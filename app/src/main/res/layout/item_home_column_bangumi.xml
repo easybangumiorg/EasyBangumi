@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.heyanle.easybangumi.ui.main.diy.HomeColumnLinearLayout
+    android:layout_marginEnd="8dp"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center">
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:layout_width="95dp"
+        android:layout_height="135dp"
+        android:id="@+id/cover"/>
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/title"
+        android:maxLines="2"
+        android:minLines="2"
+        android:gravity="top|center"
+        android:textSize="13sp"
+        android:text="小林家的龙女仆"
+        android:textColor="?attr/colorOnSurface"
+        android:layout_width="95dp"
+        android:layout_height="wrap_content"/>
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:layout_marginTop="2dp"
+        android:id="@+id/intro"
+        android:text="共 12 集"
+        android:gravity="center"
+        android:textSize="12sp"
+        android:textColor="?attr/subtitleTextColor"
+        android:layout_width="95dp"
+        android:layout_height="wrap_content"/>
+
+
+
+</com.heyanle.easybangumi.ui.main.diy.HomeColumnLinearLayout>

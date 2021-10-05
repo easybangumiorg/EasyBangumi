@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.23703703703703705" />
+        <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/drawable/ic_baseline_brightness_2_24.xml" value="0.2515625" />
+        <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/drawable/ic_baseline_brightness_auto_24.xml" value="0.2515625" />
+        <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/drawable/ic_baseline_keyboard_arrow_down_24.xml" value="0.3640625" />
+        <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/drawable/ic_baseline_keyboard_arrow_right_24.xml" value="0.3640625" />
+        <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/drawable/ic_baseline_search_24.xml" value="0.23703703703703705" />
+        <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/drawable/ic_baseline_settings_24.xml" value="0.23703703703703705" />
+        <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/drawable/ic_baseline_wb_sunny_24.xml" value="0.2515625" />
+        <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/layout/activity_crash.xml" value="0.264" />
+        <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/layout/activity_detail.xml" value="0.2418478260869565" />
+        <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/layout/activity_main.xml" value="0.34791666666666665" />
+        <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/layout/activity_play.xml" value="0.5" />
+        <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/layout/fragment_home.xml" value="0.33" />
+        <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/layout/fragment_recycler.xml" value="0.34791666666666665" />
+        <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/layout/fragment_setting.xml" value="0.23541666666666666" />
+        <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/layout/item_episode.xml" value="0.34791666666666665" />
+        <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/layout/item_home_column.xml" value="0.23541666666666666" />
+        <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/layout/item_home_column_bangumi.xml" value="0.536" />
+        <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/menu/menu_main_activity_toolbar.xml" value="0.34791666666666665" />
+        <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/xml/setting.xml" value="0.23541666666666666" />
+      </map>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/build/classes" />
+  </component>
+  <component name="ProjectType">
+    <option name="id" value="Android" />
+  </component>
+</project>

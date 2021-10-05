@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btn"
+        android:layout_margin="4dp"
+        android:text="第一集"
+
+        android:textColor="?attr/colorOnSecondary"
+        android:background="?attr/colorSecondary"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"/>
+
+</RelativeLayout>
