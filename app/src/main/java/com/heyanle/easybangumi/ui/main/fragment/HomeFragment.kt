@@ -5,6 +5,8 @@ import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.Toast
+import androidx.core.view.size
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.bumptech.glide.Glide
@@ -14,12 +16,16 @@ import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.databinding.FragmentHomeBinding
 import com.heyanle.easybangumi.databinding.ItemHomeColumnBangumiBinding
 import com.heyanle.easybangumi.databinding.ItemHomeColumnBinding
+import com.heyanle.easybangumi.db.EasyDatabase
 import com.heyanle.easybangumi.entity.Bangumi
+import com.heyanle.easybangumi.entity.BangumiDetail
 import com.heyanle.easybangumi.source.ParserFactory
-import com.heyanle.easybangumi.ui.detail.DetailActivity
+import com.heyanle.easybangumi.ui.detailplay.DetailPlayActivity
 import com.heyanle.easybangumi.ui.main.viewmodel.HomeFragmentViewModel
 import com.heyanle.easybangumi.utils.getAttrColor
+import com.heyanle.easybangumi.utils.gone
 import com.heyanle.easybangumi.utils.oksp
+import com.heyanle.easybangumi.utils.visible
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -55,11 +61,13 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             refresh()
         }
         viewModel.bangumiMap.observe(viewLifecycleOwner){ map ->
-            binding.refreshLayout.isRefreshing = true
-            binding.linear.removeAllViews()
-            binding.linear.addView(binding.sourceCard)
+            binding.refreshLayout.isRefreshing = false
+            binding.contentLinear.removeAllViews()
+            binding.errorLayout.gone()
+            binding.contentLinear.visible()
             map.iterator().forEach {
-                val bin = ItemHomeColumnBinding.inflate(layoutInflater, binding.linear, true)
+
+                val bin = ItemHomeColumnBinding.inflate(layoutInflater, binding.contentLinear, true)
                 bin.columnTitle.text = it.key
                 it.value.forEach { ba ->
                     val b = ItemHomeColumnBangumiBinding.inflate(layoutInflater, bin.linear, true)
@@ -72,8 +80,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                     b.root.onTouchDown = {
                         bin.scroll.homeColumnLinearLayout = b.root
                     }
-                    b.root.onTouchUpWithoutMove = {
-                        DetailActivity.start(requireActivity(), ba)
+                    b.root.setOnClickListener {
+                        ParserFactory.play(ba.source)?.startPlayActivity(requireActivity(), ba)
+                        //DetailPlayActivity.start(requireActivity(), ba)
                     }
                 }
             }
@@ -83,6 +92,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         binding.sourceCard.setOnClickListener {
             showSourceDialog()
         }
+        binding.errorLayout.setOnClickListener {
+            refresh()
+        }
+
     }
 
 
@@ -90,7 +103,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         super.onResume()
         val j = viewModel.bangumiMap.value
         if(viewModel.bangumiMap.value == null || viewModel.bangumiMap.value!!.isEmpty()){
-            if(binding.linear.childCount <= 1){
+            if(binding.contentLinear.childCount == 0){
                 refresh()
             }
         }
@@ -103,20 +116,33 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         GlobalScope.launch {
             binding.refreshLayout.post {
                 binding.refreshLayout.isRefreshing = true
-                binding.linear.removeAllViews()
-                binding.linear.addView(binding.sourceCard)
+                binding.errorLayout.gone()
+                binding.contentLinear.gone()
             }
             viewModel.currentSourceIndex.value?.let {
-                val map = ParserFactory.home(ParserFactory.homeKeys()[it])?.home()?:return@let
+                val map = ParserFactory.home(ParserFactory.homeKeys()[it])?.home()
+                if(map == null || map.isEmpty()){
+                    error()
+                    return@let
+                }
                 load(map)
             }
+
         }
     }
 
     private fun load(map: LinkedHashMap<String, List<Bangumi>>){
+        Log.i("HomeFragment", "load")
         viewModel.bangumiMap.postValue(map)
     }
+    private fun error(){
+        requireActivity().runOnUiThread {
+            binding.errorLayout.visible()
+            binding.contentLinear.visible()
+            binding.refreshLayout.isRefreshing = false
+        }
 
+    }
     private fun showSourceDialog(){
         val list = ParserFactory.homeKeys()
         val titles = Array<String>(list.size){

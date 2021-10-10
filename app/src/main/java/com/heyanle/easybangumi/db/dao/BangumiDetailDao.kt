@@ -1,9 +1,7 @@
 package com.heyanle.easybangumi.db.dao
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.Query
-import androidx.room.Update
+import androidx.paging.PagingSource
+import androidx.room.*
 import com.heyanle.easybangumi.entity.BangumiDetail
 
 /**
@@ -21,5 +19,11 @@ interface BangumiDetailDao {
 
     @Update
     fun update(vararg bangumiDetail: BangumiDetail)
+
+    @Query("select * from bangumi_detail where star = 1 order by lastVisiTime desc")
+    fun findStarBangumiDetail():PagingSource<Int, BangumiDetail>
+
+    @Delete
+    fun delete(vararg bangumiDetail: BangumiDetail)
 
 }

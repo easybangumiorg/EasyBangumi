@@ -10,6 +10,7 @@ import com.heyanle.easybangumi.source.IParser
 import com.heyanle.easybangumi.source.IPlayUrlParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 
@@ -129,9 +130,14 @@ class BimibimiParser: IParser, IHomeParser, IBangumiDetailParser, IPlayUrlParser
         }
     }
 
+    private var bangumi:Bangumi? = null
+    private val temp: ArrayList<ArrayList<String>> = arrayListOf()
+
     override suspend fun getBangumiPlaySource(bangumi: Bangumi): LinkedHashMap<String, List<String>> {
+        this@BimibimiParser.temp.clear()
         return withContext(Dispatchers.IO) {
             val map = LinkedHashMap<String, List<String>>()
+
             kotlin.runCatching {
                 val doc = Jsoup.connect(bangumi.detailUrl).timeout(10000)
                     .userAgent(EasyApplication.INSTANCE.getString(R.string.UA))
@@ -142,17 +148,21 @@ class BimibimiParser: IParser, IHomeParser, IBangumiDetailParser, IPlayUrlParser
                 while(ite.hasNext() && playBoxIte.hasNext()){
                     val sourceA = ite.next()
                     val list = arrayListOf<String>()
+                    val urlList = arrayListOf<String>()
 
                     val playBox = playBoxIte.next()
                     playBox.getElementsByTag("a").forEach {
                         list.add(it.text())
+                        urlList.add(url(it.attr("href")))
                     }
 
                     map[sourceA.text()] = list
+                    this@BimibimiParser.temp.add(urlList)
                 }
             }.onFailure {
                 it.printStackTrace()
             }
+            this@BimibimiParser.bangumi = bangumi
             map
         }
     }
@@ -162,6 +172,71 @@ class BimibimiParser: IParser, IHomeParser, IBangumiDetailParser, IPlayUrlParser
         lineIndex: Int,
         episodes: Int
     ): String {
-        return ""
+
+        var detailUrl = if(this.bangumi == bangumi){
+            temp[lineIndex][episodes]
+        }else ""
+        if(detailUrl.isEmpty()){
+            kotlin.runCatching {
+                val doc = Jsoup.connect(bangumi.detailUrl).timeout(10000)
+                    .userAgent(EasyApplication.INSTANCE.getString(R.string.UA))
+                    .get()
+                val playBox = doc.getElementsByClass("play_box")[lineIndex]
+                playBox.getElementsByTag("a")[episodes].let {
+                    detailUrl = url(it.attr("href"))
+                }
+
+            }.onFailure {
+                it.printStackTrace()
+            }
+        }
+
+        if(detailUrl.isEmpty()){
+            return detailUrl
+        }
+
+        return withContext(Dispatchers.IO) {
+            var result = ""
+            kotlin.runCatching {
+                val doc = Jsoup.connect(detailUrl).timeout(10000)
+                    .userAgent(EasyApplication.INSTANCE.getString(R.string.UA))
+                    .get()
+
+
+                val jsonData = doc.getElementById("video").toString().run {
+                    substring(indexOf("{"), lastIndexOf("}") + 1)
+                }
+                val jsonObject = JSONObject(jsonData)
+                val jsonUrl = jsonObject.getString("url")
+
+                if (jsonUrl.contains("http")) {
+                    result = jsonUrl
+                } else {
+                    var from = jsonObject.getString("from")
+                    from = when (from) {
+                        "wei" -> {
+                            "wy"
+                        }
+                        "ksyun" -> {
+                            "ksyun"
+                        }
+                        else -> {
+                            "play"
+                        }
+                    }
+                    val videoHtmlUrl = "$ROOT_URL/static/danmu/$from.php?url=$jsonUrl&myurl=$detailUrl"
+                    val d = Jsoup.connect(videoHtmlUrl).timeout(10000)
+                        .userAgent(EasyApplication.INSTANCE.getString(R.string.UA))
+                        .get()
+                    result = d.select("video#video source")[0].attr("src")
+
+                }
+
+            }.onFailure {
+                result = ""
+                it.printStackTrace()
+            }
+            result
+        }
     }
 }

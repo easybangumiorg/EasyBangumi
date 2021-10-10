@@ -39,15 +39,14 @@
                     android:layout_height="match_parent"/>
 
                 <ImageView
-                    android:layout_centerInParent="true"
                     android:id="@+id/cover"
                     android:layout_width="140dp"
                     android:layout_height="match_parent"
-                    android:layout_centerVertical="true"
+                    android:layout_centerInParent="true"
                     android:layout_marginStart="16dp"
                     android:layout_marginTop="4dp"
                     android:layout_marginEnd="8dp"
-                    android:layout_marginBottom="4dp"/>
+                    android:layout_marginBottom="4dp" />
 
 
 

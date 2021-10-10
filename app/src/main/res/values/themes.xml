@@ -13,10 +13,16 @@
         <item name="colorSurface">@color/white</item>
         <item name="colorOnSurface">@color/black</item>
         <item name="subtitleTextColor">#878c90</item>
+
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
         <item name="android:navigationBarColor"  tools:targetApi="m">@color/white</item>
         <item name="android:colorForeground">?attr/colorOnSurface</item>
         <item name="android:textColorPrimary">?attr/colorOnSurface</item>
+    </style>
+
+    <style name="Theme.Toolbar.Play" parent="Theme.EasyBangumi">
+        <item name="colorControlNormal">@color/white</item>
+        <item name="titleTextColor">@color/white</item>
     </style>
 
     <style name="Theme.EasyBangumi.Light" parent="Theme.EasyBangumi">

@@ -39,11 +39,13 @@ class HomeColumnHorizontalScrollView : HorizontalScrollView {
 
 
 
+    var startScrollY = 0
 
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
         //Log.e("asdfg", "dispatchTouchEvent ${ev?.action}")
         when (ev?.action) {
             MotionEvent.ACTION_DOWN -> {
+                startScrollY = scrollY
                 isMove = false
                 initialTouchX = ev.x
                 initialTouchY = ev.y
@@ -51,9 +53,12 @@ class HomeColumnHorizontalScrollView : HorizontalScrollView {
                 //parent.requestDisallowInterceptTouchEvent(true)
             }
             MotionEvent.ACTION_MOVE -> {
-                isMove = true
+
                 val dx = ev.x - initialTouchX
                 val dy = ev.y - initialTouchY
+                if(dx > 0.5 || dy > 0.5){
+                    isMove = true
+                }
 
                 val hasScrollView = (canScrollHorizontally(-1) && dx > 0)
                         || (canScrollHorizontally(1) && dx < 0)
@@ -65,8 +70,8 @@ class HomeColumnHorizontalScrollView : HorizontalScrollView {
             }
             MotionEvent.ACTION_UP -> {
                 requestDisallowInterceptTouchEvent(false)
-                if(!isMove){
-                    homeColumnLinearLayout?.onTouchUpWithoutMove?.let { it() }
+                if(!isMove && scrollY == startScrollY){
+                    homeColumnLinearLayout?.performClick()
                 }
                 isMove = false
 

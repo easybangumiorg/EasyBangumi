@@ -36,4 +36,21 @@
     <string name="episode">选集</string>
     
     <string name="recommend">相关推荐</string>
+
+    <string name="error_click_to_refresh">加载出错，点击重新加载</string>
+
+    <string name="episode_total">共&#160;%1$d&#160;话</string>
+    <string name="type_keyword_to_search">输入关键字搜索</string>
+
+    <string name="my_bangumi_item_intro">%1$s\n%2$s\n%3$s</string>
+    <string name="last_watch_title">看到 %1$s\n%2$s</string>
+
+    <string name="retry">点击重试</string>
+
+    <string name="delete_follow_bangumi_completely">取消追番成功</string>
+
+    <array name="my_bangumi_menu_array">
+        <item>取消追番</item>
+    </array>
+
 </resources>

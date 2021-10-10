@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <androidx.core.widget.NestedScrollView
+        android:layout_alignParentEnd="true"
+        android:layout_width="240dp"
+        android:layout_height="match_parent"
+        android:background="#88000000"
+        android:gravity="center"
+        android:paddingTop="10dp"
+        android:paddingBottom="16dp" >
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:gravity="center"
+            android:id="@+id/video_quality_wrapper_area"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+    </androidx.core.widget.NestedScrollView>
+
+
+</RelativeLayout>

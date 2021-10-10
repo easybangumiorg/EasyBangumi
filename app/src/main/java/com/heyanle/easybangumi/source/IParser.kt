@@ -1,7 +1,9 @@
 package com.heyanle.easybangumi.source
 
+import android.content.Context
 import com.heyanle.easybangumi.entity.Bangumi
 import com.heyanle.easybangumi.entity.BangumiDetail
+import com.heyanle.easybangumi.ui.detailplay.DetailPlayActivity
 
 /**
  * 番剧源 接口
@@ -44,6 +46,11 @@ interface IBangumiDetailParser : IParser{
 }
 
 interface IPlayUrlParser : IParser{
+
+
+    fun startPlayActivity(context: Context, bangumi: Bangumi){
+        DetailPlayActivity.start(context, bangumi)
+    }
 
     /**
      * 获取播放源数据

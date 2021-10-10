@@ -14,12 +14,14 @@ object ParserFactory {
         register(YhdmParser())
     }
 
+    private val parserMap = hashMapOf<String, IParser>()
     private val homeMap = hashMapOf<String, IHomeParser>()
     private val searchMap = hashMapOf<String, ISearchParser>()
     private val detailMap = hashMapOf<String, IBangumiDetailParser>()
     private val playMap = hashMapOf<String, IPlayUrlParser>()
 
     private fun register(iParser: IParser){
+        parserMap[iParser.getKey()] = iParser
         if(iParser is IHomeParser){
             homeMap[iParser.getKey()] = iParser
         }
@@ -33,6 +35,10 @@ object ParserFactory {
             playMap[iParser.getKey()] = iParser
         }
 
+    }
+
+    fun parser(key: String): IParser?{
+        return parserMap[key]
     }
 
     fun homeKeys():List<String>{

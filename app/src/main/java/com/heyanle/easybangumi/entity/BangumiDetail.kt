@@ -9,7 +9,7 @@ import androidx.room.PrimaryKey
  * https://github.com/heyanLE
  */
 @Entity(tableName = "bangumi_detail")
-data class BangumiDetail (
+data class BangumiDetail(
 
     // 唯一标识，格式 "[source]-[id]"
     @PrimaryKey var id: String,
@@ -44,7 +44,11 @@ data class BangumiDetail (
     // 上次观看集数
     var lastEpisodes: Int = 0,
 
-    // 上次浏览时间
-    var lastVisitTime: Long = 0,
+    var lastEpisodeTitle: String = "",
+
+    var lastVisiTime: Long = 0L,
 ){
+    fun getBangumi():Bangumi{
+        return Bangumi(id, source, detailUrl, name, cover, intro)
+    }
 }

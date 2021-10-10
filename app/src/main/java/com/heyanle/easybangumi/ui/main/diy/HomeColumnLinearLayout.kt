@@ -12,7 +12,6 @@ import androidx.appcompat.widget.LinearLayoutCompat
 class HomeColumnLinearLayout: LinearLayoutCompat {
 
     var onTouchDown : ()->Unit = {}
-    var onTouchUpWithoutMove: ()->Unit = {}
 
     constructor(context: Context) : super(context)
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
@@ -25,6 +24,7 @@ class HomeColumnLinearLayout: LinearLayoutCompat {
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
         if(ev?.action == MotionEvent.ACTION_DOWN){
             onTouchDown()
+            return false
         }
         return super.dispatchTouchEvent(ev)
     }

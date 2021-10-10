@@ -10,6 +10,8 @@ import com.heyanle.easybangumi.source.IParser
 import com.heyanle.easybangumi.source.IPlayUrlParser
 import com.heyanle.easybangumi.source.bimibimi.BimibimiParser
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
@@ -49,7 +51,7 @@ class YhdmParser: IParser, IHomeParser, IBangumiDetailParser, IPlayUrlParser {
         return withContext(Dispatchers.IO){
             val map = LinkedHashMap<String, List<Bangumi>>()
             kotlin.runCatching {
-                val doc = Jsoup.connect(BimibimiParser.ROOT_URL).timeout(10000)
+                val doc = Jsoup.connect(ROOT_URL).timeout(10000)
                     .userAgent(EasyApplication.INSTANCE.getString(R.string.UA))
                     .get()
 
@@ -80,6 +82,7 @@ class YhdmParser: IParser, IHomeParser, IBangumiDetailParser, IPlayUrlParser {
                 }
 
             }.onFailure {
+                map.clear()
                 it.printStackTrace()
             }
 
@@ -87,7 +90,11 @@ class YhdmParser: IParser, IHomeParser, IBangumiDetailParser, IPlayUrlParser {
         }
     }
 
+    private var bangumi:Bangumi ? = null
+    private val temp: ArrayList<String> = arrayListOf()
+
     override suspend fun detail(bangumi: Bangumi): BangumiDetail? {
+
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
                 val doc = Jsoup.connect(bangumi.detailUrl).timeout(10000)
@@ -111,6 +118,7 @@ class YhdmParser: IParser, IHomeParser, IBangumiDetailParser, IPlayUrlParser {
     }
 
     override suspend fun getBangumiPlaySource(bangumi: Bangumi): LinkedHashMap<String, List<String>> {
+        temp.clear()
         return withContext(Dispatchers.IO) {
             val map = LinkedHashMap<String, List<String>>()
             kotlin.runCatching {
@@ -121,11 +129,13 @@ class YhdmParser: IParser, IHomeParser, IBangumiDetailParser, IPlayUrlParser {
                 val list = arrayListOf<String>()
                 sourceDiv.children().forEach {
                     list.add(it.text())
+                    temp.add(it.child(0).attr("href"))
                 }
                 map.put("播放列表", list)
             }.onFailure {
                 it.printStackTrace()
             }
+            this@YhdmParser.bangumi = bangumi
             map
         }
     }
@@ -135,6 +145,42 @@ class YhdmParser: IParser, IHomeParser, IBangumiDetailParser, IPlayUrlParser {
         lineIndex: Int,
         episodes: Int
     ): String {
-        return ""
+        var detailUrl = ""
+        if(this.bangumi == bangumi){
+            detailUrl = temp[episodes]
+        }else{
+            detailUrl = withContext(Dispatchers.IO) {
+                var result = ""
+                kotlin.runCatching {
+                    val doc = Jsoup.connect(bangumi.detailUrl).timeout(10000)
+                        .userAgent(EasyApplication.INSTANCE.getString(R.string.UA))
+                        .get()
+                    val sourceDiv = doc.getElementsByClass("movurl")[0].child(0)
+                    val list = arrayListOf<String>()
+                    result = sourceDiv.child(episodes).child(0).attr("href")
+
+                }.onFailure {
+                    it.printStackTrace()
+                }
+                result
+            }
+        }
+        if(detailUrl.isEmpty()){
+            return detailUrl
+        }
+        return withContext(Dispatchers.IO) {
+            var result = ""
+            kotlin.runCatching {
+                val doc = Jsoup.connect(url(detailUrl)).timeout(10000)
+                    .userAgent(EasyApplication.INSTANCE.getString(R.string.UA))
+                    .get()
+                result = doc.select("div.area div.bofang div#playbox")[0].attr("data-vid").split("$")[0]
+            }.onFailure {
+                it.printStackTrace()
+                result = ""
+            }
+            result
+        }
+
     }
 }

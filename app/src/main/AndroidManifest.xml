@@ -26,7 +26,11 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ui.detail.DetailActivity"/>
+        <activity android:name=".ui.search.SearchActivity"/>
+        <activity android:name=".ui.detailplay.DetailPlayActivity"
+            android:launchMode="singleTask"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:screenOrientation="fullSensor" />
 
         <activity android:name=".crash.CrashActivity"
             android:process="com.heyanle.easybangumi.crash"/>

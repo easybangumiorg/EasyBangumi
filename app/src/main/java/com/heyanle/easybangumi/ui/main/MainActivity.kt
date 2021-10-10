@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
 import android.widget.Toast
+import androidx.activity.viewModels
 import com.google.android.material.tabs.TabLayoutMediator
 import com.heyanle.easybangumi.EasyApplication
 import com.heyanle.easybangumi.R
@@ -14,8 +15,11 @@ import com.heyanle.easybangumi.adapter.PagerAdapter
 import com.heyanle.easybangumi.ui.main.fragment.HomeFragment
 import com.heyanle.easybangumi.ui.main.fragment.MyBangumiFragment
 import com.heyanle.easybangumi.ui.main.fragment.SettingFragment
+import com.heyanle.easybangumi.ui.main.viewmodel.MainActivityViewModel
+import com.heyanle.easybangumi.ui.search.SearchActivity
 import com.heyanle.easybangumi.utils.DarkChangeSaveIntent
 import com.heyanle.easybangumi.utils.DarkUtils
+import com.heyanle.easybangumi.utils.start
 
 /**
  * Created by HeYanLe on 2021/9/19 10:28.
@@ -39,6 +43,8 @@ class MainActivity : BaseActivity(), DarkChangeSaveIntent {
         ActivityMainBinding.inflate(LayoutInflater.from(this))
     }
 
+    private val viewModel by viewModels<MainActivityViewModel>()
+
     private val pageAdapter: PagerAdapter by lazy {
         PagerAdapter(
             this,
@@ -51,6 +57,11 @@ class MainActivity : BaseActivity(), DarkChangeSaveIntent {
                 else -> throw Exception("never run there, maybe")
             }
         }
+    }
+
+    override fun onPause() {
+        viewModel.refreshMyBangumi.value = true
+        super.onPause()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -97,6 +108,10 @@ class MainActivity : BaseActivity(), DarkChangeSaveIntent {
                     DarkUtils.switch(this)
                 }
 
+                true
+            }
+            it.findItem(R.id.item_search).setOnMenuItemClickListener {
+                start<SearchActivity>()
                 true
             }
         }
