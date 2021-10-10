@@ -4,10 +4,7 @@ import com.heyanle.easybangumi.EasyApplication
 import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.entity.Bangumi
 import com.heyanle.easybangumi.entity.BangumiDetail
-import com.heyanle.easybangumi.source.IBangumiDetailParser
-import com.heyanle.easybangumi.source.IHomeParser
-import com.heyanle.easybangumi.source.IParser
-import com.heyanle.easybangumi.source.IPlayUrlParser
+import com.heyanle.easybangumi.source.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -18,7 +15,7 @@ import org.jsoup.nodes.Element
  * Created by HeYanLe on 2021/9/20 21:48.
  * https://github.com/heyanLE
  */
-class BimibimiParser: IParser, IHomeParser, IBangumiDetailParser, IPlayUrlParser {
+class BimibimiParser: IParser, IHomeParser, IBangumiDetailParser, IPlayUrlParser, ISearchParser {
 
     companion object{
         const val ROOT_URL = "http://bimiacg2.net"
@@ -238,5 +235,47 @@ class BimibimiParser: IParser, IHomeParser, IBangumiDetailParser, IPlayUrlParser
             }
             result
         }
+    }
+
+    override fun getFirstPage(): Int {
+        return 1
+    }
+
+    override suspend fun search(keyword: String, page: Int): ISearchParser.BangumiPageResult {
+        var res = ISearchParser.BangumiPageResult(null, false, emptyList())
+        withContext(Dispatchers.IO){
+            val url = url("/vod/search/wd/$keyword/page/$page")
+
+            runCatching {
+                val doc = Jsoup.connect(url).timeout(10000)
+                    .userAgent(EasyApplication.INSTANCE.getString(R.string.UA))
+                    .get()
+                val r = arrayListOf<Bangumi>()
+                doc.select("div.v_tb ul.drama-module.clearfix.tab-cont li.item").forEach {
+                    val detailUrl = url(it.child(0).attr("href"))
+                    val b = Bangumi(
+                        id = "${getLabel()}-$detailUrl",
+                        name = it.child(1).child(0).text(),
+                        detailUrl = detailUrl,
+                        intro = it.child(1).child(1).text(),
+                        cover = url(it.child(0).child(0).attr("src")),
+                        visitTime = System.currentTimeMillis(),
+                        source = getKey(),
+                    )
+                    r.add(b)
+                }
+                val pages = doc.select("div.pages ul.pagination li a.next.pagegbk")
+                res = if(pages.isEmpty()){
+                    ISearchParser.BangumiPageResult(null, true, r)
+                }else{
+                    ISearchParser.BangumiPageResult(page+1, true, r)
+                }
+            }.onFailure {
+                it.printStackTrace()
+                throw it
+
+            }
+        }
+        return res
     }
 }

@@ -5,7 +5,5 @@
     <item android:id="@+id/item_search"
         app:showAsAction="ifRoom"
         app:iconTint="?attr/colorSecondary"
-        app:icon="@drawable/ic_baseline_arrow_forward_24"
-        android:icon="@drawable/ic_baseline_arrow_forward_24"
         android:title="@string/search" />
 </menu>

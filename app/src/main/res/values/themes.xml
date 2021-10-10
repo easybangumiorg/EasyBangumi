@@ -25,6 +25,10 @@
         <item name="titleTextColor">@color/white</item>
     </style>
 
+    <style name="Theme.Toolbar.Menu.Text.Color" parent="Theme.EasyBangumi">
+        <item name="actionMenuTextColor">?attr/colorSecondary</item>
+    </style>
+
     <style name="Theme.EasyBangumi.Light" parent="Theme.EasyBangumi">
         <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>

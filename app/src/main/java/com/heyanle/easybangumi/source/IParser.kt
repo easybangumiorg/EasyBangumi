@@ -17,13 +17,23 @@ interface IParser{
 }
 
 interface ISearchParser: IParser{
+
+    data class BangumiPageResult(
+        val nextPage: Int?,
+        val complete: Boolean,
+        val data: List<Bangumi>
+    )
+
+    fun getFirstPage(): Int
+
+
     /**
      * 搜索
      * @param keyword 关键字
      * @param page 页码
      * @return Bangumi 列表
      */
-    suspend fun search(keyword: String, page: Int) : List<Bangumi>
+    suspend fun search(keyword: String, page: Int) : BangumiPageResult
 }
 
 interface IHomeParser : IParser{

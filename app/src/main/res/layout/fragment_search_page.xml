@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="?android:colorBackground">
+
+    <LinearLayout
+        android:id="@+id/empty_layout"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:src="@drawable/ic_baseline_search_24"
+            app:tint="?attr/subtitleTextColor" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:textColor="?attr/subtitleTextColor"
+            android:text="@string/type_keyword_to_search"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:gravity="center"
+        android:layout_centerInParent="true"
+        android:id="@+id/error_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+
+        <ImageView
+            android:id="@+id/refresh_img_view"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_centerHorizontal="true"
+            android:src="@drawable/ic_sharp_refresh_24"
+            app:tint="?attr/subtitleTextColor" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:textColor="?attr/subtitleTextColor"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@id/refresh_img_view"
+            android:text="@string/error_click_to_refresh"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+
+    </RelativeLayout>
+
+    <include
+        android:id="@+id/content"
+        layout="@layout/fragment_refresh_recycler"/>
+
+</RelativeLayout>

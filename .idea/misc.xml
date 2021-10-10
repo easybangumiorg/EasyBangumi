@@ -13,15 +13,18 @@
         <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/drawable/ic_baseline_search_24.xml" value="0.23703703703703705" />
         <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/drawable/ic_baseline_settings_24.xml" value="0.23703703703703705" />
         <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/drawable/ic_baseline_wb_sunny_24.xml" value="0.2515625" />
+        <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/drawable/ic_launcher_background.xml" value="0.3640625" />
         <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/layout/activity_crash.xml" value="0.264" />
         <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/layout/activity_detail.xml" value="0.2418478260869565" />
         <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/layout/activity_detail_play.xml" value="0.2" />
         <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/layout/activity_main.xml" value="0.34791666666666665" />
         <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/layout/activity_play.xml" value="0.5" />
-        <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/layout/activity_search.xml" value="0.23541666666666666" />
+        <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/layout/activity_search.xml" value="0.33" />
         <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/layout/fragment_home.xml" value="0.264" />
         <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/layout/fragment_my_follow.xml" value="0.23541666666666666" />
         <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/layout/fragment_recycler.xml" value="0.34791666666666665" />
+        <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/layout/fragment_refresh_recycler.xml" value="0.34791666666666665" />
+        <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/layout/fragment_search_page.xml" value="0.34791666666666665" />
         <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/layout/fragment_setting.xml" value="0.23541666666666666" />
         <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/layout/item_detail_episode.xml" value="0.2269021739130435" />
         <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/layout/item_episode.xml" value="0.34791666666666665" />
@@ -30,10 +33,12 @@
         <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/layout/item_load_status.xml" value="0.23541666666666666" />
         <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/layout/item_my_follow_bangumi.xml" value="0.23541666666666666" />
         <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/layout/item_play_line.xml" value="0.264" />
+        <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/layout/item_search_bangumi.xml" value="0.34791666666666665" />
         <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/layout/layout_ag_video.xml" value="0.23177083333333334" />
         <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/layout/popup_layout_clarity.xml" value="0.23541666666666666" />
         <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/menu/menu_main_activity_toolbar.xml" value="0.34791666666666665" />
         <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/menu/menu_search_activity_toolbar.xml" value="0.23541666666666666" />
+        <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.3640625" />
         <entry key="..\:/Project/Android/EasyBangumi/app/src/main/res/xml/setting.xml" value="0.23541666666666666" />
         <entry key="..\:/Users/eke_l/.gradle/caches/transforms-3/b1cf03b5d05fbd79deb28224333a49cd/transformed/jetified-jiaozivideoplayer-7.7.0/res/layout/jz_layout_clarity.xml" value="0.23541666666666666" />
         <entry key="..\:/Users/eke_l/.gradle/caches/transforms-3/b1cf03b5d05fbd79deb28224333a49cd/transformed/jetified-jiaozivideoplayer-7.7.0/res/layout/jz_layout_clarity_item.xml" value="0.23541666666666666" />
