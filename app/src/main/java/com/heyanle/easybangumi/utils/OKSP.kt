@@ -2,7 +2,10 @@ package com.heyanle.easybangumi.utils
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.ArraySet
 import com.heyanle.easybangumi.EasyApplication
+import okhttp3.internal.wait
+import java.lang.Exception
 import kotlin.reflect.KProperty
 
 /**
@@ -10,9 +13,108 @@ import kotlin.reflect.KProperty
  * https://github.com/heyanLE
  */
 
-fun <T>  oksp (key: String,
+fun <T> oksp (key: String,
           defValue: T): OKSP<T>{
     return OKSP<T>(key, defValue)
+}
+
+class OKSPSet <T> (
+    private val key: String,
+    private val clazz: Class<T>) : MutableSet<T>{
+
+    companion object{
+        const val SP_NAME = "EasyBangumi.SP"
+    }
+
+    private val sharedPreferences: SharedPreferences by lazy {
+        EasyApplication.INSTANCE.getSharedPreferences(
+            OKSP.SP_NAME,
+            Context.MODE_PRIVATE
+        )
+    }
+
+    @Volatile private var value:MutableSet<T> = hashSetOf()
+
+    operator fun getValue(thisRef: Any?, property: KProperty<*>): MutableSet<T> {
+        load()
+        return this
+    }
+
+    operator fun setValue(thisRef: Any?, property: KProperty<*>, value: MutableSet<T>){
+        value.clear()
+        value.addAll(value)
+        save()
+    }
+
+    private fun load(){
+        val ss = sharedPreferences.getStringSet(key, emptySet())?: emptySet()
+        value.clear()
+
+        for(s in ss){
+            clazz.cast(s)?.let {
+                value.add(it)
+            }
+        }
+    }
+
+    private fun save(){
+
+    }
+
+    override val size: Int
+        get() = value.size
+
+    override fun contains(element: T): Boolean {
+        return value.contains(element)
+    }
+
+    override fun containsAll(elements: Collection<T>): Boolean {
+        return value.containsAll(elements)
+    }
+
+    override fun isEmpty(): Boolean {
+        return value.isEmpty()
+    }
+
+    override fun iterator(): MutableIterator<T> {
+        throw OKSPException()
+    }
+
+    override fun add(element: T): Boolean {
+        return value.add(element).apply {
+            save()
+        }
+    }
+
+    override fun addAll(elements: Collection<T>): Boolean {
+        return value.addAll(elements).apply {
+            save()
+        }
+    }
+
+    override fun clear() {
+        value.clear()
+        save()
+    }
+
+    override fun remove(element: T): Boolean {
+        return value.remove(element).apply {
+            save()
+        }
+
+    }
+
+    override fun removeAll(elements: Collection<T>): Boolean {
+        return value.removeAll(elements).apply {
+            save()
+        }
+    }
+
+    override fun retainAll(elements: Collection<T>): Boolean {
+        return value.retainAll(elements).apply {
+            save()
+        }
+    }
 }
 
 class OKSP <T> (
@@ -59,4 +161,8 @@ class OKSP <T> (
             else -> putString(key, value.toString())?:defValue.toString()
         }
     }.apply()
+
+
 }
+
+class OKSPException: Exception("Can't iterator from OKSPSet, please use getValueSet() get set first")

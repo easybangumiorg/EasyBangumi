@@ -11,6 +11,7 @@ import android.os.Build
 import android.text.BoringLayout
 import androidx.appcompat.app.AppCompatDelegate
 import com.heyanle.easybangumi.EasyApplication
+import com.heyanle.easybangumi.utils.oksp.okspValue
 
 
 /**
@@ -28,8 +29,12 @@ interface DarkChangeSaveIntent{
 }
 object DarkUtils {
 
-    private var isDark by oksp("is_dark", false)
-    private var autoDark by oksp("auto_dark", true)
+//    private var isDark by oksp("is_dark", false)
+//    private var autoDark by oksp("auto_dark", true)
+
+    private var isDark by okspValue("is_dark", false)
+    private var autoDark by okspValue("auto_dark", true)
+
 
     private val themeId: Int
     get() = if(isDark) R.style.Theme_EasyBangumi_Dark else R.style.Theme_EasyBangumi_Light

@@ -5,6 +5,7 @@ import com.heyanle.easybangumi.crash.CrashHandler
 import com.heyanle.easybangumi.db.EasyDatabase
 import com.heyanle.easybangumi.source.ParserFactory
 import com.heyanle.easybangumi.utils.DarkUtils
+import com.heyanle.easybangumi.utils.oksp.initDefaultOksp
 
 /**
  * Created by HeYanLe on 2021/9/8 22:07.
@@ -20,10 +21,13 @@ class EasyApplication : Application() {
         super.onCreate()
         INSTANCE = this
         Thread.setDefaultUncaughtExceptionHandler(CrashHandler(this))
+        initDefaultOksp(this, "EasyBangumi")
         DarkUtils.autoApplication()
         ParserFactory.init()
         EasyDatabase.AppDB
         //DarkUtils.dark(true)
+
+
     }
 
 

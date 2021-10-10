@@ -136,29 +136,35 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         viewModel.bangumiMap.postValue(map)
     }
     private fun error(){
-        requireActivity().runOnUiThread {
-            binding.errorLayout.visible()
-            binding.contentLinear.visible()
-            binding.refreshLayout.isRefreshing = false
+        kotlin.runCatching {
+            requireActivity().runOnUiThread {
+                binding.errorLayout.visible()
+                binding.contentLinear.visible()
+                binding.refreshLayout.isRefreshing = false
+            }
         }
+
 
     }
     private fun showSourceDialog(){
-        val list = ParserFactory.homeKeys()
-        val titles = Array<String>(list.size){
-            ParserFactory.home(list[it])?.getLabel()?:""
-        }
-        MaterialAlertDialogBuilder(requireContext()).apply {
-            setItems(titles) { _, i ->
-                if(i == homeIndex){
-                    return@setItems
-                }else{
-                    isChangeSource = true
-                    viewModel.currentSourceIndex.value = i
-                }
+        kotlin.runCatching {
+            val list = ParserFactory.homeKeys()
+            val titles = Array<String>(list.size){
+                ParserFactory.home(list[it])?.getLabel()?:""
             }
-            setTitle(R.string.change_home_source)
-        }.show()
+            MaterialAlertDialogBuilder(requireContext()).apply {
+                setItems(titles) { _, i ->
+                    if(i == homeIndex){
+                        return@setItems
+                    }else{
+                        isChangeSource = true
+                        viewModel.currentSourceIndex.value = i
+                    }
+                }
+                setTitle(R.string.change_home_source)
+            }.show()
+        }
+
     }
 
 
