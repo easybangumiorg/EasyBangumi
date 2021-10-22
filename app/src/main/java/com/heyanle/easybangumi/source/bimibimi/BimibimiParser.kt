@@ -1,21 +1,26 @@
 package com.heyanle.easybangumi.source.bimibimi
 
+import android.content.Context
 import com.heyanle.easybangumi.EasyApplication
 import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.entity.Bangumi
 import com.heyanle.easybangumi.entity.BangumiDetail
 import com.heyanle.easybangumi.source.*
+import com.heyanle.easybangumi.ui.detailplay.DetailPlayActivity
+import com.heyanle.easybangumi.utils.start
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
+import java.lang.Exception
+import java.lang.IndexOutOfBoundsException
 
 /**
- * Created by HeYanLe on 2021/9/20 21:48.
+ * Created by HeYanLe on 2021/10/21 11:38.
  * https://github.com/heyanLE
  */
-class BimibimiParser: IParser, IHomeParser, IBangumiDetailParser, IPlayUrlParser, ISearchParser {
+class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISearchParser {
 
     companion object{
         const val ROOT_URL = "http://bimiacg2.net"
@@ -40,19 +45,33 @@ class BimibimiParser: IParser, IHomeParser, IBangumiDetailParser, IPlayUrlParser
     }
 
     override fun getLabel(): String {
-        return "Bimibimi"
+        return "哔咪动漫"
     }
 
-    override suspend fun home(): LinkedHashMap<String, List<Bangumi>> {
+    override fun getVersion(): String {
+        return "1.0.0"
+    }
+
+    override fun getVersionCode(): Int {
+        return 0
+    }
+
+    override suspend fun home(): ISourceParser.ParserResult<LinkedHashMap<String, List<Bangumi>>> {
         return withContext(Dispatchers.IO){
             val map = LinkedHashMap<String, List<Bangumi>>()
-            kotlin.runCatching {
-                val doc = Jsoup.connect(ROOT_URL).timeout(10000)
+            val doc = runCatching {
+                Jsoup.connect(ROOT_URL).timeout(10000)
                     .userAgent(EasyApplication.INSTANCE.getString(R.string.UA))
                     .get()
+            }.getOrElse {
+                it.printStackTrace()
+                return@withContext ISourceParser.ParserResult.Error(it, false)
+            }
+            kotlin.runCatching {
+
                 val elements = doc.getElementsByClass("area-cont")
 
-                fun load(element:Element){
+                fun load(element: Element){
                     val columnTitle = element.getElementsByClass("title")[0].child(1).text()
                     val uls = element.getElementsByClass("tab-cont")
                     val list = arrayListOf<Bangumi>()
@@ -92,26 +111,79 @@ class BimibimiParser: IParser, IHomeParser, IBangumiDetailParser, IPlayUrlParser
                 // 剧场动画
                 load(elements[4])
 
-
-
-
             }.onFailure {
                 it.printStackTrace()
+                return@withContext ISourceParser.ParserResult.Error(it, true)
+            }.onSuccess {
+                return@withContext ISourceParser.ParserResult.Complete(map)
             }
 
-            return@withContext map
+            return@withContext ISourceParser.ParserResult.Error(Exception("Unknown Error"), true)
         }
-
     }
 
-    override suspend fun detail(bangumi: Bangumi): BangumiDetail? {
-        return withContext(Dispatchers.IO) {
-            kotlin.runCatching {
-                val doc = Jsoup.connect(bangumi.detailUrl).timeout(10000)
+    override fun firstKey(): Int {
+        return 1
+    }
+
+    override suspend fun search(
+        keyword: String,
+        key: Int
+    ): ISourceParser.ParserResult<Pair<Int?, List<Bangumi>>> {
+        return withContext(Dispatchers.IO){
+            val doc = runCatching {
+                val url = url("/vod/search/wd/$keyword/page/$key")
+                Jsoup.connect(url).timeout(10000)
                     .userAgent(EasyApplication.INSTANCE.getString(R.string.UA))
                     .get()
+            }.getOrElse {
+                it.printStackTrace()
+                return@withContext ISourceParser.ParserResult.Error(it, false)
+            }
+
+            runCatching {
+                val r = arrayListOf<Bangumi>()
+                doc.select("div.v_tb ul.drama-module.clearfix.tab-cont li.item").forEach {
+                    val detailUrl = url(it.child(0).attr("href"))
+                    val b = Bangumi(
+                        id = "${getLabel()}-$detailUrl",
+                        name = it.child(1).child(0).text(),
+                        detailUrl = detailUrl,
+                        intro = it.child(1).child(1).text(),
+                        cover = url(it.child(0).child(0).attr("src")),
+                        visitTime = System.currentTimeMillis(),
+                        source = getKey(),
+                    )
+                    r.add(b)
+                }
+                val pages = doc.select("div.pages ul.pagination li a.next.pagegbk")
+                if(pages.isEmpty()){
+                    return@withContext ISourceParser.ParserResult.Complete(Pair(null, r))
+                }else{
+                    return@withContext ISourceParser.ParserResult.Complete(Pair(key + 1, r))
+                }
+            }.onFailure {
+                it.printStackTrace()
+                return@withContext ISourceParser.ParserResult.Error(it, true)
+            }
+
+            return@withContext ISourceParser.ParserResult.Error(Exception("Unknown Error"), true)
+        }
+    }
+
+    override suspend fun detail(bangumi: Bangumi): ISourceParser.ParserResult<BangumiDetail> {
+        return withContext(Dispatchers.IO) {
+            val doc = runCatching {
+                Jsoup.connect(bangumi.detailUrl).timeout(10000)
+                    .userAgent(EasyApplication.INSTANCE.getString(R.string.UA))
+                    .get()
+            }.getOrElse {
+                it.printStackTrace()
+                return@withContext ISourceParser.ParserResult.Error(it, false)
+            }
+            kotlin.runCatching {
                 val description = doc.getElementsByClass("vod-jianjie")[0].text()
-                return@withContext BangumiDetail(
+                return@withContext  ISourceParser.ParserResult.Complete(BangumiDetail(
                     id = bangumi.id,
                     source = getKey(),
                     name = bangumi.name,
@@ -119,26 +191,32 @@ class BimibimiParser: IParser, IHomeParser, IBangumiDetailParser, IPlayUrlParser
                     intro = bangumi.intro,
                     detailUrl = bangumi.detailUrl,
                     description = description
-                )
+                ))
             }.onFailure {
                 it.printStackTrace()
+                return@withContext ISourceParser.ParserResult.Error(it, false)
             }
-            null
+            return@withContext ISourceParser.ParserResult.Error(Exception("Unknown Error"), true)
         }
     }
 
     private var bangumi:Bangumi? = null
     private val temp: ArrayList<ArrayList<String>> = arrayListOf()
 
-    override suspend fun getBangumiPlaySource(bangumi: Bangumi): LinkedHashMap<String, List<String>> {
+    override suspend fun getPlayMsg(bangumi: Bangumi): ISourceParser.ParserResult<LinkedHashMap<String, List<String>>> {
         this@BimibimiParser.temp.clear()
         return withContext(Dispatchers.IO) {
             val map = LinkedHashMap<String, List<String>>()
-
-            kotlin.runCatching {
-                val doc = Jsoup.connect(bangumi.detailUrl).timeout(10000)
+            val doc = runCatching {
+                Jsoup.connect(bangumi.detailUrl).timeout(10000)
                     .userAgent(EasyApplication.INSTANCE.getString(R.string.UA))
                     .get()
+            }.getOrElse {
+                it.printStackTrace()
+                return@withContext ISourceParser.ParserResult.Error(it, false)
+            }
+
+            kotlin.runCatching {
                 val sourceDiv = doc.getElementsByClass("play_source_tab")[0]
                 val ite = sourceDiv.getElementsByTag("a").iterator()
                 val playBoxIte = doc.getElementsByClass("play_box").iterator()
@@ -156,50 +234,59 @@ class BimibimiParser: IParser, IHomeParser, IBangumiDetailParser, IPlayUrlParser
                     map[sourceA.text()] = list
                     this@BimibimiParser.temp.add(urlList)
                 }
+                this@BimibimiParser.bangumi = bangumi
+                return@withContext ISourceParser.ParserResult.Complete(map)
             }.onFailure {
+                this@BimibimiParser.bangumi = null
                 it.printStackTrace()
+                return@withContext ISourceParser.ParserResult.Error(it, true)
             }
-            this@BimibimiParser.bangumi = bangumi
-            map
+            this@BimibimiParser.bangumi = null
+            return@withContext ISourceParser.ParserResult.Error(Exception("Unknown Error"), true)
         }
     }
 
-    override suspend fun getBangumiPlayUrl(
+    override suspend fun getPlayUrl(
         bangumi: Bangumi,
         lineIndex: Int,
         episodes: Int
-    ): String {
+    ): ISourceParser.ParserResult<String> {
 
-        var detailUrl = if(this.bangumi == bangumi){
-            temp[lineIndex][episodes]
-        }else ""
-        if(detailUrl.isEmpty()){
-            kotlin.runCatching {
-                val doc = Jsoup.connect(bangumi.detailUrl).timeout(10000)
-                    .userAgent(EasyApplication.INSTANCE.getString(R.string.UA))
-                    .get()
-                val playBox = doc.getElementsByClass("play_box")[lineIndex]
-                playBox.getElementsByTag("a")[episodes].let {
-                    detailUrl = url(it.attr("href"))
+        if(lineIndex < 0 || episodes < 0){
+            return ISourceParser.ParserResult.Error(IndexOutOfBoundsException(), false)
+        }
+        var url = ""
+        if(bangumi != this.bangumi
+            || lineIndex >= temp.size
+            || episodes >= temp[lineIndex].size
+            || temp[lineIndex][episodes] == ""){
+            getPlayMsg(bangumi).error {
+                return@getPlayUrl ISourceParser.ParserResult.Error(it.throwable, it.isParserError)
+            }.complete {
+                runCatching {
+                    url = temp[lineIndex][episodes]
+                }.onFailure {
+                    return@getPlayUrl ISourceParser.ParserResult.Error(it, true)
                 }
-
-            }.onFailure {
-                it.printStackTrace()
             }
+        }else{
+            url = temp[lineIndex][episodes]
         }
 
-        if(detailUrl.isEmpty()){
-            return detailUrl
+        if(url.isEmpty()){
+            return ISourceParser.ParserResult.Error(Exception("Unknown Error"), true)
         }
-
         return withContext(Dispatchers.IO) {
-            var result = ""
-            kotlin.runCatching {
-                val doc = Jsoup.connect(detailUrl).timeout(10000)
+            val doc = runCatching {
+                Jsoup.connect(url).timeout(10000)
                     .userAgent(EasyApplication.INSTANCE.getString(R.string.UA))
                     .get()
+            }.getOrElse {
+                it.printStackTrace()
+                return@withContext ISourceParser.ParserResult.Error(it, false)
+            }
 
-
+            val videoHtmlUrl = runCatching {
                 val jsonData = doc.getElementById("video").toString().run {
                     substring(indexOf("{"), lastIndexOf("}") + 1)
                 }
@@ -207,7 +294,7 @@ class BimibimiParser: IParser, IHomeParser, IBangumiDetailParser, IPlayUrlParser
                 val jsonUrl = jsonObject.getString("url")
 
                 if (jsonUrl.contains("http")) {
-                    result = jsonUrl
+                    return@withContext ISourceParser.ParserResult.Complete(jsonUrl)
                 } else {
                     var from = jsonObject.getString("from")
                     from = when (from) {
@@ -221,61 +308,35 @@ class BimibimiParser: IParser, IHomeParser, IBangumiDetailParser, IPlayUrlParser
                             "play"
                         }
                     }
-                    val videoHtmlUrl = "$ROOT_URL/static/danmu/$from.php?url=$jsonUrl&myurl=$detailUrl"
-                    val d = Jsoup.connect(videoHtmlUrl).timeout(10000)
-                        .userAgent(EasyApplication.INSTANCE.getString(R.string.UA))
-                        .get()
-                    result = d.select("video#video source")[0].attr("src")
-
+                    "$ROOT_URL/static/danmu/$from.php?url=$jsonUrl&myurl=$url"
                 }
 
-            }.onFailure {
-                result = ""
+
+            }.getOrElse {
                 it.printStackTrace()
+                return@withContext ISourceParser.ParserResult.Error(it, true)
             }
-            result
-        }
-    }
-
-    override fun getFirstPage(): Int {
-        return 1
-    }
-
-    override suspend fun search(keyword: String, page: Int): ISearchParser.BangumiPageResult {
-        var res = ISearchParser.BangumiPageResult(null, false, emptyList())
-        withContext(Dispatchers.IO){
-            val url = url("/vod/search/wd/$keyword/page/$page")
-
-            runCatching {
-                val doc = Jsoup.connect(url).timeout(10000)
+            val d = runCatching {
+                Jsoup.connect(videoHtmlUrl).timeout(10000)
                     .userAgent(EasyApplication.INSTANCE.getString(R.string.UA))
                     .get()
-                val r = arrayListOf<Bangumi>()
-                doc.select("div.v_tb ul.drama-module.clearfix.tab-cont li.item").forEach {
-                    val detailUrl = url(it.child(0).attr("href"))
-                    val b = Bangumi(
-                        id = "${getLabel()}-$detailUrl",
-                        name = it.child(1).child(0).text(),
-                        detailUrl = detailUrl,
-                        intro = it.child(1).child(1).text(),
-                        cover = url(it.child(0).child(0).attr("src")),
-                        visitTime = System.currentTimeMillis(),
-                        source = getKey(),
-                    )
-                    r.add(b)
-                }
-                val pages = doc.select("div.pages ul.pagination li a.next.pagegbk")
-                res = if(pages.isEmpty()){
-                    ISearchParser.BangumiPageResult(null, true, r)
-                }else{
-                    ISearchParser.BangumiPageResult(page+1, true, r)
-                }
+            }.getOrElse {
+                it.printStackTrace()
+                return@withContext ISourceParser.ParserResult.Error(it, false)
+            }
+            runCatching {
+                return@withContext ISourceParser.ParserResult.Complete(d.select("video#video source")[0].attr("src"))
             }.onFailure {
                 it.printStackTrace()
-                throw it
-
+                return@withContext ISourceParser.ParserResult.Error(it, true)
             }
+
+            return@withContext ISourceParser.ParserResult.Error(Exception("Unknown Error"), true)
         }
-        return res
+        //return super.getPlayUrl(bangumi, lineIndex, episodes)
+    }
+
+    override fun startPlay(context: Context, bangumi: Bangumi) {
+        DetailPlayActivity.start(context, bangumi)
     }
 }

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.heyanle.easybangumi">
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -19,6 +20,7 @@
         <activity android:name=".ui.main.MainActivity"
             android:label="@string/app_name"
             android:exported="true"
+            android:screenOrientation="fullSensor"
             android:configChanges="uiMode">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -30,7 +32,13 @@
         <activity android:name=".ui.detailplay.DetailPlayActivity"
             android:launchMode="singleTask"
             android:configChanges="orientation|screenSize|keyboardHidden"
-            android:screenOrientation="fullSensor" />
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
+        <activity android:name=".ui.detailplay.DetailPlayWebViewActivity"
+            android:launchMode="singleTask"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
 
         <activity android:name=".crash.CrashActivity"
             android:process="com.heyanle.easybangumi.crash"/>

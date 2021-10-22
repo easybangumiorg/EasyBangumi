@@ -7,7 +7,7 @@ import java.lang.Exception
 import java.lang.NullPointerException
 
 /**
- * Created by HeYanLe on 2021/10/10 20:02.
+ * Created by HeYanLe on 2021/10/20 20:47.
  * https://github.com/heyanLE
  */
 class SearchPageSource(
@@ -15,8 +15,8 @@ class SearchPageSource(
     private val keyword: String,
 ) : PagingSource<Int, Bangumi>() {
 
-    override fun getRefreshKey(state: PagingState<Int, Bangumi>): Int? {
-        return searchParser.getFirstPage()
+    override fun getRefreshKey(state: PagingState<Int, Bangumi>): Int {
+        return searchParser.firstKey()
     }
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Bangumi> {
@@ -26,14 +26,22 @@ class SearchPageSource(
         }
         try{
             searchParser.search(keyword, key).let {
-                return if(it.complete){
-                    LoadResult.Page(
-                        data = it.data,
-                        prevKey = null,
-                        nextKey = it.nextPage
-                    )
-                }else{
-                    LoadResult.Error(NullPointerException())
+                return when(it){
+                    is ISourceParser.ParserResult.Error -> {
+                        if(it.isParserError){
+                            LoadResult.Error(it.throwable)
+                        }else{
+                            LoadResult.Error(Exception("load error"))
+                        }
+
+                    }
+                    is ISourceParser.ParserResult.Complete -> {
+                        LoadResult.Page(
+                            data = it.data.second,
+                            prevKey = null,
+                            nextKey = it.data.first
+                        )
+                    }
                 }
             }
         }catch (e: Exception){

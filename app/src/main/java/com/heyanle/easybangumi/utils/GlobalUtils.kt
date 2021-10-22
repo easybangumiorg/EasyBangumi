@@ -1,5 +1,6 @@
 package com.heyanle.easybangumi.utils
 
+import okhttp3.OkHttpClient
 import java.util.*
 import kotlin.collections.HashMap
 
@@ -8,6 +9,7 @@ import kotlin.collections.HashMap
  * https://github.com/heyanLE
  */
 object GlobalUtils {
+
 
     private val map = Collections.synchronizedMap(hashMapOf<String, Any>())
 

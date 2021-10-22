@@ -19,6 +19,7 @@ import android.widget.*
 import androidx.core.widget.NestedScrollView
 
 import com.heyanle.easybangumi.utils.getAttrColor
+import com.heyanle.easybangumi.utils.gone
 import com.heyanle.easybangumi.utils.invisible
 
 
@@ -94,7 +95,6 @@ class EasyPlayer: JzvdStd {
 
     override fun changeUIToPreparingChangeUrl() {
         super.changeUIToPreparingChangeUrl()
-
     }
 
     override fun onStatePause() {
@@ -117,6 +117,19 @@ class EasyPlayer: JzvdStd {
         if(screen == SCREEN_FULLSCREEN){
             backButton.visible()
         }
+    }
+
+    override fun changeUiToError() {
+        super.changeUiToError()
+        startButton.gone()
+        if(screen == SCREEN_FULLSCREEN){
+            topContainer.visible()
+            backButton.visible()
+        }
+        bottomContainer.visible()
+        currentTimeTextView.invisible()
+        totalTimeTextView.invisible()
+        progressBar.invisible()
     }
     override fun changeUiToPreparing() {
         super.changeUiToPreparing()

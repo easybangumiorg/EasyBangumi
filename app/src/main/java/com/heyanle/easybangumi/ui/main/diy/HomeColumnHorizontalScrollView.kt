@@ -6,8 +6,6 @@ import android.util.Log
 import android.view.MotionEvent
 import android.widget.HorizontalScrollView
 import kotlin.math.abs
-import android.view.VelocityTracker
-import kotlin.math.min
 
 
 /**
@@ -23,23 +21,17 @@ class HomeColumnHorizontalScrollView : HorizontalScrollView {
         attrs,
         defStyleAttr
     )
-    constructor(
-        context: Context?,
-        attrs: AttributeSet?,
-        defStyleAttr: Int,
-        defStyleRes: Int
-    ) : super(context, attrs, defStyleAttr, defStyleRes)
 
     private var initialTouchX = 0F
     private var initialTouchY = 0F
 
-    var isMove = false
+    private var isMove = false
 
     var homeColumnLinearLayout: HomeColumnLinearLayout? = null
 
 
 
-    var startScrollY = 0
+    private var startScrollY = 0
 
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
         //Log.e("asdfg", "dispatchTouchEvent ${ev?.action}")

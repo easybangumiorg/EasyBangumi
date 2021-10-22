@@ -6,15 +6,8 @@ import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.heyanle.easybangumi.R
-import com.heyanle.easybangumi.databinding.ItemMyFollowBangumiBinding
 import com.heyanle.easybangumi.databinding.ItemSearchBangumiBinding
 import com.heyanle.easybangumi.entity.Bangumi
-import com.heyanle.easybangumi.entity.BangumiDetail
-import com.heyanle.easybangumi.source.ParserFactory
-import com.heyanle.easybangumi.ui.main.adapter.MyBangumiAdapter
-import com.heyanle.easybangumi.ui.main.adapter.MyBangumiItemViewHolder
-import com.heyanle.easybangumi.utils.TimeStringUtils
 
 /**
  * Created by HeYanLe on 2021/10/10 19:55.

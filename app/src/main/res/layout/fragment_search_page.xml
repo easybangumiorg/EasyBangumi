@@ -28,6 +28,7 @@
     </LinearLayout>
 
     <RelativeLayout
+        android:visibility="gone"
         android:gravity="center"
         android:layout_centerInParent="true"
         android:id="@+id/error_layout"
@@ -44,12 +45,12 @@
             app:tint="?attr/subtitleTextColor" />
 
         <androidx.appcompat.widget.AppCompatTextView
-            android:textColor="?attr/subtitleTextColor"
-            android:layout_centerHorizontal="true"
-            android:layout_below="@id/refresh_img_view"
-            android:text="@string/error_click_to_refresh"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_below="@id/refresh_img_view"
+            android:layout_centerHorizontal="true"
+            android:text="@string/error_click_to_refresh"
+            android:textColor="?attr/subtitleTextColor" />
 
 
     </RelativeLayout>

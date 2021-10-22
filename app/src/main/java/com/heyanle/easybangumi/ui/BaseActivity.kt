@@ -6,7 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.heyanle.easybangumi.utils.DarkUtils
 
 /**
- * Created by HeYanLe on 2021/9/20 15:23.
+ * Created by HeYanLe on 2021/10/20 20:28.
  * https://github.com/heyanLE
  */
 open class BaseActivity : AppCompatActivity() {

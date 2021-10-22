@@ -10,16 +10,13 @@ import com.heyanle.easybangumi.entity.BangumiDetail
  */
 class DetailPlayViewModel : ViewModel() {
 
-    val bangumiDetail = MutableLiveData<BangumiDetail>()
+    val bangumiDetail: MutableLiveData<BangumiDetail> = MutableLiveData()
+    val playMsg: MutableLiveData<LinkedHashMap<String, List<String>>> = MutableLiveData()
 
-    val bangumiPlayMsg = MutableLiveData<LinkedHashMap<String, List<String>>>(LinkedHashMap())
+    @Volatile var nowPlayLineIndex = 0
+    @Volatile var nowPlayEpisode = 0
+    @Volatile var playUrl: Array<Array<String>> = emptyArray()
 
 
-
-    val playPlayLine = MutableLiveData<String>("")
-    val playEpisode = MutableLiveData<Int>(0)
-
-    @Volatile var realPlayLine =""
-    @Volatile var realEpisode = 0
 
 }

@@ -3,21 +3,15 @@ package com.heyanle.easybangumi.ui.search
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.LayoutInflater
-import android.view.Menu
 import android.view.MenuItem
 import androidx.activity.viewModels
 import com.google.android.material.tabs.TabLayoutMediator
-import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.adapter.PagerAdapter
 import com.heyanle.easybangumi.databinding.ActivitySearchBinding
-import com.heyanle.easybangumi.source.ParserFactory
+import com.heyanle.easybangumi.source.SourceParserFactory
 import com.heyanle.easybangumi.ui.BaseActivity
-import com.heyanle.easybangumi.ui.main.fragment.HomeFragment
-import com.heyanle.easybangumi.ui.main.fragment.MyBangumiFragment
-import com.heyanle.easybangumi.ui.main.fragment.SettingFragment
 import com.heyanle.easybangumi.ui.search.fragment.SearchPageFragment
 import com.heyanle.easybangumi.ui.search.viewmodel.SearchActivityViewModel
-import com.heyanle.easybangumi.utils.DarkUtils
 
 /**
  * Created by HeYanLe on 2021/10/9 13:03.
@@ -25,11 +19,11 @@ import com.heyanle.easybangumi.utils.DarkUtils
  */
 class SearchActivity : BaseActivity() {
 
-    val binding : ActivitySearchBinding by lazy {
+    private val binding : ActivitySearchBinding by lazy {
         ActivitySearchBinding.inflate(LayoutInflater.from(this))
     }
 
-    var searchKeyList = arrayListOf<String>()
+    private var searchKeyList = arrayListOf<String>()
 
     private val viewModel by viewModels<SearchActivityViewModel>()
 
@@ -53,11 +47,11 @@ class SearchActivity : BaseActivity() {
         supportActionBar?.setDisplayShowTitleEnabled(false)
 
         searchKeyList.clear()
-        searchKeyList.addAll(ParserFactory.searchKeys())
+        searchKeyList.addAll(SourceParserFactory.searchKeys())
         binding.viewPager.adapter = pageAdapter
         TabLayoutMediator(binding.tabLayout, binding.viewPager, true, true
         ) { tab, po ->
-            tab.text = ParserFactory.search(searchKeyList[po])?.getLabel()?:""
+            tab.text = SourceParserFactory.search(searchKeyList[po])?.getLabel()?:""
         }.attach()
 
         binding.btSearch.setOnClickListener {

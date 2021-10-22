@@ -8,9 +8,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.databinding.ItemMyFollowBangumiBinding
-import com.heyanle.easybangumi.db.AppDatabase
 import com.heyanle.easybangumi.entity.BangumiDetail
-import com.heyanle.easybangumi.source.ParserFactory
+import com.heyanle.easybangumi.source.SourceParserFactory
 import com.heyanle.easybangumi.utils.TimeStringUtils
 
 /**
@@ -38,7 +37,8 @@ class MyBangumiAdapter : PagingDataAdapter<BangumiDetail, MyBangumiItemViewHolde
             binding.tvTitle.text = it.name
 
             val str = binding.intro.context.getString(R.string.last_watch_title, it.lastEpisodeTitle, TimeStringUtils.toTImeStringMill(it.lastProcessTime))
-            binding.intro.text = binding.intro.context.getString(R.string.my_bangumi_item_intro, ParserFactory.parser(it.source)?.getLabel()?:"", it.intro, if(it.lastEpisodeTitle.isEmpty()) "" else str)
+            binding.intro.text = binding.intro.context.getString(R.string.my_bangumi_item_intro,
+                SourceParserFactory.parser(it.source)?.getLabel()?:"", it.intro, if(it.lastEpisodeTitle.isEmpty()) "" else str)
             binding.root.setOnClickListener { _ ->
                 onItemClickListener(position, it)
             }

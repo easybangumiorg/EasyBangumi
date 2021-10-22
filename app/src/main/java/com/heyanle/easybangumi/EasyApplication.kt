@@ -3,9 +3,13 @@ package com.heyanle.easybangumi
 import android.app.Application
 import com.heyanle.easybangumi.crash.CrashHandler
 import com.heyanle.easybangumi.db.EasyDatabase
-import com.heyanle.easybangumi.source.ParserFactory
+import com.heyanle.easybangumi.source.SourceParserFactory
 import com.heyanle.easybangumi.utils.DarkUtils
 import com.heyanle.easybangumi.utils.oksp.initDefaultOksp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Created by HeYanLe on 2021/9/8 22:07.
@@ -23,9 +27,12 @@ class EasyApplication : Application() {
         Thread.setDefaultUncaughtExceptionHandler(CrashHandler(this))
         initDefaultOksp(this, "EasyBangumi")
         DarkUtils.autoApplication()
-        ParserFactory.init()
+        SourceParserFactory.init()
         EasyDatabase.AppDB
         //DarkUtils.dark(true)
+
+
+
 
 
     }

@@ -1,12 +1,9 @@
 package com.heyanle.easybangumi.ui.main.fragment
 
-import android.app.AlertDialog
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
 import android.widget.Toast
-import androidx.core.view.size
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.bumptech.glide.Glide
@@ -16,20 +13,16 @@ import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.databinding.FragmentHomeBinding
 import com.heyanle.easybangumi.databinding.ItemHomeColumnBangumiBinding
 import com.heyanle.easybangumi.databinding.ItemHomeColumnBinding
-import com.heyanle.easybangumi.db.EasyDatabase
 import com.heyanle.easybangumi.entity.Bangumi
-import com.heyanle.easybangumi.entity.BangumiDetail
-import com.heyanle.easybangumi.source.ParserFactory
-import com.heyanle.easybangumi.ui.detailplay.DetailPlayActivity
+import com.heyanle.easybangumi.source.ISourceParser
+import com.heyanle.easybangumi.source.SourceParserFactory
 import com.heyanle.easybangumi.ui.main.viewmodel.HomeFragmentViewModel
 import com.heyanle.easybangumi.utils.getAttrColor
 import com.heyanle.easybangumi.utils.gone
 import com.heyanle.easybangumi.utils.oksp
 import com.heyanle.easybangumi.utils.visible
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /**
  * Created by HeYanLe on 2021/9/20 15:55.
@@ -49,8 +42,18 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentHomeBinding.bind(view)
         viewModel.currentSourceIndex.observe(viewLifecycleOwner){
+            val keyList = SourceParserFactory.homeKeys()
+            if(it < 0 || it >= keyList.size){
+                binding.homeSource.text = getString(R.string.home_source_not_found)
+                viewModel.bangumiMap.value?.let { map ->
+                    map.clear()
+                    viewModel.bangumiMap.value = map
+                }
+                return@observe
+            }
+
             homeIndex = it
-            binding.homeSource.text = getString(R.string.current_home_source, ParserFactory.homeKeys()[it])
+            binding.homeSource.text = getString(R.string.current_home_source, SourceParserFactory.homeKeys()[it])
             if(isChangeSource){
                 refresh()
                 isChangeSource = false
@@ -81,7 +84,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                         bin.scroll.homeColumnLinearLayout = b.root
                     }
                     b.root.setOnClickListener {
-                        ParserFactory.play(ba.source)?.startPlayActivity(requireActivity(), ba)
+                        SourceParserFactory.play(ba.source)?.startPlay(requireActivity(), ba)
                         //DetailPlayActivity.start(requireActivity(), ba)
                     }
                 }
@@ -101,7 +104,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     override fun onResume() {
         super.onResume()
-        val j = viewModel.bangumiMap.value
+        //val j = viewModel.bangumiMap.value
         if(viewModel.bangumiMap.value == null || viewModel.bangumiMap.value!!.isEmpty()){
             if(binding.contentLinear.childCount == 0){
                 refresh()
@@ -120,12 +123,30 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 binding.contentLinear.gone()
             }
             viewModel.currentSourceIndex.value?.let {
-                val map = ParserFactory.home(ParserFactory.homeKeys()[it])?.home()
-                if(map == null || map.isEmpty()){
-                    error()
-                    return@let
+                val keyList = SourceParserFactory.homeKeys()
+                if(it < 0 || it >= keyList.size){
+                    binding.homeSource.text = getString(R.string.home_source_not_found)
+                    viewModel.bangumiMap.value?.let { map ->
+                        map.clear()
+                        viewModel.bangumiMap.value = map
+                    }
+                }else{
+                    when(val result = SourceParserFactory.home(keyList[it])?.home()){
+                        is ISourceParser.ParserResult.Error -> {
+                            if(result.isParserError){
+                                kotlin.runCatching {
+                                    Toast.makeText(EasyApplication.INSTANCE, R.string.home_source_error, Toast.LENGTH_SHORT ).show()
+                                }
+
+                            }
+                            error()
+                        }
+                        is ISourceParser.ParserResult.Complete -> {
+                            load(result.data)
+                        }
+                    }
                 }
-                load(map)
+
             }
 
         }
@@ -148,9 +169,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
     private fun showSourceDialog(){
         kotlin.runCatching {
-            val list = ParserFactory.homeKeys()
-            val titles = Array<String>(list.size){
-                ParserFactory.home(list[it])?.getLabel()?:""
+            val list = SourceParserFactory.homeKeys()
+            val titles = Array(list.size){
+                SourceParserFactory.home(list[it])?.getLabel()?:""
             }
             MaterialAlertDialogBuilder(requireContext()).apply {
                 setItems(titles) { _, i ->
