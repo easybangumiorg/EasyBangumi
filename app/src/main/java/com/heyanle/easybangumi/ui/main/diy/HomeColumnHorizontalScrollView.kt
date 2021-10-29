@@ -48,9 +48,10 @@ class HomeColumnHorizontalScrollView : HorizontalScrollView {
 
                 val dx = ev.x - initialTouchX
                 val dy = ev.y - initialTouchY
-                if(dx > 0.5 || dy > 0.5){
+                if(abs(dx) > 0.5 || abs(dy) > 0.5){
                     isMove = true
                 }
+
 
                 val hasScrollView = (canScrollHorizontally(-1) && dx > 0)
                         || (canScrollHorizontally(1) && dx < 0)
