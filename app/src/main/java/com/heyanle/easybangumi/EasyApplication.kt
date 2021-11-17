@@ -30,11 +30,6 @@ class EasyApplication : Application() {
         SourceParserFactory.init()
         EasyDatabase.AppDB
         //DarkUtils.dark(true)
-
-
-
-
-
     }
 
 

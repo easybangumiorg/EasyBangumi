@@ -7,6 +7,7 @@ import com.heyanle.easybangumi.entity.Bangumi
 import com.heyanle.easybangumi.entity.BangumiDetail
 import com.heyanle.easybangumi.source.*
 import com.heyanle.easybangumi.ui.detailplay.DetailPlayActivity
+import com.heyanle.easybangumi.utils.OkHttpUtils
 import com.heyanle.easybangumi.utils.start
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -60,9 +61,7 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
         return withContext(Dispatchers.IO){
             val map = LinkedHashMap<String, List<Bangumi>>()
             val doc = runCatching {
-                Jsoup.connect(ROOT_URL).timeout(10000)
-                    .userAgent(EasyApplication.INSTANCE.getString(R.string.UA))
-                    .get()
+                Jsoup.parse(OkHttpUtils.get(ROOT_URL))
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -133,9 +132,7 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
         return withContext(Dispatchers.IO){
             val doc = runCatching {
                 val url = url("/vod/search/wd/$keyword/page/$key")
-                Jsoup.connect(url).timeout(10000)
-                    .userAgent(EasyApplication.INSTANCE.getString(R.string.UA))
-                    .get()
+                Jsoup.parse(OkHttpUtils.get(url))
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -174,9 +171,7 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
     override suspend fun detail(bangumi: Bangumi): ISourceParser.ParserResult<BangumiDetail> {
         return withContext(Dispatchers.IO) {
             val doc = runCatching {
-                Jsoup.connect(bangumi.detailUrl).timeout(10000)
-                    .userAgent(EasyApplication.INSTANCE.getString(R.string.UA))
-                    .get()
+                Jsoup.parse(OkHttpUtils.get(bangumi.detailUrl))
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -208,9 +203,7 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
         return withContext(Dispatchers.IO) {
             val map = LinkedHashMap<String, List<String>>()
             val doc = runCatching {
-                Jsoup.connect(bangumi.detailUrl).timeout(10000)
-                    .userAgent(EasyApplication.INSTANCE.getString(R.string.UA))
-                    .get()
+                Jsoup.parse(OkHttpUtils.get(bangumi.detailUrl))
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -278,9 +271,7 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
         }
         return withContext(Dispatchers.IO) {
             val doc = runCatching {
-                Jsoup.connect(url).timeout(10000)
-                    .userAgent(EasyApplication.INSTANCE.getString(R.string.UA))
-                    .get()
+                Jsoup.parse(OkHttpUtils.get(url))
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -317,9 +308,7 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
                 return@withContext ISourceParser.ParserResult.Error(it, true)
             }
             val d = runCatching {
-                Jsoup.connect(videoHtmlUrl).timeout(10000)
-                    .userAgent(EasyApplication.INSTANCE.getString(R.string.UA))
-                    .get()
+                Jsoup.parse(OkHttpUtils.get(videoHtmlUrl))
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)

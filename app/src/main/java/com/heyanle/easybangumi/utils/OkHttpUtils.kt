@@ -14,8 +14,8 @@ object OkHttpUtils {
     val okhttpClient =  OkHttpClient()
 
     fun get(url: String): String{
-        return okhttpClient.newCall(Request.Builder().url(url).header("User-Agent", EasyApplication.INSTANCE.getString(
-            R.string.UA)).get().build()).execute().body!!.string()
+        return okhttpClient.newCall(Request.Builder().url(url).header("User-Agent",
+            EasyApplication.INSTANCE.getString(R.string.UA)).get().build()).execute().body!!.string()
     }
 
 }

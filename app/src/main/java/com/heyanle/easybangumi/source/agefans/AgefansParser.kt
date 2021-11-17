@@ -18,6 +18,7 @@ import java.lang.Exception
 import java.lang.IndexOutOfBoundsException
 import java.util.concurrent.CountDownLatch
 import android.webkit.JavascriptInterface
+import com.heyanle.easybangumi.utils.OkHttpUtils
 import java.net.URLDecoder
 
 
@@ -28,7 +29,7 @@ import java.net.URLDecoder
 class AgefansParser: ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISearchParser {
 
     companion object{
-        const val ROOT_URL = "https://www.agefans.cc/"
+        const val ROOT_URL = "https://www.agefans.vip"
     }
 
     private fun url(source: String): String{
@@ -68,9 +69,8 @@ class AgefansParser: ISourceParser, IHomeParser, IDetailParser, IPlayerParser, I
         return withContext(Dispatchers.IO){
             val map = LinkedHashMap<String, List<Bangumi>>()
             val doc = runCatching {
-                Jsoup.connect(ROOT_URL).timeout(10000)
-                    .userAgent(EasyApplication.INSTANCE.getString(R.string.UA))
-                    .get()
+                Log.i("AgefansParser", ROOT_URL)
+                Jsoup.parse(OkHttpUtils.get(ROOT_URL))
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -120,9 +120,7 @@ class AgefansParser: ISourceParser, IHomeParser, IDetailParser, IPlayerParser, I
         return withContext(Dispatchers.IO){
             val url = "https://www.agefans.cc/search?query=$keyword&page=$key"
             val doc = runCatching {
-                Jsoup.connect(url).timeout(10000)
-                    .userAgent(EasyApplication.INSTANCE.getString(R.string.UA))
-                    .get()
+                Jsoup.parse(OkHttpUtils.get(url))
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -162,9 +160,7 @@ class AgefansParser: ISourceParser, IHomeParser, IDetailParser, IPlayerParser, I
     override suspend fun detail(bangumi: Bangumi): ISourceParser.ParserResult<BangumiDetail> {
         return withContext(Dispatchers.IO){
             val doc = runCatching {
-                Jsoup.connect(bangumi.detailUrl).timeout(10000)
-                    .userAgent(EasyApplication.INSTANCE.getString(R.string.UA))
-                    .get()
+                Jsoup.parse(OkHttpUtils.get(bangumi.detailUrl))
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -195,9 +191,7 @@ class AgefansParser: ISourceParser, IHomeParser, IDetailParser, IPlayerParser, I
         return withContext(Dispatchers.IO){
             val map = LinkedHashMap<String, List<String>>()
             val doc = runCatching {
-                Jsoup.connect(bangumi.detailUrl).timeout(10000)
-                    .userAgent(EasyApplication.INSTANCE.getString(R.string.UA))
-                    .get()
+                Jsoup.parse(OkHttpUtils.get(bangumi.detailUrl))
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)

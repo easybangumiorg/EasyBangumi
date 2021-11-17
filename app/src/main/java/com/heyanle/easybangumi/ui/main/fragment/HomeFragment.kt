@@ -160,7 +160,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         kotlin.runCatching {
             requireActivity().runOnUiThread {
                 binding.errorLayout.visible()
-                binding.contentLinear.visible()
+                binding.contentLinear.gone()
                 binding.refreshLayout.isRefreshing = false
             }
         }
