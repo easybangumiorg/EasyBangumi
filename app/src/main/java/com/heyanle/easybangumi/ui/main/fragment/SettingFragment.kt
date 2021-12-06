@@ -2,10 +2,16 @@ package com.heyanle.easybangumi.ui.main.fragment
 
 import android.os.Build
 import android.os.Bundle
+import androidx.core.os.persistableBundleOf
+import androidx.lifecycle.lifecycleScope
+import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
+import com.heyanle.easybangumi.BuildConfig
 import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.utils.DarkUtils
+import com.heyanle.easybangumi.utils.UpdateUtils
+import kotlinx.coroutines.launch
 
 /**
  * Created by HeYanLe on 2021/9/20 15:55.
@@ -40,6 +46,21 @@ class SettingFragment: PreferenceFragmentCompat(){
                 it.isEnabled = false
             }
         }
+
+        preferenceManager.findPreference<Preference>("current_version")?.let {
+            it.title = getString(R.string.current_version, BuildConfig.VERSION_NAME)
+        }
+        preferenceManager.findPreference<Preference>("check_update")?.let {
+            it.setOnPreferenceClickListener {
+                lifecycleScope.launch {
+                    runCatching {
+                        UpdateUtils.check(requireActivity(),true)
+                    }
+                }
+                true
+            }
+        }
+
 
     }
 }

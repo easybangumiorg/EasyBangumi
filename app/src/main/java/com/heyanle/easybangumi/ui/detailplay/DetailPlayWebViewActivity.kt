@@ -490,7 +490,7 @@ class DetailPlayWebViewActivity: BaseActivity() {
         }
 
         GlobalScope.launch {
-            playParser.getPlayUrl(bangumi, playLineIndex, playEpisode, binding.web)
+            playParser.getPlayUrl(bangumi, playLineIndex, playEpisode, WeakReference(binding.web), lifecycle)
                 .complete {
                     if(it.data == ""){
                         errorVideo()

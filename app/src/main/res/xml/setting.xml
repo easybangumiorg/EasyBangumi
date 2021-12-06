@@ -14,4 +14,22 @@
             app:title="@string/day_night_auto_mode"/>
 
     </PreferenceCategory>
+
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:key="about_category"
+        app:title="@string/about">
+
+        <Preference
+            app:iconSpaceReserved="false"
+            app:key="current_version"
+            app:title="@string/current_version"/>
+
+        <Preference
+            app:iconSpaceReserved="false"
+            app:key="check_update"
+            app:title="@string/check_update"/>
+
+    </PreferenceCategory>
+
 </PreferenceScreen>

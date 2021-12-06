@@ -54,6 +54,18 @@
 
     <string name="play_not_support">该源暂时不支持播放，跳转到网页</string>
 
+    <string name="long_press_fasting">长按加速中</string>
+    
+    <string name="new_version">新版本</string>
+    <string name="goto_download">点击下载</string>
+    <string name="cancel">取消</string>
+
+    <string name="about">关于</string>
+    <string name="current_version">当前版本：%1$s</string>
+    <string name="check_update">检查更新</string>
+
+    <string name="current_latest">当前为最新版本</string>
+
     <array name="my_bangumi_menu_array">
         <item>取消追番</item>
     </array>

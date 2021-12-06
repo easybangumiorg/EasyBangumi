@@ -2,10 +2,12 @@ package com.heyanle.easybangumi.source
 
 import android.content.Context
 import android.webkit.WebView
+import androidx.lifecycle.Lifecycle
 import com.heyanle.easybangumi.entity.Bangumi
 import com.heyanle.easybangumi.entity.BangumiDetail
 import java.lang.Error
 import java.lang.Exception
+import java.lang.ref.WeakReference
 
 /**
  * Created by HeYanLe on 2021/10/20 20:07.
@@ -85,7 +87,7 @@ interface IPlayerParser : ISourceParser{
     suspend fun getPlayUrl(bangumi: Bangumi, lineIndex: Int, episodes: Int): ISourceParser.ParserResult<String> {
         return ISourceParser.ParserResult.Error( Exception("Unsupported"), true)
     }
-    suspend fun getPlayUrl(bangumi: Bangumi, lineIndex: Int, episodes: Int, webView: WebView): ISourceParser.ParserResult<String> {
+    suspend fun getPlayUrl(bangumi: Bangumi, lineIndex: Int, episodes: Int, webView: WeakReference<WebView>, lifecycle: Lifecycle? = null): ISourceParser.ParserResult<String> {
         return ISourceParser.ParserResult.Error( Exception("Unsupported"), true)
     }
 }

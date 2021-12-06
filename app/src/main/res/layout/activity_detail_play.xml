@@ -164,11 +164,12 @@
                     android:textSize="12sp" />
 
                 <ImageView
-                    android:layout_alignBottom="@id/tv_episode"
-                    android:layout_alignTop="@id/tv_episode"
+                    android:visibility="gone"
                     android:id="@+id/img_right_1"
                     android:layout_width="20dp"
                     android:layout_height="wrap_content"
+                    android:layout_alignTop="@id/tv_episode"
+                    android:layout_alignBottom="@id/tv_episode"
                     android:layout_alignParentEnd="true"
                     android:layout_marginEnd="4dp"
                     android:src="@drawable/ic_baseline_keyboard_arrow_right_24"

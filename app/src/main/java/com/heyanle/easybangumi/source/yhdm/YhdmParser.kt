@@ -59,7 +59,7 @@ class YhdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISe
             val map = LinkedHashMap<String, List<Bangumi>>()
 
             val doc = runCatching {
-                Jsoup.parse(OkHttpUtils.get(ROOT_URL))
+                Jsoup.parse(OkHttpUtils.get(url(ROOT_URL)))
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -117,7 +117,7 @@ class YhdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISe
             val url = url("/search/$keyword?page=$key")
 
             val doc = runCatching {
-                Jsoup.parse(OkHttpUtils.get(url))
+                Jsoup.parse(OkHttpUtils.get(url(url)))
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -159,7 +159,7 @@ class YhdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISe
     override suspend fun detail(bangumi: Bangumi): ISourceParser.ParserResult<BangumiDetail> {
         return withContext(Dispatchers.IO) {
             val doc = runCatching {
-                Jsoup.parse(OkHttpUtils.get(bangumi.detailUrl))
+                Jsoup.parse(OkHttpUtils.get(url(bangumi.detailUrl)))
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -190,7 +190,7 @@ class YhdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISe
         return withContext(Dispatchers.IO) {
             val map = LinkedHashMap<String, List<String>>()
             val doc = runCatching {
-                Jsoup.parse(OkHttpUtils.get(bangumi.detailUrl))
+                Jsoup.parse(OkHttpUtils.get(url(bangumi.detailUrl)))
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -245,7 +245,7 @@ class YhdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISe
         }
         return withContext(Dispatchers.IO){
             val doc = runCatching {
-                Jsoup.parse(OkHttpUtils.get(url))
+                Jsoup.parse(OkHttpUtils.get(url(url)))
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)

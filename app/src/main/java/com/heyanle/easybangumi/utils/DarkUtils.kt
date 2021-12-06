@@ -11,7 +11,7 @@ import android.os.Build
 import android.text.BoringLayout
 import androidx.appcompat.app.AppCompatDelegate
 import com.heyanle.easybangumi.EasyApplication
-import com.heyanle.easybangumi.utils.oksp.okspValue
+import com.heyanle.okkv.okkv
 
 
 /**
@@ -32,8 +32,8 @@ object DarkUtils {
 //    private var isDark by oksp("is_dark", false)
 //    private var autoDark by oksp("auto_dark", true)
 
-    private var isDark by okspValue("is_dark", false)
-    private var autoDark by okspValue("auto_dark", true)
+    private var isDark by okkv("is_dark", false)
+    private var autoDark by okkv("auto_dark", true)
 
 
     private val themeId: Int

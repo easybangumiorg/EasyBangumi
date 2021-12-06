@@ -18,7 +18,11 @@ import java.lang.Exception
 import java.lang.IndexOutOfBoundsException
 import java.util.concurrent.CountDownLatch
 import android.webkit.JavascriptInterface
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.OnLifecycleEvent
 import com.heyanle.easybangumi.utils.OkHttpUtils
+import java.lang.ref.WeakReference
 import java.net.URLDecoder
 
 
@@ -70,7 +74,7 @@ class AgefansParser: ISourceParser, IHomeParser, IDetailParser, IPlayerParser, I
             val map = LinkedHashMap<String, List<Bangumi>>()
             val doc = runCatching {
                 Log.i("AgefansParser", ROOT_URL)
-                Jsoup.parse(OkHttpUtils.get(ROOT_URL))
+                Jsoup.parse(OkHttpUtils.get(url(ROOT_URL)))
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -120,7 +124,7 @@ class AgefansParser: ISourceParser, IHomeParser, IDetailParser, IPlayerParser, I
         return withContext(Dispatchers.IO){
             val url = "https://www.agefans.cc/search?query=$keyword&page=$key"
             val doc = runCatching {
-                Jsoup.parse(OkHttpUtils.get(url))
+                Jsoup.parse(OkHttpUtils.get(url(url)))
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -160,7 +164,7 @@ class AgefansParser: ISourceParser, IHomeParser, IDetailParser, IPlayerParser, I
     override suspend fun detail(bangumi: Bangumi): ISourceParser.ParserResult<BangumiDetail> {
         return withContext(Dispatchers.IO){
             val doc = runCatching {
-                Jsoup.parse(OkHttpUtils.get(bangumi.detailUrl))
+                Jsoup.parse(OkHttpUtils.get(url(bangumi.detailUrl)))
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -191,7 +195,7 @@ class AgefansParser: ISourceParser, IHomeParser, IDetailParser, IPlayerParser, I
         return withContext(Dispatchers.IO){
             val map = LinkedHashMap<String, List<String>>()
             val doc = runCatching {
-                Jsoup.parse(OkHttpUtils.get(bangumi.detailUrl))
+                Jsoup.parse(OkHttpUtils.get(url(bangumi.detailUrl)))
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -295,7 +299,8 @@ class AgefansParser: ISourceParser, IHomeParser, IDetailParser, IPlayerParser, I
         bangumi: Bangumi,
         lineIndex: Int,
         episodes: Int,
-        webView: WebView
+        webView: WeakReference<WebView>,
+        lifecycle: Lifecycle?
     ): ISourceParser.ParserResult<String> {
         if(lineIndex < 0 || episodes < 0){
             return ISourceParser.ParserResult.Error(IndexOutOfBoundsException(), false)
@@ -323,8 +328,17 @@ class AgefansParser: ISourceParser, IHomeParser, IDetailParser, IPlayerParser, I
         }
         val countDownLatch = CountDownLatch(1)
         var result:ISourceParser.ParserResult<String> = ISourceParser.ParserResult.Error<String>(Exception("Unknown Error"), true)
+
         withContext(Dispatchers.Main){
-            webView.addJavascriptInterface(client.javaJs, "java_obj")
+            lifecycle?.addObserver(object: LifecycleObserver {
+                @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+                fun onDestroy(){
+                    webView.get()?.removeJavascriptInterface("java_obj")
+                    client.onError = null
+                    client.onComplete = null
+                }
+            })
+            webView.get()?.addJavascriptInterface(client.javaJs, "java_obj")
             client.onComplete = {
                 runCatching {
                     Log.i("AgefansParser", "onComplete $it")
@@ -364,16 +378,16 @@ class AgefansParser: ISourceParser, IHomeParser, IDetailParser, IPlayerParser, I
                 }
 
             }
-            webView.webViewClient = client
-            webView.loadUrl(url)
+            webView.get()?.webViewClient = client
+            webView.get()?.loadUrl(url)
         }
 
         countDownLatch.await()
         withContext(Dispatchers.Main){
-            webView.removeJavascriptInterface("java_obj")
+            webView.get()?.removeJavascriptInterface("java_obj")
             client.onError = null
             client.onComplete = null
-            webView.loadUrl("")
+            webView.get()?.loadUrl("")
         }
         return result
     }

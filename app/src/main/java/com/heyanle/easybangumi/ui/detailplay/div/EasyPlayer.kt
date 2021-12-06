@@ -17,6 +17,7 @@ import android.graphics.Color
 import android.view.*
 import android.widget.*
 import androidx.core.widget.NestedScrollView
+import com.heyanle.easybangumi.databinding.PopupLongPressFastBinding
 
 import com.heyanle.easybangumi.utils.getAttrColor
 import com.heyanle.easybangumi.utils.gone
@@ -29,6 +30,36 @@ import com.heyanle.easybangumi.utils.invisible
  */
 class EasyPlayer: JzvdStd {
 
+    init {
+
+        gestureDetector = GestureDetector(context.applicationContext, object: GestureDetector.SimpleOnGestureListener(){
+            override fun onDoubleTap(e: MotionEvent?): Boolean {
+                if (state == STATE_PLAYING || state == STATE_PAUSE) {
+                    Log.d(TAG, "doublClick [" + this.hashCode() + "] ")
+                    startButton.performClick()
+                }
+                return super.onDoubleTap(e)
+            }
+
+            override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
+                if (!mChangePosition && !mChangeVolume) {
+                    onClickUiToggle()
+                }
+                return super.onSingleTapConfirmed(e)
+            }
+
+            override fun onLongPress(e: MotionEvent?) {
+                // TODO : 长按加速
+
+                startFast()
+                super.onLongPress(e)
+            }
+
+        })
+    }
+
+
+
     var onRetry:()->Boolean = {true}
 
     val episodeList = arrayListOf<String>()
@@ -37,6 +68,17 @@ class EasyPlayer: JzvdStd {
 
     var getCurrentIndex: ()->Int = {0}
     var onSaveLast: (Long)->Unit = {}
+
+    @Volatile var isFast = false
+
+    private val longPress: PopupWindow by lazy {
+        PopupWindow(PopupLongPressFastBinding.inflate(LayoutInflater.from(jzvdContext)).root,LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).apply {
+            isFocusable = false
+            inputMethodMode = WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
+            isOutsideTouchable = true
+            animationStyle = android.R.style.Animation_Translucent
+        }
+    }
 
     constructor(context: Context?) : super(context)
     constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
@@ -103,12 +145,21 @@ class EasyPlayer: JzvdStd {
     }
 
     override fun onTouch(v: View, event: MotionEvent): Boolean {
+        if(isFast){
+            if(event.action == MotionEvent.ACTION_UP){
+                stopFast()
+            }else
+            return true
+        }
         val id = v.id
         if (id == cn.jzvd.R.id.surface_container) {
             if(event.action == MotionEvent.ACTION_UP){
                 onSaveLast(mSeekTimePosition)
             }
         }
+
+
+
         return super.onTouch(v, event)
     }
 
@@ -232,6 +283,31 @@ class EasyPlayer: JzvdStd {
     override fun gotoNormalCompletion() {
         super.gotoNormalCompletion()
 
+    }
+
+    fun startFast(){
+        isFast = true
+
+        runCatching {
+            if(state != STATE_PLAYING){
+                onStatePlaying()
+            }
+        }
+
+        runCatching {
+            mediaInterface.setSpeed(2F)
+            longPress.showAtLocation(findViewById(cn.jzvd.R.id.surface_container), Gravity.TOP or Gravity.CENTER, 0, 0)
+        }
+
+
+    }
+
+    private fun stopFast(){
+        runCatching {
+            mediaInterface.setSpeed(1F)
+            longPress.dismiss()
+        }
+        isFast = false
     }
 
 

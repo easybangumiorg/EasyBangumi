@@ -6,6 +6,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.viewModelScope
 import com.bumptech.glide.Glide
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.heyanle.easybangumi.EasyApplication
@@ -19,8 +20,8 @@ import com.heyanle.easybangumi.source.SourceParserFactory
 import com.heyanle.easybangumi.ui.main.viewmodel.HomeFragmentViewModel
 import com.heyanle.easybangumi.utils.getAttrColor
 import com.heyanle.easybangumi.utils.gone
-import com.heyanle.easybangumi.utils.oksp
 import com.heyanle.easybangumi.utils.visible
+import com.heyanle.okkv.okkv
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -36,7 +37,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     @Volatile private var isChangeSource = false
 
-    private var homeIndex by oksp("Home_Index", 0)
+    private var homeIndex by okkv("Home_Index", 0)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -116,7 +117,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private fun refresh(){
         Log.i(viewModel.toString(), "refresh")
         Log.i(this.toString(), "refresh")
-        GlobalScope.launch {
+        viewModel.viewModelScope.launch {
             binding.refreshLayout.post {
                 binding.refreshLayout.isRefreshing = true
                 binding.errorLayout.gone()

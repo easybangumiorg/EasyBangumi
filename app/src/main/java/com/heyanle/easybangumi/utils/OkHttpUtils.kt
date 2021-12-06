@@ -11,7 +11,7 @@ import okhttp3.Request
  */
 object OkHttpUtils {
 
-    val okhttpClient =  OkHttpClient()
+    private val okhttpClient =  OkHttpClient()
 
     fun get(url: String): String{
         return okhttpClient.newCall(Request.Builder().url(url).header("User-Agent",

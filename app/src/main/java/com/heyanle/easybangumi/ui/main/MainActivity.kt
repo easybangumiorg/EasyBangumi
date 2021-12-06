@@ -6,6 +6,8 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import com.google.android.material.tabs.TabLayoutMediator
 import com.heyanle.easybangumi.EasyApplication
 import com.heyanle.easybangumi.R
@@ -19,7 +21,10 @@ import com.heyanle.easybangumi.ui.main.viewmodel.MainActivityViewModel
 import com.heyanle.easybangumi.ui.search.SearchActivity
 import com.heyanle.easybangumi.utils.DarkChangeSaveIntent
 import com.heyanle.easybangumi.utils.DarkUtils
+import com.heyanle.easybangumi.utils.UpdateUtils
 import com.heyanle.easybangumi.utils.start
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 /**
  * Created by HeYanLe on 2021/9/19 10:28.
@@ -80,6 +85,11 @@ class MainActivity : BaseActivity(), DarkChangeSaveIntent {
         }
 
         //binding.viewPager.isUserInputEnabled = false
+        lifecycleScope.launch {
+            runCatching {
+                UpdateUtils.check(this@MainActivity)
+            }
+        }
 
     }
 
