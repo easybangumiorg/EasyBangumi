@@ -56,7 +56,7 @@
 
     <string name="long_press_fasting">长按加速中</string>
     
-    <string name="new_version">新版本</string>
+    <string name="new_version">新版本 %1$s</string>
     <string name="goto_download">点击下载</string>
     <string name="cancel">取消</string>
 

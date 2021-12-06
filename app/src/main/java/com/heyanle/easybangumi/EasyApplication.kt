@@ -10,9 +10,7 @@ import com.heyanle.easybangumi.source.ISearchParser
 import com.heyanle.easybangumi.source.ISourceParser
 import com.heyanle.easybangumi.source.SourceParserFactory
 import com.heyanle.easybangumi.utils.*
-import com.heyanle.okkv.Converter
-import com.heyanle.okkv.Okkv
-import com.heyanle.okkv.OkkvValue
+import com.heyanle.okkv.*
 import com.heyanle.okkv.core.chain.BaseInterceptorChain
 import com.heyanle.okkv.core.chain.SimpleInterceptor
 import com.heyanle.okkv.mkkv.LogcatInterceptorChain
@@ -43,13 +41,18 @@ class EasyApplication : Application() {
         Thread.setDefaultUncaughtExceptionHandler(CrashHandler(this))
 
         Okkv.Builder()
-            .cache()
             .addInterceptorChain(LogcatInterceptorChain())
+
             .store(MMKVStore(this))
             .build().default()
+        DefaultOkkv.okkv?.init()
         DarkUtils.autoApplication()
         SourceParserFactory.init()
         EasyDatabase.AppDB
+
+        var s: Boolean by okkv("f", false)
+        s = true
+        s.toString().logI("Easy")
         //DarkUtils.dark(true)
 
 

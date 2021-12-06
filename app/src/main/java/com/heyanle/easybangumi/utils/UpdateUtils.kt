@@ -11,6 +11,7 @@ import com.heyanle.easybangumi.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import java.lang.ref.WeakReference
 
 /**
  * Created by HeYanLe on 2021/12/6 15:10.
@@ -30,19 +31,27 @@ object UpdateUtils {
 
 
     suspend fun check(activity: Activity, isShow: Boolean = false){
+        check(WeakReference(activity), isShow)
+    }
+
+    suspend fun check(activity: WeakReference<Activity>, isShow: Boolean){
         val updateInfo = getLatestUpdate() ?: return
         val now = BuildConfig.VERSION_NAME.replace(".", "").toInt()
         val latest = updateInfo.name.replace(".", "").toInt()
         "$now -> $latest".logI("UpdateUtils")
         "$now -> $latest".toastWithDebug()
-        if(latest > now){
-            AlertDialog.Builder(activity).setTitle(R.string.new_version).setMessage(updateInfo.body)
-                .setPositiveButton(R.string.goto_download){_, _ ->
-                    activity.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(updateInfo.downloadUrl)))
-                }.setNegativeButton(R.string.cancel, null).show()
-        }else if(isShow){
-            Toast.makeText(activity, R.string.current_latest, Toast.LENGTH_SHORT).show()
+        withContext(Dispatchers.Main){
+            val act = activity.get() ?: return@withContext
+            if(latest > now){
+                AlertDialog.Builder(act, if(DarkUtils.dark()) R.style.Theme_EasyBangumi_Toast_Dark else R.style.Theme_EasyBangumi_Toast_Light).setTitle(act.getString(R.string.new_version, updateInfo.name)).setMessage(updateInfo.body)
+                    .setPositiveButton(R.string.goto_download){_, _ ->
+                        act.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(updateInfo.downloadUrl)))
+                    }.setNegativeButton(R.string.cancel, null).show()
+            }else if(isShow){
+                Toast.makeText(act, R.string.current_latest, Toast.LENGTH_SHORT).show()
+            }
         }
+
     }
 
 

@@ -11,8 +11,8 @@ android {
         applicationId "com.heyanle.easybangumi"
         minSdk 21
         targetSdk 31
-        versionCode 7
-        versionName "1.0.6"
+        versionCode 9
+        versionName "1.0.7"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -77,8 +77,8 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-reflect:1.6.0"
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.7'
 
-    implementation 'com.github.heyanLE.okkv:okkv-mmkv:1.1.0'
-    implementation 'com.github.heyanLE.okkv:okkv-sp:1.1.0'
+    implementation 'com.github.heyanLE.okkv:okkv-sp:1.1.6'
+    implementation 'com.github.heyanLE.okkv:okkv-mmkv:1.1.6'
 
 
 
