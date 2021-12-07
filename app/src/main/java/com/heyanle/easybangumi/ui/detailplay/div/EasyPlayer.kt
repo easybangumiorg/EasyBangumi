@@ -14,6 +14,8 @@ import cn.jzvd.Jzvd
 import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.utils.visible
 import android.graphics.Color
+import android.provider.Settings
+import android.provider.Settings.SettingNotFoundException
 import android.view.*
 import android.widget.*
 import androidx.core.widget.NestedScrollView
@@ -22,6 +24,7 @@ import com.heyanle.easybangumi.databinding.PopupLongPressFastBinding
 import com.heyanle.easybangumi.utils.getAttrColor
 import com.heyanle.easybangumi.utils.gone
 import com.heyanle.easybangumi.utils.invisible
+import kotlin.math.abs
 
 
 /**
@@ -56,6 +59,8 @@ class EasyPlayer: JzvdStd {
             }
 
         })
+
+        PROGRESS_DRAG_RATE = 10f
     }
 
 
@@ -76,7 +81,7 @@ class EasyPlayer: JzvdStd {
             isFocusable = false
             inputMethodMode = WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
             isOutsideTouchable = true
-            animationStyle = android.R.style.Animation_Translucent
+            animationStyle = android.R.style.Animation_Toast
         }
     }
 
@@ -125,6 +130,7 @@ class EasyPlayer: JzvdStd {
         super.changeUIToPreparingPlaying()
         //Log.i("")
     }
+
 
     override fun onClickUiToggle() {
         Log.i("EasyPlayer", "ClickUiToggle")
@@ -286,20 +292,13 @@ class EasyPlayer: JzvdStd {
     }
 
     fun startFast(){
-        isFast = true
-
         runCatching {
-            if(state != STATE_PLAYING){
-                onStatePlaying()
+            if(state == STATE_PLAYING){
+                isFast = true
+                mediaInterface.setSpeed(2F)
+                longPress.showAtLocation(findViewById(cn.jzvd.R.id.surface_container), Gravity.TOP or Gravity.CENTER, 0, 0)
             }
         }
-
-        runCatching {
-            mediaInterface.setSpeed(2F)
-            longPress.showAtLocation(findViewById(cn.jzvd.R.id.surface_container), Gravity.TOP or Gravity.CENTER, 0, 0)
-        }
-
-
     }
 
     private fun stopFast(){
