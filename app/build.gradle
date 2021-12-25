@@ -11,8 +11,8 @@ android {
         applicationId "com.heyanle.easybangumi"
         minSdk 21
         targetSdk 31
-        versionCode 10
-        versionName "1.0.8"
+        versionCode 11
+        versionName "1.0.9"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -51,11 +51,11 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2'
     implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.2")
 
-    def room_version = "2.3.0"
 
-    implementation "androidx.room:room-runtime:$room_version"
-    kapt "androidx.room:room-compiler:$room_version"
-    implementation "androidx.room:room-ktx:$room_version"
+    implementation "androidx.room:room-runtime:2.4.0"
+    kapt "androidx.room:room-compiler:2.4.0"
+    implementation "androidx.room:room-ktx:2.4.0"
+    implementation "androidx.room:room-paging:2.4.0"
 
     implementation 'org.jsoup:jsoup:1.14.2'
 

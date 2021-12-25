@@ -24,7 +24,7 @@ import java.lang.IndexOutOfBoundsException
 class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISearchParser {
 
     companion object{
-        const val ROOT_URL = "http://bimiacg2.net"
+        const val ROOT_URL = "https://www.bimiacg4.net/"
     }
 
     private fun url(source: String): String{
