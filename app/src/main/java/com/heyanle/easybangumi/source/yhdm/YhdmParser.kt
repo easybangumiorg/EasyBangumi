@@ -37,7 +37,7 @@ class YhdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISe
     }
 
     companion object{
-        const val ROOT_URL = "http://www.yhdm.so"
+        const val ROOT_URL = "http://www.yinghuacd.com"
     }
 
     private fun url(source: String): String{

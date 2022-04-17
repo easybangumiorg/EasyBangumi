@@ -18,9 +18,7 @@ import java.lang.Exception
 import java.lang.IndexOutOfBoundsException
 import java.util.concurrent.CountDownLatch
 import android.webkit.JavascriptInterface
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.OnLifecycleEvent
+import androidx.lifecycle.*
 import com.heyanle.easybangumi.utils.OkHttpUtils
 import java.lang.ref.WeakReference
 import java.net.URLDecoder
@@ -33,7 +31,7 @@ import java.net.URLDecoder
 class AgefansParser: ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISearchParser {
 
     companion object{
-        const val ROOT_URL = "https://www.agefans.vip"
+        const val ROOT_URL = "https://www.agemys.com"
     }
 
     private fun url(source: String): String{
@@ -122,7 +120,7 @@ class AgefansParser: ISourceParser, IHomeParser, IDetailParser, IPlayerParser, I
         key: Int
     ): ISourceParser.ParserResult<Pair<Int?, List<Bangumi>>> {
         return withContext(Dispatchers.IO){
-            val url = "https://www.agefans.cc/search?query=$keyword&page=$key"
+            val url = url("/search?query=$keyword&page=$key")
             val doc = runCatching {
                 Jsoup.parse(OkHttpUtils.get(url(url)))
             }.getOrElse {
@@ -330,15 +328,16 @@ class AgefansParser: ISourceParser, IHomeParser, IDetailParser, IPlayerParser, I
         var result:ISourceParser.ParserResult<String> = ISourceParser.ParserResult.Error<String>(Exception("Unknown Error"), true)
 
         withContext(Dispatchers.Main){
-            lifecycle?.addObserver(object: LifecycleObserver {
-                @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-                fun onDestroy(){
-                    webView.get()?.removeJavascriptInterface("java_obj")
-                    client.onError = null
-                    client.onComplete = null
+            webView.get()?.addJavascriptInterface(client.javaJs, "java_obj")
+            lifecycle?.addObserver(object: LifecycleEventObserver {
+                override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
+                    if (event == Lifecycle.Event.ON_DESTROY){
+                        webView.get()?.removeJavascriptInterface("java_obj")
+                        client.onError = null
+                        client.onComplete = null
+                    }
                 }
             })
-            webView.get()?.addJavascriptInterface(client.javaJs, "java_obj")
             client.onComplete = {
                 runCatching {
                     Log.i("AgefansParser", "onComplete $it")

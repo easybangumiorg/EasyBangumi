@@ -157,7 +157,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignTop="@id/tv_episode"
                     android:layout_alignBottom="@id/tv_episode"
-                    android:layout_toStartOf="@id/img_right_1"
+                    android:layout_alignParentEnd="true"
                     android:gravity="center"
                     android:text="@string/episode_total"
                     android:textColor="?attr/subtitleTextColor"
