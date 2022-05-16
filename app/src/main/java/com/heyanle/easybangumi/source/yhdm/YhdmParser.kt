@@ -202,7 +202,7 @@ class YhdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISe
                     list.add(it.text())
                     temp.add(it.child(0).attr("href"))
                 }
-                map.put("播放列表", list)
+                map["播放列表"] = list
                 this@YhdmParser.bangumi = bangumi
                 return@withContext  ISourceParser.ParserResult.Complete(map)
             }.onFailure {

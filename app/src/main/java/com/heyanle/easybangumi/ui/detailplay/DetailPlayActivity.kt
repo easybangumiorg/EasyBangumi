@@ -136,7 +136,7 @@ class DetailPlayActivity : BaseActivity() {
         PlayLineAdapter(playLineList)
     }
 
-    @SuppressLint("NotifyDataSetChanged")
+    @SuppressLint("NotifyDataSetChanged", "SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -514,6 +514,7 @@ class DetailPlayActivity : BaseActivity() {
         }
         runCatching {
             val url = viewModel.playUrl[playLine][playEpisode]
+            //url.logEWithDebug("DetailPlayActivity")
             if(url != ""){
                 val title = episodeTitleList[playEpisode]
                 var device = 0L
@@ -521,6 +522,7 @@ class DetailPlayActivity : BaseActivity() {
                     && bangumiDetail.lastEpisodes == playEpisode){
                     device = bangumiDetail.lastProcessTime
                 }
+                binding.jzVideo.setMediaInterface(JZMediaExo::class.java)
                 binding.jzVideo.changeUrl(JZDataSource(url, title), device)
                 binding.jzVideo.startVideo()
             }

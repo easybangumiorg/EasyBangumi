@@ -19,9 +19,8 @@
         tools:ignore="UnusedAttribute">
 
         <activity android:name=".ui.main.MainActivity"
-            android:label="@string/app_name"
             android:exported="true"
-            android:screenOrientation="portrait"
+            android:screenOrientation="sensor"
             android:configChanges="uiMode">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -33,12 +32,12 @@
         <activity android:name=".ui.detailplay.DetailPlayActivity"
             android:launchMode="singleTask"
             android:configChanges="orientation|screenSize|keyboardHidden"
-            android:screenOrientation="portrait"
+            android:screenOrientation="sensor"
             tools:ignore="LockedOrientationActivity" />
         <activity android:name=".ui.detailplay.DetailPlayWebViewActivity"
             android:launchMode="singleTask"
             android:configChanges="orientation|screenSize|keyboardHidden"
-            android:screenOrientation="portrait"
+            android:screenOrientation="sensor"
             tools:ignore="LockedOrientationActivity" />
 
         <activity android:name=".crash.CrashActivity"

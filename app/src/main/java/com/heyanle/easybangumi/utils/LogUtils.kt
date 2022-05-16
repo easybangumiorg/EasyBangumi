@@ -17,6 +17,18 @@ fun String.logE(tag: String){
     Log.e(tag, this)
 }
 
+fun String.logIWithDebug(tag: String){
+    if(BuildConfig.DEBUG){
+        logI(tag)
+    }
+}
+
+fun String.logEWithDebug(tag: String){
+    if(BuildConfig.DEBUG){
+        logE(tag)
+    }
+}
+
 fun String.toastWithDebug(){
     if(BuildConfig.DEBUG){
         Toast.makeText(EasyApplication.INSTANCE, this, Toast.LENGTH_SHORT).show()

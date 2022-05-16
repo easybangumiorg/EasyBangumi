@@ -539,6 +539,7 @@ class DetailPlayWebViewActivity: BaseActivity() {
                     && bangumiDetail.lastEpisodes == playEpisode){
                     device = bangumiDetail.lastProcessTime
                 }
+                binding.jzVideo.setMediaInterface(JZMediaExo::class.java)
                 binding.jzVideo.changeUrl(JZDataSource(url, title), device)
                 binding.jzVideo.startVideo()
             }

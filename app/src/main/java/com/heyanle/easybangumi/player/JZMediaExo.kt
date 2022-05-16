@@ -10,7 +10,6 @@ import android.view.Surface
 import cn.jzvd.JZMediaInterface
 import cn.jzvd.Jzvd
 import com.google.android.exoplayer2.*
-import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.source.hls.HlsMediaSource
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection
@@ -18,9 +17,7 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.trackselection.TrackSelector
 import com.google.android.exoplayer2.upstream.*
 import com.google.android.exoplayer2.util.MimeTypes
-import com.google.android.exoplayer2.util.Util
 import com.google.android.exoplayer2.video.VideoSize
-import com.heyanle.easybangumi.R
 
 /**
  * Created by HeYanLe on 2021/11/17 21:16.
@@ -61,6 +58,11 @@ class JZMediaExo(jzvd: Jzvd) : JZMediaInterface(jzvd),Player.Listener {
         exoPlayer?.playWhenReady = true
     }
 
+    override fun onPlayerError(error: PlaybackException) {
+        super.onPlayerError(error)
+        jzvd.mediaInterface.release()
+        jzvd.onStateError()
+    }
     override fun prepare() {
         Log.e(TAG, "prepare")
         val context = jzvd.context
@@ -124,6 +126,7 @@ class JZMediaExo(jzvd: Jzvd) : JZMediaInterface(jzvd),Player.Listener {
             exoPlayer?.setMediaSource(videoSource)
             exoPlayer?.prepare()
             exoPlayer?.playWhenReady = true
+
             callback = Runnable {
                 exoPlayer?.let {
                     val percent = it.bufferedPercentage

@@ -2,6 +2,7 @@ package com.heyanle.easybangumi
 
 import android.app.Application
 import android.util.Log
+import cn.jzvd.JzvdStd
 import com.heyanle.easybangumi.crash.CrashHandler
 import com.heyanle.easybangumi.db.EasyDatabase
 import com.heyanle.easybangumi.entity.Bangumi
@@ -44,12 +45,11 @@ class EasyApplication : Application() {
             .addInterceptorChain(LogcatInterceptorChain())
 
             .store(MMKVStore(this))
-            .build().default()
-        DefaultOkkv.okkv?.init()
+            .build().init().default()
+
         DarkUtils.autoApplication()
         SourceParserFactory.init()
         EasyDatabase.AppDB
-
         var s: Boolean by okkv("f", false)
         s = true
         s.toString().logI("Easy")
