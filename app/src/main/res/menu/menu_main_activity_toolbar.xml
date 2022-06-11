@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item android:id="@+id/item_day_night"
+        app:showAsAction="ifRoom"
+        android:iconTint="?attr/colorOnPrimary"
+        app:icon="@drawable/ic_baseline_brightness_2_24"
+        android:icon="@drawable/ic_baseline_brightness_2_24"
+        android:title="@string/night_mode" />
+    <item android:id="@+id/item_search"
+        app:showAsAction="ifRoom"
+        app:iconTint="?attr/colorSecondary"
+        app:icon="@drawable/ic_baseline_search_24"
+        android:icon="@drawable/ic_baseline_search_24"
+        android:title="@string/search" />
+
+
+
+
+</menu>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@null">
+
+    <TextView
+        android:id="@+id/column_title"
+        android:textSize="16sp"
+        android:padding="8dp"
+        android:textColor="?attr/colorSecondary"
+        android:text="新番放送"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <com.heyanle.easybangumi.ui.main.diy.HomeColumnHorizontalScrollView
+        android:id="@+id/scroll"
+        android:layout_marginTop="2dp"
+        android:scrollbars="none"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:padding="8dp"
+            android:orientation="horizontal"
+            android:id="@+id/linear"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+
+        </LinearLayout>
+
+
+    </com.heyanle.easybangumi.ui.main.diy.HomeColumnHorizontalScrollView>
+
+</androidx.appcompat.widget.LinearLayoutCompat>

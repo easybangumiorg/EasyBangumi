@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="116dp"
+    android:background="?android:colorBackground">
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/cover"
+        android:layout_width="75dp"
+        android:layout_height="100dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/tv_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_toEndOf="@id/cover"
+        android:maxLines="2"
+        android:textColor="?attr/colorOnSurface"
+        android:textSize="15sp" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:layout_below="@id/tv_title"
+        android:layout_toEndOf="@id/cover"
+        android:layout_marginTop="2dp"
+        android:id="@+id/intro"
+        android:text="共 12 集"
+        android:textSize="12sp"
+        android:textColor="?attr/subtitleTextColor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+
+
+</RelativeLayout>

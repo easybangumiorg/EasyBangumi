@@ -1,0 +1,73 @@
+<resources>
+    <string name="app_name">纯纯看番</string>
+
+    <string name="there_are_something_wrong">怎么全坏了！</string>
+
+    <string name="device_msg">设备信息</string>
+    <string name="device_type">设备型号：%1$s</string>
+    <string name="android_version">安卓版本：%1$s</string>
+
+    <string name="error_log">错误日志</string>
+
+    <string name="search">搜索</string>
+    <string name="setting">设置</string>
+
+    <string name="home">主页</string>
+    <string name="my_bangumi">我的追番</string>
+
+    <string name="day_mode">日间模式</string>
+    <string name="night_mode">夜间模式</string>
+    <string name="day_night_auto_mode">自动切换夜间模式（跟随系统）</string>
+
+    <string name="channel_auto_day_night_mode">关闭自动模式，再次点击手动切换，可进设置再次开启自动模式</string>
+
+    <string name="screen">界面</string>
+
+    <string name="source_error">番剧源解析错误</string>
+    <string name="home_source_error">首页源解析错误</string>
+    <string name="home_source_not_found">无首页源</string>
+    <string name="current_home_source">当前源：%1$s （点击切换）</string>
+
+    <string name="change_home_source">切换首页源</string>
+
+    <string name="follow">追番</string>
+    <string name="followed">已追番</string>
+
+    <string name="detail">详情</string>
+    
+    <string name="play_line">播放线路</string>
+    <string name="episode">选集</string>
+    
+    <string name="recommend">相关推荐</string>
+
+    <string name="error_click_to_refresh">加载出错，点击重新加载</string>
+
+    <string name="episode_total">共&#160;%1$d&#160;话</string>
+    <string name="type_keyword_to_search">输入关键字搜索</string>
+
+    <string name="my_bangumi_item_intro">%1$s\n%2$s\n%3$s</string>
+    <string name="last_watch_title">看到 %1$s\n%2$s</string>
+
+    <string name="retry">点击重试</string>
+
+    <string name="delete_follow_bangumi_completely">取消追番成功</string>
+
+    <string name="play_not_support">该源暂时不支持播放，跳转到网页</string>
+
+    <string name="long_press_fasting">长按加速中</string>
+    
+    <string name="new_version">新版本 %1$s</string>
+    <string name="goto_download">点击下载</string>
+    <string name="cancel">取消</string>
+
+    <string name="about">关于</string>
+    <string name="current_version">当前版本：%1$s</string>
+    <string name="check_update">检查更新</string>
+
+    <string name="current_latest">当前为最新版本</string>
+
+    <array name="my_bangumi_menu_array">
+        <item>取消追番</item>
+    </array>
+
+</resources>
