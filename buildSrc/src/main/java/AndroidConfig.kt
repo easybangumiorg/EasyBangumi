@@ -10,7 +10,7 @@ object AndroidConfig {
     class DefaultConfig {
         val minSdk = 21
         val targetSdk = 32
-        val versionCode = 20
-        val versionName = "2.0.0"
+        val versionCode = 21
+        val versionName = "2.0.1"
     }
 }
