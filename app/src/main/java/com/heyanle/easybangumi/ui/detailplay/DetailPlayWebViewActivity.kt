@@ -17,6 +17,7 @@ import androidx.activity.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
+import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import cn.jzvd.JZDataSource
 import cn.jzvd.Jzvd
@@ -493,7 +494,7 @@ class DetailPlayWebViewActivity: BaseActivity() {
             e.printStackTrace()
         }
 
-        GlobalScope.launch {
+        viewModel.viewModelScope.launch(Dispatchers.IO) {
             playParser.getPlayUrl(bangumi, playLineIndex, playEpisode, WeakReference(binding.web), lifecycle)
                 .complete {
                     if(it.data == ""){
@@ -578,6 +579,7 @@ class DetailPlayWebViewActivity: BaseActivity() {
 
         runOnUiThread {
             Jzvd.goOnPlayOnPause()
+            Jzvd.releaseAllVideos()
             binding.jzVideo.changeUiToError()
         }
     }

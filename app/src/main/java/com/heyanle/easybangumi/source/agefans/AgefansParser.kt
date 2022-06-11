@@ -19,9 +19,11 @@ import java.lang.IndexOutOfBoundsException
 import java.util.concurrent.CountDownLatch
 import android.webkit.JavascriptInterface
 import androidx.lifecycle.*
+import com.heyanle.easybangumi.utils.LRUCache
 import com.heyanle.easybangumi.utils.OkHttpUtils
 import java.lang.ref.WeakReference
 import java.net.URLDecoder
+import java.util.concurrent.TimeUnit
 
 
 /**
@@ -293,6 +295,8 @@ class AgefansParser: ISourceParser, IHomeParser, IDetailParser, IPlayerParser, I
         AgeWebViewClient()
     }
 
+    private val tempPlay: LRUCache<Bangumi, HashMap<Int, HashMap<Int, String>>> = LRUCache(32)
+
     override suspend fun getPlayUrl(
         bangumi: Bangumi,
         lineIndex: Int,
@@ -300,10 +304,17 @@ class AgefansParser: ISourceParser, IHomeParser, IDetailParser, IPlayerParser, I
         webView: WeakReference<WebView>,
         lifecycle: Lifecycle?
     ): ISourceParser.ParserResult<String> {
+
         if(lineIndex < 0 || episodes < 0){
             return ISourceParser.ParserResult.Error(IndexOutOfBoundsException(), false)
         }
         var url = ""
+        val hm = tempPlay[bangumi] ?: hashMapOf()
+        val hn = hm[lineIndex] ?: hashMapOf()
+        val re = hn[episodes] ?: ""
+        if(re.isNotEmpty()){
+            return ISourceParser.ParserResult.Complete(re)
+        }
         if(bangumi != this.bangumi
             || lineIndex >= temp.size
             || episodes >= temp[lineIndex].size
@@ -363,6 +374,9 @@ class AgefansParser: ISourceParser, IHomeParser, IDetailParser, IPlayerParser, I
                         if(res.isEmpty()){
                             countDownLatch.countDown()
                         }else{
+                            hn[episodes] = res
+                            hm[lineIndex] = hn
+                            tempPlay[bangumi] = hm
                             result = ISourceParser.ParserResult.Complete(URLDecoder.decode(res, "UTF-8"))
                             countDownLatch.countDown()
                         }

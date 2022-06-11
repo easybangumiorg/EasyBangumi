@@ -563,9 +563,9 @@ class DetailPlayActivity : BaseActivity() {
         binding.content.gone()
     }
     private fun errorVideo(){
-
         runOnUiThread {
             Jzvd.goOnPlayOnPause()
+            Jzvd.releaseAllVideos()
             binding.jzVideo.changeUiToError()
         }
     }
