@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">纯纯二次元</string>
+    <string name="search">搜索</string>
+    <string name="title_anim">纯纯看番</string>
+    <string name="title_comic">纯纯漫画</string>
+    <string name="title_novel">纯纯小说</string>
+    <string name="title_setting">设置</string>
+
+    <string name="main_anim">看动画</string>
+    <string name="main_comic">看漫画</string>
+    <string name="main_novel">看小说</string>
+    <string name="main_setting">设置</string>
+
+    <string name="anim_home">主页</string>
+    <string name="anim_mine">追番</string>
+
+    <string name="error_click_to_refresh">加载出错，点击重新加载</string>
+</resources>
