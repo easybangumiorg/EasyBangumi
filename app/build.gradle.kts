@@ -48,6 +48,7 @@ dependencies {
     okhttp3()
     androidXBasic()
     leakcanary()
+    paging()
     junit()
     swipeRefreshLayout()
 

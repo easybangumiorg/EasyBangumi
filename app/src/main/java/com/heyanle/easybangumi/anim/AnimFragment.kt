@@ -5,12 +5,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import com.google.android.material.tabs.TabLayoutMediator
 import com.heyanle.easybangumi.EasyApplication
 import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.adapter.PagerAdapter
 import com.heyanle.easybangumi.anim.home.AnimHomeFragment
 import com.heyanle.easybangumi.anim.mine.AnimMineFragment
+import com.heyanle.easybangumi.anim.search.SearchActivity
 import com.heyanle.easybangumi.databinding.FragmentAnimBinding
 import com.heyanle.easybangumi.utils.getStringFromResource
 
@@ -40,6 +43,8 @@ class AnimFragment: Fragment() {
         }
     }
 
+    private val viewModel by activityViewModels<AnimViewModel>()
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -52,6 +57,7 @@ class AnimFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initTabPageView()
+        initToolbar()
     }
 
     private fun initTabPageView(){
@@ -60,6 +66,18 @@ class AnimFragment: Fragment() {
         ) { tab, po ->
             tab.text = titleList[po]
         }.attach()
+        binding.viewPager.isNestedScrollingEnabled = true
+    }
+
+    private fun initToolbar(){
+        binding.toolbar.setOnMenuItemClickListener {
+            when(it.itemId){
+                R.id.item_search -> {
+                    SearchActivity.start(this, viewModel.lastSelectSourceIndex)
+                }
+            }
+            false
+        }
     }
 
 }
