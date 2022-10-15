@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:fitsSystemWindows="true"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="?attr/colorPrimary">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:background="?attr/colorPrimary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <androidx.appcompat.widget.Toolbar
+            app:menu="@menu/fragment_anim_main_toolbar"
+            android:id="@+id/toolbar"
+            app:title="@string/title_anim"
+            app:titleTextColor="?attr/colorOnPrimary"
+            android:background="?attr/colorPrimary"
+            app:layout_scrollFlags="scroll|enterAlways"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <RelativeLayout
+                android:paddingEnd="8dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:ignore="RtlSymmetry">
+
+                <EditText
+                    android:imeOptions="actionSearch"
+                    android:maxLines="1"
+                    android:layout_alignParentStart="true"
+                    android:layout_toStartOf="@id/bt_search"
+                    android:id="@+id/et_search"
+                    android:textColorHint="?attr/colorOnPrimary"
+                    android:textColor="?attr/colorOnPrimary"
+                    android:hint="@string/type_keyword_to_search"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:background="?attr/selectableItemBackground"
+                    android:layout_marginStart="8dp"
+                    android:paddingEnd="4dp"
+                    android:paddingStart="4dp"
+                    android:gravity="center"
+                    android:textColor="?attr/colorSecondary"
+                    android:textSize="15sp"
+                    android:layout_alignBottom="@id/et_search"
+                    android:layout_alignTop="@id/et_search"
+                    android:layout_alignParentEnd="true"
+                    android:id="@+id/bt_search"
+                    android:text="@string/search"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            </RelativeLayout>
+        </androidx.appcompat.widget.Toolbar>
+
+
+        <com.google.android.material.tabs.TabLayout
+            app:tabGravity="start"
+            android:id="@+id/tab_layout"
+            android:background="?attr/colorPrimary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:tabMode="scrollable"
+            app:tabIndicatorFullWidth="false"
+            app:tabIndicatorColor="?attr/colorSecondary"
+            app:tabSelectedTextColor="?attr/colorOnPrimary"/>
+
+    </com.google.android.material.appbar.AppBarLayout>
+    <androidx.viewpager2.widget.ViewPager2
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:id="@+id/view_pager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

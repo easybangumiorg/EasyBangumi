@@ -15,4 +15,8 @@
     <string name="anim_mine">追番</string>
 
     <string name="error_click_to_refresh">加载出错，点击重新加载</string>
+
+    <string name="type_keyword_to_search">输入关键字搜索</string>
+
+    <string name="retry">点击重试</string>
 </resources>

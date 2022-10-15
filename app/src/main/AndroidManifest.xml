@@ -28,6 +28,7 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".anim.search.SearchActivity"/>
         <activity android:name="com.heyanle.easy_crasher.CrashActivity"
             android:process="com.heyanle.easybangumi.crash"/>
     </application>

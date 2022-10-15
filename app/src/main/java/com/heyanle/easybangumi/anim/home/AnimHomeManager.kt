@@ -3,6 +3,7 @@ package com.heyanle.easybangumi.anim.home
 import androidx.lifecycle.lifecycleScope
 import com.heyanle.easy_daynight.ThemeManager
 import com.heyanle.easybangumi.anim.AnimSourceFactory
+import com.heyanle.easybangumi.anim.AnimViewModel
 import com.heyanle.easybangumi.databinding.FragmentAnimHomeBinding
 import com.heyanle.easybangumi.utils.gone
 import com.heyanle.easybangumi.utils.visible
@@ -14,6 +15,7 @@ import com.heyanle.easybangumi.utils.visible
 class AnimHomeManager(
     private val fragment: AnimHomeFragment,
     private val viewModel: AnimHomeViewModel,
+    private val parentViewModel: AnimViewModel,
     private val ui: FragmentAnimHomeBinding,
 ) {
 
@@ -65,6 +67,7 @@ class AnimHomeManager(
     }
 
     private fun onLoading(state: AnimHomeViewModel.HomeAnimState.Loading){
+        parentViewModel.lastSelectSourceIndex = state.curIndex
         ui.refresh.isClickable = false
         ui.errorLayout.gone()
         ui.animHomeView.gone()
@@ -73,6 +76,7 @@ class AnimHomeManager(
     }
 
     private fun onCompletely(state: AnimHomeViewModel.HomeAnimState.Completely){
+        parentViewModel.lastSelectSourceIndex = state.curIndex
         ui.sourceTabView.changeSelect(state.curIndex)
         ui.errorLayout.isClickable = false
         ui.errorLayout.gone()
@@ -82,6 +86,7 @@ class AnimHomeManager(
     }
 
     private fun onError(state: AnimHomeViewModel.HomeAnimState.Error){
+        parentViewModel.lastSelectSourceIndex = state.curIndex
         ui.errorLayout.isClickable = true
         ui.errorLayout.visible()
         ui.animHomeView.gone()

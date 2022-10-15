@@ -5,7 +5,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import com.heyanle.easybangumi.anim.AnimViewModel
 import com.heyanle.easybangumi.databinding.FragmentAnimHomeBinding
 
 /**
@@ -16,6 +18,7 @@ class AnimHomeFragment: Fragment() {
 
     private lateinit var binding: FragmentAnimHomeBinding
     private val viewModel by viewModels<AnimHomeViewModel>()
+    private val parentViewModel by activityViewModels<AnimViewModel>()
     private lateinit var manager: AnimHomeManager
 
 
@@ -34,7 +37,7 @@ class AnimHomeFragment: Fragment() {
     }
 
     private fun initView(){
-        manager = AnimHomeManager(this, viewModel, binding)
+        manager = AnimHomeManager(this, viewModel, parentViewModel, binding)
     }
 
 }
