@@ -128,25 +128,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"/>
 
-            <TextView
-                android:id="@+id/tv_speed"
-                android:paddingStart="9dp"
-                android:paddingEnd="9dp"
-                android:textColor="@android:color/white"
-                app:layout_constraintStart_toStartOf="parent"
-                android:gravity="center"
-                android:text="@string/speed"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"/>
-
-            <TextView
-                android:id="@+id/tv_episode"
-                android:paddingStart="9dp"
-                android:paddingEnd="9dp"
-                android:textColor="@android:color/white"
-                app:layout_constraintStart_toStartOf="parent"
-                android:gravity="center"
-                android:text="@string/episode"
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_function"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"/>
 
