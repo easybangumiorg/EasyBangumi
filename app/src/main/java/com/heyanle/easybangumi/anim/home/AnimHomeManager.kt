@@ -54,7 +54,7 @@ class AnimHomeManager(
                 viewModel.refresh()
             }
         }
-        ui.refresh.setProgressBackgroundColorSchemeColor(ThemeManager.getAttrColor(fragment.requireContext(), android.R.attr.colorBackground))
+        ui.refresh.setProgressBackgroundColorSchemeColor(ThemeManager.getAttrColor(fragment.requireContext(), android.R.attr.colorPrimary))
         ui.refresh.setColorSchemeColors(ThemeManager.getAttrColor(fragment.requireContext(), com.google.android.material.R.attr.colorSecondary))
     }
 

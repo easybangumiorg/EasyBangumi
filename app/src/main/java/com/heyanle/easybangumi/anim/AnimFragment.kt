@@ -6,14 +6,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import com.google.android.material.tabs.TabLayoutMediator
-import com.heyanle.easybangumi.EasyApplication
 import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.adapter.PagerAdapter
 import com.heyanle.easybangumi.anim.home.AnimHomeFragment
 import com.heyanle.easybangumi.anim.mine.AnimMineFragment
 import com.heyanle.easybangumi.anim.search.SearchActivity
+import com.heyanle.easybangumi.anim.search.result.SearchResultFragment
 import com.heyanle.easybangumi.databinding.FragmentAnimBinding
 import com.heyanle.easybangumi.utils.getStringFromResource
 

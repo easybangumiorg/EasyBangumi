@@ -5,9 +5,13 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.LayoutInflater
+import android.view.Menu
 import android.view.MenuItem
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
+import androidx.core.view.MenuItemCompat
+import androidx.core.view.MenuItemCompat.getActionView
 import androidx.fragment.app.Fragment
 import com.google.android.material.tabs.TabLayoutMediator
 import com.heyanle.easy_daynight.ThemeManager
@@ -16,14 +20,12 @@ import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.adapter.PagerAdapter
 import com.heyanle.easybangumi.anim.AnimSourceFactory
 import com.heyanle.easybangumi.anim.home.AnimHomeFragment
-import com.heyanle.easybangumi.anim.search.page.SearchPageFragment
-import com.heyanle.easybangumi.anim.search.viewmodel.SearchActivityViewModel
+import com.heyanle.easybangumi.anim.search.result.SearchResultFragment
+import com.heyanle.easybangumi.anim.search.viewmodel.SearchViewModel
 import com.heyanle.easybangumi.databinding.ActivityAnimSearchBinding
-import com.heyanle.easybangumi.databinding.ActivityMainBinding
 
 /**
- * Created by HeYanLe on 2022/10/6 9:30.
- * https://github.com/heyanLE
+ * Create by heyanlin on 2022/10/20
  */
 class SearchActivity: AppCompatActivity() {
 
@@ -41,42 +43,34 @@ class SearchActivity: AppCompatActivity() {
             intent.putExtra(KEY_DEF_KEYWORD_INDEX, keywordIndex)
             fragment.startActivity(intent)
         }
-
     }
 
     private val binding: ActivityAnimSearchBinding by lazy {
         ActivityAnimSearchBinding.inflate(LayoutInflater.from(this))
     }
 
-    private var searchKeyList = arrayListOf<String>()
+    private val viewModel by viewModels<SearchViewModel>()
 
-    private val viewModel by viewModels<SearchActivityViewModel>()
+    private var searchKeyList = arrayListOf<String>()
 
     private val pageAdapter: PagerAdapter by lazy {
         PagerAdapter(
             this,
             searchKeyList.size
         ) {
-            AnimHomeFragment()
-            // SearchPageFragment(searchKeyList[it], it)
+            //AnimHomeFragment()
+            SearchResultFragment(searchKeyList[it], it)
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        //MediaHelper.setIsFitSystemWindows(binding.root, true)
-        MediaHelper.setIsDecorFitsSystemWindows(this, false)
+        MediaHelper.setIsDecorFitsSystemWindows(this, true)
         MediaHelper.setStatusBarColor(this, ThemeManager.getAttrColor(this, androidx.appcompat.R.attr.colorPrimary))
-        MediaHelper.setNavBarColor(this, ThemeManager.getAttrColor(this, androidx.appcompat.R.attr.colorPrimary))
-
+        MediaHelper.setNavBarColor(this, ThemeManager.getAttrColor(this, android.R.attr.colorBackground))
         setContentView(binding.root)
-
-
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.setHomeButtonEnabled(true)
-        supportActionBar?.setDisplayShowTitleEnabled(false)
-
 
         searchKeyList.clear()
         searchKeyList.addAll(AnimSourceFactory.searchKeys())
@@ -86,20 +80,22 @@ class SearchActivity: AppCompatActivity() {
             tab.text = AnimSourceFactory.search(searchKeyList[po])?.getLabel()?:""
         }.attach()
 
-        binding.btSearch.setOnClickListener {
-            viewModel.keyword.value = binding.etSearch.text.toString()
-        }
-
-        binding.etSearch.setOnKeyListener { _, keyCode, _ ->
-            if(keyCode == KeyEvent.KEYCODE_ENTER){
-                viewModel.keyword.value = binding.etSearch.text.toString()
-                return@setOnKeyListener true
-            }
-            false
-        }
-
-        val index = intent.getIntExtra(KEY_DEF_KEYWORD_INDEX, 0)
+        val index = intent.getIntExtra(SearchActivity.KEY_DEF_KEYWORD_INDEX, 0)
         binding.viewPager.setCurrentItem(index, false)
+        binding.viewPager.isNestedScrollingEnabled = true
+        binding.root.isNestedScrollingEnabled = true
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.search_toolbar, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        val item = menu.findItem(R.id.search)
+        val searchView = item.actionView as SearchView
+        initSearchView(searchView = searchView)
+        return super.onPrepareOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -111,4 +107,26 @@ class SearchActivity: AppCompatActivity() {
         }
         return super.onOptionsItemSelected(item)
     }
+
+    private fun initSearchView(searchView: SearchView){
+        searchView.isIconified = false
+        searchView.setIconifiedByDefault(true)
+        searchView.onActionViewExpanded()
+        searchView.isSubmitButtonEnabled = true
+        searchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener{
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                viewModel.keywordFlow.value = query?:""
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                if(newText == null || newText.isEmpty()){
+                    viewModel.keywordFlow.value = ""
+                    return true
+                }
+                return false
+            }
+        })
+    }
+
 }
