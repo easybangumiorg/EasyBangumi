@@ -4,7 +4,8 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="?android:colorBackground">
 
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -40,16 +41,14 @@
 
 
                 <LinearLayout
+                    android:paddingTop="100dp"
+                    android:paddingBottom="100dp"
                     android:gravity="center"
                     android:orientation="vertical"
                     android:id="@+id/error_layout"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     tools:ignore="UseCompoundDrawables">
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="100dp"/>
 
                     <ImageView
                         android:id="@+id/refresh_img_view"
@@ -65,12 +64,9 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
 
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="100dp"/>
-
 
                 </LinearLayout>
+
 
 
             </LinearLayout>

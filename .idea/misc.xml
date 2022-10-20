@@ -3,7 +3,15 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/EasyBangumi/app/src/main/res/layout/activity_anim_search.xml" value="0.25" />
+        <entry key="..\:/EasyBangumi/app/src/main/res/layout/activity_main.xml" value="0.5479166666666667" />
+        <entry key="..\:/EasyBangumi/app/src/main/res/layout/fragment_anim.xml" value="0.40609137055837563" />
+        <entry key="..\:/EasyBangumi/app/src/main/res/layout/fragment_anim_home.xml" value="0.40609137055837563" />
         <entry key="..\:/EasyBangumi/app/src/main/res/layout/fragment_anim_search_page.xml" value="0.5479166666666667" />
+        <entry key="..\:/EasyBangumi/app/src/main/res/layout/fragment_anim_search_result.xml" value="0.4067796610169492" />
+        <entry key="..\:/EasyBangumi/app/src/main/res/layout/item_anim_home.xml" value="0.5479166666666667" />
+        <entry key="..\:/EasyBangumi/app/src/main/res/menu/fragment_anim_main_toolbar.xml" value="0.5479166666666667" />
+        <entry key="..\:/EasyBangumi/app/src/main/res/menu/search_toolbar.xml" value="0.546875" />
         <entry key="..\:/EasyBangumi/easy-player/src/main/res/drawable/player_bottom_bg.xml" value="0.4145" />
         <entry key="..\:/EasyBangumi/easy-player/src/main/res/drawable/player_controller_bt_bg.xml" value="0.4955" />
         <entry key="..\:/EasyBangumi/easy-player/src/main/res/drawable/player_top_bg.xml" value="0.4145" />
