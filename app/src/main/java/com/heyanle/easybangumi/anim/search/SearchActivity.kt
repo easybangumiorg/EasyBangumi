@@ -82,8 +82,6 @@ class SearchActivity: AppCompatActivity() {
 
         val index = intent.getIntExtra(SearchActivity.KEY_DEF_KEYWORD_INDEX, 0)
         binding.viewPager.setCurrentItem(index, false)
-        binding.viewPager.isNestedScrollingEnabled = true
-        binding.root.isNestedScrollingEnabled = true
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -115,13 +113,13 @@ class SearchActivity: AppCompatActivity() {
         searchView.isSubmitButtonEnabled = true
         searchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener{
             override fun onQueryTextSubmit(query: String?): Boolean {
-                viewModel.keywordFlow.value = query?:""
+                viewModel.submitKeyword(query?:"")
                 return true
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
                 if(newText == null || newText.isEmpty()){
-                    viewModel.keywordFlow.value = ""
+                    viewModel.submitKeyword("")
                     return true
                 }
                 return false

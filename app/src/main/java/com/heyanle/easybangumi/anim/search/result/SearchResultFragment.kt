@@ -43,111 +43,18 @@ class SearchResultFragment(): Fragment(R.layout.fragment_anim_search_result) {
 
     lateinit var binding: FragmentAnimSearchResultBinding
 
-    private val adapter: SearchBangumiAdapter by lazy {
-        SearchBangumiAdapter()
-    }
-    private val concatAdapter: ConcatAdapter by lazy {
-        adapter.withLoadStateHeaderAndFooter(
-            header = ItemLoadStateAdapter(adapter::retry),
-            footer = ItemLoadStateAdapter(adapter::retry)
-        )
-    }
-
-    private val sourceKey : String
-        get() {
-            return requireArguments().getString(ARGUMENT_KEY_SOURCE_KEY, "")?:""
-        }
-    private val searchParser: ISearchParser by lazy {
-        AnimSourceFactory.search(sourceKey)?:throw NullPointerException()
-    }
-
     private val viewModel by activityViewModels<SearchViewModel> ()
-
-    private val pager: Pager<Int, Bangumi> by lazy {
-        Pager(
-            PagingConfig(pageSize = 10)
-        ){
-            SearchPageSource(searchParser, viewModel.keywordFlow.value)
-        }
-    }
+    private lateinit var manager:SearchResultManager
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentAnimSearchResultBinding.bind(view)
-        init()
+        initView()
     }
 
-//    private var lastKeyWord = ""
-//
-//    override fun onResume() {
-//        super.onResume()
-//        if(lastKeyWord != (viewModel.keywordFlow.value) || adapter.itemCount == 0){
-//            refresh(viewModel.keywordFlow.value)
-//        }
-//    }
-
-    private fun init(){
-        binding.recycler.layoutManager = LinearLayoutManager(requireContext())
-        binding.recycler.adapter = concatAdapter
-
-        binding.refreshLayout.isClickable = false
-
-        adapter.addLoadStateListener {
-            binding.refreshLayout.isRefreshing = it.refresh is LoadState.Loading
-            if(it.refresh is LoadState.NotLoading){
-                binding.recycler.visible()
-            }
-            if(it.refresh is LoadState.Error && viewModel.keywordFlow.value.isNotEmpty()){
-                (it.refresh as LoadState.Error).error.printStackTrace()
-                binding.recycler.gone()
-                binding.emptyLayout.gone()
-                binding.errorLayout.visible()
-            }
-        }
-
-        binding.refreshLayout.setOnRefreshListener {
-            refresh(viewModel.keywordFlow.value)
-        }
-        binding.errorLayout.setOnClickListener {
-            refresh(viewModel.keywordFlow.value)
-            binding.refreshLayout.isRefreshing = true
-        }
-        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
-            pager.flow.collect {
-                adapter.submitData(it)
-            }
-        }
-
-
-        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
-            viewModel.keywordFlow.collect{
-                refresh(it)
-            }
-        }
-
-        binding.root.isNestedScrollingEnabled = true
-        binding.refreshLayout.isNestedScrollingEnabled = true
-        binding.refreshLayout.setProgressBackgroundColorSchemeColor(ThemeManager.getAttrColor(requireContext(), android.R.attr.colorPrimary))
-        binding.refreshLayout.setColorSchemeColors(ThemeManager.getAttrColor(requireContext(), com.google.android.material.R.attr.colorSecondary))
-        binding.recycler.gone()
-        binding.emptyLayout.visible()
-        binding.errorLayout.gone()
+    private fun initView(){
+        manager = SearchResultManager(this, viewModel, binding)
     }
 
-    private fun refresh(keyword: String){
-        if(keyword.isEmpty()){
-            binding.recycler.gone()
-            binding.emptyLayout.visible()
-            binding.errorLayout.gone()
-            binding.refreshLayout.isRefreshing = false
-            return
-        }else{
-            binding.refreshLayout.isRefreshing = true
-            binding.recycler.gone()
-            binding.emptyLayout.gone()
-            binding.errorLayout.gone()
-            adapter.refresh()
-        }
-    }
 
 }
