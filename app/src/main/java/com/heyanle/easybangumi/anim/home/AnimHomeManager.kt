@@ -46,7 +46,6 @@ class AnimHomeManager(
 
         ui.refresh.setOnRefreshListener {
             viewModel.refresh()
-
         }
 
         ui.errorLayout.setOnClickListener {

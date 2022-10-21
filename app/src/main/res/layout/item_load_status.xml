@@ -5,6 +5,7 @@
     android:orientation="vertical"
     android:padding="8dp">
     <TextView
+        android:text="@string/load_state_error_msg"
         android:id="@+id/error_msg"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

@@ -39,12 +39,12 @@ class AnimHomeViewModel: ViewModel() {
     }
 
     private var okkvCurrentHomeSourceIndex by okkv<Int>(OKKV_KEY_SOURCE_INDEX, 0)
-    private val currentHomeSourceIndex = MutableStateFlow<HomeAnimEvent>(HomeAnimEvent.RefreshTab(okkvCurrentHomeSourceIndex))
+    private val eventFlow = MutableStateFlow<HomeAnimEvent>(HomeAnimEvent.RefreshTab(okkvCurrentHomeSourceIndex))
 
     private val homeData = HashMap<Int, LinkedHashMap<String, List<Bangumi>>>()
 
     private val _homeResult = flow<HomeAnimState> {
-        currentHomeSourceIndex.collect(){ event ->
+        eventFlow.collect(){ event ->
             val index = event.currentIndex
             // 先触发 Loading
             emit(HomeAnimState.Loading(index))
@@ -60,7 +60,7 @@ class AnimHomeViewModel: ViewModel() {
                 emit(HomeAnimState.Completely(index, homeData[index]?: linkedMapOf()))
             }else{
                 val res = AnimSourceFactory.home(keys[index])?.home()
-                if(currentHomeSourceIndex.value.currentIndex != index){
+                if(eventFlow.value.currentIndex != index){
                     // 迟到的 resp
                     res?.complete {
                         // 设置 缓存后不发送事件
@@ -94,12 +94,12 @@ class AnimHomeViewModel: ViewModel() {
             return
         }
         okkvCurrentHomeSourceIndex = index
-        currentHomeSourceIndex.value = HomeAnimEvent.ChangeTab(index)
+        eventFlow.value = HomeAnimEvent.ChangeTab(index)
     }
 
     fun refresh(){
-        val index = currentHomeSourceIndex.value.currentIndex
-        currentHomeSourceIndex.value = HomeAnimEvent.RefreshTab(index)
+        val index = eventFlow.value.currentIndex
+        eventFlow.value = HomeAnimEvent.RefreshTab(index)
     }
 
 }
