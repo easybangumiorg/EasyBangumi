@@ -3,38 +3,30 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
-        <entry key="..\:/EasyBangumi/app/src/main/res/layout/activity_anim_search.xml" value="0.25" />
-        <entry key="..\:/EasyBangumi/app/src/main/res/layout/activity_main.xml" value="0.5479166666666667" />
-        <entry key="..\:/EasyBangumi/app/src/main/res/layout/fragment_anim.xml" value="0.40609137055837563" />
-        <entry key="..\:/EasyBangumi/app/src/main/res/layout/fragment_anim_home.xml" value="0.40609137055837563" />
-        <entry key="..\:/EasyBangumi/app/src/main/res/layout/fragment_anim_search_page.xml" value="0.5479166666666667" />
-        <entry key="..\:/EasyBangumi/app/src/main/res/layout/fragment_anim_search_result.xml" value="0.4067796610169492" />
-        <entry key="..\:/EasyBangumi/app/src/main/res/layout/item_anim_home.xml" value="0.5479166666666667" />
-        <entry key="..\:/EasyBangumi/app/src/main/res/layout/item_load_status.xml" value="0.5479166666666667" />
-        <entry key="..\:/EasyBangumi/app/src/main/res/menu/fragment_anim_main_toolbar.xml" value="0.5479166666666667" />
-        <entry key="..\:/EasyBangumi/app/src/main/res/menu/search_toolbar.xml" value="0.546875" />
-        <entry key="..\:/EasyBangumi/easy-player/src/main/res/drawable/player_bottom_bg.xml" value="0.4145" />
-        <entry key="..\:/EasyBangumi/easy-player/src/main/res/drawable/player_controller_bt_bg.xml" value="0.4955" />
-        <entry key="..\:/EasyBangumi/easy-player/src/main/res/drawable/player_top_bg.xml" value="0.4145" />
-        <entry key="..\:/EasyBangumi/easy-player/src/main/res/layout/view_easy_player.xml" value="0.33" />
         <entry key="..\:/project/EasyBangumi/app/src/main/res/drawable/back_secondary_round_rect.xml" value="0.145" />
         <entry key="..\:/project/EasyBangumi/app/src/main/res/drawable/selector_main_bottom_bar.xml" value="0.248" />
+        <entry key="..\:/project/EasyBangumi/app/src/main/res/layout/activity_anim_search.xml" value="0.18432971014492755" />
         <entry key="..\:/project/EasyBangumi/app/src/main/res/layout/activity_main.xml" value="0.25" />
+        <entry key="..\:/project/EasyBangumi/app/src/main/res/layout/activity_search.xml" value="0.33958333333333335" />
         <entry key="..\:/project/EasyBangumi/app/src/main/res/layout/fragment_anim.xml" value="0.3385416666666667" />
         <entry key="..\:/project/EasyBangumi/app/src/main/res/layout/fragment_anim_home.xml" value="0.33" />
         <entry key="..\:/project/EasyBangumi/app/src/main/res/layout/fragment_anim_mine.xml" value="0.23233695652173914" />
+        <entry key="..\:/project/EasyBangumi/app/src/main/res/layout/fragment_anim_search_page.xml" value="0.176" />
+        <entry key="..\:/project/EasyBangumi/app/src/main/res/layout/fragment_anim_search_result.xml" value="0.125" />
         <entry key="..\:/project/EasyBangumi/app/src/main/res/layout/fragment_comic.xml" value="0.3385416666666667" />
         <entry key="..\:/project/EasyBangumi/app/src/main/res/layout/fragment_novel.xml" value="0.3385416666666667" />
         <entry key="..\:/project/EasyBangumi/app/src/main/res/layout/item_anim_home.xml" value="0.23596014492753623" />
         <entry key="..\:/project/EasyBangumi/app/src/main/res/layout/item_anim_home_column.xml" value="0.20425724637681159" />
         <entry key="..\:/project/EasyBangumi/app/src/main/res/layout/item_anim_home_item.xml" value="0.23596014492753623" />
         <entry key="..\:/project/EasyBangumi/app/src/main/res/layout/item_anim_home_source_tab.xml" value="0.67" />
+        <entry key="..\:/project/EasyBangumi/app/src/main/res/layout/item_load_status.xml" value="0.3385416666666667" />
+        <entry key="..\:/project/EasyBangumi/app/src/main/res/layout/item_search_anim.xml" value="0.33958333333333335" />
         <entry key="..\:/project/EasyBangumi/app/src/main/res/menu/fragment_anim_main_toolbar.xml" value="0.3385416666666667" />
         <entry key="..\:/project/EasyBangumi/app/src/main/res/menu/main_buttom_nav.xml" value="0.34322916666666664" />
         <entry key="..\:/project/EasyBangumi/app/src/main/res/xml/network_security_config.xml" value="0.16717325227963525" />
         <entry key="..\:/project/EasyBangumi/easy-crasher/src/main/res/layout/activity_crash.xml" value="0.34270833333333334" />
         <entry key="..\:/project/EasyBangumi/easy-player/src/main/res/drawable/player_top_bg.xml" value="0.1455" />
-        <entry key="..\:/project/EasyBangumi/easy-player/src/main/res/layout/view_easy_player.xml" value="0.33" />
+        <entry key="..\:/project/EasyBangumi/easy-player/src/main/res/layout/view_easy_player.xml" value="0.176" />
       </map>
     </option>
   </component>
