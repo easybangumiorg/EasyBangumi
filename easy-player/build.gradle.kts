@@ -1,5 +1,6 @@
 import com.heyanle.buildsrc.androidXBasic
 import com.heyanle.buildsrc.exoplayer
+import com.heyanle.buildsrc.exoplayerRtmp
 import com.heyanle.buildsrc.junit
 
 plugins {
@@ -34,10 +35,14 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+    buildFeatures{
+        viewBinding = true
+    }
 }
 
 dependencies {
     androidXBasic()
     junit()
     exoplayer()
+    exoplayerRtmp()
 }

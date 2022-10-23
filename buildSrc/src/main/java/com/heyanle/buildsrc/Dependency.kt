@@ -129,7 +129,11 @@ fun DependencyHandler.okkv2(){
     add(implementation, okkv2)
 }
 
-const val exoplayer = "com.google.android.exoplayer:exoplayer:2.18.1"
+const val exoplayer = "com.google.android.exoplayer:exoplayer:${Version.exoplayer}"
 fun DependencyHandler.exoplayer(){
     add(implementation, exoplayer)
+}
+const val exoplayer_rtmp = "com.google.android.exoplayer:extension-rtmp:${Version.exoplayer}"
+fun DependencyHandler.exoplayerRtmp(){
+    add(implementation, exoplayer_rtmp)
 }
