@@ -11,7 +11,15 @@ import android.widget.RelativeLayout
  */
 interface IControlComponent {
 
-    fun handleEvent(event: ControlEvent)
+    fun onPlayerStateChanged(playerState: Int)
+
+    fun onPlayStateChanged(playState: Int)
+
+    fun onVisibleChanged(isVisible: Boolean, anim: Animation)
+
+    fun onProgressUpdate(duration: Long, position: Long)
+
+    fun onLockStateChange(isLocked: Boolean)
 
     fun getView(): View?
 
@@ -19,12 +27,4 @@ interface IControlComponent {
 
     fun onAttachToController(controller: ControllerWrapper)
 
-}
-
-sealed class ControlEvent {
-    data class OnPlayerStateChanged(val playerState: Int) : ControlEvent()
-    data class OnPlayStateChanged(val playState: Int): ControlEvent()
-    data class OnVisibleChanged(val isVisible: Boolean, val anim: Animation): ControlEvent()
-    data class OnProgressUpdate(val duration: Long, val position: Long): ControlEvent()
-    data class OnLockStateChange(val boolean: Boolean): ControlEvent()
 }
