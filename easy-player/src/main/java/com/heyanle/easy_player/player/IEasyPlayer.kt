@@ -10,28 +10,6 @@ import android.view.SurfaceHolder
  */
 interface IEasyPlayer {
 
-    companion object {
-        /**
-         * 视频/音频开始渲染
-         */
-        const val MEDIA_INFO_RENDERING_START = 3
-
-        /**
-         * 缓冲开始
-         */
-        const val MEDIA_INFO_BUFFERING_START = 701
-
-        /**
-         * 缓冲结束
-         */
-        const val MEDIA_INFO_BUFFERING_END = 702
-
-        /**
-         * 视频旋转信息
-         */
-        const val MEDIA_INFO_VIDEO_ROTATION_CHANGED = 10001
-    }
-
     fun init()
 
     fun setVideoSource(url: String, headers: Map<String, String>?)
