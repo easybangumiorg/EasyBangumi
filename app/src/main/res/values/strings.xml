@@ -19,4 +19,17 @@
     <string name="confirm">确定</string>
 
     <string name="info_moesnackbar_swipe">右划关闭 →</string>
+
+    <string name="theme">主题</string>
+
+    <string name="dark_mode">夜间模式</string>
+
+    <string name="dark_on">总是开启</string>
+    <string name="dark_off">总是关闭</string>
+    <string name="dark_auto">跟随系统</string>
+
+    <string name="is_dynamic_color">动态配色</string>
+    <string name="is_dynamic_color_msg">获取系统指定配色</string>
+
+    <string name="dynamic_color_enable_msg">动态配色开启成功，如显示异常请关闭。</string>
 </resources>

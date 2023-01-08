@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContent
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Book
@@ -27,14 +29,22 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
@@ -46,6 +56,7 @@ import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.SEARCH
 import com.heyanle.easybangumi.SETTING
 import com.heyanle.easybangumi.ui.LoadingPage
+import com.heyanle.easybangumi.ui.anim.AnimPage
 import com.heyanle.easybangumi.ui.common.HomeTopAppBar
 import com.heyanle.easybangumi.ui.setting.SettingPage
 import com.heyanle.okkv2.core.okkv
@@ -60,10 +71,6 @@ sealed class HomePage @OptIn(ExperimentalMaterial3Api::class) constructor(
     val router: String,
     val icon: @Composable () -> Unit,
     val tabLabel: @Composable (() -> Unit),
-    val topBarLabel: @Composable (()->Unit),
-    val isShowSearch: Boolean = true,
-    val content: @Composable (() -> Unit),
-
     ){
     @OptIn(ExperimentalMaterial3Api::class)
     object Anim: HomePage(
@@ -71,18 +78,9 @@ sealed class HomePage @OptIn(ExperimentalMaterial3Api::class) constructor(
         icon = {
             Icon(Icons.Filled.LiveTv, contentDescription = stringResource(id = R.string.watch_anim))
         },
-        topBarLabel = {
-            Text(text = stringResource(id = R.string.anim_title))
-        },
         tabLabel = {
             Text(text = stringResource(id = R.string.watch_anim))
         },
-        content = {
-            LoadingPage(
-                modifier = Modifier.fillMaxSize(),
-                loadingMsg = "开发中"
-            )
-        }
     )
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -91,18 +89,9 @@ sealed class HomePage @OptIn(ExperimentalMaterial3Api::class) constructor(
         icon = {
             Icon(Icons.Filled.Book, contentDescription = stringResource(id = R.string.read_comic))
         },
-        topBarLabel = {
-            Text(text = stringResource(id = R.string.comic_title))
-        },
         tabLabel = {
             Text(text = stringResource(id = R.string.read_comic))
         },
-        content = {
-            LoadingPage(
-                modifier = Modifier.fillMaxSize(),
-                loadingMsg = "开发中"
-            )
-        }
     )
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -114,15 +103,6 @@ sealed class HomePage @OptIn(ExperimentalMaterial3Api::class) constructor(
         tabLabel = {
             Text(text = stringResource(id = R.string.read_novel))
         },
-        topBarLabel = {
-            Text(text = stringResource(id = R.string.novel_title))
-        },
-        content = {
-            LoadingPage(
-                modifier = Modifier.fillMaxSize(),
-                loadingMsg = "开发中"
-            )
-        }
     )
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -134,13 +114,6 @@ sealed class HomePage @OptIn(ExperimentalMaterial3Api::class) constructor(
         tabLabel = {
             Text(text = stringResource(id = R.string.setting))
         },
-        topBarLabel = {
-            Text(text = stringResource(id = R.string.setting))
-        },
-        isShowSearch = false,
-        content = {
-            SettingPage()
-        }
     )
 }
 val pageItems = listOf(
@@ -160,77 +133,79 @@ val LocalTopAppBarScrollBehavior = staticCompositionLocalOf<TopAppBarScrollBehav
 @Composable
 fun Home(){
 
-    val pageState = rememberPagerState(initialPage = initialPage)
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
-        canScroll = {
-            true
-        }
-    )
-    val nav = LocalNavController.current
     val scope = rememberCoroutineScope()
 
-    val page = pageItems[pageState.currentPage]
+    val homeNavController = rememberNavController()
+
+    var currentPageIndex by remember {
+        mutableStateOf(initialPage)
+    }
 
     SideEffect {
-        initialPage = pageState.currentPage
+        initialPage = currentPageIndex
     }
 
-    CompositionLocalProvider(LocalTopAppBarScrollBehavior provides scrollBehavior) {
-        Scaffold(
-            topBar = {
-
-                HomeTopAppBar(
-                    scrollBehavior = scrollBehavior,
-                    label = page.topBarLabel,
-                    onSearch = {
-                        nav.navigate("${SEARCH}/${page.router}")
-                    },
-                    isShowSearch = page.isShowSearch
-                )
-            },
-            bottomBar = {
-                NavigationBar(
-                    containerColor = MaterialTheme.colorScheme.primary
-                ){
-                    for (i in pageItems.indices){
-                        val selected = pageState.currentPage == i
-                        NavigationBarItem(
-                            colors = NavigationBarItemDefaults.colors(
-                                indicatorColor = MaterialTheme.colorScheme.primary,
-                                selectedIconColor = MaterialTheme.colorScheme.onPrimary,
-                                selectedTextColor = MaterialTheme.colorScheme.onPrimary,
-                                unselectedIconColor = MaterialTheme.colorScheme.onPrimary,
-                                unselectedTextColor = MaterialTheme.colorScheme.onPrimary
-                            ),
-                            alwaysShowLabel = false,
-                            selected = selected,
-                            onClick = {
-                                scope.launch {
-                                    pageState.animateScrollToPage(i)
+    Scaffold(
+        contentWindowInsets = WindowInsets(0.dp),
+        bottomBar = {
+            NavigationBar(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+            ){
+                for (i in pageItems.indices){
+                    val selected = currentPageIndex == i
+                    NavigationBarItem(
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = MaterialTheme.colorScheme.onSecondary,
+                            selectedTextColor = MaterialTheme.colorScheme.secondary,
+                            unselectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            unselectedTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            indicatorColor = MaterialTheme.colorScheme.secondary
+                        ),
+                        alwaysShowLabel = false,
+                        selected = selected,
+                        onClick = {
+                            scope.launch {
+                                homeNavController.navigate(pageItems[i].router){
+                                    // Pop up to the start destination of the graph to
+                                    // avoid building up a large stack of destinations
+                                    // on the back stack as users select items
+                                    popUpTo(homeNavController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    // Avoid multiple copies of the same destination when
+                                    // reselecting the same item
+                                    launchSingleTop = true
+                                    // Restore state when reselecting a previously selected item
+                                    restoreState = true
                                 }
-                            },
-                            icon = {
-                                pageItems[i].icon()
-                            },
-                            label = {
-                                pageItems[i].tabLabel()
+                                currentPageIndex = i
                             }
-                        )
-                    }
+                        },
+                        icon = {
+                            pageItems[i].icon()
+                        },
+                        label = {
+                            pageItems[i].tabLabel()
+                        }
+                    )
                 }
-            },
-            content = { padding ->
-                HorizontalPager(
-                    modifier = Modifier
-                        .padding(padding)
-                        .nestedScroll(scrollBehavior.nestedScrollConnection),
-                    count = pageItems.size,
-                    state = pageState,
-                ) {
-                    pageItems[it].content()
-                }
-
             }
-        )
-    }
+        },
+        content = {padding ->
+            NavHost(homeNavController, startDestination = pageItems[currentPageIndex].router, Modifier.padding(padding)) {
+                composable(HomePage.Anim.router) {
+                    AnimPage()
+                }
+                composable(HomePage.Comic.router) {
+
+                }
+                composable(HomePage.Novel.router) {
+
+                }
+                composable(HomePage.Setting.router) {
+                    SettingPage()
+                }
+            }
+        }
+    )
 }

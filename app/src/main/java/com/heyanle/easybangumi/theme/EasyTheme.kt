@@ -68,17 +68,25 @@ fun EasyTheme(
         val colorScheme = when {
             isDynamic -> {
                 val context = LocalContext.current
-                val old = if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-                old.copy(
-                    primaryContainer = old.primary,
-                    onPrimaryContainer = old.onPrimary,
-                    secondaryContainer = old.secondary,
-                    onSecondaryContainer = old.onSecondary,
-                )
+                if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+
             }
             else -> {
                 Log.d("EasyTheme", it.themeMode.name)
-                it.themeMode.getColorScheme(isDark)
+                val old = it.themeMode.getColorScheme(isDark)
+                // 不想搞 md3 配色
+                old.copy(
+                    primaryContainer = old.background,
+                    onPrimaryContainer = old.onBackground,
+                    secondaryContainer = old.surface,
+                    onSecondaryContainer = old.onSurface,
+                    tertiary = old.secondary,
+                    tertiaryContainer = old.secondary,
+                    onTertiary = old.onSecondary,
+                    onTertiaryContainer = old.onSecondary,
+                    surfaceVariant = old.surface,
+                    onSurfaceVariant = old.onSurface
+                )
             }
         }
 
@@ -86,7 +94,7 @@ fun EasyTheme(
         val view = LocalView.current
         if (!view.isInEditMode) {
             SideEffect {
-                uiController.setSystemBarsColor(Color.Transparent, false)
+                uiController.setSystemBarsColor(Color.Transparent, if(isDynamic) isDark else false)
             }
         }
 
