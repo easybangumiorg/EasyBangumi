@@ -58,7 +58,7 @@ val DarkOnSurface = Color.White
 
 val LightOnPrimary = Color.White
 val LightOnSecondary = Color.White
-val LightOnBackground = Color.White
+val LightOnBackground = Color.Black
 val LightOnSurface = Color.Black
 val LightBackground = Color(0xFFf0f0f0)
 val LightSurface = Color.White

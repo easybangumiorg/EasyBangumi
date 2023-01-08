@@ -2,17 +2,32 @@ package com.heyanle.easybangumi.ui.common
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.*
+import androidx.compose.material.DismissDirection
+import androidx.compose.material.DismissState
+import androidx.compose.material.DismissValue
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.SwipeToDismiss
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.heyanle.easybangumi.R
+import com.heyanle.easybangumi.theme.DarkMode
+import com.heyanle.easybangumi.theme.EasyThemeController
 import com.heyanle.easybangumi.utils.stringRes
 import kotlinx.coroutines.*
 
@@ -52,6 +67,12 @@ fun MoeSnackBar(modifier: Modifier = Modifier) {
             .wrapContentHeight(Alignment.Top)
             .verticalScroll(rememberScrollState())
     ) {
+        val state by EasyThemeController.easyThemeState
+        val isDark = when(state.darkMode){
+            DarkMode.Dark -> true
+            DarkMode.Light -> false
+            else -> isSystemInDarkTheme()
+        }
         moeSnackBarQueue.forEach {
             LaunchedEffect(it) {
                 it.show.value = true
@@ -75,15 +96,13 @@ fun MoeSnackBar(modifier: Modifier = Modifier) {
                     if (it.content != null) it.content.run { this(it) } else {
                         Snackbar(
                             modifier = it.modifier,
-                            backgroundColor = MaterialTheme.colors.background,
-                            contentColor = MaterialTheme.colors.contentColorFor(MaterialTheme.colors.background),
                             action = {
                                 Row {
                                     it.onConfirm?.run {
                                         TextButton({
                                             it.isConfirmPressed = true
                                             this(it)
-                                        }) { Text(it.confirmLabel) }
+                                        }) { Text(it.confirmLabel, color = MaterialTheme.colorScheme.secondary) }
                                     }
                                     it.onCancel?.run {
                                         TextButton({
@@ -100,13 +119,17 @@ fun MoeSnackBar(modifier: Modifier = Modifier) {
                 }
             }
         }
-        if (moeSnackBarQueue.size > 0) Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentWidth(Alignment.CenterHorizontally)
-                .padding(8.dp),
-            shape = RoundedCornerShape(32.dp),
-            elevation = 4.dp,
+        if (moeSnackBarQueue.size > 0)
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentWidth(Alignment.CenterHorizontally)
+                    .padding(8.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = SnackbarDefaults.color,
+                    contentColor = SnackbarDefaults.contentColor,
+                ),
+                elevation = CardDefaults.cardElevation(4.dp)
         ) {
             Text(
                 stringRes(R.string.info_moesnackbar_swipe),
