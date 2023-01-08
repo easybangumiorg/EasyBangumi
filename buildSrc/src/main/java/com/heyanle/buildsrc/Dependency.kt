@@ -1,6 +1,5 @@
 package com.heyanle.buildsrc
 
-import org.apache.tools.ant.taskdefs.optional.depend.Depend
 import org.gradle.api.artifacts.dsl.DependencyHandler
 
 /**
@@ -11,7 +10,7 @@ import org.gradle.api.artifacts.dsl.DependencyHandler
 object Version {
     const val androidx_activity_ktx = "1.5.0"
     const val androidx_fragment_ktx = "1.5.3"
-    const val androidx_core_ktx = "1.8.0"
+    const val androidx_core_ktx = "1.9.0"
     const val androidx_appcompat = "1.5.0"
     const val androidx_room = "2.4.2"
     const val google_material = "1.6.1"
@@ -31,6 +30,16 @@ object Version {
     const val androidx_lifecycle_runtime_ktx = "2.5.1"
 
     const val exoplayer = "2.18.1"
+
+    const val easy_player = "2.0"
+
+    const val compose_bom = "2022.10.00"
+
+    const val accompanist = "0.28.0"
+
+    const val navigation_compose = "2.5.3"
+
+    const val coil = "2.2.2"
 }
 // AndroidX basic
 const val androidXCoreKtx = "androidx.core:core-ktx:${Version.androidx_core_ktx}"
@@ -136,4 +145,55 @@ fun DependencyHandler.exoplayer(){
 const val exoplayer_rtmp = "com.google.android.exoplayer:extension-rtmp:${Version.exoplayer}"
 fun DependencyHandler.exoplayerRtmp(){
     add(implementation, exoplayer_rtmp)
+}
+
+const val easy_player = "com.github.heyanLE.EasyPlayer:eplayer-core:${Version.easy_player}"
+fun DependencyHandler.easyPlayer(){
+    add(implementation, easy_player)
+}
+
+const val composeBom = "androidx.compose:compose-bom:${Version.compose_bom}"
+const val composeUI = "androidx.compose.ui:ui"
+const val composeUIGraphics = "androidx.compose.ui:ui-graphics"
+const val composeUIToolingPreview = "androidx.compose.ui:ui-tooling-preview"
+const val composeMaterial3 = "androidx.compose.material3:material3"
+
+const val composeUITestJunit4 = "androidx.compose.ui:ui-test-junit4"
+const val composeUITooling = "androidx.compose.ui:ui-tooling"
+const val composeUITestManifest = "androidx.compose.ui:ui-test-manifest"
+fun DependencyHandler.compose(){
+    add(implementation, platform(composeBom))
+    add(implementation, composeUI)
+    add(implementation, composeUIGraphics)
+    add(implementation, composeUIToolingPreview)
+    add(implementation, composeMaterial3)
+
+    add(androidTestImplementation, platform(composeBom))
+    add(androidTestImplementation, composeUITestJunit4)
+    add(debugImplementation, composeUITooling)
+    add(debugImplementation, composeUITestManifest)
+    implementation("androidx.compose.material:material-icons-core")
+    implementation("androidx.compose.material:material-icons-extended")
+}
+
+fun DependencyHandler.accompanist(){
+    implementation("com.google.accompanist:accompanist-navigation-animation:${Version.accompanist}")
+    implementation("com.google.accompanist:accompanist-systemuicontroller:${Version.accompanist}")
+    implementation("com.google.accompanist:accompanist-pager:${Version.accompanist}")
+    implementation("com.google.accompanist:accompanist-pager-indicators:${Version.accompanist}")
+    implementation("com.google.accompanist:accompanist-swiperefresh:${Version.accompanist}")
+    implementation("com.google.accompanist:accompanist-insets:${Version.accompanist}")
+    implementation("com.google.accompanist:accompanist-insets-ui:${Version.accompanist}")
+    implementation("com.google.accompanist:accompanist-flowlayout:${Version.accompanist}")
+}
+
+fun DependencyHandler.navigationCompose(){
+    implementation ("androidx.navigation:navigation-compose:${Version.navigation_compose}")
+}
+
+fun DependencyHandler.coil(){
+    implementation("io.coil-kt:coil-compose:${Version.coil}")
+}
+fun DependencyHandler.coilGif(){
+    implementation("io.coil-kt:coil-gif:${Version.coil}")
 }

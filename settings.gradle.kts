@@ -1,8 +1,8 @@
 pluginManagement {
     repositories {
-        gradlePluginPortal()
         google()
         mavenCentral()
+        gradlePluginPortal()
     }
 }
 dependencyResolutionManagement {
@@ -15,9 +15,5 @@ dependencyResolutionManagement {
 }
 rootProject.name = "EasyBangumi"
 include (":app")
+include (":easy-crasher")
 include(":lib-anim")
-include(":easy-lightdark")
-include(":easy-media")
-include(":easy-crasher")
-include(":easy-view")
-include(":easy-player")

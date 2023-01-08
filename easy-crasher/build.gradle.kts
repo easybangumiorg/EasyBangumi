@@ -1,5 +1,6 @@
 import com.heyanle.buildsrc.androidXBasic
 import com.heyanle.buildsrc.junit
+import com.heyanle.buildsrc.Android
 
 plugins {
     id("com.android.library")
@@ -7,11 +8,12 @@ plugins {
 }
 
 android {
-    compileSdk = 32
+    namespace = "com.heyanle.easy_crasher"
+    compileSdk = Android.compileSdk
 
     defaultConfig {
-        minSdk = 21
-        targetSdk = 32
+        minSdk = Android.minSdk
+        targetSdk = Android.compileSdk
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
