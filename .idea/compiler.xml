@@ -2,11 +2,11 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel target="1.8">
-      <module name="EasyBangumi.app" target="11" />
-      <module name="EasyBangumi.buildSrc" target="11" />
-      <module name="EasyBangumi.buildSrc.main" target="11" />
-      <module name="EasyBangumi.buildSrc.test" target="11" />
-      <module name="EasyBangumi.easy-crasher" target="11" />
+      <module name="EasyBangumi.app" target="17" />
+      <module name="EasyBangumi.buildSrc" target="17" />
+      <module name="EasyBangumi.buildSrc.main" target="17" />
+      <module name="EasyBangumi.buildSrc.test" target="17" />
+      <module name="EasyBangumi.easy-crasher" target="17" />
       <module name="EasyBangumi.easy-lightdark" target="11" />
       <module name="EasyBangumi.easy-media" target="11" />
       <module name="EasyBangumi.easy-player" target="11" />
