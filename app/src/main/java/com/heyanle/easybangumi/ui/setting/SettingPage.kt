@@ -61,7 +61,6 @@ import com.heyanle.easybangumi.ui.common.HomeTopAppBar
 import com.heyanle.easybangumi.ui.common.MoeSnackBar
 import com.heyanle.easybangumi.ui.common.moeSnackBar
 import com.heyanle.easybangumi.ui.common.show
-import com.heyanle.easybangumi.ui.home.LocalTopAppBarScrollBehavior
 import com.heyanle.easybangumi.utils.stringRes
 import com.heyanle.easybangumi.utils.toast
 
@@ -112,7 +111,6 @@ fun ThemeSettingCard(
 
     Column(
         modifier = Modifier
-            .background(MaterialTheme.colorScheme.secondaryContainer)
             .then(modifier),
     ) {
 

@@ -66,9 +66,9 @@ fun Nav() {
             }
 
             navigation(ANIM, SEARCH){
-                composable(ANIM){}
-                composable(COMIC){}
-                composable(NOVEL){}
+                composable("${SEARCH}/${ANIM}"){}
+                composable("${SEARCH}/${COMIC}"){}
+                composable("${SEARCH}/${NOVEL}"){}
             }
 
 
