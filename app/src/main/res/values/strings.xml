@@ -32,4 +32,12 @@
     <string name="is_dynamic_color_msg">获取系统指定配色</string>
 
     <string name="dynamic_color_enable_msg">动态配色开启成功，如显示异常请关闭。</string>
+
+    <string name="home">主页</string>
+    <string name="my_anim">追番</string>
+    <string name="mine_history">历史</string>
+
+    <string name="net_error">网络错误</string>
+    <string name="click_to_refresh">点击刷新</string>
+    <string name="click_to_retry">点击重试</string>
 </resources>

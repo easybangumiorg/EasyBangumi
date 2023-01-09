@@ -74,4 +74,5 @@ dependencies {
     coilGif()
 
     implementation(project(":easy-crasher"))
+    implementation(project(":lib-anim"))
 }

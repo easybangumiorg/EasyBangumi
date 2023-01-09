@@ -1,6 +1,10 @@
 package com.heyanle.easybangumi.theme
 
+import android.annotation.SuppressLint
 import android.os.Build
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.mutableStateOf
 import com.heyanle.okkv2.core.okkv
 
@@ -17,7 +21,18 @@ data class EasyThemeState(
     val themeMode: EasyThemeMode,
     val darkMode: DarkMode,
     val isDynamicColor: Boolean,
-)
+){
+    @SuppressLint("ComposableNaming")
+    @Composable
+    @ReadOnlyComposable
+    fun isDark(): Boolean{
+        return when(darkMode){
+            DarkMode.Dark -> true
+            DarkMode.Light -> false
+            else -> isSystemInDarkTheme()
+        }
+    }
+}
 
 
 object EasyThemeController{
