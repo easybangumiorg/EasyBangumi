@@ -24,6 +24,7 @@ import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.heyanle.easybangumi.ui.home.Home
+import com.heyanle.easybangumi.ui.home.search.Search
 
 /**
  * Created by HeYanLe on 2023/1/7 13:38.
@@ -60,7 +61,9 @@ fun Nav() {
                 Home()
             }
 
-            composable(SEARCH){}
+            composable(SEARCH){
+                Search()
+            }
 
 
         }
