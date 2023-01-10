@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi.ui.anim.my
+package com.heyanle.easybangumi.ui.home.my
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.rememberScrollState

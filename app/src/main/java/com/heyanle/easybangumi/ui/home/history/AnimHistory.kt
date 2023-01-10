@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi.ui.anim.history
+package com.heyanle.easybangumi.ui.home.history
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn

@@ -79,6 +79,7 @@ fun WhitePage(
                             ImageDecoderDecoder.Factory()
                         else GifDecoder.Factory()
                     )
+                    .crossfade(true)
                     .data(image).build(),
                 contentDescription = message,
                 modifier = Modifier.size(64.dp)

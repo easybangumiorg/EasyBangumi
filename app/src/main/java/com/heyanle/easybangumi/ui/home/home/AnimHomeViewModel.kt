@@ -1,8 +1,7 @@
-package com.heyanle.easybangumi.ui.anim.home
+package com.heyanle.easybangumi.ui.home.home
 
 import androidx.lifecycle.ViewModel
-import com.heyanle.easybangumi.ui.anim.AnimSourceFactory
-import com.heyanle.easybangumi.utils.StatusData
+import com.heyanle.easybangumi.ui.home.AnimSourceFactory
 import com.heyanle.lib_anim.ISourceParser
 import com.heyanle.lib_anim.entity.Bangumi
 import com.heyanle.okkv2.core.okkv
@@ -45,7 +44,11 @@ class AnimHomeViewModel(
     val homeTitle = AnimSourceFactory.labels()
 
     private var okkvCurrentHomeSourceIndex by okkv<Int>(OKKV_KEY_SOURCE_INDEX, 0)
-    private val eventFlow = MutableStateFlow<HomeAnimEvent>(HomeAnimEvent.RefreshTab(okkvCurrentHomeSourceIndex))
+    private val eventFlow = MutableStateFlow<HomeAnimEvent>(
+        HomeAnimEvent.RefreshTab(
+            okkvCurrentHomeSourceIndex
+        )
+    )
 
     private val homeData = HashMap<Int, LinkedHashMap<String, List<Bangumi>>>()
 
@@ -57,7 +60,15 @@ class AnimHomeViewModel(
             // 下标对应番剧源检查
             val keys = AnimSourceFactory.homeKeys()
             if(keys.isEmpty() || index < 0 || index >= keys.size){
-                emit(HomeAnimState.Error(index, ISourceParser.ParserResult.Error(IllegalAccessException("Source not found"), false)))
+                emit(
+                    HomeAnimState.Error(
+                        index,
+                        ISourceParser.ParserResult.Error(
+                            IllegalAccessException("Source not found"),
+                            false
+                        )
+                    )
+                )
                 return@collect
             }
             // buffer, ChangeTab 事件才尝试走代理
@@ -67,7 +78,7 @@ class AnimHomeViewModel(
                     ks.add(t)
                 }
                 // 加载成功
-                emit(HomeAnimState.Completely(index, homeData[index]?: linkedMapOf(), ks))
+                emit(HomeAnimState.Completely(index, homeData[index] ?: linkedMapOf(), ks))
             }else{
                 val res = AnimSourceFactory.home(keys[index])?.home()
                 if(eventFlow.value.currentIndex != index){
@@ -80,7 +91,15 @@ class AnimHomeViewModel(
                 }
                 if(res == null){
                     // 加载失败
-                    emit(HomeAnimState.Error(index,ISourceParser.ParserResult.Error(IllegalAccessException("Result is null"), true) ))
+                    emit(
+                        HomeAnimState.Error(
+                            index,
+                            ISourceParser.ParserResult.Error(
+                                IllegalAccessException("Result is null"),
+                                true
+                            )
+                        )
+                    )
                 }else{
                     res.complete {
                         homeData[index] = it.data
