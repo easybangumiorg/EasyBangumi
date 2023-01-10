@@ -36,14 +36,9 @@ val LocalNavController = staticCompositionLocalOf<NavHostController> {
 
 
 const val HOME = "home"
-const val ANIM_PLAY = "anim_play"
 const val SEARCH = "search"
 
 const val ANIM = "anim"
-const val COMIC = "comic"
-const val NOVEL = "novel"
-
-const val SETTING = "setting"
 
 // 缺省路由
 const val DEFAULT = HOME
@@ -65,11 +60,7 @@ fun Nav() {
                 Home()
             }
 
-            navigation(ANIM, SEARCH){
-                composable("${SEARCH}/${ANIM}"){}
-                composable("${SEARCH}/${COMIC}"){}
-                composable("${SEARCH}/${NOVEL}"){}
-            }
+            composable(SEARCH){}
 
 
         }

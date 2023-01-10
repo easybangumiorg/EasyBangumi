@@ -2,11 +2,14 @@ package com.heyanle.easybangumi.ui.common
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
@@ -38,19 +41,25 @@ fun HomeTabRow(
 
     val isUseSecondary = themeState.isDark() && !(themeState.isDynamicColor && EasyThemeController.isSupportDynamicColor())
 
-    TabRow(
-        selectedTabIndex = selectedTabIndex,
-        containerColor = MaterialTheme.colorScheme.primary,
-        contentColor = MaterialTheme.colorScheme.onPrimary,
-        tabs = tabs,
-        divider = {},
-        indicator = { tabPositions ->
-            TabRowDefaults.Indicator(
-                Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
-                color = if(isUseSecondary) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onPrimary
+    Surface(
+        shadowElevation = 4.dp
+    ){
+        TabRow(
+            selectedTabIndex = selectedTabIndex,
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+            tabs = tabs,
+            divider = {},
+            indicator = { tabPositions ->
+                TabRowDefaults.Indicator(
+                    Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
+                    color = if(isUseSecondary) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onPrimary
+                )
+            },
+
             )
-        },
-    )
+    }
+
 }
 
 @Composable
@@ -76,30 +85,32 @@ fun KeyTabRow(
     selectedTabIndex: Int,
     selectedContainerColor: Color = MaterialTheme.colorScheme.secondary,
     selectedContentColor: Color = MaterialTheme.colorScheme.onSecondary,
-    unselectedContainerColor: Color = MaterialTheme.colorScheme.primaryContainer,
-    unselectedContentColor: Color = MaterialTheme.colorScheme.onPrimaryContainer,
+    unselectedContainerColor: Color = MaterialTheme.colorScheme.background,
+    unselectedContentColor: Color = MaterialTheme.colorScheme.onBackground,
     textList: List<String>,
     onItemClick: (Int)->Unit,
 ){
 
     LazyRow(
-        modifier = Modifier.padding(0.dp, 8.dp)
+        modifier = Modifier.padding(2.dp, 0.dp),
+
     ){
         items(textList.size){
             val selected = it == selectedTabIndex
-            Box(modifier = Modifier
-                .clip(
-                    CircleShape
-                )
-                .background(if(selected) selectedContainerColor else unselectedContainerColor)
-                .clickable {
-                    onItemClick(it)
-                }
-                .padding(8.dp, 4.dp)
-
-            ){
+            Surface(
+                shadowElevation = 4.dp,
+                shape = CircleShape,
+                modifier =
+                    Modifier
+                        .padding(2.dp, 8.dp)
+                        ,
+                color = if (selected) selectedContainerColor else unselectedContainerColor,
+            ) {
                 Text(
-                    color = if(selected) selectedContentColor else unselectedContentColor,
+                    modifier = Modifier.clip(CircleShape).clickable {
+                        onItemClick(it)
+                    }.padding(8.dp, 4.dp),
+                    color = if (selected) selectedContentColor else unselectedContentColor,
                     fontWeight = FontWeight.W900,
                     text = textList[it],
                     fontSize = 12.sp,

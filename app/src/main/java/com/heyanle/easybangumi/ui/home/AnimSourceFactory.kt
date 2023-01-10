@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi.ui.anim
+package com.heyanle.easybangumi.ui.home
 
 import com.heyanle.lib_anim.*
 import com.heyanle.lib_anim.bimibimi.BimibimiParser
@@ -81,11 +81,11 @@ object AnimSourceFactory {
 
 
     fun requireHome(key: String): IHomeParser {
-        return home(key)?:throw NullPointerException("Home parser of key $key is null")
+        return home(key) ?:throw NullPointerException("Home parser of key $key is null")
     }
 
     fun requireSearch(key: String): ISearchParser {
-        return search(key)?:throw NullPointerException("Search parser of key $key is null")
+        return search(key) ?:throw NullPointerException("Search parser of key $key is null")
     }
 
     fun requireDetail(key: String): IDetailParser {

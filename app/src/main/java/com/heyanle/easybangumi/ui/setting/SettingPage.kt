@@ -73,28 +73,12 @@ import com.heyanle.easybangumi.utils.toast
 @Composable
 fun SettingPage(){
     val scope = rememberCoroutineScope()
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    Scaffold(
-        topBar = {
-            HomeTopAppBar(
-                scrollBehavior = scrollBehavior,
-                label = {
-                    Text(text = stringResource(id = R.string.setting))
-                },
-            )
-        },
-        content = {padding ->
-            Column(modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .verticalScroll(rememberScrollState())
-            ) {
-                ThemeSettingCard()
-            }
-
-        }
-    )
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .verticalScroll(rememberScrollState())
+    ) {
+        ThemeSettingCard()
+    }
 
 }
 

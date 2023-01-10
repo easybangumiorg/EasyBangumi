@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi.ui.anim.history
+package com.heyanle.easybangumi.ui.home.history
 
 import androidx.lifecycle.ViewModel
 

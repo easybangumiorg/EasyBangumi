@@ -40,4 +40,6 @@
     <string name="net_error">网络错误</string>
     <string name="click_to_refresh">点击刷新</string>
     <string name="click_to_retry">点击重试</string>
+
+    <string name="click_to_up_top">点击回到顶部</string>
 </resources>

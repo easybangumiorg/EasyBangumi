@@ -11,7 +11,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import com.heyanle.easybangumi.ui.home.pageItems
 import kotlinx.coroutines.launch
 
 /**

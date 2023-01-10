@@ -1,175 +1,159 @@
 package com.heyanle.easybangumi.ui.home
 
-import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Book
-import androidx.compose.material.icons.filled.LiveTv
-import androidx.compose.material.icons.filled.MenuBook
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavHostController
 import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.rememberPagerState
 import com.heyanle.easybangumi.ANIM
-import com.heyanle.easybangumi.COMIC
-import com.heyanle.easybangumi.NOVEL
+import com.heyanle.easybangumi.LocalNavController
 import com.heyanle.easybangumi.R
-import com.heyanle.easybangumi.SETTING
-import com.heyanle.easybangumi.ui.anim.AnimPage
-import com.heyanle.easybangumi.ui.common.HomeNavigationBar
-import com.heyanle.easybangumi.ui.common.HomeNavigationItem
+import com.heyanle.easybangumi.SEARCH
+import com.heyanle.easybangumi.ui.common.FastScrollToTopFab
+import com.heyanle.easybangumi.ui.home.history.AnimHistory
+import com.heyanle.easybangumi.ui.home.home.AnimHome
+import com.heyanle.easybangumi.ui.home.my.AnimMy
+import com.heyanle.easybangumi.ui.common.HomeTabItem
+import com.heyanle.easybangumi.ui.common.HomeTabRow
+import com.heyanle.easybangumi.ui.common.HomeTopAppBar
 import com.heyanle.easybangumi.ui.setting.SettingPage
 import com.heyanle.okkv2.core.okkv
 import kotlinx.coroutines.launch
 
 /**
- * Created by HeYanLe on 2023/1/7 16:44.
+ * Created by HeYanLe on 2023/1/7 21:52.
  * https://github.com/heyanLE
  */
 
-sealed class HomePage @OptIn(ExperimentalMaterial3Api::class) constructor(
-    val router: String,
-    val icon: @Composable () -> Unit,
+// 番剧页面相关的子页面
+sealed class HomePage(
     val tabLabel: @Composable (() -> Unit),
-    ){
-    @OptIn(ExperimentalMaterial3Api::class)
-    object Anim: HomePage(
-        router = ANIM,
-        icon = {
-            Icon(Icons.Filled.LiveTv, contentDescription = stringResource(id = R.string.watch_anim))
-        },
-        tabLabel = {
-            Text(text = stringResource(id = R.string.watch_anim))
-        },
+    val content: @Composable (()->Unit),
+){
+    //番剧主页
+    object Home: HomePage(
+        tabLabel = { Text(text = stringResource(id = R.string.home)) },
+        content = { AnimHome() }
     )
 
-    @OptIn(ExperimentalMaterial3Api::class)
-    object Comic: HomePage(
-        router = COMIC,
-        icon = {
-            Icon(Icons.Filled.Book, contentDescription = stringResource(id = R.string.read_comic))
-        },
-        tabLabel = {
-            Text(text = stringResource(id = R.string.read_comic))
-        },
+    // 我的追番
+    object My: HomePage(
+        tabLabel = { Text(text = stringResource(id = R.string.my_anim)) },
+        content = { AnimMy() }
     )
 
-    @OptIn(ExperimentalMaterial3Api::class)
-    object Novel: HomePage(
-        router = NOVEL,
-        icon = {
-            Icon(Icons.Filled.MenuBook, contentDescription = stringResource(id = R.string.read_novel))
-        },
-        tabLabel = {
-            Text(text = stringResource(id = R.string.read_novel))
-        },
+    // 历史记录
+    object History: HomePage(
+        tabLabel = { Text(text = stringResource(id = R.string.mine_history)) },
+        content = { AnimHistory() }
     )
 
-    @OptIn(ExperimentalMaterial3Api::class)
     object Setting: HomePage(
-        router = SETTING,
-        icon = {
-            Icon(Icons.Filled.Settings, contentDescription = stringResource(id = R.string.setting))
-        },
-        tabLabel = {
-            Text(text = stringResource(id = R.string.setting))
-        },
+        tabLabel = { Text(text = stringResource(id = R.string.setting)) },
+        content = { SettingPage() }
     )
 }
-val pageItems = listOf(
-    HomePage.Anim,
-    HomePage.Comic,
-    HomePage.Novel,
-    HomePage.Setting,
+
+val animSubPageItems = listOf(
+    HomePage.Home,
+    HomePage.My,
+    HomePage.History,
+    HomePage.Setting
 )
 
-var homeInitialPage by okkv("homeInitialPage", 0)
-
+var animInitialPage by okkv("animInitialPage", 0)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class)
 @Composable
-fun Home(){
-
+fun Home(
+){
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val nav = LocalNavController.current
     val scope = rememberCoroutineScope()
 
-    val homeNavController = rememberNavController()
+    val pagerState = rememberPagerState(
+        initialPage = animInitialPage
+    )
 
-    var currentPageIndex by remember {
-        mutableStateOf(homeInitialPage)
+    LaunchedEffect(key1 = Unit){
+        pagerState.scrollToPage(animInitialPage)
     }
 
 
     Scaffold(
-        contentWindowInsets = WindowInsets(0.dp),
-        bottomBar = {
-            HomeNavigationBar {
-                for (i in pageItems.indices){
-                    val selected = currentPageIndex == i
-                    HomeNavigationItem(
-                        selected = selected,
-                        icon = { pageItems[i].icon() },
-                        label = { pageItems[i].tabLabel() },
-                        onClick = {
-                            scope.launch {
-                                homeNavController.navigate(pageItems[i].router){
-                                    // Pop up to the start destination of the graph to
-                                    // avoid building up a large stack of destinations
-                                    // on the back stack as users select items
-                                    popUpTo(homeNavController.graph.findStartDestination().id) {
-                                        saveState = true
-                                    }
-                                    // Avoid multiple copies of the same destination when
-                                    // reselecting the same item
-                                    launchSingleTop = true
-                                    // Restore state when reselecting a previously selected item
-                                    restoreState = true
-                                }
-                                currentPageIndex = i
-                            }
-                        }
-                    )
+        topBar = {
+            HomeTopAppBar(
+                scrollBehavior = scrollBehavior,
+                label = {
+                    Text(text = stringResource(id = R.string.anim_title))
+                },
+                isShowSearch = true,
+                onSearch = {
+                    scope.launch {
+                        nav.navigate(SEARCH)
+                    }
+
                 }
-            }
+            )
         },
-        content = {padding ->
+        content = { padding ->
+
             SideEffect {
-                homeInitialPage = currentPageIndex
+                animInitialPage = pagerState.currentPage
             }
-            NavHost(homeNavController, startDestination = pageItems[currentPageIndex].router, Modifier.padding(padding)) {
-                composable(HomePage.Anim.router) {
-                    AnimPage()
-                }
-                composable(HomePage.Comic.router) {
 
-                }
-                composable(HomePage.Novel.router) {
+            Column(modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
 
+                ) {
+                HomeTabRow(selectedTabIndex = pagerState.currentPage) {
+                    for(i in animSubPageItems.indices){
+                        HomeTabItem(
+                            selected = i == pagerState.currentPage,
+                            text = animSubPageItems[i].tabLabel,
+                            onClick = {
+                                scope.launch {
+                                    pagerState.animateScrollToPage(i)
+                                }
+                            }
+                        )
+                    }
                 }
-                composable(HomePage.Setting.router) {
-                    SettingPage()
+
+                HorizontalPager(
+                    modifier = Modifier,
+                    state = pagerState,
+                    count = animSubPageItems.size
+                ) {
+                    animSubPageItems[it].content()
                 }
+
             }
+
+
+
+
         }
     )
+
 }
