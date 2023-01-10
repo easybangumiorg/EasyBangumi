@@ -58,6 +58,7 @@ import com.heyanle.easybangumi.ui.common.ErrorPage
 import com.heyanle.easybangumi.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi.ui.common.KeyTabRow
 import com.heyanle.easybangumi.ui.common.LoadingPage
+import com.heyanle.easybangumi.ui.common.OkImage
 import com.heyanle.easybangumi.ui.common.ScrollHeaderBox
 
 /**
@@ -171,15 +172,9 @@ fun LazyListScope.animHomePage(state: AnimHomeViewModel.HomeAnimState.Completely
                         .padding(4.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    AsyncImage(
-                        model = ImageRequest
-                            .Builder(LocalContext.current)
-                            .data(item.cover)
-                            .placeholder(ColorDrawable(MaterialTheme.colorScheme.secondaryContainer.toArgb()))
-                            .crossfade(true)
-                            .build(),
+                    OkImage(
+                        image = item.cover,
                         contentDescription = item.name,
-                        contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .height(135.dp)
                             .width(95.dp)

@@ -42,12 +42,13 @@ fun HomeTabRow(
     val isUseSecondary = themeState.isDark() && !(themeState.isDynamicColor && EasyThemeController.isSupportDynamicColor())
 
     Surface(
-        shadowElevation = 4.dp
+        shadowElevation = 4.dp,
+        color = MaterialTheme.colorScheme.primary,
     ){
         TabRow(
             selectedTabIndex = selectedTabIndex,
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary,
+            containerColor = Color.Transparent,
+            contentColor = Color.Transparent,
             tabs = tabs,
             divider = {},
             indicator = { tabPositions ->
@@ -55,9 +56,7 @@ fun HomeTabRow(
                     Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
                     color = if(isUseSecondary) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onPrimary
                 )
-            },
-
-            )
+            },)
     }
 
 }
