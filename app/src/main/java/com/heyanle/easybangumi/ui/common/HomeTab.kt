@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.heyanle.easybangumi.theme.EasyThemeController
@@ -41,24 +42,19 @@ fun HomeTabRow(
 
     val isUseSecondary = themeState.isDark() && !(themeState.isDynamicColor && EasyThemeController.isSupportDynamicColor())
 
-    Surface(
-        shadowElevation = 4.dp,
-        color = MaterialTheme.colorScheme.primary,
-    ){
-        ScrollableTabRow(
-            edgePadding = 0.dp,
-            selectedTabIndex = selectedTabIndex,
-            containerColor = Color.Transparent,
-            contentColor = Color.Transparent,
-            tabs = tabs,
-            divider = {},
-            indicator = { tabPositions ->
-                TabRowDefaults.Indicator(
-                    Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
-                    color = if(isUseSecondary) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onPrimary
-                )
-            },)
-    }
+    ScrollableTabRow(
+        edgePadding = 0.dp,
+        selectedTabIndex = selectedTabIndex,
+        containerColor = MaterialTheme.colorScheme.primary,
+        contentColor = Color.Transparent,
+        tabs = tabs,
+        divider = {},
+        indicator = { tabPositions ->
+            TabRowDefaults.Indicator(
+                Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
+                color = if(isUseSecondary) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onPrimary
+            )
+        },)
 
 }
 

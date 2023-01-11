@@ -27,6 +27,7 @@ import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.heyanle.easybangumi.ui.home.Home
 import com.heyanle.easybangumi.ui.home.search.Search
 import com.heyanle.easybangumi.ui.player.Play
+import com.heyanle.lib_anim.entity.Bangumi
 
 /**
  * Created by HeYanLe on 2023/1/7 13:38.
@@ -45,6 +46,18 @@ const val PLAY = "play"
 
 // 缺省路由
 const val DEFAULT = HOME
+
+fun NavHostController.navigationSearch(keyword: String){
+    navigate("${SEARCH}?keyword=${keyword}")
+}
+
+fun NavHostController.navigationPlay(bangumi: Bangumi){
+    navigationPlay(bangumi.source, bangumi.detailUrl)
+}
+
+fun NavHostController.navigationPlay(source: String, detailUrl: String){
+    navigate("${PLAY}?source=${source}&detailUrl=${detailUrl}")
+}
 
 
 @OptIn(ExperimentalAnimationApi::class)

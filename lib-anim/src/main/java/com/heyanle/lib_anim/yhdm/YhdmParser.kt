@@ -163,8 +163,8 @@ class YhdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISe
             }
             kotlin.runCatching {
                 val id = "${getLabel()}-${bangumi.detailUrl}"
-                val name = doc.select("div.fire div.rete h1")[0].text()
-                val intro = doc.select("div.fire div.rete div.sinfo p")[0].text()
+                val name = doc.select("div.fire div.rate h1")[0].text()
+                val intro = doc.select("div.fire div.rate div.sinfo p")[0].text()
                 val cover = url(doc.select("div.fire.l div.thumb.l img")[0].attr("src"))
                 val description = doc.getElementsByClass("info")[0].text()
                 return@withContext ISourceParser.ParserResult.Complete( BangumiDetail(

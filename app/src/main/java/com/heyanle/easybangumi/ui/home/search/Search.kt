@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -32,11 +33,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.insets.statusBarsHeight
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.heyanle.easybangumi.LocalNavController
 import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.ui.common.HomeTabItem
@@ -76,6 +79,8 @@ fun Search(
 
     val vm = viewModel<SearchViewModel>()
 
+    val uiController = rememberSystemUiController()
+
     LaunchedEffect(key1 = Unit){
         pagerState.scrollToPage(animInitialPage)
     }
@@ -84,12 +89,13 @@ fun Search(
         mutableStateOf(false)
     }
 
+
+
     Scaffold(
         containerColor = Color.Transparent,
         contentColor = MaterialTheme.colorScheme.onBackground,
         topBar = {
             SearchTopBar(
-                modifier = Modifier.systemBarsPadding(),
                 placeholder = {
                     Text(text = stringResource(id = R.string.anim_search))
                 },
@@ -135,6 +141,7 @@ fun Search(
                                 )
                             }
                         }
+
                     }) { padding ->
                     HorizontalPager(
                         modifier = Modifier.fillMaxHeight(),

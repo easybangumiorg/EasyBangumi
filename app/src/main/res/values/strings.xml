@@ -50,4 +50,7 @@
 
     <string name="please_input_keyword_to_search">请输入关键字搜索</string>
     <string name="list_most_bottom">已经结束拉！</string>
+
+    <string name="loading_error">加载错误</string>
+    <string name="source_error">番剧源报错</string>
 </resources>

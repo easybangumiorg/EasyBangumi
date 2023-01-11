@@ -1,7 +1,7 @@
 package com.heyanle.easybangumi.ui.home.home
 
 import androidx.lifecycle.ViewModel
-import com.heyanle.easybangumi.ui.home.AnimSourceFactory
+import com.heyanle.easybangumi.source.AnimSourceFactory
 import com.heyanle.lib_anim.ISourceParser
 import com.heyanle.lib_anim.entity.Bangumi
 import com.heyanle.okkv2.core.okkv

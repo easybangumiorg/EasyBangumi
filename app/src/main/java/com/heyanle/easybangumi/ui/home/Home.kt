@@ -3,6 +3,7 @@ package com.heyanle.easybangumi.ui.home
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
@@ -12,6 +13,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -24,11 +26,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
-import com.heyanle.easybangumi.ANIM
 import com.heyanle.easybangumi.LocalNavController
 import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.SEARCH
@@ -106,34 +108,20 @@ fun Home(
         containerColor = Color.Transparent,
         contentColor = MaterialTheme.colorScheme.onBackground,
         topBar = {
-            HomeTopAppBar(
-                scrollBehavior = scrollBehavior,
-                label = {
-                    Text(text = stringResource(id = R.string.anim_title))
-                },
-                isShowSearch = true,
-                onSearch = {
-                    scope.launch {
-                        nav.navigate(SEARCH)
+            Column() {
+                HomeTopAppBar(
+                    scrollBehavior = scrollBehavior,
+                    label = {
+                        Text(text = stringResource(id = R.string.anim_title))
+                    },
+                    isShowSearch = true,
+                    onSearch = {
+                        scope.launch {
+                            nav.navigate(SEARCH)
+                        }
+
                     }
-
-                }
-            )
-        },
-        content = { padding ->
-
-            Log.d("Home", padding.calculateTopPadding().value.toString())
-            SideEffect {
-                animInitialPage = pagerState.currentPage
-            }
-
-            Column(modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .background(MaterialTheme.colorScheme.background)
-                .nestedScroll(scrollBehavior.nestedScrollConnection),
-
-                ) {
+                )
                 HomeTabRow(selectedTabIndex = pagerState.currentPage) {
                     for(i in animSubPageItems.indices){
                         HomeTabItem(
@@ -147,9 +135,40 @@ fun Home(
                         )
                     }
                 }
+            }
+
+
+        },
+        content = { padding ->
+
+            Log.d("Home", padding.calculateTopPadding().value.toString())
+            SideEffect {
+                animInitialPage = pagerState.currentPage
+            }
+
+            Column(modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Transparent)
+                .padding(padding)
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
+
+                ) {
+//                HomeTabRow(selectedTabIndex = pagerState.currentPage) {
+//                    for(i in animSubPageItems.indices){
+//                        HomeTabItem(
+//                            selected = i == pagerState.currentPage,
+//                            text = animSubPageItems[i].tabLabel,
+//                            onClick = {
+//                                scope.launch {
+//                                    pagerState.animateScrollToPage(i)
+//                                }
+//                            }
+//                        )
+//                    }
+//                }
 
                 HorizontalPager(
-                    modifier = Modifier,
+                    modifier = Modifier.background(MaterialTheme.colorScheme.background),
                     state = pagerState,
                     count = animSubPageItems.size
                 ) {

@@ -177,7 +177,7 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
                 val tit = doc.select("div.txt_intro_con div.tit")[0]
                 val name = tit.child(0).text()
                 val intro = tit.child(1).text()
-                val cover = url(doc.select("div.v_pic img")[0].attr("src"))
+                val cover = url(doc.select("div.poster_placeholder div.v_pic img")[0].attr("src"))
                 val description = doc.getElementsByClass("vod-jianjie")[0].text()
                 return@withContext  ISourceParser.ParserResult.Complete(
                     BangumiDetail(

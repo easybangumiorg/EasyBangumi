@@ -49,7 +49,9 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemsIndexed
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.PagerState
+import com.heyanle.easybangumi.LocalNavController
 import com.heyanle.easybangumi.R
+import com.heyanle.easybangumi.navigationPlay
 import com.heyanle.easybangumi.ui.common.EmptyPage
 import com.heyanle.easybangumi.ui.common.ErrorPage
 import com.heyanle.easybangumi.ui.common.LoadingPage
@@ -103,6 +105,7 @@ fun SearchPage(
     }
     val state by controller.pagerFlow.collectAsState(initial = SearchPageController.EmptyBangumi)
     val sta = state
+    val nav = LocalNavController.current
 
     AnimatedContent(
         targetState = sta,
@@ -145,7 +148,7 @@ fun SearchPage(
                         itemsIndexed(lazyPagingItems){_, v ->
                             v?.let {
                                 BangumiSearchItem(bangumi = it){
-
+                                    nav.navigationPlay(it)
                                 }
                             }
                         }
