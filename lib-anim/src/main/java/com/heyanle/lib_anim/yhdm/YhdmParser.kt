@@ -4,6 +4,7 @@ package com.heyanle.lib_anim.yhdm
 import com.heyanle.lib_anim.*
 import com.heyanle.lib_anim.entity.Bangumi
 import com.heyanle.lib_anim.entity.BangumiDetail
+import com.heyanle.lib_anim.entity.BangumiSummary
 import com.heyanle.lib_anim.utils.OkHttpUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -152,7 +153,7 @@ class YhdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISe
         }
     }
 
-    override suspend fun detail(bangumi: Bangumi): ISourceParser.ParserResult<BangumiDetail> {
+    override suspend fun detail(bangumi: BangumiSummary): ISourceParser.ParserResult<BangumiDetail> {
         return withContext(Dispatchers.IO) {
             val doc = runCatching {
                 Jsoup.parse(OkHttpUtils.get(url(bangumi.detailUrl)))
@@ -161,13 +162,17 @@ class YhdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISe
                 return@withContext ISourceParser.ParserResult.Error(it, false)
             }
             kotlin.runCatching {
+                val id = "${getLabel()}-${bangumi.detailUrl}"
+                val name = doc.select("div.fire div.rete h1")[0].text()
+                val intro = doc.select("div.fire div.rete div.sinfo p")[0].text()
+                val cover = url(doc.select("div.fire.l div.thumb.l img")[0].attr("src"))
                 val description = doc.getElementsByClass("info")[0].text()
                 return@withContext ISourceParser.ParserResult.Complete( BangumiDetail(
-                    id = bangumi.id,
+                    id = id,
                     source = getKey(),
-                    name = bangumi.name,
-                    cover = bangumi.cover,
-                    intro = bangumi.intro,
+                    name = name,
+                    cover = cover,
+                    intro = intro,
                     detailUrl = bangumi.detailUrl,
                     description = description
                 )
@@ -180,9 +185,9 @@ class YhdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISe
         }
     }
 
-    private var bangumi: Bangumi? = null
+    private var bangumi: BangumiSummary? = null
     private val temp: ArrayList<String> = arrayListOf()
-    override suspend fun getPlayMsg(bangumi: Bangumi): ISourceParser.ParserResult<LinkedHashMap<String, List<String>>> {
+    override suspend fun getPlayMsg(bangumi: BangumiSummary): ISourceParser.ParserResult<LinkedHashMap<String, List<String>>> {
         temp.clear()
         return withContext(Dispatchers.IO) {
             val map = LinkedHashMap<String, List<String>>()
@@ -213,7 +218,7 @@ class YhdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISe
     }
 
     override suspend fun getPlayUrl(
-        bangumi: Bangumi,
+        bangumi: BangumiSummary,
         lineIndex: Int,
         episodes: Int
     ): ISourceParser.ParserResult<String> {
