@@ -19,3 +19,13 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+-keep org.bouncycastle.jsse.BCSSLParameters
+-keep org.bouncycastle.jsse.BCSSLSocket
+-keep org.bouncycastle.jsse.provider.BouncyCastleJsseProvider
+-keep org.conscrypt.Conscrypt
+-keep org.conscrypt.Conscrypt
+-keep org.conscrypt.ConscryptHostnameVerifier
+-keep org.openjsse.javax.net.ssl.SSLParameters
+-keep org.openjsse.javax.net.ssl.SSLSocket
+-keep org.openjsse.net.ssl.OpenJSSE

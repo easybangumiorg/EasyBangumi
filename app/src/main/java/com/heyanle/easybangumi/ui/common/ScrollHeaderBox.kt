@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.offset
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -18,6 +19,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import kotlin.math.absoluteValue
 
 /**
  * Created by HeYanLe on 2023/1/10 13:53.
@@ -27,6 +29,8 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun ScrollHeaderBox(
     modifier: Modifier = Modifier,
+    canScroll: (Offset)->Boolean = { true },
+    showForever: MutableState<Boolean> = mutableStateOf(false),
     header: @Composable ()->Unit,
     content: @Composable (PaddingValues) ->Unit,
 ){
@@ -39,13 +43,30 @@ fun ScrollHeaderBox(
     val nestedScrollConnection = remember {
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                if(!canScroll(available)) {
+                    return Offset.Zero
+                }
+                if(available.x.absoluteValue > available.y.absoluteValue){
+                    return Offset.Zero
+                }
                 val delta = available.y
+
+                val min = -headerHeightPx.toFloat()
+                val max = 0F
+
+                val old = offsetHeightPx
                 val newOffset = offsetHeightPx + delta
                 // 设置 Header 的位移范围
                 offsetHeightPx = newOffset.coerceIn(-headerHeightPx.toFloat(), 0F)
-
-                return Offset.Zero
+                if(newOffset > max){
+                    return available.copy(y = +max-old)
+                }
+                if(newOffset < min){
+                    return available.copy(y = +min - old)
+                }
+                return available.copy(y = delta)
             }
+
 
         }
     }
@@ -54,12 +75,14 @@ fun ScrollHeaderBox(
         modifier = Modifier.nestedScroll(nestedScrollConnection).then(modifier)
     ) {
 
-        content(PaddingValues(top = with(LocalDensity.current){headerHeightPx.toDp()}))
+        content(PaddingValues(top = with(LocalDensity.current){(headerHeightPx+offsetHeightPx).toDp()} ))
+
+        val offsetY = if(showForever.value) 0.dp else with(LocalDensity.current){offsetHeightPx.toDp()}
 
         Box(
             modifier = Modifier.onSizeChanged {
                         headerHeightPx = it.height
-                }.clipToBounds().offset(0.dp, with(LocalDensity.current){offsetHeightPx.toDp()})
+                }.clipToBounds().offset(0.dp, offsetY)
         ){
             header()
         }
