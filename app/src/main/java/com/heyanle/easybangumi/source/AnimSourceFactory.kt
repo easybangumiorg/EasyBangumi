@@ -1,5 +1,6 @@
-package com.heyanle.easybangumi.ui.home
+package com.heyanle.easybangumi.source
 
+import androidx.lifecycle.MutableLiveData
 import com.heyanle.lib_anim.*
 import com.heyanle.lib_anim.bimibimi.BimibimiParser
 import com.heyanle.lib_anim.yhdm.YhdmParser
@@ -17,6 +18,7 @@ object AnimSourceFactory {
     private val searchMap = hashMapOf<String, ISearchParser>()
     private val detailMap = hashMapOf<String, IDetailParser>()
     private val playMap = hashMapOf<String, IPlayerParser>()
+
     init {
         register(YhdmParser())
         register(BimibimiParser())

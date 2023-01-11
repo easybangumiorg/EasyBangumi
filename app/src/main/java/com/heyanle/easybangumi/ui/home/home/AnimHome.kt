@@ -56,7 +56,9 @@ import coil.compose.AsyncImage
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import coil.request.ImageRequest
+import com.heyanle.easybangumi.LocalNavController
 import com.heyanle.easybangumi.R
+import com.heyanle.easybangumi.navigationPlay
 import com.heyanle.easybangumi.ui.common.ErrorPage
 import com.heyanle.easybangumi.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi.ui.common.KeyTabRow
@@ -183,7 +185,9 @@ fun AnimHome(){
 }
 
 fun LazyListScope.animHomePage(state: AnimHomeViewModel.HomeAnimState.Completely){
+
     items(state.keyList){ key ->
+        val nav = LocalNavController.current
         Text(
             modifier = Modifier.padding(8.dp, 4.dp),
             text = key,
@@ -199,7 +203,7 @@ fun LazyListScope.animHomePage(state: AnimHomeViewModel.HomeAnimState.Completely
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
                         .clickable {
-
+                            nav.navigationPlay(item)
                         }
                         .padding(4.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp)

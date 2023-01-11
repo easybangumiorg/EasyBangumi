@@ -94,7 +94,8 @@ fun EasyTheme(
         val view = LocalView.current
         if (!view.isInEditMode) {
             SideEffect {
-                uiController.setSystemBarsColor(Color.Transparent, if(isDynamic) isDark else false)
+                uiController.setStatusBarColor(Color.Transparent, if(isDynamic) isDark else false)
+                uiController.setNavigationBarColor(colorScheme.primary, if(isDynamic) isDark else false )
             }
         }
 
