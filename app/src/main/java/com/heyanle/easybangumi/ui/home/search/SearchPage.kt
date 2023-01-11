@@ -157,9 +157,6 @@ fun SearchPage(
                             }
                         }else if(lazyPagingItems.loadState.append is LoadState.Error){
                             item {
-                                LaunchedEffect(key1 = Unit){
-                                    isShowTabForever.value = true
-                                }
                                 val errorMsg = (lazyPagingItems.loadState.append as? LoadState.Error)?.error?.message?: stringRes(R.string.net_error)
                                 ErrorPage(
                                     modifier = Modifier.fillMaxWidth(),

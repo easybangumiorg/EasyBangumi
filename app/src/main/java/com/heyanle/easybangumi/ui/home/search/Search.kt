@@ -56,10 +56,12 @@ import kotlinx.coroutines.launch
 var animSearchInitialPage by okkv("animSearchInitialPage", 0)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class)
 @Composable
-fun Search(){
+fun Search(
+    defKeyword: String = ""
+){
 
     val keyword = remember {
-        mutableStateOf("")
+        mutableStateOf(defKeyword)
     }
 
     val pagerState = rememberPagerState(

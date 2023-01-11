@@ -19,12 +19,14 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
+import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.heyanle.easybangumi.ui.home.Home
 import com.heyanle.easybangumi.ui.home.search.Search
+import com.heyanle.easybangumi.ui.player.Play
 
 /**
  * Created by HeYanLe on 2023/1/7 13:38.
@@ -39,7 +41,7 @@ val LocalNavController = staticCompositionLocalOf<NavHostController> {
 const val HOME = "home"
 const val SEARCH = "search"
 
-const val ANIM = "anim"
+const val PLAY = "play"
 
 // 缺省路由
 const val DEFAULT = HOME
@@ -61,8 +63,23 @@ fun Nav() {
                 Home()
             }
 
-            composable(SEARCH){
-                Search()
+            composable(
+                "${SEARCH}?keyword={keyword}",
+                arguments = listOf(navArgument("keyword") { defaultValue = "" })
+            ){
+                Search(it.arguments?.getString("keyword")?:"")
+            }
+
+            composable(
+                "${PLAY}?source={source}&detailUrl={detailUrl}",
+                arguments = listOf(
+                    navArgument("source") { defaultValue = "" },
+                    navArgument("detailUrl") { defaultValue = ""},
+                )
+            ){
+                val source = it.arguments?.getString("source")?:""
+                val detailUrl = it.arguments?.getString("detailUrl")?:""
+                Play(source = source, detail = detailUrl)
             }
 
 

@@ -4,6 +4,7 @@ import com.google.gson.JsonParser
 import com.heyanle.lib_anim.*
 import com.heyanle.lib_anim.entity.Bangumi
 import com.heyanle.lib_anim.entity.BangumiDetail
+import com.heyanle.lib_anim.entity.BangumiSummary
 import com.heyanle.lib_anim.utils.OkHttpUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -163,7 +164,7 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
         }
     }
 
-    override suspend fun detail(bangumi: Bangumi): ISourceParser.ParserResult<BangumiDetail> {
+    override suspend fun detail(bangumi: BangumiSummary): ISourceParser.ParserResult<BangumiDetail> {
         return withContext(Dispatchers.IO) {
             val doc = runCatching {
                 Jsoup.parse(OkHttpUtils.get(url(bangumi.detailUrl)))
@@ -172,14 +173,19 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
                 return@withContext ISourceParser.ParserResult.Error(it, false)
             }
             kotlin.runCatching {
+                val id = "${getLabel()}-${bangumi.detailUrl}"
+                val tit = doc.select("div.txt_intro_con div.tit")[0]
+                val name = tit.child(0).text()
+                val intro = tit.child(1).text()
+                val cover = url(doc.select("div.v_pic img")[0].attr("src"))
                 val description = doc.getElementsByClass("vod-jianjie")[0].text()
                 return@withContext  ISourceParser.ParserResult.Complete(
                     BangumiDetail(
-                    id = bangumi.id,
+                    id = id,
                     source = getKey(),
-                    name = bangumi.name,
-                    cover = bangumi.cover,
-                    intro = bangumi.intro,
+                    name = name,
+                    cover = cover,
+                    intro = intro,
                     detailUrl = bangumi.detailUrl,
                     description = description
                 )
@@ -192,10 +198,10 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
         }
     }
 
-    private var bangumi: Bangumi? = null
+    private var bangumi: BangumiSummary? = null
     private val temp: ArrayList<ArrayList<String>> = arrayListOf()
 
-    override suspend fun getPlayMsg(bangumi: Bangumi): ISourceParser.ParserResult<LinkedHashMap<String, List<String>>> {
+    override suspend fun getPlayMsg(bangumi: BangumiSummary): ISourceParser.ParserResult<LinkedHashMap<String, List<String>>> {
         this@BimibimiParser.temp.clear()
         return withContext(Dispatchers.IO) {
             val map = LinkedHashMap<String, List<String>>()
@@ -237,7 +243,7 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
     }
 
     override suspend fun getPlayUrl(
-        bangumi: Bangumi,
+        bangumi: BangumiSummary,
         lineIndex: Int,
         episodes: Int
     ): ISourceParser.ParserResult<String> {

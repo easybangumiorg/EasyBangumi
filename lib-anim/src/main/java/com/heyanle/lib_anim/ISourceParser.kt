@@ -2,6 +2,7 @@ package com.heyanle.lib_anim
 
 import com.heyanle.lib_anim.entity.Bangumi
 import com.heyanle.lib_anim.entity.BangumiDetail
+import com.heyanle.lib_anim.entity.BangumiSummary
 import java.lang.Exception
 
 
@@ -65,7 +66,7 @@ interface ISearchParser : ISourceParser {
 }
 
 interface IDetailParser: ISourceParser {
-    suspend fun detail(bangumi: Bangumi): ISourceParser.ParserResult<BangumiDetail>
+    suspend fun detail(bangumi: BangumiSummary): ISourceParser.ParserResult<BangumiDetail>
 }
 
 interface IPlayerParser : ISourceParser {
@@ -73,12 +74,12 @@ interface IPlayerParser : ISourceParser {
     /**
      * 播放线路
      */
-    suspend fun getPlayMsg(bangumi: Bangumi): ISourceParser.ParserResult<LinkedHashMap<String, List<String>>>
+    suspend fun getPlayMsg(bangumi: BangumiSummary): ISourceParser.ParserResult<LinkedHashMap<String, List<String>>>
 
     /**
      * 下标
      */
-    suspend fun getPlayUrl(bangumi: Bangumi, lineIndex: Int, episodes: Int): ISourceParser.ParserResult<String> {
+    suspend fun getPlayUrl(bangumi: BangumiSummary, lineIndex: Int, episodes: Int): ISourceParser.ParserResult<String> {
         return ISourceParser.ParserResult.Error(Exception("Unsupported"), true)
     }
 }

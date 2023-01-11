@@ -30,4 +30,8 @@ data class Bangumi (
 
     // 最后访问时间 （历史记录）
     var visitTime: Long = 0L,
-)
+){
+    fun toSummary(): BangumiSummary{
+        return BangumiSummary(source, detailUrl)
+    }
+}
