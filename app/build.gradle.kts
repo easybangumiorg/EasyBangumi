@@ -13,6 +13,7 @@ import com.heyanle.buildsrc.swipeRefreshLayout
 import com.heyanle.buildsrc.Android
 import com.heyanle.buildsrc.coil
 import com.heyanle.buildsrc.coilGif
+import com.heyanle.buildsrc.pagingCompose
 
 plugins {
     id ("com.android.application")
@@ -65,6 +66,7 @@ dependencies {
     androidXBasic()
     leakcanary()
     paging()
+    pagingCompose()
     junit()
     easyPlayer()
     compose()

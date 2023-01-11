@@ -49,7 +49,9 @@ object AnimSourceFactory {
         return homeMap.keys.toList()
     }
 
-    fun labels(): List<String>{
+
+
+    fun labelsHome(): List<String>{
         val res = arrayListOf<String>()
         homeKeys().forEach { key ->
             parser(key)?.let {
@@ -62,6 +64,17 @@ object AnimSourceFactory {
     fun searchKeys():List<String>{
         return searchMap.keys.toList()
     }
+
+    fun labelsSearch(): List<String>{
+        val res = arrayListOf<String>()
+        searchKeys().forEach { key ->
+            parser(key)?.let {
+                res.add(it.getLabel())
+            }
+        }
+        return res
+    }
+
 
     fun home(key: String):IHomeParser?{
         return homeMap[key]

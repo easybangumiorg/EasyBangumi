@@ -41,7 +41,7 @@ class AnimHomeViewModel(
         private const val OKKV_KEY_SOURCE_INDEX = "source_index"
     }
 
-    val homeTitle = AnimSourceFactory.labels()
+    val homeTitle = AnimSourceFactory.labelsHome()
 
     private var okkvCurrentHomeSourceIndex by okkv<Int>(OKKV_KEY_SOURCE_INDEX, 0)
     private val eventFlow = MutableStateFlow<HomeAnimEvent>(

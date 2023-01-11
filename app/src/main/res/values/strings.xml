@@ -13,10 +13,13 @@
 
     <string name="search">搜索</string>
 
+    <string name="is_empty">内容为空</string>
     <string name="loading">加载中</string>
 
     <string name="cancel">取消</string>
     <string name="confirm">确定</string>
+
+    <string name="back">返回</string>
 
     <string name="info_moesnackbar_swipe">右划关闭 →</string>
 
@@ -41,5 +44,10 @@
     <string name="click_to_refresh">点击刷新</string>
     <string name="click_to_retry">点击重试</string>
 
+    <string name="anim_search">番剧搜索</string>
+
     <string name="click_to_up_top">点击回到顶部</string>
+
+    <string name="please_input_keyword_to_search">请输入关键字搜索</string>
+    <string name="list_most_bottom">已经结束拉！</string>
 </resources>

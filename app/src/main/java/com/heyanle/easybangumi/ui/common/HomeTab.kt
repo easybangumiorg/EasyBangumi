@@ -45,7 +45,8 @@ fun HomeTabRow(
         shadowElevation = 4.dp,
         color = MaterialTheme.colorScheme.primary,
     ){
-        TabRow(
+        ScrollableTabRow(
+            edgePadding = 0.dp,
             selectedTabIndex = selectedTabIndex,
             containerColor = Color.Transparent,
             contentColor = Color.Transparent,

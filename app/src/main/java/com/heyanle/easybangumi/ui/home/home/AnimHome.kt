@@ -30,7 +30,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -65,6 +68,8 @@ import com.heyanle.easybangumi.ui.common.ScrollHeaderBox
  * Created by HeYanLe on 2023/1/9 21:29.
  * https://github.com/heyanLE
  */
+
+
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun AnimHome(){
@@ -85,7 +90,27 @@ fun AnimHome(){
     
     val lazyListState = rememberLazyListState()
 
+    var isHeaderShowForever by remember {
+        mutableStateOf(false)
+    }
+    val endReached by remember {
+        derivedStateOf {
+            val lastVisibleItem = lazyListState.layoutInfo.visibleItemsInfo.lastOrNull()
+                ?: return@derivedStateOf true
+
+            lastVisibleItem.index == lazyListState.layoutInfo.totalItemsCount - 1
+        }
+    }
+
+
     ScrollHeaderBox(
+        canScroll = {
+            if(isHeaderShowForever){
+                false
+            }else{
+                !(it.y < 0 && endReached)
+            }
+        },
         modifier = Modifier.fillMaxSize(),
         header = {
             KeyTabRow(selectedTabIndex = sta.curIndex, textList = vm.homeTitle, onItemClick = {
@@ -102,14 +127,20 @@ fun AnimHome(){
             ){ stat ->
                 when (stat) {
                     is AnimHomeViewModel.HomeAnimState.Loading -> {
+                        LaunchedEffect(key1 = Unit){
+                            isHeaderShowForever = true
+                        }
+
                         LoadingPage(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .verticalScroll(rememberScrollState())
                         )
                     }
 
                     is AnimHomeViewModel.HomeAnimState.Completely -> {
+                        LaunchedEffect(key1 = Unit){
+                            isHeaderShowForever = false
+                        }
                         LazyColumn(
                             modifier = Modifier
                                 .fillMaxSize(),
@@ -119,14 +150,15 @@ fun AnimHome(){
                         ){
                             animHomePage(state = stat)
                         }
-
                     }
 
                     is AnimHomeViewModel.HomeAnimState.Error -> {
+                        LaunchedEffect(key1 = Unit){
+                            isHeaderShowForever = true
+                        }
                         ErrorPage(
                             modifier = Modifier
-                                .fillMaxSize()
-                                .verticalScroll(rememberScrollState()),
+                                .fillMaxSize(),
                             errorMsg = if(stat.error.isParserError) stat.error.throwable.message?:"" else stringResource(id = R.string.net_error),
                             clickEnable = true,
                             onClick = {

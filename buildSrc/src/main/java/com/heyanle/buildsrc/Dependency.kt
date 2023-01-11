@@ -102,6 +102,9 @@ const val paging = "androidx.paging:paging-runtime-ktx:${Version.paging}"
 fun DependencyHandler.paging(){
     add(implementation, paging)
 }
+fun DependencyHandler.pagingCompose(){
+    implementation("androidx.paging:paging-compose:1.0.0-alpha17")
+}
 
 const val androidXSwipeRefreshLayout = "androidx.swiperefreshlayout:swiperefreshlayout:${Version.androidx_swipe_refresh_layout}"
 fun DependencyHandler.swipeRefreshLayout(){

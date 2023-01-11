@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,6 +52,15 @@ fun ErrorPage(
 }
 
 @Composable
+fun EmptyPage(
+    modifier: Modifier = Modifier,
+    emptyMsg: String = stringResource(id = R.string.is_empty),
+    other: @Composable ()->Unit = {},
+){
+    WhitePage(modifier, R.drawable.empty_bocchi, emptyMsg, other)
+}
+
+@Composable
 fun LoadingPage(
     modifier: Modifier = Modifier,
     loadingMsg: String = stringResource(id = R.string.loading),
@@ -87,7 +97,7 @@ fun WhitePage(
             Spacer(modifier = Modifier.height(10.dp))
             Text(
                 text = message,
-                color = Color.Gray.copy(alpha = 0.6f),
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                 fontStyle = FontStyle.Italic,
                 textAlign = TextAlign.Center
             )
