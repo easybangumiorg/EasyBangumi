@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">EasyPlayer</string>
+
+    <string name="play_error">出了点小问题，请点击重试</string>
+    <string name="retry">重试</string>
+
+    <string name="play_speeding_up">两倍速播放中</string>
+</resources>

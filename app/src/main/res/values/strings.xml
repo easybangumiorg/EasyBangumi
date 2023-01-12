@@ -53,4 +53,5 @@
 
     <string name="loading_error">加载错误</string>
     <string name="source_error">番剧源报错</string>
+    <string name="clear">清空</string>
 </resources>

@@ -25,6 +25,8 @@ import com.heyanle.easybangumi.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeTopAppBar(
+    containerColor: Color = MaterialTheme.colorScheme.primary,
+    contentColor: Color = MaterialTheme.colorScheme.onPrimary,
     scrollBehavior : TopAppBarScrollBehavior,
     label: @Composable ()->Unit,
     onSearch: (()->Unit)? = null,
@@ -34,9 +36,9 @@ fun HomeTopAppBar(
         scrollBehavior = scrollBehavior,
         title = label,
         colors = TopAppBarDefaults.smallTopAppBarColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            titleContentColor = MaterialTheme.colorScheme.onPrimary,
-            actionIconContentColor = MaterialTheme.colorScheme.onPrimary
+            containerColor = containerColor,
+            titleContentColor = contentColor,
+            actionIconContentColor = contentColor
         ),
         actions = {
             if(isShowSearch){

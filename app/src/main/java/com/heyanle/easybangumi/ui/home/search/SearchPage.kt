@@ -68,7 +68,7 @@ import com.heyanle.lib_anim.entity.Bangumi
 @Composable
 fun SearchPage(
     isShowTabForever: MutableState<Boolean>,
-    padding: PaddingValues,
+    padding: PaddingValues = PaddingValues(0.dp),
     vm: SearchViewModel,
     controller: SearchPageController,
     isEnable: Boolean, // 是否刷新

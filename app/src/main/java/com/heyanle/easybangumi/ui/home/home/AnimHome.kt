@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -115,9 +116,13 @@ fun AnimHome(){
         },
         modifier = Modifier.fillMaxSize(),
         header = {
-            KeyTabRow(selectedTabIndex = sta.curIndex, textList = vm.homeTitle, onItemClick = {
-                vm.changeHomeSource(it)
-            })
+            KeyTabRow(
+                modifier = Modifier.offset(0.dp, it),
+                selectedTabIndex = sta.curIndex,
+                textList = vm.homeTitle,
+                onItemClick = {
+                    vm.changeHomeSource(it)
+                })
         },
         content = {
             AnimatedContent(

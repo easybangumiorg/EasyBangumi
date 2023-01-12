@@ -1,16 +1,15 @@
 package com.heyanle.easybangumi.ui.player
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,31 +18,42 @@ import androidx.compose.material.TextButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.media3.common.util.UnstableApi
 import com.heyanle.easybangumi.ui.common.LoadingPage
 import com.heyanle.easybangumi.ui.common.OkImage
-import com.heyanle.easybangumi.ui.common.moeSnackBar
 
 /**
  * Created by HeYanLe on 2023/1/11 15:27.
  * https://github.com/heyanLE
  */
 
+@SuppressLint("UnsafeOptInUsageError")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Play(
     source: String,
     detail: String,
 ){
+
+    LaunchedEffect(key1 = Unit){
+        PlayerController.onScreenLaunch()
+    }
+    DisposableEffect(key1 = Unit){
+        onDispose {
+            PlayerController.onScreenDispose()
+        }
+    }
 
     val vm: AnimPlayViewModel = viewModel(factory = AnimPlayerViewModelFactory(source, detail))
 
@@ -93,15 +103,41 @@ fun Play(
 }
 
 // 播放器
+
+@SuppressLint("UnsafeOptInUsageError")
 @Composable
-fun Video(
+fun  Video(
     vm: AnimPlayViewModel,
     playerStatus: AnimPlayViewModel.PlayerStatus,
 ){
+
+
+
+
+
+
     when(playerStatus){
         is AnimPlayViewModel.PlayerStatus.None -> {}
         is AnimPlayViewModel.PlayerStatus.Play -> {
-            Text(text = "play ${playerStatus.url}")
+
+//            LaunchedEffect(key1 = Unit){
+//                PlayerController.newPlayer(playerStatus)
+//            }
+            Box(modifier = Modifier.height(250.dp)){
+                if(PlayerController.canAddToCompose.value){
+                    AndroidView(
+                        modifier = Modifier.fillMaxSize(),
+                        factory = {
+                            PlayerController.exoPlayerViewCompose
+                        }
+                    ){
+                        PlayerController.newPlayer(playerStatus)
+                        // PlayerController.onContainer(it)
+                    }
+                }
+
+            }
+
         }
         is AnimPlayViewModel.PlayerStatus.Error -> {}
         is AnimPlayViewModel.PlayerStatus.Loading -> {}

@@ -33,6 +33,8 @@ import com.heyanle.easybangumi.theme.EasyThemeController
  */
 @Composable
 fun HomeTabRow(
+    modifier: Modifier = Modifier,
+    containerColor: Color = MaterialTheme.colorScheme.primary,
     selectedTabIndex: Int,
     tabs: @Composable () -> Unit
 ){
@@ -43,9 +45,10 @@ fun HomeTabRow(
     val isUseSecondary = themeState.isDark() && !(themeState.isDynamicColor && EasyThemeController.isSupportDynamicColor())
 
     ScrollableTabRow(
+        modifier = Modifier.then(modifier),
         edgePadding = 0.dp,
         selectedTabIndex = selectedTabIndex,
-        containerColor = MaterialTheme.colorScheme.primary,
+        containerColor = containerColor,
         contentColor = Color.Transparent,
         tabs = tabs,
         divider = {},
@@ -78,6 +81,7 @@ fun HomeTabItem(
 
 @Composable
 fun KeyTabRow(
+    modifier: Modifier = Modifier,
     selectedTabIndex: Int,
     selectedContainerColor: Color = MaterialTheme.colorScheme.secondary,
     selectedContentColor: Color = MaterialTheme.colorScheme.onSecondary,
@@ -88,7 +92,7 @@ fun KeyTabRow(
 ){
 
     LazyRow(
-        modifier = Modifier.padding(2.dp, 0.dp),
+        modifier = Modifier.padding(2.dp, 0.dp).then(modifier),
 
     ){
         items(textList.size){

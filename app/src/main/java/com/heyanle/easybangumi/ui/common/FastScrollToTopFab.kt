@@ -38,7 +38,8 @@ import kotlinx.coroutines.launch
 fun FastScrollToTopFab(
     listState: LazyListState,
     after: Int = 10,
-    padding: PaddingValues = PaddingValues(0.dp)
+    padding: PaddingValues = PaddingValues(0.dp),
+    onClick: () -> Unit = {}
 ) {
     val scope = rememberCoroutineScope()
     FastScrollToTopFab(
@@ -47,6 +48,7 @@ fun FastScrollToTopFab(
     ) {
         scope.launch {
             listState.animateScrollToItem(0, 0)
+            onClick()
         }
     }
 }
@@ -55,7 +57,8 @@ fun FastScrollToTopFab(
 fun FastScrollToTopFab(
     listState: LazyGridState,
     after: Int = 10,
-    padding: PaddingValues = PaddingValues(0.dp)
+    padding: PaddingValues = PaddingValues(0.dp),
+    onClick: () -> Unit = {}
 ) {
     val scope = rememberCoroutineScope()
     FastScrollToTopFab(
@@ -64,6 +67,7 @@ fun FastScrollToTopFab(
     ) {
         scope.launch {
             listState.animateScrollToItem(0, 0)
+            onClick()
         }
     }
 }
