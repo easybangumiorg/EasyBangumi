@@ -75,6 +75,7 @@ class AnimPlayViewModel(
                                     R.string.source_error) else stringRes(R.string.loading_error), it.throwable))
                             }
                     }.onFailure {
+                        it.printStackTrace()
                         send(PlayerStatus.Error(event.lineIndex, event.episode, stringRes(R.string.loading_error), it))
                     }
 
@@ -108,14 +109,14 @@ class AnimPlayViewModel(
 }
 
 class AnimPlayerViewModelFactory(
-    val source: String,
-    val detailUrl: String,
+    private val source: String,
+    private val detailUrl: String,
 ) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(AnimPlayViewModel::class.java))
-            return AnimPlayViewModel(BangumiSummary(source, detailUrl)) as T
+            return PlayerController.getAnimPlayViewModel(BangumiSummary(source, detailUrl)) as T
         throw RuntimeException("unknown class :" + modelClass.name)
     }
 }

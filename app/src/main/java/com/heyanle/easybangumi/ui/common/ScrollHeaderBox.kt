@@ -18,6 +18,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlin.math.absoluteValue
 
@@ -31,7 +32,7 @@ fun ScrollHeaderBox(
     modifier: Modifier = Modifier,
     canScroll: (Offset)->Boolean = { true },
     showForever: MutableState<Boolean> = mutableStateOf(false),
-    header: @Composable ()->Unit,
+    header: @Composable (Dp)->Unit,
     content: @Composable (PaddingValues) ->Unit,
 ){
 
@@ -82,9 +83,9 @@ fun ScrollHeaderBox(
         Box(
             modifier = Modifier.onSizeChanged {
                         headerHeightPx = it.height
-                }.clipToBounds().offset(0.dp, offsetY)
+                }.clipToBounds()
         ){
-            header()
+            header(offsetY)
         }
 
     }

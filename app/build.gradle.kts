@@ -13,6 +13,7 @@ import com.heyanle.buildsrc.swipeRefreshLayout
 import com.heyanle.buildsrc.Android
 import com.heyanle.buildsrc.coil
 import com.heyanle.buildsrc.coilGif
+import com.heyanle.buildsrc.media3Exo
 import com.heyanle.buildsrc.pagingCompose
 
 plugins {
@@ -75,6 +76,7 @@ dependencies {
     coil()
     coilGif()
 
+    media3Exo()
     implementation(project(":easy-crasher"))
     implementation(project(":lib-anim"))
 }

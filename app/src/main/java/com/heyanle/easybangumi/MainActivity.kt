@@ -39,4 +39,12 @@ class MainActivity : ComponentActivity() {
         }
         MediaHelper.setIsDecorFitsSystemWindows(this, false)
     }
+
+    override fun finish() {
+        super.finish()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+    }
 }

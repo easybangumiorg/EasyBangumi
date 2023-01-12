@@ -6,6 +6,7 @@
       <module name="EasyBangumi.buildSrc" target="17" />
       <module name="EasyBangumi.buildSrc.main" target="17" />
       <module name="EasyBangumi.buildSrc.test" target="17" />
+      <module name="EasyBangumi.easy-bangumi-player" target="17" />
       <module name="EasyBangumi.easy-crasher" target="17" />
       <module name="EasyBangumi.easy-lightdark" target="11" />
       <module name="EasyBangumi.easy-media" target="11" />

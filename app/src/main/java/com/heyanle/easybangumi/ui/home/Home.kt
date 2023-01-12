@@ -108,40 +108,50 @@ fun Home(
         containerColor = Color.Transparent,
         contentColor = MaterialTheme.colorScheme.onBackground,
         topBar = {
-            Column() {
-                HomeTopAppBar(
-                    scrollBehavior = scrollBehavior,
-                    label = {
-                        Text(text = stringResource(id = R.string.anim_title))
-                    },
-                    isShowSearch = true,
-                    onSearch = {
-                        scope.launch {
-                            nav.navigate(SEARCH)
-                        }
-
-                    }
-                )
-                HomeTabRow(selectedTabIndex = pagerState.currentPage) {
-                    for(i in animSubPageItems.indices){
-                        HomeTabItem(
-                            selected = i == pagerState.currentPage,
-                            text = animSubPageItems[i].tabLabel,
-                            onClick = {
-                                scope.launch {
-                                    pagerState.animateScrollToPage(i)
-                                }
+            Surface(
+                shadowElevation = 4.dp,
+                color = MaterialTheme.colorScheme.primary
+            ){
+                Column() {
+                    HomeTopAppBar(
+                        containerColor = Color.Transparent,
+                        scrollBehavior = scrollBehavior,
+                        label = {
+                            Text(text = stringResource(id = R.string.anim_title))
+                        },
+                        isShowSearch = true,
+                        onSearch = {
+                            scope.launch {
+                                nav.navigate(SEARCH)
                             }
-                        )
+
+                        }
+                    )
+                    HomeTabRow(
+                        containerColor = Color.Transparent,
+                        selectedTabIndex = pagerState.currentPage
+                    ) {
+                        for(i in animSubPageItems.indices){
+                            HomeTabItem(
+                                selected = i == pagerState.currentPage,
+                                text = animSubPageItems[i].tabLabel,
+                                onClick = {
+                                    scope.launch {
+                                        pagerState.animateScrollToPage(i)
+                                    }
+                                }
+                            )
+                        }
                     }
                 }
             }
 
 
+
         },
         content = { padding ->
 
-            Log.d("Home", padding.calculateTopPadding().value.toString())
+            Log.d("Home", pagerState.currentPage.toString())
             SideEffect {
                 animInitialPage = pagerState.currentPage
             }

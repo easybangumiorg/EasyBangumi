@@ -40,6 +40,8 @@ object Version {
     const val navigation_compose = "2.5.3"
 
     const val coil = "2.2.2"
+
+    const val media3 = "1.0.0-beta03"
 }
 // AndroidX basic
 const val androidXCoreKtx = "androidx.core:core-ktx:${Version.androidx_core_ktx}"
@@ -154,6 +156,9 @@ const val easy_player = "com.github.heyanLE.EasyPlayer:eplayer-core:${Version.ea
 fun DependencyHandler.easyPlayer(){
     add(implementation, easy_player)
 }
+fun DependencyHandler.easyPlayerExo(){
+    implementation("com.github.heyanLE.EasyPlayer:eplayer-exo:${Version.easy_player}")
+}
 
 const val composeBom = "androidx.compose:compose-bom:${Version.compose_bom}"
 const val composeUI = "androidx.compose.ui:ui"
@@ -199,4 +204,19 @@ fun DependencyHandler.coil(){
 }
 fun DependencyHandler.coilGif(){
     implementation("io.coil-kt:coil-gif:${Version.coil}")
+}
+
+fun DependencyHandler.media3Exo(){
+    // For media playback using ExoPlayer
+    implementation("androidx.media3:media3-exoplayer:${Version.media3}")
+
+    // For DASH playback support with ExoPlayer
+    implementation("androidx.media3:media3-exoplayer-dash:${Version.media3}")
+    // For HLS playback support with ExoPlayer
+    implementation("androidx.media3:media3-exoplayer-hls:${Version.media3}")
+    // For RTSP playback support with ExoPlayer
+    implementation("androidx.media3:media3-exoplayer-rtsp:${Version.media3}")
+    implementation("androidx.media3:media3-datasource-rtmp:${Version.media3}")
+    // For building media playback UIs
+    implementation("androidx.media3:media3-ui:${Version.media3}")
 }
