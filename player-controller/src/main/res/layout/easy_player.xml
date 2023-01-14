@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.heyanle.player_controller.BaseEasyPlayerView
+    android:id="@+id/playerView"
+    app:layout_constraintTop_toTopOf="parent"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--GestureController 带手势功能的控制器-->
+    <com.heyanle.eplayer_core.controller.GestureController
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.heyanle.eplayer_standard.component.StandardComponent
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <com.heyanle.player_controller.component.VolumeBrightnessComponent
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <com.heyanle.player_controller.component.LongPressSpeedComponent
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+        <com.heyanle.player_controller.component.ErrorComponent
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+
+    </com.heyanle.eplayer_core.controller.GestureController>
+
+
+
+</com.heyanle.player_controller.BaseEasyPlayerView>

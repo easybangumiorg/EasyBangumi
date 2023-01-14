@@ -120,3 +120,45 @@ fun KeyTabRow(
     }
 
 }
+
+@Composable
+fun PlayLineTabRow(
+    modifier: Modifier = Modifier,
+    selectedTabIndex: Int,
+    selectedContainerColor: Color = MaterialTheme.colorScheme.secondary,
+    selectedContentColor: Color = MaterialTheme.colorScheme.onSecondary,
+    unselectedContainerColor: Color = MaterialTheme.colorScheme.background,
+    unselectedContentColor: Color = MaterialTheme.colorScheme.onBackground,
+    textList: List<String>,
+    onItemClick: (Int)->Unit,
+){
+
+    LazyRow(
+        modifier = Modifier.padding(2.dp, 0.dp).then(modifier),
+
+        ){
+        items(textList.size){
+            val selected = it == selectedTabIndex
+            Surface(
+                shadowElevation = 4.dp,
+                shape = CircleShape,
+                modifier =
+                Modifier
+                    .padding(2.dp, 8.dp)
+                ,
+                color = if (selected) selectedContainerColor else unselectedContainerColor,
+            ) {
+                Text(
+                    modifier = Modifier.clip(CircleShape).clickable {
+                        onItemClick(it)
+                    }.padding(8.dp, 4.dp),
+                    color = if (selected) selectedContentColor else unselectedContentColor,
+                    fontWeight = FontWeight.W900,
+                    text = textList[it],
+                    fontSize = 26.sp,
+                )
+            }
+        }
+    }
+
+}
