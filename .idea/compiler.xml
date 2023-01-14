@@ -12,6 +12,7 @@
       <module name="EasyBangumi.easy-media" target="11" />
       <module name="EasyBangumi.easy-player" target="11" />
       <module name="EasyBangumi.easy-view" target="11" />
+      <module name="EasyBangumi.player-controller" target="17" />
     </bytecodeTargetLevel>
   </component>
 </project>

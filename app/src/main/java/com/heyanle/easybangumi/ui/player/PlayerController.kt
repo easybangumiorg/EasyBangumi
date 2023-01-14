@@ -1,5 +1,6 @@
 package com.heyanle.easybangumi.ui.player
 
+import android.content.Context
 import android.graphics.PixelFormat
 import android.os.Build
 import android.util.Log
@@ -21,13 +22,17 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.analytics.DefaultAnalyticsCollector
 import androidx.media3.exoplayer.hls.HlsMediaSource
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
-import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.exoplayer.upstream.DefaultBandwidthMeter
 import androidx.media3.ui.PlayerView
 import com.heyanle.easybangumi.BangumiApp
 import com.heyanle.easybangumi.utils.OverlayHelper
 import com.heyanle.easybangumi.utils.dip2px
+import com.heyanle.eplayer_core.player.IPlayerEngine
+import com.heyanle.eplayer_core.player.IPlayerEngineFactory
+import com.heyanle.eplayer_core.render.IRender
+import com.heyanle.eplayer_core.render.IRenderFactory
+import com.heyanle.eplayer_core.render.SurfaceViewRender
 import com.heyanle.lib_anim.entity.BangumiSummary
 import com.heyanle.okkv2.core.okkv
 import kotlinx.coroutines.MainScope
@@ -82,16 +87,7 @@ object PlayerController {
     ).build()
 
 
-
-
     val exoPlayerView : PlayerView by lazy {
-        PlayerView(BangumiApp.INSTANCE).apply {
-            player = exoPlayer
-            layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-        }
-    }
-
-    val exoPlayerViewCompose : PlayerView by lazy {
         PlayerView(BangumiApp.INSTANCE).apply {
             player = exoPlayer
             layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
@@ -110,7 +106,6 @@ object PlayerController {
                 BangumiApp.INSTANCE,
                 defaultDataSourceFactory
             )
-
             val source = HlsMediaSource.Factory(dataSourceFactory).createMediaSource(MediaItem.fromUri(newPlay.url))
             exoPlayer.setMediaSource(source)
             Log.d("PlayerController", newPlay.url)
@@ -128,7 +123,6 @@ object PlayerController {
             it.printStackTrace()
         }
         playerContainer.addView(exoPlayerView, ViewGroup.MarginLayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
-        exoPlayer.setVideoSurfaceView(exoPlayerViewCompose.videoSurfaceView as SurfaceView)
         canAddToCompose.value = true
     }
 

@@ -79,4 +79,5 @@ dependencies {
     media3Exo()
     implementation(project(":easy-crasher"))
     implementation(project(":lib-anim"))
+    implementation(project(":player-controller"))
 }

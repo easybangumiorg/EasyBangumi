@@ -42,6 +42,8 @@ object Version {
     const val coil = "2.2.2"
 
     const val media3 = "1.0.0-beta03"
+
+    const val media = "1.6.0"
 }
 // AndroidX basic
 const val androidXCoreKtx = "androidx.core:core-ktx:${Version.androidx_core_ktx}"
@@ -204,6 +206,10 @@ fun DependencyHandler.coil(){
 }
 fun DependencyHandler.coilGif(){
     implementation("io.coil-kt:coil-gif:${Version.coil}")
+}
+
+fun DependencyHandler.media(){
+    implementation("androidx.media:media:${Version.media}")
 }
 
 fun DependencyHandler.media3Exo(){
