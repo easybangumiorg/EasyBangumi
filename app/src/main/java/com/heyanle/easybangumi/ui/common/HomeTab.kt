@@ -36,7 +36,8 @@ fun HomeTabRow(
     modifier: Modifier = Modifier,
     containerColor: Color = MaterialTheme.colorScheme.primary,
     selectedTabIndex: Int,
-    tabs: @Composable () -> Unit
+    indicatorColor:  @Composable (Boolean)->Color= {if(it) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onPrimary},
+    tabs: @Composable () -> Unit,
 ){
     val themeState by remember {
         EasyThemeController.easyThemeState
@@ -55,7 +56,7 @@ fun HomeTabRow(
         indicator = { tabPositions ->
             TabRowDefaults.Indicator(
                 Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
-                color = if(isUseSecondary) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onPrimary
+                color = indicatorColor(isUseSecondary)
             )
         },)
 
@@ -66,6 +67,8 @@ fun HomeTabItem(
     selected: Boolean,
     text: (@Composable ()->Unit)? = null,
     icon: (@Composable ()->Unit)? = null,
+    selectedContentColor: Color = MaterialTheme.colorScheme.onPrimary,
+    unselectedContentColor: Color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.4f),
     onClick: ()->Unit,
 ){
 
@@ -74,8 +77,8 @@ fun HomeTabItem(
         onClick = onClick,
         text = text,
         icon = icon,
-        selectedContentColor = MaterialTheme.colorScheme.onPrimary,
-        unselectedContentColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.4f),
+        selectedContentColor = selectedContentColor,
+        unselectedContentColor = unselectedContentColor,
     )
 }
 

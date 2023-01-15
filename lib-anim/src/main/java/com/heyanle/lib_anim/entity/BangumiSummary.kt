@@ -13,7 +13,26 @@ data class BangumiSummary(
     val detailUrl: String,
 ){
 
+
     override fun toString(): String {
         return "BangumiSummary(source='$source', detailUrl='$detailUrl')"
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as BangumiSummary
+
+        if (source != other.source) return false
+        if (detailUrl != other.detailUrl) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = source.hashCode()
+        result = 31 * result + detailUrl.hashCode()
+        return result
     }
 }

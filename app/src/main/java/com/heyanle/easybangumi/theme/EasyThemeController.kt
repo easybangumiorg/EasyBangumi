@@ -3,6 +3,7 @@ package com.heyanle.easybangumi.theme
 import android.annotation.SuppressLint
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.mutableStateOf
@@ -36,6 +37,8 @@ data class EasyThemeState(
 
 
 object EasyThemeController{
+
+    var curThemeColor: ColorScheme? = null
 
     private var themeModeOkkv by okkv("theme_mode_index", EasyThemeMode.Blue.name)
     private var darkModeOkkv by okkv("dark_mode_index", DarkMode.Auto.name)

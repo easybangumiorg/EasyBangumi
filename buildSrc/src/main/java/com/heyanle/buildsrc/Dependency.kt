@@ -39,6 +39,8 @@ object Version {
 
     const val navigation_compose = "2.5.3"
 
+    const val compose_runtime = "1.3.2"
+
     const val coil = "2.2.2"
 
     const val media3 = "1.0.0-beta03"
@@ -184,6 +186,8 @@ fun DependencyHandler.compose(){
     add(debugImplementation, composeUITestManifest)
     implementation("androidx.compose.material:material-icons-core")
     implementation("androidx.compose.material:material-icons-extended")
+
+    implementation("androidx.compose.runtime:runtime-livedata:${Version.compose_runtime}")
 }
 
 fun DependencyHandler.accompanist(){

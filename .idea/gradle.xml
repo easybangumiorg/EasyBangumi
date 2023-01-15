@@ -14,7 +14,6 @@
             <option value="$PROJECT_DIR$/buildSrc" />
             <option value="$PROJECT_DIR$/easy-crasher" />
             <option value="$PROJECT_DIR$/lib-anim" />
-            <option value="$PROJECT_DIR$/player-controller" />
           </set>
         </option>
       </GradleProjectSettings>

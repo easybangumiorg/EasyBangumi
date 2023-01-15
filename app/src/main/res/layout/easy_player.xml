@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.heyanle.player_controller.BaseEasyPlayerView
+<com.heyanle.easybangumi.ui.common.easy_player.BaseEasyPlayerView
     android:id="@+id/playerView"
     app:layout_constraintTop_toTopOf="parent"
     android:layout_width="match_parent"
@@ -33,4 +33,4 @@
 
 
 
-</com.heyanle.player_controller.BaseEasyPlayerView>
+</com.heyanle.easybangumi.ui.common.easy_player.BaseEasyPlayerView>

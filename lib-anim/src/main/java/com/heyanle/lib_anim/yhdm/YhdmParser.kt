@@ -2,6 +2,7 @@ package com.heyanle.lib_anim.yhdm
 
 
 import com.heyanle.lib_anim.*
+import com.heyanle.lib_anim.IPlayerParser.PlayerInfo.Companion.TYPE_HLS
 import com.heyanle.lib_anim.entity.Bangumi
 import com.heyanle.lib_anim.entity.BangumiDetail
 import com.heyanle.lib_anim.entity.BangumiSummary
@@ -204,7 +205,7 @@ class YhdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISe
                     list.add(it.text())
                     temp.add(it.child(0).attr("href"))
                 }
-                map["播放列表"] = list
+                map["播放列表"] = list.reversed()
                 this@YhdmParser.bangumi = bangumi
                 return@withContext  ISourceParser.ParserResult.Complete(map)
             }.onFailure {
@@ -221,7 +222,7 @@ class YhdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISe
         bangumi: BangumiSummary,
         lineIndex: Int,
         episodes: Int
-    ): ISourceParser.ParserResult<String> {
+    ): ISourceParser.ParserResult<IPlayerParser.PlayerInfo> {
         if(lineIndex < 0 || episodes < 0){
             return ISourceParser.ParserResult.Error(IndexOutOfBoundsException(), false)
         }
@@ -260,7 +261,7 @@ class YhdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISe
                 return@withContext ISourceParser.ParserResult.Error(it, true)
             }
             if(result.isNotEmpty())
-                return@withContext ISourceParser.ParserResult.Complete(result)
+                return@withContext ISourceParser.ParserResult.Complete(IPlayerParser.PlayerInfo(type = TYPE_HLS,uri = result))
 
             return@withContext ISourceParser.ParserResult.Error(Exception("Unknown Error"), true)
         }

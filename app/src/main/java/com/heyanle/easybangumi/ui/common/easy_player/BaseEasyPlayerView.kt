@@ -1,4 +1,4 @@
-package com.heyanle.player_controller
+package com.heyanle.easybangumi.ui.common.easy_player
 
 import android.app.Activity
 import android.content.Context
@@ -15,14 +15,11 @@ import android.widget.FrameLayout
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.drawToBitmap
 import androidx.media.AudioAttributesCompat
-import androidx.media3.common.PlaybackException
-import androidx.media3.common.PlaybackParameters
-import androidx.media3.common.Player
-import androidx.media3.common.Player.STATE_BUFFERING
-import androidx.media3.common.Player.STATE_ENDED
-import androidx.media3.common.Player.STATE_IDLE
-import androidx.media3.common.Player.STATE_READY
-import androidx.media3.common.VideoSize
+import com.google.android.exoplayer2.PlaybackException
+import com.google.android.exoplayer2.PlaybackParameters
+import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.Player.*
+import com.google.android.exoplayer2.video.VideoSize
 import com.heyanle.eplayer_core.EasyPlayerManager
 import com.heyanle.eplayer_core.constant.EasyPlayStatus
 import com.heyanle.eplayer_core.constant.EasyPlayerStatus
@@ -139,7 +136,7 @@ class BaseEasyPlayerView:
         }
     }
 
-    protected fun dispatchPlayStateChange(playState: Int){
+    fun dispatchPlayStateChange(playState: Int){
         mCurrentPlayState = playState
         runWithController {
             dispatchPlayStateChange(playState)
@@ -417,6 +414,25 @@ class BaseEasyPlayerView:
         }
     }
 
+    override fun onEvents(player: Player, events: Player.Events) {
+        super.onEvents(player, events)
+
+    }
+
+    override fun onAvailableCommandsChanged(availableCommands: Player.Commands) {
+        super.onAvailableCommandsChanged(availableCommands)
+        if(availableCommands.contains(Player.COMMAND_PREPARE)){
+            dispatchPlayStateChange(EasyPlayStatus.STATE_PREPARING)
+        }
+    }
+
+    override fun onIsLoadingChanged(isLoading: Boolean) {
+        super.onIsLoadingChanged(isLoading)
+        if(isLoading){
+            // dispatchPlayStateChange(EasyPlayStatus.STATE_PREPARING)
+        }
+    }
+
 
     // == PlayerView 自带相关逻辑 ===============
 
@@ -459,7 +475,19 @@ class BaseEasyPlayerView:
         onPlayWhenReadyChanged(player.playWhenReady, Player.PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST)
         onPlaybackStateChanged(player.playbackState)
         onPlayerErrorChanged(player.playerError)
+    }
 
+    fun detachToPlayer(){
+        innerPlayer?.removeListener(this)
+        innerPlayer = null
+    }
+
+    fun refreshStateOnce(){
+        innerPlayer?.let {
+            onPlayWhenReadyChanged(it.playWhenReady, Player.PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST)
+            onPlaybackStateChanged(it.playbackState)
+            onPlayerErrorChanged(it.playerError)
+        }
 
     }
 
@@ -504,8 +532,12 @@ class BaseEasyPlayerView:
 
     override fun onWindowFocusChanged(hasWindowFocus: Boolean) {
         super.onWindowFocusChanged(hasWindowFocus)
-        if(hasWindowFocus && mIsFullScreen){
-            MediaHelper.setSystemBarsBehavior(requireActivity(), WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE)
+        if(mIsFullScreen){
+            isFocusableInTouchMode = true
+            requestFocus()
+            if(hasWindowFocus){
+                MediaHelper.setSystemBarsBehavior(requireActivity(), WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE)
+            }
         }
     }
 
