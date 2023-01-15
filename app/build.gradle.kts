@@ -13,6 +13,9 @@ import com.heyanle.buildsrc.swipeRefreshLayout
 import com.heyanle.buildsrc.Android
 import com.heyanle.buildsrc.coil
 import com.heyanle.buildsrc.coilGif
+import com.heyanle.buildsrc.exoplayer
+import com.heyanle.buildsrc.exoplayerRtmp
+import com.heyanle.buildsrc.media
 import com.heyanle.buildsrc.media3Exo
 import com.heyanle.buildsrc.pagingCompose
 
@@ -53,6 +56,7 @@ android {
     }
     buildFeatures {
         compose = true
+        viewBinding = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.3.2"
@@ -75,9 +79,10 @@ dependencies {
     navigationCompose()
     coil()
     coilGif()
-
-    media3Exo()
+    exoplayer()
+    exoplayerRtmp()
+    media()
+    easyPlayer()
     implementation(project(":easy-crasher"))
     implementation(project(":lib-anim"))
-    implementation(project(":player-controller"))
 }

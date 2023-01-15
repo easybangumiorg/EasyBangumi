@@ -22,11 +22,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Switch
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Brightness2
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.ColorLens
-import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -49,10 +45,12 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.heyanle.easybangumi.R
+import com.heyanle.easybangumi.player.TinyStatusController
 import com.heyanle.easybangumi.theme.DarkMode
 import com.heyanle.easybangumi.theme.EasyThemeController
 import com.heyanle.easybangumi.theme.EasyThemeMode
@@ -61,6 +59,7 @@ import com.heyanle.easybangumi.ui.common.HomeTopAppBar
 import com.heyanle.easybangumi.ui.common.MoeSnackBar
 import com.heyanle.easybangumi.ui.common.moeSnackBar
 import com.heyanle.easybangumi.ui.common.show
+import com.heyanle.easybangumi.utils.OverlayHelper
 import com.heyanle.easybangumi.utils.stringRes
 import com.heyanle.easybangumi.utils.toast
 
@@ -78,6 +77,7 @@ fun SettingPage(){
         .verticalScroll(rememberScrollState())
     ) {
         ThemeSettingCard()
+        TinySettingCard()
     }
 
 }
@@ -264,23 +264,85 @@ fun ThemeSettingCard(
             }
         }
 
+    }
+}
+
+@Composable
+fun TinySettingCard(
+    modifier: Modifier = Modifier
+){
+    var isAutoTiny by remember {
+        mutableStateOf(TinyStatusController.autoTinyEnableOkkv)
+    }
+
+    Column(
+        modifier = Modifier
+            .then(modifier),
+    ) {
+
+        Text(
+            modifier = Modifier.padding(16.dp, 16.dp),
+            text = stringResource(id = R.string.play),
+            color = MaterialTheme.colorScheme.secondary,
+            textAlign = TextAlign.Start
+        )
+
+        val ctx = LocalContext.current
+
         Row(modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                "testtest".moeSnackBar(
-                    confirmLabel = "确认",
-                    onConfirm = {
-                        "确认".toast()
+                val check = isAutoTiny && OverlayHelper.drawOverlayEnable(ctx)
+                if(!check){
+                    if(OverlayHelper.drawOverlayEnable(ctx)){
+                        isAutoTiny = true
+                        TinyStatusController.autoTinyEnableOkkv = true
+                    }else{
+                        stringRes(R.string.please_overlay_permission).toast()
+                        OverlayHelper.gotoDrawOverlaySetting(ctx)
                     }
-                )
+                }else{
+                    isAutoTiny = false
+                    TinyStatusController.autoTinyEnableOkkv = false
+                }
             }
             .padding(16.dp, 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ){
-            Text(text = "test")
-        }
+            Row (
+                modifier = Modifier.fillMaxHeight(),
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                Icon(
+                    Icons.Filled.LaptopWindows,
+                    contentDescription = stringResource(id = R.string.auto_tiny) )
+                Spacer(modifier = Modifier.size(16.dp))
+                Column() {
+                    Text(text = stringResource(id = R.string.auto_tiny))
+                    Text(
+                        fontSize = MaterialTheme.typography.titleSmall.fontSize,
+                        modifier = Modifier.alpha(0.6f),
+                        text = stringResource(id = R.string.auto_tiny_msg))
+                }
 
+            }
+
+            Switch(checked = isAutoTiny && OverlayHelper.drawOverlayEnable(ctx), onCheckedChange = {
+                if(it){
+                    if(OverlayHelper.drawOverlayEnable(ctx)){
+                        isAutoTiny = true
+                        TinyStatusController.autoTinyEnableOkkv = true
+                    }else{
+                        stringRes(R.string.please_overlay_permission).toast()
+                        OverlayHelper.gotoDrawOverlaySetting(ctx)
+                    }
+                }else{
+                    isAutoTiny = false
+                    TinyStatusController.autoTinyEnableOkkv = false
+                }
+            })
+        }
 
 
     }

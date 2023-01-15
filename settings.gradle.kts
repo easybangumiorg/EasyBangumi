@@ -17,4 +17,3 @@ rootProject.name = "EasyBangumi"
 include (":app")
 include (":easy-crasher")
 include(":lib-anim")
-include(":player-controller")

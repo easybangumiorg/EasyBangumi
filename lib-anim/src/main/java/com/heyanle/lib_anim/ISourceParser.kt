@@ -71,6 +71,17 @@ interface IDetailParser: ISourceParser {
 
 interface IPlayerParser : ISourceParser {
 
+    data class PlayerInfo(
+        val type: Int = TYPE_DASH,
+        val uri: String = "",
+    ){
+        companion object {
+            const val TYPE_DASH = 0
+            const val TYPE_HLS = 2
+            const val TYPE_OTHER = 4
+        }
+    }
+
     /**
      * 播放线路
      */
@@ -79,7 +90,7 @@ interface IPlayerParser : ISourceParser {
     /**
      * 下标
      */
-    suspend fun getPlayUrl(bangumi: BangumiSummary, lineIndex: Int, episodes: Int): ISourceParser.ParserResult<String> {
+    suspend fun getPlayUrl(bangumi: BangumiSummary, lineIndex: Int, episodes: Int): ISourceParser.ParserResult<PlayerInfo> {
         return ISourceParser.ParserResult.Error(Exception("Unsupported"), true)
     }
 }

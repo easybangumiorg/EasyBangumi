@@ -37,7 +37,9 @@ class AnimPlayViewModel(
         class None(sourceIndex: Int, episode: Int): PlayerStatus(sourceIndex, episode)
 
         class Loading(sourceIndex: Int, episode: Int): PlayerStatus(sourceIndex, episode)
-        class Play(sourceIndex: Int, episode: Int, val url: String): PlayerStatus(sourceIndex, episode)
+        class Play(sourceIndex: Int, episode: Int, val uri: String, val type: Int = 0): PlayerStatus(sourceIndex, episode){
+
+        }
 
         class Error(sourceIndex: Int, episode: Int, val errorMsg: String, val throwable: Throwable?):PlayerStatus(sourceIndex, episode)
     }
@@ -69,7 +71,7 @@ class AnimPlayViewModel(
                     kotlin.runCatching {
                         AnimSourceFactory.requirePlay(bangumiSummary.source).getPlayUrl(bangumiSummary, event.lineIndex, event.episode)
                             .complete {
-                                send(PlayerStatus.Play(event.lineIndex, event.episode, it.data))
+                                send(PlayerStatus.Play(event.lineIndex, event.episode, it.data.uri, it.data.type))
                             }.error {
                                 send(PlayerStatus.Error(event.lineIndex, event.episode, if(it.isParserError) stringRes(
                                     R.string.source_error) else stringRes(R.string.loading_error), it.throwable))
@@ -108,15 +110,3 @@ class AnimPlayViewModel(
     }
 }
 
-class AnimPlayerViewModelFactory(
-    private val source: String,
-    private val detailUrl: String,
-) : ViewModelProvider.Factory {
-
-    @Suppress("UNCHECKED_CAST")
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(AnimPlayViewModel::class.java))
-            return PlayerController.getAnimPlayViewModel(BangumiSummary(source, detailUrl)) as T
-        throw RuntimeException("unknown class :" + modelClass.name)
-    }
-}

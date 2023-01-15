@@ -2,6 +2,7 @@ package com.heyanle.lib_anim.bimibimi
 
 import com.google.gson.JsonParser
 import com.heyanle.lib_anim.*
+import com.heyanle.lib_anim.IPlayerParser.PlayerInfo.Companion.TYPE_HLS
 import com.heyanle.lib_anim.entity.Bangumi
 import com.heyanle.lib_anim.entity.BangumiDetail
 import com.heyanle.lib_anim.entity.BangumiSummary
@@ -246,7 +247,7 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
         bangumi: BangumiSummary,
         lineIndex: Int,
         episodes: Int
-    ): ISourceParser.ParserResult<String> {
+    ): ISourceParser.ParserResult<IPlayerParser.PlayerInfo> {
 
         if(lineIndex < 0 || episodes < 0){
             return ISourceParser.ParserResult.Error(IndexOutOfBoundsException(), false)
@@ -288,7 +289,7 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
                 val jsonUrl = jsonObject.get("url").asString
 
                 if (jsonUrl.contains("http")) {
-                    return@withContext ISourceParser.ParserResult.Complete(jsonUrl)
+                    return@withContext ISourceParser.ParserResult.Complete(IPlayerParser.PlayerInfo(uri = jsonUrl))
                 } else {
                     var from = jsonObject.get("from").asString
                     from = when (from) {
@@ -297,6 +298,9 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
                         }
                         "ksyun" -> {
                             "ksyun"
+                        }
+                        "danmakk" -> {
+                            "pic"
                         }
                         else -> {
                             "play"
@@ -317,7 +321,13 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
                 return@withContext ISourceParser.ParserResult.Error(it, false)
             }
             runCatching {
-                return@withContext ISourceParser.ParserResult.Complete(d.select("video#video source")[0].attr("src"))
+                var src = d.select("video#video source")[0].attr("src")
+                if(src.startsWith("./")){
+                    src = src.replace("./", "$ROOT_URL/static/danmu/")
+                }else if(!src.startsWith("http://") && !src.startsWith("https://")){
+                    src = "${"$ROOT_URL/static/danmu/"}${src}"
+                }
+                return@withContext ISourceParser.ParserResult.Complete(IPlayerParser.PlayerInfo(type = TYPE_HLS,uri = src))
             }.onFailure {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, true)
