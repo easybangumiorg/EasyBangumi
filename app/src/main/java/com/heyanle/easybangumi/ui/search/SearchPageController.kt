@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi.ui.home.search
+package com.heyanle.easybangumi.ui.search
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -7,7 +7,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.heyanle.easybangumi.source.AnimSourceFactory
-import com.heyanle.easybangumi.ui.home.search.paging.SearchPageSource
+import com.heyanle.easybangumi.ui.search.paging.SearchPageSource
 import com.heyanle.lib_anim.entity.Bangumi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow

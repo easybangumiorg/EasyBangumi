@@ -82,6 +82,7 @@ class TinyWindowComponent: FrameLayout, IComponent, SeekBar.OnSeekBarChangeListe
         binding.seekBar.setOnSeekBarChangeListener(this)
         binding.ivFullscreen.setOnClickListener {
             // todo 回到播放页面
+            BangumiPlayController.getCurPendingIntent().send()
         }
         binding.ivClose.setOnClickListener {
             PlayerTinyController.dismissTiny()

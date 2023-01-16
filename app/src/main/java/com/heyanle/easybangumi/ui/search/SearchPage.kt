@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi.ui.home.search
+package com.heyanle.easybangumi.ui.search
 
 import android.util.Log
 import androidx.compose.animation.AnimatedContent
@@ -52,11 +52,7 @@ import com.google.accompanist.pager.PagerState
 import com.heyanle.easybangumi.LocalNavController
 import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.navigationPlay
-import com.heyanle.easybangumi.ui.common.EmptyPage
-import com.heyanle.easybangumi.ui.common.ErrorPage
-import com.heyanle.easybangumi.ui.common.LoadingPage
-import com.heyanle.easybangumi.ui.common.OkImage
-import com.heyanle.easybangumi.ui.common.moeSnackBar
+import com.heyanle.easybangumi.ui.common.*
 import com.heyanle.easybangumi.utils.stringRes
 import com.heyanle.lib_anim.entity.Bangumi
 
@@ -124,10 +120,13 @@ fun SearchPage(
                         .fillMaxSize(),
                     emptyMsg = stringResource(id = R.string.please_input_keyword_to_search)
                 )
+                KeyTabRow(selectedTabIndex = -1, textList = vm.searchHistory, onItemClick = {
+                    vm.search(vm.searchHistory[it])
+                })
             }
             is SearchPageController.SearchPageState.Page -> {
                 val lazyPagingItems = newState.flow.collectAsLazyPagingItems()
-                if(lazyPagingItems.loadState.refresh == LoadState.Loading){
+                if(lazyPagingItems.loadState.refresh is LoadState.Loading){
                     LaunchedEffect(key1 = Unit){
                         isShowTabForever.value = true
                     }
@@ -152,7 +151,7 @@ fun SearchPage(
                                 }
                             }
                         }
-                        if (lazyPagingItems.loadState.append == LoadState.Loading) {
+                        if (lazyPagingItems.loadState.append is LoadState.Loading) {
                             item {
                                 LoadingPage(
                                     modifier = Modifier.fillMaxWidth(),
@@ -172,7 +171,9 @@ fun SearchPage(
                             }
                         }else {
                             item {  
-                                Text(modifier = Modifier.fillMaxWidth().padding(0.dp, 2.dp), textAlign = TextAlign.Center,text = stringResource(id = R.string.list_most_bottom))
+                                Text(modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(0.dp, 2.dp), textAlign = TextAlign.Center,text = stringResource(id = R.string.list_most_bottom))
                             }
                         }
                     }

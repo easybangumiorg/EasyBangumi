@@ -85,14 +85,12 @@ fun SearchTopBar(
     containerColor: Color,
     placeholder: @Composable ()->Unit,
     text: MutableState<String>,
+    onValueChange: (String)->Unit = {text.value = it},
     onBack: ()->Unit,
     onSearch: (String)->Unit,
     focusRequester: FocusRequester,
 ){
 
-    LaunchedEffect(key1 = Unit){
-        focusRequester.requestFocus()
-    }
 
     TopAppBar(
         modifier = Modifier.then(modifier),
@@ -125,6 +123,15 @@ fun SearchTopBar(
                             stringResource(id = R.string.clear)
                         )
                     }
+                    IconButton(onClick = {
+                        onSearch(text.value)
+                    }) {
+                        Icon(
+                            imageVector = Icons.Filled.Search,
+                            stringResource(id = R.string.search)
+                        )
+                    }
+
                 }
             }
         },
@@ -142,9 +149,7 @@ fun SearchTopBar(
                     }
                 ),
                 value = text.value,
-                onValueChange = {
-                    text.value = it
-                },
+                onValueChange = onValueChange,
                 colors =  TextFieldDefaults.textFieldColors(
                     containerColor = Color.Transparent,
                     cursorColor = MaterialTheme.colorScheme.secondary,

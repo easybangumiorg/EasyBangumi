@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi.ui.home.search.paging
+package com.heyanle.easybangumi.ui.search.paging
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState

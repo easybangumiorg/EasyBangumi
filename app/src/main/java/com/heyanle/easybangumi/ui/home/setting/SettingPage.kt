@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi.ui.setting
+package com.heyanle.easybangumi.ui.home.setting
 
 import android.content.res.Resources.Theme
 import androidx.compose.foundation.background

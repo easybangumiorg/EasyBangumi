@@ -67,6 +67,7 @@ class ErrorComponent: FrameLayout, IComponent {
         }else if(playState == EasyPlayStatus.STATE_IDLE || playState == STATE_START_ABORT){
             if(isError){
                 binding.root.visibility = View.VISIBLE
+                isError = false
             }else{
                 binding.root.visibility = View.GONE
             }

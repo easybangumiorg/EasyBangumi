@@ -2,6 +2,7 @@ package com.heyanle.easybangumi
 
 import android.app.Application
 import com.heyanle.easy_crasher.CrashHandler
+import com.heyanle.easybangumi.db.EasyDB
 import com.heyanle.easybangumi.utils.exo_ssl.CropUtil
 import com.heyanle.easybangumi.utils.exo_ssl.TrustAllHostnameVerifier
 import com.heyanle.okkv2.MMKVStore
@@ -30,6 +31,8 @@ class BangumiApp : Application() {
 
         HttpsURLConnection.setDefaultSSLSocketFactory(CropUtil.getUnsafeSslSocketFactory())
         HttpsURLConnection.setDefaultHostnameVerifier(TrustAllHostnameVerifier())
+
+        EasyDB.init(this)
     }
 
     private fun initOkkv(){
