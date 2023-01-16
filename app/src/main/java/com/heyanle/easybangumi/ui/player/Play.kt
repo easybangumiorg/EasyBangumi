@@ -87,10 +87,10 @@ fun Play(
 ){
 
     // 这里 activity onPause 的时候会修改 lastPauseLevel
-    // 这里可以监听 home 钮回到桌面再回来
-    LaunchedEffect(key1 = BangumiPlayController.lastPauseLevel.value){
-        BangumiPlayController.onPlayerScreenReshow()
-    }
+//    // 这里可以监听 home 钮回到桌面再回来
+//    LaunchedEffect(key1 = BangumiPlayController.lastPauseLevel.value){
+//        BangumiPlayController.onPlayerScreenReshow()
+//    }
 
     LaunchedEffect(key1 = Unit){
         BangumiPlayController.newBangumi(BangumiSummary(source, detail))
@@ -111,19 +111,15 @@ fun Play(
     val playerStatus by vm.playerStatus.collectAsState(initial = null)
     val detailStatus by vm.detailController.detailFlow.collectAsState(initial = null)
     val playMsgStatus by vm.playMsgController.flow.collectAsState(initial = null)
-
-
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             uiController.setStatusBarColor(Color.Black)
         }
     }
-
     LaunchedEffect(key1 = Unit){
         vm.load()
     }
-
     Scaffold(
         containerColor = Color.Black,
         contentColor = MaterialTheme.colorScheme.onBackground,
@@ -136,13 +132,11 @@ fun Play(
                 playerStatus?.let {
                     Video(vm, playerStatus = it)
                 }
-
                 Surface(
                     modifier = Modifier.weight(1f),
                     contentColor = MaterialTheme.colorScheme.onBackground,
                     color = MaterialTheme.colorScheme.background
                 ) {
-
                     LazyVerticalGrid(columns = GridCells.Fixed(2)){
                         detailStatus?.let {
                             detail(vm, detailStatus = it)
@@ -154,22 +148,12 @@ fun Play(
                             playerStatus?.let {
                                 playerMsg(vm, playerMsgStatus = playMsg, it)
                             }
-
                         }
                     }
                 }
-
-
-
-
-
             }
         }
     )
-
-
-
-
 }
 
 // 播放器

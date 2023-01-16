@@ -29,18 +29,26 @@ object TinyStatusController {
         // 如果开启了自动小窗 & 当前视频正在播放 则小窗
         if(autoTinyEnableOkkv && PlayerController.exoPlayer.isPlaying){
             PlayerTinyController.showTiny()
+        }else{
+            // 如果没开 先暂停再说
+            PlayerController.exoPlayer.pause()
         }
     }
 
     fun onActResume(){
         if(playerScreenLaunch){
             PlayerTinyController.dismissTiny()
+            BangumiPlayController.onPlayerScreenReshow()
         }
     }
 
     fun onActPause(){
-        if(playerScreenLaunch){
+        // 如果 当前在播放页 & 开启了自动小窗 & 当前视频正在播放 则小窗
+        if(playerScreenLaunch && autoTinyEnableOkkv && PlayerController.exoPlayer.isPlaying){
             PlayerTinyController.showTiny()
+        }else{
+            // 如果没开 先暂停再说
+            PlayerController.exoPlayer.pause()
         }
     }
 
