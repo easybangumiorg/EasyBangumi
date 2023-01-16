@@ -1,9 +1,15 @@
 package com.heyanle.easybangumi.ui.player
 
+import android.app.PendingIntent
+import android.content.Intent
+import android.os.Build
 import android.util.Log
 import androidx.collection.LruCache
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.app.TaskStackBuilder
+import androidx.core.net.toUri
 import androidx.lifecycle.MutableLiveData
+import androidx.navigation.NavController
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
@@ -12,6 +18,9 @@ import com.google.android.exoplayer2.source.hls.HlsMediaSource
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultDataSource
 import com.heyanle.easybangumi.BangumiApp
+import com.heyanle.easybangumi.MainActivity
+import com.heyanle.easybangumi.NAV
+import com.heyanle.easybangumi.PLAY
 import com.heyanle.easybangumi.player.PlayerController
 import com.heyanle.easybangumi.player.PlayerTinyController
 import com.heyanle.easybangumi.ui.common.easy_player.EasyPlayerView
@@ -23,6 +32,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
+import java.net.URLEncoder
 
 /**
  * Created by HeYanLe on 2023/1/15 19:53.
@@ -41,11 +51,45 @@ object BangumiPlayController {
 
     val curPlayerStatus = MutableLiveData<AnimPlayViewModel.PlayerStatus>()
 
-    fun newBangumi(bangumiSummary: BangumiSummary){
+    var pendingIntent: PendingIntent? = null
+
+    fun getCurPendingIntent(): PendingIntent{
+        return if(pendingIntent != null){
+            pendingIntent!!
+        }else{
+            val intent = Intent(BangumiApp.INSTANCE, MainActivity::class.java)
+            val flagImmutable = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                PendingIntent.FLAG_IMMUTABLE
+            }else{
+                0
+            }
+            PendingIntent.getActivity(BangumiApp.INSTANCE, 0, intent, flagImmutable)
+        }
+    }
+
+    fun newBangumi(bangumiSummary: BangumiSummary, navController: NavController){
         val new = getAnimPlayViewModel(bangumiSummary)
         if(new != curAnimPlayViewModel.value){
             curAnimPlayViewModel.postValue(new)
         }
+        val del = URLEncoder.encode(bangumiSummary.detailUrl, "utf-8")
+
+        val deepLinkIntent = Intent(
+            Intent.ACTION_VIEW,
+            "${NAV}://${PLAY}/${bangumiSummary.source}/${del}".toUri(),
+            BangumiApp.INSTANCE,
+            MainActivity::class.java
+        )
+
+        pendingIntent = TaskStackBuilder.create(BangumiApp.INSTANCE).run {
+            addNextIntentWithParentStack(deepLinkIntent)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            } else {
+                getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
+            }
+        }
+
 
     }
 

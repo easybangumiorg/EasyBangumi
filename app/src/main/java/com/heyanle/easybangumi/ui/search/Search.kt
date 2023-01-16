@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi.ui.home.search
+package com.heyanle.easybangumi.ui.search
 
 import android.animation.ValueAnimator
 import androidx.compose.foundation.background
@@ -25,16 +25,7 @@ import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -65,6 +56,7 @@ import com.heyanle.easybangumi.ui.common.ScrollHeaderBox
 import com.heyanle.easybangumi.ui.common.SearchTopBar
 import com.heyanle.easybangumi.ui.home.animInitialPage
 import com.heyanle.okkv2.core.okkv
+import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 
@@ -91,9 +83,7 @@ fun Search(
     defKeyword: String = ""
 ){
 
-    val keyword = remember {
-        mutableStateOf(defKeyword)
-    }
+
 
     val pagerState = rememberPagerState(
         initialPage = animSearchInitialPage
@@ -106,13 +96,17 @@ fun Search(
 
     val vm = viewModel<SearchViewModel>()
 
+    val keyword = remember {
+        mutableStateOf(
+            vm.keywordState.value.ifEmpty { defKeyword }
+        )
+    }
+
     val uiController = rememberSystemUiController()
 
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
-    LaunchedEffect(key1 = Unit){
-        pagerState.scrollToPage(animInitialPage)
-    }
+
 
     // 饱和 cancel
     DisposableEffect(key1 = Unit){
@@ -130,6 +124,17 @@ fun Search(
         FocusRequester()
     }
 
+    LaunchedEffect(key1 = Unit){
+        pagerState.scrollToPage(animSearchInitialPage)
+
+        if(vm.controllerList[animSearchInitialPage].pagerFlow.last() !is SearchPageController.SearchPageState.Empty){
+            focusRequester.requestFocus()
+            scrollBehavior.state.heightOffset = 0F
+            scrollBehavior.state.contentOffset = 0F
+
+        }
+    }
+
     Scaffold(
         containerColor = Color.Transparent,
         contentColor = MaterialTheme.colorScheme.onBackground,
@@ -142,7 +147,6 @@ fun Search(
                     SearchTopBar(
                         modifier = Modifier.statusBarsPadding(),
                         placeholder = {
-
                             Text(modifier = Modifier, textAlign = TextAlign.Start,text = stringResource(id = R.string.anim_search))
                         },
                         text = keyword,
@@ -150,7 +154,14 @@ fun Search(
                             nav.popBackStack()
                         },
                         onSearch = {
-                            vm.keywordState.value = it
+                            vm.search(it)
+
+                        },
+                        onValueChange = {
+                            keyword.value = it
+                            if(it.isEmpty()){
+                                vm.search(it)
+                            }
                         },
                         scrollBehavior = scrollBehavior,
                         containerColor = Color.Transparent,
@@ -184,7 +195,7 @@ fun Search(
                 modifier = Modifier
                     .fillMaxHeight()
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
-                    .nestedScroll(object: NestedScrollConnection{
+                    .nestedScroll(object : NestedScrollConnection {
                         override fun onPreScroll(
                             available: Offset,
                             source: NestedScrollSource

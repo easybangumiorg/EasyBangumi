@@ -86,15 +86,15 @@ fun Play(
     detail: String,
 ){
 
-    // 这里 activity onPause 的时候会修改 lastPauseLevel
-//    // 这里可以监听 home 钮回到桌面再回来
-//    LaunchedEffect(key1 = BangumiPlayController.lastPauseLevel.value){
-//        BangumiPlayController.onPlayerScreenReshow()
-//    }
-
-    LaunchedEffect(key1 = Unit){
-        BangumiPlayController.newBangumi(BangumiSummary(source, detail))
+    val nav = LocalNavController.current
+    // 多实例的时候，当前页面的动画如果不是当前播放的，需要改变当前播放的
+    LaunchedEffect(key1 = BangumiPlayController.curAnimPlayViewModel.value){
+        val old = BangumiPlayController.curAnimPlayViewModel.value?.bangumiSummary
+        if(old?.source != source || old.detailUrl != detail){
+            BangumiPlayController.newBangumi(BangumiSummary(source, detail), nav)
+        }
         TinyStatusController.onPlayScreenLaunch()
+
     }
 
     val uiController = rememberSystemUiController()

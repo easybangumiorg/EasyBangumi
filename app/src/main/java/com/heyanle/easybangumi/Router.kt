@@ -20,14 +20,18 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import androidx.navigation.navigation
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.heyanle.easybangumi.ui.home.Home
-import com.heyanle.easybangumi.ui.home.search.Search
+import com.heyanle.easybangumi.ui.search.Search
 import com.heyanle.easybangumi.ui.player.Play
 import com.heyanle.lib_anim.entity.Bangumi
+import java.net.URLDecoder
+import java.net.URLEncoder
+import java.nio.charset.Charset
 
 /**
  * Created by HeYanLe on 2023/1/7 13:38.
@@ -38,6 +42,7 @@ val LocalNavController = staticCompositionLocalOf<NavHostController> {
     error("AppNavController Not Provide")
 }
 
+const val NAV = "nav"
 
 const val HOME = "home"
 const val SEARCH = "search"
@@ -56,7 +61,8 @@ fun NavHostController.navigationPlay(bangumi: Bangumi){
 }
 
 fun NavHostController.navigationPlay(source: String, detailUrl: String){
-    navigate("${PLAY}?source=${source}&detailUrl=${detailUrl}")
+    val uel = URLEncoder.encode(detailUrl, "utf-8")
+    navigate("${PLAY}/${source}/${uel}")
 }
 
 
@@ -84,15 +90,17 @@ fun Nav() {
             }
 
             composable(
-                "${PLAY}?source={source}&detailUrl={detailUrl}",
+                "${PLAY}/{source}/{detailUrl}",
                 arguments = listOf(
                     navArgument("source") { defaultValue = "" },
                     navArgument("detailUrl") { defaultValue = ""},
-                )
+                ),
+                deepLinks = listOf(navDeepLink { uriPattern = "${NAV}://${PLAY}/{source}/{detailUrl}" }),
             ){
                 val source = it.arguments?.getString("source")?:""
                 val detailUrl = it.arguments?.getString("detailUrl")?:""
-                Play(source = source, detail = detailUrl)
+
+                Play(source = source, detail = URLDecoder.decode(detailUrl, "utf-8"))
             }
 
 

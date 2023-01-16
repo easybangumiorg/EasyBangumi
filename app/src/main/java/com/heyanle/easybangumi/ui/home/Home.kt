@@ -41,7 +41,7 @@ import com.heyanle.easybangumi.ui.home.my.AnimMy
 import com.heyanle.easybangumi.ui.common.HomeTabItem
 import com.heyanle.easybangumi.ui.common.HomeTabRow
 import com.heyanle.easybangumi.ui.common.HomeTopAppBar
-import com.heyanle.easybangumi.ui.setting.SettingPage
+import com.heyanle.easybangumi.ui.home.setting.SettingPage
 import com.heyanle.okkv2.core.okkv
 import kotlinx.coroutines.launch
 
