@@ -16,6 +16,7 @@ import com.heyanle.easybangumi.utils.dip2px
 import com.heyanle.easybangumi.utils.stringRes
 import com.heyanle.easybangumi.utils.toast
 import com.heyanle.okkv2.core.okkv
+import kotlin.math.absoluteValue
 
 
 /**
@@ -128,7 +129,7 @@ object PlayerTinyController {
             MotionEvent.ACTION_MOVE -> {
                 val nowX = event.rawX
                 val nowY = event.rawY
-                if(isMove || nowX - downTouchX >= slop || nowY - downTouchY >= slop){
+                if(isMove || (nowX - downTouchX).absoluteValue >= slop || (nowY - downTouchY).absoluteValue >= slop){
                     isMove = true
                     val newWindowX = downWindowX + (nowX - downTouchX)
                     val newWindowY = downWindowY + (nowY - downTouchY)
