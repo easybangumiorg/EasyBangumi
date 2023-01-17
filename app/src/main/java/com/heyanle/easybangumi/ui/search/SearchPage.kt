@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi.ui.search
 
 import android.util.Log
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
@@ -12,8 +13,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
@@ -168,54 +171,74 @@ fun SearchPage(
             }
             is SearchPageViewModel.SearchPageState.Page -> {
                 val lazyPagingItems = newState.flow.collectAsLazyPagingItems()
-                if(lazyPagingItems.loadState.refresh is LoadState.Loading){
-                    LaunchedEffect(key1 = Unit){
-                        isShowTabForever.value = true
+                when (lazyPagingItems.loadState.refresh) {
+                    is LoadState.Loading -> {
+                        LoadingPage(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState()),
+                        )
                     }
-                    LoadingPage(
-                        modifier = Modifier
-                            .fillMaxSize(),
-                    )
-                }else{
-                    LaunchedEffect(key1 = Unit){
-                        isShowTabForever.value = false
+                    is LoadState.Error -> {
+                        ErrorPage(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState()),
+                            errorMsg = stringResource(R.string.net_error),
+                            clickEnable = true,
+                            other = {
+                                Text(text = stringResource(id = R.string.click_to_retry))
+                            },
+                            onClick = {
+                                vm.search(vm.getCurKeyword())
+                            }
+                        )
                     }
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize(),
-                        state = lazyListState,
-                        contentPadding = PaddingValues(0.dp, padding.calculateTopPadding() + 6.dp, 0.dp, 6.dp),
-                    ) {
-                        itemsIndexed(lazyPagingItems){_, v ->
-                            v?.let {
-                                BangumiSearchItem(bangumi = it){
-                                    nav.navigationPlay(it)
+                    else -> {
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxSize(),
+                            state = lazyListState,
+                            contentPadding = PaddingValues(0.dp, padding.calculateTopPadding() + 6.dp, 0.dp, 6.dp),
+                        ) {
+                            itemsIndexed(lazyPagingItems){_, v ->
+                                v?.let { bangumi ->
+                                    BangumiSearchItem(bangumi = bangumi){
+                                        nav.navigationPlay(it)
+                                    }
                                 }
                             }
-                        }
-                        if (lazyPagingItems.loadState.append is LoadState.Loading) {
-                            item {
-                                LoadingPage(
-                                    modifier = Modifier.fillMaxWidth(),
-                                )
-                            }
-                        }else if(lazyPagingItems.loadState.append is LoadState.Error){
-                            item {
-                                val errorMsg = (lazyPagingItems.loadState.append as? LoadState.Error)?.error?.message?: stringRes(R.string.net_error)
-                                ErrorPage(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    errorMsg = errorMsg,
-                                    clickEnable = true,
-                                    onClick = {
-                                        lazyPagingItems.retry()
+                            when (lazyPagingItems.loadState.append) {
+                                is LoadState.Loading -> {
+                                    item {
+                                        LoadingPage(
+                                            modifier = Modifier.fillMaxWidth(),
+                                        )
                                     }
-                                )
-                            }
-                        }else {
-                            item {  
-                                Text(modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(0.dp, 2.dp), textAlign = TextAlign.Center,text = stringResource(id = R.string.list_most_bottom))
+                                }
+                                is LoadState.Error -> {
+                                    item {
+                                        val errorMsg = (lazyPagingItems.loadState.append as? LoadState.Error)?.error?.message?: stringRes(R.string.net_error)
+                                        ErrorPage(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            errorMsg = errorMsg,
+                                            clickEnable = true,
+                                            other = {
+                                                Text(text = stringResource(id = R.string.click_to_retry))
+                                            },
+                                            onClick = {
+                                                lazyPagingItems.retry()
+                                            }
+                                        )
+                                    }
+                                }
+                                else -> {
+                                    item {
+                                        Text(modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(0.dp, 2.dp), textAlign = TextAlign.Center,text = stringResource(id = R.string.list_most_bottom))
+                                    }
+                                }
                             }
                         }
                     }
