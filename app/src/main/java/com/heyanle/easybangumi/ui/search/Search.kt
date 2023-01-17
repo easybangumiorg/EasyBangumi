@@ -4,32 +4,20 @@ import android.animation.ValueAnimator
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -40,23 +28,17 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.google.accompanist.insets.statusBarsHeight
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.heyanle.easybangumi.LocalNavController
 import com.heyanle.easybangumi.R
-import com.heyanle.easybangumi.ui.common.FastScrollToTopFab
-import com.heyanle.easybangumi.ui.common.HomeTabItem
-import com.heyanle.easybangumi.ui.common.HomeTabRow
-import com.heyanle.easybangumi.ui.common.LoadingPage
-import com.heyanle.easybangumi.ui.common.ScrollHeaderBox
-import com.heyanle.easybangumi.ui.common.SearchTopBar
-import com.heyanle.easybangumi.ui.home.animInitialPage
+import com.heyanle.easybangumi.ui.common.*
+import com.heyanle.lib_anim.ISearchParser
 import com.heyanle.okkv2.core.okkv
-import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 
@@ -64,8 +46,6 @@ import java.lang.ref.WeakReference
  * Created by HeYanLe on 2023/1/10 16:34.
  * https://github.com/heyanLE
  */
-
-var animSearchInitialPage by okkv("animSearchInitialPage", 0)
 
 var topAppBarExpendAnimator: WeakReference<ValueAnimator>? = null
 fun onNewTopAppBarExpendAnim(valueAnimator: ValueAnimator?){
@@ -75,32 +55,31 @@ fun onNewTopAppBarExpendAnim(valueAnimator: ValueAnimator?){
     }
 }
 
+@Composable
+fun Search(
+    default: String,
+){
+    SearchSourceContainer(
+        errorContainerColor = MaterialTheme.colorScheme.background
+    ) {
+        val vm = viewModel<SearchViewModel>(factory = SearchViewModelFactory(default))
+        SearchPage(vm = vm, it)
+    }
+}
+
+var animSearchInitialPage by okkv("animSearchInitialPage", 0)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class,
     ExperimentalComposeUiApi::class
 )
 @Composable
-fun Search(
-    defKeyword: String = ""
+fun SearchPage(
+    vm: SearchViewModel,
+    searchParsers: List<ISearchParser>
 ){
-
-
-
-    val pagerState = rememberPagerState(
-        initialPage = animSearchInitialPage
-    )
-
 
     val scope = rememberCoroutineScope()
 
     val nav = LocalNavController.current
-
-    val vm = viewModel<SearchViewModel>()
-
-    val keyword = remember {
-        mutableStateOf(
-            vm.keywordState.value.ifEmpty { defKeyword }
-        )
-    }
 
     val uiController = rememberSystemUiController()
 
@@ -124,10 +103,16 @@ fun Search(
         FocusRequester()
     }
 
-    LaunchedEffect(key1 = Unit){
-        pagerState.scrollToPage(animSearchInitialPage)
+    val pagerState = rememberPagerState(initialPage = animSearchInitialPage)
+    LaunchedEffect(key1 = searchParsers.size){
+        if(animSearchInitialPage >= searchParsers.size){
+            animSearchInitialPage = 0
+            pagerState.scrollToPage(0)
+        }
+    }
 
-        if(vm.controllerList[animSearchInitialPage].pagerFlow.last() !is SearchPageController.SearchPageState.Empty){
+    LaunchedEffect(key1 = Unit){
+        if(vm.searchEventState.value.isEmpty()){
             focusRequester.requestFocus()
             scrollBehavior.state.heightOffset = 0F
             scrollBehavior.state.contentOffset = 0F
@@ -149,7 +134,7 @@ fun Search(
                         placeholder = {
                             Text(modifier = Modifier, textAlign = TextAlign.Start,text = stringResource(id = R.string.anim_search))
                         },
-                        text = keyword,
+                        text = vm.keywordState,
                         onBack = {
                             nav.popBackStack()
                         },
@@ -158,7 +143,7 @@ fun Search(
 
                         },
                         onValueChange = {
-                            keyword.value = it
+                            vm.keywordState.value = it
                             if(it.isEmpty()){
                                 vm.search(it)
                             }
@@ -171,11 +156,12 @@ fun Search(
                         containerColor = MaterialTheme.colorScheme.primary,
                         selectedTabIndex = pagerState.currentPage
                     ) {
-                        for(i in vm.searchTitle.indices){
+
+                        for (i in searchParsers.indices) {
                             HomeTabItem(
                                 selected = i == pagerState.currentPage,
                                 text = {
-                                    Text(text = vm.searchTitle[i])
+                                    Text(text = searchParsers[i].getLabel())
                                 },
                                 onClick = {
                                     scope.launch {
@@ -206,19 +192,28 @@ fun Search(
                     })
                     .background(MaterialTheme.colorScheme.background)
                     .padding(padding),
-                count =  vm.searchTitle.size,
+                count =  searchParsers.size,
                 state = pagerState,
                 key = {it}
             ) {
 
+                vm.searchHistory
                 val lazyListState = rememberLazyListState()
-
-                val controller = remember {
-                    vm.controllerList[it]
-                }
                 Box(modifier = Modifier.fillMaxSize()){
-                    SearchPage(isHeaderShowForever ,vm = vm, controller = controller, isEnable = pagerState.currentPage == it, lazyListState = lazyListState)
-
+                    SearchPage(
+                        isShowTabForever = isHeaderShowForever,
+                        searchEventState = vm.searchEventState,
+                        historyKey = vm.searchHistory,
+                        searchParser = searchParsers[it],
+                        isEnable = pagerState.currentPage == it,
+                        onHistoryKeyClick = {
+                            vm.search(it)
+                        },
+                        lazyListState = lazyListState,
+                        onHistoryDelete = {
+                            vm.clearHistory()
+                        }
+                    )
                     FastScrollToTopFab(listState = lazyListState){
                         val anim = ValueAnimator.ofFloat(0F, 1F)
                         val sourceHeightOffset = scrollBehavior.state.heightOffset
@@ -240,6 +235,7 @@ fun Search(
                     }
                 }
             }
+
         }
     )
 }

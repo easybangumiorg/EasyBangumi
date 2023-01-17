@@ -54,10 +54,13 @@ fun HomeTabRow(
         tabs = tabs,
         divider = {},
         indicator = { tabPositions ->
-            TabRowDefaults.Indicator(
-                Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
-                color = indicatorColor(isUseSecondary)
-            )
+            if(tabPositions.isNotEmpty()){
+                TabRowDefaults.Indicator(
+                    Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
+                    color = indicatorColor(isUseSecondary)
+                )
+            }
+
         },)
 
 }

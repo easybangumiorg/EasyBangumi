@@ -51,6 +51,10 @@
     <string name="please_input_keyword_to_search">请输入关键字搜索</string>
     <string name="list_most_bottom">已经结束拉！</string>
 
+    <string name="no_source">没有番剧源</string>
+
+    <string name="source_not_found">番剧源不存在</string>
+
     <string name="loading_error">加载错误</string>
     <string name="source_error">番剧源报错</string>
     <string name="clear">清空</string>
@@ -66,7 +70,9 @@
     <string name="auto_tiny">自动小窗播放</string>
     <string name="auto_tiny_msg">播放中退出播放页自动进入小窗</string>
 
+    <string name="history">历史记录</string>
 
+    <string name="delete">删除</string>
 
     <string name="please_overlay_permission">请授予悬浮球权限</string>
 </resources>

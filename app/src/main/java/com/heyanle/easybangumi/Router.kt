@@ -5,23 +5,12 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.material.BottomNavigationItem
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Book
-import androidx.compose.material.icons.filled.LiveTv
-import androidx.compose.material.icons.filled.MenuBook
-import androidx.compose.material.icons.filled.Tv
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
-import androidx.navigation.navigation
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
@@ -31,7 +20,6 @@ import com.heyanle.easybangumi.ui.player.Play
 import com.heyanle.lib_anim.entity.Bangumi
 import java.net.URLDecoder
 import java.net.URLEncoder
-import java.nio.charset.Charset
 
 /**
  * Created by HeYanLe on 2023/1/7 13:38.

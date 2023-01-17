@@ -1,9 +1,11 @@
 package com.heyanle.easybangumi.source
 
-import androidx.lifecycle.MutableLiveData
 import com.heyanle.lib_anim.*
 import com.heyanle.lib_anim.bimibimi.BimibimiParser
 import com.heyanle.lib_anim.yhdm.YhdmParser
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 
 
 /**
@@ -12,103 +14,70 @@ import com.heyanle.lib_anim.yhdm.YhdmParser
  */
 object AnimSourceFactory {
 
+    // 把所有源作为一个 flow 对外暴露，全局可用
+    private val animSourceFlow = MutableStateFlow(AnimSources(emptyList()))
 
-    private val parserMap = hashMapOf<String, ISourceParser>()
-    private val homeMap = hashMapOf<String, IHomeParser>()
-    private val searchMap = hashMapOf<String, ISearchParser>()
-    private val detailMap = hashMapOf<String, IDetailParser>()
-    private val playMap = hashMapOf<String, IPlayerParser>()
-
-    init {
-        register(YhdmParser())
-        register(BimibimiParser())
+    // 注册源
+    // TODO 插件化加载
+    fun init(){
+        MainScope().launch {
+            animSourceFlow.emit(AnimSources(arrayListOf(
+                YhdmParser(),
+                BimibimiParser()
+            )))
+        }
     }
 
-    private fun register(iParser: ISourceParser){
-        if(!parserMap.containsKey(iParser.getKey())
-            || parserMap[iParser.getKey()]!!.getVersionCode() < iParser.getVersionCode()){
-            parserMap[iParser.getKey()] = iParser
-            if(iParser is IHomeParser){
-                homeMap[iParser.getKey()] = iParser
-            }
-            if(iParser is ISearchParser){
-                searchMap[iParser.getKey()] = iParser
-            }
-            if(iParser is IDetailParser){
-                detailMap[iParser.getKey()] = iParser
-            }
-            if(iParser is IPlayerParser){
-                playMap[iParser.getKey()] = iParser
+    fun parsers(): Flow<AnimSources>{
+        return animSourceFlow
+    }
+
+    fun homeParsers(): Flow<List<IHomeParser>>{
+        return channelFlow {
+            animSourceFlow.collectLatest {
+                send(it.homeParsers())
             }
         }
     }
 
-    fun parser(key: String): ISourceParser?{
-        return parserMap[key]
-    }
-
-    fun homeKeys():List<String>{
-        return homeMap.keys.toList()
-    }
-
-
-
-    fun labelsHome(): List<String>{
-        val res = arrayListOf<String>()
-        homeKeys().forEach { key ->
-            parser(key)?.let {
-                res.add(it.getLabel())
+    fun searchParsers(): Flow<List<ISearchParser>>{
+        return channelFlow {
+            animSourceFlow.collectLatest {
+                send(it.searchParsers())
             }
         }
-        return res
     }
 
-    fun searchKeys():List<String>{
-        return searchMap.keys.toList()
+    fun home(source: String): IHomeParser? {
+        return animSourceFlow.value.home(source)
     }
 
-    fun labelsSearch(): List<String>{
-        val res = arrayListOf<String>()
-        searchKeys().forEach { key ->
-            parser(key)?.let {
-                res.add(it.getLabel())
-            }
-        }
-        return res
+    fun search(source: String): ISearchParser?{
+        return animSourceFlow.value.search(source)
     }
 
-
-    fun home(key: String):IHomeParser?{
-        return homeMap[key]
+    fun detail(source: String): IDetailParser?{
+        return animSourceFlow.value.detail(source)
     }
 
-    fun search(key: String): ISearchParser?{
-        return searchMap[key]
+    fun play(source: String): IPlayerParser?{
+        return animSourceFlow.value.play(source)
     }
-
-    fun detail(key: String): IDetailParser?{
-        return detailMap[key]
-    }
-
-    fun play(key: String): IPlayerParser?{
-        return playMap[key]
-    }
-
 
     fun requireHome(key: String): IHomeParser {
-        return home(key) ?:throw NullPointerException("Home parser of key $key is null")
+        return animSourceFlow.value.requireHome(key)
     }
 
     fun requireSearch(key: String): ISearchParser {
-        return search(key) ?:throw NullPointerException("Search parser of key $key is null")
+        return animSourceFlow.value.requireSearch(key)
     }
 
     fun requireDetail(key: String): IDetailParser {
-        return detail(key) ?: throw NullPointerException("Detail parser of key $key is null")
+        return animSourceFlow.value.requireDetail(key)
     }
 
     fun requirePlay(key: String): IPlayerParser {
-        return play(key) ?: throw NullPointerException("Player parser of key $key is null")
+        return animSourceFlow.value.requirePlay(key)
     }
 
 }

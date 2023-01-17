@@ -115,22 +115,26 @@ fun SearchTopBar(
                 text.value.isNotEmpty()
             ){
                 if(it){
-                    IconButton(onClick = {
-                        text.value = ""
-                    }) {
-                        Icon(
-                            imageVector = Icons.Filled.Clear,
-                            stringResource(id = R.string.clear)
-                        )
+                    Row() {
+                        IconButton(onClick = {
+                            text.value = ""
+                            onValueChange("")
+                        }) {
+                            Icon(
+                                imageVector = Icons.Filled.Clear,
+                                stringResource(id = R.string.clear)
+                            )
+                        }
+                        IconButton(onClick = {
+                            onSearch(text.value)
+                        }) {
+                            Icon(
+                                imageVector = Icons.Filled.Search,
+                                stringResource(id = R.string.search)
+                            )
+                        }
                     }
-                    IconButton(onClick = {
-                        onSearch(text.value)
-                    }) {
-                        Icon(
-                            imageVector = Icons.Filled.Search,
-                            stringResource(id = R.string.search)
-                        )
-                    }
+
 
                 }
             }

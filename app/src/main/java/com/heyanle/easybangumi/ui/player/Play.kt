@@ -1,29 +1,19 @@
 package com.heyanle.easybangumi.ui.player
 
 import android.annotation.SuppressLint
-import android.content.Context
-import android.inputmethodservice.Keyboard.Row
 import android.util.Log
-import android.view.ViewGroup
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.*
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Surface
-import androidx.compose.material3.TabRowDefaults
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -43,35 +33,24 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.heyanle.easybangumi.BangumiApp
 import com.heyanle.easybangumi.LocalNavController
 import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.player.PlayerController
 import com.heyanle.easybangumi.player.TinyStatusController
-import com.heyanle.easybangumi.theme.EasyThemeController
 import com.heyanle.easybangumi.ui.common.ErrorPage
 import com.heyanle.easybangumi.ui.common.HomeTabItem
 import com.heyanle.easybangumi.ui.common.HomeTabRow
 import com.heyanle.easybangumi.ui.common.LoadingPage
 import com.heyanle.easybangumi.ui.common.OkImage
 import com.heyanle.easybangumi.ui.common.easy_player.EasyPlayerView
-import com.heyanle.easybangumi.ui.home.animSubPageItems
-import com.heyanle.easybangumi.utils.dip2px
 import com.heyanle.eplayer_core.constant.EasyPlayStatus
-import com.heyanle.eplayer_core.player.IPlayerEngine
-import com.heyanle.eplayer_core.player.IPlayerEngineFactory
-import com.heyanle.eplayer_core.render.IRender
-import com.heyanle.eplayer_core.render.IRenderFactory
 import com.heyanle.lib_anim.entity.BangumiSummary
-import kotlinx.coroutines.launch
 
 /**
  * Created by HeYanLe on 2023/1/11 15:27.
@@ -106,7 +85,7 @@ fun Play(
         }
     }
 
-    val vm: AnimPlayViewModel = BangumiPlayController.getAnimPlayViewModel(BangumiSummary(source, detail))
+    val vm: AnimPlayItemController = BangumiPlayController.getAnimPlayViewModel(BangumiSummary(source, detail))
 
     val playerStatus by vm.playerStatus.collectAsState(initial = null)
     val detailStatus by vm.detailController.detailFlow.collectAsState(initial = null)
@@ -161,8 +140,8 @@ fun Play(
 @SuppressLint("UnsafeOptInUsageError")
 @Composable
 fun  Video(
-    vm: AnimPlayViewModel,
-    playerStatus: AnimPlayViewModel.PlayerStatus,
+    vm: AnimPlayItemController,
+    playerStatus: AnimPlayItemController.PlayerStatus,
 ){
 
     val density = LocalDensity.current
@@ -181,7 +160,7 @@ fun  Video(
                     with(density) { ((it.width / (PlayerController.ratioWidth)) * PlayerController.ratioHeight).toDp() }
             }
     ){
-        if(playerStatus is AnimPlayViewModel.PlayerStatus.Error){
+        if(playerStatus is AnimPlayItemController.PlayerStatus.Error){
             ErrorPage(
                 errorMsg = playerStatus.errorMsg,
                 clickEnable = true,
@@ -204,12 +183,12 @@ fun  Video(
             ){
                 BangumiPlayController.onNewComposeView(it)
                 when(playerStatus){
-                    is AnimPlayViewModel.PlayerStatus.None -> {}
-                    is AnimPlayViewModel.PlayerStatus.Play -> {
+                    is AnimPlayItemController.PlayerStatus.None -> {}
+                    is AnimPlayItemController.PlayerStatus.Play -> {
 
                         it.basePlayerView.refreshStateOnce()
                     }
-                    is AnimPlayViewModel.PlayerStatus.Loading -> {
+                    is AnimPlayItemController.PlayerStatus.Loading -> {
                         it.basePlayerView.dispatchPlayStateChange(EasyPlayStatus.STATE_PREPARING)
                     }
                     else ->{}
@@ -229,9 +208,9 @@ fun  Video(
 
 // 播放线路 & 集
 fun LazyGridScope.playerMsg(
-    vm: AnimPlayViewModel,
+    vm: AnimPlayItemController,
     playerMsgStatus: PlayMsgController.PlayMsgStatus,
-    playerStatus: AnimPlayViewModel.PlayerStatus,
+    playerStatus: AnimPlayItemController.PlayerStatus,
 ){
 
 
@@ -319,7 +298,7 @@ fun LazyGridScope.playerMsg(
 }
 
 fun LazyGridScope.action(
-    vm: AnimPlayViewModel,
+    vm: AnimPlayItemController,
     detailStatus: DetailController.DetailStatus
 ){
     item(span = {
@@ -351,7 +330,7 @@ fun LazyGridScope.action(
 
 // 番剧详情
 fun LazyGridScope.detail(
-    vm: AnimPlayViewModel,
+    vm: AnimPlayItemController,
     detailStatus: DetailController.DetailStatus
 ){
     item(span = {

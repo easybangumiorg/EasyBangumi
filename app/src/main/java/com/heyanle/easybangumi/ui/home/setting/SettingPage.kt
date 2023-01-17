@@ -31,14 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -49,8 +42,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.recyclerview.widget.RecyclerView
 import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.player.TinyStatusController
+import com.heyanle.easybangumi.source.AnimSourceFactory
 import com.heyanle.easybangumi.theme.DarkMode
 import com.heyanle.easybangumi.theme.EasyThemeController
 import com.heyanle.easybangumi.theme.EasyThemeMode
@@ -275,6 +270,16 @@ fun TinySettingCard(
         mutableStateOf(TinyStatusController.autoTinyEnableOkkv)
     }
 
+    val ctx = LocalContext.current
+
+    LaunchedEffect(key1 = isAutoTiny){
+        if(isAutoTiny && !OverlayHelper.drawOverlayEnable(ctx)){
+            isAutoTiny = false
+            TinyStatusController.autoTinyEnableOkkv = false
+        }
+    }
+
+
     Column(
         modifier = Modifier
             .then(modifier),
@@ -287,21 +292,21 @@ fun TinySettingCard(
             textAlign = TextAlign.Start
         )
 
-        val ctx = LocalContext.current
+
 
         Row(modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                val check = isAutoTiny && OverlayHelper.drawOverlayEnable(ctx)
-                if(!check){
-                    if(OverlayHelper.drawOverlayEnable(ctx)){
+                val check = isAutoTiny
+                if (!check) {
+                    if (OverlayHelper.drawOverlayEnable(ctx)) {
                         isAutoTiny = true
                         TinyStatusController.autoTinyEnableOkkv = true
-                    }else{
+                    } else {
                         stringRes(R.string.please_overlay_permission).toast()
                         OverlayHelper.gotoDrawOverlaySetting(ctx)
                     }
-                }else{
+                } else {
                     isAutoTiny = false
                     TinyStatusController.autoTinyEnableOkkv = false
                 }
@@ -328,7 +333,7 @@ fun TinySettingCard(
 
             }
 
-            Switch(checked = isAutoTiny && OverlayHelper.drawOverlayEnable(ctx), onCheckedChange = {
+            Switch(checked = isAutoTiny, onCheckedChange = {
                 if(it){
                     if(OverlayHelper.drawOverlayEnable(ctx)){
                         isAutoTiny = true

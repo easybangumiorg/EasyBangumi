@@ -45,11 +45,11 @@ object BangumiPlayController {
     val lastPauseLevel = mutableStateOf(0)
     private var composeViewRes: WeakReference<EasyPlayerView>? = null
 
-    private val animPlayViewModelCache: LruCache<BangumiSummary, AnimPlayViewModel> = LruCache(3)
+    private val animPlayViewModelCache = ItemLru()
 
-    val curAnimPlayViewModel = MutableLiveData<AnimPlayViewModel>()
+    val curAnimPlayViewModel = MutableLiveData<AnimPlayItemController>()
 
-    val curPlayerStatus = MutableLiveData<AnimPlayViewModel.PlayerStatus>()
+    val curPlayerStatus = MutableLiveData<AnimPlayItemController.PlayerStatus>()
 
     var pendingIntent: PendingIntent? = null
 
@@ -93,10 +93,10 @@ object BangumiPlayController {
 
     }
 
-    fun getAnimPlayViewModel(bangumiSummary: BangumiSummary): AnimPlayViewModel{
+    fun getAnimPlayViewModel(bangumiSummary: BangumiSummary): AnimPlayItemController{
         val cache = animPlayViewModelCache[bangumiSummary]
         if(cache == null){
-            val n = AnimPlayViewModel(bangumiSummary)
+            val n = AnimPlayItemController(bangumiSummary)
             animPlayViewModelCache.put(bangumiSummary, n)
             return n
         }
@@ -116,7 +116,7 @@ object BangumiPlayController {
         composeViewRes?.get()?.basePlayerView?.attachToPlayer(PlayerController.exoPlayer)
     }
 
-    var lastPlayerStatus: AnimPlayViewModel.PlayerStatus.Play? = null
+    var lastPlayerStatus: AnimPlayItemController.PlayerStatus.Play? = null
 
     init {
         curAnimPlayViewModel.observeForever {
@@ -131,14 +131,14 @@ object BangumiPlayController {
         }
         curPlayerStatus.observeForever {
             when(it){
-                is AnimPlayViewModel.PlayerStatus.Loading -> {
+                is AnimPlayItemController.PlayerStatus.Loading -> {
                     if(PlayerTinyController.isTinyMode) {
                         PlayerTinyController.tinyPlayerView.basePlayerView.dispatchPlayStateChange(
                             EasyPlayStatus.STATE_PREPARING
                         )
                     }
                 }
-                is AnimPlayViewModel.PlayerStatus.Play -> {
+                is AnimPlayItemController.PlayerStatus.Play -> {
                     Log.d("BangumiPlayController", it.uri)
                     if(PlayerTinyController.isTinyMode) {
                         PlayerTinyController.tinyPlayerView.basePlayerView.refreshStateOnce()
@@ -164,7 +164,7 @@ object BangumiPlayController {
                     }
                     lastPlayerStatus = it
                 }
-                is AnimPlayViewModel.PlayerStatus.Error -> {
+                is AnimPlayItemController.PlayerStatus.Error -> {
                     if(PlayerTinyController.isTinyMode){
                         it.errorMsg.toast()
                         PlayerTinyController.dismissTiny()
@@ -176,6 +176,23 @@ object BangumiPlayController {
 
                 }
             }
+        }
+    }
+
+    class ItemLru: LruCache<BangumiSummary, AnimPlayItemController>(3){
+        override fun entryRemoved(
+            evicted: Boolean,
+            key: BangumiSummary,
+            oldValue: AnimPlayItemController,
+            newValue: AnimPlayItemController?
+        ) {
+            super.entryRemoved(evicted, key, oldValue, newValue)
+            kotlin.runCatching {
+                oldValue.clear()
+            }.onFailure {
+                it.printStackTrace()
+            }
+
         }
     }
 

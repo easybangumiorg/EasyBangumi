@@ -26,7 +26,7 @@ object EasyDB {
     lateinit var database:AppDatabase
 
     fun init(context: Context){
-        Room.databaseBuilder(
+        database = Room.databaseBuilder(
             context,
             AppDatabase::class.java, "easy_bangumi"
         ).fallbackToDestructiveMigration().build()

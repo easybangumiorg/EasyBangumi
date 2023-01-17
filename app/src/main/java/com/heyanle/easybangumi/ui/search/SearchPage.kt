@@ -7,53 +7,39 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.with
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemsIndexed
+import com.google.accompanist.flowlayout.FlowMainAxisAlignment
+import com.google.accompanist.flowlayout.FlowRow
 import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.PagerState
 import com.heyanle.easybangumi.LocalNavController
 import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.navigationPlay
 import com.heyanle.easybangumi.ui.common.*
 import com.heyanle.easybangumi.utils.stringRes
+import com.heyanle.lib_anim.ISearchParser
 import com.heyanle.lib_anim.entity.Bangumi
 
 /**
@@ -65,12 +51,17 @@ import com.heyanle.lib_anim.entity.Bangumi
 fun SearchPage(
     isShowTabForever: MutableState<Boolean>,
     padding: PaddingValues = PaddingValues(0.dp),
-    vm: SearchViewModel,
-    controller: SearchPageController,
+    searchEventState: State<String>,
+    historyKey: SnapshotStateList<String>,
+    searchParser: ISearchParser,
     isEnable: Boolean, // 是否刷新
     lazyListState: LazyListState = rememberLazyListState(),
+    onHistoryKeyClick: (String)->Unit,
+    onHistoryDelete: ()->Unit,
 ){
-    val keyword by vm.keywordState
+    
+    val vm = viewModel<SearchPageViewModel>(factory = SearchPageViewModelFactory(searchParser))
+
     if(isEnable){
         val lastItem by remember() {
             derivedStateOf {
@@ -86,20 +77,24 @@ fun SearchPage(
             }
         }
         SideEffect {
-            controller.isCurLast = endReached
+            vm.isCurLast = endReached
         }
     }
 
     if(isEnable){
+        val keyword by searchEventState
         LaunchedEffect(key1 = keyword){
-            if(controller.keywordFlow.value != keyword){
-                Log.d("SearchPage", "${controller.keywordFlow.value} $keyword")
-                controller.refreshKeyword(keyword)
+            val cur = vm.getCurKeyword()
+            if(cur != keyword){
+                vm.search(keyword)
             }
 
         }
     }
-    val state by controller.pagerFlow.collectAsState(initial = SearchPageController.EmptyBangumi)
+    val state by vm.pagerFlow.collectAsState(initial = vm.lastPagerState?:SearchPageViewModel.EmptyBangumi)
+    LaunchedEffect(key1 = state){
+        Log.d("SearchPage", state.toString())
+    }
     val sta = state
     val nav = LocalNavController.current
 
@@ -111,20 +106,67 @@ fun SearchPage(
         },
     ){ newState ->
         when(newState){
-            is SearchPageController.SearchPageState.Empty -> {
+            is SearchPageViewModel.SearchPageState.Empty -> {
                 LaunchedEffect(key1 = Unit){
                     isShowTabForever.value = true
                 }
-                EmptyPage(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    emptyMsg = stringResource(id = R.string.please_input_keyword_to_search)
-                )
-                KeyTabRow(selectedTabIndex = -1, textList = vm.searchHistory, onItemClick = {
-                    vm.search(vm.searchHistory[it])
-                })
+                Box(modifier = Modifier
+                    .fillMaxSize()){
+                    EmptyPage(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        emptyMsg = stringResource(id = R.string.please_input_keyword_to_search)
+                    )
+
+                    Column(modifier = Modifier.padding(16.dp)){
+                        Row (
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ){
+                            Text(text = stringResource(id = R.string.history))
+                            IconButton(onClick = {
+                                onHistoryDelete()
+                            }) {
+                                Icon(Icons.Filled.Delete, contentDescription = stringResource(id = R.string.delete))
+                            }
+                        }
+
+                        FlowRow (
+                            mainAxisSpacing = 4.dp,
+                            crossAxisSpacing = 4.dp
+                        ) {
+                            historyKey.forEach {
+                                Surface(
+                                    shadowElevation = 4.dp,
+                                    shape = CircleShape,
+                                    modifier =
+                                    Modifier
+                                        .padding(2.dp, 8.dp)
+                                    ,
+                                    color = MaterialTheme.colorScheme.secondary,
+                                ) {
+                                    Text(
+                                        modifier = Modifier
+                                            .clip(CircleShape)
+                                            .clickable {
+                                                onHistoryKeyClick(it)
+                                            }
+                                            .padding(8.dp, 4.dp),
+                                        color = MaterialTheme.colorScheme.onPrimary,
+                                        fontWeight = FontWeight.W900,
+                                        text = it,
+                                        fontSize = 12.sp,
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                }
+
+
             }
-            is SearchPageController.SearchPageState.Page -> {
+            is SearchPageViewModel.SearchPageState.Page -> {
                 val lazyPagingItems = newState.flow.collectAsLazyPagingItems()
                 if(lazyPagingItems.loadState.refresh is LoadState.Loading){
                     LaunchedEffect(key1 = Unit){

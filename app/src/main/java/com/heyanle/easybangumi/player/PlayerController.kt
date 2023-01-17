@@ -20,6 +20,8 @@ import com.heyanle.easybangumi.BangumiApp
 import com.heyanle.easybangumi.utils.OverlayHelper
 import com.heyanle.easybangumi.utils.dip2px
 import com.heyanle.okkv2.core.okkv
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 /**
  * 1. 管理 Player 对象
@@ -31,15 +33,19 @@ object PlayerController {
     val ratioWidth = 16F
     val ratioHeight = 9F
 
-    var exoPlayer: ExoPlayer = ExoPlayer.Builder(
-        BangumiApp.INSTANCE,
-        DefaultRenderersFactory(BangumiApp.INSTANCE),
-        DefaultMediaSourceFactory(BangumiApp.INSTANCE),
-        DefaultTrackSelector(BangumiApp.INSTANCE),
-        DefaultLoadControl(),
-        DefaultBandwidthMeter.getSingletonInstance(BangumiApp.INSTANCE),
-        DefaultAnalyticsCollector(Clock.DEFAULT)
-    ).build()
+    val exoPlayer: ExoPlayer by lazy {
+        ExoPlayer.Builder(
+            BangumiApp.INSTANCE,
+            DefaultRenderersFactory(BangumiApp.INSTANCE),
+            DefaultMediaSourceFactory(BangumiApp.INSTANCE),
+            DefaultTrackSelector(BangumiApp.INSTANCE),
+            DefaultLoadControl(),
+            DefaultBandwidthMeter.getSingletonInstance(BangumiApp.INSTANCE),
+            DefaultAnalyticsCollector(Clock.DEFAULT)
+        ).build()
+    }
+
+
 
 
 
