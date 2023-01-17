@@ -4,13 +4,11 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewModelScope
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.PagerState
 import com.heyanle.easybangumi.db.EasyDB
-import com.heyanle.easybangumi.source.AnimSourceFactory
 import com.heyanle.lib_anim.ISearchParser
-import com.heyanle.okkv2.core.okkv
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -23,6 +21,22 @@ import kotlinx.coroutines.withContext
 class SearchViewModel(
     val default: String = "",
 ): ViewModel(){
+
+    private val viewModelOwnerStore = hashMapOf<ISearchParser, ViewModelStore>()
+
+    fun getViewModelStoreOwner(pageParser: ISearchParser) = ViewModelStoreOwner {
+        var viewModelStore = viewModelOwnerStore[pageParser]
+        if (viewModelStore == null) {
+            viewModelStore = ViewModelStore()
+            viewModelOwnerStore[pageParser] = viewModelStore
+        }
+        viewModelStore
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        viewModelOwnerStore.values.forEach(ViewModelStore::clear)
+    }
 
     val keywordState = mutableStateOf("")
 

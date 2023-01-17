@@ -29,6 +29,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
@@ -196,44 +197,48 @@ fun SearchPage(
                 state = pagerState,
                 key = {it}
             ) {
-
-                vm.searchHistory
-                val lazyListState = rememberLazyListState()
-                Box(modifier = Modifier.fillMaxSize()){
-                    SearchPage(
-                        isShowTabForever = isHeaderShowForever,
-                        searchEventState = vm.searchEventState,
-                        historyKey = vm.searchHistory,
-                        searchParser = searchParsers[it],
-                        isEnable = pagerState.currentPage == it,
-                        onHistoryKeyClick = {
-                            vm.search(it)
-                        },
-                        lazyListState = lazyListState,
-                        onHistoryDelete = {
-                            vm.clearHistory()
-                        }
-                    )
-                    FastScrollToTopFab(listState = lazyListState){
-                        val anim = ValueAnimator.ofFloat(0F, 1F)
-                        val sourceHeightOffset = scrollBehavior.state.heightOffset
-                        val sourceContentOffset = scrollBehavior.state.contentOffset
-                        anim.addUpdateListener {
-                            runCatching {
-                                val float = it.animatedValue as Float
-                                val targetHeightOffset = sourceHeightOffset + (0F - sourceHeightOffset)*float
-                                val targetContentOffset = sourceContentOffset + (0F - sourceContentOffset)*float
-                                scrollBehavior.state.heightOffset = targetHeightOffset
-                                scrollBehavior.state.contentOffset = targetContentOffset
-                            }.onFailure {
-                                it.printStackTrace()
+                CompositionLocalProvider(
+                    LocalViewModelStoreOwner provides vm.getViewModelStoreOwner(searchParsers[it])
+                ) {
+                    vm.searchHistory
+                    val lazyListState = rememberLazyListState()
+                    Box(modifier = Modifier.fillMaxSize()){
+                        SearchPage(
+                            isShowTabForever = isHeaderShowForever,
+                            searchEventState = vm.searchEventState,
+                            historyKey = vm.searchHistory,
+                            searchParser = searchParsers[it],
+                            isEnable = pagerState.currentPage == it,
+                            onHistoryKeyClick = {
+                                vm.search(it)
+                            },
+                            lazyListState = lazyListState,
+                            onHistoryDelete = {
+                                vm.clearHistory()
                             }
+                        )
+                        FastScrollToTopFab(listState = lazyListState){
+                            val anim = ValueAnimator.ofFloat(0F, 1F)
+                            val sourceHeightOffset = scrollBehavior.state.heightOffset
+                            val sourceContentOffset = scrollBehavior.state.contentOffset
+                            anim.addUpdateListener {
+                                runCatching {
+                                    val float = it.animatedValue as Float
+                                    val targetHeightOffset = sourceHeightOffset + (0F - sourceHeightOffset)*float
+                                    val targetContentOffset = sourceContentOffset + (0F - sourceContentOffset)*float
+                                    scrollBehavior.state.heightOffset = targetHeightOffset
+                                    scrollBehavior.state.contentOffset = targetContentOffset
+                                }.onFailure {
+                                    it.printStackTrace()
+                                }
+                            }
+                            anim.duration = 200
+                            onNewTopAppBarExpendAnim(anim)
+                            anim.start()
                         }
-                        anim.duration = 200
-                        onNewTopAppBarExpendAnim(anim)
-                        anim.start()
                     }
                 }
+
             }
 
         }

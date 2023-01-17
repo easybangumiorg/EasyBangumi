@@ -37,7 +37,13 @@ class SearchPageViewModel(
         }
     }
 
-    private val keywordFlow = MutableStateFlow("")
+    sealed class SearchEvent(val keyword: String){
+
+        object None: SearchEvent("")
+        class Search(keyword: String): SearchEvent(keyword)
+    }
+
+    private val keywordFlow = MutableStateFlow<SearchEvent>(SearchEvent.None)
 
     var lastPagerState: SearchPageState<Int, Bangumi>? = null
 
@@ -46,52 +52,25 @@ class SearchPageViewModel(
     init {
         viewModelScope.launch {
             keywordFlow.collectLatest {
-                if(it.isEmpty()){
+                if(it.keyword.isEmpty()){
                     lastPagerState = EmptyBangumi
                     pagerFlow.emit(EmptyBangumi)
                 }else{
-                    val n = SearchPageState.Page<Int, Bangumi>(it, getPager(it).flow.cachedIn(viewModelScope))
+                    val n = SearchPageState.Page<Int, Bangumi>(it.keyword, getPager(it.keyword).flow.cachedIn(viewModelScope))
                     lastPagerState = n
                     pagerFlow.emit(n)
-//                    val la = lastPagerState
-//                    if(la!=null && la.keyword == it){
-//                        pagerFlow.emit(la)
-//                    }else{
-//                        val n = SearchPageState.Page<Int, Bangumi>(it, getPager(it).flow.cachedIn(vm.viewModelScope))
-//                        lastPagerState = n
-//                        pagerFlow.emit(n)
-//                    }
-
                 }
             }
         }
     }
-//
-//    val pagerFlow = channelFlow<SearchPageState<Int, Bangumi>> {
-//        keywordFlow.collectLatest {
-//            if(it.isEmpty()){
-//                send(EmptyBangumi)
-//            }else{
-//                val la = lastPagerState
-//                if(la!=null && la.keyword == it){
-//                    send(la)
-//                }else{
-//                    val n = SearchPageState.Page<Int, Bangumi>(it, getPager(it).flow.cachedIn(vm.viewModelScope))
-//                    lastPagerState = n
-//                    send(n)
-//                }
-//
-//            }
-//        }
-//    }
 
     fun getCurKeyword(): String{
-        return keywordFlow.value
+        return keywordFlow.value.keyword
     }
 
     fun search(keyword: String){
         viewModelScope.launch {
-            keywordFlow.emit(keyword)
+            keywordFlow.emit(SearchEvent.Search(keyword))
         }
     }
 
