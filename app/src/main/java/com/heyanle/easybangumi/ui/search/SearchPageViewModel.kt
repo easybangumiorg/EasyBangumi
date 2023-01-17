@@ -39,7 +39,7 @@ class SearchPageViewModel(
 
     private val keywordFlow = MutableStateFlow("")
 
-    var lastPagerState: SearchPageState.Page<Int, Bangumi>? = null
+    var lastPagerState: SearchPageState<Int, Bangumi>? = null
 
     val pagerFlow = MutableStateFlow<SearchPageState<Int, Bangumi>>(EmptyBangumi)
 
@@ -47,6 +47,7 @@ class SearchPageViewModel(
         viewModelScope.launch {
             keywordFlow.collectLatest {
                 if(it.isEmpty()){
+                    lastPagerState = EmptyBangumi
                     pagerFlow.emit(EmptyBangumi)
                 }else{
                     val n = SearchPageState.Page<Int, Bangumi>(it, getPager(it).flow.cachedIn(viewModelScope))
