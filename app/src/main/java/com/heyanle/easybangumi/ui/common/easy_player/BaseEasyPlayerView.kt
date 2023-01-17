@@ -410,7 +410,10 @@ class BaseEasyPlayerView:
     override fun onIsPlayingChanged(isPlaying: Boolean) {
         super.onIsPlayingChanged(isPlaying)
         if(isPlaying){
+            renderContainer.keepScreenOn = true
             dispatchPlayStateChange(EasyPlayStatus.STATE_PLAYING)
+        }else{
+            renderContainer.keepScreenOn = false
         }
     }
 
@@ -475,6 +478,7 @@ class BaseEasyPlayerView:
         onPlayWhenReadyChanged(player.playWhenReady, Player.PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST)
         onPlaybackStateChanged(player.playbackState)
         onPlayerErrorChanged(player.playerError)
+        onIsPlayingChanged(player.isPlaying)
     }
 
     fun detachToPlayer(){
