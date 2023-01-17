@@ -2,6 +2,7 @@ package com.heyanle.easybangumi.ui.home.home
 
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
+import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
@@ -60,12 +61,7 @@ import coil.request.ImageRequest
 import com.heyanle.easybangumi.LocalNavController
 import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.navigationPlay
-import com.heyanle.easybangumi.ui.common.ErrorPage
-import com.heyanle.easybangumi.ui.common.FastScrollToTopFab
-import com.heyanle.easybangumi.ui.common.KeyTabRow
-import com.heyanle.easybangumi.ui.common.LoadingPage
-import com.heyanle.easybangumi.ui.common.OkImage
-import com.heyanle.easybangumi.ui.common.ScrollHeaderBox
+import com.heyanle.easybangumi.ui.common.*
 
 /**
  * Created by HeYanLe on 2023/1/9 21:29.
@@ -76,11 +72,22 @@ import com.heyanle.easybangumi.ui.common.ScrollHeaderBox
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun AnimHome(){
+    HomeSourceContainer {
+        val vm = viewModel<AnimHomeViewModel>(factory = AnimHomeViewModelFactory(it))
+        AnimHomePage(vm = vm)
+    }
+}
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+fun AnimHomePage(
+    vm: AnimHomeViewModel
+){
+    val labels = vm.homes.map {
+        it.getLabel()
+    }
 
-
-    val vm = viewModel<AnimHomeViewModel>()
-    val status by vm.homeResultFlow.collectAsState(initial = null)
-    if(status == null){
+    val status by vm.homeResultFlow.collectAsState(initial = AnimHomeViewModel.HomeAnimState.None)
+    if(status == AnimHomeViewModel.HomeAnimState.None){
         // 这里要成闭环
         Box(modifier = Modifier
             .fillMaxSize()
@@ -88,9 +95,10 @@ fun AnimHome(){
             .clickable {
                 vm.refresh()
             })
+        return
     }
-    val sta = status?:return
-    
+    val sta = status
+
     val lazyListState = rememberLazyListState()
 
     var isHeaderShowForever by remember {
@@ -104,8 +112,7 @@ fun AnimHome(){
             lastVisibleItem.index == lazyListState.layoutInfo.totalItemsCount - 1
         }
     }
-
-
+    Log.d("AnimHome", "label not empty")
     ScrollHeaderBox(
         canScroll = {
             if(isHeaderShowForever){
@@ -115,11 +122,11 @@ fun AnimHome(){
             }
         },
         modifier = Modifier.fillMaxSize(),
-        header = {
+        header = { dp ->
             KeyTabRow(
-                modifier = Modifier.offset(0.dp, it),
+                modifier = Modifier.offset(0.dp, dp),
                 selectedTabIndex = sta.curIndex,
-                textList = vm.homeTitle,
+                textList = labels,
                 onItemClick = {
                     vm.changeHomeSource(it)
                 })
@@ -176,17 +183,14 @@ fun AnimHome(){
                             }
                         )
                     }
+                    else -> {}
                 }
             }
         }
     )
-
-
     Box(modifier = Modifier){
         FastScrollToTopFab(listState = lazyListState)
     }
-
-
 }
 
 fun LazyListScope.animHomePage(state: AnimHomeViewModel.HomeAnimState.Completely){

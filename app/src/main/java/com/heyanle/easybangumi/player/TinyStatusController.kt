@@ -1,9 +1,6 @@
 package com.heyanle.easybangumi.player
 
-import com.heyanle.easybangumi.ui.player.AnimPlayViewModel
 import com.heyanle.easybangumi.ui.player.BangumiPlayController
-import com.heyanle.easybangumi.utils.toast
-import com.heyanle.eplayer_core.constant.EasyPlayStatus
 import com.heyanle.okkv2.core.okkv
 
 /**
@@ -15,7 +12,7 @@ import com.heyanle.okkv2.core.okkv
  */
 object TinyStatusController {
 
-    var autoTinyEnableOkkv by okkv<Boolean>("AUTO_TINY_ENABLE", def = true)
+    var autoTinyEnableOkkv by okkv<Boolean>("AUTO_TINY_ENABLE", def = false)
 
     private var playerScreenLaunch: Boolean = false
 

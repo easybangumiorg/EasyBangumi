@@ -28,6 +28,9 @@ interface SearchHistoryDao {
     @Delete
     fun delete(historyBean: SearchHistory)
 
+    @Query("DELETE FROM SearchHistory")
+    fun deleteAll()
+
     @Transaction
     fun insertOrModify(content: String) {
         val query = get(content)

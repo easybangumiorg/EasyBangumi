@@ -134,8 +134,6 @@ class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChange
             if(playState == EasyPlayStatus.STATE_PREPARING){
                 binding.root.visibility = View.VISIBLE
                 stopFadeOut()
-            }else{
-                startFadeOut()
             }
 
             if(playState != EasyPlayStatus.STATE_BUFFERING
