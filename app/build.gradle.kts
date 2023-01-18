@@ -67,6 +67,7 @@ dependencies {
     media()
     easyPlayer()
     room()
+    roomPaging()
     implementation(project(":easy-crasher"))
     implementation(project(":lib-anim"))
 }

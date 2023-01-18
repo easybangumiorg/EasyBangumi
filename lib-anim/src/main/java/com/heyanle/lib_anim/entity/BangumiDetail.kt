@@ -47,10 +47,18 @@ data class BangumiDetail(
 
     var lastEpisodeTitle: String = "",
 
-    var lastVisiTime: Long = 0L,
+    var lastVisitedTime: Long = 0L,
+
+    var createTime: Long = 0L,
+
 
 ){
     fun getBangumi(): Bangumi {
         return Bangumi(id, source, detailUrl, name, cover, intro)
     }
+
+    fun getSummary(): BangumiSummary {
+        return BangumiSummary(source, detailUrl)
+    }
+
 }

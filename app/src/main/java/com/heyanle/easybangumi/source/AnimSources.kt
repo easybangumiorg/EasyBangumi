@@ -40,6 +40,11 @@ class AnimSources(
         }
     }
 
+    fun parser(key: String): ISourceParser?{
+        return parserMap[key]
+    }
+
+
     fun homeParsers(): List<IHomeParser>{
         val res = arrayListOf<IHomeParser>()
         for((_, v) in homeMap){

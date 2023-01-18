@@ -201,10 +201,12 @@ class YhdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISe
             kotlin.runCatching {
                 val sourceDiv = doc.getElementsByClass("movurl")[0].child(0)
                 val list = arrayListOf<String>()
+                val tt = arrayListOf<String>()
                 sourceDiv.children().forEach {
                     list.add(it.text())
-                    temp.add(it.child(0).attr("href"))
+                    tt.add(it.child(0).attr("href"))
                 }
+                temp.addAll(tt.reversed())
                 map["播放列表"] = list.reversed()
                 this@YhdmParser.bangumi = bangumi
                 return@withContext  ISourceParser.ParserResult.Complete(map)

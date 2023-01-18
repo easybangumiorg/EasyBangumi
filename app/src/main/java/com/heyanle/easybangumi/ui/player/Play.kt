@@ -10,20 +10,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.StarOutline
+import androidx.compose.material.icons.filled.Web
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -43,14 +33,11 @@ import com.heyanle.easybangumi.LocalNavController
 import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.player.PlayerController
 import com.heyanle.easybangumi.player.TinyStatusController
-import com.heyanle.easybangumi.ui.common.ErrorPage
-import com.heyanle.easybangumi.ui.common.HomeTabItem
-import com.heyanle.easybangumi.ui.common.HomeTabRow
-import com.heyanle.easybangumi.ui.common.LoadingPage
-import com.heyanle.easybangumi.ui.common.OkImage
+import com.heyanle.easybangumi.ui.common.*
 import com.heyanle.easybangumi.ui.common.easy_player.EasyPlayerView
 import com.heyanle.eplayer_core.constant.EasyPlayStatus
 import com.heyanle.lib_anim.entity.BangumiSummary
+import kotlinx.coroutines.launch
 
 /**
  * Created by HeYanLe on 2023/1/11 15:27.
@@ -76,12 +63,11 @@ fun Play(
 
     }
 
-    val uiController = rememberSystemUiController()
-    val oldColor = MaterialTheme.colorScheme.primary
+
     DisposableEffect(key1 = Unit){
         onDispose {
             TinyStatusController.onPlayScreenDispose()
-            uiController.setStatusBarColor(oldColor)
+            //uiController.setStatusBarColor(oldColor)
         }
     }
 
@@ -90,12 +76,7 @@ fun Play(
     val playerStatus by vm.playerStatus.collectAsState(initial = null)
     val detailStatus by vm.detailController.detailFlow.collectAsState(initial = null)
     val playMsgStatus by vm.playMsgController.flow.collectAsState(initial = null)
-    val view = LocalView.current
-    if (!view.isInEditMode) {
-        SideEffect {
-            uiController.setStatusBarColor(Color.Black)
-        }
-    }
+
     LaunchedEffect(key1 = Unit){
         vm.load()
     }
@@ -116,7 +97,7 @@ fun Play(
                     contentColor = MaterialTheme.colorScheme.onBackground,
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    LazyVerticalGrid(columns = GridCells.Fixed(2)){
+                    LazyVerticalGrid(columns = GridCells.Fixed(3)){
                         detailStatus?.let {
                             detail(vm, detailStatus = it)
                         }
@@ -245,6 +226,7 @@ fun LazyGridScope.playerMsg(
                     vm.changePlayer(curLines, curEpi)
                 }
                 HomeTabRow(
+                    modifier = Modifier.padding(4.dp, 0.dp, 4.dp, 8.dp),
                     containerColor = Color.Transparent,
                     selectedTabIndex = curLines,
                     indicatorColor = {MaterialTheme.colorScheme.secondary}
@@ -269,7 +251,7 @@ fun LazyGridScope.playerMsg(
                 val selected = index== curEpi
                 Surface(
                     shadowElevation = 4.dp,
-                    shape = CircleShape,
+                    shape = RoundedCornerShape(4.dp),
                     modifier =
                     Modifier
                         .fillMaxWidth()
@@ -333,6 +315,7 @@ fun LazyGridScope.detail(
     vm: AnimPlayItemController,
     detailStatus: DetailController.DetailStatus
 ){
+
     item(span = {
         // LazyGridItemSpanScope:
         // maxLineSpan
@@ -340,7 +323,7 @@ fun LazyGridScope.detail(
     }) {
         Box(modifier = Modifier
             .padding(8.dp)
-            .height(135.dp)
+            .height(210.dp)
             .fillMaxWidth()){
             when(detailStatus){
                 is DetailController.DetailStatus.None -> {}
@@ -352,38 +335,90 @@ fun LazyGridScope.detail(
                 }
                 is DetailController.DetailStatus.Completely -> {
                     Log.d("Play", detailStatus.bangumiDetail.cover)
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    Column(
+                        modifier = Modifier.fillMaxHeight()
                     ) {
-                        OkImage(
+                        Row(
                             modifier = Modifier
-                                .height(135.dp)
-                                .width(95.dp)
-                                .clip(RoundedCornerShape(8.dp)),
-                            image = detailStatus.bangumiDetail.cover,
-                            contentDescription = detailStatus.bangumiDetail.name)
-                        Column (
-                            modifier = Modifier.weight(1.0f),
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                        ){
-                            Text(
-                                text = detailStatus.bangumiDetail.name,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                fontSize = 16.sp
-                            )
-                            Text(
+                                .height(135.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            OkImage(
                                 modifier = Modifier
-                                    .weight(1.0f)
-                                    .alpha(0.8f),
-                                text = detailStatus.bangumiDetail.description,
-                                overflow = TextOverflow.Ellipsis,
-                                fontSize = 12.sp,
-                                lineHeight = 14.sp
-                            )
-                        }
+                                    .height(135.dp)
+                                    .width(95.dp)
+                                    .clip(RoundedCornerShape(8.dp)),
+                                image = detailStatus.bangumiDetail.cover,
+                                contentDescription = detailStatus.bangumiDetail.name)
+                            Column (
+                                modifier = Modifier.weight(1.0f),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ){
+                                Text(
+                                    text = detailStatus.bangumiDetail.name,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    fontSize = 16.sp
+                                )
+                                Text(
+                                    modifier = Modifier
+                                        .weight(1.0f)
+                                        .alpha(0.8f),
+                                    text = detailStatus.bangumiDetail.description,
+                                    overflow = TextOverflow.Ellipsis,
+                                    fontSize = 12.sp,
+                                    lineHeight = 14.sp
+                                )
+                            }
 
+                        }
+                        val scope = rememberCoroutineScope()
+                        val isStar by vm.detailController.isBangumiStar
+                        Row(
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .weight(1f)
+                                    .clip(CircleShape)
+                                    .clickable {
+                                        scope.launch {
+                                            vm.detailController.setBangumiStar(
+                                                !isStar,
+                                                detailStatus.bangumiDetail
+                                            )
+                                        }
+
+                                    },
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center,
+                            ) {
+                                val icon = if(isStar) Icons.Filled.Star else Icons.Filled.StarOutline
+                                val textId = if(isStar) R.string.stared else R.string.click_star
+                                Icon(icon, stringResource(id = textId))
+                                Text(text = stringResource(id = textId))
+                            }
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(CircleShape)
+                                    .fillMaxHeight()
+                                    .clickable {
+                                        "还在支持".moeSnackBar()
+
+                                    },
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Icon(Icons.Filled.Web, stringResource(id = R.string.web_view))
+                                Text(text = stringResource(id = R.string.web_view))
+                            }
+
+                        }
+                        
                     }
+                    
 
                 }
                 else -> {}
