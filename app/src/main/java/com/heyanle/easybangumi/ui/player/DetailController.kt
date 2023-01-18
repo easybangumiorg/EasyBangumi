@@ -1,16 +1,21 @@
 package com.heyanle.easybangumi.ui.player
 
+import androidx.compose.runtime.mutableStateOf
 import com.heyanle.easybangumi.R
+import com.heyanle.easybangumi.db.EasyDB
+import com.heyanle.easybangumi.db.entity.BangumiStar
 import com.heyanle.easybangumi.source.AnimSourceFactory
 import com.heyanle.easybangumi.ui.home.home.AnimHomeViewModel
 import com.heyanle.easybangumi.utils.stringRes
 import com.heyanle.lib_anim.entity.BangumiDetail
 import com.heyanle.lib_anim.entity.BangumiSummary
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.withContext
 
 /**
  * Created by HeYanLe on 2023/1/11 22:02.
@@ -47,6 +52,10 @@ class DetailController(val bangumiSummary: BangumiSummary) {
                         send(DetailStatus.Loading(detail))
                         AnimSourceFactory.requireDetail(detail.bangumiSummary.source).detail(detail.bangumiSummary)
                             .complete {
+                                val isStar = withContext(Dispatchers.IO){
+                                    EasyDB.database.bangumiStarDao().getBySourceDetailUrl(it.data.source, it.data.detailUrl) != null
+                                }
+                                isBangumiStar.value = isStar
                                 send(DetailStatus.Completely(detail, it.data))
                             }.error {
                                 it.throwable.printStackTrace()
@@ -62,8 +71,39 @@ class DetailController(val bangumiSummary: BangumiSummary) {
     }
     val detailFlow: Flow<DetailStatus> = _detailStatus
 
+
+    val isBangumiStar = mutableStateOf(false)
+
     suspend fun load(){
         eventFlow.emit(DetailEvent.LoadDetail(bangumiSummary))
+    }
+
+    suspend fun setBangumiStar(isStar: Boolean, bangumiDetail: BangumiDetail){
+        if(isStar){
+            withContext(Dispatchers.IO){
+                EasyDB.database.bangumiStarDao().apply {
+                    val old = getBySourceDetailUrl(bangumiDetail.source, bangumiDetail.detailUrl)
+                    if(old == null){
+                        insert(BangumiStar.fromBangumi(bangumiDetail))
+                    }else{
+
+                        modify(old.copy(
+                            name = bangumiDetail.name,
+                            cover = bangumiDetail.cover,
+                            source = bangumiDetail.source,
+                            createTime = System.currentTimeMillis()
+                        ))
+                    }
+                }
+
+            }
+            isBangumiStar.value = true
+        }else{
+            withContext(Dispatchers.IO){
+                EasyDB.database.bangumiStarDao().deleteBySourceDetailUrl(bangumiDetail.source, bangumiDetail.detailUrl)
+            }
+            isBangumiStar.value = false
+        }
     }
 
 }

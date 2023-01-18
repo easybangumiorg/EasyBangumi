@@ -28,6 +28,10 @@ object AnimSourceFactory {
         }
     }
 
+    fun label(key: String): String?{
+        return animSourceFlow.value.parser(key)?.getLabel()
+    }
+
     fun parsers(): Flow<AnimSources>{
         return animSourceFlow
     }

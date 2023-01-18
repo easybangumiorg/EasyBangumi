@@ -71,6 +71,8 @@ class ErrorComponent: FrameLayout, IComponent {
             }else{
                 binding.root.visibility = View.GONE
             }
+        }else if(!isError){
+            binding.root.visibility = View.GONE
         }
     }
 
