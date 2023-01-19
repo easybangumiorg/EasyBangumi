@@ -29,13 +29,13 @@ QQ群：729848189 有兴趣进来玩，群主爆肝更新中
 - 樱花动漫 ([http://www.yinghuacd.com](http://www.yinghuacd.com))
 - 哔咪动漫 Bimibimi ([https://www.bimiacg4.net](https://www.bimiacg4.net))
 # 截图
-<img src="./screenshots/1.jpg" width="30%" />
-<img src="./screenshots/2.jpg" width="30%" />
-<img src="./screenshots/3.jpg" width="30%" />
-<img src="./screenshots/4.jpg" width="30%" />
-<img src="./screenshots/5.jpg" width="30%" />
-<img src="./screenshots/6.jpg"/>
-<img src="./screenshots/7.jpg" width="30%" />
+<img src="./screenshots/1.png" width="30%" />
+<img src="./screenshots/2.png" width="30%" />
+<img src="./screenshots/3.png" width="30%" />
+<img src="./screenshots/4.png" width="30%" />
+<img src="./screenshots/5.png" width="30%" />
+<img src="./screenshots/6.png"/>
+<img src="./screenshots/7.png" width="30%" />
 
 
 
