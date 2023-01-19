@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi.ui.common.easy_player.component
 
 import android.R.color
+import android.animation.Animator
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.PorterDuff
@@ -9,19 +10,25 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.LayerDrawable
 import android.util.AttributeSet
 import android.util.Log
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import android.widget.FrameLayout
 import android.widget.RelativeLayout
 import android.widget.SeekBar
+import android.widget.TextView
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.databinding.ComponentStandardBinding
 import com.heyanle.easybangumi.theme.EasyThemeController
 import com.heyanle.easybangumi.ui.common.easy_player.utils.TimeUtils
+import com.heyanle.easybangumi.utils.dip2px
 import com.heyanle.eplayer_core.constant.EasyPlayStatus
+import com.heyanle.eplayer_core.constant.EasyPlayerStatus
 import com.heyanle.eplayer_core.controller.ComponentContainer
 import com.heyanle.eplayer_core.controller.IGestureComponent
 
@@ -31,7 +38,17 @@ import com.heyanle.eplayer_core.controller.IGestureComponent
  */
 class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChangeListener {
 
+
+    private val textMap = linkedMapOf<Float, TextView>().apply {
+        put(2f, getTextView("x2.0", 2f))
+        put(1.5f, getTextView("x1.5", 1.5f))
+        put(1f, getTextView("x1.0", 1f))
+    }
+
     private var container: ComponentContainer? = null
+
+    private var selectSpeedTextColor: Int = Color.Green.toArgb()
+    private var normalSpeedTextColor: Int = Color.White.toArgb()
 
     private val binding: ComponentStandardBinding = ComponentStandardBinding.inflate(
         LayoutInflater.from(context), this, true)
@@ -96,6 +113,9 @@ class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChange
                 toggleLockState()
             }
         }
+        binding.back.setOnClickListener {
+            container?.stopFullScreen(true)
+        }
         binding.seekBar.max = Int.MAX_VALUE
         EasyThemeController.curThemeColor?.let {
             val color = it.secondary.toArgb()
@@ -108,13 +128,32 @@ class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChange
             binding.progressBar.indeterminateTintList = ColorStateList.valueOf(color)
             binding.progressBar.indeterminateTintMode = PorterDuff.Mode.SRC_ATOP
 
+            selectSpeedTextColor = it.secondary.toArgb()
+        }
+        textMap.iterator().forEach {
+            binding.speedContainer.addView(it.value, ViewGroup.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
+        }
+        binding.speedRoot.visibility = View.GONE
+        binding.speedRoot.setOnClickListener {
+            hideSpeedContainer()
+        }
+        binding.tvSpeed.setOnClickListener {
+            refreshSpeedContainer()
+            showSpeedContainer()
         }
     }
 
     // == override IComponent
 
     override fun onPlayerStateChanged(playerState: Int) {
-
+        when(playerState){
+            EasyPlayerStatus.PLAYER_FULL_SCREEN -> {
+                binding.upLayout.visibility = View.VISIBLE
+            }
+            else -> {
+                binding.upLayout.visibility = View.GONE
+            }
+        }
     }
 
     override fun onPlayStateChanged(playState: Int) {
@@ -214,6 +253,79 @@ class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChange
             binding.contentLayout.visibility = View.VISIBLE
         }
     }
+
+    private fun getTextView(text: String, speed: Float): TextView{
+        return TextView(context).apply {
+            setPadding(0, dip2px(context, 8f), 0, dip2px(context, 8f))
+            gravity = Gravity.CENTER
+            this.text = text
+            textSize = 18F
+            setOnClickListener {
+                runWithContainer {
+                    setSpeed(speed = speed)
+                }
+                refreshSpeedContainer()
+            }
+        }
+    }
+
+    private fun refreshSpeedContainer(){
+        runWithContainer {
+            textMap.iterator().forEach {
+                it.value.setTextColor(normalSpeedTextColor)
+            }
+            textMap[this.getSpeed()]?.setTextColor(selectSpeedTextColor)
+        }
+    }
+
+    private fun showSpeedContainer(){
+        runWithContainer {
+            stopFadeOut()
+        }
+        binding.speedRoot.visibility = View.VISIBLE
+        binding.speedScrollContainer.translationX = dip2px(context, 128F).toFloat()
+        binding.speedScrollContainer.animate().translationX(0F).setListener(
+            object: Animator.AnimatorListener{
+                override fun onAnimationEnd(animation: Animator) {
+                    binding.speedScrollContainer.translationX = 0F
+                }
+
+                override fun onAnimationStart(animation: Animator) {
+                }
+
+                override fun onAnimationCancel(animation: Animator) {
+                }
+
+                override fun onAnimationRepeat(animation: Animator) {
+                }
+            }
+        ).start()
+    }
+    private fun hideSpeedContainer(){
+        runWithContainer {
+            startFadeOut()
+        }
+        binding.speedRoot.visibility = View.VISIBLE
+        binding.speedScrollContainer.translationX = 0F
+        binding.speedScrollContainer.animate().translationX(dip2px(context, 128F).toFloat()).setListener(
+            object: Animator.AnimatorListener{
+                override fun onAnimationEnd(animation: Animator) {
+                    binding.speedRoot.visibility = View.GONE
+                    binding.speedScrollContainer.translationX = dip2px(context, 128F).toFloat()
+                }
+
+                override fun onAnimationStart(animation: Animator) {
+                }
+
+                override fun onAnimationCancel(animation: Animator) {
+                }
+
+                override fun onAnimationRepeat(animation: Animator) {
+                }
+            }
+        ).start()
+    }
+
 
     override fun getView(): View {
         return this

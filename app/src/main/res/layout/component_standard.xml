@@ -10,6 +10,26 @@
         android:layout_height="match_parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/up_layout"
+            android:background="@drawable/player_up_bg"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_width="match_parent"
+            android:layout_height="64dp">
+
+            <ImageView
+                app:tint="@android:color/white"
+                android:id="@+id/back"
+                android:layout_marginStart="14dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:src="@drawable/baseline_arrow_back_24"
+                android:layout_width="36dp"
+                android:layout_height="36dp"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/timeline_layout"
             android:background="@drawable/player_bottom_bg"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -28,7 +48,6 @@
 
             <SeekBar
                 android:id="@+id/seek_bar"
-                android:layout_marginStart="18dp"
                 app:layout_constraintStart_toEndOf="@id/tv_current_time"
                 app:layout_constraintEnd_toStartOf="@id/tv_total_time"
                 android:layout_width="0dp"
@@ -39,9 +58,22 @@
                 android:id="@+id/tv_total_time"
                 android:layout_marginStart="18dp"
                 android:textColor="@android:color/white"
-                app:layout_constraintEnd_toStartOf="@id/iv_fullscreen"
+                app:layout_constraintEnd_toStartOf="@id/tv_speed"
                 android:gravity="center"
                 android:text="00:00"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"/>
+
+            <TextView
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
+                android:textColor="@android:color/white"
+                android:gravity="center"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:id="@+id/tv_speed"
+                app:layout_constraintEnd_toStartOf="@id/iv_fullscreen"
+                android:text="倍速"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"/>
 
@@ -97,5 +129,32 @@
         android:layout_marginStart="16dp"
         android:layout_width="32dp"
         android:layout_height="32dp"/>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/speed_root"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/speed_scroll_container"
+            android:background="#99000000"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_width="128dp"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:id="@+id/speed_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+        </androidx.core.widget.NestedScrollView>
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

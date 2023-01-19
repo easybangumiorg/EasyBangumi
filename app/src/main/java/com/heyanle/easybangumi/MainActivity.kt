@@ -18,6 +18,7 @@ import com.heyanle.easybangumi.player.TinyStatusController
 import com.heyanle.easybangumi.theme.EasyTheme
 import com.heyanle.easybangumi.ui.common.MoeSnackBar
 import com.heyanle.easybangumi.ui.player.BangumiPlayController
+import com.heyanle.eplayer_core.EasyPlayerManager
 import com.heyanle.eplayer_core.utils.MediaHelper
 
 class MainActivity : ComponentActivity() {
@@ -41,6 +42,7 @@ class MainActivity : ComponentActivity() {
             }
         }
         MediaHelper.setIsDecorFitsSystemWindows(this, false)
+        EasyPlayerManager.enableOrientation = false
     }
 
     override fun finish() {
