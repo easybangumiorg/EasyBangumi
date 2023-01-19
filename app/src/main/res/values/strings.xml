@@ -82,4 +82,12 @@
     <string name="web_view">WebView</string>
 
     <string name="please_overlay_permission">请授予悬浮球权限</string>
+
+    <string name="about">关于</string>
+
+    <string name="author">作者</string>
+    <string name="github">作者</string>
+    <string name="qq_groud">QQ群</string>
+
+
 </resources>

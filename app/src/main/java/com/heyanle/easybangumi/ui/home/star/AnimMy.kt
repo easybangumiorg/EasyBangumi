@@ -158,6 +158,7 @@ fun BangumiStarCard(
             val sourceText = AnimSourceFactory.label(item.source)?:item.source
             Text(
                 text = sourceText,
+                color = MaterialTheme.colorScheme.onSecondary,
                 modifier = Modifier.background(MaterialTheme.colorScheme.secondary, RoundedCornerShape(0.dp, 0.dp, 8.dp, 0.dp)).padding(8.dp, 0.dp))
 
         }

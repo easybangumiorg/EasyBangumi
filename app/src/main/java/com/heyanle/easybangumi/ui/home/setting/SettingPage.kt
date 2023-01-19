@@ -1,62 +1,34 @@
 package com.heyanle.easybangumi.ui.home.setting
 
-import android.content.res.Resources.Theme
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Switch
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.ClipboardManager
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.recyclerview.widget.RecyclerView
 import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.player.TinyStatusController
-import com.heyanle.easybangumi.source.AnimSourceFactory
 import com.heyanle.easybangumi.theme.DarkMode
 import com.heyanle.easybangumi.theme.EasyThemeController
 import com.heyanle.easybangumi.theme.EasyThemeMode
 import com.heyanle.easybangumi.theme.getColorScheme
-import com.heyanle.easybangumi.ui.common.HomeTopAppBar
-import com.heyanle.easybangumi.ui.common.MoeSnackBar
 import com.heyanle.easybangumi.ui.common.moeSnackBar
-import com.heyanle.easybangumi.ui.common.show
 import com.heyanle.easybangumi.utils.OverlayHelper
 import com.heyanle.easybangumi.utils.stringRes
 import com.heyanle.easybangumi.utils.toast
+
 
 /**
  * Created by HeYanLe on 2023/1/7 22:53.
@@ -72,7 +44,8 @@ fun SettingPage(){
         .verticalScroll(rememberScrollState())
     ) {
         ThemeSettingCard()
-        TinySettingCard()
+        // TinySettingCard()
+        About()
     }
 
 }
@@ -352,3 +325,71 @@ fun TinySettingCard(
 
     }
 }
+
+@Composable
+fun About(
+    modifier: Modifier = Modifier
+){
+    Column(
+        modifier = Modifier
+            .then(modifier),
+    ) {
+
+        Text(
+            modifier = Modifier.padding(16.dp, 16.dp),
+            text = stringResource(id = R.string.about),
+            color = MaterialTheme.colorScheme.secondary,
+            textAlign = TextAlign.Start
+        )
+
+
+
+        Row(modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+
+            }
+            .padding(16.dp, 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ){
+            Row (
+                modifier = Modifier.fillMaxHeight(),
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                Icon(
+                    Icons.Filled.People,
+                    contentDescription = stringResource(id = R.string.author) )
+                Spacer(modifier = Modifier.size(16.dp))
+                Text(text = stringResource(id = R.string.author))
+            }
+            Text(text = "何言")
+        }
+        val manager: ClipboardManager = LocalClipboardManager.current
+        Row(modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                manager.setText(AnnotatedString("729848189"))
+                "复制成功".moeSnackBar()
+            }
+            .padding(16.dp, 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ){
+            Row (
+                modifier = Modifier.fillMaxHeight(),
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                Icon(
+                    Icons.Filled.Group,
+                    contentDescription = stringResource(id = R.string.qq_groud) )
+                Spacer(modifier = Modifier.size(16.dp))
+                Text(text = stringResource(id = R.string.qq_groud))
+            }
+            Text(text = "729848189")
+        }
+
+
+    }
+}
+
