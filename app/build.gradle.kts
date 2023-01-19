@@ -8,11 +8,11 @@ plugins {
 }
 
 android {
-    namespace = "com.heyanle.easybangumi"
+    namespace = "com.heyanle.easybangumi2"
     compileSdk = Android.compileSdk
 
     defaultConfig {
-        applicationId = "com.heyanle.easybangumi"
+        applicationId = "com.heyanle.easybangumi2"
         minSdk = Android.minSdk
         targetSdk = Android.targetSdk
         versionCode = Android.versionCode

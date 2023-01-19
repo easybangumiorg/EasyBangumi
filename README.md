@@ -1,37 +1,49 @@
 # 纯纯看番
-<img src="./easy.png" width="30%" />
-一个看动画、看漫画、看小说的 Android 应用 （3.0 开发中）
+<img src="./app_logo.png" width="30%" />
+一个看动画的 Android 应用 （4.0 开发中）
 
 # 试用
-release 中有 2.0 版本，只有看动画功能
+release 中 3.0 版本
+QQ群：729848189 有兴趣进来玩，群主爆肝更新中
 
 # 功能
 - 番剧搜索
 - 首页推荐
 - 番剧收藏（追番）
 - 番剧播放
-- 进度记忆
-- 日夜间模式切换
-- 看漫画（开发中）
-- 看小说（开发中）
+- 多主题
+- 倍速播放
+
+# 未来展望 （开坑 4.0）
+- MD3 主题  
+- 播放器优化
+- UI 优化
+- 播放历史
+- 视频下载
+- 投屏
+- 弹幕
+- 插件化
 
 # 目前支持番剧源
 （不定时更新）
 - 樱花动漫 ([http://www.yinghuacd.com](http://www.yinghuacd.com))
 - 哔咪动漫 Bimibimi ([https://www.bimiacg4.net](https://www.bimiacg4.net))
-
-- (3.0去除) AGE 动漫 (WebView 抓包) ([https://www.agemys.com](https://www.agemys.com)) 
-- (3.0去除) 森之屋动漫 ([https://www.senfun.net](https://www.senfun.net))
-
 # 截图
-<img src="./screenshots/1.png" width="30%" />
-<img src="./screenshots/2.png" width="30%" />
-<img src="./screenshots/3.png" width="30%" />
-<img src="./screenshots/4.png" width="30%" />
-<img src="./screenshots/5.png"/>
-<img src="./screenshots/6.png" width="30%" />
+<img src="./screenshots/1.jpg" width="30%" />
+<img src="./screenshots/2.jpg" width="30%" />
+<img src="./screenshots/3.jpg" width="30%" />
+<img src="./screenshots/4.jpg" width="30%" />
+<img src="./screenshots/5.jpg" width="30%" />
+<img src="./screenshots/6.jpg"/>
+<img src="./screenshots/7.jpg" width="30%" />
+
+
 
 # 更新列表
+- 2023/01/20 3.0  （数据不继承）  
+  使用 Compose 重写，UI 更新  
+  修复 无法锁定竖屏的问题  
+  修复 哔咪动漫 看不了的问题  
 
 - 2022/06/12 2.0.2  
   修复 视频看不了的 BUG (忘记配置混淆)  
