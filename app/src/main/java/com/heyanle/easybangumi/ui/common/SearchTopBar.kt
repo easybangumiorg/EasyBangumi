@@ -142,6 +142,7 @@ fun SearchTopBar(
         title = {
             val textStyle = MaterialTheme.typography.titleLarge
             TextField(
+                singleLine = true,
                 textStyle = textStyle,
                 modifier = Modifier
                     .fillMaxWidth()

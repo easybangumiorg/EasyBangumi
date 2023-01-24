@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -53,6 +54,7 @@ fun Play(
     // 多实例的时候，当前页面的动画如果不是当前播放的，需要改变当前播放的
     LaunchedEffect(key1 = BangumiPlayController.curAnimPlayViewModel.value){
         val old = BangumiPlayController.curAnimPlayViewModel.value?.bangumiSummary
+        Log.d("Play", "bangumi(source=${source}, detail=${detail})")
         if(old?.source != source || old.detailUrl != detail){
             BangumiPlayController.newBangumi(BangumiSummary(source, detail), nav)
         }
@@ -77,6 +79,18 @@ fun Play(
     LaunchedEffect(key1 = Unit){
         vm.load()
     }
+    val ps = playerStatus
+    val ms = playMsgStatus
+    if(ms is PlayMsgController.PlayMsgStatus.Completely){
+        LaunchedEffect(key1 = Unit){
+            if(ps != null){
+                val curLines = ps.sourceIndex
+                val curEpi = ps.episode
+                vm.changePlayer(curLines, curEpi)
+            }
+        }
+    }
+
     Scaffold(
         containerColor = Color.Black,
         contentColor = MaterialTheme.colorScheme.onBackground,
@@ -151,6 +165,8 @@ fun  Video(
                 }
             )
         }else{
+            val curStatus by PlayerController.playerControllerStatus.observeAsState(EasyPlayStatus.STATE_IDLE)
+            val curVideo by PlayerController.videoSizeStatus.observeAsState()
             AndroidView(
                 modifier = Modifier.fillMaxSize(),
                 factory = {
@@ -164,8 +180,12 @@ fun  Video(
                 when(playerStatus){
                     is AnimPlayItemController.PlayerStatus.None -> {}
                     is AnimPlayItemController.PlayerStatus.Play -> {
+                        it.basePlayerView.dispatchPlayStateChange(curStatus)
+                        curVideo?.apply {
+                            it.basePlayerView.onVideoSizeChanged(this)
+                        }
 
-                        it.basePlayerView.refreshStateOnce()
+                        // it.basePlayerView.refreshStateOnce()
                     }
                     is AnimPlayItemController.PlayerStatus.Loading -> {
                         it.basePlayerView.dispatchPlayStateChange(EasyPlayStatus.STATE_PREPARING)
@@ -213,64 +233,68 @@ fun LazyGridScope.playerMsg(
 
             val curLines = playerStatus.sourceIndex
             val curEpi = playerStatus.episode
-            val epi = playerMsgStatus.playMsg[lines[curLines]]?: emptyList()
+            if(curLines > 0 && curEpi > 0 && curLines < lines.size){
+                val epi = kotlin.runCatching {
+                    playerMsgStatus.playMsg[lines[curLines]]
+                }.getOrNull()?: emptyList()
+                if(curEpi < epi.size){
+                    item(span = {
+                        // LazyGridItemSpanScope:
+                        // maxLineSpan
+                        GridItemSpan(maxLineSpan)
+                    }){
 
-            item(span = {
-                // LazyGridItemSpanScope:
-                // maxLineSpan
-                GridItemSpan(maxLineSpan)
-            }){
-                LaunchedEffect(key1 = Unit){
-                    vm.changePlayer(curLines, curEpi)
-                }
-                HomeTabRow(
-                    modifier = Modifier.padding(4.dp, 0.dp, 4.dp, 8.dp),
-                    containerColor = Color.Transparent,
-                    selectedTabIndex = curLines,
-                    indicatorColor = {MaterialTheme.colorScheme.secondary}
-                ) {
-                    for(i in lines.indices){
-                        HomeTabItem(
-                            selected = i == curLines,
-                            text = {
-                                Text(lines[i])
-                            },
-                            onClick = {
-                                vm.changeLines(i)
-                            },
-                            selectedContentColor = MaterialTheme.colorScheme.secondary,
-                            unselectedContentColor = MaterialTheme.colorScheme.onBackground
-                        )
+                        HomeTabRow(
+                            modifier = Modifier.padding(4.dp, 0.dp, 4.dp, 8.dp),
+                            containerColor = Color.Transparent,
+                            selectedTabIndex = curLines,
+                            indicatorColor = {MaterialTheme.colorScheme.secondary}
+                        ) {
+                            for(i in lines.indices){
+                                HomeTabItem(
+                                    selected = i == curLines,
+                                    text = {
+                                        Text(lines[i])
+                                    },
+                                    onClick = {
+                                        vm.changeLines(i)
+                                    },
+                                    selectedContentColor = MaterialTheme.colorScheme.secondary,
+                                    unselectedContentColor = MaterialTheme.colorScheme.onBackground
+                                )
+                            }
+                        }
+                    }
+
+                    itemsIndexed(epi){index, item ->
+                        val selected = index== curEpi
+                        Surface(
+                            shadowElevation = 4.dp,
+                            shape = RoundedCornerShape(4.dp),
+                            modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(4.dp, 4.dp)
+                            ,
+                            color = if (selected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.secondaryContainer,
+                        ) {
+                            Text(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(CircleShape)
+                                    .clickable {
+                                        vm.changePlayer(curLines, index)
+                                    }
+                                    .padding(16.dp, 4.dp),
+                                color = if (selected) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.onSecondaryContainer,
+                                text = item,
+                                fontSize = 16.sp,
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
                 }
-            }
 
-            itemsIndexed(epi){index, item ->
-                val selected = index== curEpi
-                Surface(
-                    shadowElevation = 4.dp,
-                    shape = RoundedCornerShape(4.dp),
-                    modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(4.dp, 4.dp)
-                    ,
-                    color = if (selected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.secondaryContainer,
-                ) {
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(CircleShape)
-                            .clickable {
-                                vm.changePlayer(curLines, index)
-                            }
-                            .padding(16.dp, 4.dp),
-                        color = if (selected) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.onSecondaryContainer,
-                        text = item,
-                        fontSize = 16.sp,
-                        textAlign = TextAlign.Center
-                    )
-                }
             }
         }
     }

@@ -6,12 +6,13 @@
     android:visibility="gone"
     tools:visibility="visible"
     android:id="@+id/center_container"
-    android:layout_width="160dp"
-    android:layout_height="120dp"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:padding="16dp"
     android:layout_gravity="center"
-    android:background="#96000000"
+    android:background="@drawable/play_vb_bg"
     android:gravity="center"
-    android:orientation="vertical">
+    android:orientation="horizontal">
 
     <ImageView
         app:tint="@android:color/white"
@@ -20,14 +21,9 @@
         android:layout_height="36dp"
         tools:src="@drawable/ic_baseline_volume_up_24" />
 
-    <TextView
-        android:id="@+id/tv_percent"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:textColor="@android:color/white"
-        android:textSize="14sp"
-        tools:text="100" />
+    <View
+        android:layout_width="16dp"
+        android:layout_height="1dp"/>
 
     <ProgressBar
         android:id="@+id/pb_percent"

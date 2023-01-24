@@ -56,22 +56,12 @@ class ErrorComponent: FrameLayout, IComponent {
     override fun onDetachToContainer(container: ComponentContainer) {
         this.container = null
     }
-
-    var isError = false
     override fun onPlayStateChanged(playState: Int) {
         super.onPlayStateChanged(playState)
         Log.d("ErrorComponent", "$playState")
         if(playState == EasyPlayStatus.STATE_ERROR) {
-            isError = true
             binding.root.visibility = View.VISIBLE
-        }else if(playState == EasyPlayStatus.STATE_IDLE || playState == STATE_START_ABORT){
-            if(isError){
-                binding.root.visibility = View.VISIBLE
-                isError = false
-            }else{
-                binding.root.visibility = View.GONE
-            }
-        }else if(!isError){
+        }else{
             binding.root.visibility = View.GONE
         }
     }

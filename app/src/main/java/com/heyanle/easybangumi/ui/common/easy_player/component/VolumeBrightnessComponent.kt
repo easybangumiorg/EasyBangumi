@@ -30,7 +30,9 @@ class VolumeBrightnessComponent: FrameLayout, IGestureComponent {
     init {
         EasyThemeController.curThemeColor?.let {
             val color = it.secondary.toArgb()
-            binding.pbPercent.indeterminateTintList = ColorStateList.valueOf(color)
+//            binding.pbPercent.indeterminateTintList = ColorStateList.valueOf(color)
+//            binding.pbPercent.indeterminateTintMode = PorterDuff.Mode.SRC_ATOP
+            binding.pbPercent.progressTintList = ColorStateList.valueOf(color)
         }
     }
 
@@ -68,10 +70,10 @@ class VolumeBrightnessComponent: FrameLayout, IGestureComponent {
             hide()
         }
         binding.ivIcon.setImageResource(R.drawable.ic_baseline_brightness_6_24)
-        binding.tvPercent.text = buildString {
-        append(percent)
-        append("%")
-    }
+//        binding.tvPercent.text = buildString {
+//            append(percent)
+//            append("%")
+//        }
         binding.pbPercent.progress = percent
     }
 
@@ -90,10 +92,10 @@ class VolumeBrightnessComponent: FrameLayout, IGestureComponent {
         }else {
             binding.ivIcon.setImageResource(R.drawable.ic_baseline_volume_up_24)
         }
-        binding.tvPercent.text = buildString {
-        append(percent)
-        append("%")
-    }
+//        binding.tvPercent.text = buildString {
+//            append(percent)
+//            append("%")
+//        }
         binding.pbPercent.progress = percent
     }
 

@@ -141,7 +141,7 @@ object BangumiPlayController {
                 is AnimPlayItemController.PlayerStatus.Play -> {
                     Log.d("BangumiPlayController", it.uri)
                     if(PlayerTinyController.isTinyMode) {
-                        PlayerTinyController.tinyPlayerView.basePlayerView.refreshStateOnce()
+                        //PlayerTinyController.tinyPlayerView.basePlayerView.refreshStateOnce()
                     }
                     if(lastPlayerStatus?.uri != it.uri || lastPlayerStatus?.type != it.type){
                         val defaultDataSourceFactory = DefaultDataSource.Factory(BangumiApp.INSTANCE)
@@ -159,8 +159,9 @@ object BangumiPlayController {
                                 MediaItem.fromUri(it.uri)
                             )
                         }
-                        PlayerController.exoPlayer.setMediaSource(media)
-                        PlayerController.exoPlayer.prepare()
+
+                        PlayerController.setMediaSource(media)
+                        PlayerController.prepare()
                     }
                     lastPlayerStatus = it
                 }

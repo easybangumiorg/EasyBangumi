@@ -26,8 +26,8 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 android:src="@drawable/baseline_arrow_back_24"
-                android:layout_width="36dp"
-                android:layout_height="36dp"/>
+                android:layout_width="32dp"
+                android:layout_height="32dp"/>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -93,28 +93,9 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <ImageView
-            android:id="@+id/iv_controller"
-            android:padding="8dp"
-            app:tint="@android:color/white"
-            android:src="@drawable/ic_baseline_play_arrow_24"
-            android:background="@drawable/player_controller_bt_bg"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            android:contentDescription="play-pause" />
 
-        <ProgressBar
-            android:id="@+id/progress_bar"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            android:layout_width="64dp"
-            android:layout_height="64dp"/>
+
+
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/speed_root"
@@ -156,6 +137,29 @@
         android:layout_marginStart="16dp"
         android:layout_width="32dp"
         android:layout_height="32dp"/>
+
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_width="64dp"
+        android:layout_height="64dp"/>
+
+    <ImageView
+        android:id="@+id/iv_controller"
+        android:padding="8dp"
+        app:tint="@android:color/white"
+        android:src="@drawable/ic_baseline_play_arrow_24"
+        android:background="@drawable/player_controller_bt_bg"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:contentDescription="play-pause" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

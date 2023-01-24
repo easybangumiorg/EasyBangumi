@@ -43,12 +43,9 @@ import kotlin.concurrent.write
 class BaseEasyPlayerView:
     FrameLayout,
     IPlayer,
-    Player.Listener,
     AudioFocusHelper.OnAudioFocusListener,
     View.OnKeyListener
 {
-
-    private val speedPlaybackParameters: PlaybackParameters = PlaybackParameters(1.0F)
     private var innerPlayer: Player? = null
     val surfaceView: SurfaceViewRender = SurfaceViewRender(context)
 
@@ -66,12 +63,6 @@ class BaseEasyPlayerView:
 
     // 当前进度（临时变量）
     private var mCurrentPosition: Long = 0L
-    var progressManager = EasyPlayerManager.progressManager
-
-    // 是否循环播放
-    var isLooping: Boolean = false
-    // 是否静音
-    private var mIsMute: Boolean = false
 
     // 当前缩放情况
     private var mCurrentScaleType: Int = EasyPlayerManager.screenScaleType
@@ -137,6 +128,12 @@ class BaseEasyPlayerView:
     }
 
     fun dispatchPlayStateChange(playState: Int){
+        if(innerPlayer?.playerError != null && playState != EasyPlayStatus.STATE_ERROR){
+            dispatchPlayStateChange(
+                EasyPlayStatus.STATE_ERROR
+            )
+        }
+        renderContainer.keepScreenOn = playState == EasyPlayStatus.STATE_PLAYING
         mCurrentPlayState = playState
         runWithController {
             dispatchPlayStateChange(playState)
@@ -213,11 +210,10 @@ class BaseEasyPlayerView:
     }
 
     // IPlayer
-    override fun onVideoSizeChanged(videoSize: VideoSize) {
-        super.onVideoSizeChanged(videoSize)
+    fun onVideoSizeChanged(videoSize: VideoSize) {
         mVideoSize[0] = videoSize.width
         mVideoSize[1] = videoSize.height
-        surfaceView?.setVideoSize(videoSize.width, videoSize.height)
+        surfaceView.setVideoSize(videoSize.width, videoSize.height)
 
     }
 
@@ -277,6 +273,7 @@ class BaseEasyPlayerView:
                 clearMediaItems()
             }
         }
+        innerPlayer?.stop()
         innerPlayer?.prepare()
     }
 
@@ -359,82 +356,82 @@ class BaseEasyPlayerView:
 
     // == Player.Listener ==============
 
-    override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
-        super.onPlayWhenReadyChanged(playWhenReady, reason)
-        if(innerPlayer?.playbackState == STATE_READY ){
-            if(playWhenReady){
-                dispatchPlayStateChange(EasyPlayStatus.STATE_PLAYING)
-            }else{
-                dispatchPlayStateChange(EasyPlayStatus.STATE_PAUSED)
-            }
-        }
-    }
-
-    override fun onPlaybackStateChanged(playbackState: Int) {
-        when(playbackState){
-            STATE_IDLE -> {
-                dispatchPlayStateChange(EasyPlayStatus.STATE_IDLE)
-            }
-            STATE_BUFFERING -> {
-                dispatchPlayStateChange(EasyPlayStatus.STATE_BUFFERING)
-            }
-            STATE_READY -> {
-                dispatchPlayStateChange(EasyPlayStatus.STATE_BUFFERED)
-                if(innerPlayer?.playWhenReady == true){
-                    dispatchPlayStateChange(EasyPlayStatus.STATE_PLAYING)
-                }else{
-                    dispatchPlayStateChange(EasyPlayStatus.STATE_PAUSED)
-                }
-
-            }
-            STATE_ENDED -> {
-                dispatchPlayStateChange(EasyPlayStatus.STATE_PLAYBACK_COMPLETED)
-            }
-        }
-    }
-
-    override fun onPlayerErrorChanged(error: PlaybackException?) {
-        super.onPlayerErrorChanged(error)
-        Log.d("BaseEasyPlayerView", error.toString())
-        if(error != null){
-            dispatchPlayStateChange(EasyPlayStatus.STATE_ERROR)
-        }
-    }
-
-    override fun onPlayerError(error: PlaybackException) {
-        super.onPlayerError(error)
-        Log.d("BaseEasyPlayerView", error.toString())
-        dispatchPlayStateChange(EasyPlayStatus.STATE_ERROR)
-    }
-
-    override fun onIsPlayingChanged(isPlaying: Boolean) {
-        super.onIsPlayingChanged(isPlaying)
-        if(isPlaying){
-            renderContainer.keepScreenOn = true
-            dispatchPlayStateChange(EasyPlayStatus.STATE_PLAYING)
-        }else{
-            renderContainer.keepScreenOn = false
-        }
-    }
-
-    override fun onEvents(player: Player, events: Player.Events) {
-        super.onEvents(player, events)
-
-    }
-
-    override fun onAvailableCommandsChanged(availableCommands: Player.Commands) {
-        super.onAvailableCommandsChanged(availableCommands)
-        if(availableCommands.contains(Player.COMMAND_PREPARE)){
-            dispatchPlayStateChange(EasyPlayStatus.STATE_PREPARING)
-        }
-    }
-
-    override fun onIsLoadingChanged(isLoading: Boolean) {
-        super.onIsLoadingChanged(isLoading)
-        if(isLoading){
-            // dispatchPlayStateChange(EasyPlayStatus.STATE_PREPARING)
-        }
-    }
+//    override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+//        super.onPlayWhenReadyChanged(playWhenReady, reason)
+//        if(innerPlayer?.playbackState == STATE_READY ){
+//            if(playWhenReady){
+//                dispatchPlayStateChange(EasyPlayStatus.STATE_PLAYING)
+//            }else{
+//                dispatchPlayStateChange(EasyPlayStatus.STATE_PAUSED)
+//            }
+//        }
+//    }
+//
+//    override fun onPlaybackStateChanged(playbackState: Int) {
+//        when(playbackState){
+//            STATE_IDLE -> {
+//                dispatchPlayStateChange(EasyPlayStatus.STATE_IDLE)
+//            }
+//            STATE_BUFFERING -> {
+//                dispatchPlayStateChange(EasyPlayStatus.STATE_BUFFERING)
+//            }
+//            STATE_READY -> {
+//                dispatchPlayStateChange(EasyPlayStatus.STATE_BUFFERED)
+//                if(innerPlayer?.playWhenReady == true){
+//                    dispatchPlayStateChange(EasyPlayStatus.STATE_PLAYING)
+//                }else{
+//                    dispatchPlayStateChange(EasyPlayStatus.STATE_PAUSED)
+//                }
+//
+//            }
+//            STATE_ENDED -> {
+//                dispatchPlayStateChange(EasyPlayStatus.STATE_PLAYBACK_COMPLETED)
+//            }
+//        }
+//    }
+//
+//    override fun onPlayerErrorChanged(error: PlaybackException?) {
+//        super.onPlayerErrorChanged(error)
+//        Log.d("BaseEasyPlayerView", error.toString())
+//        if(error != null){
+//            dispatchPlayStateChange(EasyPlayStatus.STATE_ERROR)
+//        }
+//    }
+//
+//    override fun onPlayerError(error: PlaybackException) {
+//        super.onPlayerError(error)
+//        Log.d("BaseEasyPlayerView", error.toString())
+//        dispatchPlayStateChange(EasyPlayStatus.STATE_ERROR)
+//    }
+//
+//    override fun onIsPlayingChanged(isPlaying: Boolean) {
+//        super.onIsPlayingChanged(isPlaying)
+//        if(isPlaying){
+//            renderContainer.keepScreenOn = true
+//            dispatchPlayStateChange(EasyPlayStatus.STATE_PLAYING)
+//        }else{
+//            renderContainer.keepScreenOn = false
+//        }
+//    }
+//
+//    override fun onEvents(player: Player, events: Player.Events) {
+//        super.onEvents(player, events)
+//
+//    }
+//
+//    override fun onAvailableCommandsChanged(availableCommands: Player.Commands) {
+//        super.onAvailableCommandsChanged(availableCommands)
+//        if(availableCommands.contains(Player.COMMAND_PREPARE)){
+//            dispatchPlayStateChange(EasyPlayStatus.STATE_PREPARING)
+//        }
+//    }
+//
+//    override fun onIsLoadingChanged(isLoading: Boolean) {
+//        super.onIsLoadingChanged(isLoading)
+//        if(isLoading){
+//            // dispatchPlayStateChange(EasyPlayStatus.STATE_PREPARING)
+//        }
+//    }
 
 
     // == PlayerView 自带相关逻辑 ===============
@@ -471,27 +468,16 @@ class BaseEasyPlayerView:
     }
 
     fun attachToPlayer(player: Player){
-        innerPlayer?.removeListener(this)
         innerPlayer = player
-        player.addListener(this)
         player.setVideoSurfaceView(surfaceView)
-        onPlayWhenReadyChanged(player.playWhenReady, Player.PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST)
-        onPlaybackStateChanged(player.playbackState)
-        onPlayerErrorChanged(player.playerError)
-        onIsPlayingChanged(player.isPlaying)
     }
 
     fun detachToPlayer(){
-        innerPlayer?.removeListener(this)
         innerPlayer = null
     }
 
     fun refreshStateOnce(){
-        innerPlayer?.let {
-            onPlayWhenReadyChanged(it.playWhenReady, Player.PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST)
-            onPlaybackStateChanged(it.playbackState)
-            onPlayerErrorChanged(it.playerError)
-        }
+
 
     }
 
