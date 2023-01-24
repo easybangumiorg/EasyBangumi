@@ -1,5 +1,6 @@
 package com.heyanle.easybangumi.player
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.distinctUntilChanged
@@ -66,6 +67,7 @@ class ExoPlayerStatusController(
                 _playerControllerStatus.postValue(EasyPlayStatus.STATE_IDLE)
             }
             Player.STATE_BUFFERING -> {
+
                 _playerControllerStatus.postValue(EasyPlayStatus.STATE_BUFFERING)
             }
             Player.STATE_READY -> {

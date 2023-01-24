@@ -135,6 +135,7 @@ class BaseEasyPlayerView:
         }
         renderContainer.keepScreenOn = playState == EasyPlayStatus.STATE_PLAYING
         mCurrentPlayState = playState
+
         runWithController {
             dispatchPlayStateChange(playState)
         }
