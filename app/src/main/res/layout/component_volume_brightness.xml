@@ -32,4 +32,7 @@
         android:layout_height="3dp"
         android:max="100" />
 
+    <View
+        android:layout_width="8dp"
+        android:layout_height="1dp"/>
 </LinearLayout>

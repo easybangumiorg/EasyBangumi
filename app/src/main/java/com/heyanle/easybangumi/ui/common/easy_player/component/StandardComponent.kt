@@ -508,10 +508,11 @@ class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChange
         }
         isProgressSlide = true
         runWithContainer {
+            show()
             stopFadeOut()
             stopProgressUpdate()
-            binding.root.clearAnimation()
-            binding.root.visibility = View.VISIBLE
+            binding.progressBar.hideWithAnim()
+            binding.ivController.hideWithAnim()
             seekTo(slidePosition)
             refreshTimeUI(duration, slidePosition)
             setSeekbarProgress(duration, slidePosition)
@@ -522,6 +523,7 @@ class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChange
         super.onStopSlide()
         isProgressSlide = false
         runWithContainer {
+            onUIChange(isVisible, isLocked = isLocked, playState)
             startFadeOut()
             startProgressUpdate()
         }
