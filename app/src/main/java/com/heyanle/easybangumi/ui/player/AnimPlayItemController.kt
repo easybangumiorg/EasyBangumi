@@ -1,17 +1,13 @@
 package com.heyanle.easybangumi.ui.player
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import android.util.Log
 import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.source.AnimSourceFactory
 import com.heyanle.easybangumi.utils.stringRes
 import com.heyanle.lib_anim.entity.BangumiSummary
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.channelFlow
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 /**
@@ -71,6 +67,7 @@ class AnimPlayItemController(
                     send(PlayerStatus.Loading(event.lineIndex, event.episode))
                     kotlin.runCatching {
                         val res = AnimSourceFactory.play(bangumiSummary.source)
+
                         res?.getPlayUrl(bangumiSummary, event.lineIndex, event.episode)?.complete {
                             send(PlayerStatus.Play(event.lineIndex, event.episode, it.data.uri, it.data.type))
                         }?.error {
@@ -94,6 +91,22 @@ class AnimPlayItemController(
     }
     val playerStatus: Flow<PlayerStatus> = _playerStatus
 
+    init {
+        scope.launch {
+            playMsgController.flow.collectLatest {
+
+                if(it is PlayMsgController.PlayMsgStatus.Completely){
+
+                    val state = playerStatus.last()
+                    Log.d("AnimPlayItemController", "$it")
+                    val lineIndex = state?.sourceIndex ?:0
+                    val episode = state?.episode?:0
+
+                    eventFlow.emit(PlayerEvent.ChangePlay(lineIndex, episode))
+                }
+            }
+        }
+    }
     fun load(){
         scope.launch {
             detailController.load()
@@ -102,14 +115,17 @@ class AnimPlayItemController(
     }
 
     fun changeLines(lineIndex: Int){
+        Log.d("AnimPlayItemController", "changeLines lineIndex->$lineIndex")
         scope.launch {
             eventFlow.emit(PlayerEvent.ChangeLine(lineIndex))
         }
     }
 
     fun changePlayer(lineIndex: Int, episode: Int){
+
         scope.launch {
             eventFlow.emit(PlayerEvent.ChangePlay(lineIndex, episode))
+
         }
     }
 

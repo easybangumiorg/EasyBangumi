@@ -57,6 +57,7 @@ class ExoPlayerStatusController(
 
     private fun dispatchStatus(){
         if(exoPlayer.playerError != null){
+            exoPlayer.playerError?.printStackTrace()
             _playerControllerStatus.postValue(EasyPlayStatus.STATE_ERROR)
             return
         }
