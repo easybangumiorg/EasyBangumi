@@ -33,6 +33,7 @@ import com.heyanle.easybangumi.player.PlayerController
 import com.heyanle.easybangumi.player.TinyStatusController
 import com.heyanle.easybangumi.ui.common.*
 import com.heyanle.easybangumi.ui.common.easy_player.EasyPlayerView
+import com.heyanle.easybangumi.utils.openUrl
 import com.heyanle.eplayer_core.constant.EasyPlayStatus
 import com.heyanle.lib_anim.entity.BangumiSummary
 import kotlinx.coroutines.launch
@@ -81,12 +82,16 @@ fun Play(
     }
     val ps = playerStatus
     val ms = playMsgStatus
-    if(ms is PlayMsgController.PlayMsgStatus.Completely){
-        LaunchedEffect(key1 = Unit){
-            if(ps != null){
-                val curLines = ps.sourceIndex
-                val curEpi = ps.episode
-                vm.changePlayer(curLines, curEpi)
+    val ds = detailStatus
+    LaunchedEffect(key1 = ps, key2 = ms, key3 = ds){
+        if(ms != null && ms is PlayMsgController.PlayMsgStatus.Completely) {
+            if (ps != null && (ps is AnimPlayItemController.PlayerStatus.None)) {
+                if (ds != null && ds is DetailController.DetailStatus.Completely) {
+                    val curLines = ps.sourceIndex
+                    val curEpi = ps.episode
+                    vm.changePlayer(curLines, curEpi)
+                }
+
             }
         }
     }
@@ -108,19 +113,41 @@ fun Play(
                     contentColor = MaterialTheme.colorScheme.onBackground,
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    LazyVerticalGrid(columns = GridCells.Fixed(3)){
-                        detailStatus?.let {
-                            detail(vm, detailStatus = it)
+                    if(ms is PlayMsgController.PlayMsgStatus.Error || ds is DetailController.DetailStatus.Error){
+                        val sb = StringBuilder()
+                        if(ms is PlayMsgController.PlayMsgStatus.Error ){
+                            sb.append(ms.errorMsg).append("\n")
                         }
-                        detailStatus?.let {
-                            // action(vm, detailStatus = it)
+                        if(ds is DetailController.DetailStatus.Error ){
+                            sb.append(ds.errorMsg).append("\n")
                         }
-                        playMsgStatus?.let { playMsg ->
-                            playerStatus?.let {
-                                playerMsg(vm, playerMsgStatus = playMsg, it)
+                        ErrorPage(
+                            modifier = Modifier.fillMaxSize(),
+                            errorMsg = sb.toString(),
+                            clickEnable = true,
+                            other = {
+                                Text(text = stringResource(id = R.string.click_to_retry))
+                            },
+                            onClick = {
+                                vm.load()
+                            }
+                        )
+                    }else{
+                        LazyVerticalGrid(columns = GridCells.Fixed(3)){
+                            detailStatus?.let {
+                                detail(vm, detailStatus = it)
+                            }
+                            detailStatus?.let {
+                                // action(vm, detailStatus = it)
+                            }
+                            playMsgStatus?.let { playMsg ->
+                                playerStatus?.let {
+                                    playerMsg(vm, playerMsgStatus = playMsg, it)
+                                }
                             }
                         }
                     }
+
                 }
             }
         }
@@ -155,6 +182,7 @@ fun  Video(
     ){
         if(playerStatus is AnimPlayItemController.PlayerStatus.Error){
             ErrorPage(
+                modifier = Modifier.fillMaxSize(),
                 errorMsg = playerStatus.errorMsg,
                 clickEnable = true,
                 other = {
@@ -216,7 +244,8 @@ fun LazyGridScope.playerMsg(
 
     when(playerMsgStatus){
         is PlayMsgController.PlayMsgStatus.None -> {}
-        is PlayMsgController.PlayMsgStatus.Error -> {}
+        is PlayMsgController.PlayMsgStatus.Error -> {
+        }
         is PlayMsgController.PlayMsgStatus.Loading -> {
             item(span = {
                 // LazyGridItemSpanScope:
@@ -233,65 +262,62 @@ fun LazyGridScope.playerMsg(
 
             val curLines = playerStatus.sourceIndex
             val curEpi = playerStatus.episode
-            if(curLines > 0 && curEpi > 0 && curLines < lines.size){
+            if(curLines >= 0 && curLines < lines.size){
                 val epi = kotlin.runCatching {
                     playerMsgStatus.playMsg[lines[curLines]]
                 }.getOrNull()?: emptyList()
-                if(curEpi < epi.size){
-                    item(span = {
-                        // LazyGridItemSpanScope:
-                        // maxLineSpan
-                        GridItemSpan(maxLineSpan)
-                    }){
+                item(span = {
+                    // LazyGridItemSpanScope:
+                    // maxLineSpan
+                    GridItemSpan(maxLineSpan)
+                }){
 
-                        HomeTabRow(
-                            modifier = Modifier.padding(4.dp, 0.dp, 4.dp, 8.dp),
-                            containerColor = Color.Transparent,
-                            selectedTabIndex = curLines,
-                            indicatorColor = {MaterialTheme.colorScheme.secondary}
-                        ) {
-                            for(i in lines.indices){
-                                HomeTabItem(
-                                    selected = i == curLines,
-                                    text = {
-                                        Text(lines[i])
-                                    },
-                                    onClick = {
-                                        vm.changeLines(i)
-                                    },
-                                    selectedContentColor = MaterialTheme.colorScheme.secondary,
-                                    unselectedContentColor = MaterialTheme.colorScheme.onBackground
-                                )
-                            }
-                        }
-                    }
-
-                    itemsIndexed(epi){index, item ->
-                        val selected = index== curEpi
-                        Surface(
-                            shadowElevation = 4.dp,
-                            shape = RoundedCornerShape(4.dp),
-                            modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .padding(4.dp, 4.dp)
-                            ,
-                            color = if (selected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.secondaryContainer,
-                        ) {
-                            Text(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(CircleShape)
-                                    .clickable {
-                                        vm.changePlayer(curLines, index)
-                                    }
-                                    .padding(16.dp, 4.dp),
-                                color = if (selected) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.onSecondaryContainer,
-                                text = item,
-                                fontSize = 16.sp,
-                                textAlign = TextAlign.Center
+                    HomeTabRow(
+                        modifier = Modifier.padding(4.dp, 0.dp, 4.dp, 8.dp),
+                        containerColor = Color.Transparent,
+                        selectedTabIndex = curLines,
+                        indicatorColor = {MaterialTheme.colorScheme.secondary}
+                    ) {
+                        for(i in lines.indices){
+                            HomeTabItem(
+                                selected = i == curLines,
+                                text = {
+                                    Text(lines[i])
+                                },
+                                onClick = {
+                                    vm.changeLines(i)
+                                },
+                                selectedContentColor = MaterialTheme.colorScheme.secondary,
+                                unselectedContentColor = MaterialTheme.colorScheme.onBackground
                             )
                         }
+                    }
+                }
+                itemsIndexed(epi){index, item ->
+                    val selected = index== curEpi
+                    Surface(
+                        shadowElevation = 4.dp,
+                        shape = RoundedCornerShape(4.dp),
+                        modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(4.dp, 4.dp)
+                        ,
+                        color = if (selected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.secondaryContainer,
+                    ) {
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(CircleShape)
+                                .clickable {
+                                    vm.changePlayer(curLines, index)
+                                }
+                                .padding(16.dp, 4.dp),
+                            color = if (selected) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.onSecondaryContainer,
+                            text = item,
+                            fontSize = 16.sp,
+                            textAlign = TextAlign.Center
+                        )
                     }
                 }
 
@@ -301,36 +327,6 @@ fun LazyGridScope.playerMsg(
 
 }
 
-fun LazyGridScope.action(
-    vm: AnimPlayItemController,
-    detailStatus: DetailController.DetailStatus
-){
-    item(span = {
-        // LazyGridItemSpanScope:
-        // maxLineSpan
-        GridItemSpan(maxLineSpan)
-    }){
-        Row(
-            horizontalArrangement = Arrangement.Center
-        ){
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Image(Icons.Filled.Star, contentDescription = "追番")
-                Text(text = "追番")
-            }
-            
-            Spacer(modifier = Modifier.size(16.dp))
-
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Image(Icons.Filled.OpenInBrowser, contentDescription = "追番")
-                Text(text = "打开网站")
-            }
-        }
-    }
-}
 
 // 番剧详情
 fun LazyGridScope.detail(
@@ -418,8 +414,12 @@ fun LazyGridScope.detail(
                             ) {
                                 val icon = if(isStar) Icons.Filled.Star else Icons.Filled.StarOutline
                                 val textId = if(isStar) R.string.stared else R.string.click_star
-                                Icon(icon, stringResource(id = textId))
-                                Text(text = stringResource(id = textId))
+                                Icon(icon, stringResource(id = textId), tint = if(isStar) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onBackground)
+                                Text(
+                                    text = stringResource(id = textId),
+                                    color = if(isStar) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onBackground,
+                                    fontSize = 12.sp
+                                )
                             }
                             Column(
                                 modifier = Modifier
@@ -427,14 +427,14 @@ fun LazyGridScope.detail(
                                     .clip(CircleShape)
                                     .fillMaxHeight()
                                     .clickable {
-                                        "还在支持".moeSnackBar()
-
+                                        // "还在支持".moeSnackBar()
+                                        vm.bangumiSummary.detailUrl.openUrl()
                                     },
                                 verticalArrangement = Arrangement.Center,
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Icon(Icons.Filled.Web, stringResource(id = R.string.web_view))
-                                Text(text = stringResource(id = R.string.web_view))
+                                Text(text = stringResource(id = R.string.web_view), fontSize = 12.sp)
                             }
 
                         }
