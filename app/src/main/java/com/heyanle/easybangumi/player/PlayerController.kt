@@ -7,19 +7,26 @@ import android.view.SurfaceView
 import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.compose.runtime.mutableStateOf
-import com.google.android.exoplayer2.DefaultLoadControl
-import com.google.android.exoplayer2.DefaultRenderersFactory
-import com.google.android.exoplayer2.ExoPlayer
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.distinctUntilChanged
+import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.analytics.DefaultAnalyticsCollector
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
+import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.google.android.exoplayer2.util.Clock
+import com.google.android.exoplayer2.video.VideoSize
 import com.heyanle.easybangumi.BangumiApp
 import com.heyanle.easybangumi.utils.OverlayHelper
 import com.heyanle.easybangumi.utils.dip2px
+import com.heyanle.eplayer_core.constant.EasyPlayStatus
+import com.heyanle.eplayer_core.player.IPlayer
 import com.heyanle.okkv2.core.okkv
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
@@ -45,8 +52,19 @@ object PlayerController {
         ).build()
     }
 
+    private val stateController = ExoPlayerStatusController(exoPlayer)
+    val playerControllerStatus: LiveData<Int> = stateController.playerControllerStatus
+    val videoSizeStatus: LiveData<VideoSize> = stateController.videoSizeStatus
 
+    fun setMediaSource(source: MediaSource){
+        exoPlayer.setMediaSource(source)
+        stateController.dispatchIdle()
+    }
 
+    fun prepare(){
+        exoPlayer.prepare()
+        stateController.dispatchPreparing()
+    }
 
 
 

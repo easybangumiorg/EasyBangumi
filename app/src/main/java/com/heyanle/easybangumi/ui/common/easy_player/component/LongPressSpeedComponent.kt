@@ -28,6 +28,8 @@ class LongPressSpeedComponent: FrameLayout, IGestureComponent {
 
     private var isSpeed = false
 
+    private var oldSpeed = 1f
+
     init{
         binding.root.visibility = View.GONE
     }
@@ -37,6 +39,7 @@ class LongPressSpeedComponent: FrameLayout, IGestureComponent {
         runWithContainer {
             if(isPlaying()){
                 isSpeed = true
+                oldSpeed = getSpeed()
                 binding.root.visibility = View.VISIBLE
                 binding.root.clearAnimation()
                 binding.root.alpha = 0f
@@ -47,7 +50,7 @@ class LongPressSpeedComponent: FrameLayout, IGestureComponent {
                             binding.root.alpha = 1.0f
                         }
                     }).start()
-                setSpeed(LONG_PRESS_SPEED)
+                setSpeed(LONG_PRESS_SPEED*oldSpeed)
             }
         }
     }
@@ -66,7 +69,7 @@ class LongPressSpeedComponent: FrameLayout, IGestureComponent {
                     }
                 }).start()
             runWithContainer {
-                setSpeed(1.0f)
+                setSpeed(oldSpeed)
             }
         }
 

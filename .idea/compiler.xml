@@ -10,7 +10,8 @@
       <module name="EasyBangumi.easy-crasher" target="17" />
       <module name="EasyBangumi.easy-lightdark" target="11" />
       <module name="EasyBangumi.easy-media" target="11" />
-      <module name="EasyBangumi.easy-player" target="11" />
+      <module name="EasyBangumi.easy-player" target="17" />
+      <module name="EasyBangumi.easy-source" target="17" />
       <module name="EasyBangumi.easy-view" target="11" />
       <module name="EasyBangumi.player-controller" target="17" />
     </bytecodeTargetLevel>

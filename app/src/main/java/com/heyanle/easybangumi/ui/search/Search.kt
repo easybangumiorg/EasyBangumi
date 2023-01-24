@@ -114,7 +114,9 @@ fun SearchPage(
 
     LaunchedEffect(key1 = Unit){
         if(vm.searchEventState.value.isEmpty()){
-            focusRequester.requestFocus()
+            kotlin.runCatching {
+                focusRequester.requestFocus()
+            }
             scrollBehavior.state.heightOffset = 0F
             scrollBehavior.state.contentOffset = 0F
 
