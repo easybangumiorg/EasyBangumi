@@ -193,7 +193,6 @@ fun  Video(
                 }
             )
         }else{
-            val curStatus by PlayerController.playerControllerStatus.observeAsState(EasyPlayStatus.STATE_IDLE)
             val curVideo by PlayerController.videoSizeStatus.observeAsState()
             AndroidView(
                 modifier = Modifier.fillMaxSize(),
@@ -204,15 +203,14 @@ fun  Video(
                     }
                 }
             ){
-                BangumiPlayController.onNewComposeView(it)
                 when(playerStatus){
                     is AnimPlayItemController.PlayerStatus.None -> {}
                     is AnimPlayItemController.PlayerStatus.Play -> {
-                        it.basePlayerView.dispatchPlayStateChange(curStatus)
+                        BangumiPlayController.onNewComposeView(it)
+                        // it.basePlayerView.dispatchPlayStateChange(curStatus)
                         curVideo?.apply {
                             it.basePlayerView.onVideoSizeChanged(this)
                         }
-
                         // it.basePlayerView.refreshStateOnce()
                     }
                     is AnimPlayItemController.PlayerStatus.Loading -> {

@@ -135,7 +135,7 @@ class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChange
         Log.d("StandardComponent", "playState $playState")
         this.playState = playState
         isVisible = container?.isShowing()?:false
-        onUIChange(isVisible, isLocked, playState)
+        onUIChange(isVisible, isLocked, this.playState)
 //        refreshPlayPauseBtStatus()
 //        runWithContainer {
 //
@@ -223,6 +223,10 @@ class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChange
         isLocked: Boolean,
         playState: Int,
     ){
+        Log.d("StandardComponent", "onUIChange $isVisible $isLocked $playState")
+        if(playState == 4){
+            java.lang.Exception().printStackTrace()
+        }
         refreshPlayPauseBtStatus()
         runWithContainer {
             refreshTimeUI(getDuration(), getCurrentPosition())
@@ -237,42 +241,45 @@ class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChange
                 }
                 // 加载资源中
                 EasyPlayStatus.STATE_PREPARING -> {
+                    if(isLocked){
+                        setLocked(false)
+                        return
+                    }
+                    if(!isVisible){
+                        show()
+                        stopFadeOut()
+                        return
+                    }
                     // 加载中不显示加锁，显示进度条，进度条为 0,0 显示加载框 隐藏播放暂停按钮
                     // 强制显示，停止消失计时
                     binding.root.visibility = View.VISIBLE
                     binding.ivLock.hideWithAnim()
                     binding.contentLayout.showWithAnim()
                     binding.ivController.hideWithAnim()
-                    if(isLocked){
-                        setLocked(false)
-                    }
-                    if(!isVisible){
-                        show()
-                        stopFadeOut()
-                    }
-                    refreshTimeUI(0L, 0L)
+                    binding.progressBar.visibility = View.VISIBLE
                     binding.progressBar.showWithAnim()
+                    refreshTimeUI(0L, 0L)
                     stopFadeOut()
+
                 }
                 // 缓冲中
                 EasyPlayStatus.STATE_BUFFERING -> {
                     binding.root.visibility = View.VISIBLE
+                    binding.progressBar.showWithAnim()
                     if(isVisible){
                         if(isLocked){
                             binding.ivLock.showWithAnim()
-                            binding.progressBar.hideWithAnim()
                             binding.contentLayout.hideWithAnim()
                             binding.ivController.hideWithAnim()
                         }else{
                             binding.ivLock.showWithAnim()
-                            binding.progressBar.showWithAnim()
+
                             binding.contentLayout.showWithAnim()
                             binding.ivController.hideWithAnim()
                         }
                     }else{
                         binding.ivLock.hideWithAnim()
                         binding.contentLayout.hideWithAnim()
-                        binding.progressBar.showWithAnim()
                         binding.ivController.hideWithAnim()
                     }
                 }
@@ -325,54 +332,65 @@ class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChange
     }
 
     private fun View.showWithAnim(){
-        if(visibility == View.GONE){
-            alpha = 0f
-            val show = AlphaAnimation(0f, 1f).apply {
-                duration = 100
-                setAnimationListener(object: Animation.AnimationListener {
-                    override fun onAnimationStart(animation: Animation?) {
-                        visibility = View.VISIBLE
+        post {
+            if(visibility == View.GONE){
+                clearAnimation()
+                visibility = View.VISIBLE
+                alpha = 0f
+                animate().alpha(1f).setListener(object: Animator.AnimatorListener {
+                    override fun onAnimationStart(animation: Animator) {
                     }
 
-                    override fun onAnimationEnd(animation: Animation?) {
+                    override fun onAnimationEnd(animation: Animator) {
+                        alpha = 1f
+
+                    }
+
+                    override fun onAnimationCancel(animation: Animator) {
                         alpha = 1f
                     }
 
-                    override fun onAnimationRepeat(animation: Animation?) {
+                    override fun onAnimationRepeat(animation: Animator) {
                     }
-                })
+                }).setDuration(100).start()
+            }else{
+                clearAnimation()
+                alpha = 1f
             }
-            clearAnimation()
-            startAnimation(show)
-        }else{
-            alpha = 1f
         }
+
     }
 
     private fun View.hideWithAnim(){
-        if(visibility == View.VISIBLE){
-            alpha = 1f
-            val hide = AlphaAnimation(1f, 0f).apply {
-                duration = 100
-                setAnimationListener(object: Animation.AnimationListener {
-                    override fun onAnimationStart(animation: Animation?) {
-                        visibility = View.VISIBLE
+        post {
+            if(visibility == View.VISIBLE){
+                clearAnimation()
+                alpha = 1f
+                animate().alpha(0f).setListener(object: Animator.AnimatorListener {
+                    override fun onAnimationStart(animation: Animator) {
                     }
 
-                    override fun onAnimationEnd(animation: Animation?) {
+                    override fun onAnimationEnd(animation: Animator) {
+                        alpha = 0f
+                        visibility = View.GONE
+
+                    }
+
+                    override fun onAnimationCancel(animation: Animator) {
                         alpha = 0f
                         visibility = View.GONE
                     }
 
-                    override fun onAnimationRepeat(animation: Animation?) {
+                    override fun onAnimationRepeat(animation: Animator) {
                     }
-                })
+                }).setDuration(100).start()
+            }else{
+                visibility = View.GONE
+                clearAnimation()
+                alpha = 0f
             }
-            clearAnimation()
-            startAnimation(hide)
-        }else{
-            alpha = 0f
         }
+
     }
 
 

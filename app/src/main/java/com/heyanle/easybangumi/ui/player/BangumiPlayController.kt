@@ -104,7 +104,13 @@ object BangumiPlayController {
     }
 
     fun onNewComposeView(easyPlayerView: EasyPlayerView){
-        this.composeViewRes = WeakReference(easyPlayerView)
+        if(easyPlayerView != this.composeViewRes?.get()){
+            this.composeViewRes = WeakReference(easyPlayerView)
+            PlayerController.playerControllerStatus.value?.let {
+                easyPlayerView.basePlayerView.dispatchPlayStateChange(it)
+            }
+        }
+
     }
 
     // activity 的 onPause 调用
@@ -119,6 +125,9 @@ object BangumiPlayController {
     var lastPlayerStatus: AnimPlayItemController.PlayerStatus.Play? = null
 
     init {
+        PlayerController.playerControllerStatus.observeForever {state ->
+            this.composeViewRes?.get()?.basePlayerView?.dispatchPlayStateChange(state)
+        }
         curAnimPlayViewModel.observeForever {
             lastScope.cancel()
             val scope = MainScope()
