@@ -3,6 +3,7 @@ package com.heyanle.easybangumi.source
 import com.heyanle.lib_anim.*
 import com.heyanle.lib_anim.bimibimi.BimibimiParser
 import com.heyanle.lib_anim.yhdm.YhdmParser
+import com.heyanle.lib_anim.cycdm.CycdmParser
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -23,7 +24,9 @@ object AnimSourceFactory {
         MainScope().launch {
             animSourceFlow.emit(AnimSources(arrayListOf(
                 YhdmParser(),
-                BimibimiParser()
+                BimibimiParser(),
+                CycdmParser()
+
             )))
         }
     }
