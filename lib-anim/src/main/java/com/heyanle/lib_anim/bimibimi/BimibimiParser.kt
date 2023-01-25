@@ -21,7 +21,7 @@ import java.lang.IndexOutOfBoundsException
 class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISearchParser {
 
     companion object{
-        const val ROOT_URL = "http://www.bimiacg4.net/"
+        const val ROOT_URL = "https://proxy-tf-all-ws.bilivideo.com/?url=http://www.bimiacg4.net"
     }
 
     private fun url(source: String): String{
