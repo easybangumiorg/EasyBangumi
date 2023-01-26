@@ -5,8 +5,9 @@
 
 # 试用
 
-release 中 3.0 版本
-QQ群：729848189 有兴趣进来玩，群主爆肝更新中
+下载地址：[https://install.appcenter.ms/users/heyanle/apps/easybangumi/distribution_groups/easybangumi](https://install.appcenter.ms/users/heyanle/apps/easybangumi/distribution_groups/easybangumi)  
+release 中 3.0 版本  
+QQ群：729848189 有兴趣进来玩，群主爆肝更新中  
 
 # 功能
 
