@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <FrameLayout
             android:visibility="gone"
             tools:visibility="visible"
             android:id="@+id/up_layout"
@@ -19,31 +19,39 @@
             android:layout_width="match_parent"
             android:layout_height="64dp">
 
-            <ImageView
-                app:tint="@android:color/white"
-                android:id="@+id/back"
-                android:layout_marginStart="14dp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                android:src="@drawable/baseline_arrow_back_24"
-                android:layout_width="32dp"
-                android:layout_height="32dp" />
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="64dp">
 
-            <TextView
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:textColor="@android:color/white"
-                android:gravity="center"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                android:id="@+id/tv_speed"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:text="@string/speed"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent" />
+                <ImageView
+                    app:tint="@android:color/white"
+                    android:id="@+id/back"
+                    android:layout_marginStart="20dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:src="@drawable/baseline_keyboard_arrow_left_24"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp" />
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                <TextView
+                    android:paddingStart="16dp"
+                    android:paddingEnd="8dp"
+                    android:textColor="@android:color/white"
+                    android:gravity="center"
+                    android:textSize="18sp"
+                    android:maxLines="1"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:id="@+id/tv_title"
+                    app:layout_constraintStart_toEndOf="@id/back"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+        </FrameLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/timeline_layout"
@@ -97,6 +105,19 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent" />
 
+                <TextView
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:textColor="@android:color/white"
+                    android:gravity="center"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:id="@+id/tv_speed"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:text="@string/speed"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent" />
+
                 <ImageView
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
@@ -115,35 +136,11 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
 
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/speed_root"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <androidx.core.widget.NestedScrollView
-                android:id="@+id/speed_scroll_container"
-                android:layout_width="128dp"
-                android:layout_height="match_parent"
-                android:background="#99000000"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
-
-                <LinearLayout
-                    android:id="@+id/speed_container"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical" />
-
-            </androidx.core.widget.NestedScrollView>
-
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <ImageView
+        android:visibility="gone"
+        tools:visibility="visible"
         android:id="@+id/iv_lock"
         android:padding="8dp"
         app:tint="@android:color/white"
@@ -192,6 +189,56 @@
         android:layout_width="64dp"
         android:layout_height="64dp"
         android:contentDescription="play-pause" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/speed_root"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/speed_scroll_container"
+            android:layout_width="128dp"
+            android:layout_height="match_parent"
+            android:background="#CC000000"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <LinearLayout
+                android:id="@+id/speed_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+        </androidx.core.widget.NestedScrollView>
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/play_list_root"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/play_list_scroll_container"
+            android:layout_width="128dp"
+            android:layout_height="match_parent"
+            android:background="#CC000000"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <LinearLayout
+                android:id="@+id/play_list_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+        </androidx.core.widget.NestedScrollView>
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
