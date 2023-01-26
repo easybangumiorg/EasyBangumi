@@ -31,7 +31,7 @@ data class BangumiDetail(
     val detailUrl: String,
 
     // 描述
-    val description : String = "",
+    val description: String = "",
 
     // 是否追番
     var star: Boolean = false,
@@ -52,7 +52,7 @@ data class BangumiDetail(
     var createTime: Long = 0L,
 
 
-){
+    ) {
     fun getBangumi(): Bangumi {
         return Bangumi(id, source, detailUrl, name, cover, intro)
     }

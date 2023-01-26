@@ -55,12 +55,12 @@ fun EasyTheme(
     AnimatedContent(
         targetState = easyThemeState,
         transitionSpec = {
-        fadeIn(animationSpec = tween(300, delayMillis = 0)) with
-                fadeOut(animationSpec = tween(300, delayMillis = 300))
-    },
+            fadeIn(animationSpec = tween(300, delayMillis = 0)) with
+                    fadeOut(animationSpec = tween(300, delayMillis = 300))
+        },
     ) {
         val isDynamic = it.isDynamicColor && EasyThemeController.isSupportDynamicColor()
-        val isDark = when(it.darkMode){
+        val isDark = when (it.darkMode) {
             DarkMode.Dark -> true
             DarkMode.Light -> false
             else -> isSystemInDarkTheme()
@@ -95,12 +95,15 @@ fun EasyTheme(
         val view = LocalView.current
         if (!view.isInEditMode) {
             SideEffect {
-                uiController.setStatusBarColor(Color.Transparent, if(isDynamic) isDark else false)
-                uiController.setNavigationBarColor(colorScheme.primary, if(isDynamic) isDark else false )
+                uiController.setStatusBarColor(Color.Transparent, if (isDynamic) isDark else false)
+                uiController.setNavigationBarColor(
+                    colorScheme.primary,
+                    if (isDynamic) isDark else false
+                )
             }
         }
 
-        LaunchedEffect(key1 = colorScheme){
+        LaunchedEffect(key1 = colorScheme) {
             EasyThemeController.curThemeColor = colorScheme
         }
         MaterialTheme(

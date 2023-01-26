@@ -20,11 +20,11 @@ import java.lang.IndexOutOfBoundsException
  */
 class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISearchParser {
 
-    companion object{
+    companion object {
         const val ROOT_URL = "http://www.bimiacg4.net"
     }
 
-    private fun url(source: String): String{
+    private fun url(source: String): String {
         return when {
             source.startsWith("http") -> {
                 source
@@ -55,7 +55,7 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
     }
 
     override suspend fun home(): ISourceParser.ParserResult<LinkedHashMap<String, List<Bangumi>>> {
-        return withContext(Dispatchers.IO){
+        return withContext(Dispatchers.IO) {
             val map = LinkedHashMap<String, List<Bangumi>>()
             val doc = runCatching {
                 Jsoup.parse(OkHttpUtils.get(url(ROOT_URL)))
@@ -67,13 +67,13 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
 
                 val elements = doc.getElementsByClass("area-cont")
 
-                fun load(element: Element){
+                fun load(element: Element) {
                     val columnTitle = element.getElementsByClass("title")[0].child(1).text()
                     val uls = element.getElementsByClass("tab-cont")
                     val list = arrayListOf<Bangumi>()
                     val ul = uls[0]
                     ul.children().forEach { ele ->
-                        val detailUrl =  url(ele.child(0).attr("href"))
+                        val detailUrl = url(ele.child(0).attr("href"))
                         val imgUrl = url(ele.getElementsByTag("img")[0].attr("src"))
                         val title = ele.child(1).child(0).text()
                         val intro = ele.child(1).child(1).text()
@@ -126,7 +126,7 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
         keyword: String,
         key: Int
     ): ISourceParser.ParserResult<Pair<Int?, List<Bangumi>>> {
-        return withContext(Dispatchers.IO){
+        return withContext(Dispatchers.IO) {
             val doc = runCatching {
                 val url = url("/vod/search/wd/$keyword/page/$key")
                 Jsoup.parse(OkHttpUtils.get(url(url)))
@@ -151,9 +151,9 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
                     r.add(b)
                 }
                 val pages = doc.select("div.pages ul.pagination li a.next.pagegbk")
-                if(pages.isEmpty()){
+                if (pages.isEmpty()) {
                     return@withContext ISourceParser.ParserResult.Complete(Pair(null, r))
-                }else{
+                } else {
                     return@withContext ISourceParser.ParserResult.Complete(Pair(key + 1, r))
                 }
             }.onFailure {
@@ -180,16 +180,16 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
                 val intro = tit.child(1).text()
                 val cover = url(doc.select("div.poster_placeholder div.v_pic img")[0].attr("src"))
                 val description = doc.getElementsByClass("vod-jianjie")[0].text()
-                return@withContext  ISourceParser.ParserResult.Complete(
+                return@withContext ISourceParser.ParserResult.Complete(
                     BangumiDetail(
-                    id = id,
-                    source = getKey(),
-                    name = name,
-                    cover = cover,
-                    intro = intro,
-                    detailUrl = bangumi.detailUrl,
-                    description = description
-                )
+                        id = id,
+                        source = getKey(),
+                        name = name,
+                        cover = cover,
+                        intro = intro,
+                        detailUrl = bangumi.detailUrl,
+                        description = description
+                    )
                 )
             }.onFailure {
                 it.printStackTrace()
@@ -217,7 +217,7 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
                 val sourceDiv = doc.getElementsByClass("play_source_tab")[0]
                 val ite = sourceDiv.getElementsByTag("a").iterator()
                 val playBoxIte = doc.getElementsByClass("play_box").iterator()
-                while(ite.hasNext() && playBoxIte.hasNext()){
+                while (ite.hasNext() && playBoxIte.hasNext()) {
                     val sourceA = ite.next()
                     val list = arrayListOf<String>()
                     val urlList = arrayListOf<String>()
@@ -249,14 +249,15 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
         episodes: Int
     ): ISourceParser.ParserResult<IPlayerParser.PlayerInfo> {
 
-        if(lineIndex < 0 || episodes < 0){
+        if (lineIndex < 0 || episodes < 0) {
             return ISourceParser.ParserResult.Error(IndexOutOfBoundsException(), false)
         }
         var url = ""
-        if(bangumi != this.bangumi
+        if (bangumi != this.bangumi
             || lineIndex >= temp.size
             || episodes >= temp[lineIndex].size
-            || temp[lineIndex][episodes] == ""){
+            || temp[lineIndex][episodes] == ""
+        ) {
             getPlayMsg(bangumi).error {
                 return@getPlayUrl ISourceParser.ParserResult.Error(it.throwable, it.isParserError)
             }.complete {
@@ -266,11 +267,11 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
                     return@getPlayUrl ISourceParser.ParserResult.Error(it, true)
                 }
             }
-        }else{
+        } else {
             url = temp[lineIndex][episodes]
         }
 
-        if(url.isEmpty()){
+        if (url.isEmpty()) {
             return ISourceParser.ParserResult.Error(Exception("Unknown Error"), true)
         }
         return withContext(Dispatchers.IO) {
@@ -289,7 +290,11 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
                 val jsonUrl = jsonObject.get("url").asString
 
                 if (jsonUrl.contains("http")) {
-                    return@withContext ISourceParser.ParserResult.Complete(IPlayerParser.PlayerInfo(uri = jsonUrl))
+                    return@withContext ISourceParser.ParserResult.Complete(
+                        IPlayerParser.PlayerInfo(
+                            uri = jsonUrl
+                        )
+                    )
                 } else {
                     var from = jsonObject.get("from").asString
                     from = when (from) {
@@ -302,7 +307,7 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
                         "danmakk" -> {
                             "pic"
                         }
-                        "pic"-> {
+                        "pic" -> {
                             "pic"
                         }
                         else -> {
@@ -325,12 +330,17 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
             }
             runCatching {
                 var src = d.select("video#video source")[0].attr("src")
-                if(src.startsWith("./")){
+                if (src.startsWith("./")) {
                     src = src.replace("./", "$ROOT_URL/static/danmu/")
-                }else if(!src.startsWith("http://") && !src.startsWith("https://")){
+                } else if (!src.startsWith("http://") && !src.startsWith("https://")) {
                     src = "${"$ROOT_URL/static/danmu/"}${src}"
                 }
-                return@withContext ISourceParser.ParserResult.Complete(IPlayerParser.PlayerInfo(type = TYPE_HLS,uri = src))
+                return@withContext ISourceParser.ParserResult.Complete(
+                    IPlayerParser.PlayerInfo(
+                        type = TYPE_HLS,
+                        uri = src
+                    )
+                )
             }.onFailure {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, true)

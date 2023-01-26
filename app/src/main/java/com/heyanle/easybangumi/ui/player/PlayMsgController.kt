@@ -17,16 +17,21 @@ import kotlinx.coroutines.flow.flow
 class PlayMsgController(val bangumiSummary: BangumiSummary) {
 
     sealed class PlayMsgStatus {
-        object None: PlayMsgStatus()
-        class Loading(val event: PlayMsgEvent):PlayMsgStatus()
-        class Error(val event: PlayMsgEvent, val errorMsg: String, val error: Throwable?):PlayMsgStatus()
-        class Completely(val event: PlayMsgEvent, val playMsg: LinkedHashMap<String, List<String>>):PlayMsgStatus()
+        object None : PlayMsgStatus()
+        class Loading(val event: PlayMsgEvent) : PlayMsgStatus()
+        class Error(val event: PlayMsgEvent, val errorMsg: String, val error: Throwable?) :
+            PlayMsgStatus()
+
+        class Completely(
+            val event: PlayMsgEvent,
+            val playMsg: LinkedHashMap<String, List<String>>
+        ) : PlayMsgStatus()
     }
 
     // 刷新事件
     sealed class PlayMsgEvent {
-        object Init: PlayMsgEvent()
-        class LoadDetail(val bangumiSummary: BangumiSummary): PlayMsgEvent()
+        object Init : PlayMsgEvent()
+        class LoadDetail(val bangumiSummary: BangumiSummary) : PlayMsgEvent()
     }
 
     private val eventFlow = MutableStateFlow<PlayMsgEvent>(
@@ -34,20 +39,26 @@ class PlayMsgController(val bangumiSummary: BangumiSummary) {
     )
 
     private val _detailStatus = channelFlow<PlayMsgStatus> {
-        eventFlow.collectLatest {event ->
-            when(event){
+        eventFlow.collectLatest { event ->
+            when (event) {
                 PlayMsgEvent.Init -> {
                     send(PlayMsgStatus.None)
                 }
                 is PlayMsgEvent.LoadDetail -> {
                     kotlin.runCatching {
                         send(PlayMsgStatus.Loading(event))
-                        AnimSourceFactory.requirePlay(event.bangumiSummary.source).getPlayMsg(event.bangumiSummary)
+                        AnimSourceFactory.requirePlay(event.bangumiSummary.source)
+                            .getPlayMsg(event.bangumiSummary)
                             .complete {
                                 send(PlayMsgStatus.Completely(event, it.data))
                             }.error {
-                                send(PlayMsgStatus.Error(event, if(it.isParserError) stringRes(
-                                    R.string.source_error) else stringRes(R.string.loading_error), it.throwable))
+                                send(
+                                    PlayMsgStatus.Error(
+                                        event, if (it.isParserError) stringRes(
+                                            R.string.source_error
+                                        ) else stringRes(R.string.loading_error), it.throwable
+                                    )
+                                )
                             }
                     }.onFailure {
                         send(PlayMsgStatus.Error(event, stringRes(R.string.loading_error), it))
@@ -58,7 +69,7 @@ class PlayMsgController(val bangumiSummary: BangumiSummary) {
     }
     val flow: Flow<PlayMsgStatus> = _detailStatus
 
-    suspend fun load(){
+    suspend fun load() {
         eventFlow.emit(PlayMsgEvent.LoadDetail(bangumiSummary))
     }
 

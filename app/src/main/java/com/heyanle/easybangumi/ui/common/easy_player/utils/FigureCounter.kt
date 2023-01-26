@@ -15,20 +15,18 @@ class FigureCounter {
     var deltaSum = 0.0f
 
 
-
-    fun add(delta: Float): Int{
+    fun add(delta: Float): Int {
         deltaSum += delta
 
-        val curDelta = ((deltaSum/(max-min))*(outMax - outMin)).toInt()
-        return if(curDelta == 0){
+        val curDelta = ((deltaSum / (max - min)) * (outMax - outMin)).toInt()
+        return if (curDelta == 0) {
             0
-        }else{
+        } else {
             deltaSum = 0f
             curDelta
         }
 
     }
-
 
 
 }

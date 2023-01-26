@@ -11,9 +11,11 @@ import com.heyanle.easybangumi.R
  * Created by HeYanLe on 2023/1/14 23:24.
  * https://github.com/heyanLE
  */
-class EasyPlayerView: FrameLayout {
+class EasyPlayerView : FrameLayout {
 
-    val basePlayerView: BaseEasyPlayerView = LayoutInflater.from(context).inflate(R.layout.easy_player, this, false) as BaseEasyPlayerView
+    val basePlayerView: BaseEasyPlayerView = LayoutInflater.from(context)
+        .inflate(R.layout.easy_player, this, false) as BaseEasyPlayerView
+
     init {
         addView(basePlayerView)
         setBackgroundColor(Color.BLACK)

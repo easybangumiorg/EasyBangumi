@@ -10,15 +10,15 @@ import com.heyanle.lib_anim.entity.BangumiDetail
  * https://github.com/heyanLE
  */
 @Entity
-data class BangumiStar (
+data class BangumiStar(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-    val name: String ,
+    val name: String,
     val cover: String,
     val source: String,
     val detailUrl: String,
     val createTime: Long,
-){
+) {
 
     companion object {
         fun fromBangumi(bangumi: Bangumi): BangumiStar {
@@ -30,6 +30,7 @@ data class BangumiStar (
                 createTime = System.currentTimeMillis()
             )
         }
+
         fun fromBangumi(bangumi: BangumiDetail): BangumiStar {
             return BangumiStar(
                 name = bangumi.name,

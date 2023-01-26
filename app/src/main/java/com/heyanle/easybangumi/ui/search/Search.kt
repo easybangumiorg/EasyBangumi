@@ -49,7 +49,7 @@ import java.lang.ref.WeakReference
  */
 
 var topAppBarExpendAnimator: WeakReference<ValueAnimator>? = null
-fun onNewTopAppBarExpendAnim(valueAnimator: ValueAnimator?){
+fun onNewTopAppBarExpendAnim(valueAnimator: ValueAnimator?) {
     topAppBarExpendAnimator?.get()?.cancel()
     topAppBarExpendAnimator = valueAnimator?.let {
         WeakReference(it)
@@ -59,7 +59,7 @@ fun onNewTopAppBarExpendAnim(valueAnimator: ValueAnimator?){
 @Composable
 fun Search(
     default: String,
-){
+) {
     SearchSourceContainer(
         errorContainerColor = MaterialTheme.colorScheme.background
     ) {
@@ -69,14 +69,16 @@ fun Search(
 }
 
 var animSearchInitialPage by okkv("animSearchInitialPage", 0)
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class,
+
+@OptIn(
+    ExperimentalMaterial3Api::class, ExperimentalPagerApi::class,
     ExperimentalComposeUiApi::class
 )
 @Composable
 fun SearchPage(
     vm: SearchViewModel,
     searchParsers: List<ISearchParser>
-){
+) {
 
     val scope = rememberCoroutineScope()
 
@@ -87,9 +89,8 @@ fun SearchPage(
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
 
-
     // 饱和 cancel
-    DisposableEffect(key1 = Unit){
+    DisposableEffect(key1 = Unit) {
         onNewTopAppBarExpendAnim(null)
         onDispose {
             onNewTopAppBarExpendAnim(null)
@@ -105,15 +106,15 @@ fun SearchPage(
     }
 
     val pagerState = rememberPagerState(initialPage = animSearchInitialPage)
-    LaunchedEffect(key1 = searchParsers.size){
-        if(animSearchInitialPage >= searchParsers.size){
+    LaunchedEffect(key1 = searchParsers.size) {
+        if (animSearchInitialPage >= searchParsers.size) {
             animSearchInitialPage = 0
             pagerState.scrollToPage(0)
         }
     }
 
-    LaunchedEffect(key1 = Unit){
-        if(vm.searchEventState.value.isEmpty()){
+    LaunchedEffect(key1 = Unit) {
+        if (vm.searchEventState.value.isEmpty()) {
             kotlin.runCatching {
                 focusRequester.requestFocus()
             }
@@ -130,12 +131,16 @@ fun SearchPage(
             Surface(
                 shadowElevation = 4.dp,
                 color = MaterialTheme.colorScheme.primary
-            ){
+            ) {
                 Column() {
                     SearchTopBar(
                         modifier = Modifier.statusBarsPadding(),
                         placeholder = {
-                            Text(modifier = Modifier, textAlign = TextAlign.Start,text = stringResource(id = R.string.anim_search))
+                            Text(
+                                modifier = Modifier,
+                                textAlign = TextAlign.Start,
+                                text = stringResource(id = R.string.anim_search)
+                            )
                         },
                         text = vm.keywordState,
                         onBack = {
@@ -147,7 +152,7 @@ fun SearchPage(
                         },
                         onValueChange = {
                             vm.keywordState.value = it
-                            if(it.isEmpty()){
+                            if (it.isEmpty()) {
                                 vm.search(it)
                             }
                         },
@@ -195,16 +200,16 @@ fun SearchPage(
                     })
                     .background(MaterialTheme.colorScheme.background)
                     .padding(padding),
-                count =  searchParsers.size,
+                count = searchParsers.size,
                 state = pagerState,
-                key = {it}
+                key = { it }
             ) {
                 CompositionLocalProvider(
                     LocalViewModelStoreOwner provides vm.getViewModelStoreOwner(searchParsers[it])
                 ) {
                     vm.searchHistory
                     val lazyListState = rememberLazyListState()
-                    Box(modifier = Modifier.fillMaxSize()){
+                    Box(modifier = Modifier.fillMaxSize()) {
                         SearchPage(
                             isShowTabForever = isHeaderShowForever,
                             searchEventState = vm.searchEventState,
@@ -219,15 +224,17 @@ fun SearchPage(
                                 vm.clearHistory()
                             }
                         )
-                        FastScrollToTopFab(listState = lazyListState){
+                        FastScrollToTopFab(listState = lazyListState) {
                             val anim = ValueAnimator.ofFloat(0F, 1F)
                             val sourceHeightOffset = scrollBehavior.state.heightOffset
                             val sourceContentOffset = scrollBehavior.state.contentOffset
                             anim.addUpdateListener {
                                 runCatching {
                                     val float = it.animatedValue as Float
-                                    val targetHeightOffset = sourceHeightOffset + (0F - sourceHeightOffset)*float
-                                    val targetContentOffset = sourceContentOffset + (0F - sourceContentOffset)*float
+                                    val targetHeightOffset =
+                                        sourceHeightOffset + (0F - sourceHeightOffset) * float
+                                    val targetContentOffset =
+                                        sourceContentOffset + (0F - sourceContentOffset) * float
                                     scrollBehavior.state.heightOffset = targetHeightOffset
                                     scrollBehavior.state.contentOffset = targetContentOffset
                                 }.onFailure {

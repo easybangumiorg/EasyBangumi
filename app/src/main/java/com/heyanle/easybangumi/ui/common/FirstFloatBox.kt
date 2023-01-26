@@ -15,8 +15,8 @@ import java.lang.reflect.Modifier
 @Composable
 fun FirstFloatColumn(
     modifier: Modifier,
-    first: @Composable ()->Unit,
-    content: @Composable (PaddingValues)->Unit,
+    first: @Composable () -> Unit,
+    content: @Composable (PaddingValues) -> Unit,
 ) {
     var headerHeightPx by remember {
         mutableStateOf(0)

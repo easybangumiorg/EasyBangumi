@@ -68,7 +68,7 @@ fun MoeSnackBar(modifier: Modifier = Modifier) {
             .verticalScroll(rememberScrollState())
     ) {
         val state by EasyThemeController.easyThemeState
-        val isDark = when(state.darkMode){
+        val isDark = when (state.darkMode) {
             DarkMode.Dark -> true
             DarkMode.Light -> false
             else -> isSystemInDarkTheme()
@@ -102,7 +102,12 @@ fun MoeSnackBar(modifier: Modifier = Modifier) {
                                         TextButton({
                                             it.isConfirmPressed = true
                                             this(it)
-                                        }) { Text(it.confirmLabel, color = MaterialTheme.colorScheme.secondary) }
+                                        }) {
+                                            Text(
+                                                it.confirmLabel,
+                                                color = MaterialTheme.colorScheme.secondary
+                                            )
+                                        }
                                     }
                                     it.onCancel?.run {
                                         TextButton({
@@ -130,13 +135,13 @@ fun MoeSnackBar(modifier: Modifier = Modifier) {
                     contentColor = SnackbarDefaults.contentColor,
                 ),
                 elevation = CardDefaults.cardElevation(4.dp)
-        ) {
-            Text(
-                stringRes(R.string.info_moesnackbar_swipe),
-                Modifier.padding(8.dp, 0.dp),
-                fontSize = 12.sp
-            )
-        }
+            ) {
+                Text(
+                    stringRes(R.string.info_moesnackbar_swipe),
+                    Modifier.padding(8.dp, 0.dp),
+                    fontSize = 12.sp
+                )
+            }
     }
 }
 

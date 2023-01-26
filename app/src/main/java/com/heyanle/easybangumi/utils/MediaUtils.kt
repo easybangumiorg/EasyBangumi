@@ -16,7 +16,7 @@ object MediaUtils {
     /**
      * 设置 状态栏反色模式
      */
-    fun setIsAppearanceLightStatusBars(activity: Activity, isLight: Boolean){
+    fun setIsAppearanceLightStatusBars(activity: Activity, isLight: Boolean) {
         WindowCompat
             .getInsetsController(activity.window, activity.window.decorView)
             .isAppearanceLightStatusBars = isLight
@@ -25,7 +25,7 @@ object MediaUtils {
     /**
      * 设置 导航栏反色模式
      */
-    fun setIsAppearanceLightNavBars(activity: Activity, isLight: Boolean){
+    fun setIsAppearanceLightNavBars(activity: Activity, isLight: Boolean) {
         WindowCompat
             .getInsetsController(activity.window, activity.window.decorView)
             .isAppearanceLightNavigationBars = isLight
@@ -34,13 +34,13 @@ object MediaUtils {
     /**
      * 设置状态栏是否显示
      */
-    fun setIsStatusBarsShow(activity: Activity, isShow: Boolean){
+    fun setIsStatusBarsShow(activity: Activity, isShow: Boolean) {
         WindowCompat
             .getInsetsController(activity.window, activity.window.decorView)
             .let {
-                if(isShow){
+                if (isShow) {
                     it.show(WindowInsetsCompat.Type.statusBars())
-                }else{
+                } else {
                     it.hide(WindowInsetsCompat.Type.systemBars())
                 }
                 it.systemBarsBehavior
@@ -50,14 +50,14 @@ object MediaUtils {
     /**
      * 设置 导航栏是否显示
      */
-    fun setIsNavBarsShow(activity: Activity, isShow: Boolean){
+    fun setIsNavBarsShow(activity: Activity, isShow: Boolean) {
         WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
         WindowCompat
             .getInsetsController(activity.window, activity.window.decorView)
             .let {
-                if(isShow){
+                if (isShow) {
                     it.show(WindowInsetsCompat.Type.navigationBars())
-                }else{
+                } else {
                     it.hide(WindowInsetsCompat.Type.navigationBars())
                 }
             }
@@ -70,7 +70,7 @@ object MediaUtils {
      * @see WindowInsetsControllerCompat.BEHAVIOR_SHOW_BARS_BY_SWIPE
      *
      */
-    fun setSystemBarsBehavior(activity: Activity, behavior: Int){
+    fun setSystemBarsBehavior(activity: Activity, behavior: Int) {
 
         WindowCompat
             .getInsetsController(activity.window, activity.window.decorView)
@@ -80,14 +80,14 @@ object MediaUtils {
     /**
      * 给 view 加上 导航栏和状态栏的 padding
      */
-    fun setIsFitSystemWindows(view: View, isFit: Boolean){
+    fun setIsFitSystemWindows(view: View, isFit: Boolean) {
         view.fitsSystemWindows = isFit
     }
 
     /**
      * 设置状态栏颜色
      */
-    fun setStatusBarColor(activity: Activity, color: Int){
+    fun setStatusBarColor(activity: Activity, color: Int) {
         // 需要取消半透明颜色
         activity.window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
         activity.window.statusBarColor = color
@@ -107,7 +107,7 @@ object MediaUtils {
      * true 为不嵌入状态栏
      * false 为嵌入状态栏
      */
-    fun setIsDecorFitsSystemWindows(activity: Activity, isFits: Boolean){
+    fun setIsDecorFitsSystemWindows(activity: Activity, isFits: Boolean) {
         WindowCompat.setDecorFitsSystemWindows(activity.window, isFits)
     }
 

@@ -15,7 +15,7 @@ import android.view.WindowManager
  */
 object OverlayHelper {
 
-    fun drawOverlayEnable(context: Context): Boolean{
+    fun drawOverlayEnable(context: Context): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             Settings.canDrawOverlays(context)
         } else {
@@ -35,7 +35,7 @@ object OverlayHelper {
     fun gotoDrawOverlaySetting(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             context.startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION))
-        }else{
+        } else {
             gotoAppDetailSetting(context)
         }
         //Toast.makeText(context, R.string.please_allow_draw_overlay,Toast.LENGTH_SHORT).show();

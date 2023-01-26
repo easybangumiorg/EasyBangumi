@@ -17,16 +17,16 @@ class SearchPageSource(
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Bangumi> {
         val key = params.key ?: return LoadResult.Error(NullPointerException())
-        if(keyword.isEmpty()){
+        if (keyword.isEmpty()) {
             return LoadResult.Error(NullPointerException())
         }
-        try{
+        try {
             searchParser.search(keyword, key).let {
-                return when(it){
+                return when (it) {
                     is ISourceParser.ParserResult.Error -> {
-                        if(it.isParserError){
+                        if (it.isParserError) {
                             LoadResult.Error(it.throwable)
-                        }else{
+                        } else {
                             LoadResult.Error(Exception("load error"))
                         }
 
@@ -40,7 +40,7 @@ class SearchPageSource(
                     }
                 }
             }
-        }catch (e: Exception){
+        } catch (e: Exception) {
             return LoadResult.Error(e)
         }
 

@@ -56,16 +56,15 @@ object PlayerController {
     val playerControllerStatus: LiveData<Int> = stateController.playerControllerStatus
     val videoSizeStatus: LiveData<VideoSize> = stateController.videoSizeStatus
 
-    fun setMediaSource(source: MediaSource){
+    fun setMediaSource(source: MediaSource) {
         exoPlayer.setMediaSource(source)
         stateController.dispatchIdle()
     }
 
-    fun prepare(){
+    fun prepare() {
         exoPlayer.prepare()
         stateController.dispatchPreparing()
     }
-
 
 
 }
