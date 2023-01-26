@@ -28,6 +28,8 @@ QQ群：729848189 有兴趣进来玩，群主爆肝更新中
 （不定时更新）
 - 樱花动漫 ([http://www.yinghuacd.com](http://www.yinghuacd.com))
 - 哔咪动漫 Bimibimi ([https://www.bimiacg4.net](https://www.bimiacg4.net))
+- 次元城动漫源 ([https://www.cycdm01.top](https://www.cycdm01.top))  
+
 # 截图
 <img src="./screenshots/1.png" width="30%" />
 <img src="./screenshots/2.png" width="30%" />
@@ -40,6 +42,10 @@ QQ群：729848189 有兴趣进来玩，群主爆肝更新中
 
 
 # 更新列表
+- 2023/01/26 3.0.3  
+  新增 次元城动漫源 (https://www.cycdm01.top) 源，感谢 AyalaKaguya 的适配
+  修复 暂停时候播放暂停按钮不会跟着隐藏的问题  
+
 - 2023/01/24 3.0.2  
   修复 换集时有几率在加载状态但是没有加载条的问题  
   修复 手势滑动进度时有几率没有显示进度条的问题  

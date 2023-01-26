@@ -307,20 +307,22 @@ class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChange
                 EasyPlayStatus.STATE_PAUSED -> {
                     binding.root.visibility = View.VISIBLE
                     binding.progressBar.hideWithAnim()
-                    binding.ivController.showWithAnim()
                     stopFadeOut()
 
                     if(isVisible){
                         if(isLocked){
                             binding.ivLock.showWithAnim()
                             binding.contentLayout.hideWithAnim()
+                            binding.ivController.hideWithAnim()
                         }else{
                             binding.ivLock.showWithAnim()
                             binding.contentLayout.showWithAnim()
+                            binding.ivController.showWithAnim()
                         }
                     }else{
                         binding.ivLock.hideWithAnim()
                         binding.contentLayout.hideWithAnim()
+                        binding.ivController.hideWithAnim()
 
                     }
                 }
