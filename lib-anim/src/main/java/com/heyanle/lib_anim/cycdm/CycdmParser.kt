@@ -309,7 +309,7 @@ class CycdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
                 if (result.isNotEmpty())
                     return@withContext ISourceParser.ParserResult.Complete(
                         IPlayerParser.PlayerInfo(
-                            type = IPlayerParser.PlayerInfo.TYPE_HLS,
+                            type = if (result.endsWith("mp4")) IPlayerParser.PlayerInfo.TYPE_OTHER else IPlayerParser.PlayerInfo.TYPE_HLS,
                             uri = result
                         )
                     )
