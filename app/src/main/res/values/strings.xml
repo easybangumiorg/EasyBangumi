@@ -92,5 +92,7 @@
     <string name="speed">倍速</string>
     <string name="episode">选集</string>
 
+    <string name="replay_error">重播失败 QAQ，请手动选集</string>
+
 
 </resources>
