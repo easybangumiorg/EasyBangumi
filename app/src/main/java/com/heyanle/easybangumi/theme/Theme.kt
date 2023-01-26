@@ -39,8 +39,8 @@ enum class EasyThemeMode(
     )
 }
 
-fun EasyThemeMode.getColorScheme(isDark: Boolean): ColorScheme{
-    return if(isDark) darkColorScheme else lightColorScheme
+fun EasyThemeMode.getColorScheme(isDark: Boolean): ColorScheme {
+    return if (isDark) darkColorScheme else lightColorScheme
 }
 
 private val DarkGreenColorScheme = darkColorScheme(

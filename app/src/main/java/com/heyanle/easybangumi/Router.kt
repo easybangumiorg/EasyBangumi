@@ -40,15 +40,15 @@ const val PLAY = "play"
 // 缺省路由
 const val DEFAULT = HOME
 
-fun NavHostController.navigationSearch(keyword: String){
+fun NavHostController.navigationSearch(keyword: String) {
     navigate("${SEARCH}?keyword=${keyword}")
 }
 
-fun NavHostController.navigationPlay(bangumi: Bangumi){
+fun NavHostController.navigationPlay(bangumi: Bangumi) {
     navigationPlay(bangumi.source, bangumi.detailUrl)
 }
 
-fun NavHostController.navigationPlay(source: String, detailUrl: String){
+fun NavHostController.navigationPlay(source: String, detailUrl: String) {
     val uel = URLEncoder.encode(detailUrl, "utf-8")
     navigate("${PLAY}/${source}/${uel}")
 }
@@ -66,27 +66,29 @@ fun Nav() {
             popExitTransition = { slideOutHorizontally(tween()) { it } })
         {
 
-            composable(HOME){
+            composable(HOME) {
                 Home()
             }
 
             composable(
                 "${SEARCH}?keyword={keyword}",
                 arguments = listOf(navArgument("keyword") { defaultValue = "" })
-            ){
-                Search(it.arguments?.getString("keyword")?:"")
+            ) {
+                Search(it.arguments?.getString("keyword") ?: "")
             }
 
             composable(
                 "${PLAY}/{source}/{detailUrl}",
                 arguments = listOf(
                     navArgument("source") { defaultValue = "" },
-                    navArgument("detailUrl") { defaultValue = ""},
+                    navArgument("detailUrl") { defaultValue = "" },
                 ),
-                deepLinks = listOf(navDeepLink { uriPattern = "${NAV}://${PLAY}/{source}/{detailUrl}" }),
-            ){
-                val source = it.arguments?.getString("source")?:""
-                val detailUrl = it.arguments?.getString("detailUrl")?:""
+                deepLinks = listOf(navDeepLink {
+                    uriPattern = "${NAV}://${PLAY}/{source}/{detailUrl}"
+                }),
+            ) {
+                val source = it.arguments?.getString("source") ?: ""
+                val detailUrl = it.arguments?.getString("detailUrl") ?: ""
 
                 Play(source = source, detail = URLDecoder.decode(detailUrl, "utf-8"))
             }

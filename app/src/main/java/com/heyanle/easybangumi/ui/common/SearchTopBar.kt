@@ -83,13 +83,13 @@ fun SearchTopBar(
     scrollBehavior: TopAppBarScrollBehavior,
     modifier: Modifier = Modifier,
     containerColor: Color,
-    placeholder: @Composable ()->Unit,
+    placeholder: @Composable () -> Unit,
     text: MutableState<String>,
-    onValueChange: (String)->Unit = {text.value = it},
-    onBack: ()->Unit,
-    onSearch: (String)->Unit,
+    onValueChange: (String) -> Unit = { text.value = it },
+    onBack: () -> Unit,
+    onSearch: (String) -> Unit,
     focusRequester: FocusRequester,
-){
+) {
 
 
     TopAppBar(
@@ -113,8 +113,8 @@ fun SearchTopBar(
         actions = {
             Crossfade(
                 text.value.isNotEmpty()
-            ){
-                if(it){
+            ) {
+                if (it) {
                     Row() {
                         IconButton(onClick = {
                             text.value = ""
@@ -155,14 +155,17 @@ fun SearchTopBar(
                 ),
                 value = text.value,
                 onValueChange = onValueChange,
-                colors =  TextFieldDefaults.textFieldColors(
+                colors = TextFieldDefaults.textFieldColors(
                     containerColor = Color.Transparent,
                     cursorColor = MaterialTheme.colorScheme.secondary,
                     textColor = MaterialTheme.colorScheme.onPrimary,
                     unfocusedIndicatorColor = Color.Transparent,
                     placeholderColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f),
                     focusedIndicatorColor = Color.Transparent,
-                    selectionColors = TextSelectionColors(MaterialTheme.colorScheme.secondary, MaterialTheme.colorScheme.secondary)
+                    selectionColors = TextSelectionColors(
+                        MaterialTheme.colorScheme.secondary,
+                        MaterialTheme.colorScheme.secondary
+                    )
                 ),
                 placeholder = {
                     CompositionLocalProvider(

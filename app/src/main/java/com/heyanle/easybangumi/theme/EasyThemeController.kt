@@ -22,12 +22,12 @@ data class EasyThemeState(
     val themeMode: EasyThemeMode,
     val darkMode: DarkMode,
     val isDynamicColor: Boolean,
-){
+) {
     @SuppressLint("ComposableNaming")
     @Composable
     @ReadOnlyComposable
-    fun isDark(): Boolean{
-        return when(darkMode){
+    fun isDark(): Boolean {
+        return when (darkMode) {
             DarkMode.Dark -> true
             DarkMode.Light -> false
             else -> isSystemInDarkTheme()
@@ -36,7 +36,7 @@ data class EasyThemeState(
 }
 
 
-object EasyThemeController{
+object EasyThemeController {
 
     var curThemeColor: ColorScheme? = null
 
@@ -46,22 +46,21 @@ object EasyThemeController{
 
     val easyThemeState = mutableStateOf(
         EasyThemeState(
-        EasyThemeMode.valueOf(themeModeOkkv),
-        DarkMode.valueOf(darkModeOkkv),
-        isDynamicColorOkkv && isSupportDynamicColor()
+            EasyThemeMode.valueOf(themeModeOkkv),
+            DarkMode.valueOf(darkModeOkkv),
+            isDynamicColorOkkv && isSupportDynamicColor()
+        )
     )
-    )
 
 
-
-    fun changeDarkMode(darkMode: DarkMode){
+    fun changeDarkMode(darkMode: DarkMode) {
         darkModeOkkv = darkMode.name
         easyThemeState.value = easyThemeState.value.copy(
             darkMode = darkMode
         )
     }
 
-    fun changeThemeMode(themeMode: EasyThemeMode){
+    fun changeThemeMode(themeMode: EasyThemeMode) {
         themeModeOkkv = themeMode.name
         easyThemeState.value = easyThemeState.value.copy(
             themeMode = themeMode
@@ -69,7 +68,7 @@ object EasyThemeController{
 
     }
 
-    fun changeIsDynamicColor(isDynamicColor: Boolean){
+    fun changeIsDynamicColor(isDynamicColor: Boolean) {
         // 安卓 12 才有该功能
         val real = (isDynamicColor && isSupportDynamicColor())
         isDynamicColorOkkv = real
@@ -82,5 +81,5 @@ object EasyThemeController{
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
     }
 
-    
+
 }

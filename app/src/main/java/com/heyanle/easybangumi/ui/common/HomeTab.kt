@@ -36,14 +36,15 @@ fun HomeTabRow(
     modifier: Modifier = Modifier,
     containerColor: Color = MaterialTheme.colorScheme.primary,
     selectedTabIndex: Int,
-    indicatorColor:  @Composable (Boolean)->Color= {if(it) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onPrimary},
+    indicatorColor: @Composable (Boolean) -> Color = { if (it) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onPrimary },
     tabs: @Composable () -> Unit,
-){
+) {
     val themeState by remember {
         EasyThemeController.easyThemeState
     }
 
-    val isUseSecondary = themeState.isDark() && !(themeState.isDynamicColor && EasyThemeController.isSupportDynamicColor())
+    val isUseSecondary =
+        themeState.isDark() && !(themeState.isDynamicColor && EasyThemeController.isSupportDynamicColor())
 
     ScrollableTabRow(
         modifier = Modifier.then(modifier),
@@ -54,26 +55,27 @@ fun HomeTabRow(
         tabs = tabs,
         divider = {},
         indicator = { tabPositions ->
-            if(tabPositions.isNotEmpty()){
+            if (tabPositions.isNotEmpty()) {
                 TabRowDefaults.Indicator(
                     Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
                     color = indicatorColor(isUseSecondary)
                 )
             }
 
-        },)
+        },
+    )
 
 }
 
 @Composable
 fun HomeTabItem(
     selected: Boolean,
-    text: (@Composable ()->Unit)? = null,
-    icon: (@Composable ()->Unit)? = null,
+    text: (@Composable () -> Unit)? = null,
+    icon: (@Composable () -> Unit)? = null,
     selectedContentColor: Color = MaterialTheme.colorScheme.onPrimary,
     unselectedContentColor: Color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.4f),
-    onClick: ()->Unit,
-){
+    onClick: () -> Unit,
+) {
 
     Tab(
         selected = selected,
@@ -94,28 +96,32 @@ fun KeyTabRow(
     unselectedContainerColor: Color = MaterialTheme.colorScheme.background,
     unselectedContentColor: Color = MaterialTheme.colorScheme.onBackground,
     textList: List<String>,
-    onItemClick: (Int)->Unit,
-){
+    onItemClick: (Int) -> Unit,
+) {
 
     LazyRow(
-        modifier = Modifier.padding(2.dp, 0.dp).then(modifier),
+        modifier = Modifier
+            .padding(2.dp, 0.dp)
+            .then(modifier),
 
-    ){
-        items(textList.size){
+        ) {
+        items(textList.size) {
             val selected = it == selectedTabIndex
             Surface(
                 shadowElevation = 4.dp,
                 shape = CircleShape,
                 modifier =
-                    Modifier
-                        .padding(2.dp, 8.dp)
-                        ,
+                Modifier
+                    .padding(2.dp, 8.dp),
                 color = if (selected) selectedContainerColor else unselectedContainerColor,
             ) {
                 Text(
-                    modifier = Modifier.clip(CircleShape).clickable {
-                        onItemClick(it)
-                    }.padding(8.dp, 4.dp),
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .clickable {
+                            onItemClick(it)
+                        }
+                        .padding(8.dp, 4.dp),
                     color = if (selected) selectedContentColor else unselectedContentColor,
                     fontWeight = FontWeight.W900,
                     text = textList[it],
@@ -136,28 +142,32 @@ fun PlayLineTabRow(
     unselectedContainerColor: Color = MaterialTheme.colorScheme.background,
     unselectedContentColor: Color = MaterialTheme.colorScheme.onBackground,
     textList: List<String>,
-    onItemClick: (Int)->Unit,
-){
+    onItemClick: (Int) -> Unit,
+) {
 
     LazyRow(
-        modifier = Modifier.padding(2.dp, 0.dp).then(modifier),
+        modifier = Modifier
+            .padding(2.dp, 0.dp)
+            .then(modifier),
 
-        ){
-        items(textList.size){
+        ) {
+        items(textList.size) {
             val selected = it == selectedTabIndex
             Surface(
                 shadowElevation = 4.dp,
                 shape = CircleShape,
                 modifier =
                 Modifier
-                    .padding(2.dp, 8.dp)
-                ,
+                    .padding(2.dp, 8.dp),
                 color = if (selected) selectedContainerColor else unselectedContainerColor,
             ) {
                 Text(
-                    modifier = Modifier.clip(CircleShape).clickable {
-                        onItemClick(it)
-                    }.padding(8.dp, 4.dp),
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .clickable {
+                            onItemClick(it)
+                        }
+                        .padding(8.dp, 4.dp),
                     color = if (selected) selectedContentColor else unselectedContentColor,
                     fontWeight = FontWeight.W900,
                     text = textList[it],

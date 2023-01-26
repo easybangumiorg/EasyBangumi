@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
  * https://github.com/heyanLE
  */
 @Entity
-data class Bangumi (
+data class Bangumi(
 
     // 唯一标识，格式 "[source]-[id]"
     @PrimaryKey var id: String,
@@ -30,8 +30,8 @@ data class Bangumi (
 
     // 最后访问时间 （历史记录）
     var visitTime: Long = 0L,
-){
-    fun toSummary(): BangumiSummary{
+) {
+    fun toSummary(): BangumiSummary {
         return BangumiSummary(source, detailUrl)
     }
 }

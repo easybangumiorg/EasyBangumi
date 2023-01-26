@@ -4,11 +4,11 @@ package com.heyanle.buildsrc
  * Created by HeYanLe on 2023/1/3 17:17.
  * https://github.com/heyanLE
  */
-object Android{
+object Android {
     val minSdk = 21
     val targetSdk = 33
     val compileSdk = 33
 
-    val versionCode = 41
-    val versionName = "3.0.2"
+    val versionCode = 42
+    val versionName = "3.0.3"
 }

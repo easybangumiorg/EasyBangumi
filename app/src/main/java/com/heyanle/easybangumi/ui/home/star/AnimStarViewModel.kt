@@ -16,11 +16,11 @@ import kotlinx.coroutines.launch
  * Created by HeYanLe on 2023/1/9 21:28.
  * https://github.com/heyanLE
  */
-class AnimStarViewModel: ViewModel() {
+class AnimStarViewModel : ViewModel() {
 
     companion object {
         private val isRefresh = MutableLiveData(false)
-        fun refresh(){
+        fun refresh() {
             isRefresh.postValue(true)
         }
     }
@@ -28,7 +28,7 @@ class AnimStarViewModel: ViewModel() {
     val curPager = mutableStateOf(getPager().flow.cachedIn(viewModelScope))
 
     private val observer = Observer<Boolean> { t ->
-        if(t){
+        if (t) {
             viewModelScope.launch {
                 curPager.value = getPager().flow.cachedIn(viewModelScope)
             }
@@ -39,10 +39,10 @@ class AnimStarViewModel: ViewModel() {
         isRefresh.observeForever(observer)
     }
 
-    private fun getPager(): Pager<Int, BangumiStar>{
+    private fun getPager(): Pager<Int, BangumiStar> {
         return Pager(
             PagingConfig(pageSize = 10)
-        ){
+        ) {
             EasyDB.database.bangumiStarDao().getAll()
         }
     }

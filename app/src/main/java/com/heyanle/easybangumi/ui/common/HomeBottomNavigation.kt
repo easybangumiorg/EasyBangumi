@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
  */
 @Composable
 fun HomeNavigationBar(
-    content: @Composable RowScope.()->Unit,
+    content: @Composable RowScope.() -> Unit,
 ) {
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -30,10 +30,10 @@ fun HomeNavigationBar(
 @Composable
 fun RowScope.HomeNavigationItem(
     selected: Boolean,
-    icon: @Composable ()->Unit,
-    label: @Composable ()->Unit,
-    onClick: ()->Unit,
-){
+    icon: @Composable () -> Unit,
+    label: @Composable () -> Unit,
+    onClick: () -> Unit,
+) {
     NavigationBarItem(
         colors = NavigationBarItemDefaults.colors(
             selectedIconColor = MaterialTheme.colorScheme.onSecondary,

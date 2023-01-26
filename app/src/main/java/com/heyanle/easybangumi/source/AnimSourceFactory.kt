@@ -20,26 +20,30 @@ object AnimSourceFactory {
 
     // 注册源
     // TODO 插件化加载
-    fun init(){
+    fun init() {
         MainScope().launch {
-            animSourceFlow.emit(AnimSources(arrayListOf(
-                YhdmParser(),
-                BimibimiParser(),
-                CycdmParser()
+            animSourceFlow.emit(
+                AnimSources(
+                    arrayListOf(
+                        YhdmParser(),
+                        BimibimiParser(),
+                        CycdmParser()
 
-            )))
+                    )
+                )
+            )
         }
     }
 
-    fun label(key: String): String?{
+    fun label(key: String): String? {
         return animSourceFlow.value.parser(key)?.getLabel()
     }
 
-    fun parsers(): Flow<AnimSources>{
+    fun parsers(): Flow<AnimSources> {
         return animSourceFlow
     }
 
-    fun homeParsers(): Flow<List<IHomeParser>>{
+    fun homeParsers(): Flow<List<IHomeParser>> {
         return channelFlow {
             animSourceFlow.collectLatest {
                 send(it.homeParsers())
@@ -47,7 +51,7 @@ object AnimSourceFactory {
         }
     }
 
-    fun searchParsers(): Flow<List<ISearchParser>>{
+    fun searchParsers(): Flow<List<ISearchParser>> {
         return channelFlow {
             animSourceFlow.collectLatest {
                 send(it.searchParsers())
@@ -59,15 +63,15 @@ object AnimSourceFactory {
         return animSourceFlow.value.home(source)
     }
 
-    fun search(source: String): ISearchParser?{
+    fun search(source: String): ISearchParser? {
         return animSourceFlow.value.search(source)
     }
 
-    fun detail(source: String): IDetailParser?{
+    fun detail(source: String): IDetailParser? {
         return animSourceFlow.value.detail(source)
     }
 
-    fun play(source: String): IPlayerParser?{
+    fun play(source: String): IPlayerParser? {
         return animSourceFlow.value.play(source)
     }
 
