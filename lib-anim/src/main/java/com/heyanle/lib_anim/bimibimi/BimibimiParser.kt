@@ -68,7 +68,7 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
 
                 val elements = doc.getElementsByClass("area-cont")
 
-                fun load(element: Element) {
+                fun load(element: Element){
                     val columnTitle = element.getElementsByClass("title")[0].child(1).text()
                     val uls = element.getElementsByClass("tab-cont")
                     val list = arrayListOf<Bangumi>()
@@ -76,8 +76,6 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
                     ul.children().forEach { ele ->
                         val detailUrl = url(ele.child(0).attr("href"))
                         val imgUrl = PROXY_URL+url(ele.getElementsByTag("img")[0].attr("src"))
-                        val detailUrl = url(ele.child(0).attr("href"))
-                        val imgUrl = url(ele.getElementsByTag("img")[0].attr("src"))
                         val title = ele.child(1).child(0).text()
                         val intro = ele.child(1).child(1).text()
                         val bangumi = Bangumi(
