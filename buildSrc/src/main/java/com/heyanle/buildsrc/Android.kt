@@ -9,6 +9,6 @@ object Android {
     val targetSdk = 33
     val compileSdk = 33
 
-    val versionCode = 42
-    val versionName = "3.0.3"
+    val versionCode = 43
+    val versionName = "3.0.4"
 }
