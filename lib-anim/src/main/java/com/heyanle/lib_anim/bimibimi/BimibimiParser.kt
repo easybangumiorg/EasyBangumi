@@ -20,11 +20,12 @@ import java.lang.IndexOutOfBoundsException
  */
 class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISearchParser {
 
-    companion object {
+    companion object{
         const val ROOT_URL = "http://www.bimiacg4.net"
+        const val PROXY_URL = "https://proxy-tf-all-ws.bilivideo.com/?url="
     }
 
-    private fun url(source: String): String {
+    private fun url(source: String): String{
         return when {
             source.startsWith("http") -> {
                 source
@@ -58,7 +59,7 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
         return withContext(Dispatchers.IO) {
             val map = LinkedHashMap<String, List<Bangumi>>()
             val doc = runCatching {
-                Jsoup.parse(OkHttpUtils.get(url(ROOT_URL)))
+                Jsoup.parse(OkHttpUtils.get(PROXY_URL + url(ROOT_URL)))
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -67,14 +68,14 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
 
                 val elements = doc.getElementsByClass("area-cont")
 
-                fun load(element: Element) {
+                fun load(element: Element){
                     val columnTitle = element.getElementsByClass("title")[0].child(1).text()
                     val uls = element.getElementsByClass("tab-cont")
                     val list = arrayListOf<Bangumi>()
                     val ul = uls[0]
                     ul.children().forEach { ele ->
                         val detailUrl = url(ele.child(0).attr("href"))
-                        val imgUrl = url(ele.getElementsByTag("img")[0].attr("src"))
+                        val imgUrl = PROXY_URL+url(ele.getElementsByTag("img")[0].attr("src"))
                         val title = ele.child(1).child(0).text()
                         val intro = ele.child(1).child(1).text()
                         val bangumi = Bangumi(
@@ -129,7 +130,7 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
         return withContext(Dispatchers.IO) {
             val doc = runCatching {
                 val url = url("/vod/search/wd/$keyword/page/$key")
-                Jsoup.parse(OkHttpUtils.get(url(url)))
+                Jsoup.parse(OkHttpUtils.get(PROXY_URL + url))
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -144,7 +145,7 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
                         name = it.child(1).child(0).text(),
                         detailUrl = detailUrl,
                         intro = it.child(1).child(1).text(),
-                        cover = url(it.child(0).child(0).attr("src")),
+                        cover = PROXY_URL+url(it.child(0).child(0).attr("src")),
                         visitTime = System.currentTimeMillis(),
                         source = getKey(),
                     )
@@ -168,7 +169,7 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
     override suspend fun detail(bangumi: BangumiSummary): ISourceParser.ParserResult<BangumiDetail> {
         return withContext(Dispatchers.IO) {
             val doc = runCatching {
-                Jsoup.parse(OkHttpUtils.get(url(bangumi.detailUrl)))
+                Jsoup.parse(OkHttpUtils.get(PROXY_URL + url(bangumi.detailUrl)))
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -178,7 +179,7 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
                 val tit = doc.select("div.txt_intro_con div.tit")[0]
                 val name = tit.child(0).text()
                 val intro = tit.child(1).text()
-                val cover = url(doc.select("div.poster_placeholder div.v_pic img")[0].attr("src"))
+                val cover = PROXY_URL+url(doc.select("div.poster_placeholder div.v_pic img")[0].attr("src"))
                 val description = doc.getElementsByClass("vod-jianjie")[0].text()
                 return@withContext ISourceParser.ParserResult.Complete(
                     BangumiDetail(
@@ -207,7 +208,7 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
         return withContext(Dispatchers.IO) {
             val map = LinkedHashMap<String, List<String>>()
             val doc = runCatching {
-                Jsoup.parse(OkHttpUtils.get(url(bangumi.detailUrl)))
+                Jsoup.parse(OkHttpUtils.get(PROXY_URL + url(bangumi.detailUrl)))
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -276,7 +277,7 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
         }
         return withContext(Dispatchers.IO) {
             val doc = runCatching {
-                Jsoup.parse(OkHttpUtils.get(url(url)))
+                Jsoup.parse(OkHttpUtils.get(PROXY_URL + url(url)))
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -314,7 +315,7 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
                             "play"
                         }
                     }
-                    "$ROOT_URL/static/danmu/$from.php?url=$jsonUrl&myurl=$url"
+                    "$ROOT_URL/static/danmu/$from.php?url=$jsonUrl"// &myurl=$url
                 }
 
 
@@ -323,17 +324,17 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
                 return@withContext ISourceParser.ParserResult.Error(it, true)
             }
             val d = runCatching {
-                Jsoup.parse(OkHttpUtils.get(url(videoHtmlUrl)))
+                Jsoup.parse(OkHttpUtils.get(PROXY_URL + url(videoHtmlUrl)))
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
             }
             runCatching {
                 var src = d.select("video#video source")[0].attr("src")
-                if (src.startsWith("./")) {
-                    src = src.replace("./", "$ROOT_URL/static/danmu/")
-                } else if (!src.startsWith("http://") && !src.startsWith("https://")) {
-                    src = "${"$ROOT_URL/static/danmu/"}${src}"
+                if(src.startsWith("./")){
+                    src = src.replace("./", "$PROXY_URL$ROOT_URL/static/danmu/")
+                }else if(!src.startsWith("http://") && !src.startsWith("https://")){
+                    src = "${"$PROXY_URL$ROOT_URL/static/danmu/"}${src}"
                 }
                 return@withContext ISourceParser.ParserResult.Complete(
                     IPlayerParser.PlayerInfo(
