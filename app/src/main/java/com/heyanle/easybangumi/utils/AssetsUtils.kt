@@ -8,7 +8,7 @@ import com.heyanle.easybangumi.BangumiApp
  */
 object AssetsUtils {
 
-    fun getFile(){
+    fun getFile() {
         // BangumiApp.INSTANCE.assets.
     }
 

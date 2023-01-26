@@ -13,20 +13,24 @@ import javax.net.ssl.*
  */
 object OkHttpUtils {
 
-    val ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Safari/537.36 Edg/93.0.961.52"
+    val ua =
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Safari/537.36 Edg/93.0.961.52"
 
-    private val okhttpClient =  OkHttpClient.Builder()
+    private val okhttpClient = OkHttpClient.Builder()
         .hostnameVerifier(createHostnameVerifier())
         .sslSocketFactory(createSSLSocketFactory(), TrustAllCerts())
         .build()
 
-    fun get(url: String): String{
-        return okhttpClient.newCall(Request.Builder().url(url).header("User-Agent",
-           ua
-        ).get().build()).execute().body!!.string()
+    fun get(url: String): String {
+        return okhttpClient.newCall(
+            Request.Builder().url(url).header(
+                "User-Agent",
+                ua
+            ).get().build()
+        ).execute().body!!.string()
     }
 
-    private fun createSSLSocketFactory(): SSLSocketFactory{
+    private fun createSSLSocketFactory(): SSLSocketFactory {
         return runCatching {
             SSLContext.getInstance("TLS").let {
                 it.init(null, arrayOf(TrustAllManager()), SecureRandom())
@@ -37,7 +41,7 @@ object OkHttpUtils {
         }
     }
 
-    private fun createHostnameVerifier(): HostnameVerifier{
+    private fun createHostnameVerifier(): HostnameVerifier {
         return HostnameVerifier { _, _ -> true }
     }
 

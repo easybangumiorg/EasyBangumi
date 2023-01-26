@@ -18,41 +18,46 @@ import kotlinx.coroutines.launch
  */
 class AnimHomeViewModel(
     val homes: List<IHomeParser>
-): ViewModel() {
+) : ViewModel() {
 
     sealed class HomeAnimState(
         val curIndex: Int
     ) {
-        object None: HomeAnimState(-1)
+        object None : HomeAnimState(-1)
 
         // 加载中
-        class Loading(curIndex: Int): HomeAnimState(curIndex){
+        class Loading(curIndex: Int) : HomeAnimState(curIndex) {
             override fun toString(): String {
                 return "HomeAnimState.Loading(curIndex=$curIndex)"
             }
         }
 
         // 加载完成
-        class Completely(curIndex: Int, val data: LinkedHashMap<String, List<Bangumi>>, val keyList: List<String>): HomeAnimState(curIndex){
+        class Completely(
+            curIndex: Int,
+            val data: LinkedHashMap<String, List<Bangumi>>,
+            val keyList: List<String>
+        ) : HomeAnimState(curIndex) {
             override fun toString(): String {
                 return "HomeAnimState.Completely(curIndex=$curIndex)"
             }
         }
 
         // 加载错误
-        class Error(curIndex: Int, val error: ISourceParser.ParserResult.Error<LinkedHashMap<String, List<Bangumi>>>): HomeAnimState(curIndex)
-
-
+        class Error(
+            curIndex: Int,
+            val error: ISourceParser.ParserResult.Error<LinkedHashMap<String, List<Bangumi>>>
+        ) : HomeAnimState(curIndex)
 
 
     }
 
     sealed class HomeAnimEvent(val currentIndex: Int) {
         // 修改首页源 （走缓存）
-        class ChangeTab(index: Int): HomeAnimEvent(index)
+        class ChangeTab(index: Int) : HomeAnimEvent(index)
 
         // 刷新首页源 （强制不走缓存）
-        class RefreshTab(index: Int): HomeAnimEvent(index)
+        class RefreshTab(index: Int) : HomeAnimEvent(index)
     }
 
     companion object {
@@ -68,18 +73,18 @@ class AnimHomeViewModel(
 
     private val homeData = HashMap<Int, LinkedHashMap<String, List<Bangumi>>>()
 
-    private val _homeResult = MutableStateFlow<HomeAnimState> (HomeAnimState.None)
+    private val _homeResult = MutableStateFlow<HomeAnimState>(HomeAnimState.None)
     val homeResultFlow: Flow<HomeAnimState> = _homeResult
 
     init {
         viewModelScope.launch {
-            eventFlow.collectLatest(){ event ->
+            eventFlow.collectLatest() { event ->
 
                 val index = event.currentIndex
                 Log.d("AnimHomeViewHolder", "index->$index")
                 // 下标对应番剧源检查
                 val keys = homes
-                if(keys.isEmpty() || index < 0){
+                if (keys.isEmpty() || index < 0) {
                     _homeResult.emit(
                         HomeAnimState.Error(
                             index,
@@ -91,24 +96,30 @@ class AnimHomeViewModel(
                     )
                     return@collectLatest
                 }
-                if(index >= keys.size){
+                if (index >= keys.size) {
 
                     eventFlow.emit(HomeAnimEvent.ChangeTab(0))
                     return@collectLatest
                 }
                 // buffer, ChangeTab 事件才尝试走代理
-                if(event is HomeAnimEvent.ChangeTab && homeData.containsKey(index) && homeData[index]?.isNotEmpty() == true){
+                if (event is HomeAnimEvent.ChangeTab && homeData.containsKey(index) && homeData[index]?.isNotEmpty() == true) {
                     val ks = arrayListOf<String>()
                     homeData[index]?.forEach { (t, _) ->
                         ks.add(t)
                     }
                     // 加载成功
-                    _homeResult.emit(HomeAnimState.Completely(index, homeData[index] ?: linkedMapOf(), ks))
-                }else{
+                    _homeResult.emit(
+                        HomeAnimState.Completely(
+                            index,
+                            homeData[index] ?: linkedMapOf(),
+                            ks
+                        )
+                    )
+                } else {
                     // 先触发 Loading
                     _homeResult.emit(HomeAnimState.Loading(index))
                     val res = keys[index].home()
-                    if(eventFlow.value.currentIndex != index){
+                    if (eventFlow.value.currentIndex != index) {
                         // 迟到的 resp
                         res.complete {
                             // 设置 缓存后不发送事件
@@ -133,9 +144,9 @@ class AnimHomeViewModel(
     }
 
 
-    fun changeHomeSource(index: Int){
+    fun changeHomeSource(index: Int) {
         viewModelScope.launch {
-            if(index < 0 || homes.isEmpty()){
+            if (index < 0 || homes.isEmpty()) {
                 return@launch
             }
             okkvCurrentHomeSourceIndex = index
@@ -144,7 +155,7 @@ class AnimHomeViewModel(
 
     }
 
-    fun refresh(){
+    fun refresh() {
         val index = eventFlow.value.currentIndex
         eventFlow.value = HomeAnimEvent.RefreshTab(index)
     }

@@ -40,12 +40,11 @@ import kotlin.concurrent.write
  * Created by HeYanLe on 2023/1/14 22:10.
  * https://github.com/heyanLE
  */
-class BaseEasyPlayerView:
+class BaseEasyPlayerView :
     FrameLayout,
     IPlayer,
     AudioFocusHelper.OnAudioFocusListener,
-    View.OnKeyListener
-{
+    View.OnKeyListener {
     private var innerPlayer: Player? = null
     val surfaceView: SurfaceViewRender = SurfaceViewRender(context)
 
@@ -76,12 +75,28 @@ class BaseEasyPlayerView:
     private var mIsFullScreen = false
 
     init {
-        realViewContainer.layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
-        addView(realViewContainer, ViewGroup.LayoutParams(
+        realViewContainer.layoutParams = FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.MATCH_PARENT,
+            FrameLayout.LayoutParams.MATCH_PARENT
+        )
+        addView(
+            realViewContainer, ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+        )
+        realViewContainer.addView(
+            renderContainer,
+            0,
+            ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+        )
+        val lp = FrameLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT ))
-        realViewContainer.addView(renderContainer, 0, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT ))
-        val lp = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT)
+            ViewGroup.LayoutParams.MATCH_PARENT
+        )
         lp.gravity = Gravity.CENTER
         renderContainer.addView(surfaceView, lp)
         audioFocusHelper.setListener(this)
@@ -90,12 +105,12 @@ class BaseEasyPlayerView:
 
     // == Controller 管理和 事件分发 ============
 
-    fun addController(isAddToParent: Boolean = true, vararg controller: IController){
+    fun addController(isAddToParent: Boolean = true, vararg controller: IController) {
         controllerLock.write {
-            for(c in controller){
+            for (c in controller) {
                 controllers.add(c)
                 c.attachToPlayer(this)
-                if(isAddToParent){
+                if (isAddToParent) {
                     realViewContainer.addView(c.getViewContainer())
                 }
             }
@@ -104,7 +119,7 @@ class BaseEasyPlayerView:
 
     fun removeController(vararg controller: IController) {
         controllerLock.write {
-            for(c in controller){
+            for (c in controller) {
                 controllers.remove(c)
                 c.detachPlayer(this)
                 realViewContainer.removeView(c.getViewContainer())
@@ -120,15 +135,15 @@ class BaseEasyPlayerView:
         return res
     }
 
-    protected fun dispatchPlayerStateChange(playerState: Int){
+    protected fun dispatchPlayerStateChange(playerState: Int) {
         mCurrentPlayerState = playerState
         runWithController {
             dispatchPlayerStateChange(playerState)
         }
     }
 
-    fun dispatchPlayStateChange(playState: Int){
-        if(innerPlayer?.playerError != null && playState != EasyPlayStatus.STATE_ERROR){
+    fun dispatchPlayStateChange(playState: Int) {
+        if (innerPlayer?.playerError != null && playState != EasyPlayStatus.STATE_ERROR) {
             dispatchPlayStateChange(
                 EasyPlayStatus.STATE_ERROR
             )
@@ -141,7 +156,7 @@ class BaseEasyPlayerView:
         }
     }
 
-    protected inline fun runWithController(block: IController.()->Unit){
+    protected inline fun runWithController(block: IController.() -> Unit) {
         controllerLock.read {
             controllers.iterator().forEach {
                 it.block()
@@ -150,15 +165,15 @@ class BaseEasyPlayerView:
     }
 
     override fun startFullScreen(changeScreen: Boolean) {
-        if(mIsFullScreen){
+        if (mIsFullScreen) {
             return
         }
         runWithEnvironmentIfNotNull {
-            val activity = getActivity()?: return
-            val decorView = (activity.window.decorView as? ViewGroup)?: return
+            val activity = getActivity() ?: return
+            val decorView = (activity.window.decorView as? ViewGroup) ?: return
             mIsFullScreen = true
 
-            if(changeScreen) {
+            if (changeScreen) {
                 // 横屏
                 ActivityScreenHelper.activityScreenOrientationLandscape(activity)
             }
@@ -174,7 +189,10 @@ class BaseEasyPlayerView:
 
             // 隐藏状态栏和虚拟按键
             MediaHelper.setIsSystemBarsShow(activity, false)
-            MediaHelper.setSystemBarsBehavior(activity, WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE)
+            MediaHelper.setSystemBarsBehavior(
+                activity,
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            )
 
             isFocusableInTouchMode = true
             requestFocus()
@@ -183,11 +201,11 @@ class BaseEasyPlayerView:
     }
 
     override fun stopFullScreen(changeScreen: Boolean) {
-        if(!mIsFullScreen) return
-        val activity = getActivity()?: return
-        val decorView = (activity.window.decorView as? ViewGroup)?: return
+        if (!mIsFullScreen) return
+        val activity = getActivity() ?: return
+        val decorView = (activity.window.decorView as? ViewGroup) ?: return
         mIsFullScreen = false
-        if(changeScreen) {
+        if (changeScreen) {
             // 竖屏
             ActivityScreenHelper.activityScreenOrientationPortrait(activity)
         }
@@ -223,19 +241,19 @@ class BaseEasyPlayerView:
     }
 
     override fun getBufferedPercentage(): Int {
-        return innerPlayer?.bufferedPercentage?:-1
+        return innerPlayer?.bufferedPercentage ?: -1
     }
 
     override fun getCurrentPosition(): Long {
-        return innerPlayer?.currentPosition?:-1
+        return innerPlayer?.currentPosition ?: -1
     }
 
     override fun getDuration(): Long {
-        return innerPlayer?.duration?:-1
+        return innerPlayer?.duration ?: -1
     }
 
     override fun getSpeed(): Float {
-        return innerPlayer?.playbackParameters?.speed?:1.0F
+        return innerPlayer?.playbackParameters?.speed ?: 1.0F
     }
 
     override fun getVideoSize(): IntArray {
@@ -262,13 +280,13 @@ class BaseEasyPlayerView:
     }
 
     override fun pause() {
-        if(isInPlaybackState()) {
+        if (isInPlaybackState()) {
             innerPlayer?.playWhenReady = false
         }
     }
 
     override fun replay(resetPosition: Boolean) {
-        if (resetPosition){
+        if (resetPosition) {
             runWithEnvironmentIfNotNull {
                 stop()
                 clearMediaItems()
@@ -279,7 +297,7 @@ class BaseEasyPlayerView:
     }
 
     override fun seekTo(pos: Long) {
-        if(isInPlaybackState()){
+        if (isInPlaybackState()) {
             runWithEnvironmentIfNotNull {
                 seekTo(pos)
             }
@@ -287,7 +305,7 @@ class BaseEasyPlayerView:
     }
 
     override fun setMirrorRotation(enable: Boolean) {
-        surfaceView?.scaleX = if(enable) -1f else 1f
+        surfaceView?.scaleX = if (enable) -1f else 1f
     }
 
     override fun setMute(isMute: Boolean) {
@@ -324,7 +342,7 @@ class BaseEasyPlayerView:
     private var mStartRequested: Boolean = false
     private var mPausedForLoss = false
     override fun onAudioFocusChange(focusChange: Int) {
-        when(focusChange){
+        when (focusChange) {
             AudioManager.AUDIOFOCUS_GAIN, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT -> {
                 if (mStartRequested || mPausedForLoss) {
                     start()
@@ -437,7 +455,7 @@ class BaseEasyPlayerView:
 
     // == PlayerView 自带相关逻辑 ===============
 
-    fun release(){
+    fun release() {
         if (!isInIdleState()) {
 
             //关闭AudioFocus监听
@@ -460,7 +478,7 @@ class BaseEasyPlayerView:
                 mCurrentPlayState != EasyPlayStatus.STATE_PLAYBACK_COMPLETED
     }
 
-    protected open fun isInIdleState(): Boolean{
+    protected open fun isInIdleState(): Boolean {
         return mCurrentPlayState == EasyPlayStatus.STATE_IDLE
     }
 
@@ -468,16 +486,16 @@ class BaseEasyPlayerView:
         return mCurrentPlayState == EasyPlayStatus.STATE_START_ABORT
     }
 
-    fun attachToPlayer(player: Player){
+    fun attachToPlayer(player: Player) {
         innerPlayer = player
         player.setVideoSurfaceView(surfaceView)
     }
 
-    fun detachToPlayer(){
+    fun detachToPlayer() {
         innerPlayer = null
     }
 
-    fun refreshStateOnce(){
+    fun refreshStateOnce() {
 
 
     }
@@ -489,16 +507,16 @@ class BaseEasyPlayerView:
         return false
     }
 
-    private fun findEnvironmentAndControllerFromChildren(){
+    private fun findEnvironmentAndControllerFromChildren() {
         val viewList = ArrayList<View>()
-        for(i in 0 until childCount){
+        for (i in 0 until childCount) {
             val v = getChildAt(i)
             Log.d("BaseEasyPlayer", "v -> ${v.toString()}")
             viewList.add(v)
         }
         viewList.forEach { v ->
 
-            when(v){
+            when (v) {
 
                 is IControllerGetter -> {
                     removeView(v)
@@ -509,7 +527,7 @@ class BaseEasyPlayerView:
     }
 
     fun onBackPress(): Boolean {
-        if(mIsFullScreen){
+        if (mIsFullScreen) {
             stopFullScreen()
             return true
         }
@@ -523,11 +541,14 @@ class BaseEasyPlayerView:
 
     override fun onWindowFocusChanged(hasWindowFocus: Boolean) {
         super.onWindowFocusChanged(hasWindowFocus)
-        if(mIsFullScreen){
+        if (mIsFullScreen) {
             isFocusableInTouchMode = true
             requestFocus()
-            if(hasWindowFocus){
-                MediaHelper.setSystemBarsBehavior(requireActivity(), WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE)
+            if (hasWindowFocus) {
+                MediaHelper.setSystemBarsBehavior(
+                    requireActivity(),
+                    WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                )
             }
         }
     }
@@ -536,17 +557,20 @@ class BaseEasyPlayerView:
         return getActivity() ?: throw IllegalStateException("BaseEasyPlayer Not in Activity")
     }
 
-    private fun getActivity(): Activity?{
+    private fun getActivity(): Activity? {
         return PlayUtils.findActivity(context)
     }
 
-    private fun requestFocusIfNeed(){
-        if(!isMute() && enableAudioFocus){
-            audioFocusHelper.requestFocusCompat(AudioAttributesCompat.USAGE_MEDIA, AudioAttributesCompat.CONTENT_TYPE_MOVIE)
+    private fun requestFocusIfNeed() {
+        if (!isMute() && enableAudioFocus) {
+            audioFocusHelper.requestFocusCompat(
+                AudioAttributesCompat.USAGE_MEDIA,
+                AudioAttributesCompat.CONTENT_TYPE_MOVIE
+            )
         }
     }
 
-    private inline fun runWithEnvironmentIfNotNull(block: Player.()->Unit){
+    private inline fun runWithEnvironmentIfNotNull(block: Player.() -> Unit) {
         innerPlayer?.let {
             it.block()
         }

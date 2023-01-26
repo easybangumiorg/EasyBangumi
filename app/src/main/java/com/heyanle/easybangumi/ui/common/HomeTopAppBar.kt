@@ -27,11 +27,11 @@ import com.heyanle.easybangumi.R
 fun HomeTopAppBar(
     containerColor: Color = MaterialTheme.colorScheme.primary,
     contentColor: Color = MaterialTheme.colorScheme.onPrimary,
-    scrollBehavior : TopAppBarScrollBehavior,
-    label: @Composable ()->Unit,
-    onSearch: (()->Unit)? = null,
+    scrollBehavior: TopAppBarScrollBehavior,
+    label: @Composable () -> Unit,
+    onSearch: (() -> Unit)? = null,
     isShowSearch: Boolean = false,
-){
+) {
     TopAppBar(
         scrollBehavior = scrollBehavior,
         title = label,
@@ -41,11 +41,14 @@ fun HomeTopAppBar(
             actionIconContentColor = contentColor
         ),
         actions = {
-            if(isShowSearch){
+            if (isShowSearch) {
                 IconButton(onClick = {
                     onSearch?.invoke()
                 }) {
-                    Icon(Icons.Filled.Search, contentDescription = stringResource(id = R.string.search))
+                    Icon(
+                        Icons.Filled.Search,
+                        contentDescription = stringResource(id = R.string.search)
+                    )
                 }
             }
         }

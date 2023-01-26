@@ -12,9 +12,10 @@ fun dip2px(context: Context, dpValue: Float): Int {
     return (dpValue * scale + 0.5f).toInt()
 }
 
-fun Float.dip2px(): Int{
+fun Float.dip2px(): Int {
     return dip2px(BangumiApp.INSTANCE, this)
 }
-fun Int.dip2px(): Int{
+
+fun Int.dip2px(): Int {
     return dip2px(BangumiApp.INSTANCE, this.toFloat())
 }

@@ -19,7 +19,7 @@ import kotlin.collections.LinkedHashMap
  * Created by AyalaKaguya on 2023/1/24 21:22.
  * https://github.com/AyalaKaguya
  */
-class CycdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISearchParser  {
+class CycdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISearchParser {
 
     override fun getKey(): String {
         return "cycdm"
@@ -37,11 +37,11 @@ class CycdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
         return 0
     }
 
-    companion object{
+    companion object {
         const val ROOT_URL = "https://www.cycdm01.top"
     }
 
-    private fun url(source: String): String{
+    private fun url(source: String): String {
         return when {
             source.startsWith("http") -> {
                 source
@@ -56,7 +56,7 @@ class CycdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
     }
 
     override suspend fun home(): ISourceParser.ParserResult<LinkedHashMap<String, List<Bangumi>>> {
-        return withContext(Dispatchers.IO){
+        return withContext(Dispatchers.IO) {
             val map = LinkedHashMap<String, List<Bangumi>>()
 
             val doc = runCatching {
@@ -76,7 +76,7 @@ class CycdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
                     val detailBox = it.child(1).child(0)
                     val coverStyle = imgBox.child(3).attr("style")
                     val coverPattern = Regex("""(?<=url\().*(?=\))""")
-                    val cover = coverPattern.find(coverStyle)?.value?:""
+                    val cover = coverPattern.find(coverStyle)?.value ?: ""
                     val name = detailBox.child(1).text()
                     val detailUrl = url(detailBox.child(3).child(0).child(1).attr("href"))
                     val intro = detailBox.child(2).text()
@@ -96,7 +96,7 @@ class CycdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
                 map["首页推荐"] = listMain
 
                 val docCol = doc.select("div.box-width.wow.fadeInUp.animated").iterator()
-                while (docCol.hasNext()){
+                while (docCol.hasNext()) {
                     val children = docCol.next()
                     val columnName = children.child(0).child(0).child(0).text()
                     val list = arrayListOf<Bangumi>()
@@ -169,14 +169,14 @@ class CycdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
                     r.add(b)
                 }
                 val pages = doc.select("div.page-info")
-                if(pages.isEmpty()){
+                if (pages.isEmpty()) {
                     return@withContext ISourceParser.ParserResult.Complete(Pair(null, r))
-                }else{
+                } else {
                     val p = pages.select("a.page-link.bj2.cor7.ho").next().text()
-                    if(p == "下一页"){
+                    if (p == "下一页") {
                         return@withContext ISourceParser.ParserResult.Complete(Pair(null, r))
                     } else {
-                        return@withContext ISourceParser.ParserResult.Complete(Pair(key+1, r))
+                        return@withContext ISourceParser.ParserResult.Complete(Pair(key + 1, r))
                     }
                 }
             }.onFailure {
@@ -200,18 +200,20 @@ class CycdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
             kotlin.runCatching {
                 val id = "${getLabel()}-${bangumi.detailUrl}"
                 val name = doc.select("div.detail-info.rel.flex-auto h3")[0].text()
-                val intro = doc.select("div.detail-info.rel.flex-auto div.slide-info.hide span.slide-info-remarks")[0].text()
+                val intro =
+                    doc.select("div.detail-info.rel.flex-auto div.slide-info.hide span.slide-info-remarks")[0].text()
                 val cover = doc.select("a.detail-pic.lazy.mask-0")[0].attr("data-original")
                 val description = doc.select("div.check.text.selected.cor3")[0].text()
-                return@withContext ISourceParser.ParserResult.Complete( BangumiDetail(
-                    id = id,
-                    source = getKey(),
-                    name = name,
-                    cover = cover,
-                    intro = intro,
-                    detailUrl = bangumi.detailUrl,
-                    description = description
-                )
+                return@withContext ISourceParser.ParserResult.Complete(
+                    BangumiDetail(
+                        id = id,
+                        source = getKey(),
+                        name = name,
+                        cover = cover,
+                        intro = intro,
+                        detailUrl = bangumi.detailUrl,
+                        description = description
+                    )
                 )
             }.onFailure {
                 it.printStackTrace()
@@ -245,10 +247,10 @@ class CycdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
                     listTarget.add(it.text())
                     listLink.add(it.child(0).attr("href"))
                 }
-                temp.addAll(listLink.reversed())
-                map["播放列表"] = listTarget.reversed()
+                temp.addAll(listLink)
+                map["播放列表"] = listTarget
                 this@CycdmParser.bangumi = bangumi
-                return@withContext  ISourceParser.ParserResult.Complete(map)
+                return@withContext ISourceParser.ParserResult.Complete(map)
             }.onFailure {
                 this@CycdmParser.bangumi = bangumi
                 it.printStackTrace()
@@ -264,13 +266,14 @@ class CycdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
         lineIndex: Int,
         episodes: Int
     ): ISourceParser.ParserResult<IPlayerParser.PlayerInfo> {
-        if(lineIndex < 0 || episodes < 0){
+        if (lineIndex < 0 || episodes < 0) {
             return ISourceParser.ParserResult.Error(IndexOutOfBoundsException(), false)
         }
         var url = ""
-        if(bangumi != this.bangumi
+        if (bangumi != this.bangumi
             || episodes >= temp.size
-            || temp[episodes] == ""){
+            || temp[episodes] == ""
+        ) {
             getPlayMsg(bangumi).error {
                 return@getPlayUrl ISourceParser.ParserResult.Error(it.throwable, it.isParserError)
             }.complete {
@@ -280,14 +283,14 @@ class CycdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
                     return@getPlayUrl ISourceParser.ParserResult.Error(it, true)
                 }
             }
-        }else{
+        } else {
             url = temp[episodes]
         }
 
-        if(url.isEmpty()){
+        if (url.isEmpty()) {
             return ISourceParser.ParserResult.Error(Exception("Unknown Error"), true)
         }
-        return withContext(Dispatchers.IO){
+        return withContext(Dispatchers.IO) {
             val doc = runCatching {
                 Jsoup.parse(OkHttpUtils.get(url(url)))
             }.getOrElse {
@@ -298,13 +301,18 @@ class CycdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
             runCatching {
                 val playInfo = doc.select("div.player-left script")[0].data()
                 val playPattern = Regex("""(?<="url":").*(?=","u)""")
-                val playSecret = playPattern.find(playInfo)?.value?:""
+                val playSecret = playPattern.find(playInfo)?.value ?: ""
 
                 var result = playSecret.base64Decoded
-                result = URLDecoder.decode(result)
+                result = URLDecoder.decode(result, "utf-8")
 
                 if (result.isNotEmpty())
-                    return@withContext ISourceParser.ParserResult.Complete(IPlayerParser.PlayerInfo(type = IPlayerParser.PlayerInfo.TYPE_HLS,uri = result))
+                    return@withContext ISourceParser.ParserResult.Complete(
+                        IPlayerParser.PlayerInfo(
+                            type = IPlayerParser.PlayerInfo.TYPE_HLS,
+                            uri = result
+                        )
+                    )
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, true)

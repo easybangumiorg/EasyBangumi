@@ -27,6 +27,7 @@ import com.heyanle.easybangumi.databinding.ComponentStandardBinding
 import com.heyanle.easybangumi.theme.EasyThemeController
 import com.heyanle.easybangumi.ui.common.easy_player.utils.TimeUtils
 import com.heyanle.easybangumi.ui.common.moeSnackBar
+import com.heyanle.easybangumi.ui.player.BangumiPlayController
 import com.heyanle.easybangumi.utils.dip2px
 import com.heyanle.eplayer_core.constant.EasyPlayStatus
 import com.heyanle.eplayer_core.constant.EasyPlayerStatus
@@ -37,7 +38,7 @@ import com.heyanle.eplayer_core.controller.IGestureComponent
 /**
  * Create by heyanlin on 2022/11/2
  */
-class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChangeListener {
+class StandardComponent : FrameLayout, IGestureComponent, SeekBar.OnSeekBarChangeListener {
 
 
     private val textMap = linkedMapOf<Float, TextView>().apply {
@@ -53,7 +54,8 @@ class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChange
     private var normalSpeedTextColor: Int = Color.White.toArgb()
 
     private val binding: ComponentStandardBinding = ComponentStandardBinding.inflate(
-        LayoutInflater.from(context), this, true)
+        LayoutInflater.from(context), this, true
+    )
 
     private var isLocked = false
 
@@ -94,10 +96,13 @@ class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChange
             val dra = binding.seekBar.progressDrawable as LayerDrawable
             dra.getDrawable(2).colorFilter = PorterDuffColorFilter(color, PorterDuff.Mode.SRC)
 
-            dra.findDrawableByLayerId(android.R.id.background).colorFilter = PorterDuffColorFilter(0x99ffffff.toInt(), PorterDuff.Mode.SRC)
-            binding.seekBar.thumb.colorFilter = PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP)
+            dra.findDrawableByLayerId(android.R.id.background).colorFilter =
+                PorterDuffColorFilter(0x99ffffff.toInt(), PorterDuff.Mode.SRC)
+            binding.seekBar.thumb.colorFilter =
+                PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP)
             binding.seekBar.progressTintList = ColorStateList.valueOf(color)
-            binding.seekBar.progressBackgroundTintList = ColorStateList.valueOf(Color.White.copy(0.6f).toArgb())
+            binding.seekBar.progressBackgroundTintList =
+                ColorStateList.valueOf(Color.White.copy(0.6f).toArgb())
             binding.seekBar.secondaryProgressTintList = ColorStateList.valueOf(Color.White.toArgb())
 
             binding.progressBar.indeterminateTintList = ColorStateList.valueOf(color)
@@ -106,7 +111,10 @@ class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChange
             selectSpeedTextColor = it.secondary.toArgb()
         }
         textMap.iterator().forEach {
-            binding.speedContainer.addView(it.value, ViewGroup.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
+            binding.speedContainer.addView(
+                it.value,
+                ViewGroup.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+            )
         }
         binding.speedRoot.visibility = View.GONE
         binding.speedRoot.setOnClickListener {
@@ -121,7 +129,7 @@ class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChange
     // == override IComponent
 
     override fun onPlayerStateChanged(playerState: Int) {
-        when(playerState){
+        when (playerState) {
             EasyPlayerStatus.PLAYER_FULL_SCREEN -> {
                 binding.upLayout.visibility = View.VISIBLE
             }
@@ -134,7 +142,7 @@ class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChange
     override fun onPlayStateChanged(playState: Int) {
         Log.d("StandardComponent", "playState $playState")
         this.playState = playState
-        isVisible = container?.isShowing()?:false
+        isVisible = container?.isShowing() ?: false
         onUIChange(isVisible, isLocked, this.playState)
 //        refreshPlayPauseBtStatus()
 //        runWithContainer {
@@ -222,9 +230,9 @@ class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChange
         isVisible: Boolean,
         isLocked: Boolean,
         playState: Int,
-    ){
+    ) {
         Log.d("StandardComponent", "onUIChange $isVisible $isLocked $playState")
-        if(playState == 4){
+        if (playState == 4) {
             java.lang.Exception().printStackTrace()
         }
         refreshPlayPauseBtStatus()
@@ -241,11 +249,11 @@ class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChange
                 }
                 // 加载资源中
                 EasyPlayStatus.STATE_PREPARING -> {
-                    if(isLocked){
+                    if (isLocked) {
                         setLocked(false)
                         return
                     }
-                    if(!isVisible){
+                    if (!isVisible) {
                         show()
                         stopFadeOut()
                         return
@@ -266,18 +274,18 @@ class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChange
                 EasyPlayStatus.STATE_BUFFERING -> {
                     binding.root.visibility = View.VISIBLE
                     binding.progressBar.showWithAnim()
-                    if(isVisible){
-                        if(isLocked){
+                    if (isVisible) {
+                        if (isLocked) {
                             binding.ivLock.showWithAnim()
                             binding.contentLayout.hideWithAnim()
                             binding.ivController.hideWithAnim()
-                        }else{
+                        } else {
                             binding.ivLock.showWithAnim()
 
                             binding.contentLayout.showWithAnim()
                             binding.ivController.hideWithAnim()
                         }
-                    }else{
+                    } else {
                         binding.ivLock.hideWithAnim()
                         binding.contentLayout.hideWithAnim()
                         binding.ivController.hideWithAnim()
@@ -287,18 +295,18 @@ class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChange
                     binding.root.visibility = View.VISIBLE
                     binding.progressBar.hideWithAnim()
 
-                    if(isVisible){
+                    if (isVisible) {
                         startFadeOut()
-                        if(isLocked){
+                        if (isLocked) {
                             binding.ivLock.showWithAnim()
                             binding.contentLayout.hideWithAnim()
                             binding.ivController.hideWithAnim()
-                        }else{
+                        } else {
                             binding.ivLock.showWithAnim()
                             binding.contentLayout.showWithAnim()
                             binding.ivController.showWithAnim()
                         }
-                    }else{
+                    } else {
                         binding.ivLock.hideWithAnim()
                         binding.contentLayout.hideWithAnim()
                         binding.ivController.hideWithAnim()
@@ -309,17 +317,17 @@ class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChange
                     binding.progressBar.hideWithAnim()
                     stopFadeOut()
 
-                    if(isVisible){
-                        if(isLocked){
+                    if (isVisible) {
+                        if (isLocked) {
                             binding.ivLock.showWithAnim()
                             binding.contentLayout.hideWithAnim()
                             binding.ivController.hideWithAnim()
-                        }else{
+                        } else {
                             binding.ivLock.showWithAnim()
                             binding.contentLayout.showWithAnim()
                             binding.ivController.showWithAnim()
                         }
-                    }else{
+                    } else {
                         binding.ivLock.hideWithAnim()
                         binding.contentLayout.hideWithAnim()
                         binding.ivController.hideWithAnim()
@@ -329,17 +337,40 @@ class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChange
                 EasyPlayStatus.STATE_ERROR -> {
                     binding.root.visibility = View.GONE
                 }
+                EasyPlayStatus.STATE_PLAYBACK_COMPLETED -> {
+                    if (isLocked) {
+                        setLocked(false)
+                        return
+                    }
+                    if (!isVisible) {
+                        show()
+                        stopFadeOut()
+                        return
+                    }
+                    // 尝试跳下一集，失败就显示重播按钮
+                    if (BangumiPlayController.curAnimPlayViewModel.value?.tryNext() != true) {
+                        binding.root.visibility = View.VISIBLE
+                        binding.ivLock.hideWithAnim()
+                        binding.contentLayout.showWithAnim()
+                        binding.ivController.hideWithAnim()
+                        binding.progressBar.hideWithAnim()
+                        refreshTimeUI(0L, 0L)
+                        stopFadeOut()
+                        binding.ivReplay.showWithAnim()
+                    }
+
+                }
             }
         }
     }
 
-    private fun View.showWithAnim(){
+    private fun View.showWithAnim() {
         post {
-            if(visibility == View.GONE){
+            if (visibility == View.GONE) {
                 clearAnimation()
                 visibility = View.VISIBLE
                 alpha = 0f
-                animate().alpha(1f).setListener(object: Animator.AnimatorListener {
+                animate().alpha(1f).setListener(object : Animator.AnimatorListener {
                     override fun onAnimationStart(animation: Animator) {
                     }
 
@@ -355,7 +386,7 @@ class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChange
                     override fun onAnimationRepeat(animation: Animator) {
                     }
                 }).setDuration(100).start()
-            }else{
+            } else {
                 clearAnimation()
                 alpha = 1f
             }
@@ -363,12 +394,12 @@ class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChange
 
     }
 
-    private fun View.hideWithAnim(){
+    private fun View.hideWithAnim() {
         post {
-            if(visibility == View.VISIBLE){
+            if (visibility == View.VISIBLE) {
                 clearAnimation()
                 alpha = 1f
-                animate().alpha(0f).setListener(object: Animator.AnimatorListener {
+                animate().alpha(0f).setListener(object : Animator.AnimatorListener {
                     override fun onAnimationStart(animation: Animator) {
                     }
 
@@ -386,7 +417,7 @@ class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChange
                     override fun onAnimationRepeat(animation: Animator) {
                     }
                 }).setDuration(100).start()
-            }else{
+            } else {
                 visibility = View.GONE
                 clearAnimation()
                 alpha = 0f
@@ -396,31 +427,33 @@ class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChange
     }
 
 
-
     override fun onProgressUpdate(duration: Long, position: Long) {
-        Log.d("StandardComponent", "onProgressUpdate dur->$duration pos->$position isProgressSlide->$isProgressSlide isSeekBarTouching->$isSeekBarTouching")
-        if(!isProgressSlide && !isSeekBarTouching){
+        Log.d(
+            "StandardComponent",
+            "onProgressUpdate dur->$duration pos->$position isProgressSlide->$isProgressSlide isSeekBarTouching->$isSeekBarTouching"
+        )
+        if (!isProgressSlide && !isSeekBarTouching) {
             refreshTimeUI(duration, position)
-            setSeekbarProgress(duration, position, container?.getBufferedPercentage()?:0)
+            setSeekbarProgress(duration, position, container?.getBufferedPercentage() ?: 0)
         }
     }
 
     override fun onLockStateChange(isLocked: Boolean) {
         this.isLocked = isLocked
-        if(isLocked){
+        if (isLocked) {
             binding.ivLock.setImageResource(R.drawable.ic_baseline_lock_24)
 //            binding.contentLayout.visibility = View.GONE
 //            runWithContainer {
 //                startFadeOut()
 //            }
-        }else{
+        } else {
             binding.ivLock.setImageResource(R.drawable.ic_baseline_lock_open_24)
             // binding.contentLayout.visibility = View.VISIBLE
         }
         onUIChange(isVisible, isLocked, playState)
     }
 
-    private fun getTextView(text: String, speed: Float): TextView{
+    private fun getTextView(text: String, speed: Float): TextView {
         return TextView(context).apply {
             setPadding(0, dip2px(context, 8f), 0, dip2px(context, 8f))
             gravity = Gravity.CENTER
@@ -435,7 +468,7 @@ class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChange
         }
     }
 
-    private fun refreshSpeedContainer(){
+    private fun refreshSpeedContainer() {
         runWithContainer {
             textMap.iterator().forEach {
                 it.value.setTextColor(normalSpeedTextColor)
@@ -444,14 +477,14 @@ class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChange
         }
     }
 
-    private fun showSpeedContainer(){
+    private fun showSpeedContainer() {
         runWithContainer {
             stopFadeOut()
         }
         binding.speedRoot.visibility = View.VISIBLE
         binding.speedScrollContainer.translationX = dip2px(context, 128F).toFloat()
         binding.speedScrollContainer.animate().translationX(0F).setListener(
-            object: Animator.AnimatorListener{
+            object : Animator.AnimatorListener {
                 override fun onAnimationEnd(animation: Animator) {
                     binding.speedScrollContainer.translationX = 0F
                 }
@@ -467,29 +500,31 @@ class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChange
             }
         ).start()
     }
-    private fun hideSpeedContainer(){
+
+    private fun hideSpeedContainer() {
         runWithContainer {
             startFadeOut()
         }
         binding.speedRoot.visibility = View.VISIBLE
         binding.speedScrollContainer.translationX = 0F
-        binding.speedScrollContainer.animate().translationX(dip2px(context, 128F).toFloat()).setListener(
-            object: Animator.AnimatorListener{
-                override fun onAnimationEnd(animation: Animator) {
-                    binding.speedRoot.visibility = View.GONE
-                    binding.speedScrollContainer.translationX = dip2px(context, 128F).toFloat()
-                }
+        binding.speedScrollContainer.animate().translationX(dip2px(context, 128F).toFloat())
+            .setListener(
+                object : Animator.AnimatorListener {
+                    override fun onAnimationEnd(animation: Animator) {
+                        binding.speedRoot.visibility = View.GONE
+                        binding.speedScrollContainer.translationX = dip2px(context, 128F).toFloat()
+                    }
 
-                override fun onAnimationStart(animation: Animator) {
-                }
+                    override fun onAnimationStart(animation: Animator) {
+                    }
 
-                override fun onAnimationCancel(animation: Animator) {
-                }
+                    override fun onAnimationCancel(animation: Animator) {
+                    }
 
-                override fun onAnimationRepeat(animation: Animator) {
+                    override fun onAnimationRepeat(animation: Animator) {
+                    }
                 }
-            }
-        ).start()
+            ).start()
     }
 
 
@@ -498,14 +533,17 @@ class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChange
     }
 
     override fun getLayoutParam(): RelativeLayout.LayoutParams {
-        return RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT)
+        return RelativeLayout.LayoutParams(
+            RelativeLayout.LayoutParams.MATCH_PARENT,
+            RelativeLayout.LayoutParams.MATCH_PARENT
+        )
     }
 
     private fun requireContainer(): ComponentContainer {
         return container ?: throw NullPointerException()
     }
 
-    private inline fun runWithContainer(block: ComponentContainer.()->Unit){
+    private inline fun runWithContainer(block: ComponentContainer.() -> Unit) {
         container?.block()
     }
 
@@ -520,10 +558,13 @@ class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChange
     // == override IGestureComponent
 
     override fun onSlidePositionChange(slidePosition: Long, currentPosition: Long, duration: Long) {
-        Log.d("StandardComponent", "onSlidePositionChange($slidePosition,$currentPosition,$duration)")
+        Log.d(
+            "StandardComponent",
+            "onSlidePositionChange($slidePosition,$currentPosition,$duration)"
+        )
 
         super.onSlidePositionChange(slidePosition, currentPosition, duration)
-        if(isLocked){
+        if (isLocked) {
             return
         }
         isProgressSlide = true
@@ -552,7 +593,7 @@ class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChange
     // == override seekbar listener
 
     override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-        if(fromUser){
+        if (fromUser) {
             runWithContainer {
                 val newPosition = getDuration() * progress / seekBar.max
                 seekTo(newPosition)
@@ -581,7 +622,7 @@ class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChange
 
     // == UI 显示效果控制
 
-    private fun refreshTimeUI(duration: Long, position: Long){
+    private fun refreshTimeUI(duration: Long, position: Long) {
         val durationStr = TimeUtils.toString(duration)
         val positionStr = TimeUtils.toString(position)
         binding.tvCurrentTime.text = positionStr
@@ -589,17 +630,18 @@ class StandardComponent: FrameLayout, IGestureComponent, SeekBar.OnSeekBarChange
 
     }
 
-    private fun setSeekbarProgress(duration: Long, position: Long, bufferedPercentage:Int = 0 ){
-        binding.seekBar.progress = ((position.toFloat()/duration)*binding.seekBar.max).toInt()
-        binding.seekBar.secondaryProgress = (binding.seekBar.max/100F * bufferedPercentage).toInt()
+    private fun setSeekbarProgress(duration: Long, position: Long, bufferedPercentage: Int = 0) {
+        binding.seekBar.progress = ((position.toFloat() / duration) * binding.seekBar.max).toInt()
+        binding.seekBar.secondaryProgress =
+            (binding.seekBar.max / 100F * bufferedPercentage).toInt()
     }
 
-    private fun refreshPlayPauseBtStatus(){
+    private fun refreshPlayPauseBtStatus() {
         runWithContainer {
-            if(isPlaying()){
+            if (isPlaying()) {
                 startFadeOut()
                 binding.ivController.setImageResource(R.drawable.ic_baseline_pause_24)
-            }else{
+            } else {
                 stopFadeOut()
                 binding.ivController.setImageResource(R.drawable.ic_baseline_play_arrow_24)
             }

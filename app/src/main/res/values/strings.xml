@@ -89,5 +89,8 @@
     <string name="github">作者</string>
     <string name="qq_groud">QQ群</string>
 
+    <string name="speed">倍速</string>
+    <string name="episode">选集</string>
+
 
 </resources>

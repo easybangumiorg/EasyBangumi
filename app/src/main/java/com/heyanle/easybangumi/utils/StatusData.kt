@@ -9,20 +9,20 @@ import com.heyanle.easybangumi.R
  * Created by HeYanLe on 2023/1/8 22:49.
  * https://github.com/heyanLE
  */
-sealed class StatusData<T>{
-    class None<T>: StatusData<T>()
+sealed class StatusData<T> {
+    class None<T> : StatusData<T>()
     data class Loading<T>(
         val loadingText: String = stringRes(R.string.loading)
-    ): StatusData<T>()
+    ) : StatusData<T>()
 
     data class Error<T>(
         val errorMsg: String = "",
         val throwable: Throwable? = null,
-    ): StatusData<T>()
+    ) : StatusData<T>()
 
     data class Data<T>(
         val data: T
-    ): StatusData<T>()
+    ) : StatusData<T>()
 
     fun isNone(): Boolean {
         return this is None
@@ -41,7 +41,7 @@ sealed class StatusData<T>{
     }
 
     @Composable
-    fun composeLoading(content: @Composable (Loading<T>)->Unit): StatusData<T> {
+    fun composeLoading(content: @Composable (Loading<T>) -> Unit): StatusData<T> {
         (this as? Loading)?.let {
             content(it)
         }
@@ -49,7 +49,7 @@ sealed class StatusData<T>{
     }
 
     @Composable
-    fun composeError(content: @Composable (Error<T>)->Unit): StatusData<T> {
+    fun composeError(content: @Composable (Error<T>) -> Unit): StatusData<T> {
         (this as? Error)?.let {
             content(it)
         }
@@ -57,28 +57,28 @@ sealed class StatusData<T>{
     }
 
     @Composable
-    fun composeData(content: @Composable (Data<T>)->Unit): StatusData<T> {
+    fun composeData(content: @Composable (Data<T>) -> Unit): StatusData<T> {
         (this as? Data)?.let {
             content(it)
         }
         return this
     }
 
-    fun onLoading(block: (Loading<T>)->Unit): StatusData<T>{
+    fun onLoading(block: (Loading<T>) -> Unit): StatusData<T> {
         (this as? Loading)?.let {
             block(it)
         }
         return this
     }
 
-    fun onError(block: (Error<T>)->Unit): StatusData<T>{
+    fun onError(block: (Error<T>) -> Unit): StatusData<T> {
         (this as? Error)?.let {
             block(it)
         }
         return this
     }
 
-    fun onData(block: (Data<T>)->Unit): StatusData<T>{
+    fun onData(block: (Data<T>) -> Unit): StatusData<T> {
         (this as? Data)?.let {
             block(it)
         }
@@ -87,14 +87,17 @@ sealed class StatusData<T>{
 
 }
 
-fun <T> MutableLiveData<StatusData<T>>.loading(loadingText: String = stringRes(R.string.loading)){
+fun <T> MutableLiveData<StatusData<T>>.loading(loadingText: String = stringRes(R.string.loading)) {
     value = StatusData.Loading(loadingText)
 }
 
-fun <T> MutableLiveData<StatusData<T>>.error(errorMsg: String = "", throwable: Throwable? = null,){
+fun <T> MutableLiveData<StatusData<T>>.error(
+    errorMsg: String = "",
+    throwable: Throwable? = null,
+) {
     value = StatusData.Error(errorMsg, throwable)
 }
 
-fun <T> MutableLiveData<StatusData<T>>.data(data: T){
+fun <T> MutableLiveData<StatusData<T>>.data(data: T) {
     value = StatusData.Data(data)
 }

@@ -21,75 +21,75 @@ class AnimSources(
         }
     }
 
-    private fun register(iParser: ISourceParser){
-        if(!parserMap.containsKey(iParser.getKey())
-            || parserMap[iParser.getKey()]!!.getVersionCode() < iParser.getVersionCode()){
+    private fun register(iParser: ISourceParser) {
+        if (!parserMap.containsKey(iParser.getKey())
+            || parserMap[iParser.getKey()]!!.getVersionCode() < iParser.getVersionCode()
+        ) {
             parserMap[iParser.getKey()] = iParser
-            if(iParser is IHomeParser){
+            if (iParser is IHomeParser) {
                 homeMap[iParser.getKey()] = iParser
             }
-            if(iParser is ISearchParser){
+            if (iParser is ISearchParser) {
                 searchMap[iParser.getKey()] = iParser
             }
-            if(iParser is IDetailParser){
+            if (iParser is IDetailParser) {
                 detailMap[iParser.getKey()] = iParser
             }
-            if(iParser is IPlayerParser){
+            if (iParser is IPlayerParser) {
                 playMap[iParser.getKey()] = iParser
             }
         }
     }
 
-    fun parser(key: String): ISourceParser?{
+    fun parser(key: String): ISourceParser? {
         return parserMap[key]
     }
 
 
-    fun homeParsers(): List<IHomeParser>{
+    fun homeParsers(): List<IHomeParser> {
         val res = arrayListOf<IHomeParser>()
-        for((_, v) in homeMap){
+        for ((_, v) in homeMap) {
             res.add(v)
         }
         return res
     }
 
-    fun searchParsers(): List<ISearchParser>{
+    fun searchParsers(): List<ISearchParser> {
         val res = arrayListOf<ISearchParser>()
-        for((_, v) in searchMap){
+        for ((_, v) in searchMap) {
             res.add(v)
         }
         return res
     }
 
 
-
-    fun home(key: String):IHomeParser?{
+    fun home(key: String): IHomeParser? {
         return homeMap[key]
     }
 
-    fun search(key: String): ISearchParser?{
+    fun search(key: String): ISearchParser? {
         return searchMap[key]
     }
 
-    fun detail(key: String): IDetailParser?{
+    fun detail(key: String): IDetailParser? {
         return detailMap[key]
     }
 
-    fun play(key: String): IPlayerParser?{
+    fun play(key: String): IPlayerParser? {
         return playMap[key]
     }
 
-    fun empty(): Boolean{
+    fun empty(): Boolean {
         return parserMap.isEmpty()
     }
 
 
     fun requireHome(key: String): IHomeParser {
-        return home(key) ?:throw NullPointerException("Home parser of key $key is null")
+        return home(key) ?: throw NullPointerException("Home parser of key $key is null")
     }
 
     fun requireSearch(key: String): ISearchParser {
-        return search(key) ?:throw NullPointerException("Search parser of key $key is null")
+        return search(key) ?: throw NullPointerException("Search parser of key $key is null")
     }
 
     fun requireDetail(key: String): IDetailParser {

@@ -13,7 +13,9 @@ import com.heyanle.easybangumi.R
  */
 class TinyEasyPlayerView : FrameLayout {
 
-    val basePlayerView: BaseEasyPlayerView = LayoutInflater.from(context).inflate(R.layout.easy_player_tiny, this, false) as BaseEasyPlayerView
+    val basePlayerView: BaseEasyPlayerView = LayoutInflater.from(context)
+        .inflate(R.layout.easy_player_tiny, this, false) as BaseEasyPlayerView
+
     init {
         addView(basePlayerView)
         setBackgroundColor(Color.BLACK)

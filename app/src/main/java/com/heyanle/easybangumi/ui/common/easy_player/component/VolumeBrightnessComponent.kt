@@ -20,12 +20,14 @@ import com.heyanle.eplayer_core.controller.IGestureComponent
 /**
  * Create by heyanlin on 2022/11/7
  */
-class VolumeBrightnessComponent: FrameLayout, IGestureComponent {
+class VolumeBrightnessComponent : FrameLayout, IGestureComponent {
 
     private var container: ComponentContainer? = null
 
-    private val binding: ComponentVolumeBrightnessBinding = ComponentVolumeBrightnessBinding.inflate(
-        LayoutInflater.from(context), this, true)
+    private val binding: ComponentVolumeBrightnessBinding =
+        ComponentVolumeBrightnessBinding.inflate(
+            LayoutInflater.from(context), this, true
+        )
 
     init {
         EasyThemeController.curThemeColor?.let {
@@ -44,7 +46,7 @@ class VolumeBrightnessComponent: FrameLayout, IGestureComponent {
         return container ?: throw NullPointerException()
     }
 
-    private inline fun runWithContainer(block: ComponentContainer.()->Unit){
+    private inline fun runWithContainer(block: ComponentContainer.() -> Unit) {
         container?.block()
     }
 
@@ -85,11 +87,11 @@ class VolumeBrightnessComponent: FrameLayout, IGestureComponent {
         runWithContainer {
             hide()
         }
-        if(percent <= 0){
+        if (percent <= 0) {
             binding.ivIcon.setImageResource(R.drawable.ic_baseline_volume_off_24)
-        }else if(percent <= 50){
+        } else if (percent <= 50) {
             binding.ivIcon.setImageResource(R.drawable.ic_baseline_volume_down_24)
-        }else {
+        } else {
             binding.ivIcon.setImageResource(R.drawable.ic_baseline_volume_up_24)
         }
 //        binding.tvPercent.text = buildString {
@@ -102,7 +104,7 @@ class VolumeBrightnessComponent: FrameLayout, IGestureComponent {
     override fun onUp() {
         super.onUp()
         binding.centerContainer.animate()
-            .alpha(0f).setDuration(300).setListener(object: AnimatorListenerAdapter() {
+            .alpha(0f).setDuration(300).setListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
                     super.onAnimationEnd(animation)
                     binding.centerContainer.visibility = View.GONE
@@ -118,7 +120,8 @@ class VolumeBrightnessComponent: FrameLayout, IGestureComponent {
                 playState == EasyPlayStatus.STATE_PREPARING ||
                 playState == EasyPlayStatus.STATE_PREPARED ||
                 playState == EasyPlayStatus.STATE_ERROR ||
-                playState == EasyPlayStatus.STATE_PLAYBACK_COMPLETED) {
+                playState == EasyPlayStatus.STATE_PLAYBACK_COMPLETED
+            ) {
                 GONE
             } else {
                 VISIBLE

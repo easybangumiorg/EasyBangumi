@@ -34,11 +34,11 @@ class YhdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISe
         return 0
     }
 
-    companion object{
+    companion object {
         const val ROOT_URL = "http://www.yinghuacd.com"
     }
 
-    private fun url(source: String): String{
+    private fun url(source: String): String {
         return when {
             source.startsWith("http") -> {
                 source
@@ -53,7 +53,7 @@ class YhdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISe
     }
 
     override suspend fun home(): ISourceParser.ParserResult<LinkedHashMap<String, List<Bangumi>>> {
-        return withContext(Dispatchers.IO){
+        return withContext(Dispatchers.IO) {
             val map = LinkedHashMap<String, List<Bangumi>>()
 
             val doc = runCatching {
@@ -66,7 +66,7 @@ class YhdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISe
             kotlin.runCatching {
 
                 val children = doc.select("div.firs.l")[0].children().iterator()
-                while(children.hasNext()){
+                while (children.hasNext()) {
                     val title = children.next()
                     val child = children.next()
                     val titleString = title.child(0).text()
@@ -111,7 +111,7 @@ class YhdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISe
         keyword: String,
         key: Int
     ): ISourceParser.ParserResult<Pair<Int?, List<Bangumi>>> {
-        return withContext(Dispatchers.IO){
+        return withContext(Dispatchers.IO) {
             val url = url("/search/$keyword?page=$key")
 
             val doc = runCatching {
@@ -136,14 +136,14 @@ class YhdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISe
                     r.add(b)
                 }
                 val pages = doc.select("div.pages")
-                if(pages.isEmpty()){
+                if (pages.isEmpty()) {
                     return@withContext ISourceParser.ParserResult.Complete(Pair(null, r))
-                }else{
+                } else {
                     val p = pages.select("a#lastn")
-                    if(p.isEmpty()){
+                    if (p.isEmpty()) {
                         return@withContext ISourceParser.ParserResult.Complete(Pair(null, r))
-                    }else{
-                        return@withContext ISourceParser.ParserResult.Complete(Pair(key+1, r))
+                    } else {
+                        return@withContext ISourceParser.ParserResult.Complete(Pair(key + 1, r))
                     }
                 }
             }.onFailure {
@@ -168,15 +168,16 @@ class YhdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISe
                 val intro = doc.select("div.fire div.rate div.sinfo p")[0].text()
                 val cover = url(doc.select("div.fire.l div.thumb.l img")[0].attr("src"))
                 val description = doc.getElementsByClass("info")[0].text()
-                return@withContext ISourceParser.ParserResult.Complete( BangumiDetail(
-                    id = id,
-                    source = getKey(),
-                    name = name,
-                    cover = cover,
-                    intro = intro,
-                    detailUrl = bangumi.detailUrl,
-                    description = description
-                )
+                return@withContext ISourceParser.ParserResult.Complete(
+                    BangumiDetail(
+                        id = id,
+                        source = getKey(),
+                        name = name,
+                        cover = cover,
+                        intro = intro,
+                        detailUrl = bangumi.detailUrl,
+                        description = description
+                    )
                 )
             }.onFailure {
                 it.printStackTrace()
@@ -209,7 +210,7 @@ class YhdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISe
                 temp.addAll(tt.reversed())
                 map["播放列表"] = list.reversed()
                 this@YhdmParser.bangumi = bangumi
-                return@withContext  ISourceParser.ParserResult.Complete(map)
+                return@withContext ISourceParser.ParserResult.Complete(map)
             }.onFailure {
                 this@YhdmParser.bangumi = null
                 it.printStackTrace()
@@ -225,13 +226,14 @@ class YhdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISe
         lineIndex: Int,
         episodes: Int
     ): ISourceParser.ParserResult<IPlayerParser.PlayerInfo> {
-        if(lineIndex < 0 || episodes < 0){
+        if (lineIndex < 0 || episodes < 0) {
             return ISourceParser.ParserResult.Error(IndexOutOfBoundsException(), false)
         }
         var url = ""
-        if(bangumi != this.bangumi
+        if (bangumi != this.bangumi
             || episodes >= temp.size
-            || temp[episodes] == ""){
+            || temp[episodes] == ""
+        ) {
             getPlayMsg(bangumi).error {
                 return@getPlayUrl ISourceParser.ParserResult.Error(it.throwable, it.isParserError)
             }.complete {
@@ -241,14 +243,14 @@ class YhdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISe
                     return@getPlayUrl ISourceParser.ParserResult.Error(it, true)
                 }
             }
-        }else{
+        } else {
             url = temp[episodes]
         }
 
-        if(url.isEmpty()){
+        if (url.isEmpty()) {
             return ISourceParser.ParserResult.Error(Exception("Unknown Error"), true)
         }
-        return withContext(Dispatchers.IO){
+        return withContext(Dispatchers.IO) {
             val doc = runCatching {
                 Jsoup.parse(OkHttpUtils.get(url(url)))
             }.getOrElse {
@@ -262,8 +264,13 @@ class YhdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISe
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, true)
             }
-            if(result.isNotEmpty())
-                return@withContext ISourceParser.ParserResult.Complete(IPlayerParser.PlayerInfo(type = TYPE_HLS,uri = result))
+            if (result.isNotEmpty())
+                return@withContext ISourceParser.ParserResult.Complete(
+                    IPlayerParser.PlayerInfo(
+                        type = TYPE_HLS,
+                        uri = result
+                    )
+                )
 
             return@withContext ISourceParser.ParserResult.Error(Exception("Unknown Error"), true)
         }

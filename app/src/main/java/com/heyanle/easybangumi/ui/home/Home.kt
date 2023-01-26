@@ -44,27 +44,27 @@ import kotlinx.coroutines.launch
 // 番剧页面相关的子页面
 sealed class HomePage(
     val tabLabel: @Composable (() -> Unit),
-    val content: @Composable (()->Unit),
-){
+    val content: @Composable (() -> Unit),
+) {
     //番剧主页
-    object Home: HomePage(
+    object Home : HomePage(
         tabLabel = { Text(text = stringResource(id = R.string.home)) },
         content = { AnimHome() }
     )
 
     // 我的追番
-    object My: HomePage(
+    object My : HomePage(
         tabLabel = { Text(text = stringResource(id = R.string.my_anim)) },
         content = { AnimMy() }
     )
 
     // 历史记录
-    object History: HomePage(
+    object History : HomePage(
         tabLabel = { Text(text = stringResource(id = R.string.mine_history)) },
         content = { AnimHistory() }
     )
 
-    object Setting: HomePage(
+    object Setting : HomePage(
         tabLabel = { Text(text = stringResource(id = R.string.setting)) },
         content = { SettingPage() }
     )
@@ -78,10 +78,11 @@ val animSubPageItems = listOf(
 )
 
 var animInitialPage by okkv("animInitialPage", 0)
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class)
 @Composable
 fun Home(
-){
+) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val nav = LocalNavController.current
     val scope = rememberCoroutineScope()
@@ -90,7 +91,7 @@ fun Home(
         initialPage = animInitialPage
     )
 
-    LaunchedEffect(key1 = Unit){
+    LaunchedEffect(key1 = Unit) {
         pagerState.scrollToPage(animInitialPage)
     }
 
@@ -102,7 +103,7 @@ fun Home(
             Surface(
                 shadowElevation = 4.dp,
                 color = MaterialTheme.colorScheme.primary
-            ){
+            ) {
                 Column() {
                     HomeTopAppBar(
                         containerColor = Color.Transparent,
@@ -122,7 +123,7 @@ fun Home(
                         containerColor = Color.Transparent,
                         selectedTabIndex = pagerState.currentPage
                     ) {
-                        for(i in animSubPageItems.indices){
+                        for (i in animSubPageItems.indices) {
                             HomeTabItem(
                                 selected = i == pagerState.currentPage,
                                 text = animSubPageItems[i].tabLabel,
@@ -138,7 +139,6 @@ fun Home(
             }
 
 
-
         },
         content = { padding ->
 
@@ -147,11 +147,12 @@ fun Home(
                 animInitialPage = pagerState.currentPage
             }
 
-            Column(modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Transparent)
-                .padding(padding)
-                .nestedScroll(scrollBehavior.nestedScrollConnection),
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Transparent)
+                    .padding(padding)
+                    .nestedScroll(scrollBehavior.nestedScrollConnection),
 
                 ) {
 //                HomeTabRow(selectedTabIndex = pagerState.currentPage) {
@@ -177,8 +178,6 @@ fun Home(
                 }
 
             }
-
-
 
 
         }

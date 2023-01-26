@@ -53,23 +53,23 @@ object BangumiPlayController {
 
     var pendingIntent: PendingIntent? = null
 
-    fun getCurPendingIntent(): PendingIntent{
-        return if(pendingIntent != null){
+    fun getCurPendingIntent(): PendingIntent {
+        return if (pendingIntent != null) {
             pendingIntent!!
-        }else{
+        } else {
             val intent = Intent(BangumiApp.INSTANCE, MainActivity::class.java)
-            val flagImmutable = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val flagImmutable = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 PendingIntent.FLAG_IMMUTABLE
-            }else{
+            } else {
                 0
             }
             PendingIntent.getActivity(BangumiApp.INSTANCE, 0, intent, flagImmutable)
         }
     }
 
-    fun newBangumi(bangumiSummary: BangumiSummary, navController: NavController){
+    fun newBangumi(bangumiSummary: BangumiSummary, navController: NavController) {
         val new = getAnimPlayViewModel(bangumiSummary)
-        if(new != curAnimPlayViewModel.value){
+        if (new != curAnimPlayViewModel.value) {
             curAnimPlayViewModel.postValue(new)
         }
         val del = URLEncoder.encode(bangumiSummary.detailUrl, "utf-8")
@@ -84,7 +84,10 @@ object BangumiPlayController {
         pendingIntent = TaskStackBuilder.create(BangumiApp.INSTANCE).run {
             addNextIntentWithParentStack(deepLinkIntent)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+                getPendingIntent(
+                    0,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
             } else {
                 getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
             }
@@ -93,9 +96,9 @@ object BangumiPlayController {
 
     }
 
-    fun getAnimPlayViewModel(bangumiSummary: BangumiSummary): AnimPlayItemController{
+    fun getAnimPlayViewModel(bangumiSummary: BangumiSummary): AnimPlayItemController {
         val cache = animPlayViewModelCache[bangumiSummary]
-        if(cache == null){
+        if (cache == null) {
             val n = AnimPlayItemController(bangumiSummary)
             animPlayViewModelCache.put(bangumiSummary, n)
             return n
@@ -103,8 +106,8 @@ object BangumiPlayController {
         return cache
     }
 
-    fun onNewComposeView(easyPlayerView: EasyPlayerView){
-        if(easyPlayerView != this.composeViewRes?.get()){
+    fun onNewComposeView(easyPlayerView: EasyPlayerView) {
+        if (easyPlayerView != this.composeViewRes?.get()) {
             this.composeViewRes = WeakReference(easyPlayerView)
             PlayerController.playerControllerStatus.value?.let {
                 easyPlayerView.basePlayerView.dispatchPlayStateChange(it)
@@ -114,18 +117,18 @@ object BangumiPlayController {
     }
 
     // activity 的 onPause 调用
-    fun onPause(){
-        lastPauseLevel.value = lastPauseLevel.value+1
+    fun onPause() {
+        lastPauseLevel.value = lastPauseLevel.value + 1
     }
 
-    fun onPlayerScreenReshow(){
+    fun onPlayerScreenReshow() {
         composeViewRes?.get()?.basePlayerView?.attachToPlayer(PlayerController.exoPlayer)
     }
 
     var lastPlayerStatus: AnimPlayItemController.PlayerStatus.Play? = null
 
     init {
-        PlayerController.playerControllerStatus.observeForever {state ->
+        PlayerController.playerControllerStatus.observeForever { state ->
             this.composeViewRes?.get()?.basePlayerView?.dispatchPlayStateChange(state)
         }
         curAnimPlayViewModel.observeForever {
@@ -139,9 +142,9 @@ object BangumiPlayController {
             }
         }
         curPlayerStatus.observeForever {
-            when(it){
+            when (it) {
                 is AnimPlayItemController.PlayerStatus.Loading -> {
-                    if(PlayerTinyController.isTinyMode) {
+                    if (PlayerTinyController.isTinyMode) {
                         PlayerTinyController.tinyPlayerView.basePlayerView.dispatchPlayStateChange(
                             EasyPlayStatus.STATE_PREPARING
                         )
@@ -149,11 +152,12 @@ object BangumiPlayController {
                 }
                 is AnimPlayItemController.PlayerStatus.Play -> {
                     Log.d("BangumiPlayController", it.uri)
-                    if(PlayerTinyController.isTinyMode) {
+                    if (PlayerTinyController.isTinyMode) {
                         //PlayerTinyController.tinyPlayerView.basePlayerView.refreshStateOnce()
                     }
-                    if(lastPlayerStatus?.uri != it.uri || lastPlayerStatus?.type != it.type){
-                        val defaultDataSourceFactory = DefaultDataSource.Factory(BangumiApp.INSTANCE)
+                    if (lastPlayerStatus?.uri != it.uri || lastPlayerStatus?.type != it.type) {
+                        val defaultDataSourceFactory =
+                            DefaultDataSource.Factory(BangumiApp.INSTANCE)
                         val dataSourceFactory: DataSource.Factory = DefaultDataSource.Factory(
                             BangumiApp.INSTANCE,
                             defaultDataSourceFactory
@@ -161,12 +165,14 @@ object BangumiPlayController {
                         val media = when (it.type) {
                             C.CONTENT_TYPE_DASH -> DashMediaSource.Factory(dataSourceFactory)
                                 .createMediaSource(MediaItem.fromUri(it.uri))
-                            C.CONTENT_TYPE_HLS -> HlsMediaSource.Factory(dataSourceFactory).createMediaSource(
-                                MediaItem.fromUri(it.uri)
-                            )
-                            else -> ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(
-                                MediaItem.fromUri(it.uri)
-                            )
+                            C.CONTENT_TYPE_HLS -> HlsMediaSource.Factory(dataSourceFactory)
+                                .createMediaSource(
+                                    MediaItem.fromUri(it.uri)
+                                )
+                            else -> ProgressiveMediaSource.Factory(dataSourceFactory)
+                                .createMediaSource(
+                                    MediaItem.fromUri(it.uri)
+                                )
                         }
 
                         PlayerController.setMediaSource(media)
@@ -175,7 +181,7 @@ object BangumiPlayController {
                     lastPlayerStatus = it
                 }
                 is AnimPlayItemController.PlayerStatus.Error -> {
-                    if(PlayerTinyController.isTinyMode){
+                    if (PlayerTinyController.isTinyMode) {
                         it.errorMsg.toast()
                         PlayerTinyController.dismissTiny()
                         PlayerController.exoPlayer.stop()
@@ -189,7 +195,7 @@ object BangumiPlayController {
         }
     }
 
-    class ItemLru: LruCache<BangumiSummary, AnimPlayItemController>(3){
+    class ItemLru : LruCache<BangumiSummary, AnimPlayItemController>(3) {
         override fun entryRemoved(
             evicted: Boolean,
             key: BangumiSummary,
