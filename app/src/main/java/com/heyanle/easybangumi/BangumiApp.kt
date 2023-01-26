@@ -8,6 +8,10 @@ import com.heyanle.easybangumi.utils.exo_ssl.CropUtil
 import com.heyanle.easybangumi.utils.exo_ssl.TrustAllHostnameVerifier
 import com.heyanle.okkv2.MMKVStore
 import com.heyanle.okkv2.core.Okkv
+import com.microsoft.appcenter.AppCenter
+import com.microsoft.appcenter.analytics.Analytics
+import com.microsoft.appcenter.crashes.Crashes
+import com.microsoft.appcenter.distribute.Distribute
 import javax.net.ssl.HttpsURLConnection
 
 /**
@@ -36,6 +40,8 @@ class BangumiApp : Application() {
         EasyDB.init(this)
 
         AnimSourceFactory.init()
+
+        initAppCenter()
     }
 
     private fun initOkkv(){
@@ -46,6 +52,19 @@ class BangumiApp : Application() {
 
     private fun initCrasher(){
         Thread.setDefaultUncaughtExceptionHandler(CrashHandler(this))
+    }
+
+    private fun initAppCenter(){
+        kotlin.runCatching {
+            // https://appcenter.ms
+            AppCenter.start(
+                this, "7885baf3-05b8-4148-a60d-1cff798608d2",
+                Analytics::class.java, Crashes::class.java, Distribute::class.java
+            )
+        }.onFailure {
+            it.printStackTrace()
+        }
+
     }
 
 }

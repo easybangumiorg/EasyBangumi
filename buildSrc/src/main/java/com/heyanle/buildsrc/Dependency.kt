@@ -46,6 +46,8 @@ object Version {
     const val media3 = "1.0.0-beta03"
 
     const val media = "1.6.0"
+
+    const val app_center = "4.4.5"
 }
 // AndroidX basic
 const val androidXCoreKtx = "androidx.core:core-ktx:${Version.androidx_core_ktx}"
@@ -229,4 +231,10 @@ fun DependencyHandler.media3Exo(){
     implementation("androidx.media3:media3-datasource-rtmp:${Version.media3}")
     // For building media playback UIs
     implementation("androidx.media3:media3-ui:${Version.media3}")
+}
+
+fun DependencyHandler.appCenter(){
+    implementation("com.microsoft.appcenter:appcenter-analytics:${Version.app_center}")
+    implementation("com.microsoft.appcenter:appcenter-crashes:${Version.app_center}")
+    implementation("com.microsoft.appcenter:appcenter-distribute:${Version.app_center}")
 }
