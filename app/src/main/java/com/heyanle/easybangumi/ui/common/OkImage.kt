@@ -31,7 +31,7 @@ fun OkImage(
     isGif: Boolean = false,
     contentScale: ContentScale = ContentScale.Crop,
     crossFade: Boolean = true
-){
+) {
     AsyncImage(
         model = ImageRequest
             .Builder(LocalContext.current)
@@ -39,9 +39,9 @@ fun OkImage(
             .placeholder(ColorDrawable(MaterialTheme.colorScheme.secondaryContainer.toArgb()))
             .crossfade(crossFade)
             .apply {
-                if(isGif){
+                if (isGif) {
                     decoderFactory(
-                        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
                             ImageDecoderDecoder.Factory()
                         else GifDecoder.Factory()
                     )

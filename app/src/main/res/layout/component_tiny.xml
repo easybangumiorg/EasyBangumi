@@ -8,7 +8,7 @@
     <View
         android:id="@+id/touch_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:background="#4D000000"
@@ -50,7 +50,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_width="48dp"
-            android:layout_height="48dp"/>
+            android:layout_height="48dp" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/timeline_layout"
@@ -64,7 +64,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/iv_fullscreen"
                 android:layout_width="0dp"
-                android:layout_height="48dp"/>
+                android:layout_height="48dp" />
 
             <ImageView
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -78,7 +78,6 @@
                 android:contentDescription="fullscreen" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
-
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

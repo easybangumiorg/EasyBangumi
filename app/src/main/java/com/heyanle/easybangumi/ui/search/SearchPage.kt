@@ -59,13 +59,13 @@ fun SearchPage(
     searchParser: ISearchParser,
     isEnable: Boolean, // 是否刷新
     lazyListState: LazyListState = rememberLazyListState(),
-    onHistoryKeyClick: (String)->Unit,
-    onHistoryDelete: ()->Unit,
-){
-    
+    onHistoryKeyClick: (String) -> Unit,
+    onHistoryDelete: () -> Unit,
+) {
+
     val vm = viewModel<SearchPageViewModel>(factory = SearchPageViewModelFactory(searchParser))
 
-    if(isEnable){
+    if (isEnable) {
         val lastItem by remember() {
             derivedStateOf {
                 val lastVisibleItem = lazyListState.layoutInfo.visibleItemsInfo.lastOrNull()
@@ -76,7 +76,7 @@ fun SearchPage(
 
         val endReached by remember(lastItem) {
             derivedStateOf {
-                lastItem == -1 || lastItem == lazyListState.layoutInfo.totalItemsCount-1
+                lastItem == -1 || lastItem == lazyListState.layoutInfo.totalItemsCount - 1
             }
         }
         SideEffect {
@@ -84,18 +84,20 @@ fun SearchPage(
         }
     }
 
-    if(isEnable){
+    if (isEnable) {
         val keyword by searchEventState
-        LaunchedEffect(key1 = keyword){
+        LaunchedEffect(key1 = keyword) {
             val cur = vm.getCurKeyword()
-            if(cur != keyword){
+            if (cur != keyword) {
                 vm.search(keyword)
             }
 
         }
     }
-    val state by vm.pagerFlow.collectAsState(initial = vm.lastPagerState?:SearchPageViewModel.EmptyBangumi)
-    LaunchedEffect(key1 = state){
+    val state by vm.pagerFlow.collectAsState(
+        initial = vm.lastPagerState ?: SearchPageViewModel.EmptyBangumi
+    )
+    LaunchedEffect(key1 = state) {
         Log.d("SearchPage", state.toString())
     }
     val sta = state
@@ -107,34 +109,39 @@ fun SearchPage(
             fadeIn(animationSpec = tween(300, delayMillis = 300)) with
                     fadeOut(animationSpec = tween(300, delayMillis = 0))
         },
-    ){ newState ->
-        when(newState){
+    ) { newState ->
+        when (newState) {
             is SearchPageViewModel.SearchPageState.Empty -> {
-                LaunchedEffect(key1 = Unit){
+                LaunchedEffect(key1 = Unit) {
                     isShowTabForever.value = true
                 }
-                Box(modifier = Modifier
-                    .fillMaxSize()){
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                ) {
                     EmptyPage(
                         modifier = Modifier
                             .fillMaxSize(),
                         emptyMsg = stringResource(id = R.string.please_input_keyword_to_search)
                     )
 
-                    Column(modifier = Modifier.padding(16.dp)){
-                        Row (
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
-                        ){
+                        ) {
                             Text(text = stringResource(id = R.string.history))
                             IconButton(onClick = {
                                 onHistoryDelete()
                             }) {
-                                Icon(Icons.Filled.Delete, contentDescription = stringResource(id = R.string.delete))
+                                Icon(
+                                    Icons.Filled.Delete,
+                                    contentDescription = stringResource(id = R.string.delete)
+                                )
                             }
                         }
 
-                        FlowRow (
+                        FlowRow(
                             mainAxisSpacing = 4.dp,
                             crossAxisSpacing = 4.dp
                         ) {
@@ -144,8 +151,7 @@ fun SearchPage(
                                     shape = CircleShape,
                                     modifier =
                                     Modifier
-                                        .padding(2.dp, 8.dp)
-                                    ,
+                                        .padding(2.dp, 8.dp),
                                     color = MaterialTheme.colorScheme.secondary,
                                 ) {
                                     Text(
@@ -199,11 +205,16 @@ fun SearchPage(
                             modifier = Modifier
                                 .fillMaxSize(),
                             state = lazyListState,
-                            contentPadding = PaddingValues(0.dp, padding.calculateTopPadding() + 6.dp, 0.dp, 6.dp),
+                            contentPadding = PaddingValues(
+                                0.dp,
+                                padding.calculateTopPadding() + 6.dp,
+                                0.dp,
+                                6.dp
+                            ),
                         ) {
-                            itemsIndexed(lazyPagingItems){_, v ->
+                            itemsIndexed(lazyPagingItems) { _, v ->
                                 v?.let { bangumi ->
-                                    BangumiSearchItem(bangumi = bangumi){
+                                    BangumiSearchItem(bangumi = bangumi) {
                                         nav.navigationPlay(it)
                                     }
                                 }
@@ -218,7 +229,9 @@ fun SearchPage(
                                 }
                                 is LoadState.Error -> {
                                     item {
-                                        val errorMsg = (lazyPagingItems.loadState.append as? LoadState.Error)?.error?.message?: stringRes(R.string.net_error)
+                                        val errorMsg =
+                                            (lazyPagingItems.loadState.append as? LoadState.Error)?.error?.message
+                                                ?: stringRes(R.string.net_error)
                                         ErrorPage(
                                             modifier = Modifier.fillMaxWidth(),
                                             errorMsg = errorMsg,
@@ -234,9 +247,13 @@ fun SearchPage(
                                 }
                                 else -> {
                                     item {
-                                        Text(modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(0.dp, 2.dp), textAlign = TextAlign.Center,text = stringResource(id = R.string.list_most_bottom))
+                                        Text(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(0.dp, 2.dp),
+                                            textAlign = TextAlign.Center,
+                                            text = stringResource(id = R.string.list_most_bottom)
+                                        )
                                     }
                                 }
                             }
@@ -252,8 +269,8 @@ fun SearchPage(
 fun BangumiSearchItem(
     modifier: Modifier = Modifier,
     bangumi: Bangumi,
-    onClick: (Bangumi)->Unit,
-){
+    onClick: (Bangumi) -> Unit,
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -276,7 +293,11 @@ fun BangumiSearchItem(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(text = bangumi.name, maxLines = 2, color = MaterialTheme.colorScheme.onBackground)
-            Text(text = bangumi.intro, maxLines = 4, color = MaterialTheme.colorScheme.onBackground.copy(0.6f))
+            Text(
+                text = bangumi.intro,
+                maxLines = 4,
+                color = MaterialTheme.colorScheme.onBackground.copy(0.6f)
+            )
         }
     }
 }

@@ -31,7 +31,7 @@ object PlayerTinyController {
 
     var tinyWidthDpOkkv by okkv<Int>("TINY_WIDTH_DP", 250)
 
-    val tinyPlayerView : TinyEasyPlayerView by lazy {
+    val tinyPlayerView: TinyEasyPlayerView by lazy {
         TinyEasyPlayerView(BangumiApp.INSTANCE)
     }
 
@@ -39,13 +39,13 @@ object PlayerTinyController {
 
     private var layoutParams: WindowManager.LayoutParams = WindowManager.LayoutParams()
 
-    fun showTiny(){
-        if(OverlayHelper.drawOverlayEnable(BangumiApp.INSTANCE)){
+    fun showTiny() {
+        if (OverlayHelper.drawOverlayEnable(BangumiApp.INSTANCE)) {
             val playWhenReady = PlayerController.exoPlayer.playWhenReady
             kotlin.runCatching {
                 PlayerController.exoPlayer.pause()
                 refreshLayoutParams()
-                tinyPlayerView .layoutParams = layoutParams
+                tinyPlayerView.layoutParams = layoutParams
                 kotlin.runCatching {
                     windowManager.addView(
                         tinyPlayerView,
@@ -70,14 +70,14 @@ object PlayerTinyController {
                 err.toast()
             }
 
-        }else{
+        } else {
             isTinyMode = false
             stringRes(R.string.no_overlay_permission).toast()
         }
 
     }
 
-    fun dismissTiny(){
+    fun dismissTiny() {
         isTinyMode = false
         kotlin.runCatching {
             windowManager.removeView(tinyPlayerView)
@@ -91,17 +91,18 @@ object PlayerTinyController {
         }
     }
 
-    private fun refreshLayoutParams(){
+    private fun refreshLayoutParams() {
         layoutParams.type = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O)
-                WindowManager.LayoutParams.TYPE_PHONE
+            WindowManager.LayoutParams.TYPE_PHONE
         else
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
 
         layoutParams.format = PixelFormat.RGBA_8888
         layoutParams.flags =
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
         layoutParams.width = tinyWidthDpOkkv.dip2px()
-        layoutParams.height = ((tinyWidthDpOkkv.dip2px() / PlayerController.ratioWidth) * PlayerController.ratioHeight).toInt()
+        layoutParams.height =
+            ((tinyWidthDpOkkv.dip2px() / PlayerController.ratioWidth) * PlayerController.ratioHeight).toInt()
         layoutParams.gravity = Gravity.START or Gravity.TOP
     }
 
@@ -117,8 +118,8 @@ object PlayerTinyController {
     var slop = ViewConfiguration.get(BangumiApp.INSTANCE).scaledTouchSlop
 
 
-    fun onTouchEvent(event: MotionEvent): Boolean{
-        when(event.action){
+    fun onTouchEvent(event: MotionEvent): Boolean {
+        when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 downWindowX = layoutParams.x
                 downWindowY = layoutParams.y
@@ -129,7 +130,7 @@ object PlayerTinyController {
             MotionEvent.ACTION_MOVE -> {
                 val nowX = event.rawX
                 val nowY = event.rawY
-                if(isMove || (nowX - downTouchX).absoluteValue >= slop || (nowY - downTouchY).absoluteValue >= slop){
+                if (isMove || (nowX - downTouchX).absoluteValue >= slop || (nowY - downTouchY).absoluteValue >= slop) {
                     isMove = true
                     val newWindowX = downWindowX + (nowX - downTouchX)
                     val newWindowY = downWindowY + (nowY - downTouchY)
@@ -145,7 +146,7 @@ object PlayerTinyController {
             MotionEvent.ACTION_UP -> {
                 val now = System.currentTimeMillis()
                 moveToEdge()
-                if(!isMove && now - downTime < 1000L){
+                if (!isMove && now - downTime < 1000L) {
                     return false
                 }
                 isMove = false
@@ -154,19 +155,20 @@ object PlayerTinyController {
         return true
     }
 
-    fun moveToEdge(){
+    fun moveToEdge() {
         val oldX = layoutParams.x
         val oldY = layoutParams.y
 
-        val newX = if(oldX+ layoutParams.width/2F <= getRealWidth()/2F ) 0 else getRealWidth() - layoutParams.width
-        val newY = oldY.coerceIn(0, getRealHeight()-layoutParams.height)
+        val newX =
+            if (oldX + layoutParams.width / 2F <= getRealWidth() / 2F) 0 else getRealWidth() - layoutParams.width
+        val newY = oldY.coerceIn(0, getRealHeight() - layoutParams.height)
 
         val valueAnim = ValueAnimator.ofFloat(0f, 1f)
         valueAnim.addUpdateListener {
             kotlin.runCatching {
                 val i = it.animatedValue as Float
-                val x = oldX + (newX-oldX)*i
-                val y = oldY + (newY-oldY)*i
+                val x = oldX + (newX - oldX) * i
+                val y = oldY + (newY - oldY) * i
                 layoutParams.x = x.toInt()
                 layoutParams.y = y.toInt()
                 windowManager.updateViewLayout(tinyPlayerView, layoutParams)
@@ -183,13 +185,13 @@ object PlayerTinyController {
         valueAnim.start()
     }
 
-    fun getRealWidth(): Int{
+    fun getRealWidth(): Int {
         val dm = DisplayMetrics()
         windowManager.getDefaultDisplay().getRealMetrics(dm)
         return dm.widthPixels
     }
 
-    fun getRealHeight(): Int{
+    fun getRealHeight(): Int {
         val dm = DisplayMetrics()
         windowManager.getDefaultDisplay().getRealMetrics(dm)
         return dm.heightPixels

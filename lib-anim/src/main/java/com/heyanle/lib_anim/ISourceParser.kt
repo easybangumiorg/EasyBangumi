@@ -13,31 +13,32 @@ import java.lang.Exception
 
 interface ISourceParser {
 
-    sealed class ParserResult<T>{
+    sealed class ParserResult<T> {
         data class Complete<T>(
             val data: T
-        ): ParserResult<T>()
+        ) : ParserResult<T>()
 
         data class Error<T>(
             val throwable: Throwable,
             val isParserError: Boolean = false
-        ): ParserResult<T>()
+        ) : ParserResult<T>()
 
-        inline fun complete(block:(Complete<T>)->Unit): ParserResult<T> {
-            if(this is Complete){
+        inline fun complete(block: (Complete<T>) -> Unit): ParserResult<T> {
+            if (this is Complete) {
                 block(this)
             }
             return this
         }
-        inline fun error(block:(Error<T>)->Unit): ParserResult<T> {
-            if(this is Error){
+
+        inline fun error(block: (Error<T>) -> Unit): ParserResult<T> {
+            if (this is Error) {
                 block(this)
             }
             return this
         }
     }
 
-    fun getKey():String
+    fun getKey(): String
     fun getLabel(): String
     fun getVersion(): String
     fun getVersionCode(): Int
@@ -62,10 +63,13 @@ interface ISearchParser : ISourceParser {
      * @param keyword 关键字
      * @return 结果 <下一页的 key, 结果>
      */
-    suspend fun search(keyword: String, key: Int): ISourceParser.ParserResult<Pair<Int?, List<Bangumi>>>
+    suspend fun search(
+        keyword: String,
+        key: Int
+    ): ISourceParser.ParserResult<Pair<Int?, List<Bangumi>>>
 }
 
-interface IDetailParser: ISourceParser {
+interface IDetailParser : ISourceParser {
     suspend fun detail(bangumi: BangumiSummary): ISourceParser.ParserResult<BangumiDetail>
 }
 
@@ -74,7 +78,7 @@ interface IPlayerParser : ISourceParser {
     data class PlayerInfo(
         val type: Int = TYPE_DASH,
         val uri: String = "",
-    ){
+    ) {
         companion object {
             const val TYPE_DASH = 0
             const val TYPE_HLS = 2
@@ -90,7 +94,11 @@ interface IPlayerParser : ISourceParser {
     /**
      * 下标
      */
-    suspend fun getPlayUrl(bangumi: BangumiSummary, lineIndex: Int, episodes: Int): ISourceParser.ParserResult<PlayerInfo> {
+    suspend fun getPlayUrl(
+        bangumi: BangumiSummary,
+        lineIndex: Int,
+        episodes: Int
+    ): ISourceParser.ParserResult<PlayerInfo> {
         return ISourceParser.ParserResult.Error(Exception("Unsupported"), true)
     }
 }

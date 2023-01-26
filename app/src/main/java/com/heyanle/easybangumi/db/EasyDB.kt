@@ -17,8 +17,8 @@ import com.heyanle.lib_anim.entity.BangumiDetail
  */
 @Database(
     entities = [
-        SearchHistory::class ,  // 搜索历史
-        BangumiStar::class ,    // 追番
+        SearchHistory::class,  // 搜索历史
+        BangumiStar::class,    // 追番
     ],
     version = 3,
     exportSchema = false
@@ -30,10 +30,11 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun bangumiStarDao(): BangumiStarDao
     val bangumiStar: BangumiStarDao by lazy { bangumiStarDao() }
 }
-object EasyDB {
-    lateinit var database:AppDatabase
 
-    fun init(context: Context){
+object EasyDB {
+    lateinit var database: AppDatabase
+
+    fun init(context: Context) {
         database = Room.databaseBuilder(
             context,
             AppDatabase::class.java, "easy_bangumi"

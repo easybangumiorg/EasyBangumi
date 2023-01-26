@@ -37,11 +37,12 @@ import com.heyanle.easybangumi.utils.toast
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingPage(){
+fun SettingPage() {
     val scope = rememberCoroutineScope()
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .verticalScroll(rememberScrollState())
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
     ) {
         ThemeSettingCard()
         // TinySettingCard()
@@ -53,9 +54,9 @@ fun SettingPage(){
 @Composable
 fun ThemeSettingCard(
     modifier: Modifier = Modifier
-){
+) {
     val themeState by EasyThemeController.easyThemeState
-    val isDark = when(themeState.darkMode){
+    val isDark = when (themeState.darkMode) {
         DarkMode.Dark -> true
         DarkMode.Light -> false
         else -> isSystemInDarkTheme()
@@ -89,8 +90,8 @@ fun ThemeSettingCard(
                     )
                     .clickable {
                         EasyThemeController.changeThemeMode(it)
-                    }){
-                    if(it.name == themeState.themeMode.name){
+                    }) {
+                    if (it.name == themeState.themeMode.name) {
                         Icon(
                             modifier = Modifier.align(Alignment.Center),
                             imageVector = Icons.Filled.Check,
@@ -122,15 +123,16 @@ fun ThemeSettingCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    if(isDark)Icons.Filled.Brightness2 else Icons.Filled.WbSunny,
-                    contentDescription = stringResource(id = R.string.dark_mode) )
+                    if (isDark) Icons.Filled.Brightness2 else Icons.Filled.WbSunny,
+                    contentDescription = stringResource(id = R.string.dark_mode)
+                )
                 Spacer(modifier = Modifier.size(16.dp))
                 Text(text = stringResource(id = R.string.dark_mode))
             }
 
 
-            Box(){
-                val text = when(themeState.darkMode){
+            Box() {
+                val text = when (themeState.darkMode) {
                     DarkMode.Dark -> stringResource(id = R.string.dark_on)
                     DarkMode.Light -> stringResource(id = R.string.dark_off)
                     else -> stringResource(id = R.string.dark_auto)
@@ -138,11 +140,13 @@ fun ThemeSettingCard(
                 Row() {
                     Text(
                         modifier = Modifier.alpha(0.6f),
-                        text = text)
+                        text = text
+                    )
                     Icon(
                         Icons.Filled.ExpandMore,
                         modifier = Modifier.alpha(0.6f),
-                        contentDescription = stringResource(id = R.string.dark_mode) )
+                        contentDescription = stringResource(id = R.string.dark_mode)
+                    )
                 }
                 DropdownMenu(
                     expanded = darkExpanded,
@@ -183,11 +187,11 @@ fun ThemeSettingCard(
 
         }
 
-        if(EasyThemeController.isSupportDynamicColor()){
+        if (EasyThemeController.isSupportDynamicColor()) {
             var isDynamicCheck by remember {
                 mutableStateOf(themeState.isDynamicColor)
             }
-            LaunchedEffect(key1 = themeState){
+            LaunchedEffect(key1 = themeState) {
                 isDynamicCheck = themeState.isDynamicColor
             }
 
@@ -204,28 +208,30 @@ fun ThemeSettingCard(
                 .padding(16.dp, 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
-            ){
-                Row (
+            ) {
+                Row(
                     modifier = Modifier.fillMaxHeight(),
                     verticalAlignment = Alignment.CenterVertically
-                ){
+                ) {
                     Icon(
                         Icons.Filled.ColorLens,
-                        contentDescription = stringResource(id = R.string.is_dynamic_color) )
+                        contentDescription = stringResource(id = R.string.is_dynamic_color)
+                    )
                     Spacer(modifier = Modifier.size(16.dp))
                     Column() {
                         Text(text = stringResource(id = R.string.is_dynamic_color))
                         Text(
                             fontSize = MaterialTheme.typography.titleSmall.fontSize,
                             modifier = Modifier.alpha(0.6f),
-                            text = stringResource(id = R.string.is_dynamic_color_msg))
+                            text = stringResource(id = R.string.is_dynamic_color_msg)
+                        )
                     }
 
                 }
                 Switch(checked = isDynamicCheck, onCheckedChange = {
                     isDynamicCheck = it
                     EasyThemeController.changeIsDynamicColor(it)
-                    if(it){
+                    if (it) {
                         stringRes(R.string.dynamic_color_enable_msg).moeSnackBar()
                     }
                 })
@@ -238,15 +244,15 @@ fun ThemeSettingCard(
 @Composable
 fun TinySettingCard(
     modifier: Modifier = Modifier
-){
+) {
     var isAutoTiny by remember {
         mutableStateOf(TinyStatusController.autoTinyEnableOkkv)
     }
 
     val ctx = LocalContext.current
 
-    LaunchedEffect(key1 = isAutoTiny){
-        if(isAutoTiny && !OverlayHelper.drawOverlayEnable(ctx)){
+    LaunchedEffect(key1 = isAutoTiny) {
+        if (isAutoTiny && !OverlayHelper.drawOverlayEnable(ctx)) {
             isAutoTiny = false
             TinyStatusController.autoTinyEnableOkkv = false
         }
@@ -287,35 +293,37 @@ fun TinySettingCard(
             .padding(16.dp, 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
-        ){
-            Row (
+        ) {
+            Row(
                 modifier = Modifier.fillMaxHeight(),
                 verticalAlignment = Alignment.CenterVertically
-            ){
+            ) {
                 Icon(
                     Icons.Filled.LaptopWindows,
-                    contentDescription = stringResource(id = R.string.auto_tiny) )
+                    contentDescription = stringResource(id = R.string.auto_tiny)
+                )
                 Spacer(modifier = Modifier.size(16.dp))
                 Column() {
                     Text(text = stringResource(id = R.string.auto_tiny))
                     Text(
                         fontSize = MaterialTheme.typography.titleSmall.fontSize,
                         modifier = Modifier.alpha(0.6f),
-                        text = stringResource(id = R.string.auto_tiny_msg))
+                        text = stringResource(id = R.string.auto_tiny_msg)
+                    )
                 }
 
             }
 
             Switch(checked = isAutoTiny, onCheckedChange = {
-                if(it){
-                    if(OverlayHelper.drawOverlayEnable(ctx)){
+                if (it) {
+                    if (OverlayHelper.drawOverlayEnable(ctx)) {
                         isAutoTiny = true
                         TinyStatusController.autoTinyEnableOkkv = true
-                    }else{
+                    } else {
                         stringRes(R.string.please_overlay_permission).toast()
                         OverlayHelper.gotoDrawOverlaySetting(ctx)
                     }
-                }else{
+                } else {
                     isAutoTiny = false
                     TinyStatusController.autoTinyEnableOkkv = false
                 }
@@ -329,7 +337,7 @@ fun TinySettingCard(
 @Composable
 fun About(
     modifier: Modifier = Modifier
-){
+) {
     Column(
         modifier = Modifier
             .then(modifier),
@@ -352,14 +360,15 @@ fun About(
             .padding(16.dp, 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
-        ){
-            Row (
+        ) {
+            Row(
                 modifier = Modifier.fillMaxHeight(),
                 verticalAlignment = Alignment.CenterVertically
-            ){
+            ) {
                 Icon(
                     Icons.Filled.People,
-                    contentDescription = stringResource(id = R.string.author) )
+                    contentDescription = stringResource(id = R.string.author)
+                )
                 Spacer(modifier = Modifier.size(16.dp))
                 Text(text = stringResource(id = R.string.author))
             }
@@ -375,14 +384,15 @@ fun About(
             .padding(16.dp, 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
-        ){
-            Row (
+        ) {
+            Row(
                 modifier = Modifier.fillMaxHeight(),
                 verticalAlignment = Alignment.CenterVertically
-            ){
+            ) {
                 Icon(
                     Icons.Filled.Group,
-                    contentDescription = stringResource(id = R.string.qq_groud) )
+                    contentDescription = stringResource(id = R.string.qq_groud)
+                )
                 Spacer(modifier = Modifier.size(16.dp))
                 Text(text = stringResource(id = R.string.qq_groud))
             }

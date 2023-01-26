@@ -16,9 +16,10 @@ import com.heyanle.eplayer_core.controller.IComponent
 /**
  * Create by heyanlin on 2022/11/10
  */
-class ErrorComponent: FrameLayout, IComponent {
+class ErrorComponent : FrameLayout, IComponent {
 
-    private val binding: ComponentErrorBinding = ComponentErrorBinding.inflate(LayoutInflater.from(context), this, false)
+    private val binding: ComponentErrorBinding =
+        ComponentErrorBinding.inflate(LayoutInflater.from(context), this, false)
 
     private var container: ComponentContainer? = null
 
@@ -38,14 +39,17 @@ class ErrorComponent: FrameLayout, IComponent {
     }
 
     override fun getLayoutParam(): RelativeLayout.LayoutParams {
-        return RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT)
+        return RelativeLayout.LayoutParams(
+            RelativeLayout.LayoutParams.MATCH_PARENT,
+            RelativeLayout.LayoutParams.MATCH_PARENT
+        )
     }
 
     private fun requireContainer(): ComponentContainer {
         return container ?: throw NullPointerException()
     }
 
-    private inline fun runWithContainer(block: ComponentContainer.()->Unit){
+    private inline fun runWithContainer(block: ComponentContainer.() -> Unit) {
         container?.block()
     }
 
@@ -56,16 +60,16 @@ class ErrorComponent: FrameLayout, IComponent {
     override fun onDetachToContainer(container: ComponentContainer) {
         this.container = null
     }
+
     override fun onPlayStateChanged(playState: Int) {
         super.onPlayStateChanged(playState)
         Log.d("ErrorComponent", "$playState")
-        if(playState == EasyPlayStatus.STATE_ERROR) {
+        if (playState == EasyPlayStatus.STATE_ERROR) {
             binding.root.visibility = View.VISIBLE
-        }else{
+        } else {
             binding.root.visibility = View.GONE
         }
     }
-
 
 
     constructor(context: Context) : super(context)
