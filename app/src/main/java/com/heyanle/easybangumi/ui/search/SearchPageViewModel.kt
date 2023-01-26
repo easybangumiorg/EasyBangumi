@@ -19,28 +19,30 @@ import kotlinx.coroutines.launch
  */
 class SearchPageViewModel(
     private val searchParser: ISearchParser,
-): ViewModel() {
+) : ViewModel() {
 
     var isCurLast = false
 
     object EmptyBangumi : SearchPageState.Empty<Int, Bangumi>()
-    sealed class SearchPageState<K : Any, V : Any>{
-        open class Empty<K : Any, V : Any>: SearchPageState<K, V>(){
-            override fun toString(): String{
+    sealed class SearchPageState<K : Any, V : Any> {
+        open class Empty<K : Any, V : Any> : SearchPageState<K, V>() {
+            override fun toString(): String {
                 return "SearchPageState.Empty"
             }
         }
-        class Page<K : Any, V : Any>(val keyword: String, val flow: Flow<PagingData<V>>): SearchPageState<K, V>(){
-            override fun toString(): String{
+
+        class Page<K : Any, V : Any>(val keyword: String, val flow: Flow<PagingData<V>>) :
+            SearchPageState<K, V>() {
+            override fun toString(): String {
                 return "SearchPageState.Page(keyword=${keyword}, flow=${flow})"
             }
         }
     }
 
-    sealed class SearchEvent(val keyword: String){
+    sealed class SearchEvent(val keyword: String) {
 
-        object None: SearchEvent("")
-        class Search(keyword: String): SearchEvent(keyword)
+        object None : SearchEvent("")
+        class Search(keyword: String) : SearchEvent(keyword)
     }
 
     private val keywordFlow = MutableStateFlow<SearchEvent>(SearchEvent.None)
@@ -52,11 +54,14 @@ class SearchPageViewModel(
     init {
         viewModelScope.launch {
             keywordFlow.collectLatest {
-                if(it.keyword.isEmpty()){
+                if (it.keyword.isEmpty()) {
                     lastPagerState = EmptyBangumi
                     pagerFlow.emit(EmptyBangumi)
-                }else{
-                    val n = SearchPageState.Page<Int, Bangumi>(it.keyword, getPager(it.keyword).flow.cachedIn(viewModelScope))
+                } else {
+                    val n = SearchPageState.Page<Int, Bangumi>(
+                        it.keyword,
+                        getPager(it.keyword).flow.cachedIn(viewModelScope)
+                    )
                     lastPagerState = n
                     pagerFlow.emit(n)
                 }
@@ -64,11 +69,11 @@ class SearchPageViewModel(
         }
     }
 
-    fun getCurKeyword(): String{
+    fun getCurKeyword(): String {
         return keywordFlow.value.keyword
     }
 
-    fun search(keyword: String){
+    fun search(keyword: String) {
         viewModelScope.launch {
             keywordFlow.emit(SearchEvent.Search(keyword))
         }
@@ -77,7 +82,7 @@ class SearchPageViewModel(
     private fun getPager(keyword: String): Pager<Int, Bangumi> = Pager(
         PagingConfig(pageSize = 10),
         initialKey = searchParser.firstKey()
-    ){
+    ) {
         SearchPageSource(searchParser, keyword)
     }
 

@@ -49,14 +49,14 @@ import kotlinx.coroutines.launch
 fun Play(
     source: String,
     detail: String,
-){
+) {
 
     val nav = LocalNavController.current
     // 多实例的时候，当前页面的动画如果不是当前播放的，需要改变当前播放的
-    LaunchedEffect(key1 = BangumiPlayController.curAnimPlayViewModel.value){
+    LaunchedEffect(key1 = BangumiPlayController.curAnimPlayViewModel.value) {
         val old = BangumiPlayController.curAnimPlayViewModel.value?.bangumiSummary
         Log.d("Play", "bangumi(source=${source}, detail=${detail})")
-        if(old?.source != source || old.detailUrl != detail){
+        if (old?.source != source || old.detailUrl != detail) {
             BangumiPlayController.newBangumi(BangumiSummary(source, detail), nav)
         }
         TinyStatusController.onPlayScreenLaunch()
@@ -64,27 +64,28 @@ fun Play(
     }
 
 
-    DisposableEffect(key1 = Unit){
+    DisposableEffect(key1 = Unit) {
         onDispose {
             TinyStatusController.onPlayScreenDispose()
             //uiController.setStatusBarColor(oldColor)
         }
     }
 
-    val vm: AnimPlayItemController = BangumiPlayController.getAnimPlayViewModel(BangumiSummary(source, detail))
+    val vm: AnimPlayItemController =
+        BangumiPlayController.getAnimPlayViewModel(BangumiSummary(source, detail))
 
     val playerStatus by vm.playerStatus.collectAsState(initial = null)
     val detailStatus by vm.detailController.detailFlow.collectAsState(initial = null)
     val playMsgStatus by vm.playMsgController.flow.collectAsState(initial = null)
 
-    LaunchedEffect(key1 = Unit){
+    LaunchedEffect(key1 = Unit) {
         vm.load()
     }
     val ps = playerStatus
     val ms = playMsgStatus
     val ds = detailStatus
-    LaunchedEffect(key1 = ps, key2 = ms, key3 = ds){
-        if(ms != null && ms is PlayMsgController.PlayMsgStatus.Completely) {
+    LaunchedEffect(key1 = ps, key2 = ms, key3 = ds) {
+        if (ms != null && ms is PlayMsgController.PlayMsgStatus.Completely) {
             if (ps != null && (ps is AnimPlayItemController.PlayerStatus.None)) {
                 if (ds != null && ds is DetailController.DetailStatus.Completely) {
                     val curLines = ps.sourceIndex
@@ -113,12 +114,12 @@ fun Play(
                     contentColor = MaterialTheme.colorScheme.onBackground,
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    if(ms is PlayMsgController.PlayMsgStatus.Error || ds is DetailController.DetailStatus.Error){
+                    if (ms is PlayMsgController.PlayMsgStatus.Error || ds is DetailController.DetailStatus.Error) {
                         val sb = StringBuilder()
-                        if(ms is PlayMsgController.PlayMsgStatus.Error ){
+                        if (ms is PlayMsgController.PlayMsgStatus.Error) {
                             sb.append(ms.errorMsg).append("\n")
                         }
-                        if(ds is DetailController.DetailStatus.Error ){
+                        if (ds is DetailController.DetailStatus.Error) {
                             sb.append(ds.errorMsg).append("\n")
                         }
                         ErrorPage(
@@ -132,8 +133,8 @@ fun Play(
                                 vm.load()
                             }
                         )
-                    }else{
-                        LazyVerticalGrid(columns = GridCells.Fixed(3)){
+                    } else {
+                        LazyVerticalGrid(columns = GridCells.Fixed(3)) {
                             detailStatus?.let {
                                 detail(vm, detailStatus = it)
                             }
@@ -159,10 +160,10 @@ fun Play(
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnsafeOptInUsageError")
 @Composable
-fun  Video(
+fun Video(
     vm: AnimPlayItemController,
     playerStatus: AnimPlayItemController.PlayerStatus,
-){
+) {
 
     val density = LocalDensity.current
 
@@ -179,8 +180,8 @@ fun  Video(
                 height =
                     with(density) { ((it.width / (PlayerController.ratioWidth)) * PlayerController.ratioHeight).toDp() }
             }
-    ){
-        if(playerStatus is AnimPlayItemController.PlayerStatus.Error){
+    ) {
+        if (playerStatus is AnimPlayItemController.PlayerStatus.Error) {
             ErrorPage(
                 modifier = Modifier.fillMaxSize(),
                 errorMsg = playerStatus.errorMsg,
@@ -192,7 +193,7 @@ fun  Video(
                     vm.changePlayer(playerStatus.sourceIndex, playerStatus.episode)
                 }
             )
-        }else{
+        } else {
             val curVideo by PlayerController.videoSizeStatus.observeAsState()
             AndroidView(
                 modifier = Modifier.fillMaxSize(),
@@ -202,8 +203,8 @@ fun  Video(
                         BangumiPlayController.onNewComposeView(this)
                     }
                 }
-            ){
-                when(playerStatus){
+            ) {
+                when (playerStatus) {
                     is AnimPlayItemController.PlayerStatus.None -> {}
                     is AnimPlayItemController.PlayerStatus.Play -> {
                         BangumiPlayController.onNewComposeView(it)
@@ -216,7 +217,7 @@ fun  Video(
                     is AnimPlayItemController.PlayerStatus.Loading -> {
                         it.basePlayerView.dispatchPlayStateChange(EasyPlayStatus.STATE_PREPARING)
                     }
-                    else ->{}
+                    else -> {}
                 }
                 PlayerController.exoPlayer.setVideoSurfaceView(it.basePlayerView.surfaceView)
                 // PlayerController.onContainer(it)
@@ -227,7 +228,6 @@ fun  Video(
     }
 
 
-
 }
 
 
@@ -236,11 +236,10 @@ fun LazyGridScope.playerMsg(
     vm: AnimPlayItemController,
     playerMsgStatus: PlayMsgController.PlayMsgStatus,
     playerStatus: AnimPlayItemController.PlayerStatus,
-){
+) {
 
 
-
-    when(playerMsgStatus){
+    when (playerMsgStatus) {
         is PlayMsgController.PlayMsgStatus.None -> {}
         is PlayMsgController.PlayMsgStatus.Error -> {
         }
@@ -249,7 +248,7 @@ fun LazyGridScope.playerMsg(
                 // LazyGridItemSpanScope:
                 // maxLineSpan
                 GridItemSpan(maxLineSpan)
-            }){
+            }) {
                 LoadingPage()
             }
 
@@ -260,23 +259,23 @@ fun LazyGridScope.playerMsg(
 
             val curLines = playerStatus.sourceIndex
             val curEpi = playerStatus.episode
-            if(curLines >= 0 && curLines < lines.size){
+            if (curLines >= 0 && curLines < lines.size) {
                 val epi = kotlin.runCatching {
                     playerMsgStatus.playMsg[lines[curLines]]
-                }.getOrNull()?: emptyList()
+                }.getOrNull() ?: emptyList()
                 item(span = {
                     // LazyGridItemSpanScope:
                     // maxLineSpan
                     GridItemSpan(maxLineSpan)
-                }){
+                }) {
 
                     HomeTabRow(
                         modifier = Modifier.padding(4.dp, 0.dp, 4.dp, 8.dp),
                         containerColor = Color.Transparent,
                         selectedTabIndex = curLines,
-                        indicatorColor = {MaterialTheme.colorScheme.secondary}
+                        indicatorColor = { MaterialTheme.colorScheme.secondary }
                     ) {
-                        for(i in lines.indices){
+                        for (i in lines.indices) {
                             HomeTabItem(
                                 selected = i == curLines,
                                 text = {
@@ -291,16 +290,15 @@ fun LazyGridScope.playerMsg(
                         }
                     }
                 }
-                itemsIndexed(epi){index, item ->
-                    val selected = index== curEpi
+                itemsIndexed(epi) { index, item ->
+                    val selected = index == curEpi
                     Surface(
                         shadowElevation = 4.dp,
                         shape = RoundedCornerShape(4.dp),
                         modifier =
                         Modifier
                             .fillMaxWidth()
-                            .padding(4.dp, 4.dp)
-                        ,
+                            .padding(4.dp, 4.dp),
                         color = if (selected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.secondaryContainer,
                     ) {
                         Text(
@@ -330,18 +328,20 @@ fun LazyGridScope.playerMsg(
 fun LazyGridScope.detail(
     vm: AnimPlayItemController,
     detailStatus: DetailController.DetailStatus
-){
+) {
 
     item(span = {
         // LazyGridItemSpanScope:
         // maxLineSpan
         GridItemSpan(maxLineSpan)
     }) {
-        Box(modifier = Modifier
-            .padding(8.dp)
-            .height(210.dp)
-            .fillMaxWidth()){
-            when(detailStatus){
+        Box(
+            modifier = Modifier
+                .padding(8.dp)
+                .height(210.dp)
+                .fillMaxWidth()
+        ) {
+            when (detailStatus) {
                 is DetailController.DetailStatus.None -> {}
                 is DetailController.DetailStatus.Error -> {}
                 is DetailController.DetailStatus.Loading -> {
@@ -365,11 +365,12 @@ fun LazyGridScope.detail(
                                     .width(95.dp)
                                     .clip(RoundedCornerShape(8.dp)),
                                 image = detailStatus.bangumiDetail.cover,
-                                contentDescription = detailStatus.bangumiDetail.name)
-                            Column (
+                                contentDescription = detailStatus.bangumiDetail.name
+                            )
+                            Column(
                                 modifier = Modifier.weight(1.0f),
                                 verticalArrangement = Arrangement.spacedBy(4.dp)
-                            ){
+                            ) {
                                 Text(
                                     text = detailStatus.bangumiDetail.name,
                                     maxLines = 1,
@@ -410,12 +411,17 @@ fun LazyGridScope.detail(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Center,
                             ) {
-                                val icon = if(isStar) Icons.Filled.Star else Icons.Filled.StarOutline
-                                val textId = if(isStar) R.string.stared else R.string.click_star
-                                Icon(icon, stringResource(id = textId), tint = if(isStar) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onBackground)
+                                val icon =
+                                    if (isStar) Icons.Filled.Star else Icons.Filled.StarOutline
+                                val textId = if (isStar) R.string.stared else R.string.click_star
+                                Icon(
+                                    icon,
+                                    stringResource(id = textId),
+                                    tint = if (isStar) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onBackground
+                                )
                                 Text(
                                     text = stringResource(id = textId),
-                                    color = if(isStar) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onBackground,
+                                    color = if (isStar) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onBackground,
                                     fontSize = 12.sp
                                 )
                             }
@@ -432,13 +438,16 @@ fun LazyGridScope.detail(
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Icon(Icons.Filled.Web, stringResource(id = R.string.web_view))
-                                Text(text = stringResource(id = R.string.web_view), fontSize = 12.sp)
+                                Text(
+                                    text = stringResource(id = R.string.web_view),
+                                    fontSize = 12.sp
+                                )
                             }
 
                         }
-                        
+
                     }
-                    
+
 
                 }
                 else -> {}

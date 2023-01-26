@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
  * https://github.com/heyanLE
  */
 @Entity
-data class SearchHistory (
+data class SearchHistory(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val timestamp: Long,

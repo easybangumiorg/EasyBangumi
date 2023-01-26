@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:visibility="gone"
@@ -23,7 +22,7 @@
 
     <View
         android:layout_width="16dp"
-        android:layout_height="1dp"/>
+        android:layout_height="1dp" />
 
     <ProgressBar
         android:id="@+id/pb_percent"
@@ -34,5 +33,5 @@
 
     <View
         android:layout_width="8dp"
-        android:layout_height="1dp"/>
+        android:layout_height="1dp" />
 </LinearLayout>

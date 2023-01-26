@@ -2,8 +2,8 @@ import com.heyanle.buildsrc.*
 import org.gradle.kotlin.dsl.project
 
 plugins {
-    id ("com.android.application")
-    id ("org.jetbrains.kotlin.android")
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
     id("kotlin-kapt")
 }
 
@@ -27,7 +27,10 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"),  "proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
     compileOptions {
@@ -68,6 +71,7 @@ dependencies {
     easyPlayer()
     room()
     roomPaging()
+    appCenter()
     implementation(project(":easy-crasher"))
     implementation(project(":lib-anim"))
 }

@@ -33,12 +33,13 @@ import com.heyanle.eplayer_core.controller.IComponent
  * https://github.com/heyanLE
  */
 @SuppressLint("ClickableViewAccessibility")
-class TinyWindowComponent: FrameLayout, IComponent, SeekBar.OnSeekBarChangeListener {
+class TinyWindowComponent : FrameLayout, IComponent, SeekBar.OnSeekBarChangeListener {
 
     private var container: ComponentContainer? = null
 
     private val binding: ComponentTinyBinding = ComponentTinyBinding.inflate(
-        LayoutInflater.from(context), this, true)
+        LayoutInflater.from(context), this, true
+    )
 
     // seekbar 是否在滑动
     private var isSeekBarTouching = false
@@ -48,7 +49,7 @@ class TinyWindowComponent: FrameLayout, IComponent, SeekBar.OnSeekBarChangeListe
 
     private val showAnim = AlphaAnimation(0f, 1f).apply {
         duration = 300
-        setAnimationListener(object: Animation.AnimationListener {
+        setAnimationListener(object : Animation.AnimationListener {
             override fun onAnimationStart(animation: Animation?) {
                 binding.contentLayout.visibility = View.VISIBLE
             }
@@ -64,7 +65,7 @@ class TinyWindowComponent: FrameLayout, IComponent, SeekBar.OnSeekBarChangeListe
 
     private val hideAnim = AlphaAnimation(1f, 0f).apply {
         duration = 300
-        setAnimationListener(object: Animation.AnimationListener {
+        setAnimationListener(object : Animation.AnimationListener {
             override fun onAnimationStart(animation: Animation?) {
                 binding.contentLayout.visibility = View.VISIBLE
             }
@@ -99,9 +100,11 @@ class TinyWindowComponent: FrameLayout, IComponent, SeekBar.OnSeekBarChangeListe
             val dra = binding.seekBar.progressDrawable as LayerDrawable
             dra.getDrawable(2).colorFilter = PorterDuffColorFilter(color, PorterDuff.Mode.SRC)
 
-            dra.findDrawableByLayerId(android.R.id.background).colorFilter = PorterDuffColorFilter(0x99ffffff.toInt(), PorterDuff.Mode.SRC)
+            dra.findDrawableByLayerId(android.R.id.background).colorFilter =
+                PorterDuffColorFilter(0x99ffffff.toInt(), PorterDuff.Mode.SRC)
 
-            binding.seekBar.thumb.colorFilter = PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP)
+            binding.seekBar.thumb.colorFilter =
+                PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP)
 
             binding.progressBar.indeterminateTintList = ColorStateList.valueOf(color)
             binding.progressBar.indeterminateTintMode = PorterDuff.Mode.SRC_ATOP
@@ -109,48 +112,50 @@ class TinyWindowComponent: FrameLayout, IComponent, SeekBar.OnSeekBarChangeListe
         }
         binding.touchView.setOnTouchListener { v, event ->
             Log.d("Tiny", event.toString())
-            if(!PlayerTinyController.onTouchEvent(event) && event.action == MotionEvent.ACTION_UP){
+            if (!PlayerTinyController.onTouchEvent(event) && event.action == MotionEvent.ACTION_UP) {
                 container?.toggleShowState()
             }
             true
         }
     }
+
     override fun onPlayStateChanged(playState: Int) {
         Log.d("StandardComponent", "playState $playState")
         refreshPlayPauseBtStatus()
         runWithContainer {
-            if(playState != EasyPlayStatus.STATE_PLAYING
+            if (playState != EasyPlayStatus.STATE_PLAYING
                 && playState != EasyPlayStatus.STATE_BUFFERED
                 && playState != EasyPlayStatus.STATE_PREPARING
-            ){
+            ) {
                 stopProgressUpdate()
-            }else{
+            } else {
                 onProgressUpdate(duration = getDuration(), getCurrentPosition())
                 startProgressUpdate()
             }
 
-            if(playState == EasyPlayStatus.STATE_PREPARING){
+            if (playState == EasyPlayStatus.STATE_PREPARING) {
                 binding.root.visibility = View.VISIBLE
                 stopFadeOut()
             }
 
-            if(playState != EasyPlayStatus.STATE_BUFFERING
-                && playState != EasyPlayStatus.STATE_PREPARING) {
+            if (playState != EasyPlayStatus.STATE_BUFFERING
+                && playState != EasyPlayStatus.STATE_PREPARING
+            ) {
                 binding.progressBar.visibility = View.GONE
                 binding.ivController.visibility = View.VISIBLE
-            }else{
+            } else {
                 binding.progressBar.visibility = View.VISIBLE
                 binding.ivController.visibility = View.GONE
             }
-            if(playState == EasyPlayStatus.STATE_PREPARING){
+            if (playState == EasyPlayStatus.STATE_PREPARING) {
                 binding.timelineLayout.visibility = View.GONE
-            }else{
+            } else {
                 binding.timelineLayout.visibility = View.VISIBLE
             }
 
         }
 
-        when(playState){
+        when (playState) {
             EasyPlayStatus.STATE_IDLE, EasyPlayStatus.STATE_PLAYBACK_COMPLETED -> {
                 // 复原
                 binding.seekBar.progress = 0
@@ -175,22 +180,23 @@ class TinyWindowComponent: FrameLayout, IComponent, SeekBar.OnSeekBarChangeListe
 
     override fun onVisibleChanged(isVisible: Boolean) {
         runWithContainer {
-            if(!isPlaying()){
+            if (!isPlaying()) {
                 stopFadeOut()
             }
         }
         this.isVisible = isVisible
-        if( !isSeekBarTouching){
+        if (!isSeekBarTouching) {
             binding.root.clearAnimation()
-            if(isVisible){
+            if (isVisible) {
                 binding.root.startAnimation(showAnim)
-            }else{
+            } else {
                 binding.root.startAnimation(hideAnim)
             }
         }
     }
+
     override fun onProgressUpdate(duration: Long, position: Long) {
-        if( !isSeekBarTouching){
+        if (!isSeekBarTouching) {
             setSeekbarProgress(duration, position)
         }
     }
@@ -198,7 +204,7 @@ class TinyWindowComponent: FrameLayout, IComponent, SeekBar.OnSeekBarChangeListe
     // == override seekbar listener
 
     override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-        if(fromUser){
+        if (fromUser) {
             runWithContainer {
                 val newPosition = getDuration() * progress / seekBar.max
                 seekTo(newPosition)
@@ -226,16 +232,16 @@ class TinyWindowComponent: FrameLayout, IComponent, SeekBar.OnSeekBarChangeListe
 
     // == UI 显示效果控制
 
-    private fun setSeekbarProgress(duration: Long, position: Long ){
-        binding.seekBar.progress = ((position.toFloat()/duration)*binding.seekBar.max).toInt()
+    private fun setSeekbarProgress(duration: Long, position: Long) {
+        binding.seekBar.progress = ((position.toFloat() / duration) * binding.seekBar.max).toInt()
     }
 
-    private fun refreshPlayPauseBtStatus(){
+    private fun refreshPlayPauseBtStatus() {
         runWithContainer {
-            if(isPlaying()){
+            if (isPlaying()) {
                 startFadeOut()
                 binding.ivController.setImageResource(R.drawable.ic_baseline_pause_24)
-            }else{
+            } else {
                 stopFadeOut()
                 binding.ivController.setImageResource(R.drawable.ic_baseline_play_arrow_24)
             }
@@ -247,7 +253,7 @@ class TinyWindowComponent: FrameLayout, IComponent, SeekBar.OnSeekBarChangeListe
         return this
     }
 
-    private inline fun runWithContainer(block: ComponentContainer.()->Unit){
+    private inline fun runWithContainer(block: ComponentContainer.() -> Unit) {
         container?.block()
     }
 

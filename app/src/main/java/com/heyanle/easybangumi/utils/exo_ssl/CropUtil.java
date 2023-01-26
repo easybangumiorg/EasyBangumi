@@ -10,7 +10,7 @@ import javax.net.ssl.X509TrustManager;
  * https://github.com/heyanLE
  */
 public class CropUtil {
-    public static SSLSocketFactory getUnsafeSslSocketFactory(){
+    public static SSLSocketFactory getUnsafeSslSocketFactory() {
         try {
             final TrustManager[] trustAllCerts = new TrustManager[]{
                     new X509TrustManager() {
