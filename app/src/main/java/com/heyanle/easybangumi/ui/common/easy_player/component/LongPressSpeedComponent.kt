@@ -15,7 +15,7 @@ import com.heyanle.eplayer_core.controller.IGestureComponent
  * Created by HeYanLe on 2022/11/7 23:12.
  * https://github.com/heyanLE
  */
-class LongPressSpeedComponent: FrameLayout, IGestureComponent {
+class LongPressSpeedComponent : FrameLayout, IGestureComponent {
 
     companion object {
         private const val LONG_PRESS_SPEED = 2.0f
@@ -24,45 +24,46 @@ class LongPressSpeedComponent: FrameLayout, IGestureComponent {
     private var container: ComponentContainer? = null
 
     private val binding: ComponentLongPressBinding = ComponentLongPressBinding.inflate(
-        LayoutInflater.from(context), this, true)
+        LayoutInflater.from(context), this, true
+    )
 
     private var isSpeed = false
 
     private var oldSpeed = 1f
 
-    init{
+    init {
         binding.root.visibility = View.GONE
     }
 
     override fun onLongPressStart() {
         super.onLongPressStart()
         runWithContainer {
-            if(isPlaying()){
+            if (isPlaying()) {
                 isSpeed = true
                 oldSpeed = getSpeed()
                 binding.root.visibility = View.VISIBLE
                 binding.root.clearAnimation()
                 binding.root.alpha = 0f
                 binding.root.animate().alpha(1.0f).setDuration(100)
-                    .setListener(object: AnimatorListenerAdapter() {
+                    .setListener(object : AnimatorListenerAdapter() {
                         override fun onAnimationEnd(animation: Animator) {
                             super.onAnimationEnd(animation)
                             binding.root.alpha = 1.0f
                         }
                     }).start()
-                setSpeed(LONG_PRESS_SPEED*oldSpeed)
+                setSpeed(LONG_PRESS_SPEED * oldSpeed)
             }
         }
     }
 
     override fun onUp() {
         super.onUp()
-        if(isSpeed){
+        if (isSpeed) {
             isSpeed = false
             binding.root.clearAnimation()
             binding.root.alpha = 1f
             binding.root.animate().alpha(0f).setDuration(100)
-                .setListener(object: AnimatorListenerAdapter() {
+                .setListener(object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator) {
                         super.onAnimationEnd(animation)
                         binding.root.visibility = View.GONE
@@ -79,7 +80,7 @@ class LongPressSpeedComponent: FrameLayout, IGestureComponent {
         return this
     }
 
-    private inline fun runWithContainer(block: ComponentContainer.()->Unit){
+    private inline fun runWithContainer(block: ComponentContainer.() -> Unit) {
         container?.block()
     }
 

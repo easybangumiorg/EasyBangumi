@@ -30,11 +30,11 @@ import kotlin.math.absoluteValue
 @Composable
 fun ScrollHeaderBox(
     modifier: Modifier = Modifier,
-    canScroll: (Offset)->Boolean = { true },
+    canScroll: (Offset) -> Boolean = { true },
     showForever: MutableState<Boolean> = mutableStateOf(false),
-    header: @Composable (Dp)->Unit,
-    content: @Composable (PaddingValues) ->Unit,
-){
+    header: @Composable (Dp) -> Unit,
+    content: @Composable (PaddingValues) -> Unit,
+) {
 
     var headerHeightPx by remember {
         mutableStateOf(0)
@@ -44,10 +44,10 @@ fun ScrollHeaderBox(
     val nestedScrollConnection = remember {
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                if(!canScroll(available)) {
+                if (!canScroll(available)) {
                     return Offset.Zero
                 }
-                if(available.x.absoluteValue > available.y.absoluteValue){
+                if (available.x.absoluteValue > available.y.absoluteValue) {
                     return Offset.Zero
                 }
                 val delta = available.y
@@ -59,10 +59,10 @@ fun ScrollHeaderBox(
                 val newOffset = offsetHeightPx + delta
                 // 设置 Header 的位移范围
                 offsetHeightPx = newOffset.coerceIn(-headerHeightPx.toFloat(), 0F)
-                if(newOffset > max){
-                    return available.copy(y = +max-old)
+                if (newOffset > max) {
+                    return available.copy(y = +max - old)
                 }
-                if(newOffset < min){
+                if (newOffset < min) {
                     return available.copy(y = +min - old)
                 }
                 return available.copy(y = delta)
@@ -73,18 +73,23 @@ fun ScrollHeaderBox(
     }
 
     Box(
-        modifier = Modifier.nestedScroll(nestedScrollConnection).then(modifier)
+        modifier = Modifier
+            .nestedScroll(nestedScrollConnection)
+            .then(modifier)
     ) {
 
-        content(PaddingValues(top = with(LocalDensity.current){(headerHeightPx+offsetHeightPx).toDp()} ))
+        content(PaddingValues(top = with(LocalDensity.current) { (headerHeightPx + offsetHeightPx).toDp() }))
 
-        val offsetY = if(showForever.value) 0.dp else with(LocalDensity.current){offsetHeightPx.toDp()}
+        val offsetY =
+            if (showForever.value) 0.dp else with(LocalDensity.current) { offsetHeightPx.toDp() }
 
         Box(
-            modifier = Modifier.onSizeChanged {
-                        headerHeightPx = it.height
-                }.clipToBounds()
-        ){
+            modifier = Modifier
+                .onSizeChanged {
+                    headerHeightPx = it.height
+                }
+                .clipToBounds()
+        ) {
             header(offsetY)
         }
 

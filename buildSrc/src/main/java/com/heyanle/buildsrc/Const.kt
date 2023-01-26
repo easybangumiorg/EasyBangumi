@@ -14,24 +14,30 @@ const val debugImplementation = "debugImplementation"
 const val testImplementation = "testImplementation"
 const val androidTestImplementation = "androidTestImplementation"
 
-fun DependencyHandler.implementation(src: String){
+fun DependencyHandler.implementation(src: String) {
     add(implementation, src)
 }
+
 fun DependencyHandler.project(path: String): Dependency {
     return project(mapOf("path" to path))
 }
-fun DependencyHandler.ksp(src: String){
+
+fun DependencyHandler.ksp(src: String) {
     add(ksp, src)
 }
-fun DependencyHandler.kapt(src: String){
+
+fun DependencyHandler.kapt(src: String) {
     add(kapt, src)
 }
-fun DependencyHandler.debugImplementation(src: String){
+
+fun DependencyHandler.debugImplementation(src: String) {
     add(debugImplementation, src)
 }
-fun DependencyHandler.testImplementation(src: String){
+
+fun DependencyHandler.testImplementation(src: String) {
     add(testImplementation, src)
 }
-fun DependencyHandler.androidTestImplementation(src: String){
+
+fun DependencyHandler.androidTestImplementation(src: String) {
     add(androidTestImplementation, src)
 }

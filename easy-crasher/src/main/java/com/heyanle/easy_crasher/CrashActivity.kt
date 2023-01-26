@@ -10,7 +10,7 @@ import org.w3c.dom.Text
  * Created by HeYanLe on 2022/9/4 15:02.
  * https://github.com/heyanLE
  */
-class CrashActivity: Activity() {
+class CrashActivity : Activity() {
 
     companion object {
         const val KEY_ERROR_MSG = "ERROR_MSG"
@@ -22,7 +22,7 @@ class CrashActivity: Activity() {
         initView()
     }
 
-    private fun initView(){
+    private fun initView() {
         val btTitle = findViewById<TextView>(R.id.tv_title)
         val title = "手机型号：${android.os.Build.MODEL}\n安卓版本：${android.os.Build.VERSION.RELEASE}"
         btTitle.text = title

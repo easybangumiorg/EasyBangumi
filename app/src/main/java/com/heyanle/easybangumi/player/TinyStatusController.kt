@@ -16,40 +16,38 @@ object TinyStatusController {
 
     private var playerScreenLaunch: Boolean = false
 
-    fun onPlayScreenLaunch(){
+    fun onPlayScreenLaunch() {
         playerScreenLaunch = true
         PlayerTinyController.dismissTiny()
     }
 
-    fun onPlayScreenDispose(){
+    fun onPlayScreenDispose() {
         playerScreenLaunch = false
         // 如果开启了自动小窗 & 当前视频正在播放 则小窗
-        if(autoTinyEnableOkkv && PlayerController.exoPlayer.isPlaying){
+        if (autoTinyEnableOkkv && PlayerController.exoPlayer.isPlaying) {
             PlayerTinyController.showTiny()
-        }else{
+        } else {
             // 如果没开 先暂停再说
             PlayerController.exoPlayer.pause()
         }
     }
 
-    fun onActResume(){
-        if(playerScreenLaunch){
+    fun onActResume() {
+        if (playerScreenLaunch) {
             PlayerTinyController.dismissTiny()
             BangumiPlayController.onPlayerScreenReshow()
         }
     }
 
-    fun onActPause(){
+    fun onActPause() {
         // 如果 当前在播放页 & 开启了自动小窗 & 当前视频正在播放 则小窗
-        if(playerScreenLaunch && autoTinyEnableOkkv && PlayerController.exoPlayer.isPlaying){
+        if (playerScreenLaunch && autoTinyEnableOkkv && PlayerController.exoPlayer.isPlaying) {
             PlayerTinyController.showTiny()
-        }else{
+        } else {
             // 如果没开 先暂停再说
             PlayerController.exoPlayer.pause()
         }
     }
-
-
 
 
 }

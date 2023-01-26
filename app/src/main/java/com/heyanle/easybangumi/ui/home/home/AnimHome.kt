@@ -71,23 +71,24 @@ import com.heyanle.easybangumi.ui.common.*
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun AnimHome(){
+fun AnimHome() {
     HomeSourceContainer {
         val vm = viewModel<AnimHomeViewModel>(factory = AnimHomeViewModelFactory(it))
         AnimHomePage(vm = vm)
     }
 }
+
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun AnimHomePage(
     vm: AnimHomeViewModel
-){
+) {
     val labels = vm.homes.map {
         it.getLabel()
     }
 
     val status by vm.homeResultFlow.collectAsState(initial = AnimHomeViewModel.HomeAnimState.None)
-    if(status == AnimHomeViewModel.HomeAnimState.None){
+    if (status == AnimHomeViewModel.HomeAnimState.None) {
         // 这里要成闭环
         Box(modifier = Modifier
             .fillMaxSize()
@@ -115,9 +116,9 @@ fun AnimHomePage(
     Log.d("AnimHome", "label not empty")
     ScrollHeaderBox(
         canScroll = {
-            if(isHeaderShowForever){
+            if (isHeaderShowForever) {
                 false
-            }else{
+            } else {
                 !(it.y < 0 && endReached)
             }
         },
@@ -138,10 +139,10 @@ fun AnimHomePage(
                     fadeIn(animationSpec = tween(300, delayMillis = 300)) with
                             fadeOut(animationSpec = tween(300, delayMillis = 0))
                 },
-            ){ stat ->
+            ) { stat ->
                 when (stat) {
                     is AnimHomeViewModel.HomeAnimState.Loading -> {
-                        LaunchedEffect(key1 = Unit){
+                        LaunchedEffect(key1 = Unit) {
                             isHeaderShowForever = true
                         }
 
@@ -152,7 +153,7 @@ fun AnimHomePage(
                     }
 
                     is AnimHomeViewModel.HomeAnimState.Completely -> {
-                        LaunchedEffect(key1 = Unit){
+                        LaunchedEffect(key1 = Unit) {
                             isHeaderShowForever = false
                         }
                         LazyColumn(
@@ -161,19 +162,20 @@ fun AnimHomePage(
                             contentPadding = it,
                             verticalArrangement = Arrangement.spacedBy(4.dp),
                             state = lazyListState
-                        ){
+                        ) {
                             animHomePage(state = stat)
                         }
                     }
 
                     is AnimHomeViewModel.HomeAnimState.Error -> {
-                        LaunchedEffect(key1 = Unit){
+                        LaunchedEffect(key1 = Unit) {
                             isHeaderShowForever = true
                         }
                         ErrorPage(
                             modifier = Modifier
                                 .fillMaxSize(),
-                            errorMsg = if(stat.error.isParserError) stat.error.throwable.message?:"" else stringResource(id = R.string.net_error),
+                            errorMsg = if (stat.error.isParserError) stat.error.throwable.message
+                                ?: "" else stringResource(id = R.string.net_error),
                             clickEnable = true,
                             onClick = {
                                 vm.refresh()
@@ -188,14 +190,14 @@ fun AnimHomePage(
             }
         }
     )
-    Box(modifier = Modifier){
+    Box(modifier = Modifier) {
         FastScrollToTopFab(listState = lazyListState)
     }
 }
 
-fun LazyListScope.animHomePage(state: AnimHomeViewModel.HomeAnimState.Completely){
+fun LazyListScope.animHomePage(state: AnimHomeViewModel.HomeAnimState.Completely) {
 
-    items(state.keyList){ key ->
+    items(state.keyList) { key ->
         val nav = LocalNavController.current
         Text(
             modifier = Modifier.padding(8.dp, 4.dp),
@@ -204,9 +206,9 @@ fun LazyListScope.animHomePage(state: AnimHomeViewModel.HomeAnimState.Completely
             fontSize = MaterialTheme.typography.titleMedium.fontSize,
             fontWeight = FontWeight.W900,
         )
-        val da = state.data[key]?: emptyList()
-        LazyRow(){
-            items(da.size?:0){ i ->
+        val da = state.data[key] ?: emptyList()
+        LazyRow() {
+            items(da.size ?: 0) { i ->
                 val item = da[i]
                 Column(
                     modifier = Modifier
@@ -231,13 +233,13 @@ fun LazyListScope.animHomePage(state: AnimHomeViewModel.HomeAnimState.Completely
                     Text(
                         textAlign = TextAlign.Center,
                         modifier = Modifier.width(95.dp),
-                        text = "${item.name}${if(needEnter) "\n " else ""}",
+                        text = "${item.name}${if (needEnter) "\n " else ""}",
                         maxLines = 2,
                         fontSize = MaterialTheme.typography.bodyMedium.fontSize,
                         lineHeight = MaterialTheme.typography.bodyMedium.lineHeight,
                         overflow = TextOverflow.Ellipsis,
                         onTextLayout = {
-                            if(it.lineCount < 2){
+                            if (it.lineCount < 2) {
                                 needEnter = true
                             }
                         }

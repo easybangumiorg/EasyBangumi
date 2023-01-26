@@ -16,7 +16,7 @@ import com.heyanle.eplayer_core.constant.EasyPlayStatus
  */
 class ExoPlayerStatusController(
     private val exoPlayer: ExoPlayer
-) : Player.Listener{
+) : Player.Listener {
 
     init {
         exoPlayer.addListener(this)
@@ -48,21 +48,21 @@ class ExoPlayerStatusController(
         dispatchStatus()
     }
 
-    fun dispatchPreparing(){
+    fun dispatchPreparing() {
         _playerControllerStatus.postValue(EasyPlayStatus.STATE_PREPARING)
     }
 
-    fun dispatchIdle(){
+    fun dispatchIdle() {
         _playerControllerStatus.postValue(EasyPlayStatus.STATE_IDLE)
     }
 
-    private fun dispatchStatus(){
-        if(exoPlayer.playerError != null){
+    private fun dispatchStatus() {
+        if (exoPlayer.playerError != null) {
             exoPlayer.playerError?.printStackTrace()
             _playerControllerStatus.postValue(EasyPlayStatus.STATE_ERROR)
             return
         }
-        when(exoPlayer.playbackState){
+        when (exoPlayer.playbackState) {
             Player.STATE_IDLE -> {
                 _playerControllerStatus.postValue(EasyPlayStatus.STATE_IDLE)
             }
@@ -72,9 +72,9 @@ class ExoPlayerStatusController(
             }
             Player.STATE_READY -> {
                 _playerControllerStatus.postValue(EasyPlayStatus.STATE_BUFFERED)
-                if(exoPlayer.playWhenReady){
+                if (exoPlayer.playWhenReady) {
                     _playerControllerStatus.postValue(EasyPlayStatus.STATE_PLAYING)
-                }else{
+                } else {
                     _playerControllerStatus.postValue(EasyPlayStatus.STATE_PAUSED)
                 }
 
@@ -86,7 +86,7 @@ class ExoPlayerStatusController(
 
     }
 
-    fun release(){
+    fun release() {
         exoPlayer.removeListener(this)
     }
 

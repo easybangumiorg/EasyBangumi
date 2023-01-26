@@ -11,7 +11,7 @@ data class BangumiSummary(
 
     // 详细网址
     val detailUrl: String,
-){
+) {
 
 
     override fun toString(): String {

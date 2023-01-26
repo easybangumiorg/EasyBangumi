@@ -4,8 +4,8 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
-    <uses-permission android:name="android.permission.SYSTEM_OVERLAY_WINDOW"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.SYSTEM_OVERLAY_WINDOW" />
 
     <application
         android:name=".BangumiApp"
@@ -31,15 +31,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <intent-filter>
-                <data android:scheme="nav" android:host="play" />
+                <data
+                    android:scheme="nav"
+                    android:host="play" />
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
         </activity>
 
-        <activity android:name="com.heyanle.easy_crasher.CrashActivity"
-            android:process="com.heyanle.easybangumi.crash"/>
+        <activity
+            android:name="com.heyanle.easy_crasher.CrashActivity"
+            android:process="com.heyanle.easybangumi.crash" />
 
     </application>
 

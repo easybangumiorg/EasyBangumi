@@ -35,28 +35,29 @@ fun ErrorPage(
     image: Any = R.drawable.error_ikuyo,
     errorMsg: String = "",
     clickEnable: Boolean = false,
-    other: @Composable ()->Unit = {},
-    onClick: ()->Unit = {},
+    other: @Composable () -> Unit = {},
+    onClick: () -> Unit = {},
 
-    ){
+    ) {
     WhitePage(
         modifier.let {
-            if(clickEnable){
+            if (clickEnable) {
                 it.clickable {
                     onClick()
                 }
-            }else {
+            } else {
                 it
             }
-        }, image, errorMsg, other)
+        }, image, errorMsg, other
+    )
 }
 
 @Composable
 fun EmptyPage(
     modifier: Modifier = Modifier,
     emptyMsg: String = stringResource(id = R.string.is_empty),
-    other: @Composable ()->Unit = {},
-){
+    other: @Composable () -> Unit = {},
+) {
     WhitePage(modifier, R.drawable.empty_bocchi, emptyMsg, other)
 }
 
@@ -64,18 +65,18 @@ fun EmptyPage(
 fun LoadingPage(
     modifier: Modifier = Modifier,
     loadingMsg: String = stringResource(id = R.string.loading),
-    other: @Composable ()->Unit = {},
-){
+    other: @Composable () -> Unit = {},
+) {
     WhitePage(modifier, Uri.parse("file:///android_asset/loading_ryo.gif"), loadingMsg, other)
 }
 
 @Composable
 fun WhitePage(
     modifier: Modifier = Modifier,
-    image: Any ,
+    image: Any,
     message: String = "",
-    other: @Composable ()->Unit = {},
-){
+    other: @Composable () -> Unit = {},
+) {
     Box(
         modifier = Modifier.then(modifier),
         contentAlignment = Alignment.Center
@@ -85,7 +86,7 @@ fun WhitePage(
                 model = ImageRequest
                     .Builder(LocalContext.current)
                     .decoderFactory(
-                        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
                             ImageDecoderDecoder.Factory()
                         else GifDecoder.Factory()
                     )

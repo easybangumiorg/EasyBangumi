@@ -25,21 +25,23 @@ import com.heyanle.lib_anim.ISearchParser
 fun SourceContainer(
     modifier: Modifier = Modifier,
     errorContainerColor: Color = Color.Transparent,
-    content: @Composable (AnimSources)->Unit,
+    content: @Composable (AnimSources) -> Unit,
 ) {
     val animSources by AnimSourceFactory.parsers().collectAsState(initial = null)
     val anim = animSources
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .then(modifier)){
-        if(anim == null || anim.empty()){
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .then(modifier)
+    ) {
+        if (anim == null || anim.empty()) {
             EmptyPage(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(errorContainerColor),
                 emptyMsg = stringResource(id = R.string.no_source)
             )
-        }else{
+        } else {
             content(anim)
         }
     }
@@ -49,24 +51,26 @@ fun SourceContainer(
 fun HomeSourceContainer(
     modifier: Modifier = Modifier,
     errorContainerColor: Color = Color.Transparent,
-    content: @Composable (List<IHomeParser>)->Unit,
-){
+    content: @Composable (List<IHomeParser>) -> Unit,
+) {
     SourceContainer(
         modifier,
         errorContainerColor = errorContainerColor
     ) {
         val homes = it.homeParsers()
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .then(modifier)){
-            if(homes.isEmpty()){
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .then(modifier)
+        ) {
+            if (homes.isEmpty()) {
                 EmptyPage(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(errorContainerColor),
                     emptyMsg = stringResource(id = R.string.no_source)
                 )
-            }else{
+            } else {
                 content(homes)
             }
         }
@@ -77,24 +81,26 @@ fun HomeSourceContainer(
 fun SearchSourceContainer(
     modifier: Modifier = Modifier,
     errorContainerColor: Color = Color.Transparent,
-    content: @Composable (List<ISearchParser>)->Unit,
-){
+    content: @Composable (List<ISearchParser>) -> Unit,
+) {
     SourceContainer(
         modifier,
         errorContainerColor = errorContainerColor
     ) {
         val homes = it.searchParsers()
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .then(modifier)){
-            if(homes.isEmpty()){
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .then(modifier)
+        ) {
+            if (homes.isEmpty()) {
                 EmptyPage(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(errorContainerColor),
                     emptyMsg = stringResource(id = R.string.no_source)
                 )
-            }else{
+            } else {
                 content(homes)
             }
         }

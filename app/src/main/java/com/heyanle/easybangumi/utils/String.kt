@@ -11,7 +11,7 @@ import com.heyanle.easybangumi.ui.common.moeSnackBar
  * https://github.com/heyanLE
  */
 
-fun stringRes(resId: Int, vararg formatArgs: Any): String{
+fun stringRes(resId: Int, vararg formatArgs: Any): String {
     return BangumiApp.INSTANCE.getString(resId, formatArgs)
 }
 

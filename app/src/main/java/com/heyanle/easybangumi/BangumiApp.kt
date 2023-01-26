@@ -44,17 +44,17 @@ class BangumiApp : Application() {
         initAppCenter()
     }
 
-    private fun initOkkv(){
+    private fun initOkkv() {
         Okkv.Builder().store(MMKVStore(this)).cache().build().init().default()
         // 如果不使用缓存，请手动指定 key
         Okkv.Builder().store(MMKVStore(this)).build().init().default("no_cache")
     }
 
-    private fun initCrasher(){
+    private fun initCrasher() {
         Thread.setDefaultUncaughtExceptionHandler(CrashHandler(this))
     }
 
-    private fun initAppCenter(){
+    private fun initAppCenter() {
         kotlin.runCatching {
             // https://appcenter.ms
             AppCenter.start(

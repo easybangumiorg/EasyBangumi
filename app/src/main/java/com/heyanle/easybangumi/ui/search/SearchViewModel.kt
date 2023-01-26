@@ -20,7 +20,7 @@ import kotlinx.coroutines.withContext
  */
 class SearchViewModel(
     val default: String = "",
-): ViewModel(){
+) : ViewModel() {
 
     private val viewModelOwnerStore = hashMapOf<ISearchParser, ViewModelStore>()
 
@@ -62,7 +62,7 @@ class SearchViewModel(
 
     }
 
-    fun search(keyword: String){
+    fun search(keyword: String) {
         keywordState.value = keyword
         searchEventState.value = keyword
         viewModelScope.launch {
@@ -82,7 +82,7 @@ class SearchViewModel(
 
     }
 
-    fun clearHistory(){
+    fun clearHistory() {
         viewModelScope.launch(Dispatchers.IO) {
             EasyDB.database.searchHistory.deleteAll()
         }

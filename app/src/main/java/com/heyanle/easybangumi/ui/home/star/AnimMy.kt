@@ -17,6 +17,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -34,7 +35,7 @@ import com.heyanle.easybangumi.utils.stringRes
  */
 
 @Composable
-fun AnimMy(){
+fun AnimMy() {
 
     val lazyGridState = rememberLazyGridState()
     val vm = viewModel<AnimStarViewModel>()
@@ -43,53 +44,56 @@ fun AnimMy(){
     val nav = LocalNavController.current
     val scope = rememberCoroutineScope()
 
-    Box(modifier = Modifier.fillMaxSize()){
+    Box(modifier = Modifier.fillMaxSize()) {
         val pagingItems = vm.curPager.value.collectAsLazyPagingItems()
-        if(pagingItems.itemCount == 0){
+        if (pagingItems.itemCount == 0) {
             EmptyPage(
                 modifier = Modifier.fillMaxSize(),
                 emptyMsg = stringResource(id = R.string.no_star_bangumi)
             )
-        }else{
+        } else {
             LazyVerticalGrid(
                 contentPadding = PaddingValues(4.dp, 4.dp),
                 columns = GridCells.Adaptive(95.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
-            ){
+            ) {
                 items(
                     count = pagingItems.itemCount,
                 ) { index ->
                     pagingItems[index]?.let { star ->
-                        BangumiStarCard(item = star){
+                        BangumiStarCard(item = star) {
                             nav.navigationPlay(it.source, it.detailUrl)
                         }
                     }
                 }
                 when (pagingItems.loadState.append) {
                     is LoadState.Loading -> {
-                        item (
+                        item(
                             span = {
                                 // LazyGridItemSpanScope:
                                 // maxLineSpan
                                 GridItemSpan(maxLineSpan)
                             }
-                        ){
+                        ) {
                             LoadingPage(
                                 modifier = Modifier.fillMaxWidth(),
                             )
                         }
                     }
                     is LoadState.Error -> {
-                        item (
+                        item(
                             span = {
                                 // LazyGridItemSpanScope:
                                 // maxLineSpan
                                 GridItemSpan(maxLineSpan)
                             }
-                        ){
-                            val errorMsg = (pagingItems.loadState.append as? LoadState.Error)?.error?.message?: stringRes(
-                                R.string.net_error)
+                        ) {
+                            val errorMsg =
+                                (pagingItems.loadState.append as? LoadState.Error)?.error?.message
+                                    ?: stringRes(
+                                        R.string.net_error
+                                    )
                             ErrorPage(
                                 modifier = Modifier.fillMaxWidth(),
                                 errorMsg = errorMsg,
@@ -104,16 +108,19 @@ fun AnimMy(){
                         }
                     }
                     else -> {
-                        item (
+                        item(
                             span = {
                                 // LazyGridItemSpanScope:
                                 // maxLineSpan
                                 GridItemSpan(maxLineSpan)
                             }
-                        ){
-                            Text(modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(0.dp, 2.dp), textAlign = TextAlign.Center,text = stringResource(id = R.string.list_most_bottom)
+                        ) {
+                            Text(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(0.dp, 2.dp),
+                                textAlign = TextAlign.Center,
+                                text = stringResource(id = R.string.list_most_bottom)
                             )
                         }
                     }
@@ -128,8 +135,8 @@ fun AnimMy(){
 @Composable
 fun BangumiStarCard(
     item: BangumiStar,
-    onClick: (BangumiStar)->Unit,
-){
+    onClick: (BangumiStar) -> Unit,
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -141,10 +148,12 @@ fun BangumiStarCard(
         verticalArrangement = Arrangement.spacedBy(4.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(modifier = Modifier
-            .height(135.dp)
-            .width(95.dp)
-            .clip(RoundedCornerShape(8.dp))){
+        Box(
+            modifier = Modifier
+                .height(135.dp)
+                .width(95.dp)
+                .clip(RoundedCornerShape(8.dp))
+        ) {
 
             OkImage(
                 image = item.cover,
@@ -155,11 +164,18 @@ fun BangumiStarCard(
                     .clip(RoundedCornerShape(8.dp))
             )
 
-            val sourceText = AnimSourceFactory.label(item.source)?:item.source
+            val sourceText = AnimSourceFactory.label(item.source) ?: item.source
             Text(
+                fontSize = 13.sp,
                 text = sourceText,
                 color = MaterialTheme.colorScheme.onSecondary,
-                modifier = Modifier.background(MaterialTheme.colorScheme.secondary, RoundedCornerShape(0.dp, 0.dp, 8.dp, 0.dp)).padding(8.dp, 0.dp))
+                modifier = Modifier
+                    .background(
+                        MaterialTheme.colorScheme.secondary,
+                        RoundedCornerShape(0.dp, 0.dp, 8.dp, 0.dp)
+                    )
+                    .padding(8.dp, 0.dp)
+            )
 
         }
 
@@ -169,13 +185,13 @@ fun BangumiStarCard(
         Text(
             textAlign = TextAlign.Center,
             modifier = Modifier.width(95.dp),
-            text = "${item.name}${if(needEnter) "\n " else ""}",
+            text = "${item.name}${if (needEnter) "\n " else ""}",
             maxLines = 2,
             fontSize = MaterialTheme.typography.bodyMedium.fontSize,
             lineHeight = MaterialTheme.typography.bodyMedium.lineHeight,
             overflow = TextOverflow.Ellipsis,
             onTextLayout = {
-                if(it.lineCount < 2){
+                if (it.lineCount < 2) {
                     needEnter = true
                 }
             }
