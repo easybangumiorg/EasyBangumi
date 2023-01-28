@@ -3,6 +3,7 @@ package com.heyanle.easybangumi.ui.common.easy_player
 import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.media.AudioManager
 import android.util.AttributeSet
 import android.util.Log
@@ -93,6 +94,7 @@ class BaseEasyPlayerView :
                 ViewGroup.LayoutParams.MATCH_PARENT
             )
         )
+        realViewContainer.setBackgroundColor(Color.BLACK)
         val lp = FrameLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT
