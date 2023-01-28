@@ -7,13 +7,11 @@ import com.heyanle.lib_anim.entity.BangumiSummary
 import com.heyanle.lib_anim.utils.OkHttpUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.*
 import org.jsoup.Jsoup
-import java.lang.Exception
-import java.lang.IndexOutOfBoundsException
+import com.google.gson.JsonParser
 import java.net.URLDecoder
-import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.LinkedHashMap
+
 
 /**
  * Created by AyalaKaguya on 2023/1/24 21:22.
@@ -261,6 +259,39 @@ class CycdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
         }
     }
 
+    private fun saltParseUrl (salt: String):String {
+        val client = OkHttpClient().newBuilder().build()
+
+        val body: RequestBody = MultipartBody.Builder().setType(MultipartBody.FORM)
+            .addFormDataPart("url", salt)
+            .addFormDataPart("time", "1674837556")
+            .addFormDataPart("key", "533fcd74ffa5c3fbb99a45c593d369fa")
+            .build()
+
+        val request: Request = Request.Builder()
+            .url("https://player.cycdm01.top/api_config.php")
+            .method("POST", body)
+            .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Safari/537.36 Edg/93.0.961.52")
+            .addHeader("Accept", "*/*")
+            .addHeader("Host", "player.cycdm01.top")
+            .addHeader("Connection", "keep-alive")
+            .addHeader(
+                "Content-Type",
+                "multipart/form-data; boundary=--------------------------441235884103066496960501"
+            )
+            .build()
+
+        kotlin.runCatching {
+            val response = client.newCall(request).execute()
+            val jsonObject = JsonParser.parseString(response.body!!.string()).asJsonObject
+            return jsonObject.get("url").asString
+        }.getOrElse {
+            it.printStackTrace()
+        }
+
+        return salt
+    }
+
     override suspend fun getPlayUrl(
         bangumi: BangumiSummary,
         lineIndex: Int,
@@ -305,6 +336,10 @@ class CycdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
 
                 var result = playSecret.base64Decoded
                 result = URLDecoder.decode(result, "utf-8")
+
+                if (result.startsWith("cycdm")) {
+                    result = this@CycdmParser.saltParseUrl(result)
+                }
 
                 if (result.isNotEmpty())
                     return@withContext ISourceParser.ParserResult.Complete(
