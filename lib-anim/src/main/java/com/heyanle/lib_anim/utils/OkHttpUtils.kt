@@ -1,7 +1,9 @@
 package com.heyanle.lib_anim.utils
 
+import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody
 import java.security.SecureRandom
 import java.security.cert.CertificateException
 import java.security.cert.X509Certificate
@@ -28,6 +30,19 @@ object OkHttpUtils {
                 ua
             ).get().build()
         ).execute().body!!.string()
+    }
+
+    fun post(url: String, body: MultipartBody): String {
+        return okhttpClient.newCall(
+            Request.Builder().url(url)
+                .method("POST", body)
+                .addHeader("User-Agent", ua)
+                .build()
+        ).execute().body!!.string()
+    }
+
+    fun getPostFormBody(): MultipartBody.Builder {
+        return MultipartBody.Builder().setType(MultipartBody.FORM)
     }
 
     private fun createSSLSocketFactory(): SSLSocketFactory {
