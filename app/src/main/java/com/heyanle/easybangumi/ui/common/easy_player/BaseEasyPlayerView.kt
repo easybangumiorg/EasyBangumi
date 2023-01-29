@@ -137,7 +137,7 @@ class BaseEasyPlayerView :
         return res
     }
 
-    protected fun dispatchPlayerStateChange(playerState: Int) {
+    fun dispatchPlayerStateChange(playerState: Int) {
         mCurrentPlayerState = playerState
         runWithController {
             dispatchPlayerStateChange(playerState)
