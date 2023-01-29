@@ -26,6 +26,7 @@ import com.heyanle.easybangumi.player.PlayerTinyController
 import com.heyanle.easybangumi.ui.common.easy_player.EasyPlayerView
 import com.heyanle.easybangumi.utils.toast
 import com.heyanle.eplayer_core.constant.EasyPlayStatus
+import com.heyanle.eplayer_core.constant.EasyPlayerStatus
 import com.heyanle.lib_anim.entity.BangumiSummary
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
@@ -110,6 +111,8 @@ object BangumiPlayController {
         if (easyPlayerView != this.composeViewRes?.get()) {
             this.composeViewRes = WeakReference(easyPlayerView)
             PlayerController.playerControllerStatus.value?.let {
+                val playerState = if (easyPlayerView.basePlayerView.isFullScreen()) EasyPlayerStatus.PLAYER_FULL_SCREEN else EasyPlayerStatus.PLAYER_NORMAL
+                easyPlayerView.basePlayerView.dispatchPlayerStateChange(playerState)
                 easyPlayerView.basePlayerView.dispatchPlayStateChange(it)
             }
         }
