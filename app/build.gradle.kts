@@ -23,7 +23,8 @@ android {
             useSupportLibrary = true
         }
 
-        buildConfigField("String","APP_CENTER_SECRET", PrivateVlaue.APP_CENTER_SECRET)
+
+        buildConfigField("String",Config.APP_CENTER_SECRET, "\"${Config.getPrivateValue(Config.APP_CENTER_SECRET)}\"")
     }
 
     buildTypes {
