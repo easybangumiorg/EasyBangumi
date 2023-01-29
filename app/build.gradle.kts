@@ -22,6 +22,8 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        buildConfigField("String","APP_CENTER_SECRET", PrivateVlaue.APP_CENTER_SECRET)
     }
 
     buildTypes {

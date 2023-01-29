@@ -58,7 +58,7 @@ class BangumiApp : Application() {
         kotlin.runCatching {
             // https://appcenter.ms
             AppCenter.start(
-                this, "7885baf3-05b8-4148-a60d-1cff798608d2",
+                this, "",
                 Analytics::class.java, Crashes::class.java, Distribute::class.java
             )
         }.onFailure {
