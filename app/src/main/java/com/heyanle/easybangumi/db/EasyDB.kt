@@ -4,8 +4,10 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.heyanle.easybangumi.db.dao.BangumiHistoryDao
 import com.heyanle.easybangumi.db.dao.BangumiStarDao
 import com.heyanle.easybangumi.db.dao.SearchHistoryDao
+import com.heyanle.easybangumi.db.entity.BangumiHistory
 import com.heyanle.easybangumi.db.entity.BangumiStar
 import com.heyanle.easybangumi.db.entity.SearchHistory
 import com.heyanle.lib_anim.entity.Bangumi
@@ -19,8 +21,9 @@ import com.heyanle.lib_anim.entity.BangumiDetail
     entities = [
         SearchHistory::class,  // 搜索历史
         BangumiStar::class,    // 追番
+        BangumiHistory::class, // 观看历史
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -29,6 +32,9 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract fun bangumiStarDao(): BangumiStarDao
     val bangumiStar: BangumiStarDao by lazy { bangumiStarDao() }
+
+    abstract fun bangumiHistoryDao(): BangumiHistoryDao
+    val bangumiHistory: BangumiHistoryDao by lazy { bangumiHistoryDao() }
 }
 
 object EasyDB {

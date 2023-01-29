@@ -295,7 +295,8 @@ class StandardComponent : FrameLayout, IGestureComponent, SeekBar.OnSeekBarChang
                     binding.contentLayout.showWithAnim()
                     binding.ivController.hideWithAnim()
                     binding.progressBar.visibility = View.VISIBLE
-                    binding.progressBar.showWithAnim()
+                    binding.progressBar.alpha = 1.0f
+                    binding.progressBar.show()
                     refreshTimeUI(0L, 0L)
                     stopFadeOut()
 
@@ -303,7 +304,7 @@ class StandardComponent : FrameLayout, IGestureComponent, SeekBar.OnSeekBarChang
                 // 缓冲中
                 EasyPlayStatus.STATE_BUFFERING -> {
                     binding.root.visibility = View.VISIBLE
-                    binding.progressBar.showWithAnim()
+                    binding.progressBar.show()
                     binding.ivReplay.hideWithAnim()
                     if (isFullScreen()) {
                         binding.tvEpisode.showWithAnim()
@@ -331,7 +332,7 @@ class StandardComponent : FrameLayout, IGestureComponent, SeekBar.OnSeekBarChang
                 }
                 EasyPlayStatus.STATE_PLAYING -> {
                     binding.root.visibility = View.VISIBLE
-                    binding.progressBar.hideWithAnim()
+                    binding.progressBar.hide()
                     binding.ivReplay.hideWithAnim()
                     if (isFullScreen()) {
                         binding.tvEpisode.showWithAnim()
@@ -359,7 +360,7 @@ class StandardComponent : FrameLayout, IGestureComponent, SeekBar.OnSeekBarChang
                 }
                 EasyPlayStatus.STATE_PAUSED -> {
                     binding.root.visibility = View.VISIBLE
-                    binding.progressBar.hideWithAnim()
+                    binding.progressBar.hide()
                     binding.ivReplay.hideWithAnim()
                     if (isFullScreen()) {
                         binding.tvEpisode.showWithAnim()
@@ -409,7 +410,7 @@ class StandardComponent : FrameLayout, IGestureComponent, SeekBar.OnSeekBarChang
                         binding.ivLock.hideWithAnim()
                         binding.contentLayout.showWithAnim()
                         binding.ivController.hideWithAnim()
-                        binding.progressBar.hideWithAnim()
+                        binding.progressBar.hide()
                         refreshTimeUI(0L, 0L)
                         stopFadeOut()
                         binding.ivReplay.showWithAnim()
@@ -421,63 +422,67 @@ class StandardComponent : FrameLayout, IGestureComponent, SeekBar.OnSeekBarChang
     }
 
     private fun View.showWithAnim() {
-        post {
-            if (visibility == View.GONE) {
-                clearAnimation()
-                visibility = View.VISIBLE
-                alpha = 0f
-                animate().alpha(1f).setListener(object : Animator.AnimatorListener {
-                    override fun onAnimationStart(animation: Animator) {
-                    }
+        if (visibility == View.GONE) {
+            clearAnimation()
+            visibility = View.VISIBLE
+            alpha = 0f
+            animate().alpha(1f).setListener(object : Animator.AnimatorListener {
+                override fun onAnimationStart(animation: Animator) {
+                }
 
-                    override fun onAnimationEnd(animation: Animator) {
-                        alpha = 1f
+                override fun onAnimationEnd(animation: Animator) {
+                    alpha = 1f
 
-                    }
+                }
 
-                    override fun onAnimationCancel(animation: Animator) {
-                        alpha = 1f
-                    }
+                override fun onAnimationCancel(animation: Animator) {
+                    alpha = 1f
+                }
 
-                    override fun onAnimationRepeat(animation: Animator) {
-                    }
-                }).setDuration(100).start()
-            } else {
-                clearAnimation()
-                alpha = 1f
-            }
+                override fun onAnimationRepeat(animation: Animator) {
+                }
+            }).setDuration(100).start()
+        } else {
+            clearAnimation()
+            alpha = 1f
         }
 
     }
+    
+    private fun View.show(){
+        visibility = View.VISIBLE
+    }
+    
+    private fun View.hide(){
+        visibility = View.GONE
+    }
 
     private fun View.hideWithAnim() {
-        post {
-            if (visibility == View.VISIBLE) {
-                clearAnimation()
-                alpha = 1f
-                animate().alpha(0f).setListener(object : Animator.AnimatorListener {
-                    override fun onAnimationStart(animation: Animator) {
-                    }
+        if (visibility == View.VISIBLE) {
+            clearAnimation()
+            alpha = 1f
+            animate().alpha(0f).setListener(object : Animator.AnimatorListener {
+                override fun onAnimationStart(animation: Animator) {
+                }
 
-                    override fun onAnimationEnd(animation: Animator) {
-                        alpha = 0f
-                        visibility = View.GONE
+                override fun onAnimationEnd(animation: Animator) {
+                    alpha = 0f
+                    visibility = View.GONE
 
-                    }
+                }
 
-                    override fun onAnimationCancel(animation: Animator) {
-                        alpha = 0f
-                        visibility = View.GONE
-                    }
+                override fun onAnimationCancel(animation: Animator) {
+                    alpha = 0f
+                    visibility = View.GONE
+                }
 
-                    override fun onAnimationRepeat(animation: Animator) {
-                    }
-                }).setDuration(100).start()
-            } else {
-                visibility = View.GONE
-                clearAnimation()
-                alpha = 0f
-            }
+                override fun onAnimationRepeat(animation: Animator) {
+                }
+            }).setDuration(100).start()
+        } else {
+            visibility = View.GONE
+            clearAnimation()
+            alpha = 0f
         }
 
     }
@@ -488,6 +493,7 @@ class StandardComponent : FrameLayout, IGestureComponent, SeekBar.OnSeekBarChang
             "StandardComponent",
             "onProgressUpdate dur->$duration pos->$position isProgressSlide->$isProgressSlide isSeekBarTouching->$isSeekBarTouching"
         )
+        BangumiPlayController.trySaveHistory(position)
         if (!isProgressSlide && !isSeekBarTouching) {
             refreshTimeUI(duration, position)
             setSeekbarProgress(duration, position, container?.getBufferedPercentage() ?: 0)
@@ -704,7 +710,7 @@ class StandardComponent : FrameLayout, IGestureComponent, SeekBar.OnSeekBarChang
             show()
             stopFadeOut()
             stopProgressUpdate()
-            binding.progressBar.hideWithAnim()
+            binding.progressBar.hide()
             binding.ivController.hideWithAnim()
             seekTo(slidePosition)
             refreshTimeUI(duration, slidePosition)
