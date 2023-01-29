@@ -1,15 +1,13 @@
 package com.heyanle.easybangumi.ui.home.star
 
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
 import com.heyanle.easybangumi.db.EasyDB
 import com.heyanle.easybangumi.db.entity.BangumiStar
+import com.heyanle.easybangumi.ui.home.history.AnimHistoryViewModel
 import kotlinx.coroutines.launch
 
 /**
@@ -20,6 +18,7 @@ class AnimStarViewModel : ViewModel() {
 
     companion object {
         private val isRefresh = MutableLiveData(false)
+        private val refresh = isRefresh.distinctUntilChanged()
         fun refresh() {
             isRefresh.postValue(true)
         }
@@ -35,21 +34,24 @@ class AnimStarViewModel : ViewModel() {
         }
     }
 
+    fun refresh(){
+        curPager.value = getPager().flow.cachedIn(viewModelScope)
+    }
     init {
-        isRefresh.observeForever(observer)
+        refresh.observeForever(observer)
     }
 
     private fun getPager(): Pager<Int, BangumiStar> {
         return Pager(
             PagingConfig(pageSize = 10)
         ) {
-            EasyDB.database.bangumiStarDao().getAll()
+            EasyDB.database.bangumiStar.getAll()
         }
     }
 
     override fun onCleared() {
         super.onCleared()
-        isRefresh.removeObserver(observer)
+        refresh.removeObserver(observer)
     }
 
 }

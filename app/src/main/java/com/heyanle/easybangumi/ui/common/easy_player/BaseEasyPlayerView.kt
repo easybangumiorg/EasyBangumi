@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.media.AudioManager
+import android.os.Parcelable
 import android.util.AttributeSet
 import android.util.Log
 import android.view.Gravity
@@ -16,11 +17,13 @@ import android.widget.FrameLayout
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.drawToBitmap
 import androidx.media.AudioAttributesCompat
+import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.*
 import com.google.android.exoplayer2.video.VideoSize
+import com.heyanle.easybangumi.ui.player.BangumiPlayController
 import com.heyanle.eplayer_core.EasyPlayerManager
 import com.heyanle.eplayer_core.constant.EasyPlayStatus
 import com.heyanle.eplayer_core.constant.EasyPlayerStatus
@@ -46,7 +49,7 @@ class BaseEasyPlayerView :
     IPlayer,
     AudioFocusHelper.OnAudioFocusListener,
     View.OnKeyListener {
-    private var innerPlayer: Player? = null
+    private var innerPlayer: ExoPlayer? = null
     val surfaceView: SurfaceViewRender = SurfaceViewRender(context)
 
     private val realViewContainer = FrameLayout(context)
@@ -152,6 +155,15 @@ class BaseEasyPlayerView :
         }
         renderContainer.keepScreenOn = playState == EasyPlayStatus.STATE_PLAYING
         mCurrentPlayState = playState
+
+        if(playState == EasyPlayStatus.STATE_PLAYING) {
+            getCurrentPosition().let {
+                if(it != -1L){
+                    BangumiPlayController.trySaveHistory(it)
+                }
+            }
+
+        }
 
         runWithController {
             dispatchPlayStateChange(playState)
@@ -488,7 +500,7 @@ class BaseEasyPlayerView :
         return mCurrentPlayState == EasyPlayStatus.STATE_START_ABORT
     }
 
-    fun attachToPlayer(player: Player) {
+    fun attachToPlayer(player: ExoPlayer) {
         innerPlayer = player
         player.setVideoSurfaceView(surfaceView)
     }
@@ -576,6 +588,16 @@ class BaseEasyPlayerView :
         innerPlayer?.let {
             it.block()
         }
+    }
+
+    override fun onSaveInstanceState(): Parcelable? {
+        getCurrentPosition().let {
+            if(it != -1L){
+                BangumiPlayController.trySaveHistory(it)
+            }
+        }
+
+        return super.onSaveInstanceState()
     }
 
     constructor(context: Context) : super(context)

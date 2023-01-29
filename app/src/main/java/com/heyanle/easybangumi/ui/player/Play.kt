@@ -29,8 +29,10 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.heyanle.easybangumi.LocalNavController
 import com.heyanle.easybangumi.R
+import com.heyanle.easybangumi.navigationSearch
 import com.heyanle.easybangumi.player.PlayerController
 import com.heyanle.easybangumi.player.TinyStatusController
+import com.heyanle.easybangumi.source.AnimSourceFactory
 import com.heyanle.easybangumi.ui.common.*
 import com.heyanle.easybangumi.ui.common.easy_player.EasyPlayerView
 import com.heyanle.easybangumi.utils.openUrl
@@ -49,6 +51,7 @@ import kotlinx.coroutines.launch
 fun Play(
     source: String,
     detail: String,
+    enterData: BangumiPlayController.EnterData? = null,
 ) {
 
     val nav = LocalNavController.current
@@ -57,7 +60,7 @@ fun Play(
         val old = BangumiPlayController.curAnimPlayViewModel.value?.bangumiSummary
         Log.d("Play", "bangumi(source=${source}, detail=${detail})")
         if (old?.source != source || old.detailUrl != detail) {
-            BangumiPlayController.newBangumi(BangumiSummary(source, detail), nav)
+            BangumiPlayController.newBangumi(BangumiSummary(source, detail), enterData)
         }
         TinyStatusController.onPlayScreenLaunch()
 
@@ -85,14 +88,16 @@ fun Play(
     val ms = playMsgStatus
     val ds = detailStatus
     LaunchedEffect(key1 = ps, key2 = ms, key3 = ds) {
+        Log.d("Play", "root launchedEffect ${ps?.javaClass?.simpleName}  ${ms?.javaClass?.simpleName} ${ds?.javaClass?.simpleName}")
         if (ms != null && ms is PlayMsgController.PlayMsgStatus.Completely) {
-            if (ps != null && (ps is AnimPlayItemController.PlayerStatus.None)) {
-                if (ds != null && ds is DetailController.DetailStatus.Completely) {
+            if (ds != null && ds is DetailController.DetailStatus.Completely) {
+                if (ps != null && (ps is AnimPlayItemController.PlayerStatus.None)) {
                     val curLines = ps.sourceIndex
                     val curEpi = ps.episode
-                    vm.changePlayer(curLines, curEpi)
+                    vm.onShow(curLines, curEpi)
+                }else if(ps != null && (ps is AnimPlayItemController.PlayerStatus.Play)){
+                    BangumiPlayController.trySaveHistory(-1)
                 }
-
             }
         }
     }
@@ -330,11 +335,13 @@ fun LazyGridScope.detail(
     detailStatus: DetailController.DetailStatus
 ) {
 
+
     item(span = {
         // LazyGridItemSpanScope:
         // maxLineSpan
         GridItemSpan(maxLineSpan)
     }) {
+        val nav = LocalNavController.current
         Box(
             modifier = Modifier
                 .padding(8.dp)
@@ -359,14 +366,36 @@ fun LazyGridScope.detail(
                                 .height(135.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            OkImage(
+                            Box(
                                 modifier = Modifier
                                     .height(135.dp)
                                     .width(95.dp)
-                                    .clip(RoundedCornerShape(8.dp)),
-                                image = detailStatus.bangumiDetail.cover,
-                                contentDescription = detailStatus.bangumiDetail.name
-                            )
+                                    .clip(RoundedCornerShape(8.dp))
+                            ) {
+
+                                OkImage(
+                                    image = detailStatus.bangumiDetail.cover,
+                                    contentDescription = detailStatus.bangumiDetail.name,
+                                    modifier = Modifier
+                                        .height(135.dp)
+                                        .width(95.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                )
+
+                                val sourceText = AnimSourceFactory.label(detailStatus.bangumiDetail.source) ?: detailStatus.bangumiDetail.source
+                                Text(
+                                    fontSize = 13.sp,
+                                    text = sourceText,
+                                    color = MaterialTheme.colorScheme.onSecondary,
+                                    modifier = Modifier
+                                        .background(
+                                            MaterialTheme.colorScheme.secondary,
+                                            RoundedCornerShape(0.dp, 0.dp, 8.dp, 0.dp)
+                                        )
+                                        .padding(8.dp, 0.dp)
+                                )
+
+                            }
                             Column(
                                 modifier = Modifier.weight(1.0f),
                                 verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -422,6 +451,24 @@ fun LazyGridScope.detail(
                                 Text(
                                     text = stringResource(id = textId),
                                     color = if (isStar) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onBackground,
+                                    fontSize = 12.sp
+                                )
+                            }
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(CircleShape)
+                                    .fillMaxHeight()
+                                    .clickable {
+                                        // "还在支持".moeSnackBar()
+                                        nav.navigationSearch(detailStatus.bangumiDetail.name)
+                                    },
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Icon(Icons.Filled.Search, stringResource(id = R.string.search_same_bangumi))
+                                Text(
+                                    text = stringResource(id = R.string.search_same_bangumi),
                                     fontSize = 12.sp
                                 )
                             }

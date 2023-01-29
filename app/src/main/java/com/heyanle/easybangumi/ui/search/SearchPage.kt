@@ -8,6 +8,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.with
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -40,6 +41,7 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.heyanle.easybangumi.LocalNavController
 import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.navigationPlay
+import com.heyanle.easybangumi.source.AnimSourceFactory
 import com.heyanle.easybangumi.ui.common.*
 import com.heyanle.easybangumi.utils.stringRes
 import com.heyanle.lib_anim.ISearchParser
@@ -281,14 +283,36 @@ fun BangumiSearchItem(
             .then(modifier),
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        OkImage(
-            image = bangumi.cover,
-            contentDescription = bangumi.name,
+        Box(
             modifier = Modifier
-                .height(120.dp)
-                .width(90.dp)
+                .height(135.dp)
+                .width(95.dp)
                 .clip(RoundedCornerShape(8.dp))
-        )
+        ) {
+            val sourceText = AnimSourceFactory.label(bangumi.source) ?: bangumi.source
+            OkImage(
+                image = bangumi.cover,
+                contentDescription = bangumi.name,
+                modifier = Modifier
+                    .height(135.dp)
+                    .width(95.dp)
+                    .clip(RoundedCornerShape(8.dp))
+            )
+
+            Text(
+                fontSize = 13.sp,
+                text = sourceText,
+                color = MaterialTheme.colorScheme.onSecondary,
+                modifier = Modifier
+                    .background(
+                        MaterialTheme.colorScheme.secondary,
+                        RoundedCornerShape(0.dp, 0.dp, 8.dp, 0.dp)
+                    )
+                    .padding(8.dp, 0.dp)
+            )
+
+        }
+
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {

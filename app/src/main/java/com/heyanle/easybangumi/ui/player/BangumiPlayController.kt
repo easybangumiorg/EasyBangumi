@@ -21,17 +21,18 @@ import com.heyanle.easybangumi.BangumiApp
 import com.heyanle.easybangumi.MainActivity
 import com.heyanle.easybangumi.NAV
 import com.heyanle.easybangumi.PLAY
+import com.heyanle.easybangumi.db.EasyDB
+import com.heyanle.easybangumi.db.entity.BangumiHistory
 import com.heyanle.easybangumi.player.PlayerController
 import com.heyanle.easybangumi.player.PlayerTinyController
 import com.heyanle.easybangumi.ui.common.easy_player.EasyPlayerView
+import com.heyanle.easybangumi.ui.home.history.AnimHistoryViewModel
 import com.heyanle.easybangumi.utils.toast
 import com.heyanle.eplayer_core.constant.EasyPlayStatus
 import com.heyanle.eplayer_core.constant.EasyPlayerStatus
 import com.heyanle.lib_anim.entity.BangumiSummary
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 import java.net.URLEncoder
 
@@ -41,7 +42,16 @@ import java.net.URLEncoder
  */
 object BangumiPlayController {
 
+    data class EnterData(
+        val sourceIndex: Int = -1,
+        val episode: Int = -1,
+        val startProcess: Long = -1L,
+    ){}
+
+    private val scope = MainScope()
     private var lastScope = MainScope()
+
+    private var lastProgress = -1L
 
     val lastPauseLevel = mutableStateOf(0)
     private var composeViewRes: WeakReference<EasyPlayerView>? = null
@@ -68,11 +78,13 @@ object BangumiPlayController {
         }
     }
 
-    fun newBangumi(bangumiSummary: BangumiSummary, navController: NavController) {
-        val new = getAnimPlayViewModel(bangumiSummary)
+    fun newBangumi(bangumiSummary: BangumiSummary, enterData: EnterData? = null) {
+
+        val new = getAnimPlayViewModel(bangumiSummary, enterData)
         if (new != curAnimPlayViewModel.value) {
             curAnimPlayViewModel.postValue(new)
         }
+        lastProgress = enterData?.startProcess ?: -1L
         val del = URLEncoder.encode(bangumiSummary.detailUrl, "utf-8")
 
         val deepLinkIntent = Intent(
@@ -97,13 +109,14 @@ object BangumiPlayController {
 
     }
 
-    fun getAnimPlayViewModel(bangumiSummary: BangumiSummary): AnimPlayItemController {
+    fun getAnimPlayViewModel(bangumiSummary: BangumiSummary, enterData: EnterData? = null): AnimPlayItemController {
         val cache = animPlayViewModelCache[bangumiSummary]
         if (cache == null) {
-            val n = AnimPlayItemController(bangumiSummary)
+            val n = AnimPlayItemController(bangumiSummary, enterData)
             animPlayViewModelCache.put(bangumiSummary, n)
             return n
         }
+        cache.onNewEnter(enterData)
         return cache
     }
 
@@ -130,6 +143,45 @@ object BangumiPlayController {
 
     var lastPlayerStatus: AnimPlayItemController.PlayerStatus.Play? = null
 
+    fun trySaveHistory(process: Long = -1){
+
+        val playVM = curAnimPlayViewModel.value ?: return
+        val ds = playVM.detailController.detailFlow.value
+        val ms = playVM.playMsgController.flow.value
+        val ps = playVM.playerStatus.value
+        Log.d("BangumiPlayController", "trySave ${ds.javaClass.simpleName} ${ms.javaClass.simpleName} ${ps.javaClass.simpleName} ${ps.sourceIndex} ${ps.episode} $process")
+        if(
+            ds is DetailController.DetailStatus.Completely &&
+            ms is PlayMsgController.PlayMsgStatus.Completely &&
+            ps is AnimPlayItemController.PlayerStatus.Play) {
+            scope.launch {
+                withContext(Dispatchers.IO){
+                    val lineTitle = kotlin.runCatching {
+                        ms.playMsg.keys.toList()[ps.sourceIndex]
+                    }.getOrElse { ""  }
+                    val episodeTitle = kotlin.runCatching {
+                        ms.playMsg[lineTitle]?.get(ps.episode) ?: ""
+                    }.getOrElse { "" }
+                    val history = BangumiHistory(
+                        name = ds.bangumiDetail.name,
+                        cover = ds.bangumiDetail.cover,
+                        source = ds.bangumiDetail.source,
+                        detailUrl = ds.bangumiDetail.detailUrl,
+                        intro = ds.bangumiDetail.intro,
+                        lastLinesIndex = ps.sourceIndex,
+                        lastLineTitle = lineTitle,
+                        lastEpisodeIndex = ps.episode,
+                        lastEpisodeTitle = episodeTitle,
+                        lastProcessTime = process,
+                        createTime = System.currentTimeMillis()
+                    )
+                    EasyDB.database.bangumiHistory.insertOrModify(history)
+                    AnimHistoryViewModel.refresh()
+                }
+            }
+        }
+    }
+
     init {
         PlayerController.playerControllerStatus.observeForever { state ->
             this.composeViewRes?.get()?.basePlayerView?.dispatchPlayStateChange(state)
@@ -145,56 +197,79 @@ object BangumiPlayController {
             }
         }
         curPlayerStatus.observeForever {
-            when (it) {
-                is AnimPlayItemController.PlayerStatus.Loading -> {
-                    if (PlayerTinyController.isTinyMode) {
-                        PlayerTinyController.tinyPlayerView.basePlayerView.dispatchPlayStateChange(
-                            EasyPlayStatus.STATE_PREPARING
-                        )
+            scope.launch {
+                when (it) {
+                    is AnimPlayItemController.PlayerStatus.Loading -> {
+                        if (PlayerTinyController.isTinyMode) {
+                            PlayerTinyController.tinyPlayerView.basePlayerView.dispatchPlayStateChange(
+                                EasyPlayStatus.STATE_PREPARING
+                            )
+                        }
+                        if(lastProgress == -1L){
+                            val vm = curAnimPlayViewModel.value ?: return@launch
+                            lastProgress = withContext(Dispatchers.IO){
+                                EasyDB.database.bangumiHistory.getFromBangumiSummary(vm.bangumiSummary.source, vm.bangumiSummary.detailUrl)
+                                    ?.lastProcessTime ?: 0
+                            }
+                        }
                     }
-                }
-                is AnimPlayItemController.PlayerStatus.Play -> {
-                    Log.d("BangumiPlayController", it.uri)
-                    if (PlayerTinyController.isTinyMode) {
-                        //PlayerTinyController.tinyPlayerView.basePlayerView.refreshStateOnce()
+                    is AnimPlayItemController.PlayerStatus.Play -> {
+                        if(lastProgress == -1L){
+                            val vm = curAnimPlayViewModel.value ?: return@launch
+                            lastProgress = withContext(Dispatchers.IO){
+                                EasyDB.database.bangumiHistory.getFromBangumiSummary(vm.bangumiSummary.source, vm.bangumiSummary.detailUrl)
+                                    ?.lastProcessTime ?: 0
+                            }
+                        }
+                        Log.d("BangumiPlayController", it.uri)
+                        val vm = curAnimPlayViewModel.value ?: return@launch
+                        if (PlayerTinyController.isTinyMode) {
+                            //PlayerTinyController.tinyPlayerView.basePlayerView.refreshStateOnce()
+                        }
+                        if (lastPlayerStatus?.uri != it.uri || lastPlayerStatus?.type != it.type) {
+                            val defaultDataSourceFactory =
+                                DefaultDataSource.Factory(BangumiApp.INSTANCE)
+                            val dataSourceFactory: DataSource.Factory = DefaultDataSource.Factory(
+                                BangumiApp.INSTANCE,
+                                defaultDataSourceFactory
+                            )
+                            val media = when (it.type) {
+                                C.CONTENT_TYPE_DASH -> DashMediaSource.Factory(dataSourceFactory)
+                                    .createMediaSource(MediaItem.fromUri(it.uri))
+                                C.CONTENT_TYPE_HLS -> HlsMediaSource.Factory(dataSourceFactory)
+                                    .createMediaSource(
+                                        MediaItem.fromUri(it.uri)
+                                    )
+                                else -> ProgressiveMediaSource.Factory(dataSourceFactory)
+                                    .createMediaSource(
+                                        MediaItem.fromUri(it.uri)
+                                    )
+                            }
+                            Log.d("BangumiPlayController", "onPlay $lastProgress")
+                            if(lastProgress > 0){
+                                PlayerController.setMediaSource(media, lastProgress)
+                            }else{
+                                PlayerController.setMediaSource(media)
+                            }
+                            lastProgress = -1
+                            PlayerController.prepare()
+                        }
+                        lastPlayerStatus = it
+
                     }
-                    if (lastPlayerStatus?.uri != it.uri || lastPlayerStatus?.type != it.type) {
-                        val defaultDataSourceFactory =
-                            DefaultDataSource.Factory(BangumiApp.INSTANCE)
-                        val dataSourceFactory: DataSource.Factory = DefaultDataSource.Factory(
-                            BangumiApp.INSTANCE,
-                            defaultDataSourceFactory
-                        )
-                        val media = when (it.type) {
-                            C.CONTENT_TYPE_DASH -> DashMediaSource.Factory(dataSourceFactory)
-                                .createMediaSource(MediaItem.fromUri(it.uri))
-                            C.CONTENT_TYPE_HLS -> HlsMediaSource.Factory(dataSourceFactory)
-                                .createMediaSource(
-                                    MediaItem.fromUri(it.uri)
-                                )
-                            else -> ProgressiveMediaSource.Factory(dataSourceFactory)
-                                .createMediaSource(
-                                    MediaItem.fromUri(it.uri)
-                                )
+                    is AnimPlayItemController.PlayerStatus.Error -> {
+                        if (PlayerTinyController.isTinyMode) {
+                            it.errorMsg.toast()
+                            PlayerTinyController.dismissTiny()
+                            PlayerController.exoPlayer.stop()
                         }
 
-                        PlayerController.setMediaSource(media)
-                        PlayerController.prepare()
                     }
-                    lastPlayerStatus = it
-                }
-                is AnimPlayItemController.PlayerStatus.Error -> {
-                    if (PlayerTinyController.isTinyMode) {
-                        it.errorMsg.toast()
-                        PlayerTinyController.dismissTiny()
-                        PlayerController.exoPlayer.stop()
+                    else -> {
                     }
-
-                }
-                else -> {
-
                 }
             }
+
         }
     }
 
