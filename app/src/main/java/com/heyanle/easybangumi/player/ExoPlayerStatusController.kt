@@ -62,6 +62,7 @@ class ExoPlayerStatusController(
             _playerControllerStatus.postValue(EasyPlayStatus.STATE_ERROR)
             return
         }
+        Log.d("ExoPlayerController", "dispatchStatus ${exoPlayer.playbackState} ${exoPlayer.playWhenReady}")
         when (exoPlayer.playbackState) {
             Player.STATE_IDLE -> {
                 _playerControllerStatus.postValue(EasyPlayStatus.STATE_IDLE)

@@ -57,7 +57,12 @@ object PlayerController {
     val videoSizeStatus: LiveData<VideoSize> = stateController.videoSizeStatus
 
     fun setMediaSource(source: MediaSource) {
-        exoPlayer.setMediaSource(source)
+        exoPlayer.setMediaSource(source, true)
+        stateController.dispatchIdle()
+    }
+
+    fun setMediaSource(source: MediaSource, progress: Long) {
+        exoPlayer.setMediaSource(source, progress)
         stateController.dispatchIdle()
     }
 

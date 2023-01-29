@@ -2,13 +2,15 @@ package com.heyanle.easybangumi.ui.player
 
 import android.util.Log
 import com.heyanle.easybangumi.R
+import com.heyanle.easybangumi.db.EasyDB
+import com.heyanle.easybangumi.db.entity.BangumiHistory
 import com.heyanle.easybangumi.source.AnimSourceFactory
+import com.heyanle.easybangumi.ui.home.history.AnimHistoryViewModel
 import com.heyanle.easybangumi.utils.stringRes
+import com.heyanle.lib_anim.entity.BangumiDetail
 import com.heyanle.lib_anim.entity.BangumiSummary
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 
 /**
  * Created by HeYanLe on 2023/1/11 16:36.
@@ -16,6 +18,7 @@ import kotlinx.coroutines.launch
  */
 class AnimPlayItemController(
     val bangumiSummary: BangumiSummary,
+    var enterData: BangumiPlayController.EnterData? = null,
 ) {
 
     val scope = MainScope()
@@ -56,17 +59,21 @@ class AnimPlayItemController(
 
     // 事件
     sealed class PlayerEvent {
-        class None(val lineIndex: Int, val episode: Int) : PlayerEvent()
+        object None : PlayerEvent()
         class ChangePlay(val lineIndex: Int, val episode: Int) : PlayerEvent()
         class ChangeLine(val lineIndex: Int) : PlayerEvent()
     }
 
-
     private val eventFlow = MutableStateFlow<PlayerEvent>(
-        PlayerEvent.None(0, 0)
+        PlayerEvent.None
     )
 
-    private val _playerStatus = MutableStateFlow<PlayerStatus>(PlayerStatus.None(0, 0))
+    private val _playerStatus = MutableStateFlow<PlayerStatus>(
+        PlayerStatus.None(
+            enterData?.sourceIndex ?: -1,
+            enterData?.episode ?: -1
+        )
+    )
     val playerStatus: StateFlow<PlayerStatus> = _playerStatus
 
     init {
@@ -74,10 +81,18 @@ class AnimPlayItemController(
             playMsgController.init()
         }
         scope.launch {
+            detailController.init()
+        }
+        scope.launch {
             eventFlow.collectLatest { event ->
                 when (event) {
                     is PlayerEvent.None -> {
-                        _playerStatus.emit(PlayerStatus.None(event.lineIndex, event.episode))
+                        _playerStatus.emit(
+                            PlayerStatus.None(
+                                enterData?.sourceIndex ?: -1,
+                                enterData?.episode ?: -1
+                            )
+                        )
                     }
                     is PlayerEvent.ChangePlay -> {
                         curEpisode[event.lineIndex] = event.episode
@@ -96,17 +111,19 @@ class AnimPlayItemController(
                                         )
                                     )
                                 }?.error {
-                                _playerStatus.emit(
-                                    PlayerStatus.Error(
-                                        event.lineIndex,
-                                        event.episode,
-                                        if (it.isParserError) stringRes(
-                                            R.string.source_error
-                                        ) else stringRes(R.string.loading_error),
-                                        it.throwable
+                                    it.throwable.printStackTrace()
+                                    _playerStatus.emit(
+
+                                        PlayerStatus.Error(
+                                            event.lineIndex,
+                                            event.episode,
+                                            if (it.isParserError) stringRes(
+                                                R.string.source_error
+                                            ) else stringRes(R.string.loading_error),
+                                            it.throwable
+                                        )
                                     )
-                                )
-                            }
+                                }
                                 ?: _playerStatus.emit(
                                     PlayerStatus.Error(
                                         event.lineIndex, event.episode, stringRes(
@@ -157,8 +174,60 @@ class AnimPlayItemController(
 
     fun changePlayer(lineIndex: Int, episode: Int) {
         scope.launch {
-            eventFlow.emit(PlayerEvent.ChangePlay(lineIndex, episode))
+            if(lineIndex == -1){
+                eventFlow.emit(PlayerEvent.ChangePlay(0, 0))
+            }else if(episode == -1){
+                eventFlow.emit(PlayerEvent.ChangePlay(lineIndex, 0))
+            }else{
+                eventFlow.emit(PlayerEvent.ChangePlay(lineIndex, episode))
+            }
 
+
+
+        }
+    }
+
+
+    // 当 番剧详情 和 番剧播放列表 都加载完 并且 播放状态为 None 时第一个调用
+    fun onShow(lineIndex: Int, episode: Int) {
+        Log.d("AnimPlayItemController", "onShow $lineIndex $episode")
+        if (lineIndex != -1 && episode != -1) {
+            changePlayer(lineIndex, episode)
+            return
+        }
+        scope.launch {
+            val history = withContext(Dispatchers.IO) {
+                EasyDB.database.bangumiHistory.getFromBangumiSummary(
+                    bangumiSummary.source,
+                    bangumiSummary.detailUrl
+                )
+            }
+            if (history == null) {
+                eventFlow.emit(
+                    PlayerEvent.ChangePlay(
+                        if (lineIndex == -1) 0 else lineIndex,
+                        if (episode == -1) 0 else episode
+                    )
+                )
+            } else {
+                if (lineIndex == -1) {
+                    eventFlow.emit(
+                        PlayerEvent.ChangePlay(
+                            history.lastLinesIndex,
+                            history.lastEpisodeIndex
+                        )
+                    )
+                } else {
+                    eventFlow.emit(PlayerEvent.ChangePlay(lineIndex, 0))
+                }
+            }
+        }
+    }
+
+    fun onNewEnter(enterData: BangumiPlayController.EnterData?) {
+        this.enterData = enterData
+        if (enterData != null) {
+            changePlayer(enterData.sourceIndex, enterData.episode)
         }
     }
 

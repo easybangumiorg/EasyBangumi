@@ -29,17 +29,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -62,6 +58,8 @@ import com.heyanle.easybangumi.LocalNavController
 import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.navigationPlay
 import com.heyanle.easybangumi.ui.common.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
  * Created by HeYanLe on 2023/1/9 21:29.
@@ -78,7 +76,7 @@ fun AnimHome() {
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
+@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun AnimHomePage(
     vm: AnimHomeViewModel
@@ -113,84 +111,105 @@ fun AnimHomePage(
             lastVisibleItem.index == lazyListState.layoutInfo.totalItemsCount - 1
         }
     }
+    val scope = rememberCoroutineScope()
     Log.d("AnimHome", "label not empty")
-    ScrollHeaderBox(
-        canScroll = {
-            if (isHeaderShowForever) {
-                false
-            } else {
-                !(it.y < 0 && endReached)
-            }
-        },
-        modifier = Modifier.fillMaxSize(),
-        header = { dp ->
-            KeyTabRow(
-                modifier = Modifier.offset(0.dp, dp),
-                selectedTabIndex = sta.curIndex,
-                textList = labels,
-                onItemClick = {
-                    vm.changeHomeSource(it)
-                })
-        },
-        content = {
-            AnimatedContent(
-                targetState = sta,
-                transitionSpec = {
-                    fadeIn(animationSpec = tween(300, delayMillis = 300)) with
-                            fadeOut(animationSpec = tween(300, delayMillis = 0))
-                },
-            ) { stat ->
-                when (stat) {
-                    is AnimHomeViewModel.HomeAnimState.Loading -> {
-                        LaunchedEffect(key1 = Unit) {
-                            isHeaderShowForever = true
-                        }
+    var refreshing by remember { mutableStateOf(false) }
+    val state = rememberPullRefreshState(refreshing, onRefresh = {
+        scope.launch {
+            refreshing = true
+            vm.refresh()
+            delay(500)
+            refreshing = false
+        }
 
-                        LoadingPage(
-                            modifier = Modifier
-                                .fillMaxSize()
-                        )
-                    }
-
-                    is AnimHomeViewModel.HomeAnimState.Completely -> {
-                        LaunchedEffect(key1 = Unit) {
-                            isHeaderShowForever = false
-                        }
-                        LazyColumn(
-                            modifier = Modifier
-                                .fillMaxSize(),
-                            contentPadding = it,
-                            verticalArrangement = Arrangement.spacedBy(4.dp),
-                            state = lazyListState
-                        ) {
-                            animHomePage(state = stat)
-                        }
-                    }
-
-                    is AnimHomeViewModel.HomeAnimState.Error -> {
-                        LaunchedEffect(key1 = Unit) {
-                            isHeaderShowForever = true
-                        }
-                        ErrorPage(
-                            modifier = Modifier
-                                .fillMaxSize(),
-                            errorMsg = if (stat.error.isParserError) stat.error.throwable.message
-                                ?: "" else stringResource(id = R.string.net_error),
-                            clickEnable = true,
-                            onClick = {
-                                vm.refresh()
-                            },
-                            other = {
-                                Text(text = stringResource(id = R.string.click_to_retry))
+    })
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .pullRefresh(state)) {
+        ScrollHeaderBox(
+            canScroll = {
+                if (isHeaderShowForever) {
+                    false
+                } else {
+                    !(it.y < 0 && endReached)
+                }
+            },
+            modifier = Modifier.fillMaxSize(),
+            header = { dp ->
+                KeyTabRow(
+                    modifier = Modifier.offset(0.dp, dp),
+                    selectedTabIndex = sta.curIndex,
+                    textList = labels,
+                    onItemClick = {
+                        vm.changeHomeSource(it)
+                    })
+            },
+            content = {
+                AnimatedContent(
+                    targetState = sta,
+                    transitionSpec = {
+                        fadeIn(animationSpec = tween(300, delayMillis = 300)) with
+                                fadeOut(animationSpec = tween(300, delayMillis = 0))
+                    },
+                ) { stat ->
+                    when (stat) {
+                        is AnimHomeViewModel.HomeAnimState.Loading -> {
+                            LaunchedEffect(key1 = Unit) {
+                                isHeaderShowForever = true
                             }
-                        )
+
+                            LoadingPage(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                            )
+                        }
+
+                        is AnimHomeViewModel.HomeAnimState.Completely -> {
+                            LaunchedEffect(key1 = Unit) {
+                                isHeaderShowForever = false
+                            }
+                            LazyColumn(
+                                modifier = Modifier
+                                    .fillMaxSize(),
+                                contentPadding = it,
+                                verticalArrangement = Arrangement.spacedBy(4.dp),
+                                state = lazyListState
+                            ) {
+                                animHomePage(state = stat)
+                            }
+
+                        }
+
+                        is AnimHomeViewModel.HomeAnimState.Error -> {
+                            LaunchedEffect(key1 = Unit) {
+                                isHeaderShowForever = true
+                            }
+                            ErrorPage(
+                                modifier = Modifier
+                                    .fillMaxSize(),
+                                errorMsg = if (stat.error.isParserError) stat.error.throwable.message
+                                    ?: "" else stringResource(id = R.string.net_error),
+                                clickEnable = true,
+                                onClick = {
+                                    vm.refresh()
+                                },
+                                other = {
+                                    Text(text = stringResource(id = R.string.click_to_retry))
+                                }
+                            )
+                        }
+                        else -> {}
                     }
-                    else -> {}
                 }
             }
-        }
-    )
-    Box(modifier = Modifier) {
+        )
+        PullRefreshIndicator(
+            refreshing,
+            state,
+            Modifier.align(Alignment.TopCenter),
+            backgroundColor = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.secondary
+        )
         FastScrollToTopFab(listState = lazyListState)
     }
 }

@@ -94,5 +94,9 @@
 
     <string name="replay_error">重播失败 QAQ，请手动选集</string>
 
+    <string name="last_episode_title">上次看到： %1$s</string>
+
+    <string name="search_same_bangumi">搜索同名番</string>
+
 
 </resources>
