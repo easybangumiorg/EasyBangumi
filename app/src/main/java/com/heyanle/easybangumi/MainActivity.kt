@@ -12,8 +12,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.navigation.NavHostController
 import com.heyanle.easybangumi.player.TinyStatusController
 import com.heyanle.easybangumi.theme.EasyTheme
 import com.heyanle.easybangumi.ui.common.MoeSnackBar

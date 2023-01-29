@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi
 
 import android.app.Application
+import android.util.Log
 import com.heyanle.easy_crasher.CrashHandler
 import com.heyanle.easybangumi.db.EasyDB
 import com.heyanle.easybangumi.source.AnimSourceFactory
@@ -57,12 +58,16 @@ class BangumiApp : Application() {
     private fun initAppCenter() {
         kotlin.runCatching {
             // https://appcenter.ms
-            AppCenter.start(
-                this, "",
-                Analytics::class.java, Crashes::class.java, Distribute::class.java
-            )
-            // 禁用自动更新 使用手动更新
-            Distribute.disableAutomaticCheckForUpdate()
+            val sc = BuildConfig.APP_CENTER_SECRET
+            Log.d("BangumiApp", "app center secret -> $sc")
+            if(sc.isNotEmpty()){
+                AppCenter.start(
+                    this, sc,
+                    Analytics::class.java, Crashes::class.java, Distribute::class.java
+                )
+                // 禁用自动更新 使用手动更新
+                Distribute.disableAutomaticCheckForUpdate()
+            }
         }.onFailure {
             it.printStackTrace()
         }
