@@ -61,6 +61,8 @@ class BangumiApp : Application() {
                 this, "",
                 Analytics::class.java, Crashes::class.java, Distribute::class.java
             )
+            // 禁用自动更新 使用手动更新
+            Distribute.disableAutomaticCheckForUpdate()
         }.onFailure {
             it.printStackTrace()
         }
