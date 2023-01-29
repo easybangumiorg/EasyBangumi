@@ -16,6 +16,7 @@
         android:icon="@mipmap/app_logo"
         android:label="@string/app_name"
         android:supportsRtl="true"
+        android:screenOrientation="portrait"
         android:theme="@style/Theme.EasyBangumi"
         tools:targetApi="31">
         <activity
