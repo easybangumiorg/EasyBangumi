@@ -89,6 +89,10 @@
     <string name="github">作者</string>
     <string name="qq_groud">QQ群</string>
 
+    <string name="version">当前版本</string>
+
+    <string name="open_source_url">打开原网站</string>
+
     <string name="speed">倍速</string>
     <string name="episode">选集</string>
 

@@ -143,7 +143,7 @@ fun Home(
         content = { padding ->
 
             Log.d("Home", pagerState.currentPage.toString())
-            SideEffect {
+            LaunchedEffect(key1 = pagerState.currentPage){
                 animInitialPage = pagerState.currentPage
             }
 

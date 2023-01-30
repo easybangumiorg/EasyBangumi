@@ -11,6 +11,7 @@ import android.view.WindowManager
 import com.heyanle.easybangumi.BangumiApp
 import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.ui.common.easy_player.TinyEasyPlayerView
+import com.heyanle.easybangumi.ui.player.BangumiPlayController
 import com.heyanle.easybangumi.utils.OverlayHelper
 import com.heyanle.easybangumi.utils.dip2px
 import com.heyanle.easybangumi.utils.stringRes
@@ -59,6 +60,7 @@ object PlayerTinyController {
                     PlayerController.exoPlayer.playWhenReady = playWhenReady
                     tinyPlayerView.basePlayerView.attachToPlayer(PlayerController.exoPlayer)
                 }
+                BangumiPlayController.onNewTinyComposeView(tinyPlayerView.basePlayerView)
             }.onFailure { err ->
                 isTinyMode = false
                 err.printStackTrace()

@@ -18,12 +18,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.heyanle.easybangumi.BuildConfig
 import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.player.TinyStatusController
 import com.heyanle.easybangumi.theme.DarkMode
 import com.heyanle.easybangumi.theme.EasyThemeController
 import com.heyanle.easybangumi.theme.EasyThemeMode
 import com.heyanle.easybangumi.theme.getColorScheme
+import com.heyanle.easybangumi.ui.common.OkImage
 import com.heyanle.easybangumi.ui.common.moeSnackBar
 import com.heyanle.easybangumi.utils.OverlayHelper
 import com.heyanle.easybangumi.utils.stringRes
@@ -45,7 +47,8 @@ fun SettingPage() {
             .verticalScroll(rememberScrollState())
     ) {
         ThemeSettingCard()
-        // TinySettingCard()
+        TinySettingCard()
+        Author()
         About()
     }
 
@@ -366,13 +369,14 @@ fun About(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    Icons.Filled.People,
-                    contentDescription = stringResource(id = R.string.author)
+                    Icons.Filled.AutoAwesome,
+                    contentDescription = stringResource(id = R.string.version)
                 )
                 Spacer(modifier = Modifier.size(16.dp))
-                Text(text = stringResource(id = R.string.author))
+                Text(text = stringResource(id = R.string.version))
             }
-            Text(text = "何言")
+            Text(text = BuildConfig.VERSION_NAME)
+
         }
         val manager: ClipboardManager = LocalClipboardManager.current
         Row(modifier = Modifier
@@ -397,6 +401,78 @@ fun About(
                 Text(text = stringResource(id = R.string.qq_groud))
             }
             Text(text = "729848189")
+        }
+
+
+    }
+}
+
+@Composable
+fun Author(
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = Modifier
+            .then(modifier),
+    ) {
+
+        Text(
+            modifier = Modifier.padding(16.dp, 16.dp),
+            text = stringResource(id = R.string.author),
+            color = MaterialTheme.colorScheme.secondary,
+            textAlign = TextAlign.Start
+        )
+
+
+
+        Row(modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+
+            }
+            .padding(16.dp, 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                modifier = Modifier.fillMaxHeight(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OkImage(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clip(CircleShape),
+                    image = R.mipmap.app_logo,
+                    contentDescription = "何言")
+                Spacer(modifier = Modifier.size(16.dp))
+                Text(text = "何言")
+            }
+            Text(text = "整体研发")
+        }
+
+        Row(modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+
+            }
+            .padding(16.dp, 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                modifier = Modifier.fillMaxHeight(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OkImage(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clip(CircleShape),
+                    image = R.drawable.ayala,
+                    contentDescription = "Ayala")
+                Spacer(modifier = Modifier.size(16.dp))
+                Text(text = "ayala")
+            }
+            Text(text = "源适配")
         }
 
 

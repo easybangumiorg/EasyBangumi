@@ -2,6 +2,7 @@ package com.heyanle.easybangumi.ui.player
 
 import android.annotation.SuppressLint
 import android.util.Log
+import android.view.View
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.*
@@ -27,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.google.android.exoplayer2.C.ColorTransfer
 import com.heyanle.easybangumi.LocalNavController
 import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.navigationSearch
@@ -67,15 +69,18 @@ fun Play(
     }
 
 
-    DisposableEffect(key1 = Unit) {
-        onDispose {
-            TinyStatusController.onPlayScreenDispose()
-            //uiController.setStatusBarColor(oldColor)
-        }
-    }
+
 
     val vm: AnimPlayItemController =
         BangumiPlayController.getAnimPlayViewModel(BangumiSummary(source, detail))
+
+    DisposableEffect(key1 = Unit) {
+        onDispose {
+            TinyStatusController.onPlayScreenDispose()
+            vm.onDispose()
+            //uiController.setStatusBarColor(oldColor)
+        }
+    }
 
     val playerStatus by vm.playerStatus.collectAsState(initial = null)
     val detailStatus by vm.detailController.detailFlow.collectAsState(initial = null)
@@ -210,8 +215,11 @@ fun Video(
                 }
             ) {
                 when (playerStatus) {
-                    is AnimPlayItemController.PlayerStatus.None -> {}
+                    is AnimPlayItemController.PlayerStatus.None -> {
+                        it.visibility = View.GONE
+                    }
                     is AnimPlayItemController.PlayerStatus.Play -> {
+                        it.visibility = View.VISIBLE
                         BangumiPlayController.onNewComposeView(it)
                         // it.basePlayerView.dispatchPlayStateChange(curStatus)
                         curVideo?.apply {
@@ -220,7 +228,7 @@ fun Video(
                         // it.basePlayerView.refreshStateOnce()
                     }
                     is AnimPlayItemController.PlayerStatus.Loading -> {
-                        it.basePlayerView.dispatchPlayStateChange(EasyPlayStatus.STATE_PREPARING)
+                         it.basePlayerView.dispatchPlayStateChange(EasyPlayStatus.STATE_PREPARING)
                     }
                     else -> {}
                 }
@@ -281,17 +289,29 @@ fun LazyGridScope.playerMsg(
                         indicatorColor = { MaterialTheme.colorScheme.secondary }
                     ) {
                         for (i in lines.indices) {
-                            HomeTabItem(
-                                selected = i == curLines,
-                                text = {
-                                    Text(lines[i])
-                                },
-                                onClick = {
-                                    vm.changeLines(i)
-                                },
-                                selectedContentColor = MaterialTheme.colorScheme.secondary,
-                                unselectedContentColor = MaterialTheme.colorScheme.onBackground
-                            )
+                            if(playerMsgStatus.playMsg[lines[i]]?.isNotEmpty() == true){
+                                HomeTabItem(
+                                    selected = i == curLines,
+                                    text = {
+                                        Text(lines[i])
+                                    },
+                                    onClick = {
+                                        vm.changeLines(i)
+                                    },
+                                    selectedContentColor = MaterialTheme.colorScheme.secondary,
+                                    unselectedContentColor = MaterialTheme.colorScheme.onBackground
+                                )
+                            }else{
+                                // 为空的话避免异常加空占位
+                                HomeTabItem(
+                                    selected = false,
+                                    text = { },
+                                    onClick = { },
+                                    selectedContentColor = Color.Transparent,
+                                    unselectedContentColor = Color.Transparent,
+                                    enable = false
+                                )
+                            }
                         }
                     }
                 }
@@ -461,7 +481,7 @@ fun LazyGridScope.detail(
                                     .fillMaxHeight()
                                     .clickable {
                                         // "还在支持".moeSnackBar()
-                                        nav.navigationSearch(detailStatus.bangumiDetail.name)
+                                        nav.navigationSearch(detailStatus.bangumiDetail.name, detailStatus.bangumiDetail.source)
                                     },
                                 verticalArrangement = Arrangement.Center,
                                 horizontalAlignment = Alignment.CenterHorizontally
@@ -484,9 +504,9 @@ fun LazyGridScope.detail(
                                 verticalArrangement = Arrangement.Center,
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Icon(Icons.Filled.Web, stringResource(id = R.string.web_view))
+                                Icon(Icons.Filled.Web, stringResource(id = R.string.open_source_url))
                                 Text(
-                                    text = stringResource(id = R.string.web_view),
+                                    text = stringResource(id = R.string.open_source_url),
                                     fontSize = 12.sp
                                 )
                             }
