@@ -33,6 +33,7 @@ QQ群：729848189 有兴趣进来玩，群主爆肝更新中
 
 （不定时更新）
 
+- 樱花动漫P ([https://www.yhdmp.net](https://www.yhdmp.net))
 - 樱花动漫 ([http://www.yinghuacd.com](http://www.yinghuacd.com))
 - 哔咪动漫 Bimibimi ([https://www.bimiacg4.net](https://www.bimiacg4.net))
 - 次元城动漫源 ([https://www.cycdm01.top](https://www.cycdm01.top))
