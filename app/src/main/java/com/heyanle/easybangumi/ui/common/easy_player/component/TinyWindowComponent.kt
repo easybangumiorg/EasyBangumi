@@ -160,7 +160,6 @@ class TinyWindowComponent : FrameLayout, IComponent, SeekBar.OnSeekBarChangeList
                 // 复原
                 binding.seekBar.progress = 0
                 binding.seekBar.secondaryProgress = 0
-                binding.root.visibility = View.GONE
                 PlayerTinyController.dismissTiny()
                 PlayerController.exoPlayer.pause()
             }

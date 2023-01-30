@@ -175,6 +175,7 @@ class AnimPlayItemController(
     fun changePlayer(lineIndex: Int, episode: Int) {
         scope.launch {
             if(lineIndex == -1){
+
                 eventFlow.emit(PlayerEvent.ChangePlay(0, 0))
             }else if(episode == -1){
                 eventFlow.emit(PlayerEvent.ChangePlay(lineIndex, 0))
@@ -190,7 +191,7 @@ class AnimPlayItemController(
 
     // 当 番剧详情 和 番剧播放列表 都加载完 并且 播放状态为 None 时第一个调用
     fun onShow(lineIndex: Int, episode: Int) {
-        Log.d("AnimPlayItemController", "onShow $lineIndex $episode")
+
         if (lineIndex != -1 && episode != -1) {
             changePlayer(lineIndex, episode)
             return
@@ -202,6 +203,7 @@ class AnimPlayItemController(
                     bangumiSummary.detailUrl
                 )
             }
+            Log.d("AnimPlayItemController", "onShow $history")
             if (history == null) {
                 eventFlow.emit(
                     PlayerEvent.ChangePlay(
@@ -225,9 +227,12 @@ class AnimPlayItemController(
     }
 
     fun onNewEnter(enterData: BangumiPlayController.EnterData?) {
+        Log.d("AnimPlayItemController", "onNewEnter ${enterData}")
         this.enterData = enterData
         if (enterData != null) {
-            changePlayer(enterData.sourceIndex, enterData.episode)
+            if(_playerStatus.value !is PlayerStatus.None){
+                onShow(enterData.sourceIndex, enterData.episode)
+            }
         }
     }
 
@@ -313,6 +318,10 @@ class AnimPlayItemController(
             return true
         }
         return false
+    }
+
+    fun onDispose(){
+        BangumiPlayController.trySaveHistory(-1)
     }
 
     fun changeEpisode(epi: Int): Boolean {

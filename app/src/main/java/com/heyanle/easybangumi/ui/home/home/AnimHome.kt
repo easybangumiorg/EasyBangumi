@@ -138,7 +138,7 @@ fun AnimHomePage(
             header = { dp ->
                 KeyTabRow(
                     modifier = Modifier.offset(0.dp, dp),
-                    selectedTabIndex = sta.curIndex,
+                    selectedTabIndex = status.curIndex,
                     textList = labels,
                     onItemClick = {
                         vm.changeHomeSource(it)
@@ -146,7 +146,7 @@ fun AnimHomePage(
             },
             content = {
                 AnimatedContent(
-                    targetState = sta,
+                    targetState = status,
                     transitionSpec = {
                         fadeIn(animationSpec = tween(300, delayMillis = 300)) with
                                 fadeOut(animationSpec = tween(300, delayMillis = 0))

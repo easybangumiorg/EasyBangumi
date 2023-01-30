@@ -46,6 +46,10 @@ fun NavHostController.navigationSearch(keyword: String) {
     navigate("${SEARCH}?keyword=${keyword}")
 }
 
+fun NavHostController.navigationSearch(keyword: String, source: String) {
+    navigate("${SEARCH}?keyword=${keyword}&source=${source}")
+}
+
 fun NavHostController.navigationPlay(bangumi: Bangumi) {
     navigationPlay(bangumi.source, bangumi.detailUrl)
 }
@@ -84,10 +88,15 @@ fun Nav() {
             }
 
             composable(
-                "${SEARCH}?keyword={keyword}",
-                arguments = listOf(navArgument("keyword") { defaultValue = "" })
+                "${SEARCH}?keyword={keyword}&sourceIndex={sourceIndex}",
+                arguments = listOf(
+                    navArgument("keyword") { defaultValue = "" },
+                    navArgument("source") {
+                        defaultValue = ""
+                    }
+                )
             ) {
-                Search(it.arguments?.getString("keyword") ?: "")
+                Search(it.arguments?.getString("keyword") ?: "", it.arguments?.getString("source")?:"")
             }
 
             composable(
