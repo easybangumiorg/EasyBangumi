@@ -32,13 +32,24 @@
             android:contentDescription="play-pause" />
 
         <ImageView
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:id="@+id/iv_fullscreen"
+            android:padding="10dp"
+            app:tint="@android:color/white"
+            android:src="@drawable/ic_baseline_fullscreen_24"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:contentDescription="fullscreen" />
+
+        <ImageView
             android:id="@+id/iv_close"
             android:padding="10dp"
             tools:tint="@android:color/white"
             app:tint="@android:color/white"
             android:src="@drawable/baseline_close_24"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:contentDescription="play-pause" />
@@ -62,20 +73,10 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 android:id="@+id/seek_bar"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/iv_fullscreen"
+                app:layout_constraintEnd_toEndOf="parent"
                 android:layout_width="0dp"
                 android:layout_height="48dp" />
 
-            <ImageView
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:id="@+id/iv_fullscreen"
-                android:padding="10dp"
-                app:tint="@android:color/white"
-                android:src="@drawable/ic_baseline_fullscreen_24"
-                android:layout_width="wrap_content"
-                android:layout_height="48dp"
-                android:contentDescription="fullscreen" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

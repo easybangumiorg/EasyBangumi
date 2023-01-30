@@ -148,11 +148,21 @@ class BaseEasyPlayerView :
     }
 
     fun dispatchPlayStateChange(playState: Int) {
+        Log.d("BaseEasyPlayerView", "$playState")
         if (innerPlayer?.playerError != null && playState != EasyPlayStatus.STATE_ERROR) {
             dispatchPlayStateChange(
                 EasyPlayStatus.STATE_ERROR
             )
         }
+//        if(playState == EasyPlayStatus.STATE_PLAYING &&
+//            playState == EasyPlayStatus.STATE_PAUSED &&
+//            playState == EasyPlayStatus.STATE_BUFFERING &&
+//            playState == EasyPlayStatus.STATE_BUFFERED
+//        ){
+//            renderContainer.visibility = View.VISIBLE
+//        }else{
+//            renderContainer.visibility = View.GONE
+//        }
         renderContainer.keepScreenOn = playState == EasyPlayStatus.STATE_PLAYING
         mCurrentPlayState = playState
 

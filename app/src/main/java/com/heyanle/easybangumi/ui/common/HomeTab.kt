@@ -75,6 +75,7 @@ fun HomeTabItem(
     selectedContentColor: Color = MaterialTheme.colorScheme.onPrimary,
     unselectedContentColor: Color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.4f),
     onClick: () -> Unit,
+    enable: Boolean = true,
 ) {
 
     Tab(
@@ -84,6 +85,7 @@ fun HomeTabItem(
         icon = icon,
         selectedContentColor = selectedContentColor,
         unselectedContentColor = unselectedContentColor,
+        enabled = enable,
     )
 }
 

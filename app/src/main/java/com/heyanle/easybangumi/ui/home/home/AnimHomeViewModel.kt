@@ -9,8 +9,8 @@ import com.heyanle.lib_anim.IHomeParser
 import com.heyanle.lib_anim.ISourceParser
 import com.heyanle.lib_anim.entity.Bangumi
 import com.heyanle.okkv2.core.okkv
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 
 /**
  * Created by HeYanLe on 2023/1/8 22:55.
@@ -76,69 +76,77 @@ class AnimHomeViewModel(
     private val _homeResult = MutableStateFlow<HomeAnimState>(HomeAnimState.None)
     val homeResultFlow: Flow<HomeAnimState> = _homeResult
 
+    var lastScope: CoroutineScope? = null
+
     init {
         viewModelScope.launch {
             eventFlow.collectLatest() { event ->
 
-                val index = event.currentIndex
-                Log.d("AnimHomeViewHolder", "index->$index")
-                // 下标对应番剧源检查
-                val keys = homes
-                if (keys.isEmpty() || index < 0) {
-                    _homeResult.emit(
-                        HomeAnimState.Error(
-                            index,
-                            ISourceParser.ParserResult.Error(
-                                IllegalAccessException("Source not found"),
-                                false
+                lastScope?.cancel()
+                val sc = MainScope()
+                lastScope = sc
+                sc.launch {
+                    val index = event.currentIndex
+                    Log.d("AnimHomeViewHolder", "index->$index")
+                    // 下标对应番剧源检查
+                    val keys = homes
+                    if (keys.isEmpty() || index < 0) {
+                        _homeResult.emit(
+                            HomeAnimState.Error(
+                                index,
+                                ISourceParser.ParserResult.Error(
+                                    IllegalAccessException("Source not found"),
+                                    false
+                                )
                             )
                         )
-                    )
-                    return@collectLatest
-                }
-                if (index >= keys.size) {
+                        return@launch
+                    }
+                    if (index >= keys.size) {
 
-                    eventFlow.emit(HomeAnimEvent.ChangeTab(0))
-                    return@collectLatest
-                }
-                // buffer, ChangeTab 事件才尝试走代理
-                if (event is HomeAnimEvent.ChangeTab && homeData.containsKey(index) && homeData[index]?.isNotEmpty() == true) {
-                    val ks = arrayListOf<String>()
-                    homeData[index]?.forEach { (t, _) ->
-                        ks.add(t)
+                        eventFlow.emit(HomeAnimEvent.ChangeTab(0))
+                        return@launch
                     }
-                    // 加载成功
-                    _homeResult.emit(
-                        HomeAnimState.Completely(
-                            index,
-                            homeData[index] ?: linkedMapOf(),
-                            ks
-                        )
-                    )
-                } else {
-                    // 先触发 Loading
-                    _homeResult.emit(HomeAnimState.Loading(index))
-                    val res = keys[index].home()
-                    if (eventFlow.value.currentIndex != index) {
-                        // 迟到的 resp
-                        res.complete {
-                            // 设置 缓存后不发送事件
-                            homeData[index] = it.data
-                        }
-                        return@collectLatest
-                    }
-                    res.complete {
-                        homeData[index] = it.data
+                    // buffer, ChangeTab 事件才尝试走代理
+                    if (event is HomeAnimEvent.ChangeTab && homeData.containsKey(index) && homeData[index]?.isNotEmpty() == true) {
                         val ks = arrayListOf<String>()
-                        it.data.forEach { (t, _) ->
+                        homeData[index]?.forEach { (t, _) ->
                             ks.add(t)
                         }
                         // 加载成功
-                        _homeResult.emit(HomeAnimState.Completely(index, it.data, ks))
-                    }.error {
-                        _homeResult.emit(HomeAnimState.Error(index, it))
+                        _homeResult.emit(
+                            HomeAnimState.Completely(
+                                index,
+                                homeData[index] ?: linkedMapOf(),
+                                ks
+                            )
+                        )
+                    } else {
+                        // 先触发 Loading
+                        _homeResult.emit(HomeAnimState.Loading(index))
+                        val res = keys[index].home()
+                        if (eventFlow.value.currentIndex != index || !sc.isActive) {
+                            // 迟到的 resp
+                            res.complete {
+                                // 设置 缓存后不发送事件
+                                homeData[index] = it.data
+                            }
+                            return@launch
+                        }
+                        res.complete {
+                            homeData[index] = it.data
+                            val ks = arrayListOf<String>()
+                            it.data.forEach { (t, _) ->
+                                ks.add(t)
+                            }
+                            // 加载成功
+                            _homeResult.emit(HomeAnimState.Completely(index, it.data, ks))
+                        }.error {
+                            _homeResult.emit(HomeAnimState.Error(index, it))
+                        }
                     }
                 }
+
             }
         }
     }

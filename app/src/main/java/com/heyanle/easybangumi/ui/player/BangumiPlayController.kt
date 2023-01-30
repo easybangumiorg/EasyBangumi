@@ -25,6 +25,8 @@ import com.heyanle.easybangumi.db.EasyDB
 import com.heyanle.easybangumi.db.entity.BangumiHistory
 import com.heyanle.easybangumi.player.PlayerController
 import com.heyanle.easybangumi.player.PlayerTinyController
+import com.heyanle.easybangumi.player.TinyStatusController
+import com.heyanle.easybangumi.ui.common.easy_player.BaseEasyPlayerView
 import com.heyanle.easybangumi.ui.common.easy_player.EasyPlayerView
 import com.heyanle.easybangumi.ui.home.history.AnimHistoryViewModel
 import com.heyanle.easybangumi.utils.toast
@@ -56,6 +58,8 @@ object BangumiPlayController {
     val lastPauseLevel = mutableStateOf(0)
     private var composeViewRes: WeakReference<EasyPlayerView>? = null
 
+    private var tinyViewRes: WeakReference<BaseEasyPlayerView>? = null
+
     private val animPlayViewModelCache = ItemLru()
 
     val curAnimPlayViewModel = MutableLiveData<AnimPlayItemController>()
@@ -84,6 +88,7 @@ object BangumiPlayController {
         if (new != curAnimPlayViewModel.value) {
             curAnimPlayViewModel.postValue(new)
         }
+        new.onNewEnter(enterData)
         lastProgress = enterData?.startProcess ?: -1L
         val del = URLEncoder.encode(bangumiSummary.detailUrl, "utf-8")
 
@@ -116,20 +121,29 @@ object BangumiPlayController {
             animPlayViewModelCache.put(bangumiSummary, n)
             return n
         }
-        cache.onNewEnter(enterData)
         return cache
     }
 
     fun onNewComposeView(easyPlayerView: EasyPlayerView) {
         if (easyPlayerView != this.composeViewRes?.get()) {
             this.composeViewRes = WeakReference(easyPlayerView)
-            PlayerController.playerControllerStatus.value?.let {
-                val playerState = if (easyPlayerView.basePlayerView.isFullScreen()) EasyPlayerStatus.PLAYER_FULL_SCREEN else EasyPlayerStatus.PLAYER_NORMAL
-                easyPlayerView.basePlayerView.dispatchPlayerStateChange(playerState)
-                easyPlayerView.basePlayerView.dispatchPlayStateChange(it)
-            }
+        }
+        PlayerController.playerControllerStatus.value?.let {
+            val playerState = if (easyPlayerView.basePlayerView.isFullScreen()) EasyPlayerStatus.PLAYER_FULL_SCREEN else EasyPlayerStatus.PLAYER_NORMAL
+            easyPlayerView.basePlayerView.dispatchPlayerStateChange(playerState)
+            easyPlayerView.basePlayerView.dispatchPlayStateChange(it)
         }
 
+    }
+
+    fun onNewTinyComposeView(easyPlayerView: BaseEasyPlayerView){
+        if (easyPlayerView != this.tinyViewRes?.get()) {
+            this.tinyViewRes = WeakReference(easyPlayerView)
+        }
+        PlayerController.playerControllerStatus.value?.let {
+            easyPlayerView.dispatchPlayerStateChange(EasyPlayerStatus.PLAYER_TINY_SCREEN)
+            easyPlayerView.dispatchPlayStateChange(it)
+        }
     }
 
     // activity 的 onPause 调用
@@ -143,8 +157,11 @@ object BangumiPlayController {
 
     var lastPlayerStatus: AnimPlayItemController.PlayerStatus.Play? = null
 
-    fun trySaveHistory(process: Long = -1){
-
+    fun trySaveHistory(ps: Long = -1){
+        var process = ps
+        if(ps == -1L){
+            process = composeViewRes?.get()?.basePlayerView?.getCurrentPosition() ?: -1L
+        }
         val playVM = curAnimPlayViewModel.value ?: return
         val ds = playVM.detailController.detailFlow.value
         val ms = playVM.playMsgController.flow.value
@@ -184,7 +201,12 @@ object BangumiPlayController {
 
     init {
         PlayerController.playerControllerStatus.observeForever { state ->
-            this.composeViewRes?.get()?.basePlayerView?.dispatchPlayStateChange(state)
+            if(PlayerTinyController.isTinyMode){
+                this.tinyViewRes?.get()?.dispatchPlayStateChange(state)
+            }else{
+                this.composeViewRes?.get()?.basePlayerView?.dispatchPlayStateChange(state)
+            }
+
         }
         curAnimPlayViewModel.observeForever {
             lastScope.cancel()
@@ -205,22 +227,9 @@ object BangumiPlayController {
                                 EasyPlayStatus.STATE_PREPARING
                             )
                         }
-                        if(lastProgress == -1L){
-                            val vm = curAnimPlayViewModel.value ?: return@launch
-                            lastProgress = withContext(Dispatchers.IO){
-                                EasyDB.database.bangumiHistory.getFromBangumiSummary(vm.bangumiSummary.source, vm.bangumiSummary.detailUrl)
-                                    ?.lastProcessTime ?: 0
-                            }
-                        }
                     }
                     is AnimPlayItemController.PlayerStatus.Play -> {
-                        if(lastProgress == -1L){
-                            val vm = curAnimPlayViewModel.value ?: return@launch
-                            lastProgress = withContext(Dispatchers.IO){
-                                EasyDB.database.bangumiHistory.getFromBangumiSummary(vm.bangumiSummary.source, vm.bangumiSummary.detailUrl)
-                                    ?.lastProcessTime ?: 0
-                            }
-                        }
+                        Log.d("BangumiPlayController", "onPlay $lastProgress")
                         Log.d("BangumiPlayController", it.uri)
                         val vm = curAnimPlayViewModel.value ?: return@launch
                         if (PlayerTinyController.isTinyMode) {
@@ -245,14 +254,16 @@ object BangumiPlayController {
                                         MediaItem.fromUri(it.uri)
                                     )
                             }
-                            Log.d("BangumiPlayController", "onPlay $lastProgress")
+
                             if(lastProgress > 0){
                                 PlayerController.setMediaSource(media, lastProgress)
                             }else{
-                                PlayerController.setMediaSource(media)
+                                PlayerController.setMediaSource(media, 0)
                             }
                             lastProgress = -1
                             PlayerController.prepare()
+                        }else{
+                            PlayerController.exoPlayer.seekTo(0)
                         }
                         lastPlayerStatus = it
 

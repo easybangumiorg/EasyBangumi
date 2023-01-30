@@ -59,12 +59,13 @@ fun onNewTopAppBarExpendAnim(valueAnimator: ValueAnimator?) {
 @Composable
 fun Search(
     default: String,
+    source: String,
 ) {
     SearchSourceContainer(
-        errorContainerColor = MaterialTheme.colorScheme.background
+        errorContainerColor = MaterialTheme.colorScheme.background,
     ) {
         val vm = viewModel<SearchViewModel>(factory = SearchViewModelFactory(default))
-        SearchPage(vm = vm, it)
+        SearchPage(vm = vm, it, source)
     }
 }
 
@@ -77,7 +78,8 @@ var animSearchInitialPage by okkv("animSearchInitialPage", 0)
 @Composable
 fun SearchPage(
     vm: SearchViewModel,
-    searchParsers: List<ISearchParser>
+    searchParsers: List<ISearchParser>,
+    source: String,
 ) {
 
     val scope = rememberCoroutineScope()
@@ -105,10 +107,21 @@ fun SearchPage(
         FocusRequester()
     }
 
-    val pagerState = rememberPagerState(initialPage = animSearchInitialPage)
+    val pagerState = rememberPagerState(initialPage = Unit.let {
+        var index = -1
+        searchParsers.forEachIndexed { i, iSearchParser ->
+            if(iSearchParser.getKey() == source){
+                index = i
+            }
+        }
+        if(index == -1) animSearchInitialPage else index
+    })
     LaunchedEffect(key1 = searchParsers.size) {
         if (animSearchInitialPage >= searchParsers.size) {
             animSearchInitialPage = 0
+            //pagerState.scrollToPage(0)
+        }
+        if(pagerState.currentPage >= searchParsers.size){
             pagerState.scrollToPage(0)
         }
     }
@@ -185,6 +198,9 @@ fun SearchPage(
         },
         content = { padding ->
             val keyboard = LocalSoftwareKeyboardController.current
+            LaunchedEffect(pagerState.currentPage) {
+                animSearchInitialPage = pagerState.currentPage
+            }
             HorizontalPager(
                 modifier = Modifier
                     .fillMaxHeight()
