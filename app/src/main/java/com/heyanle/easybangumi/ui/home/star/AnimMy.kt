@@ -84,6 +84,7 @@ fun AnimMy() {
                 )
             } else {
                 LazyVerticalGrid(
+                    state = lazyGridState,
                     contentPadding = PaddingValues(4.dp, 4.dp),
                     columns = GridCells.Adaptive(95.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
