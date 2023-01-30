@@ -72,88 +72,89 @@ fun AnimHistory() {
     })
     val pi = vm.curPager.value.collectAsLazyPagingItems()
 
-        Box(modifier = Modifier.fillMaxSize().pullRefresh(state)) {
-            AnimatedContent(
-                targetState = pi,
-                transitionSpec = {
-                    fadeIn(animationSpec = tween(300, delayMillis = 300)) with
-                            fadeOut(animationSpec = tween(300, delayMillis = 0))
-                },
-            ) { pagingItems ->
-                if (pagingItems.itemCount == 0) {
-                    EmptyPage(
-                        modifier = Modifier.fillMaxSize(),
-                        emptyMsg = stringResource(id = R.string.no_star_bangumi)
-                    )
-                } else {
+    Box(modifier = Modifier.fillMaxSize().pullRefresh(state)) {
+        AnimatedContent(
+            targetState = pi,
+            transitionSpec = {
+                fadeIn(animationSpec = tween(300, delayMillis = 300)) with
+                        fadeOut(animationSpec = tween(300, delayMillis = 0))
+            },
+        ) { pagingItems ->
+            if (pagingItems.itemCount == 0) {
+                EmptyPage(
+                    modifier = Modifier.fillMaxSize(),
+                    emptyMsg = stringResource(id = R.string.no_star_bangumi)
+                )
+            } else {
 
-                    Box(modifier = Modifier){
-                        LazyColumn(
-                        ){
-                            items(pagingItems){
-                                it?.let {
-                                    BangumiHistoryCard(bangumiHistory = it, onClick = {
-                                        nav.navigationPlay(it.source, it.detailUrl, it.lastLinesIndex, it.lastEpisodeIndex, it.lastProcessTime)
-                                    })
-                                }
-
+                Box(modifier = Modifier){
+                    LazyColumn(
+                        state = lazyListState
+                    ){
+                        items(pagingItems){
+                            it?.let {
+                                BangumiHistoryCard(bangumiHistory = it, onClick = {
+                                    nav.navigationPlay(it.source, it.detailUrl, it.lastLinesIndex, it.lastEpisodeIndex, it.lastProcessTime)
+                                })
                             }
-                            when (pagingItems.loadState.append) {
-                                is LoadState.Loading -> {
-                                    item() {
-                                        LoadingPage(
-                                            modifier = Modifier.fillMaxWidth(),
-                                        )
-                                    }
+
+                        }
+                        when (pagingItems.loadState.append) {
+                            is LoadState.Loading -> {
+                                item() {
+                                    LoadingPage(
+                                        modifier = Modifier.fillMaxWidth(),
+                                    )
                                 }
-                                is LoadState.Error -> {
-                                    item() {
-                                        val errorMsg =
-                                            (pagingItems.loadState.append as? LoadState.Error)?.error?.message
-                                                ?: stringRes(
-                                                    R.string.net_error
-                                                )
-                                        ErrorPage(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            errorMsg = errorMsg,
-                                            clickEnable = true,
-                                            other = {
-                                                Text(text = stringResource(id = R.string.click_to_retry))
-                                            },
-                                            onClick = {
-                                                pagingItems.retry()
-                                            }
-                                        )
-                                    }
+                            }
+                            is LoadState.Error -> {
+                                item() {
+                                    val errorMsg =
+                                        (pagingItems.loadState.append as? LoadState.Error)?.error?.message
+                                            ?: stringRes(
+                                                R.string.net_error
+                                            )
+                                    ErrorPage(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        errorMsg = errorMsg,
+                                        clickEnable = true,
+                                        other = {
+                                            Text(text = stringResource(id = R.string.click_to_retry))
+                                        },
+                                        onClick = {
+                                            pagingItems.retry()
+                                        }
+                                    )
                                 }
-                                else -> {
-                                    item() {
-                                        Text(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(0.dp, 2.dp),
-                                            textAlign = TextAlign.Center,
-                                            text = stringResource(id = R.string.list_most_bottom)
-                                        )
-                                    }
+                            }
+                            else -> {
+                                item() {
+                                    Text(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(0.dp, 2.dp),
+                                        textAlign = TextAlign.Center,
+                                        text = stringResource(id = R.string.list_most_bottom)
+                                    )
                                 }
                             }
                         }
-
                     }
+
                 }
             }
-
-
-            PullRefreshIndicator(
-                refreshing,
-                state,
-                Modifier.align(Alignment.TopCenter),
-                backgroundColor = MaterialTheme.colorScheme.background,
-                contentColor = MaterialTheme.colorScheme.secondary
-            )
-            FastScrollToTopFab(listState = lazyListState)
         }
+
+
+        PullRefreshIndicator(
+            refreshing,
+            state,
+            Modifier.align(Alignment.TopCenter),
+            backgroundColor = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.secondary
+        )
+        FastScrollToTopFab(listState = lazyListState)
+    }
 
 
 
