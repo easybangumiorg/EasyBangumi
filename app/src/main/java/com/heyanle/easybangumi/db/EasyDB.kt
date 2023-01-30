@@ -23,7 +23,7 @@ import com.heyanle.lib_anim.entity.BangumiDetail
         BangumiStar::class,    // 追番
         BangumiHistory::class, // 观看历史
     ],
-    version = 4,
+    version = 6,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
