@@ -10,8 +10,6 @@ import com.heyanle.easybangumi.db.dao.SearchHistoryDao
 import com.heyanle.easybangumi.db.entity.BangumiHistory
 import com.heyanle.easybangumi.db.entity.BangumiStar
 import com.heyanle.easybangumi.db.entity.SearchHistory
-import com.heyanle.lib_anim.entity.Bangumi
-import com.heyanle.lib_anim.entity.BangumiDetail
 
 /**
  * Created by HeYanLe on 2023/1/17 0:26.

@@ -4,10 +4,10 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.heyanle.bangumi_source_api.api.IHomeParser
+import com.heyanle.bangumi_source_api.api.ISourceParser
+import com.heyanle.bangumi_source_api.api.entity.Bangumi
 import com.heyanle.easybangumi.source.AnimSourceFactory
-import com.heyanle.lib_anim.IHomeParser
-import com.heyanle.lib_anim.ISourceParser
-import com.heyanle.lib_anim.entity.Bangumi
 import com.heyanle.okkv2.core.okkv
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*

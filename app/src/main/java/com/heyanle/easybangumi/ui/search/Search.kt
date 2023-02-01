@@ -35,10 +35,10 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.heyanle.bangumi_source_api.api.ISearchParser
 import com.heyanle.easybangumi.LocalNavController
 import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.ui.common.*
-import com.heyanle.lib_anim.ISearchParser
 import com.heyanle.okkv2.core.okkv
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference

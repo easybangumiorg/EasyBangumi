@@ -1,19 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <bytecodeTargetLevel target="1.8">
-      <module name="EasyBangumi.app" target="17" />
-      <module name="EasyBangumi.buildSrc" target="17" />
-      <module name="EasyBangumi.buildSrc.main" target="17" />
-      <module name="EasyBangumi.buildSrc.test" target="17" />
+    <bytecodeTargetLevel target="17">
       <module name="EasyBangumi.easy-bangumi-player" target="17" />
-      <module name="EasyBangumi.easy-crasher" target="17" />
       <module name="EasyBangumi.easy-lightdark" target="11" />
       <module name="EasyBangumi.easy-media" target="11" />
       <module name="EasyBangumi.easy-player" target="17" />
       <module name="EasyBangumi.easy-source" target="17" />
       <module name="EasyBangumi.easy-view" target="11" />
       <module name="EasyBangumi.player-controller" target="17" />
+      <module name="project.EasyBangumi.lib-anim.main" target="1.8" />
+      <module name="project.EasyBangumi.lib-anim.test" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

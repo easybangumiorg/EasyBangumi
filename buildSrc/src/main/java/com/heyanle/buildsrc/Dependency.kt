@@ -48,6 +48,12 @@ object Version {
     const val media = "1.6.0"
 
     const val app_center = "4.4.5"
+
+    const val bangumi_api = "5.1"
+
+    const val androidx_webkit = "1.5.0"
+
+    const val commons_text = "1.10.0"
 }
 
 // AndroidX basic
@@ -249,4 +255,16 @@ fun DependencyHandler.appCenter() {
     implementation("com.microsoft.appcenter:appcenter-analytics:${Version.app_center}")
     implementation("com.microsoft.appcenter:appcenter-crashes:${Version.app_center}")
     implementation("com.microsoft.appcenter:appcenter-distribute:${Version.app_center}")
+}
+
+fun DependencyHandler.easySourceApi(){
+    implementation ("com.github.heyanLE.EasyBangumiSourceAPI:api:${Version.bangumi_api}")
+}
+
+fun DependencyHandler.androidXWebkit(){
+    implementation("androidx.webkit:webkit:${Version.androidx_webkit}")
+}
+
+fun DependencyHandler.commonsText(){
+    implementation("org.apache.commons:commons-text:${Version.commons_text}")
 }

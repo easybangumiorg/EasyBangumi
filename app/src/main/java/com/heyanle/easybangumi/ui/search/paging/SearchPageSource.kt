@@ -2,9 +2,9 @@ package com.heyanle.easybangumi.ui.search.paging
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import com.heyanle.lib_anim.ISearchParser
-import com.heyanle.lib_anim.ISourceParser
-import com.heyanle.lib_anim.entity.Bangumi
+import com.heyanle.bangumi_source_api.api.ISearchParser
+import com.heyanle.bangumi_source_api.api.ISourceParser
+import com.heyanle.bangumi_source_api.api.entity.Bangumi
 
 class SearchPageSource(
     private val searchParser: ISearchParser,
