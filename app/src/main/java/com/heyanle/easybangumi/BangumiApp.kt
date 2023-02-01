@@ -5,8 +5,11 @@ import android.util.Log
 import com.heyanle.easy_crasher.CrashHandler
 import com.heyanle.easybangumi.db.EasyDB
 import com.heyanle.easybangumi.source.AnimSourceFactory
+import com.heyanle.easybangumi.source.AnimSourceLibrary
+import com.heyanle.easybangumi.source.utils.initUtils
 import com.heyanle.easybangumi.utils.exo_ssl.CropUtil
 import com.heyanle.easybangumi.utils.exo_ssl.TrustAllHostnameVerifier
+import com.heyanle.lib_anim.InnerLoader
 import com.heyanle.okkv2.MMKVStore
 import com.heyanle.okkv2.core.Okkv
 import com.microsoft.appcenter.AppCenter
@@ -44,7 +47,9 @@ class BangumiApp : Application() {
 
         EasyDB.init(this)
 
-        AnimSourceFactory.init()
+        AnimSourceLibrary.newSource(InnerLoader, true)
+
+        initUtils()
 
         initAppCenter()
     }

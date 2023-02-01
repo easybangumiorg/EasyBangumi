@@ -1,10 +1,9 @@
 package com.heyanle.easybangumi.source
 
-import com.heyanle.lib_anim.*
-import com.heyanle.lib_anim.bimibimi.BimibimiParser
-import com.heyanle.lib_anim.yhdm.YhdmParser
-import com.heyanle.lib_anim.cycdm.CycdmParser
-import com.heyanle.lib_anim.yhdmp.YhdmpParser
+import com.heyanle.bangumi_source_api.api.IDetailParser
+import com.heyanle.bangumi_source_api.api.IHomeParser
+import com.heyanle.bangumi_source_api.api.IPlayerParser
+import com.heyanle.bangumi_source_api.api.ISearchParser
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -16,24 +15,14 @@ import kotlinx.coroutines.launch
  */
 object AnimSourceFactory {
 
+    val scope = MainScope()
+
     // 把所有源作为一个 flow 对外暴露，全局可用
     private val animSourceFlow = MutableStateFlow(AnimSources(emptyList()))
 
-    // 注册源
-    // TODO 插件化加载
-    fun init() {
-        MainScope().launch {
-            animSourceFlow.emit(
-                AnimSources(
-                    arrayListOf(
-                        YhdmParser(),
-                        BimibimiParser(),
-                        CycdmParser(),
-                        YhdmpParser(),
-
-                    )
-                )
-            )
+    fun newSource(source: AnimSources){
+        scope.launch {
+            animSourceFlow.emit(source)
         }
     }
 

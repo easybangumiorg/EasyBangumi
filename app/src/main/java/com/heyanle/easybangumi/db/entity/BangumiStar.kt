@@ -2,8 +2,8 @@ package com.heyanle.easybangumi.db.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.heyanle.lib_anim.entity.Bangumi
-import com.heyanle.lib_anim.entity.BangumiDetail
+import com.heyanle.bangumi_source_api.api.entity.Bangumi
+import com.heyanle.bangumi_source_api.api.entity.BangumiDetail
 
 /**
  * Created by HeYanLe on 2023/1/18 21:41.

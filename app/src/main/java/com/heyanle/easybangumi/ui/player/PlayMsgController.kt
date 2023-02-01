@@ -1,9 +1,9 @@
 package com.heyanle.easybangumi.ui.player
 
+import com.heyanle.bangumi_source_api.api.entity.BangumiSummary
 import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.source.AnimSourceFactory
 import com.heyanle.easybangumi.utils.stringRes
-import com.heyanle.lib_anim.entity.BangumiSummary
 import kotlinx.coroutines.flow.*
 
 /**

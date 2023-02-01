@@ -17,6 +17,7 @@ import com.google.android.exoplayer2.source.dash.DashMediaSource
 import com.google.android.exoplayer2.source.hls.HlsMediaSource
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultDataSource
+import com.heyanle.bangumi_source_api.api.entity.BangumiSummary
 import com.heyanle.easybangumi.BangumiApp
 import com.heyanle.easybangumi.MainActivity
 import com.heyanle.easybangumi.NAV
@@ -32,7 +33,6 @@ import com.heyanle.easybangumi.ui.home.history.AnimHistoryViewModel
 import com.heyanle.easybangumi.utils.toast
 import com.heyanle.eplayer_core.constant.EasyPlayStatus
 import com.heyanle.eplayer_core.constant.EasyPlayerStatus
-import com.heyanle.lib_anim.entity.BangumiSummary
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
 import java.lang.ref.WeakReference

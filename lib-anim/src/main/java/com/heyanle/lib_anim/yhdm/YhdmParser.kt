@@ -1,12 +1,13 @@
 package com.heyanle.lib_anim.yhdm
 
 
-import com.heyanle.lib_anim.*
-import com.heyanle.lib_anim.IPlayerParser.PlayerInfo.Companion.TYPE_HLS
-import com.heyanle.lib_anim.entity.Bangumi
-import com.heyanle.lib_anim.entity.BangumiDetail
-import com.heyanle.lib_anim.entity.BangumiSummary
-import com.heyanle.lib_anim.utils.OkHttpUtils
+import com.heyanle.bangumi_source_api.api.*
+import com.heyanle.bangumi_source_api.api.IPlayerParser.PlayerInfo.Companion.TYPE_HLS
+import com.heyanle.bangumi_source_api.api.entity.Bangumi
+import com.heyanle.bangumi_source_api.api.entity.BangumiDetail
+import com.heyanle.bangumi_source_api.api.entity.BangumiSummary
+import com.heyanle.bangumi_source_api.api.utils.OkHttpUtils
+import com.heyanle.bangumi_source_api.api.utils.webUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup

@@ -75,6 +75,11 @@ dependencies {
     room()
     roomPaging()
     appCenter()
+    gson()
+    jsoup()
+    androidXWebkit()
+    commonsText()
+    easySourceApi()
     implementation(project(":easy-crasher"))
     implementation(project(":lib-anim"))
 }
