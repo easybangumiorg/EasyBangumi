@@ -13,7 +13,6 @@
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/buildSrc" />
             <option value="$PROJECT_DIR$/easy-crasher" />
-            <option value="$PROJECT_DIR$/easy-source" />
             <option value="$PROJECT_DIR$/lib-anim" />
           </set>
         </option>

@@ -7,9 +7,9 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import com.heyanle.bangumi_source_api.api.ISearchParser
+import com.heyanle.bangumi_source_api.api.entity.Bangumi
 import com.heyanle.easybangumi.ui.search.paging.SearchPageSource
-import com.heyanle.lib_anim.ISearchParser
-import com.heyanle.lib_anim.entity.Bangumi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 

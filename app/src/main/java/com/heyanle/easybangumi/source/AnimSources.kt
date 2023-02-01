@@ -1,19 +1,20 @@
 package com.heyanle.easybangumi.source
 
-import com.heyanle.lib_anim.*
+import com.heyanle.bangumi_source_api.api.*
+
 
 /**
  * Created by HeYanLe on 2023/1/17 17:53.
  * https://github.com/heyanLE
  */
 class AnimSources(
-    list: List<ISearchParser>
+    list: List<ISourceParser>
 ) {
-    private val parserMap = hashMapOf<String, ISourceParser>()
-    private val homeMap = hashMapOf<String, IHomeParser>()
-    private val searchMap = hashMapOf<String, ISearchParser>()
-    private val detailMap = hashMapOf<String, IDetailParser>()
-    private val playMap = hashMapOf<String, IPlayerParser>()
+    private val parserMap = linkedMapOf<String, ISourceParser>()
+    private val homeMap = linkedMapOf<String, IHomeParser>()
+    private val searchMap = linkedMapOf<String, ISearchParser>()
+    private val detailMap = linkedMapOf<String, IDetailParser>()
+    private val playMap = linkedMapOf<String, IPlayerParser>()
 
     init {
         list.forEach {

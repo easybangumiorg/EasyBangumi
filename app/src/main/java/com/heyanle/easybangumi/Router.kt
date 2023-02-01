@@ -15,11 +15,11 @@ import androidx.navigation.navDeepLink
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import com.heyanle.bangumi_source_api.api.entity.Bangumi
 import com.heyanle.easybangumi.ui.home.Home
 import com.heyanle.easybangumi.ui.player.BangumiPlayController
 import com.heyanle.easybangumi.ui.search.Search
 import com.heyanle.easybangumi.ui.player.Play
-import com.heyanle.lib_anim.entity.Bangumi
 import java.net.URLDecoder
 import java.net.URLEncoder
 

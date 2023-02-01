@@ -10,11 +10,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import com.heyanle.bangumi_source_api.api.IHomeParser
+import com.heyanle.bangumi_source_api.api.ISearchParser
 import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.source.AnimSourceFactory
 import com.heyanle.easybangumi.source.AnimSources
-import com.heyanle.lib_anim.IHomeParser
-import com.heyanle.lib_anim.ISearchParser
 
 /**
  * Created by HeYanLe on 2023/1/17 19:16.

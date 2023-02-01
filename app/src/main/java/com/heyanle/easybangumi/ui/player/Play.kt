@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.android.exoplayer2.C.ColorTransfer
+import com.heyanle.bangumi_source_api.api.entity.BangumiSummary
 import com.heyanle.easybangumi.LocalNavController
 import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.navigationSearch
@@ -39,7 +40,6 @@ import com.heyanle.easybangumi.ui.common.*
 import com.heyanle.easybangumi.ui.common.easy_player.EasyPlayerView
 import com.heyanle.easybangumi.utils.openUrl
 import com.heyanle.eplayer_core.constant.EasyPlayStatus
-import com.heyanle.lib_anim.entity.BangumiSummary
 import kotlinx.coroutines.launch
 
 /**

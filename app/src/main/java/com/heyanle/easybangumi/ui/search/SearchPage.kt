@@ -38,14 +38,14 @@ import androidx.paging.compose.itemsIndexed
 import com.google.accompanist.flowlayout.FlowMainAxisAlignment
 import com.google.accompanist.flowlayout.FlowRow
 import com.google.accompanist.pager.ExperimentalPagerApi
+import com.heyanle.bangumi_source_api.api.ISearchParser
+import com.heyanle.bangumi_source_api.api.entity.Bangumi
 import com.heyanle.easybangumi.LocalNavController
 import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.navigationPlay
 import com.heyanle.easybangumi.source.AnimSourceFactory
 import com.heyanle.easybangumi.ui.common.*
 import com.heyanle.easybangumi.utils.stringRes
-import com.heyanle.lib_anim.ISearchParser
-import com.heyanle.lib_anim.entity.Bangumi
 
 /**
  * Created by HeYanLe on 2023/1/10 18:54.

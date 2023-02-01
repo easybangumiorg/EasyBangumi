@@ -1,14 +1,13 @@
 package com.heyanle.easybangumi.ui.player
 
 import android.util.Log
+import com.heyanle.bangumi_source_api.api.entity.BangumiSummary
 import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.db.EasyDB
 import com.heyanle.easybangumi.db.entity.BangumiHistory
 import com.heyanle.easybangumi.source.AnimSourceFactory
 import com.heyanle.easybangumi.ui.home.history.AnimHistoryViewModel
 import com.heyanle.easybangumi.utils.stringRes
-import com.heyanle.lib_anim.entity.BangumiDetail
-import com.heyanle.lib_anim.entity.BangumiSummary
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 

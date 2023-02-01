@@ -5,4 +5,10 @@
             <certificates src="system" />
         </trust-anchors>
     </base-config>
+    <domain-config cleartextTrafficPermitted="true">
+        //  Add host of your URL in below line.
+        //   ie. if url is  "https://www.google.com/search?source=...."
+        //   then just add "www.google.com"
+        <domain includeSubdomains="true">www.yhdmp.net</domain>
+    </domain-config>
 </network-security-config>
