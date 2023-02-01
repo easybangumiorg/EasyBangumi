@@ -203,9 +203,6 @@ fun AnimHomePage(
                         else -> {}
                     }
                 }
-                AndroidView(factory = {
-                    WebUtilImpl.globalWebView
-                })
             }
         )
         PullRefreshIndicator(
