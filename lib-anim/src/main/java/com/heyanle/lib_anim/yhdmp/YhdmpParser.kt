@@ -1,11 +1,15 @@
 package com.heyanle.lib_anim.yhdmp
 
 import com.google.gson.JsonParser
-import com.heyanle.lib_anim.*
-import com.heyanle.lib_anim.entity.Bangumi
-import com.heyanle.lib_anim.entity.BangumiDetail
-import com.heyanle.lib_anim.entity.BangumiSummary
-import com.heyanle.lib_anim.utils.OkHttpUtils
+import com.heyanle.bangumi_source_api.api.*
+import com.heyanle.bangumi_source_api.api.IPlayerParser.PlayerInfo.Companion.TYPE_HLS
+import com.heyanle.bangumi_source_api.api.entity.Bangumi
+import com.heyanle.bangumi_source_api.api.entity.BangumiDetail
+import com.heyanle.bangumi_source_api.api.entity.BangumiSummary
+import com.heyanle.bangumi_source_api.api.utils.OkHttpUtils
+import com.heyanle.bangumi_source_api.api.utils.pathUtil
+import com.heyanle.bangumi_source_api.api.utils.stringUtil
+import com.heyanle.bangumi_source_api.api.utils.webUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
@@ -58,7 +62,7 @@ class YhdmpParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
             val map = LinkedHashMap<String, List<Bangumi>>()
 
             val doc = runCatching {
-                Jsoup.parse(OkHttpUtils.get(url(ROOT_URL)))
+                Jsoup.connect(ROOT_URL).get()
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
