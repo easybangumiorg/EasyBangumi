@@ -41,7 +41,9 @@ class FileHelper(
             val fileLru = cacheFileMap[parserKey]?:throw IllegalAccessException()
             val file = fileLru.get(fileName)
             if(file == null){
-                fileLru.put(fileName, File(File(cacheDir, parserKey), fileName))
+                val container = File(cacheDir, parserKey)
+                container.mkdirs()
+                fileLru.put(fileName, File(container, fileName))
             }
             return fileLru.get(fileName)?:throw IllegalAccessException()
 
