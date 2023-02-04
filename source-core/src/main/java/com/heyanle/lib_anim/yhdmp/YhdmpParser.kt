@@ -2,10 +2,13 @@ package com.heyanle.lib_anim.yhdmp
 
 import com.google.gson.JsonParser
 import com.heyanle.bangumi_source_api.api.*
-import com.heyanle.bangumi_source_api.api.IPlayerParser.PlayerInfo.Companion.TYPE_HLS
 import com.heyanle.bangumi_source_api.api.entity.Bangumi
 import com.heyanle.bangumi_source_api.api.entity.BangumiDetail
 import com.heyanle.bangumi_source_api.api.entity.BangumiSummary
+import com.heyanle.lib_anim.bimibimi.BimibimiParser
+import com.heyanle.lib_anim.utils.Base64Utils
+import com.heyanle.lib_anim.utils.fileHelper
+import com.heyanle.lib_anim.utils.getUri
 import com.heyanle.lib_anim.utils.network.GET
 import com.heyanle.lib_anim.utils.network.networkHelper
 import com.heyanle.lib_anim.utils.network.webview_helper.webViewHelper
@@ -42,7 +45,7 @@ class YhdmpParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
     }
 
     companion object {
-        const val ROOT_URL = "https://m.yhdmp.net/"
+        const val ROOT_URL = "https://m.yhdmp.net"
     }
 
     private fun url(source: String): String {
@@ -210,15 +213,10 @@ class YhdmpParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
         }
     }
 
-    private var bangumi: BangumiSummary? = null
-    private val temp: ArrayList<String> = arrayListOf()
-
     override suspend fun getPlayMsg(bangumi: BangumiSummary): ISourceParser.ParserResult<LinkedHashMap<String, List<String>>> {
-        temp.clear()
         return withContext(Dispatchers.IO) {
             val map = LinkedHashMap<String, List<String>>()
             val doc = runCatching {
-                url(bangumi.detailUrl)
                 Jsoup.connect(url(bangumi.detailUrl)).get()
             }.getOrElse {
                 it.printStackTrace()
@@ -236,19 +234,15 @@ class YhdmpParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
                         list.add(it.text())
                         tt.add(it.child(0).attr("href"))
                     }
-                    temp.addAll(tt)
                     map["播放列表${index}"] = list
                     index += 1
                 }
 
-                this@YhdmpParser.bangumi = bangumi
                 return@withContext ISourceParser.ParserResult.Complete(map)
             }.onFailure {
-                this@YhdmpParser.bangumi = null
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, true)
             }
-            this@YhdmpParser.bangumi = null
             return@withContext ISourceParser.ParserResult.Error(Exception("Unknown Error"), true)
         }
     }
@@ -261,27 +255,6 @@ class YhdmpParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
         if (lineIndex < 0 || episodes < 0) {
             return ISourceParser.ParserResult.Error(IndexOutOfBoundsException(), false)
         }
-        var url = ""
-        if (bangumi != this.bangumi
-            || episodes >= temp.size
-            || temp[episodes] == ""
-        ) {
-            getPlayMsg(bangumi).error {
-                return@getPlayUrl ISourceParser.ParserResult.Error(it.throwable, it.isParserError)
-            }.complete {
-                runCatching {
-                    url = temp[episodes]
-                }.onFailure {
-                    return@getPlayUrl ISourceParser.ParserResult.Error(it, true)
-                }
-            }
-        } else {
-            url = temp[episodes]
-        }
-
-        if (url.isEmpty()) {
-            return ISourceParser.ParserResult.Error(Exception("Unknown Error"), true)
-        }
 
         return withContext(Dispatchers.IO) {
             val playID = Regex("""(?<=showp/).*(?=.html)""").find(bangumi.detailUrl)?.value ?: ""
@@ -292,8 +265,11 @@ class YhdmpParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
                     true
                 )
 
+            val url = url("/showp/${playID}-${lineIndex}-${episodes}.html")
+
             val playSecret = runCatching {
-                getPlayInfoRequest(bangumi.detailUrl, lineIndex, episodes, url(url))
+                k1 = null
+                getPlayInfoRequest(playID, lineIndex, episodes, url)
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -311,19 +287,31 @@ class YhdmpParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
             val result = decodeByteCrypt(vurl)
 
             if (result.isNotEmpty()) {
-                if (result.indexOf(".mp4") == -1)
+                if (result.indexOf(".mp4") != -1)
                     return@withContext ISourceParser.ParserResult.Complete(
                         IPlayerParser.PlayerInfo(
-                            type = IPlayerParser.PlayerInfo.TYPE_HLS,
-                            uri = result
+                            type = IPlayerParser.PlayerInfo.TYPE_OTHER,
+                            uri = url(result)
                         )
                     )
                 return@withContext ISourceParser.ParserResult.Complete(
                     IPlayerParser.PlayerInfo(
-                        type = IPlayerParser.PlayerInfo.TYPE_OTHER,
-                        uri = result
+                        type = IPlayerParser.PlayerInfo.TYPE_HLS,
+                        uri = url(result)
                     )
                 )
+//                val fp = fileHelper.getFile(getKey(),Base64Utils.getMD5(result)+".m3u8")
+//                if (!fp.exists()) {
+//                    val req = GET(url(result),Headers.headersOf("User-Agent", networkHelper.defaultLinuxUA))
+//                    val res = networkHelper.client.newCall(req).execute().body?.string()?:""
+//                    fp.writeText(res,Charsets.UTF_8)
+//                }
+//                return@withContext ISourceParser.ParserResult.Complete(
+//                    IPlayerParser.PlayerInfo(
+//                        type = IPlayerParser.PlayerInfo.TYPE_HLS,
+//                        uri = fp.getUri()
+//                    )
+//                )
             }
             return@withContext ISourceParser.ParserResult.Error(Exception("Unknown Error"), true)
         }
@@ -336,13 +324,11 @@ class YhdmpParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
     private var errCount = 0
 
     private fun getPlayInfoRequest(
-        playURL: String,
+        playID: String,
         playIndex: Int,
         epIndex: Int,
         referer: String
     ): String {
-        val playID = Regex("""(?<=showp/).*(?=.html)""").find(playURL)?.value ?: ""
-
         val target =
             url("/_getplay?aid=${playID}&playindex=${playIndex}&epindex=${epIndex}&r=${Math.random()}")
         val clint = networkHelper.client
@@ -378,13 +364,13 @@ class YhdmpParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
                 }
             }
 
-            if (errCount == 5) {
+            if (errCount == 4) {
                 errCount = 0
                 throw Error("Too many failures")
             }
             errCount++
 
-            return getPlayInfoRequest(playURL, playIndex, epIndex, referer)
+            return getPlayInfoRequest(playID, playIndex, epIndex, referer)
         }
 
         return body
