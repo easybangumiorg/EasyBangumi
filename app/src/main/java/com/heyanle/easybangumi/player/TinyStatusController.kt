@@ -1,6 +1,6 @@
 package com.heyanle.easybangumi.player
 
-import com.heyanle.easybangumi.ui.player.BangumiPlayController
+import com.heyanle.easybangumi.ui.playerOld.BangumiPlayController
 import com.heyanle.okkv2.core.okkv
 
 /**

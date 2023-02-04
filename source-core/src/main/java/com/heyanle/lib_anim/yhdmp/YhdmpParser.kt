@@ -1,5 +1,6 @@
 package com.heyanle.lib_anim.yhdmp
 
+import android.util.Log
 import com.google.gson.JsonParser
 import com.heyanle.bangumi_source_api.api.*
 import com.heyanle.bangumi_source_api.api.IPlayerParser.PlayerInfo.Companion.TYPE_HLS
@@ -258,6 +259,7 @@ class YhdmpParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
         lineIndex: Int,
         episodes: Int
     ): ISourceParser.ParserResult<IPlayerParser.PlayerInfo> {
+        Log.d("YhdmpParser", "test")
         if (lineIndex < 0 || episodes < 0) {
             return ISourceParser.ParserResult.Error(IndexOutOfBoundsException(), false)
         }
@@ -346,8 +348,8 @@ class YhdmpParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
         val target =
             url("/_getplay?aid=${playID}&playindex=${playIndex}&epindex=${epIndex}&r=${Math.random()}")
         val clint = networkHelper.client
-        
-        val header =  Headers.Builder().add("Referer", referer)
+
+        val header = Headers.Builder().add("Referer", referer)
         if (k1 != null && t1 != null) {
             val t = t1!!.div(0x3e8) shr 5
             k2 = (t * (t % 0x1000) + 0x99d6) * (t % 0x1000) + t

@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi.ui.player
+package com.heyanle.easybangumi.ui.playerOld
 
 import androidx.compose.runtime.mutableStateOf
 import com.heyanle.bangumi_source_api.api.entity.BangumiDetail
@@ -7,7 +7,6 @@ import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.db.EasyDB
 import com.heyanle.easybangumi.db.entity.BangumiStar
 import com.heyanle.easybangumi.source.AnimSourceFactory
-import com.heyanle.easybangumi.ui.home.home.AnimHomeViewModel
 import com.heyanle.easybangumi.ui.home.star.AnimStarViewModel
 import com.heyanle.easybangumi.utils.stringRes
 import kotlinx.coroutines.Dispatchers

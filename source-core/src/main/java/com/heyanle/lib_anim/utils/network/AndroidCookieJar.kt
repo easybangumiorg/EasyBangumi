@@ -1,6 +1,7 @@
 package com.heyanle.lib_anim.utils.network
 
 import android.webkit.CookieManager
+import android.webkit.CookieSyncManager
 import okhttp3.Cookie
 import okhttp3.CookieJar
 import okhttp3.HttpUrl
@@ -15,6 +16,7 @@ class AndroidCookieJar : CookieJar {
     override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
         val urlString = url.toString()
         cookies.forEach { manager.setCookie(urlString, it.toString()) }
+        manager.flush()
     }
 
     override fun loadForRequest(url: HttpUrl): List<Cookie> {
@@ -51,5 +53,9 @@ class AndroidCookieJar : CookieJar {
 
     fun removeAll() {
         manager.removeAllCookies {}
+    }
+
+    fun flush() {
+        manager.flush()
     }
 }

@@ -4,22 +4,18 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.navigation.NavHostController
 import com.heyanle.easybangumi.player.TinyStatusController
 import com.heyanle.easybangumi.theme.EasyTheme
 import com.heyanle.easybangumi.ui.common.MoeSnackBar
-import com.heyanle.easybangumi.ui.player.BangumiPlayController
+import com.heyanle.easybangumi.ui.playerOld.BangumiPlayController
 import com.heyanle.eplayer_core.EasyPlayerManager
 import com.heyanle.eplayer_core.utils.MediaHelper
 

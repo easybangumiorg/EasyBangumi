@@ -13,6 +13,9 @@ import com.heyanle.lib_anim.utils.isOutdated
 import com.heyanle.lib_anim.utils.network.NetworkHelper
 import com.heyanle.lib_anim.utils.network.webViewUserHelper
 import com.heyanle.lib_anim.utils.stringHelper
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import okhttp3.Cookie
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Interceptor
@@ -93,6 +96,9 @@ class CloudflareUserInterceptor(
                     {
                         if (isCloudFlareBypassed()) {
                             stringHelper.moeSnackBar("Cloudflare 加载成功，请刷新")
+                        }
+                        GlobalScope.launch(Dispatchers.IO) {
+                            networkHelper.cookieManager.flush()
                         }
                     }
                 )

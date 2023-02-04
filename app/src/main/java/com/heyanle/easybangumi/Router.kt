@@ -20,9 +20,9 @@ import com.heyanle.bangumi_source_api.api.entity.Bangumi
 import com.heyanle.easybangumi.source.utils.WebViewUserHelperImpl
 import com.heyanle.easybangumi.ui.WebViewUser
 import com.heyanle.easybangumi.ui.home.Home
-import com.heyanle.easybangumi.ui.player.BangumiPlayController
+import com.heyanle.easybangumi.ui.playerOld.BangumiPlayController
 import com.heyanle.easybangumi.ui.search.Search
-import com.heyanle.easybangumi.ui.player.Play
+import com.heyanle.easybangumi.ui.playerOld.Play
 import java.lang.ref.WeakReference
 import java.net.URLDecoder
 import java.net.URLEncoder
