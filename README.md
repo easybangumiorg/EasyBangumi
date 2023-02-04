@@ -39,10 +39,11 @@ QQ群：729848189 有兴趣进来玩，群主爆肝更新中
 - 次元城动漫源 ([https://www.cycdm01.top](https://www.cycdm01.top))
 
 # 截图
-| <img src="./screenshots/1.png" width="35%"/> | <img src="./screenshots/1.png" width="35%"/>  | <img src="./screenshots/2.png" width="35%" /> |
+| <img src="./screenshots/1.png" width="35%"/> | <img src="./screenshots/2.png" width="35%"/>  | <img src="./screenshots/3.png" width="35%" /> |
 |:--------------------------------------------:|:---------------------------------------------:|:---------------------------------------------:|
-| <img src="./screenshots/3.png" width="35%"/> | <img src="./screenshots/4.png"  width="35%"/> | <img src="./screenshots/5.png"  width="35%"/> |
-|       <img src="./screenshots/6.png"/>       | <img src="./screenshots/7.png"  width="35%"/> |
+| <img src="./screenshots/4.png" width="35%"/> | <img src="./screenshots/5.png"  width="35%"/> | <img src="./screenshots/7.png"  width="35%"/> |
+
+<img src="./screenshots/6.png"/> 
 
 
 
