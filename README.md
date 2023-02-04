@@ -1,6 +1,6 @@
 # 纯纯看番
 
-<img src="./app_logo.png" width="35%" />
+<img src="./app_logo.png" width="30%" />
 一个看动画的 Android 应用 （4.0 开发中）
 
 # 试用
@@ -39,9 +39,9 @@ QQ群：729848189 有兴趣进来玩，群主爆肝更新中
 - 次元城动漫源 ([https://www.cycdm01.top](https://www.cycdm01.top))
 
 # 截图
-| <img src="./screenshots/1.png" width="35%"/> | <img src="./screenshots/2.png" width="35%"/>  | <img src="./screenshots/3.png" width="35%" /> |
+| <img src="./screenshots/1.png" width="50%"/> | <img src="./screenshots/2.png" width="50%"/>  | <img src="./screenshots/3.png" width="50%" /> |
 |:--------------------------------------------:|:---------------------------------------------:|:---------------------------------------------:|
-| <img src="./screenshots/4.png" width="35%"/> | <img src="./screenshots/5.png"  width="35%"/> | <img src="./screenshots/7.png"  width="35%"/> |
+| <img src="./screenshots/4.png" width="50%"/> | <img src="./screenshots/5.png"  width="50%"/> | <img src="./screenshots/7.png"  width="50%"/> |
 
 <img src="./screenshots/6.png"/> 
 
