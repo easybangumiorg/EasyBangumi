@@ -1,12 +1,10 @@
 package com.heyanle.easybangumi.ui.common.easy_player.component
 
-import android.R.color
 import android.animation.Animator
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
-import android.graphics.drawable.Drawable
 import android.graphics.drawable.LayerDrawable
 import android.util.AttributeSet
 import android.util.Log
@@ -14,8 +12,6 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.AlphaAnimation
-import android.view.animation.Animation
 import android.widget.FrameLayout
 import android.widget.RelativeLayout
 import android.widget.SeekBar
@@ -27,7 +23,7 @@ import com.heyanle.easybangumi.databinding.ComponentStandardBinding
 import com.heyanle.easybangumi.theme.EasyThemeController
 import com.heyanle.easybangumi.ui.common.easy_player.utils.TimeUtils
 import com.heyanle.easybangumi.ui.common.moeSnackBar
-import com.heyanle.easybangumi.ui.player.BangumiPlayController
+import com.heyanle.easybangumi.ui.playerOld.BangumiPlayController
 import com.heyanle.easybangumi.utils.dip2px
 import com.heyanle.easybangumi.utils.stringRes
 import com.heyanle.eplayer_core.constant.EasyPlayStatus

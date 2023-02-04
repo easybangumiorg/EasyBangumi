@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi.ui.player
+package com.heyanle.easybangumi.ui.playerOld
 
 import com.heyanle.bangumi_source_api.api.entity.BangumiSummary
 import com.heyanle.easybangumi.R

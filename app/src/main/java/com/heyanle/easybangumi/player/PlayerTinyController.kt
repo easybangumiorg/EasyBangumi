@@ -11,7 +11,7 @@ import android.view.WindowManager
 import com.heyanle.easybangumi.BangumiApp
 import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.ui.common.easy_player.TinyEasyPlayerView
-import com.heyanle.easybangumi.ui.player.BangumiPlayController
+import com.heyanle.easybangumi.ui.playerOld.BangumiPlayController
 import com.heyanle.easybangumi.utils.OverlayHelper
 import com.heyanle.easybangumi.utils.dip2px
 import com.heyanle.easybangumi.utils.stringRes

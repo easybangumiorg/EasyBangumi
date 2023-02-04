@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi.ui.player
+package com.heyanle.easybangumi.ui.playerOld
 
 import android.app.PendingIntent
 import android.content.Intent
@@ -9,7 +9,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.TaskStackBuilder
 import androidx.core.net.toUri
 import androidx.lifecycle.MutableLiveData
-import androidx.navigation.NavController
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
@@ -26,7 +25,6 @@ import com.heyanle.easybangumi.db.EasyDB
 import com.heyanle.easybangumi.db.entity.BangumiHistory
 import com.heyanle.easybangumi.player.PlayerController
 import com.heyanle.easybangumi.player.PlayerTinyController
-import com.heyanle.easybangumi.player.TinyStatusController
 import com.heyanle.easybangumi.ui.common.easy_player.BaseEasyPlayerView
 import com.heyanle.easybangumi.ui.common.easy_player.EasyPlayerView
 import com.heyanle.easybangumi.ui.home.history.AnimHistoryViewModel
