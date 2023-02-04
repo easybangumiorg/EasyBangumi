@@ -1,6 +1,7 @@
 package com.heyanle.lib_anim.cycdm
 
 import android.util.Base64
+import android.util.Log
 import com.google.gson.JsonParser
 import com.heyanle.bangumi_source_api.api.*
 import com.heyanle.bangumi_source_api.api.IPlayerParser.PlayerInfo.Companion.TYPE_HLS
@@ -274,7 +275,7 @@ class CycdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
 
     override suspend fun getPlayMsg(bangumi: BangumiSummary): ISourceParser.ParserResult<LinkedHashMap<String, List<String>>> {
         temp.clear()
-
+        Log.d("CycdmParser", "getPlayMsgTest")
         return withContext(Dispatchers.IO) {
             val map = LinkedHashMap<String, List<String>>()
             val doc = runCatching {
@@ -314,6 +315,7 @@ class CycdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
         lineIndex: Int,
         episodes: Int
     ): ISourceParser.ParserResult<IPlayerParser.PlayerInfo> {
+        Log.d("CycdmParser", "test")
         if (lineIndex < 0 || episodes < 0) {
             return ISourceParser.ParserResult.Error(IndexOutOfBoundsException(), false)
         }

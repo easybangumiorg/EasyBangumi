@@ -1,356 +1,136 @@
 package com.heyanle.easybangumi.ui.player
 
-import android.util.Log
 import com.heyanle.bangumi_source_api.api.entity.BangumiSummary
 import com.heyanle.easybangumi.R
-import com.heyanle.easybangumi.db.EasyDB
-import com.heyanle.easybangumi.db.entity.BangumiHistory
 import com.heyanle.easybangumi.player.PlayerController
 import com.heyanle.easybangumi.source.AnimSourceFactory
-import com.heyanle.easybangumi.ui.home.history.AnimHistoryViewModel
+import com.heyanle.easybangumi.ui.playerOld.AnimPlayItemController
 import com.heyanle.easybangumi.utils.stringRes
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 /**
- * Created by HeYanLe on 2023/1/11 16:36.
+ * Created by HeYanLe on 2023/2/4 23:28.
  * https://github.com/heyanLE
  */
 class AnimPlayItemController(
     val bangumiSummary: BangumiSummary,
-    var enterData: BangumiPlayController.EnterData? = null,
 ) {
 
-    val scope = MainScope()
-    val eventScope = MainScope()
+    private var lastScope: CoroutineScope? = null
 
-    // 储存 线路与集数的对应关系，只是用于切换线路的时候缓存一下当前选择
-    val curEpisode: HashMap<Int, Int> = hashMapOf()
+    val infoController = BangumiInfoController(bangumiSummary)
 
-//    // == 储存当前播放数据与播放的线路集数 =============================
-//    // == 用于播放器里选集
-//
-//    val curPlayMsg: LinkedHashMap<String, List<String>> = linkedMapOf()
-//    var curPlay: Pair<Int, Int> = 0 to 0
-
-    val detailController = DetailController(bangumiSummary)
-    val playMsgController = PlayMsgController(bangumiSummary)
+    private val _playerStatus = MutableStateFlow<AnimPlayState>(
+        AnimPlayState.None
+    )
+    val playerStatus: StateFlow<AnimPlayState> = _playerStatus
 
 
-    // 播放 Url 真正播放器的状态由 EasyPlayer 自己维护
-    sealed class PlayerStatus(
-        val sourceIndex: Int, val episode: Int
+    fun loadInfo() {
+        infoController.load()
+    }
+
+    fun loadPlay(
+        lineIndex: Int,
+        episodeIndex: Int,
     ) {
-        class None(sourceIndex: Int, episode: Int) : PlayerStatus(sourceIndex, episode)
-
-        class Loading(sourceIndex: Int, episode: Int) : PlayerStatus(sourceIndex, episode)
-        class Play(sourceIndex: Int, episode: Int, val uri: String, val type: Int = 0) :
-            PlayerStatus(sourceIndex, episode) {
-
-        }
-
-        class Error(
-            sourceIndex: Int,
-            episode: Int,
-            val errorMsg: String,
-            val throwable: Throwable?
-        ) : PlayerStatus(sourceIndex, episode)
-    }
-
-
-    // 事件
-    sealed class PlayerEvent {
-        object None : PlayerEvent()
-        class ChangePlay(val lineIndex: Int, val episode: Int) : PlayerEvent()
-        class ChangeLine(val lineIndex: Int) : PlayerEvent()
-    }
-
-    private val eventFlow = MutableStateFlow<PlayerEvent>(
-        PlayerEvent.None
-    )
-
-    private val _playerStatus = MutableStateFlow<PlayerStatus>(
-        PlayerStatus.None(
-            enterData?.sourceIndex ?: -1,
-            enterData?.episode ?: -1
-        )
-    )
-    val playerStatus: StateFlow<PlayerStatus> = _playerStatus
-
-    init {
-        scope.launch {
-            playMsgController.init()
-        }
-        scope.launch {
-            detailController.init()
-        }
-        eventScope.launch {
-            eventFlow.collectLatest { event ->
-                scope.launch {
-                    when (event) {
-                        is PlayerEvent.None -> {
-                            _playerStatus.emit(
-                                PlayerStatus.None(
-                                    enterData?.sourceIndex ?: -1,
-                                    enterData?.episode ?: -1
-                                )
-                            )
-                        }
-
-                        is PlayerEvent.ChangePlay -> {
-                            PlayerController.exoPlayer.pause()
-                            PlayerController.exoPlayer.stop()
-                            curEpisode[event.lineIndex] = event.episode
-                            _playerStatus.emit(PlayerStatus.Loading(event.lineIndex, event.episode))
-                            kotlin.runCatching {
-                                val res = AnimSourceFactory.play(bangumiSummary.source)
-
-                                val result = res?.getPlayUrl(bangumiSummary, event.lineIndex, event.episode)
-                                val cur = eventFlow.value
-                                val las = cur as? PlayerEvent.ChangePlay
-                                if(las?.episode == event.episode && las.lineIndex == event.lineIndex){
-                                    // 防抖
-                                    result?.complete {
-                                        _playerStatus.emit(
-                                            PlayerStatus.Play(
-                                                event.lineIndex,
-                                                event.episode,
-                                                it.data.uri,
-                                                it.data.type
-                                            )
-                                        )
-                                    }?.error {
-                                        it.throwable.printStackTrace()
-                                        _playerStatus.emit(
-
-                                            PlayerStatus.Error(
-                                                event.lineIndex,
-                                                event.episode,
-                                                if (it.isParserError) stringRes(
-                                                    R.string.source_error
-                                                ) else stringRes(R.string.loading_error),
-                                                it.throwable
-                                            )
-                                        )
-                                    }
-                                        ?: _playerStatus.emit(
-                                            PlayerStatus.Error(
-                                                event.lineIndex, event.episode, stringRes(
-                                                    R.string.source_not_found
-                                                ), java.lang.NullPointerException("source Not found")
-                                            )
-                                        )
-                                }
-
-
-                            }.onFailure {
-                                it.printStackTrace()
-                                _playerStatus.emit(
-                                    PlayerStatus.Error(
-                                        event.lineIndex,
-                                        event.episode,
-                                        stringRes(R.string.loading_error),
-                                        it
-                                    )
-                                )
-                            }
-
-                        }
-
-                        is PlayerEvent.ChangeLine -> {
-                            eventFlow.emit(
-                                PlayerEvent.ChangePlay(
-                                    event.lineIndex,
-                                    curEpisode[event.lineIndex] ?: 0
-                                )
-                            )
-                        }
-                    }
-                }
-
-            }
-        }
-    }
-
-    fun load() {
-        scope.launch {
-            detailController.load()
-            playMsgController.load()
-        }
-    }
-
-    fun changeLines(lineIndex: Int) {
-        Log.d("AnimPlayItemController", "changeLines lineIndex->$lineIndex")
-        scope.launch {
-            eventFlow.emit(PlayerEvent.ChangeLine(lineIndex))
-        }
-    }
-
-    fun changePlayer(lineIndex: Int, episode: Int) {
-        scope.launch {
-            if (lineIndex == -1) {
-
-                eventFlow.emit(PlayerEvent.ChangePlay(0, 0))
-            } else if (episode == -1) {
-                eventFlow.emit(PlayerEvent.ChangePlay(lineIndex, 0))
-            } else {
-                eventFlow.emit(PlayerEvent.ChangePlay(lineIndex, episode))
-            }
-
-
-        }
-    }
-
-
-    // 当 番剧详情 和 番剧播放列表 都加载完 并且 播放状态为 None 时第一个调用
-    fun onShow(lineIndex: Int, episode: Int) {
-
-        if (lineIndex != -1 && episode != -1) {
-            changePlayer(lineIndex, episode)
+        val info = infoController.flow.value
+        if (info !is BangumiInfoState.Info) {
             return
         }
+        if (lineIndex < 0 || lineIndex >= info.playMsg.size) {
+            return
+        }
+        val lines = info.playMsg.toList()[lineIndex]
+        if (episodeIndex < 0 || episodeIndex >= lines.second.size) {
+            return
+        }
+        lastScope?.cancel()
+        val scope = MainScope()
+        lastScope = scope
         scope.launch {
-            val history = withContext(Dispatchers.IO) {
-                EasyDB.database.bangumiHistory.getFromBangumiSummary(
-                    bangumiSummary.source,
-                    bangumiSummary.detailUrl
+            _playerStatus.emit(
+                AnimPlayState.Loading(
+                    lineIndex,
+                    episodeIndex,
                 )
-            }
-            Log.d("AnimPlayItemController", "onShow $history")
-            if (history == null) {
-                eventFlow.emit(
-                    PlayerEvent.ChangePlay(
-                        if (lineIndex == -1) 0 else lineIndex,
-                        if (episode == -1) 0 else episode
-                    )
-                )
-            } else {
-                if (lineIndex == -1) {
-                    eventFlow.emit(
-                        PlayerEvent.ChangePlay(
-                            history.lastLinesIndex,
-                            history.lastEpisodeIndex
+            )
+            PlayerController.exoPlayer.pause()
+            PlayerController.exoPlayer.stop()
+            kotlin.runCatching {
+                val res = AnimSourceFactory.requirePlay(bangumiSummary.source)
+                val result = res.getPlayUrl(bangumiSummary, lineIndex, episodeIndex)
+                result.complete {
+                    _playerStatus.emit(
+                        AnimPlayState.Play(
+                            lineIndex,
+                            episodeIndex,
+                            it.data.uri,
+                            it.data.type,
                         )
                     )
-                } else {
-                    eventFlow.emit(PlayerEvent.ChangePlay(lineIndex, 0))
+                }.error {
+                    _playerStatus.emit(
+                        AnimPlayState.Error(
+                            lineIndex,
+                            episodeIndex,
+                            if (it.isParserError) stringRes(
+                                R.string.source_error
+                            ) else stringRes(R.string.loading_error), it.throwable
+                        )
+                    )
                 }
+            }.onFailure {
+                it.printStackTrace()
+                _playerStatus.emit(
+                    AnimPlayState.Error(
+                        lineIndex,
+                        episodeIndex,
+                        stringRes(R.string.loading_error),
+                        it
+                    )
+                )
             }
         }
     }
 
-    fun onNewEnter(enterData: BangumiPlayController.EnterData?) {
-        Log.d("AnimPlayItemController", "onNewEnter ${enterData}")
-        this.enterData = enterData
-        if (enterData != null) {
-            if (_playerStatus.value !is PlayerStatus.None) {
-                onShow(enterData.sourceIndex, enterData.episode)
-            }
-        }
+
+    fun release() {
+        infoController.release()
+        lastScope?.cancel()
     }
 
-    private fun checkPlay(line: Int, epi: Int): Boolean {
-        val status = playMsgController.flow.value as? PlayMsgController.PlayMsgStatus.Completely
-            ?: return false
-        val curPlayMsg = status.playMsg
-        if (curPlayMsg.isEmpty()) {
-            return false
-        }
-        val lines = curPlayMsg.keys.toList()
-        if (line < 0 || line >= lines.size) {
-            return false
-        }
-        val key = lines[line]
-        val es = curPlayMsg[key] ?: return false
-        if (epi < 0 || epi >= es.size) {
-            return false
-        }
-        return true
-    }
 
-    fun getCurTitle(): String {
-        val status =
-            playMsgController.flow.value as? PlayMsgController.PlayMsgStatus.Completely ?: return ""
-        val curPlayMsg = status.playMsg
-        val curLine = playerStatus.value.sourceIndex
-        val curEp = playerStatus.value.episode
-        if (curPlayMsg.isEmpty()) {
-            return ""
-        }
-        val lines = curPlayMsg.keys.toList()
-        if (curLine < 0 || curLine >= lines.size) {
-            return ""
-        }
-        val key = lines[curLine]
-        val eps = curPlayMsg[key] ?: return ""
-        if (curEp < 0 || curEp >= eps.size) {
-            return ""
-        }
-        return eps[curEp]
-    }
+}
 
-    fun getCurPlayList(): List<String> {
+sealed class AnimPlayState(
+    val sourceIndex: Int,
+    val episode: Int,
+) {
+    object None : AnimPlayState(-1, -1)
 
-        val res = arrayListOf<String>()
-        val status = playMsgController.flow.value as? PlayMsgController.PlayMsgStatus.Completely
-            ?: return res
-        val curPlayMsg = status.playMsg
-        val curLine = playerStatus.value.sourceIndex
-        if (curPlayMsg.isEmpty()) {
-            return res
-        }
-        val lines = curPlayMsg.keys.toList()
-        if (curLine < 0 || curLine >= lines.size) {
-            return res
-        }
-        curPlayMsg[lines[curLine]]?.forEach {
-            res.add(it)
-        }
-        return res
-    }
+    class Loading(
+        sourceIndex: Int,
+        episode: Int,
+    ) : AnimPlayState(sourceIndex, episode)
 
-    fun replay(): Boolean {
-        val line = playerStatus.value.sourceIndex
-        val epi = playerStatus.value.episode
-        if (checkPlay(line, epi)) {
-            scope.launch {
-                eventFlow.emit(PlayerEvent.ChangePlay(line, epi))
-            }
-            return true
-        }
-        return false
-    }
+    class Play(
+        sourceIndex: Int,
+        episode: Int,
+        val uri: String,
+        val type: Int = 0
+    ) : AnimPlayState(sourceIndex, episode)
 
-    fun tryNext(): Boolean {
-        val line = playerStatus.value.sourceIndex
-        val epi = playerStatus.value.episode + 1
-        if (checkPlay(line, epi)) {
-            scope.launch {
-                eventFlow.emit(PlayerEvent.ChangePlay(line, epi))
-            }
-            return true
-        }
-        return false
-    }
-
-    fun onDispose() {
-        BangumiPlayController.trySaveHistory(-1)
-    }
-
-    fun changeEpisode(epi: Int): Boolean {
-        val line = playerStatus.value.sourceIndex
-        if (checkPlay(line, epi)) {
-            scope.launch {
-                eventFlow.emit(PlayerEvent.ChangePlay(line, epi))
-            }
-            return true
-        }
-        return false
-    }
-
-    fun clear() {
-        scope.cancel()
-        eventScope.cancel()
-    }
+    class Error(
+        sourceIndex: Int,
+        episode: Int,
+        val errorMsg: String,
+        val throwable: Throwable?
+    ) : AnimPlayState(sourceIndex, episode)
 }
 

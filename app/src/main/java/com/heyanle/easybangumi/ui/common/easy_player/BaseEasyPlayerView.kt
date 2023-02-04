@@ -10,7 +10,6 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.Gravity
 import android.view.KeyEvent
-import android.view.SurfaceView
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -18,16 +17,12 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.drawToBitmap
 import androidx.media.AudioAttributesCompat
 import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.PlaybackException
-import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.Player.*
 import com.google.android.exoplayer2.video.VideoSize
-import com.heyanle.easybangumi.ui.player.BangumiPlayController
+import com.heyanle.easybangumi.ui.playerOld.BangumiPlayController
 import com.heyanle.eplayer_core.EasyPlayerManager
 import com.heyanle.eplayer_core.constant.EasyPlayStatus
 import com.heyanle.eplayer_core.constant.EasyPlayerStatus
-import com.heyanle.eplayer_core.constant.OtherPlayerEvent
 import com.heyanle.eplayer_core.controller.IController
 import com.heyanle.eplayer_core.controller.IControllerGetter
 import com.heyanle.eplayer_core.player.IPlayer

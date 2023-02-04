@@ -17,13 +17,11 @@ import android.widget.FrameLayout
 import android.widget.SeekBar
 import androidx.compose.ui.graphics.toArgb
 import com.heyanle.easybangumi.R
-import com.heyanle.easybangumi.databinding.ComponentStandardBinding
 import com.heyanle.easybangumi.databinding.ComponentTinyBinding
 import com.heyanle.easybangumi.player.PlayerController
 import com.heyanle.easybangumi.player.PlayerTinyController
 import com.heyanle.easybangumi.theme.EasyThemeController
-import com.heyanle.easybangumi.ui.common.easy_player.utils.TimeUtils
-import com.heyanle.easybangumi.ui.player.BangumiPlayController
+import com.heyanle.easybangumi.ui.playerOld.BangumiPlayController
 import com.heyanle.eplayer_core.constant.EasyPlayStatus
 import com.heyanle.eplayer_core.controller.ComponentContainer
 import com.heyanle.eplayer_core.controller.IComponent
