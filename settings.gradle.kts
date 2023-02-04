@@ -16,4 +16,5 @@ dependencyResolutionManagement {
 rootProject.name = "EasyBangumi"
 include(":app")
 include(":easy-crasher")
-include(":lib-anim")
+include(":source-core")
+include(":source-api")
