@@ -24,7 +24,8 @@ class CrashActivity : Activity() {
 
     private fun initView() {
         val btTitle = findViewById<TextView>(R.id.tv_title)
-        val title = "手机型号：${android.os.Build.MODEL}\n安卓版本：${android.os.Build.VERSION.RELEASE}"
+        val title =
+            "手机型号：${android.os.Build.MODEL}\n安卓版本：${android.os.Build.VERSION.RELEASE}"
         btTitle.text = title
 
         val tvErrMsg = findViewById<TextView>(R.id.tv_msg)

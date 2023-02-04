@@ -34,18 +34,24 @@ interface BangumiHistoryDao {
 
         val query = getFromBangumiSummary(history.source, history.detailUrl)
         if (query != null) {
-            val lastP = if(history.lastProcessTime == -1L ){
-                if(history.lastLinesIndex == query.lastLinesIndex && history.lastEpisodeIndex == query.lastEpisodeIndex){
+            val lastP = if (history.lastProcessTime == -1L) {
+                if (history.lastLinesIndex == query.lastLinesIndex && history.lastEpisodeIndex == query.lastEpisodeIndex) {
                     query.lastProcessTime
-                }else{
+                } else {
                     0
                 }
-            }else{
+            } else {
                 history.lastProcessTime
             }
             Log.d("BangumiHistoryDao", "insertOrModify $lastP")
 
-            modify(history.copy(id = query.id, lastProcessTime = lastP, createTime = System.currentTimeMillis()))
+            modify(
+                history.copy(
+                    id = query.id,
+                    lastProcessTime = lastP,
+                    createTime = System.currentTimeMillis()
+                )
+            )
         } else {
             insert(history.copy(createTime = System.currentTimeMillis()))
         }

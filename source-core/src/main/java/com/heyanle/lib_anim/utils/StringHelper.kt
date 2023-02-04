@@ -5,6 +5,7 @@ package com.heyanle.lib_anim.utils
  * https://github.com/heyanLE
  */
 lateinit var stringHelper: StringHelper
+
 interface StringHelper {
 
     fun moeSnackBar(string: String)

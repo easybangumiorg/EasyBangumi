@@ -39,16 +39,16 @@ fun WebViewUser(
 
     val nav = LocalNavController.current
 
-    LaunchedEffect(key1 = Unit){
-        while(isActive){
-            if(onCheck(webView)){
+    LaunchedEffect(key1 = Unit) {
+        while (isActive) {
+            if (onCheck(webView)) {
                 nav.popBackStack()
             }
             delay(1000)
         }
     }
 
-    DisposableEffect(key1 = Unit){
+    DisposableEffect(key1 = Unit) {
         onDispose {
             onStop(webView)
         }
@@ -83,7 +83,7 @@ fun WebViewUser(
         content = {
             Box(
                 modifier = Modifier.padding(it)
-            ){
+            ) {
                 AndroidView(factory = {
                     webView
                 })

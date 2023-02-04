@@ -31,9 +31,11 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
             source.startsWith("http") -> {
                 source
             }
+
             source.startsWith("/") -> {
                 ROOT_URL + source
             }
+
             else -> {
                 "$ROOT_URL/$source"
             }
@@ -61,7 +63,10 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
             val map = LinkedHashMap<String, List<Bangumi>>()
             val doc = runCatching {
 
-                Jsoup.parse(networkHelper.client.newCall(GET(PROXY_URL + url(ROOT_URL))).execute().body?.string()?:"")
+                Jsoup.parse(
+                    networkHelper.client.newCall(GET(PROXY_URL + url(ROOT_URL)))
+                        .execute().body?.string() ?: ""
+                )
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -133,7 +138,10 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
             val doc = runCatching {
                 val url = url("/vod/search/wd/$keyword/page/$key")
 
-                Jsoup.parse(networkHelper.client.newCall(GET(PROXY_URL + url)).execute().body?.string()?:"")
+                Jsoup.parse(
+                    networkHelper.client.newCall(GET(PROXY_URL + url)).execute().body?.string()
+                        ?: ""
+                )
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -173,7 +181,10 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
         return withContext(Dispatchers.IO) {
             val doc = runCatching {
 
-                Jsoup.parse(networkHelper.client.newCall(GET(PROXY_URL + url(bangumi.detailUrl))).execute().body?.string()?:"")
+                Jsoup.parse(
+                    networkHelper.client.newCall(GET(PROXY_URL + url(bangumi.detailUrl)))
+                        .execute().body?.string() ?: ""
+                )
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -213,7 +224,10 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
         return withContext(Dispatchers.IO) {
             val map = LinkedHashMap<String, List<String>>()
             val doc = runCatching {
-                Jsoup.parse(networkHelper.client.newCall(GET(PROXY_URL + url(bangumi.detailUrl))).execute().body?.string()?:"")
+                Jsoup.parse(
+                    networkHelper.client.newCall(GET(PROXY_URL + url(bangumi.detailUrl)))
+                        .execute().body?.string() ?: ""
+                )
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -283,7 +297,10 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
         return withContext(Dispatchers.IO) {
             val doc = runCatching {
 
-                Jsoup.parse(networkHelper.client.newCall(GET(PROXY_URL + url(url))).execute().body?.string()?:"")
+                Jsoup.parse(
+                    networkHelper.client.newCall(GET(PROXY_URL + url(url))).execute().body?.string()
+                        ?: ""
+                )
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -308,15 +325,19 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
                         "wei" -> {
                             "wy"
                         }
+
                         "ksyun" -> {
                             "ksyun"
                         }
+
                         "danmakk" -> {
                             "pic"
                         }
+
                         "pic" -> {
                             "pic"
                         }
+
                         else -> {
                             "play"
                         }
@@ -330,7 +351,10 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
                 return@withContext ISourceParser.ParserResult.Error(it, true)
             }
             val d = runCatching {
-                Jsoup.parse(networkHelper.client.newCall(GET(PROXY_URL + url(videoHtmlUrl))).execute().body?.string()?:"")
+                Jsoup.parse(
+                    networkHelper.client.newCall(GET(PROXY_URL + url(videoHtmlUrl)))
+                        .execute().body?.string() ?: ""
+                )
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)

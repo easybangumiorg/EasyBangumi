@@ -129,6 +129,7 @@ object PlayerTinyController {
                 downTouchY = event.rawY
                 downTime = System.currentTimeMillis()
             }
+
             MotionEvent.ACTION_MOVE -> {
                 val nowX = event.rawX
                 val nowY = event.rawY
@@ -145,6 +146,7 @@ object PlayerTinyController {
                     }
                 }
             }
+
             MotionEvent.ACTION_UP -> {
                 val now = System.currentTimeMillis()
                 moveToEdge()

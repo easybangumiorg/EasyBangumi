@@ -158,6 +158,7 @@ class StandardComponent : FrameLayout, IGestureComponent, SeekBar.OnSeekBarChang
                 binding.tvEpisode.visibility = View.VISIBLE
                 binding.ivLock.visibility = View.VISIBLE
             }
+
             else -> {
                 binding.upLayout.visibility = View.GONE
                 binding.tvEpisode.visibility = View.GONE
@@ -171,13 +172,13 @@ class StandardComponent : FrameLayout, IGestureComponent, SeekBar.OnSeekBarChang
         this.playState = playState
         isVisible = container?.isShowing() ?: false
         onUIChange(isVisible, isLocked, this.playState)
-        if(playState == EasyPlayStatus.STATE_PLAYING ||
+        if (playState == EasyPlayStatus.STATE_PLAYING ||
             playState == EasyPlayStatus.STATE_PAUSED ||
             playState == EasyPlayStatus.STATE_BUFFERING ||
             playState == EasyPlayStatus.STATE_BUFFERED
-        ){
+        ) {
             binding.viewMask.hide()
-        }else{
+        } else {
             binding.viewMask.show()
         }
 //        refreshPlayPauseBtStatus()
@@ -321,13 +322,13 @@ class StandardComponent : FrameLayout, IGestureComponent, SeekBar.OnSeekBarChang
                     }
                     if (isVisible) {
                         if (isLocked) {
-                            if(isFullScreen()){
+                            if (isFullScreen()) {
                                 binding.ivLock.show()
                             }
                             binding.contentLayout.hideWithAnim()
                             binding.ivController.hide()
                         } else {
-                            if(isFullScreen()){
+                            if (isFullScreen()) {
                                 binding.ivLock.show()
                             }
 
@@ -340,6 +341,7 @@ class StandardComponent : FrameLayout, IGestureComponent, SeekBar.OnSeekBarChang
                         binding.ivController.hide()
                     }
                 }
+
                 EasyPlayStatus.STATE_PLAYING -> {
                     binding.root.visibility = View.VISIBLE
                     binding.progressBar.hide()
@@ -350,13 +352,13 @@ class StandardComponent : FrameLayout, IGestureComponent, SeekBar.OnSeekBarChang
                     if (isVisible) {
                         startFadeOut()
                         if (isLocked) {
-                            if(isFullScreen()){
+                            if (isFullScreen()) {
                                 binding.ivLock.show()
                             }
                             binding.contentLayout.hideWithAnim()
                             binding.ivController.hide()
                         } else {
-                            if(isFullScreen()){
+                            if (isFullScreen()) {
                                 binding.ivLock.show()
                             }
                             binding.contentLayout.showWithAnim()
@@ -368,6 +370,7 @@ class StandardComponent : FrameLayout, IGestureComponent, SeekBar.OnSeekBarChang
                         binding.ivController.hide()
                     }
                 }
+
                 EasyPlayStatus.STATE_PAUSED -> {
                     binding.root.visibility = View.VISIBLE
                     binding.progressBar.hide()
@@ -379,13 +382,13 @@ class StandardComponent : FrameLayout, IGestureComponent, SeekBar.OnSeekBarChang
 
                     if (isVisible) {
                         if (isLocked) {
-                            if(isFullScreen()){
+                            if (isFullScreen()) {
                                 binding.ivLock.show()
                             }
                             binding.contentLayout.hideWithAnim()
                             binding.ivController.hide()
                         } else {
-                            if(isFullScreen()){
+                            if (isFullScreen()) {
                                 binding.ivLock.show()
                             }
                             binding.contentLayout.showWithAnim()
@@ -398,9 +401,11 @@ class StandardComponent : FrameLayout, IGestureComponent, SeekBar.OnSeekBarChang
 
                     }
                 }
+
                 EasyPlayStatus.STATE_ERROR -> {
                     binding.root.visibility = View.GONE
                 }
+
                 EasyPlayStatus.STATE_PLAYBACK_COMPLETED -> {
                     if (isLocked) {
                         setLocked(false)
@@ -461,12 +466,12 @@ class StandardComponent : FrameLayout, IGestureComponent, SeekBar.OnSeekBarChang
         }
 
     }
-    
-    private fun View.show(){
+
+    private fun View.show() {
         visibility = View.VISIBLE
     }
-    
-    private fun View.hide(){
+
+    private fun View.hide() {
         visibility = View.GONE
     }
 

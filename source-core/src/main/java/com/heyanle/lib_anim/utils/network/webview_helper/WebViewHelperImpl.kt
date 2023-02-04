@@ -11,20 +11,14 @@ import android.webkit.SslErrorHandler
 import android.webkit.ValueCallback
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
-import android.webkit.WebSettings
 import android.webkit.WebView
 import androidx.webkit.WebResourceErrorCompat
 import androidx.webkit.WebViewClientCompat
-import com.heyanle.lib_anim.utils.network.GET
-import com.heyanle.lib_anim.utils.network.WebViewProxyClient
-import com.heyanle.lib_anim.utils.network.networkHelper
 import com.heyanle.lib_anim.utils.setDefaultSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okhttp3.CacheControl
-import okhttp3.Headers
 import java.io.ByteArrayInputStream
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -128,11 +122,9 @@ class WebViewHelperImpl(
         }
 
 
-
         override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
             return false
         }
-
 
 
 //        /**
@@ -183,7 +175,7 @@ class WebViewHelperImpl(
 
                     web.executeJavaScriptCode(actionJs ?: "")
                     web.evaluateJavascript("(function() { return document.documentElement.outerHTML })()") {
-                        Log.d("WebviewHelper", "script back"+url)
+                        Log.d("WebviewHelper", "script back" + url)
                         if (it.isNullOrEmpty())
                             con.resume("")
                         else {
@@ -223,7 +215,7 @@ class WebViewHelperImpl(
                     }
 
                     override fun onLoadResource(view: WebView, url: String) {
-                        Log.d("WebviewHelper", " 1.url -> "+url)
+                        Log.d("WebviewHelper", " 1.url -> " + url)
                         if (callBackRegex.isNotBlank() && !hasResult && regexE.matches(url)) {
                             Log.d("url matched", url)
                             callBack(view)
@@ -271,7 +263,7 @@ class WebViewHelperImpl(
 //                    }
                 }
                 globalWebView.resumeTimers()
-                globalWebView.loadUrl(url, header?: emptyMap())
+                globalWebView.loadUrl(url, header ?: emptyMap())
                 launch(Dispatchers.Main) {
                     delay(timeOut)
                     if (!hasResult)
@@ -307,7 +299,7 @@ class WebViewHelperImpl(
                     }
 
                     override fun onLoadResource(view: WebView?, url: String) {
-                        Log.d("WebViewHelper", "url->"+url)
+                        Log.d("WebViewHelper", "url->" + url)
                         if (!hasResult && regexE.matches(url)) {
                             con.resume(url)
                             hasResult = true
@@ -318,7 +310,7 @@ class WebViewHelperImpl(
                     }
                 }
                 globalWebView.resumeTimers()
-                globalWebView.loadUrl(url, header?: emptyMap())
+                globalWebView.loadUrl(url, header ?: emptyMap())
                 launch(Dispatchers.Main) {
                     delay(timeOut)
                     if (!hasResult) {
@@ -381,7 +373,7 @@ class WebViewHelperImpl(
                 test
             }
             globalWebView.resumeTimers()
-            globalWebView.loadUrl(url, header?: emptyMap())
+            globalWebView.loadUrl(url, header ?: emptyMap())
             launch(Dispatchers.Main) {
                 delay(timeOut)
                 if (!hasResult) {

@@ -34,9 +34,10 @@ class AnimStarViewModel : ViewModel() {
         }
     }
 
-    fun refresh(){
+    fun refresh() {
         curPager.value = getPager().flow.cachedIn(viewModelScope)
     }
+
     init {
         refresh.observeForever(observer)
     }

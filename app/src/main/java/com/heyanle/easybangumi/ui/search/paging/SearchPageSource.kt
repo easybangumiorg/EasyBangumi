@@ -31,6 +31,7 @@ class SearchPageSource(
                         }
 
                     }
+
                     is ISourceParser.ParserResult.Complete -> {
                         LoadResult.Page(
                             data = it.data.second,
