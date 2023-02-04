@@ -10,6 +10,7 @@ import com.heyanle.lib_anim.utils.network.GET
 import com.heyanle.lib_anim.utils.network.networkHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.Headers
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import java.lang.Exception
@@ -56,19 +57,23 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
         return 0
     }
 
+    private fun defaultGET(url: String) :String {
+        val req = GET(PROXY_URL + url,Headers.headersOf("User-Agent", networkHelper.defaultLinuxUA))
+        return networkHelper.client.newCall(req).execute().body?.string()?:""
+    }
+
     override suspend fun home(): ISourceParser.ParserResult<LinkedHashMap<String, List<Bangumi>>> {
         return withContext(Dispatchers.IO) {
             val map = LinkedHashMap<String, List<Bangumi>>()
             val doc = runCatching {
-
-                Jsoup.parse(networkHelper.client.newCall(GET(PROXY_URL + url(ROOT_URL))).execute().body?.string()?:"")
+                Jsoup.parse(defaultGET(ROOT_URL))
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
             }
             kotlin.runCatching {
 
-                val elements = doc.getElementsByClass("area-cont")
+                val elements = doc.select("div.area-cont")
 
                 fun load(element: Element) {
                     val columnTitle = element.getElementsByClass("title")[0].child(1).text()
@@ -77,7 +82,7 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
                     val ul = uls[0]
                     ul.children().forEach { ele ->
                         val detailUrl = url(ele.child(0).attr("href"))
-                        val imgUrl = PROXY_URL + url(ele.getElementsByTag("img")[0].attr("src"))
+                        val imgUrl = url(ele.getElementsByTag("img")[0].attr("src"))
                         val title = ele.child(1).child(0).text()
                         val intro = ele.child(1).child(1).text()
                         val bangumi = Bangumi(
@@ -132,8 +137,7 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
         return withContext(Dispatchers.IO) {
             val doc = runCatching {
                 val url = url("/vod/search/wd/$keyword/page/$key")
-
-                Jsoup.parse(networkHelper.client.newCall(GET(PROXY_URL + url)).execute().body?.string()?:"")
+                Jsoup.parse(defaultGET(url))
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -172,8 +176,7 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
     override suspend fun detail(bangumi: BangumiSummary): ISourceParser.ParserResult<BangumiDetail> {
         return withContext(Dispatchers.IO) {
             val doc = runCatching {
-
-                Jsoup.parse(networkHelper.client.newCall(GET(PROXY_URL + url(bangumi.detailUrl))).execute().body?.string()?:"")
+                Jsoup.parse(defaultGET(bangumi.detailUrl))
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -213,7 +216,7 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
         return withContext(Dispatchers.IO) {
             val map = LinkedHashMap<String, List<String>>()
             val doc = runCatching {
-                Jsoup.parse(networkHelper.client.newCall(GET(PROXY_URL + url(bangumi.detailUrl))).execute().body?.string()?:"")
+                Jsoup.parse(defaultGET(bangumi.detailUrl))
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -283,7 +286,7 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
         return withContext(Dispatchers.IO) {
             val doc = runCatching {
 
-                Jsoup.parse(networkHelper.client.newCall(GET(PROXY_URL + url(url))).execute().body?.string()?:"")
+                Jsoup.parse(defaultGET(url))
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
