@@ -49,6 +49,7 @@ class PlayMsgController(val bangumiSummary: BangumiSummary) {
                 PlayMsgEvent.Init -> {
                     _detailStatus.emit(PlayMsgStatus.None)
                 }
+
                 is PlayMsgEvent.LoadDetail -> {
                     kotlin.runCatching {
                         _detailStatus.emit(PlayMsgStatus.Loading(event))

@@ -13,7 +13,7 @@ import com.heyanle.lib_anim.yhdmp.YhdmpParser
  */
 
 
-object InnerLoader: ParserLoader {
+object InnerLoader : ParserLoader {
 
     override fun load(): List<ISourceParser> {
         return listOf(

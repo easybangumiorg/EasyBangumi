@@ -112,9 +112,11 @@ fun AnimHomePage(
         }
 
     })
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .pullRefresh(state)) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .pullRefresh(state)
+    ) {
         ScrollHeaderBox(
             canScroll = {
                 if (isHeaderShowForever) {
@@ -187,6 +189,7 @@ fun AnimHomePage(
                                 }
                             )
                         }
+
                         else -> {}
                     }
                 }

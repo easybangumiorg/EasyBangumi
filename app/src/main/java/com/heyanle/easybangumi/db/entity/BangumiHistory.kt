@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
  * https://github.com/heyanLE
  */
 @Entity
-data class BangumiHistory (
+data class BangumiHistory(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val name: String,

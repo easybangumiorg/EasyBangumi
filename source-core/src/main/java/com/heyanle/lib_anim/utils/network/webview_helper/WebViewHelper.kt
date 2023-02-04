@@ -6,6 +6,7 @@ package com.heyanle.lib_anim.utils.network.webview_helper
  */
 
 lateinit var webViewHelper: WebviewHelper
+
 interface WebviewHelper {
 
     /**

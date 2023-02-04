@@ -32,9 +32,11 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
             source.startsWith("http") -> {
                 source
             }
+
             source.startsWith("/") -> {
                 ROOT_URL + source
             }
+
             else -> {
                 "$ROOT_URL/$source"
             }
@@ -311,15 +313,19 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
                         "wei" -> {
                             "wy"
                         }
+
                         "ksyun" -> {
                             "ksyun"
                         }
+
                         "danmakk" -> {
                             "pic"
                         }
+
                         "pic" -> {
                             "pic"
                         }
+
                         else -> {
                             "play"
                         }
@@ -333,7 +339,10 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
                 return@withContext ISourceParser.ParserResult.Error(it, true)
             }
             val d = runCatching {
-                Jsoup.parse(networkHelper.client.newCall(GET(PROXY_URL + url(videoHtmlUrl))).execute().body?.string()?:"")
+                Jsoup.parse(
+                    networkHelper.client.newCall(GET(PROXY_URL + url(videoHtmlUrl)))
+                        .execute().body?.string() ?: ""
+                )
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)

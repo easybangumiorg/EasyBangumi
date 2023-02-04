@@ -65,9 +65,11 @@ fun AnimMy() {
     })
     val pi = vm.curPager.value.collectAsLazyPagingItems()
 
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .pullRefresh(state)) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .pullRefresh(state)
+    ) {
         AnimatedContent(
             targetState = pi,
             transitionSpec = {
@@ -113,6 +115,7 @@ fun AnimMy() {
                                 )
                             }
                         }
+
                         is LoadState.Error -> {
                             item(
                                 span = {
@@ -139,6 +142,7 @@ fun AnimMy() {
                                 )
                             }
                         }
+
                         else -> {
                             item(
                                 span = {

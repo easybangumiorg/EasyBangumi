@@ -23,7 +23,7 @@ object AnimSourceLibrary {
         val key: String,
         val enable: Boolean,
         val order: Int,
-    ){
+    ) {
 
     }
 
@@ -35,9 +35,9 @@ object AnimSourceLibrary {
     fun getConfigs(): HashMap<String, SourceConfig> {
         val res = hashMapOf<String, SourceConfig>()
         parserMap.value.iterator().forEach {
-            if(parserConfig.containsKey(it.key)){
-                res[it.key] = parserConfig[it.key]?:throw java.lang.IllegalStateException()
-            }else{
+            if (parserConfig.containsKey(it.key)) {
+                res[it.key] = parserConfig[it.key] ?: throw java.lang.IllegalStateException()
+            } else {
                 val config = SourceConfig(it.key, false, parserConfig.size)
                 parserConfig[it.key] = config
                 res[it.key] = config
@@ -49,21 +49,21 @@ object AnimSourceLibrary {
 
 
     @UiThread
-    fun newSource(loader: ParserLoader, defaultEnable: Boolean){
+    fun newSource(loader: ParserLoader, defaultEnable: Boolean) {
         scope.launch {
             val old = linkedMapOf<String, ISourceParser>()
             old.putAll(parserMap.value)
             loader.load().forEach {
                 if (!old.containsKey(it.getKey())
-                    ||old[it.getKey()]!!.getVersionCode() < it.getVersionCode()
+                    || old[it.getKey()]!!.getVersionCode() < it.getVersionCode()
                 ) {
                     old[it.getKey()] = it
                 }
             }
             parserMap.emit(old)
-            if(defaultEnable){
+            if (defaultEnable) {
                 old.iterator().forEach {
-                    if(!parserConfig.containsKey(it.key)){
+                    if (!parserConfig.containsKey(it.key)) {
                         val config = SourceConfig(it.key, true, parserConfig.size)
                         parserConfig[it.key] = config
                     }
@@ -76,13 +76,13 @@ object AnimSourceLibrary {
 
 
     @UiThread
-    fun saveNewConfig(config: List<SourceConfig>){
+    fun saveNewConfig(config: List<SourceConfig>) {
         val newConfigs = hashMapOf<String, SourceConfig>()
         val enableSource = arrayListOf<SourceConfig>()
         config.forEach {
-            if(parserMap.value.containsKey(it.key)){
+            if (parserMap.value.containsKey(it.key)) {
                 newConfigs[it.key] = it
-                if(it.enable){
+                if (it.enable) {
                     enableSource.add(it)
                 }
             }
@@ -103,16 +103,19 @@ object AnimSourceLibrary {
         AnimSourceFactory.newSource(AnimSources(parser))
     }
 
-    private fun getOkkvConfig(): HashMap<String,SourceConfig>{
+    private fun getOkkvConfig(): HashMap<String, SourceConfig> {
         val res = hashMapOf<String, SourceConfig>()
-        Gson().fromJson<List<SourceConfig>>(parserConfigJsonOkkv, object: TypeToken<List<SourceConfig>>(){}.type)
+        Gson().fromJson<List<SourceConfig>>(
+            parserConfigJsonOkkv,
+            object : TypeToken<List<SourceConfig>>() {}.type
+        )
             .forEach {
                 res[it.key] = it
             }
         return res
     }
 
-    private fun saveOkkv(){
+    private fun saveOkkv() {
         parserConfigJsonOkkv = Gson().toJson(parserConfig.values)
     }
 

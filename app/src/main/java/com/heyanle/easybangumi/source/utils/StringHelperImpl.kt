@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
  * Created by HeYanLe on 2023/2/3 23:19.
  * https://github.com/heyanLE
  */
-class StringHelperImpl: StringHelper {
+class StringHelperImpl : StringHelper {
 
     override fun moeSnackBar(string: String) {
         GlobalScope.launch(Dispatchers.Main) {

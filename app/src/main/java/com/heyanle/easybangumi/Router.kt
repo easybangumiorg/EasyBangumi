@@ -36,7 +36,7 @@ val LocalNavController = staticCompositionLocalOf<NavHostController> {
     error("AppNavController Not Provide")
 }
 
-var navControllerRef : WeakReference<NavHostController>? = null
+var navControllerRef: WeakReference<NavHostController>? = null
 
 const val NAV = "nav"
 
@@ -83,7 +83,7 @@ fun NavHostController.navigationPlay(source: String, detailUrl: String) {
 @Composable
 fun Nav() {
     val nav = rememberAnimatedNavController()
-    LaunchedEffect(key1 = nav){
+    LaunchedEffect(key1 = nav) {
         navControllerRef = WeakReference(nav)
     }
     CompositionLocalProvider(LocalNavController provides nav) {
@@ -107,7 +107,10 @@ fun Nav() {
                     }
                 )
             ) {
-                Search(it.arguments?.getString("keyword") ?: "", it.arguments?.getString("source")?:"")
+                Search(
+                    it.arguments?.getString("keyword") ?: "",
+                    it.arguments?.getString("source") ?: ""
+                )
             }
 
             composable(
@@ -123,7 +126,7 @@ fun Nav() {
                         defaultValue = -1
                         type = NavType.IntType
                     },
-                    navArgument("startPosition"){
+                    navArgument("startPosition") {
                         defaultValue = -1L
                         type = NavType.LongType
                     },
@@ -134,9 +137,9 @@ fun Nav() {
             ) {
                 val source = it.arguments?.getString("source") ?: ""
                 val detailUrl = it.arguments?.getString("detailUrl") ?: ""
-                val linesIndex = it.arguments?.getInt("linesIndex")?:-1
-                val episode = it.arguments?.getInt("episode")?:-1
-                val startPosition = it.arguments?.getLong("startPosition")?:-1L
+                val linesIndex = it.arguments?.getInt("linesIndex") ?: -1
+                val episode = it.arguments?.getInt("episode") ?: -1
+                val startPosition = it.arguments?.getLong("startPosition") ?: -1L
 
                 val enterData = BangumiPlayController.EnterData(
                     sourceIndex = linesIndex,
@@ -145,15 +148,20 @@ fun Nav() {
 
                 )
 
-                Play(source = source, detail = URLDecoder.decode(detailUrl, "utf-8"), enterData = enterData)
+                Play(
+                    source = source,
+                    detail = URLDecoder.decode(detailUrl, "utf-8"),
+                    enterData = enterData
+                )
             }
 
-            composable(WEB_VIEW_USER){
+            composable(WEB_VIEW_USER) {
                 kotlin.runCatching {
-                    val wb = WebViewUserHelperImpl.webViewRef?.get()?:throw NullPointerException()
-                    val onCheck = WebViewUserHelperImpl.onCheck?.get()?:throw NullPointerException()
-                    val onStop = WebViewUserHelperImpl.onStop?.get()?:throw NullPointerException()
-                    WebViewUser(webView = wb, onCheck = onCheck, onStop = onStop )
+                    val wb = WebViewUserHelperImpl.webViewRef?.get() ?: throw NullPointerException()
+                    val onCheck =
+                        WebViewUserHelperImpl.onCheck?.get() ?: throw NullPointerException()
+                    val onStop = WebViewUserHelperImpl.onStop?.get() ?: throw NullPointerException()
+                    WebViewUser(webView = wb, onCheck = onCheck, onStop = onStop)
                 }.onFailure {
                     nav.popBackStack()
                 }
