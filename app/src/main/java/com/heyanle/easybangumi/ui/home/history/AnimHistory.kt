@@ -52,7 +52,7 @@ import kotlinx.coroutines.launch
  * Created by HeYanLe on 2023/1/9 21:51.
  * https://github.com/heyanLE
  */
-@OptIn(ExperimentalAnimationApi::class)
+@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun AnimHistory() {
     val lazyListState = rememberLazyListState()

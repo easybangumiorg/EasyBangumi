@@ -59,9 +59,10 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
         return 0
     }
 
-    private fun defaultGET(url: String) :String {
-        val req = GET(PROXY_URL + url,Headers.headersOf("User-Agent", networkHelper.defaultLinuxUA))
-        return networkHelper.client.newCall(req).execute().body?.string()?:""
+    private fun defaultGET(url: String): String {
+        val req =
+            GET(PROXY_URL + url, Headers.headersOf("User-Agent", networkHelper.defaultLinuxUA))
+        return networkHelper.client.newCall(req).execute().body?.string() ?: ""
     }
 
     override suspend fun home(): ISourceParser.ParserResult<LinkedHashMap<String, List<Bangumi>>> {
