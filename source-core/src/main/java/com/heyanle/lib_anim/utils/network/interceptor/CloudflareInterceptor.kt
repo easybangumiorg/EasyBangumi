@@ -14,6 +14,7 @@ import androidx.webkit.WebViewClientCompat
 import com.heyanle.lib_anim.utils.isOutdated
 import com.heyanle.lib_anim.utils.network.NetworkHelper
 import com.heyanle.lib_anim.utils.network.WebViewProxyClient
+import com.heyanle.lib_anim.utils.stringHelper
 import okhttp3.Cookie
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Interceptor
@@ -38,6 +39,7 @@ class CloudflareInterceptor(
     }
 
     override fun intercept(chain: Interceptor.Chain, request: Request, response: Response): Response {
+        stringHelper.moeSnackBar("当前需要等待 CloudFlare 检测，请耐心等待")
         try {
             response.close()
 
@@ -186,4 +188,4 @@ private val ERROR_CODES = listOf(403, 503)
 private val SERVER_CHECK = arrayOf("cloudflare-nginx", "cloudflare")
 private val COOKIE_NAMES = listOf("cf_clearance")
 
-private class CloudflareBypassException : Exception("CloudflareBypassError")
+class CloudflareBypassException : Exception("CloudflareBypassError")

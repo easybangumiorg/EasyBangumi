@@ -7,6 +7,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -16,10 +17,13 @@ import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.heyanle.bangumi_source_api.api.entity.Bangumi
+import com.heyanle.easybangumi.source.utils.WebViewUserHelperImpl
+import com.heyanle.easybangumi.ui.WebViewUser
 import com.heyanle.easybangumi.ui.home.Home
 import com.heyanle.easybangumi.ui.player.BangumiPlayController
 import com.heyanle.easybangumi.ui.search.Search
 import com.heyanle.easybangumi.ui.player.Play
+import java.lang.ref.WeakReference
 import java.net.URLDecoder
 import java.net.URLEncoder
 
@@ -32,12 +36,16 @@ val LocalNavController = staticCompositionLocalOf<NavHostController> {
     error("AppNavController Not Provide")
 }
 
+var navControllerRef : WeakReference<NavHostController>? = null
+
 const val NAV = "nav"
 
 const val HOME = "home"
 const val SEARCH = "search"
 
 const val PLAY = "play"
+
+const val WEB_VIEW_USER = "web_view_user"
 
 // 缺省路由
 const val DEFAULT = HOME
@@ -75,6 +83,9 @@ fun NavHostController.navigationPlay(source: String, detailUrl: String) {
 @Composable
 fun Nav() {
     val nav = rememberAnimatedNavController()
+    LaunchedEffect(key1 = nav){
+        navControllerRef = WeakReference(nav)
+    }
     CompositionLocalProvider(LocalNavController provides nav) {
         AnimatedNavHost(nav, DEFAULT,
             enterTransition = { slideInHorizontally(tween()) { it } },
@@ -135,6 +146,17 @@ fun Nav() {
                 )
 
                 Play(source = source, detail = URLDecoder.decode(detailUrl, "utf-8"), enterData = enterData)
+            }
+
+            composable(WEB_VIEW_USER){
+                kotlin.runCatching {
+                    val wb = WebViewUserHelperImpl.webViewRef?.get()?:throw NullPointerException()
+                    val onCheck = WebViewUserHelperImpl.onCheck?.get()?:throw NullPointerException()
+                    val onStop = WebViewUserHelperImpl.onStop?.get()?:throw NullPointerException()
+                    WebViewUser(webView = wb, onCheck = onCheck, onStop = onStop )
+                }.onFailure {
+                    nav.popBackStack()
+                }
             }
 
 

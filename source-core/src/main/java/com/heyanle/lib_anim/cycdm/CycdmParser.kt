@@ -11,11 +11,14 @@ import com.heyanle.lib_anim.bimibimi.BimibimiParser
 import com.heyanle.lib_anim.utils.Base64Utils
 import com.heyanle.lib_anim.utils.network.GET
 import com.heyanle.lib_anim.utils.network.POST
+import com.heyanle.lib_anim.utils.network.interceptor.WaitWebViewException
 import com.heyanle.lib_anim.utils.network.networkHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.FormBody
+import okhttp3.Headers
 import okhttp3.RequestBody
+import okhttp3.internal.userAgent
 import org.jsoup.Jsoup
 import java.net.URLDecoder
 
@@ -84,9 +87,12 @@ class CycdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
             val map = LinkedHashMap<String, List<Bangumi>>()
 
             val doc = runCatching {
-
-                Jsoup.parse(networkHelper.client.newCall(GET(ROOT_URL)).execute().body?.string()?:"")
+                val req = GET(ROOT_URL, Headers.headersOf("User-Agent", networkHelper.defaultUA))
+                Jsoup.parse(networkHelper.cloudflareUserClient.newCall(req).execute().body?.string()?:"")
             }.getOrElse {
+                if(it is WaitWebViewException){
+                    return@withContext ISourceParser.ParserResult.Error(Exception("等待人机检测中"), true)
+                }
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
             }
@@ -318,7 +324,7 @@ class CycdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
         }
         return withContext(Dispatchers.IO) {
             val doc = runCatching {
-                Jsoup.parse(networkHelper.client.newCall(GET(url)).execute().body?.string()?:"")
+                Jsoup.parse(networkHelper.client.newCall(GET(url(url))).execute().body?.string()?:"")
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)

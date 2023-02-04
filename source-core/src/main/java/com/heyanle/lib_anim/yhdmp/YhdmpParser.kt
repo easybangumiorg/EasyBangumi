@@ -84,8 +84,8 @@ class YhdmpParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
                         if(cover.startsWith("//")){
                             cover = "https:${cover}"
                         }
-                        stringHelper.moeSnackBar(coverStyle)
-                        stringHelper.moeSnackBar(cover)
+//                        stringHelper.moeSnackBar(coverStyle)
+//                        stringHelper.moeSnackBar(cover)
                         val name = it.child(1).text()
                         val detailUrl = url(it.child(0).child(0).attr("href"))
                         val intro = it.child(0).child(0).child(0).child(1).text()

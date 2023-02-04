@@ -6,6 +6,7 @@ import com.heyanle.lib_anim.utils.FileHelper
 import com.heyanle.lib_anim.utils.fileHelper
 import com.heyanle.lib_anim.utils.network.NetworkHelper
 import com.heyanle.lib_anim.utils.network.networkHelper
+import com.heyanle.lib_anim.utils.network.webViewUserHelper
 import com.heyanle.lib_anim.utils.network.webview_helper.WebViewHelperImpl
 import com.heyanle.lib_anim.utils.network.webview_helper.webViewHelper
 import com.heyanle.lib_anim.utils.stringHelper
@@ -20,4 +21,5 @@ fun initUtils(context: Context){
     networkHelper = NetworkHelper(context, BuildConfig.DEBUG)
     stringHelper = StringHelperImpl()
     webViewHelper = WebViewHelperImpl(context)
+    webViewUserHelper = WebViewUserHelperImpl
 }
