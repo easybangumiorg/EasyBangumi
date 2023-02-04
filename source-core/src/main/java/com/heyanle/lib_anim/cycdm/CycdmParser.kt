@@ -93,6 +93,7 @@ class CycdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
                 Jsoup.parse(
                     networkHelper.cloudflareUserClient.newCall(req).execute().body?.string() ?: ""
                 )
+
             }.getOrElse {
                 if (it is WaitWebViewException) {
                     return@withContext ISourceParser.ParserResult.Error(
