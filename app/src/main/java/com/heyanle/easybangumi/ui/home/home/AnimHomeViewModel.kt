@@ -76,16 +76,14 @@ class AnimHomeViewModel(
     private val _homeResult = MutableStateFlow<HomeAnimState>(HomeAnimState.None)
     val homeResultFlow: Flow<HomeAnimState> = _homeResult
 
-    var lastScope: CoroutineScope? = null
+    var lastJob: Job? = null
 
     init {
         viewModelScope.launch {
             eventFlow.collectLatest() { event ->
 
-                lastScope?.cancel()
-                val sc = MainScope()
-                lastScope = sc
-                sc.launch {
+                lastJob?.cancel()
+                lastJob = viewModelScope.launch {
                     val index = event.currentIndex
                     Log.d("AnimHomeViewHolder", "index->$index")
                     // 下标对应番剧源检查
@@ -125,7 +123,7 @@ class AnimHomeViewModel(
                         // 先触发 Loading
                         _homeResult.emit(HomeAnimState.Loading(index))
                         val res = keys[index].home()
-                        if (eventFlow.value.currentIndex != index || !sc.isActive) {
+                        if (eventFlow.value.currentIndex != index || lastJob?.isActive != true) {
                             // 迟到的 resp
                             res.complete {
                                 // 设置 缓存后不发送事件
