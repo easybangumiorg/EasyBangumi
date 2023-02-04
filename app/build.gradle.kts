@@ -29,11 +29,13 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
+            postprocessing {
+                isRemoveUnusedCode = true
+                isRemoveUnusedResources = true
+                isObfuscate = false
+                isOptimizeCode = true
+                proguardFiles("proguard-rules.pro")
+            }
         }
     }
     compileOptions {
@@ -52,6 +54,7 @@ android {
     }
 
 }
+
 
 dependencies {
     glide()
@@ -79,7 +82,7 @@ dependencies {
     jsoup()
     androidXWebkit()
     commonsText()
-    easySourceApi()
     implementation(project(":easy-crasher"))
-    implementation(project(":lib-anim"))
+    implementation(project(":source-core"))
+    implementation(project(":source-api"))
 }
