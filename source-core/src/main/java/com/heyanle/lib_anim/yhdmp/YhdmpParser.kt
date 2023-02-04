@@ -135,15 +135,18 @@ class YhdmpParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
             }
             kotlin.runCatching {
                 val r = arrayListOf<Bangumi>()
-                doc.select("div.fire.l div.lpic ul li").forEach {
-                    val detailUrl = url(it.child(0).attr("href"))
-                    val coverUrl = it.child(0).child(0).attr("src")
+                doc.select("li").forEach {
+                    val detailUrl = url(it.child(0).child(0).attr("href"))
+                    val coverStyle = it.select("div.imgblock")[0].attr("style")
+                    val coverPattern = Regex("""(?<=url\(').*(?='\))""")
+                    var cover = coverPattern.find(coverStyle)?.value ?: ""
+
                     val b = Bangumi(
                         id = "${getLabel()}-$detailUrl",
                         name = it.child(1).text(),
                         detailUrl = detailUrl,
-                        intro = it.child(2).text(),
-                        cover = "https:${coverUrl}",
+                        intro = it.select("div.itemimgtext")[0].text(),
+                        cover = "https:${cover}",
                         visitTime = System.currentTimeMillis(),
                         source = getKey(),
                     )
@@ -179,10 +182,10 @@ class YhdmpParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
             }
             kotlin.runCatching {
                 val id = "${getLabel()}-${bangumi.detailUrl}"
-                val name = doc.select("div.fire.l div.rate.r h1")[0].text()
-                val intro = doc.select("div.fire.l div.rate.r div.sinfo p")[0].text()
-                val cover = doc.select("div.fire.l div.thumb.l img")[0].attr("src")
-                val description = doc.getElementsByClass("info")[0].text()
+                val name = doc.select("div.show h1")[0].text()
+                val intro = doc.select("div.info-sub p")[2].text()
+                val cover = doc.select("div.show img")[0].attr("src")
+                val description = doc.select("div.info")[0].text()
                 return@withContext ISourceParser.ParserResult.Complete(
                     BangumiDetail(
                         id = id,
@@ -282,7 +285,6 @@ class YhdmpParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
                 return@withContext ISourceParser.ParserResult.Error(Exception("Unknown Error"), true)
 
             val playSecret = runCatching {
-                k1 = null
                 getPlayInfoRequest(bangumi.detailUrl, lineIndex, episodes, url(url))
             }.getOrElse {
                 it.printStackTrace()
@@ -330,11 +332,9 @@ class YhdmpParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
 
         val target = url("/_getplay?aid=${playID}&playindex=${playIndex}&epindex=${epIndex}&r=${Math.random()}")
         val clint = networkHelper.client
-
-
-
+        
         val header =  Headers.Builder().add("Referer", referer)
-        if (k1 != null) {
+        if (k1 != null && t1 != null) {
             val t = t1!!.div(0x3e8) shr 5
             k2 = (t * (t % 0x1000) + 0x99d6) * (t % 0x1000) + t
             t2 = Date().time
@@ -355,7 +355,6 @@ class YhdmpParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
                     val size = session.length
                     val i = session.indexOf(";")
                     if (i in 0 until size) {
-                        //最终获取到的cookie
                         val cookie = session.substring(0, i).split("=")
                         when (cookie[0]) {
                             "k1" -> k1 = cookie[1].toLong()
@@ -365,7 +364,7 @@ class YhdmpParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
                 }
             }
 
-            if (errCount == 4) {
+            if (errCount == 5) {
                 errCount = 0
                 throw Error("Too many failures")
             }

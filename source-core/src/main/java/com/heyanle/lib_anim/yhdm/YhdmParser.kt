@@ -3,6 +3,7 @@ package com.heyanle.lib_anim.yhdm
 
 import com.heyanle.bangumi_source_api.api.*
 import com.heyanle.bangumi_source_api.api.IPlayerParser.PlayerInfo.Companion.TYPE_HLS
+import com.heyanle.bangumi_source_api.api.IPlayerParser.PlayerInfo.Companion.TYPE_OTHER
 import com.heyanle.bangumi_source_api.api.entity.Bangumi
 import com.heyanle.bangumi_source_api.api.entity.BangumiDetail
 import com.heyanle.bangumi_source_api.api.entity.BangumiSummary
@@ -264,13 +265,21 @@ class YhdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISe
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, true)
             }
-            if (result.isNotEmpty())
+            if (result.isNotEmpty()) {
+                if (result.indexOf(".m3u8") != -1)
+                    return@withContext ISourceParser.ParserResult.Complete(
+                        IPlayerParser.PlayerInfo(
+                            type = TYPE_HLS,
+                            uri = result
+                        )
+                    )
                 return@withContext ISourceParser.ParserResult.Complete(
                     IPlayerParser.PlayerInfo(
-                        type = TYPE_HLS,
+                        type = TYPE_OTHER,
                         uri = result
                     )
                 )
+            }
 
             return@withContext ISourceParser.ParserResult.Error(Exception("Unknown Error"), true)
         }
