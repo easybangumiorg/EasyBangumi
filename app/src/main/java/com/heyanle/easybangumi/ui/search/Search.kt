@@ -110,18 +110,18 @@ fun SearchPage(
     val pagerState = rememberPagerState(initialPage = Unit.let {
         var index = -1
         searchParsers.forEachIndexed { i, iSearchParser ->
-            if(iSearchParser.getKey() == source){
+            if (iSearchParser.getKey() == source) {
                 index = i
             }
         }
-        if(index == -1) animSearchInitialPage else index
+        if (index == -1) animSearchInitialPage else index
     })
     LaunchedEffect(key1 = searchParsers.size) {
         if (animSearchInitialPage >= searchParsers.size) {
             animSearchInitialPage = 0
             //pagerState.scrollToPage(0)
         }
-        if(pagerState.currentPage >= searchParsers.size){
+        if (pagerState.currentPage >= searchParsers.size) {
             pagerState.scrollToPage(0)
         }
     }

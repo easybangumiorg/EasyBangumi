@@ -72,6 +72,7 @@ fun EasyTheme(
                 if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
 
             }
+
             else -> {
                 Log.d("EasyTheme", it.themeMode.name)
                 val old = it.themeMode.getColorScheme(isDark)

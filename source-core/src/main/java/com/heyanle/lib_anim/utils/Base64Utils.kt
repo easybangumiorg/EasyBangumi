@@ -91,6 +91,7 @@ object Base64Utils {
     fun decodeUrl(string: String): String {
         return string.base64UrlDecoded
     }
+
     fun encode(string: String): String {
         return string.base64Encoded
     }

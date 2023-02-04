@@ -177,6 +177,7 @@ fun SearchPage(
 
 
             }
+
             is SearchPageViewModel.SearchPageState.Page -> {
                 val lazyPagingItems = newState.flow.collectAsLazyPagingItems()
                 when (lazyPagingItems.loadState.refresh) {
@@ -187,6 +188,7 @@ fun SearchPage(
                                 .verticalScroll(rememberScrollState()),
                         )
                     }
+
                     is LoadState.Error -> {
                         ErrorPage(
                             modifier = Modifier
@@ -202,6 +204,7 @@ fun SearchPage(
                             }
                         )
                     }
+
                     else -> {
                         LazyColumn(
                             modifier = Modifier
@@ -229,6 +232,7 @@ fun SearchPage(
                                         )
                                     }
                                 }
+
                                 is LoadState.Error -> {
                                     item {
                                         val errorMsg =
@@ -247,6 +251,7 @@ fun SearchPage(
                                         )
                                     }
                                 }
+
                                 else -> {
                                     item {
                                         Text(

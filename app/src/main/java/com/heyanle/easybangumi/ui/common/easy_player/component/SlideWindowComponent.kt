@@ -37,7 +37,9 @@ class SlideWindowComponent : FrameLayout, IGestureComponent {
     override fun onSlidePositionChange(slidePosition: Long, currentPosition: Long, duration: Long) {
         super.onSlidePositionChange(slidePosition, currentPosition, duration)
         showIfNeed()
-        "${TimeUtils.toString(slidePosition)}/${TimeUtils.toString(duration)}".also { binding.root.text = it }
+        "${TimeUtils.toString(slidePosition)}/${TimeUtils.toString(duration)}".also {
+            binding.root.text = it
+        }
     }
 
     override fun onStopSlide() {
@@ -53,8 +55,8 @@ class SlideWindowComponent : FrameLayout, IGestureComponent {
             }).start()
     }
 
-    fun showIfNeed(){
-        if(binding.root.visibility != View.VISIBLE){
+    fun showIfNeed() {
+        if (binding.root.visibility != View.VISIBLE) {
             binding.root.visibility = View.VISIBLE
             binding.root.clearAnimation()
             binding.root.alpha = 0f
@@ -67,7 +69,6 @@ class SlideWindowComponent : FrameLayout, IGestureComponent {
                 }).start()
         }
     }
-
 
 
     override fun getView(): View {

@@ -44,9 +44,11 @@ class YhdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISe
             source.startsWith("http") -> {
                 source
             }
+
             source.startsWith("/") -> {
                 ROOT_URL + source
             }
+
             else -> {
                 "$ROOT_URL/$source"
             }
