@@ -10,7 +10,7 @@ import java.lang.ref.WeakReference
  * Created by HeYanLe on 2023/2/4 14:34.
  * https://github.com/heyanLE
  */
-object WebViewUserHelperImpl: WebViewUserHelper {
+object WebViewUserHelperImpl : WebViewUserHelper {
 
     var webViewRef: WeakReference<WebView>? = null
     var onCheck: WeakReference<(WebView) -> Boolean>? = null

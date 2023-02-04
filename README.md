@@ -7,7 +7,7 @@
 
 下载地址：[https://install.appcenter.ms/users/heyanle/apps/easybangumi/distribution_groups/easybangumi](https://install.appcenter.ms/users/heyanle/apps/easybangumi/distribution_groups/easybangumi)  
 release 中 3.0 版本  
-QQ群：729848189 有兴趣进来玩，群主爆肝更新中  
+QQ群：729848189 有兴趣进来玩，群主爆肝更新中
 
 # 功能
 
@@ -40,13 +40,11 @@ QQ群：729848189 有兴趣进来玩，群主爆肝更新中
 
 # 截图
 
-<img src="./screenshots/1.png" width="30%" />
-<img src="./screenshots/2.png" width="30%" />
-<img src="./screenshots/3.png" width="30%" />
-<img src="./screenshots/4.png" width="30%" />
-<img src="./screenshots/5.png" width="30%" />
-<img src="./screenshots/6.png"/>
-<img src="./screenshots/7.png" width="30%" />
+| <img src="./screenshots/1.png" width="50%"/> | <img src="./screenshots/2.png" width="50%"/>  | <img src="./screenshots/3.png" width="50%" /> |
+|:--------------------------------------------:|:---------------------------------------------:|:---------------------------------------------:|
+| <img src="./screenshots/4.png" width="50%"/> | <img src="./screenshots/5.png"  width="50%"/> | <img src="./screenshots/7.png"  width="50%"/> |
+
+<img src="./screenshots/6.png"/> 
 
 # 更新列表
 
@@ -61,7 +59,7 @@ QQ群：729848189 有兴趣进来玩，群主爆肝更新中
   修复 换番后在下面数据加载中上面播放器依然可以控制上一部番的问题  
   修复 点击搜索同名番后没选中当前源的问题  
   修复 搜索界面源选择无法持久化的问题  
-  修复 主页加载时无法切换源的问题  
+  修复 主页加载时无法切换源的问题
 
 - 2023/01/31 3.0.5
   新增 滑动进度条弹窗

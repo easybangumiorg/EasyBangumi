@@ -26,6 +26,7 @@ import javax.net.ssl.X509TrustManager
  */
 
 lateinit var networkHelper: NetworkHelper
+
 class NetworkHelper(
     context: Context,
     private val isDebug: Boolean = false,
@@ -35,7 +36,8 @@ class NetworkHelper(
 
 
     val cookieManager = AndroidCookieJar()
-    val defaultLinuxUA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36 Edg/108.0.1462.76"
+    val defaultLinuxUA =
+        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36 Edg/108.0.1462.76"
     val defaultUA = WebView(context).getDefaultUserAgentString()
 
     private val userAgentInterceptor by lazy { UserAgentInterceptor(this) }

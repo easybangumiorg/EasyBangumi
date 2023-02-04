@@ -93,6 +93,7 @@ class AnimPlayItemController(
                             )
                         )
                     }
+
                     is PlayerEvent.ChangePlay -> {
                         curEpisode[event.lineIndex] = event.episode
                         _playerStatus.emit(PlayerStatus.Loading(event.lineIndex, event.episode))
@@ -144,6 +145,7 @@ class AnimPlayItemController(
                         }
 
                     }
+
                     is PlayerEvent.ChangeLine -> {
                         eventFlow.emit(
                             PlayerEvent.ChangePlay(
@@ -173,15 +175,14 @@ class AnimPlayItemController(
 
     fun changePlayer(lineIndex: Int, episode: Int) {
         scope.launch {
-            if(lineIndex == -1){
+            if (lineIndex == -1) {
 
                 eventFlow.emit(PlayerEvent.ChangePlay(0, 0))
-            }else if(episode == -1){
+            } else if (episode == -1) {
                 eventFlow.emit(PlayerEvent.ChangePlay(lineIndex, 0))
-            }else{
+            } else {
                 eventFlow.emit(PlayerEvent.ChangePlay(lineIndex, episode))
             }
-
 
 
         }
@@ -229,7 +230,7 @@ class AnimPlayItemController(
         Log.d("AnimPlayItemController", "onNewEnter ${enterData}")
         this.enterData = enterData
         if (enterData != null) {
-            if(_playerStatus.value !is PlayerStatus.None){
+            if (_playerStatus.value !is PlayerStatus.None) {
                 onShow(enterData.sourceIndex, enterData.episode)
             }
         }
@@ -319,7 +320,7 @@ class AnimPlayItemController(
         return false
     }
 
-    fun onDispose(){
+    fun onDispose() {
         BangumiPlayController.trySaveHistory(-1)
     }
 

@@ -9,4 +9,4 @@
     android:text="10:00 / 23:00"
     android:gravity="center"
     android:layout_height="44dp"
-    android:background="@drawable/play_vb_bg"/>
+    android:background="@drawable/play_vb_bg" />

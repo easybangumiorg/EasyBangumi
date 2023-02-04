@@ -59,14 +59,17 @@ fun SettingPage() {
                 .fillMaxWidth()
                 .clickable {
                     scope.launch {
-                        val res = webViewHelper.getRenderedHtmlCode("https://www.agemys.net/play/20220232?playid=2_1")
+                        val res =
+                            webViewHelper.getRenderedHtmlCode("https://www.agemys.net/play/20220232?playid=2_1")
 
-                        val iframeUrl = Jsoup.parse(res).select("iframe")[0].attr("src")
+                        val iframeUrl = Jsoup
+                            .parse(res)
+                            .select("iframe")[0].attr("src")
                         iframeUrl.moeSnackBar()
-                        Log.d("SettingPage",iframeUrl)
+                        Log.d("SettingPage", iframeUrl)
                     }
 
-            },
+                },
             text = "测试"
         )
     }
@@ -462,7 +465,8 @@ fun Author(
                         .size(24.dp)
                         .clip(CircleShape),
                     image = R.mipmap.app_logo,
-                    contentDescription = "何言")
+                    contentDescription = "何言"
+                )
                 Spacer(modifier = Modifier.size(16.dp))
                 Text(text = "何言")
             }
@@ -487,7 +491,8 @@ fun Author(
                         .size(24.dp)
                         .clip(CircleShape),
                     image = R.drawable.ayala,
-                    contentDescription = "Ayala")
+                    contentDescription = "Ayala"
+                )
                 Spacer(modifier = Modifier.size(16.dp))
                 Text(text = "ayala")
             }

@@ -55,26 +55,28 @@ class CycdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
             source.startsWith("http") -> {
                 source
             }
+
             source.startsWith("/") -> {
                 ROOT_URL + source
             }
+
             else -> {
                 "$ROOT_URL/$source"
             }
         }
     }
 
-    private var antscdn_waf_cookie6 :String = ""
+    private var antscdn_waf_cookie6: String = ""
     private fun httpGet(url: String): String {
 
-        val raw = networkHelper.client.newCall(GET(url)).execute().body?.string()?:""
+        val raw = networkHelper.client.newCall(GET(url)).execute().body?.string() ?: ""
         // TODO 以上的请求应加上Cookies头
 
         if (raw.startsWith("<!DOCTYPE html>"))
             return raw
 
         val cookiePattern = Regex("""(?<=cookie6',).*(?= - 99)""")
-        val cookie = cookiePattern.find(raw)?.value?:""
+        val cookie = cookiePattern.find(raw)?.value ?: ""
 
         antscdn_waf_cookie6 = (cookie.toInt() - 99).toString()
         // TODO 此处应再次发起请求
@@ -88,10 +90,15 @@ class CycdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
 
             val doc = runCatching {
                 val req = GET(ROOT_URL, Headers.headersOf("User-Agent", networkHelper.defaultUA))
-                Jsoup.parse(networkHelper.cloudflareUserClient.newCall(req).execute().body?.string()?:"")
+                Jsoup.parse(
+                    networkHelper.cloudflareUserClient.newCall(req).execute().body?.string() ?: ""
+                )
             }.getOrElse {
-                if(it is WaitWebViewException){
-                    return@withContext ISourceParser.ParserResult.Error(Exception("等待人机检测中"), true)
+                if (it is WaitWebViewException) {
+                    return@withContext ISourceParser.ParserResult.Error(
+                        Exception("等待人机检测中"),
+                        true
+                    )
                 }
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -178,7 +185,9 @@ class CycdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
 
             val doc = runCatching {
 
-                Jsoup.parse(networkHelper.client.newCall(GET(urlSearch)).execute().body?.string()?:"")
+                Jsoup.parse(
+                    networkHelper.client.newCall(GET(urlSearch)).execute().body?.string() ?: ""
+                )
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -223,7 +232,10 @@ class CycdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
         return withContext(Dispatchers.IO) {
             val doc = runCatching {
 
-                Jsoup.parse(networkHelper.client.newCall(GET(bangumi.detailUrl)).execute().body?.string()?:"")
+                Jsoup.parse(
+                    networkHelper.client.newCall(GET(bangumi.detailUrl)).execute().body?.string()
+                        ?: ""
+                )
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -265,7 +277,10 @@ class CycdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
         return withContext(Dispatchers.IO) {
             val map = LinkedHashMap<String, List<String>>()
             val doc = runCatching {
-                Jsoup.parse(networkHelper.client.newCall(GET(bangumi.detailUrl)).execute().body?.string()?:"")
+                Jsoup.parse(
+                    networkHelper.client.newCall(GET(bangumi.detailUrl)).execute().body?.string()
+                        ?: ""
+                )
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -324,7 +339,9 @@ class CycdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
         }
         return withContext(Dispatchers.IO) {
             val doc = runCatching {
-                Jsoup.parse(networkHelper.client.newCall(GET(url(url))).execute().body?.string()?:"")
+                Jsoup.parse(
+                    networkHelper.client.newCall(GET(url(url))).execute().body?.string() ?: ""
+                )
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -341,14 +358,15 @@ class CycdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
                     kotlin.runCatching {
 
 
-
-                        val requestForUrl = networkHelper.client.newCall(POST(
-                            "https://player.cycdm01.top/api_config.php",
-                            body = FormBody.Builder().add("url", result).build()
-                        )).execute().body?.string()?:""
+                        val requestForUrl = networkHelper.client.newCall(
+                            POST(
+                                "https://player.cycdm01.top/api_config.php",
+                                body = FormBody.Builder().add("url", result).build()
+                            )
+                        ).execute().body?.string() ?: ""
 
                         val jsonObject = JsonParser.parseString(requestForUrl).asJsonObject
-                        result =  jsonObject.get("url").asString
+                        result = jsonObject.get("url").asString
                     }.onFailure {
                         it.printStackTrace()
                     }

@@ -69,8 +69,6 @@ fun Play(
     }
 
 
-
-
     val vm: AnimPlayItemController =
         BangumiPlayController.getAnimPlayViewModel(BangumiSummary(source, detail))
 
@@ -93,14 +91,17 @@ fun Play(
     val ms = playMsgStatus
     val ds = detailStatus
     LaunchedEffect(key1 = ps, key2 = ms, key3 = ds) {
-        Log.d("Play", "root launchedEffect ${ps?.javaClass?.simpleName}  ${ms?.javaClass?.simpleName} ${ds?.javaClass?.simpleName}")
+        Log.d(
+            "Play",
+            "root launchedEffect ${ps?.javaClass?.simpleName}  ${ms?.javaClass?.simpleName} ${ds?.javaClass?.simpleName}"
+        )
         if (ms != null && ms is PlayMsgController.PlayMsgStatus.Completely) {
             if (ds != null && ds is DetailController.DetailStatus.Completely) {
                 if (ps != null && (ps is AnimPlayItemController.PlayerStatus.None)) {
                     val curLines = ps.sourceIndex
                     val curEpi = ps.episode
                     vm.onShow(curLines, curEpi)
-                }else if(ps != null && (ps is AnimPlayItemController.PlayerStatus.Play)){
+                } else if (ps != null && (ps is AnimPlayItemController.PlayerStatus.Play)) {
                     BangumiPlayController.trySaveHistory(-1)
                 }
             }
@@ -218,6 +219,7 @@ fun Video(
                     is AnimPlayItemController.PlayerStatus.None -> {
                         it.visibility = View.GONE
                     }
+
                     is AnimPlayItemController.PlayerStatus.Play -> {
                         it.visibility = View.VISIBLE
                         BangumiPlayController.onNewComposeView(it)
@@ -227,9 +229,11 @@ fun Video(
                         }
                         // it.basePlayerView.refreshStateOnce()
                     }
+
                     is AnimPlayItemController.PlayerStatus.Loading -> {
-                         it.basePlayerView.dispatchPlayStateChange(EasyPlayStatus.STATE_PREPARING)
+                        it.basePlayerView.dispatchPlayStateChange(EasyPlayStatus.STATE_PREPARING)
                     }
+
                     else -> {}
                 }
                 PlayerController.exoPlayer.setVideoSurfaceView(it.basePlayerView.surfaceView)
@@ -256,6 +260,7 @@ fun LazyGridScope.playerMsg(
         is PlayMsgController.PlayMsgStatus.None -> {}
         is PlayMsgController.PlayMsgStatus.Error -> {
         }
+
         is PlayMsgController.PlayMsgStatus.Loading -> {
             item(span = {
                 // LazyGridItemSpanScope:
@@ -266,6 +271,7 @@ fun LazyGridScope.playerMsg(
             }
 
         }
+
         is PlayMsgController.PlayMsgStatus.Completely -> {
 
             val lines = playerMsgStatus.playMsg.keys.toList()
@@ -289,7 +295,7 @@ fun LazyGridScope.playerMsg(
                         indicatorColor = { MaterialTheme.colorScheme.secondary }
                     ) {
                         for (i in lines.indices) {
-                            if(playerMsgStatus.playMsg[lines[i]]?.isNotEmpty() == true){
+                            if (playerMsgStatus.playMsg[lines[i]]?.isNotEmpty() == true) {
                                 HomeTabItem(
                                     selected = i == curLines,
                                     text = {
@@ -301,7 +307,7 @@ fun LazyGridScope.playerMsg(
                                     selectedContentColor = MaterialTheme.colorScheme.secondary,
                                     unselectedContentColor = MaterialTheme.colorScheme.onBackground
                                 )
-                            }else{
+                            } else {
                                 // 为空的话避免异常加空占位
                                 HomeTabItem(
                                     selected = false,
@@ -376,6 +382,7 @@ fun LazyGridScope.detail(
                         modifier = Modifier.fillMaxSize()
                     )
                 }
+
                 is DetailController.DetailStatus.Completely -> {
                     Log.d("Play", detailStatus.bangumiDetail.cover)
                     Column(
@@ -402,7 +409,9 @@ fun LazyGridScope.detail(
                                         .clip(RoundedCornerShape(8.dp))
                                 )
 
-                                val sourceText = AnimSourceFactory.label(detailStatus.bangumiDetail.source) ?: detailStatus.bangumiDetail.source
+                                val sourceText =
+                                    AnimSourceFactory.label(detailStatus.bangumiDetail.source)
+                                        ?: detailStatus.bangumiDetail.source
                                 Text(
                                     fontSize = 13.sp,
                                     text = sourceText,
@@ -481,12 +490,18 @@ fun LazyGridScope.detail(
                                     .fillMaxHeight()
                                     .clickable {
                                         // "还在支持".moeSnackBar()
-                                        nav.navigationSearch(detailStatus.bangumiDetail.name, detailStatus.bangumiDetail.source)
+                                        nav.navigationSearch(
+                                            detailStatus.bangumiDetail.name,
+                                            detailStatus.bangumiDetail.source
+                                        )
                                     },
                                 verticalArrangement = Arrangement.Center,
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Icon(Icons.Filled.Search, stringResource(id = R.string.search_same_bangumi))
+                                Icon(
+                                    Icons.Filled.Search,
+                                    stringResource(id = R.string.search_same_bangumi)
+                                )
                                 Text(
                                     text = stringResource(id = R.string.search_same_bangumi),
                                     fontSize = 12.sp
@@ -504,7 +519,10 @@ fun LazyGridScope.detail(
                                 verticalArrangement = Arrangement.Center,
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Icon(Icons.Filled.Web, stringResource(id = R.string.open_source_url))
+                                Icon(
+                                    Icons.Filled.Web,
+                                    stringResource(id = R.string.open_source_url)
+                                )
                                 Text(
                                     text = stringResource(id = R.string.open_source_url),
                                     fontSize = 12.sp
@@ -517,6 +535,7 @@ fun LazyGridScope.detail(
 
 
                 }
+
                 else -> {}
             }
         }

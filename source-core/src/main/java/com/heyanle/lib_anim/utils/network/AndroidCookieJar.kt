@@ -14,7 +14,6 @@ class AndroidCookieJar : CookieJar {
 
     override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
         val urlString = url.toString()
-
         cookies.forEach { manager.setCookie(urlString, it.toString()) }
     }
 
@@ -24,7 +23,6 @@ class AndroidCookieJar : CookieJar {
 
     fun get(url: HttpUrl): List<Cookie> {
         val cookies = manager.getCookie(url.toString())
-
         return if (cookies != null && cookies.isNotEmpty()) {
             cookies.split(";").mapNotNull { Cookie.parse(url, it) }
         } else {

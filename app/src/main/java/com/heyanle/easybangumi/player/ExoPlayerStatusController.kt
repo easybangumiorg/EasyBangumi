@@ -62,15 +62,20 @@ class ExoPlayerStatusController(
             _playerControllerStatus.postValue(EasyPlayStatus.STATE_ERROR)
             return
         }
-        Log.d("ExoPlayerController", "dispatchStatus ${exoPlayer.playbackState} ${exoPlayer.playWhenReady}")
+        Log.d(
+            "ExoPlayerController",
+            "dispatchStatus ${exoPlayer.playbackState} ${exoPlayer.playWhenReady}"
+        )
         when (exoPlayer.playbackState) {
             Player.STATE_IDLE -> {
                 _playerControllerStatus.postValue(EasyPlayStatus.STATE_IDLE)
             }
+
             Player.STATE_BUFFERING -> {
 
                 _playerControllerStatus.postValue(EasyPlayStatus.STATE_BUFFERING)
             }
+
             Player.STATE_READY -> {
                 _playerControllerStatus.postValue(EasyPlayStatus.STATE_BUFFERED)
                 if (exoPlayer.playWhenReady) {
@@ -80,6 +85,7 @@ class ExoPlayerStatusController(
                 }
 
             }
+
             Player.STATE_ENDED -> {
                 _playerControllerStatus.postValue(EasyPlayStatus.STATE_PLAYBACK_COMPLETED)
             }

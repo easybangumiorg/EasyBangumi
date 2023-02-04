@@ -3,17 +3,14 @@ package com.heyanle.lib_anim.utils.network.interceptor
 import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
-import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.webkit.WebResourceErrorCompat
 import androidx.webkit.WebViewClientCompat
 import com.heyanle.lib_anim.utils.isOutdated
 import com.heyanle.lib_anim.utils.network.NetworkHelper
-import com.heyanle.lib_anim.utils.network.WebViewProxyClient
 import com.heyanle.lib_anim.utils.stringHelper
 import okhttp3.Cookie
 import okhttp3.HttpUrl.Companion.toHttpUrl
@@ -38,7 +35,11 @@ class CloudflareInterceptor(
         return response.code in ERROR_CODES && response.header("Server") in SERVER_CHECK
     }
 
-    override fun intercept(chain: Interceptor.Chain, request: Request, response: Response): Response {
+    override fun intercept(
+        chain: Interceptor.Chain,
+        request: Request,
+        response: Response
+    ): Response {
         stringHelper.moeSnackBar("当前需要等待 CloudFlare 检测，请耐心等待")
         try {
             response.close()
@@ -77,7 +78,7 @@ class CloudflareInterceptor(
         executor.execute {
             webview = createWebView(originalRequest)
 
-            webview?.webViewClient = object : WebViewClientCompat()  {
+            webview?.webViewClient = object : WebViewClientCompat() {
                 override fun onPageFinished(view: WebView, url: String) {
                     Log.d("CloudflareInterceptor", "intercept")
                     fun isCloudFlareBypassed(): Boolean {
@@ -119,7 +120,13 @@ class CloudflareInterceptor(
                     description: String?,
                     failingUrl: String,
                 ) {
-                    onReceivedErrorCompat(view, errorCode, description, failingUrl, failingUrl == view.url)
+                    onReceivedErrorCompat(
+                        view,
+                        errorCode,
+                        description,
+                        failingUrl,
+                        failingUrl == view.url
+                    )
                 }
 
                 final override fun onReceivedHttpError(

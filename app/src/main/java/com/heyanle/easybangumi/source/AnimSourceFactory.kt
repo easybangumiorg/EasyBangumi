@@ -20,7 +20,7 @@ object AnimSourceFactory {
     // 把所有源作为一个 flow 对外暴露，全局可用
     private val animSourceFlow = MutableStateFlow(AnimSources(emptyList()))
 
-    fun newSource(source: AnimSources){
+    fun newSource(source: AnimSources) {
         scope.launch {
             animSourceFlow.emit(source)
         }

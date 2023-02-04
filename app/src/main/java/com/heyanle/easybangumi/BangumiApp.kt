@@ -89,12 +89,12 @@ class BangumiApp : Application() {
     }
 
     private fun initAppCenter() {
-        if(!BuildConfig.DEBUG){
+        if (!BuildConfig.DEBUG) {
             kotlin.runCatching {
                 // https://appcenter.ms
                 val sc = BuildConfig.APP_CENTER_SECRET
                 Log.d("BangumiApp", "app center secret -> $sc")
-                if(sc.isNotEmpty()){
+                if (sc.isNotEmpty()) {
                     AppCenter.start(
                         this, sc,
                         Analytics::class.java, Crashes::class.java, Distribute::class.java
