@@ -111,8 +111,12 @@ fun DependencyHandler.jsoup() {
 
 // okhttp3
 const val okhttp3 = "com.squareup.okhttp3:okhttp:${Version.okhttp3}"
+const val okhttp3logging = "com.squareup.okhttp3:logging-interceptor:${Version.okhttp3}"
 fun DependencyHandler.okhttp3() {
     add(implementation, okhttp3)
+}
+fun DependencyHandler.okhttp3logging(){
+    implementation(okhttp3logging)
 }
 
 // paging
@@ -257,9 +261,9 @@ fun DependencyHandler.appCenter() {
     implementation("com.microsoft.appcenter:appcenter-distribute:${Version.app_center}")
 }
 
-fun DependencyHandler.easySourceApi(){
-    implementation ("com.github.heyanLE.EasyBangumiSourceAPI:api:${Version.bangumi_api}")
-}
+//fun DependencyHandler.easySourceApi(){
+//    implementation ("com.github.heyanLE.EasyBangumiSourceAPI:api:${Version.bangumi_api}")
+//}
 
 fun DependencyHandler.androidXWebkit(){
     implementation("androidx.webkit:webkit:${Version.androidx_webkit}")

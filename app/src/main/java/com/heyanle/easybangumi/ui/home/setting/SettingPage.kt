@@ -19,7 +19,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.heyanle.bangumi_source_api.api.utils.webUtil
 import com.heyanle.easybangumi.BuildConfig
 import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.player.TinyStatusController
@@ -32,6 +31,7 @@ import com.heyanle.easybangumi.ui.common.moeSnackBar
 import com.heyanle.easybangumi.utils.OverlayHelper
 import com.heyanle.easybangumi.utils.stringRes
 import com.heyanle.easybangumi.utils.toast
+import com.heyanle.lib_anim.utils.network.webview_helper.webViewHelper
 import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
 
@@ -59,7 +59,7 @@ fun SettingPage() {
                 .fillMaxWidth()
                 .clickable {
                     scope.launch {
-                        val res = webUtil.getRenderedHtmlCode("https://www.agemys.net/play/20220232?playid=2_1")
+                        val res = webViewHelper.getRenderedHtmlCode("https://www.agemys.net/play/20220232?playid=2_1")
 
                         val iframeUrl = Jsoup.parse(res).select("iframe")[0].attr("src")
                         iframeUrl.moeSnackBar()
