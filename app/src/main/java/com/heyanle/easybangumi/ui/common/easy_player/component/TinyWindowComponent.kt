@@ -163,14 +163,17 @@ class TinyWindowComponent : FrameLayout, IComponent, SeekBar.OnSeekBarChangeList
                 PlayerTinyController.dismissTiny()
                 PlayerController.exoPlayer.pause()
             }
+
             EasyPlayStatus.STATE_BUFFERING -> {
                 binding.ivController.visibility = View.GONE
                 binding.progressBar.visibility = View.VISIBLE
             }
+
             EasyPlayStatus.STATE_ERROR -> {
                 PlayerTinyController.dismissTiny()
                 PlayerController.exoPlayer.pause()
             }
+
             else -> {
 
             }

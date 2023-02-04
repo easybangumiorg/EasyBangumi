@@ -7,6 +7,7 @@ import android.webkit.WebView
  * https://github.com/heyanLE
  */
 lateinit var webViewUserHelper: WebViewUserHelper
+
 interface WebViewUserHelper {
 
     fun start(

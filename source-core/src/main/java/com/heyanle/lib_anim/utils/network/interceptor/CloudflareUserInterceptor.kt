@@ -25,7 +25,7 @@ import java.util.concurrent.CountDownLatch
  * Created by HeYanLe on 2023/2/4 14:03.
  * https://github.com/heyanLE
  */
-class CloudflareUserInterceptor (
+class CloudflareUserInterceptor(
     private val context: Context,
     private val networkHelper: NetworkHelper,
 ) : WebViewInterceptor(context, networkHelper) {
@@ -36,7 +36,11 @@ class CloudflareUserInterceptor (
         return response.code in ERROR_CODES && response.header("Server") in SERVER_CHECK
     }
 
-    override fun intercept(chain: Interceptor.Chain, request: Request, response: Response): Response {
+    override fun intercept(
+        chain: Interceptor.Chain,
+        request: Request,
+        response: Response
+    ): Response {
         stringHelper.moeSnackBar("当前需要等待 CloudFlare 检测，请耐心等待")
         try {
             response.close()
@@ -53,8 +57,7 @@ class CloudflareUserInterceptor (
             throw IOException(e)
         } catch (e: WaitWebViewException) {
             throw e
-        }
-        catch (e: Exception) {
+        } catch (e: Exception) {
             throw IOException(e)
         }
     }
@@ -88,7 +91,7 @@ class CloudflareUserInterceptor (
                         isCloudFlareBypassed()
                     },
                     {
-                        if(isCloudFlareBypassed()){
+                        if (isCloudFlareBypassed()) {
                             stringHelper.moeSnackBar("Cloudflare 加载成功，请刷新")
                         }
                     }

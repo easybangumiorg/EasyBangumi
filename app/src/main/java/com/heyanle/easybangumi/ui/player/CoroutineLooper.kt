@@ -9,22 +9,23 @@ import kotlinx.coroutines.isActive
  * https://github.com/heyanLE
  */
 class CoroutineLooper(
-    val run: suspend ()->Unit,
+    val run: suspend () -> Unit,
     val delay: Long = 2000
 ) {
 
     val loopScope: CoroutineScope? = null
 
     @UiThread
-    fun start(){
+    fun start() {
 
     }
 
     @UiThread
-    fun stop(){}
+    fun stop() {
+    }
 
-    private suspend fun loop(){
-        while(loopScope?.isActive == true){
+    private suspend fun loop() {
+        while (loopScope?.isActive == true) {
 
         }
     }

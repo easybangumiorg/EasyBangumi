@@ -115,7 +115,8 @@ const val okhttp3logging = "com.squareup.okhttp3:logging-interceptor:${Version.o
 fun DependencyHandler.okhttp3() {
     add(implementation, okhttp3)
 }
-fun DependencyHandler.okhttp3logging(){
+
+fun DependencyHandler.okhttp3logging() {
     implementation(okhttp3logging)
 }
 
@@ -265,10 +266,10 @@ fun DependencyHandler.appCenter() {
 //    implementation ("com.github.heyanLE.EasyBangumiSourceAPI:api:${Version.bangumi_api}")
 //}
 
-fun DependencyHandler.androidXWebkit(){
+fun DependencyHandler.androidXWebkit() {
     implementation("androidx.webkit:webkit:${Version.androidx_webkit}")
 }
 
-fun DependencyHandler.commonsText(){
+fun DependencyHandler.commonsText() {
     implementation("org.apache.commons:commons-text:${Version.commons_text}")
 }

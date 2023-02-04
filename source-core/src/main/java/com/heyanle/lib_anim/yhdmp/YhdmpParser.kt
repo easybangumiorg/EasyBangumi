@@ -50,9 +50,11 @@ class YhdmpParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
             source.startsWith("http") -> {
                 source
             }
+
             source.startsWith("/") -> {
                 ROOT_URL + source
             }
+
             else -> {
                 "$ROOT_URL/$source"
             }
@@ -64,7 +66,10 @@ class YhdmpParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
             val map = LinkedHashMap<String, List<Bangumi>>()
 
             val doc = runCatching {
-                Jsoup.parse(networkHelper.cloudflareClient.newCall(GET(ROOT_URL)).execute().body?.string()?:"")
+                Jsoup.parse(
+                    networkHelper.cloudflareClient.newCall(GET(ROOT_URL)).execute().body?.string()
+                        ?: ""
+                )
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -81,7 +86,7 @@ class YhdmpParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
                         val coverStyle = it.child(0).child(0).child(0).child(0).attr("style")
                         val coverPattern = Regex("""(?<=url\(').*(?='\))""")
                         var cover = coverPattern.find(coverStyle)?.value ?: ""
-                        if(cover.startsWith("//")){
+                        if (cover.startsWith("//")) {
                             cover = "https:${cover}"
                         }
 //                        stringHelper.moeSnackBar(coverStyle)
@@ -276,10 +281,13 @@ class YhdmpParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
         }
 
         return withContext(Dispatchers.IO) {
-            val playID = Regex("""(?<=showp/).*(?=.html)""").find(bangumi.detailUrl)?.value?:""
+            val playID = Regex("""(?<=showp/).*(?=.html)""").find(bangumi.detailUrl)?.value ?: ""
 
             if (playID.isEmpty())
-                return@withContext ISourceParser.ParserResult.Error(Exception("Unknown Error"), true)
+                return@withContext ISourceParser.ParserResult.Error(
+                    Exception("Unknown Error"),
+                    true
+                )
 
             val playSecret = runCatching {
                 k1 = null
@@ -296,7 +304,7 @@ class YhdmpParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
                 return@withContext ISourceParser.ParserResult.Error(it, true)
             }
 
-            val vurl =  jsonObject.get("vurl").asString
+            val vurl = jsonObject.get("vurl").asString
 
             val result = decodeByteCrypt(vurl)
 
@@ -319,21 +327,26 @@ class YhdmpParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
         }
     }
 
-    private var t1: Long?  = null
-    private var t2: Long?  = null
-    private var k1: Long?  = null
-    private var k2: Long?  = null
+    private var t1: Long? = null
+    private var t2: Long? = null
+    private var k1: Long? = null
+    private var k2: Long? = null
     private var errCount = 0
 
-    private fun getPlayInfoRequest(playURL:String, playIndex:Int, epIndex:Int, referer:String): String {
-        val playID = Regex("""(?<=showp/).*(?=.html)""").find(playURL)?.value?:""
+    private fun getPlayInfoRequest(
+        playURL: String,
+        playIndex: Int,
+        epIndex: Int,
+        referer: String
+    ): String {
+        val playID = Regex("""(?<=showp/).*(?=.html)""").find(playURL)?.value ?: ""
 
-        val target = url("/_getplay?aid=${playID}&playindex=${playIndex}&epindex=${epIndex}&r=${Math.random()}")
+        val target =
+            url("/_getplay?aid=${playID}&playindex=${playIndex}&epindex=${epIndex}&r=${Math.random()}")
         val clint = networkHelper.client
 
 
-
-        val header =  Headers.Builder().add("Referer", referer)
+        val header = Headers.Builder().add("Referer", referer)
         if (k1 != null) {
             val t = t1!!.div(0x3e8) shr 5
             k2 = (t * (t % 0x1000) + 0x99d6) * (t % 0x1000) + t
@@ -350,7 +363,7 @@ class YhdmpParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
         if (body == "err:timeout" || body.isEmpty()) {
             val cookies: List<String> = exReq.headers.values("Set-Cookie")
 
-            cookies.forEach {session ->
+            cookies.forEach { session ->
                 if (session.isNotEmpty()) {
                     val size = session.length
                     val i = session.indexOf(";")

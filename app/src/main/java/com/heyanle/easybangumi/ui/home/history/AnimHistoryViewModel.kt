@@ -34,7 +34,7 @@ class AnimHistoryViewModel : ViewModel() {
         }
     }
 
-    fun refresh(){
+    fun refresh() {
         curPager.value = getPager().flow.cachedIn(viewModelScope)
     }
 

@@ -48,7 +48,7 @@ object BangumiPlayController {
         val sourceIndex: Int = -1,
         val episode: Int = -1,
         val startProcess: Long = -1L,
-    ){}
+    ) {}
 
     private val scope = MainScope()
     private var lastScope = MainScope()
@@ -114,7 +114,10 @@ object BangumiPlayController {
 
     }
 
-    fun getAnimPlayViewModel(bangumiSummary: BangumiSummary, enterData: EnterData? = null): AnimPlayItemController {
+    fun getAnimPlayViewModel(
+        bangumiSummary: BangumiSummary,
+        enterData: EnterData? = null
+    ): AnimPlayItemController {
         val cache = animPlayViewModelCache[bangumiSummary]
         if (cache == null) {
             val n = AnimPlayItemController(bangumiSummary, enterData)
@@ -129,14 +132,15 @@ object BangumiPlayController {
             this.composeViewRes = WeakReference(easyPlayerView)
         }
         PlayerController.playerControllerStatus.value?.let {
-            val playerState = if (easyPlayerView.basePlayerView.isFullScreen()) EasyPlayerStatus.PLAYER_FULL_SCREEN else EasyPlayerStatus.PLAYER_NORMAL
+            val playerState =
+                if (easyPlayerView.basePlayerView.isFullScreen()) EasyPlayerStatus.PLAYER_FULL_SCREEN else EasyPlayerStatus.PLAYER_NORMAL
             easyPlayerView.basePlayerView.dispatchPlayerStateChange(playerState)
             easyPlayerView.basePlayerView.dispatchPlayStateChange(it)
         }
 
     }
 
-    fun onNewTinyComposeView(easyPlayerView: BaseEasyPlayerView){
+    fun onNewTinyComposeView(easyPlayerView: BaseEasyPlayerView) {
         if (easyPlayerView != this.tinyViewRes?.get()) {
             this.tinyViewRes = WeakReference(easyPlayerView)
         }
@@ -157,25 +161,29 @@ object BangumiPlayController {
 
     var lastPlayerStatus: AnimPlayItemController.PlayerStatus.Play? = null
 
-    fun trySaveHistory(ps: Long = -1){
+    fun trySaveHistory(ps: Long = -1) {
         var process = ps
-        if(ps == -1L){
+        if (ps == -1L) {
             process = composeViewRes?.get()?.basePlayerView?.getCurrentPosition() ?: -1L
         }
         val playVM = curAnimPlayViewModel.value ?: return
         val ds = playVM.detailController.detailFlow.value
         val ms = playVM.playMsgController.flow.value
         val ps = playVM.playerStatus.value
-        Log.d("BangumiPlayController", "trySave ${ds.javaClass.simpleName} ${ms.javaClass.simpleName} ${ps.javaClass.simpleName} ${ps.sourceIndex} ${ps.episode} $process")
-        if(
+        Log.d(
+            "BangumiPlayController",
+            "trySave ${ds.javaClass.simpleName} ${ms.javaClass.simpleName} ${ps.javaClass.simpleName} ${ps.sourceIndex} ${ps.episode} $process"
+        )
+        if (
             ds is DetailController.DetailStatus.Completely &&
             ms is PlayMsgController.PlayMsgStatus.Completely &&
-            ps is AnimPlayItemController.PlayerStatus.Play) {
+            ps is AnimPlayItemController.PlayerStatus.Play
+        ) {
             scope.launch {
-                withContext(Dispatchers.IO){
+                withContext(Dispatchers.IO) {
                     val lineTitle = kotlin.runCatching {
                         ms.playMsg.keys.toList()[ps.sourceIndex]
-                    }.getOrElse { ""  }
+                    }.getOrElse { "" }
                     val episodeTitle = kotlin.runCatching {
                         ms.playMsg[lineTitle]?.get(ps.episode) ?: ""
                     }.getOrElse { "" }
@@ -201,9 +209,9 @@ object BangumiPlayController {
 
     init {
         PlayerController.playerControllerStatus.observeForever { state ->
-            if(PlayerTinyController.isTinyMode){
+            if (PlayerTinyController.isTinyMode) {
                 this.tinyViewRes?.get()?.dispatchPlayStateChange(state)
-            }else{
+            } else {
                 this.composeViewRes?.get()?.basePlayerView?.dispatchPlayStateChange(state)
             }
 
@@ -228,6 +236,7 @@ object BangumiPlayController {
                             )
                         }
                     }
+
                     is AnimPlayItemController.PlayerStatus.Play -> {
                         Log.d("BangumiPlayController", "onPlay $lastProgress")
                         Log.d("BangumiPlayController", it.uri)
@@ -245,29 +254,32 @@ object BangumiPlayController {
                             val media = when (it.type) {
                                 C.CONTENT_TYPE_DASH -> DashMediaSource.Factory(dataSourceFactory)
                                     .createMediaSource(MediaItem.fromUri(it.uri))
+
                                 C.CONTENT_TYPE_HLS -> HlsMediaSource.Factory(dataSourceFactory)
                                     .createMediaSource(
                                         MediaItem.fromUri(it.uri)
                                     )
+
                                 else -> ProgressiveMediaSource.Factory(dataSourceFactory)
                                     .createMediaSource(
                                         MediaItem.fromUri(it.uri)
                                     )
                             }
 
-                            if(lastProgress > 0){
+                            if (lastProgress > 0) {
                                 PlayerController.setMediaSource(media, lastProgress)
-                            }else{
+                            } else {
                                 PlayerController.setMediaSource(media, 0)
                             }
                             lastProgress = -1
                             PlayerController.prepare()
-                        }else{
+                        } else {
                             PlayerController.exoPlayer.seekTo(0)
                         }
                         lastPlayerStatus = it
 
                     }
+
                     is AnimPlayItemController.PlayerStatus.Error -> {
                         if (PlayerTinyController.isTinyMode) {
                             it.errorMsg.toast()
@@ -276,6 +288,7 @@ object BangumiPlayController {
                         }
 
                     }
+
                     else -> {
                     }
                 }
