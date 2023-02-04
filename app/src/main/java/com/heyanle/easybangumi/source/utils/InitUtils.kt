@@ -18,7 +18,7 @@ import com.heyanle.lib_anim.utils.stringHelper
  * Created by HeYanLe on 2023/2/1 17:49.
  * https://github.com/heyanLE
  */
-fun initUtils(context: Context){
+fun initUtils(context: Context) {
     AppHelper.context = BangumiApp.INSTANCE
     fileHelper = FileHelper(context)
     networkHelper = NetworkHelper(context, BuildConfig.DEBUG)

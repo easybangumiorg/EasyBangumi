@@ -166,9 +166,9 @@ class BaseEasyPlayerView :
         renderContainer.keepScreenOn = playState == EasyPlayStatus.STATE_PLAYING
         mCurrentPlayState = playState
 
-        if(playState == EasyPlayStatus.STATE_PLAYING) {
+        if (playState == EasyPlayStatus.STATE_PLAYING) {
             getCurrentPosition().let {
-                if(it != -1L){
+                if (it != -1L) {
                     BangumiPlayController.trySaveHistory(it)
                 }
             }
@@ -379,6 +379,7 @@ class BaseEasyPlayerView :
 
 
             }
+
             AudioManager.AUDIOFOCUS_LOSS, AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
                 if (isPlaying()) {
                     mPausedForLoss = true
@@ -602,7 +603,7 @@ class BaseEasyPlayerView :
 
     override fun onSaveInstanceState(): Parcelable? {
         getCurrentPosition().let {
-            if(it != -1L){
+            if (it != -1L) {
                 BangumiPlayController.trySaveHistory(it)
             }
         }

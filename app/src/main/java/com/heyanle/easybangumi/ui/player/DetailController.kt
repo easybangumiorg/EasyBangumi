@@ -56,6 +56,7 @@ class DetailController(val bangumiSummary: BangumiSummary) {
                 DetailEvent.Init -> {
                     _detailStatus.emit(DetailStatus.None)
                 }
+
                 is DetailEvent.LoadDetail -> {
                     kotlin.runCatching {
                         _detailStatus.emit(DetailStatus.Loading(detail))
@@ -84,7 +85,13 @@ class DetailController(val bangumiSummary: BangumiSummary) {
                             }
                     }.onFailure {
                         it.printStackTrace()
-                        _detailStatus.emit(DetailStatus.Error(detail, stringRes(R.string.loading_error), it))
+                        _detailStatus.emit(
+                            DetailStatus.Error(
+                                detail,
+                                stringRes(R.string.loading_error),
+                                it
+                            )
+                        )
                     }
                 }
             }

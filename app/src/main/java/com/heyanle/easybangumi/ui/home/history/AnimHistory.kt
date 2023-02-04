@@ -72,7 +72,9 @@ fun AnimHistory() {
     })
     val pi = vm.curPager.value.collectAsLazyPagingItems()
 
-    Box(modifier = Modifier.fillMaxSize().pullRefresh(state)) {
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .pullRefresh(state)) {
         AnimatedContent(
             targetState = pi,
             transitionSpec = {
@@ -87,14 +89,20 @@ fun AnimHistory() {
                 )
             } else {
 
-                Box(modifier = Modifier){
+                Box(modifier = Modifier) {
                     LazyColumn(
                         state = lazyListState
-                    ){
-                        items(pagingItems){
+                    ) {
+                        items(pagingItems) {
                             it?.let {
                                 BangumiHistoryCard(bangumiHistory = it, onClick = {
-                                    nav.navigationPlay(it.source, it.detailUrl, it.lastLinesIndex, it.lastEpisodeIndex, it.lastProcessTime)
+                                    nav.navigationPlay(
+                                        it.source,
+                                        it.detailUrl,
+                                        it.lastLinesIndex,
+                                        it.lastEpisodeIndex,
+                                        it.lastProcessTime
+                                    )
                                 })
                             }
 
@@ -107,6 +115,7 @@ fun AnimHistory() {
                                     )
                                 }
                             }
+
                             is LoadState.Error -> {
                                 item() {
                                     val errorMsg =
@@ -127,6 +136,7 @@ fun AnimHistory() {
                                     )
                                 }
                             }
+
                             else -> {
                                 item() {
                                     Text(
@@ -157,15 +167,14 @@ fun AnimHistory() {
     }
 
 
-
 }
 
 @Composable
 fun BangumiHistoryCard(
     modifier: Modifier = Modifier,
     bangumiHistory: BangumiHistory,
-    onClick: (BangumiHistory)->Unit,
-){
+    onClick: (BangumiHistory) -> Unit,
+) {
     val sourceText = AnimSourceFactory.label(bangumiHistory.source) ?: bangumiHistory.source
     Row(
         modifier = Modifier
@@ -209,9 +218,16 @@ fun BangumiHistoryCard(
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(text = bangumiHistory.name, maxLines = 2, color = MaterialTheme.colorScheme.onBackground)
             Text(
-                text = stringResource(id = R.string.last_episode_title, bangumiHistory.lastEpisodeTitle),
+                text = bangumiHistory.name,
+                maxLines = 2,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Text(
+                text = stringResource(
+                    id = R.string.last_episode_title,
+                    bangumiHistory.lastEpisodeTitle
+                ),
                 maxLines = 1,
                 color = MaterialTheme.colorScheme.onBackground.copy(0.6f)
             )
