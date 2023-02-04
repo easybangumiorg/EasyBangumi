@@ -85,7 +85,7 @@ fun AnimHistory() {
             if (pagingItems.itemCount == 0) {
                 EmptyPage(
                     modifier = Modifier.fillMaxSize(),
-                    emptyMsg = stringResource(id = R.string.no_star_bangumi)
+                    emptyMsg = stringResource(id = R.string.no_history)
                 )
             } else {
 

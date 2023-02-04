@@ -13,6 +13,8 @@ import com.heyanle.easybangumi.utils.exo_ssl.CropUtil
 import com.heyanle.easybangumi.utils.exo_ssl.TrustAllHostnameVerifier
 import com.heyanle.lib_anim.InnerLoader
 import com.heyanle.lib_anim.utils.WebViewUtil
+import com.heyanle.lib_anim.utils.fileHelper
+import com.heyanle.lib_anim.utils.getUri
 import com.heyanle.okkv2.MMKVStore
 import com.heyanle.okkv2.core.Okkv
 import com.microsoft.appcenter.AppCenter
