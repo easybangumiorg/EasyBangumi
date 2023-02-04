@@ -5,6 +5,7 @@ import com.heyanle.bangumi_source_api.api.entity.BangumiSummary
 import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.db.EasyDB
 import com.heyanle.easybangumi.db.entity.BangumiHistory
+import com.heyanle.easybangumi.player.PlayerController
 import com.heyanle.easybangumi.source.AnimSourceFactory
 import com.heyanle.easybangumi.ui.home.history.AnimHistoryViewModel
 import com.heyanle.easybangumi.utils.stringRes
@@ -21,6 +22,7 @@ class AnimPlayItemController(
 ) {
 
     val scope = MainScope()
+    val eventScope = MainScope()
 
     // 储存 线路与集数的对应关系，只是用于切换线路的时候缓存一下当前选择
     val curEpisode: HashMap<Int, Int> = hashMapOf()
@@ -82,79 +84,90 @@ class AnimPlayItemController(
         scope.launch {
             detailController.init()
         }
-        scope.launch {
+        eventScope.launch {
             eventFlow.collectLatest { event ->
-                when (event) {
-                    is PlayerEvent.None -> {
-                        _playerStatus.emit(
-                            PlayerStatus.None(
-                                enterData?.sourceIndex ?: -1,
-                                enterData?.episode ?: -1
-                            )
-                        )
-                    }
-
-                    is PlayerEvent.ChangePlay -> {
-                        curEpisode[event.lineIndex] = event.episode
-                        _playerStatus.emit(PlayerStatus.Loading(event.lineIndex, event.episode))
-                        kotlin.runCatching {
-                            val res = AnimSourceFactory.play(bangumiSummary.source)
-
-                            res?.getPlayUrl(bangumiSummary, event.lineIndex, event.episode)
-                                ?.complete {
-                                    _playerStatus.emit(
-                                        PlayerStatus.Play(
-                                            event.lineIndex,
-                                            event.episode,
-                                            it.data.uri,
-                                            it.data.type
-                                        )
-                                    )
-                                }?.error {
-                                    it.throwable.printStackTrace()
-                                    _playerStatus.emit(
-
-                                        PlayerStatus.Error(
-                                            event.lineIndex,
-                                            event.episode,
-                                            if (it.isParserError) stringRes(
-                                                R.string.source_error
-                                            ) else stringRes(R.string.loading_error),
-                                            it.throwable
-                                        )
-                                    )
-                                }
-                                ?: _playerStatus.emit(
-                                    PlayerStatus.Error(
-                                        event.lineIndex, event.episode, stringRes(
-                                            R.string.source_not_found
-                                        ), java.lang.NullPointerException("source Not found")
-                                    )
-                                )
-
-                        }.onFailure {
-                            it.printStackTrace()
+                scope.launch {
+                    when (event) {
+                        is PlayerEvent.None -> {
                             _playerStatus.emit(
-                                PlayerStatus.Error(
-                                    event.lineIndex,
-                                    event.episode,
-                                    stringRes(R.string.loading_error),
-                                    it
+                                PlayerStatus.None(
+                                    enterData?.sourceIndex ?: -1,
+                                    enterData?.episode ?: -1
                                 )
                             )
                         }
 
-                    }
+                        is PlayerEvent.ChangePlay -> {
+                            PlayerController.exoPlayer.pause()
+                            PlayerController.exoPlayer.stop()
+                            curEpisode[event.lineIndex] = event.episode
+                            _playerStatus.emit(PlayerStatus.Loading(event.lineIndex, event.episode))
+                            kotlin.runCatching {
+                                val res = AnimSourceFactory.play(bangumiSummary.source)
 
-                    is PlayerEvent.ChangeLine -> {
-                        eventFlow.emit(
-                            PlayerEvent.ChangePlay(
-                                event.lineIndex,
-                                curEpisode[event.lineIndex] ?: 0
+                                val result = res?.getPlayUrl(bangumiSummary, event.lineIndex, event.episode)
+                                val cur = eventFlow.value
+                                val las = cur as? PlayerEvent.ChangePlay
+                                if(las?.episode == event.episode && las.lineIndex == event.lineIndex){
+                                    // 防抖
+                                    result?.complete {
+                                        _playerStatus.emit(
+                                            PlayerStatus.Play(
+                                                event.lineIndex,
+                                                event.episode,
+                                                it.data.uri,
+                                                it.data.type
+                                            )
+                                        )
+                                    }?.error {
+                                        it.throwable.printStackTrace()
+                                        _playerStatus.emit(
+
+                                            PlayerStatus.Error(
+                                                event.lineIndex,
+                                                event.episode,
+                                                if (it.isParserError) stringRes(
+                                                    R.string.source_error
+                                                ) else stringRes(R.string.loading_error),
+                                                it.throwable
+                                            )
+                                        )
+                                    }
+                                        ?: _playerStatus.emit(
+                                            PlayerStatus.Error(
+                                                event.lineIndex, event.episode, stringRes(
+                                                    R.string.source_not_found
+                                                ), java.lang.NullPointerException("source Not found")
+                                            )
+                                        )
+                                }
+
+
+                            }.onFailure {
+                                it.printStackTrace()
+                                _playerStatus.emit(
+                                    PlayerStatus.Error(
+                                        event.lineIndex,
+                                        event.episode,
+                                        stringRes(R.string.loading_error),
+                                        it
+                                    )
+                                )
+                            }
+
+                        }
+
+                        is PlayerEvent.ChangeLine -> {
+                            eventFlow.emit(
+                                PlayerEvent.ChangePlay(
+                                    event.lineIndex,
+                                    curEpisode[event.lineIndex] ?: 0
+                                )
                             )
-                        )
+                        }
                     }
                 }
+
             }
         }
     }
@@ -337,6 +350,7 @@ class AnimPlayItemController(
 
     fun clear() {
         scope.cancel()
+        eventScope.cancel()
     }
 }
 

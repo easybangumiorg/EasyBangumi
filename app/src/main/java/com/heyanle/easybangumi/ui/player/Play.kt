@@ -329,16 +329,16 @@ fun LazyGridScope.playerMsg(
                         modifier =
                         Modifier
                             .fillMaxWidth()
-                            .padding(4.dp, 4.dp),
+                            .padding(4.dp, 4.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .clickable {
+                                vm.changePlayer(curLines, index)
+                            },
                         color = if (selected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.secondaryContainer,
                     ) {
                         Text(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(CircleShape)
-                                .clickable {
-                                    vm.changePlayer(curLines, index)
-                                }
                                 .padding(16.dp, 4.dp),
                             color = if (selected) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.onSecondaryContainer,
                             text = item,
