@@ -33,6 +33,10 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
                 source
             }
 
+            source.startsWith("//") -> {
+                "https:$source"
+            }
+
             source.startsWith("/") -> {
                 ROOT_URL + source
             }
