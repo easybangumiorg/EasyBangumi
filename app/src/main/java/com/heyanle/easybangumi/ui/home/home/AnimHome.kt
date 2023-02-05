@@ -7,6 +7,8 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.with
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.LocalOverscrollConfiguration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -56,7 +58,7 @@ import kotlinx.coroutines.launch
  */
 
 
-@OptIn(ExperimentalAnimationApi::class)
+@OptIn(ExperimentalAnimationApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun AnimHome() {
     HomeSourceContainer {
@@ -209,6 +211,7 @@ fun AnimHomePage(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 fun LazyListScope.animHomePage(state: AnimHomeViewModel.HomeAnimState.Completely) {
 
     items(state.keyList) { key ->
@@ -221,43 +224,47 @@ fun LazyListScope.animHomePage(state: AnimHomeViewModel.HomeAnimState.Completely
             fontWeight = FontWeight.W900,
         )
         val da = state.data[key] ?: emptyList()
-        LazyRow() {
-            items(da.size ?: 0) { i ->
-                val item = da[i]
-                Column(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .clickable {
-                            nav.navigationPlay(item)
-                        }
-                        .padding(4.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    OkImage(
-                        image = item.cover,
-                        contentDescription = item.name,
+        CompositionLocalProvider(
+            LocalOverscrollConfiguration provides null
+        ) {
+            LazyRow() {
+                items(da.size ?: 0) { i ->
+                    val item = da[i]
+                    Column(
                         modifier = Modifier
-                            .height(135.dp)
-                            .width(95.dp)
                             .clip(RoundedCornerShape(8.dp))
-                    )
-                    var needEnter by remember() {
-                        mutableStateOf(false)
-                    }
-                    Text(
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.width(95.dp),
-                        text = "${item.name}${if (needEnter) "\n " else ""}",
-                        maxLines = 2,
-                        fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-                        lineHeight = MaterialTheme.typography.bodyMedium.lineHeight,
-                        overflow = TextOverflow.Ellipsis,
-                        onTextLayout = {
-                            if (it.lineCount < 2) {
-                                needEnter = true
+                            .clickable {
+                                nav.navigationPlay(item)
                             }
+                            .padding(4.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        OkImage(
+                            image = item.cover,
+                            contentDescription = item.name,
+                            modifier = Modifier
+                                .height(135.dp)
+                                .width(95.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                        )
+                        var needEnter by remember() {
+                            mutableStateOf(false)
                         }
-                    )
+                        Text(
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.width(95.dp),
+                            text = "${item.name}${if (needEnter) "\n " else ""}",
+                            maxLines = 2,
+                            fontSize = MaterialTheme.typography.bodyMedium.fontSize,
+                            lineHeight = MaterialTheme.typography.bodyMedium.lineHeight,
+                            overflow = TextOverflow.Ellipsis,
+                            onTextLayout = {
+                                if (it.lineCount < 2) {
+                                    needEnter = true
+                                }
+                            }
+                        )
+                    }
                 }
             }
         }

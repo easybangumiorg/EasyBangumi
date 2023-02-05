@@ -139,7 +139,10 @@ class YhdmpParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
             val url = url("/s_all?ex=$key&kw=$keyword")
 
             val doc = runCatching {
-                Jsoup.connect(url(url)).get()
+                Jsoup.parse(
+                    networkHelper.cloudflareClient.newCall(GET(url(url))).execute().body?.string()
+                        ?: ""
+                )
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
@@ -150,7 +153,7 @@ class YhdmpParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
                     val detailUrl = url(it.child(0).child(0).attr("href"))
                     val coverStyle = it.select("div.imgblock")[0].attr("style")
                     val coverPattern = Regex("""(?<=url\(').*(?='\))""")
-                    var cover = coverPattern.find(coverStyle)?.value ?: ""
+                    val cover = coverPattern.find(coverStyle)?.value ?: ""
 
                     val b = Bangumi(
                         id = "${getLabel()}-$detailUrl",
@@ -368,7 +371,7 @@ class YhdmpParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
                 }
             }
 
-            if (errCount == 4) {
+            if (errCount == 10) {
                 errCount = 0
                 throw Error("Too many failures")
             }

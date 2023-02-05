@@ -32,6 +32,7 @@ import com.heyanle.easybangumi.utils.OverlayHelper
 import com.heyanle.easybangumi.utils.stringRes
 import com.heyanle.easybangumi.utils.toast
 import com.heyanle.lib_anim.utils.network.webview_helper.webViewHelper
+import com.microsoft.appcenter.distribute.Distribute
 import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
 
@@ -54,24 +55,6 @@ fun SettingPage() {
         TinySettingCard()
         Author()
         About()
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable {
-                    scope.launch {
-                        val res =
-                            webViewHelper.getRenderedHtmlCode("https://www.agemys.net/play/20220232?playid=2_1")
-
-                        val iframeUrl = Jsoup
-                            .parse(res)
-                            .select("iframe")[0].attr("src")
-                        iframeUrl.moeSnackBar()
-                        Log.d("SettingPage", iframeUrl)
-                    }
-
-                },
-            text = "测试"
-        )
     }
 
 }
@@ -380,7 +363,7 @@ fun About(
         Row(modifier = Modifier
             .fillMaxWidth()
             .clickable {
-
+                Distribute.checkForUpdate()
             }
             .padding(16.dp, 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
