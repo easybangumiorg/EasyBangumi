@@ -1,14 +1,11 @@
 package com.heyanle.lib_anim.cycdm
 
-import android.util.Base64
 import android.util.Log
 import com.google.gson.JsonParser
 import com.heyanle.bangumi_source_api.api.*
-import com.heyanle.bangumi_source_api.api.IPlayerParser.PlayerInfo.Companion.TYPE_HLS
 import com.heyanle.bangumi_source_api.api.entity.Bangumi
 import com.heyanle.bangumi_source_api.api.entity.BangumiDetail
 import com.heyanle.bangumi_source_api.api.entity.BangumiSummary
-import com.heyanle.lib_anim.bimibimi.BimibimiParser
 import com.heyanle.lib_anim.utils.Base64Utils
 import com.heyanle.lib_anim.utils.network.GET
 import com.heyanle.lib_anim.utils.network.POST
@@ -18,8 +15,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.FormBody
 import okhttp3.Headers
-import okhttp3.RequestBody
-import okhttp3.internal.userAgent
 import org.jsoup.Jsoup
 import java.net.URLDecoder
 
@@ -55,6 +50,10 @@ class CycdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
         return when {
             source.startsWith("http") -> {
                 source
+            }
+
+            source.startsWith("//") -> {
+                "https:$source"
             }
 
             source.startsWith("/") -> {
