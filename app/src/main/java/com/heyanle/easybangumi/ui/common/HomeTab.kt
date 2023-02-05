@@ -97,8 +97,8 @@ fun KeyTabRow(
     selectedTabIndex: Int,
     selectedContainerColor: Color = MaterialTheme.colorScheme.secondary,
     selectedContentColor: Color = MaterialTheme.colorScheme.onSecondary,
-    unselectedContainerColor: Color = MaterialTheme.colorScheme.background,
-    unselectedContentColor: Color = MaterialTheme.colorScheme.onBackground,
+    unselectedContainerColor: Color = MaterialTheme.colorScheme.secondaryContainer,
+    unselectedContentColor: Color = MaterialTheme.colorScheme.onSecondaryContainer,
     textList: List<String>,
     onItemClick: (Int) -> Unit,
 ) {

@@ -9,6 +9,8 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.with
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.LocalOverscrollConfiguration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -28,6 +30,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -38,12 +41,15 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarOutline
 import androidx.compose.material.icons.filled.Web
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -136,7 +142,7 @@ fun Play(
     val selectLines = remember {
         mutableStateOf(0)
     }
-    
+
     val lazyGridState = rememberLazyGridState()
 
     LaunchedEffect(key1 = playerState) {
@@ -180,13 +186,13 @@ fun Play(
                             fadeOut(animationSpec = tween(300, delayMillis = 0))
                 },
             ) {
-                LazyVerticalGrid(
-                    state = lazyGridState,
-                    columns = GridCells.Fixed(3),
-                    contentPadding = PaddingValues(4.dp)
-                ) {
-                    info(controller, it, playerState, selectLines)
-                }
+                Info(
+                    controller = controller,
+                    infoState = it,
+                    playerState = playerState,
+                    selectLines = selectLines,
+                    lazyGridState = lazyGridState
+                )
             }
 
         }
@@ -232,6 +238,7 @@ fun PlayerView(
                         }
                     }
                 ) {
+                    Log.d("Play", "onPlayView $playerState")
                     when (playerState) {
                         is AnimPlayState.None -> {
                             it.visibility = View.GONE
@@ -262,48 +269,27 @@ fun PlayerView(
     }
 }
 
-//
-fun LazyGridScope.info(
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun Info(
     controller: AnimPlayingController,
     infoState: BangumiInfoState,
     playerState: AnimPlayState,
     selectLines: MutableState<Int>,
+    lazyGridState: LazyGridState,
 ) {
-    if (infoState is BangumiInfoState.Loading) {
-        item(span = {
-            GridItemSpan(maxLineSpan)
-        }) {
-            LoadingPage()
-        }
-    } else if (infoState is BangumiInfoState.Info) {
-        // 番剧详情
-        item(
-            span = {
-                GridItemSpan(maxLineSpan)
-            }
-        ) {
-            Detailed(bangumiDetail = infoState.detail)
+    when (infoState) {
+        is BangumiInfoState.Loading -> {
+            LoadingPage(
+                modifier = Modifier.fillMaxSize()
+            )
         }
 
-        // 操作
-        item(
-            span = {
-                GridItemSpan(maxLineSpan)
-            }
-        ) {
-            ActionRow(controller = controller, infoState = infoState)
-        }
-
-        // 播放信息
-        playMsg(controller, infoState, playerState, selectLines)
-    } else if (infoState is BangumiInfoState.Error) {
-        item(
-            span = {
-                GridItemSpan(maxLineSpan)
-            }
-        ) {
+        is BangumiInfoState.Error -> {
             ErrorPage(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(0.dp, 32.dp),
                 errorMsg = infoState.errorMsg,
                 clickEnable = true,
                 other = {
@@ -314,8 +300,44 @@ fun LazyGridScope.info(
                 }
             )
         }
+
+        is BangumiInfoState.Info -> {
+            CompositionLocalProvider(
+                LocalOverscrollConfiguration provides null
+            ) {
+                LazyVerticalGrid(
+                    state = lazyGridState,
+                    columns = GridCells.Fixed(3),
+                    contentPadding = PaddingValues(4.dp)
+                ) {
+                    // 番剧详情
+                    item(
+                        span = {
+                            GridItemSpan(maxLineSpan)
+                        }
+                    ) {
+                        Detailed(bangumiDetail = infoState.detail)
+                    }
+
+                    // 操作
+                    item(
+                        span = {
+                            GridItemSpan(maxLineSpan)
+                        }
+                    ) {
+                        ActionRow(controller = controller, infoState = infoState)
+                    }
+
+                    // 播放信息
+                    playMsg(controller, infoState, playerState, selectLines)
+                }
+            }
+        }
+
+        else -> {}
     }
 }
+//
 
 @Composable
 fun Detailed(
@@ -429,6 +451,7 @@ fun ActionRow(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 fun LazyGridScope.playMsg(
     controller: AnimPlayingController,
     infoState: BangumiInfoState.Info,
@@ -442,35 +465,54 @@ fun LazyGridScope.playMsg(
         GridItemSpan(maxLineSpan)
     }) {
 
+        val lineIndex = remember(lines) {
+            arrayListOf<Int>().apply {
+                for (i in lines.indices) {
+                    if (infoState.playMsg[lines[i]]?.isNotEmpty() == true) {
+                        add(i)
+                    }
+                }
+            }
+        }
+
         HomeTabRow(
             modifier = Modifier.padding(4.dp, 0.dp, 4.dp, 8.dp),
             containerColor = Color.Transparent,
-            selectedTabIndex = selectLines.value,
+            selectedTabIndex = lineIndex.indexOf(selectLines.value),
             indicatorColor = { MaterialTheme.colorScheme.secondary }
         ) {
-            for (i in lines.indices) {
-                if (infoState.playMsg[lines[i]]?.isNotEmpty() == true) {
+
+            for (i in lineIndex.indices) {
+                if (infoState.playMsg[lines[lineIndex[i]]]?.isNotEmpty() == true) {
                     HomeTabItem(
-                        selected = i == selectLines.value,
+                        selected = lineIndex[i] == selectLines.value,
                         text = {
-                            Text(lines[i])
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(lines[lineIndex[i]])
+                                if (playerState.lineIndex == lineIndex[i]) {
+                                    Box(
+                                        modifier = Modifier
+                                            .padding(2.dp, 0.dp, 0.dp, 0.dp)
+                                            .size(8.dp)
+                                            .background(
+                                                MaterialTheme.colorScheme.secondary,
+                                                CircleShape
+                                            )
+                                    )
+
+                                }
+
+                            }
+
                         },
                         onClick = {
-                            selectLines.value = i
+                            selectLines.value = lineIndex[i]
                         },
                         selectedContentColor = MaterialTheme.colorScheme.secondary,
                         unselectedContentColor = MaterialTheme.colorScheme.onBackground
-                    )
-                } else {
-                    // 为空的话避免异常加空占位
-                    HomeTabItem(
-                        modifier = Modifier.size(0.dp),
-                        selected = false,
-                        text = { },
-                        onClick = { },
-                        selectedContentColor = Color.Transparent,
-                        unselectedContentColor = Color.Transparent,
-                        enable = false
                     )
                 }
             }
@@ -505,6 +547,7 @@ fun LazyGridScope.playMsg(
             )
         }
     }
+
 }
 
 @Composable
