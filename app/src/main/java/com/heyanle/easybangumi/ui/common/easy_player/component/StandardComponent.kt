@@ -20,10 +20,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.databinding.ComponentStandardBinding
+import com.heyanle.easybangumi.player.PlayerController
 import com.heyanle.easybangumi.theme.EasyThemeController
 import com.heyanle.easybangumi.ui.common.easy_player.utils.TimeUtils
 import com.heyanle.easybangumi.ui.common.moeSnackBar
-import com.heyanle.easybangumi.ui.playerOld.BangumiPlayController
+import com.heyanle.easybangumi.ui.player.AnimPlayingManager
+import com.heyanle.easybangumi.ui.player.BangumiPlayManager
 import com.heyanle.easybangumi.utils.dip2px
 import com.heyanle.easybangumi.utils.stringRes
 import com.heyanle.eplayer_core.constant.EasyPlayStatus
@@ -123,7 +125,7 @@ class StandardComponent : FrameLayout, IGestureComponent, SeekBar.OnSeekBarChang
             showSpeedContainer()
         }
         binding.ivReplay.setOnClickListener {
-            if (BangumiPlayController.curAnimPlayViewModel.value?.replay() != true) {
+            if (AnimPlayingManager.replay() != true) {
                 stringRes(R.string.replay_error).moeSnackBar()
             }
         }
@@ -269,7 +271,7 @@ class StandardComponent : FrameLayout, IGestureComponent, SeekBar.OnSeekBarChang
         runWithContainer {
             refreshTimeUI(getDuration(), getCurrentPosition())
             setSeekbarProgress(getDuration(), getCurrentPosition(), getBufferedPercentage())
-            BangumiPlayController.trySaveHistory(getCurrentPosition())
+            BangumiPlayManager.trySaveHistory(getCurrentPosition())
 
             when (playState) {
                 EasyPlayStatus.STATE_IDLE -> {
@@ -294,17 +296,18 @@ class StandardComponent : FrameLayout, IGestureComponent, SeekBar.OnSeekBarChang
                     // 加载中不显示加锁，显示进度条，进度条为 0,0 显示加载框 隐藏播放暂停按钮
                     // 强制显示，停止消失计时
                     binding.tvTitle.text =
-                        BangumiPlayController.curAnimPlayViewModel.value?.getCurTitle() ?: ""
-                    binding.tvEpisode.hideWithAnim()
+                        AnimPlayingManager.getCurTitle()
+                    binding.tvEpisode.hide()
                     binding.ivReplay.hide()
                     binding.root.visibility = View.VISIBLE
                     binding.ivLock.hide()
-                    binding.contentLayout.showWithAnim()
+                    binding.contentLayout.show()
                     binding.ivController.hide()
                     binding.progressBar.visibility = View.VISIBLE
                     binding.progressBar.alpha = 1.0f
                     binding.progressBar.show()
                     refreshTimeUI(0L, 0L)
+                    setSeekbarProgress(1L, 0L, 0)
                     stopFadeOut()
 
                 }
@@ -314,26 +317,26 @@ class StandardComponent : FrameLayout, IGestureComponent, SeekBar.OnSeekBarChang
                     binding.progressBar.show()
                     binding.ivReplay.hide()
                     if (isFullScreen()) {
-                        binding.tvEpisode.showWithAnim()
+                        binding.tvEpisode.show()
                     }
                     if (isVisible) {
                         if (isLocked) {
                             if (isFullScreen()) {
                                 binding.ivLock.show()
                             }
-                            binding.contentLayout.hideWithAnim()
+                            binding.contentLayout.hide()
                             binding.ivController.hide()
                         } else {
                             if (isFullScreen()) {
                                 binding.ivLock.show()
                             }
 
-                            binding.contentLayout.showWithAnim()
+                            binding.contentLayout.show()
                             binding.ivController.hide()
                         }
                     } else {
                         binding.ivLock.hide()
-                        binding.contentLayout.hideWithAnim()
+                        binding.contentLayout.hide()
                         binding.ivController.hide()
                     }
                 }
@@ -343,7 +346,7 @@ class StandardComponent : FrameLayout, IGestureComponent, SeekBar.OnSeekBarChang
                     binding.progressBar.hide()
                     binding.ivReplay.hide()
                     if (isFullScreen()) {
-                        binding.tvEpisode.showWithAnim()
+                        binding.tvEpisode.show()
                     }
                     if (isVisible) {
                         startFadeOut()
@@ -351,18 +354,18 @@ class StandardComponent : FrameLayout, IGestureComponent, SeekBar.OnSeekBarChang
                             if (isFullScreen()) {
                                 binding.ivLock.show()
                             }
-                            binding.contentLayout.hideWithAnim()
+                            binding.contentLayout.hide()
                             binding.ivController.hide()
                         } else {
                             if (isFullScreen()) {
                                 binding.ivLock.show()
                             }
-                            binding.contentLayout.showWithAnim()
+                            binding.contentLayout.show()
                             binding.ivController.show()
                         }
                     } else {
                         binding.ivLock.hide()
-                        binding.contentLayout.hideWithAnim()
+                        binding.contentLayout.hide()
                         binding.ivController.hide()
                     }
                 }
@@ -372,7 +375,7 @@ class StandardComponent : FrameLayout, IGestureComponent, SeekBar.OnSeekBarChang
                     binding.progressBar.hide()
                     binding.ivReplay.hide()
                     if (isFullScreen()) {
-                        binding.tvEpisode.showWithAnim()
+                        binding.tvEpisode.show()
                     }
                     stopFadeOut()
 
@@ -381,18 +384,18 @@ class StandardComponent : FrameLayout, IGestureComponent, SeekBar.OnSeekBarChang
                             if (isFullScreen()) {
                                 binding.ivLock.show()
                             }
-                            binding.contentLayout.hideWithAnim()
+                            binding.contentLayout.hide()
                             binding.ivController.hide()
                         } else {
                             if (isFullScreen()) {
                                 binding.ivLock.show()
                             }
-                            binding.contentLayout.showWithAnim()
+                            binding.contentLayout.show()
                             binding.ivController.show()
                         }
                     } else {
                         binding.ivLock.hide()
-                        binding.contentLayout.hideWithAnim()
+                        binding.contentLayout.hide()
                         binding.ivController.hide()
 
                     }
@@ -413,13 +416,13 @@ class StandardComponent : FrameLayout, IGestureComponent, SeekBar.OnSeekBarChang
                         return
                     }
                     // 尝试跳下一集，失败就显示重播按钮
-                    if (BangumiPlayController.curAnimPlayViewModel.value?.tryNext() != true) {
+                    if (!AnimPlayingManager.tryNext()) {
                         if (isFullScreen()) {
-                            binding.tvEpisode.showWithAnim()
+                            binding.tvEpisode.show()
                         }
                         binding.root.visibility = View.VISIBLE
                         binding.ivLock.hide()
-                        binding.contentLayout.showWithAnim()
+                        binding.contentLayout.show()
                         binding.ivController.hide()
                         binding.progressBar.hide()
                         refreshTimeUI(0L, 0L)
@@ -432,36 +435,6 @@ class StandardComponent : FrameLayout, IGestureComponent, SeekBar.OnSeekBarChang
         }
     }
 
-    private fun View.showWithAnim() {
-        if (visibility == View.GONE) {
-            clearAnimation()
-            post {
-                visibility = View.VISIBLE
-                alpha = 0f
-                animate().alpha(1f).setListener(object : Animator.AnimatorListener {
-                    override fun onAnimationStart(animation: Animator) {
-                    }
-
-                    override fun onAnimationEnd(animation: Animator) {
-                        alpha = 1f
-
-                    }
-
-                    override fun onAnimationCancel(animation: Animator) {
-                        alpha = 1f
-                    }
-
-                    override fun onAnimationRepeat(animation: Animator) {
-                    }
-                }).setDuration(100).start()
-            }
-
-        } else {
-            clearAnimation()
-            alpha = 1f
-        }
-
-    }
 
     private fun View.show() {
         visibility = View.VISIBLE
@@ -469,38 +442,6 @@ class StandardComponent : FrameLayout, IGestureComponent, SeekBar.OnSeekBarChang
 
     private fun View.hide() {
         visibility = View.GONE
-    }
-
-    private fun View.hideWithAnim() {
-        if (visibility == View.VISIBLE) {
-            clearAnimation()
-            post {
-                alpha = 1f
-                animate().alpha(0f).setListener(object : Animator.AnimatorListener {
-                    override fun onAnimationStart(animation: Animator) {
-                    }
-
-                    override fun onAnimationEnd(animation: Animator) {
-                        alpha = 0f
-                        visibility = View.GONE
-
-                    }
-
-                    override fun onAnimationCancel(animation: Animator) {
-                        alpha = 0f
-                        visibility = View.GONE
-                    }
-
-                    override fun onAnimationRepeat(animation: Animator) {
-                    }
-                }).setDuration(100).start()
-            }
-        } else {
-            visibility = View.GONE
-            clearAnimation()
-            alpha = 0f
-        }
-
     }
 
 
@@ -556,22 +497,20 @@ class StandardComponent : FrameLayout, IGestureComponent, SeekBar.OnSeekBarChang
 
     private fun initPlayContainer() {
         playListTextList.clear()
-        BangumiPlayController.curAnimPlayViewModel.value?.let {
-            it.getCurPlayList().forEachIndexed { index, s ->
-                Log.d("StandardComponent", "i $index s $s")
-                val tv = TextView(context).apply {
-                    setTextColor(if (BangumiPlayController.curAnimPlayViewModel.value?.playerStatus?.value?.episode == index) selectSpeedTextColor else normalSpeedTextColor)
-                    setPadding(0, dip2px(context, 8f), 0, dip2px(context, 8f))
-                    gravity = Gravity.CENTER
-                    this.text = s
-                    textSize = 18F
-                    setOnClickListener {
-                        BangumiPlayController.curAnimPlayViewModel.value?.changeEpisode(index)
-                        hidePlayLineContainer()
-                    }
+        AnimPlayingManager.getCurPlayList().forEachIndexed { index, s ->
+            Log.d("StandardComponent", "i $index s $s")
+            val tv = TextView(context).apply {
+                setTextColor(if (BangumiPlayManager.getCurAnimPlayItemController()?.playerState?.value?.episode == index) selectSpeedTextColor else normalSpeedTextColor)
+                setPadding(0, dip2px(context, 8f), 0, dip2px(context, 8f))
+                gravity = Gravity.CENTER
+                this.text = s
+                textSize = 18F
+                setOnClickListener {
+                    AnimPlayingManager.tryChangeEpisode(index)
+                    hidePlayLineContainer()
                 }
-                playListTextList.add(tv)
             }
+            playListTextList.add(tv)
         }
         binding.playListContainer.removeAllViews()
         playListTextList.forEach {

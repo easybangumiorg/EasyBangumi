@@ -10,6 +10,7 @@ import com.heyanle.easybangumi.source.AnimSourceFactory
 import com.heyanle.easybangumi.ui.home.star.AnimStarViewModel
 import com.heyanle.easybangumi.utils.stringRes
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,6 +27,7 @@ class BangumiInfoController(
 ) {
 
     private val scope = MainScope()
+    private var lastJob: Job? = null
 
     private val _infoStatus = MutableStateFlow<BangumiInfoState>(
         BangumiInfoState.None
@@ -35,7 +37,8 @@ class BangumiInfoController(
     val isBangumiStar = mutableStateOf(false)
 
     fun load() {
-        scope.launch {
+        lastJob?.cancel()
+        lastJob = scope.launch {
             _infoStatus.emit(BangumiInfoState.Loading)
             kotlin.runCatching {
                 var bangumiDetail: BangumiDetail? = null
@@ -95,40 +98,43 @@ class BangumiInfoController(
         }
     }
 
-    suspend fun setBangumiStar(isStar: Boolean, bangumiDetail: BangumiDetail) {
-        if (isStar) {
-            withContext(Dispatchers.IO) {
-                EasyDB.database.bangumiStar.apply {
-                    val old = getBySourceDetailUrl(bangumiDetail.source, bangumiDetail.detailUrl)
-                    if (old == null) {
-                        insert(BangumiStar.fromBangumi(bangumiDetail))
-                    } else {
-
-                        modify(
-                            old.copy(
-                                name = bangumiDetail.name,
-                                cover = bangumiDetail.cover,
-                                source = bangumiDetail.source,
-                                createTime = System.currentTimeMillis()
+    fun setBangumiStar(isStar: Boolean, bangumiDetail: BangumiDetail) {
+        scope.launch {
+            if (isStar) {
+                withContext(Dispatchers.IO) {
+                    EasyDB.database.bangumiStar.apply {
+                        val old =
+                            getBySourceDetailUrl(bangumiDetail.source, bangumiDetail.detailUrl)
+                        if (old == null) {
+                            insert(BangumiStar.fromBangumi(bangumiDetail))
+                        } else {
+                            modify(
+                                old.copy(
+                                    name = bangumiDetail.name,
+                                    cover = bangumiDetail.cover,
+                                    source = bangumiDetail.source,
+                                    createTime = System.currentTimeMillis()
+                                )
                             )
-                        )
+                        }
                     }
                 }
-
+                AnimStarViewModel.refresh()
+                isBangumiStar.value = true
+            } else {
+                withContext(Dispatchers.IO) {
+                    EasyDB.database.bangumiStarDao()
+                        .deleteBySourceDetailUrl(bangumiDetail.source, bangumiDetail.detailUrl)
+                }
+                AnimStarViewModel.refresh()
+                isBangumiStar.value = false
             }
-            AnimStarViewModel.refresh()
-            isBangumiStar.value = true
-        } else {
-            withContext(Dispatchers.IO) {
-                EasyDB.database.bangumiStarDao()
-                    .deleteBySourceDetailUrl(bangumiDetail.source, bangumiDetail.detailUrl)
-            }
-            AnimStarViewModel.refresh()
-            isBangumiStar.value = false
         }
     }
 
     fun release() {
+        lastJob?.cancel()
+        lastJob = null
         scope.cancel()
     }
 

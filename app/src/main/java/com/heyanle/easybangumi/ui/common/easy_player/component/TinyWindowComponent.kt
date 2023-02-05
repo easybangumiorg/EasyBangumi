@@ -21,7 +21,8 @@ import com.heyanle.easybangumi.databinding.ComponentTinyBinding
 import com.heyanle.easybangumi.player.PlayerController
 import com.heyanle.easybangumi.player.PlayerTinyController
 import com.heyanle.easybangumi.theme.EasyThemeController
-import com.heyanle.easybangumi.ui.playerOld.BangumiPlayController
+import com.heyanle.easybangumi.ui.player.AnimPlayingManager
+import com.heyanle.easybangumi.ui.player.BangumiPlayManager
 import com.heyanle.eplayer_core.constant.EasyPlayStatus
 import com.heyanle.eplayer_core.controller.ComponentContainer
 import com.heyanle.eplayer_core.controller.IComponent
@@ -81,7 +82,7 @@ class TinyWindowComponent : FrameLayout, IComponent, SeekBar.OnSeekBarChangeList
         binding.seekBar.setOnSeekBarChangeListener(this)
         binding.ivFullscreen.setOnClickListener {
             // todo 回到播放页面
-            BangumiPlayController.getCurPendingIntent().send()
+            AnimPlayingManager.getCurPendingIntent().send()
         }
         binding.ivClose.setOnClickListener {
             PlayerTinyController.dismissTiny()

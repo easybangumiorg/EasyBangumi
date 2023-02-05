@@ -55,7 +55,7 @@ fun HomeTabRow(
         tabs = tabs,
         divider = {},
         indicator = { tabPositions ->
-            if (tabPositions.isNotEmpty()) {
+            if (tabPositions.isNotEmpty() && selectedTabIndex >= 0 && selectedTabIndex < tabPositions.size) {
                 TabRowDefaults.Indicator(
                     Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
                     color = indicatorColor(isUseSecondary)
@@ -69,6 +69,7 @@ fun HomeTabRow(
 
 @Composable
 fun HomeTabItem(
+    modifier: Modifier = Modifier,
     selected: Boolean,
     text: (@Composable () -> Unit)? = null,
     icon: (@Composable () -> Unit)? = null,
@@ -79,6 +80,7 @@ fun HomeTabItem(
 ) {
 
     Tab(
+        modifier = modifier,
         selected = selected,
         onClick = onClick,
         text = text,
