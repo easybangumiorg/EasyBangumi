@@ -19,7 +19,7 @@ import androidx.media.AudioAttributesCompat
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.video.VideoSize
-import com.heyanle.easybangumi.ui.playerOld.BangumiPlayController
+import com.heyanle.easybangumi.ui.player.BangumiPlayManager
 import com.heyanle.eplayer_core.EasyPlayerManager
 import com.heyanle.eplayer_core.constant.EasyPlayStatus
 import com.heyanle.eplayer_core.constant.EasyPlayerStatus
@@ -164,7 +164,7 @@ class BaseEasyPlayerView :
         if (playState == EasyPlayStatus.STATE_PLAYING) {
             getCurrentPosition().let {
                 if (it != -1L) {
-                    BangumiPlayController.trySaveHistory(it)
+                    BangumiPlayManager.trySaveHistory(it)
                 }
             }
 
@@ -599,7 +599,7 @@ class BaseEasyPlayerView :
     override fun onSaveInstanceState(): Parcelable? {
         getCurrentPosition().let {
             if (it != -1L) {
-                BangumiPlayController.trySaveHistory(it)
+                BangumiPlayManager.trySaveHistory(it)
             }
         }
 

@@ -68,5 +68,9 @@ object PlayerController {
         stateController.dispatchPreparing()
     }
 
+    fun isMedia(): Boolean {
+        return exoPlayer.playbackState == Player.STATE_BUFFERING || exoPlayer.playbackState == Player.STATE_READY
+    }
+
 
 }

@@ -192,36 +192,7 @@ fun BangumiStarCard(
         verticalArrangement = Arrangement.spacedBy(4.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(
-            modifier = Modifier
-                .height(135.dp)
-                .width(95.dp)
-                .clip(RoundedCornerShape(8.dp))
-        ) {
-
-            OkImage(
-                image = item.cover,
-                contentDescription = item.name,
-                modifier = Modifier
-                    .height(135.dp)
-                    .width(95.dp)
-                    .clip(RoundedCornerShape(8.dp))
-            )
-
-            val sourceText = AnimSourceFactory.label(item.source) ?: item.source
-            Text(
-                fontSize = 13.sp,
-                text = sourceText,
-                color = MaterialTheme.colorScheme.onSecondary,
-                modifier = Modifier
-                    .background(
-                        MaterialTheme.colorScheme.secondary,
-                        RoundedCornerShape(0.dp, 0.dp, 8.dp, 0.dp)
-                    )
-                    .padding(8.dp, 0.dp)
-            )
-
-        }
+        BangumiCard(item.cover, item.name, item.source)
 
         var needEnter by remember() {
             mutableStateOf(false)

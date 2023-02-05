@@ -1,10 +1,12 @@
 package com.heyanle.lib_anim.utils.network
 
+import android.util.Log
 import android.webkit.CookieManager
 import android.webkit.CookieSyncManager
 import okhttp3.Cookie
 import okhttp3.CookieJar
 import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrl
 
 /**
  * Created by HeYanLe on 2023/2/3 21:51.
@@ -15,6 +17,7 @@ class AndroidCookieJar : CookieJar {
 
     override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
         val urlString = url.toString()
+        Log.d("AndroidCookieJar", urlString)
         cookies.forEach { manager.setCookie(urlString, it.toString()) }
         manager.flush()
     }
@@ -49,6 +52,11 @@ class AndroidCookieJar : CookieJar {
             .filterNames()
             .onEach { manager.setCookie(urlString, "$it=;Max-Age=$maxAge") }
             .count()
+    }
+
+    fun put(url: String, vararg cookies: Cookie) {
+        val urlString = url.toHttpUrl().toString()
+        cookies.forEach { manager.setCookie(urlString, it.toString()) }
     }
 
     fun removeAll() {

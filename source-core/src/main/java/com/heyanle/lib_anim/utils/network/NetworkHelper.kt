@@ -5,6 +5,7 @@ import android.webkit.WebView
 import com.heyanle.lib_anim.utils.getDefaultUserAgentString
 import com.heyanle.lib_anim.utils.network.interceptor.CloudflareInterceptor
 import com.heyanle.lib_anim.utils.network.interceptor.CloudflareUserInterceptor
+import com.heyanle.lib_anim.utils.network.interceptor.CookieInterceptor
 import com.heyanle.lib_anim.utils.network.interceptor.UserAgentInterceptor
 import okhttp3.Cache
 import okhttp3.Headers
@@ -43,6 +44,7 @@ class NetworkHelper(
     private val userAgentInterceptor by lazy { UserAgentInterceptor(this) }
     private val cloudflareInterceptor by lazy { CloudflareInterceptor(context, this) }
     private val cloudflareUserInterceptor by lazy { CloudflareUserInterceptor(context, this) }
+    private val cookieInterceptor by lazy { CookieInterceptor(this) }
 
     private val baseClientBuilder: OkHttpClient.Builder
         get() {
@@ -52,6 +54,7 @@ class NetworkHelper(
                 .readTimeout(30, TimeUnit.SECONDS)
                 .callTimeout(2, TimeUnit.MINUTES)
                 .addInterceptor(userAgentInterceptor)
+                .addInterceptor(cookieInterceptor)
                 .sslSocketFactory(createSSLSocketFactory(), TrustAllCerts())
                 .hostnameVerifier(createHostnameVerifier())
 
