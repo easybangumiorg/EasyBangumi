@@ -188,35 +188,7 @@ fun BangumiHistoryCard(
             .then(modifier),
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .height(135.dp)
-                .width(95.dp)
-                .clip(RoundedCornerShape(8.dp))
-        ) {
-
-            OkImage(
-                image = bangumiHistory.cover,
-                contentDescription = bangumiHistory.name,
-                modifier = Modifier
-                    .height(135.dp)
-                    .width(95.dp)
-                    .clip(RoundedCornerShape(8.dp))
-            )
-
-            Text(
-                fontSize = 13.sp,
-                text = sourceText,
-                color = MaterialTheme.colorScheme.onSecondary,
-                modifier = Modifier
-                    .background(
-                        MaterialTheme.colorScheme.secondary,
-                        RoundedCornerShape(0.dp, 0.dp, 8.dp, 0.dp)
-                    )
-                    .padding(8.dp, 0.dp)
-            )
-
-        }
+        BangumiCard(bangumiHistory.cover, bangumiHistory.name, bangumiHistory.source)
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {

@@ -15,7 +15,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import com.heyanle.easybangumi.player.TinyStatusController
 import com.heyanle.easybangumi.theme.EasyTheme
 import com.heyanle.easybangumi.ui.common.MoeSnackBar
-import com.heyanle.easybangumi.ui.playerOld.BangumiPlayController
+import com.heyanle.easybangumi.ui.player.BangumiPlayManager
 import com.heyanle.eplayer_core.EasyPlayerManager
 import com.heyanle.eplayer_core.utils.MediaHelper
 
@@ -63,9 +63,6 @@ class MainActivity : ComponentActivity() {
         super.onPause()
         kotlin.runCatching {
             TinyStatusController.onActPause()
-        }
-        kotlin.runCatching {
-            BangumiPlayController.onPause()
         }
     }
 }

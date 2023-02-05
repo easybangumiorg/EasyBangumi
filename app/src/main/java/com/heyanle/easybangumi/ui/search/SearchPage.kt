@@ -288,6 +288,7 @@ fun BangumiSearchItem(
             .then(modifier),
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        BangumiCard(bangumi = bangumi)
         Box(
             modifier = Modifier
                 .height(135.dp)

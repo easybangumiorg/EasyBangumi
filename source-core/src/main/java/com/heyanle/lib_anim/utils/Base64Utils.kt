@@ -106,10 +106,10 @@ object Base64Utils {
     fun getMD5(text: String): String {
         try {
             val instance: MessageDigest = MessageDigest.getInstance("MD5")
-            val digest:ByteArray = instance.digest(text.toByteArray())
-            var sb : StringBuffer = StringBuffer()
+            val digest: ByteArray = instance.digest(text.toByteArray())
+            var sb: StringBuffer = StringBuffer()
             for (b in digest) {
-                var i :Int = b.toInt() and 0xff
+                var i: Int = b.toInt() and 0xff
                 var hexString = Integer.toHexString(i)
                 if (hexString.length < 2) {
                     hexString = "0" + hexString

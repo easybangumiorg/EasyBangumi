@@ -9,6 +9,7 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.FrameLayout
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.databinding.ComponentVolumeBrightnessBinding
@@ -35,6 +36,8 @@ class VolumeBrightnessComponent : FrameLayout, IGestureComponent {
 //            binding.pbPercent.indeterminateTintList = ColorStateList.valueOf(color)
 //            binding.pbPercent.indeterminateTintMode = PorterDuff.Mode.SRC_ATOP
             binding.pbPercent.progressTintList = ColorStateList.valueOf(color)
+            binding.pbPercent.progressBackgroundTintList =
+                ColorStateList.valueOf(Color.White.copy(0.6f).toArgb())
         }
     }
 
