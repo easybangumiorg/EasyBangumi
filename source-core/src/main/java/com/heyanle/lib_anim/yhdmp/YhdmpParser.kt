@@ -6,23 +6,14 @@ import com.heyanle.bangumi_source_api.api.*
 import com.heyanle.bangumi_source_api.api.entity.Bangumi
 import com.heyanle.bangumi_source_api.api.entity.BangumiDetail
 import com.heyanle.bangumi_source_api.api.entity.BangumiSummary
-import com.heyanle.lib_anim.bimibimi.BimibimiParser
-import com.heyanle.lib_anim.utils.Base64Utils
-import com.heyanle.lib_anim.utils.fileHelper
-import com.heyanle.lib_anim.utils.getUri
 import com.heyanle.lib_anim.utils.network.GET
 import com.heyanle.lib_anim.utils.network.networkHelper
-import com.heyanle.lib_anim.utils.network.webview_helper.webViewHelper
-import com.heyanle.lib_anim.utils.stringHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import okhttp3.Cookie
 import okhttp3.Headers
-import okhttp3.HttpUrl
-import okhttp3.internal.userAgent
 import org.jsoup.Jsoup
 import java.net.URLDecoder
-import java.util.Date
+import java.util.*
 
 
 /**
@@ -55,6 +46,10 @@ class YhdmpParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
         return when {
             source.startsWith("http") -> {
                 source
+            }
+
+            source.startsWith("//") -> {
+                "https:$source"
             }
 
             source.startsWith("/") -> {
