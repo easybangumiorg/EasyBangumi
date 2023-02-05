@@ -289,35 +289,6 @@ fun BangumiSearchItem(
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         BangumiCard(bangumi = bangumi)
-        Box(
-            modifier = Modifier
-                .height(135.dp)
-                .width(95.dp)
-                .clip(RoundedCornerShape(8.dp))
-        ) {
-            val sourceText = AnimSourceFactory.label(bangumi.source) ?: bangumi.source
-            OkImage(
-                image = bangumi.cover,
-                contentDescription = bangumi.name,
-                modifier = Modifier
-                    .height(135.dp)
-                    .width(95.dp)
-                    .clip(RoundedCornerShape(8.dp))
-            )
-
-            Text(
-                fontSize = 13.sp,
-                text = sourceText,
-                color = MaterialTheme.colorScheme.onSecondary,
-                modifier = Modifier
-                    .background(
-                        MaterialTheme.colorScheme.secondary,
-                        RoundedCornerShape(0.dp, 0.dp, 8.dp, 0.dp)
-                    )
-                    .padding(8.dp, 0.dp)
-            )
-
-        }
 
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp)

@@ -23,6 +23,11 @@ android {
             useSupportLibrary = true
         }
 
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments["room.schemaLocation"] = "$projectDir/schemas".toString()
+            }
+        }
 
         buildConfigField(
             "String",

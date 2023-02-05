@@ -188,7 +188,8 @@ class CycdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
             val doc = runCatching {
 
                 Jsoup.parse(
-                    networkHelper.client.newCall(GET(urlSearch)).execute().body?.string() ?: ""
+                    networkHelper.cloudflareUserClient.newCall(GET(urlSearch))
+                        .execute().body?.string() ?: ""
                 )
             }.getOrElse {
                 it.printStackTrace()

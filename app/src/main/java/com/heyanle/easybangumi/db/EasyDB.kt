@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi.db
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -21,8 +22,11 @@ import com.heyanle.easybangumi.db.entity.SearchHistory
         BangumiStar::class,    // 追番
         BangumiHistory::class, // 观看历史
     ],
+    // 历史遗留问题
+    autoMigrations = [
+    ],
     version = 6,
-    exportSchema = false
+    exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun searchHistoryDao(): SearchHistoryDao
