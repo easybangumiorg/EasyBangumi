@@ -182,16 +182,18 @@ class StandardComponent : FrameLayout, IGestureComponent, SeekBar.OnSeekBarChang
 //        refreshPlayPauseBtStatus()
 //        runWithContainer {
 //
-//            // 进度管理
-//            if(playState != EasyPlayStatus.STATE_PLAYING
-//                && playState != EasyPlayStatus.STATE_BUFFERED
-//                && playState != EasyPlayStatus.STATE_PREPARING
-//            ){
-//                stopProgressUpdate()
-//            }else{
-//                onProgressUpdate(duration = getDuration(), getCurrentPosition())
-//                startProgressUpdate()
-//            }
+        runWithContainer {
+            // 进度管理
+            if(playState != EasyPlayStatus.STATE_PLAYING
+                && playState != EasyPlayStatus.STATE_BUFFERED
+            ){
+                stopProgressUpdate()
+            }else{
+                // onProgressUpdate(duration = getDuration(), getCurrentPosition())
+                startProgressUpdate()
+            }
+        }
+
 //
 //
 //            if(playState == EasyPlayStatus.STATE_PREPARING){
