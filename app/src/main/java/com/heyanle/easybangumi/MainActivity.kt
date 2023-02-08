@@ -2,6 +2,7 @@ package com.heyanle.easybangumi
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.webkit.WebView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
@@ -13,15 +14,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import com.heyanle.easybangumi.player.TinyStatusController
+import com.heyanle.easybangumi.source.utils.initUtils
 import com.heyanle.easybangumi.theme.EasyTheme
 import com.heyanle.easybangumi.ui.common.MoeSnackBar
 import com.heyanle.easybangumi.ui.player.BangumiPlayManager
 import com.heyanle.eplayer_core.EasyPlayerManager
 import com.heyanle.eplayer_core.utils.MediaHelper
+import com.heyanle.lib_anim.utils.getDefaultUserAgentString
+import com.heyanle.lib_anim.utils.network.networkHelper
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // initUtils(BangumiApp.INSTANCE)
+        // networkHelper.defaultUA = WebView(this).getDefaultUserAgentString()
         MediaHelper.setIsDecorFitsSystemWindows(this, false)
         setContent {
             EasyTheme {

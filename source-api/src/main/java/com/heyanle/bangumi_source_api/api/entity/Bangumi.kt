@@ -29,6 +29,6 @@ data class Bangumi(
     var visitTime: Long = 0L,
 ) {
     fun toSummary(): BangumiSummary {
-        return BangumiSummary(source, detailUrl)
+        return BangumiSummary(id, source, detailUrl)
     }
 }

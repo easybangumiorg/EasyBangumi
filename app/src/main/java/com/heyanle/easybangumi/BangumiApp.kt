@@ -4,6 +4,7 @@ import android.app.Application
 import android.os.Build
 import android.os.Looper
 import android.util.Log
+import android.widget.Toast
 import com.heyanle.easy_crasher.CrashHandler
 import com.heyanle.easybangumi.db.EasyDB
 import com.heyanle.easybangumi.source.AnimSourceFactory
@@ -54,9 +55,15 @@ class BangumiApp : Application() {
 
         AnimSourceLibrary.newSource(InnerLoader, true)
 
-        initUtils(this)
-
         initAppCenter()
+
+        kotlin.runCatching {
+            initUtils(this)
+        }.onFailure {
+            it.printStackTrace()
+            Toast.makeText(this, it.message, Toast.LENGTH_SHORT).show()
+        }
+
     }
 
     override fun getPackageName(): String {

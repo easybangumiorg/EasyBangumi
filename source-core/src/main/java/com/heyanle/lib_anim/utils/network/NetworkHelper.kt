@@ -1,6 +1,7 @@
 package com.heyanle.lib_anim.utils.network
 
 import android.content.Context
+import android.util.Log
 import android.webkit.WebView
 import com.heyanle.lib_anim.utils.getDefaultUserAgentString
 import com.heyanle.lib_anim.utils.network.interceptor.CloudflareInterceptor
@@ -39,8 +40,13 @@ class NetworkHelper(
     val cookieManager = AndroidCookieJar()
     val defaultLinuxUA =
         "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36 Edg/108.0.1462.76"
-    val defaultUA = WebView(context).getDefaultUserAgentString()
+    val defaultUA:String = kotlin.runCatching {
+        WebView(context).getDefaultUserAgentString()
+    }.getOrElse {
+        it.printStackTrace()
+        "Mozilla/5.0 (Linux; Android 13; RMX3551 Build/SKQ1.220617.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/103.0.5060.129 Mobile Safari/537.36"
 
+    }
     private val userAgentInterceptor by lazy { UserAgentInterceptor(this) }
     private val cloudflareInterceptor by lazy { CloudflareInterceptor(context, this) }
     private val cloudflareUserInterceptor by lazy { CloudflareUserInterceptor(context, this) }

@@ -97,12 +97,13 @@ import com.heyanle.eplayer_core.constant.EasyPlayStatus
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
 fun Play(
+    id: String,
     source: String,
     detail: String,
     enterData: BangumiPlayManager.EnterData? = null,
 ) {
 
-    val controller = PlayingControllerFactory.getItemController(BangumiSummary(source, detail))
+    val controller = PlayingControllerFactory.getItemController(BangumiSummary(id, source, detail))
 
     LaunchedEffect(key1 = controller) {
         BangumiPlayManager.newAnimPlayItemController(controller, enterData)
