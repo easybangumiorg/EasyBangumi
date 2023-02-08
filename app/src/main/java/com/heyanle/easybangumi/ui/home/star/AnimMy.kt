@@ -97,7 +97,7 @@ fun AnimMy() {
                     ) { index ->
                         pagingItems[index]?.let { star ->
                             BangumiStarCard(item = star) {
-                                nav.navigationPlay(it.source, it.detailUrl)
+                                nav.navigationPlay(it.bangumiId, it.source, it.detailUrl)
                             }
                         }
                     }

@@ -99,6 +99,7 @@ fun AnimHistory() {
                             it?.let {
                                 BangumiHistoryCard(bangumiHistory = it, onClick = {
                                     nav.navigationPlay(
+                                        it.bangumiId,
                                         it.source,
                                         it.detailUrl,
                                         it.lastLinesIndex,

@@ -5,6 +5,8 @@ import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.heyanle.easybangumi.db.dao.BangumiHistoryDao
 import com.heyanle.easybangumi.db.dao.BangumiStarDao
 import com.heyanle.easybangumi.db.dao.SearchHistoryDao
@@ -23,9 +25,8 @@ import com.heyanle.easybangumi.db.entity.SearchHistory
         BangumiHistory::class, // 观看历史
     ],
     // 历史遗留问题
-    autoMigrations = [
-    ],
-    version = 6,
+    autoMigrations = [],
+    version = 7,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -42,10 +43,21 @@ abstract class AppDatabase : RoomDatabase() {
 object EasyDB {
     lateinit var database: AppDatabase
 
+    private val MIGRATION_6_7 = object : Migration(6, 7) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("ALTER TABLE BangumiHistory ADD COLUMN `bangumiId` TEXT NOT NULL DEFAULT ''")
+            database.execSQL("ALTER TABLE BangumiStar ADD COLUMN `bangumiId` TEXT NOT NULL DEFAULT ''")
+        }
+    }
+
+
     fun init(context: Context) {
         database = Room.databaseBuilder(
             context,
             AppDatabase::class.java, "easy_bangumi"
-        ).fallbackToDestructiveMigration().build()
+        ).fallbackToDestructiveMigration()
+            .apply {
+                addMigrations(MIGRATION_6_7)
+            }.build()
     }
 }

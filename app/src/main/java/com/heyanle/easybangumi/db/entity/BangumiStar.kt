@@ -13,6 +13,7 @@ import com.heyanle.bangumi_source_api.api.entity.BangumiDetail
 data class BangumiStar(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
+    val bangumiId: String,
     val name: String,
     val cover: String,
     val source: String,
@@ -27,6 +28,7 @@ data class BangumiStar(
                 cover = bangumi.cover,
                 source = bangumi.source,
                 detailUrl = bangumi.detailUrl,
+                bangumiId = bangumi.id,
                 createTime = System.currentTimeMillis()
             )
         }
@@ -37,6 +39,7 @@ data class BangumiStar(
                 cover = bangumi.cover,
                 source = bangumi.source,
                 detailUrl = bangumi.detailUrl,
+                bangumiId = bangumi.id,
                 createTime = System.currentTimeMillis()
             )
         }

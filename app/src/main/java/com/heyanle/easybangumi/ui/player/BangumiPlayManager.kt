@@ -226,6 +226,7 @@ object BangumiPlayManager {
                 }.getOrElse { "" }
                 val history = BangumiHistory(
                     name = infoState.detail.name,
+                    bangumiId = infoState.detail.id,
                     cover = infoState.detail.cover,
                     source = infoState.detail.source,
                     detailUrl = infoState.detail.detailUrl,

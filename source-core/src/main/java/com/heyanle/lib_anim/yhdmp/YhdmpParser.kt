@@ -11,6 +11,8 @@ import com.heyanle.lib_anim.utils.SourceUtils
 import com.heyanle.lib_anim.utils.network.GET
 import com.heyanle.lib_anim.utils.network.networkHelper
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.Headers
 import org.jsoup.Jsoup
