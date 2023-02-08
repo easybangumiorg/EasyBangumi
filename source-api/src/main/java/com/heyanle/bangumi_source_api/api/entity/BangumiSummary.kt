@@ -6,6 +6,8 @@ package com.heyanle.bangumi_source_api.api.entity
  */
 // 番剧摘要
 data class BangumiSummary(
+    // 唯一标志，由源自己决定放啥
+    val id: String,
     // 源名称
     val source: String,
 
@@ -14,8 +16,12 @@ data class BangumiSummary(
 ) {
 
 
-    override fun toString(): String {
-        return "BangumiSummary(source='$source', detailUrl='$detailUrl')"
+
+
+    override fun hashCode(): Int {
+        var result = source.hashCode()
+        result = 31 * result + detailUrl.hashCode()
+        return result
     }
 
     override fun equals(other: Any?): Boolean {
@@ -24,15 +30,14 @@ data class BangumiSummary(
 
         other as BangumiSummary
 
+        if (id != other.id) return false
         if (source != other.source) return false
         if (detailUrl != other.detailUrl) return false
 
         return true
     }
 
-    override fun hashCode(): Int {
-        var result = source.hashCode()
-        result = 31 * result + detailUrl.hashCode()
-        return result
+    override fun toString(): String {
+        return "BangumiSummary(id='$id', source='$source', detailUrl='$detailUrl')"
     }
 }

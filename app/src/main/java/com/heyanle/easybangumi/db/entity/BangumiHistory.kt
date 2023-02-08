@@ -11,6 +11,7 @@ import androidx.room.PrimaryKey
 data class BangumiHistory(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
+    val bangumiId: String,
     val name: String,
     val cover: String,
     val source: String,

@@ -54,7 +54,7 @@ data class BangumiDetail(
     }
 
     fun getSummary(): BangumiSummary {
-        return BangumiSummary(source, detailUrl)
+        return BangumiSummary(id, source, detailUrl)
     }
 
 }

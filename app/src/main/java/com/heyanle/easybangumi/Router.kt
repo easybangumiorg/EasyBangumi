@@ -59,23 +59,26 @@ fun NavHostController.navigationSearch(keyword: String, source: String) {
 }
 
 fun NavHostController.navigationPlay(bangumi: Bangumi) {
-    navigationPlay(bangumi.source, bangumi.detailUrl)
+    navigationPlay(bangumi.id, bangumi.source, bangumi.detailUrl)
 }
 
 fun NavHostController.navigationPlay(
+    id: String,
     source: String,
     detailUrl: String,
     linesIndex: Int = -1,
     episode: Int = -1,
     startPosition: Long = -1L
 ) {
+    val idl = URLEncoder.encode(id, "utf-8")
     val uel = URLEncoder.encode(detailUrl, "utf-8")
-    navigate("${PLAY}/${source}/${uel}?linesIndex=${linesIndex}&episode=${episode}&startPosition=${startPosition}")
+    navigate("${PLAY}/${source}/${uel}?id=${idl}&linesIndex=${linesIndex}&episode=${episode}&startPosition=${startPosition}")
 }
 
-fun NavHostController.navigationPlay(source: String, detailUrl: String) {
+fun NavHostController.navigationPlay(id: String, source: String, detailUrl: String) {
     val uel = URLEncoder.encode(detailUrl, "utf-8")
-    navigate("${PLAY}/${source}/${uel}")
+    val idl = URLEncoder.encode(id, "utf-8")
+    navigate("${PLAY}/${source}/${uel}id=${idl}")
 }
 
 
@@ -114,8 +117,9 @@ fun Nav() {
             }
 
             composable(
-                "${PLAY}/{source}/{detailUrl}?linesIndex={linesIndex}&episode={episode}&startPosition={startPosition}",
+                "${PLAY}/{source}/{detailUrl}?id={id}&linesIndex={linesIndex}&episode={episode}&startPosition={startPosition}",
                 arguments = listOf(
+                    navArgument("id") {defaultValue = ""},
                     navArgument("source") { defaultValue = "" },
                     navArgument("detailUrl") { defaultValue = "" },
                     navArgument("linesIndex") {
@@ -135,6 +139,7 @@ fun Nav() {
                     uriPattern = "${NAV}://${PLAY}/{source}/{detailUrl}"
                 }),
             ) {
+                val id = it.arguments?.getString("id") ?: ""
                 val source = it.arguments?.getString("source") ?: ""
                 val detailUrl = it.arguments?.getString("detailUrl") ?: ""
                 val linesIndex = it.arguments?.getInt("linesIndex") ?: -1
@@ -149,6 +154,7 @@ fun Nav() {
                 )
 
                 Play(
+                    id = URLDecoder.decode(id, "utf-8"),
                     source = source,
                     detail = URLDecoder.decode(detailUrl, "utf-8"),
                     enterData = enterData
