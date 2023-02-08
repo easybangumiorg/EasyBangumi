@@ -46,6 +46,8 @@ class AgefansParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
 
     private object Parse {
 
+        fun url2id(url:String): String = url.split("/").last()
+
         fun home(jObject:JsonObject, key:String): List<Bangumi> {
             val list = arrayListOf<Bangumi>()
             val targetList = jObject.get(key).asJsonArray
@@ -56,7 +58,7 @@ class AgefansParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
                     name = ele.get("Title").asString,
                     cover = ele.get("PicSmall").asString,
                     intro = ele.get("NewTitle").asString,
-                    detailUrl = ele.get("AID").asString, //R.webViewDetailUrl(ele.get("AID").asString),
+                    detailUrl = R.webViewDetailUrl(ele.get("AID").asString),
                     visitTime = System.currentTimeMillis(),
                     source = SOURSE_KEY
                 )
@@ -75,7 +77,7 @@ class AgefansParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
                     name = ele.get("R动画名称").asString,
                     cover = ele.get("R封面图小").asString,
                     intro = ele.get("R新番标题").asString,
-                    detailUrl = ele.get("AID").asString, //R.webViewDetailUrl(ele.get("AID").asString),
+                    detailUrl = R.webViewDetailUrl(ele.get("AID").asString),
                     visitTime = System.currentTimeMillis(),
                     source = SOURSE_KEY
                 )
@@ -92,21 +94,30 @@ class AgefansParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
                 name = ele.get("R动画名称").asString,
                 cover = ele.get("R封面图").asString,
                 intro = ele.get("R新番标题").asString,
-                detailUrl = ele.get("AID").asString, //R.webViewDetailUrl(ele.get("AID").asString),
+                detailUrl = R.webViewDetailUrl(ele.get("AID").asString),
                 description = ele.get("R简介").asString,
                 source = SOURSE_KEY
             )
         }
+
+
 
         fun playList(jObject: JsonObject, key: String): LinkedHashMap<String, List<String>> {
             val ele = jObject.get(key).asJsonArray
             val map = java.util.LinkedHashMap<String, List<String>>()
             var index = 1
 
-            ele.forEach {
+            fun unpackPlayList(JArray: JsonArray): List<String> {
                 val list = arrayListOf<String>()
 
-                map["播放列表${index}"] = list
+                JArray.forEach{
+                    list.add(it.asJsonObject.get("Title_l").asString)
+                }
+                return list
+            }
+
+            ele.forEach {
+                map["播放列表${index}"] = unpackPlayList(it.asJsonArray)
                 index += 1
             }
             return map
@@ -190,7 +201,8 @@ class AgefansParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
     override suspend fun detail(bangumi: BangumiSummary): ISourceParser.ParserResult<BangumiDetail> {
         return withContext(Dispatchers.IO) {
             val bangumiDetail = kotlin.runCatching {
-                val rBgDetail = get(R.detail(bangumi.detailUrl))
+                val id = Parse.url2id(bangumi.detailUrl)
+                val rBgDetail = get(R.detail(id))
                 JsonParser.parseString(rBgDetail.body!!.string()).asJsonObject
             }.getOrElse {
                 it.printStackTrace()
@@ -212,7 +224,8 @@ class AgefansParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
     override suspend fun getPlayMsg(bangumi: BangumiSummary): ISourceParser.ParserResult<LinkedHashMap<String, List<String>>> {
         return withContext(Dispatchers.IO) {
             val bangumiDetail = kotlin.runCatching {
-                val rBgDetail = get(R.detail(bangumi.detailUrl))
+                val id = Parse.url2id(bangumi.detailUrl)
+                val rBgDetail = get(R.detail(id))
                 JsonParser.parseString(rBgDetail.body!!.string()).asJsonObject
             }.getOrElse {
                 it.printStackTrace()
@@ -220,7 +233,9 @@ class AgefansParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
             }
 
             kotlin.runCatching {
-                val playlist = Parse.playList(bangumiDetail,"R在线播放All")
+                val bangumiInfo = bangumiDetail.get("AniInfo").asJsonObject
+                bangumiCache[bangumiInfo.get("AID").asString] = bangumiInfo
+                val playlist = Parse.playList(bangumiInfo,"R在线播放All")
                 return@withContext ISourceParser.ParserResult.Complete(playlist)
 
             }.onFailure {
@@ -236,8 +251,39 @@ class AgefansParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
         lineIndex: Int,
         episodes: Int
     ): ISourceParser.ParserResult<IPlayerParser.PlayerInfo> {
+        if (lineIndex < 0 || episodes < 0) {
+            return ISourceParser.ParserResult.Error(IndexOutOfBoundsException(), false)
+        }
+
         return withContext(Dispatchers.IO) {
-            TODO("Not yet implemented")
+            kotlin.runCatching {
+                val id = Parse.url2id(bangumi.detailUrl)
+                val trueBangumi = bangumiCache[id]!!.asJsonObject
+                val playUrl = trueBangumi
+                    .get("R在线播放All")
+                    .asJsonArray[lineIndex]
+                    .asJsonArray[episodes].asJsonObject
+                    .get("PlayVid").asString
+
+                if (playUrl.indexOf(".mp4") != -1)
+                    return@withContext ISourceParser.ParserResult.Complete(
+                        IPlayerParser.PlayerInfo(
+                            type = IPlayerParser.PlayerInfo.TYPE_OTHER,
+                            uri = playUrl
+                        )
+                    )
+
+                return@withContext ISourceParser.ParserResult.Complete(
+                    IPlayerParser.PlayerInfo(
+                        type = IPlayerParser.PlayerInfo.TYPE_HLS,
+                        uri = playUrl
+                    )
+                )
+            }.onFailure {
+                it.printStackTrace()
+                return@withContext ISourceParser.ParserResult.Error(it, true)
+            }
+            return@withContext ISourceParser.ParserResult.Error(Exception("Unknown Error"), true)
         }
     }
 }
