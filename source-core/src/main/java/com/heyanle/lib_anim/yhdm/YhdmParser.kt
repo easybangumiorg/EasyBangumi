@@ -7,6 +7,8 @@ import com.heyanle.bangumi_source_api.api.IPlayerParser.PlayerInfo.Companion.TYP
 import com.heyanle.bangumi_source_api.api.entity.Bangumi
 import com.heyanle.bangumi_source_api.api.entity.BangumiDetail
 import com.heyanle.bangumi_source_api.api.entity.BangumiSummary
+import com.heyanle.lib_anim.bimibimi.BimibimiParser
+import com.heyanle.lib_anim.utils.SourceUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
@@ -39,23 +41,7 @@ class YhdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISe
     }
 
     private fun url(source: String): String {
-        return when {
-            source.startsWith("http") -> {
-                source
-            }
-
-            source.startsWith("//") -> {
-                "https:$source"
-            }
-
-            source.startsWith("/") -> {
-                ROOT_URL + source
-            }
-
-            else -> {
-                "$ROOT_URL/$source"
-            }
-        }
+        return SourceUtils.urlParser(ROOT_URL, source)
     }
 
     override suspend fun home(): ISourceParser.ParserResult<LinkedHashMap<String, List<Bangumi>>> {

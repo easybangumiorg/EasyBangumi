@@ -6,7 +6,9 @@ import com.heyanle.bangumi_source_api.api.*
 import com.heyanle.bangumi_source_api.api.entity.Bangumi
 import com.heyanle.bangumi_source_api.api.entity.BangumiDetail
 import com.heyanle.bangumi_source_api.api.entity.BangumiSummary
+import com.heyanle.lib_anim.bimibimi.BimibimiParser
 import com.heyanle.lib_anim.utils.Base64Utils
+import com.heyanle.lib_anim.utils.SourceUtils
 import com.heyanle.lib_anim.utils.network.GET
 import com.heyanle.lib_anim.utils.network.POST
 import com.heyanle.lib_anim.utils.network.interceptor.WaitWebViewException
@@ -43,45 +45,10 @@ class CycdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
 
     companion object {
         const val ROOT_URL = "https://www.cycdm01.top"
-        const val HOST_NAME = "www.cycdm01.top"
     }
 
     private fun url(source: String): String {
-        return when {
-            source.startsWith("http") -> {
-                source
-            }
-
-            source.startsWith("//") -> {
-                "https:$source"
-            }
-
-            source.startsWith("/") -> {
-                ROOT_URL + source
-            }
-
-            else -> {
-                "$ROOT_URL/$source"
-            }
-        }
-    }
-
-    private var antscdn_waf_cookie6: String = ""
-    private fun httpGet(url: String): String {
-
-        val raw = networkHelper.client.newCall(GET(url)).execute().body?.string() ?: ""
-        // TODO 以上的请求应加上Cookies头
-
-        if (raw.startsWith("<!DOCTYPE html>"))
-            return raw
-
-        val cookiePattern = Regex("""(?<=cookie6',).*(?= - 99)""")
-        val cookie = cookiePattern.find(raw)?.value ?: ""
-
-        antscdn_waf_cookie6 = (cookie.toInt() - 99).toString()
-        // TODO 此处应再次发起请求
-
-        return url
+        return SourceUtils.urlParser(ROOT_URL, source)
     }
 
     override suspend fun home(): ISourceParser.ParserResult<LinkedHashMap<String, List<Bangumi>>> {
@@ -358,9 +325,6 @@ class CycdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
                 result = URLDecoder.decode(result, "utf-8")
 
                 if (result.startsWith("cycdm")) {
-                    kotlin.runCatching {
-
-
                         val requestForUrl = networkHelper.client.newCall(
                             POST(
                                 "https://player.cycdm01.top/api_config.php",
@@ -370,9 +334,6 @@ class CycdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
 
                         val jsonObject = JsonParser.parseString(requestForUrl).asJsonObject
                         result = jsonObject.get("url").asString
-                    }.onFailure {
-                        it.printStackTrace()
-                    }
                 }
 
                 if (result.isNotEmpty())
@@ -382,7 +343,7 @@ class CycdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
                             uri = result
                         )
                     )
-            }.getOrElse {
+            }.onFailure {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, true)
             }

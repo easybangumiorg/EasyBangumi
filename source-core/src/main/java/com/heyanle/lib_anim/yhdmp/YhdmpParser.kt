@@ -6,6 +6,8 @@ import com.heyanle.bangumi_source_api.api.*
 import com.heyanle.bangumi_source_api.api.entity.Bangumi
 import com.heyanle.bangumi_source_api.api.entity.BangumiDetail
 import com.heyanle.bangumi_source_api.api.entity.BangumiSummary
+import com.heyanle.lib_anim.bimibimi.BimibimiParser
+import com.heyanle.lib_anim.utils.SourceUtils
 import com.heyanle.lib_anim.utils.network.GET
 import com.heyanle.lib_anim.utils.network.networkHelper
 import kotlinx.coroutines.Dispatchers
@@ -43,23 +45,7 @@ class YhdmpParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
     }
 
     private fun url(source: String): String {
-        return when {
-            source.startsWith("http") -> {
-                source
-            }
-
-            source.startsWith("//") -> {
-                "https:$source"
-            }
-
-            source.startsWith("/") -> {
-                ROOT_URL + source
-            }
-
-            else -> {
-                "$ROOT_URL/$source"
-            }
-        }
+        return SourceUtils.urlParser(ROOT_URL, source)
     }
 
     override suspend fun home(): ISourceParser.ParserResult<LinkedHashMap<String, List<Bangumi>>> {
@@ -253,7 +239,6 @@ class YhdmpParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
         lineIndex: Int,
         episodes: Int
     ): ISourceParser.ParserResult<IPlayerParser.PlayerInfo> {
-        Log.d("YhdmpParser", "test")
         if (lineIndex < 0 || episodes < 0) {
             return ISourceParser.ParserResult.Error(IndexOutOfBoundsException(), false)
         }
@@ -289,6 +274,7 @@ class YhdmpParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
             val result = decodeByteCrypt(vurl)
 
             if (result.isNotEmpty()) {
+
                 if (result.indexOf(".mp4") != -1)
                     return@withContext ISourceParser.ParserResult.Complete(
                         IPlayerParser.PlayerInfo(
