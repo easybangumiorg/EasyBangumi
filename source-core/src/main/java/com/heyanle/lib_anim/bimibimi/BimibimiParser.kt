@@ -6,6 +6,7 @@ import com.heyanle.bangumi_source_api.api.IPlayerParser.PlayerInfo.Companion.TYP
 import com.heyanle.bangumi_source_api.api.entity.Bangumi
 import com.heyanle.bangumi_source_api.api.entity.BangumiDetail
 import com.heyanle.bangumi_source_api.api.entity.BangumiSummary
+import com.heyanle.lib_anim.utils.SourceUtils
 import com.heyanle.lib_anim.utils.network.GET
 import com.heyanle.lib_anim.utils.network.networkHelper
 import kotlinx.coroutines.Dispatchers
@@ -23,28 +24,13 @@ import java.lang.IndexOutOfBoundsException
 class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISearchParser {
 
     companion object {
-        const val ROOT_URL = "http://www.bimiacg4.net"
-        const val PROXY_URL = "https://proxy-tf-all-ws.bilivideo.com/?url="
+        const val ROOT_URL = "http://www.bimiacg5.net"
+        const val PROXY_URL = ""
+//        const val PROXY_URL = "https://proxy-tf-all-ws.bilivideo.com/?url="
     }
 
     private fun url(source: String): String {
-        return when {
-            source.startsWith("http") -> {
-                source
-            }
-
-            source.startsWith("//") -> {
-                "https:$source"
-            }
-
-            source.startsWith("/") -> {
-                ROOT_URL + source
-            }
-
-            else -> {
-                "$ROOT_URL/$source"
-            }
-        }
+        return SourceUtils.urlParser(ROOT_URL, source)
     }
 
     override fun getKey(): String {
