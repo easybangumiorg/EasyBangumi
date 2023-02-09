@@ -5,6 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.items
 import com.heyanle.easybangumi.LocalNavController
 import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.db.entity.BangumiStar
@@ -92,13 +94,17 @@ fun AnimMy() {
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
+                    pagingItems.itemCount
                     items(
                         count = pagingItems.itemCount,
                     ) { index ->
-                        pagingItems[index]?.let { star ->
+                        val star = pagingItems[index]
+                        if(star != null){
                             BangumiStarCard(item = star) {
                                 nav.navigationPlay(it.bangumiId, it.source, it.detailUrl)
                             }
+                        }else{
+                            BangumiStarCardPlaceHolder()
                         }
                     }
                     when (pagingItems.loadState.append) {
@@ -175,7 +181,6 @@ fun AnimMy() {
         FastScrollToTopFab(listState = lazyGridState)
     }
 }
-
 @Composable
 fun BangumiStarCard(
     item: BangumiStar,
@@ -210,6 +215,34 @@ fun BangumiStarCard(
                     needEnter = true
                 }
             }
+        )
+    }
+}
+
+@Composable
+fun BangumiStarCardPlaceHolder(
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .clickable {
+
+            }
+            .padding(0.dp, 4.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        BangumiCard("", "", "")
+
+        Text(
+            textAlign = TextAlign.Center,
+            modifier = Modifier.width(95.dp),
+            text = " \n ",
+            maxLines = 2,
+            fontSize = MaterialTheme.typography.bodyMedium.fontSize,
+            lineHeight = MaterialTheme.typography.bodyMedium.lineHeight,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }

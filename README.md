@@ -35,8 +35,9 @@ QQ群：729848189 有兴趣进来玩，群主爆肝更新中
 
 - 樱花动漫P ([https://www.yhdmp.net](https://www.yhdmp.net))
 - 樱花动漫 ([http://www.yinghuacd.com](http://www.yinghuacd.com))
-- 哔咪动漫 Bimibimi ([https://www.bimiacg4.net](https://www.bimiacg4.net))
+- 哔咪动漫 ([https://www.bimiacg4.net](https://www.bimiacg4.net))
 - 次元城动漫源 ([https://www.cycdm01.top](https://www.cycdm01.top))
+- AGE 动漫源 ([https://www.agemys.net](https://www.agemys.net))
 
 # 截图
 
@@ -48,16 +49,20 @@ QQ群：729848189 有兴趣进来玩，群主爆肝更新中
 
 # 更新列表
 
-- 2023/02/05 3.0.8 紧急更新   
-  修复 播放页进度不更新的问题  
+- 2023/02/09 3.0.9
+  修复 没有追番时追番列表有概率崩溃的问题
+  修复 播放页有概率崩溃的问题
+  新增 AGE 动漫源([https://www.agemys.net](https://www.agemys.net))
 
+- 2023/02/05 3.0.8 紧急更新   
+  修复 播放页进度不更新的问题
 
 - 2023/02/05 3.0.7   
   修复 一堆播放页的 bug (重构)  
   修复 樱花动漫P源有时候线路错乱的问题  
   修复 3.0.7 将是最后一个升级会清数据的版本(历史遗留问题  
   优化 播放源现在具有保存文件，过 Cloudflare 的能力  
-  优化 现在樱花动漫 P 部分可用，次元城可用  
+  优化 现在樱花动漫 P 部分可用，次元城可用   
   优化 优化一些界面的细节  
 
 - 2023/01/31 3.0.6
