@@ -110,7 +110,7 @@ fun Play(
     }
 
     LaunchedEffect(key1 = Unit) {
-        AnimPlayingManager.newBangumi(source, detail)
+        AnimPlayingManager.newBangumi(id, source, detail)
     }
 
     DisposableEffect(key1 = Unit) {
