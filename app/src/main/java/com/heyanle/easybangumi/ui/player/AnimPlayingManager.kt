@@ -141,12 +141,13 @@ object AnimPlayingManager {
         }
     }
 
-    fun newBangumi(source: String, url: String) {
+    fun newBangumi(id: String, source: String, url: String) {
         val del = URLEncoder.encode(url, "utf-8")
+        val idl = URLEncoder.encode(id, "utf-8")
 
         val deepLinkIntent = Intent(
             Intent.ACTION_VIEW,
-            "$NAV://$PLAY/${source}/${del}".toUri(),
+            "$NAV://$PLAY/${source}/${del}?id=${idl}".toUri(),
             BangumiApp.INSTANCE,
             MainActivity::class.java
         )

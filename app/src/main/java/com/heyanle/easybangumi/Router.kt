@@ -78,7 +78,7 @@ fun NavHostController.navigationPlay(
 fun NavHostController.navigationPlay(id: String, source: String, detailUrl: String) {
     val uel = URLEncoder.encode(detailUrl, "utf-8")
     val idl = URLEncoder.encode(id, "utf-8")
-    navigate("${PLAY}/${source}/${uel}id=${idl}")
+    navigate("${PLAY}/${source}/${uel}?id=${idl}")
 }
 
 
