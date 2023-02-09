@@ -93,23 +93,27 @@ class StandardComponent : FrameLayout, IGestureComponent, SeekBar.OnSeekBarChang
         }
         binding.seekBar.max = Int.MAX_VALUE
         EasyThemeController.curThemeColor?.let {
-            val color = it.secondary.toArgb()
-            val dra = binding.seekBar.progressDrawable as LayerDrawable
-            dra.getDrawable(2).colorFilter = PorterDuffColorFilter(color, PorterDuff.Mode.SRC)
+            kotlin.runCatching {
+                val color = it.secondary.toArgb()
+                val dra = binding.seekBar.progressDrawable as LayerDrawable
+                dra.getDrawable(2).colorFilter = PorterDuffColorFilter(color, PorterDuff.Mode.SRC)
 
-            dra.findDrawableByLayerId(android.R.id.background).colorFilter =
-                PorterDuffColorFilter(0x99ffffff.toInt(), PorterDuff.Mode.SRC)
-            binding.seekBar.thumb.colorFilter =
-                PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP)
-            binding.seekBar.progressTintList = ColorStateList.valueOf(color)
-            binding.seekBar.progressBackgroundTintList =
-                ColorStateList.valueOf(Color.White.copy(0.6f).toArgb())
-            binding.seekBar.secondaryProgressTintList = ColorStateList.valueOf(Color.White.toArgb())
+                dra.findDrawableByLayerId(android.R.id.background).colorFilter =
+                    PorterDuffColorFilter(0x99ffffff.toInt(), PorterDuff.Mode.SRC)
+                binding.seekBar.thumb.colorFilter =
+                    PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP)
+                binding.seekBar.progressTintList = ColorStateList.valueOf(color)
+                binding.seekBar.progressBackgroundTintList =
+                    ColorStateList.valueOf(Color.White.copy(0.6f).toArgb())
+                binding.seekBar.secondaryProgressTintList = ColorStateList.valueOf(Color.White.toArgb())
 
-            binding.progressBar.indeterminateTintList = ColorStateList.valueOf(color)
-            binding.progressBar.indeterminateTintMode = PorterDuff.Mode.SRC_ATOP
+                binding.progressBar.indeterminateTintList = ColorStateList.valueOf(color)
+                binding.progressBar.indeterminateTintMode = PorterDuff.Mode.SRC_ATOP
 
-            selectSpeedTextColor = it.secondary.toArgb()
+                selectSpeedTextColor = it.secondary.toArgb()
+            }.onFailure {
+                it.printStackTrace()
+            }
         }
 
         binding.speedRoot.visibility = View.GONE
