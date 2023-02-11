@@ -99,11 +99,11 @@ fun AnimMy() {
                         count = pagingItems.itemCount,
                     ) { index ->
                         val star = pagingItems[index]
-                        if(star != null){
+                        if (star != null) {
                             BangumiStarCard(item = star) {
                                 nav.navigationPlay(it.bangumiId, it.source, it.detailUrl)
                             }
-                        }else{
+                        } else {
                             BangumiStarCardPlaceHolder()
                         }
                     }
@@ -181,6 +181,7 @@ fun AnimMy() {
         FastScrollToTopFab(listState = lazyGridState)
     }
 }
+
 @Composable
 fun BangumiStarCard(
     item: BangumiStar,

@@ -105,7 +105,8 @@ class StandardComponent : FrameLayout, IGestureComponent, SeekBar.OnSeekBarChang
                 binding.seekBar.progressTintList = ColorStateList.valueOf(color)
                 binding.seekBar.progressBackgroundTintList =
                     ColorStateList.valueOf(Color.White.copy(0.6f).toArgb())
-                binding.seekBar.secondaryProgressTintList = ColorStateList.valueOf(Color.White.toArgb())
+                binding.seekBar.secondaryProgressTintList =
+                    ColorStateList.valueOf(Color.White.toArgb())
 
                 binding.progressBar.indeterminateTintList = ColorStateList.valueOf(color)
                 binding.progressBar.indeterminateTintMode = PorterDuff.Mode.SRC_ATOP
@@ -188,11 +189,11 @@ class StandardComponent : FrameLayout, IGestureComponent, SeekBar.OnSeekBarChang
 //
         runWithContainer {
             // 进度管理
-            if(playState != EasyPlayStatus.STATE_PLAYING
+            if (playState != EasyPlayStatus.STATE_PLAYING
                 && playState != EasyPlayStatus.STATE_BUFFERED
-            ){
+            ) {
                 stopProgressUpdate()
-            }else{
+            } else {
                 // onProgressUpdate(duration = getDuration(), getCurrentPosition())
                 startProgressUpdate()
             }

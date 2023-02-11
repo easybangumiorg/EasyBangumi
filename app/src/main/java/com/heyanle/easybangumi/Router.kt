@@ -17,8 +17,11 @@ import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.heyanle.bangumi_source_api.api.entity.Bangumi
+import com.heyanle.bangumi_source_api.api.entity.BangumiDetail
 import com.heyanle.easybangumi.source.utils.WebViewUserHelperImpl
 import com.heyanle.easybangumi.ui.WebViewUser
+import com.heyanle.easybangumi.ui.dlna.Dlna
+import com.heyanle.easybangumi.ui.dlna.DlnaPlayingManager
 import com.heyanle.easybangumi.ui.home.Home
 import com.heyanle.easybangumi.ui.player.BangumiPlayManager
 import com.heyanle.easybangumi.ui.player.Play
@@ -45,6 +48,8 @@ const val SEARCH = "search"
 
 const val PLAY = "play"
 
+const val DLNA = "dlna"
+
 const val WEB_VIEW_USER = "web_view_user"
 
 // 缺省路由
@@ -60,6 +65,10 @@ fun NavHostController.navigationSearch(keyword: String, source: String) {
 
 fun NavHostController.navigationPlay(bangumi: Bangumi) {
     navigationPlay(bangumi.id, bangumi.source, bangumi.detailUrl)
+}
+
+fun NavHostController.navigationDlna(bangumi: BangumiDetail) {
+    navigationDlna(bangumi.id, bangumi.source, bangumi.detailUrl)
 }
 
 fun NavHostController.navigationPlay(
@@ -79,6 +88,24 @@ fun NavHostController.navigationPlay(id: String, source: String, detailUrl: Stri
     val uel = URLEncoder.encode(detailUrl, "utf-8")
     val idl = URLEncoder.encode(id, "utf-8")
     navigate("${PLAY}/${source}/${uel}?id=${idl}")
+}
+
+fun NavHostController.navigationDlna(
+    id: String,
+    source: String,
+    detailUrl: String,
+    linesIndex: Int = -1,
+    episode: Int = -1,
+) {
+    val idl = URLEncoder.encode(id, "utf-8")
+    val uel = URLEncoder.encode(detailUrl, "utf-8")
+    navigate("${DLNA}/${source}/${uel}?id=${idl}&linesIndex=${linesIndex}&episode=${episode}")
+}
+
+fun NavHostController.navigationDlna(id: String, source: String, detailUrl: String) {
+    val uel = URLEncoder.encode(detailUrl, "utf-8")
+    val idl = URLEncoder.encode(id, "utf-8")
+    navigate("${DLNA}/${source}/${uel}?id=${idl}")
 }
 
 
@@ -119,7 +146,7 @@ fun Nav() {
             composable(
                 "${PLAY}/{source}/{detailUrl}?id={id}&linesIndex={linesIndex}&episode={episode}&startPosition={startPosition}",
                 arguments = listOf(
-                    navArgument("id") {defaultValue = ""},
+                    navArgument("id") { defaultValue = "" },
                     navArgument("source") { defaultValue = "" },
                     navArgument("detailUrl") { defaultValue = "" },
                     navArgument("linesIndex") {
@@ -154,6 +181,44 @@ fun Nav() {
                 )
 
                 Play(
+                    id = URLDecoder.decode(id, "utf-8"),
+                    source = source,
+                    detail = URLDecoder.decode(detailUrl, "utf-8"),
+                    enterData = enterData
+                )
+            }
+
+            composable(
+                "${DLNA}/{source}/{detailUrl}?id={id}&linesIndex={linesIndex}&episode={episode}",
+                arguments = listOf(
+                    navArgument("id") { defaultValue = "" },
+                    navArgument("source") { defaultValue = "" },
+                    navArgument("detailUrl") { defaultValue = "" },
+                    navArgument("linesIndex") {
+                        defaultValue = -1
+                        type = NavType.IntType
+                    },
+                    navArgument("episode") {
+                        defaultValue = -1
+                        type = NavType.IntType
+                    },
+                ),
+                deepLinks = listOf(navDeepLink {
+                    uriPattern = "${NAV}://${DLNA}/{source}/{detailUrl}?id={id}"
+                }),
+            ) {
+                val id = it.arguments?.getString("id") ?: ""
+                val source = it.arguments?.getString("source") ?: ""
+                val detailUrl = it.arguments?.getString("detailUrl") ?: ""
+                val linesIndex = it.arguments?.getInt("linesIndex") ?: -1
+                val episode = it.arguments?.getInt("episode") ?: -1
+
+                val enterData = DlnaPlayingManager.EnterData(
+                    lineIndex = linesIndex,
+                    episode = episode,
+
+                    )
+                Dlna(
                     id = URLDecoder.decode(id, "utf-8"),
                     source = source,
                     detail = URLDecoder.decode(detailUrl, "utf-8"),

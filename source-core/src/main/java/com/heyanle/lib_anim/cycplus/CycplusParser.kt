@@ -31,8 +31,11 @@ class CycplusParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
 
         // 等一波API更新，先用脏办法实现了
         fun indexVedio() = "$BASE_URL/ciyuancheng.php/v$VERSION_CODES/index_video"
-        fun search(title: String,page: Int) = "$BASE_URL/ciyuancheng.php/v$VERSION_CODES/search?pg=$page&text=$title"
-        fun vedioDetail(id: String) = "$BASE_URL/ciyuancheng.php/v$VERSION_CODES/video_detail?id=$id"
+        fun search(title: String, page: Int) =
+            "$BASE_URL/ciyuancheng.php/v$VERSION_CODES/search?pg=$page&text=$title"
+
+        fun vedioDetail(id: String) =
+            "$BASE_URL/ciyuancheng.php/v$VERSION_CODES/video_detail?id=$id"
     }
 
     private fun getJson(target: String): Result<JsonElement> {
@@ -88,11 +91,11 @@ class CycplusParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
             return map
         }
 
-        fun search(jObject: JsonObject,key: String): List<Bangumi> {
+        fun search(jObject: JsonObject, key: String): List<Bangumi> {
             val list = arrayListOf<Bangumi>()
             val playList = jObject.getAsJsonArray(key)
 
-            playList.forEach{
+            playList.forEach {
                 val ele = it.asJsonObject
                 val bgm = Bangumi(
                     id = ele.get("vod_id").asString,
@@ -109,7 +112,7 @@ class CycplusParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
             return list
         }
 
-        fun detail(jObject: JsonObject,key: String): BangumiDetail {
+        fun detail(jObject: JsonObject, key: String): BangumiDetail {
             val jDetail = jObject.getAsJsonObject(key)
 
             return BangumiDetail(
@@ -123,7 +126,7 @@ class CycplusParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
             )
         }
 
-        fun playList(jObject: JsonObject,key: String): LinkedHashMap<String, List<String>> {
+        fun playList(jObject: JsonObject, key: String): LinkedHashMap<String, List<String>> {
             val jList = jObject.getAsJsonArray(key)
             val map = LinkedHashMap<String, List<String>>()
 
@@ -197,7 +200,7 @@ class CycplusParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
         }
     }
 
-    private val bangumiCache = LinkedHashMap<String,JsonObject>()
+    private val bangumiCache = LinkedHashMap<String, JsonObject>()
 
     override suspend fun detail(bangumi: BangumiSummary): ISourceParser.ParserResult<BangumiDetail> {
         return withContext(Dispatchers.IO) {
@@ -207,7 +210,8 @@ class CycplusParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
             }
 
             kotlin.runCatching {
-                val bangumiInfo = Parse.detail(detail.asJsonObject.getAsJsonObject("data"),"vod_info")
+                val bangumiInfo =
+                    Parse.detail(detail.asJsonObject.getAsJsonObject("data"), "vod_info")
                 return@withContext ISourceParser.ParserResult.Complete(bangumiInfo)
             }.onFailure {
                 it.printStackTrace()
@@ -230,7 +234,7 @@ class CycplusParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
                     .getAsJsonObject("data")
                     .getAsJsonObject("vod_info")
                 bangumiCache[bgmInfo.get("vod_id").asString] = bgmInfo
-                val playlist =Parse.playList(bgmInfo,"vod_url_with_player")
+                val playlist = Parse.playList(bgmInfo, "vod_url_with_player")
                 return@withContext ISourceParser.ParserResult.Complete(playlist)
 
             }.onFailure {
@@ -265,7 +269,7 @@ class CycplusParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
 
                 if (playUrl.startsWith(saltPerfix)) {
                     // 这里不使用var playUrl是因为下面可以得到确切类型，而上面的是不确定的
-                    val reLink = getJson(saltParse+playUrl).getOrElse {
+                    val reLink = getJson(saltParse + playUrl).getOrElse {
                         it.printStackTrace()
                         return@withContext ISourceParser.ParserResult.Error(it, false)
                     }.asJsonObject

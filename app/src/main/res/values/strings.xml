@@ -40,6 +40,12 @@
     <string name="my_anim">追番</string>
     <string name="mine_history">历史</string>
 
+    <string name="refresh">刷新</string>
+
+    <string name="change_device">切换设备</string>
+
+    <string name="screen_cast">投屏</string>
+
     <string name="net_error">网络错误</string>
     <string name="click_to_refresh">点击刷新</string>
     <string name="click_to_retry">点击重试</string>
@@ -67,7 +73,11 @@
 
     <string name="no_overlay_permission">没有悬浮权限！</string>
 
+    <string name="unselected_device">未选择设备</string>
+
     <string name="play">播放</string>
+    <string name="pause">暂停</string>
+    <string name="stop">停止</string>
     <string name="auto_tiny">自动小窗播放</string>
     <string name="auto_tiny_msg">播放中退出播放页自动进入小窗</string>
 
@@ -102,6 +112,20 @@
     <string name="last_episode_title">上次看到： %1$s</string>
 
     <string name="search_same_bangumi">搜索同名番</string>
+
+    <string name="dlne_state_playing">播放成功</string>
+
+    <string name="dlne_state_pause">暂停成功</string>
+
+    <string name="dlne_state_stop">停止成功</string>
+
+    <string name="dlne_state_error">投放失败</string>
+
+    <string name="dlne_state_loading">设备连接中</string>
+
+    <string name="dnla_try_play">尝试发送播放命令</string>
+    <string name="dnla_try_pause">尝试发送暂停命令</string>
+    <string name="dnla_try_stop">尝试发送停止命令</string>
 
 
 </resources>
