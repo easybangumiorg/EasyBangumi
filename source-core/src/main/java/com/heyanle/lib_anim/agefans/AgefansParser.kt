@@ -32,26 +32,30 @@ class AgefansParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
     private object R {
         val clint = networkHelper.client
 
-        fun webViewDetailUrl(aid:String):String = "$WEBVIEW_DETAIL_ROOT/detail/$aid"
+        fun webViewDetailUrl(aid: String): String = "$WEBVIEW_DETAIL_ROOT/detail/$aid"
 
         // 等一波API更新，先用脏办法实现了
-        fun homeList(update:Int,recommend:Int):String = "$BASE_URL/v2/home-list?update=$update&recommend=$recommend"
-        fun search(title:String,page:Int):String = "$BASE_URL/v2/search?query=$title&page=$page"
-        fun detail(aid: String):String = "$BASE_URL/v2/detail/$aid"
-        fun recommend(size:Int):String = "$BASE_URL/v2/recommend?size=$size"
-        fun rank(value:String,page:Int,size:Int):String = "$BASE_URL/v2/rank?value=$value&page=$page&size=$size"
-        fun catalog():String = "$BASE_URL/v2/catalog"
-        fun slipic():String = "$BASE_URL/v2/slipic"
+        fun homeList(update: Int, recommend: Int): String =
+            "$BASE_URL/v2/home-list?update=$update&recommend=$recommend"
+
+        fun search(title: String, page: Int): String = "$BASE_URL/v2/search?query=$title&page=$page"
+        fun detail(aid: String): String = "$BASE_URL/v2/detail/$aid"
+        fun recommend(size: Int): String = "$BASE_URL/v2/recommend?size=$size"
+        fun rank(value: String, page: Int, size: Int): String =
+            "$BASE_URL/v2/rank?value=$value&page=$page&size=$size"
+
+        fun catalog(): String = "$BASE_URL/v2/catalog"
+        fun slipic(): String = "$BASE_URL/v2/slipic"
     }
 
     private object Parse {
 
-        fun url2id(url:String): String = url.split("/").last()
+        fun url2id(url: String): String = url.split("/").last()
 
-        fun home(jObject:JsonObject, key:String): List<Bangumi> {
+        fun home(jObject: JsonObject, key: String): List<Bangumi> {
             val list = arrayListOf<Bangumi>()
             val targetList = jObject.get(key).asJsonArray
-            targetList.forEach{
+            targetList.forEach {
                 val ele = it.asJsonObject
                 val bgm = Bangumi(
                     id = ele.get("AID").asString,
@@ -67,10 +71,10 @@ class AgefansParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
             return list
         }
 
-        fun search(jObject:JsonObject, key: String): List<Bangumi>  {
+        fun search(jObject: JsonObject, key: String): List<Bangumi> {
             val list = arrayListOf<Bangumi>()
             val bgList = jObject.get(key).asJsonArray
-            bgList.forEach{
+            bgList.forEach {
                 val ele = it.asJsonObject
                 val bgm = Bangumi(
                     id = ele.get("AID").asString,
@@ -108,7 +112,7 @@ class AgefansParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
             fun unpackPlayList(JArray: JsonArray): List<String> {
                 val list = arrayListOf<String>()
 
-                JArray.forEach{
+                JArray.forEach {
                     list.add(it.asJsonObject.get("Title_l").asString)
                 }
                 return list
@@ -133,21 +137,21 @@ class AgefansParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
         return withContext(Dispatchers.IO) {
             val map = java.util.LinkedHashMap<String, List<Bangumi>>()
             val homeList = kotlin.runCatching {
-                val rHomeList = get(R.homeList(12,12))
+                val rHomeList = get(R.homeList(12, 12))
                 JsonParser.parseString(rHomeList.body!!.string()).asJsonObject
             }.getOrElse {
                 it.printStackTrace()
-                return@withContext ISourceParser.ParserResult.Error(it,false)
+                return@withContext ISourceParser.ParserResult.Error(it, false)
             }
 
             kotlin.runCatching {
-                map["每日推荐"] = Parse.home(homeList,"AniPreEvDay")
-                map["最近更新"] = Parse.home(homeList,"AniPreUP")
+                map["每日推荐"] = Parse.home(homeList, "AniPreEvDay")
+                map["最近更新"] = Parse.home(homeList, "AniPreUP")
 
             }.onFailure {
                 map.clear()
                 it.printStackTrace()
-                return@withContext ISourceParser.ParserResult.Error(it,true)
+                return@withContext ISourceParser.ParserResult.Error(it, true)
             }.onSuccess {
                 return@withContext ISourceParser.ParserResult.Complete(map)
             }
@@ -179,21 +183,21 @@ class AgefansParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
                 if (pgSize == 3)
                     return@withContext ISourceParser.ParserResult.Complete(Pair(null, list))
 
-                if (pgSize-3 > key)
+                if (pgSize - 3 > key)
                     return@withContext ISourceParser.ParserResult.Complete(Pair(key + 1, list))
 
                 return@withContext ISourceParser.ParserResult.Complete(Pair(null, list))
 
             }.onFailure {
                 it.printStackTrace()
-                return@withContext ISourceParser.ParserResult.Error(it,true)
+                return@withContext ISourceParser.ParserResult.Error(it, true)
             }
 
             return@withContext ISourceParser.ParserResult.Error(Exception("Unknown Error"), true)
         }
     }
 
-    private val bangumiCache = LinkedHashMap<String,JsonObject>()
+    private val bangumiCache = LinkedHashMap<String, JsonObject>()
 
     override suspend fun detail(bangumi: BangumiSummary): ISourceParser.ParserResult<BangumiDetail> {
         return withContext(Dispatchers.IO) {
@@ -207,7 +211,7 @@ class AgefansParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
             }
 
             kotlin.runCatching {
-                val bangumiInfo = Parse.detail(bangumiDetail,"AniInfo")
+                val bangumiInfo = Parse.detail(bangumiDetail, "AniInfo")
                 return@withContext ISourceParser.ParserResult.Complete(bangumiInfo)
 
             }.onFailure {
@@ -232,7 +236,7 @@ class AgefansParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
             kotlin.runCatching {
                 val bangumiInfo = bangumiDetail.get("AniInfo").asJsonObject
                 bangumiCache[bangumiInfo.get("AID").asString] = bangumiInfo
-                val playlist = Parse.playList(bangumiInfo,"R在线播放All")
+                val playlist = Parse.playList(bangumiInfo, "R在线播放All")
                 return@withContext ISourceParser.ParserResult.Complete(playlist)
 
             }.onFailure {
@@ -282,6 +286,7 @@ class AgefansParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
 
                         stringHelper.moeSnackBar("解析失败，请打开原网站播放")
                     }
+
                     "<play>web_m3u8</play>" -> {
                         return@withContext ISourceParser.ParserResult.Complete(
                             IPlayerParser.PlayerInfo(
@@ -290,6 +295,7 @@ class AgefansParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
                             )
                         )
                     }
+
                     "<play>zjm3u8</play>" -> {
                         return@withContext ISourceParser.ParserResult.Complete(
                             IPlayerParser.PlayerInfo(
@@ -298,6 +304,7 @@ class AgefansParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
                             )
                         )
                     }
+
                     else -> {
                         return@withContext ISourceParser.ParserResult.Complete(
                             IPlayerParser.PlayerInfo(

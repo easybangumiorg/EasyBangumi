@@ -24,7 +24,7 @@ object Version {
     const val leakcanary = "2.7"
     const val kotlinx_coroutines = "1.6.0"
     const val glide = "4.12.0"
-    const val okkv2 = "1.1.0"
+    const val okkv2 = "1.2.4"
     const val junit = "4.13.2"
 
     const val androidx_lifecycle_runtime_ktx = "2.5.1"
@@ -54,6 +54,12 @@ object Version {
     const val androidx_webkit = "1.5.0"
 
     const val commons_text = "1.10.0"
+
+    const val cling = "2.1.2"
+
+    const val jetty = "8.1.12.v20130726"
+
+    const val servlet = "4.0.1"
 }
 
 // AndroidX basic
@@ -272,4 +278,20 @@ fun DependencyHandler.androidXWebkit() {
 
 fun DependencyHandler.commonsText() {
     implementation("org.apache.commons:commons-text:${Version.commons_text}")
+}
+
+fun DependencyHandler.cling() {
+    implementation("org.fourthline.cling:cling-core:${Version.cling}")
+    implementation("org.fourthline.cling:cling-support:${Version.cling}")
+}
+
+fun DependencyHandler.jetty() {
+    implementation("org.eclipse.jetty:jetty-server:${Version.jetty}")
+    implementation("org.eclipse.jetty:jetty-servlet:${Version.jetty}")
+    implementation("org.eclipse.jetty:jetty-client:${Version.jetty}")
+}
+
+fun DependencyHandler.servlet() {
+    implementation("javax.servlet:javax.servlet-api:${Version.servlet}")
+
 }

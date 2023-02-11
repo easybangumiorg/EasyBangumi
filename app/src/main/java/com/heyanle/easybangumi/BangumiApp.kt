@@ -88,9 +88,9 @@ class BangumiApp : Application() {
     }
 
     private fun initOkkv() {
-        Okkv.Builder().store(MMKVStore(this)).cache().build().init().default()
+        Okkv.Builder(MMKVStore(this)).cache().build().init().default()
         // 如果不使用缓存，请手动指定 key
-        Okkv.Builder().store(MMKVStore(this)).build().init().default("no_cache")
+        Okkv.Builder(MMKVStore(this)).build().init().default("no_cache")
     }
 
     private fun initCrasher() {

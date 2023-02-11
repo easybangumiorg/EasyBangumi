@@ -1,7 +1,7 @@
 package com.heyanle.lib_anim.utils
 
 object SourceUtils {
-    fun urlParser(rootURL:String,source: String): String {
+    fun urlParser(rootURL: String, source: String): String {
         return when {
             source.startsWith("http") -> {
                 source

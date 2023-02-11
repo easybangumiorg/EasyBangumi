@@ -58,7 +58,10 @@ object BangumiPlayManager {
     /**
      * 指定初始线路，集数和进度
      */
-    private var lastEnterData: EnterData? = null
+    private val lastEnterData: EnterData?
+        get() {
+            return curAnimPlayingController?.enterData
+        }
 
     /**
      * 上一个播放的 state ，防抖处理
@@ -68,7 +71,7 @@ object BangumiPlayManager {
     fun newAnimPlayItemController(controller: AnimPlayingController, enterData: EnterData?) {
         if (curAnimPlayingController != controller) {
             curAnimPlayingController = controller
-            lastEnterData = enterData
+            controller.enterData = enterData
             lastJob?.cancel()
             lastJob = scope.launch {
                 controller.playerState.collectLatest {
@@ -77,10 +80,6 @@ object BangumiPlayManager {
             }
         }
 
-    }
-
-    fun newEnterData(enterData: EnterData?) {
-        lastEnterData = enterData
     }
 
     fun clearCurAnimPlayItemController() {
@@ -138,6 +137,8 @@ object BangumiPlayManager {
                         EasyPlayStatus.STATE_PREPARING
                     )
                 }
+                PlayerController.exoPlayer.pause()
+                PlayerController.exoPlayer.stop()
             }
 
             is AnimPlayState.Play -> {
@@ -171,9 +172,8 @@ object BangumiPlayManager {
                         PlayerController.setMediaSource(media, 0)
                     } else {
                         PlayerController.setMediaSource(media, lastEnter.startProcess)
-
                     }
-                    lastEnterData = null
+                    curAnimPlayingController?.enterData = null
                     PlayerController.prepare()
                 } else {
                     PlayerController.exoPlayer.seekTo(0)

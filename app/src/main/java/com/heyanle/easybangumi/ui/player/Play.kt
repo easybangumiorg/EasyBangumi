@@ -37,6 +37,7 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CastConnected
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarOutline
@@ -76,6 +77,7 @@ import com.heyanle.bangumi_source_api.api.entity.BangumiDetail
 import com.heyanle.bangumi_source_api.api.entity.BangumiSummary
 import com.heyanle.easybangumi.LocalNavController
 import com.heyanle.easybangumi.R
+import com.heyanle.easybangumi.navigationDlna
 import com.heyanle.easybangumi.navigationSearch
 import com.heyanle.easybangumi.player.PlayerController
 import com.heyanle.easybangumi.player.TinyStatusController
@@ -447,6 +449,31 @@ fun ActionRow(
             },
             onClick = {
                 infoState.detail.detailUrl.openUrl()
+            }
+        )
+
+        // 打开原网站
+        Action(
+            icon = {
+                Icon(
+                    Icons.Filled.CastConnected,
+                    stringResource(id = R.string.screen_cast)
+                )
+            },
+            msg = {
+                Text(
+                    text = stringResource(id = R.string.screen_cast),
+                    fontSize = 12.sp
+                )
+            },
+            onClick = {
+                nav.navigationDlna(
+                    infoState.detail.id,
+                    infoState.detail.source,
+                    infoState.detail.detailUrl,
+                    controller.playerState.value.lineIndex,
+                    controller.playerState.value.episode
+                )
             }
         )
     }

@@ -40,7 +40,7 @@ class NetworkHelper(
     val cookieManager = AndroidCookieJar()
     val defaultLinuxUA =
         "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36 Edg/108.0.1462.76"
-    val defaultUA:String = kotlin.runCatching {
+    val defaultUA: String = kotlin.runCatching {
         WebView(context).getDefaultUserAgentString()
     }.getOrElse {
         it.printStackTrace()
