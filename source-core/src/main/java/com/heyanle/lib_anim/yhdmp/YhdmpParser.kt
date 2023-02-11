@@ -1,18 +1,14 @@
 package com.heyanle.lib_anim.yhdmp
 
-import android.util.Log
 import com.google.gson.JsonParser
 import com.heyanle.bangumi_source_api.api.*
 import com.heyanle.bangumi_source_api.api.entity.Bangumi
 import com.heyanle.bangumi_source_api.api.entity.BangumiDetail
 import com.heyanle.bangumi_source_api.api.entity.BangumiSummary
-import com.heyanle.lib_anim.bimibimi.BimibimiParser
 import com.heyanle.lib_anim.utils.SourceUtils
 import com.heyanle.lib_anim.utils.network.GET
 import com.heyanle.lib_anim.utils.network.networkHelper
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.Headers
 import org.jsoup.Jsoup
@@ -250,7 +246,7 @@ class YhdmpParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
 
             if (playID.isEmpty())
                 return@withContext ISourceParser.ParserResult.Error(
-                    Exception("Unknown Error"),
+                    Exception("playID Error"),
                     true
                 )
 

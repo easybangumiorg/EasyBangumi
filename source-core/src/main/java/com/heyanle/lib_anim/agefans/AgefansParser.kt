@@ -1,6 +1,5 @@
 package com.heyanle.lib_anim.agefans
 
-import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
@@ -13,7 +12,6 @@ import com.heyanle.lib_anim.utils.network.GET
 import com.heyanle.lib_anim.utils.network.networkHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import okhttp3.Headers
 import okhttp3.Response
 
 /**
@@ -99,8 +97,6 @@ class AgefansParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
                 source = SOURSE_KEY
             )
         }
-
-
 
         fun playList(jObject: JsonObject, key: String): LinkedHashMap<String, List<String>> {
             val ele = jObject.get(key).asJsonArray

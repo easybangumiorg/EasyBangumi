@@ -1,6 +1,5 @@
 package com.heyanle.lib_anim.cycplus
 
-import android.os.Build.VERSION_CODES
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
@@ -12,6 +11,10 @@ import com.heyanle.lib_anim.utils.network.GET
 import com.heyanle.lib_anim.utils.network.networkHelper
 import kotlinx.coroutines.*
 
+/**
+ * Created by AyalaKaguya on 2023/2/11 11:54.
+ * https://github.com/AyalaKaguya
+ */
 class CycplusParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISearchParser {
 
     companion object {
@@ -41,11 +44,14 @@ class CycplusParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
 
     init {
         GlobalScope.launch {
-            val rt = getJson(ROOT_URL).getOrElse {
+            getJson(ROOT_URL).onFailure {
                 it.printStackTrace()
-                JsonParser.parseString("[\"https://app.95189371.cn\"]")
+                R.BASE_URL = "https://app.95189371.cn"
+            }.onSuccess {
+                kotlin.runCatching {
+                    R.BASE_URL = it.asJsonArray[0].asString
+                }
             }
-            R.BASE_URL = rt.asJsonArray[0].asString
         }
     }
 
@@ -80,21 +86,80 @@ class CycplusParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
             }
             return map
         }
+
+        fun search(jObject: JsonObject,key: String): List<Bangumi> {
+            val list = arrayListOf<Bangumi>()
+            val playList = jObject.getAsJsonArray(key)
+
+            playList.forEach{
+                val ele = it.asJsonObject
+                val bgm = Bangumi(
+                    id = ele.get("vod_id").asString,
+                    name = ele.get("vod_name").asString,
+                    cover = ele.get("vod_pic").asString,
+                    intro = ele.get("vod_remarks").asString,
+                    detailUrl = WEBVIEW_ROOT,
+                    visitTime = System.currentTimeMillis(),
+                    source = SOURSE_KEY
+                )
+                list.add(bgm)
+            }
+
+            return list
+        }
+
+        fun detail(jObject: JsonObject,key: String): BangumiDetail {
+            val jDetail = jObject.getAsJsonObject(key)
+
+            return BangumiDetail(
+                id = jDetail.get("vod_id").asString,
+                name = jDetail.get("vod_name").asString,
+                cover = jDetail.get("vod_pic").asString,
+                intro = jDetail.get("vod_remarks").asString,
+                detailUrl = WEBVIEW_ROOT,
+                description = jDetail.get("vod_content").asString,
+                source = SOURSE_KEY
+            )
+        }
+
+        fun playList(jObject: JsonObject,key: String): LinkedHashMap<String, List<String>> {
+            val jList = jObject.getAsJsonArray(key)
+            val map = LinkedHashMap<String, List<String>>()
+
+            fun unpackPlayList(strArray: List<String>): List<String> {
+                val list = arrayListOf<String>()
+
+                strArray.forEach {
+                    list.add(it.split("$")[0])
+                }
+
+                return list
+            }
+
+            jList.forEach {
+                map[it.asJsonObject.get("name").asString] = unpackPlayList(
+                    it.asJsonObject
+                        .get("url").asString
+                        .split("#")
+                )
+            }
+            return map
+        }
     }
 
     override suspend fun home(): ISourceParser.ParserResult<LinkedHashMap<String, List<Bangumi>>> {
         return withContext(Dispatchers.IO) {
             val index = getJson(R.indexVedio()).getOrElse {
                 it.printStackTrace()
-                return@withContext ISourceParser.ParserResult.Error(it,false)
+                return@withContext ISourceParser.ParserResult.Error(it, false)
             }
 
             kotlin.runCatching {
-                val map = Parse.home(index.asJsonObject,"data")
+                val map = Parse.home(index.asJsonObject, "data")
                 return@withContext ISourceParser.ParserResult.Complete(map)
             }.onFailure {
                 it.printStackTrace()
-                return@withContext ISourceParser.ParserResult.Error(it,true)
+                return@withContext ISourceParser.ParserResult.Error(it, true)
             }
             return@withContext ISourceParser.ParserResult.Error(Exception("Unknown Error"), true)
         }
@@ -106,15 +171,139 @@ class CycplusParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
         keyword: String,
         key: Int
     ): ISourceParser.ParserResult<Pair<Int?, List<Bangumi>>> {
-        TODO("Not yet implemented")
+        return withContext(Dispatchers.IO) {
+            val search = getJson(R.search(keyword, key)).getOrElse {
+                it.printStackTrace()
+                return@withContext ISourceParser.ParserResult.Error(it, false)
+            }
+
+            kotlin.runCatching {
+                val total = search.asJsonObject.get("total").asInt
+                val limit = search.asJsonObject.get("limit").asInt
+                val list = Parse.search(search.asJsonObject, "data")
+
+                val maxP = total / limit + 1
+
+                if (maxP > key)
+                    return@withContext ISourceParser.ParserResult.Complete(Pair(key + 1, list))
+
+                return@withContext ISourceParser.ParserResult.Complete(Pair(null, list))
+            }.onFailure {
+                it.printStackTrace()
+                return@withContext ISourceParser.ParserResult.Error(it, true)
+            }
+            return@withContext ISourceParser.ParserResult.Error(Exception("Unknown Error"), true)
+        }
     }
 
+    private val bangumiCache = LinkedHashMap<String,JsonObject>()
+
     override suspend fun detail(bangumi: BangumiSummary): ISourceParser.ParserResult<BangumiDetail> {
-        TODO("Not yet implemented")
+        return withContext(Dispatchers.IO) {
+            val detail = getJson(R.vedioDetail(bangumi.id)).getOrElse {
+                it.printStackTrace()
+                return@withContext ISourceParser.ParserResult.Error(it, false)
+            }
+
+            kotlin.runCatching {
+                val bangumiInfo = Parse.detail(detail.asJsonObject.getAsJsonObject("data"),"vod_info")
+                return@withContext ISourceParser.ParserResult.Complete(bangumiInfo)
+            }.onFailure {
+                it.printStackTrace()
+                return@withContext ISourceParser.ParserResult.Error(it, true)
+            }
+            return@withContext ISourceParser.ParserResult.Error(Exception("Unknown Error"), true)
+        }
     }
 
     override suspend fun getPlayMsg(bangumi: BangumiSummary): ISourceParser.ParserResult<LinkedHashMap<String, List<String>>> {
-        TODO("Not yet implemented")
+        return withContext(Dispatchers.IO) {
+            val detail = getJson(R.vedioDetail(bangumi.id)).getOrElse {
+                it.printStackTrace()
+                return@withContext ISourceParser.ParserResult.Error(it, false)
+            }
+
+            kotlin.runCatching {
+                val bgmInfo = detail.asJsonObject
+                    .getAsJsonObject("data")
+                    .getAsJsonObject("vod_info")
+                bangumiCache[bgmInfo.get("vod_id").asString] = bgmInfo
+                val playlist =Parse.playList(bgmInfo,"vod_url_with_player")
+                return@withContext ISourceParser.ParserResult.Complete(playlist)
+
+            }.onFailure {
+                it.printStackTrace()
+                return@withContext ISourceParser.ParserResult.Error(it, true)
+            }
+            return@withContext ISourceParser.ParserResult.Error(Exception("Unknown Error"), true)
+
+        }
     }
 
+    override suspend fun getPlayUrl(
+        bangumi: BangumiSummary,
+        lineIndex: Int,
+        episodes: Int
+    ): ISourceParser.ParserResult<IPlayerParser.PlayerInfo> {
+        if (lineIndex < 0 || episodes < 0) {
+            return ISourceParser.ParserResult.Error(IndexOutOfBoundsException(), false)
+        }
+
+        return withContext(Dispatchers.IO) {
+            kotlin.runCatching {
+                val bgmInfo = bangumiCache[bangumi.id]!!
+                val playSourse = bgmInfo
+                    .getAsJsonArray("vod_url_with_player")[lineIndex]
+                    .asJsonObject
+                val saltPerfix = playSourse.get("un_link_features").asString
+                val playUrl = playSourse.get("url").asString
+                    .split("#")[episodes]
+                    .split("$")[1]
+                val saltParse = playSourse.get("parse_api").asString
+
+                if (playUrl.startsWith(saltPerfix)) {
+                    // 这里不使用var playUrl是因为下面可以得到确切类型，而上面的是不确定的
+                    val reLink = getJson(saltParse+playUrl).getOrElse {
+                        it.printStackTrace()
+                        return@withContext ISourceParser.ParserResult.Error(it, false)
+                    }.asJsonObject
+                    val type = reLink.get("type").asString
+                    val result = reLink.get("url").asString
+                    if (type == "m3u8")
+                        return@withContext ISourceParser.ParserResult.Complete(
+                            IPlayerParser.PlayerInfo(
+                                type = IPlayerParser.PlayerInfo.TYPE_HLS,
+                                uri = result
+                            )
+                        )
+                    return@withContext ISourceParser.ParserResult.Complete(
+                        IPlayerParser.PlayerInfo(
+                            type = IPlayerParser.PlayerInfo.TYPE_OTHER,
+                            uri = result
+                        )
+                    )
+                }
+
+                if (playUrl.indexOf(".m3u8") != -1)
+                    return@withContext ISourceParser.ParserResult.Complete(
+                        IPlayerParser.PlayerInfo(
+                            type = IPlayerParser.PlayerInfo.TYPE_HLS,
+                            uri = playUrl
+                        )
+                    )
+
+                return@withContext ISourceParser.ParserResult.Complete(
+                    IPlayerParser.PlayerInfo(
+                        type = IPlayerParser.PlayerInfo.TYPE_OTHER,
+                        uri = playUrl
+                    )
+                )
+
+            }.onFailure {
+                it.printStackTrace()
+                return@withContext ISourceParser.ParserResult.Error(it, true)
+            }
+            return@withContext ISourceParser.ParserResult.Error(Exception("Unknown Error"), true)
+        }
+    }
 }
