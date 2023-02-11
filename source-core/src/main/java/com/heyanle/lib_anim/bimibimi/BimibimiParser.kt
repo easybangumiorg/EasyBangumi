@@ -25,8 +25,7 @@ class BimibimiParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser,
 
     companion object {
         const val ROOT_URL = "http://www.bimiacg5.net"
-        const val PROXY_URL = ""
-//        const val PROXY_URL = "https://proxy-tf-all-ws.bilivideo.com/?url="
+        const val PROXY_URL = "https://proxy-tf-all-ws.bilivideo.com/?url=" // https://proxy-tf-all-ws.bilivideo.com/?url=
     }
 
     private fun url(source: String): String {
