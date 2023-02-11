@@ -477,7 +477,7 @@ fun Author(
                     contentDescription = "Ayala"
                 )
                 Spacer(modifier = Modifier.size(16.dp))
-                Text(text = "ayala")
+                Text(text = "Ayala")
             }
             Text(text = "源适配")
         }
