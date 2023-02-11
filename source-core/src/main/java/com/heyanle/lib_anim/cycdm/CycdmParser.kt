@@ -325,15 +325,15 @@ class CycdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, IS
                 result = URLDecoder.decode(result, "utf-8")
 
                 if (result.startsWith("cycdm")) {
-                        val requestForUrl = networkHelper.client.newCall(
-                            POST(
-                                "https://player.cycdm01.top/api_config.php",
-                                body = FormBody.Builder().add("url", result).build()
-                            )
-                        ).execute().body?.string() ?: ""
+                    val requestForUrl = networkHelper.client.newCall(
+                        POST(
+                            "https://player.cycdm01.top/api_config.php",
+                            body = FormBody.Builder().add("url", result).build()
+                        )
+                    ).execute().body?.string() ?: ""
 
-                        val jsonObject = JsonParser.parseString(requestForUrl).asJsonObject
-                        result = jsonObject.get("url").asString
+                    val jsonObject = JsonParser.parseString(requestForUrl).asJsonObject
+                    result = jsonObject.get("url").asString
                 }
 
                 if (result.isNotEmpty())

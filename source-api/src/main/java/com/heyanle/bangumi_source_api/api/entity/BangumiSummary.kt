@@ -16,8 +16,6 @@ data class BangumiSummary(
 ) {
 
 
-
-
     override fun hashCode(): Int {
         var result = source.hashCode()
         result = 31 * result + detailUrl.hashCode()

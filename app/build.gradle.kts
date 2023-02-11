@@ -36,6 +36,10 @@ android {
         )
     }
 
+    packagingOptions {
+        resources.excludes.add("META-INF/beans.xml")
+    }
+
     buildTypes {
         release {
             postprocessing {
@@ -94,4 +98,6 @@ dependencies {
     implementation(project(":easy-crasher"))
     implementation(project(":source-core"))
     implementation(project(":source-api"))
+    cling()
+    implementation(project(":easy-dlna"))
 }

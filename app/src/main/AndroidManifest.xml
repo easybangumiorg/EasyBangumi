@@ -6,6 +6,9 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.SYSTEM_OVERLAY_WINDOW" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:name=".BangumiApp"
@@ -45,6 +48,14 @@
         <activity
             android:name="com.heyanle.easy_crasher.CrashActivity"
             android:process="com.heyanle.easybangumi.crash" />
+
+        <service
+            android:name="com.zane.androidupnpdemo.service.ClingUpnpService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="ITOP.MOBILE.SIMPLE.SERVICE.SENSORSERVICE" />
+            </intent-filter>
+        </service>
 
     </application>
 
