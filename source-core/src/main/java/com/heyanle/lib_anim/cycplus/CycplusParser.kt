@@ -9,6 +9,7 @@ import com.heyanle.bangumi_source_api.api.entity.BangumiDetail
 import com.heyanle.bangumi_source_api.api.entity.BangumiSummary
 import com.heyanle.lib_anim.utils.network.GET
 import com.heyanle.lib_anim.utils.network.networkHelper
+import com.heyanle.lib_anim.utils.stringHelper
 import kotlinx.coroutines.*
 
 /**
@@ -224,6 +225,7 @@ class CycplusParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
             }
 
             kotlin.runCatching {
+                stringHelper.moeSnackBar("次元城+来自于次元城APP，如果没有必要，还请点击下方的’打开原网站‘下载次元城APP使用")
                 val bgmInfo = detail.asJsonObject
                     .getAsJsonObject("data")
                     .getAsJsonObject("vod_info")

@@ -7,9 +7,11 @@ import com.heyanle.bangumi_source_api.api.*
 import com.heyanle.bangumi_source_api.api.entity.Bangumi
 import com.heyanle.bangumi_source_api.api.entity.BangumiDetail
 import com.heyanle.bangumi_source_api.api.entity.BangumiSummary
-import com.heyanle.lib_anim.utils.SourceUtils
 import com.heyanle.lib_anim.utils.network.GET
 import com.heyanle.lib_anim.utils.network.networkHelper
+import com.heyanle.lib_anim.utils.network.webViewUserHelper
+import com.heyanle.lib_anim.utils.network.webview_helper.webViewHelper
+import com.heyanle.lib_anim.utils.stringHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.Response
@@ -24,13 +26,13 @@ class AgefansParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
         const val SOURSE_KEY = "agefans"
         const val ROOT_URL = "https://www.agemys.net"
         const val BASE_URL = "https://api.agefans.app"
-        const val WEBVIEW_DETAIL_ROOT = "https://web.age-spa.com:8443/#/detail/"
+        const val WEBVIEW_DETAIL_ROOT = "https://web.age-spa.com:8443/#"
     }
 
     private object R {
         val clint = networkHelper.client
 
-        fun webViewDetailUrl(aid:String):String = "$WEBVIEW_DETAIL_ROOT$aid"
+        fun webViewDetailUrl(aid:String):String = "$WEBVIEW_DETAIL_ROOT/detail/$aid"
 
         // 等一波API更新，先用脏办法实现了
         fun homeList(update:Int,recommend:Int):String = "$BASE_URL/v2/home-list?update=$update&recommend=$recommend"
@@ -121,7 +123,6 @@ class AgefansParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
     }
 
     private fun get(target: String): Response = R.clint.newCall(GET(target)).execute()
-    private fun url(path: String): String = SourceUtils.urlParser(ROOT_URL, path)
 
     override fun getKey(): String = SOURSE_KEY
     override fun getLabel(): String = "Age动漫"
@@ -255,26 +256,57 @@ class AgefansParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
             kotlin.runCatching {
                 val id = Parse.url2id(bangumi.detailUrl)
                 val trueBangumi = bangumiCache[id]!!.asJsonObject
-                val playUrl = trueBangumi
+                val playTarget = trueBangumi
                     .get("R在线播放All")
                     .asJsonArray[lineIndex]
                     .asJsonArray[episodes].asJsonObject
-                    .get("PlayVid").asString
+                val playUrl = playTarget.get("PlayVid").asString
 
-                if (playUrl.indexOf(".mp4") != -1)
-                    return@withContext ISourceParser.ParserResult.Complete(
-                        IPlayerParser.PlayerInfo(
-                            type = IPlayerParser.PlayerInfo.TYPE_OTHER,
-                            uri = playUrl
+                when (playTarget.get("PlayId").asString) {
+                    "<play>88jx</play>" -> {
+                        stringHelper.moeSnackBar("番剧源存在跨域解析，请耐心等待")
+
+                        val blobUrl = webViewHelper.interceptResource(
+                            url = "$WEBVIEW_DETAIL_ROOT/play/${bangumi.id}/${lineIndex + 1}/$episodes",
+                            regex = """(?=http).*(?=\.mp4)""",
+                            timeOut = 8000
                         )
-                    )
 
-                return@withContext ISourceParser.ParserResult.Complete(
-                    IPlayerParser.PlayerInfo(
-                        type = IPlayerParser.PlayerInfo.TYPE_HLS,
-                        uri = playUrl
-                    )
-                )
+                        if (!blobUrl.isEmpty())
+                            return@withContext ISourceParser.ParserResult.Complete(
+                                IPlayerParser.PlayerInfo(
+                                    type = IPlayerParser.PlayerInfo.TYPE_OTHER,
+                                    uri = blobUrl
+                                )
+                            )
+
+                        stringHelper.moeSnackBar("解析失败，请打开原网站播放")
+                    }
+                    "<play>web_m3u8</play>" -> {
+                        return@withContext ISourceParser.ParserResult.Complete(
+                            IPlayerParser.PlayerInfo(
+                                type = IPlayerParser.PlayerInfo.TYPE_HLS,
+                                uri = playUrl
+                            )
+                        )
+                    }
+                    "<play>zjm3u8</play>" -> {
+                        return@withContext ISourceParser.ParserResult.Complete(
+                            IPlayerParser.PlayerInfo(
+                                type = IPlayerParser.PlayerInfo.TYPE_HLS,
+                                uri = playUrl
+                            )
+                        )
+                    }
+                    else -> {
+                        return@withContext ISourceParser.ParserResult.Complete(
+                            IPlayerParser.PlayerInfo(
+                                type = IPlayerParser.PlayerInfo.TYPE_OTHER,
+                                uri = playUrl
+                            )
+                        )
+                    }
+                }
             }.onFailure {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, true)
