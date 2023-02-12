@@ -2,6 +2,10 @@ package com.zane.androidupnpdemo.service;
 
 import android.content.Intent;
 import android.os.IBinder;
+import android.util.Log;
+
+import com.zane.androidupnpdemo.EasyAndroidRouterImpl;
+import com.zane.androidupnpdemo.log.AndroidLoggingHandler;
 
 import org.fourthline.cling.UpnpServiceConfiguration;
 import org.fourthline.cling.UpnpServiceImpl;
@@ -15,6 +19,7 @@ import org.fourthline.cling.model.meta.LocalDevice;
 import org.fourthline.cling.protocol.ProtocolFactory;
 import org.fourthline.cling.registry.Registry;
 import org.fourthline.cling.transport.Router;
+import org.fourthline.cling.transport.RouterException;
 
 /**
  * 说明：
@@ -23,29 +28,39 @@ import org.fourthline.cling.transport.Router;
  */
 
 public class ClingUpnpService extends AndroidUpnpServiceImpl {
+
+    public static volatile boolean isCreate = false;
     private LocalDevice mLocalDevice = null;
+
+
 
     @Override
     public void onCreate() {
-        super.onCreate();
+        Log.d("ClingUpnpService", "onCreate");
+        //super.onCreate();
+
+        isCreate = true;
         upnpService = new UpnpServiceImpl(getConfiguration()) {
 
 
             @Override
             protected Router createRouter(ProtocolFactory protocolFactory, Registry registry) {
-                return new AndroidRouter(configuration, protocolFactory, ClingUpnpService.this);
+                return new EasyAndroidRouterImpl(configuration, protocolFactory, ClingUpnpService.this);
             }
 
             @Override
             public synchronized void shutdown() {
-                // First have to remove the receiver, so Android won't complain about it leaking
-                // when the main UI thread exits.
                 ((AndroidRouter) getRouter()).unregisterBroadcastReceiver();
 
                 // Now we can concurrently run the Cling shutdown code, without occupying the
                 // Android main UI thread. This will complete probably after the main UI thread
                 // is done.
-                super.shutdown(true);
+                super.shutdown(false);
+                try {
+                    Log.d("ClingUpnpService", ""+getRouter().isEnabled());
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
             }
         };
 
@@ -55,6 +70,9 @@ public class ClingUpnpService extends AndroidUpnpServiceImpl {
 
     @Override
     public void onDestroy() {
+        isCreate = false;
+        Log.d("ClingUpnpService", "onDestroy");
+        upnpService.shutdown();
         super.onDestroy();
     }
 

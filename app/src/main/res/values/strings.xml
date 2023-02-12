@@ -123,9 +123,13 @@
 
     <string name="dlne_state_loading">设备连接中</string>
 
+    <string name="please_choose_device">请选择设备</string>
+
     <string name="dnla_try_play">尝试发送播放命令</string>
     <string name="dnla_try_pause">尝试发送暂停命令</string>
     <string name="dnla_try_stop">尝试发送停止命令</string>
+
+    <string name="dlna_alert">如果没反应可点击刷新再次投送!</string>
 
 
 </resources>
