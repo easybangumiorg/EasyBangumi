@@ -1,7 +1,8 @@
 # 纯纯看番
 
 <img src="./app_logo.png" width="30%" />
-一个看动画的 Android 应用 （4.0 开发中）
+使用 Compose 开发的 看番 Android 应用
+
 
 # 下载
 
