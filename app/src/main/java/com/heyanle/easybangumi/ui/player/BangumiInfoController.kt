@@ -15,6 +15,7 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -88,12 +89,14 @@ class BangumiInfoController(
                         return@launch
                     }
             }.onFailure {
-                _infoStatus.emit(
-                    BangumiInfoState.Error(
-                        stringRes(R.string.loading_error),
-                        it
+                if (isActive) {
+                    _infoStatus.emit(
+                        BangumiInfoState.Error(
+                            stringRes(R.string.loading_error),
+                            it
+                        )
                     )
-                )
+                }
             }
         }
     }
