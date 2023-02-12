@@ -46,6 +46,7 @@ class AnimPlayingController(
     val isBangumiStar = infoController.isBangumiStar
 
     var enterData: BangumiPlayManager.EnterData? = null
+    var lastEnterData: BangumiPlayManager.EnterData? = null
 
 
     fun loadInfo() {
@@ -85,27 +86,32 @@ class AnimPlayingController(
                 val res = AnimSourceFactory.requirePlay(bangumiSummary.source)
                 val result = res.getPlayUrl(bangumiSummary, lineIndex, episodeIndex)
                 result.complete {
-                    _playerState.emit(
-                        AnimPlayState.Play(
-                            lineIndex,
-                            episodeIndex,
-                            it.data.uri,
-                            it.data.type,
+                    if (isActive) {
+                        _playerState.emit(
+                            AnimPlayState.Play(
+                                lineIndex,
+                                episodeIndex,
+                                it.data.uri,
+                                it.data.type,
+                            )
                         )
-                    )
+                    }
                 }.error {
                     it.throwable.printStackTrace()
-                    _playerState.emit(
-                        AnimPlayState.Error(
-                            lineIndex,
-                            episodeIndex,
-                            if (it.isParserError) stringRes(
-                                R.string.source_error
-                            ) else stringRes(R.string.loading_error), it.throwable
+                    if (isActive) {
+                        _playerState.emit(
+                            AnimPlayState.Error(
+                                lineIndex,
+                                episodeIndex,
+                                if (it.isParserError) stringRes(
+                                    R.string.source_error
+                                ) else stringRes(R.string.loading_error), it.throwable
+                            )
                         )
-                    )
+                    }
                 }
             }.onFailure {
+
                 if (isActive) {
                     it.printStackTrace()
                     _playerState.emit(
@@ -138,42 +144,46 @@ class AnimPlayingController(
     }
 
     fun onShow(enterData: BangumiPlayManager.EnterData?, useHistory: Boolean = true) {
-
-        scope.launch {
-            val curPlayState = playerState.value
-            Log.d("AnimPlayingController", "${enterData} ${curPlayState}")
-            when (curPlayState) {
-                is AnimPlayState.None -> {
-                    _playerState.emit(
-                        AnimPlayState.Loading(
-                            0,
-                            0,
+        if(lastEnterData != enterData){
+            lastEnterData = enterData
+            scope.launch {
+                val curPlayState = playerState.value
+                Log.d("AnimPlayingController", "${enterData} ${curPlayState}")
+                when (curPlayState) {
+                    is AnimPlayState.None -> {
+                        _playerState.emit(
+                            AnimPlayState.Loading(
+                                0,
+                                0,
+                            )
                         )
-                    )
-                    val newEnterData = getRealEnterDataWhenFirst(enterData, useHistory)
-                    this@AnimPlayingController.enterData = newEnterData
-                    loadPlay(newEnterData.lineIndex, newEnterData.episode)
-                }
+                        val newEnterData = getRealEnterDataWhenFirst(enterData, useHistory)
+                        this@AnimPlayingController.enterData = newEnterData
+                        loadPlay(newEnterData.lineIndex, newEnterData.episode)
+                    }
 
-                is AnimPlayState.Loading -> {
-                    val newEnterData = getRealEnterDataWhenFirst(enterData, useHistory)
-                    this@AnimPlayingController.enterData = newEnterData
-                    loadPlay(newEnterData.lineIndex, newEnterData.episode)
-                }
+                    is AnimPlayState.Loading -> {
+                        val newEnterData = getRealEnterDataWhenFirst(enterData, useHistory)
+                        this@AnimPlayingController.enterData = newEnterData
+                        loadPlay(newEnterData.lineIndex, newEnterData.episode)
+                    }
 
-                is AnimPlayState.Play -> {
-                    // 如果当前已经在播放，则必须显示指定 enterData 才触发刷新
-                    if (enterData != null && enterData.lineIndex >= 0 && enterData.episode >= 0) {
-                        this@AnimPlayingController.enterData = enterData
-                        loadPlay(enterData.lineIndex, enterData.episode)
+                    is AnimPlayState.Play -> {
+                        // 如果当前已经在播放，则必须显示指定 enterData 才触发刷新
+                        if (enterData != null && enterData.lineIndex >= 0 && enterData.episode >= 0) {
+                            this@AnimPlayingController.enterData = enterData
+                            loadPlay(enterData.lineIndex, enterData.episode)
+                        }
+                    }
+
+                    else -> {
+
                     }
                 }
 
-                else -> {
-
-                }
             }
         }
+
 
     }
 

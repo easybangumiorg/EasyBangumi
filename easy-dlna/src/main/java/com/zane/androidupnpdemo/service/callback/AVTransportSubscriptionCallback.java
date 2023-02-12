@@ -73,25 +73,6 @@ public class AVTransportSubscriptionCallback extends BaseSubscriptionCallback {
                     return;
                 }
             }
-
-            //RelativeTimePosition
-            String position = "00:00:00";
-            AVTransportVariable.RelativeTimePosition eventedValue = lastChange.getEventedValue(0, AVTransportVariable.RelativeTimePosition.class);
-            if (Utils.isNotNull(eventedValue)) {
-                position = lastChange.getEventedValue(0, AVTransportVariable.RelativeTimePosition.class).getValue();
-                int intTime = Utils.getIntTime(position);
-                Log.e(TAG, "position: " + position + ", intTime: " + intTime);
-
-                // 该设备支持进度回传
-                Config.getInstance().setHasRelTimePosCallback(true);
-
-                Intent intent = new Intent(Intents.ACTION_POSITION_CALLBACK);
-                intent.putExtra(Intents.EXTRA_POSITION, intTime);
-                mContext.sendBroadcast(intent);
-
-                // TODO: 17/7/20 ACTION_PLAY_COMPLETE 播完了
-
-            }
         } catch (Exception e) {
             e.printStackTrace();
         }

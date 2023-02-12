@@ -24,6 +24,7 @@ import com.zane.androidupnpdemo.entity.IDevice
 import com.zane.androidupnpdemo.entity.IResponse
 import com.zane.androidupnpdemo.listener.BrowseRegistryListener
 import com.zane.androidupnpdemo.listener.DeviceListChangedListener
+import com.zane.androidupnpdemo.log.AndroidLoggingHandler
 import com.zane.androidupnpdemo.service.ClingUpnpService
 import com.zane.androidupnpdemo.service.manager.ClingManager
 import com.zane.androidupnpdemo.service.manager.DeviceManager
@@ -31,7 +32,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import java.lang.Thread.getAllStackTraces
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.concurrent.thread
 
 
 /**
@@ -56,18 +59,9 @@ object DlnaManager {
      */
     private val mClingPlayControl: ClingPlayControl = ClingPlayControl()
 
-    private val mTransportStateBroadcastReceiver: BroadcastReceiver =
-        TransportStateBroadcastReceiver().apply {
-
-        }
 
     init {
-        val filter = IntentFilter()
-        filter.addAction(ACTION_PLAYING)
-        filter.addAction(Intents.ACTION_PAUSED_PLAYBACK)
-        filter.addAction(Intents.ACTION_STOPPED)
-        filter.addAction(Intents.ACTION_TRANSITIONING)
-        BangumiApp.INSTANCE.registerReceiver(mTransportStateBroadcastReceiver, filter)
+        // AndroidLoggingHandler.injectJavaLogger()
     }
 
     /** 用于监听发现设备  */
@@ -103,7 +97,6 @@ object DlnaManager {
 
         override fun onServiceDisconnected(className: ComponentName) {
             Log.e(TAG, "mUpnpServiceConnection onServiceDisconnected")
-            ClingManager.getInstance().setUpnpService(null)
         }
     }
 
@@ -112,7 +105,7 @@ object DlnaManager {
             scope.launch {
                 Log.d(TAG, "init")
                 val upnpServiceIntent = Intent(BangumiApp.INSTANCE, ClingUpnpService::class.java)
-                BangumiApp.INSTANCE.startService(upnpServiceIntent)
+                // BangumiApp.INSTANCE.startService(upnpServiceIntent)
                 BangumiApp.INSTANCE.bindService(
                     upnpServiceIntent,
                     mUpnpServiceConnection,
@@ -137,9 +130,54 @@ object DlnaManager {
     }
 
     fun release() {
-        val intent = Intent()
-        intent.action = "ITOP.MOBILE.SIMPLE.SERVICE.SENSORSERVICE"
-        BangumiApp.INSTANCE.stopService(intent)
+        ClingManager.getInstance().cleanSelectedDevice()
+        thread {
+            val threadSet: Set<Thread> = getAllStackTraces().keys
+                for (thread in threadSet) {
+                    if (thread.name.startsWith("cling")) {
+                        Log.d(TAG, "Killing thread #" + thread.id + " " + thread.name)
+                        thread.interrupt()
+                    }
+                }
+                try {
+                    BangumiApp.INSTANCE.unbindService(mUpnpServiceConnection)
+                } catch (ignore: IllegalArgumentException) {
+                } // Already unbound
+        }
+//        object : Thread() {
+//            override fun run() {
+//                val threadSet: Set<Thread> = getAllStackTraces().keys
+//                for (thread in threadSet) {
+//                    if (thread.name.startsWith("cling")) {
+//                        Log.d(TAG, "Killing thread #" + thread.id + " " + thread.name)
+//                        thread.interrupt()
+//                    }
+//                }
+//                try {
+//                    BangumiApp.INSTANCE.unbindService(mUpnpServiceConnection)
+//                } catch (ignore: IllegalArgumentException) {
+//                } // Already unbound
+//                kotlin.runCatching {
+//                    kotlin.runCatching {
+//                        val intent = Intent()
+//                        intent.action = "ITOP.MOBILE.SIMPLE.SERVICE.SENSORSERVICE"
+//                        intent.setPackage(BangumiApp.INSTANCE.packageName)
+//                        BangumiApp.INSTANCE.stopService(intent)
+//                    }.onFailure {
+//                        it.printStackTrace()
+//                    }
+//                }
+//            }
+//        }.start()
+        BangumiApp.INSTANCE.unbindService(mUpnpServiceConnection)
+        val clingUpnpServiceManager = ClingManager.getInstance()
+        clingUpnpServiceManager.registry.removeAllLocalDevices()
+        clingUpnpServiceManager.registry.removeAllRemoteDevices()
+        clingUpnpServiceManager.registry.removeListener(mBrowseRegistryListener)
+        clingUpnpServiceManager.setUpnpService(null)
+        clingUpnpServiceManager.destroy()
+
+
         isInit.set(false)
         curDevice.value = null
         dmrDevices.clear()
@@ -157,7 +195,7 @@ object DlnaManager {
 
     fun playNew(url: String) {
         initIfNeed()
-        url.moeSnackBar()
+        // url.moeSnackBar()
         scope.launch {
             val callback = object : ControlCallback<Any> {
                 override fun success(response: IResponse<Any>?) {
@@ -226,32 +264,5 @@ object DlnaManager {
         }
     }
 
-
-    /**
-     * 接收状态改变信息
-     */
-    private class TransportStateBroadcastReceiver : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            val action = intent.action
-            Log.e(TAG, "Receive playback intent:$action")
-            if (Intents.ACTION_PLAYING.equals(action)) {
-                scope.launch {
-                    stringRes(R.string.dlne_state_playing).moeSnackBar()
-                }
-            } else if (Intents.ACTION_PAUSED_PLAYBACK.equals(action)) {
-                scope.launch {
-                    stringRes(R.string.dlne_state_pause).moeSnackBar()
-                }
-            } else if (Intents.ACTION_STOPPED.equals(action)) {
-                scope.launch {
-                    stringRes(R.string.dlne_state_stop).moeSnackBar()
-                }
-            } else if (Intents.ACTION_TRANSITIONING.equals(action)) {
-                scope.launch {
-                    stringRes(R.string.dlne_state_loading).moeSnackBar()
-                }
-            }
-        }
-    }
 
 }
