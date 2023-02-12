@@ -37,6 +37,8 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowLeft
 import androidx.compose.material.icons.filled.CastConnected
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
@@ -45,10 +47,14 @@ import androidx.compose.material.icons.filled.Web
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -123,8 +129,8 @@ fun Play(
         }
     }
 
-    val infoState by controller.infoState.collectAsState(BangumiInfoState.None)
-    val playerState by controller.playerState.collectAsState(AnimPlayState.None)
+    val infoState by controller.infoState.collectAsState(null)
+    val playerState by controller.playerState.collectAsState(null)
 
     LaunchedEffect(key1 = infoState) {
         if (infoState is BangumiInfoState.None) {
@@ -133,6 +139,9 @@ fun Play(
             controller.onShow(enterData)
         }
     }
+
+    val info = infoState
+    val player = playerState
 
     val density = LocalDensity.current
 
@@ -149,59 +158,68 @@ fun Play(
     val lazyGridState = rememberLazyGridState()
 
     LaunchedEffect(key1 = playerState) {
-        selectLines.value = playerState.lineIndex
+        playerState?.let {
+            selectLines.value = it.lineIndex
+        }
+
     }
 
-    Surface(
-        modifier = Modifier
-            .fillMaxSize()
-            .navigationBarsPadding()
-            .onSizeChanged {
-                val h = with(density) {
-                    ((it.width / (PlayerController.ratioWidth)) * PlayerController.ratioHeight)
-                        .coerceAtMost(
-                            it.height / 2F
-                        )
-                        .toDp()
-                }
-                videoPlayer = h
-            },
-        color = Color.Transparent,
-        contentColor = MaterialTheme.colorScheme.onBackground,
-    ) {
+    if(info != null  && player != null){
 
-        Column {
-            PlayerView(
-                modifier = Modifier
-                    .background(Color.Black)
-                    .statusBarsPadding()
-                    .height(videoPlayer),
-                controller = controller,
-                playerState = playerState
-            )
-            AnimatedContent(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background),
-                targetState = infoState,
-                transitionSpec = {
-                    fadeIn(animationSpec = tween(300, delayMillis = 300)) with
-                            fadeOut(animationSpec = tween(300, delayMillis = 0))
+        Surface(
+            modifier = Modifier
+                .fillMaxSize()
+                .navigationBarsPadding()
+                .onSizeChanged {
+                    val h = with(density) {
+                        ((it.width / (PlayerController.ratioWidth)) * PlayerController.ratioHeight)
+                            .coerceAtMost(
+                                it.height / 2F
+                            )
+                            .toDp()
+                    }
+                    videoPlayer = h
                 },
-            ) {
-                Info(
+            color = Color.Transparent,
+            contentColor = MaterialTheme.colorScheme.onBackground,
+        ) {
+            Column {
+                PlayerView(
+                    modifier = Modifier
+                        .background(Color.Black)
+                        .statusBarsPadding()
+                        .height(videoPlayer),
                     controller = controller,
-                    infoState = it,
-                    playerState = playerState,
-                    selectLines = selectLines,
-                    lazyGridState = lazyGridState
+                    playerState = player
                 )
+                AnimatedContent(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.background),
+                    targetState = info,
+                    transitionSpec = {
+                        fadeIn(animationSpec = tween(300, delayMillis = 300)) with
+                                fadeOut(animationSpec = tween(300, delayMillis = 0))
+                    },
+                ) {
+                    Info(
+                        controller = controller,
+                        infoState = it,
+                        playerState = player,
+                        selectLines = selectLines,
+                        lazyGridState = lazyGridState
+                    )
+                }
+
             }
 
-        }
-        FastScrollToTopFab(listState = lazyGridState)
+            FastScrollToTopFab(listState = lazyGridState)
 
+        }
     }
+
+
+
 
 
 }
@@ -213,6 +231,7 @@ fun PlayerView(
     controller: AnimPlayingController,
     playerState: AnimPlayState,
 ) {
+    val nav = LocalNavController.current
     Box(modifier = modifier) {
         when (playerState) {
             is AnimPlayState.Error -> {
@@ -269,6 +288,21 @@ fun PlayerView(
                 }
             }
         }
+
+        FilledIconButton(
+            modifier = Modifier.padding(8.dp),
+            colors = IconButtonDefaults.iconButtonColors(
+                containerColor = Color.Black.copy(0.6f),
+                contentColor = Color.White
+            ),
+            onClick = {
+                nav.popBackStack()
+            }) {
+            Icon(
+                imageVector = Icons.Filled.ArrowLeft,
+                stringResource(id = R.string.back)
+            )
+        }
     }
 }
 
@@ -289,6 +323,7 @@ fun Info(
         }
 
         is BangumiInfoState.Error -> {
+            infoState.throwable?.printStackTrace()
             ErrorPage(
                 modifier = Modifier
                     .fillMaxSize()
@@ -551,28 +586,27 @@ fun LazyGridScope.playMsg(
     }.getOrNull() ?: emptyList()
     itemsIndexed(epi) { index, item ->
         val selected = selectLines.value == playerState.lineIndex && index == playerState.episode
-        Surface(
-            shadowElevation = 4.dp,
-            shape = RoundedCornerShape(4.dp),
-            modifier =
-            Modifier
-                .fillMaxWidth()
-                .padding(4.dp, 4.dp)
-                .clip(RoundedCornerShape(4.dp))
-                .clickable {
-                    controller.loadPlay(selectLines.value, index)
-                },
-            color = if (selected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.secondaryContainer,
-        ) {
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp, 4.dp),
-                color = if (selected) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.onSecondaryContainer,
-                text = item,
-                fontSize = 16.sp,
-                textAlign = TextAlign.Center
-            )
+        Box(modifier = Modifier.padding(4.dp, 4.dp)){
+            Surface(
+                shadowElevation = 4.dp,
+                shape = RoundedCornerShape(4.dp),
+                modifier =
+                Modifier
+                    .clickable {
+                        controller.loadPlay(selectLines.value, index)
+                    },
+                color = if (selected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.secondaryContainer,
+            ) {
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp, 4.dp),
+                    color = if (selected) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.onSecondaryContainer,
+                    text = item,
+                    fontSize = 16.sp,
+                    textAlign = TextAlign.Center
+                )
+            }
         }
     }
 

@@ -78,7 +78,7 @@ object EasyThemeController {
     }
 
     fun isSupportDynamicColor(): Boolean {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+        return false // Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
     }
 
 
