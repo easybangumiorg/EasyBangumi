@@ -3,47 +3,32 @@
 <img src="./app_logo.png" width="30%" />
 一个看动画的 Android 应用 （4.0 开发中）
 
-# 试用
+# 下载
 
-下载地址：[https://install.appcenter.ms/users/heyanle/apps/easybangumi/distribution_groups/easybangumi](https://install.appcenter.ms/users/heyanle/apps/easybangumi/distribution_groups/easybangumi)  
-release 中 3.0 版本  
-QQ群：729848189 有兴趣进来玩，群主爆肝更新中
+下载地址：[https://install.appcenter.ms/users/heyanle/apps/easybangumi/distribution_groups/easybangumi](https://install.appcenter.ms/users/heyanle/apps/easybangumi/distribution_groups/easybangumi)
 
-# 功能
+# 开发计划
 
-- 番剧搜索
-- 首页推荐
-- 番剧收藏（追番）
-- 番剧播放
-- 多主题
-- 倍速播放
+- [x] 番剧搜索
+- [x] 首页推荐
+- [x] 番剧收藏（追番）
+- [x] 番剧播放
+- [x] 多主题
+- [x] 倍速播放
+- [x] 播放历史
+- [ ] 投屏功能
+- [ ] 添加弹幕功能
+- [ ] 插件化，添加插件市场
 
-# 未来展望 （开坑 4.0）
+# 反馈
 
-- MD3 主题
-- 播放器优化
-- UI 优化
-- 播放历史
-- 视频下载
-- 投屏
-- 弹幕
-- 插件化
-
-# 目前支持番剧源
-
-（不定时更新）
-
-- 樱花动漫P ([https://www.yhdmp.net](https://www.yhdmp.net))
-- 樱花动漫 ([http://www.yinghuacd.com](http://www.yinghuacd.com))
-- 哔咪动漫 ([https://www.bimiacg4.net](https://www.bimiacg4.net))
-- 次元城动漫源 ([https://www.cycdm01.top](https://www.cycdm01.top))
-- AGE 动漫源 ([https://www.agemys.net](https://www.agemys.net))
+点击链接加入群聊【纯纯看番】：[729848189](https://jq.qq.com/?_wv=1027&k=vyJ8l8M7)
 
 # 截图
 
-| <img src="./screenshots/1.png" width="50%"/> | <img src="./screenshots/2.png" width="50%"/>  | <img src="./screenshots/3.png" width="50%" /> |
-|:--------------------------------------------:|:---------------------------------------------:|:---------------------------------------------:|
-| <img src="./screenshots/4.png" width="50%"/> | <img src="./screenshots/5.png"  width="50%"/> | <img src="./screenshots/7.png"  width="50%"/> |
+| <img src="./screenshots/1.png" /> | <img src="./screenshots/2.png" />  | <img src="./screenshots/3.png"  /> |
+|:---------------------------------:|:----------------------------------:|:----------------------------------:|
+| <img src="./screenshots/4.png" /> | <img src="./screenshots/5.png"  /> | <img src="./screenshots/7.png"  /> |
 
 <img src="./screenshots/6.png"/> 
 
