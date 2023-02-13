@@ -45,6 +45,7 @@ object DlnaManager {
 
     const val TAG = "DlnaManager"
 
+    @Volatile
     var scope: CoroutineScope = MainScope()
 
     val dmrDevices = mutableStateListOf<ClingDevice>()
@@ -169,13 +170,18 @@ object DlnaManager {
 //                }
 //            }
 //        }.start()
-        BangumiApp.INSTANCE.unbindService(mUpnpServiceConnection)
-        val clingUpnpServiceManager = ClingManager.getInstance()
-        clingUpnpServiceManager.registry.removeAllLocalDevices()
-        clingUpnpServiceManager.registry.removeAllRemoteDevices()
-        clingUpnpServiceManager.registry.removeListener(mBrowseRegistryListener)
-        clingUpnpServiceManager.setUpnpService(null)
-        clingUpnpServiceManager.destroy()
+        // BangumiApp.INSTANCE.unbindService(mUpnpServiceConnection)
+        kotlin.runCatching {
+            val clingUpnpServiceManager = ClingManager.getInstance()
+            clingUpnpServiceManager.registry.removeAllLocalDevices()
+            clingUpnpServiceManager.registry.removeAllRemoteDevices()
+            clingUpnpServiceManager.registry.removeListener(mBrowseRegistryListener)
+            clingUpnpServiceManager.setUpnpService(null)
+            clingUpnpServiceManager.destroy()
+        }.onFailure {
+            it.printStackTrace()
+        }
+
 
 
         isInit.set(false)
