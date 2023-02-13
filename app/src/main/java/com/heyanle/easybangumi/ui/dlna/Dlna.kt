@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -29,21 +30,29 @@ import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
@@ -51,12 +60,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.heyanle.bangumi_source_api.api.entity.BangumiSummary
 import com.heyanle.easybangumi.LocalNavController
 import com.heyanle.easybangumi.R
@@ -147,51 +160,86 @@ fun DlnaPage(
         selectLines.value = playerState.lineIndex
     }
 
+    DisposableEffect(key1 = Unit){
+        onDispose {
+            DlnaManager.release()
+            DlnaPlayingManager.release()
+        }
+    }
+
+    if(isDlnaListOpen){
+        AlertDialog(
+            title = {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(text = stringResource(id = R.string.please_choose_device))
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier
+                            .padding(16.dp, 0.dp)
+                            .size(32.dp)
+
+                    )
+                }
+
+            },
+            text = {
+               DlnaDeviceList(onClick = {
+                   isDlnaListOpen = false
+                   DlnaManager.select(it)
+               })
+            },
+            onDismissRequest = {
+                isDlnaListOpen = false
+            },
+            confirmButton = {}
+        )
+    }
+
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         contentColor = MaterialTheme.colorScheme.onBackground,
         topBar = {
             TopAppBar(
+                colors = TopAppBarDefaults.smallTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
+                ),
                 title = {
                     val curDevice = DlnaManager.curDevice.value
                     val title = if (curDevice == null) {
                         stringRes(R.string.unselected_device)
                     } else {
-                        curDevice.device.displayString
+                        curDevice.device.details.friendlyName
                     }
-                    Text(text = title)
+                    Text(text = title, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 },
                 navigationIcon = {
-                    Icon(
-                        Icons.Filled.ArrowBack,
-                        contentDescription = stringResource(id = R.string.back),
-                        modifier = Modifier.clickable {
-                            nav.popBackStack()
-                        }
-                    )
+                    IconButton(onClick = {
+                        nav.popBackStack()
+                    }) {
+                        Icon(
+                            Icons.Filled.ArrowBack,
+                            contentDescription = stringResource(id = R.string.back),
+                        )
+                    }
                 },
                 actions = {
-                    Text(text = stringResource(id = R.string.change_device),
-                        modifier = Modifier.clickable {
-                            isDlnaListOpen = !isDlnaListOpen
-                        })
+                    TextButton(onClick = {
+                        isDlnaListOpen = true
+                    }) {
+                        Text(text = stringResource(id = R.string.change_device), color = MaterialTheme.colorScheme.onPrimary)
+                    }
+
                 }
             )
         }
     ) {
         Column(modifier = Modifier.padding(it)) {
-            AnimatedVisibility(visible = isDlnaListOpen) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(360.dp)
-                ) {
-                    DlnaDeviceList {
-                        DlnaManager.select(it)
-                        isDlnaListOpen = false
-                    }
-                }
-            }
             AnimatedContent(targetState = playerState) {
                 when (it) {
                     is AnimPlayState.Error -> {
@@ -213,7 +261,9 @@ fun DlnaPage(
                     }
 
                     is AnimPlayState.Loading -> {
-                        LoadingPage()
+                        LoadingPage(
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
 
                     is AnimPlayState.Play -> {
@@ -309,89 +359,95 @@ fun Info(
 
 @Composable
 fun DlnaDeviceAction() {
-    Row(
-        modifier = Modifier
-            .padding(4.dp)
-            .height(35.dp)
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Action(
-            icon = {
-                Icon(
-                    Icons.Filled.PlayArrow,
-                    stringResource(id = R.string.play),
-                )
-            },
-            msg = {
-                Text(
-                    text = stringResource(id = R.string.play),
-                    color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 12.sp
-                )
-            },
-            onClick = {
-                stringRes(R.string.dnla_try_play).moeSnackBar()
-                DlnaManager.play()
-            }
-        )
-        Action(
-            icon = {
-                Icon(
-                    Icons.Filled.Pause,
-                    stringResource(id = R.string.pause),
-                )
-            },
-            msg = {
-                Text(
-                    text = stringResource(id = R.string.pause),
-                    color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 12.sp
-                )
-            },
-            onClick = {
-                stringRes(R.string.dnla_try_pause).moeSnackBar()
-                DlnaManager.pause()
-            }
-        )
+        Text(text = stringResource(id = R.string.dlna_alert))
+        Row(
+            modifier = Modifier
+                .padding(4.dp)
+                .height(72.dp)
+        ) {
+            Action(
+                icon = {
+                    Icon(
+                        Icons.Filled.PlayArrow,
+                        stringResource(id = R.string.play),
+                    )
+                },
+                msg = {
+                    Text(
+                        text = stringResource(id = R.string.play),
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontSize = 12.sp
+                    )
+                },
+                onClick = {
+                    stringRes(R.string.dnla_try_play).moeSnackBar()
+                    DlnaManager.play()
+                }
+            )
+            Action(
+                icon = {
+                    Icon(
+                        Icons.Filled.Pause,
+                        stringResource(id = R.string.pause),
+                    )
+                },
+                msg = {
+                    Text(
+                        text = stringResource(id = R.string.pause),
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontSize = 12.sp
+                    )
+                },
+                onClick = {
+                    stringRes(R.string.dnla_try_pause).moeSnackBar()
+                    DlnaManager.pause()
+                }
+            )
 
-        Action(
-            icon = {
-                Icon(
-                    Icons.Filled.Stop,
-                    stringResource(id = R.string.stop),
-                )
-            },
-            msg = {
-                Text(
-                    text = stringResource(id = R.string.stop),
-                    color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 12.sp
-                )
-            },
-            onClick = {
-                stringRes(R.string.dnla_try_stop).moeSnackBar()
-                DlnaManager.stop()
-            }
-        )
+            Action(
+                icon = {
+                    Icon(
+                        Icons.Filled.Stop,
+                        stringResource(id = R.string.stop),
+                    )
+                },
+                msg = {
+                    Text(
+                        text = stringResource(id = R.string.stop),
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontSize = 12.sp
+                    )
+                },
+                onClick = {
+                    stringRes(R.string.dnla_try_stop).moeSnackBar()
+                    DlnaManager.stop()
+                }
+            )
 
-        Action(
-            icon = {
-                Icon(
-                    Icons.Filled.Refresh,
-                    stringResource(id = R.string.refresh),
-                )
-            },
-            msg = {
-                Text(
-                    text = stringResource(id = R.string.refresh),
-                    color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 12.sp
-                )
-            },
-            onClick = {
-                DlnaPlayingManager.refresh()
-            }
-        )
+            Action(
+                icon = {
+                    Icon(
+                        Icons.Filled.Refresh,
+                        stringResource(id = R.string.refresh),
+                    )
+                },
+                msg = {
+                    Text(
+                        text = stringResource(id = R.string.refresh),
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontSize = 12.sp
+                    )
+                },
+                onClick = {
+                    DlnaPlayingManager.refresh()
+                }
+            )
+        }
     }
+    
 }
 
 @Composable
@@ -399,20 +455,23 @@ fun DlnaDeviceList(
     onClick: (ClingDevice) -> Unit,
 ) {
     val list = DlnaManager.dmrDevices
-    LazyColumn() {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+    ) {
         items(list) {
             Text(
                 modifier = Modifier
-                    .padding(4.dp, 4.dp)
+                    .fillMaxWidth()
+                    .clip(CircleShape)
                     .clickable {
                         onClick(it)
-                    },
-                text = it.device.displayString
-            )
-        }
-        item {
-            LoadingPage(
-                loadingMsg = ""
+                    }
+                    .padding(16.dp, 8.dp)
+                    ,
+                text = it.device.details.friendlyName,
+                color = if(it.isSelected) MaterialTheme.colorScheme.secondary else Color.Unspecified
             )
         }
     }

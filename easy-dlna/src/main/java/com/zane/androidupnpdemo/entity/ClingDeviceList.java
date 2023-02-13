@@ -46,12 +46,15 @@ public class ClingDeviceList {
 
     @Nullable
     public ClingDevice getClingDevice(Device device) {
-        for (ClingDevice clingDevice : mClingDeviceList) {
-            Device deviceTemp = clingDevice.getDevice();
-            if (deviceTemp != null && deviceTemp.equals(device)) {
-                return clingDevice;
+        try{
+            for (ClingDevice clingDevice : mClingDeviceList) {
+                Device deviceTemp = clingDevice.getDevice();
+                if (deviceTemp != null && deviceTemp.equals(device)) {
+                    return clingDevice;
+                }
             }
-        }
+        }catch (Exception e){}
+
         return null;
     }
 

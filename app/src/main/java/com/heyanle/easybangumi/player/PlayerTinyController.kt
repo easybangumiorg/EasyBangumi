@@ -84,7 +84,7 @@ object PlayerTinyController {
         kotlin.runCatching {
             windowManager.removeView(tinyPlayerView)
         }.onFailure {
-            it.printStackTrace()
+            //it.printStackTrace()
         }
         kotlin.runCatching {
             tinyPlayerView.basePlayerView.detachToPlayer()
