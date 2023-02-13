@@ -30,11 +30,11 @@ class CycplusParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
         var BASE_URL = ""
 
         // 等一波API更新，先用脏办法实现了
-        fun indexVedio() = "$BASE_URL/ciyuancheng.php/v$VERSION_CODES/index_video"
+        fun indexVideo() = "$BASE_URL/ciyuancheng.php/v$VERSION_CODES/index_video"
         fun search(title: String, page: Int) =
             "$BASE_URL/ciyuancheng.php/v$VERSION_CODES/search?pg=$page&text=$title"
 
-        fun vedioDetail(id: String) =
+        fun videoDetail(id: String) =
             "$BASE_URL/ciyuancheng.php/v$VERSION_CODES/video_detail?id=$id"
     }
 
@@ -47,7 +47,7 @@ class CycplusParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
     }
 
     init {
-        GlobalScope.launch {
+        CoroutineScope(Dispatchers.IO).launch {
             getJson(ROOT_URL).onFailure {
                 it.printStackTrace()
                 R.BASE_URL = "https://app.95189371.cn"
@@ -153,7 +153,7 @@ class CycplusParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
 
     override suspend fun home(): ISourceParser.ParserResult<LinkedHashMap<String, List<Bangumi>>> {
         return withContext(Dispatchers.IO) {
-            val index = getJson(R.indexVedio()).getOrElse {
+            val index = getJson(R.indexVideo()).getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
             }
@@ -204,7 +204,7 @@ class CycplusParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
 
     override suspend fun detail(bangumi: BangumiSummary): ISourceParser.ParserResult<BangumiDetail> {
         return withContext(Dispatchers.IO) {
-            val detail = getJson(R.vedioDetail(bangumi.id)).getOrElse {
+            val detail = getJson(R.videoDetail(bangumi.id)).getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
             }
@@ -223,7 +223,7 @@ class CycplusParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
 
     override suspend fun getPlayMsg(bangumi: BangumiSummary): ISourceParser.ParserResult<LinkedHashMap<String, List<String>>> {
         return withContext(Dispatchers.IO) {
-            val detail = getJson(R.vedioDetail(bangumi.id)).getOrElse {
+            val detail = getJson(R.videoDetail(bangumi.id)).getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, false)
             }
