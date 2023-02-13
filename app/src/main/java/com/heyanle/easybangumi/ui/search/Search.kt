@@ -47,15 +47,6 @@ import java.lang.ref.WeakReference
  * Created by HeYanLe on 2023/1/10 16:34.
  * https://github.com/heyanLE
  */
-
-var topAppBarExpendAnimator: WeakReference<ValueAnimator>? = null
-fun onNewTopAppBarExpendAnim(valueAnimator: ValueAnimator?) {
-    topAppBarExpendAnimator?.get()?.cancel()
-    topAppBarExpendAnimator = valueAnimator?.let {
-        WeakReference(it)
-    }
-}
-
 @Composable
 fun Search(
     default: String,
@@ -90,14 +81,6 @@ fun SearchPage(
 
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
-
-    // 饱和 cancel
-    DisposableEffect(key1 = Unit) {
-        onNewTopAppBarExpendAnim(null)
-        onDispose {
-            onNewTopAppBarExpendAnim(null)
-        }
-    }
 
     val isHeaderShowForever = remember {
         mutableStateOf(false)
@@ -240,27 +223,7 @@ fun SearchPage(
                                 vm.clearHistory()
                             }
                         )
-                        FastScrollToTopFab(listState = lazyListState) {
-                            val anim = ValueAnimator.ofFloat(0F, 1F)
-                            val sourceHeightOffset = scrollBehavior.state.heightOffset
-                            val sourceContentOffset = scrollBehavior.state.contentOffset
-                            anim.addUpdateListener {
-                                runCatching {
-                                    val float = it.animatedValue as Float
-                                    val targetHeightOffset =
-                                        sourceHeightOffset + (0F - sourceHeightOffset) * float
-                                    val targetContentOffset =
-                                        sourceContentOffset + (0F - sourceContentOffset) * float
-                                    scrollBehavior.state.heightOffset = targetHeightOffset
-                                    scrollBehavior.state.contentOffset = targetContentOffset
-                                }.onFailure {
-                                    it.printStackTrace()
-                                }
-                            }
-                            anim.duration = 200
-                            onNewTopAppBarExpendAnim(anim)
-                            anim.start()
-                        }
+                        FastScrollToTopFab(listState = lazyListState)
                     }
                 }
 
