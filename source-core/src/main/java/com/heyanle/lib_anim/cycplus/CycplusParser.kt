@@ -30,6 +30,7 @@ class CycplusParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
         var BASE_URL = ""
 
         // 等一波API更新，先用脏办法实现了
+        fun webviewUrl(id: String) = "$WEBVIEW_ROOT#$id"
         fun indexVideo() = "$BASE_URL/ciyuancheng.php/v$VERSION_CODES/index_video"
         fun search(title: String, page: Int) =
             "$BASE_URL/ciyuancheng.php/v$VERSION_CODES/search?pg=$page&text=$title"
@@ -74,12 +75,13 @@ class CycplusParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
 
                 ele.getAsJsonArray("vlist").forEach {
                     val bgObject = it.asJsonObject
+                    val id = bgObject.get("vod_id").asString
                     val bgm = Bangumi(
-                        id = bgObject.get("vod_id").asString,
+                        id = id,
                         name = bgObject.get("vod_name").asString,
                         cover = bgObject.get("vod_pic").asString,
                         intro = bgObject.get("vod_remarks").asString,
-                        detailUrl = WEBVIEW_ROOT,
+                        detailUrl = R.webviewUrl(id),
                         visitTime = System.currentTimeMillis(),
                         source = SOURSE_KEY
                     )
@@ -97,12 +99,13 @@ class CycplusParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
 
             playList.forEach {
                 val ele = it.asJsonObject
+                val id = ele.get("vod_id").asString
                 val bgm = Bangumi(
-                    id = ele.get("vod_id").asString,
+                    id = id,
                     name = ele.get("vod_name").asString,
                     cover = ele.get("vod_pic").asString,
                     intro = ele.get("vod_remarks").asString,
-                    detailUrl = WEBVIEW_ROOT,
+                    detailUrl = R.webviewUrl(id),
                     visitTime = System.currentTimeMillis(),
                     source = SOURSE_KEY
                 )
@@ -114,13 +117,13 @@ class CycplusParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
 
         fun detail(jObject: JsonObject, key: String): BangumiDetail {
             val jDetail = jObject.getAsJsonObject(key)
-
+            val id = jDetail.get("vod_id").asString
             return BangumiDetail(
-                id = jDetail.get("vod_id").asString,
+                id = id,
                 name = jDetail.get("vod_name").asString,
                 cover = jDetail.get("vod_pic").asString,
                 intro = jDetail.get("vod_remarks").asString,
-                detailUrl = WEBVIEW_ROOT,
+                detailUrl = R.webviewUrl(id),
                 description = jDetail.get("vod_content").asString,
                 source = SOURSE_KEY
             )

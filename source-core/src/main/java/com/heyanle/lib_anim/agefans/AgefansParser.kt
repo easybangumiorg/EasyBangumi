@@ -9,7 +9,6 @@ import com.heyanle.bangumi_source_api.api.entity.BangumiDetail
 import com.heyanle.bangumi_source_api.api.entity.BangumiSummary
 import com.heyanle.lib_anim.utils.network.GET
 import com.heyanle.lib_anim.utils.network.networkHelper
-import com.heyanle.lib_anim.utils.network.webViewUserHelper
 import com.heyanle.lib_anim.utils.network.webview_helper.webViewHelper
 import com.heyanle.lib_anim.utils.stringHelper
 import kotlinx.coroutines.Dispatchers
@@ -276,7 +275,7 @@ class AgefansParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
                             timeOut = 8000
                         )
 
-                        if (!blobUrl.isEmpty())
+                        if (blobUrl.isNotEmpty())
                             return@withContext ISourceParser.ParserResult.Complete(
                                 IPlayerParser.PlayerInfo(
                                     type = IPlayerParser.PlayerInfo.TYPE_OTHER,
