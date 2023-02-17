@@ -29,10 +29,10 @@ interface BangumiStarDao {
     @Query("SELECT * FROM BangumiStar ORDER BY createTime DESC")
     fun getAll(): PagingSource<Int, BangumiStar>
 
-    @Query("SELECT * FROM BangumiStar WHERE source=(:source) AND detailUrl = (:detailUrl)")
-    fun getBySourceDetailUrl(source: String, detailUrl: String): BangumiStar?
+    @Query("SELECT * FROM BangumiStar WHERE bangumiId=(:id) AND source=(:source) AND detailUrl = (:detailUrl)")
+    fun getBySourceDetailUrl(id:String, source: String, detailUrl: String): BangumiStar?
 
-    @Query("DELETE FROM BangumiStar WHERE source=(:source) AND detailUrl = (:detailUrl)")
-    fun deleteBySourceDetailUrl(source: String, detailUrl: String)
+    @Query("DELETE FROM BangumiStar WHERE bangumiId=(:id) AND source=(:source) AND detailUrl = (:detailUrl)")
+    fun deleteBySourceDetailUrl(id:String, source: String, detailUrl: String)
 
 }

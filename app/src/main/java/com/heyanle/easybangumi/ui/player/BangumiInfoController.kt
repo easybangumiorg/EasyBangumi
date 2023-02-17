@@ -49,6 +49,7 @@ class BangumiInfoController(
                     .complete {
                         val isStar = withContext(Dispatchers.IO) {
                             EasyDB.database.bangumiStarDao().getBySourceDetailUrl(
+                                it.data.id,
                                 it.data.source,
                                 it.data.detailUrl
                             ) != null
@@ -107,7 +108,7 @@ class BangumiInfoController(
                 withContext(Dispatchers.IO) {
                     EasyDB.database.bangumiStar.apply {
                         val old =
-                            getBySourceDetailUrl(bangumiDetail.source, bangumiDetail.detailUrl)
+                            getBySourceDetailUrl(bangumiDetail.id, bangumiDetail.source, bangumiDetail.detailUrl)
                         if (old == null) {
                             insert(BangumiStar.fromBangumi(bangumiDetail))
                         } else {
@@ -127,7 +128,7 @@ class BangumiInfoController(
             } else {
                 withContext(Dispatchers.IO) {
                     EasyDB.database.bangumiStarDao()
-                        .deleteBySourceDetailUrl(bangumiDetail.source, bangumiDetail.detailUrl)
+                        .deleteBySourceDetailUrl(bangumiDetail.id, bangumiDetail.source, bangumiDetail.detailUrl)
                 }
                 AnimStarViewModel.refresh()
                 isBangumiStar.value = false
