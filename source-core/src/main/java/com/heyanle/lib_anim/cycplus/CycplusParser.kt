@@ -19,7 +19,7 @@ import kotlinx.coroutines.*
 class CycplusParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISearchParser {
 
     companion object {
-        const val SOURSE_KEY = "cycplus"
+        const val SOURCE_KEY = "cycplus"
         const val ROOT_URL = "https://cycdm-1303090324.cos.ap-guangzhou.myqcloud.com/dtym.json"
         const val WEBVIEW_ROOT = "https://www.cycity.top/"
         const val VERSION_CODES = 6
@@ -60,7 +60,7 @@ class CycplusParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
         }
     }
 
-    override fun getKey(): String = SOURSE_KEY
+    override fun getKey(): String = SOURCE_KEY
     override fun getLabel(): String = "次元城+"
     override fun getVersion(): String = "1.0.0"
     override fun getVersionCode(): Int = VERSION_CODES
@@ -83,7 +83,7 @@ class CycplusParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
                         intro = bgObject.get("vod_remarks").asString,
                         detailUrl = R.webviewUrl(id),
                         visitTime = System.currentTimeMillis(),
-                        source = SOURSE_KEY
+                        source = SOURCE_KEY
                     )
                     list.add(bgm)
                 }
@@ -107,7 +107,7 @@ class CycplusParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
                     intro = ele.get("vod_remarks").asString,
                     detailUrl = R.webviewUrl(id),
                     visitTime = System.currentTimeMillis(),
-                    source = SOURSE_KEY
+                    source = SOURCE_KEY
                 )
                 list.add(bgm)
             }
@@ -125,7 +125,7 @@ class CycplusParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
                 intro = jDetail.get("vod_remarks").asString,
                 detailUrl = R.webviewUrl(id),
                 description = jDetail.get("vod_content").asString,
-                source = SOURSE_KEY
+                source = SOURCE_KEY
             )
         }
 
@@ -261,16 +261,16 @@ class CycplusParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
                 val bgmInfo = bangumiCache[bangumi.id]!!
-                val playSourse = bgmInfo
+                val playSource = bgmInfo
                     .getAsJsonArray("vod_url_with_player")[lineIndex]
                     .asJsonObject
-                val saltPerfix = playSourse.get("un_link_features").asString
-                val playUrl = playSourse.get("url").asString
+                val saltPrefix = playSource.get("un_link_features").asString
+                val playUrl = playSource.get("url").asString
                     .split("#")[episodes]
                     .split("$")[1]
-                val saltParse = playSourse.get("parse_api").asString
+                val saltParse = playSource.get("parse_api").asString
 
-                if (playUrl.startsWith(saltPerfix)) {
+                if (playUrl.startsWith(saltPrefix)) {
                     // 这里不使用var playUrl是因为下面可以得到确切类型，而上面的是不确定的
                     val reLink = getJson(saltParse + playUrl).getOrElse {
                         it.printStackTrace()
