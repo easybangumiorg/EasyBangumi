@@ -131,7 +131,7 @@ class StandardComponent : FrameLayout, IGestureComponent, SeekBar.OnSeekBarChang
         }
         binding.ivReplay.setOnClickListener {
             if (AnimPlayingManager.replay() != true) {
-                stringRes(R.string.replay_error).moeSnackBar()
+                stringRes(com.heyanle.easy_i18n.R.string.replay_error).moeSnackBar()
             }
         }
         textMap.iterator().forEach {

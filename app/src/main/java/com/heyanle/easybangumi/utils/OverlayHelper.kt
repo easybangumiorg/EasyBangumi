@@ -38,7 +38,7 @@ object OverlayHelper {
         } else {
             gotoAppDetailSetting(context)
         }
-        //Toast.makeText(context, R.string.please_allow_draw_overlay,Toast.LENGTH_SHORT).show();
+        //Toast.makeText(context, com.heyanle.easy_i18n.R.string.please_allow_draw_overlay,Toast.LENGTH_SHORT).show();
     }
 
     /**

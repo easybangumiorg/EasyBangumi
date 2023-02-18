@@ -41,14 +41,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easybangumi.LocalNavController
-import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.navigationPlay
 import com.heyanle.easybangumi.ui.common.*
-import com.heyanle.lib_anim.utils.network.webview_helper.WebViewHelperImpl
-import com.heyanle.lib_anim.utils.network.webview_helper.webViewHelper
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -119,6 +115,10 @@ fun AnimHomePage(
             .fillMaxSize()
             .pullRefresh(state)
     ) {
+        val sta = rememberLazyListState()
+        LaunchedEffect(key1 = Unit) {
+            sta.scrollToItem(status.curIndex)
+        }
         ScrollHeaderBox(
             canScroll = {
                 if (isHeaderShowForever) {
@@ -133,9 +133,11 @@ fun AnimHomePage(
                     modifier = Modifier.offset(0.dp, dp),
                     selectedTabIndex = status.curIndex,
                     textList = labels,
+                    state = sta,
                     onItemClick = {
                         vm.changeHomeSource(it)
-                    })
+                    }
+                )
             },
             content = {
                 AnimatedContent(
@@ -181,13 +183,13 @@ fun AnimHomePage(
                                 modifier = Modifier
                                     .fillMaxSize(),
                                 errorMsg = if (stat.error.isParserError) stat.error.throwable.message
-                                    ?: "" else stringResource(id = R.string.net_error),
+                                    ?: "" else stringResource(id = com.heyanle.easy_i18n.R.string.net_error),
                                 clickEnable = true,
                                 onClick = {
                                     vm.refresh()
                                 },
                                 other = {
-                                    Text(text = stringResource(id = R.string.click_to_retry))
+                                    Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.click_to_retry))
                                 }
                             )
                         }

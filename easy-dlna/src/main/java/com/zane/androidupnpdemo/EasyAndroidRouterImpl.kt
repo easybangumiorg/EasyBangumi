@@ -32,9 +32,10 @@ class EasyAndroidRouterImpl(
         Log.d("EasyAndroidRouterImpl", "received1 ${ClingUpnpService.isCreate} ${isEnabled}")
         super.received(stream)
     }
+
     override fun send(msg: OutgoingDatagramMessage<*>?) {
         Log.d("EasyAndroidRouterImpl", "send1 ${ClingUpnpService.isCreate} ${isEnabled}")
-        if(!ClingUpnpService.isCreate){
+        if (!ClingUpnpService.isCreate) {
             for (datagramIO in datagramIOs.values) {
                 kotlin.runCatching {
                     datagramIO.stop()
@@ -50,7 +51,7 @@ class EasyAndroidRouterImpl(
 
     override fun send(msg: StreamRequestMessage?): StreamResponseMessage? {
         Log.d("EasyAndroidRouterImpl", "send2 ${ClingUpnpService.isCreate} ${isEnabled}")
-        if(!ClingUpnpService.isCreate){
+        if (!ClingUpnpService.isCreate) {
             kotlin.runCatching {
                 streamClient.stop()
             }.onFailure {

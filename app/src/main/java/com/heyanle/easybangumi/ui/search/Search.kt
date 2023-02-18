@@ -1,6 +1,5 @@
 package com.heyanle.easybangumi.ui.search
 
-import android.animation.ValueAnimator
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,7 +27,6 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -37,11 +35,9 @@ import com.google.accompanist.pager.rememberPagerState
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.heyanle.bangumi_source_api.api.ISearchParser
 import com.heyanle.easybangumi.LocalNavController
-import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.ui.common.*
 import com.heyanle.okkv2.core.okkv
 import kotlinx.coroutines.launch
-import java.lang.ref.WeakReference
 
 /**
  * Created by HeYanLe on 2023/1/10 16:34.
@@ -135,7 +131,7 @@ fun SearchPage(
                             Text(
                                 modifier = Modifier,
                                 textAlign = TextAlign.Start,
-                                text = stringResource(id = R.string.anim_search)
+                                text = stringResource(id = com.heyanle.easy_i18n.R.string.anim_search)
                             )
                         },
                         text = vm.keywordState,
@@ -226,9 +222,7 @@ fun SearchPage(
                         FastScrollToTopFab(listState = lazyListState)
                     }
                 }
-
             }
-
         }
     )
 }

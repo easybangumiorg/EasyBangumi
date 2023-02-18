@@ -74,7 +74,7 @@ object PlayerTinyController {
 
         } else {
             isTinyMode = false
-            stringRes(R.string.no_overlay_permission).toast()
+            stringRes(com.heyanle.easy_i18n.R.string.no_overlay_permission).toast()
         }
 
     }

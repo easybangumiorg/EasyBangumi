@@ -45,8 +45,8 @@ data class MoeSnackBarData @OptIn(ExperimentalMaterialApi::class) constructor(
     val duration: Long = MoeSnackBar.SHORT,
     val onCancel: ((MoeSnackBarData) -> Unit)? = null,
     val onConfirm: ((MoeSnackBarData) -> Unit)? = null,
-    val cancelLabel: String = stringRes(R.string.cancel),
-    val confirmLabel: String = stringRes(R.string.confirm),
+    val cancelLabel: String = stringRes(com.heyanle.easy_i18n.R.string.cancel),
+    val confirmLabel: String = stringRes(com.heyanle.easy_i18n.R.string.confirm),
     val onDismiss: ((MoeSnackBarData) -> Unit)? = null,
     val animationDuration: Int = 250,
     val show: MutableState<Boolean> = mutableStateOf(false),
@@ -137,7 +137,7 @@ fun MoeSnackBar(modifier: Modifier = Modifier) {
                 elevation = CardDefaults.cardElevation(4.dp)
             ) {
                 Text(
-                    stringRes(R.string.info_moesnackbar_swipe),
+                    stringRes(com.heyanle.easy_i18n.R.string.info_moesnackbar_swipe),
                     Modifier.padding(8.dp, 0.dp),
                     fontSize = 12.sp
                 )
@@ -170,8 +170,8 @@ fun Any.moeSnackBar(
     duration: Long = MoeSnackBar.SHORT,
     onCancel: ((MoeSnackBarData) -> Unit)? = null,
     onConfirm: ((MoeSnackBarData) -> Unit)? = null,
-    cancelLabel: String = stringRes(R.string.cancel),
-    confirmLabel: String = stringRes(R.string.confirm),
+    cancelLabel: String = stringRes(com.heyanle.easy_i18n.R.string.cancel),
+    confirmLabel: String = stringRes(com.heyanle.easy_i18n.R.string.confirm),
     onDismiss: ((MoeSnackBarData) -> Unit)? = null,
     animationDuration: Int = 250,
     modifier: Modifier = Modifier.padding(8.dp, 8.dp, 8.dp, 0.dp),

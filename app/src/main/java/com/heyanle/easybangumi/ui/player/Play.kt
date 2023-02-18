@@ -37,24 +37,20 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowLeft
 import androidx.compose.material.icons.filled.CastConnected
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarOutline
 import androidx.compose.material.icons.filled.Web
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -82,7 +78,6 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.heyanle.bangumi_source_api.api.entity.BangumiDetail
 import com.heyanle.bangumi_source_api.api.entity.BangumiSummary
 import com.heyanle.easybangumi.LocalNavController
-import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.navigationDlna
 import com.heyanle.easybangumi.navigationSearch
 import com.heyanle.easybangumi.player.PlayerController
@@ -164,7 +159,7 @@ fun Play(
 
     }
 
-    if(info != null  && player != null){
+    if (info != null && player != null) {
 
         Surface(
             modifier = Modifier
@@ -219,9 +214,6 @@ fun Play(
     }
 
 
-
-
-
 }
 
 // 播放器
@@ -241,7 +233,7 @@ fun PlayerView(
                     errorMsg = playerState.errorMsg,
                     clickEnable = true,
                     other = {
-                        Text(text = stringResource(id = R.string.click_to_retry))
+                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.click_to_retry))
                     },
                     onClick = {
                         controller.loadPlay(playerState.lineIndex, playerState.episode)
@@ -299,8 +291,8 @@ fun PlayerView(
                 nav.popBackStack()
             }) {
             Icon(
-                imageVector = Icons.Filled.ArrowLeft,
-                stringResource(id = R.string.back)
+                imageVector = Icons.Filled.KeyboardArrowLeft,
+                stringResource(id = com.heyanle.easy_i18n.R.string.back)
             )
         }
     }
@@ -331,7 +323,7 @@ fun Info(
                 errorMsg = infoState.errorMsg,
                 clickEnable = true,
                 other = {
-                    Text(text = stringResource(id = R.string.click_to_retry))
+                    Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.click_to_retry))
                 },
                 onClick = {
                     controller.loadInfo()
@@ -346,7 +338,7 @@ fun Info(
                 LazyVerticalGrid(
                     state = lazyGridState,
                     columns = GridCells.Fixed(3),
-                    contentPadding = PaddingValues(4.dp)
+                    contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 76.dp)
                 ) {
                     // 番剧详情
                     item(
@@ -423,7 +415,8 @@ fun ActionRow(
     ) {
         val starIcon =
             if (isStar) Icons.Filled.Star else Icons.Filled.StarOutline
-        val starTextId = if (isStar) R.string.stared else R.string.click_star
+        val starTextId =
+            if (isStar) com.heyanle.easy_i18n.R.string.stared else com.heyanle.easy_i18n.R.string.click_star
         // 点击追番
         Action(
             icon = {
@@ -452,12 +445,12 @@ fun ActionRow(
             icon = {
                 Icon(
                     Icons.Filled.Search,
-                    stringResource(id = R.string.search_same_bangumi)
+                    stringResource(id = com.heyanle.easy_i18n.R.string.search_same_bangumi)
                 )
             },
             msg = {
                 Text(
-                    text = stringResource(id = R.string.search_same_bangumi),
+                    text = stringResource(id = com.heyanle.easy_i18n.R.string.search_same_bangumi),
                     fontSize = 12.sp
                 )
             },
@@ -473,12 +466,12 @@ fun ActionRow(
             icon = {
                 Icon(
                     Icons.Filled.Web,
-                    stringResource(id = R.string.open_source_url)
+                    stringResource(id = com.heyanle.easy_i18n.R.string.open_source_url)
                 )
             },
             msg = {
                 Text(
-                    text = stringResource(id = R.string.open_source_url),
+                    text = stringResource(id = com.heyanle.easy_i18n.R.string.open_source_url),
                     fontSize = 12.sp
                 )
             },
@@ -492,12 +485,12 @@ fun ActionRow(
             icon = {
                 Icon(
                     Icons.Filled.CastConnected,
-                    stringResource(id = R.string.screen_cast)
+                    stringResource(id = com.heyanle.easy_i18n.R.string.screen_cast)
                 )
             },
             msg = {
                 Text(
-                    text = stringResource(id = R.string.screen_cast),
+                    text = stringResource(id = com.heyanle.easy_i18n.R.string.screen_cast),
                     fontSize = 12.sp
                 )
             },
@@ -586,7 +579,7 @@ fun LazyGridScope.playMsg(
     }.getOrNull() ?: emptyList()
     itemsIndexed(epi) { index, item ->
         val selected = selectLines.value == playerState.lineIndex && index == playerState.episode
-        Box(modifier = Modifier.padding(4.dp, 4.dp)){
+        Box(modifier = Modifier.padding(4.dp, 4.dp)) {
             Surface(
                 shadowElevation = 4.dp,
                 shape = RoundedCornerShape(4.dp),

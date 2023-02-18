@@ -2,10 +2,10 @@ package com.heyanle.easybangumi.ui.home.star
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,21 +20,18 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.items
 import com.heyanle.easybangumi.LocalNavController
-import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.db.entity.BangumiStar
 import com.heyanle.easybangumi.navigationPlay
-import com.heyanle.easybangumi.source.AnimSourceFactory
 import com.heyanle.easybangumi.ui.common.*
 import com.heyanle.easybangumi.utils.stringRes
 import kotlinx.coroutines.delay
@@ -66,6 +63,27 @@ fun AnimMy() {
         }
     })
     val pi = vm.curPager.value.collectAsLazyPagingItems()
+    val haptic = LocalHapticFeedback.current
+
+    LaunchedEffect(key1 = Unit) {
+        vm.onLaunch()
+    }
+
+    var deleteState by remember {
+        mutableStateOf<BangumiStar?>(null)
+    }
+
+    EasyDeleteDialog(
+        show = deleteState != null,
+        onDelete = {
+            deleteState?.let {
+                vm.deleteBangumiStar(it)
+            }
+        },
+        onDismissRequest = {
+            deleteState = null
+        }
+    )
 
     Box(
         modifier = Modifier
@@ -84,12 +102,13 @@ fun AnimMy() {
                     modifier = Modifier
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState()),
-                    emptyMsg = stringResource(id = R.string.no_star_bangumi)
+                    emptyMsg = stringResource(id = com.heyanle.easy_i18n.R.string.no_star_bangumi)
                 )
             } else {
                 LazyVerticalGrid(
+                    modifier = Modifier.fillMaxSize(),
                     state = lazyGridState,
-                    contentPadding = PaddingValues(4.dp, 4.dp),
+                    contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 60.dp),
                     columns = GridCells.Adaptive(95.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -100,9 +119,16 @@ fun AnimMy() {
                     ) { index ->
                         val star = pagingItems[index]
                         if (star != null) {
-                            BangumiStarCard(item = star) {
-                                nav.navigationPlay(it.bangumiId, it.source, it.detailUrl)
-                            }
+                            BangumiStarCard(
+                                item = star,
+                                onLongClick = {
+                                    deleteState = it
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                },
+                                onClick = {
+                                    nav.navigationPlay(it.bangumiId, it.source, it.detailUrl)
+                                }
+                            )
                         } else {
                             BangumiStarCardPlaceHolder()
                         }
@@ -133,14 +159,14 @@ fun AnimMy() {
                                 val errorMsg =
                                     (pagingItems.loadState.append as? LoadState.Error)?.error?.message
                                         ?: stringRes(
-                                            R.string.net_error
+                                            com.heyanle.easy_i18n.R.string.net_error
                                         )
                                 ErrorPage(
                                     modifier = Modifier.fillMaxWidth(),
                                     errorMsg = errorMsg,
                                     clickEnable = true,
                                     other = {
-                                        Text(text = stringResource(id = R.string.click_to_retry))
+                                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.click_to_retry))
                                     },
                                     onClick = {
                                         pagingItems.retry()
@@ -162,7 +188,7 @@ fun AnimMy() {
                                         .fillMaxWidth()
                                         .padding(0.dp, 2.dp),
                                     textAlign = TextAlign.Center,
-                                    text = stringResource(id = R.string.list_most_bottom)
+                                    text = stringResource(id = com.heyanle.easy_i18n.R.string.list_most_bottom)
                                 )
                             }
                         }
@@ -182,16 +208,22 @@ fun AnimMy() {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun BangumiStarCard(
     item: BangumiStar,
     onClick: (BangumiStar) -> Unit,
+    onLongClick: (BangumiStar) -> Unit,
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
-            .clickable {
+            .combinedClickable(
+                onLongClick = {
+                    onLongClick(item)
+                }
+            ) {
                 onClick(item)
             }
             .padding(0.dp, 4.dp),

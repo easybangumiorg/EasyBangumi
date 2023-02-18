@@ -9,7 +9,12 @@ import com.heyanle.easybangumi.db.EasyDB
 import com.heyanle.easybangumi.db.entity.BangumiHistory
 import com.heyanle.easybangumi.db.entity.BangumiStar
 import com.heyanle.easybangumi.ui.home.star.AnimStarViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Created by HeYanLe on 2023/1/9 21:51.
@@ -17,10 +22,10 @@ import kotlinx.coroutines.launch
  */
 class AnimHistoryViewModel : ViewModel() {
     companion object {
-        private val isRefresh = MutableLiveData(false)
-        private val refresh = isRefresh.distinctUntilChanged()
+        private val isRefresh = MutableStateFlow<Boolean>(false)
         fun refresh() {
-            isRefresh.postValue(true)
+            isRefresh.compareAndSet(false, true)
+            //isRefresh.postValue(true)
         }
     }
 
@@ -32,14 +37,20 @@ class AnimHistoryViewModel : ViewModel() {
                 curPager.value = getPager().flow.cachedIn(viewModelScope)
             }
         }
+        isRefresh.value = false
+    }
+
+    suspend fun onPageLaunch() {
+        isRefresh.collectLatest {
+            if (it) {
+                refresh()
+            }
+            isRefresh.emit(false)
+        }
     }
 
     fun refresh() {
         curPager.value = getPager().flow.cachedIn(viewModelScope)
-    }
-
-    init {
-        refresh.observeForever(observer)
     }
 
     private fun getPager(): Pager<Int, BangumiHistory> {
@@ -50,8 +61,23 @@ class AnimHistoryViewModel : ViewModel() {
         }
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        refresh.removeObserver(observer)
+    fun delete(bangumiHistory: BangumiHistory) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                EasyDB.database.bangumiHistory.deleteByBangumiSummary(
+                    bangumiHistory.bangumiId,
+                    bangumiHistory.source,
+                    bangumiHistory.detailUrl
+                )
+            }
+        }
+    }
+
+    fun clear() {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                EasyDB.database.bangumiHistory.clear()
+            }
+        }
     }
 }
