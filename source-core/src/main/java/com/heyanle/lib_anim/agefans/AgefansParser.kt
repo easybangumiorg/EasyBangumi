@@ -22,7 +22,7 @@ import okhttp3.Response
 class AgefansParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISearchParser {
 
     companion object {
-        const val SOURSE_KEY = "agefans"
+        const val SOURCE_KEY = "agefans"
         const val ROOT_URL = "https://www.agemys.net"
         const val BASE_URL = "https://api.agefans.app"
         const val WEBVIEW_DETAIL_ROOT = "https://web.age-spa.com:8443/#"
@@ -63,7 +63,7 @@ class AgefansParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
                     intro = ele.get("NewTitle").asString,
                     detailUrl = R.webViewDetailUrl(ele.get("AID").asString),
                     visitTime = System.currentTimeMillis(),
-                    source = SOURSE_KEY
+                    source = SOURCE_KEY
                 )
                 list.add(bgm)
             }
@@ -82,7 +82,7 @@ class AgefansParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
                     intro = ele.get("R新番标题").asString,
                     detailUrl = R.webViewDetailUrl(ele.get("AID").asString),
                     visitTime = System.currentTimeMillis(),
-                    source = SOURSE_KEY
+                    source = SOURCE_KEY
                 )
                 list.add(bgm)
             }
@@ -99,7 +99,7 @@ class AgefansParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
                 intro = ele.get("R新番标题").asString,
                 detailUrl = R.webViewDetailUrl(ele.get("AID").asString),
                 description = ele.get("R简介").asString,
-                source = SOURSE_KEY
+                source = SOURCE_KEY
             )
         }
 
@@ -127,7 +127,7 @@ class AgefansParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
 
     private fun get(target: String): Response = R.clint.newCall(GET(target)).execute()
 
-    override fun getKey(): String = SOURSE_KEY
+    override fun getKey(): String = SOURCE_KEY
     override fun getLabel(): String = "Age动漫"
     override fun getVersion(): String = "1.0.0"
     override fun getVersionCode(): Int = 0
