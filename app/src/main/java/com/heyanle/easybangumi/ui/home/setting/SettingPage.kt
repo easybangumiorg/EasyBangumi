@@ -29,6 +29,7 @@ import com.heyanle.easybangumi.theme.getColorScheme
 import com.heyanle.easybangumi.ui.common.OkImage
 import com.heyanle.easybangumi.ui.common.moeSnackBar
 import com.heyanle.easybangumi.utils.OverlayHelper
+import com.heyanle.easybangumi.utils.openUrl
 import com.heyanle.easybangumi.utils.stringRes
 import com.heyanle.easybangumi.utils.toast
 import com.heyanle.lib_anim.utils.network.webview_helper.webViewHelper
@@ -406,6 +407,29 @@ fun About(
                 Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.qq_groud))
             }
             Text(text = "729848189")
+        }
+
+        Row(modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                "https://pd.qq.com/s/4q8rd0285".openUrl()
+            }
+            .padding(16.dp, 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                modifier = Modifier.fillMaxHeight(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Filled.Group,
+                    contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.qq_chanel)
+                )
+                Spacer(modifier = Modifier.size(16.dp))
+                Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.qq_chanel))
+            }
+            Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.qq_chanel_click))
         }
 
 

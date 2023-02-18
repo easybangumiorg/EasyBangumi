@@ -133,6 +133,9 @@
 
     <string name="delete_confirmation">确定要删除吗？</string>
     <string name="clear_confirmation">确定要清空吗？</string>
+    
+    <string name="qq_chanel">QQ 频道</string>
+    <string name="qq_chanel_click">点击加入</string>
 
 
 </resources>

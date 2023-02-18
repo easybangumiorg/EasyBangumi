@@ -33,6 +33,7 @@ public class ClingUpnpService extends AndroidUpnpServiceImpl {
     private LocalDevice mLocalDevice = null;
 
 
+
     @Override
     public void onCreate() {
         Log.d("ClingUpnpService", "onCreate");
@@ -56,8 +57,8 @@ public class ClingUpnpService extends AndroidUpnpServiceImpl {
                 // is done.
                 super.shutdown(false);
                 try {
-                    Log.d("ClingUpnpService", "" + getRouter().isEnabled());
-                } catch (Exception e) {
+                    Log.d("ClingUpnpService", ""+getRouter().isEnabled());
+                }catch (Exception e){
                     e.printStackTrace();
                 }
             }
