@@ -5,7 +5,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ScrollableTabRow
@@ -100,10 +102,13 @@ fun KeyTabRow(
     unselectedContainerColor: Color = MaterialTheme.colorScheme.secondaryContainer,
     unselectedContentColor: Color = MaterialTheme.colorScheme.onSecondaryContainer,
     textList: List<String>,
+    state: LazyListState = rememberLazyListState(),
     onItemClick: (Int) -> Unit,
-) {
+
+    ) {
 
     LazyRow(
+        state = state,
         modifier = Modifier
             .padding(2.dp, 0.dp)
             .then(modifier),

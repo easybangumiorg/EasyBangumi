@@ -8,7 +8,11 @@ import androidx.paging.cachedIn
 import com.heyanle.easybangumi.db.EasyDB
 import com.heyanle.easybangumi.db.entity.BangumiStar
 import com.heyanle.easybangumi.ui.home.history.AnimHistoryViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Created by HeYanLe on 2023/1/9 21:28.
@@ -17,10 +21,10 @@ import kotlinx.coroutines.launch
 class AnimStarViewModel : ViewModel() {
 
     companion object {
-        private val isRefresh = MutableLiveData(false)
-        private val refresh = isRefresh.distinctUntilChanged()
+        private val isRefresh = MutableStateFlow<Boolean>(false)
         fun refresh() {
-            isRefresh.postValue(true)
+            isRefresh.compareAndSet(false, true)
+            //isRefresh.postValue(true)
         }
     }
 
@@ -38,8 +42,13 @@ class AnimStarViewModel : ViewModel() {
         curPager.value = getPager().flow.cachedIn(viewModelScope)
     }
 
-    init {
-        refresh.observeForever(observer)
+    suspend fun onLaunch() {
+        isRefresh.collectLatest {
+            if (it) {
+                refresh()
+            }
+            isRefresh.emit(false)
+        }
     }
 
     private fun getPager(): Pager<Int, BangumiStar> {
@@ -50,9 +59,16 @@ class AnimStarViewModel : ViewModel() {
         }
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        refresh.removeObserver(observer)
+    fun deleteBangumiStar(bangumiStar: BangumiStar) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                EasyDB.database.bangumiStarDao()
+                    .deleteByBangumiSummary(
+                        bangumiStar.bangumiId,
+                        bangumiStar.source,
+                        bangumiStar.detailUrl
+                    )
+            }
+        }
     }
-
 }

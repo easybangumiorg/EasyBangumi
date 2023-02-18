@@ -1,6 +1,5 @@
 package com.heyanle.easybangumi.db.dao
 
-import androidx.paging.DataSource
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Delete
@@ -8,7 +7,6 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
 import com.heyanle.easybangumi.db.entity.BangumiStar
-import com.heyanle.easybangumi.db.entity.SearchHistory
 
 /**
  * Created by HeYanLe on 2023/1/18 21:45.
@@ -30,9 +28,9 @@ interface BangumiStarDao {
     fun getAll(): PagingSource<Int, BangumiStar>
 
     @Query("SELECT * FROM BangumiStar WHERE bangumiId=(:id) AND source=(:source) AND detailUrl = (:detailUrl)")
-    fun getBySourceDetailUrl(id:String, source: String, detailUrl: String): BangumiStar?
+    fun getBySourceDetailUrl(id: String, source: String, detailUrl: String): BangumiStar?
 
     @Query("DELETE FROM BangumiStar WHERE bangumiId=(:id) AND source=(:source) AND detailUrl = (:detailUrl)")
-    fun deleteBySourceDetailUrl(id:String, source: String, detailUrl: String)
+    fun deleteByBangumiSummary(id: String, source: String, detailUrl: String)
 
 }

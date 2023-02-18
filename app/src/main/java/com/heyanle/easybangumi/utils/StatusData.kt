@@ -12,7 +12,7 @@ import com.heyanle.easybangumi.R
 sealed class StatusData<T> {
     class None<T> : StatusData<T>()
     data class Loading<T>(
-        val loadingText: String = stringRes(R.string.loading)
+        val loadingText: String = stringRes(com.heyanle.easy_i18n.R.string.loading)
     ) : StatusData<T>()
 
     data class Error<T>(
@@ -87,7 +87,7 @@ sealed class StatusData<T> {
 
 }
 
-fun <T> MutableLiveData<StatusData<T>>.loading(loadingText: String = stringRes(R.string.loading)) {
+fun <T> MutableLiveData<StatusData<T>>.loading(loadingText: String = stringRes(com.heyanle.easy_i18n.R.string.loading)) {
     value = StatusData.Loading(loadingText)
 }
 

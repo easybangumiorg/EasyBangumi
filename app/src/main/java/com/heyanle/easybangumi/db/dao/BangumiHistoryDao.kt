@@ -23,16 +23,22 @@ interface BangumiHistoryDao {
     @Delete
     fun delete(bangumiHistory: BangumiHistory)
 
+    @Query("DELETE FROM BangumiHistory WHERE 1=1")
+    fun clear()
+
     @Query("SELECT * FROM BangumiHistory ORDER BY createTime DESC")
     fun getAllOrderByTime(): PagingSource<Int, BangumiHistory>
 
-    @Query("SELECT * FROM BangumiHistory WHERE source=(:source) AND detailUrl=(:detailUrl)")
-    fun getFromBangumiSummary(source: String, detailUrl: String): BangumiHistory?
+    @Query("SELECT * FROM BangumiHistory WHERE bangumiId=(:id) AND source=(:source) AND detailUrl=(:detailUrl)")
+    fun getFromBangumiSummary(id: String, source: String, detailUrl: String): BangumiHistory?
+
+    @Query("DELETE FROM BangumiHistory WHERE bangumiId=(:id) AND source=(:source) AND detailUrl=(:detailUrl)")
+    fun deleteByBangumiSummary(id: String, source: String, detailUrl: String)
 
     @Transaction
     fun insertOrModify(history: BangumiHistory) {
 
-        val query = getFromBangumiSummary(history.source, history.detailUrl)
+        val query = getFromBangumiSummary(history.bangumiId, history.source, history.detailUrl)
         if (query != null) {
             val lastP = if (history.lastProcessTime == -1L) {
                 if (history.lastLinesIndex == query.lastLinesIndex && history.lastEpisodeIndex == query.lastEpisodeIndex) {

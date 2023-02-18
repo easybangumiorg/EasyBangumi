@@ -26,7 +26,6 @@ import com.heyanle.lib_anim.utils.network.networkHelper
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         // initUtils(BangumiApp.INSTANCE)
         // networkHelper.defaultUA = WebView(this).getDefaultUserAgentString()
         MediaHelper.setIsDecorFitsSystemWindows(this, false)

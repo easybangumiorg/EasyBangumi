@@ -2,8 +2,6 @@ package com.heyanle.easybangumi.ui.dlna
 
 import android.util.Log
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.Crossfade
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -11,16 +9,13 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.with
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalOverscrollConfiguration
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -43,9 +38,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -64,22 +57,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import com.heyanle.bangumi_source_api.api.entity.BangumiSummary
 import com.heyanle.easybangumi.LocalNavController
-import com.heyanle.easybangumi.R
-import com.heyanle.easybangumi.player.PlayerController
 import com.heyanle.easybangumi.ui.common.ErrorPage
 import com.heyanle.easybangumi.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi.ui.common.LoadingPage
 import com.heyanle.easybangumi.ui.common.moeSnackBar
 import com.heyanle.easybangumi.ui.player.Action
-import com.heyanle.easybangumi.ui.player.ActionRow
 import com.heyanle.easybangumi.ui.player.AnimPlayState
 import com.heyanle.easybangumi.ui.player.AnimPlayingController
 import com.heyanle.easybangumi.ui.player.BangumiInfoState
@@ -160,20 +148,25 @@ fun DlnaPage(
         selectLines.value = playerState.lineIndex
     }
 
-    DisposableEffect(key1 = Unit){
+    DisposableEffect(key1 = Unit) {
         onDispose {
-            DlnaManager.release()
-            DlnaPlayingManager.release()
+            kotlin.runCatching {
+                DlnaManager.release()
+                DlnaPlayingManager.release()
+            }.onFailure {
+                it.printStackTrace()
+            }
+
         }
     }
 
-    if(isDlnaListOpen){
+    if (isDlnaListOpen) {
         AlertDialog(
             title = {
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = stringResource(id = R.string.please_choose_device))
+                    Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.please_choose_device))
                     CircularProgressIndicator(
                         color = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier
@@ -185,10 +178,10 @@ fun DlnaPage(
 
             },
             text = {
-               DlnaDeviceList(onClick = {
-                   isDlnaListOpen = false
-                   DlnaManager.select(it)
-               })
+                DlnaDeviceList(onClick = {
+                    isDlnaListOpen = false
+                    DlnaManager.select(it)
+                })
             },
             onDismissRequest = {
                 isDlnaListOpen = false
@@ -212,7 +205,7 @@ fun DlnaPage(
                 title = {
                     val curDevice = DlnaManager.curDevice.value
                     val title = if (curDevice == null) {
-                        stringRes(R.string.unselected_device)
+                        stringRes(com.heyanle.easy_i18n.R.string.unselected_device)
                     } else {
                         curDevice.device.details.friendlyName
                     }
@@ -224,7 +217,7 @@ fun DlnaPage(
                     }) {
                         Icon(
                             Icons.Filled.ArrowBack,
-                            contentDescription = stringResource(id = R.string.back),
+                            contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.back),
                         )
                     }
                 },
@@ -232,7 +225,10 @@ fun DlnaPage(
                     TextButton(onClick = {
                         isDlnaListOpen = true
                     }) {
-                        Text(text = stringResource(id = R.string.change_device), color = MaterialTheme.colorScheme.onPrimary)
+                        Text(
+                            text = stringResource(id = com.heyanle.easy_i18n.R.string.change_device),
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
                     }
 
                 }
@@ -249,7 +245,7 @@ fun DlnaPage(
                             errorMsg = it.errorMsg,
                             clickEnable = true,
                             other = {
-                                Text(text = stringResource(id = R.string.click_to_retry))
+                                Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.click_to_retry))
                             },
                             onClick = {
                                 playingController.loadPlay(
@@ -320,7 +316,7 @@ fun Info(
                 errorMsg = infoState.errorMsg,
                 clickEnable = true,
                 other = {
-                    Text(text = stringResource(id = R.string.click_to_retry))
+                    Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.click_to_retry))
                 },
                 onClick = {
                     controller.loadInfo()
@@ -335,8 +331,9 @@ fun Info(
                 LazyVerticalGrid(
                     state = lazyGridState,
                     columns = GridCells.Fixed(3),
-                    contentPadding = PaddingValues(4.dp)
-                ) {
+                    contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 60.dp),
+
+                    ) {
                     // 番剧详情
                     item(
                         span = {
@@ -362,7 +359,7 @@ fun DlnaDeviceAction() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = stringResource(id = R.string.dlna_alert))
+        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.dlna_alert))
         Row(
             modifier = Modifier
                 .padding(4.dp)
@@ -372,18 +369,18 @@ fun DlnaDeviceAction() {
                 icon = {
                     Icon(
                         Icons.Filled.PlayArrow,
-                        stringResource(id = R.string.play),
+                        stringResource(id = com.heyanle.easy_i18n.R.string.play),
                     )
                 },
                 msg = {
                     Text(
-                        text = stringResource(id = R.string.play),
+                        text = stringResource(id = com.heyanle.easy_i18n.R.string.play),
                         color = MaterialTheme.colorScheme.onBackground,
                         fontSize = 12.sp
                     )
                 },
                 onClick = {
-                    stringRes(R.string.dnla_try_play).moeSnackBar()
+                    stringRes(com.heyanle.easy_i18n.R.string.dnla_try_play).moeSnackBar()
                     DlnaManager.play()
                 }
             )
@@ -391,18 +388,18 @@ fun DlnaDeviceAction() {
                 icon = {
                     Icon(
                         Icons.Filled.Pause,
-                        stringResource(id = R.string.pause),
+                        stringResource(id = com.heyanle.easy_i18n.R.string.pause),
                     )
                 },
                 msg = {
                     Text(
-                        text = stringResource(id = R.string.pause),
+                        text = stringResource(id = com.heyanle.easy_i18n.R.string.pause),
                         color = MaterialTheme.colorScheme.onBackground,
                         fontSize = 12.sp
                     )
                 },
                 onClick = {
-                    stringRes(R.string.dnla_try_pause).moeSnackBar()
+                    stringRes(com.heyanle.easy_i18n.R.string.dnla_try_pause).moeSnackBar()
                     DlnaManager.pause()
                 }
             )
@@ -411,18 +408,18 @@ fun DlnaDeviceAction() {
                 icon = {
                     Icon(
                         Icons.Filled.Stop,
-                        stringResource(id = R.string.stop),
+                        stringResource(id = com.heyanle.easy_i18n.R.string.stop),
                     )
                 },
                 msg = {
                     Text(
-                        text = stringResource(id = R.string.stop),
+                        text = stringResource(id = com.heyanle.easy_i18n.R.string.stop),
                         color = MaterialTheme.colorScheme.onBackground,
                         fontSize = 12.sp
                     )
                 },
                 onClick = {
-                    stringRes(R.string.dnla_try_stop).moeSnackBar()
+                    stringRes(com.heyanle.easy_i18n.R.string.dnla_try_stop).moeSnackBar()
                     DlnaManager.stop()
                 }
             )
@@ -431,12 +428,12 @@ fun DlnaDeviceAction() {
                 icon = {
                     Icon(
                         Icons.Filled.Refresh,
-                        stringResource(id = R.string.refresh),
+                        stringResource(id = com.heyanle.easy_i18n.R.string.refresh),
                     )
                 },
                 msg = {
                     Text(
-                        text = stringResource(id = R.string.refresh),
+                        text = stringResource(id = com.heyanle.easy_i18n.R.string.refresh),
                         color = MaterialTheme.colorScheme.onBackground,
                         fontSize = 12.sp
                     )
@@ -447,7 +444,7 @@ fun DlnaDeviceAction() {
             )
         }
     }
-    
+
 }
 
 @Composable
@@ -468,10 +465,9 @@ fun DlnaDeviceList(
                     .clickable {
                         onClick(it)
                     }
-                    .padding(16.dp, 8.dp)
-                    ,
+                    .padding(16.dp, 8.dp),
                 text = it.device.details.friendlyName,
-                color = if(it.isSelected) MaterialTheme.colorScheme.secondary else Color.Unspecified
+                color = if (it.isSelected) MaterialTheme.colorScheme.secondary else Color.Unspecified
             )
         }
     }

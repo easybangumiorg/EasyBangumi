@@ -77,7 +77,7 @@ fun ThemeSettingCard(
 
         Text(
             modifier = Modifier.padding(16.dp, 16.dp),
-            text = stringResource(id = R.string.theme),
+            text = stringResource(id = com.heyanle.easy_i18n.R.string.theme),
             color = MaterialTheme.colorScheme.secondary,
             textAlign = TextAlign.Start
         )
@@ -103,7 +103,7 @@ fun ThemeSettingCard(
                         Icon(
                             modifier = Modifier.align(Alignment.Center),
                             imageVector = Icons.Filled.Check,
-                            contentDescription = stringResource(id = R.string.theme),
+                            contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.theme),
                             tint = MaterialTheme.colorScheme.onSecondary
                         )
                     }
@@ -132,18 +132,18 @@ fun ThemeSettingCard(
             ) {
                 Icon(
                     if (isDark) Icons.Filled.Brightness2 else Icons.Filled.WbSunny,
-                    contentDescription = stringResource(id = R.string.dark_mode)
+                    contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.dark_mode)
                 )
                 Spacer(modifier = Modifier.size(16.dp))
-                Text(text = stringResource(id = R.string.dark_mode))
+                Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.dark_mode))
             }
 
 
             Box() {
                 val text = when (themeState.darkMode) {
-                    DarkMode.Dark -> stringResource(id = R.string.dark_on)
-                    DarkMode.Light -> stringResource(id = R.string.dark_off)
-                    else -> stringResource(id = R.string.dark_auto)
+                    DarkMode.Dark -> stringResource(id = com.heyanle.easy_i18n.R.string.dark_on)
+                    DarkMode.Light -> stringResource(id = com.heyanle.easy_i18n.R.string.dark_off)
+                    else -> stringResource(id = com.heyanle.easy_i18n.R.string.dark_auto)
                 }
                 Row() {
                     Text(
@@ -153,7 +153,7 @@ fun ThemeSettingCard(
                     Icon(
                         Icons.Filled.ExpandMore,
                         modifier = Modifier.alpha(0.6f),
-                        contentDescription = stringResource(id = R.string.dark_mode)
+                        contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.dark_mode)
                     )
                 }
                 DropdownMenu(
@@ -166,7 +166,7 @@ fun ThemeSettingCard(
                             darkExpanded = false
                         },
                         text = {
-                            Text(text = stringResource(id = R.string.dark_on))
+                            Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.dark_on))
                         }
                     )
 
@@ -176,7 +176,7 @@ fun ThemeSettingCard(
                             darkExpanded = false
                         },
                         text = {
-                            Text(text = stringResource(id = R.string.dark_off))
+                            Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.dark_off))
                         }
                     )
 
@@ -186,7 +186,7 @@ fun ThemeSettingCard(
                             darkExpanded = false
                         },
                         text = {
-                            Text(text = stringResource(id = R.string.dark_auto))
+                            Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.dark_auto))
                         }
                     )
                 }
@@ -210,7 +210,7 @@ fun ThemeSettingCard(
                     isDynamicCheck = !old
                     EasyThemeController.changeIsDynamicColor(!old)
                     if (!old) {
-                        stringRes(R.string.dynamic_color_enable_msg).moeSnackBar()
+                        stringRes(com.heyanle.easy_i18n.R.string.dynamic_color_enable_msg).moeSnackBar()
                     }
                 }
                 .padding(16.dp, 16.dp),
@@ -223,15 +223,15 @@ fun ThemeSettingCard(
                 ) {
                     Icon(
                         Icons.Filled.ColorLens,
-                        contentDescription = stringResource(id = R.string.is_dynamic_color)
+                        contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.is_dynamic_color)
                     )
                     Spacer(modifier = Modifier.size(16.dp))
                     Column() {
-                        Text(text = stringResource(id = R.string.is_dynamic_color))
+                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.is_dynamic_color))
                         Text(
                             fontSize = MaterialTheme.typography.titleSmall.fontSize,
                             modifier = Modifier.alpha(0.6f),
-                            text = stringResource(id = R.string.is_dynamic_color_msg)
+                            text = stringResource(id = com.heyanle.easy_i18n.R.string.is_dynamic_color_msg)
                         )
                     }
 
@@ -240,7 +240,7 @@ fun ThemeSettingCard(
                     isDynamicCheck = it
                     EasyThemeController.changeIsDynamicColor(it)
                     if (it) {
-                        stringRes(R.string.dynamic_color_enable_msg).moeSnackBar()
+                        stringRes(com.heyanle.easy_i18n.R.string.dynamic_color_enable_msg).moeSnackBar()
                     }
                 })
             }
@@ -274,7 +274,7 @@ fun TinySettingCard(
 
         Text(
             modifier = Modifier.padding(16.dp, 16.dp),
-            text = stringResource(id = R.string.play),
+            text = stringResource(id = com.heyanle.easy_i18n.R.string.play),
             color = MaterialTheme.colorScheme.secondary,
             textAlign = TextAlign.Start
         )
@@ -290,7 +290,7 @@ fun TinySettingCard(
                         isAutoTiny = true
                         TinyStatusController.autoTinyEnableOkkv = true
                     } else {
-                        stringRes(R.string.please_overlay_permission).toast()
+                        stringRes(com.heyanle.easy_i18n.R.string.please_overlay_permission).toast()
                         OverlayHelper.gotoDrawOverlaySetting(ctx)
                     }
                 } else {
@@ -308,15 +308,15 @@ fun TinySettingCard(
             ) {
                 Icon(
                     Icons.Filled.LaptopWindows,
-                    contentDescription = stringResource(id = R.string.auto_tiny)
+                    contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.auto_tiny)
                 )
                 Spacer(modifier = Modifier.size(16.dp))
                 Column() {
-                    Text(text = stringResource(id = R.string.auto_tiny))
+                    Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.auto_tiny))
                     Text(
                         fontSize = MaterialTheme.typography.titleSmall.fontSize,
                         modifier = Modifier.alpha(0.6f),
-                        text = stringResource(id = R.string.auto_tiny_msg)
+                        text = stringResource(id = com.heyanle.easy_i18n.R.string.auto_tiny_msg)
                     )
                 }
 
@@ -328,7 +328,7 @@ fun TinySettingCard(
                         isAutoTiny = true
                         TinyStatusController.autoTinyEnableOkkv = true
                     } else {
-                        stringRes(R.string.please_overlay_permission).toast()
+                        stringRes(com.heyanle.easy_i18n.R.string.please_overlay_permission).toast()
                         OverlayHelper.gotoDrawOverlaySetting(ctx)
                     }
                 } else {
@@ -353,7 +353,7 @@ fun About(
 
         Text(
             modifier = Modifier.padding(16.dp, 16.dp),
-            text = stringResource(id = R.string.about),
+            text = stringResource(id = com.heyanle.easy_i18n.R.string.about),
             color = MaterialTheme.colorScheme.secondary,
             textAlign = TextAlign.Start
         )
@@ -375,10 +375,10 @@ fun About(
             ) {
                 Icon(
                     Icons.Filled.AutoAwesome,
-                    contentDescription = stringResource(id = R.string.version)
+                    contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.version)
                 )
                 Spacer(modifier = Modifier.size(16.dp))
-                Text(text = stringResource(id = R.string.version))
+                Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.version))
             }
             Text(text = BuildConfig.VERSION_NAME)
 
@@ -400,10 +400,10 @@ fun About(
             ) {
                 Icon(
                     Icons.Filled.Group,
-                    contentDescription = stringResource(id = R.string.qq_groud)
+                    contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.qq_groud)
                 )
                 Spacer(modifier = Modifier.size(16.dp))
-                Text(text = stringResource(id = R.string.qq_groud))
+                Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.qq_groud))
             }
             Text(text = "729848189")
         }
@@ -423,7 +423,7 @@ fun Author(
 
         Text(
             modifier = Modifier.padding(16.dp, 16.dp),
-            text = stringResource(id = R.string.author),
+            text = stringResource(id = com.heyanle.easy_i18n.R.string.author),
             color = MaterialTheme.colorScheme.secondary,
             textAlign = TextAlign.Start
         )

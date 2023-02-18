@@ -24,10 +24,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.heyanle.easybangumi.R
 import kotlinx.coroutines.launch
 
 /**
@@ -42,7 +40,7 @@ fun FastScrollToTopFab(
     onClick: () -> Unit = {}
 ) {
     val scope = rememberCoroutineScope()
-    FastScrollToTopFab(
+    EasyFab(
         state = remember { derivedStateOf { listState.firstVisibleItemIndex > after } },
         padding = padding
     ) {
@@ -61,7 +59,7 @@ fun FastScrollToTopFab(
     onClick: () -> Unit = {}
 ) {
     val scope = rememberCoroutineScope()
-    FastScrollToTopFab(
+    EasyFab(
         state = remember { derivedStateOf { listState.firstVisibleItemIndex > after } },
         padding = padding
     ) {
@@ -73,9 +71,16 @@ fun FastScrollToTopFab(
 }
 
 @Composable
-fun FastScrollToTopFab(
+fun EasyFab(
     state: State<Boolean>,
     padding: PaddingValues = PaddingValues(0.dp),
+    icon: @Composable () -> Unit = {
+        androidx.compose.material3.Icon(
+            Icons.Filled.KeyboardArrowUp,
+            contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.click_to_up_top),
+            tint = MaterialTheme.colorScheme.onSecondary
+        )
+    },
     onClick: () -> Unit
 ) {
     AnimatedVisibility(
@@ -100,11 +105,7 @@ fun FastScrollToTopFab(
                 containerColor = MaterialTheme.colorScheme.secondary,
                 elevation = FloatingActionButtonDefaults.elevation(16.dp)
             ) {
-                androidx.compose.material3.Icon(
-                    Icons.Filled.KeyboardArrowUp,
-                    contentDescription = stringResource(id = R.string.click_to_up_top),
-                    tint = MaterialTheme.colorScheme.onSecondary
-                )
+                icon()
             }
         }
     }

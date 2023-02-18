@@ -134,16 +134,16 @@ object DlnaManager {
         ClingManager.getInstance().cleanSelectedDevice()
         thread {
             val threadSet: Set<Thread> = getAllStackTraces().keys
-                for (thread in threadSet) {
-                    if (thread.name.startsWith("cling")) {
-                        Log.d(TAG, "Killing thread #" + thread.id + " " + thread.name)
-                        thread.interrupt()
-                    }
+            for (thread in threadSet) {
+                if (thread.name.startsWith("cling")) {
+                    Log.d(TAG, "Killing thread #" + thread.id + " " + thread.name)
+                    thread.interrupt()
                 }
-                try {
-                    BangumiApp.INSTANCE.unbindService(mUpnpServiceConnection)
-                } catch (ignore: IllegalArgumentException) {
-                } // Already unbound
+            }
+            try {
+                BangumiApp.INSTANCE.unbindService(mUpnpServiceConnection)
+            } catch (ignore: IllegalArgumentException) {
+            } // Already unbound
         }
 //        object : Thread() {
 //            override fun run() {

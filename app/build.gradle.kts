@@ -95,9 +95,10 @@ dependencies {
     jsoup()
     androidXWebkit()
     commonsText()
+    cling()
     implementation(project(":easy-crasher"))
     implementation(project(":source-core"))
     implementation(project(":source-api"))
-    cling()
     implementation(project(":easy-dlna"))
+    implementation(project(":easy-i18n"))
 }

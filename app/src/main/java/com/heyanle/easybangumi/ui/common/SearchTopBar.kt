@@ -106,7 +106,7 @@ fun SearchTopBar(
             }) {
                 Icon(
                     imageVector = Icons.Filled.ArrowBack,
-                    stringResource(id = R.string.back)
+                    stringResource(id = com.heyanle.easy_i18n.R.string.back)
                 )
             }
         },
@@ -122,7 +122,7 @@ fun SearchTopBar(
                         }) {
                             Icon(
                                 imageVector = Icons.Filled.Clear,
-                                stringResource(id = R.string.clear)
+                                stringResource(id = com.heyanle.easy_i18n.R.string.clear)
                             )
                         }
                         IconButton(onClick = {
@@ -130,7 +130,7 @@ fun SearchTopBar(
                         }) {
                             Icon(
                                 imageVector = Icons.Filled.Search,
-                                stringResource(id = R.string.search)
+                                stringResource(id = com.heyanle.easy_i18n.R.string.search)
                             )
                         }
                     }

@@ -104,8 +104,9 @@ class AnimPlayingController(
                                 lineIndex,
                                 episodeIndex,
                                 if (it.isParserError) stringRes(
-                                    R.string.source_error
-                                ) else stringRes(R.string.loading_error), it.throwable
+                                    com.heyanle.easy_i18n.R.string.source_error
+                                ) else stringRes(com.heyanle.easy_i18n.R.string.loading_error),
+                                it.throwable
                             )
                         )
                     }
@@ -118,7 +119,7 @@ class AnimPlayingController(
                         AnimPlayState.Error(
                             lineIndex,
                             episodeIndex,
-                            stringRes(R.string.loading_error),
+                            stringRes(com.heyanle.easy_i18n.R.string.loading_error),
                             it
                         )
                     )
@@ -144,7 +145,7 @@ class AnimPlayingController(
     }
 
     fun onShow(enterData: BangumiPlayManager.EnterData?, useHistory: Boolean = true) {
-        if(lastEnterData != enterData){
+        if (lastEnterData != enterData) {
             lastEnterData = enterData
             scope.launch {
                 val curPlayState = playerState.value
@@ -203,6 +204,7 @@ class AnimPlayingController(
     private suspend fun getEnterDataFromHistory(): BangumiPlayManager.EnterData {
         return withContext(Dispatchers.IO) {
             val hist = EasyDB.database.bangumiHistory.getFromBangumiSummary(
+                bangumiSummary.id,
                 bangumiSummary.source,
                 bangumiSummary.detailUrl
             )
