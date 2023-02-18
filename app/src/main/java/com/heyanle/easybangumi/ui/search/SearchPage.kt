@@ -124,7 +124,7 @@ fun SearchPage(
                     EmptyPage(
                         modifier = Modifier
                             .fillMaxSize(),
-                        emptyMsg = stringResource(id = R.string.please_input_keyword_to_search)
+                        emptyMsg = stringResource(id = com.heyanle.easy_i18n.R.string.please_input_keyword_to_search)
                     )
 
                     Column(modifier = Modifier.padding(16.dp)) {
@@ -132,13 +132,13 @@ fun SearchPage(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = stringResource(id = R.string.history))
+                            Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.history))
                             IconButton(onClick = {
                                 onHistoryDelete()
                             }) {
                                 Icon(
                                     Icons.Filled.Delete,
-                                    contentDescription = stringResource(id = R.string.delete)
+                                    contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.delete)
                                 )
                             }
                         }
@@ -194,10 +194,10 @@ fun SearchPage(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .verticalScroll(rememberScrollState()),
-                            errorMsg = stringResource(R.string.net_error),
+                            errorMsg = stringResource(com.heyanle.easy_i18n.R.string.net_error),
                             clickEnable = true,
                             other = {
-                                Text(text = stringResource(id = R.string.click_to_retry))
+                                Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.click_to_retry))
                             },
                             onClick = {
                                 vm.search(vm.getCurKeyword())
@@ -214,7 +214,7 @@ fun SearchPage(
                                 0.dp,
                                 padding.calculateTopPadding() + 6.dp,
                                 0.dp,
-                                6.dp
+                                62.dp
                             ),
                         ) {
                             itemsIndexed(lazyPagingItems) { _, v ->
@@ -237,13 +237,13 @@ fun SearchPage(
                                     item {
                                         val errorMsg =
                                             (lazyPagingItems.loadState.append as? LoadState.Error)?.error?.message
-                                                ?: stringRes(R.string.net_error)
+                                                ?: stringRes(com.heyanle.easy_i18n.R.string.net_error)
                                         ErrorPage(
                                             modifier = Modifier.fillMaxWidth(),
                                             errorMsg = errorMsg,
                                             clickEnable = true,
                                             other = {
-                                                Text(text = stringResource(id = R.string.click_to_retry))
+                                                Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.click_to_retry))
                                             },
                                             onClick = {
                                                 lazyPagingItems.retry()
@@ -259,7 +259,7 @@ fun SearchPage(
                                                 .fillMaxWidth()
                                                 .padding(0.dp, 2.dp),
                                             textAlign = TextAlign.Center,
-                                            text = stringResource(id = R.string.list_most_bottom)
+                                            text = stringResource(id = com.heyanle.easy_i18n.R.string.list_most_bottom)
                                         )
                                     }
                                 }

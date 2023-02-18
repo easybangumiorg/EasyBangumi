@@ -74,7 +74,7 @@ fun WebViewUser(
                     }) {
                         Icon(
                             imageVector = Icons.Filled.ArrowBack,
-                            stringResource(id = R.string.back)
+                            stringResource(id = com.heyanle.easy_i18n.R.string.back)
                         )
                     }
                 },

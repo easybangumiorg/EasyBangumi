@@ -39,7 +39,7 @@ fun SourceContainer(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(errorContainerColor),
-                emptyMsg = stringResource(id = R.string.no_source)
+                emptyMsg = stringResource(id = com.heyanle.easy_i18n.R.string.no_source)
             )
         } else {
             content(anim)
@@ -68,7 +68,7 @@ fun HomeSourceContainer(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(errorContainerColor),
-                    emptyMsg = stringResource(id = R.string.no_source)
+                    emptyMsg = stringResource(id = com.heyanle.easy_i18n.R.string.no_source)
                 )
             } else {
                 content(homes)
@@ -98,7 +98,7 @@ fun SearchSourceContainer(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(errorContainerColor),
-                    emptyMsg = stringResource(id = R.string.no_source)
+                    emptyMsg = stringResource(id = com.heyanle.easy_i18n.R.string.no_source)
                 )
             } else {
                 content(homes)

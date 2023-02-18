@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import com.heyanle.easybangumi.BangumiApp
+import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.ui.common.moeSnackBar
 
 /**

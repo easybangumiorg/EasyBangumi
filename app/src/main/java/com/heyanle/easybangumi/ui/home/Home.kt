@@ -48,24 +48,24 @@ sealed class HomePage(
 ) {
     //番剧主页
     object Home : HomePage(
-        tabLabel = { Text(text = stringResource(id = R.string.home)) },
+        tabLabel = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.home)) },
         content = { AnimHome() }
     )
 
     // 我的追番
     object My : HomePage(
-        tabLabel = { Text(text = stringResource(id = R.string.my_anim)) },
+        tabLabel = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.my_anim)) },
         content = { AnimMy() }
     )
 
     // 历史记录
     object History : HomePage(
-        tabLabel = { Text(text = stringResource(id = R.string.mine_history)) },
+        tabLabel = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.mine_history)) },
         content = { AnimHistory() }
     )
 
     object Setting : HomePage(
-        tabLabel = { Text(text = stringResource(id = R.string.setting)) },
+        tabLabel = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.setting)) },
         content = { SettingPage() }
     )
 }
@@ -109,7 +109,7 @@ fun Home(
                         containerColor = Color.Transparent,
                         scrollBehavior = scrollBehavior,
                         label = {
-                            Text(text = stringResource(id = R.string.anim_title))
+                            Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.anim_title))
                         },
                         isShowSearch = true,
                         onSearch = {

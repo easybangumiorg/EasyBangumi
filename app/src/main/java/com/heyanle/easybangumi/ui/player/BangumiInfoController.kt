@@ -60,8 +60,8 @@ class BangumiInfoController(
                         it.throwable.printStackTrace()
                         _infoStatus.emit(
                             BangumiInfoState.Error(
-                                if (it.isParserError) stringRes(R.string.source_error) else stringRes(
-                                    R.string.loading_error
+                                if (it.isParserError) stringRes(com.heyanle.easy_i18n.R.string.source_error) else stringRes(
+                                    com.heyanle.easy_i18n.R.string.loading_error
                                 ),
                                 it.throwable
                             )
@@ -83,8 +83,9 @@ class BangumiInfoController(
                         _infoStatus.emit(
                             BangumiInfoState.Error(
                                 if (it.isParserError) stringRes(
-                                    R.string.source_error
-                                ) else stringRes(R.string.loading_error), it.throwable
+                                    com.heyanle.easy_i18n.R.string.source_error
+                                ) else stringRes(com.heyanle.easy_i18n.R.string.loading_error),
+                                it.throwable
                             )
                         )
                         return@launch
@@ -93,7 +94,7 @@ class BangumiInfoController(
                 if (isActive) {
                     _infoStatus.emit(
                         BangumiInfoState.Error(
-                            stringRes(R.string.loading_error),
+                            stringRes(com.heyanle.easy_i18n.R.string.loading_error),
                             it
                         )
                     )
@@ -108,7 +109,11 @@ class BangumiInfoController(
                 withContext(Dispatchers.IO) {
                     EasyDB.database.bangumiStar.apply {
                         val old =
-                            getBySourceDetailUrl(bangumiDetail.id, bangumiDetail.source, bangumiDetail.detailUrl)
+                            getBySourceDetailUrl(
+                                bangumiDetail.id,
+                                bangumiDetail.source,
+                                bangumiDetail.detailUrl
+                            )
                         if (old == null) {
                             insert(BangumiStar.fromBangumi(bangumiDetail))
                         } else {
@@ -128,7 +133,11 @@ class BangumiInfoController(
             } else {
                 withContext(Dispatchers.IO) {
                     EasyDB.database.bangumiStarDao()
-                        .deleteBySourceDetailUrl(bangumiDetail.id, bangumiDetail.source, bangumiDetail.detailUrl)
+                        .deleteByBangumiSummary(
+                            bangumiDetail.id,
+                            bangumiDetail.source,
+                            bangumiDetail.detailUrl
+                        )
                 }
                 AnimStarViewModel.refresh()
                 isBangumiStar.value = false

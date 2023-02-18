@@ -24,7 +24,7 @@ public final class AndroidLoggingHandler extends Handler {
 
     public static void injectJavaLogger() {
         Enumeration<String> e = LogManager.getLogManager().getLoggerNames();
-        while(e.hasMoreElements()){
+        while (e.hasMoreElements()) {
             String name = e.nextElement();
             Logger rootLogger = LogManager.getLogManager().getLogger(name);
             Handler[] handlers = rootLogger.getHandlers();

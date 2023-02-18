@@ -4,46 +4,41 @@ package com.heyanle.easybangumi.ui.home.history
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ClearAll
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.items
-import com.google.accompanist.swiperefresh.SwipeRefresh
+import androidx.paging.compose.itemsIndexed
 import com.heyanle.easybangumi.LocalNavController
-import com.heyanle.easybangumi.R
 import com.heyanle.easybangumi.db.entity.BangumiHistory
 import com.heyanle.easybangumi.navigationPlay
-import com.heyanle.easybangumi.source.AnimSourceFactory
 import com.heyanle.easybangumi.ui.common.*
 import com.heyanle.easybangumi.ui.common.easy_player.utils.TimeUtils
-import com.heyanle.easybangumi.ui.home.star.AnimStarViewModel
-import com.heyanle.easybangumi.ui.home.star.BangumiStarCard
 import com.heyanle.easybangumi.utils.stringRes
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -72,6 +67,42 @@ fun AnimHistory() {
     })
     val pi = vm.curPager.value.collectAsLazyPagingItems()
 
+    var deleteState by remember {
+        mutableStateOf<BangumiHistory?>(null)
+    }
+
+    EasyDeleteDialog(
+        show = deleteState != null,
+        onDelete = {
+            deleteState?.let {
+                vm.delete(it)
+            }
+        },
+        onDismissRequest = {
+            deleteState = null
+        }
+    )
+
+    var clearState by remember {
+        mutableStateOf(false)
+    }
+
+    EasyClearDialog(
+        show = clearState,
+        onDelete = {
+            vm.clear()
+        },
+        onDismissRequest = {
+            clearState = false
+        }
+    )
+
+
+
+    LaunchedEffect(key1 = Unit) {
+        vm.onPageLaunch()
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -87,15 +118,17 @@ fun AnimHistory() {
             if (pagingItems.itemCount == 0) {
                 EmptyPage(
                     modifier = Modifier.fillMaxSize(),
-                    emptyMsg = stringResource(id = R.string.no_history)
+                    emptyMsg = stringResource(id = com.heyanle.easy_i18n.R.string.no_history)
                 )
             } else {
 
                 Box(modifier = Modifier) {
                     LazyColumn(
-                        state = lazyListState
+                        modifier = Modifier.fillMaxSize(),
+                        state = lazyListState,
+                        contentPadding = PaddingValues(0.dp, 0.dp, 0.dp, 56.dp),
                     ) {
-                        items(pagingItems) {
+                        itemsIndexed(pagingItems) { index, it ->
                             it?.let {
                                 BangumiHistoryCard(bangumiHistory = it, onClick = {
                                     nav.navigationPlay(
@@ -106,6 +139,9 @@ fun AnimHistory() {
                                         it.lastEpisodeIndex,
                                         it.lastProcessTime
                                     )
+                                }, onDelete = {
+                                    deleteState = it
+                                    //vm.delete(hi)
                                 })
                             }
 
@@ -124,14 +160,14 @@ fun AnimHistory() {
                                     val errorMsg =
                                         (pagingItems.loadState.append as? LoadState.Error)?.error?.message
                                             ?: stringRes(
-                                                R.string.net_error
+                                                com.heyanle.easy_i18n.R.string.net_error
                                             )
                                     ErrorPage(
                                         modifier = Modifier.fillMaxWidth(),
                                         errorMsg = errorMsg,
                                         clickEnable = true,
                                         other = {
-                                            Text(text = stringResource(id = R.string.click_to_retry))
+                                            Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.click_to_retry))
                                         },
                                         onClick = {
                                             pagingItems.retry()
@@ -147,13 +183,26 @@ fun AnimHistory() {
                                             .fillMaxWidth()
                                             .padding(0.dp, 2.dp),
                                         textAlign = TextAlign.Center,
-                                        text = stringResource(id = R.string.list_most_bottom)
+                                        text = stringResource(id = com.heyanle.easy_i18n.R.string.list_most_bottom)
                                     )
                                 }
                             }
                         }
                     }
-
+                    val clearFabState =
+                        remember { derivedStateOf { lazyListState.firstVisibleItemIndex < 2 } }
+                    EasyFab(
+                        state = clearFabState,
+                        icon = {
+                            androidx.compose.material3.Icon(
+                                Icons.Filled.ClearAll,
+                                contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.clear),
+                                tint = MaterialTheme.colorScheme.onSecondary
+                            )
+                        }
+                    ) {
+                        clearState = true
+                    }
                 }
             }
         }
@@ -167,6 +216,8 @@ fun AnimHistory() {
             contentColor = MaterialTheme.colorScheme.secondary
         )
         FastScrollToTopFab(listState = lazyListState)
+
+
     }
 
 
@@ -177,40 +228,52 @@ fun BangumiHistoryCard(
     modifier: Modifier = Modifier,
     bangumiHistory: BangumiHistory,
     onClick: (BangumiHistory) -> Unit,
+    onDelete: (BangumiHistory) -> Unit,
 ) {
-    val sourceText = AnimSourceFactory.label(bangumiHistory.source) ?: bangumiHistory.source
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-                onClick(bangumiHistory)
-            }
-            .padding(16.dp, 8.dp)
-            .then(modifier),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        BangumiCard(bangumiHistory.cover, bangumiHistory.name, bangumiHistory.source)
-        Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .clickable {
+            onClick(bangumiHistory)
+        }
+        .padding(16.dp, 8.dp)
+        .then(modifier)) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(
-                text = bangumiHistory.name,
-                maxLines = 2,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Text(
-                text = stringResource(
-                    id = R.string.last_episode_title,
-                    bangumiHistory.lastEpisodeTitle
-                ),
-                maxLines = 1,
-                color = MaterialTheme.colorScheme.onBackground.copy(0.6f)
-            )
-            Text(
-                text = TimeUtils.toString(bangumiHistory.lastProcessTime).toString(),
-                maxLines = 1,
-                color = MaterialTheme.colorScheme.onBackground.copy(0.6f)
+            BangumiCard(bangumiHistory.cover, bangumiHistory.name, bangumiHistory.source)
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = bangumiHistory.name,
+                    maxLines = 2,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Text(
+                    text = stringResource(
+                        id = com.heyanle.easy_i18n.R.string.last_episode_title,
+                        bangumiHistory.lastEpisodeTitle
+                    ),
+                    maxLines = 1,
+                    color = MaterialTheme.colorScheme.onBackground.copy(0.6f)
+                )
+                Text(
+                    text = TimeUtils.toString(bangumiHistory.lastProcessTime).toString(),
+                    maxLines = 1,
+                    color = MaterialTheme.colorScheme.onBackground.copy(0.6f)
+                )
+            }
+        }
+        IconButton(
+            modifier = Modifier.align(Alignment.BottomEnd),
+            onClick = {
+                onDelete(bangumiHistory)
+            }) {
+            Icon(
+                Icons.Filled.Delete,
+                contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.delete)
             )
         }
     }
 }
+

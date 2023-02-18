@@ -47,7 +47,7 @@ fun HomeTopAppBar(
                 }) {
                     Icon(
                         Icons.Filled.Search,
-                        contentDescription = stringResource(id = R.string.search)
+                        contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.search)
                     )
                 }
             }

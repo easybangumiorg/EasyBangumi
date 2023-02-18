@@ -55,7 +55,7 @@ fun ErrorPage(
 @Composable
 fun EmptyPage(
     modifier: Modifier = Modifier,
-    emptyMsg: String = stringResource(id = R.string.is_empty),
+    emptyMsg: String = stringResource(id = com.heyanle.easy_i18n.R.string.is_empty),
     other: @Composable () -> Unit = {},
 ) {
     WhitePage(modifier, R.drawable.empty_bocchi, emptyMsg, other)
@@ -64,7 +64,7 @@ fun EmptyPage(
 @Composable
 fun LoadingPage(
     modifier: Modifier = Modifier,
-    loadingMsg: String = stringResource(id = R.string.loading),
+    loadingMsg: String = stringResource(id = com.heyanle.easy_i18n.R.string.loading),
     other: @Composable () -> Unit = {},
 ) {
     WhitePage(modifier, Uri.parse("file:///android_asset/loading_ryo.gif"), loadingMsg, other)
