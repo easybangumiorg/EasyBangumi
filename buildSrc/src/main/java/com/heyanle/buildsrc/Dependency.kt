@@ -174,6 +174,9 @@ const val okkv2 = "com.github.heyanLE.okkv2:okkv2-mmkv:${Version.okkv2}"
 fun DependencyHandler.okkv2() {
     add(implementation, okkv2)
 }
+fun DependencyHandler.okkv2Compose() {
+    implementation("com.github.heyanLE.okkv2:okkv2-compose:${Version.okkv2}")
+}
 
 const val exoplayer = "com.google.android.exoplayer:exoplayer:${Version.exoplayer}"
 fun DependencyHandler.exoplayer() {
