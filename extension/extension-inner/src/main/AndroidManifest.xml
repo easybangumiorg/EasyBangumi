@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-feature android:name="easybangumi.extension" android:required="true" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/app_logo"
+        android:label="EasyBangumi: 本体番剧源"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.EasyBangumi">
+
+        <!--readme-->
+        <meta-data
+            android:name="easybangumi.extension.readme"
+            android:value="这是纯纯看番本体番剧源" />
+
+
+        <!--libVersion-->
+        <meta-data
+            android:name="easybangumi.extension.lib.version"
+            android:value="1" />
+
+        <!--source-->
+        <meta-data
+            android:name="easybangumi.extension.source"
+            android:value=".EasySourceFactory"/>
+
+    </application>
+
+    <queries>
+        <package android:name="com.heyanle.easybangumi" />
+    </queries>
+
+
+
+
+</manifest>

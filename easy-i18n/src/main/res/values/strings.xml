@@ -38,7 +38,10 @@
 
     <string name="home">主页</string>
     <string name="my_anim">追番</string>
+    <string name="update">更新</string>
     <string name="mine_history">历史</string>
+    <string name="explore">浏览</string>
+    <string name="more">更多</string>
 
     <string name="refresh">刷新</string>
 

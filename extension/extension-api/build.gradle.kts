@@ -1,5 +1,5 @@
+import com.heyanle.buildsrc.Android
 import com.heyanle.buildsrc.*
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("com.android.library")
@@ -8,20 +8,18 @@ plugins {
 }
 
 android {
-    namespace = "com.heyanle.core"
+    namespace = "com.heyanle.extension_api"
     compileSdk = Android.compileSdk
-    publishing {
-        singleVariant("release") {
-            withSourcesJar()
-        }
-    }
 
     defaultConfig {
         minSdk = Android.minSdk
         targetSdk = Android.targetSdk
+    }
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles("consumer-rules.pro")
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+        }
     }
 
     buildTypes {
@@ -42,11 +40,22 @@ android {
     }
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
+afterEvaluate {
+    publishing {
+        publications {
+            create("maven_public", MavenPublication::class) {
+                groupId = "com.heyanle"
+                artifactId = "extension-api"
+                version = Extension.LIB_VERSION_NAME
+                from(components.getByName("release"))
+            }
+        }
+    }
 }
 
-
-
 dependencies {
+    api(okhttp3)
+    api(jsoup)
+    api(project(":source-api"))
+    api(project(":source-core"))
 }
