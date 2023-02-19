@@ -72,6 +72,7 @@ android {
 dependencies {
     glide()
     okkv2()
+    okkv2Compose()
     okhttp3()
     androidXBasic()
     leakcanary()
