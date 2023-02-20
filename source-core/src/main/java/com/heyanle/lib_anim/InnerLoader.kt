@@ -6,6 +6,7 @@ import com.heyanle.lib_anim.agefans.AgefansParser
 import com.heyanle.lib_anim.bimibimi.BimibimiParser
 import com.heyanle.lib_anim.cycdm.CycdmParser
 import com.heyanle.lib_anim.cycplus.CycplusParser
+import com.heyanle.lib_anim.omofun.OmofunParser
 import com.heyanle.lib_anim.yhdm.YhdmParser
 import com.heyanle.lib_anim.yhdmp.YhdmpParser
 
@@ -19,12 +20,13 @@ object InnerLoader : ParserLoader {
 
     override fun load(): List<ISourceParser> {
         return listOf(
-            CycdmParser(),
-            YhdmParser(),
-            YhdmpParser(),
-            BimibimiParser(),
-            AgefansParser(),
-            CycplusParser(),
+            OmofunParser(),     // Omofun
+            CycplusParser(),    // 次元城+
+            CycdmParser(),      // 次元城
+            YhdmParser(),       // 樱花动漫
+            YhdmpParser(),      // 樱花动漫 P
+            BimibimiParser(),   // Bimibimi
+            AgefansParser(),    // Age
         )
     }
 }
