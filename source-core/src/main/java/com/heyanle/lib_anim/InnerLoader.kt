@@ -20,13 +20,13 @@ object InnerLoader : ParserLoader {
 
     override fun load(): List<ISourceParser> {
         return listOf(
-            CycdmParser(),
-            YhdmParser(),
-            YhdmpParser(),
-            BimibimiParser(),
-            AgefansParser(),
-            CycplusParser(),
-            OmofunParser(),
+            OmofunParser(),     // Omofun
+            CycplusParser(),    // 次元城+
+            CycdmParser(),      // 次元城
+            YhdmParser(),       // 樱花动漫
+            YhdmpParser(),      // 樱花动漫 P
+            BimibimiParser(),   // Bimibimi
+            AgefansParser(),    // Age
         )
     }
 }
