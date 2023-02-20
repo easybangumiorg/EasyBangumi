@@ -8,4 +8,7 @@ class PlayLine(
     val key: String = "",
     val id: Int = 0,
     val label: String,
+    val episode: List<String>,
 )
+
+

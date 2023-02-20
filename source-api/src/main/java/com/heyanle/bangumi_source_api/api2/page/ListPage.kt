@@ -1,18 +1,17 @@
-package com.heyanle.bangumi_source_api.api2.home
+package com.heyanle.bangumi_source_api.api2.page
 
 import com.heyanle.bangumi_source_api.api2.Source
 import com.heyanle.bangumi_source_api.api2.entity.CartoonCover
 
 /**
- * Created by HeYanLe on 2023/2/18 21:39.
+ * Created by HeYanLe on 2023/2/20 16:03.
  * https://github.com/heyanLE
  */
-interface HomePageSource : Source {
+interface ListPage: CartoonPage {
 
-    suspend fun homes(): List<HomePage>
+    val firstKey: Int
 
-    suspend fun getCartoon(
-        homePage: HomePage,
+    suspend fun getCartoons(
         pageKey: Int
     ): Source.SourceResult<Pair<Int?, List<CartoonCover>>>
 
