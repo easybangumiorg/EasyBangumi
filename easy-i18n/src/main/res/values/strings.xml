@@ -97,7 +97,7 @@
     <string name="about">关于</string>
 
     <string name="author">作者</string>
-    <string name="github">作者</string>
+    <string name="github">Github</string>
     <string name="qq_groud">QQ群</string>
 
     <string name="version">当前版本</string>
@@ -135,7 +135,11 @@
     <string name="clear_confirmation">确定要清空吗？</string>
     
     <string name="qq_chanel">QQ 频道</string>
-    <string name="qq_chanel_click">点击加入</string>
+
+    <string name="telegram">Telegram</string>
+
+    <string name="click_to_add">点击加入</string>
+    <string name="click_to_explore">点击浏览</string>
 
 
 </resources>
