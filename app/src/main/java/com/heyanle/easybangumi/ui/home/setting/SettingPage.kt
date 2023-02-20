@@ -15,6 +15,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
@@ -399,8 +400,11 @@ fun About(
                 modifier = Modifier.fillMaxHeight(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+
                 Icon(
-                    Icons.Filled.Group,
+                    modifier = Modifier
+                        .size(24.dp),
+                    painter = painterResource(id = R.drawable.qq),
                     contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.qq_groud)
                 )
                 Spacer(modifier = Modifier.size(16.dp))
@@ -423,13 +427,65 @@ fun About(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    Icons.Filled.Group,
+                    modifier = Modifier
+                        .size(24.dp),
+                    painter = painterResource(id = R.drawable.qq),
                     contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.qq_chanel)
                 )
                 Spacer(modifier = Modifier.size(16.dp))
                 Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.qq_chanel))
             }
-            Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.qq_chanel_click))
+            Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.click_to_add))
+        }
+
+        Row(modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                "https://t.me/easybangumi".openUrl()
+            }
+            .padding(16.dp, 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                modifier = Modifier.fillMaxHeight(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    modifier = Modifier
+                        .size(24.dp),
+                    painter = painterResource(id = R.drawable.telegram),
+                    contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.telegram)
+                )
+                Spacer(modifier = Modifier.size(16.dp))
+                Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.telegram))
+            }
+            Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.click_to_add))
+        }
+
+        Row(modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                "https://github.com/heyanLE/EasyBangumi".openUrl()
+            }
+            .padding(16.dp, 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                modifier = Modifier.fillMaxHeight(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    modifier = Modifier
+                        .size(24.dp),
+                    painter = painterResource(id = R.drawable.github),
+                    contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.github)
+                )
+                Spacer(modifier = Modifier.size(16.dp))
+                Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.github))
+            }
+            Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.click_to_explore))
         }
 
 
@@ -509,4 +565,6 @@ fun Author(
 
     }
 }
+
+
 
