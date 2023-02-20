@@ -18,4 +18,6 @@ interface CartoonCover : Serializable {
 
     var coverUrl: String?
 
+    var intro: String?
+
 }
