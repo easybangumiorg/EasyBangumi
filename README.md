@@ -28,6 +28,7 @@
 
 点击链接加入群聊【纯纯看番】：[729848189](https://jq.qq.com/?_wv=1027&k=vyJ8l8M7)  
 点击链接加入QQ频道【纯纯看番】：[https://pd.qq.com/s/4q8rd0285](https://pd.qq.com/s/4q8rd0285)
+点击链接加入 Telegram 群组【纯纯看番】：[https://t.me/easybangumi](https://t.me/easybangumi)
 
 # 截图
 
@@ -38,6 +39,9 @@
 <img src="./screenshots/6.png"/> 
 
 # 更新列表
+
+- 2023/02/18 3.1.3  
+  新增 Omofun 源
 
 - 2023/02/18 3.1.2  
   修复 次元城+ 源不认识追番的问题  

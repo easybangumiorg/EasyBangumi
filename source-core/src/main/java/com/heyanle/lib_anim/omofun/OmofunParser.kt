@@ -1,4 +1,4 @@
-package com.heyanle.lib_anim.cycplus
+package com.heyanle.lib_anim.omofun
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
@@ -10,33 +10,31 @@ import com.heyanle.bangumi_source_api.api.entity.BangumiSummary
 import com.heyanle.lib_anim.utils.network.GET
 import com.heyanle.lib_anim.utils.network.networkHelper
 import com.heyanle.lib_anim.utils.stringHelper
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-/**
- * Created by AyalaKaguya on 2023/2/11 11:54.
- * https://github.com/AyalaKaguya
- */
-class CycplusParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISearchParser {
-
+class OmofunParser  : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISearchParser {
     companion object {
-        const val SOURCE_KEY = "cycplus"
-        const val ROOT_URL = "https://cycdm-1303090324.cos.ap-guangzhou.myqcloud.com/dtym.json"
-        const val WEBVIEW_ROOT = "https://www.cycity.top/"
-        const val VERSION_CODES = 6
+        const val SOURCE_KEY = "omofun"
+        const val ROOT_URL = "http://omocdn.net/dynamic.json"
+        const val WEBVIEW_ROOT = "https://omofun.tv/"
+        const val VERSION_CODES = 2
     }
 
     private object R {
         val clint = networkHelper.client
-        var BASE_URL = "https://app.95189371.cn"
+        var BASE_URL = "http://103.91.210.141:2515"
 
         // 等一波API更新，先用脏办法实现了
         fun webviewUrl(id: String) = "$WEBVIEW_ROOT#$id"
-        fun indexVideo() = "$BASE_URL/ciyuancheng.php/v$VERSION_CODES/index_video"
+        fun indexVideo() = "$BASE_URL/xgapp.php/v$VERSION_CODES/index_video"
         fun search(title: String, page: Int) =
-            "$BASE_URL/ciyuancheng.php/v$VERSION_CODES/search?pg=$page&text=$title"
+            "$BASE_URL/xgapp.php/v$VERSION_CODES/search?pg=$page&text=$title"
 
         fun videoDetail(id: String) =
-            "$BASE_URL/ciyuancheng.php/v$VERSION_CODES/video_detail?id=$id"
+            "$BASE_URL/xgapp.php/v$VERSION_CODES/video_detail?id=$id"
     }
 
     private fun getJson(target: String): Result<JsonElement> {
@@ -60,7 +58,7 @@ class CycplusParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
     }
 
     override fun getKey(): String = SOURCE_KEY
-    override fun getLabel(): String = "次元城+"
+    override fun getLabel(): String = "Omofun"
     override fun getVersion(): String = "1.0.0"
     override fun getVersionCode(): Int = VERSION_CODES
 
@@ -231,7 +229,7 @@ class CycplusParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
             }
 
             kotlin.runCatching {
-                stringHelper.moeSnackBar("次元城+来自于次元城APP，如果没有必要，还请点击下方的’打开原网站‘下载次元城APP使用")
+                stringHelper.moeSnackBar("Omofun来自于Omofun APP，如果没有必要，还请点击下方的’打开原网站‘下载Omofun APP使用")
                 val bgmInfo = detail.asJsonObject
                     .getAsJsonObject("data")
                     .getAsJsonObject("vod_info")
@@ -263,27 +261,18 @@ class CycplusParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, 
                 val playSource = bgmInfo
                     .getAsJsonArray("vod_url_with_player")[lineIndex]
                     .asJsonObject
-                val saltPrefix = playSource.get("un_link_features").asString
                 val playUrl = playSource.get("url").asString
                     .split("#")[episodes]
                     .split("$")[1]
                 val saltParse = playSource.get("parse_api").asString
 
-                if (playUrl.startsWith(saltPrefix)) {
-                    // 这里不使用var playUrl是因为下面可以得到确切类型，而上面的是不确定的
+                if (!playUrl.startsWith("http")) {
                     val reLink = getJson(saltParse + playUrl).getOrElse {
                         it.printStackTrace()
                         return@withContext ISourceParser.ParserResult.Error(it, false)
                     }.asJsonObject
-                    val type = reLink.get("type").asString
                     val result = reLink.get("url").asString
-                    if (type == "m3u8")
-                        return@withContext ISourceParser.ParserResult.Complete(
-                            IPlayerParser.PlayerInfo(
-                                type = IPlayerParser.PlayerInfo.TYPE_HLS,
-                                uri = result
-                            )
-                        )
+
                     return@withContext ISourceParser.ParserResult.Complete(
                         IPlayerParser.PlayerInfo(
                             type = IPlayerParser.PlayerInfo.TYPE_OTHER,
