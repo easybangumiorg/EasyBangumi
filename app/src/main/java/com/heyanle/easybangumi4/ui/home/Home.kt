@@ -1,8 +1,6 @@
 package com.heyanle.easybangumi4.ui.home
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Explore
@@ -24,9 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -35,6 +31,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.heyanle.easy_i18n.R
+import com.heyanle.easybangumi4.ui.home.explore.Explore
 import com.heyanle.okkv2.core.okkv
 
 /**
@@ -48,7 +45,7 @@ sealed class HomePage(
     val icon: @Composable ((Boolean) -> Unit),
     val content: @Composable (() -> Unit),
 ) {
-    object Star : HomePage(
+    object StarPage : HomePage(
         route = "star",
         tabLabel = { Text(text = stringResource(id = R.string.my_anim)) },
         icon = {
@@ -62,7 +59,7 @@ sealed class HomePage(
         },
     )
 
-    object Update : HomePage(
+    object UpdatePage : HomePage(
         route = "update",
         tabLabel = { Text(text = stringResource(id = R.string.update)) },
         icon = {
@@ -76,7 +73,7 @@ sealed class HomePage(
         }
     )
 
-    object History : HomePage(
+    object HistoryPage : HomePage(
         route = "history",
         tabLabel = { Text(text = stringResource(id = R.string.history)) },
         icon = {
@@ -90,7 +87,7 @@ sealed class HomePage(
         }
     )
 
-    object Explore : HomePage(
+    object ExplorePage : HomePage(
         route = "explore",
         tabLabel = { Text(text = stringResource(id = R.string.explore)) },
         icon = {
@@ -100,11 +97,11 @@ sealed class HomePage(
             )
         },
         content = {
-            Text(text = stringResource(id = R.string.explore))
+            Explore()
         }
     )
 
-    object More : HomePage(
+    object MorePage : HomePage(
         route = "more",
         tabLabel = { Text(text = stringResource(id = R.string.more)) },
         icon = {
@@ -121,11 +118,11 @@ sealed class HomePage(
 }
 
 val HomePageItems = listOf(
-    HomePage.Star,
-    HomePage.Update,
-    HomePage.History,
-    HomePage.Explore,
-    HomePage.More,
+    HomePage.StarPage,
+    HomePage.UpdatePage,
+    HomePage.HistoryPage,
+    HomePage.ExplorePage,
+    HomePage.MorePage,
 )
 
 var homePageIndex by okkv("homePageInitPageIndex", 0)
@@ -175,7 +172,7 @@ fun Home() {
         NavHost(
             modifier = Modifier.padding(padding),
             startDestination = HomePageItems.getOrNull(homePageIndex)?.route
-                ?: HomePage.Star.route,
+                ?: HomePage.StarPage.route,
             navController = homeNavController
         ) {
             HomePageItems.forEach { page ->
