@@ -102,4 +102,6 @@ dependencies {
     implementation(project(":source-api"))
     implementation(project(":easy-dlna"))
     implementation(project(":easy-i18n"))
+    implementation(project(":extension:extension-api"))
+    implementation(project(":extension:extension-load"))
 }

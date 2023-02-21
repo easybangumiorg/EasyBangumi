@@ -10,5 +10,6 @@ class CartoonCoverImpl : CartoonCover {
     override lateinit var source: String
     override lateinit var url: String
     override lateinit var title: String
+    override var intro: String? = null
     override var coverUrl: String? = null
 }

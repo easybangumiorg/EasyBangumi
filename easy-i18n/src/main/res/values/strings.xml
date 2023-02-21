@@ -144,5 +144,8 @@
     <string name="click_to_add">点击加入</string>
     <string name="click_to_explore">点击浏览</string>
 
+    <string name="extension">扩展</string>
+    <string name="source">番源</string>
+
 
 </resources>
