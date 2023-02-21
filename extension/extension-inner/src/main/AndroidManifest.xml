@@ -8,8 +8,7 @@
         android:allowBackup="true"
         android:icon="@mipmap/app_logo"
         android:label="EasyBangumi: 本体番剧源"
-        android:supportsRtl="true"
-        android:theme="@style/Theme.EasyBangumi">
+        android:supportsRtl="true">
 
         <!--readme-->
         <meta-data

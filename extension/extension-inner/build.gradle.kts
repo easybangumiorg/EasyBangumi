@@ -15,8 +15,8 @@ android {
         applicationId = "com.heyanle.extension_inner"
         minSdk = Android.minSdk
         targetSdk = Android.targetSdk
-        versionCode = Android.versionCode
-        versionName = Android.versionName
+        versionCode = 1
+        versionName = "1.0"
 
     }
     buildTypes {

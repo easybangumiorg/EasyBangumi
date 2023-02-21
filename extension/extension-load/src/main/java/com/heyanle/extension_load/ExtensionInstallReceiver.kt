@@ -10,7 +10,6 @@ import com.heyanle.extension_load.model.LoadResult
 import com.heyanle.extension_load.utils.loge
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -21,8 +20,6 @@ import kotlinx.coroutines.launch
  */
 class ExtensionInstallReceiver (private val listener: Listener):
     BroadcastReceiver(){
-
-    val scope = MainScope()
 
     /**
      * Registers this broadcast receiver
@@ -49,41 +46,21 @@ class ExtensionInstallReceiver (private val listener: Listener):
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {
             Intent.ACTION_PACKAGE_ADDED -> {
-                if (isReplacing(intent)) return
-                scope.launch {
-                    when (val result = getExtensionFromIntent(context, intent)) {
-                        is LoadResult.Success -> listener.onExtensionInstalled(result.extension)
-                        else -> {}
-                    }
+                getPackageNameFromIntent(intent)?.let {
+                    listener.onExtensionInstalled(context, it)
                 }
             }
             Intent.ACTION_PACKAGE_REPLACED -> {
-                scope.launch {
-                    when (val result = getExtensionFromIntent(context, intent)) {
-                        is LoadResult.Success -> listener.onExtensionUpdated(result.extension)
-                        // Not needed as a package can't be upgraded if the signature is different
-                        // is LoadResult.Untrusted -> {}
-                        else -> {}
-                    }
+                getPackageNameFromIntent(intent)?.let {
+                    listener.onExtensionUpdated(context, it)
                 }
             }
             Intent.ACTION_PACKAGE_REMOVED -> {
-                if (isReplacing(intent)) return
-                val pkgName = getPackageNameFromIntent(intent)
-                if (pkgName != null) {
-                    listener.onPackageUninstalled(pkgName)
+                getPackageNameFromIntent(intent)?.let {
+                    listener.onPackageUninstalled(context, it)
                 }
             }
         }
-    }
-
-    private suspend fun getExtensionFromIntent(context: Context, intent: Intent?): LoadResult {
-        val pkgName = getPackageNameFromIntent(intent)
-        if (pkgName == null) {
-            "Package name not found".loge()
-            return LoadResult.Error
-        }
-        return scope.async(Dispatchers.IO, CoroutineStart.DEFAULT) { ExtensionLoader.loadExtensionFromPkgName(context, pkgName) }.await()
     }
 
     /**
@@ -93,21 +70,13 @@ class ExtensionInstallReceiver (private val listener: Listener):
         return intent?.data?.encodedSchemeSpecificPart ?: return null
     }
 
-    /**
-     * Returns true if this package is performing an update.
-     *
-     * @param intent The intent that triggered the event.
-     */
-    private fun isReplacing(intent: Intent): Boolean {
-        return intent.getBooleanExtra(Intent.EXTRA_REPLACING, false)
-    }
 
     /**
      * Listener that receives extension installation events.
      */
     interface Listener {
-        fun onExtensionInstalled(extension: Extension)
-        fun onExtensionUpdated(extension: Extension)
-        fun onPackageUninstalled(pkgName: String)
+        fun onExtensionInstalled(context: Context, pkgName: String)
+        fun onExtensionUpdated(context: Context, pkgName: String)
+        fun onPackageUninstalled(context: Context, pkgName: String)
     }
 }
