@@ -6,8 +6,11 @@ import android.os.Looper
 import android.util.Log
 import com.heyanle.easy_crasher.CrashHandler
 import com.heyanle.easybangumi.BuildConfig
+import com.heyanle.easybangumi4.source.ExtensionSource
 import com.heyanle.easybangumi.utils.exo_ssl.CropUtil
 import com.heyanle.easybangumi.utils.exo_ssl.TrustAllHostnameVerifier
+import com.heyanle.extension_load.ExtensionInit
+import com.heyanle.extension_load.IconFactoryImpl
 import com.heyanle.lib_anim.utils.WebViewUtil
 import com.heyanle.okkv2.MMKVStore
 import com.heyanle.okkv2.core.Okkv
@@ -38,6 +41,8 @@ class App: Application() {
         HttpsURLConnection.setDefaultHostnameVerifier(TrustAllHostnameVerifier())
 
         initAppCenter()
+
+        initExtension()
 
     }
 
@@ -90,8 +95,11 @@ class App: Application() {
                 it.printStackTrace()
             }
         }
+    }
 
-
+    private fun initExtension(){
+        ExtensionSource.init()
+        ExtensionInit.init(this, IconFactoryImpl())
     }
 
 }

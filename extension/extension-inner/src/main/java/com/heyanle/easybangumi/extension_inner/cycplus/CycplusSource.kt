@@ -1,9 +1,8 @@
-package com.heyanle.extension_inner.cycplus
+package com.heyanle.easybangumi.extension_inner.cycplus
 
 import com.heyanle.bangumi_source_api.api2.Source
-import com.heyanle.bangumi_source_api.api2.configuration.ConfigSource
+import com.heyanle.easybangumi.extension_inner.R
 import com.heyanle.extension_api.ExtensionIconSource
-import com.heyanle.lib_anim.utils.network.networkHelper
 
 /**
  * Created by HeYanLe on 2023/2/19 23:14.
@@ -21,7 +20,7 @@ class CycplusSource: Source, ExtensionIconSource {
         get() = 0
 
     override fun getIconResourcesId(): Int? {
-        TODO("Not yet implemented")
+        return R.drawable.cycplus
     }
 
     init {

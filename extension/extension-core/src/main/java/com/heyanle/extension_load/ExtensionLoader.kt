@@ -5,6 +5,7 @@ import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.content.res.AssetManager
 import android.os.Build
+import android.util.Log
 import androidx.core.content.pm.PackageInfoCompat
 import com.heyanle.bangumi_source_api.api2.Source
 import com.heyanle.bangumi_source_api.api2.SourceFactory
@@ -39,7 +40,7 @@ object ExtensionLoader {
      * 获取扩展列表
      * @param loadPkgName 需要直接加载的扩展包名列表
      */
-    fun getAllExtension(context: Context, loadPkgName: List<String>): List<Extension> {
+    fun getAllExtension(context: Context): List<Extension> {
         val pkgManager = context.packageManager
 
         @Suppress("DEPRECATION") val installedPkgs =
@@ -49,34 +50,24 @@ object ExtensionLoader {
                 pkgManager.getInstalledPackages(PACKAGE_FLAGS)
             }
 
-        val extPkgs = installedPkgs.filter { isPackageAnExtension(it) }
+        val extPkgs = installedPkgs.filter {
+            it.packageName.loge("ExtensionLoader")
+            isPackageAnExtension(it) }
 
         if (extPkgs.isEmpty()) return emptyList()
 
         return extPkgs.map {
-            val res = arrayListOf<Extension.Available>()
             // 转换 Extension.Available
-            getAvailableExtension(pkgManager, it)
-        }.filterIsInstance<LoadResult.Success<Extension.Available>>()
-            .map {
-                it.extension
-            }.map { ext ->
-                // 加载 loadPkgName 中的扩展
-                if (loadPkgName.contains(ext.pkgName)) {
-                    loadExtension(context, ext)
-                } else {
-                    ext
-                }
-            }
+            innerLoadExtension(context,pkgManager, it.packageName)
+        }.filterIsInstance<Extension>()
     }
 
 
-    fun getExtension(
-        context: Context,
-        pkgName: String,
-    ): LoadResult<Extension.Available> {
 
-        return try {
+    fun innerLoadExtension(
+        context: Context, pkgManager: PackageManager, pkgName: String,
+    ): Extension? {
+        return kotlin.runCatching {
             val pkgManager = context.packageManager
             val pkgInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 pkgManager.getPackageInfo(
@@ -85,89 +76,30 @@ object ExtensionLoader {
             } else {
                 pkgManager.getPackageInfo(pkgName, PACKAGE_FLAGS)
             }
-            getAvailableExtension(pkgManager, pkgInfo)
-
-        } catch (e: Exception) {
-            e.printStackTrace()
-            LoadResult.Error(e, e.message.toString())
-        }
-
-    }
-
-    fun loadExtension(
-        context: Context, ext: Extension.Available
-    ): Extension {
-        return when (val res = innerLoadExtension(context, ext)) {
-            is LoadResult.Success -> {
-                res.extension
-            }
-
-            is LoadResult.Error -> {
-                Extension.InstallError(
-                    label = ext.label,
-                    pkgName = ext.pkgName,
-                    versionName = ext.versionName,
-                    versionCode = ext.versionCode,
-                    libVersion = ext.libVersion,
-                    readme = ext.readme,
-                    icon = ext.icon,
-                    exception = res.exception,
-                    errMsg = res.errMsg,
-                )
-                ext
-            }
-        }
-    }
-
-    private fun getAvailableExtension(
-        pkgManager: PackageManager,
-        packageInfo: PackageInfo,
-    ): LoadResult<Extension.Available> {
-        try {
-            val appInfo =
-                pkgManager.getApplicationInfo(packageInfo.packageName, PackageManager.GET_META_DATA)
-            val extName =
-                pkgManager.getApplicationLabel(appInfo).toString().substringAfter("EasyBangumi: ")
-            val versionName = packageInfo.versionName
-            val versionCode = PackageInfoCompat.getLongVersionCode(packageInfo)
-            // Validate lib version
-            val libVersion = appInfo.metaData.getLong(METADATA_SOURCE_LIB_VERSION)
-            val readme = appInfo.metaData.getString(METADATA_README)
-            return LoadResult.Success(Extension.Available(label = extName,
-                pkgName = packageInfo.packageName,
-                versionName = versionName,
-                versionCode = versionCode,
-                libVersion = libVersion,
-                readme = readme,
-                icon = kotlin.runCatching { pkgManager.getApplicationIcon(packageInfo.packageName) }
-                    .getOrNull()))
-        } catch (e: Exception) {
-            return LoadResult.Error(e, e.message.toString())
-        }
-
-    }
-
-    private fun innerLoadExtension(
-        context: Context, ext: Extension.Available
-    ): LoadResult<Extension.Installed> {
-        return kotlin.runCatching {
-            val pkgManager = context.packageManager
-            val pkgInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                pkgManager.getPackageInfo(
-                    ext.pkgName, PackageManager.PackageInfoFlags.of(PACKAGE_FLAGS.toLong())
-                )
-            } else {
-                pkgManager.getPackageInfo(ext.pkgName, PACKAGE_FLAGS)
-            }
-            val appInfo = pkgManager.getApplicationInfo(ext.pkgName, PackageManager.GET_META_DATA)
+            val appInfo = pkgManager.getApplicationInfo(pkgInfo.packageName, PackageManager.GET_META_DATA)
             val classLoader = PathClassLoader(appInfo.sourceDir, null, context.classLoader)
 
+            val extName =
+                pkgManager.getApplicationLabel(appInfo).toString().substringAfter("EasyBangumi: ")
+            val versionName = pkgInfo.versionName
+            val versionCode = PackageInfoCompat.getLongVersionCode(pkgInfo)
+            // Validate lib version
+            val libVersion = appInfo.metaData.getInt(METADATA_SOURCE_LIB_VERSION)
+            val readme = appInfo.metaData.getString(METADATA_README)
             // 库版本管理
-            if (ext.libVersion < LIB_VERSION_MIN || ext.libVersion > LIB_VERSION_MAX) {
-                "Lib version is ${ext.libVersion}, while only versions " + "${LIB_VERSION_MIN} to ${LIB_VERSION_MAX} are allowed".loge()
-                return LoadResult.Error(
+            if (libVersion < LIB_VERSION_MIN || libVersion > LIB_VERSION_MAX) {
+                "Lib version is ${libVersion}, while only versions " + "${LIB_VERSION_MIN} to ${LIB_VERSION_MAX} are allowed".loge("ExtensionLoader")
+                return Extension.InstallError(
+                    label = extName,
+                    pkgName = pkgInfo.packageName,
+                    versionName = versionName,
+                    versionCode = versionCode,
+                    libVersion = libVersion,
+                    readme = readme,
+                    icon = kotlin.runCatching { pkgManager.getApplicationIcon(pkgInfo.packageName) }
+                        .getOrNull(),
+                    errMsg = "插件版本过旧",
                     exception = null,
-                    errMsg = "Lib version is ${ext.libVersion}, while only versions " + "${LIB_VERSION_MIN} to ${LIB_VERSION_MAX} are allowed"
                 )
             }
 
@@ -186,9 +118,20 @@ object ExtensionLoader {
                         else -> throw Exception("Unknown source class type! ${obj.javaClass}")
                     }
                 } catch (e: Exception) {
-                    "Extension load error: ${ext.label}".loge()
+                    "Extension load error: ${extName}".loge("ExtensionLoader")
                     e.printStackTrace()
-                    return LoadResult.Error(e, "Extension load error")
+                    return Extension.InstallError(
+                        label = extName,
+                        pkgName = pkgInfo.packageName,
+                        versionName = versionName,
+                        versionCode = versionCode,
+                        libVersion = libVersion,
+                        readme = readme,
+                        icon = kotlin.runCatching { pkgManager.getApplicationIcon(pkgInfo.packageName) }
+                            .getOrNull(),
+                        errMsg = "加载异常",
+                        exception = e,
+                    )
                 }
             }.map {
                 // 动态代理，返回 key 前面加上 包名-
@@ -199,30 +142,29 @@ object ExtensionLoader {
                             proxy: Any?, method: Method?, args: Array<out Any>?
                         ): Any? {
                             if (method?.name == "getKey") {
-                                return pkgInfo.packageName + "-" + method.invoke(args)
+                                return pkgInfo.packageName + "-" + it.key
                             }
-                            return method?.invoke(args)
+                            return method?.invoke(it, *(args ?: arrayOfNulls<Any>(0)))
                         }
                     }) as Source
             }
 
-            return LoadResult.Success(
-                Extension.Installed(
-                    label = ext.label,
-                    pkgName = ext.pkgName,
-                    versionName = ext.versionName,
-                    versionCode = ext.versionCode,
-                    libVersion = ext.libVersion,
-                    readme = ext.readme,
-                    icon = ext.icon,
-                    sources = sources,
-                    resources = pkgManager.getResourcesForApplication(appInfo),
-                )
+            return Extension.Installed(
+                label = extName,
+                pkgName = pkgInfo.packageName,
+                versionName = versionName,
+                versionCode = versionCode,
+                libVersion = libVersion,
+                readme = readme,
+                icon = kotlin.runCatching { pkgManager.getApplicationIcon(pkgInfo.packageName) }
+                    .getOrNull(),
+                sources = sources,
+                resources = pkgManager.getResourcesForApplication(appInfo),
             )
 
         }.getOrElse {
             it.printStackTrace()
-            LoadResult.Error(exception = null, errMsg = it.message.toString())
+            null
         }
     }
 

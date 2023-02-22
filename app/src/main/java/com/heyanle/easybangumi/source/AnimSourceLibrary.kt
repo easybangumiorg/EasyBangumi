@@ -27,8 +27,18 @@ object AnimSourceLibrary {
 
     private val parserMap = MutableStateFlow(mapOf<String, ISourceParser>())
 
+    private const val DATA_VERSION = 1
+
+    init {
+        migrations()
+    }
+
+
     private var parserConfigJsonOkkv by okkv("parserConfigJsonOkkv", "[]")
+
     private var parserConfig = getOkkvConfig()
+
+
 
     fun getConfigs(): HashMap<String, SourceConfig> {
         val res = hashMapOf<String, SourceConfig>()
@@ -115,6 +125,13 @@ object AnimSourceLibrary {
 
     private fun saveOkkv() {
         parserConfigJsonOkkv = Gson().toJson(parserConfig.values)
+    }
+
+    /**
+     * 数据版本升级迁移埋点
+     */
+    private fun migrations() {
+
     }
 
 }
