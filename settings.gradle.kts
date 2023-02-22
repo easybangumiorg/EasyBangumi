@@ -20,10 +20,10 @@ dependencyResolutionManagement {
 rootProject.name = "EasyBangumi"
 include(":app")
 include(":easy-crasher")
-include(":source-core")
+include(":source-utils")
 include(":source-api")
 include(":easy-dlna")
 include(":easy-i18n")
 include(":extension:extension-api")
-include(":extension:extension-load")
+include(":extension:extension-core")
 include(":extension:extension-inner")

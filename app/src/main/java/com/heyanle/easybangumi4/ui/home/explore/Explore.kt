@@ -1,6 +1,8 @@
 package com.heyanle.easybangumi4.ui.home.explore
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -38,7 +40,6 @@ sealed class ExplorePage(
     val tabLabel: @Composable (() -> Unit),
     val topAppBar: @Composable (() -> Unit),
     val content: @Composable (() -> Unit),
-    val viewModelStore: ViewModelStore = ViewModelStore()
 ) {
 
     object SourcePage : ExplorePage(
@@ -88,16 +89,17 @@ fun Explore() {
     }
     Scaffold(
         topBar = {
-            val page = ExplorePageItems[pagerState.currentPage]
-            CompositionLocalProvider(
-                LocalViewModelStoreOwner provides vm.getViewModelStoreOwner(page)
-            ) {
-                page.topAppBar()
+            Crossfade(targetState = ExplorePageItems[pagerState.currentPage]) {
+                CompositionLocalProvider(
+                    LocalViewModelStoreOwner provides vm.getViewModelStoreOwner(it)
+                ) {
+                    it.topAppBar()
+                }
             }
         },
         content = { padding ->
             Column(
-                modifier = Modifier.padding(padding)
+                modifier = Modifier.fillMaxSize().padding(padding)
             ) {
                 TabRow(selectedTabIndex = pagerState.currentPage) {
                     ExplorePageItems.forEachIndexed { index, explorePage ->

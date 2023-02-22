@@ -4,15 +4,10 @@ import android.app.Application
 import android.os.Build
 import android.os.Looper
 import android.util.Log
-import android.widget.Toast
 import com.heyanle.easy_crasher.CrashHandler
 import com.heyanle.easybangumi.BuildConfig
-import com.heyanle.easybangumi.db.EasyDB
-import com.heyanle.easybangumi.source.AnimSourceLibrary
-import com.heyanle.easybangumi.source.utils.initUtils
 import com.heyanle.easybangumi.utils.exo_ssl.CropUtil
 import com.heyanle.easybangumi.utils.exo_ssl.TrustAllHostnameVerifier
-import com.heyanle.lib_anim.InnerLoader
 import com.heyanle.lib_anim.utils.WebViewUtil
 import com.heyanle.okkv2.MMKVStore
 import com.heyanle.okkv2.core.Okkv

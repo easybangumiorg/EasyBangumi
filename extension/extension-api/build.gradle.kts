@@ -57,5 +57,5 @@ dependencies {
     api(okhttp3)
     api(jsoup)
     api(project(":source-api"))
-    api(project(":source-core"))
+    api(project(":source-utils"))
 }
