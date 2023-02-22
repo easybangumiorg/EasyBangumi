@@ -59,4 +59,12 @@
 
     </application>
 
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.ANSWER" />
+            <data android:host="com.heyanle.easybangumi"
+                android:scheme="source"/>
+        </intent>
+    </queries>
+
 </manifest>

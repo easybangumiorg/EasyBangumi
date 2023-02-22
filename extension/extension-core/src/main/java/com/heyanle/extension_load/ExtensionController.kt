@@ -24,9 +24,9 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 object ExtensionController {
 
-    init {
-        iconFactory = IconFactoryImpl()
-    }
+//    init {
+//        iconFactory = IconFactoryImpl()
+//    }
 
     sealed class ExtensionState {
 
@@ -51,7 +51,7 @@ object ExtensionController {
     private val loadScope = MainScope()
     private var lastJob: Job? = null
 
-    fun init(context: Context, loadPkgName: List<String>) {
+    fun init(context: Context) {
         if (receiverInit.compareAndSet(false, true)) {
             ExtensionInstallReceiver(ReceiverListener()).register(context)
         }
@@ -59,30 +59,12 @@ object ExtensionController {
         lastJob = loadScope.launch() {
             _installedExtensionsFlow.emit(ExtensionState.Loading)
             val extensions = withContext(Dispatchers.IO) {
-                ExtensionLoader.getAllExtension(context, loadPkgName)
+                ExtensionLoader.getAllExtension(context)
             }
             _installedExtensionsFlow.emit(ExtensionState.Extensions(extensions))
         }
 
 
-    }
-
-    fun load(context: Context, extension: Extension.Available) {
-        loadScope.launch {
-            val lastState =
-                (_installedExtensionsFlow.value as? ExtensionState.Extensions) ?: return@launch
-            if (loadingExtensionLabel.compareAndSet(null, extension.label)) {
-                // cas 成功才加载
-                val oldList = lastState.extensions.toMutableList()
-                oldList.remove(extension)
-                oldList.add(ExtensionLoader.loadExtension(context, extension))
-                _installedExtensionsFlow.emit(ExtensionState.Extensions(oldList))
-                loadingExtensionLabel.emit(null)
-            } else {
-                // 有扩展正在加载，什么都不做
-                return@launch
-            }
-        }
     }
 
     class ReceiverListener : ExtensionInstallReceiver.Listener {
@@ -94,12 +76,10 @@ object ExtensionController {
                             if (it is ExtensionState.Extensions) {
                                 val oldList = it.extensions.toMutableList()
                                 _installedExtensionsFlow.emit(ExtensionState.Loading)
-                                (ExtensionLoader.getExtension(
-                                    context,
-                                    pkgName
-                                ) as? LoadResult.Success)?.let {
-                                    oldList.add(it.extension)
-                                }
+                                ExtensionLoader.innerLoadExtension(context, context.packageManager, pkgName)
+                                    ?.let {
+                                        oldList.add(it)
+                                    }
                                 _installedExtensionsFlow.emit(ExtensionState.Extensions(oldList))
                                 cancel()
                             }
@@ -114,12 +94,10 @@ object ExtensionController {
                     if (lastState is ExtensionState.Extensions) {
                         val oldList = lastState.extensions.toMutableList()
                         _installedExtensionsFlow.emit(ExtensionState.Loading)
-                        (ExtensionLoader.getExtension(
-                            context,
-                            pkgName
-                        ) as? LoadResult.Success)?.let {
-                            oldList.add(it.extension)
-                        }
+                        ExtensionLoader.innerLoadExtension(context, context.packageManager, pkgName)
+                            ?.let {
+                                oldList.add(it)
+                            }
                         _installedExtensionsFlow.emit(ExtensionState.Extensions(oldList))
                     }
                 }
@@ -129,18 +107,20 @@ object ExtensionController {
 
         override fun onExtensionUpdated(context: Context, pkgName: String) {
             loadScope.launch {
+
                 if (loadingExtensionLabel.value != null) {
                     val job = loadScope.launch {
                         installedExtensionsFlow.collectLatest {
                             if (it is ExtensionState.Extensions) {
                                 val oldList = it.extensions.toMutableList()
                                 _installedExtensionsFlow.emit(ExtensionState.Loading)
-                                (ExtensionLoader.getExtension(
-                                    context,
-                                    pkgName
-                                ) as? LoadResult.Success)?.let {
-                                    oldList.add(it.extension)
+                                oldList.find { it.pkgName == pkgName }?.let {
+                                    oldList.remove(it)
                                 }
+                                ExtensionLoader.innerLoadExtension(context, context.packageManager, pkgName)
+                                    ?.let {
+                                        oldList.add(it)
+                                    }
                                 _installedExtensionsFlow.emit(ExtensionState.Extensions(oldList))
                                 cancel()
                             }
@@ -158,15 +138,14 @@ object ExtensionController {
                         oldList.find { it.pkgName == pkgName }?.let {
                             oldList.remove(it)
                         }
-                        (ExtensionLoader.getExtension(
-                            context,
-                            pkgName
-                        ) as? LoadResult.Success)?.let {
-                            oldList.add(it.extension)
-                        }
+                        ExtensionLoader.innerLoadExtension(context, context.packageManager, pkgName)
+                            ?.let {
+                                oldList.add(it)
+                            }
                         _installedExtensionsFlow.emit(ExtensionState.Extensions(oldList))
                     }
                 }
+
             }
         }
 
@@ -179,14 +158,10 @@ object ExtensionController {
                                 if (it is ExtensionState.Extensions) {
                                     val oldList = it.extensions.toMutableList()
                                     _installedExtensionsFlow.emit(ExtensionState.Loading)
-                                    (ExtensionLoader.getExtension(
-                                        context,
-                                        pkgName
-                                    ) as? LoadResult.Success)?.let {
-                                        oldList.add(it.extension)
+                                    oldList.find { it.pkgName == pkgName }?.let {
+                                        oldList.remove(it)
                                     }
                                     _installedExtensionsFlow.emit(ExtensionState.Extensions(oldList))
-                                    cancel()
                                 }
                             }
 
