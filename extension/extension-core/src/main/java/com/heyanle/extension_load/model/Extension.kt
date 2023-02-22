@@ -15,26 +15,16 @@ sealed class Extension {
     abstract val pkgName: String
     abstract val versionName: String
     abstract val versionCode: Long
-    abstract val libVersion: Long
+    abstract val libVersion: Int
     abstract val readme: String?
     abstract val icon: Drawable?
-
-    data class Available(
-        override val label: String,
-        override val pkgName: String,
-        override val versionName: String,
-        override val versionCode: Long,
-        override val libVersion: Long,
-        override val readme: String?,
-        override val icon: Drawable?,
-    ): Extension()
 
     data class Installed(
         override val label: String,
         override val pkgName: String,
         override val versionName: String,
         override val versionCode: Long,
-        override val libVersion: Long,
+        override val libVersion: Int,
         override val readme: String?,
         override val icon: Drawable?,
         val sources: List<Source>,
@@ -46,7 +36,7 @@ sealed class Extension {
         override val pkgName: String,
         override val versionName: String,
         override val versionCode: Long,
-        override val libVersion: Long,
+        override val libVersion: Int,
         override val readme: String?,
         override val icon: Drawable?,
         val exception: Exception?,

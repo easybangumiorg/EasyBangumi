@@ -77,7 +77,7 @@ fun EasyTheme(
 
         MaterialTheme(
             colorScheme = colorScheme,
-            typography = com.heyanle.easybangumi.theme.Typography,
+            typography = Typography,
             content = content
         )
     }

@@ -147,5 +147,8 @@
     <string name="extension">扩展</string>
     <string name="source">番源</string>
 
+    <string name="open">开启</string>
+    <string name="close">关闭</string>
+
 
 </resources>

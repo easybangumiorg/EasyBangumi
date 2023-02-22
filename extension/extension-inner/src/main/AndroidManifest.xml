@@ -26,6 +26,16 @@
             android:name="easybangumi.extension.source"
             android:value=".EasySourceFactory"/>
 
+        <activity android:name="com.heyanle.extension_api.NoneActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.ANSWER" />
+                <data android:host="com.heyanle.easybangumi"
+                    android:scheme="source"/>
+            </intent-filter>
+
+        </activity>
+
     </application>
 
     <queries>

@@ -8,11 +8,11 @@ plugins {
 }
 
 android {
-    namespace = "com.heyanle.extension_inner"
+    namespace = "com.heyanle.easybangumi.extension_inner"
     compileSdk = Android.compileSdk
 
     defaultConfig {
-        applicationId = "com.heyanle.extension_inner"
+        applicationId = "com.heyanle.easybangumi.extension_inner"
         minSdk = Android.minSdk
         targetSdk = Android.targetSdk
         versionCode = 1
