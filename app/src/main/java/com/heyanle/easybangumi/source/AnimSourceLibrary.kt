@@ -23,9 +23,7 @@ object AnimSourceLibrary {
         val key: String,
         val enable: Boolean,
         val order: Int,
-    ) {
-
-    }
+    )
 
     private val parserMap = MutableStateFlow(mapOf<String, ISourceParser>())
 

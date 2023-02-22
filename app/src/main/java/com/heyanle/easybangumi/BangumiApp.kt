@@ -7,25 +7,18 @@ import android.util.Log
 import android.widget.Toast
 import com.heyanle.easy_crasher.CrashHandler
 import com.heyanle.easybangumi.db.EasyDB
-import com.heyanle.easybangumi.source.AnimSourceFactory
 import com.heyanle.easybangumi.source.AnimSourceLibrary
 import com.heyanle.easybangumi.source.utils.initUtils
 import com.heyanle.easybangumi.utils.exo_ssl.CropUtil
 import com.heyanle.easybangumi.utils.exo_ssl.TrustAllHostnameVerifier
-import com.heyanle.lib_anim.InnerLoader
+import com.heyanle.lib_anim.old.InnerLoader
 import com.heyanle.lib_anim.utils.WebViewUtil
-import com.heyanle.lib_anim.utils.fileHelper
-import com.heyanle.lib_anim.utils.getUri
 import com.heyanle.okkv2.MMKVStore
 import com.heyanle.okkv2.core.Okkv
 import com.microsoft.appcenter.AppCenter
 import com.microsoft.appcenter.analytics.Analytics
 import com.microsoft.appcenter.crashes.Crashes
 import com.microsoft.appcenter.distribute.Distribute
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import javax.net.ssl.HttpsURLConnection
 
 /**
