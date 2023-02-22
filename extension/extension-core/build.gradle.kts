@@ -1,26 +1,17 @@
-import com.heyanle.buildsrc.*
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import com.heyanle.buildsrc.androidXBasic
 
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
-    id("maven-publish")
 }
 
 android {
-    namespace = "com.heyanle.core"
-    compileSdk = Android.compileSdk
-    publishing {
-        singleVariant("release") {
-            withSourcesJar()
-        }
-    }
+    namespace = "com.heyanle.extension_load"
+    compileSdk = com.heyanle.buildsrc.Android.compileSdk
 
     defaultConfig {
-        minSdk = Android.minSdk
-        targetSdk = Android.targetSdk
-
-        consumerProguardFiles("consumer-rules.pro")
+        minSdk = com.heyanle.buildsrc.Android.minSdk
+        targetSdk = com.heyanle.buildsrc.Android.targetSdk
     }
 
     buildTypes {
@@ -41,11 +32,9 @@ android {
     }
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
-}
-
-
-
 dependencies {
+    androidXBasic()
+    implementation(project(":extension:extension-api"))
+    implementation(project(":source-api"))
+    implementation(project(":source-utils"))
 }
