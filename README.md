@@ -1,7 +1,14 @@
 # 纯纯看番
 
-<img src="./app_logo.png" width="30%" />
-使用 Compose 开发的 看番 Android 应用
+![纯纯看番](./EasyBangumi.png)  
+
+<p align="center">
+  <img alt="release" src="https://img.shields.io/github/v/release/heyanLE/EasyBangumi" />
+  <img alt="license" src="https://img.shields.io/github/license/heyanLE/EasyBangumi" />
+  <img alt="downloads" src="https://img.shields.io/github/downloads/heyanLE/EasyBangumi/total" />
+  <img alt="issues" src="https://img.shields.io/github/issues/heyanLE/EasyBangumi" />
+</p>
+
 
 
 # 下载
