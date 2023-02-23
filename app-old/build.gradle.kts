@@ -8,11 +8,11 @@ plugins {
 }
 
 android {
-    namespace = "com.heyanle.easybangumi4"
+    namespace = "com.heyanle.easybangumi"
     compileSdk = Android.compileSdk
 
     defaultConfig {
-        applicationId = "com.heyanle.easybangumi4"
+        applicationId = "com.heyanle.easybangumi"
         minSdk = Android.minSdk
         targetSdk = Android.targetSdk
         versionCode = Android.versionCode
@@ -35,7 +35,6 @@ android {
             "\"${Config.getPrivateValue(Config.APP_CENTER_SECRET)}\""
         )
     }
-
 
     packagingOptions {
         resources.excludes.add("META-INF/beans.xml")
@@ -68,7 +67,6 @@ android {
     }
 
 }
-
 
 
 dependencies {

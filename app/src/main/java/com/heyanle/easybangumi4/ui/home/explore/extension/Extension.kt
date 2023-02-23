@@ -22,8 +22,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.heyanle.easybangumi.R
-import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.ui.common.ExtensionContainer
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.extension_load.ExtensionController

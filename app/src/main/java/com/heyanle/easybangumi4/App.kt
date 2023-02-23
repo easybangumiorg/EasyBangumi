@@ -5,13 +5,12 @@ import android.os.Build
 import android.os.Looper
 import android.util.Log
 import com.heyanle.easy_crasher.CrashHandler
-import com.heyanle.easybangumi.BuildConfig
 import com.heyanle.easybangumi4.source.ExtensionSource
-import com.heyanle.easybangumi.utils.exo_ssl.CropUtil
-import com.heyanle.easybangumi.utils.exo_ssl.TrustAllHostnameVerifier
 import com.heyanle.extension_load.ExtensionInit
 import com.heyanle.extension_load.IconFactoryImpl
 import com.heyanle.lib_anim.utils.WebViewUtil
+import com.heyanle.easybangumi4.utils.exo_ssl.CropUtil
+import com.heyanle.easybangumi4.utils.exo_ssl.TrustAllHostnameVerifier
 import com.heyanle.okkv2.MMKVStore
 import com.heyanle.okkv2.core.Okkv
 import com.microsoft.appcenter.AppCenter
