@@ -1,8 +1,8 @@
 package com.heyanle.easybangumi.source.utils
 
 import android.content.Context
-import com.heyanle.easybangumi.BangumiApp
 import com.heyanle.easybangumi.BuildConfig
+import com.heyanle.easybangumi.BangumiApp
 import com.heyanle.lib_anim.utils.AppHelper
 import com.heyanle.lib_anim.utils.FileHelper
 import com.heyanle.lib_anim.utils.fileHelper
