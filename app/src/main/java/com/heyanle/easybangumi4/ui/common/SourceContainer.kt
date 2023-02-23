@@ -11,9 +11,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.heyanle.bangumi_source_api.api2.SourceFactory
 import com.heyanle.easy_i18n.R
-import com.heyanle.easybangumi.source.AnimSourceFactory
-import com.heyanle.easybangumi.source.AnimSources
-import com.heyanle.easybangumi.ui.common.EmptyPage
 import com.heyanle.easybangumi4.source.SourceBundle
 import com.heyanle.easybangumi4.source.SourceMaster
 

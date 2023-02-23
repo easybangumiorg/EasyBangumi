@@ -27,8 +27,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
-import com.heyanle.easybangumi.ui.home.animInitialPage
-import com.heyanle.easybangumi4.ui.home.HomePage
 import com.heyanle.easybangumi4.ui.home.explore.extension.Extension
 import com.heyanle.easybangumi4.ui.home.explore.extension.ExtensionTopAppBar
 import com.heyanle.easybangumi4.ui.home.explore.source.Source
