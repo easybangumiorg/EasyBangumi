@@ -7,7 +7,6 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.mutableStateOf
-import com.heyanle.easybangumi.theme.EasyThemeState
 import com.heyanle.okkv2.core.okkv
 
 /**

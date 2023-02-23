@@ -10,8 +10,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.heyanle.easy_i18n.R
-import com.heyanle.easybangumi.ui.common.EmptyPage
-import com.heyanle.easybangumi.ui.common.LoadingPage
 import com.heyanle.extension_load.ExtensionController
 import com.heyanle.extension_load.model.Extension
 
