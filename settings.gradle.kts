@@ -15,8 +15,10 @@ dependencyResolutionManagement {
         }
         maven { url = uri("https://jitpack.io") }
         mavenCentral()
+        maven { url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/") }
     }
 }
+
 rootProject.name = "EasyBangumi"
 include(":app")
 include(":app-old")
