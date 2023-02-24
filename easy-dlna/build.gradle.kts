@@ -10,13 +10,12 @@ plugins {
 
 android {
     namespace = "com.heyanle.easy_dlna"
-    compileSdk = 33
+    compileSdk = com.heyanle.buildsrc.Android.compileSdk
 
     defaultConfig {
-        minSdk = 21
-        targetSdk = 33
+        minSdk = com.heyanle.buildsrc.Android.minSdk
+        targetSdk = com.heyanle.buildsrc.Android.targetSdk
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
 
@@ -39,8 +38,16 @@ android {
 }
 
 dependencies {
-    junit()
     cling()
-    jetty()
-    servlet()
+    //jetty()
+    //servlet()
+    implementation(files("libs/javax.servlet-3.0.0.v201103241009.jar"))
+    implementation(files("libs/jetty-client-8.1.9.v20130131.jar"))
+    implementation(files("libs/jetty-continuation-8.1.9.v20130131.jar"))
+    implementation(files("libs/jetty-http-8.1.9.v20130131.jar"))
+    implementation(files("libs/jetty-io-8.1.9.v20130131.jar"))
+    implementation(files("libs/jetty-security-8.1.9.v20130131.jar"))
+    implementation(files("libs/jetty-server-8.1.9.v20130131.jar"))
+    implementation(files("libs/jetty-servlet-8.1.9.v20130131.jar"))
+    implementation(files("libs/jetty-util-8.1.9.v20130131.jar"))
 }
