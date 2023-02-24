@@ -37,16 +37,16 @@ jobs:
         
     # 给 gradlew 文件授权
     - name: Grant execute permission for gradlew
-      run: chmod +x ./gradlew
+      run: chmod +x gradlew
       
     - name: Build with Gradle
-      uses: gradle/gradle-command-action@v2
+      uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
       with:
         arguments: build
         
     # 发布项目
     - name: Publish
-      uses: gradle/gradle-command-action@v2
+      uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
       with:
         arguments: publish
       env:
