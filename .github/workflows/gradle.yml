@@ -16,7 +16,7 @@ on:
 jobs:
   build:
 
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
@@ -38,6 +38,9 @@ jobs:
     # 给 gradlew 文件授权
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
+
+    - name: Grant execute permission for usr/bin
+      run: chmod +x /usr/bin/
       
     - name: Build with Gradle
       run: ./gradlew build
