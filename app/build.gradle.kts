@@ -8,11 +8,11 @@ plugins {
 }
 
 android {
-    namespace = "com.heyanle.easybangumi"
+    namespace = "com.heyanle.easybangumi4"
     compileSdk = Android.compileSdk
 
     defaultConfig {
-        applicationId = "com.heyanle.easybangumi"
+        applicationId = "com.heyanle.easybangumi4"
         minSdk = Android.minSdk
         targetSdk = Android.targetSdk
         versionCode = Android.versionCode
@@ -35,6 +35,7 @@ android {
             "\"${Config.getPrivateValue(Config.APP_CENTER_SECRET)}\""
         )
     }
+
 
     packagingOptions {
         resources.excludes.add("META-INF/beans.xml")
@@ -69,9 +70,11 @@ android {
 }
 
 
+
 dependencies {
     glide()
     okkv2()
+    okkv2Compose()
     okhttp3()
     androidXBasic()
     leakcanary()
@@ -97,8 +100,10 @@ dependencies {
     commonsText()
     cling()
     implementation(project(":easy-crasher"))
-    implementation(project(":source-core"))
+    implementation(project(":source-utils"))
     implementation(project(":source-api"))
     implementation(project(":easy-dlna"))
     implementation(project(":easy-i18n"))
+    implementation(project(":extension:extension-api"))
+    implementation(project(":extension:extension-core"))
 }
