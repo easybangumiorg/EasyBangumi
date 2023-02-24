@@ -57,7 +57,7 @@ object Version {
 
     const val cling = "2.1.2"
 
-    const val jetty = "8.1.12.v20130726"
+    const val jetty = "9.0.7.v20131107"
 
     const val servlet = "4.0.1"
 }

@@ -8,6 +8,11 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
+        mavenLocal() {
+            content {
+                includeModule("org.eclipse.jetty.orbit", "javax.servlet");
+            }
+        }
         google()
         maven {
             url = uri("http://4thline.org/m2")
