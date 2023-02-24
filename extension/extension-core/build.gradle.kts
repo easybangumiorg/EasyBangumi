@@ -36,4 +36,6 @@ android {
 dependencies {
     androidXBasic()
     implementation(SourceExtension.extensionApi)
+    implementation(SourceExtension.sourceApi)
+    implementation(SourceExtension.sourceUtils)
 }
