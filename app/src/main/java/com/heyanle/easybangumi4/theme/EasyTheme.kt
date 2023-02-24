@@ -1,5 +1,6 @@
 package com.heyanle.easybangumi4.theme
 
+import android.os.Build
 import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -50,9 +51,9 @@ fun EasyTheme(
         }
 
         val colorScheme = when {
-            isDynamic -> {
+            isDynamic && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
                 val context = LocalContext.current
-                if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+                if (isDark ) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
 
             }
 
