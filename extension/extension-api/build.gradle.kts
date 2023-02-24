@@ -1,8 +1,6 @@
 import com.heyanle.buildsrc.Android
 import com.heyanle.buildsrc.*
-import org.jetbrains.kotlin.gradle.utils.loadPropertyFromResources
 import org.jetbrains.kotlin.konan.properties.Properties
-import org.jetbrains.kotlin.load.kotlin.signatures
 
 plugins {
     id("com.android.library")
@@ -46,7 +44,7 @@ android {
 
 val publishingProps = Properties()
 runCatching {
-    publishingProps.load(project.rootProject.file("extension/extension-api/publishing/publishing.properties").inputStream())
+    publishingProps.load(project.rootProject.file("publishing/publishing.properties").inputStream())
 }.onFailure {
     it.printStackTrace()
 }
@@ -57,13 +55,13 @@ afterEvaluate {
         publications {
             create("maven_public", MavenPublication::class) {
                 groupId = "io.github.easybangumiorg"
-                artifactId = "extension-api"
-                version = Extension.LIB_VERSION_NAME + "-SNAPSHOT"
+                artifactId = "source-api"
+                version = SourceExtension.LIB_VERSION
                 from(components.getByName("release"))
 
                 pom {
                     name.set("EasyBangumi extension api")
-                    description.set("ExtensionApi for EasyBangumi")
+                    description.set("extensionAPI for EasyBangumi")
                     url.set("https://github.com/easybangumiorg/EasyBangumi.git")
 
                     licenses {
@@ -92,11 +90,12 @@ afterEvaluate {
         repositories {
             maven {
                 // change to point to your repo
+                val releaseRepo = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
                 val snapshotRepo = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
                 url = uri(snapshotRepo)
                 credentials {
-                    username = publishingProps.getProperty("credencial.username", "")
-                    password = publishingProps.getProperty("credencial.password", "")
+                    username = publishingProps.getProperty("credencial.username", System.getenv("OSSRH_USERNAME"))
+                    password = publishingProps.getProperty("credencial.password", System.getenv("OSSRH_PASSWORD"))
                 }
             }
             maven {
@@ -106,19 +105,27 @@ afterEvaluate {
         }
 
     }
-    val keyId = publishingProps.getProperty("signing.keyId", "")
-    val password = publishingProps.getProperty("signing.password", "")
+    val keyId = publishingProps.getProperty("signing.keyId", System.getenv("SIGNING_KEY_ID"))
+    val password = publishingProps.getProperty("signing.password", System.getenv("SIGNING_PASSWORD"))
     val secretKeyRingFile = publishingProps.getProperty("signing.secretKeyRingFile", "")
 
     //project.loadPropertyFromResources()
-    if (keyId?.isNotEmpty() == true && password?.isNotEmpty() == true && secretKeyRingFile?.isNotEmpty() == true){
+    if (keyId?.isNotEmpty() == true && password?.isNotEmpty() == true){
 //        (project.properties as MutableMap<String, Any>).apply {
 //            put("signing.keyId", keyId)
 //            put("signing.password", password)
 //            put("signing.secretKeyRingFile", secretKeyRingFile)
 //        }
 
-        val s = file(secretKeyRingFile).readText()
+        val s = runCatching {
+            if(secretKeyRingFile.isNotEmpty()){
+                project.rootProject.file("publishing/"+secretKeyRingFile).readText()
+            }else{
+                throw IllegalAccessException()
+            }
+        }.getOrElse {
+            System.getenv("SIGNING_SECRET_KEY")
+        }
         //println(s)
         signing {
             useInMemoryPgpKeys(s, password)
@@ -131,6 +138,6 @@ afterEvaluate {
 dependencies {
     api(okhttp3)
     api(jsoup)
-    api(project(":source-api"))
-    api(project(":source-utils"))
+    api(SourceExtension.sourceApi)
+    api(SourceExtension.sourceUtils)
 }

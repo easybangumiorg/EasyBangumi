@@ -1,3 +1,4 @@
+import com.heyanle.buildsrc.SourceExtension
 import com.heyanle.buildsrc.androidXBasic
 
 plugins {
@@ -34,7 +35,5 @@ android {
 
 dependencies {
     androidXBasic()
-    implementation(project(":extension:extension-api"))
-    implementation(project(":source-api"))
-    implementation(project(":source-utils"))
+    implementation(SourceExtension.extensionApi)
 }
