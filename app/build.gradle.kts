@@ -100,10 +100,10 @@ dependencies {
     commonsText()
     cling()
     implementation(project(":easy-crasher"))
-    implementation(project(":source-utils"))
-    implementation(project(":source-api"))
     implementation(project(":easy-dlna"))
     implementation(project(":easy-i18n"))
-    implementation(project(":extension:extension-api"))
+    implementation(SourceExtension.sourceApi)
+    implementation(SourceExtension.sourceUtils)
+    implementation(SourceExtension.extensionApi)
     implementation(project(":extension:extension-core"))
 }
