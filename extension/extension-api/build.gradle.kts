@@ -55,7 +55,7 @@ afterEvaluate {
         publications {
             create("maven_public", MavenPublication::class) {
                 groupId = "io.github.easybangumiorg"
-                artifactId = "source-api"
+                artifactId = "extension-api"
                 version = SourceExtension.LIB_VERSION
                 from(components.getByName("release"))
 
