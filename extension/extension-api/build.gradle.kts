@@ -46,7 +46,7 @@ val publishingProps = Properties()
 runCatching {
     publishingProps.load(project.rootProject.file("publishing/publishing.properties").inputStream())
 }.onFailure {
-    it.printStackTrace()
+    //it.printStackTrace()
 }
 
 
@@ -136,6 +136,7 @@ afterEvaluate {
 
 
 dependencies {
+    api(kotlinx_coroutines)
     api(okhttp3)
     api(jsoup)
     api(SourceExtension.sourceApi)

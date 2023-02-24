@@ -42,7 +42,7 @@ val publishingProps = Properties()
 runCatching {
     publishingProps.load(project.rootProject.file("publishing/publishing.properties").inputStream())
 }.onFailure {
-    it.printStackTrace()
+    //it.printStackTrace()
 }
 
 
