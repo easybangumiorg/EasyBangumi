@@ -38,7 +38,6 @@ object ExtensionLoader {
 
     /**
      * 获取扩展列表
-     * @param loadPkgName 需要直接加载的扩展包名列表
      */
     fun getAllExtension(context: Context): List<Extension> {
         val pkgManager = context.packageManager
@@ -57,7 +56,7 @@ object ExtensionLoader {
         if (extPkgs.isEmpty()) return emptyList()
 
         return extPkgs.map {
-            // 转换 Extension.Available
+            // 加载
             innerLoadExtension(context,pkgManager, it.packageName)
         }.filterIsInstance<Extension>()
     }
@@ -68,7 +67,6 @@ object ExtensionLoader {
         context: Context, pkgManager: PackageManager, pkgName: String,
     ): Extension? {
         return kotlin.runCatching {
-            val pkgManager = context.packageManager
             val pkgInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 pkgManager.getPackageInfo(
                     pkgName, PackageManager.PackageInfoFlags.of(PACKAGE_FLAGS.toLong())
