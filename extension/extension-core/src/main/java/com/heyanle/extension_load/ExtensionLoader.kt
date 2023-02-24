@@ -3,14 +3,11 @@ package com.heyanle.extension_load
 import android.content.Context
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
-import android.content.res.AssetManager
 import android.os.Build
-import android.util.Log
 import androidx.core.content.pm.PackageInfoCompat
 import com.heyanle.bangumi_source_api.api2.Source
 import com.heyanle.bangumi_source_api.api2.SourceFactory
 import com.heyanle.extension_load.model.Extension
-import com.heyanle.extension_load.model.LoadResult
 import com.heyanle.extension_load.utils.loge
 import dalvik.system.PathClassLoader
 import java.lang.reflect.InvocationHandler
