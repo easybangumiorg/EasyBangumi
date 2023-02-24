@@ -49,8 +49,8 @@ jobs:
         OSSRH_PASSWORD: ${{secrets.OSSRH_PASSWORD}}
         OSSRH_USERNAME: ${{secrets.OSSRH_USERNAME}}
         SIGNING_KEY_ID: ${{secrets.SIGNING_KEY_ID}}
-        SIGNING_PASSWORD: ${{secrets.SIGNING_KEY_ID}}
-        SIGNING_SECRET_KEY: ${{secrets.SIGNING_KEY_ID}}
+        SIGNING_PASSWORD: ${{secrets.SIGNING_PASSWORD}}
+        SIGNING_SECRET_KEY: ${{secrets.SIGNING_SECRET_KEY}}
         
         
         
