@@ -98,6 +98,8 @@ dependencies {
     jsoup()
     androidXWebkit()
     commonsText()
+    cling()
+    implementation(project(":easy-dlna"))
     implementation(project(":easy-crasher"))
     implementation(project(":easy-i18n"))
     implementation(SourceExtension.sourceApi)
