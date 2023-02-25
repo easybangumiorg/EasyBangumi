@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -57,6 +58,7 @@ fun Extension (){
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExtensionItem (
     extension: Extension,
@@ -64,48 +66,45 @@ fun ExtensionItem (
     onAction: (Extension)->Unit,
 ){
 
-    Row(modifier = Modifier.fillMaxWidth().clickable {
-        onClick(extension)
-    }.padding(20.dp)) {
-        OkImage(
-            modifier = Modifier.size(40.dp),
-            image = extension.icon,
-            contentDescription = extension.label
-        )
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 12.dp, vertical = 4.dp),
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = extension.label,
-                style = MaterialTheme.typography.labelMedium
-            )
+    ListItem(
+        modifier = Modifier.clickable {
+            onClick(extension)
+        },
+        headlineText = {
+            Text(text = extension.label)
+        },
+        supportingText = {
             Text(
                 text = extension.versionName,
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.outline
+            )
+        },
+        trailingContent = {
+            when(extension){
+                is Extension.Installed -> {
+                    TextButton(onClick = {
+                        onAction(extension)
+                    }) {
+                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.setting))
+                    }
+                }
+                is Extension.InstallError -> {
+                    TextButton(
+                        enabled = false,
+                        onClick = {
+
+                        }) {
+                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.loading_error))
+                    }
+                }
+            }
+        },
+        leadingContent = {
+            OkImage(
+                modifier = Modifier.size(40.dp),
+                image = extension.icon,
+                contentDescription = extension.label
             )
         }
-        when(extension){
-            is Extension.Installed -> {
-                TextButton(onClick = {
-                    onAction(extension)
-                }) {
-                    Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.setting))
-                }
-            }
-            is Extension.InstallError -> {
-                TextButton(
-                    enabled = false,
-                    onClick = {
+    )
 
-                }) {
-                    Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.loading_error))
-                }
-            }
-        }
-
-    }
 }
