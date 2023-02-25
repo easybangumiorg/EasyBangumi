@@ -3,6 +3,7 @@ package com.heyanle.bangumi_source_api.api2
 import com.heyanle.bangumi_source_api.api2.component.Component
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * Created by HeYanLe on 2023/2/18 21:38.
@@ -53,9 +54,12 @@ interface Source {
 
 }
 
-suspend fun <T> withResult(context: CoroutineContext,block: suspend () -> T): Source.SourceResult<T> {
+suspend fun <T> withResult(
+    context: CoroutineContext = EmptyCoroutineContext,
+    block: suspend () -> T
+): Source.SourceResult<T> {
     return try {
-        withContext(context){
+        withContext(context) {
             Source.SourceResult.Complete(block())
         }
     } catch (e: ParserException) {

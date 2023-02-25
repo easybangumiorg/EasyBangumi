@@ -6,8 +6,8 @@ import android.graphics.drawable.Drawable
  * Created by HeYanLe on 2023/2/22 20:12.
  * https://github.com/heyanLE
  */
-interface IconSource: Source {
+interface IconSource : Source {
 
-    fun getIconFactory(): ()->(Drawable?)
+    fun getIconFactory(): () -> (Drawable?)
 
 }

@@ -16,12 +16,10 @@ class ListPageGroup(
 ) : CartoonPage
 
 
-
-
 fun ComponentBuilderScope.listPageGroup(
     label: String,
     listPage: suspend () -> Source.SourceResult<List<ListPage>>,
-){
+) {
     this.components.add(ListPageGroup(label, source, false, listPage))
 }
 

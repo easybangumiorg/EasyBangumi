@@ -15,7 +15,7 @@ interface Component {
 
 class ComponentBuilderScope(
     val source: Source,
-){
+) {
     val components: ArrayList<Component> = arrayListOf()
 
 }
