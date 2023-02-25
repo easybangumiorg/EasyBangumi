@@ -29,7 +29,7 @@ fun ComponentBuilderScope.listPage(
     newScreen: Boolean = false,
     firstKey: Int,
     firstKeyFactory: () -> Int = {firstKey},
-    getCartoons: (
+    getCartoons: suspend (
         pageKey: Int
     ) -> Source.SourceResult<Pair<Int?, List<CartoonCover>>>
 ){
@@ -41,7 +41,7 @@ fun ListPagesBuilderScope.listPage(
     newScreen: Boolean = false,
     firstKey: Int,
     firstKeyFactory: () -> Int = {firstKey},
-    getCartoons: (
+    getCartoons: suspend (
         pageKey: Int
     ) -> Source.SourceResult<Pair<Int?, List<CartoonCover>>>
 ){
