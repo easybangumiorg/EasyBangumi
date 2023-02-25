@@ -144,4 +144,5 @@ afterEvaluate {
 
 
 dependencies {
+    coroutines()
 }
