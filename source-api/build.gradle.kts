@@ -97,12 +97,19 @@ afterEvaluate {
         repositories {
             maven {
                 // change to point to your repo
-                val releaseRepo = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+                val releaseRepo =
+                    "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
                 val snapshotRepo = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
                 url = uri(snapshotRepo)
                 credentials {
-                    username = publishingProps.getProperty("credencial.username", System.getenv("OSSRH_USERNAME"))
-                    password = publishingProps.getProperty("credencial.password", System.getenv("OSSRH_PASSWORD"))
+                    username = publishingProps.getProperty(
+                        "credencial.username",
+                        System.getenv("OSSRH_USERNAME")
+                    )
+                    password = publishingProps.getProperty(
+                        "credencial.password",
+                        System.getenv("OSSRH_PASSWORD")
+                    )
                 }
             }
             maven {
@@ -113,11 +120,12 @@ afterEvaluate {
 
     }
     val keyId = publishingProps.getProperty("signing.keyId", System.getenv("SIGNING_KEY_ID"))
-    val password = publishingProps.getProperty("signing.password", System.getenv("SIGNING_PASSWORD"))
+    val password =
+        publishingProps.getProperty("signing.password", System.getenv("SIGNING_PASSWORD"))
     val secretKeyRingFile = publishingProps.getProperty("signing.secretKeyRingFile", "")
 
     //project.loadPropertyFromResources()
-    if (keyId?.isNotEmpty() == true && password?.isNotEmpty() == true){
+    if (keyId?.isNotEmpty() == true && password?.isNotEmpty() == true) {
 //        (project.properties as MutableMap<String, Any>).apply {
 //            put("signing.keyId", keyId)
 //            put("signing.password", password)
@@ -125,9 +133,9 @@ afterEvaluate {
 //        }
 
         val s = runCatching {
-            if(secretKeyRingFile.isNotEmpty()){
-                project.rootProject.file("publishing/"+secretKeyRingFile).readText()
-            }else{
+            if (secretKeyRingFile.isNotEmpty()) {
+                project.rootProject.file("publishing/" + secretKeyRingFile).readText()
+            } else {
                 throw IllegalAccessException()
             }
         }.getOrElse {

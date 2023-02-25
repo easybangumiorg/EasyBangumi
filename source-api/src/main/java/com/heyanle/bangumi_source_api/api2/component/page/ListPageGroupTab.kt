@@ -18,6 +18,6 @@ fun ComponentBuilderScope.listPageGroupTab(
     label: String,
     newScreen: Boolean = true,
     listPage: suspend () -> Source.SourceResult<List<ListPage>>,
-){
+) {
     this.components.add(ListPageGroupTab(label, source, newScreen, listPage))
 }
