@@ -13,11 +13,3 @@ class ListPageGroupTab(
     override val newScreen: Boolean = true,
     val listPage: suspend () -> Source.SourceResult<List<ListPage>>
 ) : CartoonPage
-
-fun ComponentBuilderScope.listPageGroupTab(
-    label: String,
-    newScreen: Boolean = true,
-    listPage: suspend () -> Source.SourceResult<List<ListPage>>,
-) {
-    this.components.add(ListPageGroupTab(label, source, newScreen, listPage))
-}

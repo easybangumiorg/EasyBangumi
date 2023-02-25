@@ -40,7 +40,7 @@ object EasyThemeController {
 
     private var themeModeOkkv by okkv("theme_mode", EasyThemeMode.Tachiyomi.name)
     private var darkModeOkkv by okkv("dark_mode", DarkMode.Auto.name)
-    private var isDynamicColorOkkv by okkv<Boolean>("is_dynamic_color", def = false)
+    private var isDynamicColorOkkv by okkv<Boolean>("is_dynamic_color", def = true)
 
     val easyThemeState = mutableStateOf(
         EasyThemeState(

@@ -38,42 +38,35 @@ class SingleListPage(
     }
 )
 
-fun Source.singleListPage(
-    label: String,
-    list: List<CartoonCover>,
-): SingleListPage {
-    return SingleListPage(label, this, false, list)
-}
+
 
 class ListPagesBuilderScope(
     val source: Source,
 ) {
     val components: ArrayList<ListPage> = arrayListOf()
+
+
+    fun singleListPage(
+        label: String,
+        list: List<CartoonCover>,
+    ): SingleListPage {
+        return SingleListPage(label, source, false, list)
+    }
+
+    fun listPage(
+        label: String,
+        newScreen: Boolean = false,
+        firstKey: Int,
+        firstKeyFactory: () -> Int = { firstKey },
+        getCartoons: suspend (
+            pageKey: Int
+        ) -> Source.SourceResult<Pair<Int?, List<CartoonCover>>>
+    ) {
+        this.components.add(ListPage(label, source, newScreen, firstKeyFactory, getCartoons))
+    }
 }
 
-fun ComponentBuilderScope.listPage(
-    label: String,
-    newScreen: Boolean = false,
-    firstKey: Int,
-    firstKeyFactory: () -> Int = { firstKey },
-    getCartoons: suspend (
-        pageKey: Int
-    ) -> Source.SourceResult<Pair<Int?, List<CartoonCover>>>
-) {
-    this.components.add(ListPage(label, source, newScreen, firstKeyFactory, getCartoons))
-}
 
-fun ListPagesBuilderScope.listPage(
-    label: String,
-    newScreen: Boolean = false,
-    firstKey: Int,
-    firstKeyFactory: () -> Int = { firstKey },
-    getCartoons: suspend (
-        pageKey: Int
-    ) -> Source.SourceResult<Pair<Int?, List<CartoonCover>>>
-) {
-    this.components.add(ListPage(label, source, newScreen, firstKeyFactory, getCartoons))
-}
 
 
 
