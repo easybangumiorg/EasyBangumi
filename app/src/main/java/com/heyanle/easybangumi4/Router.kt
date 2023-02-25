@@ -10,11 +10,14 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.navigation.NavHostController
+import androidx.navigation.navArgument
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.heyanle.easybangumi4.ui.home.Home
+import com.heyanle.easybangumi4.ui.sourcehome.SourceHome
 import java.lang.ref.WeakReference
+import java.net.URLEncoder
 
 /**
  * Created by HeYanLe on 2023/2/19 0:10.
@@ -29,6 +32,11 @@ var navControllerRef: WeakReference<NavHostController>? = null
 const val NAV = "nav"
 
 const val HOME = "home"
+
+const val SOURCE_HOME = "source_home"
+fun NavHostController.navigationSourceHome(key: String) {
+    navigate("${SOURCE_HOME}?key=${key}")
+}
 
 // 缺省路由
 const val DEFAULT = HOME
@@ -52,6 +60,18 @@ fun Nav() {
             composable(HOME) {
                 Home()
             }
+
+            composable(
+                route = "${SOURCE_HOME}?key={key}",
+                arguments = listOf(
+                    navArgument("key") { defaultValue = "" },
+                )
+            ){
+                SourceHome(
+                    it.arguments?.getString("key") ?: "",
+                )
+            }
+
         }
     }
 
