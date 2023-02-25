@@ -1,6 +1,7 @@
 package com.heyanle.bangumi_source_api.api2.play
 
 import com.heyanle.bangumi_source_api.api2.Source
+import com.heyanle.bangumi_source_api.api2.component.Component
 import com.heyanle.bangumi_source_api.api2.entity.Cartoon
 import com.heyanle.bangumi_source_api.api2.entity.CartoonSummary
 

@@ -1,5 +1,7 @@
 package com.heyanle.bangumi_source_api.api2
 
+import com.heyanle.bangumi_source_api.api2.component.Component
+
 /**
  * Created by HeYanLe on 2023/2/18 21:38.
  * https://github.com/heyanLE
@@ -16,6 +18,10 @@ interface Source {
     val version: String
 
     val versionCode: Int
+
+    val describe: String?
+
+    fun components(): List<Component>
 
 
     sealed class SourceResult<T> {
