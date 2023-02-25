@@ -38,6 +38,13 @@ class SingleListPage(
     }
 )
 
+fun Source.singleListPage(
+    label: String,
+    list: List<CartoonCover>,
+): SingleListPage {
+    return SingleListPage(label, this, false, list)
+}
+
 class ListPagesBuilderScope(
     val source: Source,
 ) {
