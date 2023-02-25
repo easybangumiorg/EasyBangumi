@@ -50,3 +50,18 @@ interface Source {
     }
 
 }
+
+suspend fun <T> withResult(block: suspend () -> T): Source.SourceResult<T> {
+    return try {
+        Source.SourceResult.Complete(block())
+    } catch (e: ParserException) {
+        Source.SourceResult.Error<T>(e, true)
+    } catch (e: Exception) {
+        Source.SourceResult.Error<T>(e, false)
+    }
+
+}
+
+class ParserException(
+    override val message: String?
+) : Exception()
