@@ -21,11 +21,11 @@ class SearchComponent(
 
 fun ComponentBuilderScope.search(
     firstKey: Int,
-    firstKeyFactory: () -> Int = {firstKey},
+    firstKeyFactory: () -> Int = { firstKey },
     search: suspend (
         keyword: String,
         pageKey: Int
     ) -> Source.SourceResult<Pair<Int?, List<CartoonCover>>>
-){
+) {
     this.components.add(SearchComponent(source, firstKeyFactory, search))
 }

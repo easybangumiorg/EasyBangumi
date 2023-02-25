@@ -6,6 +6,7 @@ package com.heyanle.bangumi_source_api.api2.configuration
  */
 
 lateinit var configFactory: ConfigFactory
+
 interface ConfigFactory {
     fun currentConfigString(field: ConfigField<String>): String
     fun currentConfigInt(field: ConfigField<Int>): Int
