@@ -58,15 +58,20 @@ class SourceBundle(
             }
             pageMap[source.key] = arrayListOf()
             searchMap.remove(source.key)
-            source.components().forEach {
-                if (it is CartoonPage) {
-                    pageMap[source.key]?.add(it)
-                }
+            kotlin.runCatching {
+                source.components().forEach {
+                    if (it is CartoonPage) {
+                        pageMap[source.key]?.add(it)
+                    }
 
-                if (it is SearchComponent) {
-                    searchMap[source.key] = it
+                    if (it is SearchComponent) {
+                        searchMap[source.key] = it
+                    }
                 }
+            }.onFailure {
+                it.printStackTrace()
             }
+
         }
     }
 

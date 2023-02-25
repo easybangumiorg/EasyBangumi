@@ -2,7 +2,6 @@ package com.heyanle.bangumi_source_api.api2.component.search
 
 import com.heyanle.bangumi_source_api.api2.Source
 import com.heyanle.bangumi_source_api.api2.component.Component
-import com.heyanle.bangumi_source_api.api2.component.ComponentBuilderScope
 import com.heyanle.bangumi_source_api.api2.entity.CartoonCover
 
 /**
@@ -17,15 +16,3 @@ class SearchComponent(
         pageKey: Int
     ) -> Source.SourceResult<Pair<Int?, List<CartoonCover>>>
 ) : Component
-
-
-fun ComponentBuilderScope.search(
-    firstKey: Int,
-    firstKeyFactory: () -> Int = { firstKey },
-    search: suspend (
-        keyword: String,
-        pageKey: Int
-    ) -> Source.SourceResult<Pair<Int?, List<CartoonCover>>>
-) {
-    this.components.add(SearchComponent(source, firstKeyFactory, search))
-}
