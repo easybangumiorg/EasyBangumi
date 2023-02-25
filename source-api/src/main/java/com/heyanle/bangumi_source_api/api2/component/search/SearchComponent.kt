@@ -12,7 +12,7 @@ import com.heyanle.bangumi_source_api.api2.entity.CartoonCover
 class SearchComponent(
     override val source: Source,
     val firstKey: () -> Int,
-    val search: (
+    val search: suspend (
         keyword: String,
         pageKey: Int
     ) -> Source.SourceResult<Pair<Int?, List<CartoonCover>>>
@@ -22,7 +22,7 @@ class SearchComponent(
 fun ComponentBuilderScope.search(
     firstKey: Int,
     firstKeyFactory: () -> Int = {firstKey},
-    search: (
+    search: suspend (
         keyword: String,
         pageKey: Int
     ) -> Source.SourceResult<Pair<Int?, List<CartoonCover>>>

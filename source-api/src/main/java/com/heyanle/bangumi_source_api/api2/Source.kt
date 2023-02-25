@@ -1,6 +1,8 @@
 package com.heyanle.bangumi_source_api.api2
 
 import com.heyanle.bangumi_source_api.api2.component.Component
+import kotlinx.coroutines.withContext
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Created by HeYanLe on 2023/2/18 21:38.
@@ -51,9 +53,11 @@ interface Source {
 
 }
 
-suspend fun <T> withResult(block: suspend () -> T): Source.SourceResult<T> {
+suspend fun <T> withResult(context: CoroutineContext,block: suspend () -> T): Source.SourceResult<T> {
     return try {
-        Source.SourceResult.Complete(block())
+        withContext(context){
+            Source.SourceResult.Complete(block())
+        }
     } catch (e: ParserException) {
         Source.SourceResult.Error<T>(e, true)
     } catch (e: Exception) {
