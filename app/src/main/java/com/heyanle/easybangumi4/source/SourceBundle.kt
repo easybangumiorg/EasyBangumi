@@ -1,11 +1,12 @@
 package com.heyanle.easybangumi4.source
 
-import com.heyanle.bangumi_source_api.api2.IconSource
-import com.heyanle.bangumi_source_api.api2.Source
-import com.heyanle.bangumi_source_api.api2.component.page.CartoonPage
-import com.heyanle.bangumi_source_api.api2.component.search.SearchComponent
-import com.heyanle.bangumi_source_api.api2.configuration.ConfigSource
-import com.heyanle.bangumi_source_api.api2.play.PlaySource
+import com.heyanle.bangumi_source_api.api.IconSource
+import com.heyanle.bangumi_source_api.api.Source
+import com.heyanle.bangumi_source_api.api.configuration.ConfigSource
+import com.heyanle.bangumi_source_api.api.page.PageSource
+import com.heyanle.bangumi_source_api.api.play.PlaySource
+import com.heyanle.bangumi_source_api.api.search.SearchSource
+
 
 /**
  * Created by HeYanLe on 2023/2/22 20:41.
@@ -23,9 +24,9 @@ class SourceBundle(
 
     private val playMap = linkedMapOf<String, PlaySource>()
 
-    private val pageMap = linkedMapOf<String, ArrayList<CartoonPage>>()
+    private val pageMap = linkedMapOf<String, PageSource>()
 
-    private val searchMap = linkedMapOf<String, SearchComponent>()
+    private val searchMap = linkedMapOf<String, SearchSource>()
 
     init {
         list.forEach {
@@ -56,21 +57,8 @@ class SourceBundle(
             } else {
                 playMap.remove(source.key)
             }
-            pageMap[source.key] = arrayListOf()
-            searchMap.remove(source.key)
-            kotlin.runCatching {
-                source.components().forEach {
-                    if (it is CartoonPage) {
-                        pageMap[source.key]?.add(it)
-                    }
 
-                    if (it is SearchComponent) {
-                        searchMap[source.key] = it
-                    }
-                }
-            }.onFailure {
-                it.printStackTrace()
-            }
+
 
         }
     }
@@ -85,11 +73,11 @@ class SourceBundle(
         return sourceMap[key]
     }
 
-    fun page(key: String): List<CartoonPage>? {
+    fun page(key: String): PageSource? {
         return pageMap[key]
     }
 
-    fun search(key: String): SearchComponent? {
+    fun search(key: String): SearchSource? {
         return searchMap[key]
     }
 

@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.heyanle.bangumi_source_api.api2.component.page.ListPage
+import com.heyanle.bangumi_source_api.api.page.SourcePage
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.ui.common.CartoonCard
 import com.heyanle.easybangumi4.ui.common.ErrorPage
@@ -61,7 +61,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun SourceListPage(
     modifier: Modifier = Modifier,
-    listPage: ListPage,
+    listPage: SourcePage.SingleCartoonPage,
     lazyGridState: LazyGridState = rememberLazyGridState(),
     header: (@Composable ()->Unit)? = null
 ){
