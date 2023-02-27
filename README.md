@@ -3,9 +3,10 @@
 ![纯纯看番](./EasyBangumi.png)  
 
 <p align="center">
-  <img alt="release" src="https://img.shields.io/github/v/release/easybangumiorg/EasyBangumiExtension" />
-  <img alt="license" src="https://img.shields.io/github/license/easybangumiorg/EasyBangumiExtension" />
-  <img alt="issues" src="https://img.shields.io/github/issues/easybangumiorg/EasyBangumiExtension" />
+  <img alt="release" src="https://img.shields.io/github/v/release/easybangumiorg/EasyBangumi" />
+  <img alt="license" src="https://img.shields.io/github/license/easybangumiorg/EasyBangumi" />
+  <img alt="downloads" src="https://img.shields.io/github/downloads/easybangumiorg/EasyBangumi/total" />
+  <img alt="issues" src="https://img.shields.io/github/issues/easybangumiorg/EasyBangumi" />
 </p>
 
 
