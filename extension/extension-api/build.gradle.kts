@@ -138,6 +138,7 @@ afterEvaluate {
 
 dependencies {
     api(SourceExtension.sourceApi)
+    api(SourceExtension.sourceUtils)
     api(com.heyanle.buildsrc.kotlinx_coroutines)
     api(com.heyanle.buildsrc.okhttp3)
     api(com.heyanle.buildsrc.gson)
