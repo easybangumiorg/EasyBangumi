@@ -137,5 +137,10 @@ afterEvaluate {
 
 
 dependencies {
-    compileOnly(SourceExtension.sourceApi)
+    api(SourceExtension.sourceApi)
+    api(com.heyanle.buildsrc.kotlinx_coroutines)
+    api(com.heyanle.buildsrc.okhttp3)
+    api(com.heyanle.buildsrc.gson)
+    api(com.heyanle.buildsrc.jsoup)
+
 }
