@@ -1,6 +1,12 @@
-
 import com.heyanle.buildsrc.Android
 import com.heyanle.buildsrc.SourceExtension
+import com.heyanle.buildsrc.androidXWebkit
+import com.heyanle.buildsrc.commonsText
+import com.heyanle.buildsrc.gson
+import com.heyanle.buildsrc.jsoup
+import com.heyanle.buildsrc.kotlinx_coroutines
+import com.heyanle.buildsrc.okhttp3
+import com.heyanle.buildsrc.okhttp3logging
 import org.jetbrains.kotlin.konan.properties.Properties
 
 plugins {
@@ -11,18 +17,15 @@ plugins {
 }
 
 android {
-    namespace = "com.heyanle.extension_api"
+    namespace = "com.heyanle.lib_anim"
     compileSdk = Android.compileSdk
 
     defaultConfig {
         minSdk = Android.minSdk
-        targetSdk = Android.targetSdk
-    }
+        targetSdk = Android.compileSdk
 
-    publishing {
-        singleVariant("release") {
-            withSourcesJar()
-        }
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles("consumer-rules.pro")
     }
 
     buildTypes {
@@ -56,13 +59,13 @@ afterEvaluate {
         publications {
             create("maven_public", MavenPublication::class) {
                 groupId = "io.github.easybangumiorg"
-                artifactId = "extension-api"
+                artifactId = "source-utils"
                 version = SourceExtension.LIB_VERSION
                 from(components.getByName("release"))
 
                 pom {
-                    name.set("EasyBangumi extension api")
-                    description.set("extensionAPI for EasyBangumi")
+                    name.set("EasyBangumi source utils")
+                    description.set("SourceUtils for EasyBangumi")
                     url.set("https://github.com/easybangumiorg/EasyBangumi.git")
 
                     licenses {
@@ -136,6 +139,14 @@ afterEvaluate {
 }
 
 
+
+
 dependencies {
-    compileOnly(SourceExtension.sourceApi)
+    compileOnly(androidXWebkit)
+    compileOnly(kotlinx_coroutines)
+    compileOnly(jsoup)
+    compileOnly(okhttp3)
+    compileOnly(okhttp3logging)
+    compileOnly(gson)
+    compileOnly(commonsText)
 }

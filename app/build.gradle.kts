@@ -1,5 +1,32 @@
-import com.heyanle.buildsrc.*
-import org.gradle.kotlin.dsl.project
+
+import com.heyanle.buildsrc.Android
+import com.heyanle.buildsrc.Config
+import com.heyanle.buildsrc.accompanist
+import com.heyanle.buildsrc.androidXBasic
+import com.heyanle.buildsrc.androidXWebkit
+import com.heyanle.buildsrc.appCenter
+import com.heyanle.buildsrc.cling
+import com.heyanle.buildsrc.coil
+import com.heyanle.buildsrc.coilGif
+import com.heyanle.buildsrc.commonsText
+import com.heyanle.buildsrc.compose
+import com.heyanle.buildsrc.easyPlayer
+import com.heyanle.buildsrc.exoplayer
+import com.heyanle.buildsrc.exoplayerRtmp
+import com.heyanle.buildsrc.glide
+import com.heyanle.buildsrc.gson
+import com.heyanle.buildsrc.jsoup
+import com.heyanle.buildsrc.junit
+import com.heyanle.buildsrc.leakcanary
+import com.heyanle.buildsrc.media
+import com.heyanle.buildsrc.navigationCompose
+import com.heyanle.buildsrc.okhttp3
+import com.heyanle.buildsrc.okkv2
+import com.heyanle.buildsrc.okkv2Compose
+import com.heyanle.buildsrc.paging
+import com.heyanle.buildsrc.pagingCompose
+import com.heyanle.buildsrc.room
+import com.heyanle.buildsrc.roomPaging
 
 plugins {
     id("com.android.application")
@@ -102,8 +129,8 @@ dependencies {
     implementation(project(":easy-dlna"))
     implementation(project(":easy-crasher"))
     implementation(project(":easy-i18n"))
-    implementation(SourceExtension.sourceApi)
-    implementation(SourceExtension.sourceUtils)
-    implementation(SourceExtension.extensionApi)
     implementation(project(":extension:extension-core"))
+    implementation(project(":source:source-api"))
+    implementation(project(":source:source-utils"))
+    implementation(project(":extension:extension-api"))
 }
