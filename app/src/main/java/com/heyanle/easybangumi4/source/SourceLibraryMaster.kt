@@ -3,7 +3,7 @@ package com.heyanle.easybangumi4.source
 import androidx.annotation.UiThread
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.heyanle.bangumi_source_api.api2.Source
+import com.heyanle.bangumi_source_api.api.Source
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.okkv2.core.okkv
 import kotlinx.coroutines.MainScope

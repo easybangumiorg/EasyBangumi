@@ -1,10 +1,8 @@
 package com.heyanle.extension_load.model
 
-import android.content.res.AssetManager
 import android.content.res.Resources
 import android.graphics.drawable.Drawable
-import com.heyanle.bangumi_source_api.api2.Source
-import java.lang.Exception
+import com.heyanle.bangumi_source_api.api.Source
 
 /**
  * Created by HeYanLe on 2023/2/19 16:16.
