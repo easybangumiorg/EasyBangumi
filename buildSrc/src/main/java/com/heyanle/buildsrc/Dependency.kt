@@ -274,11 +274,12 @@ fun DependencyHandler.appCenter() {
 //fun DependencyHandler.easySourceApi(){
 //    implementation ("com.github.heyanLE.EasyBangumiSourceAPI:api:${Version.bangumi_api}")
 //}
-
+val androidXWebkit = "androidx.webkit:webkit:${Version.androidx_webkit}"
 fun DependencyHandler.androidXWebkit() {
     implementation("androidx.webkit:webkit:${Version.androidx_webkit}")
 }
 
+val commonsText = "org.apache.commons:commons-text:${Version.commons_text}"
 fun DependencyHandler.commonsText() {
     implementation("org.apache.commons:commons-text:${Version.commons_text}")
 }
