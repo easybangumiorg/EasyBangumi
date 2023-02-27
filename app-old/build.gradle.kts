@@ -100,8 +100,4 @@ dependencies {
     implementation(project(":easy-crasher"))
     implementation(project(":easy-dlna"))
     implementation(project(":easy-i18n"))
-    implementation(SourceExtension.sourceApi)
-    implementation(SourceExtension.sourceUtils)
-    implementation(SourceExtension.extensionApi)
-    implementation(project(":extension:extension-core"))
 }

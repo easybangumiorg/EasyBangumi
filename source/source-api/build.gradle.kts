@@ -1,7 +1,7 @@
-
-import com.heyanle.buildsrc.Android
-import com.heyanle.buildsrc.SourceExtension
+import com.heyanle.buildsrc.*
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.konan.properties.Properties
+import org.jetbrains.kotlin.load.kotlin.signatures
 
 plugins {
     id("com.android.library")
@@ -10,28 +10,32 @@ plugins {
     id("signing")
 }
 
+
 android {
-    namespace = "com.heyanle.extension_api"
+    namespace = "com.heyanle.core"
     compileSdk = Android.compileSdk
-
-    defaultConfig {
-        minSdk = Android.minSdk
-        targetSdk = Android.targetSdk
-    }
-
     publishing {
         singleVariant("release") {
             withSourcesJar()
         }
     }
 
+    defaultConfig {
+        minSdk = Android.minSdk
+        targetSdk = Android.targetSdk
+
+        consumerProguardFiles("consumer-rules.pro")
+    }
+
     buildTypes {
         release {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
+            postprocessing {
+                isRemoveUnusedCode = false
+                isRemoveUnusedResources = false
+                isObfuscate = false
+                isOptimizeCode = false
+                proguardFiles("proguard-rules.pro")
+            }
         }
     }
     compileOptions {
@@ -43,11 +47,15 @@ android {
     }
 }
 
+tasks.withType<KotlinCompile> {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
 val publishingProps = Properties()
 runCatching {
     publishingProps.load(project.rootProject.file("publishing/publishing.properties").inputStream())
 }.onFailure {
-    //it.printStackTrace()
+    // it.printStackTrace()
 }
 
 
@@ -56,13 +64,13 @@ afterEvaluate {
         publications {
             create("maven_public", MavenPublication::class) {
                 groupId = "io.github.easybangumiorg"
-                artifactId = "extension-api"
+                artifactId = "source-api"
                 version = SourceExtension.LIB_VERSION
                 from(components.getByName("release"))
 
                 pom {
-                    name.set("EasyBangumi extension api")
-                    description.set("extensionAPI for EasyBangumi")
+                    name.set("EasyBangumi source api")
+                    description.set("SourceApi for EasyBangumi")
                     url.set("https://github.com/easybangumiorg/EasyBangumi.git")
 
                     licenses {
@@ -91,12 +99,19 @@ afterEvaluate {
         repositories {
             maven {
                 // change to point to your repo
-                val releaseRepo = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+                val releaseRepo =
+                    "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
                 val snapshotRepo = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
                 url = uri(snapshotRepo)
                 credentials {
-                    username = publishingProps.getProperty("credencial.username", System.getenv("OSSRH_USERNAME"))
-                    password = publishingProps.getProperty("credencial.password", System.getenv("OSSRH_PASSWORD"))
+                    username = publishingProps.getProperty(
+                        "credencial.username",
+                        System.getenv("OSSRH_USERNAME")
+                    )
+                    password = publishingProps.getProperty(
+                        "credencial.password",
+                        System.getenv("OSSRH_PASSWORD")
+                    )
                 }
             }
             maven {
@@ -107,11 +122,12 @@ afterEvaluate {
 
     }
     val keyId = publishingProps.getProperty("signing.keyId", System.getenv("SIGNING_KEY_ID"))
-    val password = publishingProps.getProperty("signing.password", System.getenv("SIGNING_PASSWORD"))
+    val password =
+        publishingProps.getProperty("signing.password", System.getenv("SIGNING_PASSWORD"))
     val secretKeyRingFile = publishingProps.getProperty("signing.secretKeyRingFile", "")
 
     //project.loadPropertyFromResources()
-    if (keyId?.isNotEmpty() == true && password?.isNotEmpty() == true){
+    if (keyId?.isNotEmpty() == true && password?.isNotEmpty() == true) {
 //        (project.properties as MutableMap<String, Any>).apply {
 //            put("signing.keyId", keyId)
 //            put("signing.password", password)
@@ -119,9 +135,9 @@ afterEvaluate {
 //        }
 
         val s = runCatching {
-            if(secretKeyRingFile.isNotEmpty()){
-                project.rootProject.file("publishing/"+secretKeyRingFile).readText()
-            }else{
+            if (secretKeyRingFile.isNotEmpty()) {
+                project.rootProject.file("publishing/" + secretKeyRingFile).readText()
+            } else {
                 throw IllegalAccessException()
             }
         }.getOrElse {
@@ -136,6 +152,8 @@ afterEvaluate {
 }
 
 
+
 dependencies {
-    compileOnly(SourceExtension.sourceApi)
+    compileOnly(kotlinx_coroutines)
+    compileOnly(okhttp3)
 }
