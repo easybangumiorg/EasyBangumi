@@ -25,6 +25,12 @@ interface Source {
 
     // fun components(): List<Component>
 
+    /**
+     * 获取拆分 Source，默认不拆分
+     * SearchSource、PageSource 等
+     */
+    fun sources(): List<Source> = emptyList()
+
 
 }
 
