@@ -9,10 +9,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import com.heyanle.bangumi_source_api.api.IHomeParser
-import com.heyanle.bangumi_source_api.api2.Source
-import com.heyanle.bangumi_source_api.api2.SourceFactory
-import com.heyanle.bangumi_source_api.api2.component.page.CartoonPage
+import com.heyanle.bangumi_source_api.api.Source
+import com.heyanle.bangumi_source_api.api.page.SourcePage
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.source.SourceBundle
 import com.heyanle.easybangumi4.source.SourceMaster
@@ -52,13 +50,13 @@ fun PageContainer(
     sourceKey: String,
     modifier: Modifier = Modifier,
     errorContainerColor: Color = Color.Transparent,
-    content: @Composable (SourceBundle, Source, List<CartoonPage>) -> Unit,
+    content: @Composable (SourceBundle, Source, List<SourcePage>) -> Unit,
 ) {
     SourceContainer(
         modifier,
         errorContainerColor = errorContainerColor
     ) {
-        val homes = it.page(sourceKey) ?: emptyList()
+        val homes = it.page(sourceKey)?.getPages() ?: emptyList()
         val sou = it.source(sourceKey)
         Box(
             modifier = Modifier

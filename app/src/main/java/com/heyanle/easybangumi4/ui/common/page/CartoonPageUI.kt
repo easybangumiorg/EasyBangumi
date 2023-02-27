@@ -1,9 +1,7 @@
 package com.heyanle.easybangumi4.ui.common.page
 
 import androidx.compose.runtime.Composable
-import com.heyanle.bangumi_source_api.api2.component.page.CartoonPage
-import com.heyanle.bangumi_source_api.api2.component.page.ListPage
-import com.heyanle.bangumi_source_api.api2.component.page.ListPageGroup
+import com.heyanle.bangumi_source_api.api.page.SourcePage
 import com.heyanle.easybangumi4.ui.common.page.list.SourceListPage
 import com.heyanle.easybangumi4.ui.common.page.listgroup.SourceListPageGroup
 
@@ -14,14 +12,15 @@ import com.heyanle.easybangumi4.ui.common.page.listgroup.SourceListPageGroup
 
 @Composable
 fun CartoonPageUI(
-    cartoonPage: CartoonPage
+    cartoonPage: SourcePage
 ){
     when(cartoonPage){
-        is ListPage -> {
+        is SourcePage.SingleCartoonPage -> {
             SourceListPage(listPage = cartoonPage)
         }
-        is ListPageGroup -> {
+        is SourcePage.Group -> {
             SourceListPageGroup(listPageGroup = cartoonPage)
         }
+        else -> {}
     }
 }
