@@ -7,12 +7,10 @@ import android.os.Build
 import androidx.core.content.pm.PackageInfoCompat
 import com.heyanle.bangumi_source_api.api.Source
 import com.heyanle.bangumi_source_api.api.SourceFactory
+import com.heyanle.extension_api.ExtensionSource
 import com.heyanle.extension_load.model.Extension
 import com.heyanle.extension_load.utils.loge
 import dalvik.system.PathClassLoader
-import java.lang.reflect.InvocationHandler
-import java.lang.reflect.Method
-import java.lang.reflect.Proxy
 
 /**
  * Created by HeYanLe on 2023/2/21 21:50.
@@ -47,7 +45,7 @@ object ExtensionLoader {
             }
 
         val extPkgs = installedPkgs.filter {
-            it.packageName.loge("ExtensionLoader")
+            //it.packageName.loge("ExtensionLoader")
             isPackageAnExtension(it) }
 
         if (extPkgs.isEmpty()) return emptyList()
@@ -128,20 +126,44 @@ object ExtensionLoader {
                         exception = e,
                     )
                 }
-            }.map {
-                // 动态代理，返回 key 前面加上 包名-
-                Proxy.newProxyInstance(it.javaClass.classLoader,
-                    it.javaClass.interfaces,
-                    object : InvocationHandler {
-                        override fun invoke(
-                            proxy: Any?, method: Method?, args: Array<out Any>?
-                        ): Any? {
-                            if (method?.name == "getKey") {
-                                return pkgInfo.packageName + "-" + it.key
-                            }
-                            return method?.invoke(it, *(args ?: arrayOfNulls<Any>(0)))
-                        }
-                    }) as Source
+            }
+                .map {
+                    if(it is ExtensionSource) {
+                        it.packageName = pkgInfo.packageName
+                    }
+                    it
+//                // 动态代理，返回 key 前面加上 包名-
+//                val proxy = Proxy.newProxyInstance(it.javaClass.classLoader,
+//                    it.javaClass.interfaces,
+//                    object : InvocationHandler {
+//                        override fun invoke(
+//                            proxy: Any?, method: Method?, args: Array<out Any>?
+//                        ): Any? {
+//                            if (method?.name == "getKey") {
+//                                return pkgInfo.packageName + "-" + it.key
+//                            }
+//                            return method?.invoke(it, *(args ?: arrayOfNulls<Any>(0)))
+//                        }
+//                    }) as Source
+//
+//                it.components().forEach {
+//                    it.source = proxy
+////                    proxy.key.loge("ExtensionLoader")
+////                    it.source.key.loge("ExtensionLoader")
+//                }
+//                it.loge("ExtensionLoader")
+//                proxy.loge("ExtensionLoader")
+//                proxy.components().forEach {
+//                    it.source = proxy
+//                    it.source.loge("ExtensionLoader")
+//                }
+//                proxy.components().forEach {
+//                    it.source.loge("ExtensionLoader")
+//                }
+//
+//
+//
+//                proxy
             }
 
             return Extension.Installed(

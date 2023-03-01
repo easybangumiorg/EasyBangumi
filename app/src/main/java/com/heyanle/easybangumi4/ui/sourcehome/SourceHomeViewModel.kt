@@ -7,9 +7,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
-import com.heyanle.bangumi_source_api.api2.Source
-import com.heyanle.bangumi_source_api.api2.component.page.CartoonPage
-import com.heyanle.bangumi_source_api.api2.component.search.SearchComponent
+import com.heyanle.bangumi_source_api.api.Source
+import com.heyanle.bangumi_source_api.api.component.page.SourcePage
+import com.heyanle.bangumi_source_api.api.component.search.SearchComponent
 
 /**
  * Created by HeYanLe on 2023/2/25 19:13.
@@ -21,12 +21,12 @@ class SourceHomeViewModel: ViewModel() {
     sealed class SourceHomeState {
         object None: SourceHomeState()
 
-        class Normal(val source: Source, val page: List<CartoonPage>, val search: SearchComponent?): SourceHomeState()
+        class Normal(val source: Source, val page: List<SourcePage>, val search: SearchComponent?): SourceHomeState()
 
     }
 
     var sourceHomeState by mutableStateOf<SourceHomeState>(SourceHomeState.None)
-    fun onInit(source: Source, page: List<CartoonPage>, search: SearchComponent?){
+    fun onInit(source: Source, page: List<SourcePage>, search: SearchComponent?){
         Log.d("SourceHomeViewModel", "$source ${page.size} ${search}")
         sourceHomeState = SourceHomeState.Normal(source, page, search)
     }
@@ -41,7 +41,7 @@ class SourceHomeViewModel: ViewModel() {
         /**
          * 当前选择某页面
          */
-        class Page(val cartoonPage: CartoonPage): CurrentSourcePageState()
+        class Page(val cartoonPage: SourcePage): CurrentSourcePageState()
 
         /**
          * 当前为搜索
@@ -70,7 +70,7 @@ class SourceHomeViewModel: ViewModel() {
      * 点击 chip
      */
     fun clickPage(
-        page: CartoonPage
+        page: SourcePage
     ){
         withNormal {
             // 如果页面需要新页面则不处理
@@ -88,15 +88,22 @@ class SourceHomeViewModel: ViewModel() {
         }
     }
 
-    private val viewModelOwnerStore = hashMapOf<CartoonPage, ViewModelStore>()
+    private val viewModelOwnerStore = hashMapOf<SourcePage, ViewModelStore>()
 
-    fun getViewModelStoreOwner(page: CartoonPage) = ViewModelStoreOwner {
+    fun getViewModelStoreOwner(page: SourcePage) = ViewModelStoreOwner {
         var viewModelStore = viewModelOwnerStore[page]
         if (viewModelStore == null) {
             viewModelStore = ViewModelStore()
             viewModelOwnerStore[page] = viewModelStore
         }
         viewModelStore
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        viewModelOwnerStore.iterator().forEach {
+            it.value.clear()
+        }
     }
 
 

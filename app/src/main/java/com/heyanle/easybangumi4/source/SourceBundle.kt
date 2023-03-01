@@ -2,10 +2,12 @@ package com.heyanle.easybangumi4.source
 
 import com.heyanle.bangumi_source_api.api.IconSource
 import com.heyanle.bangumi_source_api.api.Source
+import com.heyanle.bangumi_source_api.api.component.Component
+import com.heyanle.bangumi_source_api.api.component.page.PageComponent
+import com.heyanle.bangumi_source_api.api.component.play.PlayComponent
+import com.heyanle.bangumi_source_api.api.component.search.SearchComponent
 import com.heyanle.bangumi_source_api.api.configuration.ConfigSource
-import com.heyanle.bangumi_source_api.api.page.PageSource
-import com.heyanle.bangumi_source_api.api.play.PlaySource
-import com.heyanle.bangumi_source_api.api.search.SearchSource
+import com.heyanle.easybangumi4.utils.loge
 
 
 /**
@@ -22,11 +24,11 @@ class SourceBundle(
 
     private val iconMap = linkedMapOf<String, IconSource>()
 
-    private val playMap = linkedMapOf<String, PlaySource>()
+    private val playMap = linkedMapOf<String, PlayComponent>()
 
-    private val pageMap = linkedMapOf<String, PageSource>()
+    private val pageMap = linkedMapOf<String, PageComponent>()
 
-    private val searchMap = linkedMapOf<String, SearchSource>()
+    private val searchMap = linkedMapOf<String, SearchComponent>()
 
     init {
         list.forEach {
@@ -42,21 +44,45 @@ class SourceBundle(
 
             if (source is ConfigSource) {
                 configMap[source.key] = source
-            } else {
+            }else{
                 configMap.remove(source.key)
             }
 
             if (source is IconSource) {
                 iconMap[source.key] = source
-            } else {
+            }else{
                 iconMap.remove(source.key)
             }
 
-            if (source is PlaySource) {
-                playMap[source.key] = source
-            } else {
-                playMap.remove(source.key)
+            playMap.remove(source.key)
+            pageMap.remove(source.key)
+            searchMap.remove(source.key)
+
+
+            val components = arrayListOf<Component>()
+
+            (source as? Component)?.let {
+                components.add(it)
             }
+            components.addAll(source.components())
+
+            components.forEach {
+
+                if (it is PlayComponent) {
+                    playMap[it.source.key] = it
+                }
+
+                if(it is PageComponent) {
+                    it.source.key.loge("SourceBundle")
+                    pageMap[it.source.key] = it
+                }
+
+                if(it is SearchComponent) {
+                    searchMap[it.source.key] = it
+                }
+            }
+
+
 
 
 
@@ -73,11 +99,12 @@ class SourceBundle(
         return sourceMap[key]
     }
 
-    fun page(key: String): PageSource? {
+    fun page(key: String): PageComponent? {
+        key.loge("SourceBundle")
         return pageMap[key]
     }
 
-    fun search(key: String): SearchSource? {
+    fun search(key: String): SearchComponent? {
         return searchMap[key]
     }
 
@@ -89,7 +116,7 @@ class SourceBundle(
         return iconMap[key]
     }
 
-    fun play(key: String): PlaySource? {
+    fun play(key: String): PlayComponent? {
         return playMap[key]
     }
 

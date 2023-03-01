@@ -4,13 +4,15 @@ import android.app.Application
 import android.os.Build
 import android.os.Looper
 import android.util.Log
+import android.widget.Toast
 import com.heyanle.easy_crasher.CrashHandler
 import com.heyanle.easybangumi4.source.ExtensionSource
+import com.heyanle.easybangumi4.source.utils.initUtils
+import com.heyanle.easybangumi4.utils.exo_ssl.CropUtil
+import com.heyanle.easybangumi4.utils.exo_ssl.TrustAllHostnameVerifier
 import com.heyanle.extension_load.ExtensionInit
 import com.heyanle.extension_load.IconFactoryImpl
 import com.heyanle.lib_anim.utils.WebViewUtil
-import com.heyanle.easybangumi4.utils.exo_ssl.CropUtil
-import com.heyanle.easybangumi4.utils.exo_ssl.TrustAllHostnameVerifier
 import com.heyanle.okkv2.MMKVStore
 import com.heyanle.okkv2.core.Okkv
 import com.microsoft.appcenter.AppCenter
@@ -42,6 +44,12 @@ class App: Application() {
         initAppCenter()
 
         initExtension()
+        kotlin.runCatching {
+            initUtils(this)
+        }.onFailure {
+            it.printStackTrace()
+            Toast.makeText(this, it.message, Toast.LENGTH_SHORT).show()
+        }
 
     }
 

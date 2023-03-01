@@ -1,4 +1,4 @@
-package com.heyanle.bangumi_source_api.api.page
+package com.heyanle.bangumi_source_api.api.component.page
 
 import com.heyanle.bangumi_source_api.api.SourceResult
 import com.heyanle.bangumi_source_api.api.entity.CartoonCover
@@ -10,36 +10,36 @@ import com.heyanle.bangumi_source_api.api.entity.CartoonCover
 sealed class SourcePage {
 
     abstract val label: String
+    abstract val newScreen: Boolean
 
 
     /**
-     * 页面组，异步加载多个 单页面
+     * 页面组，异步加载多个
      */
     class Group(
         override val label: String,
-        val loadPage: suspend ()-> SourceResult<List<SingleCartoonPage>>
+        override val newScreen: Boolean,
+        val loadPage: suspend ()-> SourceResult<List<SingleCartoonPage>>,
     ): SourcePage()
 
     /**
-     * 新页面页面组，将会重新跳转到新的页面展示页面组
+     * 异步单页面
      */
-    class GroupWithScreen(
+    class SingleAsyncPage(
         override val label: String,
-        val loadPage: suspend ()-> SourceResult<List<SingleCartoonPage>>
+        override val newScreen: Boolean,
+        val load: suspend () -> SourceResult<SingleCartoonPage>
     ): SourcePage()
 
-    /**
-     * 跳转新页面展示单个页面
-     */
-    class WithScreen(
-        override val label: String,
-        val loadPage: suspend ()-> SourceResult<SingleCartoonPage>
-    ): SourcePage()
+
 
     /**
      * 单个页面
      */
     sealed class SingleCartoonPage: SourcePage() {
+
+        override val newScreen: Boolean
+            get() = false
 
         // 获取首页 key
         abstract var firstKey: () -> Int
@@ -93,20 +93,21 @@ fun PageBuilderScope.groupCartoonPage(
     label: String,
     loadPage: suspend ()-> SourceResult<List<SourcePage.SingleCartoonPage>>
 ){
-    pages.add(SourcePage.Group(label, loadPage))
+    pages.add(SourcePage.Group(label, false, loadPage))
 }
 
 fun PageBuilderScope.groupWithScreenCartoonPage(
     label: String,
     loadPage: suspend ()-> SourceResult<List<SourcePage.SingleCartoonPage>>
 ){
-    pages.add(SourcePage.Group(label, loadPage))
+    pages.add(SourcePage.Group(label, true, loadPage))
 }
 
-fun PageBuilderScope.singleWithScreenCartoonPage(
+fun PageBuilderScope.asyncSingleCartoonPage(
     label: String,
+    newScreen: Boolean,
     loadPage: suspend ()-> SourceResult<SourcePage.SingleCartoonPage>
 ){
-    pages.add(SourcePage.WithScreen(label, loadPage))
+    pages.add(SourcePage.SingleAsyncPage(label, newScreen, loadPage))
 }
 

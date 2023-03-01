@@ -1,6 +1,5 @@
-package com.heyanle.bangumi_source_api.api.search
+package com.heyanle.bangumi_source_api.api.component.search
 
-import com.heyanle.bangumi_source_api.api.Source
 import com.heyanle.bangumi_source_api.api.SourceResult
 import com.heyanle.bangumi_source_api.api.entity.CartoonCover
 
@@ -8,7 +7,7 @@ import com.heyanle.bangumi_source_api.api.entity.CartoonCover
  * Created by HeYanLe on 2023/2/27 21:42.
  * https://github.com/heyanLE
  */
-interface SearchSource: Source {
+interface SearchComponent {
 
     /**
      * 获取首页页码
