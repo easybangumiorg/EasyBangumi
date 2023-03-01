@@ -1,5 +1,3 @@
-import com.heyanle.buildsrc.androidXBasic
-
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
@@ -33,5 +31,4 @@ android {
 }
 
 dependencies {
-    androidXBasic()
 }

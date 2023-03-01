@@ -6,13 +6,12 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.with
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
@@ -24,15 +23,17 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarColors
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -79,78 +80,83 @@ fun SourceHome(key: String) {
     val state = vm.sourceHomeState
     val cur = vm.currentSourceState
 
-    Scaffold(
-        containerColor = Color.Transparent,
-        topBar = {
-            Column(
-                modifier = Modifier.background(MaterialTheme.colorScheme.background)
-            ) {
-                SourceHomeTopAppBar(
-                    state = state,
-                    onSearch = {
-                        if (it.isEmpty()) {
-                            return@SourceHomeTopAppBar
-                        }
-                        vm.search(it)
-                    },
-                    onBack = {
-                        nav.popBackStack()
+    Surface(
+        tonalElevation = 8.dp
+    ) {
+        Column(
+            modifier = Modifier.systemBarsPadding(),
+        ) {
+            SourceHomeTopAppBar(
+                state = state,
+                onSearch = {
+                    if (it.isEmpty()) {
+                        return@SourceHomeTopAppBar
                     }
-                )
-                state.let {
-                    if (it is SourceHomeViewModel.SourceHomeState.Normal) {
-                        LazyRow(
-                            modifier = Modifier.fillMaxWidth(),
-                            contentPadding = PaddingValues(8.dp, 0.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            items(it.page) { page ->
-                                vm.currentSourceState.let {
-                                    val isSelect =
-                                        it is SourceHomeViewModel.CurrentSourcePageState.Page && it.cartoonPage == page
-                                    FilterChip(selected = isSelect, onClick = {
+                    vm.search(it)
+                },
+                onBack = {
+                    nav.popBackStack()
+                }
+            )
+            state.let {
+                if (it is SourceHomeViewModel.SourceHomeState.Normal) {
+                    LazyRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentPadding = PaddingValues(8.dp, 0.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(it.page) { page ->
+                            vm.currentSourceState.let {
+                                val isSelect =
+                                    it is SourceHomeViewModel.CurrentSourcePageState.Page && it.cartoonPage == page
+                                FilterChip(
+
+                                    selected = isSelect,
+                                    onClick = {
                                         vm.clickPage(page)
-                                    }, label = { Text(page.label) })
-                                }
-
+                                    },
+                                    label = { Text(page.label) },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = MaterialTheme.colorScheme.secondary,
+                                        selectedLabelColor = MaterialTheme.colorScheme.onSecondary,
+                                        selectedLeadingIconColor = MaterialTheme.colorScheme.onSecondary,
+                                        selectedTrailingIconColor = MaterialTheme.colorScheme.onSecondary,
+                                    ),
+                                )
                             }
+
                         }
                     }
                 }
-                Divider()
-
             }
+            Divider()
 
-        }
-    ) { padding ->
-        PageContainer(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .padding(padding),
-            sourceKey = key
-        ) { bundle, sou, pages ->
+            PageContainer(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                sourceKey = key,
+            ) { bundle, sou, pages ->
 
-            val search = remember {
-                bundle.search(key)
-            }
+                val search = remember {
+                    bundle.search(key)
+                }
 
-            LaunchedEffect(key1 = Unit) {
-                vm.onInit(sou, pages, search)
-            }
+                LaunchedEffect(key1 = Unit) {
+                    vm.onInit(sou, pages, search)
+                }
 
-            Surface(
-                color = MaterialTheme.colorScheme.background,
-                contentColor = MaterialTheme.colorScheme.onBackground
-            ) {
-                vm.sourceHomeState.let {
-                    if (it is SourceHomeViewModel.SourceHomeState.Normal) {
-                        SourceHomeScreen(vm = vm, state = it)
+                Surface(
+                ) {
+                    vm.sourceHomeState.let {
+                        if (it is SourceHomeViewModel.SourceHomeState.Normal) {
+                            SourceHomeScreen(vm = vm, state = it)
+                        }
                     }
                 }
+
+
             }
-
-
         }
     }
 
@@ -161,6 +167,7 @@ fun SourceHome(key: String) {
 @Composable
 fun SourceHomeTopAppBar(
     state: SourceHomeViewModel.SourceHomeState,
+    colors: TopAppBarColors = TopAppBarDefaults.smallTopAppBarColors(),
     onSearch: (String) -> Unit,
     onBack: () -> Unit,
 ) {
@@ -184,6 +191,7 @@ fun SourceHomeTopAppBar(
     }
 
     TopAppBar(
+        colors = colors,
         navigationIcon = {
             IconButton(onClick = {
                 if (isCurrentSearchMode) {
@@ -290,15 +298,17 @@ fun SourceHomeScreen(
     }
     val keyboard = LocalSoftwareKeyboardController.current
     AnimatedContent(
-        modifier = Modifier.fillMaxSize().nestedScroll(object : NestedScrollConnection {
-            override fun onPreScroll(
-                available: Offset,
-                source: NestedScrollSource
-            ): Offset {
-                keyboard?.hide()
-                return super.onPreScroll(available, source)
-            }
-        }),
+        modifier = Modifier
+            .fillMaxSize()
+            .nestedScroll(object : NestedScrollConnection {
+                override fun onPreScroll(
+                    available: Offset,
+                    source: NestedScrollSource
+                ): Offset {
+                    keyboard?.hide()
+                    return super.onPreScroll(available, source)
+                }
+            }),
         targetState = vm.currentSourceState,
         transitionSpec = {
             fadeIn(animationSpec = tween(300, delayMillis = 300)) with

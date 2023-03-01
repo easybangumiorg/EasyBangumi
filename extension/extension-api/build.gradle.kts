@@ -1,6 +1,7 @@
 
 import com.heyanle.buildsrc.Android
 import com.heyanle.buildsrc.SourceExtension
+import com.heyanle.buildsrc.Version
 import org.jetbrains.kotlin.konan.properties.Properties
 
 plugins {
@@ -139,9 +140,9 @@ afterEvaluate {
 dependencies {
     api(SourceExtension.sourceApi)
     api(SourceExtension.sourceUtils)
-    api(com.heyanle.buildsrc.kotlinx_coroutines)
-    api(com.heyanle.buildsrc.okhttp3)
-    api(com.heyanle.buildsrc.gson)
-    api(com.heyanle.buildsrc.jsoup)
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-android:${Version.kotlinx_coroutines}")
+    api("com.squareup.okhttp3:okhttp:${Version.okhttp3}")
+    api("com.google.code.gson:gson:${Version.gson}")
+    api( "org.jsoup:jsoup:${Version.jsoup}")
 
 }
