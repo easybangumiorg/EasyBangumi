@@ -1,5 +1,4 @@
-import com.heyanle.buildsrc.androidXBasic
-import com.heyanle.buildsrc.junit
+
 import com.heyanle.buildsrc.Android
 
 plugins {
@@ -15,7 +14,6 @@ android {
         minSdk = Android.minSdk
         targetSdk = Android.compileSdk
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
 
@@ -38,6 +36,6 @@ android {
 }
 
 dependencies {
-    androidXBasic()
-    junit()
+    implementation("androidx.core:core-ktx:${com.heyanle.buildsrc.Version.androidx_core_ktx}")
+    implementation("androidx.appcompat:appcompat:${com.heyanle.buildsrc.Version.androidx_appcompat}")
 }

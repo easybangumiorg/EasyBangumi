@@ -1,7 +1,5 @@
-import com.heyanle.buildsrc.cling
-import com.heyanle.buildsrc.jetty
-import com.heyanle.buildsrc.junit
-import com.heyanle.buildsrc.servlet
+
+import com.heyanle.buildsrc.implementation
 
 plugins {
     id("com.android.library")
@@ -38,7 +36,8 @@ android {
 }
 
 dependencies {
-    cling()
+    implementation("org.fourthline.cling:cling-core:${com.heyanle.buildsrc.Version.cling}")
+    implementation("org.fourthline.cling:cling-support:${com.heyanle.buildsrc.Version.cling}")
     //jetty()
     //servlet()
     implementation(files("libs/javax.servlet-3.0.0.v201103241009.jar"))
