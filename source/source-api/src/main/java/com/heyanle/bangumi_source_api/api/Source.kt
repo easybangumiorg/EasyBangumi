@@ -1,5 +1,6 @@
 package com.heyanle.bangumi_source_api.api
 
+import com.heyanle.bangumi_source_api.api.component.Component
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -23,13 +24,10 @@ interface Source {
 
     val describe: String?
 
-    // fun components(): List<Component>
-
     /**
-     * 获取拆分 Source，默认不拆分
-     * SearchSource、PageSource 等
+     * 获取组件
      */
-    fun sources(): List<Source> = emptyList()
+    fun components(): List<Component> = emptyList()
 
 
 }

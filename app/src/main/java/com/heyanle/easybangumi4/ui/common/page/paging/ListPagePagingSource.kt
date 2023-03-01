@@ -3,15 +3,15 @@ package com.heyanle.easybangumi4.ui.common.page.paging
 import android.util.Log
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import com.heyanle.bangumi_source_api.api2.component.page.ListPage
-import com.heyanle.bangumi_source_api.api2.entity.CartoonCover
+import com.heyanle.bangumi_source_api.api.entity.CartoonCover
+import com.heyanle.bangumi_source_api.api.component.page.SourcePage
 
 /**
  * Created by HeYanLe on 2023/2/25 20:46.
  * https://github.com/heyanLE
  */
 class ListPagePagingSource(
-    private val listPage: ListPage
+    private val listPage: SourcePage.SingleCartoonPage
 ) : PagingSource<Int, CartoonCover>() {
 
     override fun getRefreshKey(state: PagingState<Int, CartoonCover>): Int? {
@@ -22,7 +22,7 @@ class ListPagePagingSource(
         val key = params.key ?: return LoadResult.Error(NullPointerException())
         Log.d("ListPagePagingSource", this.toString())
         kotlin.runCatching {
-            listPage.getCartoons(key)
+            listPage.load(key)
                 .apply {
                     Log.d("ListPagePagingSource", this.toString())
                 }

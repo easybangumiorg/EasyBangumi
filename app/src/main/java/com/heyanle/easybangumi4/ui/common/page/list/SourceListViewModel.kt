@@ -7,8 +7,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
-import com.heyanle.bangumi_source_api.api2.component.page.ListPage
-import com.heyanle.bangumi_source_api.api2.entity.CartoonCover
+import com.heyanle.bangumi_source_api.api.entity.CartoonCover
+import com.heyanle.bangumi_source_api.api.component.page.SourcePage
 import com.heyanle.easybangumi4.ui.common.page.paging.ListPagePagingSource
 
 /**
@@ -16,7 +16,7 @@ import com.heyanle.easybangumi4.ui.common.page.paging.ListPagePagingSource
  * https://github.com/heyanLE
  */
 class SourceListViewModel(
-    private val listPage: ListPage
+    private val listPage: SourcePage.SingleCartoonPage
 ): ViewModel() {
 
     val curPager = mutableStateOf(getPager().flow.cachedIn(viewModelScope))
@@ -36,7 +36,7 @@ class SourceListViewModel(
 }
 
 class SourceListViewModelFactory(
-    private val listPage: ListPage
+    private val listPage: SourcePage.SingleCartoonPage
 ) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")

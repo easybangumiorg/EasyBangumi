@@ -1,7 +1,7 @@
-package com.heyanle.bangumi_source_api.api.play
+package com.heyanle.bangumi_source_api.api.component.play
 
-import com.heyanle.bangumi_source_api.api.Source
 import com.heyanle.bangumi_source_api.api.SourceResult
+import com.heyanle.bangumi_source_api.api.component.Component
 import com.heyanle.bangumi_source_api.api.entity.Cartoon
 import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
 import com.heyanle.bangumi_source_api.api.entity.PlayLine
@@ -11,7 +11,7 @@ import com.heyanle.bangumi_source_api.api.entity.PlayerInfo
  * Created by HeYanLe on 2023/2/27 22:00.
  * https://github.com/heyanLE
  */
-interface PlaySource : Source {
+interface PlayComponent: Component {
 
     suspend fun getDetailed(
         summary: CartoonSummary

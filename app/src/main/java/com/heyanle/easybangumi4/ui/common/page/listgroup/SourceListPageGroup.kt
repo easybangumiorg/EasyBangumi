@@ -1,13 +1,10 @@
 package com.heyanle.easybangumi4.ui.common.page.listgroup
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.with
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -27,9 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.heyanle.bangumi_source_api.api2.component.page.ListPage
-import com.heyanle.bangumi_source_api.api2.component.page.ListPageGroup
-import com.heyanle.easybangumi4.R
+import com.heyanle.bangumi_source_api.api.component.page.SourcePage
 import com.heyanle.easybangumi4.ui.common.ErrorPage
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.page.list.SourceListPage
@@ -41,7 +36,7 @@ import com.heyanle.easybangumi4.ui.common.page.list.SourceListPage
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun SourceListPageGroup(
-    listPageGroup: ListPageGroup
+    listPageGroup: SourcePage.Group
 ) {
     val vm =
         viewModel<SourceListGroupViewModel>(factory = SourceListGroupViewModelFactory(listPageGroup))
@@ -118,11 +113,14 @@ fun SourceListWithGroup(
 
 @Composable
 fun SourceListGroupTab(
-    list: List<ListPage>,
-    curPage: ListPage,
-    onClick: (ListPage)->Unit,
+    list: List<SourcePage.SingleCartoonPage>,
+    curPage: SourcePage.SingleCartoonPage,
+    onClick: (SourcePage.SingleCartoonPage)->Unit,
 ){
-    LazyRow{
+    LazyRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center
+    ){
         items(list) {
             val selected = it == curPage
             Surface(

@@ -1,7 +1,7 @@
 package com.heyanle.easybangumi4.ui.common.page
 
 import androidx.compose.runtime.Composable
-import com.heyanle.bangumi_source_api.api.page.SourcePage
+import com.heyanle.bangumi_source_api.api.component.page.SourcePage
 import com.heyanle.easybangumi4.ui.common.page.list.SourceListPage
 import com.heyanle.easybangumi4.ui.common.page.listgroup.SourceListPageGroup
 

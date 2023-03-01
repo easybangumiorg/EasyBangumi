@@ -15,7 +15,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.selection.TextSelectionColors
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
@@ -27,30 +28,38 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.ui.common.PageContainer
 import com.heyanle.easybangumi4.ui.common.page.CartoonPageUI
+import com.heyanle.easybangumi4.ui.sourcehome.search.SourceSearchPage
 
 /**
  * Created by HeYanLe on 2023/2/25 17:32.
@@ -79,7 +88,7 @@ fun SourceHome(key: String) {
                 SourceHomeTopAppBar(
                     state = state,
                     onSearch = {
-                        if (it.isEmpty() && cur !is SourceHomeViewModel.CurrentSourcePageState.Search) {
+                        if (it.isEmpty()) {
                             return@SourceHomeTopAppBar
                         }
                         vm.search(it)
@@ -89,7 +98,7 @@ fun SourceHome(key: String) {
                     }
                 )
                 state.let {
-                    if(it is SourceHomeViewModel.SourceHomeState.Normal){
+                    if (it is SourceHomeViewModel.SourceHomeState.Normal) {
                         LazyRow(
                             modifier = Modifier.fillMaxWidth(),
                             contentPadding = PaddingValues(8.dp, 0.dp),
@@ -142,7 +151,6 @@ fun SourceHome(key: String) {
             }
 
 
-
         }
     }
 
@@ -169,8 +177,8 @@ fun SourceHomeTopAppBar(
         mutableStateOf("")
     }
 
-    LaunchedEffect(key1 = isCurrentSearchMode){
-        if(isCurrentSearchMode == true){
+    LaunchedEffect(key1 = isCurrentSearchMode) {
+        if (isCurrentSearchMode) {
             focusRequester.requestFocus()
         }
     }
@@ -194,6 +202,13 @@ fun SourceHomeTopAppBar(
             if (state is SourceHomeViewModel.SourceHomeState.Normal) {
                 if (isCurrentSearchMode) {
                     TextField(
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                        keyboardActions = KeyboardActions(
+                            onSearch = {
+                                onSearch(text)
+                            }
+                        ),
+                        maxLines = 1,
                         modifier = Modifier.focusRequester(focusRequester),
                         colors = TextFieldDefaults.textFieldColors(
                             containerColor = Color.Transparent,
@@ -203,9 +218,6 @@ fun SourceHomeTopAppBar(
                         value = text,
                         onValueChange = {
                             text = it
-                            if (it.isEmpty()) {
-                                onSearch(it)
-                            }
                         },
                         placeholder = {
                             Text(
@@ -242,7 +254,7 @@ fun SourceHomeTopAppBar(
                         }
                     }
 
-                }else if(state.search != null){
+                } else if (state.search != null) {
                     IconButton(onClick = {
                         isCurrentSearchMode = true
                     }) {
@@ -258,7 +270,9 @@ fun SourceHomeTopAppBar(
 
 }
 
-@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class,
+    ExperimentalComposeUiApi::class
+)
 @Composable
 fun SourceHomeScreen(
     vm: SourceHomeViewModel,
@@ -274,9 +288,17 @@ fun SourceHomeScreen(
             }
         }
     }
-
+    val keyboard = LocalSoftwareKeyboardController.current
     AnimatedContent(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().nestedScroll(object : NestedScrollConnection {
+            override fun onPreScroll(
+                available: Offset,
+                source: NestedScrollSource
+            ): Offset {
+                keyboard?.hide()
+                return super.onPreScroll(available, source)
+            }
+        }),
         targetState = vm.currentSourceState,
         transitionSpec = {
             fadeIn(animationSpec = tween(300, delayMillis = 300)) with
@@ -289,15 +311,23 @@ fun SourceHomeScreen(
             }
 
             is SourceHomeViewModel.CurrentSourcePageState.Page -> {
-                CartoonPageUI(cartoonPage = it.cartoonPage)
+                val listVmOwner = vm.getViewModelStoreOwner(it.cartoonPage)
+                CompositionLocalProvider(
+                    LocalViewModelStoreOwner provides listVmOwner
+                ) {
+                    CartoonPageUI(cartoonPage = it.cartoonPage)
+                }
+
             }
 
             is SourceHomeViewModel.CurrentSourcePageState.Search -> {
+                state.search?.let { search ->
+                    SourceSearchPage(keyword = it.keyword, searchSource = search)
+                }
 
             }
         }
     }
-
 
 
 }
