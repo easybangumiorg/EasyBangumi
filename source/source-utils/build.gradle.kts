@@ -1,12 +1,7 @@
+
 import com.heyanle.buildsrc.Android
 import com.heyanle.buildsrc.SourceExtension
-import com.heyanle.buildsrc.androidXWebkit
-import com.heyanle.buildsrc.commonsText
-import com.heyanle.buildsrc.gson
-import com.heyanle.buildsrc.jsoup
-import com.heyanle.buildsrc.kotlinx_coroutines
-import com.heyanle.buildsrc.okhttp3
-import com.heyanle.buildsrc.okhttp3logging
+import com.heyanle.buildsrc.Version
 import org.jetbrains.kotlin.konan.properties.Properties
 
 plugins {
@@ -142,11 +137,11 @@ afterEvaluate {
 
 
 dependencies {
-    compileOnly(androidXWebkit)
-    compileOnly(kotlinx_coroutines)
-    compileOnly(jsoup)
-    compileOnly(okhttp3)
-    compileOnly(okhttp3logging)
-    compileOnly(gson)
-    compileOnly(commonsText)
+    compileOnly("androidx.webkit:webkit:${Version.androidx_webkit}")
+    compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-android:${Version.kotlinx_coroutines}")
+    compileOnly("org.jsoup:jsoup:${Version.jsoup}")
+    compileOnly("com.squareup.okhttp3:okhttp:${Version.okhttp3}")
+    compileOnly("com.squareup.okhttp3:logging-interceptor:${Version.okhttp3}")
+    compileOnly("com.google.code.gson:gson:${Version.gson}")
+    compileOnly("org.apache.commons:commons-text:${Version.commons_text}")
 }

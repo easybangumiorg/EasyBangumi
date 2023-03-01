@@ -1,7 +1,9 @@
-import com.heyanle.buildsrc.*
+
+import com.heyanle.buildsrc.Android
+import com.heyanle.buildsrc.SourceExtension
+import com.heyanle.buildsrc.Version
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.konan.properties.Properties
-import org.jetbrains.kotlin.load.kotlin.signatures
 
 plugins {
     id("com.android.library")
@@ -154,6 +156,6 @@ afterEvaluate {
 
 
 dependencies {
-    compileOnly(kotlinx_coroutines)
-    compileOnly(okhttp3)
+    compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-android:${Version.kotlinx_coroutines}")
+    compileOnly( "com.squareup.okhttp3:okhttp:${Version.okhttp3}")
 }

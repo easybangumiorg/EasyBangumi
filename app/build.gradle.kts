@@ -1,32 +1,9 @@
 
 import com.heyanle.buildsrc.Android
 import com.heyanle.buildsrc.Config
-import com.heyanle.buildsrc.accompanist
-import com.heyanle.buildsrc.androidXBasic
-import com.heyanle.buildsrc.androidXWebkit
-import com.heyanle.buildsrc.appCenter
-import com.heyanle.buildsrc.cling
-import com.heyanle.buildsrc.coil
-import com.heyanle.buildsrc.coilGif
-import com.heyanle.buildsrc.commonsText
-import com.heyanle.buildsrc.compose
-import com.heyanle.buildsrc.easyPlayer
-import com.heyanle.buildsrc.exoplayer
-import com.heyanle.buildsrc.exoplayerRtmp
-import com.heyanle.buildsrc.glide
-import com.heyanle.buildsrc.gson
-import com.heyanle.buildsrc.jsoup
-import com.heyanle.buildsrc.junit
-import com.heyanle.buildsrc.leakcanary
-import com.heyanle.buildsrc.media
-import com.heyanle.buildsrc.navigationCompose
-import com.heyanle.buildsrc.okhttp3
-import com.heyanle.buildsrc.okkv2
-import com.heyanle.buildsrc.okkv2Compose
-import com.heyanle.buildsrc.paging
-import com.heyanle.buildsrc.pagingCompose
-import com.heyanle.buildsrc.room
-import com.heyanle.buildsrc.roomPaging
+import com.heyanle.buildsrc.Version
+import com.heyanle.buildsrc.implementation
+import com.heyanle.buildsrc.project
 
 plugins {
     id("com.android.application")
@@ -45,7 +22,6 @@ android {
         versionCode = Android.versionCode
         versionName = Android.versionName
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -99,33 +75,81 @@ android {
 
 
 dependencies {
-    glide()
-    okkv2()
-    okkv2Compose()
-    okhttp3()
-    androidXBasic()
-    leakcanary()
-    paging()
-    pagingCompose()
-    junit()
-    easyPlayer()
-    compose()
-    accompanist()
-    navigationCompose()
-    coil()
-    coilGif()
-    exoplayer()
-    exoplayerRtmp()
-    media()
-    easyPlayer()
-    room()
-    roomPaging()
-    appCenter()
-    gson()
-    jsoup()
-    androidXWebkit()
-    commonsText()
-    cling()
+
+
+    implementation("com.github.bumptech.glide:glide:${Version.glide}")
+    implementation("com.github.heyanLE.okkv2:okkv2-mmkv:${Version.okkv2}")
+    implementation("com.squareup.okhttp3:okhttp:${Version.okhttp3}")
+    implementation("com.squareup.okhttp3:logging-interceptor:${Version.okhttp3}")
+
+    implementation("androidx.core:core-ktx:${Version.androidx_core_ktx}")
+    implementation("androidx.appcompat:appcompat:${Version.androidx_appcompat}")
+    implementation("com.google.android.material:material:${Version.google_material}")
+    implementation("androidx.activity:activity-ktx:${Version.androidx_activity_ktx}")
+    implementation("androidx.fragment:fragment-ktx:${Version.androidx_fragment_ktx}")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:${Version.androidx_lifecycle_runtime_ktx}")
+
+    implementation( "com.squareup.leakcanary:leakcanary-android:${Version.leakcanary}")
+
+    implementation("androidx.paging:paging-runtime-ktx:${Version.paging}")
+    implementation("androidx.paging:paging-compose:1.0.0-alpha18")
+    implementation("com.github.heyanLE.EasyPlayer:eplayer-core:${Version.easy_player}")
+
+    implementation("androidx.compose.ui:ui:${Version.compose}")
+    implementation("androidx.compose.ui:ui-graphics:${Version.compose}")
+    implementation("androidx.compose.ui:ui-tooling-preview:${Version.compose}")
+    implementation("androidx.compose.material3:material3:${Version.compose}")
+    implementation("androidx.compose.material:material-icons-core:${Version.compose}")
+    implementation("androidx.compose.material:material-icons-extended:${Version.compose}")
+
+    debugImplementation("androidx.compose.ui:ui-tooling:${Version.compose}")
+    debugImplementation("androidx.compose.ui:ui-test-manifest:${Version.compose}")
+
+    implementation("androidx.compose.runtime:runtime-livedata:${Version.compose_runtime}")
+
+    implementation("com.google.accompanist:accompanist-navigation-animation:${Version.accompanist}")
+    implementation("com.google.accompanist:accompanist-systemuicontroller:${Version.accompanist}")
+    implementation("com.google.accompanist:accompanist-pager:${Version.accompanist}")
+    implementation("com.google.accompanist:accompanist-pager-indicators:${Version.accompanist}")
+    implementation("com.google.accompanist:accompanist-swiperefresh:${Version.accompanist}")
+    implementation("com.google.accompanist:accompanist-insets:${Version.accompanist}")
+    implementation("com.google.accompanist:accompanist-insets-ui:${Version.accompanist}")
+    implementation("com.google.accompanist:accompanist-flowlayout:${Version.accompanist}")
+
+    implementation("androidx.navigation:navigation-compose:${Version.navigation_compose}")
+
+    implementation("io.coil-kt:coil-compose:${Version.coil}")
+    implementation("io.coil-kt:coil-gif:${Version.coil}")
+
+    implementation("com.google.android.exoplayer:exoplayer:${Version.exoplayer}")
+    implementation("com.google.android.exoplayer:extension-rtmp:${Version.exoplayer}")
+
+    implementation("androidx.media:media:${Version.media}")
+
+    implementation("com.github.heyanLE.EasyPlayer:eplayer-core:${Version.easy_player}")
+
+    implementation("androidx.room:room-runtime:${Version.androidx_room}")
+    implementation("androidx.room:room-ktx:${Version.androidx_room}")
+    implementation("androidx.room:room-paging:${Version.androidx_room}")
+    implementation("androidx.room:room-common:${Version.androidx_room}")
+
+    kapt("androidx.room:room-compiler:${Version.androidx_room}")
+
+    implementation("com.microsoft.appcenter:appcenter-analytics:${Version.app_center}")
+    implementation("com.microsoft.appcenter:appcenter-crashes:${Version.app_center}")
+    implementation("com.microsoft.appcenter:appcenter-distribute:${Version.app_center}")
+
+    implementation("com.google.code.gson:gson:${Version.gson}")
+
+    implementation("org.jsoup:jsoup:${Version.jsoup}")
+
+    implementation("androidx.webkit:webkit:${Version.androidx_webkit}")
+
+    implementation("org.apache.commons:commons-text:${Version.commons_text}")
+
+    implementation("org.fourthline.cling:cling-core:${Version.cling}")
+    implementation("org.fourthline.cling:cling-support:${Version.cling}")
+
     implementation(project(":easy-dlna"))
     implementation(project(":easy-crasher"))
     implementation(project(":easy-i18n"))
