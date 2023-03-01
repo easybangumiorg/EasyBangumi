@@ -14,10 +14,11 @@ import androidx.navigation.navArgument
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import com.heyanle.bangumi_source_api.api.entity.CartoonCover
 import com.heyanle.easybangumi4.ui.home.Home
 import com.heyanle.easybangumi4.ui.sourcehome.SourceHome
+import com.heyanle.easybangumi4.utils.easyTODO
 import java.lang.ref.WeakReference
-import java.net.URLEncoder
 
 /**
  * Created by HeYanLe on 2023/2/19 0:10.
@@ -33,10 +34,20 @@ const val NAV = "nav"
 
 const val HOME = "home"
 
+const val DETAILED = "detailed"
+
+const val WEB_VIEW_USER = "web_view_user"
+
 const val SOURCE_HOME = "source_home"
 fun NavHostController.navigationSourceHome(key: String) {
     navigate("${SOURCE_HOME}?key=${key}")
 }
+
+fun NavHostController.navigationDetailed(cartoonCover: CartoonCover) {
+    easyTODO("详情页")
+}
+
+
 
 // 缺省路由
 const val DEFAULT = HOME

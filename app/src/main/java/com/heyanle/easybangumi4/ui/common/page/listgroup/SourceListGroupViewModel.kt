@@ -9,10 +9,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewModelScope
-import com.heyanle.bangumi_source_api.api2.component.page.CartoonPage
-import com.heyanle.bangumi_source_api.api2.component.page.ListPage
-import com.heyanle.bangumi_source_api.api2.component.page.ListPageGroup
-import com.heyanle.easybangumi4.ui.common.page.list.SourceListViewModel
+import com.heyanle.bangumi_source_api.api.component.page.SourcePage
 import com.heyanle.easybangumi4.utils.stringRes
 import kotlinx.coroutines.launch
 
@@ -21,7 +18,7 @@ import kotlinx.coroutines.launch
  * https://github.com/heyanLE
  */
 class SourceListGroupViewModel(
-    private val listPage: ListPageGroup
+    private val listPage: SourcePage.Group
 ): ViewModel() {
 
     sealed class GroupState {
@@ -29,7 +26,7 @@ class SourceListGroupViewModel(
 
         object Loading: GroupState()
 
-        class Group(val list: List<ListPage>): GroupState()
+        class Group(val list: List<SourcePage.SingleCartoonPage>): GroupState()
 
         class Error(val errorMsg: String): GroupState()
     }
@@ -39,7 +36,7 @@ class SourceListGroupViewModel(
     fun refresh(){
         viewModelScope.launch {
             groupState = GroupState.Loading
-            listPage.listPage()
+            listPage.loadPage()
                 .complete {
                     groupState = GroupState.Group(it.data)
                 }
@@ -57,20 +54,20 @@ class SourceListGroupViewModel(
     sealed class CurListPageState {
         object None: CurListPageState()
 
-        class Page(val pageListPage: ListPage): CurListPageState()
+        class Page(val pageListPage: SourcePage.SingleCartoonPage): CurListPageState()
 
     }
     var curListState by mutableStateOf<CurListPageState>(CurListPageState.None)
 
-    fun changeListPage(listPage: ListPage){
+    fun changeListPage(listPage: SourcePage.SingleCartoonPage){
         curListState = CurListPageState.Page(listPage)
         Log.d("SourceGroupViewModel", "changeListPage ${listPage.label}")
     }
 
 
-    private val viewModelOwnerStore = hashMapOf<CartoonPage, ViewModelStore>()
+    private val viewModelOwnerStore = hashMapOf<SourcePage, ViewModelStore>()
 
-    fun getViewModelStoreOwner(page: CartoonPage) = ViewModelStoreOwner {
+    fun getViewModelStoreOwner(page: SourcePage) = ViewModelStoreOwner {
         var viewModelStore = viewModelOwnerStore[page]
         if (viewModelStore == null) {
             viewModelStore = ViewModelStore()
@@ -79,10 +76,16 @@ class SourceListGroupViewModel(
         viewModelStore
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        viewModelOwnerStore.iterator().forEach {
+            it.value.clear()
+        }
+    }
 }
 
 class SourceListGroupViewModelFactory(
-    private val listPage: ListPageGroup
+    private val listPage: SourcePage.Group
 ) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")

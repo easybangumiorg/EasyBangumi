@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.heyanle.bangumi_source_api.api.Source
-import com.heyanle.bangumi_source_api.api.page.SourcePage
+import com.heyanle.bangumi_source_api.api.component.page.SourcePage
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.source.SourceBundle
 import com.heyanle.easybangumi4.source.SourceMaster

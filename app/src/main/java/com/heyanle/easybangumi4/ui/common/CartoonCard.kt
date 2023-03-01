@@ -1,5 +1,6 @@
 package com.heyanle.easybangumi4.ui.common
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.heyanle.bangumi_source_api.api.entity.CartoonCover
@@ -29,7 +32,7 @@ import com.heyanle.bangumi_source_api.api.entity.CartoonCover
  */
 
 @Composable
-fun CartoonCard(
+fun CartoonCardWithCover(
     modifier: Modifier = Modifier,
     cartoonCover: CartoonCover,
     onClick: (CartoonCover) -> Unit,
@@ -46,9 +49,7 @@ fun CartoonCard(
             .then(modifier),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        if(cartoonCover.coverUrl == null){
-
-        }else{
+        if(cartoonCover.coverUrl != null){
             OkImage(
                 modifier = Modifier
                     .height(135.dp)
@@ -74,8 +75,46 @@ fun CartoonCard(
                 }
             )
         }
+    }
+}
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CartoonCardWithoutCover(
+    modifier: Modifier = Modifier,
+    cartoonCover: CartoonCover,
+    onClick: (CartoonCover) -> Unit,
+) {
+    Column (
+        modifier = Modifier
+            .width(260.dp)
+            .padding(4.dp)
+//                .clip(RoundedCornerShape(4.dp))
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
+            .clickable {
+                onClick(cartoonCover)
+            }
+            .padding(8.dp)
+            .then(modifier),
+    ) {
 
+        Text(
+            text = cartoonCover.title,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Start,
+        )
+        cartoonCover.intro?.let {
+            Text(
+                text = it,
+                color = MaterialTheme.colorScheme.secondary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.End
+            )
+        }
     }
 
 }

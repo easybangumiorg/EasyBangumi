@@ -1,4 +1,4 @@
-package com.heyanle.bangumi_source_api.api.page
+package com.heyanle.bangumi_source_api.api.component.page
 
 import com.heyanle.bangumi_source_api.api.Source
 
