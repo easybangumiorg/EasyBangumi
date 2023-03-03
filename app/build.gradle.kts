@@ -67,7 +67,7 @@ android {
         viewBinding = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.3.2"
+        kotlinCompilerExtensionVersion = "1.4.1"
     }
 
 }
@@ -78,7 +78,9 @@ dependencies {
 
 
     implementation("com.github.bumptech.glide:glide:${Version.glide}")
+
     implementation("com.github.heyanLE.okkv2:okkv2-mmkv:${Version.okkv2}")
+
     implementation("com.squareup.okhttp3:okhttp:${Version.okhttp3}")
     implementation("com.squareup.okhttp3:logging-interceptor:${Version.okhttp3}")
 
@@ -95,17 +97,18 @@ dependencies {
     implementation("androidx.paging:paging-compose:1.0.0-alpha18")
     implementation("com.github.heyanLE.EasyPlayer:eplayer-core:${Version.easy_player}")
 
-    implementation("androidx.compose.ui:ui:${Version.compose}")
-    implementation("androidx.compose.ui:ui-graphics:${Version.compose}")
-    implementation("androidx.compose.ui:ui-tooling-preview:${Version.compose}")
-    implementation("androidx.compose.material3:material3:${Version.compose}")
-    implementation("androidx.compose.material:material-icons-core:${Version.compose}")
-    implementation("androidx.compose.material:material-icons-extended:${Version.compose}")
+    implementation(platform("androidx.compose:compose-bom:${Version.compose_bom}"))
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.ui:ui-graphics")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material:material-icons-core")
+    implementation("androidx.compose.material:material-icons-extended")
+    implementation("androidx.compose.runtime:runtime-livedata")
 
-    debugImplementation("androidx.compose.ui:ui-tooling:${Version.compose}")
-    debugImplementation("androidx.compose.ui:ui-test-manifest:${Version.compose}")
-
-    implementation("androidx.compose.runtime:runtime-livedata:${Version.compose_runtime}")
+    debugImplementation(platform("androidx.compose:compose-bom:${Version.compose_bom}"))
+    debugImplementation("androidx.compose.ui:ui-tooling")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
 
     implementation("com.google.accompanist:accompanist-navigation-animation:${Version.accompanist}")
     implementation("com.google.accompanist:accompanist-systemuicontroller:${Version.accompanist}")
