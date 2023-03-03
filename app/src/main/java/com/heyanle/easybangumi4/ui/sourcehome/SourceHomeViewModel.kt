@@ -90,13 +90,17 @@ class SourceHomeViewModel: ViewModel() {
 
     private val viewModelOwnerStore = hashMapOf<SourcePage, ViewModelStore>()
 
-    fun getViewModelStoreOwner(page: SourcePage) = ViewModelStoreOwner {
-        var viewModelStore = viewModelOwnerStore[page]
-        if (viewModelStore == null) {
-            viewModelStore = ViewModelStore()
-            viewModelOwnerStore[page] = viewModelStore
-        }
-        viewModelStore
+    fun getViewModelStoreOwner(page: SourcePage) = object: ViewModelStoreOwner {
+
+        override val viewModelStore: ViewModelStore
+            get() {
+                var viewModelStore = viewModelOwnerStore[page]
+                if (viewModelStore == null) {
+                    viewModelStore = ViewModelStore()
+                    viewModelOwnerStore[page] = viewModelStore
+                }
+                return viewModelStore
+            }
     }
 
     override fun onCleared() {

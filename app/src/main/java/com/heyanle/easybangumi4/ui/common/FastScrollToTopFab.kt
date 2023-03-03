@@ -6,12 +6,14 @@ import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.FloatingActionButton
@@ -35,6 +37,26 @@ import kotlinx.coroutines.launch
 @Composable
 fun FastScrollToTopFab(
     listState: LazyListState,
+    after: Int = 10,
+    padding: PaddingValues = PaddingValues(0.dp),
+    onClick: () -> Unit = {}
+) {
+    val scope = rememberCoroutineScope()
+    EasyFab(
+        state = remember { derivedStateOf { listState.firstVisibleItemIndex > after } },
+        padding = padding
+    ) {
+        scope.launch {
+            listState.animateScrollToItem(0, 0)
+            onClick()
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun FastScrollToTopFab(
+    listState: LazyStaggeredGridState,
     after: Int = 10,
     padding: PaddingValues = PaddingValues(0.dp),
     onClick: () -> Unit = {}

@@ -83,7 +83,6 @@ fun SourceHome(key: String) {
 
 
     Surface(
-        tonalElevation = 8.dp,
         color = MaterialTheme.colorScheme.background,
         contentColor = MaterialTheme.colorScheme.onBackground
     ) {
@@ -150,8 +149,7 @@ fun SourceHome(key: String) {
                     vm.onInit(sou, pages, search)
                 }
 
-                Surface(
-                ) {
+                Surface{
                     vm.sourceHomeState.let {
                         if (it is SourceHomeViewModel.SourceHomeState.Normal) {
                             SourceHomeScreen(vm = vm, state = it)

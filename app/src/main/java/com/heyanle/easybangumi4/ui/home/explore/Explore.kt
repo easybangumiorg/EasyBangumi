@@ -1,14 +1,8 @@
 package com.heyanle.easybangumi4.ui.home.explore
 
-import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
@@ -20,8 +14,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -92,53 +84,48 @@ fun Explore() {
     LaunchedEffect(key1 = Unit) {
         pagerState.scrollToPage(explorePageIndex)
     }
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        topBar = {
-            Column(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                CompositionLocalProvider(
-                    LocalViewModelStoreOwner provides vm.getViewModelStoreOwner(ExplorePageItems[pagerState.currentPage])
-                ) {
-                    ExplorePageItems[pagerState.currentPage].topAppBar(scrollBehavior)
-                }
-                TabRow(
-                    selectedTabIndex = pagerState.currentPage,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    ExplorePageItems.forEachIndexed { index, explorePage ->
-                        Tab(selected = index == pagerState.currentPage,
-                            onClick = {
-                                scope.launch {
-                                    pagerState.animateScrollToPage(index)
-                                }
-                            },
-                            text = {
-                                explorePage.tabLabel()
-                            })
-                    }
-                }
-            }
 
-        },
-        content = { padding ->
-            HorizontalPager(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                count = ExplorePageItems.size,
-                state = pagerState
-            ) {
-                val page = ExplorePageItems[it]
-                CompositionLocalProvider(
-                    LocalViewModelStoreOwner provides vm.getViewModelStoreOwner(page)
-                ) {
-                    page.content()
-                }
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        CompositionLocalProvider(
+            LocalViewModelStoreOwner provides vm.getViewModelStoreOwner(ExplorePageItems[pagerState.currentPage])
+        ) {
+            ExplorePageItems[pagerState.currentPage].topAppBar(scrollBehavior)
+        }
+        TabRow(
+            selectedTabIndex = pagerState.currentPage,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            ExplorePageItems.forEachIndexed { index, explorePage ->
+                Tab(selected = index == pagerState.currentPage,
+                    onClick = {
+                        scope.launch {
+                            pagerState.animateScrollToPage(index)
+                        }
+                    },
+                    text = {
+                        explorePage.tabLabel()
+                    })
             }
         }
-    )
+
+        HorizontalPager(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+            count = ExplorePageItems.size,
+            state = pagerState
+        ) {
+            val page = ExplorePageItems[it]
+            CompositionLocalProvider(
+                LocalViewModelStoreOwner provides vm.getViewModelStoreOwner(page)
+            ) {
+                page.content()
+            }
+        }
+
+    }
 
 
 }

@@ -1,8 +1,7 @@
 package com.heyanle.easybangumi4.ui.home
 
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.History
@@ -16,15 +15,15 @@ import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Report
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -136,9 +135,23 @@ var homePageIndex by okkv("homePageInitPageIndex", 0)
 fun Home() {
     val homeNavController = rememberNavController()
 
-    Scaffold(
-        contentWindowInsets = WindowInsets(0.dp),
-        bottomBar = {
+    Surface(
+        color = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.onBackground
+    ) {
+        Column() {
+            NavHost(
+                modifier = Modifier.weight(1f),
+                startDestination = HomePageItems.getOrNull(homePageIndex)?.route
+                    ?: HomePage.StarPage.route,
+                navController = homeNavController
+            ) {
+                HomePageItems.forEach { page ->
+                    composable(page.route){
+                        page.content()
+                    }
+                }
+            }
             NavigationBar(){
                 val navBackStackEntry by homeNavController.currentBackStackEntryAsState()
                 val currentDestination = navBackStackEntry?.destination
@@ -170,20 +183,9 @@ fun Home() {
                     )
                 }
             }
+
         }
-    ) { padding ->
-        NavHost(
-            modifier = Modifier.padding(padding),
-            startDestination = HomePageItems.getOrNull(homePageIndex)?.route
-                ?: HomePage.StarPage.route,
-            navController = homeNavController
-        ) {
-            HomePageItems.forEach { page ->
-                composable(page.route){
-                    page.content()
-                }
-            }
-        }
+
     }
 
 }
