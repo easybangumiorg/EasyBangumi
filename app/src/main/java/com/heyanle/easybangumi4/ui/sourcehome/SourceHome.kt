@@ -80,8 +80,12 @@ fun SourceHome(key: String) {
     val state = vm.sourceHomeState
     val cur = vm.currentSourceState
 
+
+
     Surface(
-        tonalElevation = 8.dp
+        tonalElevation = 8.dp,
+        color = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.onBackground
     ) {
         Column(
             modifier = Modifier.systemBarsPadding(),

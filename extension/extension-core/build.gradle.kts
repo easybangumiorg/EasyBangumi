@@ -1,4 +1,5 @@
 import com.heyanle.buildsrc.SourceExtension
+import com.heyanle.buildsrc.Version
 
 plugins {
     id("com.android.library")
@@ -33,6 +34,7 @@ android {
 }
 
 dependencies {
+    implementation("androidx.appcompat:appcompat:${Version.androidx_appcompat}")
     implementation(SourceExtension.extensionApi)
     implementation(SourceExtension.sourceApi)
     implementation(SourceExtension.sourceUtils)

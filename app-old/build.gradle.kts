@@ -89,6 +89,7 @@ dependencies {
     val exoplayer = "2.18.1"
     val easy_player = "2.0"
     val compose = "1.0.1"
+    val compose_bom = "2022.10.00"
     val accompanist = "0.28.0"
     val navigation_compose = "2.5.3"
     val compose_runtime = "1.3.2"
@@ -104,6 +105,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:${okhttp3}")
     implementation("com.squareup.okhttp3:logging-interceptor:${okhttp3}")
 
+
     implementation("androidx.core:core-ktx:${androidx_core_ktx}")
     implementation("androidx.appcompat:appcompat:${androidx_appcompat}")
     implementation("com.google.android.material:material:${google_material}")
@@ -117,15 +119,17 @@ dependencies {
     implementation("androidx.paging:paging-compose:1.0.0-alpha18")
     implementation("com.github.heyanLE.EasyPlayer:eplayer-core:${easy_player}")
 
-    implementation("androidx.compose.ui:ui:${compose}")
-    implementation("androidx.compose.ui:ui-graphics:${compose}")
-    implementation("androidx.compose.ui:ui-tooling-preview:${compose}")
-    implementation("androidx.compose.material3:material3:${compose}")
-    implementation("androidx.compose.material:material-icons-core:${compose}")
-    implementation("androidx.compose.material:material-icons-extended:${compose}")
+    implementation(platform("androidx.compose:compose-bom:${compose_bom}"))
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.ui:ui-graphics")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material:material-icons-core")
+    implementation("androidx.compose.material:material-icons-extended")
 
-    debugImplementation("androidx.compose.ui:ui-tooling:${compose}")
-    debugImplementation("androidx.compose.ui:ui-test-manifest:${compose}")
+    debugImplementation(platform("androidx.compose:compose-bom:${compose_bom}"))
+    debugImplementation("androidx.compose.ui:ui-tooling")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
 
     implementation("androidx.compose.runtime:runtime-livedata:${compose_runtime}")
 
