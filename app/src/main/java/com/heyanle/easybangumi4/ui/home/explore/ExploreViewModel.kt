@@ -12,13 +12,17 @@ class ExploreViewModel : ViewModel() {
 
     private val viewModelOwnerStore = hashMapOf<ExplorePage, ViewModelStore>()
 
-    fun getViewModelStoreOwner(page: ExplorePage) = ViewModelStoreOwner {
-        var viewModelStore = viewModelOwnerStore[page]
-        if (viewModelStore == null) {
-            viewModelStore = ViewModelStore()
-            viewModelOwnerStore[page] = viewModelStore
-        }
-        viewModelStore
+    fun getViewModelStoreOwner(page: ExplorePage) = object: ViewModelStoreOwner {
+
+        override val viewModelStore: ViewModelStore
+            get() {
+                var viewModelStore = viewModelOwnerStore[page]
+                if (viewModelStore == null) {
+                    viewModelStore = ViewModelStore()
+                    viewModelOwnerStore[page] = viewModelStore
+                }
+                return viewModelStore
+            }
     }
 
     override fun onCleared() {
