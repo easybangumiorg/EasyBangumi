@@ -1,17 +1,15 @@
 package com.heyanle.buildsrc
 
-import org.gradle.api.artifacts.dsl.DependencyHandler
-
 /**
  * Created by HeYanLe on 2022/9/10 16:48.
  * https://github.com/heyanLE
  */
 
 object Version {
-    const val androidx_activity_ktx = "1.5.5"
+    const val androidx_activity_ktx = "1.6.1"
     const val androidx_fragment_ktx = "1.5.5"
     const val androidx_core_ktx = "1.9.0"
-    const val androidx_appcompat = "1.6.0"
+    const val androidx_appcompat = "1.6.1"
     const val androidx_room = "2.5.0"
     const val google_material = "1.8.0"
     const val jsoup = "1.15.3"
@@ -28,10 +26,9 @@ object Version {
     const val androidx_lifecycle_runtime_ktx = "2.5.1"
     const val exoplayer = "2.18.3"
     const val easy_player = "2.0"
-    const val compose = "1.3.3"
+    const val compose_bom = "2023.01.00"
     const val accompanist = "0.28.0"
     const val navigation_compose = "2.5.3"
-    const val compose_runtime = "1.3.3"
     const val coil = "2.2.2"
     const val media3 = "1.0.0-beta03"
     const val media = "1.6.0"
@@ -42,4 +39,6 @@ object Version {
     const val cling = "2.1.2"
     const val jetty = "9.0.7.v20131107"
     const val servlet = "4.0.1"
+
+
 }
