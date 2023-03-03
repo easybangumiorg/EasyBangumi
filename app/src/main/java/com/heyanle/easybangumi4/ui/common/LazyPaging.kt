@@ -1,9 +1,12 @@
 package com.heyanle.easybangumi4.ui.common
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridScope
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -114,6 +117,87 @@ fun <T : Any> LazyGridScope.pagingCommon(items: LazyPagingItems<T>){
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
+fun <T : Any> LazyStaggeredGridScope.pagingCommon(items: LazyPagingItems<T>){
+    when(items.loadState.refresh){
+        is LoadState.Loading -> {
+            item(
+                span = StaggeredGridItemSpan.FullLine
+            ) {
+                LoadingPage(
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
+
+        is LoadState.Error -> {
+            item(
+                span = StaggeredGridItemSpan.FullLine
+            ) {
+                val errorMsg =
+                    (items.loadState.refresh as? LoadState.Error)?.error?.message
+                        ?: stringRes(
+                            R.string.net_error
+                        )
+                ErrorPage(
+                    modifier = Modifier.fillMaxWidth(),
+                    errorMsg = errorMsg,
+                    clickEnable = true,
+                    other = {
+                        Text(text = stringResource(id = R.string.click_to_retry))
+                    },
+                    onClick = {
+                        items.refresh()
+                    }
+                )
+            }
+        }
+
+        else -> {
+
+        }
+    }
+
+    when (items.loadState.append) {
+        is LoadState.Loading -> {
+            item(
+                span = StaggeredGridItemSpan.FullLine
+            ) {
+                LoadingPage(
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
+
+        is LoadState.Error -> {
+            item(
+                span = StaggeredGridItemSpan.FullLine
+            ) {
+                val errorMsg =
+                    (items.loadState.append as? LoadState.Error)?.error?.message
+                        ?: stringRes(
+                            R.string.net_error
+                        )
+                ErrorPage(
+                    modifier = Modifier.fillMaxWidth(),
+                    errorMsg = errorMsg,
+                    clickEnable = true,
+                    other = {
+                        Text(text = stringResource(id = R.string.click_to_retry))
+                    },
+                    onClick = {
+                        items.retry()
+                    }
+                )
+            }
+        }
+
+        else -> {
+
+        }
+    }
+}
+
 fun <T : Any> LazyListScope.pagingCommon(items: LazyPagingItems<T>){
     when(items.loadState.refresh){
         is LoadState.Loading -> {
@@ -185,3 +269,4 @@ fun <T : Any> LazyListScope.pagingCommon(items: LazyPagingItems<T>){
         }
     }
 }
+

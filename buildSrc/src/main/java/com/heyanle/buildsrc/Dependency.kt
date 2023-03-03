@@ -26,7 +26,7 @@ object Version {
     const val androidx_lifecycle_runtime_ktx = "2.5.1"
     const val exoplayer = "2.18.3"
     const val easy_player = "2.0"
-    const val compose_bom = "2023.01.00"
+
     const val accompanist = "0.28.0"
     const val navigation_compose = "2.5.3"
     const val coil = "2.2.2"
@@ -39,6 +39,16 @@ object Version {
     const val cling = "2.1.2"
     const val jetty = "9.0.7.v20131107"
     const val servlet = "4.0.1"
+
+    const val compose_bom = "2023.01.00"
+
+    const val compose_animation = "1.4.0-beta02"
+    const val compose_compiler = "1.4.3"
+    const val compose_foundation = "1.4.0-beta02"
+    const val compose_material = "1.4.0-beta02"
+    const val compose_material3 = "1.1.0-alpha07"
+    const val compose_runtime = "1.4.0-beta02"
+    const val compose_ui = "1.4.0-beta02"
 
 
 }

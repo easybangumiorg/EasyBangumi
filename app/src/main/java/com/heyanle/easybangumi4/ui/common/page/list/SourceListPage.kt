@@ -6,11 +6,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
@@ -108,7 +112,7 @@ fun SourceListPageContentWithCover(
                 modifier = Modifier
                     .fillMaxSize(),
                 state = lazyGridState,
-                columns = GridCells.Adaptive(95.dp),
+                columns = GridCells.Adaptive(150.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp) ,
                 contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
@@ -125,9 +129,10 @@ fun SourceListPageContentWithCover(
                     }
                 }
                 items(items.itemCount){
+
                     items[it]?.let {
                         CartoonCardWithCover(
-
+                            modifier = Modifier.fillMaxWidth(),
                             cartoonCover = it
                         ){
                             nav.navigationDetailed(it)
@@ -147,11 +152,11 @@ fun SourceListPageContentWithCover(
             backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
             contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
         )
-        FastScrollToTopFab(listState = lazyGridState, after = 30)
+        FastScrollToTopFab(listState = lazyGridState, after = 20)
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun SourceListPageContentWithoutCover(
     modifier: Modifier = Modifier,
@@ -172,27 +177,26 @@ fun SourceListPageContentWithoutCover(
         }
     })
 
-    val lazyListState = rememberLazyListState()
+    val lazyState = rememberLazyStaggeredGridState()
     Box(
         modifier = Modifier
             .fillMaxSize()
             .pullRefresh(state)
             .then(modifier)
     ){
+        
         pagingItems.let{ items ->
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(260.dp),
+            LazyVerticalStaggeredGrid(
+                columns = StaggeredGridCells.Adaptive(150.dp),
+                state = lazyState,
                 verticalArrangement = Arrangement.spacedBy(4.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
-                contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
+                contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp),
+                modifier = Modifier.fillMaxSize()
             ){
                 header?.let {
                     item(
-                        span = {
-                            // LazyGridItemSpanScope:
-                            // maxLineSpan
-                            GridItemSpan(maxLineSpan)
-                        }
+                        span = StaggeredGridItemSpan.FullLine
                     ) {
                         it()
                     }
@@ -209,6 +213,35 @@ fun SourceListPageContentWithoutCover(
                 }
                 pagingCommon(items)
             }
+//            LazyVerticalGrid(
+//                columns = GridCells.Adaptive(150.dp),
+//                verticalArrangement = Arrangement.spacedBy(4.dp),
+//                horizontalArrangement = Arrangement.spacedBy(4.dp),
+//                contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
+//            ){
+//                header?.let {
+//                    item(
+//                        span = {
+//                            // LazyGridItemSpanScope:
+//                            // maxLineSpan
+//                            GridItemSpan(maxLineSpan)
+//                        }
+//                    ) {
+//                        it()
+//                    }
+//                }
+//                items(items.itemCount){
+//                    items[it]?.let {
+//                        CartoonCardWithoutCover(
+//                            cartoonCover = it
+//                        ){
+//                            nav.navigationDetailed(it)
+//                        }
+//                    }
+//
+//                }
+//                pagingCommon(items)
+//            }
 //            LazyColumn(
 //                state = lazyListState,
 //                verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -242,6 +275,6 @@ fun SourceListPageContentWithoutCover(
             backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
             contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
         )
-        FastScrollToTopFab(listState = lazyListState, after = 30)
+        FastScrollToTopFab(lazyState, after = 20)
     }
 }
