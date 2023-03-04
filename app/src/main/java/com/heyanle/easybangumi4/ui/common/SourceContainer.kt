@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.heyanle.bangumi_source_api.api.Source
+import com.heyanle.bangumi_source_api.api.component.detailed.DetailedComponent
 import com.heyanle.bangumi_source_api.api.component.page.SourcePage
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.source.SourceBundle
@@ -71,6 +72,37 @@ fun PageContainer(
                 )
             } else {
                 content(it, sou, homes)
+            }
+        }
+    }
+}
+
+@Composable
+fun DetailedContainer(
+    sourceKey: String,
+    modifier: Modifier = Modifier,
+    errorContainerColor: Color = Color.Transparent,
+    content: @Composable (SourceBundle, Source, DetailedComponent ) -> Unit,
+) {
+    SourceContainer(
+        modifier,
+        errorContainerColor = errorContainerColor
+    ) {
+        val detailed = it.detailed(sourceKey)
+        val sou = it.source(sourceKey)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
+            if (sou == null || detailed == null) {
+                EmptyPage(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(errorContainerColor),
+                    emptyMsg = stringResource(id = com.heyanle.easy_i18n.R.string.no_source)
+                )
+            } else {
+                content(it, sou, detailed)
             }
         }
     }
