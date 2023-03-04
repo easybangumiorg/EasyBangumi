@@ -13,11 +13,6 @@ import com.heyanle.bangumi_source_api.api.entity.PlayerInfo
  */
 interface PlayComponent: Component {
 
-    suspend fun getDetailed(
-        summary: CartoonSummary
-    ): SourceResult<Cartoon>
-
-
     /**
      * 获取播放线路
      */
