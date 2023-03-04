@@ -3,9 +3,11 @@ package com.heyanle.easybangumi4.source
 import com.heyanle.bangumi_source_api.api.IconSource
 import com.heyanle.bangumi_source_api.api.Source
 import com.heyanle.bangumi_source_api.api.component.Component
+import com.heyanle.bangumi_source_api.api.component.detailed.DetailedComponent
 import com.heyanle.bangumi_source_api.api.component.page.PageComponent
 import com.heyanle.bangumi_source_api.api.component.play.PlayComponent
 import com.heyanle.bangumi_source_api.api.component.search.SearchComponent
+import com.heyanle.bangumi_source_api.api.component.update.UpdateComponent
 import com.heyanle.bangumi_source_api.api.configuration.ConfigSource
 import com.heyanle.easybangumi4.utils.loge
 
@@ -29,6 +31,10 @@ class SourceBundle(
     private val pageMap = linkedMapOf<String, PageComponent>()
 
     private val searchMap = linkedMapOf<String, SearchComponent>()
+
+    private val detailedMap = linkedMapOf<String, DetailedComponent>()
+
+    private val updateMap = linkedMapOf<String, UpdateComponent>()
 
     init {
         list.forEach {
@@ -57,6 +63,8 @@ class SourceBundle(
             playMap.remove(source.key)
             pageMap.remove(source.key)
             searchMap.remove(source.key)
+            detailedMap.remove(source.key)
+            updateMap.remove(source.key)
 
 
             val components = arrayListOf<Component>()
@@ -79,6 +87,14 @@ class SourceBundle(
 
                 if(it is SearchComponent) {
                     searchMap[it.source.key] = it
+                }
+
+                if(it is DetailedComponent) {
+                    detailedMap[it.source.key] = it
+                }
+
+                if(it is UpdateComponent) {
+                    updateMap[it.source.key] = it
                 }
             }
 
@@ -118,6 +134,14 @@ class SourceBundle(
 
     fun play(key: String): PlayComponent? {
         return playMap[key]
+    }
+
+    fun detailed(key: String): DetailedComponent? {
+        return detailedMap[key]
+    }
+
+    fun update(key: String): UpdateComponent? {
+        return updateMap[key]
     }
 
     fun empty(): Boolean {

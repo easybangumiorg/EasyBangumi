@@ -2,7 +2,6 @@ package com.heyanle.bangumi_source_api.api.component.play
 
 import com.heyanle.bangumi_source_api.api.SourceResult
 import com.heyanle.bangumi_source_api.api.component.Component
-import com.heyanle.bangumi_source_api.api.entity.Cartoon
 import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
 import com.heyanle.bangumi_source_api.api.entity.PlayLine
 import com.heyanle.bangumi_source_api.api.entity.PlayerInfo
@@ -13,12 +12,7 @@ import com.heyanle.bangumi_source_api.api.entity.PlayerInfo
  */
 interface PlayComponent: Component {
 
-    /**
-     * 获取播放线路
-     */
-    suspend fun getPlayLine(
-        summary: CartoonSummary
-    ): SourceResult<PlayLine>
+
 
     /**
      * 获取播放信息
