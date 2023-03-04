@@ -20,16 +20,35 @@ interface Cartoon : Serializable {
 
     var coverUrl: String?
 
-    var updateStrategy: UpdateStrategy
+    var intro: String?
+
+    var description: String?
+
+    var updateStrategy: Int
 
     var isUpdate: Boolean       // 是否更新，在追番页显示
 
     var status: Int
 
     companion object {
-        const val UNKNOWN = 0               // 未知
-        const val ONGOING = 1               // 连载中
-        const val COMPLETED = 2             // 已完结
+        const val STATUS_UNKNOWN = 0               // 未知
+        const val STATUS_ONGOING = 1               // 连载中
+        const val STATUS_COMPLETED = 2             // 已完结
+
+        /**
+         * 无论自动更新还是手动更新都会更新
+         */
+        const val UPDATE_STRATEGY_ALWAYS = 0
+
+        /**
+         * 只有手动更新时才会更新，一般用于已完结
+         */
+        const val UPDATE_STRATEGY_ONLY_MANUAL = 1
+
+        /**
+         * 不更新，一般用于剧场版或年代久远不可能更新的番剧
+         */
+        const val UPDATE_STRATEGY_NEVER = 2
     }
 
     fun getGenres(): List<String>? {

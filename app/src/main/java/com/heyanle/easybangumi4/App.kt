@@ -6,6 +6,7 @@ import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import com.heyanle.easy_crasher.CrashHandler
+import com.heyanle.easybangumi4.db.AppDatabase
 import com.heyanle.easybangumi4.source.ExtensionSource
 import com.heyanle.easybangumi4.source.utils.initUtils
 import com.heyanle.easybangumi4.utils.exo_ssl.CropUtil
@@ -26,6 +27,8 @@ import javax.net.ssl.HttpsURLConnection
  * https://github.com/heyanLE
  */
 lateinit var APP: App
+lateinit var DB: AppDatabase
+
 class App: Application() {
 
 
@@ -44,6 +47,8 @@ class App: Application() {
         initAppCenter()
 
         initExtension()
+
+        initDataBase()
         kotlin.runCatching {
             initUtils(this)
         }.onFailure {
@@ -107,6 +112,10 @@ class App: Application() {
     private fun initExtension(){
         ExtensionSource.init()
         ExtensionInit.init(this, IconFactoryImpl())
+    }
+
+    private fun initDataBase(){
+        AppDatabase.init(this)
     }
 
 }

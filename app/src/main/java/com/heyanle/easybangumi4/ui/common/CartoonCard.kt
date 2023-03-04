@@ -43,7 +43,7 @@ fun CartoonCardWithCover(
             .padding(4.dp),
         horizontalAlignment = Alignment.Start,
     ) {
-        if(cartoonCover.coverUrl != null){
+        if(!cartoonCover.coverUrl.isNullOrEmpty()){
             OkImage(
                 modifier = Modifier
                     .then(modifier).aspectRatio(19/27F)
