@@ -41,7 +41,7 @@ class SourceHomeViewModel: ViewModel() {
         /**
          * 当前选择某页面
          */
-        class Page(val cartoonPage: SourcePage): CurrentSourcePageState()
+        class Page(val pageIndex: Int): CurrentSourcePageState()
 
         /**
          * 当前为搜索
@@ -70,12 +70,17 @@ class SourceHomeViewModel: ViewModel() {
      * 点击 chip
      */
     fun clickPage(
-        page: SourcePage
+        pageIndex: Int
     ){
         withNormal {
+            if(pageIndex < 0 || pageIndex >= it.page.size){
+                return
+            }
+            val page = it.page[pageIndex]
             // 如果页面需要新页面则不处理
             if(!page.newScreen){
-                currentSourceState = CurrentSourcePageState.Page(page)
+                it.page.indexOf(page)
+                currentSourceState = CurrentSourcePageState.Page(pageIndex)
             }
         }
     }
