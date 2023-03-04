@@ -40,7 +40,8 @@ fun SourceListPageGroup(
 ) {
     val vm =
         viewModel<SourceListGroupViewModel>(factory = SourceListGroupViewModelFactory(listPageGroup))
-    LaunchedEffect(key1 = Unit) {
+
+    LaunchedEffect(Unit) {
         if (vm.groupState is SourceListGroupViewModel.GroupState.None) {
             vm.refresh()
         }

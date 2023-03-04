@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -108,25 +108,19 @@ fun SourceHome(key: String) {
                         contentPadding = PaddingValues(8.dp, 0.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(it.page) { page ->
-                            vm.currentSourceState.let {
-                                val isSelect =
-                                    it is SourceHomeViewModel.CurrentSourcePageState.Page && it.cartoonPage == page
-                                FilterChip(
 
-                                    selected = isSelect,
-                                    onClick = {
-                                        vm.clickPage(page)
-                                    },
-                                    label = { Text(page.label) },
-                                    colors = FilterChipDefaults.filterChipColors(
-                                        selectedContainerColor = MaterialTheme.colorScheme.secondary,
-                                        selectedLabelColor = MaterialTheme.colorScheme.onSecondary,
-                                        selectedLeadingIconColor = MaterialTheme.colorScheme.onSecondary,
-                                        selectedTrailingIconColor = MaterialTheme.colorScheme.onSecondary,
-                                    ),
-                                )
-                            }
+                        itemsIndexed(it.page) {i, page ->
+                            //val selectPage = (vm.currentSourceState as? SourceHomeViewModel.CurrentSourcePageState.Page )?.cartoonPage
+                            val select = ((vm.currentSourceState as? SourceHomeViewModel.CurrentSourcePageState.Page )?.pageIndex) == i
+
+                            FilterChip(
+                                selected = select,
+                                onClick = {
+                                    vm.clickPage(i)
+                                },
+                                label = { Text(page.label) },
+                                colors = FilterChipDefaults.filterChipColors(),
+                            )
 
                         }
                     }
@@ -146,7 +140,9 @@ fun SourceHome(key: String) {
                 }
 
                 LaunchedEffect(key1 = Unit) {
-                    vm.onInit(sou, pages, search)
+                    if(vm.sourceHomeState is SourceHomeViewModel.SourceHomeState.None){
+                        vm.onInit(sou, pages, search)
+                    }
                 }
 
                 Surface{
@@ -169,7 +165,7 @@ fun SourceHome(key: String) {
 @Composable
 fun SourceHomeTopAppBar(
     state: SourceHomeViewModel.SourceHomeState,
-    colors: TopAppBarColors = TopAppBarDefaults.smallTopAppBarColors(),
+    colors: TopAppBarColors = TopAppBarDefaults.topAppBarColors(),
     onSearch: (String) -> Unit,
     onBack: () -> Unit,
 ) {
@@ -289,11 +285,13 @@ fun SourceHomeScreen(
     state: SourceHomeViewModel.SourceHomeState.Normal
 ) {
 
+
+
     LaunchedEffect(key1 = Unit) {
-        vm.currentSourceState.let {
-            if (it is SourceHomeViewModel.CurrentSourcePageState.None) {
+        vm.currentSourceState.let { sta ->
+            if (sta is SourceHomeViewModel.CurrentSourcePageState.None) {
                 state.page.find { !it.newScreen }?.let {
-                    vm.clickPage(it)
+                    vm.clickPage(state.page.indexOf(it))
                 }
             }
         }
@@ -317,17 +315,18 @@ fun SourceHomeScreen(
                     fadeOut(animationSpec = tween(300, delayMillis = 0))
         }
     ) {
+
         when (it) {
             SourceHomeViewModel.CurrentSourcePageState.None -> {
 
             }
 
             is SourceHomeViewModel.CurrentSourcePageState.Page -> {
-                val listVmOwner = vm.getViewModelStoreOwner(it.cartoonPage)
+                val listVmOwner = vm.getViewModelStoreOwner(state.page[it.pageIndex])
                 CompositionLocalProvider(
                     LocalViewModelStoreOwner provides listVmOwner
                 ) {
-                    CartoonPageUI(cartoonPage = it.cartoonPage)
+                    CartoonPageUI(cartoonPage = state.page[it.pageIndex])
                 }
 
             }

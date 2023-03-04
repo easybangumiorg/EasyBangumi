@@ -5,10 +5,12 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.navArgument
 import com.google.accompanist.navigation.animation.AnimatedNavHost
@@ -61,14 +63,33 @@ fun Nav() {
         navControllerRef = WeakReference(nav)
     }
     CompositionLocalProvider(LocalNavController provides nav) {
+//        NavHost(navController = nav, DEFAULT) {
+//            composable(HOME) {
+//                Home()
+//            }
+//
+//            composable(
+//                route = "${SOURCE_HOME}?key={key}",
+//                arguments = listOf(
+//                    navArgument("key") { defaultValue = "" },
+//                )
+//            ){
+//                SourceHome(
+//                    it.arguments?.getString("key") ?: "",
+//                )
+//            }
+//        }
         AnimatedNavHost(nav, DEFAULT,
+            modifier = Modifier.fillMaxSize(),
             enterTransition = { slideInHorizontally(tween()) { it } },
             exitTransition = { slideOutHorizontally(tween()) { -it } + fadeOut(tween()) },
             popEnterTransition = { slideInHorizontally(tween()) { -it } },
-            popExitTransition = { slideOutHorizontally(tween()) { it } })
-        {
+            popExitTransition = { slideOutHorizontally(tween()) { it } }
+        ) {
 
-            composable(HOME) {
+            composable(
+                HOME,
+            ) {
                 Home()
             }
 
