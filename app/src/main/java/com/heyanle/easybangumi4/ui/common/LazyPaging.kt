@@ -21,16 +21,27 @@ import com.heyanle.easybangumi4.utils.stringRes
  */
 
 
-fun <T : Any> LazyGridScope.pagingCommon(items: LazyPagingItems<T>){
-    when(items.loadState.refresh){
+fun <T : Any> LazyGridScope.pagingCommon(items: LazyPagingItems<T>) {
+    if (items.loadState.refresh is LoadState.NotLoading &&
+        items.loadState.append is LoadState.NotLoading && items.itemCount == 0
+    ) {
+        item(span = {
+            // LazyGridItemSpanScope:
+            // maxLineSpan
+            GridItemSpan(maxLineSpan)
+        }) {
+            EmptyPage(
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+    }
+    when (items.loadState.refresh) {
         is LoadState.Loading -> {
-            item(
-                span = {
-                    // LazyGridItemSpanScope:
-                    // maxLineSpan
-                    GridItemSpan(maxLineSpan)
-                }
-            ) {
+            item(span = {
+                // LazyGridItemSpanScope:
+                // maxLineSpan
+                GridItemSpan(maxLineSpan)
+            }) {
                 LoadingPage(
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -38,20 +49,16 @@ fun <T : Any> LazyGridScope.pagingCommon(items: LazyPagingItems<T>){
         }
 
         is LoadState.Error -> {
-            item(
-                span = {
-                    // LazyGridItemSpanScope:
-                    // maxLineSpan
-                    GridItemSpan(maxLineSpan)
-                }
-            ) {
+            item(span = {
+                // LazyGridItemSpanScope:
+                // maxLineSpan
+                GridItemSpan(maxLineSpan)
+            }) {
                 val errorMsg =
-                    (items.loadState.refresh as? LoadState.Error)?.error?.message
-                        ?: stringRes(
-                            R.string.net_error
-                        )
-                ErrorPage(
-                    modifier = Modifier.fillMaxWidth(),
+                    (items.loadState.refresh as? LoadState.Error)?.error?.message ?: stringRes(
+                        R.string.net_error
+                    )
+                ErrorPage(modifier = Modifier.fillMaxWidth(),
                     errorMsg = errorMsg,
                     clickEnable = true,
                     other = {
@@ -59,8 +66,7 @@ fun <T : Any> LazyGridScope.pagingCommon(items: LazyPagingItems<T>){
                     },
                     onClick = {
                         items.refresh()
-                    }
-                )
+                    })
             }
         }
 
@@ -71,13 +77,11 @@ fun <T : Any> LazyGridScope.pagingCommon(items: LazyPagingItems<T>){
 
     when (items.loadState.append) {
         is LoadState.Loading -> {
-            item(
-                span = {
-                    // LazyGridItemSpanScope:
-                    // maxLineSpan
-                    GridItemSpan(maxLineSpan)
-                }
-            ) {
+            item(span = {
+                // LazyGridItemSpanScope:
+                // maxLineSpan
+                GridItemSpan(maxLineSpan)
+            }) {
                 LoadingPage(
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -85,20 +89,16 @@ fun <T : Any> LazyGridScope.pagingCommon(items: LazyPagingItems<T>){
         }
 
         is LoadState.Error -> {
-            item(
-                span = {
-                    // LazyGridItemSpanScope:
-                    // maxLineSpan
-                    GridItemSpan(maxLineSpan)
-                }
-            ) {
+            item(span = {
+                // LazyGridItemSpanScope:
+                // maxLineSpan
+                GridItemSpan(maxLineSpan)
+            }) {
                 val errorMsg =
-                    (items.loadState.append as? LoadState.Error)?.error?.message
-                        ?: stringRes(
-                            R.string.net_error
-                        )
-                ErrorPage(
-                    modifier = Modifier.fillMaxWidth(),
+                    (items.loadState.append as? LoadState.Error)?.error?.message ?: stringRes(
+                        R.string.net_error
+                    )
+                ErrorPage(modifier = Modifier.fillMaxWidth(),
                     errorMsg = errorMsg,
                     clickEnable = true,
                     other = {
@@ -106,8 +106,7 @@ fun <T : Any> LazyGridScope.pagingCommon(items: LazyPagingItems<T>){
                     },
                     onClick = {
                         items.retry()
-                    }
-                )
+                    })
             }
         }
 
@@ -118,8 +117,19 @@ fun <T : Any> LazyGridScope.pagingCommon(items: LazyPagingItems<T>){
 }
 
 @OptIn(ExperimentalFoundationApi::class)
-fun <T : Any> LazyStaggeredGridScope.pagingCommon(items: LazyPagingItems<T>){
-    when(items.loadState.refresh){
+fun <T : Any> LazyStaggeredGridScope.pagingCommon(items: LazyPagingItems<T>) {
+    if (items.loadState.refresh is LoadState.NotLoading &&
+        items.loadState.append is LoadState.NotLoading && items.itemCount == 0
+    ) {
+        item(
+            span = StaggeredGridItemSpan.FullLine
+        ) {
+            EmptyPage(
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+    }
+    when (items.loadState.refresh) {
         is LoadState.Loading -> {
             item(
                 span = StaggeredGridItemSpan.FullLine
@@ -135,12 +145,10 @@ fun <T : Any> LazyStaggeredGridScope.pagingCommon(items: LazyPagingItems<T>){
                 span = StaggeredGridItemSpan.FullLine
             ) {
                 val errorMsg =
-                    (items.loadState.refresh as? LoadState.Error)?.error?.message
-                        ?: stringRes(
-                            R.string.net_error
-                        )
-                ErrorPage(
-                    modifier = Modifier.fillMaxWidth(),
+                    (items.loadState.refresh as? LoadState.Error)?.error?.message ?: stringRes(
+                        R.string.net_error
+                    )
+                ErrorPage(modifier = Modifier.fillMaxWidth(),
                     errorMsg = errorMsg,
                     clickEnable = true,
                     other = {
@@ -148,8 +156,7 @@ fun <T : Any> LazyStaggeredGridScope.pagingCommon(items: LazyPagingItems<T>){
                     },
                     onClick = {
                         items.refresh()
-                    }
-                )
+                    })
             }
         }
 
@@ -159,6 +166,7 @@ fun <T : Any> LazyStaggeredGridScope.pagingCommon(items: LazyPagingItems<T>){
     }
 
     when (items.loadState.append) {
+
         is LoadState.Loading -> {
             item(
                 span = StaggeredGridItemSpan.FullLine
@@ -174,12 +182,10 @@ fun <T : Any> LazyStaggeredGridScope.pagingCommon(items: LazyPagingItems<T>){
                 span = StaggeredGridItemSpan.FullLine
             ) {
                 val errorMsg =
-                    (items.loadState.append as? LoadState.Error)?.error?.message
-                        ?: stringRes(
-                            R.string.net_error
-                        )
-                ErrorPage(
-                    modifier = Modifier.fillMaxWidth(),
+                    (items.loadState.append as? LoadState.Error)?.error?.message ?: stringRes(
+                        R.string.net_error
+                    )
+                ErrorPage(modifier = Modifier.fillMaxWidth(),
                     errorMsg = errorMsg,
                     clickEnable = true,
                     other = {
@@ -187,8 +193,7 @@ fun <T : Any> LazyStaggeredGridScope.pagingCommon(items: LazyPagingItems<T>){
                     },
                     onClick = {
                         items.retry()
-                    }
-                )
+                    })
             }
         }
 
@@ -198,8 +203,17 @@ fun <T : Any> LazyStaggeredGridScope.pagingCommon(items: LazyPagingItems<T>){
     }
 }
 
-fun <T : Any> LazyListScope.pagingCommon(items: LazyPagingItems<T>){
-    when(items.loadState.refresh){
+fun <T : Any> LazyListScope.pagingCommon(items: LazyPagingItems<T>) {
+    if (items.loadState.refresh is LoadState.NotLoading &&
+        items.loadState.append is LoadState.NotLoading && items.itemCount == 0
+    ) {
+        item() {
+            EmptyPage(
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+    }
+    when (items.loadState.refresh) {
         is LoadState.Loading -> {
             item() {
                 LoadingPage(
@@ -211,12 +225,10 @@ fun <T : Any> LazyListScope.pagingCommon(items: LazyPagingItems<T>){
         is LoadState.Error -> {
             item() {
                 val errorMsg =
-                    (items.loadState.refresh as? LoadState.Error)?.error?.message
-                        ?: stringRes(
-                            R.string.net_error
-                        )
-                ErrorPage(
-                    modifier = Modifier.fillMaxWidth(),
+                    (items.loadState.refresh as? LoadState.Error)?.error?.message ?: stringRes(
+                        R.string.net_error
+                    )
+                ErrorPage(modifier = Modifier.fillMaxWidth(),
                     errorMsg = errorMsg,
                     clickEnable = true,
                     other = {
@@ -224,8 +236,7 @@ fun <T : Any> LazyListScope.pagingCommon(items: LazyPagingItems<T>){
                     },
                     onClick = {
                         items.refresh()
-                    }
-                )
+                    })
             }
         }
 
@@ -246,12 +257,10 @@ fun <T : Any> LazyListScope.pagingCommon(items: LazyPagingItems<T>){
         is LoadState.Error -> {
             item() {
                 val errorMsg =
-                    (items.loadState.append as? LoadState.Error)?.error?.message
-                        ?: stringRes(
-                            R.string.net_error
-                        )
-                ErrorPage(
-                    modifier = Modifier.fillMaxWidth(),
+                    (items.loadState.append as? LoadState.Error)?.error?.message ?: stringRes(
+                        R.string.net_error
+                    )
+                ErrorPage(modifier = Modifier.fillMaxWidth(),
                     errorMsg = errorMsg,
                     clickEnable = true,
                     other = {
@@ -259,8 +268,7 @@ fun <T : Any> LazyListScope.pagingCommon(items: LazyPagingItems<T>){
                     },
                     onClick = {
                         items.retry()
-                    }
-                )
+                    })
             }
         }
 
