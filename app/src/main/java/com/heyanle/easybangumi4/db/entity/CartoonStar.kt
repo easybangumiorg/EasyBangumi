@@ -1,5 +1,6 @@
 package com.heyanle.easybangumi4.db.entity
 
+import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.heyanle.bangumi_source_api.api.entity.Cartoon
 import com.heyanle.bangumi_source_api.api.entity.CartoonImpl
@@ -8,7 +9,8 @@ import com.heyanle.bangumi_source_api.api.entity.CartoonImpl
  * Created by HeYanLe on 2023/3/4 14:26.
  * https://github.com/heyanLE
  */
-class CartoonStar(
+@Entity
+data class CartoonStar(
 
     @PrimaryKey(autoGenerate = true)
     var starId: Int = 0,
@@ -34,6 +36,8 @@ class CartoonStar(
     var isUpdate: Boolean,       // 是否更新，在追番页显示
 
     var status: Int,
+
+    var createTime: Long = System.currentTimeMillis(),
 ) {
 
     companion object {
@@ -49,7 +53,7 @@ class CartoonStar(
                 description = cartoon.description?:"",
                 updateStrategy = cartoon.updateStrategy,
                 isUpdate = cartoon.isUpdate,
-                status = cartoon.status
+                status = cartoon.status,
             )
         }
     }

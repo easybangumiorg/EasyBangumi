@@ -12,15 +12,19 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.heyanle.bangumi_source_api.api.entity.CartoonCover
+import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlay
+import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.home.Home
 import com.heyanle.easybangumi4.ui.sourcehome.SourceHome
-import com.heyanle.easybangumi4.utils.easyTODO
 import java.lang.ref.WeakReference
+import java.net.URLDecoder
+import java.net.URLEncoder
 
 /**
  * Created by HeYanLe on 2023/2/19 0:10.
@@ -46,9 +50,24 @@ fun NavHostController.navigationSourceHome(key: String) {
 }
 
 fun NavHostController.navigationDetailed(cartoonCover: CartoonCover) {
-    easyTODO("详情页")
+    val url = URLEncoder.encode(cartoonCover.url, "utf-8")
+    val id = URLEncoder.encode(cartoonCover.id, "utf-8")
+    // easyTODO("详情页")
+    navigate("${DETAILED}?url=${url}&source=${cartoonCover.source}&id=${id}")
 }
 
+fun NavHostController.navigationDetailed(
+    cartoonCover: CartoonCover,
+    lineIndex: Int,
+    episode: Int,
+    adviceProgress: Long,
+) {
+    // easyTODO("详情页")
+    val url = URLEncoder.encode(cartoonCover.url, "utf-8")
+    val id = URLEncoder.encode(cartoonCover.id, "utf-8")
+    // easyTODO("详情页")
+    navigate("${DETAILED}?url=${url}&source=${cartoonCover.source}&id=${id}&lineIndex=${lineIndex}&episode=${episode}&adviceProgress=${adviceProgress}")
+}
 
 
 // 缺省路由
@@ -98,9 +117,45 @@ fun Nav() {
                 arguments = listOf(
                     navArgument("key") { defaultValue = "" },
                 )
-            ){
+            ) {
                 SourceHome(
                     it.arguments?.getString("key") ?: "",
+                )
+            }
+
+            composable(
+                route = "${DETAILED}?url={url}&source={source}&id={id}&lineIndex={lineIndex}&episode={episode}&adviceProgress={adviceProgress}",
+                arguments = listOf(
+                    navArgument("url") { defaultValue = "" },
+                    navArgument("source") { defaultValue = "" },
+                    navArgument("id") { defaultValue = "" },
+                    navArgument("lineIndex") {
+                        defaultValue = -1
+                        type = NavType.IntType
+                    },
+                    navArgument("episode") {
+                        defaultValue = -1
+                        type = NavType.IntType
+                    },
+                    navArgument("adviceProgress") {
+                        defaultValue = -1L
+                        type = NavType.LongType
+                    },
+
+                    )
+            ) {
+                val id = it.arguments?.getString("id") ?: ""
+                val source = it.arguments?.getString("source") ?: ""
+                val url = it.arguments?.getString("url") ?: ""
+
+                val lineIndex = it.arguments?.getInt("lineIndex") ?: -1
+                val episode = it.arguments?.getInt("episode") ?: -1
+                val adviceProgress = it.arguments?.getLong("adviceProgress") ?: -1L
+                CartoonPlay(
+                    id = URLDecoder.decode(id, "utf-8"),
+                    source = source,
+                    url = URLDecoder.decode(url, "utf-8"),
+                    CartoonPlayViewModel.EnterData(lineIndex, episode, adviceProgress)
                 )
             }
 

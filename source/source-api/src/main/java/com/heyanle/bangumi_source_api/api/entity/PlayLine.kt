@@ -5,8 +5,6 @@ package com.heyanle.bangumi_source_api.api.entity
  * https://github.com/heyanLE
  */
 class PlayLine(
-    val key: String = "",
-    val id: Int = 0,
     val label: String,
     val episode: List<String>,
 )
