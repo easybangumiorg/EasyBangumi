@@ -2,17 +2,13 @@ package com.heyanle.easybangumi4.ui.common
 
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
@@ -30,13 +26,15 @@ fun OkImage(
     contentDescription: String,
     isGif: Boolean = false,
     contentScale: ContentScale = ContentScale.Crop,
-    crossFade: Boolean = true
+    crossFade: Boolean = true,
+    errorColor: Color = MaterialTheme.colorScheme.error,
+    placeholder: Color = MaterialTheme.colorScheme.secondaryContainer,
 ) {
     AsyncImage(
         model = ImageRequest
             .Builder(LocalContext.current)
             .data(image)
-            .placeholder(ColorDrawable(MaterialTheme.colorScheme.secondaryContainer.toArgb()))
+            .placeholder(ColorDrawable(placeholder.toArgb()))
             .crossfade(crossFade)
             .apply {
                 if (isGif) {
@@ -47,7 +45,7 @@ fun OkImage(
                     )
                 }
             }
-            .error(ColorDrawable(MaterialTheme.colorScheme.error.toArgb()))
+            .error(ColorDrawable(errorColor.toArgb()))
             .build(),
         contentDescription = contentDescription,
         contentScale = contentScale,

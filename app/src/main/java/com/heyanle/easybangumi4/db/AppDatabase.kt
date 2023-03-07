@@ -5,6 +5,10 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.heyanle.easybangumi4.DB
+import com.heyanle.easybangumi4.db.dao.CartoonHistoryDao
+import com.heyanle.easybangumi4.db.dao.CartoonStarDao
+import com.heyanle.easybangumi4.db.entity.CartoonHistory
+import com.heyanle.easybangumi4.db.entity.CartoonStar
 
 /**
  * Created by HeYanLe on 2023/1/17 0:26.
@@ -12,20 +16,27 @@ import com.heyanle.easybangumi4.DB
  */
 @Database(
     entities = [
-
+        CartoonStar::class,
+        CartoonHistory::class,
     ],
-    // 历史遗留问题
     autoMigrations = [],
-    version = 7,
+    version = 1,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
+
+
+    abstract fun cartoonStarDao(): CartoonStarDao
+    val cartoonStar: CartoonStarDao by lazy { cartoonStarDao() }
+
+    abstract fun cartoonHistoryDao(): CartoonHistoryDao
+    val cartoonHistory: CartoonHistoryDao by lazy { cartoonHistoryDao() }
 
     companion object {
         fun init(context: Context) {
             DB = Room.databaseBuilder(
                 context,
-                AppDatabase::class.java, "easy_bangumi"
+                AppDatabase::class.java, "easy_cartoon"
             ).fallbackToDestructiveMigration()
                 .apply {
 
