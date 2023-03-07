@@ -12,6 +12,12 @@ class CartoonSummary(
     var url: String,
 ) : Serializable {
 
+    fun isChild(
+        cartoon: Cartoon
+    ): Boolean{
+        return id == cartoon.id && source == cartoon.source && url == cartoon.url
+    }
+
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

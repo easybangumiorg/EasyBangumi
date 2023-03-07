@@ -115,6 +115,7 @@ class App: Application() {
     }
 
     private fun initDataBase(){
+
         AppDatabase.init(this)
     }
 
