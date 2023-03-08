@@ -60,6 +60,8 @@
     <string name="please_input_keyword_to_search">请输入关键字搜索</string>
     <string name="list_most_bottom">已经结束拉！</string>
 
+    <string name="no_play_line">没有播放线路</string>
+
     <string name="no_source">没有番剧源</string>
     <string name="no_history">没有历史记录</string>
 
@@ -94,6 +96,9 @@
     <string name="stared">已经追番</string>
 
     <string name="web_view">WebView</string>
+
+    <string name="full_screen">全屏</string>
+    <string name="full_screen_exit">退出全屏</string>
 
     <string name="please_overlay_permission">请授予悬浮球权限</string>
 
