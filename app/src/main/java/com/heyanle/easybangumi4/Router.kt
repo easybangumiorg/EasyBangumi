@@ -22,6 +22,7 @@ import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlay
 import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.home.Home
 import com.heyanle.easybangumi4.ui.sourcehome.SourceHome
+import com.heyanle.easybangumi4.utils.easyTODO
 import java.lang.ref.WeakReference
 import java.net.URLDecoder
 import java.net.URLEncoder
@@ -56,6 +57,8 @@ fun NavHostController.navigationDetailed(cartoonCover: CartoonCover) {
     navigate("${DETAILED}?url=${url}&source=${cartoonCover.source}&id=${id}")
 }
 
+
+
 fun NavHostController.navigationDetailed(
     cartoonCover: CartoonCover,
     lineIndex: Int,
@@ -69,6 +72,19 @@ fun NavHostController.navigationDetailed(
     navigate("${DETAILED}?url=${url}&source=${cartoonCover.source}&id=${id}&lineIndex=${lineIndex}&episode=${episode}&adviceProgress=${adviceProgress}")
 }
 
+fun NavHostController.navigationDLNA(
+    cartoonCover: CartoonCover
+){
+    easyTODO("投屏")
+}
+
+fun NavHostController.navigationDLNA(
+    cartoonCover: CartoonCover,
+    lineIndex: Int,
+    episode: Int,
+){
+    easyTODO("投屏")
+}
 
 // 缺省路由
 const val DEFAULT = HOME
