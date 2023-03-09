@@ -31,7 +31,6 @@ import com.heyanle.easybangumi4.ui.common.player.utils.TimeUtils
 
 @Composable
 fun TopControl(
-    modifier: Modifier,
     content: @Composable RowScope.() -> Unit,
 ){
     Row(
@@ -39,7 +38,7 @@ fun TopControl(
             brush = Brush.verticalGradient(
                 listOf(Color.Black, Color.Transparent),
             )
-        ).then(modifier),
+        ),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.Start),
         content = content
@@ -48,7 +47,6 @@ fun TopControl(
 
 @Composable
 fun BottomControl(
-    modifier: Modifier,
     content: @Composable RowScope.() -> Unit,
 ) {
     Row(
@@ -56,7 +54,7 @@ fun BottomControl(
             brush = Brush.verticalGradient(
                 listOf( Color.Transparent, Color.Black)
             )
-        ).then(modifier),
+        ),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
         content = content
@@ -102,8 +100,6 @@ fun RowScope.TimeSlider(
     onValueChange: (Long) -> Unit,
     onValueChangeFinish: ()->Unit,
 ){
-
-    Long.MAX_VALUE
     Slider(
         modifier = Modifier.weight(1f),
         value = position.toFloat(),
@@ -111,7 +107,7 @@ fun RowScope.TimeSlider(
             onValueChange(it.toLong())
         },
         onValueChangeFinished = onValueChangeFinish,
-        valueRange = 0F .. during.toFloat()
+        valueRange = 0F .. during.toFloat().coerceAtLeast(0F)
     )
 }
 

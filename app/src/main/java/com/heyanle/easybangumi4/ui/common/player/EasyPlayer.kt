@@ -5,36 +5,35 @@ import android.content.pm.ActivityInfo
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -42,8 +41,10 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.heyanle.easybangumi4.ui.common.BackgroundBasedBox
+import com.heyanle.easybangumi4.ui.common.player.surface.EasySurfaceView
 import com.heyanle.easybangumi4.ui.common.player.utils.isKeepScreenOn
 import com.heyanle.easybangumi4.utils.OnLifecycleEvent
+import com.heyanle.easybangumi4.utils.loge
 
 /**
  * Created by HeYanLe on 2023/3/9 11:23.
@@ -55,13 +56,8 @@ fun EasyPlayerScaffold(
     vm: ControlViewModel,
     videoFloat: (@Composable (ControlViewModel) -> Unit)? = null,
     control: (@Composable (ControlViewModel) -> Unit)? = null,
-    content: @Composable (PaddingValues) -> Unit,
+    content: @Composable ColumnScope.() -> Unit,
 ) {
-
-    val density = LocalDensity.current
-    var videoHeight by remember {
-        mutableStateOf(320.dp)
-    }
 
     val ctx = LocalContext.current as Activity
     val ui = rememberSystemUiController()
@@ -97,16 +93,19 @@ fun EasyPlayerScaffold(
         vm.onFullScreen(false)
     }
 
-    Box(modifier = modifier) {
+    Column(
+        modifier = modifier
+    ) {
         EasyPlayer(
-            modifier = Modifier.onSizeChanged {
-                videoHeight = with(density) { it.height.toDp() }
-            }, controlViewModel = vm, control = control, videoFloat = videoFloat
+            modifier = Modifier
+                .fillMaxWidth()
+            , controlViewModel = vm, control = control, videoFloat = videoFloat
         )
-        if (!vm.isFullScreen) {
-            content(PaddingValues(0.dp, videoHeight, 0.dp, 0.dp))
+        Box(modifier = Modifier.weight(1f)){
+            this@Column.content()
         }
     }
+
 
 }
 
@@ -117,54 +116,76 @@ fun EasyPlayer(
     control: (@Composable (ControlViewModel) -> Unit)? = null,
     videoFloat: (@Composable (ControlViewModel) -> Unit)? = null,
 ) {
-    val surfaceModifier = remember(controlViewModel.isFullScreen) {
-        Modifier.apply {
-            if (controlViewModel.isFullScreen) {
-                fillMaxSize()
-            } else {
-                fillMaxWidth().aspectRatio(ControlViewModel.ratioWidth / ControlViewModel.ratioHeight)
+
+    val androidView = remember<@Composable ()->Unit> {
+        {
+            AndroidView(
+                modifier = Modifier.fillMaxSize(),
+                factory = {
+                    EasySurfaceView(it)
+                }){
+                controlViewModel.onSurfaceView(it)
             }
         }
-
     }
 
-    BackgroundBasedBox(modifier = modifier, background = {
+    BackgroundBasedBox(
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(modifier),
+        background = {
+            if(controlViewModel.isFullScreen){
+                "test1".loge()
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black)
+                ) {
 
-        DisposableEffect(key1 = Unit) {
-            controlViewModel.onLaunch()
-            onDispose {
-                controlViewModel.onDisposed()
+                    androidView()
+
+                }
+            }else{
+                "test2".loge()
+                BoxWithConstraints {
+                    Box(
+                        modifier = Modifier
+                            .width(maxWidth)
+                            .height(maxWidth / ControlViewModel.ratioWidth * ControlViewModel.ratioHeight)
+                            .background(Color.Black)
+                    ) {
+
+                        androidView()
+
+                    }
+                }
+
             }
-        }
+        },
+        foreground = {
+            Box(modifier = Modifier.fillMaxSize()){
+                control?.invoke(controlViewModel)
+                videoFloat?.invoke(controlViewModel)
+            }
+        },
+    )
 
-        Box(
-            modifier = surfaceModifier, contentAlignment = Alignment.Center
-        ) {
-            AndroidView(factory = {
-                controlViewModel.surfaceView
-            })
-
-        }
-    }, foreground = {
-        Box(modifier = Modifier.fillMaxSize()){
-            control?.invoke(controlViewModel)
-            videoFloat?.invoke(controlViewModel)
-        }
-
-    })
 }
 
 @Composable
-fun BoxScope.SimpleTopBar(
-    vm: ControlViewModel
+fun SimpleTopBar(
+    vm: ControlViewModel,
+    modifier: Modifier,
 ) {
     if (vm.isFullScreen) {
-        val isShow =
-            ((vm.controlState == ControlViewModel.ControlState.Normal) && vm.isNormalLockedControlShow) || vm.controlState != ControlViewModel.ControlState.Ended || vm.controlState != ControlViewModel.ControlState.Normal || vm.controlState != ControlViewModel.ControlState.Locked
+        val isShow = if(vm.controlState == ControlViewModel.ControlState.Normal) vm.isNormalLockedControlShow else {vm.controlState  != ControlViewModel.ControlState.Locked && vm.controlState != ControlViewModel.ControlState.Ended }
 
-        AnimatedVisibility(visible = isShow) {
+        AnimatedVisibility(
+            modifier = modifier,
+            visible = isShow,
+        ) {
             TopControl(
-                modifier = Modifier.align(Alignment.TopCenter)
+
             ) {
                 BackBtn {
                     vm.onFullScreen(false)
@@ -177,17 +198,18 @@ fun BoxScope.SimpleTopBar(
 }
 
 @Composable
-fun BoxScope.SimpleBottomBar(
+fun SimpleBottomBar(
     vm: ControlViewModel,
+    modifier: Modifier,
     otherAction: (@Composable RowScope.(ControlViewModel) -> Unit)? = null,
 ) {
-    val isShow =
-        ((vm.controlState == ControlViewModel.ControlState.Normal) && vm.isNormalLockedControlShow) || vm.controlState != ControlViewModel.ControlState.Ended || vm.controlState != ControlViewModel.ControlState.Normal || vm.controlState != ControlViewModel.ControlState.Locked
+    val isShow = if(vm.controlState == ControlViewModel.ControlState.Normal) vm.isNormalLockedControlShow else {vm.controlState  != ControlViewModel.ControlState.Locked && vm.controlState != ControlViewModel.ControlState.Ended }
 
-    AnimatedVisibility(visible = isShow) {
-        BottomControl(
-            modifier = Modifier.align(Alignment.TopCenter)
-        ) {
+    AnimatedVisibility(
+        modifier = modifier,
+        visible = isShow
+    ) {
+        BottomControl{
             PlayPauseBtn(isPlaying = vm.playWhenReady, onClick = {
                 vm.onPlayPause(it)
             })
@@ -196,8 +218,9 @@ fun BoxScope.SimpleBottomBar(
             val position =
                 if (vm.controlState == ControlViewModel.ControlState.Normal) vm.position else if (vm.controlState == ControlViewModel.ControlState.HorizontalScroll) vm.horizontalScrollPosition else 0
 
+
             TimeSlider(
-                during = vm.during,
+                during = vm.during.coerceAtLeast(0),
                 position = position,
                 onValueChange = {
                     vm.onPositionChange(it)
@@ -223,23 +246,29 @@ fun BoxScope.SimpleBottomBar(
 fun BoxScope.LockBtn(
     vm: ControlViewModel
 ) {
-    val isShow =
-        ((vm.controlState == ControlViewModel.ControlState.Normal || vm.controlState == ControlViewModel.ControlState.Locked) && vm.isNormalLockedControlShow) || vm.controlState != ControlViewModel.ControlState.Ended || vm.controlState != ControlViewModel.ControlState.Normal
-    AnimatedVisibility(visible = isShow) {
-        IconButton(
-            modifier = Modifier
-                .align(Alignment.CenterStart)
-                .clip(CircleShape)
-                .background(Color.Gray.copy(alpha = 0.5f))
-                .padding(2.dp),
-            onClick = {
+    val isShow = if(vm.controlState == ControlViewModel.ControlState.Normal || vm.controlState == ControlViewModel.ControlState.Locked) vm.isNormalLockedControlShow else {vm.controlState  != ControlViewModel.ControlState.Locked && vm.controlState != ControlViewModel.ControlState.Ended }
+
+    AnimatedVisibility(
+        modifier = Modifier
+            .align(Alignment.CenterStart),
+        visible = isShow
+    ) {
+        Box(modifier = Modifier
+            .padding(4.dp)
+            .clip(CircleShape)
+            .background(Color.Black.copy(alpha = 0.6f))
+            .clickable {
                 vm.onLockedChange(vm.controlState != ControlViewModel.ControlState.Locked)
-            }) {
+            }
+            .padding(8.dp)
+        ){
             val icon =
                 if (vm.controlState == ControlViewModel.ControlState.Locked) Icons.Filled.Lock else Icons.Filled.LockOpen
 
             Icon(
-                icon, contentDescription = stringResource(
+                icon,
+                modifier = Modifier.size(18.dp),
+                contentDescription = stringResource(
                     id = com.heyanle.easy_i18n.R.string.locked
                 )
             )
