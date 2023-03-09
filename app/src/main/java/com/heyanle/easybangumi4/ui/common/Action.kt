@@ -45,7 +45,8 @@ fun RowScope.Action(
             .clip(CircleShape)
             .clickable {
                 onClick()
-            },
+            }
+            .padding(0.dp, 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {

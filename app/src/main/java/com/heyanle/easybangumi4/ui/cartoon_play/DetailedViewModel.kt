@@ -55,6 +55,7 @@ class DetailedViewModel(
             detailedState = DetailedState.Loading
             detailedComponent.getAll(cartoonSummary)
                 .complete {
+
                     detailedState = DetailedState.Info(it.data.first, it.data.second)
                     val isStar = withContext(Dispatchers.IO) {
                         DB.cartoonStar.getBySourceDetailUrl(
