@@ -63,6 +63,7 @@ import com.heyanle.easybangumi4.ui.common.player.ControlViewModel
 import com.heyanle.easybangumi4.ui.common.player.ControlViewModelFactory
 import com.heyanle.easybangumi4.ui.common.player.EasyPlayerScaffold
 import com.heyanle.easybangumi4.ui.common.player.LockBtn
+import com.heyanle.easybangumi4.ui.common.player.ProgressBox
 import com.heyanle.easybangumi4.ui.common.player.SimpleBottomBar
 import com.heyanle.easybangumi4.ui.common.player.SimpleTopBar
 import com.heyanle.easybangumi4.utils.TODO
@@ -197,6 +198,8 @@ fun CartoonPlay(
 
 
                     LockBtn(vm = it)
+                    
+                    ProgressBox(vm = it)
                 }
             }
         ) {

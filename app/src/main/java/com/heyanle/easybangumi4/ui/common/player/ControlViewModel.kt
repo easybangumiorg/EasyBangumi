@@ -200,7 +200,7 @@ class ControlViewModel(
         super.onPlaybackStateChanged(playbackState)
         when(playbackState){
             Player.STATE_READY -> {
-                isLoading = true
+                isLoading = false
                 syncTimeIfNeed()
                 starLoop()
             }

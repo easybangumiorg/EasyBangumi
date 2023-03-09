@@ -4,6 +4,8 @@ import android.app.Activity
 import android.content.pm.ActivityInfo
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -183,6 +185,8 @@ fun SimpleTopBar(
         AnimatedVisibility(
             modifier = modifier,
             visible = isShow,
+            exit = fadeOut(),
+            enter = fadeIn(),
         ) {
             TopControl(
 
@@ -207,7 +211,9 @@ fun SimpleBottomBar(
 
     AnimatedVisibility(
         modifier = modifier,
-        visible = isShow
+        visible = isShow,
+        exit = fadeOut(),
+        enter = fadeIn(),
     ) {
         BottomControl{
             PlayPauseBtn(isPlaying = vm.playWhenReady, onClick = {
@@ -251,7 +257,9 @@ fun BoxScope.LockBtn(
     AnimatedVisibility(
         modifier = Modifier
             .align(Alignment.CenterStart),
-        visible = isShow
+        visible = isShow,
+        exit = fadeOut(),
+        enter = fadeIn(),
     ) {
         Box(modifier = Modifier
             .padding(4.dp)
