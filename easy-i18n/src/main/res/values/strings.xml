@@ -90,6 +90,8 @@
 
     <string name="delete">删除</string>
 
+    <string name="locked">锁定</string>
+
     <string name="no_star_bangumi">没有追番</string>
 
     <string name="click_star">点击追番</string>

@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Fullscreen
@@ -30,14 +31,15 @@ import com.heyanle.easybangumi4.ui.common.player.utils.TimeUtils
 
 @Composable
 fun TopControl(
+    modifier: Modifier,
     content: @Composable RowScope.() -> Unit,
 ){
     Row(
-        modifier = Modifier.background(
+        modifier = Modifier.fillMaxWidth().background(
             brush = Brush.verticalGradient(
                 listOf(Color.Black, Color.Transparent),
             )
-        ),
+        ).then(modifier),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.Start),
         content = content
@@ -46,14 +48,15 @@ fun TopControl(
 
 @Composable
 fun BottomControl(
+    modifier: Modifier,
     content: @Composable RowScope.() -> Unit,
 ) {
     Row(
-        modifier = Modifier.background(
+        modifier = Modifier.fillMaxWidth().background(
             brush = Brush.verticalGradient(
-                listOf(Color.Transparent, Color.Black),
+                listOf( Color.Transparent, Color.Black)
             )
-        ),
+        ).then(modifier),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
         content = content

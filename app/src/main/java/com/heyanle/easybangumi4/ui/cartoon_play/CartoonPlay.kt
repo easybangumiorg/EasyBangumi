@@ -1,10 +1,12 @@
 package com.heyanle.easybangumi4.ui.cartoon_play
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -29,7 +31,6 @@ import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -54,7 +55,17 @@ import com.heyanle.easybangumi4.ui.common.Action
 import com.heyanle.easybangumi4.ui.common.ActionRow
 import com.heyanle.easybangumi4.ui.common.DetailedContainer
 import com.heyanle.easybangumi4.ui.common.EmptyPage
+import com.heyanle.easybangumi4.ui.common.ErrorPage
+import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.OkImage
+import com.heyanle.easybangumi4.ui.common.player.ControlViewModel
+import com.heyanle.easybangumi4.ui.common.player.ControlViewModelFactory
+import com.heyanle.easybangumi4.ui.common.player.EasyPlayerScaffold
+import com.heyanle.easybangumi4.ui.common.player.LockBtn
+import com.heyanle.easybangumi4.ui.common.player.SimpleBottomBar
+import com.heyanle.easybangumi4.ui.common.player.SimpleTopBar
+import com.heyanle.easybangumi4.utils.TODO
+import kotlinx.coroutines.launch
 
 /**
  * Created by HeYanLe on 2023/3/4 16:34.
@@ -101,9 +112,10 @@ fun CartoonPlay(
     enterData: CartoonPlayViewModel.EnterData? = null
 ) {
 
-    val nav = LocalNavController.current
+    val controlVM =
+        viewModel<ControlViewModel>(factory = ControlViewModelFactory(CartoonPlayingManager.exoPlayer))
 
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val nav = LocalNavController.current
 
     LaunchedEffect(key1 = detailedVM.detailedState) {
         val sta = detailedVM.detailedState
@@ -122,8 +134,62 @@ fun CartoonPlay(
         color = MaterialTheme.colorScheme.background,
         contentColor = MaterialTheme.colorScheme.onBackground
     ) {
+        EasyPlayerScaffold(
+            modifier = Modifier.fillMaxSize(),
+            vm = controlVM,
+            videoFloat = {
+                LaunchedEffect(key1 = CartoonPlayingManager.state){
+                    when(CartoonPlayingManager.state){
+                        is CartoonPlayingManager.PlayingState.Playing -> {
+                            it.onPrepare()
+                        }
+                        is CartoonPlayingManager.PlayingState.Loading -> {}
+                        is CartoonPlayingManager.PlayingState.Error -> {}
+                        else -> {}
+                    }
+                }
+                when(val state = CartoonPlayingManager.state){
+                    is CartoonPlayingManager.PlayingState.Playing -> {}
+                    is CartoonPlayingManager.PlayingState.Loading -> {
+//                        LoadingPage (
+//                            modifier = Modifier
+//                                .fillMaxSize()
+//                                .clickable { }
+//                        )
+                    }
+                    is CartoonPlayingManager.PlayingState.Error -> {
+                        ErrorPage(
+                            modifier = Modifier
+                                .fillMaxSize(),
+                            errorMsg = state.errMsg,
+                            clickEnable = true,
+                            onClick = {
+                                CartoonPlayingManager.defaultScope.launch {
+                                    CartoonPlayingManager.refresh()
+                                }
+                            }
+                        )
+                    }
+                    else -> {}
+                }
 
-
+            },
+            control = {
+                Box(modifier = Modifier.fillMaxSize()){
+                    SimpleTopBar(vm = it)
+                    SimpleBottomBar(vm = it) {
+                        
+                    }
+                    
+                    LockBtn(vm = it)
+                }
+            }
+        ) {
+            CartoonPlayUI(
+                detailedVM = detailedVM,
+                cartoonPlayVM = cartoonPlayVM,
+            )
+        }
     }
 
 }
@@ -133,8 +199,69 @@ fun CartoonPlay(
 fun CartoonPlayUI(
     detailedVM: DetailedViewModel,
     cartoonPlayVM: CartoonPlayViewModel,
-    isFullScreen: Boolean,
-){
+) {
+    when(val detailedState = detailedVM.detailedState){
+        is DetailedViewModel.DetailedState.Info -> {
+            CartoonPlayDetailed(
+                modifier = Modifier.fillMaxSize(),
+                cartoon = detailedState.detail,
+                playLines = detailedState.playLine,
+                selectLineIndex = cartoonPlayVM.selectedLineIndex,
+                playingPlayLine = CartoonPlayingManager.state.playLine(),
+                playingEpisode = CartoonPlayingManager.state.episode(),
+                onLineSelect = {
+                    cartoonPlayVM.selectedLineIndex = it
+                },
+                onEpisodeClick = { _, playLine, episode ->
+                    if(CartoonPlayingManager.state.playLine() == playLine){
+                        CartoonPlayingManager.defaultScope.launch {
+                            CartoonPlayingManager.changeEpisode(episode, 0L)
+                        }
+                    }else{
+                        CartoonPlayingManager.defaultScope.launch {
+                            CartoonPlayingManager.changeLine(
+                                detailedState.detail.source,
+                                detailedVM.cartoonSummary,
+                                playLine,
+                                defaultEpisode = episode,
+                                defaultProgress = 0L
+                            )
+                        }
+                    }
+                },
+                isStar = detailedVM.isStar,
+                onStar = {
+                    detailedVM.setCartoonStar(it, detailedState.detail)
+                },
+                onSearch = {
+                    TODO("搜索同名番")
+                },
+                onWeb = {
+                    TODO("打开原网站")
+                },
+                onDlna = {
+                    TODO("投屏")
+                }
+            )
+        }
+        is DetailedViewModel.DetailedState.Error -> {
+            ErrorPage(
+                modifier = Modifier.fillMaxSize(),
+                errorMsg = detailedState.errorMsg,
+                clickEnable = true,
+                onClick = {
+                    detailedVM.load()
+                },
+                other = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.click_to_retry))}
+            )
+        }
+        is DetailedViewModel.DetailedState.Loading -> {
+            LoadingPage(
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+        else -> {}
+    }
 
 }
 
@@ -146,31 +273,31 @@ fun CartoonPlayDetailed(
     cartoon: Cartoon,
     playLines: List<PlayLine>,
     selectLineIndex: Int,
-    playingPlayLine: PlayLine,
+    playingPlayLine: PlayLine?,
     playingEpisode: Int,
     onLineSelect: (Int) -> Unit,
     onEpisodeClick: (Int, PlayLine, Int) -> Unit,
 
     isStar: Boolean,
-    onStar: (Boolean)->Unit,
-    onSearch: ()->Unit,
-    onWeb: ()->Unit,
-    onDlna: ()->Unit,
+    onStar: (Boolean) -> Unit,
+    onSearch: () -> Unit,
+    onWeb: () -> Unit,
+    onDlna: () -> Unit,
 ) {
 
     // 将非空的 播放线路 下标存成离散序列
     val unEmptyLinesIndex = remember(playLines) {
-        arrayListOf<Int>().apply{
+        arrayListOf<Int>().apply {
             playLines.forEachIndexed { index, playLine ->
-                if(playLine.episode.isNotEmpty()){
+                if (playLine.episode.isNotEmpty()) {
                     add(index)
                 }
             }
         }
     }
 
-    LaunchedEffect(key1 = playLines, key2 = selectLineIndex){
-        if(!unEmptyLinesIndex.contains(selectLineIndex) && unEmptyLinesIndex.isNotEmpty()){
+    LaunchedEffect(key1 = playLines, key2 = selectLineIndex) {
+        if (!unEmptyLinesIndex.contains(selectLineIndex) && unEmptyLinesIndex.isNotEmpty()) {
             onLineSelect(unEmptyLinesIndex[0])
         }
     }
@@ -216,21 +343,21 @@ fun CartoonPlayDetailed(
                 )
             }
 
-            if(unEmptyLinesIndex.isNotEmpty()){
-                item (
+            if (unEmptyLinesIndex.isNotEmpty()) {
+                item(
                     span = {
                         // LazyGridItemSpanScope:
                         // maxLineSpan
                         GridItemSpan(maxLineSpan)
                     }
-                ){
+                ) {
                     EmptyPage(
                         modifier = Modifier.fillMaxWidth(),
                         emptyMsg = stringResource(id = com.heyanle.easy_i18n.R.string.no_play_line)
                     )
                 }
-            }else{
-                item (
+            } else {
+                item(
                     span = {
                         // LazyGridItemSpanScope:
                         // maxLineSpan
@@ -238,7 +365,7 @@ fun CartoonPlayDetailed(
                     }
                 ) {
                     ScrollableTabRow(selectedTabIndex = unEmptyLinesIndex.indexOf(selectLineIndex)) {
-                        unEmptyLinesIndex.forEach {index ->
+                        unEmptyLinesIndex.forEach { index ->
                             val playLine = playLines[index]
                             Tab(
                                 selected = index == selectLineIndex,
@@ -253,8 +380,11 @@ fun CartoonPlayDetailed(
                     }
                 }
 
-                if(selectLineIndex >= 0 && selectLineIndex < playLines.size && unEmptyLinesIndex.contains(selectLineIndex)){
-                    itemsIndexed(playLines[selectLineIndex].episode){ index, item ->
+                if (selectLineIndex >= 0 && selectLineIndex < playLines.size && unEmptyLinesIndex.contains(
+                        selectLineIndex
+                    )
+                ) {
+                    itemsIndexed(playLines[selectLineIndex].episode) { index, item ->
                         FilterChip(
                             selected = playLines[selectLineIndex] == playingPlayLine && index == playingEpisode,
                             onClick = {
@@ -274,8 +404,8 @@ fun CartoonPlayDetailed(
 @Composable
 fun CartoonDescCard(
     cartoon: Cartoon
-){
-    Row (
+) {
+    Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(4.dp),
@@ -288,13 +418,14 @@ fun CartoonDescCard(
                 .aspectRatio(19 / 27F)
                 .clip(RoundedCornerShape(4.dp)),
             image = cartoon.coverUrl,
-            contentDescription = cartoon.title)
+            contentDescription = cartoon.title
+        )
 
         Spacer(modifier = Modifier.size(8.dp))
 
         Text(
             modifier = Modifier.weight(1f),
-            text = cartoon.description?: cartoon.intro ?: "",
+            text = cartoon.description ?: cartoon.intro ?: "",
             style = MaterialTheme.typography.bodySmall,
             overflow = TextOverflow.Ellipsis,
         )
@@ -304,12 +435,12 @@ fun CartoonDescCard(
 @Composable
 fun CartoonActions(
     isStar: Boolean,
-    onStar: (Boolean)->Unit,
-    onSearch: ()->Unit,
-    onWeb: ()->Unit,
-    onDlna: ()->Unit,
-){
-    ActionRow (
+    onStar: (Boolean) -> Unit,
+    onSearch: () -> Unit,
+    onWeb: () -> Unit,
+    onDlna: () -> Unit,
+) {
+    ActionRow(
         modifier = Modifier.fillMaxWidth()
     ) {
         val starIcon =
@@ -333,7 +464,7 @@ fun CartoonActions(
                 )
             },
             onClick = {
-                onStar(! isStar)
+                onStar(!isStar)
             }
         )
 
