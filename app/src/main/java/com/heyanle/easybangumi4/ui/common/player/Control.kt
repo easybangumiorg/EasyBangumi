@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.FullscreenExit
 import androidx.compose.material.icons.filled.Pause
@@ -26,7 +27,21 @@ import com.heyanle.easybangumi4.ui.common.player.utils.TimeUtils
  * Created by HeYanLe on 2023/3/8 22:04.
  * https://github.com/heyanLE
  */
-class Control {
+
+@Composable
+fun TopControl(
+    content: @Composable RowScope.() -> Unit,
+){
+    Row(
+        modifier = Modifier.background(
+            brush = Brush.verticalGradient(
+                listOf(Color.Black, Color.Transparent),
+            )
+        ),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.Start),
+        content = content
+    )
 }
 
 @Composable
@@ -111,6 +126,20 @@ fun RowScope.FullScreenBtn(
             contentDescription = if (isFullScreen) stringResource(id = com.heyanle.easy_i18n.R.string.full_screen_exit) else stringResource(
                 id = com.heyanle.easy_i18n.R.string.full_screen
             )
+        )
+    }
+}
+
+@Composable
+fun RowScope.BackBtn(
+    onClick: () -> Unit,
+){
+    IconButton(onClick = {
+        onClick()
+    }) {
+        Icon(
+            Icons.Filled.ArrowBack,
+            contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.back)
         )
     }
 }
