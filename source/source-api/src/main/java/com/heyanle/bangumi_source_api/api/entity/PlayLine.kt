@@ -5,6 +5,7 @@ package com.heyanle.bangumi_source_api.api.entity
  * https://github.com/heyanLE
  */
 class PlayLine(
+    val id: String, // 源自己维护和判断
     val label: String,
     val episode: List<String>,
 )
