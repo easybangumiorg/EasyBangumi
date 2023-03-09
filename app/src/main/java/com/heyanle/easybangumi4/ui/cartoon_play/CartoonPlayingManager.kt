@@ -36,6 +36,8 @@ object CartoonPlayingManager {
 
     val defaultScope = MainScope()
 
+
+
     sealed class PlayingState {
         object None : PlayingState()
 
@@ -56,6 +58,24 @@ object CartoonPlayingManager {
             val playLine: PlayLine,
             val curEpisode: Int,
         ) : PlayingState()
+
+        fun playLine(): PlayLine? {
+            return when(this){
+                None -> null
+                is Loading -> playLine
+                is Playing -> playLine
+                is Error -> playLine
+            }
+        }
+
+        fun episode(): Int {
+            return when(this){
+                None -> -1
+                is Loading -> curEpisode
+                is Playing -> curEpisode
+                is Error -> curEpisode
+            }
+        }
     }
 
     var state by mutableStateOf<PlayingState>(PlayingState.None)
@@ -67,9 +87,6 @@ object CartoonPlayingManager {
     private var cartoonSummary: CartoonSummary? = null
 
 
-    val ratioWidth = 16F
-    val ratioHeight = 9F
-
     val exoPlayer: ExoPlayer by lazy {
         ExoPlayer.Builder(
             APP,
@@ -80,6 +97,13 @@ object CartoonPlayingManager {
             DefaultBandwidthMeter.getSingletonInstance(APP),
             DefaultAnalyticsCollector(Clock.DEFAULT)
         ).build()
+    }
+
+    suspend fun refresh(){
+        val cartoonSummary = cartoonSummary?:return
+        val playComponent = playComponent?:return
+        val playLine =  state.playLine()?:return
+        changePlay(playComponent,cartoonSummary, playLine, state.episode(), 0)
     }
 
     suspend fun changeLine(

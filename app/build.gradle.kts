@@ -156,7 +156,5 @@ dependencies {
     implementation(project(":easy-crasher"))
     implementation(project(":easy-i18n"))
     implementation(project(":extension:extension-core"))
-    implementation(project(":source:source-api"))
-    implementation(project(":source:source-utils"))
     implementation(project(":extension:extension-api"))
 }

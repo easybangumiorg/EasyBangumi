@@ -22,7 +22,7 @@ import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlay
 import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.home.Home
 import com.heyanle.easybangumi4.ui.sourcehome.SourceHome
-import com.heyanle.easybangumi4.utils.easyTODO
+import com.heyanle.easybangumi4.utils.TODO
 import java.lang.ref.WeakReference
 import java.net.URLDecoder
 import java.net.URLEncoder
@@ -75,7 +75,7 @@ fun NavHostController.navigationDetailed(
 fun NavHostController.navigationDLNA(
     cartoonCover: CartoonCover
 ){
-    easyTODO("投屏")
+    TODO("投屏")
 }
 
 fun NavHostController.navigationDLNA(
@@ -83,7 +83,7 @@ fun NavHostController.navigationDLNA(
     lineIndex: Int,
     episode: Int,
 ){
-    easyTODO("投屏")
+    TODO("投屏")
 }
 
 // 缺省路由
