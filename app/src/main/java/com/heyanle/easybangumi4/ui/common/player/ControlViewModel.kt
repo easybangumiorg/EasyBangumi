@@ -10,12 +10,12 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.video.VideoSize
-import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.ui.common.player.surface.EasySurfaceView
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.lang.ref.WeakReference
 
 /**
  * Created by HeYanLe on 2023/3/8 22:45.
@@ -61,10 +61,11 @@ class ControlViewModel(
     private var lastHideJob: Job? = null
     private var loopJob: Job? = null
 
+    private var lastVideoSize: VideoSize? = null
 
-    val surfaceView: EasySurfaceView by lazy {
-        EasySurfaceView(APP)
-    }
+    private var surfaceViewRef: WeakReference<EasySurfaceView>? = null
+
+
 
     fun onLockedChange(locked: Boolean){
         viewModelScope.launch {
@@ -124,11 +125,25 @@ class ControlViewModel(
     }
 
     fun onLaunch(){
-        exoPlayer.setVideoSurfaceView(surfaceView)
+
     }
 
     fun onDisposed(){
-        exoPlayer.clearVideoSurfaceView(surfaceView)
+        surfaceViewRef?.get()?.let {
+            exoPlayer.clearVideoSurfaceView(it)
+        }
+        surfaceViewRef = null
+
+    }
+
+    fun onSurfaceView(surfaceView: EasySurfaceView){
+        surfaceViewRef = WeakReference(surfaceView)
+        exoPlayer.setVideoSurfaceView(surfaceView)
+        lastVideoSize?.let {
+            surfaceView.setVideoSize(it.width, it.height)
+        }
+
+
     }
 
 
@@ -212,7 +227,9 @@ class ControlViewModel(
 
     override fun onVideoSizeChanged(videoSize: VideoSize) {
         super.onVideoSizeChanged(videoSize)
-        surfaceView.setVideoSize(videoSize.width, videoSize.height)
+        surfaceViewRef?.get()?.let {
+            it.setVideoSize(videoSize.width, videoSize.height)
+        }
     }
 
     private fun syncTimeIfNeed(){

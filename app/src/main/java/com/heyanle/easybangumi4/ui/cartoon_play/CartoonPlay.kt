@@ -1,5 +1,6 @@
 package com.heyanle.easybangumi4.ui.cartoon_play
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -129,8 +130,8 @@ fun CartoonPlay(
 
 
 
-
     Surface(
+        modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background,
         contentColor = MaterialTheme.colorScheme.onBackground
     ) {
@@ -138,25 +139,27 @@ fun CartoonPlay(
             modifier = Modifier.fillMaxSize(),
             vm = controlVM,
             videoFloat = {
-                LaunchedEffect(key1 = CartoonPlayingManager.state){
-                    when(CartoonPlayingManager.state){
+                LaunchedEffect(key1 = CartoonPlayingManager.state) {
+                    when (CartoonPlayingManager.state) {
                         is CartoonPlayingManager.PlayingState.Playing -> {
                             it.onPrepare()
                         }
+
                         is CartoonPlayingManager.PlayingState.Loading -> {}
                         is CartoonPlayingManager.PlayingState.Error -> {}
                         else -> {}
                     }
                 }
-                when(val state = CartoonPlayingManager.state){
+                when (val state = CartoonPlayingManager.state) {
                     is CartoonPlayingManager.PlayingState.Playing -> {}
                     is CartoonPlayingManager.PlayingState.Loading -> {
-//                        LoadingPage (
-//                            modifier = Modifier
-//                                .fillMaxSize()
-//                                .clickable { }
-//                        )
+                        LoadingPage(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clickable { }
+                        )
                     }
+
                     is CartoonPlayingManager.PlayingState.Error -> {
                         ErrorPage(
                             modifier = Modifier
@@ -170,17 +173,29 @@ fun CartoonPlay(
                             }
                         )
                     }
+
                     else -> {}
                 }
 
             },
             control = {
-                Box(modifier = Modifier.fillMaxSize()){
-                    SimpleTopBar(vm = it)
-                    SimpleBottomBar(vm = it) {
-                        
+                Box(modifier = Modifier
+                    .fillMaxSize()) {
+
+                    SimpleTopBar(
+                        vm = it,
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                    )
+                    SimpleBottomBar(
+                        vm = it,
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                    ) {
+
                     }
-                    
+
+
                     LockBtn(vm = it)
                 }
             }
@@ -200,7 +215,7 @@ fun CartoonPlayUI(
     detailedVM: DetailedViewModel,
     cartoonPlayVM: CartoonPlayViewModel,
 ) {
-    when(val detailedState = detailedVM.detailedState){
+    when (val detailedState = detailedVM.detailedState) {
         is DetailedViewModel.DetailedState.Info -> {
             CartoonPlayDetailed(
                 modifier = Modifier.fillMaxSize(),
@@ -213,11 +228,11 @@ fun CartoonPlayUI(
                     cartoonPlayVM.selectedLineIndex = it
                 },
                 onEpisodeClick = { _, playLine, episode ->
-                    if(CartoonPlayingManager.state.playLine() == playLine){
+                    if (CartoonPlayingManager.state.playLine() == playLine) {
                         CartoonPlayingManager.defaultScope.launch {
                             CartoonPlayingManager.changeEpisode(episode, 0L)
                         }
-                    }else{
+                    } else {
                         CartoonPlayingManager.defaultScope.launch {
                             CartoonPlayingManager.changeLine(
                                 detailedState.detail.source,
@@ -244,6 +259,7 @@ fun CartoonPlayUI(
                 }
             )
         }
+
         is DetailedViewModel.DetailedState.Error -> {
             ErrorPage(
                 modifier = Modifier.fillMaxSize(),
@@ -252,14 +268,16 @@ fun CartoonPlayUI(
                 onClick = {
                     detailedVM.load()
                 },
-                other = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.click_to_retry))}
+                other = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.click_to_retry)) }
             )
         }
+
         is DetailedViewModel.DetailedState.Loading -> {
             LoadingPage(
                 modifier = Modifier.fillMaxSize()
             )
         }
+
         else -> {}
     }
 
@@ -309,14 +327,14 @@ fun CartoonPlayDetailed(
         Text(
             modifier = Modifier.padding(8.dp, 4.dp),
             text = cartoon.title,
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleLarge,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
         )
 
         Divider()
 
-        LazyVerticalGrid(columns = GridCells.Adaptive(64.dp)) {
+        LazyVerticalGrid(columns = GridCells.Adaptive(128.dp)) {
             item(
                 span = {
                     // LazyGridItemSpanScope:
@@ -343,7 +361,7 @@ fun CartoonPlayDetailed(
                 )
             }
 
-            if (unEmptyLinesIndex.isNotEmpty()) {
+            if (unEmptyLinesIndex.isEmpty()) {
                 item(
                     span = {
                         // LazyGridItemSpanScope:
@@ -364,7 +382,12 @@ fun CartoonPlayDetailed(
                         GridItemSpan(maxLineSpan)
                     }
                 ) {
-                    ScrollableTabRow(selectedTabIndex = unEmptyLinesIndex.indexOf(selectLineIndex)) {
+                    ScrollableTabRow(selectedTabIndex = 0.coerceAtLeast(
+                        unEmptyLinesIndex.indexOf(
+                            selectLineIndex
+                        )
+                    )
+                    ) {
                         unEmptyLinesIndex.forEach { index ->
                             val playLine = playLines[index]
                             Tab(
@@ -385,14 +408,22 @@ fun CartoonPlayDetailed(
                     )
                 ) {
                     itemsIndexed(playLines[selectLineIndex].episode) { index, item ->
-                        FilterChip(
-                            selected = playLines[selectLineIndex] == playingPlayLine && index == playingEpisode,
-                            onClick = {
-                                onEpisodeClick(selectLineIndex, playLines[selectLineIndex], index)
-                            },
-                            label = { Text(item) },
-                            colors = FilterChipDefaults.filterChipColors(),
-                        )
+
+                        Box(modifier = Modifier.padding(2.dp)) {
+                            FilterChip(
+                                modifier = Modifier.fillMaxSize(),
+                                selected = playLines[selectLineIndex] == playingPlayLine && index == playingEpisode,
+                                onClick = {
+                                    onEpisodeClick(
+                                        selectLineIndex,
+                                        playLines[selectLineIndex],
+                                        index
+                                    )
+                                },
+                                label = { Text(item) },
+                                colors = FilterChipDefaults.filterChipColors(),
+                            )
+                        }
                     }
                 }
             }

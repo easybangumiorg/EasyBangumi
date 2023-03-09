@@ -13,9 +13,10 @@ dependencyResolutionManagement {
             url = uri("http://4thline.org/m2")
             isAllowInsecureProtocol = true
         }
+        maven { url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/") }
         maven { url = uri("https://jitpack.io") }
         mavenCentral()
-        maven { url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/") }
+
     }
 }
 

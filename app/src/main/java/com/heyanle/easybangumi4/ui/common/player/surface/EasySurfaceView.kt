@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.PixelFormat
 import android.util.AttributeSet
 import android.view.SurfaceView
+import android.view.ViewGroup
 import com.heyanle.easybangumi4.ui.common.player.utils.MeasureHelper
 
 /**
@@ -52,5 +53,6 @@ class EasySurfaceView: SurfaceView {
 
     init {
         holder.setFormat(PixelFormat.RGBA_8888)
+        layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
     }
 }
