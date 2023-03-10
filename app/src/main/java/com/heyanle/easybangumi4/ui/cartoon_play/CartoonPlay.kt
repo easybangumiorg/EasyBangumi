@@ -62,6 +62,7 @@ import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.common.player.ControlViewModel
 import com.heyanle.easybangumi4.ui.common.player.ControlViewModelFactory
 import com.heyanle.easybangumi4.ui.common.player.EasyPlayerScaffold
+import com.heyanle.easybangumi4.ui.common.player.GestureController
 import com.heyanle.easybangumi4.ui.common.player.LockBtn
 import com.heyanle.easybangumi4.ui.common.player.ProgressBox
 import com.heyanle.easybangumi4.ui.common.player.SimpleBottomBar
@@ -182,6 +183,8 @@ fun CartoonPlay(
             control = {
                 Box(modifier = Modifier
                     .fillMaxSize()) {
+
+                    GestureController(vm = it, modifier = Modifier.fillMaxSize())
 
                     SimpleTopBar(
                         vm = it,
