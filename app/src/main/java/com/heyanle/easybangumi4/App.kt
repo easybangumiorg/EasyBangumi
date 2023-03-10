@@ -1,8 +1,11 @@
 package com.heyanle.easybangumi4
 
+import android.app.ActivityManager
 import android.app.Application
+import android.content.Context
 import android.os.Build
 import android.os.Looper
+import android.os.Process
 import android.util.Log
 import android.widget.Toast
 import com.heyanle.easy_crasher.CrashHandler
@@ -22,6 +25,7 @@ import com.microsoft.appcenter.crashes.Crashes
 import com.microsoft.appcenter.distribute.Distribute
 import javax.net.ssl.HttpsURLConnection
 
+
 /**
  * Created by HeYanLe on 2023/2/18 22:47.
  * https://github.com/heyanLE
@@ -34,28 +38,28 @@ class App: Application() {
 
     override fun onCreate() {
         super.onCreate()
-
         APP = this
 
         initOkkv()
 
         initCrasher()
 
-        HttpsURLConnection.setDefaultSSLSocketFactory(CropUtil.getUnsafeSslSocketFactory())
-        HttpsURLConnection.setDefaultHostnameVerifier(TrustAllHostnameVerifier())
+        if (isMainProcess()){
+            HttpsURLConnection.setDefaultSSLSocketFactory(CropUtil.getUnsafeSslSocketFactory())
+            HttpsURLConnection.setDefaultHostnameVerifier(TrustAllHostnameVerifier())
 
-        initAppCenter()
+            initAppCenter()
 
-        initExtension()
+            initExtension()
 
-        initDataBase()
-        kotlin.runCatching {
-            initUtils(this)
-        }.onFailure {
-            it.printStackTrace()
-            Toast.makeText(this, it.message, Toast.LENGTH_SHORT).show()
+            initDataBase()
+            kotlin.runCatching {
+                initUtils(this)
+            }.onFailure {
+                it.printStackTrace()
+                Toast.makeText(this, it.message, Toast.LENGTH_SHORT).show()
+            }
         }
-
     }
 
     override fun getPackageName(): String {
@@ -117,6 +121,27 @@ class App: Application() {
     private fun initDataBase(){
 
         AppDatabase.init(this)
+    }
+
+    private fun isMainProcess(): Boolean{
+        return packageName == if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            getProcessName()
+        }else{
+            getProcessName(this)
+        }
+
+    }
+
+    private fun getProcessName(cxt: Context): String? {
+        val pid = Process.myPid()
+        val am = cxt.getSystemService(ACTIVITY_SERVICE) as ActivityManager
+        val runningApps = am.runningAppProcesses ?: return null
+        for (procInfo in runningApps) {
+            if (procInfo.pid == pid) {
+                return procInfo.processName
+            }
+        }
+        return null
     }
 
 }

@@ -2,8 +2,10 @@ package com.heyanle.easybangumi4.utils
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
+import android.hardware.SensorManager
 import android.os.Parcel
 import android.os.Parcelable
+import android.view.OrientationEventListener
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
@@ -21,6 +23,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -233,6 +236,36 @@ private data class PagingPlaceholderKey(private val index: Int) : Parcelable {
 //        }
 //    }
 //    .build()
+
+
+
+@Composable
+fun OnOrientationEvent(
+    rate: Int = SensorManager.SENSOR_DELAY_NORMAL,
+    changeCD: Int = 300,
+    onEvent: (listener: OrientationEventListener, orientation: Int) -> Unit
+) {
+    val ctx = LocalContext.current
+    val cdAction = remember (changeCD) {
+        CDAction(changeCD)
+    }
+    val listener = remember(ctx) {
+        object : OrientationEventListener(ctx, rate) {
+            override fun onOrientationChanged(orientation: Int) {
+                cdAction.action {
+                    onEvent(this, orientation)
+                }
+            }
+        }
+    }
+    DisposableEffect(key1 = Unit) {
+        listener.enable()
+        onDispose {
+            listener.disable()
+        }
+    }
+
+}
 
 @Composable
 fun OnLifecycleEvent(onEvent: (owner: LifecycleOwner, event: Lifecycle.Event) -> Unit) {

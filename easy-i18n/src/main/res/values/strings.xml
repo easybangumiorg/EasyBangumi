@@ -36,6 +36,8 @@
 
     <string name="dynamic_color_enable_msg">动态配色开启成功，如显示异常请关闭。</string>
 
+    <string name="long_press_fast_forward">长按倍速播放中</string>
+
     <string name="home">主页</string>
     <string name="my_anim">追番</string>
     <string name="update">更新</string>
