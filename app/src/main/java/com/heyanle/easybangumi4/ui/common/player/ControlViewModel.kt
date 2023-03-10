@@ -1,5 +1,9 @@
 package com.heyanle.easybangumi4.ui.common.player
 
+import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.pm.ActivityInfo
+import android.view.OrientationEventListener
 import androidx.annotation.UiThread
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -7,15 +11,18 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.google.android.exoplayer2.C.TIME_UNSET
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.video.VideoSize
+import com.heyanle.easybangumi4.APP
+import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlayingManager
 import com.heyanle.easybangumi4.ui.common.player.surface.EasySurfaceView
+import com.heyanle.easybangumi4.utils.loge
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import java.lang.ref.WeakReference
 
 /**
  * Created by HeYanLe on 2023/3/8 22:45.
@@ -45,7 +52,12 @@ class ControlViewModel(
 
     var horizontalScrollPosition by mutableStateOf(0L)
 
-    var isFullScreen by mutableStateOf(false)
+    var fullScreenState by mutableStateOf<Pair<Boolean, Boolean>>(false to false)
+    val isFullScreen: Boolean
+        get() = fullScreenState.first
+
+    val isReverse: Boolean
+        get() = fullScreenState.second
 
     var isLoading by mutableStateOf(false)
 
@@ -58,12 +70,19 @@ class ControlViewModel(
 
     var title by mutableStateOf("")
 
+
+    var isLongPress by mutableStateOf(false)
+    var lastSpeed = 1.0f
+
+
+
     private var lastHideJob: Job? = null
     private var loopJob: Job? = null
 
     private var lastVideoSize: VideoSize? = null
 
-    private var surfaceViewRef: WeakReference<EasySurfaceView>? = null
+    @SuppressLint("StaticFieldLeak")
+    val surfaceView = EasySurfaceView(APP)
 
 
 
@@ -79,14 +98,58 @@ class ControlViewModel(
         }
     }
 
-    fun onFullScreen(fullScreen: Boolean){
+
+    fun onFullScreen(fullScreen: Boolean, reverse: Boolean = false, ctx: Activity){
+
         viewModelScope.launch {
-            if(isFullScreen == fullScreen){
-                return@launch
+            val oldFullScreen = isFullScreen
+            val oldReverse = isReverse
+            if(oldFullScreen != fullScreen || oldReverse != reverse){
+                if(fullScreen){
+                    ctx.requestedOrientation = if(reverse)ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE else ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                }else{
+                    ctx.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                }
+                viewModelScope.launch {
+                    fullScreenState = fullScreen to reverse
+                }
             }
-            isFullScreen = fullScreen
-            controlState = ControlState.Normal
-            showControlWithHideDelay()
+            if(oldFullScreen != fullScreen){
+                controlState = ControlState.Normal
+                showControlWithHideDelay()
+            }
+        }
+    }
+
+    private var lastOrientation = 0
+    fun onOrientation(orientation: Int, act: Activity){
+        if(controlState != ControlState.Normal || isLongPress){
+            return
+        }
+        if(orientation == OrientationEventListener.ORIENTATION_UNKNOWN){
+            lastOrientation = -1
+            return
+        }
+
+        if(orientation > 350 || orientation < 10){
+            val o: Int = act.requestedOrientation
+            if (o == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE && lastOrientation == 0) return
+            //0度，用户竖直拿着手机
+            lastOrientation = 0
+            onFullScreen(fullScreen = false, reverse = false, act)
+        } else if(orientation in 81..99) {
+            val o: Int = act.requestedOrientation
+            if (o == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT && lastOrientation == 90) return
+            //90度，用户右侧横屏拿着手机
+            lastOrientation = 90
+            onFullScreen(fullScreen = true, reverse = true, act)
+        } else if (orientation in 261..279) {
+            val o: Int = act.requestedOrientation
+            //手动切换横竖屏
+            if (o == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT && lastOrientation == 270) return
+            //270度，用户左侧横屏拿着手机
+            lastOrientation = 270
+            onFullScreen(fullScreen = true, reverse = false, act)
         }
     }
 
@@ -102,50 +165,73 @@ class ControlViewModel(
 
     @UiThread
     fun onPositionChange(position: Long){
+        if(!exoPlayer.isMedia()){
+            return
+        }
         if(controlState == ControlState.Normal){
             controlState = ControlState.HorizontalScroll
         }
-        horizontalScrollPosition = position
+
+        horizontalScrollPosition = position.coerceIn(0, exoPlayer.duration.coerceAtLeast(Int.MAX_VALUE.toLong()))
 
     }
 
     fun onActionUP(){
+        if(controlState == ControlState.Locked){
+            if(isLongPress){
+                if(exoPlayer.playbackParameters.speed != lastSpeed){
+                    exoPlayer.setPlaybackSpeed(lastSpeed)
+                }
+                isLongPress = false
+            }
+            return
+        }
         if(controlState == ControlState.HorizontalScroll){
             exoPlayer.seekTo(horizontalScrollPosition)
         }
         controlState = ControlState.Normal
         showControlWithHideDelay()
+        if(isLongPress){
+            if(exoPlayer.playbackParameters.speed != lastSpeed){
+                exoPlayer.setPlaybackSpeed(lastSpeed)
+            }
+            isLongPress = false
+        }
+    }
 
+    fun onLongPress(){
+        lastSpeed = exoPlayer.playbackParameters.speed
+        exoPlayer.setPlaybackSpeed(lastSpeed*2)
+        isLongPress = true
     }
 
 
 
-    fun onHideClick(){
-        showControlWithHideDelay()
+
+
+    fun onSingleClick(){
+        if(isNormalLockedControlShow){
+            isNormalLockedControlShow = false
+        }else{
+            showControlWithHideDelay()
+        }
     }
+
 
     fun onLaunch(){
-
-    }
-
-    fun onDisposed(){
-        surfaceViewRef?.get()?.let {
-            exoPlayer.clearVideoSurfaceView(it)
-        }
-        surfaceViewRef = null
-
-    }
-
-    fun onSurfaceView(surfaceView: EasySurfaceView){
-        surfaceViewRef = WeakReference(surfaceView)
         exoPlayer.setVideoSurfaceView(surfaceView)
         lastVideoSize?.let {
             surfaceView.setVideoSize(it.width, it.height)
         }
-
-
+        exoPlayer.setPlaybackSpeed(1.0f)
+        lastSpeed = 1.0f
+        isLongPress = false
     }
 
+    fun onDisposed(){
+        exoPlayer.stop()
+        exoPlayer.clearVideoSurfaceView(surfaceView)
+    }
 
     private fun showControlWithHideDelay(){
         lastHideJob?.cancel()
@@ -195,6 +281,14 @@ class ControlViewModel(
     }
 
 
+    override fun onIsPlayingChanged(isPlaying: Boolean) {
+        super.onIsPlayingChanged(isPlaying)
+        if(isPlaying){
+            surfaceView.keepScreenOn = true
+        }else{
+            surfaceView.keepScreenOn = true
+        }
+    }
 
     override fun onPlaybackStateChanged(playbackState: Int) {
         super.onPlaybackStateChanged(playbackState)
@@ -227,23 +321,33 @@ class ControlViewModel(
 
     override fun onVideoSizeChanged(videoSize: VideoSize) {
         super.onVideoSizeChanged(videoSize)
-        surfaceViewRef?.get()?.let {
-            it.setVideoSize(videoSize.width, videoSize.height)
-        }
+        surfaceView.setVideoSize(videoSize.width, videoSize.height)
     }
 
     private fun syncTimeIfNeed(){
-        if(during != exoPlayer.duration){
-            during = exoPlayer.duration
+        CartoonPlayingManager.exoPlayer.playbackState.loge("ControlViewModel")
+        if(exoPlayer.isMedia()){
+            if(during != exoPlayer.duration){
+                during = if(exoPlayer.duration == TIME_UNSET){
+                    0
+                }else{
+                    exoPlayer.duration
+                }
+
+            }
+            if(position != exoPlayer.currentPosition){
+                position = exoPlayer.currentPosition
+            }
+            if(bufferPosition != exoPlayer.bufferedPosition){
+                bufferPosition = exoPlayer.bufferedPosition
+            }
         }
-        if(position != exoPlayer.currentPosition){
-            position = exoPlayer.currentPosition
-        }
-        if(bufferPosition != exoPlayer.bufferedPosition){
-            bufferPosition = exoPlayer.bufferedPosition
-        }
+
     }
 
+    private fun ExoPlayer.isMedia(): Boolean {
+        return CartoonPlayingManager.exoPlayer.playbackState == Player.STATE_BUFFERING || CartoonPlayingManager.exoPlayer.playbackState == Player.STATE_READY
+    }
 }
 
 class ControlViewModelFactory(

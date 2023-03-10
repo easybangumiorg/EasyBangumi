@@ -75,6 +75,7 @@ fun RowScope.PlayPauseBtn(
         val icon = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow
         Icon(
             icon,
+            tint = Color.White,
             contentDescription = if (isPlaying) stringResource(id = com.heyanle.easy_i18n.R.string.pause) else stringResource(
                 id = com.heyanle.easy_i18n.R.string.play
             )
@@ -122,6 +123,7 @@ fun RowScope.FullScreenBtn(
         val icon = if (isFullScreen) Icons.Filled.FullscreenExit else Icons.Filled.Fullscreen
         Icon(
             icon,
+            tint = Color.White,
             contentDescription = if (isFullScreen) stringResource(id = com.heyanle.easy_i18n.R.string.full_screen_exit) else stringResource(
                 id = com.heyanle.easy_i18n.R.string.full_screen
             )
@@ -138,6 +140,7 @@ fun RowScope.BackBtn(
     }) {
         Icon(
             Icons.Filled.ArrowBack,
+            tint = Color.White,
             contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.back)
         )
     }

@@ -8,9 +8,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Icon
-import androidx.compose.material.LinearProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -100,19 +101,21 @@ fun BrightVolumeUi(icon: ImageVector, contentDescription: String, percent: Int) 
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(8.dp))
-            .background(Color.Gray.copy(alpha = 0.5f))
-            .padding(4.dp)
+            .background(Color.Black.copy(alpha = 0.5f))
+            .padding(16.dp)
         ,
         contentAlignment = Alignment.Center
     ) {
         Row (
             verticalAlignment = Alignment.CenterVertically,
         ){
-            Icon(icon, contentDescription)
-            Spacer(modifier = Modifier.size(4.dp))
+            Icon(icon, contentDescription, tint = Color.White, modifier = Modifier.size(36.dp))
+            Spacer(modifier = Modifier.size(16.dp))
             LinearProgressIndicator(
+                modifier = Modifier.width(100.dp),
                 progress = percent/100F
             )
+
         }
     }
 }
