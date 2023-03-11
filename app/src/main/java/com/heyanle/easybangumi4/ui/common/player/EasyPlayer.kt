@@ -123,9 +123,7 @@ fun EasyPlayerScaffold(
 
     OnLifecycleEvent { _, event ->
         if (event == Lifecycle.Event.ON_RESUME) {
-            if (vm.isFullScreen) {
-                ui.isSystemBarsVisible = false
-            }
+            ui.isSystemBarsVisible = !vm.isFullScreen
         }
     }
 
