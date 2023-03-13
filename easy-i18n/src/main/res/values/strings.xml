@@ -159,5 +159,8 @@
     <string name="open">开启</string>
     <string name="close">关闭</string>
 
+    <string name="video">视频</string>
+    <string name="detailed">详情</string>
+
 
 </resources>

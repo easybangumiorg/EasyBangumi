@@ -39,12 +39,11 @@ class App: Application() {
     override fun onCreate() {
         super.onCreate()
         APP = this
-
-        initOkkv()
-
-        initCrasher()
-
         if (isMainProcess()){
+            initOkkv()
+
+            initCrasher()
+
             HttpsURLConnection.setDefaultSSLSocketFactory(CropUtil.getUnsafeSslSocketFactory())
             HttpsURLConnection.setDefaultHostnameVerifier(TrustAllHostnameVerifier())
 

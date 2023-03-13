@@ -25,6 +25,28 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
  * Created by HeYanLe on 2023/2/19 0:02.
  * https://github.com/heyanLE
  */
+
+@Composable
+fun NormalSystemBarColor(
+    getStatusBarDark: (Boolean)->Boolean = {!it},
+    getNavigationBarDark: (Boolean)->Boolean = {!it},
+){
+    val isDark = when (EasyThemeController.easyThemeState.value.darkMode) {
+        DarkMode.Dark -> true
+        DarkMode.Light -> false
+        else -> isSystemInDarkTheme()
+    }
+
+    val uiController = rememberSystemUiController()
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        SideEffect() {
+            uiController.setStatusBarColor(Color.Transparent, getStatusBarDark(isDark))
+            uiController.setNavigationBarColor(Color.Transparent, getNavigationBarDark(isDark))
+        }
+    }
+}
+
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun EasyTheme(
@@ -59,14 +81,7 @@ fun EasyTheme(
             }
         }
 
-        val uiController = rememberSystemUiController()
-        val view = LocalView.current
-        if (!view.isInEditMode) {
-            SideEffect {
-                uiController.setStatusBarColor(Color.Transparent, !isDark)
-                uiController.setNavigationBarColor(Color.Transparent, !isDark)
-            }
-        }
+
 
         LaunchedEffect(key1 = colorScheme) {
             EasyThemeController.curThemeColor = colorScheme

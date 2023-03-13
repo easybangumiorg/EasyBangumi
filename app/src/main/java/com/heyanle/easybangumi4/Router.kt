@@ -18,6 +18,7 @@ import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.heyanle.bangumi_source_api.api.entity.CartoonCover
+import com.heyanle.easybangumi4.theme.NormalSystemBarColor
 import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlay
 import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.home.Home
@@ -125,6 +126,7 @@ fun Nav() {
             composable(
                 HOME,
             ) {
+                NormalSystemBarColor()
                 Home()
             }
 
@@ -134,6 +136,7 @@ fun Nav() {
                     navArgument("key") { defaultValue = "" },
                 )
             ) {
+                NormalSystemBarColor()
                 SourceHome(
                     it.arguments?.getString("key") ?: "",
                 )
@@ -167,6 +170,13 @@ fun Nav() {
                 val lineIndex = it.arguments?.getInt("lineIndex") ?: -1
                 val episode = it.arguments?.getInt("episode") ?: -1
                 val adviceProgress = it.arguments?.getLong("adviceProgress") ?: -1L
+
+
+                NormalSystemBarColor(
+                    getStatusBarDark = {
+                        false
+                    }
+                )
                 CartoonPlay(
                     id = URLDecoder.decode(id, "utf-8"),
                     source = source,

@@ -456,7 +456,7 @@ fun SimpleBottomBar(
             PlayPauseBtn(isPlaying = vm.playWhenReady, onClick = {
                 vm.onPlayPause(it)
             })
-            TimeText(time = vm.position)
+            TimeText(time = vm.position, Color.White)
 
             val position =
                 if (vm.controlState == ControlViewModel.ControlState.Normal) vm.position else if (vm.controlState == ControlViewModel.ControlState.HorizontalScroll) vm.horizontalScrollPosition else 0
@@ -473,7 +473,7 @@ fun SimpleBottomBar(
                 }
             )
 
-            TimeText(time = vm.during)
+            TimeText(time = vm.during, Color.White)
 
             otherAction?.invoke(this, vm)
 
