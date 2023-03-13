@@ -46,7 +46,7 @@ fun RowScope.Action(
             .clickable {
                 onClick()
             }
-            .padding(0.dp, 4.dp),
+            .padding(0.dp, 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
