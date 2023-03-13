@@ -88,9 +88,10 @@ fun RowScope.PlayPauseBtn(
  */
 @Composable
 fun RowScope.TimeText(
-    time: Long
+    time: Long,
+    color: Color = Color.Unspecified,
 ){
-    Text(text = TimeUtils.toString(time))
+    Text(text = TimeUtils.toString(time), color = color)
 }
 
 
