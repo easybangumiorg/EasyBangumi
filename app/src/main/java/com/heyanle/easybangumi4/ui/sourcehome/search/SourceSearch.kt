@@ -44,7 +44,6 @@ import com.heyanle.easybangumi4.navigationDetailed
 import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.common.pagingCommon
-import com.heyanle.easybangumi4.utils.logi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -102,7 +101,6 @@ fun SourceSearchPage(
                 }
                 items(pi) {
                     it?.let {
-                        it.logi("SourceSearch")
                         CartoonSearchItem(cartoonCover = it){
                             nav.navigationDetailed(it)
                         }
