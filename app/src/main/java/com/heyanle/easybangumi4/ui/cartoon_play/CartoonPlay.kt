@@ -33,17 +33,18 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBackIos
 import androidx.compose.material.icons.filled.CastConnected
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarOutline
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Surface
@@ -95,6 +96,7 @@ import com.heyanle.easybangumi4.ui.common.player.SimpleBottomBar
 import com.heyanle.easybangumi4.ui.common.player.SimpleTopBar
 import com.heyanle.easybangumi4.utils.TODO
 import com.heyanle.easybangumi4.utils.loge
+import com.heyanle.easybangumi4.utils.openUrl
 import kotlinx.coroutines.launch
 import java.util.Arrays
 
@@ -207,8 +209,19 @@ fun CartoonPlay(
 
                     else -> {}
                 }
-                IconButton(onClick = { }) {
-                    Icon(Icons.Filled.ArrowBackIos, contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.back))
+                FilledIconButton(
+                    modifier = Modifier.padding(8.dp),
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = Color.Black.copy(0.6f),
+                        contentColor = Color.White
+                    ),
+                    onClick = {
+                        nav.popBackStack()
+                    }) {
+                    Icon(
+                        imageVector = Icons.Filled.KeyboardArrowLeft,
+                        stringResource(id = com.heyanle.easy_i18n.R.string.back)
+                    )
                 }
 
             },
@@ -251,7 +264,7 @@ fun CartoonPlay(
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.primary),
             )
-            Box(modifier = Modifier.weight(1f)){
+            Box(modifier = Modifier.weight(1f)) {
                 CartoonPlayUI(
                     detailedVM = detailedVM,
                     cartoonPlayVM = cartoonPlayVM,
@@ -353,7 +366,11 @@ fun CartoonPlayPage(
             TODO("搜索同名番")
         },
         onWeb = {
-            TODO("打开原网站")
+            runCatching {
+                detailedState.detail.url.openUrl()
+            }.onFailure {
+                it.printStackTrace()
+            }
         },
         onDlna = {
             TODO("投屏")
@@ -503,7 +520,7 @@ fun CartoonPlayDetailed(
                         onWeb = onWeb,
                         onDlna = onDlna
                     )
-                    Spacer(modifier = Modifier.size(4.dp))
+                    Spacer(modifier = Modifier.size(8.dp))
                     Divider()
                 }
 
@@ -552,7 +569,9 @@ fun CartoonPlayDetailed(
                                 onClick = {
                                     onLineSelect(index)
                                 },
-                                unselectedContentColor = MaterialTheme.colorScheme.primary.copy(0.4f),
+                                unselectedContentColor = MaterialTheme.colorScheme.primary.copy(
+                                    0.4f
+                                ),
                                 text = {
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically
