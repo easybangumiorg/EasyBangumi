@@ -14,21 +14,26 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIos
 import androidx.compose.material.icons.filled.CastConnected
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -38,6 +43,7 @@ import androidx.compose.material.icons.filled.StarOutline
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Surface
@@ -76,6 +82,7 @@ import com.heyanle.easybangumi4.ui.common.ActionRow
 import com.heyanle.easybangumi4.ui.common.DetailedContainer
 import com.heyanle.easybangumi4.ui.common.EmptyPage
 import com.heyanle.easybangumi4.ui.common.ErrorPage
+import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.common.player.ControlViewModel
@@ -87,7 +94,9 @@ import com.heyanle.easybangumi4.ui.common.player.ProgressBox
 import com.heyanle.easybangumi4.ui.common.player.SimpleBottomBar
 import com.heyanle.easybangumi4.ui.common.player.SimpleTopBar
 import com.heyanle.easybangumi4.utils.TODO
+import com.heyanle.easybangumi4.utils.loge
 import kotlinx.coroutines.launch
+import java.util.Arrays
 
 /**
  * Created by HeYanLe on 2023/3/4 16:34.
@@ -131,7 +140,7 @@ fun CartoonPlay(
     cartoonPlayVM: CartoonPlayViewModel,
     cartoonSummary: CartoonSummary,
     source: Source,
-    enterData: CartoonPlayViewModel.EnterData? = null
+    enterData: CartoonPlayViewModel.EnterData? = null,
 ) {
 
     val controlVM =
@@ -150,6 +159,7 @@ fun CartoonPlay(
     }
 
 
+    val lazyGridState = rememberLazyGridState()
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -197,6 +207,9 @@ fun CartoonPlay(
 
                     else -> {}
                 }
+                IconButton(onClick = { }) {
+                    Icon(Icons.Filled.ArrowBackIos, contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.back))
+                }
 
             },
             control = {
@@ -232,11 +245,24 @@ fun CartoonPlay(
                 }
             }
         ) {
-            CartoonPlayUI(
-                detailedVM = detailedVM,
-                cartoonPlayVM = cartoonPlayVM,
+            Box(
+                modifier = Modifier
+                    .height(2.dp)
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.primary),
             )
+            Box(modifier = Modifier.weight(1f)){
+                CartoonPlayUI(
+                    detailedVM = detailedVM,
+                    cartoonPlayVM = cartoonPlayVM,
+                    listState = lazyGridState
+                )
+            }
         }
+
+
+        FastScrollToTopFab(listState = lazyGridState)
+
     }
 
 }
@@ -247,6 +273,7 @@ fun CartoonPlay(
 fun CartoonPlayUI(
     detailedVM: DetailedViewModel,
     cartoonPlayVM: CartoonPlayViewModel,
+    listState: LazyGridState = rememberLazyGridState()
 ) {
 
     val scope = rememberCoroutineScope()
@@ -256,7 +283,7 @@ fun CartoonPlayUI(
     when (val detailedState = detailedVM.detailedState) {
         is DetailedViewModel.DetailedState.Info -> {
 
-            CartoonPlayPage(detailedVM, cartoonPlayVM, detailedState)
+            CartoonPlayPage(detailedVM, cartoonPlayVM, detailedState, listState)
         }
 
         is DetailedViewModel.DetailedState.Error -> {
@@ -287,7 +314,8 @@ fun CartoonPlayUI(
 fun CartoonPlayPage(
     detailedVM: DetailedViewModel,
     cartoonPlayVM: CartoonPlayViewModel,
-    detailedState: DetailedViewModel.DetailedState.Info
+    detailedState: DetailedViewModel.DetailedState.Info,
+    listState: LazyGridState = rememberLazyGridState()
 ) {
     CartoonPlayDetailed(
         modifier = Modifier.fillMaxSize(),
@@ -296,6 +324,7 @@ fun CartoonPlayPage(
         selectLineIndex = cartoonPlayVM.selectedLineIndex,
         playingPlayLine = CartoonPlayingManager.state.playLine(),
         playingEpisode = CartoonPlayingManager.state.episode(),
+        listState = listState,
         onLineSelect = {
             cartoonPlayVM.selectedLineIndex = it
         },
@@ -341,6 +370,7 @@ fun CartoonPlayDetailed(
     selectLineIndex: Int,
     playingPlayLine: PlayLine?,
     playingEpisode: Int,
+    listState: LazyGridState = rememberLazyGridState(),
     onLineSelect: (Int) -> Unit,
     onEpisodeClick: (Int, PlayLine, Int) -> Unit,
 
@@ -364,19 +394,24 @@ fun CartoonPlayDetailed(
 
     LaunchedEffect(key1 = playLines, key2 = selectLineIndex) {
         if (!unEmptyLinesIndex.contains(selectLineIndex) && unEmptyLinesIndex.isNotEmpty()) {
+            Arrays.toString(unEmptyLinesIndex.toArray()).loge("CartoonPlay")
             onLineSelect(unEmptyLinesIndex[0])
         }
     }
 
 
 
-    Column(modifier = modifier) {
+    Box(modifier = modifier) {
 
         var isExpended by remember {
             mutableStateOf(false)
         }
 
-        LazyVerticalGrid(columns = GridCells.Adaptive(128.dp)) {
+        LazyVerticalGrid(
+            columns = GridCells.Adaptive(128.dp),
+            state = listState,
+            contentPadding = PaddingValues(0.dp, 0.dp, 0.dp, 96.dp)
+        ) {
             item(
                 span = {
                     // LazyGridItemSpanScope:
@@ -469,6 +504,7 @@ fun CartoonPlayDetailed(
                         onDlna = onDlna
                     )
                     Spacer(modifier = Modifier.size(4.dp))
+                    Divider()
                 }
 
             }
@@ -496,7 +532,9 @@ fun CartoonPlayDetailed(
                 ) {
 
                     ScrollableTabRow(
-                        modifier = Modifier.fillMaxWidth().padding(0.dp, 8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(0.dp, 8.dp),
                         selectedTabIndex = 0.coerceAtLeast(
                             unEmptyLinesIndex.indexOf(
                                 selectLineIndex
@@ -531,16 +569,12 @@ fun CartoonPlayDetailed(
                                                         CircleShape
                                                     )
                                             )
-
                                         }
-
                                     }
-
                                 }
                             )
                         }
                     }
-
                 }
 
                 if (selectLineIndex >= 0 && selectLineIndex < playLines.size && unEmptyLinesIndex.contains(
@@ -555,7 +589,7 @@ fun CartoonPlayDetailed(
                             modifier = Modifier
                                 .padding(4.dp)
                                 .fillMaxWidth()
-                                .then(modifier)
+                                //.then(modifier)
                                 .clip(RoundedCornerShape(4.dp))
                                 .background(if (select) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent)
                                 .run {
@@ -584,7 +618,6 @@ fun CartoonPlayDetailed(
                                 text = item,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier.fillMaxWidth(),
                                 textAlign = TextAlign.Center,
                             )
                         }
@@ -592,6 +625,7 @@ fun CartoonPlayDetailed(
                 }
             }
         }
+
     }
 }
 
@@ -660,8 +694,6 @@ fun CartoonDescCard(
 
 
         }
-
-        Divider()
 
         Text(modifier = Modifier.padding(8.dp), text = cartoon.description ?: cartoon.intro ?: "")
     }

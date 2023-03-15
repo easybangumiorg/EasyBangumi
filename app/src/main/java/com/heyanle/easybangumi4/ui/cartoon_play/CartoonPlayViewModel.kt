@@ -38,9 +38,10 @@ class CartoonPlayViewModel: ViewModel() {
             }
             var lineIndex = if(realEnter.playLineIndex >= 0 && realEnter.playLineIndex < info.playLine.size) realEnter.playLineIndex else 0
             if(info.playLine[lineIndex].episode.isEmpty()){
-                info.playLine.forEachIndexed { index, playLine ->
-                    if(playLine.episode.isNotEmpty()){
-                        lineIndex = index
+                for(i in info.playLine.indices){
+                    if(info.playLine[i].episode.isNotEmpty()){
+                        lineIndex = i
+                        break
                     }
                 }
             }

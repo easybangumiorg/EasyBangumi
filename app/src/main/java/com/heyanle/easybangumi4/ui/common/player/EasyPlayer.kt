@@ -152,9 +152,7 @@ fun EasyPlayerScaffold(
             modifier = Modifier
                 .fillMaxWidth(), controlViewModel = vm, control = control, videoFloat = videoFloat
         )
-        Box(modifier = Modifier.weight(1f)) {
-            this@Column.content()
-        }
+        this@Column.content()
     }
 
 
