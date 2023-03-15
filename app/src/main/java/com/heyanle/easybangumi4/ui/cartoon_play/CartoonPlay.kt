@@ -209,20 +209,23 @@ fun CartoonPlay(
 
                     else -> {}
                 }
-                FilledIconButton(
-                    modifier = Modifier.padding(8.dp),
-                    colors = IconButtonDefaults.iconButtonColors(
-                        containerColor = Color.Black.copy(0.6f),
-                        contentColor = Color.White
-                    ),
-                    onClick = {
-                        nav.popBackStack()
-                    }) {
-                    Icon(
-                        imageVector = Icons.Filled.KeyboardArrowLeft,
-                        stringResource(id = com.heyanle.easy_i18n.R.string.back)
-                    )
+                if(!it.isFullScreen){
+                    FilledIconButton(
+                        modifier = Modifier.padding(8.dp),
+                        colors = IconButtonDefaults.iconButtonColors(
+                            containerColor = Color.Black.copy(0.6f),
+                            contentColor = Color.White
+                        ),
+                        onClick = {
+                            nav.popBackStack()
+                        }) {
+                        Icon(
+                            imageVector = Icons.Filled.KeyboardArrowLeft,
+                            stringResource(id = com.heyanle.easy_i18n.R.string.back)
+                        )
+                    }
                 }
+
 
             },
             control = {
