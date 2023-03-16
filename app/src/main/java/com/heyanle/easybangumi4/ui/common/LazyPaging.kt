@@ -203,7 +203,7 @@ fun <T : Any> LazyStaggeredGridScope.pagingCommon(items: LazyPagingItems<T>) {
     }
 }
 
-fun <T : Any> LazyListScope.pagingCommon(items: LazyPagingItems<T>) {
+fun <T : Any> LazyListScope.pagingCommon(items: LazyPagingItems<T>, isShowLoading: Boolean = true) {
     if (items.loadState.refresh is LoadState.NotLoading &&
         items.loadState.append is LoadState.NotLoading && items.itemCount == 0
     ) {
@@ -215,11 +215,14 @@ fun <T : Any> LazyListScope.pagingCommon(items: LazyPagingItems<T>) {
     }
     when (items.loadState.refresh) {
         is LoadState.Loading -> {
-            item() {
-                LoadingPage(
-                    modifier = Modifier.fillMaxWidth(),
-                )
+            if(isShowLoading){
+                item() {
+                    LoadingPage(
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
             }
+
         }
 
         is LoadState.Error -> {
