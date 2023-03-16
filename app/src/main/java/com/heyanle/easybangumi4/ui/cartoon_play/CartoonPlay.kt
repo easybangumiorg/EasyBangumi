@@ -52,6 +52,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -160,6 +161,12 @@ fun CartoonPlay(
         }
     }
 
+    DisposableEffect(key1 = Unit){
+        onDispose {
+            CartoonPlayingManager.trySaveHistory()
+        }
+    }
+
 
     val lazyGridState = rememberLazyGridState()
 
@@ -176,6 +183,7 @@ fun CartoonPlay(
                     when (CartoonPlayingManager.state) {
                         is CartoonPlayingManager.PlayingState.Playing -> {
                             it.onPrepare()
+                            // CartoonPlayingManager.trySaveHistory()
                         }
 
                         is CartoonPlayingManager.PlayingState.Loading -> {}
@@ -344,7 +352,7 @@ fun CartoonPlayPage(
         onLineSelect = {
             cartoonPlayVM.selectedLineIndex = it
         },
-        onEpisodeClick = { _, playLine, episode ->
+        onEpisodeClick = { playLineIndex , playLine, episode ->
             if (CartoonPlayingManager.state.playLine() == playLine) {
                 CartoonPlayingManager.defaultScope.launch {
                     CartoonPlayingManager.changeEpisode(episode, 0L)
@@ -353,7 +361,8 @@ fun CartoonPlayPage(
                 CartoonPlayingManager.defaultScope.launch {
                     CartoonPlayingManager.changeLine(
                         detailedState.detail.source,
-                        detailedVM.cartoonSummary,
+                        detailedState.detail,
+                        playLineIndex,
                         playLine,
                         defaultEpisode = episode,
                         defaultProgress = 0L

@@ -32,6 +32,9 @@ interface CartoonHistoryDao {
     @Query("SELECT * FROM cartoonHistory ORDER BY createTime DESC")
     fun getAllOrderByTime(): PagingSource<Int, CartoonHistory>
 
+    @Query("SELECT * FROM cartoonHistory WHERE name LIKE '%' || :searchKey || '%' ORDER BY createTime DESC")
+    fun getSearchOrderByTime(searchKey: String): PagingSource<Int, CartoonHistory>
+
     @Query("SELECT * FROM cartoonHistory WHERE id=(:id) AND source=(:source) AND url=(:detailUrl)")
     fun getFromCartoonSummary(id: String, source: String, detailUrl: String): CartoonHistory?
 
