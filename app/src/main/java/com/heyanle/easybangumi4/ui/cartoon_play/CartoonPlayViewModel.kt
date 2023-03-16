@@ -22,7 +22,11 @@ class CartoonPlayViewModel: ViewModel() {
         val playLineIndex: Int,
         val episode: Int,
         val adviceProgress: Long,
-    )
+    ){
+        override fun toString(): String {
+            return "EnterData(playLineIndex=$playLineIndex, episode=$episode, adviceProgress=$adviceProgress)"
+        }
+    }
 
     var selectedLineIndex by mutableStateOf(0)
 
@@ -31,6 +35,7 @@ class CartoonPlayViewModel: ViewModel() {
         info: DetailedViewModel.DetailedState.Info,
         enter: EnterData?
     ){
+        //enter.loge("CartoonPlay")
         viewModelScope.launch {
             val realEnter = getRealEnterDataWhenFirst(cartoonSummary, enter, true)
             if(info.playLine.isEmpty()){
@@ -49,8 +54,8 @@ class CartoonPlayViewModel: ViewModel() {
             if(info.playLine[lineIndex].episode.isEmpty()){
                 return@launch
             }
-
-            CartoonPlayingManager.changeLine(cartoonSummary.source, cartoonSummary, info.playLine[lineIndex], realEnter.episode, realEnter.adviceProgress)
+            //realEnter.loge("CartoonPlay")
+            CartoonPlayingManager.changeLine(cartoonSummary.source, info.detail, lineIndex ,info.playLine[lineIndex], realEnter.episode, realEnter.adviceProgress)
         }
 
     }

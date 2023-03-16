@@ -6,13 +6,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.MoreHoriz
-import androidx.compose.material.icons.filled.Report
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarOutline
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.MoreHoriz
-import androidx.compose.material.icons.outlined.Report
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -33,6 +31,7 @@ import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.ui.home.explore.Explore
+import com.heyanle.easybangumi4.ui.home.history.History
 import com.heyanle.okkv2.core.okkv
 
 /**
@@ -60,20 +59,6 @@ sealed class HomePage(
         },
     )
 
-    object UpdatePage : HomePage(
-        route = "update",
-        tabLabel = { Text(text = stringResource(id = R.string.update)) },
-        icon = {
-            Icon(
-                if(it) Icons.Filled.Report else Icons.Outlined.Report,
-                contentDescription = stringResource(id = R.string.update)
-            )
-        },
-        content = {
-            Text(text = stringResource(id = R.string.update))
-        }
-    )
-
     object HistoryPage : HomePage(
         route = "history",
         tabLabel = { Text(text = stringResource(id = R.string.history)) },
@@ -84,7 +69,8 @@ sealed class HomePage(
             )
         },
         content = {
-            Text(text = stringResource(id = R.string.history))
+            History()
+            // Text(text = stringResource(id = R.string.history))
         }
     )
 
@@ -120,7 +106,6 @@ sealed class HomePage(
 
 val HomePageItems = listOf(
     HomePage.StarPage,
-    HomePage.UpdatePage,
     HomePage.HistoryPage,
     HomePage.ExplorePage,
     HomePage.MorePage,

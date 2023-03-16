@@ -51,6 +51,13 @@ fun NavHostController.navigationSourceHome(key: String) {
     navigate("${SOURCE_HOME}?key=${key}")
 }
 
+fun NavHostController.navigationDetailed(id: String, url: String, source: String){
+    val el = URLEncoder.encode(url, "utf-8")
+    val ed = URLEncoder.encode(id, "utf-8")
+    // easyTODO("详情页")
+    navigate("${DETAILED}?url=${el}&source=${source}&id=${ed}")
+}
+
 fun NavHostController.navigationDetailed(cartoonCover: CartoonCover) {
     val url = URLEncoder.encode(cartoonCover.url, "utf-8")
     val id = URLEncoder.encode(cartoonCover.id, "utf-8")
@@ -71,6 +78,19 @@ fun NavHostController.navigationDetailed(
     val id = URLEncoder.encode(cartoonCover.id, "utf-8")
     // easyTODO("详情页")
     navigate("${DETAILED}?url=${url}&source=${cartoonCover.source}&id=${id}&lineIndex=${lineIndex}&episode=${episode}&adviceProgress=${adviceProgress}")
+}
+
+fun NavHostController.navigationDetailed(
+    id: String, url: String, source: String,
+    lineIndex: Int,
+    episode: Int,
+    adviceProgress: Long,
+) {
+    // easyTODO("详情页")
+    val el = URLEncoder.encode(url, "utf-8")
+    val ed = URLEncoder.encode(id, "utf-8")
+    // easyTODO("详情页")
+    navigate("${DETAILED}?url=${el}&source=${source}&id=${ed}&lineIndex=${lineIndex}&episode=${episode}&adviceProgress=${adviceProgress}")
 }
 
 fun NavHostController.navigationDLNA(
