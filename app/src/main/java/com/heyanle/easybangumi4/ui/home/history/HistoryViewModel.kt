@@ -1,5 +1,6 @@
 package com.heyanle.easybangumi4.ui.home.history
 
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -20,15 +21,13 @@ import kotlinx.coroutines.withContext
  */
 class HistoryViewModel : ViewModel() {
 
+    val lazyListState = LazyListState(0, 0)
+
     val curPager = mutableStateOf(getAllPager().flow.cachedIn(viewModelScope))
     val searchPager = mutableStateOf<Flow<PagingData<CartoonHistory>>?>(null)
 
-
-    fun refreshAll() {
-        curPager.value = getAllPager().flow.cachedIn(viewModelScope)
-    }
-
     fun search(keyword: String) {
+
         if (keyword.isEmpty()) {
             exitSearch()
         } else {

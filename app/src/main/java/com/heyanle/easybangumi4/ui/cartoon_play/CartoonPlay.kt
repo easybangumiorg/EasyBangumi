@@ -172,7 +172,7 @@ fun CartoonPlay(
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background,
+        color = Color.Red,
         contentColor = MaterialTheme.colorScheme.onBackground
     ) {
         EasyPlayerScaffold(
