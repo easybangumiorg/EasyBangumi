@@ -189,7 +189,7 @@ fun SourceListPageContentWithoutCover(
             LazyVerticalStaggeredGrid(
                 columns = StaggeredGridCells.Adaptive(150.dp),
                 state = lazyState,
-                verticalArrangement = Arrangement.spacedBy(4.dp),
+                verticalItemSpacing = 4.dp,
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp),
                 modifier = Modifier.fillMaxSize()

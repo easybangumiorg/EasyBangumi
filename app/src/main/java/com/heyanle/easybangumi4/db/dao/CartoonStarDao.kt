@@ -27,9 +27,17 @@ interface CartoonStarDao {
     @Query("SELECT * FROM CartoonStar ORDER BY createTime DESC")
     fun getAll(): PagingSource<Int, CartoonStar>
 
+    @Query("SELECT count(*) FROM CartoonStar")
+    fun countAll():Int
+
+    @Query("SELECT * FROM CartoonStar WHERE title LIKE '%' || :searchKey || '%' ORDER BY createTime DESC")
+    fun getSearch(searchKey: String): PagingSource<Int, CartoonStar>
+
     @Query("SELECT * FROM CartoonStar WHERE id=(:id) AND source=(:source) AND url = (:detailUrl)")
     fun getBySourceDetailUrl(id: String, source: String, detailUrl: String): CartoonStar?
 
     @Query("DELETE FROM CartoonStar WHERE id=(:id) AND source=(:source) AND url = (:detailUrl)")
     fun deleteByCartoonSummary(id: String, source: String, detailUrl: String)
+
+
 }

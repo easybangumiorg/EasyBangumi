@@ -1,7 +1,9 @@
 package com.heyanle.easybangumi4.ui.common
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -20,6 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.heyanle.bangumi_source_api.api.entity.CartoonCover
+import com.heyanle.easybangumi4.db.entity.CartoonStar
 
 /**
  * Created by HeYanLe on 2023/2/25 21:04.
@@ -55,6 +58,51 @@ fun CartoonCardWithCover(
             Text(
                 style = MaterialTheme.typography.bodySmall,
                 text = cartoonCover.title,
+                maxLines = 1,
+                textAlign = TextAlign.Start,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Spacer(modifier = Modifier.size(4.dp))
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun CartoonStarCardWithCover(
+    modifier: Modifier = Modifier,
+    cartoon: CartoonStar,
+    onClick: ( CartoonStar) -> Unit,
+    onLongPress: (CartoonStar) -> Unit,
+) {
+
+    Column (
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(4.dp))
+            .combinedClickable(
+                onClick = {
+                    onClick(cartoon)
+                },
+                onLongClick = {
+                    onLongPress(cartoon)
+                }
+            )
+            .padding(4.dp),
+        horizontalAlignment = Alignment.Start,
+    ) {
+        if(cartoon.coverUrl.isNotEmpty()){
+            OkImage(
+                modifier = Modifier
+                    .then(modifier).aspectRatio(19/27F)
+                    .clip(RoundedCornerShape(4.dp)),
+                image = cartoon.coverUrl,
+                contentDescription = cartoon.title)
+
+            Spacer(modifier = Modifier.size(4.dp))
+            Text(
+                style = MaterialTheme.typography.bodySmall,
+                text = cartoon.title,
                 maxLines = 1,
                 textAlign = TextAlign.Start,
                 overflow = TextOverflow.Ellipsis,

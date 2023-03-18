@@ -13,7 +13,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Created by HeYanLe on 2023/3/16 22:14.
@@ -21,24 +20,9 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 class HistoryViewModel : ViewModel() {
 
-    companion object {
-        private var isRefresh = AtomicBoolean(false)
-
-        fun refresh() {
-            isRefresh.set(true)
-        }
-    }
-
-
-
     val curPager = mutableStateOf(getAllPager().flow.cachedIn(viewModelScope))
     val searchPager = mutableStateOf<Flow<PagingData<CartoonHistory>>?>(null)
 
-    fun onPageLaunch() {
-        if (isRefresh.compareAndSet(true, false)) {
-            refresh()
-        }
-    }
 
     fun refreshAll() {
         curPager.value = getAllPager().flow.cachedIn(viewModelScope)

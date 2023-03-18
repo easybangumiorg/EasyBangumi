@@ -1,24 +1,22 @@
-package com.heyanle.easybangumi4.ui.home.history
+package com.heyanle.easybangumi4.ui.home.star
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.DeleteSweep
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Badge
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -36,235 +34,165 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.items
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
-import com.heyanle.easybangumi4.db.entity.CartoonHistory
+import com.heyanle.easybangumi4.db.entity.CartoonStar
 import com.heyanle.easybangumi4.navigationDetailed
-import com.heyanle.easybangumi4.source.SourceMaster
-import com.heyanle.easybangumi4.ui.common.CartoonCard
-import com.heyanle.easybangumi4.ui.common.EasyClearDialog
+import com.heyanle.easybangumi4.ui.common.CartoonStarCardWithCover
 import com.heyanle.easybangumi4.ui.common.EasyDeleteDialog
 import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.pagingCommon
-import com.heyanle.easybangumi4.ui.common.player.utils.TimeUtils
-import com.heyanle.easybangumi4.utils.loge
 
 /**
- * Created by HeYanLe on 2023/3/16 22:11.
+ * Created by HeYanLe on 2023/3/18 17:04.
  * https://github.com/heyanLE
  */
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun History() {
-
-    val vm = viewModel<HistoryViewModel>()
+fun Star() {
+    val vm = viewModel<StarViewModel>()
 
     var isSearch by remember {
         mutableStateOf(false)
     }
 
-    var clearDialog by remember {
-        mutableStateOf(false)
-    }
 
-    var deleteHistory by remember {
-        mutableStateOf<CartoonHistory?>(null)
+    var deleteStar by remember {
+        mutableStateOf<CartoonStar?>(null)
     }
 
     val nav = LocalNavController.current
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
-    LaunchedEffect(key1 = Unit){
+    LaunchedEffect(key1 = Unit) {
+        vm.refreshNum()
         scrollBehavior.state.contentOffset = 0F
     }
+
 
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
-            HistoryTopAppBar(
+            StarTopAppBar(
                 scrollBehavior = scrollBehavior,
                 isSearch = isSearch,
-                onSearchClick = {
-                    isSearch = true
-                },
-                onClear = { clearDialog = true },
+                starNum = vm.starNum,
+                onSearchClick = { isSearch = true },
+                onFilter = { com.heyanle.easybangumi4.utils.TODO("过滤器") },
                 onSearch = {
                     vm.search(it)
                 },
                 onSearchExit = {
                     isSearch = false
-                    vm.exitSearch()
-
                 }
             )
         }
     ) {
-        Box(modifier = Modifier.padding(it)){
-            HistoryList(
-                scrollBehavior,
-                vm = vm,
-                onItemClick = {
-                    nav.navigationDetailed(
-                        it.id,
-                        it.url,
-                        it.source,
-                        it.lastLinesIndex,
-                        it.lastEpisodeIndex,
-                        it.lastProcessTime
-                    )
-                },
-                onItemDelete = {
-                    deleteHistory = it
-                }
-            )
+        Box(modifier = Modifier.padding(it)) {
+            StarList(scrollBehavior, vm = vm, onItemClick = {
+                nav.navigationDetailed(
+                    it.id,
+                    it.url,
+                    it.source,
+                )
+            }, onItemLongPress = {
+                deleteStar = it
+            })
+
         }
     }
 
     EasyDeleteDialog(
-        show = deleteHistory != null,
-        onDelete = { deleteHistory?.let(vm::delete) },
+        show = deleteStar != null,
+        onDelete = { deleteStar?.let(vm::delete) },
         onDismissRequest = {
-            deleteHistory = null
+            deleteStar = null
         }
-    )
-    EasyClearDialog(
-        show = clearDialog,
-        onDelete = { vm.clear() },
-        onDismissRequest = { clearDialog = false }
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HistoryList(
+fun StarList(
     scrollBehavior: TopAppBarScrollBehavior? = null,
-    vm: HistoryViewModel = viewModel<HistoryViewModel>(),
-    onItemClick: (CartoonHistory) -> Unit,
-    onItemDelete: (CartoonHistory) -> Unit,
+    vm: StarViewModel,
+    onItemClick: (CartoonStar) -> Unit,
+    onItemLongPress: (CartoonStar) -> Unit,
 ) {
-
     val lazyListState = rememberLazyListState()
 
-    val flow = vm.searchPager.value ?: vm.curPager.value
-    flow.loge("History")
+    val flow = remember(vm.searchPager.value, vm.curPager.value) {
+        vm.searchPager.value ?: vm.curPager.value
+    }
 
     val lazyPagingItems = flow.collectAsLazyPagingItems()
-    lazyListState.loge("History")
+
+    val haptic = LocalHapticFeedback.current
+
 
     Box(modifier = Modifier.fillMaxSize()) {
 
-        LazyColumn(
-
-            modifier = Modifier.run {
+        LazyVerticalGrid(
+            modifier = Modifier.fillMaxSize().run {
                 if (scrollBehavior != null) {
                     nestedScroll(scrollBehavior.nestedScrollConnection)
                 } else {
                     this
                 }
             },
-            state = lazyListState,
-            contentPadding = PaddingValues(0.dp, 0.dp, 0.dp, 96.dp)
+            columns = GridCells.Adaptive(150.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
         ) {
-
-            items(lazyPagingItems) {
-                it?.let {
-                    HistoryItem(cartoonHistory = it, onClick = onItemClick, onDelete = onItemDelete)
+            items(lazyPagingItems.itemCount) {
+                lazyPagingItems[it]?.let {
+                    CartoonStarCardWithCover(
+                        modifier = Modifier.fillMaxSize(),
+                        cartoon = it,
+                        onClick = {
+                            onItemClick(it)
+                        },
+                        onLongPress = {
+                            onItemLongPress(it)
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        },
+                    )
                 }
-            }
 
+            }
             pagingCommon(lazyPagingItems)
         }
 
         FastScrollToTopFab(listState = lazyListState)
     }
-
 }
-
-@Composable
-fun HistoryItem(
-    modifier: Modifier = Modifier,
-    cartoonHistory: CartoonHistory,
-    onClick: (CartoonHistory) -> Unit,
-    onDelete: (CartoonHistory) -> Unit,
-) {
-    Box(modifier = Modifier
-        .fillMaxWidth()
-        .clickable {
-            onClick(cartoonHistory)
-        }
-        .padding(16.dp, 8.dp)
-        .then(modifier)) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            CartoonCard(
-                cover = cartoonHistory.cover,
-                name = cartoonHistory.name,
-                source = SourceMaster.animSourceFlow.value.source(cartoonHistory.source)?.label
-                    ?: cartoonHistory.source
-            )
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = cartoonHistory.name,
-                    maxLines = 2,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-                Text(
-                    text = stringResource(
-                        id = R.string.last_episode_title,
-                        cartoonHistory.lastEpisodeTitle
-                    ),
-                    maxLines = 1,
-                    color = MaterialTheme.colorScheme.onBackground.copy(0.6f)
-                )
-                Text(
-                    text = TimeUtils.toString(cartoonHistory.lastProcessTime).toString(),
-                    maxLines = 1,
-                    color = MaterialTheme.colorScheme.onBackground.copy(0.6f)
-                )
-            }
-        }
-        IconButton(
-            modifier = Modifier.align(Alignment.BottomEnd),
-            onClick = {
-                onDelete(cartoonHistory)
-            }) {
-            Icon(
-                Icons.Filled.Delete,
-                contentDescription = stringResource(id = R.string.delete)
-            )
-        }
-    }
-}
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HistoryTopAppBar(
+fun StarTopAppBar(
     scrollBehavior: TopAppBarScrollBehavior? = null,
     isSearch: Boolean,
+    starNum: Int,
     onSearchClick: () -> Unit,
-    onClear: () -> Unit,
+    onFilter: () -> Unit,
     onSearch: (String) -> Unit,
     onSearchExit: () -> Unit,
 ) {
-
     var text by remember {
         mutableStateOf("")
     }
@@ -312,7 +240,16 @@ fun HistoryTopAppBar(
                         )
                     })
             } else {
-                Text(text = stringResource(id = R.string.mine_history))
+                Row {
+                    Text(text = stringResource(id = R.string.my_anim))
+                    Badge(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    ) {
+                        Text(text = if (starNum <= 999) "$starNum" else "999+")
+                    }
+                }
+
             }
         }, actions = {
             if (!isSearch) {
@@ -321,7 +258,7 @@ fun HistoryTopAppBar(
                 }) {
                     Icon(
                         imageVector = Icons.Filled.Search,
-                        stringResource(id = com.heyanle.easy_i18n.R.string.search)
+                        stringResource(id = R.string.search)
                     )
                 }
             } else if (text.isNotEmpty()) {
@@ -331,17 +268,17 @@ fun HistoryTopAppBar(
                 }) {
                     Icon(
                         imageVector = Icons.Filled.Clear,
-                        stringResource(id = com.heyanle.easy_i18n.R.string.clear)
+                        stringResource(id = R.string.clear)
                     )
                 }
             }
 
             IconButton(onClick = {
-                onClear()
+                onFilter()
             }) {
                 Icon(
-                    imageVector = Icons.Filled.DeleteSweep,
-                    stringResource(id = com.heyanle.easy_i18n.R.string.clear)
+                    imageVector = Icons.Filled.FilterList,
+                    stringResource(id = R.string.filter)
                 )
             }
 
