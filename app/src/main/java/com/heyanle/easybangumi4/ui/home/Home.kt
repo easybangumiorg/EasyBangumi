@@ -19,20 +19,19 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.rememberPagerState
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.ui.home.explore.Explore
 import com.heyanle.easybangumi4.ui.home.history.History
+import com.heyanle.easybangumi4.ui.home.star.Star
 import com.heyanle.okkv2.core.okkv
+import kotlinx.coroutines.launch
 
 /**
  * Created by HeYanLe on 2023/2/19 0:11.
@@ -55,7 +54,8 @@ sealed class HomePage(
             )
         },
         content = {
-            Text(text = stringResource(id = R.string.my_anim))
+            Star()
+//            Text(text = stringResource(id = R.string.my_anim))
         },
     )
 
@@ -118,30 +118,33 @@ var homePageIndex by okkv("homePageInitPageIndex", 0)
 )
 @Composable
 fun Home() {
-    val homeNavController = rememberNavController()
+
+    val pagerState = rememberPagerState(initialPage = homePageIndex)
+
+    val scope = rememberCoroutineScope()
 
     Surface(
         color = MaterialTheme.colorScheme.background,
         contentColor = MaterialTheme.colorScheme.onBackground
     ) {
         Column() {
-            NavHost(
+
+
+            HorizontalPager(
+                userScrollEnabled = false,
+                state = pagerState,
                 modifier = Modifier.weight(1f),
-                startDestination = HomePageItems.getOrNull(homePageIndex)?.route
-                    ?: HomePage.StarPage.route,
-                navController = homeNavController
+                count = HomePageItems.size,
             ) {
-                HomePageItems.forEach { page ->
-                    composable(page.route){
-                        page.content()
-                    }
+                HomePageItems[it].content()
+                SideEffect(){
+                    homePageIndex = pagerState.currentPage
                 }
             }
+
             NavigationBar(){
-                val navBackStackEntry by homeNavController.currentBackStackEntryAsState()
-                val currentDestination = navBackStackEntry?.destination
                 HomePageItems.forEachIndexed { i, page ->
-                    val select  = currentDestination?.hierarchy?.any { it.route == page.route } == true
+                    val select  = pagerState.currentPage == i
                     NavigationBarItem(
                         icon = {
                             page.icon(select)
@@ -150,19 +153,8 @@ fun Home() {
                         selected = select,
                         alwaysShowLabel = false,
                         onClick = {
-                            homePageIndex = i
-                            homeNavController.navigate(page.route) {
-                                // Pop up to the start destination of the graph to
-                                // avoid building up a large stack of destinations
-                                // on the back stack as users select items
-                                popUpTo(homeNavController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
-                                // Avoid multiple copies of the same destination when
-                                // reselecting the same item
-                                launchSingleTop = true
-                                // Restore state when reselecting a previously selected item
-                                restoreState = true
+                            scope.launch {
+                                pagerState.animateScrollToPage(i)
                             }
                         }
                     )

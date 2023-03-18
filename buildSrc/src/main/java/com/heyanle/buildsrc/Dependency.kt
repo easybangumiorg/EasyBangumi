@@ -42,13 +42,13 @@ object Version {
 
     const val compose_bom = "2023.01.00"
 
-    const val compose_animation = "1.4.0-beta02"
+    const val compose_animation = "1.4.0-rc01"
     const val compose_compiler = "1.4.3"
-    const val compose_foundation = "1.4.0-beta02"
-    const val compose_material = "1.4.0-beta02"
-    const val compose_material3 = "1.1.0-alpha07"
-    const val compose_runtime = "1.4.0-beta02"
-    const val compose_ui = "1.4.0-beta02"
+    const val compose_foundation = "1.4.0-rc01"
+    const val compose_material = "1.4.0-rc01"
+    const val compose_material3 = "1.1.0-alpha08"
+    const val compose_runtime = "1.4.0-rc01"
+    const val compose_ui = "1.4.0-rc01"
 
 
 }

@@ -73,10 +73,10 @@ fun SourceItem(
         modifier = Modifier.clickable {
             onClick(source)
         },
-        headlineText = {
+        headlineContent = {
             Text(text = source.label)
         },
-        supportingText = {
+        supportingContent = {
             Text(
                 text = source.version,
             )

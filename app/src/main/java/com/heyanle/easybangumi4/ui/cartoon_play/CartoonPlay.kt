@@ -161,7 +161,7 @@ fun CartoonPlay(
         }
     }
 
-    DisposableEffect(key1 = Unit){
+    DisposableEffect(key1 = Unit) {
         onDispose {
             CartoonPlayingManager.trySaveHistory()
         }
@@ -217,7 +217,7 @@ fun CartoonPlay(
 
                     else -> {}
                 }
-                if(!it.isFullScreen){
+                if (!it.isFullScreen) {
                     FilledIconButton(
                         modifier = Modifier.padding(8.dp),
                         colors = IconButtonDefaults.iconButtonColors(
@@ -352,7 +352,7 @@ fun CartoonPlayPage(
         onLineSelect = {
             cartoonPlayVM.selectedLineIndex = it
         },
-        onEpisodeClick = { playLineIndex , playLine, episode ->
+        onEpisodeClick = { playLineIndex, playLine, episode ->
             if (CartoonPlayingManager.state.playLine() == playLine) {
                 CartoonPlayingManager.defaultScope.launch {
                     CartoonPlayingManager.changeEpisode(episode, 0L)
@@ -622,7 +622,7 @@ fun CartoonPlayDetailed(
                                 .fillMaxWidth()
                                 //.then(modifier)
                                 .clip(RoundedCornerShape(4.dp))
-                                .background(if (select) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent)
+                                .background(if (select) MaterialTheme.colorScheme.secondary else Color.Transparent)
                                 .run {
                                     if (select) {
                                         this
@@ -646,6 +646,7 @@ fun CartoonPlayDetailed(
                         ) {
 
                             Text(
+                                color = if (select) MaterialTheme.colorScheme.onSecondary else Color.Unspecified,
                                 text = item,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
