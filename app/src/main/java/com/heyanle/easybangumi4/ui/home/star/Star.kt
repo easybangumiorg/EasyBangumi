@@ -53,6 +53,7 @@ import com.heyanle.easybangumi4.navigationDetailed
 import com.heyanle.easybangumi4.ui.common.CartoonStarCardWithCover
 import com.heyanle.easybangumi4.ui.common.EasyDeleteDialog
 import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
+import com.heyanle.easybangumi4.ui.common.PagingCommon
 import com.heyanle.easybangumi4.ui.common.pagingCommon
 
 /**
@@ -80,7 +81,6 @@ fun Star() {
 
     LaunchedEffect(key1 = Unit) {
         vm.refreshNum()
-        scrollBehavior.state.contentOffset = 0F
     }
 
 
@@ -145,38 +145,41 @@ fun StarList(
 
 
     Box(modifier = Modifier.fillMaxSize()) {
+        if (lazyPagingItems.itemCount > 0) {
 
-        LazyVerticalGrid(
-            modifier = Modifier.fillMaxSize().run {
-                if (scrollBehavior != null) {
-                    nestedScroll(scrollBehavior.nestedScrollConnection)
-                } else {
-                    this
-                }
-            },
-            columns = GridCells.Adaptive(150.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
-        ) {
-            items(lazyPagingItems.itemCount) {
-                lazyPagingItems[it]?.let {
-                    CartoonStarCardWithCover(
-                        modifier = Modifier.fillMaxSize(),
-                        cartoon = it,
-                        onClick = {
-                            onItemClick(it)
-                        },
-                        onLongPress = {
-                            onItemLongPress(it)
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        },
-                    )
-                }
+            LazyVerticalGrid(
+                modifier = Modifier.fillMaxSize().run {
+                    if (scrollBehavior != null) {
+                        nestedScroll(scrollBehavior.nestedScrollConnection)
+                    } else {
+                        this
+                    }
+                },
+                columns = GridCells.Adaptive(150.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
+            ) {
+                items(lazyPagingItems.itemCount) {
+                    lazyPagingItems[it]?.let {
+                        CartoonStarCardWithCover(
+                            modifier = Modifier.fillMaxSize(),
+                            cartoon = it,
+                            onClick = {
+                                onItemClick(it)
+                            },
+                            onLongPress = {
+                                onItemLongPress(it)
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            },
+                        )
+                    }
 
+                }
+                pagingCommon(lazyPagingItems)
             }
-            pagingCommon(lazyPagingItems)
         }
+        PagingCommon(items = lazyPagingItems)
 
         FastScrollToTopFab(listState = lazyListState)
     }

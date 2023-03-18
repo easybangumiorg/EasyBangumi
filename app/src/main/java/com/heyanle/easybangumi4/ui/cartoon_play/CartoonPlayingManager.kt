@@ -33,6 +33,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Created by HeYanLe on 2023/3/7 14:45.
@@ -238,7 +239,10 @@ object CartoonPlayingManager: Player.Listener {
 
             createTime = System.currentTimeMillis()
         )
-        DB.cartoonHistory.insertOrModify(history)
+        withContext(Dispatchers.IO){
+            DB.cartoonHistory.insertOrModify(history)
+        }
+
     }
 
     fun trySaveHistory(ps: Long = -1) {
@@ -278,7 +282,7 @@ object CartoonPlayingManager: Player.Listener {
     override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
         super.onPlayWhenReadyChanged(playWhenReady, reason)
         if(!playWhenReady && exoPlayer.isMedia()){
-            defaultScope.launch (Dispatchers.IO) {
+            defaultScope.launch (Dispatchers.Main) {
                 innerTrySaveHistory()
             }
         }
@@ -288,7 +292,7 @@ object CartoonPlayingManager: Player.Listener {
         super.onIsPlayingChanged(isPlaying)
         if(isPlaying){
             if(saveLoopJob == null || saveLoopJob?.isActive != true){
-                saveLoopJob = defaultScope.launch(Dispatchers.IO) {
+                saveLoopJob = defaultScope.launch(Dispatchers.Main) {
                     innerTrySaveHistory()
                 }
             }

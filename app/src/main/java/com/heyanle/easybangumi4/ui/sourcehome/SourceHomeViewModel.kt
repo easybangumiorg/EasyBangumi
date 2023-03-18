@@ -17,6 +17,9 @@ import com.heyanle.bangumi_source_api.api.component.search.SearchComponent
  */
 class SourceHomeViewModel: ViewModel() {
 
+    val searchMode = mutableStateOf(false)
+    val searchText = mutableStateOf("")
+
     // 整个页面需要的数据
     sealed class SourceHomeState {
         object None: SourceHomeState()

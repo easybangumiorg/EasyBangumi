@@ -52,14 +52,14 @@ import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.db.entity.CartoonHistory
 import com.heyanle.easybangumi4.navigationDetailed
-import com.heyanle.easybangumi4.source.SourceMaster
+import com.heyanle.easybangumi4.source.LocalSourceBundleController
 import com.heyanle.easybangumi4.ui.common.CartoonCard
 import com.heyanle.easybangumi4.ui.common.EasyClearDialog
 import com.heyanle.easybangumi4.ui.common.EasyDeleteDialog
 import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
+import com.heyanle.easybangumi4.ui.common.PagingCommon
 import com.heyanle.easybangumi4.ui.common.pagingCommon
 import com.heyanle.easybangumi4.ui.common.player.utils.TimeUtils
-import com.heyanle.easybangumi4.utils.loge
 
 /**
  * Created by HeYanLe on 2023/3/16 22:11.
@@ -88,9 +88,9 @@ fun History() {
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
-    LaunchedEffect(key1 = Unit){
-        scrollBehavior.state.contentOffset = 0F
-    }
+//    LaunchedEffect(key1 = Unit){
+//        scrollBehavior.state.contentOffset = 0F
+//    }
 
     Scaffold(
         containerColor = Color.Transparent,
@@ -113,7 +113,9 @@ fun History() {
             )
         }
     ) {
-        Box(modifier = Modifier.padding(it)){
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .padding(it)){
             HistoryList(
                 scrollBehavior,
                 vm = vm,
@@ -159,35 +161,38 @@ fun HistoryList(
 
     val lazyListState = rememberLazyListState()
 
-    val flow = vm.searchPager.value ?: vm.curPager.value
-    flow.loge("History")
 
+    val flow = vm.searchPager.value ?: vm.curPager.value
     val lazyPagingItems = flow.collectAsLazyPagingItems()
-    lazyListState.loge("History")
 
     Box(modifier = Modifier.fillMaxSize()) {
 
-        LazyColumn(
+        if(lazyPagingItems.itemCount > 0){
+            LazyColumn(
 
-            modifier = Modifier.run {
-                if (scrollBehavior != null) {
-                    nestedScroll(scrollBehavior.nestedScrollConnection)
-                } else {
-                    this
-                }
-            },
-            state = lazyListState,
-            contentPadding = PaddingValues(0.dp, 0.dp, 0.dp, 96.dp)
-        ) {
+                modifier = Modifier.fillMaxSize().run {
+                    if (scrollBehavior != null) {
+                        nestedScroll(scrollBehavior.nestedScrollConnection)
+                    } else {
+                        this
+                    }
+                },
+                state = lazyListState,
+                contentPadding = PaddingValues(0.dp, 0.dp, 0.dp, 96.dp)
+            ) {
 
-            items(lazyPagingItems) {
-                it?.let {
-                    HistoryItem(cartoonHistory = it, onClick = onItemClick, onDelete = onItemDelete)
+                items(lazyPagingItems) {
+                    it?.let {
+                        HistoryItem(cartoonHistory = it, onClick = onItemClick, onDelete = onItemDelete)
+                    }
                 }
+                pagingCommon(lazyPagingItems)
+
+
             }
-
-            pagingCommon(lazyPagingItems)
         }
+        PagingCommon(items = lazyPagingItems)
+
 
         FastScrollToTopFab(listState = lazyListState)
     }
@@ -201,6 +206,7 @@ fun HistoryItem(
     onClick: (CartoonHistory) -> Unit,
     onDelete: (CartoonHistory) -> Unit,
 ) {
+    val sourceBundle = LocalSourceBundleController.current
     Box(modifier = Modifier
         .fillMaxWidth()
         .clickable {
@@ -211,10 +217,11 @@ fun HistoryItem(
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+
             CartoonCard(
                 cover = cartoonHistory.cover,
                 name = cartoonHistory.name,
-                source = SourceMaster.animSourceFlow.value.source(cartoonHistory.source)?.label
+                source = sourceBundle.source(cartoonHistory.source)?.label
                     ?: cartoonHistory.source
             )
             Column(

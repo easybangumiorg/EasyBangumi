@@ -1,12 +1,15 @@
 package com.heyanle.easybangumi4.ui.common
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -21,8 +24,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.heyanle.bangumi_source_api.api.entity.CartoonCover
 import com.heyanle.easybangumi4.db.entity.CartoonStar
+import com.heyanle.easybangumi4.source.LocalSourceBundleController
 
 /**
  * Created by HeYanLe on 2023/2/25 21:04.
@@ -49,7 +54,8 @@ fun CartoonCardWithCover(
         if(!cartoonCover.coverUrl.isNullOrEmpty()){
             OkImage(
                 modifier = Modifier
-                    .then(modifier).aspectRatio(19/27F)
+                    .then(modifier)
+                    .aspectRatio(19 / 27F)
                     .clip(RoundedCornerShape(4.dp)),
                 image = cartoonCover.coverUrl,
                 contentDescription = cartoonCover.title)
@@ -72,6 +78,7 @@ fun CartoonCardWithCover(
 fun CartoonStarCardWithCover(
     modifier: Modifier = Modifier,
     cartoon: CartoonStar,
+    showSourceLabel: Boolean = true,
     onClick: ( CartoonStar) -> Unit,
     onLongPress: (CartoonStar) -> Unit,
 ) {
@@ -91,13 +98,32 @@ fun CartoonStarCardWithCover(
             .padding(4.dp),
         horizontalAlignment = Alignment.Start,
     ) {
+        val sourceBundle = LocalSourceBundleController.current
         if(cartoon.coverUrl.isNotEmpty()){
-            OkImage(
-                modifier = Modifier
-                    .then(modifier).aspectRatio(19/27F)
-                    .clip(RoundedCornerShape(4.dp)),
-                image = cartoon.coverUrl,
-                contentDescription = cartoon.title)
+            Box(modifier = Modifier
+                .then(modifier)
+                .aspectRatio(19 / 27F)
+                .clip(RoundedCornerShape(4.dp)),){
+                OkImage(
+                    modifier = Modifier.fillMaxSize(),
+                    image = cartoon.coverUrl,
+                    contentDescription = cartoon.title)
+                if(showSourceLabel){
+                    Text(
+                        fontSize = 13.sp,
+                        text = sourceBundle.source(cartoon.source)?.label
+                            ?: cartoon.source,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier
+                            .background(
+                                MaterialTheme.colorScheme.primary,
+                                RoundedCornerShape(0.dp, 0.dp, 4.dp, 0.dp)
+                            )
+                            .padding(4.dp, 0.dp)
+                    )
+                }
+            }
+
 
             Spacer(modifier = Modifier.size(4.dp))
             Text(

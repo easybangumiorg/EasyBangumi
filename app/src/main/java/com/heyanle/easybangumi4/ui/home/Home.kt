@@ -19,7 +19,6 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -27,10 +26,10 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import com.heyanle.easy_i18n.R
+import com.heyanle.easybangumi4.ui.common.SourceContainer
 import com.heyanle.easybangumi4.ui.home.explore.Explore
 import com.heyanle.easybangumi4.ui.home.history.History
 import com.heyanle.easybangumi4.ui.home.star.Star
-import com.heyanle.okkv2.core.okkv
 import kotlinx.coroutines.launch
 
 /**
@@ -54,7 +53,9 @@ sealed class HomePage(
             )
         },
         content = {
-            Star()
+            SourceContainer {
+                Star()
+            }
 //            Text(text = stringResource(id = R.string.my_anim))
         },
     )
@@ -111,7 +112,6 @@ val HomePageItems = listOf(
     HomePage.MorePage,
 )
 
-var homePageIndex by okkv("homePageInitPageIndex", 0)
 
 @OptIn(ExperimentalPagerApi::class, ExperimentalMaterial3Api::class,
     ExperimentalAnimationApi::class
@@ -119,7 +119,7 @@ var homePageIndex by okkv("homePageInitPageIndex", 0)
 @Composable
 fun Home() {
 
-    val pagerState = rememberPagerState(initialPage = homePageIndex)
+    val pagerState = rememberPagerState(initialPage = 0)
 
     val scope = rememberCoroutineScope()
 
@@ -129,7 +129,6 @@ fun Home() {
     ) {
         Column() {
 
-
             HorizontalPager(
                 userScrollEnabled = false,
                 state = pagerState,
@@ -137,9 +136,7 @@ fun Home() {
                 count = HomePageItems.size,
             ) {
                 HomePageItems[it].content()
-                SideEffect(){
-                    homePageIndex = pagerState.currentPage
-                }
+
             }
 
             NavigationBar(){

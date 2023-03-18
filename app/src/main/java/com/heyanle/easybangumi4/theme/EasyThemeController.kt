@@ -1,7 +1,6 @@
 package com.heyanle.easybangumi4.theme
 
 import android.annotation.SuppressLint
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Composable
@@ -76,7 +75,7 @@ object EasyThemeController {
     }
 
     fun isSupportDynamicColor(): Boolean {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+        return false //Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
     }
 
 

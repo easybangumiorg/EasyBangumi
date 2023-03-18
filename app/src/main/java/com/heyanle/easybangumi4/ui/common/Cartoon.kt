@@ -46,9 +46,9 @@ fun CartoonCard(
                 modifier = Modifier
                     .background(
                         MaterialTheme.colorScheme.primary,
-                        RoundedCornerShape(0.dp, 0.dp, 8.dp, 0.dp)
+                        RoundedCornerShape(0.dp, 0.dp, 4.dp, 0.dp)
                     )
-                    .padding(8.dp, 0.dp)
+                    .padding(4.dp, 0.dp)
             )
         }
 
