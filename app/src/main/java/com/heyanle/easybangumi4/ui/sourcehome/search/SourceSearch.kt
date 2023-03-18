@@ -41,6 +41,7 @@ import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.navigationDetailed
 import com.heyanle.easybangumi4.ui.common.CartoonCard
 import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
+import com.heyanle.easybangumi4.ui.common.PagingCommon
 import com.heyanle.easybangumi4.ui.common.pagingCommon
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -56,7 +57,6 @@ fun SourceSearchPage(
     modifier: Modifier = Modifier,
     keyword: String,
     searchSource: SearchComponent,
-    header: (@Composable () -> Unit)? = null
 ) {
     val scope = rememberCoroutineScope()
     val vm = viewModel<SearchViewModel>(factory = SearchViewModelFactory(searchSource))
@@ -86,27 +86,26 @@ fun SourceSearchPage(
             .then(modifier)
     ) {
         if(!vm.isEmpty.value){
-            LazyColumn(
-                state = lazyListState,
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
-            ) {
-                header?.let {
-                    item {
-                        it()
-                    }
-                }
-                items(pi) {
-                    it?.let {
-                        CartoonSearchItem(cartoonCover = it){
-                            nav.navigationDetailed(it)
+            if(pi.itemCount > 0){
+                LazyColumn(
+                    state = lazyListState,
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
+                ) {
+                    items(pi) {
+                        it?.let {
+                            CartoonSearchItem(cartoonCover = it){
+                                nav.navigationDetailed(it)
+                            }
                         }
                     }
-                }
-                pagingCommon(pi)
+                    pagingCommon(pi)
 
+                }
             }
+            PagingCommon(items = pi)
+
 
             PullRefreshIndicator(
                 refreshing,

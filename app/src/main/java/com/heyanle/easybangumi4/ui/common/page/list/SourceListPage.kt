@@ -4,9 +4,12 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -39,6 +42,7 @@ import com.heyanle.easybangumi4.navigationDetailed
 import com.heyanle.easybangumi4.ui.common.CartoonCardWithCover
 import com.heyanle.easybangumi4.ui.common.CartoonCardWithoutCover
 import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
+import com.heyanle.easybangumi4.ui.common.PagingCommon
 import com.heyanle.easybangumi4.ui.common.pagingCommon
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -49,32 +53,42 @@ import kotlinx.coroutines.launch
  * https://github.com/heyanLE
  */
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalAnimationApi::class,
+@OptIn(
+    ExperimentalMaterialApi::class, ExperimentalAnimationApi::class,
     ExperimentalFoundationApi::class
 )
 @Composable
 fun SourceListPage(
     modifier: Modifier = Modifier,
     listPage: SourcePage.SingleCartoonPage,
-    header: (@Composable ()->Unit)? = null
-){
+    header: (@Composable () -> Unit)? = null
+) {
 
     val vm = viewModel<SourceListViewModel>(factory = SourceListViewModelFactory(listPage))
     val scope = rememberCoroutineScope()
 
 
-
     val pi = vm.curPager.value.collectAsLazyPagingItems()
 
-    when(listPage){
+    when (listPage) {
         is SourcePage.SingleCartoonPage.WithCover -> {
-            SourceListPageContentWithCover(vm = vm, pagingItems = pi, scope = scope, header = header)
+            SourceListPageContentWithCover(
+                vm = vm,
+                pagingItems = pi,
+                scope = scope,
+                header = header
+            )
         }
-        is SourcePage.SingleCartoonPage.WithoutCover ->{
-            SourceListPageContentWithoutCover(vm = vm, pagingItems = pi, scope = scope, header = header)
+
+        is SourcePage.SingleCartoonPage.WithoutCover -> {
+            SourceListPageContentWithoutCover(
+                vm = vm,
+                pagingItems = pi,
+                scope = scope,
+                header = header
+            )
         }
     }
-
 
 
 }
@@ -86,9 +100,9 @@ fun SourceListPageContentWithCover(
     vm: SourceListViewModel,
     pagingItems: LazyPagingItems<CartoonCover>,
     scope: CoroutineScope,
-    header: (@Composable ()->Unit)? = null,
+    header: (@Composable () -> Unit)? = null,
 
-){
+    ) {
     val nav = LocalNavController.current
     var refreshing by remember { mutableStateOf(false) }
     val state = rememberPullRefreshState(refreshing, onRefresh = {
@@ -106,42 +120,54 @@ fun SourceListPageContentWithCover(
             .fillMaxSize()
             .pullRefresh(state)
             .then(modifier)
-    ){
-        pagingItems.let{ items ->
-            LazyVerticalGrid(
-                modifier = Modifier
-                    .fillMaxSize(),
-                state = lazyGridState,
-                columns = GridCells.Adaptive(150.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp) ,
-                contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
-            ){
-                header?.let {
-                    item (
-                        span = {
-                            // LazyGridItemSpanScope:
-                            // maxLineSpan
-                            GridItemSpan(maxLineSpan)
-                        }
-                    ) {
-                        it()
-                    }
-                }
-                items(items.itemCount){
+    ) {
+        pagingItems.let { items ->
 
-                    items[it]?.let {
-                        CartoonCardWithCover(
-                            modifier = Modifier.fillMaxWidth(),
-                            cartoonCover = it
-                        ){
-                            nav.navigationDetailed(it)
+            if (items.itemCount > 0) {
+                LazyVerticalGrid(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    state = lazyGridState,
+                    columns = GridCells.Adaptive(150.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
+                ) {
+                    header?.let {
+                        item(
+                            span = {
+                                // LazyGridItemSpanScope:
+                                // maxLineSpan
+                                GridItemSpan(maxLineSpan)
+                            }
+                        ) {
+                            it()
                         }
                     }
+                    items(items.itemCount) {
 
+                        items[it]?.let {
+                            CartoonCardWithCover(
+                                modifier = Modifier.fillMaxWidth(),
+                                cartoonCover = it
+                            ) {
+                                nav.navigationDetailed(it)
+                            }
+                        }
+
+                    }
+
+                    pagingCommon(items)
                 }
-
-                pagingCommon(items)
+            }
+            Column(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                if(items.itemCount <= 0){
+                    Spacer(modifier = Modifier.size(4.dp))
+                    header?.invoke()
+                }
+                PagingCommon(items = items)
             }
         }
 
@@ -163,9 +189,9 @@ fun SourceListPageContentWithoutCover(
     vm: SourceListViewModel,
     pagingItems: LazyPagingItems<CartoonCover>,
     scope: CoroutineScope,
-    header: (@Composable ()->Unit)? = null,
+    header: (@Composable () -> Unit)? = null,
 
-    ){
+    ) {
     val nav = LocalNavController.current
     var refreshing by remember { mutableStateOf(false) }
     val state = rememberPullRefreshState(refreshing, onRefresh = {
@@ -183,88 +209,47 @@ fun SourceListPageContentWithoutCover(
             .fillMaxSize()
             .pullRefresh(state)
             .then(modifier)
-    ){
-        
-        pagingItems.let{ items ->
-            LazyVerticalStaggeredGrid(
-                columns = StaggeredGridCells.Adaptive(150.dp),
-                state = lazyState,
-                verticalItemSpacing = 4.dp,
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp),
-                modifier = Modifier.fillMaxSize()
-            ){
-                header?.let {
-                    item(
-                        span = StaggeredGridItemSpan.FullLine
-                    ) {
-                        it()
-                    }
-                }
-                items(items.itemCount){
-                    items[it]?.let {
-                        CartoonCardWithoutCover(
-                            cartoonCover = it
-                        ){
-                            nav.navigationDetailed(it)
+    ) {
+
+        pagingItems.let { items ->
+            if(pagingItems.itemCount > 0) {
+                LazyVerticalStaggeredGrid(
+                    columns = StaggeredGridCells.Adaptive(150.dp),
+                    state = lazyState,
+                    verticalItemSpacing = 4.dp,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    header?.let {
+                        item(
+                            span = StaggeredGridItemSpan.FullLine
+                        ) {
+                            it()
                         }
                     }
+                    items(items.itemCount) {
+                        items[it]?.let {
+                            CartoonCardWithoutCover(
+                                cartoonCover = it
+                            ) {
+                                nav.navigationDetailed(it)
+                            }
+                        }
 
+                    }
+                    pagingCommon(items)
                 }
-                pagingCommon(items)
             }
-//            LazyVerticalGrid(
-//                columns = GridCells.Adaptive(150.dp),
-//                verticalArrangement = Arrangement.spacedBy(4.dp),
-//                horizontalArrangement = Arrangement.spacedBy(4.dp),
-//                contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
-//            ){
-//                header?.let {
-//                    item(
-//                        span = {
-//                            // LazyGridItemSpanScope:
-//                            // maxLineSpan
-//                            GridItemSpan(maxLineSpan)
-//                        }
-//                    ) {
-//                        it()
-//                    }
-//                }
-//                items(items.itemCount){
-//                    items[it]?.let {
-//                        CartoonCardWithoutCover(
-//                            cartoonCover = it
-//                        ){
-//                            nav.navigationDetailed(it)
-//                        }
-//                    }
-//
-//                }
-//                pagingCommon(items)
-//            }
-//            LazyColumn(
-//                state = lazyListState,
-//                verticalArrangement = Arrangement.spacedBy(8.dp),
-//                horizontalAlignment = Alignment.CenterHorizontally,
-//                contentPadding = PaddingValues(8.dp, 4.dp, 8.dp, 88.dp)
-//            ){
-//                header?.let {
-//                    item {
-//                        it()
-//                    }
-//                }
-//                items(items.itemCount){
-//                    items[it]?.let {
-//                        CartoonCardWithoutCover(
-//                            cartoonCover = it
-//                        ){
-//                            nav.navigationDetailed(it)
-//                        }
-//                    }
-//
-//                }
-//                pagingCommon(items)
-//            }
+            Column(
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                if(items.itemCount <= 0) {
+                    Spacer(modifier = Modifier.size(4.dp))
+                    header?.invoke()
+                }
+                PagingCommon(items = items)
+            }
 
         }
 

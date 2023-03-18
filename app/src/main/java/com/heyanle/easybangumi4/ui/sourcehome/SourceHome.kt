@@ -37,10 +37,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -90,6 +88,8 @@ fun SourceHome(key: String) {
         ) {
             SourceHomeTopAppBar(
                 state = state,
+                searchMode = vm.searchMode,
+                searchText = vm.searchText,
                 onSearch = {
                     if (it.isEmpty()) {
                         return@SourceHomeTopAppBar
@@ -108,9 +108,10 @@ fun SourceHome(key: String) {
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
 
-                        itemsIndexed(it.page) {i, page ->
+                        itemsIndexed(it.page) { i, page ->
                             //val selectPage = (vm.currentSourceState as? SourceHomeViewModel.CurrentSourcePageState.Page )?.cartoonPage
-                            val select = ((vm.currentSourceState as? SourceHomeViewModel.CurrentSourcePageState.Page )?.pageIndex) == i
+                            val select =
+                                ((vm.currentSourceState as? SourceHomeViewModel.CurrentSourcePageState.Page)?.pageIndex) == i
 
                             FilterChip(
                                 selected = select,
@@ -139,12 +140,12 @@ fun SourceHome(key: String) {
                 }
 
                 LaunchedEffect(key1 = Unit) {
-                    if(vm.sourceHomeState is SourceHomeViewModel.SourceHomeState.None){
+                    if (vm.sourceHomeState is SourceHomeViewModel.SourceHomeState.None) {
                         vm.onInit(sou, pages, search)
                     }
                 }
 
-                Surface{
+                Surface {
                     vm.sourceHomeState.let {
                         if (it is SourceHomeViewModel.SourceHomeState.Normal) {
                             SourceHomeScreen(vm = vm, state = it)
@@ -165,6 +166,8 @@ fun SourceHome(key: String) {
 fun SourceHomeTopAppBar(
     state: SourceHomeViewModel.SourceHomeState,
     colors: TopAppBarColors = TopAppBarDefaults.topAppBarColors(),
+    searchMode: MutableState<Boolean>,
+    searchText: MutableState<String>,
     onSearch: (String) -> Unit,
     onBack: () -> Unit,
 ) {
@@ -173,26 +176,14 @@ fun SourceHomeTopAppBar(
         FocusRequester()
     }
 
-    var isCurrentSearchMode by remember {
-        mutableStateOf(false)
-    }
 
-    var text by remember {
-        mutableStateOf("")
-    }
-
-    LaunchedEffect(key1 = isCurrentSearchMode) {
-        if (isCurrentSearchMode) {
-            focusRequester.requestFocus()
-        }
-    }
 
     TopAppBar(
         colors = colors,
         navigationIcon = {
             IconButton(onClick = {
-                if (isCurrentSearchMode) {
-                    isCurrentSearchMode = false
+                if (searchMode.value) {
+                    searchMode.value = false
                 } else {
                     onBack()
                 }
@@ -205,12 +196,15 @@ fun SourceHomeTopAppBar(
         },
         title = {
             if (state is SourceHomeViewModel.SourceHomeState.Normal) {
-                if (isCurrentSearchMode) {
+                if (searchMode.value) {
+                    LaunchedEffect(key1 = Unit) {
+                        focusRequester.requestFocus()
+                    }
                     TextField(
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                         keyboardActions = KeyboardActions(
                             onSearch = {
-                                onSearch(text)
+                                onSearch(searchText.value)
                             }
                         ),
                         maxLines = 1,
@@ -220,9 +214,9 @@ fun SourceHomeTopAppBar(
                             unfocusedIndicatorColor = Color.Transparent,
                             focusedIndicatorColor = Color.Transparent,
                         ),
-                        value = text,
+                        value = searchText.value,
                         onValueChange = {
-                            text = it
+                            searchText.value = it
                         },
                         placeholder = {
                             Text(
@@ -238,10 +232,10 @@ fun SourceHomeTopAppBar(
         },
         actions = {
             if (state is SourceHomeViewModel.SourceHomeState.Normal) {
-                if (isCurrentSearchMode) {
-                    if (text.isNotEmpty()) {
+                if (searchMode.value) {
+                    if (searchText.value.isNotEmpty()) {
                         IconButton(onClick = {
-                            text = ""
+                            searchText.value = ""
                             onSearch("")
                         }) {
                             Icon(
@@ -250,7 +244,7 @@ fun SourceHomeTopAppBar(
                             )
                         }
                         IconButton(onClick = {
-                            onSearch(text)
+                            onSearch(searchText.value)
                         }) {
                             Icon(
                                 imageVector = Icons.Filled.Search,
@@ -261,7 +255,7 @@ fun SourceHomeTopAppBar(
 
                 } else if (state.search != null) {
                     IconButton(onClick = {
-                        isCurrentSearchMode = true
+                        searchMode.value = true
                     }) {
                         Icon(
                             imageVector = Icons.Filled.Search,
@@ -275,7 +269,8 @@ fun SourceHomeTopAppBar(
 
 }
 
-@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class,
+@OptIn(
+    ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class,
     ExperimentalComposeUiApi::class
 )
 @Composable
@@ -283,7 +278,6 @@ fun SourceHomeScreen(
     vm: SourceHomeViewModel,
     state: SourceHomeViewModel.SourceHomeState.Normal
 ) {
-
 
 
     LaunchedEffect(key1 = Unit) {
