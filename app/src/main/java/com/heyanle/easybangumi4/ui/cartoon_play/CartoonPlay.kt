@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -172,9 +173,10 @@ fun CartoonPlay(
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color.Red,
+        color = MaterialTheme.colorScheme.background,
         contentColor = MaterialTheme.colorScheme.onBackground
     ) {
+
         EasyPlayerScaffold(
             modifier = Modifier.fillMaxSize(),
             vm = controlVM,
@@ -269,23 +271,29 @@ fun CartoonPlay(
                 }
             }
         ) {
-            Box(
+            Spacer(
                 modifier = Modifier
+                    .background(MaterialTheme.colorScheme.primary)
                     .height(2.dp)
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.primary),
+                    .fillMaxWidth(),
             )
-            Box(modifier = Modifier.weight(1f)) {
-                CartoonPlayUI(
-                    detailedVM = detailedVM,
-                    cartoonPlayVM = cartoonPlayVM,
-                    listState = lazyGridState
-                )
+            Surface(
+                modifier = Modifier.weight(1f),
+                color = MaterialTheme.colorScheme.background,
+                contentColor = MaterialTheme.colorScheme.onBackground
+            ) {
+                Box(modifier = Modifier.fillMaxSize().navigationBarsPadding()) {
+                    CartoonPlayUI(
+                        detailedVM = detailedVM,
+                        cartoonPlayVM = cartoonPlayVM,
+                        listState = lazyGridState
+                    )
+                    FastScrollToTopFab(listState = lazyGridState)
+                }
+
             }
+
         }
-
-
-        FastScrollToTopFab(listState = lazyGridState)
 
     }
 
@@ -372,7 +380,8 @@ fun CartoonPlayPage(
         },
         isStar = detailedVM.isStar,
         onStar = {
-            detailedVM.setCartoonStar(it, detailedState.detail)
+            detailedState.playLine
+            detailedVM.setCartoonStar(it, detailedState.detail, detailedState.playLine)
         },
         onSearch = {
             TODO("搜索同名番")

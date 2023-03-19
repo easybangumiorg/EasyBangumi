@@ -5,6 +5,7 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import com.heyanle.easybangumi4.db.entity.CartoonStar
 
@@ -27,8 +28,13 @@ interface CartoonStarDao {
     @Query("SELECT * FROM CartoonStar ORDER BY createTime DESC")
     fun getAll(): PagingSource<Int, CartoonStar>
 
+    fun getAllNormal(): List<CartoonStar>
+
     @Query("SELECT count(*) FROM CartoonStar")
     fun countAll():Int
+
+    @Query("SELECT * FROM CartoonStar WHERE id=(:id) AND source=(:source) AND url = (:detailUrl)")
+    fun getByCartoonSummary(id: String, source: String, detailUrl: String): CartoonStar?
 
     @Query("SELECT * FROM CartoonStar WHERE title LIKE '%' || :searchKey || '%' ORDER BY createTime DESC")
     fun getSearch(searchKey: String): PagingSource<Int, CartoonStar>
@@ -38,6 +44,22 @@ interface CartoonStarDao {
 
     @Query("DELETE FROM CartoonStar WHERE id=(:id) AND source=(:source) AND url = (:detailUrl)")
     fun deleteByCartoonSummary(id: String, source: String, detailUrl: String)
+
+
+    @Transaction
+    fun modify(list: List<CartoonStar>) {
+        list.forEach {
+            val old = getByCartoonSummary(it.id, it.source, it.url)
+            if(old == null){
+                insert(it)
+            }else{
+                it.starId = old.starId
+                modify(it)
+            }
+        }
+    }
+
+
 
 
 }

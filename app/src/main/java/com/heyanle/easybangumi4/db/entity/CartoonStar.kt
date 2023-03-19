@@ -2,8 +2,12 @@ package com.heyanle.easybangumi4.db.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.heyanle.bangumi_source_api.api.entity.Cartoon
+import com.heyanle.bangumi_source_api.api.entity.CartoonCover
 import com.heyanle.bangumi_source_api.api.entity.CartoonImpl
+import com.heyanle.bangumi_source_api.api.entity.PlayLine
 
 /**
  * Created by HeYanLe on 2023/3/4 14:26.
@@ -33,47 +37,87 @@ data class CartoonStar(
 
     var updateStrategy: Int,
 
-    var isUpdate: Boolean,       // 是否更新，在追番页显示
+    var isUpdate: Boolean,
+
+
 
     var status: Int,
 
     var createTime: Long = System.currentTimeMillis(),
+
+    var playLineString: String,
+
+    var isInitializer: Boolean = false,
+
+    var lastUpdateTime: Long = 0L,
 ) {
 
     companion object {
-        fun fromCartoon(cartoon: Cartoon): CartoonStar{
+        fun fromCartoon(cartoon: Cartoon, playLines: List<PlayLine>): CartoonStar {
             return CartoonStar(
                 id = cartoon.id,
                 source = cartoon.source,
                 url = cartoon.url,
                 title = cartoon.title,
-                genre = cartoon.genre?:"",
-                coverUrl = cartoon.coverUrl?:"",
-                intro = cartoon.intro?:"",
-                description = cartoon.description?:"",
+                genre = cartoon.genre ?: "",
+                coverUrl = cartoon.coverUrl ?: "",
+                intro = cartoon.intro ?: "",
+                description = cartoon.description ?: "",
                 updateStrategy = cartoon.updateStrategy,
-                isUpdate = cartoon.isUpdate,
                 status = cartoon.status,
+                playLineString = Gson().toJson(playLines),
+                isInitializer = true,
+                lastUpdateTime = 0L,
+                isUpdate = cartoon.isUpdate
             )
         }
     }
 
-    fun toCartoon():Cartoon {
-        return CartoonImpl(
+    fun fromCartoon(cartoon: CartoonCover): CartoonStar {
+        return CartoonStar(
+            id = cartoon.id,
+            source = cartoon.source,
+            url = cartoon.url,
+            title = cartoon.title,
+            genre = "",
+            coverUrl = cartoon.coverUrl ?: "",
+            intro = cartoon.intro ?: "",
+            description = "",
+            updateStrategy = Cartoon.UPDATE_STRATEGY_NEVER,
+            status = Cartoon.STATUS_UNKNOWN,
+            playLineString = "",
+            isInitializer = false,
+            lastUpdateTime = 0L,
+            isUpdate = false,
+        )
+    }
+
+    fun toCartoon(): Cartoon? {
+        return if(isInitializer) CartoonImpl(
             id = this.id,
             source = this.source,
             url = this.url,
             title = this.title,
-            genre = this.genre?:"",
-            coverUrl = this.coverUrl?:"",
-            intro = this.intro?:"",
-            description = this.description?:"",
+            genre = this.genre ?: "",
+            coverUrl = this.coverUrl ?: "",
+            intro = this.intro ?: "",
+            description = this.description ?: "",
             updateStrategy = this.updateStrategy,
-            isUpdate = this.isUpdate,
             status = this.status
-        )
+        ) else null
     }
 
+    fun getPlayLine(): List<PlayLine> {
+        return kotlin.runCatching {
+            Gson().fromJson<List<PlayLine>>(
+                playLineString,
+                object : TypeToken<List<PlayLine>>() {}.type
+            )
+        }.getOrElse {
+            it.printStackTrace()
+            emptyList()
+        }
+    }
 
 
 }

@@ -26,10 +26,8 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import com.heyanle.easy_i18n.R
-import com.heyanle.easybangumi4.ui.common.SourceContainer
 import com.heyanle.easybangumi4.ui.home.explore.Explore
 import com.heyanle.easybangumi4.ui.home.history.History
-import com.heyanle.easybangumi4.ui.home.star.Star
 import kotlinx.coroutines.launch
 
 /**
@@ -53,10 +51,10 @@ sealed class HomePage(
             )
         },
         content = {
-            SourceContainer {
-                Star()
-            }
-//            Text(text = stringResource(id = R.string.my_anim))
+//            SourceContainer {
+//                Star()
+//            }
+            Text(text = stringResource(id = R.string.my_anim))
         },
     )
 
