@@ -7,7 +7,7 @@ package com.heyanle.bangumi_source_api.api.entity
 class PlayLine(
     val id: String, // 源自己维护和判断
     val label: String,
-    val episode: List<String>,
+    val episode: ArrayList<String>,
 )
 
 

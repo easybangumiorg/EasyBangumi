@@ -36,14 +36,14 @@ interface Cartoon : Serializable {
         const val STATUS_COMPLETED = 2             // 已完结
 
         /**
-         * 无论自动更新还是手动更新都会更新
+         * 无论严格还是不严格都会更新
          */
         const val UPDATE_STRATEGY_ALWAYS = 0
 
         /**
-         * 只有手动更新时才会更新，一般用于已完结
+         * 只有严格更新时才会更新，一般用于已完结
          */
-        const val UPDATE_STRATEGY_ONLY_MANUAL = 1
+        const val UPDATE_STRATEGY_ONLY_STRICT = 1
 
         /**
          * 不更新，一般用于剧场版或年代久远不可能更新的番剧
