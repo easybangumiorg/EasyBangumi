@@ -23,7 +23,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -92,49 +91,87 @@ fun History() {
 //        scrollBehavior.state.contentOffset = 0F
 //    }
 
-    Scaffold(
-        containerColor = Color.Transparent,
-        topBar = {
-            HistoryTopAppBar(
-                scrollBehavior = scrollBehavior,
-                isSearch = isSearch,
-                onSearchClick = {
-                    isSearch = true
-                },
-                onClear = { clearDialog = true },
-                onSearch = {
-                    vm.search(it)
-                },
-                onSearchExit = {
-                    isSearch = false
-                    vm.exitSearch()
-
-                }
-            )
-        }
+    Column(
+        modifier = Modifier.fillMaxSize()
     ) {
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .padding(it)){
-            HistoryList(
-                scrollBehavior,
-                vm = vm,
-                onItemClick = {
-                    nav.navigationDetailed(
-                        it.id,
-                        it.url,
-                        it.source,
-                        it.lastLinesIndex,
-                        it.lastEpisodeIndex,
-                        it.lastProcessTime
-                    )
-                },
-                onItemDelete = {
-                    deleteHistory = it
-                }
-            )
-        }
+        HistoryTopAppBar(
+            scrollBehavior = scrollBehavior,
+            isSearch = isSearch,
+            onSearchClick = {
+                isSearch = true
+            },
+            onClear = { clearDialog = true },
+            onSearch = {
+                vm.search(it)
+            },
+            onSearchExit = {
+                isSearch = false
+                vm.exitSearch()
+
+            }
+        )
+        HistoryList(
+            scrollBehavior,
+            vm = vm,
+            onItemClick = {
+                nav.navigationDetailed(
+                    it.id,
+                    it.url,
+                    it.source,
+                    it.lastLinesIndex,
+                    it.lastEpisodeIndex,
+                    it.lastProcessTime
+                )
+            },
+            onItemDelete = {
+                deleteHistory = it
+            }
+        )
     }
+
+//    Scaffold(
+//        containerColor = Color.Transparent,
+//        topBar = {
+//            HistoryTopAppBar(
+//                scrollBehavior = scrollBehavior,
+//                isSearch = isSearch,
+//                onSearchClick = {
+//                    isSearch = true
+//                },
+//                onClear = { clearDialog = true },
+//                onSearch = {
+//                    vm.search(it)
+//                },
+//                onSearchExit = {
+//                    isSearch = false
+//                    vm.exitSearch()
+//
+//                }
+//            )
+//        }
+//    ) {
+//        Box(modifier = Modifier
+//            .fillMaxSize()
+//            .padding(it)){
+//            HistoryList(
+//                scrollBehavior,
+//                vm = vm,
+//                onItemClick = {
+//                    nav.navigationDetailed(
+//                        it.id,
+//                        it.url,
+//                        it.source,
+//                        it.lastLinesIndex,
+//                        it.lastEpisodeIndex,
+//                        it.lastProcessTime
+//                    )
+//                },
+//                onItemDelete = {
+//                    deleteHistory = it
+//                }
+//            )
+//        }
+//    }
 
     EasyDeleteDialog(
         show = deleteHistory != null,

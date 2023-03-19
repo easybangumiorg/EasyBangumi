@@ -76,7 +76,7 @@ class DetailedViewModel(
         }
     }
 
-    fun setCartoonStar(isStar: Boolean, cartoon: Cartoon){
+    fun setCartoonStar(isStar: Boolean, cartoon: Cartoon, playLines: List<PlayLine>){
         viewModelScope.launch {
             if (isStar) {
                 withContext(Dispatchers.IO) {
@@ -88,7 +88,7 @@ class DetailedViewModel(
                                 cartoon.url
                             )
                         if (old == null) {
-                            insert(CartoonStar.fromCartoon(cartoon))
+                            insert(CartoonStar.fromCartoon(cartoon, playLines))
                         } else {
                             modify(
                                 old.copy(
