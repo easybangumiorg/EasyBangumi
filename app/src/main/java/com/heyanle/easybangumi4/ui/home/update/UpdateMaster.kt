@@ -6,7 +6,9 @@ import com.heyanle.bangumi_source_api.api.entity.Cartoon
 import com.heyanle.easybangumi4.DB
 import com.heyanle.easybangumi4.db.entity.CartoonStar
 import com.heyanle.easybangumi4.source.SourceMaster
+import com.heyanle.okkv2.core.okkv
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.async
@@ -31,16 +33,17 @@ object UpdateMaster {
     private val scope = MainScope()
     private var job: Job? = null
 
+    private var lastUpdateTimeOkkv by okkv("LastUpdateTime", -1L)
+    var lastUpdateTime = MutableStateFlow(lastUpdateTimeOkkv)
+
     var isLoading = MutableStateFlow(false)
     var loadingError = MutableStateFlow<String?>(null)
     var updateCount = mutableStateOf(0)
 
-    var updatingCartoonName= MutableStateFlow<String>("")
-
     fun tryUpdate(
         list: List<CartoonStar>
     ): Boolean {
-        return update(list.asFlow())
+        return update(list.asFlow(), false)
     }
 
     fun tryUpdate(
@@ -57,27 +60,31 @@ object UpdateMaster {
                     else -> false
                 }
             }
-        return update(flow)
+        return update(flow, true)
     }
 
-    private fun update(flow: Flow<CartoonStar>): Boolean {
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun update(flow: Flow<CartoonStar>, isAll: Boolean ): Boolean {
         return if (isLoading.compareAndSet(expect = false, update = true)) {
             job?.cancel("New Update Task")
-            job = scope.launch(Dispatchers.IO) {
+            job = scope.launch(Dispatchers.IO.limitedParallelism(5)) {
                 flow.map { star ->
                     star to async {
-                        star.toCartoon()?.let { cartoon ->
-                            (SourceMaster.animSourceFlow.value.update(cartoon.source)
-                                ?.update(
-                                    cartoon,
-                                    star.getPlayLine()
-                                ) as? SourceResult.Complete<Cartoon>)?.data
+                        kotlin.runCatching {
+                            star.toCartoon()?.let { cartoon ->
+                                (SourceMaster.animSourceFlow.value.update(cartoon.source)
+                                    ?.update(
+                                        cartoon,
+                                        star.getPlayLine()
+                                    ) as? SourceResult.Complete<Cartoon>)?.data
+                            }
+                        }.getOrElse {
+                            it.printStackTrace()
+                            null
                         }
+
                     }
                 }.map {
-                    updatingCartoonName.update { _ ->
-                        it.first.title
-                    }
                     it.first to it.second.await()
                 }.filter {
                     it.second != null
@@ -92,10 +99,18 @@ object UpdateMaster {
                         }
                     }
                     .toList().let {
-                        DB.cartoonStar.modify(it)
+                        val now = System.currentTimeMillis()
+                        DB.cartoonStar.modify(it, now)
                         loadingError.update {
                             null
                         }
+                        if(isAll){
+                            lastUpdateTimeOkkv = now
+                            lastUpdateTime.update {
+                                now
+                            }
+                        }
+
                     }
                 isLoading.compareAndSet(expect = true, update = false)
             }

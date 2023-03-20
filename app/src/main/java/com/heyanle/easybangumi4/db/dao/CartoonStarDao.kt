@@ -25,13 +25,13 @@ interface CartoonStarDao {
     @Delete
     fun delete(cartoonStar: CartoonStar)
 
-    @Query("SELECT * FROM CartoonStar")
+    @Query("SELECT * FROM CartoonStar ORDER BY createTime DESC")
     fun getAll(): List<CartoonStar>
 
-    @Query("SELECT * FROM CartoonStar")
+    @Query("SELECT * FROM CartoonStar ORDER BY createTime DESC")
     fun flowAll(): Flow<List<CartoonStar>>
 
-    @Query("SELECT * FROM CartoonStar WHERE isInitializer=1 AND isUpdate=1")
+    @Query("SELECT * FROM CartoonStar WHERE isInitializer=1 AND isUpdate=1 ORDER BY lastUpdateTime DESC")
     fun flowUpdate(): Flow<List<CartoonStar>>
 
     @Query("SELECT * FROM CartoonStar WHERE id=(:id) AND source=(:source) AND url=(:url)")
@@ -51,13 +51,13 @@ interface CartoonStarDao {
     }
 
     @Transaction
-    fun modify(starList: List<CartoonStar>) {
+    fun modify(starList: List<CartoonStar>, lastUpdateTime: Long? = null) {
         starList.forEach { cartoonStar ->
             val old = getByCartoonSummary(cartoonStar.id, cartoonStar.source, cartoonStar.url)
             if (old == null) {
-                insert(cartoonStar.copy(createTime = System.currentTimeMillis()))
+                insert(cartoonStar.copy(createTime = System.currentTimeMillis(), lastUpdateTime = lastUpdateTime?:cartoonStar.lastUpdateTime))
             } else {
-                update(cartoonStar.copy(createTime = old.createTime))
+                update(cartoonStar.copy(createTime = old.createTime, lastUpdateTime = lastUpdateTime?:cartoonStar.lastUpdateTime))
             }
         }
     }
