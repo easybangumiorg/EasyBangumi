@@ -75,6 +75,9 @@
 
     <string name="filter">过滤器</string>
 
+    <string name="select_all">全选</string>
+    <string name="select_invert">反选</string>
+
     <string name="play_error">出了点小问题，请点击重试</string>
     <string name="retry">重试</string>
 

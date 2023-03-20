@@ -58,7 +58,7 @@ class DetailedViewModel(
 
                     detailedState = DetailedState.Info(it.data.first, it.data.second)
                     val isStar = withContext(Dispatchers.IO) {
-                        DB.cartoonStar.getBySourceDetailUrl(
+                        DB.cartoonStar.getByCartoonSummary(
                             it.data.first.id,
                             it.data.first.source,
                             it.data.first.url
@@ -80,26 +80,7 @@ class DetailedViewModel(
         viewModelScope.launch {
             if (isStar) {
                 withContext(Dispatchers.IO) {
-                    DB.cartoonStar.apply {
-                        val old =
-                            getBySourceDetailUrl(
-                                cartoon.id,
-                                cartoon.source,
-                                cartoon.url
-                            )
-                        if (old == null) {
-                            insert(CartoonStar.fromCartoon(cartoon, playLines))
-                        } else {
-                            modify(
-                                old.copy(
-                                    title = cartoon.title,
-                                    coverUrl = cartoon.coverUrl?:old.coverUrl,
-                                    source = cartoon.source,
-                                    createTime = System.currentTimeMillis()
-                                )
-                            )
-                        }
-                    }
+                    DB.cartoonStar.modify(CartoonStar.fromCartoon(cartoon, playLines))
                 }
                 // AnimStarViewModel.refresh()
                 if(cartoonSummary.isChild(cartoon)){
