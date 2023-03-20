@@ -1,7 +1,7 @@
 package com.heyanle.easybangumi4.db.entity
 
 import androidx.room.Entity
-import androidx.room.PrimaryKey
+import androidx.room.Ignore
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.heyanle.bangumi_source_api.api.entity.Cartoon
@@ -13,11 +13,8 @@ import com.heyanle.bangumi_source_api.api.entity.PlayLine
  * Created by HeYanLe on 2023/3/4 14:26.
  * https://github.com/heyanLE
  */
-@Entity
+@Entity(primaryKeys = ["id", "source", "url"])
 data class CartoonStar(
-
-    @PrimaryKey(autoGenerate = true)
-    var starId: Int = 0,
 
     var id: String,              // 标识，由源自己支持，用于区分番剧
 
@@ -39,8 +36,6 @@ data class CartoonStar(
 
     var isUpdate: Boolean,
 
-
-
     var status: Int,
 
     var createTime: Long = System.currentTimeMillis(),
@@ -51,6 +46,19 @@ data class CartoonStar(
 
     var lastUpdateTime: Long = 0L,
 ) {
+
+    @Ignore
+    private var genres: List<String>? = null
+
+    fun getGenres(): List<String>? {
+        if(genre.isEmpty()){
+            return null
+        }
+        if(genres == null){
+            genres = genre.split(", ").map { it.trim() }.filterNot { it.isBlank() }.distinct()
+        }
+        return genres
+    }
 
     companion object {
         fun fromCartoon(cartoon: Cartoon, playLines: List<PlayLine>): CartoonStar {
@@ -118,6 +126,29 @@ data class CartoonStar(
             emptyList()
         }
     }
+
+    fun matches(query: String): Boolean{
+        var matched = false
+        for(match in query.split(',')){
+            val regex = getMatchReg(match)
+            if(title.matches(regex)){
+                matched = true
+                break
+            }
+        }
+        return matched
+
+    }
+
+    private fun getMatchReg(query: String): Regex {
+        return buildString {
+            append("(.*)(")
+            append(query.split("").joinToString(")(.*)("))
+            append(")(.*)")
+        }.toRegex(RegexOption.IGNORE_CASE)
+    }
+
+
 
 
 }

@@ -20,5 +20,17 @@ class CartoonImpl(
     override var status: Int = Cartoon.STATUS_UNKNOWN,
 ) : Cartoon {
 
+    private var genres: List<String>? = null
+
+    override fun getGenres(): List<String>? {
+        if(genre == null){
+            return null
+        }
+        if(genres == null){
+            genres = super.getGenres()
+        }
+        return genres
+    }
+
 
 }
