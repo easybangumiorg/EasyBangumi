@@ -27,7 +27,6 @@ class StarViewModel : ViewModel() {
         val starCartoonList: List<CartoonStar> = emptyList(),
         val selection: Set<CartoonStar> = setOf(),
         val hasActiveFilters: Boolean = false,
-        val showingCartoonCount: Int = 0,
         val dialog: DialogState? = null
     )
 

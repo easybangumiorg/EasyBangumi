@@ -45,6 +45,20 @@
     <string name="explore">浏览</string>
     <string name="more">更多</string>
 
+    <string name="today">今天</string>
+    <string name="yesterday">昨天</string>
+    <string name="day_age">%1$s天前</string>
+
+    <string name="update_strict">全量更新</string>
+
+    <string name="doing_update">正在更新中</string>
+
+    <string name="update_error">更新错误</string>
+
+    <string name="start_update_strict">开始全量更新</string>
+    <string name="start_update">开始更新</string>
+    <string name="doing_update_wait">正在更新中，请等待上一次更新完成！</string>
+
     <string name="refresh">刷新</string>
 
     <string name="change_device">切换设备</string>
