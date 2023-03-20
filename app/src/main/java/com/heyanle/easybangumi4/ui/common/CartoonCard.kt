@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -41,7 +42,7 @@ fun CartoonCardWithCover(
     onClick: (CartoonCover) -> Unit,
 ) {
 
-    Column (
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(4.dp))
@@ -51,14 +52,15 @@ fun CartoonCardWithCover(
             .padding(4.dp),
         horizontalAlignment = Alignment.Start,
     ) {
-        if(!cartoonCover.coverUrl.isNullOrEmpty()){
+        if (!cartoonCover.coverUrl.isNullOrEmpty()) {
             OkImage(
                 modifier = Modifier
                     .then(modifier)
                     .aspectRatio(19 / 27F)
                     .clip(RoundedCornerShape(4.dp)),
                 image = cartoonCover.coverUrl,
-                contentDescription = cartoonCover.title)
+                contentDescription = cartoonCover.title
+            )
 
             Spacer(modifier = Modifier.size(4.dp))
             Text(
@@ -77,16 +79,25 @@ fun CartoonCardWithCover(
 @Composable
 fun CartoonStarCardWithCover(
     modifier: Modifier = Modifier,
+    selected: Boolean = false,
     cartoon: CartoonStar,
     showSourceLabel: Boolean = true,
-    onClick: ( CartoonStar) -> Unit,
+    onClick: (CartoonStar) -> Unit,
     onLongPress: (CartoonStar) -> Unit,
 ) {
 
-    Column (
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(4.dp))
+            .run {
+                if (selected) {
+                    background(MaterialTheme.colorScheme.primary)
+                } else {
+                    this
+                }
+            }
+            .then(modifier)
             .combinedClickable(
                 onClick = {
                     onClick(cartoon)
@@ -99,16 +110,18 @@ fun CartoonStarCardWithCover(
         horizontalAlignment = Alignment.Start,
     ) {
         val sourceBundle = LocalSourceBundleController.current
-        if(cartoon.coverUrl.isNotEmpty()){
-            Box(modifier = Modifier
-                .then(modifier)
-                .aspectRatio(19 / 27F)
-                .clip(RoundedCornerShape(4.dp)),){
+        if (cartoon.coverUrl.isNotEmpty()) {
+            Box(
+                modifier = Modifier
+                    .aspectRatio(19 / 27F)
+                    .clip(RoundedCornerShape(4.dp)),
+            ) {
                 OkImage(
                     modifier = Modifier.fillMaxSize(),
                     image = cartoon.coverUrl,
-                    contentDescription = cartoon.title)
-                if(showSourceLabel){
+                    contentDescription = cartoon.title
+                )
+                if (showSourceLabel) {
                     Text(
                         fontSize = 13.sp,
                         text = sourceBundle.source(cartoon.source)?.label
@@ -132,6 +145,7 @@ fun CartoonStarCardWithCover(
                 maxLines = 1,
                 textAlign = TextAlign.Start,
                 overflow = TextOverflow.Ellipsis,
+                color = if(selected) MaterialTheme.colorScheme.onPrimary else Color.Unspecified
             )
             Spacer(modifier = Modifier.size(4.dp))
         }
@@ -145,7 +159,7 @@ fun CartoonCardWithoutCover(
     cartoonCover: CartoonCover,
     onClick: (CartoonCover) -> Unit,
 ) {
-    Column (
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .then(modifier)

@@ -6,11 +6,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.MoreHoriz
+import androidx.compose.material.icons.filled.Report
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarOutline
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.MoreHoriz
+import androidx.compose.material.icons.outlined.Report
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -19,15 +21,20 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import com.heyanle.easy_i18n.R
+import com.heyanle.easybangumi4.ui.common.SourceContainer
 import com.heyanle.easybangumi4.ui.home.explore.Explore
 import com.heyanle.easybangumi4.ui.home.history.History
+import com.heyanle.easybangumi4.ui.home.star.Star
 import kotlinx.coroutines.launch
 
 /**
@@ -51,11 +58,24 @@ sealed class HomePage(
             )
         },
         content = {
-//            SourceContainer {
-//                Star()
-//            }
-            Text(text = stringResource(id = R.string.my_anim))
+            SourceContainer {
+                Star()
+            }
         },
+    )
+
+    object UpdatePage : HomePage(
+        route = "update",
+        tabLabel = { Text(text = stringResource(id = R.string.update)) },
+        icon = {
+            Icon(
+                if(it) Icons.Filled.Report else Icons.Outlined.Report,
+                contentDescription = stringResource(id = R.string.update)
+            )
+        },
+        content = {
+            Text(text = stringResource(id = R.string.update))
+        }
     )
 
     object HistoryPage : HomePage(
@@ -105,10 +125,15 @@ sealed class HomePage(
 
 val HomePageItems = listOf(
     HomePage.StarPage,
+    HomePage.UpdatePage,
     HomePage.HistoryPage,
     HomePage.ExplorePage,
     HomePage.MorePage,
 )
+
+val LocalHomeViewModel = staticCompositionLocalOf<HomeViewModel> {
+    error("HomeViewModel Not Provide")
+}
 
 
 @OptIn(ExperimentalPagerApi::class, ExperimentalMaterial3Api::class,
@@ -121,43 +146,54 @@ fun Home() {
 
     val scope = rememberCoroutineScope()
 
-    Surface(
-        color = MaterialTheme.colorScheme.background,
-        contentColor = MaterialTheme.colorScheme.onBackground
+    val vm = viewModel<HomeViewModel>()
+
+    CompositionLocalProvider(
+        LocalHomeViewModel provides vm
     ) {
-        Column() {
+        Surface(
+            color = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.onBackground
+        ) {
+            Column() {
 
-            HorizontalPager(
-                userScrollEnabled = false,
-                state = pagerState,
-                modifier = Modifier.weight(1f),
-                count = HomePageItems.size,
-            ) {
-                HomePageItems[it].content()
+                HorizontalPager(
+                    userScrollEnabled = false,
+                    state = pagerState,
+                    modifier = Modifier.weight(1f),
+                    count = HomePageItems.size,
+                ) {
+                    HomePageItems[it].content()
 
-            }
+                }
 
-            NavigationBar(){
-                HomePageItems.forEachIndexed { i, page ->
-                    val select  = pagerState.currentPage == i
-                    NavigationBarItem(
-                        icon = {
-                            page.icon(select)
-                        },
-                        label = page.tabLabel,
-                        selected = select,
-                        alwaysShowLabel = false,
-                        onClick = {
-                            scope.launch {
-                                pagerState.animateScrollToPage(i)
-                            }
+                if(vm.customBottomBar == null){
+                    NavigationBar(){
+                        HomePageItems.forEachIndexed { i, page ->
+                            val select  = pagerState.currentPage == i
+                            NavigationBarItem(
+                                icon = {
+                                    page.icon(select)
+                                },
+                                label = page.tabLabel,
+                                selected = select,
+                                alwaysShowLabel = false,
+                                onClick = {
+                                    scope.launch {
+                                        pagerState.animateScrollToPage(i)
+                                    }
+                                }
+                            )
                         }
-                    )
+                    }
+                }else{
+                    vm.customBottomBar?.let { it() }
                 }
             }
 
         }
-
     }
+
+
 
 }
