@@ -31,8 +31,6 @@ interface CartoonStarDao {
     @Query("SELECT * FROM CartoonStar ORDER BY createTime DESC")
     fun flowAll(): Flow<List<CartoonStar>>
 
-    @Query("SELECT * FROM CartoonStar WHERE isInitializer=1 AND isUpdate=1 ORDER BY lastUpdateTime DESC")
-    fun flowUpdate(): Flow<List<CartoonStar>>
 
     @Query("SELECT * FROM CartoonStar WHERE id=(:id) AND source=(:source) AND url=(:url)")
     fun getByCartoonSummary(id: String, source: String, url: String): CartoonStar?

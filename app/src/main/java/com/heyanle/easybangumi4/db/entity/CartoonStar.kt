@@ -73,7 +73,7 @@ data class CartoonStar(
                 description = cartoon.description ?: "",
                 updateStrategy = cartoon.updateStrategy,
                 status = cartoon.status,
-                playLineString = Gson().toJson(playLines),
+                playLineString = Gson().toJson(playLines)?:"[]",
                 isInitializer = true,
                 lastUpdateTime = 0L,
                 isUpdate = cartoon.isUpdate

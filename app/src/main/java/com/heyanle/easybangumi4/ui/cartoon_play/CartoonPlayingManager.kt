@@ -336,7 +336,6 @@ object CartoonPlayingManager: Player.Listener {
             exoPlayer.seekTo(adviceProgress)
         }
     }
-
     private fun error(
         errMsg: String,
         throwable: Throwable? = null,

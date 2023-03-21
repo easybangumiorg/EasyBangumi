@@ -1,6 +1,5 @@
 package com.heyanle.easybangumi4.utils
 
-import android.content.Context
 import java.text.DateFormat
 import java.util.Calendar
 import java.util.Date
@@ -94,38 +93,4 @@ fun Long.toLocalCalendar(): Calendar? {
             rawCalendar.get(Calendar.SECOND),
         )
     }
-}
-
-private const val MILLISECONDS_IN_DAY = 86_400_000L
-
-fun Date.toRelativeString(
-    context: Context,
-    range: Int = 7,
-    dateFormat: DateFormat = DateFormat.getDateInstance(DateFormat.SHORT),
-): String {
-    if (range == 0) {
-        return dateFormat.format(this)
-    }
-    val now = Date()
-    val difference = now.timeWithOffset.floorNearest(MILLISECONDS_IN_DAY) - this.timeWithOffset.floorNearest(MILLISECONDS_IN_DAY)
-    val days = difference.floorDiv(MILLISECONDS_IN_DAY).toInt()
-    return when {
-        difference < 0 -> stringRes(com.heyanle.easy_i18n.R.string.today)
-        difference < MILLISECONDS_IN_DAY -> stringRes(com.heyanle.easy_i18n.R.string.yesterday)
-        difference < MILLISECONDS_IN_DAY.times(range) -> stringRes(com.heyanle.easy_i18n.R.string.day_age, days)
-        else -> dateFormat.format(this)
-    }
-}
-
-val Date.timeWithOffset: Long
-    get() {
-        return Calendar.getInstance().run {
-            time = this@timeWithOffset
-            val dstOffset = get(Calendar.DST_OFFSET)
-            this@timeWithOffset.time + timeZone.rawOffset + dstOffset
-        }
-    }
-
-fun Long.floorNearest(to: Long): Long {
-    return this.floorDiv(to) * to
 }

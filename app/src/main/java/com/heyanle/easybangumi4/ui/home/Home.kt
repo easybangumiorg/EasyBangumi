@@ -35,6 +35,7 @@ import com.heyanle.easybangumi4.ui.common.SourceContainer
 import com.heyanle.easybangumi4.ui.home.explore.Explore
 import com.heyanle.easybangumi4.ui.home.history.History
 import com.heyanle.easybangumi4.ui.home.star.Star
+import com.heyanle.easybangumi4.ui.home.update.Update
 import kotlinx.coroutines.launch
 
 /**
@@ -74,7 +75,8 @@ sealed class HomePage(
             )
         },
         content = {
-            Text(text = stringResource(id = R.string.update))
+            Update()
+            //Text(text = stringResource(id = R.string.update))
         }
     )
 
