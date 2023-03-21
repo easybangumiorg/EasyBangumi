@@ -47,9 +47,11 @@
 
     <string name="today">今天</string>
     <string name="yesterday">昨天</string>
-    <string name="day_age">%1$s天前</string>
+    <string name="day_age">%1$s 天前</string>
 
     <string name="update_strict">全量更新</string>
+
+    <string name="last_update_at">上次更新于 %1$s</string>
 
     <string name="doing_update">正在更新中</string>
 

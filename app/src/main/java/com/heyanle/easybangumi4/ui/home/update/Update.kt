@@ -1,10 +1,11 @@
 package com.heyanle.easybangumi4.ui.home.update
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,6 +21,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -35,13 +37,22 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
+import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.db.entity.CartoonStar
+import com.heyanle.easybangumi4.navigationDetailed
+import com.heyanle.easybangumi4.source.LocalSourceBundleController
 import com.heyanle.easybangumi4.ui.common.LoadingImage
 import com.heyanle.easybangumi4.ui.common.LoadingPage
+import com.heyanle.easybangumi4.ui.common.OkImage
+import java.text.DateFormat
 
 /**
  * Created by HeYanLe on 2023/3/19 16:43.
@@ -56,24 +67,48 @@ fun Update() {
 
     val state by vm.stateFlow.collectAsState()
 
+    val nav = LocalNavController.current
+
     Column {
         UpdateTopAppBar(
             scrollBehavior = scrollBehavior,
             onUpdate = { vm.update(it) }
         )
 
-        if(state.isLoading){
+        if (state.isLoading) {
             LoadingPage(
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.weight(1f)
             )
-        }else{
+        } else {
 
-            LazyColumn(){
+            LazyColumn(
+                modifier = Modifier.weight(1f).nestedScroll(scrollBehavior.nestedScrollConnection)
+            ) {
                 item {
                     UpdateStateCard(state = state)
                 }
 
+                item {
+                    UpdateStateTime(state = state)
+                }
+
                 items(state.updateCartoonList) {
+                    when (it) {
+                        is UpdateViewModel.UpdateItem.Cartoon -> {
+                            UpdateCartoonCard(cartoonStar = it.star, onClick = {
+                                nav.navigationDetailed(it.id, it.url, it.source)
+                            })
+                        }
+
+                        is UpdateViewModel.UpdateItem.Header -> {
+                            ListItem(
+                                headlineContent = {
+                                    Text(text = it.header)
+                                }
+                            )
+
+                        }
+                    }
 
                 }
             }
@@ -86,11 +121,42 @@ fun Update() {
 @Composable
 fun UpdateCartoonCard(
     cartoonStar: CartoonStar,
-    onClick: ()->Unit,
-){
-    Row {
+    onClick: (CartoonStar) -> Unit,
+) {
 
-    }
+    val sourceBundle = LocalSourceBundleController.current
+
+    ListItem(
+        modifier = Modifier.clickable {
+            onClick(cartoonStar)
+        },
+        headlineContent = {
+            Text(text = cartoonStar.title, maxLines = 2, overflow = TextOverflow.Ellipsis)
+        },
+        trailingContent = {
+            Text(
+                fontSize = 13.sp,
+                text = sourceBundle.source(cartoonStar.source)?.label
+                    ?: cartoonStar.source,
+                color = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier
+                    .background(
+                        MaterialTheme.colorScheme.primary,
+                        RoundedCornerShape(4.dp)
+                    )
+                    .padding(4.dp),
+            )
+        },
+        leadingContent = {
+            OkImage(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(4.dp)),
+                image = cartoonStar.coverUrl,
+                contentDescription = cartoonStar.title
+            )
+        }
+    )
 
 }
 
@@ -103,26 +169,30 @@ fun UpdateStateCard(
         mutableStateOf(false)
     }
 
-    if (state.isLoading) {
+    if (state.isUpdating) {
+
         Row(
             modifier = Modifier
-                .padding(4.dp)
+                .fillMaxWidth()
+                .padding(16.dp, 0.dp)
+                .clip(RoundedCornerShape(8.dp))
                 .background(MaterialTheme.colorScheme.primary)
-                .clip(RoundedCornerShape(4.dp))
-                .padding(4.dp),
+                .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            LoadingImage()
-            Spacer(modifier = Modifier.size(4.dp))
-            Text(text = stringResource(id = R.string.doing_update))
+            LoadingImage(modifier = Modifier.size(40.dp))
+            Spacer(modifier = Modifier.size(8.dp))
+            Text(text = stringResource(id = R.string.doing_update), color = MaterialTheme.colorScheme.onPrimary)
         }
     } else if (state.lastUpdateError != null) {
         Row(
             modifier = Modifier
-                .padding(4.dp)
+                .fillMaxWidth()
+                .padding(16.dp, 0.dp)
+                .clip(RoundedCornerShape(8.dp))
                 .background(MaterialTheme.colorScheme.errorContainer)
-                .clip(RoundedCornerShape(4.dp))
-                .padding(4.dp),
+
+                .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
@@ -130,7 +200,7 @@ fun UpdateStateCard(
                 contentDescription = stringResource(id = R.string.update_error)
             )
             Spacer(modifier = Modifier.size(4.dp))
-            Text(text = stringResource(id = R.string.update_error))
+            Text(text = stringResource(id = R.string.update_error), color = MaterialTheme.colorScheme.onErrorContainer)
         }
     }
 
@@ -152,6 +222,25 @@ fun UpdateStateCard(
         )
     }
 
+}
+
+@Composable
+fun UpdateStateTime(
+    state: UpdateViewModel.State
+) {
+    if (state.lastUpdateTime > 0 && ! state.isUpdating) {
+        Text(
+            modifier = Modifier.padding(16.dp, 0.dp),
+            text = stringResource(
+                id = R.string.last_update_at,
+                DateFormat.getDateInstance(
+                    DateFormat.MEDIUM
+                ).format(state.lastUpdateTime)
+            ),
+            style = MaterialTheme.typography.bodySmall,
+            fontStyle = FontStyle.Italic,
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -192,6 +281,7 @@ fun UpdateTopAppBar(
                     Text(text = stringResource(id = R.string.update_strict))
                 }, onClick = {
                     onUpdate(true)
+                    isMenuShow = false
                 })
             }
 

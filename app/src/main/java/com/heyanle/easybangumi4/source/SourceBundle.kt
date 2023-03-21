@@ -81,7 +81,7 @@ class SourceBundle(
                 }
 
                 if(it is PageComponent) {
-                    it.source.key.loge("SourceBundle")
+
                     pageMap[it.source.key] = it
                 }
 
