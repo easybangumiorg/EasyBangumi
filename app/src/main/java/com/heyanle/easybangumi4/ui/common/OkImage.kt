@@ -3,7 +3,6 @@ package com.heyanle.easybangumi4.ui.common
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Build
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -12,7 +11,6 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
@@ -73,7 +71,6 @@ fun LoadingImage(
             .data(Uri.parse("file:///android_asset/loading_ryo.gif")).build(),
         contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.loading),
         modifier = Modifier
-            .size(64.dp)
             .then(modifier)
     )
 }

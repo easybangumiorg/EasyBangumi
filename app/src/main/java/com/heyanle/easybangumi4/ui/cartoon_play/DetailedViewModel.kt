@@ -50,7 +50,7 @@ class DetailedViewModel(
     var detailedState by mutableStateOf<DetailedState>(DetailedState.None)
     var isStar by mutableStateOf(false)
 
-    fun load(){
+    fun load() {
         viewModelScope.launch {
             detailedState = DetailedState.Loading
             detailedComponent.getAll(cartoonSummary)
@@ -58,11 +58,23 @@ class DetailedViewModel(
 
                     detailedState = DetailedState.Info(it.data.first, it.data.second)
                     val isStar = withContext(Dispatchers.IO) {
-                        DB.cartoonStar.getByCartoonSummary(
+                        val cartoonStar = DB.cartoonStar.getByCartoonSummary(
                             it.data.first.id,
                             it.data.first.source,
                             it.data.first.url
-                        ) != null
+                        )
+
+                        cartoonStar?.let { star ->
+                            val nStar = CartoonStar.fromCartoon(it.data.first, it.data.second)
+                            DB.cartoonStar.update(
+                                nStar.copy(
+                                    createTime = star.createTime,
+                                    isUpdate = false
+                                )
+                            )
+                        }
+
+                        cartoonStar != null
                     }
                     this@DetailedViewModel.isStar = isStar
                 }.error {
@@ -76,14 +88,14 @@ class DetailedViewModel(
         }
     }
 
-    fun setCartoonStar(isStar: Boolean, cartoon: Cartoon, playLines: List<PlayLine>){
+    fun setCartoonStar(isStar: Boolean, cartoon: Cartoon, playLines: List<PlayLine>) {
         viewModelScope.launch {
             if (isStar) {
                 withContext(Dispatchers.IO) {
                     DB.cartoonStar.modify(CartoonStar.fromCartoon(cartoon, playLines))
                 }
                 // AnimStarViewModel.refresh()
-                if(cartoonSummary.isChild(cartoon)){
+                if (cartoonSummary.isChild(cartoon)) {
                     this@DetailedViewModel.isStar = true
                 }
             } else {
@@ -96,7 +108,7 @@ class DetailedViewModel(
                         )
                 }
                 // AnimStarViewModel.refresh()
-                if(cartoonSummary.isChild(cartoon)){
+                if (cartoonSummary.isChild(cartoon)) {
                     this@DetailedViewModel.isStar = false
                 }
             }
@@ -104,12 +116,11 @@ class DetailedViewModel(
     }
 
 
-
     /**
      * lru 复用
      */
     companion object {
-        private val viewModelOwnerStore = object: LruCache<CartoonSummary, ViewModelStore>(3){
+        private val viewModelOwnerStore = object : LruCache<CartoonSummary, ViewModelStore>(3) {
             override fun entryRemoved(
                 evicted: Boolean,
                 key: CartoonSummary,
@@ -121,7 +132,7 @@ class DetailedViewModel(
             }
         }
 
-        fun getViewModelStoreOwner(summer: CartoonSummary) = object: ViewModelStoreOwner {
+        fun getViewModelStoreOwner(summer: CartoonSummary) = object : ViewModelStoreOwner {
 
             override val viewModelStore: ViewModelStore
                 get() {

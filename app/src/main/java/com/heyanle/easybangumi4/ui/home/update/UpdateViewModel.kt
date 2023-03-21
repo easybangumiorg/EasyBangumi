@@ -2,21 +2,24 @@ package com.heyanle.easybangumi4.ui.home.update
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.DB
 import com.heyanle.easybangumi4.db.entity.CartoonStar
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.insertSeparators
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.easybangumi4.utils.toDateKey
-import com.heyanle.easybangumi4.utils.toRelativeString
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.text.DateFormat
+import java.util.Calendar
 import java.util.Date
+import java.util.Locale
 
 /**
  * Created by HeYanLe on 2023/3/20 22:15.
@@ -47,11 +50,12 @@ class UpdateViewModel : ViewModel() {
         viewModelScope.launch {
             combine(
                 getCartoonStarFlow(),
-                UpdateMaster.isLoading,
+                UpdateMaster.isUpdate,
                 UpdateMaster.loadingError,
-                UpdateMaster.lastUpdateTime
+                UpdateMaster.lastUpdateTime,
             ) { list, isUpdating, loadingError, lastUpdateTime ->
-                _stateFlow.update {
+
+                val transform: (State)->State = {
                     it.copy(
                         isLoading = false,
                         isUpdating = isUpdating,
@@ -61,9 +65,24 @@ class UpdateViewModel : ViewModel() {
                         lastUpdateError = loadingError,
                     )
                 }
-
+                transform
+            }.collectLatest {transform ->
+                _stateFlow.update {
+                    transform(it)
+                }
             }
+
+
         }
+
+//        viewModelScope.launch {
+//            combine(
+//                getCartoonStarFlow(),
+//                stateFlow.map { it.isLoading }.distinctUntilChanged(),
+//            ) { list, state ->
+//                list.size.loge("UpdateViewModel")
+//            }
+//        }
     }
 
     private fun List<CartoonStar>.toUpdateItems(): List<UpdateItem> {
@@ -75,9 +94,33 @@ class UpdateViewModel : ViewModel() {
             val afterDate = after?.star?.lastUpdateTime?.toDateKey() ?: Date(0)
             when {
                 beforeDate.time != afterDate.time && afterDate.time != 0L -> {
-                    val text = afterDate.toRelativeString(
-                        context = APP,
-                    )
+
+                    val afterCalendar = Calendar.getInstance(Locale.getDefault())
+                    afterCalendar.time = afterDate
+                    afterCalendar.clear(Calendar.HOUR_OF_DAY)
+                    afterCalendar.clear(Calendar.MINUTE)
+                    afterCalendar.clear(Calendar.SECOND)
+                    afterCalendar.clear(Calendar.MILLISECOND)
+
+                    val todayCalendar =  Calendar.getInstance(Locale.getDefault())
+                    todayCalendar.time = Date(System.currentTimeMillis())
+                    todayCalendar.clear(Calendar.HOUR_OF_DAY)
+                    todayCalendar.clear(Calendar.MINUTE)
+                    todayCalendar.clear(Calendar.SECOND)
+                    todayCalendar.clear(Calendar.MILLISECOND)
+
+                    val diffDays = (todayCalendar.timeInMillis - afterCalendar.timeInMillis)/(24 * 60 * 60 * 1000)
+                    val text = when(diffDays){
+                        0L -> stringRes(com.heyanle.easy_i18n.R.string.today)
+                        1L -> stringRes(com.heyanle.easy_i18n.R.string.yesterday)
+                        else -> {
+                            if(diffDays <= 7L){
+                                stringRes(com.heyanle.easy_i18n.R.string.day_age, diffDays)
+                            }else{
+                                DateFormat.getDateInstance(DateFormat.SHORT).format(afterDate)
+                            }
+                        }
+                    }
                     UpdateItem.Header(text)
                 }
                 // Return null to avoid adding a separator between two items.
@@ -87,15 +130,22 @@ class UpdateViewModel : ViewModel() {
     }
 
     fun update(isStrict: Boolean) {
-        if (UpdateMaster.tryUpdate(isStrict)) {
-            stringRes(if (isStrict) com.heyanle.easy_i18n.R.string.start_update_strict else com.heyanle.easy_i18n.R.string.start_update)
-                .moeSnackBar()
-        }else{
-            stringRes(com.heyanle.easy_i18n.R.string.doing_update_wait).moeSnackBar()
+        viewModelScope.launch {
+            if (UpdateMaster.tryUpdate(isStrict)) {
+                stringRes(if (isStrict) com.heyanle.easy_i18n.R.string.start_update_strict else com.heyanle.easy_i18n.R.string.start_update)
+                    .moeSnackBar()
+            }else{
+                stringRes(com.heyanle.easy_i18n.R.string.doing_update_wait).moeSnackBar()
+            }
         }
+
     }
 
     private fun getCartoonStarFlow(): Flow<List<CartoonStar>> {
-        return DB.cartoonStar.flowUpdate()
+        return DB.cartoonStar.flowAll().map {
+            it.filter {
+                it.isUpdate && it.isInitializer
+            }
+        }
     }
 }

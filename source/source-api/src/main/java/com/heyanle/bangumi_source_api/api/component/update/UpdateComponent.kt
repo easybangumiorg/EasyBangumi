@@ -15,5 +15,5 @@ interface UpdateComponent: Component {
      * 更新番剧
      * 如果有更新需要将 Cartoon.isUpdate 置位 true
      */
-    fun update(cartoon: Cartoon, oldPlayLine: List<PlayLine>): SourceResult<Cartoon>
+    suspend fun update(cartoon: Cartoon, oldPlayLine: List<PlayLine>): SourceResult<Cartoon>
 }
