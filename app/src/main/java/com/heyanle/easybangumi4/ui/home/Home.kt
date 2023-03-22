@@ -34,8 +34,10 @@ import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.ui.common.SourceContainer
 import com.heyanle.easybangumi4.ui.home.explore.Explore
 import com.heyanle.easybangumi4.ui.home.history.History
+import com.heyanle.easybangumi4.ui.home.more.More
 import com.heyanle.easybangumi4.ui.home.star.Star
 import com.heyanle.easybangumi4.ui.home.update.Update
+import com.heyanle.okkv2.core.okkv
 import kotlinx.coroutines.launch
 
 /**
@@ -54,7 +56,7 @@ sealed class HomePage(
         tabLabel = { Text(text = stringResource(id = R.string.my_anim)) },
         icon = {
             Icon(
-                if(it) Icons.Filled.Star else Icons.Filled.StarOutline,
+                if (it) Icons.Filled.Star else Icons.Filled.StarOutline,
                 contentDescription = stringResource(id = R.string.my_anim)
             )
         },
@@ -70,7 +72,7 @@ sealed class HomePage(
         tabLabel = { Text(text = stringResource(id = R.string.update)) },
         icon = {
             Icon(
-                if(it) Icons.Filled.Report else Icons.Outlined.Report,
+                if (it) Icons.Filled.Report else Icons.Outlined.Report,
                 contentDescription = stringResource(id = R.string.update)
             )
         },
@@ -85,7 +87,7 @@ sealed class HomePage(
         tabLabel = { Text(text = stringResource(id = R.string.history)) },
         icon = {
             Icon(
-                if(it) Icons.Filled.History else Icons.Outlined.History,
+                if (it) Icons.Filled.History else Icons.Outlined.History,
                 contentDescription = stringResource(id = R.string.history)
             )
         },
@@ -100,7 +102,7 @@ sealed class HomePage(
         tabLabel = { Text(text = stringResource(id = R.string.explore)) },
         icon = {
             Icon(
-                if(it) Icons.Filled.Explore else Icons.Outlined.Explore,
+                if (it) Icons.Filled.Explore else Icons.Outlined.Explore,
                 contentDescription = stringResource(id = R.string.explore)
             )
         },
@@ -114,12 +116,13 @@ sealed class HomePage(
         tabLabel = { Text(text = stringResource(id = R.string.more)) },
         icon = {
             Icon(
-                if(it) Icons.Filled.MoreHoriz else Icons.Outlined.MoreHoriz,
+                if (it) Icons.Filled.MoreHoriz else Icons.Outlined.MoreHoriz,
                 contentDescription = stringResource(id = R.string.more)
             )
         },
         content = {
-            Text(text = stringResource(id = R.string.more))
+            More()
+            //Text(text = stringResource(id = R.string.more))
         }
     )
 
@@ -137,14 +140,17 @@ val LocalHomeViewModel = staticCompositionLocalOf<HomeViewModel> {
     error("HomeViewModel Not Provide")
 }
 
+var homePageIndexOkkv by okkv("home_page_index", 0)
 
-@OptIn(ExperimentalPagerApi::class, ExperimentalMaterial3Api::class,
+@OptIn(
+    ExperimentalPagerApi::class, ExperimentalMaterial3Api::class,
     ExperimentalAnimationApi::class
 )
 @Composable
 fun Home() {
 
-    val pagerState = rememberPagerState(initialPage = 0)
+    val pagerState =
+        rememberPagerState(initialPage = if (homePageIndexOkkv >= 0 && homePageIndexOkkv < HomePageItems.size) homePageIndexOkkv else 0)
 
     val scope = rememberCoroutineScope()
 
@@ -169,10 +175,10 @@ fun Home() {
 
                 }
 
-                if(vm.customBottomBar == null){
-                    NavigationBar(){
+                if (vm.customBottomBar == null) {
+                    NavigationBar() {
                         HomePageItems.forEachIndexed { i, page ->
-                            val select  = pagerState.currentPage == i
+                            val select = pagerState.currentPage == i
                             NavigationBarItem(
                                 icon = {
                                     page.icon(select)
@@ -182,20 +188,20 @@ fun Home() {
                                 alwaysShowLabel = false,
                                 onClick = {
                                     scope.launch {
-                                        pagerState.animateScrollToPage(i)
+                                        pagerState.scrollToPage(i)
                                     }
+                                    homePageIndexOkkv = i
                                 }
                             )
                         }
                     }
-                }else{
+                } else {
                     vm.customBottomBar?.let { it() }
                 }
             }
 
         }
     }
-
 
 
 }

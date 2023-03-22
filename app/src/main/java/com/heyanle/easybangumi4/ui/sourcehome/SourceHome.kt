@@ -306,7 +306,7 @@ fun SourceHomeScreen(
         transitionSpec = {
             fadeIn(animationSpec = tween(300, delayMillis = 300)) with
                     fadeOut(animationSpec = tween(300, delayMillis = 0))
-        }
+        }, label = ""
     ) {
 
         when (it) {

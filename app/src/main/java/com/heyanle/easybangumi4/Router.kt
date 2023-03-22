@@ -18,10 +18,12 @@ import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.heyanle.bangumi_source_api.api.entity.CartoonCover
+import com.heyanle.easybangumi4.theme.EasyTheme
 import com.heyanle.easybangumi4.theme.NormalSystemBarColor
 import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlay
 import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.home.Home
+import com.heyanle.easybangumi4.ui.setting.AppearanceSetting
 import com.heyanle.easybangumi4.ui.sourcehome.SourceHome
 import com.heyanle.easybangumi4.utils.TODO
 import java.lang.ref.WeakReference
@@ -47,6 +49,9 @@ const val DETAILED = "detailed"
 const val WEB_VIEW_USER = "web_view_user"
 
 const val SOURCE_HOME = "source_home"
+
+const val APPEARANCE_SETTING = "appearance_setting"
+
 fun NavHostController.navigationSourceHome(key: String) {
     navigate("${SOURCE_HOME}?key=${key}")
 }
@@ -110,6 +115,8 @@ fun NavHostController.navigationDLNA(
 // 缺省路由
 const val DEFAULT = HOME
 
+
+
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun Nav() {
@@ -146,8 +153,11 @@ fun Nav() {
             composable(
                 HOME,
             ) {
-                NormalSystemBarColor()
-                Home()
+                EasyTheme {
+                    NormalSystemBarColor()
+                    Home()
+                }
+
             }
 
             composable(
@@ -156,10 +166,13 @@ fun Nav() {
                     navArgument("key") { defaultValue = "" },
                 )
             ) {
-                NormalSystemBarColor()
-                SourceHome(
-                    it.arguments?.getString("key") ?: "",
-                )
+                EasyTheme {
+                    NormalSystemBarColor()
+                    SourceHome(
+                        it.arguments?.getString("key") ?: "",
+                    )
+                }
+
             }
 
             composable(
@@ -190,19 +203,27 @@ fun Nav() {
                 val lineIndex = it.arguments?.getInt("lineIndex") ?: -1
                 val episode = it.arguments?.getInt("episode") ?: -1
                 val adviceProgress = it.arguments?.getLong("adviceProgress") ?: -1L
+                EasyTheme {
 
+                    NormalSystemBarColor(
+                        getStatusBarDark = {
+                            false
+                        }
+                    )
+                    CartoonPlay(
+                        id = URLDecoder.decode(id, "utf-8"),
+                        source = source,
+                        url = URLDecoder.decode(url, "utf-8"),
+                        CartoonPlayViewModel.EnterData(lineIndex, episode, adviceProgress)
+                    )
+                }
+            }
 
-                NormalSystemBarColor(
-                    getStatusBarDark = {
-                        false
-                    }
-                )
-                CartoonPlay(
-                    id = URLDecoder.decode(id, "utf-8"),
-                    source = source,
-                    url = URLDecoder.decode(url, "utf-8"),
-                    CartoonPlayViewModel.EnterData(lineIndex, episode, adviceProgress)
-                )
+            composable(APPEARANCE_SETTING) {
+                EasyTheme {
+                    NormalSystemBarColor()
+                    AppearanceSetting()
+                }
             }
 
         }
