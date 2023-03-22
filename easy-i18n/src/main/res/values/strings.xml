@@ -23,12 +23,17 @@
 
     <string name="info_moesnackbar_swipe">右划关闭 →</string>
 
+    <string name="in_private">无痕模式</string>
+    <string name="in_private_msg">暂停记录观看历史</string>
+
+    <string name="appearance_setting">外观设置</string>
+
     <string name="theme">主题</string>
 
     <string name="dark_mode">夜间模式</string>
 
-    <string name="dark_on">总是开启</string>
-    <string name="dark_off">总是关闭</string>
+    <string name="dark_on">开启</string>
+    <string name="dark_off">关闭</string>
     <string name="dark_auto">跟随系统</string>
 
     <string name="is_dynamic_color">动态配色</string>
