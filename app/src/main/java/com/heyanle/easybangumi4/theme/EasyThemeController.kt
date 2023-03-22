@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.theme
 
 import android.annotation.SuppressLint
+import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Composable
@@ -57,10 +58,12 @@ object EasyThemeController {
         )
     }
 
-    fun changeThemeMode(themeMode: EasyThemeMode) {
+    fun changeThemeMode(themeMode: EasyThemeMode, isDynamicColor: Boolean = easyThemeState.value.isDynamicColor) {
         themeModeOkkv = themeMode.name
+        isDynamicColorOkkv = isDynamicColor
         easyThemeState.value = easyThemeState.value.copy(
-            themeMode = themeMode
+            themeMode = themeMode,
+            isDynamicColor = isDynamicColor
         )
 
     }
@@ -75,7 +78,7 @@ object EasyThemeController {
     }
 
     fun isSupportDynamicColor(): Boolean {
-        return false //Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
     }
 
 

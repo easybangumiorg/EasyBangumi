@@ -29,23 +29,49 @@ class MainActivity: ComponentActivity() {
         // networkHelper.defaultUA = WebView(this).getDefaultUserAgentString()
         MediaHelper.setIsDecorFitsSystemWindows(this, false)
         setContent {
-            EasyTheme {
-                val focusManager = LocalFocusManager.current
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clickable(
-                            indication = null,
-                            interactionSource = remember { MutableInteractionSource() },
-                            onClick = { focusManager.clearFocus() })
-                ) {
-                    SourceMaster.SourceHost {
-                        Nav()
+
+            val focusManager = LocalFocusManager.current
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() },
+                        onClick = { focusManager.clearFocus() })
+            ) {
+                SourceMaster.SourceHost {
+                    Nav()
+                    EasyTheme {
                         MoeSnackBar(Modifier.statusBarsPadding())
                     }
-
                 }
+
             }
+
+//            SourceMaster.SourceHost {
+//                Nav()
+//                EasyTheme {
+//                    MoeSnackBar(Modifier.statusBarsPadding())
+//                }
+//            }
+//            EasyTheme {
+//                val focusManager = LocalFocusManager.current
+//                Box(
+//                    modifier = Modifier
+//                        .fillMaxSize()
+//                        .clickable(
+//                            indication = null,
+//                            interactionSource = remember { MutableInteractionSource() },
+//                            onClick = { focusManager.clearFocus() })
+//                ) {
+//                    SourceMaster.SourceHost {
+//                        Nav()
+//                        MoeSnackBar(Modifier.statusBarsPadding())
+//                    }
+//
+//                }
+//            }
         }
         EasyPlayerManager.enableOrientation = false
     }
