@@ -27,6 +27,7 @@ import com.heyanle.bangumi_source_api.api.entity.PlayerInfo
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.DB
 import com.heyanle.easybangumi4.db.entity.CartoonHistory
+import com.heyanle.easybangumi4.preferences.InPrivatePreferences
 import com.heyanle.easybangumi4.source.SourceMaster
 import com.heyanle.easybangumi4.utils.stringRes
 import kotlinx.coroutines.Dispatchers
@@ -199,8 +200,8 @@ object CartoonPlayingManager: Player.Listener {
                 )
             }
             .error {
+                it.throwable.printStackTrace()
                 error(
-
                     if (it.isParserError) stringRes(
                         com.heyanle.easy_i18n.R.string.source_error
                     ) else stringRes(com.heyanle.easy_i18n.R.string.loading_error),
@@ -211,6 +212,10 @@ object CartoonPlayingManager: Player.Listener {
     }
 
     private suspend fun innerTrySaveHistory(ps: Long = -1){
+        if(InPrivatePreferences.stateFlow.value){
+            return
+
+        }
         var process = ps
         if (ps == -1L) {
             process = exoPlayer.currentPosition
@@ -240,7 +245,7 @@ object CartoonPlayingManager: Player.Listener {
             createTime = System.currentTimeMillis()
         )
         withContext(Dispatchers.IO){
-            DB.cartoonHistory.insertOrModify(history)
+            DB.cartoonHistory.modify(history)
         }
 
     }
@@ -275,7 +280,7 @@ object CartoonPlayingManager: Player.Listener {
 
                 createTime = System.currentTimeMillis()
             )
-            DB.cartoonHistory.insertOrModify(history)
+            DB.cartoonHistory.modify(history)
         }
     }
 

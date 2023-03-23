@@ -2,12 +2,7 @@ package com.heyanle.easybangumi4.theme
 
 import android.os.Build
 import android.util.Log
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.with
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -54,45 +49,38 @@ fun EasyTheme(
 ) {
 
     val easyThemeState by EasyThemeController.easyThemeState
-    AnimatedContent(
-        targetState = easyThemeState,
-        transitionSpec = {
-            fadeIn(animationSpec = tween(300, delayMillis = 0)) with
-                    fadeOut(animationSpec = tween(300, delayMillis = 300))
-        },
-    ) {
-        val isDynamic = it.isDynamicColor && EasyThemeController.isSupportDynamicColor()
-        val isDark = when (it.darkMode) {
-            DarkMode.Dark -> true
-            DarkMode.Light -> false
-            else -> isSystemInDarkTheme()
-        }
 
-        val colorScheme = when {
-            isDynamic && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-                val context = LocalContext.current
-                if (isDark ) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-
-            }
-
-            else -> {
-                Log.d("EasyTheme", it.themeMode.name)
-                it.themeMode.getColorScheme(isDark)
-            }
-        }
-
-
-
-        LaunchedEffect(key1 = colorScheme) {
-            EasyThemeController.curThemeColor = colorScheme
-        }
-
-        MaterialTheme(
-            colorScheme = colorScheme,
-            typography = Typography,
-            content = content
-        )
+    val isDynamic = easyThemeState.isDynamicColor && EasyThemeController.isSupportDynamicColor()
+    val isDark = when (easyThemeState.darkMode) {
+        DarkMode.Dark -> true
+        DarkMode.Light -> false
+        else -> isSystemInDarkTheme()
     }
+
+    val colorScheme = when {
+        isDynamic && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+            val context = LocalContext.current
+            if (isDark ) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+
+        }
+
+        else -> {
+            Log.d("EasyTheme", easyThemeState.themeMode.name)
+            easyThemeState.themeMode.getColorScheme(isDark)
+        }
+    }
+
+
+
+    LaunchedEffect(key1 = colorScheme) {
+        EasyThemeController.curThemeColor = colorScheme
+    }
+
+    MaterialTheme(
+        colorScheme = colorScheme,
+        typography = Typography,
+        content = content
+    )
 
 
 }

@@ -1,5 +1,6 @@
 package com.heyanle.bangumi_source_api.api
 
+import androidx.annotation.Keep
 import com.heyanle.bangumi_source_api.api.component.Component
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
@@ -9,6 +10,7 @@ import kotlin.coroutines.EmptyCoroutineContext
  * Created by HeYanLe on 2023/2/18 21:38.
  * https://github.com/heyanLE
  */
+@Keep
 interface Source {
 
     /**
@@ -32,6 +34,7 @@ interface Source {
 
 }
 
+@Keep
 suspend fun <T> withResult(
     context: CoroutineContext = EmptyCoroutineContext,
     block: suspend () -> T
@@ -48,6 +51,7 @@ suspend fun <T> withResult(
 
 }
 
+@Keep
 class ParserException(
     override val message: String?
 ) : Exception()

@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -53,14 +52,19 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.db.entity.CartoonStar
 import com.heyanle.easybangumi4.navigationDetailed
 import com.heyanle.easybangumi4.ui.common.CartoonStarCardWithCover
-import com.heyanle.easybangumi4.ui.common.EmptyPage
+import com.heyanle.easybangumi4.ui.common.EasyDeleteDialog
+import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.LoadingPage
+import com.heyanle.easybangumi4.ui.common.PagingCommon
 import com.heyanle.easybangumi4.ui.common.SelectionTopAppBar
+import com.heyanle.easybangumi4.ui.common.pagingCommon
 import com.heyanle.easybangumi4.ui.home.LocalHomeViewModel
 
 /**
@@ -79,8 +83,8 @@ fun Star() {
     val selectionBottomBar = remember<@Composable () -> Unit> {
         {
             StarSelectionBottomBar(
-                onDelete = { vm.onDeleteSelection() },
-                onChangeUpdateStrategy = { vm.onChangeSelectionUpdate() },
+                onDelete = { vm.dialogDeleteSelection() },
+                onChangeUpdateStrategy = { vm.dialogChangeUpdate() },
                 onUpdate = { vm.onUpdate() })
 
         }
@@ -121,7 +125,7 @@ fun Star() {
         AnimatedContent(targetState = state.selection.isNotEmpty(), label = "") { isSelectionMode ->
 
             if (isSelectionMode) {
-                LaunchedEffect(key1 = Unit){
+                LaunchedEffect(key1 = Unit) {
                     kotlin.runCatching {
                         focusRequester.freeFocus()
                     }
@@ -132,23 +136,17 @@ fun Star() {
                     onExit = {
                         vm.onSelectionExit()
                     },
-                    onSelectAll = {
-                        vm.onSelectionAll()
-                    },
-                    onSelectInvert = {
-                        vm.onSelectionInvert()
-                    }
                 )
-            }else{
+            } else {
                 StarTopAppBar(
                     scrollBehavior = scrollBehavior,
                     focusRequester = focusRequester,
                     isSearch = state.searchQuery != null,
-                    text = state.searchQuery?:"",
+                    text = state.searchQuery ?: "",
                     onTextChange = {
                         vm.onSearch(it)
                     },
-                    starNum = state.starCartoonList.size,
+                    starNum = state.starCount,
                     onSearchClick = {
                         vm.onSearch("")
                     },
@@ -169,7 +167,7 @@ fun Star() {
         StarList(
             isLoading = state.isLoading,
             nestedScrollConnection = scrollBehavior.nestedScrollConnection,
-            starCartoonList = state.starCartoonList,
+            starCartoonList = state.pager.collectAsLazyPagingItems(),
             selectionSet = state.selection,
             onStarClick = {
                 if (state.selection.isEmpty()) {
@@ -183,6 +181,21 @@ fun Star() {
             })
 
     }
+
+    val deleteDialog = state.dialog as? StarViewModel.DialogState.Delete
+    EasyDeleteDialog(
+        show = deleteDialog != null,
+        onDelete = {
+            deleteDialog
+                ?.let {
+                    vm.delete(it.selection.toList())
+                }
+            vm.dialogDismiss()
+        },
+        onDismissRequest = {
+            vm.dialogDismiss()
+        }
+    )
 
 
 }
@@ -229,7 +242,7 @@ fun StarSelectionBottomBar(
 fun StarList(
     isLoading: Boolean,
     nestedScrollConnection: NestedScrollConnection? = null,
-    starCartoonList: List<CartoonStar>,
+    starCartoonList: LazyPagingItems<CartoonStar>,
     selectionSet: Set<CartoonStar>,
     isHapticFeedback: Boolean = true,
     onStarClick: (CartoonStar) -> Unit,
@@ -241,42 +254,51 @@ fun StarList(
 
     if (isLoading) {
         LoadingPage(modifier = Modifier.fillMaxSize())
-    } else if (starCartoonList.isEmpty()) {
-        EmptyPage(modifier = Modifier.fillMaxSize())
     } else {
-        LazyVerticalGrid(
-            modifier = Modifier
-                .fillMaxSize()
-                .run {
-                    if (nestedScrollConnection != null) {
-                        nestedScroll(nestedScrollConnection)
-                    } else {
-                        this
-                    }
-                },
-            state = lazyGridState,
-            columns = GridCells.Adaptive(150.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
-        ) {
-            items(starCartoonList) { star ->
-                CartoonStarCardWithCover(
-                    selected = selectionSet.contains(star),
-                    cartoon = star,
-                    showSourceLabel = true,
-                    onClick = {
-                        onStarClick(it)
-                    },
-                    onLongPress = {
-                        if (isHapticFeedback) {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        if (starCartoonList.itemCount > 0) {
+
+            LazyVerticalGrid(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .run {
+                        if (nestedScrollConnection != null) {
+                            nestedScroll(nestedScrollConnection)
+                        } else {
+                            this
                         }
-                        onStarLongPress(it)
                     },
-                )
+                state = lazyGridState,
+                columns = GridCells.Adaptive(150.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
+            ) {
+                items(starCartoonList.itemCount) { int ->
+                    val star = starCartoonList[int]
+                    if (star != null) {
+                        CartoonStarCardWithCover(
+                            selected = selectionSet.contains(star),
+                            cartoon = star,
+                            showSourceLabel = true,
+                            onClick = {
+                                onStarClick(it)
+                            },
+                            onLongPress = {
+                                if (isHapticFeedback) {
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                }
+                                onStarLongPress(it)
+                            },
+                        )
+                    }
+
+                }
+                pagingCommon(starCartoonList)
             }
         }
+        PagingCommon(items = starCartoonList)
+        FastScrollToTopFab(listState = lazyGridState)
+
     }
 
 
@@ -310,8 +332,8 @@ fun StarTopAppBar(
                 }
             }
         }, title = {
-            LaunchedEffect(key1 = isSearch){
-                if(isSearch){
+            LaunchedEffect(key1 = isSearch) {
+                if (isSearch) {
                     focusRequester.requestFocus()
                 }
             }

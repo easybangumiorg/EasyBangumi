@@ -158,4 +158,5 @@ afterEvaluate {
 dependencies {
     compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-android:${Version.kotlinx_coroutines}")
     compileOnly( "com.squareup.okhttp3:okhttp:${Version.okhttp3}")
+    implementation ("androidx.annotation:annotation:${Version.androidx_annotation}")
 }

@@ -18,8 +18,9 @@ import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.heyanle.bangumi_source_api.api.entity.CartoonCover
-import com.heyanle.easybangumi4.theme.EasyTheme
+import com.heyanle.easybangumi4.source.utils.WebViewUserHelperImpl
 import com.heyanle.easybangumi4.theme.NormalSystemBarColor
+import com.heyanle.easybangumi4.ui.WebViewUser
 import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlay
 import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.home.Home
@@ -126,22 +127,7 @@ fun Nav() {
         navControllerRef = WeakReference(nav)
     }
     CompositionLocalProvider(LocalNavController provides nav) {
-//        NavHost(navController = nav, DEFAULT) {
-//            composable(HOME) {
-//                Home()
-//            }
-//
-//            composable(
-//                route = "${SOURCE_HOME}?key={key}",
-//                arguments = listOf(
-//                    navArgument("key") { defaultValue = "" },
-//                )
-//            ){
-//                SourceHome(
-//                    it.arguments?.getString("key") ?: "",
-//                )
-//            }
-//        }
+
         AnimatedNavHost(nav, DEFAULT,
             modifier = Modifier.fillMaxSize(),
             enterTransition = { slideInHorizontally(tween()) { it } },
@@ -153,10 +139,8 @@ fun Nav() {
             composable(
                 HOME,
             ) {
-                EasyTheme {
-                    NormalSystemBarColor()
-                    Home()
-                }
+                NormalSystemBarColor()
+                Home()
 
             }
 
@@ -166,12 +150,10 @@ fun Nav() {
                     navArgument("key") { defaultValue = "" },
                 )
             ) {
-                EasyTheme {
-                    NormalSystemBarColor()
-                    SourceHome(
-                        it.arguments?.getString("key") ?: "",
-                    )
-                }
+                NormalSystemBarColor()
+                SourceHome(
+                    it.arguments?.getString("key") ?: "",
+                )
 
             }
 
@@ -203,26 +185,33 @@ fun Nav() {
                 val lineIndex = it.arguments?.getInt("lineIndex") ?: -1
                 val episode = it.arguments?.getInt("episode") ?: -1
                 val adviceProgress = it.arguments?.getLong("adviceProgress") ?: -1L
-                EasyTheme {
-
-                    NormalSystemBarColor(
-                        getStatusBarDark = {
-                            false
-                        }
-                    )
-                    CartoonPlay(
-                        id = URLDecoder.decode(id, "utf-8"),
-                        source = source,
-                        url = URLDecoder.decode(url, "utf-8"),
-                        CartoonPlayViewModel.EnterData(lineIndex, episode, adviceProgress)
-                    )
-                }
+                NormalSystemBarColor(
+                    getStatusBarDark = {
+                        false
+                    }
+                )
+                CartoonPlay(
+                    id = URLDecoder.decode(id, "utf-8"),
+                    source = source,
+                    url = URLDecoder.decode(url, "utf-8"),
+                    CartoonPlayViewModel.EnterData(lineIndex, episode, adviceProgress)
+                )
             }
 
             composable(APPEARANCE_SETTING) {
-                EasyTheme {
-                    NormalSystemBarColor()
-                    AppearanceSetting()
+                NormalSystemBarColor()
+                AppearanceSetting()
+            }
+
+            composable(WEB_VIEW_USER) {
+                kotlin.runCatching {
+                    val wb = WebViewUserHelperImpl.webViewRef?.get() ?: throw NullPointerException()
+                    val onCheck =
+                        WebViewUserHelperImpl.onCheck?.get() ?: throw NullPointerException()
+                    val onStop = WebViewUserHelperImpl.onStop?.get() ?: throw NullPointerException()
+                    WebViewUser(webView = wb, onCheck = onCheck, onStop = onStop)
+                }.onFailure {
+                    nav.popBackStack()
                 }
             }
 

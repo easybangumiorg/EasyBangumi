@@ -1,6 +1,11 @@
 package com.heyanle.easybangumi4.ui.home.history
 
-import androidx.compose.foundation.clickable
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -31,16 +37,18 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -57,62 +65,95 @@ import com.heyanle.easybangumi4.ui.common.EasyClearDialog
 import com.heyanle.easybangumi4.ui.common.EasyDeleteDialog
 import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.PagingCommon
+import com.heyanle.easybangumi4.ui.common.SelectionTopAppBar
 import com.heyanle.easybangumi4.ui.common.pagingCommon
 import com.heyanle.easybangumi4.ui.common.player.utils.TimeUtils
+import com.heyanle.easybangumi4.ui.home.LocalHomeViewModel
 
 /**
  * Created by HeYanLe on 2023/3/16 22:11.
  * https://github.com/heyanLE
  */
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
 fun History() {
 
+    val homeViewModel = LocalHomeViewModel.current
     val vm = viewModel<HistoryViewModel>()
-
-    var isSearch by remember {
-        mutableStateOf(false)
-    }
-
-    var clearDialog by remember {
-        mutableStateOf(false)
-    }
-
-    var deleteHistory by remember {
-        mutableStateOf<CartoonHistory?>(null)
-    }
 
     val nav = LocalNavController.current
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
+    val state by vm.stateFlow.collectAsState()
+
+    val focusRequester = remember {
+        FocusRequester()
+    }
 //    LaunchedEffect(key1 = Unit){
 //        scrollBehavior.state.contentOffset = 0F
 //    }
 
+    BackHandler(
+        enabled = state.selection.isNotEmpty()
+    ) {
+        vm.onSelectionExit()
+    }
+
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        HistoryTopAppBar(
-            scrollBehavior = scrollBehavior,
-            isSearch = isSearch,
-            onSearchClick = {
-                isSearch = true
-            },
-            onClear = { clearDialog = true },
-            onSearch = {
-                vm.search(it)
-            },
-            onSearchExit = {
-                isSearch = false
-                vm.exitSearch()
+        AnimatedContent(targetState = state.selection.isNotEmpty(), label = "") { isSelectionMode ->
+            if (isSelectionMode) {
+                LaunchedEffect(key1 = Unit) {
+                    kotlin.runCatching {
+                        focusRequester.freeFocus()
+                    }
+                }
 
+                SelectionTopAppBar(
+                    selectionItemsCount = state.selection.size,
+                    onExit = {
+                        vm.onSelectionExit()
+                    },
+                    actions = {
+                        IconButton(onClick = { vm.dialogDeleteSelection() }) {
+                            Icon(
+                                Icons.Filled.Delete, contentDescription = stringResource(
+                                    id = R.string.delete
+                                )
+                            )
+                        }
+                    }
+                )
+            } else {
+                HistoryTopAppBar(
+                    scrollBehavior = scrollBehavior,
+                    isSearch = state.searchKey != null,
+                    focusRequester = focusRequester,
+                    onSearchClick = {
+                        vm.search("")
+                    },
+                    onClear = { vm.clearDialog() },
+                    onSearch = {
+                        vm.search(it)
+                    },
+                    text = state.searchKey ?: "",
+                    onTextChange = {
+                        vm.search(it)
+                    },
+                    onSearchExit = {
+                        vm.exitSearch()
+                    }
+                )
             }
-        )
+        }
+
         HistoryList(
             scrollBehavior,
             vm = vm,
+            state = state,
             onItemClick = {
                 nav.navigationDetailed(
                     it.id,
@@ -123,67 +164,37 @@ fun History() {
                     it.lastProcessTime
                 )
             },
+
             onItemDelete = {
-                deleteHistory = it
+                vm.dialogDeleteOne(it)
             }
         )
     }
 
-//    Scaffold(
-//        containerColor = Color.Transparent,
-//        topBar = {
-//            HistoryTopAppBar(
-//                scrollBehavior = scrollBehavior,
-//                isSearch = isSearch,
-//                onSearchClick = {
-//                    isSearch = true
-//                },
-//                onClear = { clearDialog = true },
-//                onSearch = {
-//                    vm.search(it)
-//                },
-//                onSearchExit = {
-//                    isSearch = false
-//                    vm.exitSearch()
-//
-//                }
-//            )
-//        }
-//    ) {
-//        Box(modifier = Modifier
-//            .fillMaxSize()
-//            .padding(it)){
-//            HistoryList(
-//                scrollBehavior,
-//                vm = vm,
-//                onItemClick = {
-//                    nav.navigationDetailed(
-//                        it.id,
-//                        it.url,
-//                        it.source,
-//                        it.lastLinesIndex,
-//                        it.lastEpisodeIndex,
-//                        it.lastProcessTime
-//                    )
-//                },
-//                onItemDelete = {
-//                    deleteHistory = it
-//                }
-//            )
-//        }
-//    }
 
+    val deleteDialog = state.dialog as? HistoryViewModel.Dialog.Delete
     EasyDeleteDialog(
-        show = deleteHistory != null,
-        onDelete = { deleteHistory?.let(vm::delete) },
+        show = deleteDialog != null,
+        onDelete = {
+            deleteDialog
+                ?.let {
+                    vm.delete(it.selection.toList())
+                }
+            vm.dialogDismiss()
+        },
         onDismissRequest = {
-            deleteHistory = null
+            vm.dialogDismiss()
         }
     )
+
+    val clearDialog = state.dialog as? HistoryViewModel.Dialog.Clear
     EasyClearDialog(
-        show = clearDialog,
-        onDelete = { vm.clear() },
-        onDismissRequest = { clearDialog = false }
+        show = clearDialog != null,
+        onDelete = {
+            vm.clear()
+            vm.dialogDismiss()
+        },
+        onDismissRequest = { vm.dialogDismiss() }
     )
 }
 
@@ -192,6 +203,7 @@ fun History() {
 fun HistoryList(
     scrollBehavior: TopAppBarScrollBehavior? = null,
     vm: HistoryViewModel = viewModel<HistoryViewModel>(),
+    state: HistoryViewModel.HistoryState,
     onItemClick: (CartoonHistory) -> Unit,
     onItemDelete: (CartoonHistory) -> Unit,
 ) {
@@ -199,12 +211,14 @@ fun HistoryList(
     val lazyListState = rememberLazyListState()
 
 
-    val flow = vm.searchPager.value ?: vm.curPager.value
+    val flow = state.pager
     val lazyPagingItems = flow.collectAsLazyPagingItems()
+
+    val haptic = LocalHapticFeedback.current
 
     Box(modifier = Modifier.fillMaxSize()) {
 
-        if(lazyPagingItems.itemCount > 0){
+        if (lazyPagingItems.itemCount > 0) {
             LazyColumn(
 
                 modifier = Modifier.fillMaxSize().run {
@@ -220,7 +234,23 @@ fun HistoryList(
 
                 items(lazyPagingItems) {
                     it?.let {
-                        HistoryItem(cartoonHistory = it, onClick = onItemClick, onDelete = onItemDelete)
+                        HistoryItem(
+                            cartoonHistory = it,
+                            onClick = {
+                                if (state.selection.isEmpty()) {
+                                    onItemClick(it)
+                                } else {
+                                    vm.onSelectionChange(it)
+                                }
+                            },
+                            isSelect = state.selection.contains(it),
+                            onDelete = onItemDelete,
+                            onLongPress = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                vm.onSelectionChange(it)
+                            },
+                            isShowDelete = state.selection.isEmpty()
+                        )
                     }
                 }
                 pagingCommon(lazyPagingItems)
@@ -236,20 +266,39 @@ fun HistoryList(
 
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HistoryItem(
     modifier: Modifier = Modifier,
     cartoonHistory: CartoonHistory,
+    isSelect: Boolean,
+    isShowDelete: Boolean,
     onClick: (CartoonHistory) -> Unit,
+    onLongPress: (CartoonHistory) -> Unit,
     onDelete: (CartoonHistory) -> Unit,
 ) {
     val sourceBundle = LocalSourceBundleController.current
     Box(modifier = Modifier
         .fillMaxWidth()
-        .clickable {
-            onClick(cartoonHistory)
+        .padding(8.dp, 4.dp)
+        .clip(RoundedCornerShape(8.dp))
+        .run {
+            if (isSelect) {
+                background(MaterialTheme.colorScheme.primary)
+            } else {
+                this
+            }
         }
-        .padding(16.dp, 8.dp)
+        .combinedClickable(
+            onClick = {
+                onClick(cartoonHistory)
+            },
+            onLongClick = {
+                onLongPress(cartoonHistory)
+            }
+        )
+
+        .padding(8.dp)
         .then(modifier)) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -267,7 +316,7 @@ fun HistoryItem(
                 Text(
                     text = cartoonHistory.name,
                     maxLines = 2,
-                    color = MaterialTheme.colorScheme.onBackground
+                    color = if (isSelect) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground
                 )
                 Text(
                     text = stringResource(
@@ -275,25 +324,32 @@ fun HistoryItem(
                         cartoonHistory.lastEpisodeTitle
                     ),
                     maxLines = 1,
-                    color = MaterialTheme.colorScheme.onBackground.copy(0.6f)
+                    color = if (isSelect) MaterialTheme.colorScheme.onPrimary.copy(0.6f) else MaterialTheme.colorScheme.onBackground.copy(
+                        0.6f
+                    )
                 )
                 Text(
                     text = TimeUtils.toString(cartoonHistory.lastProcessTime).toString(),
                     maxLines = 1,
-                    color = MaterialTheme.colorScheme.onBackground.copy(0.6f)
+                    color = if (isSelect) MaterialTheme.colorScheme.onPrimary.copy(0.6f) else MaterialTheme.colorScheme.onBackground.copy(
+                        0.6f
+                    )
                 )
             }
         }
-        IconButton(
-            modifier = Modifier.align(Alignment.BottomEnd),
-            onClick = {
-                onDelete(cartoonHistory)
-            }) {
-            Icon(
-                Icons.Filled.Delete,
-                contentDescription = stringResource(id = R.string.delete)
-            )
+        if (isShowDelete) {
+            IconButton(
+                modifier = Modifier.align(Alignment.BottomEnd),
+                onClick = {
+                    onDelete(cartoonHistory)
+                }) {
+                Icon(
+                    Icons.Filled.Delete,
+                    contentDescription = stringResource(id = R.string.delete)
+                )
+            }
         }
+
     }
 }
 
@@ -303,20 +359,14 @@ fun HistoryItem(
 fun HistoryTopAppBar(
     scrollBehavior: TopAppBarScrollBehavior? = null,
     isSearch: Boolean,
+    focusRequester: FocusRequester,
+    text: String,
     onSearchClick: () -> Unit,
     onClear: () -> Unit,
     onSearch: (String) -> Unit,
+    onTextChange: (String) -> Unit,
     onSearchExit: () -> Unit,
 ) {
-
-    var text by remember {
-        mutableStateOf("")
-    }
-
-    val focusRequester = remember {
-        FocusRequester()
-    }
-
     TopAppBar(
         scrollBehavior = scrollBehavior, navigationIcon = {
             if (isSearch) {
@@ -346,8 +396,7 @@ fun HistoryTopAppBar(
                     ),
                     value = text,
                     onValueChange = {
-                        text = it
-                        onSearch(text)
+                        onTextChange(it)
                     },
                     placeholder = {
                         Text(
@@ -370,8 +419,7 @@ fun HistoryTopAppBar(
                 }
             } else if (text.isNotEmpty()) {
                 IconButton(onClick = {
-                    text = ""
-                    onSearch("")
+                    onTextChange("")
                 }) {
                     Icon(
                         imageVector = Icons.Filled.Clear,

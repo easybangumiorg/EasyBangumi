@@ -1,5 +1,8 @@
 package com.heyanle.bangumi_source_api.api
 
+import androidx.annotation.Keep
+
+@Keep
 sealed class SourceResult<T> {
         data class Complete<T>(
             val data: T

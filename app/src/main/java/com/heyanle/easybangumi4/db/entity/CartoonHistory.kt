@@ -1,16 +1,13 @@
 package com.heyanle.easybangumi4.db.entity
 
 import androidx.room.Entity
-import androidx.room.PrimaryKey
 
 /**
  * Created by HeYanLe on 2023/3/7 14:55.
  * https://github.com/heyanLE
  */
-@Entity
+@Entity(primaryKeys = ["id", "source", "url"])
 data class CartoonHistory(
-    @PrimaryKey(autoGenerate = true)
-    val historyId: Int = 0,
 
     val id: String,
     val url: String,

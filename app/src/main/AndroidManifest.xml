@@ -66,6 +66,7 @@
             <data android:host="com.heyanle.easybangumi"
                 android:scheme="source"/>
         </intent>
+        <provider android:authorities="com.heyanle.easybangumi.source"/>
     </queries>
 
 </manifest>

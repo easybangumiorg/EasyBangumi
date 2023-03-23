@@ -11,6 +11,7 @@ object Version {
     const val androidx_core_ktx = "1.9.0"
     const val androidx_appcompat = "1.6.1"
     const val androidx_room = "2.5.0"
+    const val androidx_annotation = "1.6.0"
     const val google_material = "1.8.0"
     const val jsoup = "1.15.3"
     const val okhttp3 = "4.10.0"

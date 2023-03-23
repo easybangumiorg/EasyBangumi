@@ -52,7 +52,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -71,7 +70,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.heyanle.bangumi_source_api.api.Source
@@ -117,22 +115,18 @@ fun CartoonPlay(
 
     val summary = CartoonSummary(id, source, url)
     val owner = DetailedViewModel.getViewModelStoreOwner(summary)
-    CompositionLocalProvider(
-        LocalViewModelStoreOwner provides owner
-    ) {
-        DetailedContainer(sourceKey = source) { _, sou, det ->
+    DetailedContainer(sourceKey = source) { _, sou, det ->
 
-            val detailedVM =
-                viewModel<DetailedViewModel>(factory = DetailedViewModelFactory(summary, det))
-            val cartoonPlayViewModel = viewModel<CartoonPlayViewModel>()
-            CartoonPlay(
-                detailedVM = detailedVM,
-                cartoonPlayVM = cartoonPlayViewModel,
-                cartoonSummary = summary,
-                source = sou,
-                enterData = enterData
-            )
-        }
+        val detailedVM =
+            viewModel<DetailedViewModel>(factory = DetailedViewModelFactory(summary, det))
+        val cartoonPlayViewModel = viewModel<CartoonPlayViewModel>()
+        CartoonPlay(
+            detailedVM = detailedVM,
+            cartoonPlayVM = cartoonPlayViewModel,
+            cartoonSummary = summary,
+            source = sou,
+            enterData = enterData
+        )
     }
 
 }
@@ -160,6 +154,10 @@ fun CartoonPlay(
             // 加载好之后进入 播放环节
             cartoonPlayVM.onDetailedLoaded(cartoonSummary, sta, enterData)
         }
+    }
+
+    LaunchedEffect(key1 = Unit){
+        detailedVM.checkUpdate()
     }
 
     DisposableEffect(key1 = Unit) {
@@ -282,7 +280,9 @@ fun CartoonPlay(
                 color = MaterialTheme.colorScheme.background,
                 contentColor = MaterialTheme.colorScheme.onBackground
             ) {
-                Box(modifier = Modifier.fillMaxSize().navigationBarsPadding()) {
+                Box(modifier = Modifier
+                    .fillMaxSize()
+                    .navigationBarsPadding()) {
                     CartoonPlayUI(
                         detailedVM = detailedVM,
                         cartoonPlayVM = cartoonPlayVM,
