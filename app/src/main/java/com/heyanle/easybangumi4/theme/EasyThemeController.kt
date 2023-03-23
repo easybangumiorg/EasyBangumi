@@ -38,13 +38,13 @@ object EasyThemeController {
 
     var curThemeColor: ColorScheme? = null
 
-    private var themeModeOkkv by okkv("theme_mode", EasyThemeMode.Tachiyomi.name)
+    private var themeModeOkkv by okkv("theme_mode", EasyThemeMode.Default.name)
     private var darkModeOkkv by okkv("dark_mode", DarkMode.Auto.name)
     private var isDynamicColorOkkv by okkv<Boolean>("is_dynamic_color", def = true)
 
     val easyThemeState = mutableStateOf(
         EasyThemeState(
-            EasyThemeMode.valueOf(themeModeOkkv),
+            kotlin.runCatching { EasyThemeMode.valueOf(themeModeOkkv) }.getOrElse { EasyThemeMode.Default },
             DarkMode.valueOf(darkModeOkkv),
             isDynamicColorOkkv && isSupportDynamicColor()
         )

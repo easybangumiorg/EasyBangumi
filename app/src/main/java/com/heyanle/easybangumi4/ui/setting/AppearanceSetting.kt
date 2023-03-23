@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,11 +19,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Android
 import androidx.compose.material.icons.filled.ArrowBack
@@ -93,7 +95,8 @@ fun AppearanceSetting() {
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .nestedScroll(scrollBehavior.nestedScrollConnection),
+                    .nestedScroll(scrollBehavior.nestedScrollConnection)
+                    .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
 
@@ -171,7 +174,8 @@ fun DarkModeItem() {
 
 }
 
-val lazyListState = LazyListState()
+//val lazyListState = LazyListState()
+
 @Composable
 fun ThemeModeItem() {
     val theme = EasyThemeController.easyThemeState.value
@@ -188,15 +192,18 @@ fun ThemeModeItem() {
         modifier = Modifier
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
-        state = lazyListState,
         contentPadding = PaddingValues(start = 6.dp, end = 6.dp)
     ) {
         if (EasyThemeController.isSupportDynamicColor() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val dynamicColor =
                 if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
             item {
-                ThemePreviewItem(selected = theme.isDynamicColor, colorScheme = dynamicColor) {
-                    if(!theme.isDynamicColor){
+                ThemePreviewItem(
+                    selected = theme.isDynamicColor,
+                    colorScheme = dynamicColor,
+                    stringResource(id = R.string.is_dynamic_color)
+                ) {
+                    if (!theme.isDynamicColor) {
                         EasyThemeController.changeIsDynamicColor(true)
                     }
 
@@ -206,10 +213,12 @@ fun ThemeModeItem() {
         items(EasyThemeMode.values()) {
             ThemePreviewItem(
                 selected = !theme.isDynamicColor && theme.themeMode == it,
-                colorScheme = if (isDark) it.darkColorScheme else it.lightColorScheme
+                colorScheme = if (isDark) it.darkColorScheme else it.lightColorScheme,
+                stringResource(id = it.titleResId)
             ) {
                 EasyThemeController.changeThemeMode(it, false)
             }
+
         }
     }
 }
@@ -218,131 +227,140 @@ fun ThemeModeItem() {
 fun ThemePreviewItem(
     selected: Boolean,
     colorScheme: ColorScheme,
+    title: String,
     onClick: () -> Unit,
 ) {
     val dividerColor = colorScheme.onSurface.copy(alpha = 0.2f)
     Column(
-        modifier = Modifier
-            .width(120.dp)
-            .aspectRatio(9f / 16f)
-            .border(
-                width = 4.dp,
-                color = if (selected) {
-                    colorScheme.primary
-                } else {
-                    dividerColor
-                },
-                shape = RoundedCornerShape(17.dp),
-            )
-            .padding(4.dp)
-            .clip(RoundedCornerShape(13.dp))
-            .background(colorScheme.background)
-            .clickable(onClick = onClick),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // App Bar
-        Row(
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(40.dp)
-                .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxHeight(0.8f)
-                    .weight(0.7f)
-                    .padding(end = 4.dp)
-                    .background(
-                        color = colorScheme.onSurface,
-                        shape = MaterialTheme.shapes.small,
-                    ),
-            )
-
-            Box(
-                modifier = Modifier.weight(0.3f),
-                contentAlignment = Alignment.CenterEnd,
-            ) {
-                if (selected) {
-                    Icon(
-                        imageVector = Icons.Filled.CheckCircle,
-                        contentDescription = stringResource(R.string.theme),
-                        tint = colorScheme.primary,
-                    )
-                }
-            }
-        }
-
-        // Cover
-        Box(
-            modifier = Modifier
-                .padding(start = 8.dp, top = 2.dp)
-                .background(
-                    color = dividerColor,
-                    shape = MaterialTheme.shapes.small,
+                .width(120.dp)
+                .aspectRatio(9f / 16f)
+                .border(
+                    width = 4.dp,
+                    color = if (selected) {
+                        colorScheme.primary
+                    } else {
+                        dividerColor
+                    },
+                    shape = RoundedCornerShape(17.dp),
                 )
-                .fillMaxWidth(0.5f)
-                .aspectRatio(19 / 27F),
+                .padding(4.dp)
+                .clip(RoundedCornerShape(13.dp))
+                .background(colorScheme.background)
+                .clickable(onClick = onClick),
         ) {
+            // App Bar
             Row(
                 modifier = Modifier
-                    .padding(4.dp)
-                    .size(width = 24.dp, height = 16.dp)
-                    .clip(RoundedCornerShape(5.dp)),
+                    .fillMaxWidth()
+                    .height(40.dp)
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(
                     modifier = Modifier
-                        .fillMaxHeight()
-                        .width(12.dp)
-                        .background(colorScheme.tertiary),
+                        .fillMaxHeight(0.8f)
+                        .weight(0.7f)
+                        .padding(end = 4.dp)
+                        .background(
+                            color = colorScheme.onSurface,
+                            shape = MaterialTheme.shapes.small,
+                        ),
                 )
-                Box(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .width(12.dp)
-                        .background(colorScheme.secondary),
-                )
-            }
-        }
 
-        // Bottom bar
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-            contentAlignment = Alignment.BottomCenter,
-        ) {
-            Surface(
-                tonalElevation = 3.dp,
+                Box(
+                    modifier = Modifier.weight(0.3f),
+                    contentAlignment = Alignment.CenterEnd,
+                ) {
+                    if (selected) {
+                        Icon(
+                            imageVector = Icons.Filled.CheckCircle,
+                            contentDescription = stringResource(R.string.theme),
+                            tint = colorScheme.primary,
+                        )
+                    }
+                }
+            }
+
+            // Cover
+            Box(
+                modifier = Modifier
+                    .padding(start = 8.dp, top = 2.dp)
+                    .background(
+                        color = dividerColor,
+                        shape = MaterialTheme.shapes.small,
+                    )
+                    .fillMaxWidth(0.5f)
+                    .aspectRatio(19 / 27F),
             ) {
                 Row(
                     modifier = Modifier
-                        .height(32.dp)
-                        .fillMaxWidth()
-                        .background(colorScheme.surfaceVariant)
-                        .padding(horizontal = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
+                        .padding(4.dp)
+                        .size(width = 24.dp, height = 16.dp)
+                        .clip(RoundedCornerShape(5.dp)),
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(17.dp)
-                            .background(
-                                color = colorScheme.primary,
-                                shape = CircleShape,
-                            ),
+                            .fillMaxHeight()
+                            .width(12.dp)
+                            .background(colorScheme.tertiary),
                     )
                     Box(
                         modifier = Modifier
-                            .padding(start = 8.dp)
-                            .alpha(0.6f)
-                            .height(17.dp)
-                            .weight(1f)
-                            .background(
-                                color = colorScheme.onSurface,
-                                shape = MaterialTheme.shapes.small,
-                            ),
+                            .fillMaxHeight()
+                            .width(12.dp)
+                            .background(colorScheme.secondary),
                     )
                 }
             }
+
+            // Bottom bar
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                contentAlignment = Alignment.BottomCenter,
+            ) {
+                Surface(
+                    tonalElevation = 3.dp,
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .height(32.dp)
+                            .fillMaxWidth()
+                            .background(colorScheme.surfaceVariant)
+                            .padding(horizontal = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(17.dp)
+                                .background(
+                                    color = colorScheme.primary,
+                                    shape = CircleShape,
+                                ),
+                        )
+                        Box(
+                            modifier = Modifier
+                                .padding(start = 8.dp)
+                                .alpha(0.6f)
+                                .height(17.dp)
+                                .weight(1f)
+                                .background(
+                                    color = colorScheme.onSurface,
+                                    shape = MaterialTheme.shapes.small,
+                                ),
+                        )
+                    }
+                }
+            }
         }
+
+        Spacer(modifier = Modifier.size(8.dp))
+        Text(text = title, style = MaterialTheme.typography.bodyMedium)
     }
+
 }

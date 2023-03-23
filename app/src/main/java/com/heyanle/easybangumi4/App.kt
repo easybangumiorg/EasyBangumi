@@ -40,9 +40,12 @@ class App: Application() {
         super.onCreate()
         APP = this
         if (isMainProcess()){
-            initOkkv()
 
             initCrasher()
+
+            initOkkv()
+
+
 
             HttpsURLConnection.setDefaultSSLSocketFactory(CropUtil.getUnsafeSslSocketFactory())
             HttpsURLConnection.setDefaultHostnameVerifier(TrustAllHostnameVerifier())

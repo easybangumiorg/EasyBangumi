@@ -1,5 +1,6 @@
 package com.heyanle.easybangumi4.ui.common
 
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FlipToBack
@@ -27,8 +28,9 @@ import com.heyanle.easy_i18n.R
 fun SelectionTopAppBar(
     selectionItemsCount: Int,
     onExit: () -> Unit,
-    onSelectAll: () -> Unit,
-    onSelectInvert: () -> Unit,
+    onSelectAll: (() -> Unit)? = null,
+    onSelectInvert: (() -> Unit)? = null,
+    actions: @Composable (RowScope.()->Unit)? = null,
 ) {
 
     TopAppBar(
@@ -46,24 +48,30 @@ fun SelectionTopAppBar(
         }, title = {
             Text(text = selectionItemsCount.toString())
         }, actions = {
-            IconButton(onClick = {
-                onSelectAll()
-            }) {
-                Icon(
-                    imageVector = Icons.Filled.SelectAll,
-                    stringResource(id = R.string.select_all)
-                )
-            }
-            IconButton(onClick = {
-                onSelectInvert()
-            }) {
-                Icon(
-                    imageVector = Icons.Filled.FlipToBack,
-                    stringResource(id = R.string.select_invert)
-                )
+            if (onSelectAll != null) {
+                IconButton(onClick = {
+                    onSelectAll()
+                }) {
+                    Icon(
+                        imageVector = Icons.Filled.SelectAll,
+                        stringResource(id = R.string.select_all)
+                    )
+                }
             }
 
+            if (onSelectInvert != null) {
 
+                IconButton(onClick = {
+                    onSelectInvert()
+                }) {
+                    Icon(
+                        imageVector = Icons.Filled.FlipToBack,
+                        stringResource(id = R.string.select_invert)
+                    )
+                }
+            }
+
+            actions?.invoke(this)
 
         })
 }

@@ -2,6 +2,10 @@ package com.heyanle.easybangumi4.ui.home.star
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.heyanle.easybangumi4.DB
 import com.heyanle.easybangumi4.db.entity.CartoonStar
 import kotlinx.coroutines.Dispatchers
@@ -9,11 +13,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Created by HeYanLe on 2023/3/18 19:24.
@@ -21,16 +25,19 @@ import kotlinx.coroutines.launch
  */
 class StarViewModel : ViewModel() {
 
+    private val allPager = getAllPager().flow.cachedIn(viewModelScope)
+
     data class State(
         val isLoading: Boolean = true,
         val searchQuery: String? = null,
-        val starCartoonList: List<CartoonStar> = emptyList(),
+        var starCount: Int = -1,
+        var pager: Flow<PagingData<CartoonStar>>,
         val selection: Set<CartoonStar> = setOf(),
         val hasActiveFilters: Boolean = false,
         val dialog: DialogState? = null
     )
 
-    private val _stateFlow = MutableStateFlow(State())
+    private val _stateFlow = MutableStateFlow(State(pager = allPager))
     val stateFlow = _stateFlow.asStateFlow()
 
     // TODO: 过滤器弹窗状态
@@ -45,42 +52,36 @@ class StarViewModel : ViewModel() {
     }
 
     init {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             // 搜索处理
-            combine(
-                stateFlow.map { it.searchQuery }.distinctUntilChanged(),
-                getCartoonStarFlow(),
-            ) { searchQuery: String?, starList: List<CartoonStar> ->
-                if (searchQuery.isNullOrEmpty()) {
-                    starList
-                } else {
-                    starList.filter {
-                        it.matches(searchQuery)
+            stateFlow.map { it.searchQuery }.distinctUntilChanged().collectLatest { key ->
+                if (key.isNullOrEmpty()) {
+                    val count = withContext(Dispatchers.IO) { DB.cartoonStar.countAll() }
+                    _stateFlow.update {
+                        it.copy(
+                            isLoading = false,
+                            pager = allPager,
+                            starCount = count)
                     }
-                }
-            }.collectLatest { list ->
-                _stateFlow.update {
-                    it.copy(starCartoonList = list, isLoading = false)
+                } else {
+                    _stateFlow.update {
+                        it.copy(
+                            isLoading = false,
+                            pager = getSearchPager(key).flow,)
+                    }
                 }
             }
         }
+
     }
+
+    // 搜索
 
     fun onSearch(searchQuery: String?) {
         _stateFlow.update { it.copy(searchQuery = searchQuery) }
     }
 
-    fun onSelectionAll() {
-        _stateFlow.update { it.copy(selection = it.starCartoonList.toSet()) }
-    }
-
-    fun onSelectionInvert() {
-        _stateFlow.update { state ->
-            state.copy(selection = state.starCartoonList.filter {
-                !state.selection.contains(it)
-            }.toSet())
-        }
-    }
+    // 多选
 
     fun onSelectionExit() {
         _stateFlow.update {
@@ -97,26 +98,61 @@ class StarViewModel : ViewModel() {
         }
     }
 
-    fun onDeleteSelection() {
+    // dialog
+    fun dialogDeleteSelection() {
         _stateFlow.update {
             val selection = it.selection
-            it.copy(selection = emptySet(), dialog = DialogState.Delete(selection))
+            it.copy(dialog = DialogState.Delete(selection))
         }
     }
 
-    fun onChangeSelectionUpdate() {
+    fun dialogChangeUpdate() {
+        com.heyanle.easybangumi4.utils.TODO("修改更新策略")
         _stateFlow.update {
             val selection = it.selection
-            it.copy(selection = emptySet(), dialog = DialogState.ChangeUpdate(selection))
+            it.copy(dialog = DialogState.ChangeUpdate(selection))
         }
     }
+
+    fun dialogDismiss() {
+        _stateFlow.update {
+            it.copy(dialog = null)
+        }
+    }
+
+    // 数据更新
 
     fun onUpdate() {
         com.heyanle.easybangumi4.utils.TODO("番剧更新")
     }
 
+    fun delete(list: List<CartoonStar>) {
+        viewModelScope.launch (Dispatchers.IO) {
+            DB.cartoonStar.delete(list)
+        }
+
+    }
+
+    // 内部
+
     private fun getCartoonStarFlow(): Flow<List<CartoonStar>> {
         return DB.cartoonStar.flowAll()
+    }
+
+    private fun getAllPager(): Pager<Int, CartoonStar> {
+        return Pager(
+            PagingConfig(pageSize = 50)
+        ) {
+            DB.cartoonStar.pageAll()
+        }
+    }
+
+    private fun getSearchPager(keyword: String): Pager<Int, CartoonStar> {
+        return Pager(
+            PagingConfig(pageSize = 50)
+        ) {
+            DB.cartoonStar.pageSearch(keyword)
+        }
     }
 
 

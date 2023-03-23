@@ -49,6 +49,7 @@ import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.db.entity.CartoonStar
 import com.heyanle.easybangumi4.navigationDetailed
 import com.heyanle.easybangumi4.source.LocalSourceBundleController
+import com.heyanle.easybangumi4.ui.common.EmptyPage
 import com.heyanle.easybangumi4.ui.common.LoadingImage
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.OkImage
@@ -82,7 +83,9 @@ fun Update() {
         } else {
 
             LazyColumn(
-                modifier = Modifier.weight(1f).nestedScroll(scrollBehavior.nestedScrollConnection)
+                modifier = Modifier
+                    .weight(1f)
+                    .nestedScroll(scrollBehavior.nestedScrollConnection)
             ) {
                 item {
                     UpdateStateCard(state = state)
@@ -108,6 +111,16 @@ fun Update() {
                             )
 
                         }
+                    }
+
+                }
+
+                if(state.updateCartoonList.isEmpty()){
+                    item {
+                        EmptyPage(
+                            modifier = Modifier.fillMaxWidth().padding(top = 128.dp),
+                            emptyMsg = stringResource(id = R.string.empty_update)
+                        )
                     }
 
                 }

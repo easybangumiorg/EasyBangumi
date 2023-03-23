@@ -91,7 +91,7 @@ dependencies {
     implementation("androidx.fragment:fragment-ktx:${Version.androidx_fragment_ktx}")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:${Version.androidx_lifecycle_runtime_ktx}")
 
-    implementation( "com.squareup.leakcanary:leakcanary-android:${Version.leakcanary}")
+    debugImplementation( "com.squareup.leakcanary:leakcanary-android:${Version.leakcanary}")
 
     implementation("androidx.paging:paging-runtime-ktx:${Version.paging}")
     implementation("androidx.paging:paging-compose:1.0.0-alpha18")
@@ -156,5 +156,5 @@ dependencies {
     implementation(project(":easy-crasher"))
     implementation(project(":easy-i18n"))
     implementation(project(":extension:extension-core"))
-    implementation(project(":extension:extension-api"))
+    implementation(com.heyanle.buildsrc.SourceExtension.extensionApi)
 }

@@ -1,5 +1,7 @@
 package com.heyanle.bangumi_source_api.api.entity
 
+import androidx.annotation.Keep
+
 /**
  *
  * 单个番剧的更新策略，在库更新时起作用
@@ -7,6 +9,7 @@ package com.heyanle.bangumi_source_api.api.entity
  * Created by HeYanLe on 2023/2/18 21:11.
  * https://github.com/heyanLE
  */
+@Keep
 enum class UpdateStrategy {
 
     /**

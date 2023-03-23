@@ -1,9 +1,12 @@
 package com.heyanle.bangumi_source_api.api.configuration
 
+import androidx.annotation.Keep
+
 /**
  * Created by HeYanLe on 2023/2/22 19:56.
  * https://github.com/heyanLE
  */
+@Keep
 sealed class ConfigField<T> {
 
     abstract val sourceKey: String

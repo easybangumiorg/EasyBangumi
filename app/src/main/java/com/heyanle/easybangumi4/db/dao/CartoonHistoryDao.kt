@@ -1,6 +1,5 @@
 package com.heyanle.easybangumi4.db.dao
 
-import android.util.Log
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Delete
@@ -21,7 +20,7 @@ interface CartoonHistoryDao {
     fun insert(cartoonHistory: CartoonHistory)
 
     @Update
-    fun modify(cartoonHistory: CartoonHistory)
+    fun update(cartoonHistory: CartoonHistory)
 
     @Delete
     fun delete(cartoonHistory: CartoonHistory)
@@ -42,30 +41,20 @@ interface CartoonHistoryDao {
     fun deleteByCartoonSummary(id: String, source: String, detailUrl: String)
 
     @Transaction
-    fun insertOrModify(history: CartoonHistory) {
-
-        val query = getFromCartoonSummary(history.id, history.source, history.url)
-        if (query != null) {
-            val lastP = if (history.lastProcessTime == -1L) {
-                if (history.lastLinesIndex == query.lastLinesIndex && history.lastEpisodeIndex == query.lastEpisodeIndex) {
-                    query.lastProcessTime
-                } else {
-                    0
-                }
-            } else {
-                history.lastProcessTime
-            }
-            Log.d("CartoonHistoryDao", "insertOrModify $lastP")
-
-            modify(
-                history.copy(
-                    historyId = query.historyId,
-                    lastProcessTime = lastP,
-                    createTime = System.currentTimeMillis()
-                )
-            )
-        } else {
-            insert(history.copy(createTime = System.currentTimeMillis()))
+    fun delete(cartoonHistory: List<CartoonHistory>){
+        cartoonHistory.forEach {
+            delete(it)
         }
     }
+
+    @Transaction
+    fun modify(cartoonHistory: CartoonHistory) {
+        val old = getFromCartoonSummary(cartoonHistory.id, cartoonHistory.source, cartoonHistory.url)
+        if (old == null) {
+            insert(cartoonHistory.copy(createTime = System.currentTimeMillis()))
+        } else {
+            update(cartoonHistory.copy(createTime = old.createTime))
+        }
+    }
+
 }
