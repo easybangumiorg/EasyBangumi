@@ -1,5 +1,8 @@
 package com.heyanle.bangumi_source_api.api.entity
 
+import androidx.annotation.Keep
+
+@Keep
 class PlayerInfo(
     val decodeType: Int = DECODE_TYPE_OTHER,
     val uri: String = "",

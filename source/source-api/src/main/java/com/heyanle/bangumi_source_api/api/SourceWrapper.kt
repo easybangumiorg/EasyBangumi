@@ -1,9 +1,12 @@
 package com.heyanle.bangumi_source_api.api
 
+import androidx.annotation.Keep
+
 /**
  * Created by HeYanLe on 2023/2/27 22:44.
  * https://github.com/heyanLE
  */
+@Keep
 open class SourceWrapper(
     val source: Source
 ): Source {

@@ -12,13 +12,14 @@ import androidx.compose.ui.res.stringResource
 @Composable
 fun EasyDeleteDialog(
     show: Boolean,
+    message: @Composable ()->Unit = {Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.delete_confirmation))},
     onDelete: () -> Unit,
     onDismissRequest: () -> Unit,
 ) {
     if (show) {
         AlertDialog(
             text = {
-                Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.delete_confirmation))
+                message()
             },
             onDismissRequest = onDismissRequest,
             confirmButton = {

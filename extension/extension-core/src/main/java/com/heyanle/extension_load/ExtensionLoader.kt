@@ -1,5 +1,6 @@
 package com.heyanle.extension_load
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
@@ -34,6 +35,7 @@ object ExtensionLoader {
     /**
      * 获取扩展列表
      */
+    @SuppressLint("QueryPermissionsNeeded")
     fun getAllExtension(context: Context): List<Extension> {
         val pkgManager = context.packageManager
 
@@ -45,7 +47,7 @@ object ExtensionLoader {
             }
 
         val extPkgs = installedPkgs.filter {
-            //it.packageName.loge("ExtensionLoader")
+            it.packageName.loge("ExtensionLoader")
             isPackageAnExtension(it) }
 
         if (extPkgs.isEmpty()) return emptyList()

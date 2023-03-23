@@ -1,5 +1,6 @@
 package com.heyanle.bangumi_source_api.api.component.play
 
+import androidx.annotation.Keep
 import com.heyanle.bangumi_source_api.api.SourceResult
 import com.heyanle.bangumi_source_api.api.component.Component
 import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
@@ -10,6 +11,7 @@ import com.heyanle.bangumi_source_api.api.entity.PlayerInfo
  * Created by HeYanLe on 2023/2/27 22:00.
  * https://github.com/heyanLE
  */
+@Keep
 interface PlayComponent: Component {
 
 

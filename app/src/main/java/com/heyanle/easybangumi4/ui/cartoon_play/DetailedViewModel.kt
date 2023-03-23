@@ -50,6 +50,14 @@ class DetailedViewModel(
     var detailedState by mutableStateOf<DetailedState>(DetailedState.None)
     var isStar by mutableStateOf(false)
 
+    fun checkUpdate(){
+        viewModelScope.launch(Dispatchers.IO) {
+            val star = DB.cartoonStar.getByCartoonSummary(cartoonSummary.id, cartoonSummary.source, cartoonSummary.url)
+            if(star?.isUpdate == true){
+                load()
+            }
+        }
+    }
     fun load() {
         viewModelScope.launch {
             detailedState = DetailedState.Loading

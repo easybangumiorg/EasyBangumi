@@ -1,5 +1,6 @@
 package com.heyanle.bangumi_source_api.api.component.search
 
+import androidx.annotation.Keep
 import com.heyanle.bangumi_source_api.api.SourceResult
 import com.heyanle.bangumi_source_api.api.entity.CartoonCover
 
@@ -7,6 +8,7 @@ import com.heyanle.bangumi_source_api.api.entity.CartoonCover
  * Created by HeYanLe on 2023/2/27 21:42.
  * https://github.com/heyanLE
  */
+@Keep
 interface SearchComponent {
 
     /**

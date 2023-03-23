@@ -8,7 +8,7 @@ import androidx.compose.ui.graphics.Color
  * Created by HeYanLe on 2023/2/18 23:08.
  * https://github.com/heyanLE
  */
-object TachiyomiColor {
+object DefaultColor {
     
     object Light {
         val primary = Color(0xFF0057CE)
