@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.ui.home.history
+package com.heyanle.easybangumi4.ui.history
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
@@ -68,7 +68,7 @@ import com.heyanle.easybangumi4.ui.common.PagingCommon
 import com.heyanle.easybangumi4.ui.common.SelectionTopAppBar
 import com.heyanle.easybangumi4.ui.common.pagingCommon
 import com.heyanle.easybangumi4.ui.common.player.utils.TimeUtils
-import com.heyanle.easybangumi4.ui.home.LocalHomeViewModel
+import com.heyanle.easybangumi4.ui.home.history.HistoryViewModel
 
 /**
  * Created by HeYanLe on 2023/3/16 22:11.
@@ -78,8 +78,6 @@ import com.heyanle.easybangumi4.ui.home.LocalHomeViewModel
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
 fun History() {
-
-    val homeViewModel = LocalHomeViewModel.current
     val vm = viewModel<HistoryViewModel>()
 
     val nav = LocalNavController.current
@@ -143,6 +141,9 @@ fun History() {
                     onTextChange = {
                         vm.search(it)
                     },
+                    onBack = {
+                        nav.popBackStack()
+                    },
                     onSearchExit = {
                         vm.exitSearch()
                     }
@@ -196,6 +197,8 @@ fun History() {
         },
         onDismissRequest = { vm.dialogDismiss() }
     )
+
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -231,6 +234,7 @@ fun HistoryList(
                 state = lazyListState,
                 contentPadding = PaddingValues(0.dp, 0.dp, 0.dp, 96.dp)
             ) {
+
 
                 items(lazyPagingItems) {
                     it?.let {
@@ -361,6 +365,7 @@ fun HistoryTopAppBar(
     isSearch: Boolean,
     focusRequester: FocusRequester,
     text: String,
+    onBack: () -> Unit,
     onSearchClick: () -> Unit,
     onClear: () -> Unit,
     onSearch: (String) -> Unit,
@@ -369,14 +374,17 @@ fun HistoryTopAppBar(
 ) {
     TopAppBar(
         scrollBehavior = scrollBehavior, navigationIcon = {
-            if (isSearch) {
-                IconButton(onClick = {
+            IconButton(onClick = {
+                if (isSearch) {
                     onSearchExit()
-                }) {
-                    Icon(
-                        imageVector = Icons.Filled.ArrowBack, stringResource(id = R.string.back)
-                    )
+                } else {
+                    onBack()
                 }
+
+            }) {
+                Icon(
+                    imageVector = Icons.Filled.ArrowBack, stringResource(id = R.string.back)
+                )
             }
         }, title = {
             if (isSearch) {
@@ -405,7 +413,7 @@ fun HistoryTopAppBar(
                         )
                     })
             } else {
-                Text(text = stringResource(id = R.string.mine_history))
+                Text(text = stringResource(id = R.string.history))
             }
         }, actions = {
             if (!isSearch) {
