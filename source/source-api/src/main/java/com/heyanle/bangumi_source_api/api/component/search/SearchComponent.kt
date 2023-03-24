@@ -2,6 +2,7 @@ package com.heyanle.bangumi_source_api.api.component.search
 
 import androidx.annotation.Keep
 import com.heyanle.bangumi_source_api.api.SourceResult
+import com.heyanle.bangumi_source_api.api.component.Component
 import com.heyanle.bangumi_source_api.api.entity.CartoonCover
 
 /**
@@ -9,7 +10,7 @@ import com.heyanle.bangumi_source_api.api.entity.CartoonCover
  * https://github.com/heyanLE
  */
 @Keep
-interface SearchComponent {
+interface SearchComponent: Component {
 
     /**
      * 获取首页页码

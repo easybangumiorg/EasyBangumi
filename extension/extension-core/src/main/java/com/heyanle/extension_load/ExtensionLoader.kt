@@ -134,38 +134,6 @@ object ExtensionLoader {
                         it.packageName = pkgInfo.packageName
                     }
                     it
-//                // 动态代理，返回 key 前面加上 包名-
-//                val proxy = Proxy.newProxyInstance(it.javaClass.classLoader,
-//                    it.javaClass.interfaces,
-//                    object : InvocationHandler {
-//                        override fun invoke(
-//                            proxy: Any?, method: Method?, args: Array<out Any>?
-//                        ): Any? {
-//                            if (method?.name == "getKey") {
-//                                return pkgInfo.packageName + "-" + it.key
-//                            }
-//                            return method?.invoke(it, *(args ?: arrayOfNulls<Any>(0)))
-//                        }
-//                    }) as Source
-//
-//                it.components().forEach {
-//                    it.source = proxy
-////                    proxy.key.loge("ExtensionLoader")
-////                    it.source.key.loge("ExtensionLoader")
-//                }
-//                it.loge("ExtensionLoader")
-//                proxy.loge("ExtensionLoader")
-//                proxy.components().forEach {
-//                    it.source = proxy
-//                    it.source.loge("ExtensionLoader")
-//                }
-//                proxy.components().forEach {
-//                    it.source.loge("ExtensionLoader")
-//                }
-//
-//
-//
-//                proxy
             }
 
             return Extension.Installed(
