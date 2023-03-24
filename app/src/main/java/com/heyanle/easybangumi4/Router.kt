@@ -6,6 +6,8 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -23,6 +25,7 @@ import com.heyanle.easybangumi4.theme.NormalSystemBarColor
 import com.heyanle.easybangumi4.ui.WebViewUser
 import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlay
 import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlayViewModel
+import com.heyanle.easybangumi4.ui.history.History
 import com.heyanle.easybangumi4.ui.home.Home
 import com.heyanle.easybangumi4.ui.setting.AppearanceSetting
 import com.heyanle.easybangumi4.ui.sourcehome.SourceHome
@@ -50,6 +53,8 @@ const val DETAILED = "detailed"
 const val WEB_VIEW_USER = "web_view_user"
 
 const val SOURCE_HOME = "source_home"
+
+const val HISTORY = "history"
 
 const val APPEARANCE_SETTING = "appearance_setting"
 
@@ -213,6 +218,17 @@ fun Nav() {
                 }.onFailure {
                     nav.popBackStack()
                 }
+            }
+
+            composable(HISTORY) {
+                NormalSystemBarColor()
+                Surface(
+                    color = MaterialTheme.colorScheme.background,
+                    contentColor = MaterialTheme.colorScheme.onBackground
+                ) {
+                    History()
+                }
+
             }
 
         }

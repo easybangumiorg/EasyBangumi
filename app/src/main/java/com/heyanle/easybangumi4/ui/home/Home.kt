@@ -32,8 +32,8 @@ import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.ui.common.SourceContainer
+import com.heyanle.easybangumi4.ui.history.History
 import com.heyanle.easybangumi4.ui.home.explore.Explore
-import com.heyanle.easybangumi4.ui.home.history.History
 import com.heyanle.easybangumi4.ui.home.more.More
 import com.heyanle.easybangumi4.ui.home.star.Star
 import com.heyanle.easybangumi4.ui.home.update.Update
@@ -131,7 +131,7 @@ sealed class HomePage(
 val HomePageItems = listOf(
     HomePage.StarPage,
     HomePage.UpdatePage,
-    HomePage.HistoryPage,
+    // HomePage.HistoryPage,
     HomePage.ExplorePage,
     HomePage.MorePage,
 )
@@ -141,6 +141,7 @@ val LocalHomeViewModel = staticCompositionLocalOf<HomeViewModel> {
 }
 
 var homePageIndexOkkv by okkv("home_page_index", 0)
+
 
 @OptIn(
     ExperimentalPagerApi::class, ExperimentalMaterial3Api::class,
