@@ -162,12 +162,13 @@ object CartoonPlayingManager: Player.Listener {
     ): Boolean {
         val cartoonSummary = cartoon ?: return false
         val playComponent = playComponent ?: return false
-        val playingState = (state as? PlayingState.Playing) ?: return false
+        val playLineIndex = state.playLineIndex() ?: return false
+        val playLine = state.playLine() ?: return false
         changePlay(
             playComponent,
             cartoonSummary,
-            playingState.playLineIndex,
-            playingState.playLine,
+            playLineIndex,
+            playLine,
             episode,
             defaultProgress
         )
