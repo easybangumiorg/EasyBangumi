@@ -7,6 +7,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 /**
@@ -26,11 +27,14 @@ object SourceMaster {
     private val _animSourceFlow = MutableStateFlow(SourceBundle(emptyList()))
     val animSourceFlow = _animSourceFlow.asStateFlow()
 
-    fun newSource(source: SourceBundle) {
+    init {
         scope.launch {
-            _animSourceFlow.emit(source)
+            SourceLibraryMaster.sourceLibraryFlow.collectLatest {
+                _animSourceFlow.emit(SourceBundle(it.map { it.first }))
+            }
         }
     }
+
 
     @Composable
     fun SourceHost(content: @Composable ()->Unit){

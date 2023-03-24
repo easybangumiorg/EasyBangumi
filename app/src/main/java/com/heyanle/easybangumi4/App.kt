@@ -10,7 +10,6 @@ import android.util.Log
 import android.widget.Toast
 import com.heyanle.easy_crasher.CrashHandler
 import com.heyanle.easybangumi4.db.AppDatabase
-import com.heyanle.easybangumi4.source.ExtensionSource
 import com.heyanle.easybangumi4.source.utils.initUtils
 import com.heyanle.easybangumi4.utils.exo_ssl.CropUtil
 import com.heyanle.easybangumi4.utils.exo_ssl.TrustAllHostnameVerifier
@@ -116,7 +115,6 @@ class App: Application() {
     }
 
     private fun initExtension(){
-        ExtensionSource.init()
         ExtensionInit.init(this, IconFactoryImpl())
     }
 
