@@ -1,146 +1,111 @@
 package com.heyanle.easybangumi4.source
 
-import androidx.annotation.UiThread
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.heyanle.bangumi_source_api.api.Source
-import com.heyanle.easybangumi4.utils.loge
+import com.heyanle.extension_load.ExtensionController
+import com.heyanle.extension_load.model.Extension
 import com.heyanle.okkv2.core.okkv
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
+ * Flow<List<Extensions.Installed>>      --↘
+ * Flow<List<SourceConfig>>              --→ Flow<List<Pair<Source, SourceConfig>>> -> SourceMaster : Flow<SourceBundle>
+ *
  * Created by HeYanLe on 2023/2/22 21:43.
  * https://github.com/heyanLE
  */
+@OptIn(FlowPreview::class)
 object SourceLibraryMaster {
 
     val scope = MainScope()
 
-    class SourceConfig(
+    data class SourceConfig(
         val key: String,
         val enable: Boolean,
         val order: Int,
     )
-    
-    private val sourceMap = MutableStateFlow(mapOf<String, Source>())
-    private var parserConfigJsonOkkv by okkv("sourceConfigJsonOkkv", "[]")
-    private var parserConfig = getOkkvConfig()
+
+    private var configOkkv by okkv("source_config", "[]")
+    val configFlow = MutableStateFlow<Map<String, SourceConfig>>(getOkkvConfig())
+
+    val sourceLibraryFlow = MutableStateFlow<List<Pair<Source, SourceConfig>>>(emptyList())
 
 
-    @UiThread
-    fun refreshSources(sources: Collection<Source>){
+
+    init {
         scope.launch {
-            val old = linkedMapOf<String, Source>()
-            // old.putAll(sourceMap.value)
-            sources.forEach {
-                if (!old.containsKey(it.key)
-                    || old[it.key]!!.versionCode < it.versionCode
-                ) {
-                    old[it.key] = it
+            combine(
+                configFlow,
+                ExtensionController.installedExtensionsFlow.filterIsInstance<ExtensionController.ExtensionState.Extensions>()
+                    .map { it.extensions })
+            { configMap, extensions ->
+                val sources = extensions.filterIsInstance<Extension.Installed>().flatMap {
+                    it.sources
                 }
-                it.loge("SourceLibraryMaster")
-            }
-            sourceMap.emit(old)
-            old.iterator().forEach {
-                if (!parserConfig.containsKey(it.key)) {
-                    val config = SourceConfig(
-                        it.key,
-                        true,
-                        parserConfig.size
-                    )
-                    parserConfig[it.key] = config
+                sources to transformConfig(sources, configMap)
+            }.collectLatest { p ->
+                val l = p.first.flatMap {
+                    val config =
+                        p.second[it.key] ?: return@flatMap emptyList<Pair<Source, SourceConfig>>()
+                    listOf(it to config)
                 }
-            }
 
-            val it = parserConfig.iterator()
-            while(it.hasNext()){
-                val d = it.next()
-                if(!old.containsKey(d.key)){
-                    it.remove()
-                }
+                sourceLibraryFlow.emit(l)
             }
-            saveOkkv()
-            saveNewConfig(parserConfig.values)
+        }
+
+    }
+
+    fun newOkkvConfig(config: Map<String, SourceConfig>) {
+        configFlow.update {
+            it.toMutableMap().apply {
+                putAll(config)
+            }
         }
     }
 
-    @UiThread
-    fun newSources(vararg source: Source){
-        scope.launch {
-            val old = linkedMapOf<String, Source>()
-            old.putAll(sourceMap.value)
-            source.forEach {
-                if (!old.containsKey(it.key)
-                    || old[it.key]!!.versionCode < it.versionCode
-                ) {
-                    old[it.key] = it
-                }
+    private fun transformConfig(
+        list: List<Source>,
+        oldConfig: Map<String, SourceConfig>,
+    ): Map<String, SourceConfig> {
+        val cacheList = hashMapOf<String, Source>()
+        list.forEach {
+            if ((cacheList[it.key]?.versionCode ?: -1) < it.versionCode) {
+                cacheList[it.key] = it
             }
-            sourceMap.emit(old)
-            old.iterator().forEach {
-                if (!parserConfig.containsKey(it.key)) {
-                    val config = SourceConfig(
-                        it.key,
-                        true,
-                        parserConfig.size
-                    )
-                    parserConfig[it.key] = config
-                }
-            }
-            saveOkkv()
-            saveNewConfig(parserConfig.values)
         }
+        val configs = oldConfig.toMutableMap()
+        cacheList.iterator().forEach {
+            if (!configs.containsKey(it.key)) {
+                // 未排序状态
+                configs[it.key] = SourceConfig(it.key, true, Int.MAX_VALUE)
+            }
+        }
+        return configs
     }
 
-    fun saveConfig(config: SourceConfig){
-        parserConfig[config.key] = config
-        saveNewConfig(parserConfig.values)
-    }
 
-    @UiThread
-    fun saveNewConfig(config: Collection<SourceConfig>) {
-        val newConfigs = hashMapOf<String, SourceConfig>()
-        val enableSource = arrayListOf<SourceConfig>()
-        config.forEach {
-            if (sourceMap.value.containsKey(it.key)) {
-                newConfigs[it.key] = it
-                if (it.enable) {
-                    enableSource.add(it)
-                }
-            }
-        }
-        parserConfig.clear()
-        parserConfig.putAll(newConfigs)
-        saveOkkv()
-        enableSource.sortBy {
-            it.order
-        }
-        val sources = arrayListOf<Source>()
-        val old = sourceMap.value
-        enableSource.forEach { sourceConfig ->
-            old[sourceConfig.key]?.let {
-                sources.add(it)
-            }
-        }
-        SourceMaster.newSource(SourceBundle(sources))
-    }
 
-    private fun getOkkvConfig(): HashMap<String, SourceConfig> {
-        val res = hashMapOf<String, SourceConfig>()
-        Gson().fromJson<List<SourceConfig>>(
-            parserConfigJsonOkkv,
+    private fun getOkkvConfig(): Map<String, SourceConfig> {
+        val configList = Gson().fromJson<List<SourceConfig>>(
+            configOkkv,
             object : TypeToken<List<SourceConfig>>() {}.type
         )
-            .forEach {
-                res[it.key] = it
-            }
-        return res
+        val map = hashMapOf<String, SourceConfig>()
+        configList.forEach {
+            map[it.key] = it
+        }
+        return map
     }
 
-    private fun saveOkkv() {
-        parserConfigJsonOkkv = Gson().toJson(parserConfig.values)
-    }
 
 }

@@ -77,6 +77,7 @@ class SourceBundle(
             components.forEach {
 
                 if (it is PlayComponent) {
+                    it.loge("SourceBundle")
                     playMap[it.source.key] = it
                 }
 
@@ -90,6 +91,7 @@ class SourceBundle(
                 }
 
                 if(it is DetailedComponent) {
+                    it.loge("SourceBundle")
                     detailedMap[it.source.key] = it
                 }
 
@@ -116,7 +118,6 @@ class SourceBundle(
     }
 
     fun page(key: String): PageComponent? {
-        key.loge("SourceBundle")
         return pageMap[key]
     }
 
@@ -133,10 +134,12 @@ class SourceBundle(
     }
 
     fun play(key: String): PlayComponent? {
+        key.loge("SourceBundle")
         return playMap[key]
     }
 
     fun detailed(key: String): DetailedComponent? {
+        key.loge("SourceBundle")
         return detailedMap[key]
     }
 
