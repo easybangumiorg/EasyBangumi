@@ -90,6 +90,7 @@ dependencies {
     implementation("androidx.activity:activity-ktx:${Version.androidx_activity_ktx}")
     implementation("androidx.fragment:fragment-ktx:${Version.androidx_fragment_ktx}")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:${Version.androidx_lifecycle_runtime_ktx}")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:${Version.androidx_lifecycle_view_model}")
 
     debugImplementation( "com.squareup.leakcanary:leakcanary-android:${Version.leakcanary}")
 
@@ -105,6 +106,9 @@ dependencies {
     implementation("androidx.compose.material:material-icons-core:${Version.compose_material}")
     implementation("androidx.compose.material:material-icons-extended:${Version.compose_material}")
     implementation("androidx.compose.runtime:runtime-livedata:${Version.compose_runtime}")
+    implementation("androidx.compose.animation:animation:${Version.compose_animation}")
+    implementation("androidx.compose.animation:animation-core:${Version.compose_animation}")
+    implementation("androidx.compose.animation:animation-graphics:${Version.compose_animation}")
 
     debugImplementation("androidx.compose.ui:ui-tooling:${Version.compose_ui}")
     debugImplementation("androidx.compose.ui:ui-test-manifest:${Version.compose_ui}")

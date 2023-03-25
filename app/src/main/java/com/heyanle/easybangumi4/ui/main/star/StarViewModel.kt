@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.ui.home.star
+package com.heyanle.easybangumi4.ui.main.star
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -134,10 +134,6 @@ class StarViewModel : ViewModel() {
     }
 
     // 内部
-
-    private fun getCartoonStarFlow(): Flow<List<CartoonStar>> {
-        return DB.cartoonStar.flowAll()
-    }
 
     private fun getAllPager(): Pager<Int, CartoonStar> {
         return Pager(

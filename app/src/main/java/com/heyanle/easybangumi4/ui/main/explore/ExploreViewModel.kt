@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.ui.home.explore
+package com.heyanle.easybangumi4.ui.main.explore
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelStore

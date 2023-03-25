@@ -6,8 +6,8 @@ package com.heyanle.buildsrc
  */
 
 object Version {
-    const val androidx_activity_ktx = "1.6.1"
-    const val androidx_fragment_ktx = "1.5.5"
+    const val androidx_activity_ktx = "1.7.0"
+    const val androidx_fragment_ktx = "1.5.6"
     const val androidx_core_ktx = "1.9.0"
     const val androidx_appcompat = "1.6.1"
     const val androidx_room = "2.5.0"
@@ -24,12 +24,13 @@ object Version {
     const val glide = "4.14.2"
     const val okkv2 = "1.2.4"
     const val junit = "4.13.2"
-    const val androidx_lifecycle_runtime_ktx = "2.5.1"
+    const val androidx_lifecycle_view_model = "2.6.1"
+    const val androidx_lifecycle_runtime_ktx = "2.6.1"
     const val exoplayer = "2.18.3"
     const val easy_player = "2.0"
 
     const val accompanist = "0.28.0"
-    const val navigation_compose = "2.5.3"
+    const val navigation_compose = "2.6.0-alpha03"
     const val coil = "2.2.2"
     const val media3 = "1.0.0-beta03"
     const val media = "1.6.0"

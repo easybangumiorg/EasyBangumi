@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.ui.home.more
+package com.heyanle.easybangumi4.ui.main.more
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -12,6 +12,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ColorLens
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.HistoryToggleOff
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
@@ -23,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.heyanle.easybangumi4.APPEARANCE_SETTING
+import com.heyanle.easybangumi4.HISTORY
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.R
 import com.heyanle.easybangumi4.preferences.InPrivatePreferences
@@ -63,6 +65,19 @@ fun More() {
             preference = InPrivatePreferences
         )
         Divider()
+
+        ListItem(
+            modifier = Modifier.clickable {
+                nav.navigate(HISTORY)
+            },
+            headlineContent = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.history)) },
+            leadingContent = {
+                Icon(
+                    Icons.Filled.History,
+                    contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.history)
+                )
+            }
+        )
 
         ListItem(
             modifier = Modifier.clickable {
