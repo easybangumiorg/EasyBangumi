@@ -26,7 +26,7 @@ import com.heyanle.easybangumi4.ui.WebViewUser
 import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlay
 import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.history.History
-import com.heyanle.easybangumi4.ui.home.Home
+import com.heyanle.easybangumi4.ui.main.Main
 import com.heyanle.easybangumi4.ui.setting.AppearanceSetting
 import com.heyanle.easybangumi4.ui.sourcehome.SourceHome
 import com.heyanle.easybangumi4.utils.TODO
@@ -46,7 +46,7 @@ var navControllerRef: WeakReference<NavHostController>? = null
 
 const val NAV = "nav"
 
-const val HOME = "home"
+const val MAIN = "home"
 
 const val DETAILED = "detailed"
 
@@ -57,6 +57,10 @@ const val SOURCE_HOME = "source_home"
 const val HISTORY = "history"
 
 const val APPEARANCE_SETTING = "appearance_setting"
+
+fun NavHostController.navigationSearch(defKey: String){
+    TODO("搜索")
+}
 
 fun NavHostController.navigationSourceHome(key: String) {
     navigate("${SOURCE_HOME}?key=${key}")
@@ -119,7 +123,7 @@ fun NavHostController.navigationDLNA(
 }
 
 // 缺省路由
-const val DEFAULT = HOME
+const val DEFAULT = MAIN
 
 
 
@@ -142,10 +146,10 @@ fun Nav() {
         ) {
 
             composable(
-                HOME,
+                MAIN,
             ) {
                 NormalSystemBarColor()
-                Home()
+                Main()
 
             }
 

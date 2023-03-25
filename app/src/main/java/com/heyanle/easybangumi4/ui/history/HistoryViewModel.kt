@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.ui.home.history
+package com.heyanle.easybangumi4.ui.history
 
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.lifecycle.ViewModel

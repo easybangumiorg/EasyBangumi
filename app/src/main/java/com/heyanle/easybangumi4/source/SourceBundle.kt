@@ -121,6 +121,10 @@ class SourceBundle(
         return pageMap[key]
     }
 
+    fun pages(): List<PageComponent> {
+        return pageMap.values.toList()
+    }
+
     fun search(key: String): SearchComponent? {
         return searchMap[key]
     }
