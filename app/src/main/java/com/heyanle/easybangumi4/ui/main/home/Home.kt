@@ -118,29 +118,32 @@ fun Home() {
         EasyBottomSheetDialog(onDismissRequest = { isSheetShow = false }) {
             ListItem(headlineContent = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.choose_source)) })
             Divider()
-            for (page in animSources.pages()) {
-                ListItem(
-                    headlineContent = { Text(text = page.source.label) },
-                    leadingContent = {
-                        val icon = remember {
-                            animSources.icon(page.source.key)
+            repeat(10){
+                for (page in animSources.pages()) {
+                    ListItem(
+                        headlineContent = { Text(text = page.source.label) },
+                        leadingContent = {
+                            val icon = remember {
+                                animSources.icon(page.source.key)
+                            }
+                            OkImage(
+                                modifier = Modifier.size(32.dp),
+                                image = icon?.getIconFactory()?.invoke(),
+                                contentDescription = page.source.label
+                            )
+                        },
+                        trailingContent = {
+                            RadioButton(
+                                selected = state.selectionKey == page.source.key,
+                                onClick = {
+                                    isSheetShow = false
+                                    vm.changeSelectionSource(page.source.key)
+                                })
                         }
-                        OkImage(
-                            modifier = Modifier.size(32.dp),
-                            image = icon?.getIconFactory()?.invoke(),
-                            contentDescription = page.source.label
-                        )
-                    },
-                    trailingContent = {
-                        RadioButton(
-                            selected = state.selectionKey == page.source.key,
-                            onClick = {
-                                isSheetShow = false
-                                vm.changeSelectionSource(page.source.key)
-                            })
-                    }
-                )
+                    )
+                }
             }
+
 
         }
     }

@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.ui.common
 
 import android.os.Bundle
+import android.view.ViewGroup
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,7 +11,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetState
@@ -37,6 +40,7 @@ import androidx.compose.ui.platform.compositionContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.zIndex
+import androidx.core.widget.NestedScrollView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.ViewModelStore
@@ -97,6 +101,7 @@ fun MD3BottomSheet(
 
 }
 
+// TODO 添加 header
 @Composable
 fun EasyBottomSheetDialog(
     onDismissRequest: ()->Unit,
@@ -109,8 +114,12 @@ fun EasyBottomSheetDialog(
     val shape = MaterialTheme.shapes
     val dialog = remember(sheetContent) {
         BottomSheetDialog(ctx, R.style.BottomSheetDialogStyle).apply {
-            setContentView(ComposeView(ctx).apply {
-                setBackgroundColor(Color.Transparent.toArgb())
+
+            val nest = NestedScrollView(ctx)
+            nest.layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+
+            val composeView = ComposeView(ctx).apply {
+                //setBackgroundColor(colorScheme.background.toArgb())
                 setContent {
                     MaterialTheme(
                         colorScheme = colorScheme,
@@ -119,10 +128,10 @@ fun EasyBottomSheetDialog(
                     ) {
                         Surface(
                             shape = RoundedCornerShape(16.dp, 16.dp),
-                            color = MaterialTheme.colorScheme.background,
-                            contentColor = MaterialTheme.colorScheme.onBackground
+                            color = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
+                            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                         ) {
-                            Column {
+                            Column() {
                                 // DragHandle
                                 Box(
                                     Modifier
@@ -160,7 +169,9 @@ fun EasyBottomSheetDialog(
                 runRecomposeScope.launch {
                     reComposer.runRecomposeAndApplyChanges()
                 }
-            })
+            }
+            nest.addView(composeView)
+            setContentView(nest)
             setOnDismissListener {
                 onDismissRequest()
             }
