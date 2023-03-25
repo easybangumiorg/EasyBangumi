@@ -224,8 +224,11 @@ object CartoonPlayingManager: Player.Listener {
         if (process == -1L) {
             process = 0L
         }
-        // 只有在播放状态才更新历史
-        val playingState = state as? PlayingState.Playing ?: return
+        val playLineIndex = state.playLineIndex() ?: return
+        val playLine = state.playLine() ?: return
+        val curEpisode = state.episode() ?: return
+
+
         val curCartoon = cartoon ?: return
 
         val history = CartoonHistory(
@@ -237,10 +240,10 @@ object CartoonPlayingManager: Player.Listener {
             name = curCartoon.title,
             intro = curCartoon.intro ?: "",
 
-            lastLinesIndex = playingState.playLineIndex,
-            lastLineTitle = playingState.playLine.label,
-            lastEpisodeIndex = playingState.curEpisode,
-            lastEpisodeTitle = playingState.playLine.episode[playingState.curEpisode],
+            lastLinesIndex = playLineIndex,
+            lastLineTitle = playLine.label,
+            lastEpisodeIndex = curEpisode,
+            lastEpisodeTitle = playLine.episode[curEpisode],
             lastProcessTime = process,
 
             createTime = System.currentTimeMillis()
@@ -252,6 +255,9 @@ object CartoonPlayingManager: Player.Listener {
     }
 
     fun trySaveHistory(ps: Long = -1) {
+        if(InPrivatePreferences.stateFlow.value){
+            return
+        }
         var process = ps
         if (ps == -1L) {
             process = exoPlayer.currentPosition
@@ -259,9 +265,11 @@ object CartoonPlayingManager: Player.Listener {
         if (process == -1L) {
             process = 0L
         }
-        // 只有在播放状态才更新历史
-        val playingState = state as? PlayingState.Playing ?: return
         val curCartoon = cartoon ?: return
+        val playLineIndex = state.playLineIndex() ?: return
+        val playLine = state.playLine() ?: return
+        val curEpisode = state.episode() ?: return
+
 
         defaultScope.launch(Dispatchers.IO) {
             val history = CartoonHistory(
@@ -273,10 +281,10 @@ object CartoonPlayingManager: Player.Listener {
                 name = curCartoon.title,
                 intro = curCartoon.intro ?: "",
 
-                lastLinesIndex = playingState.playLineIndex,
-                lastLineTitle = playingState.playLine.label,
-                lastEpisodeIndex = playingState.curEpisode,
-                lastEpisodeTitle = playingState.playLine.episode[playingState.curEpisode],
+                lastLinesIndex = playLineIndex,
+                lastLineTitle = playLine.label,
+                lastEpisodeIndex = curEpisode,
+                lastEpisodeTitle = playLine.episode[curEpisode],
                 lastProcessTime = process,
 
                 createTime = System.currentTimeMillis()

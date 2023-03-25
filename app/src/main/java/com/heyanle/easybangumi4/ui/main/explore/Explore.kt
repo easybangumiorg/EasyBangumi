@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.ui.home.explore
+package com.heyanle.easybangumi4.ui.main.explore
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,10 +19,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
-import com.heyanle.easybangumi4.ui.home.explore.extension.Extension
-import com.heyanle.easybangumi4.ui.home.explore.extension.ExtensionTopAppBar
-import com.heyanle.easybangumi4.ui.home.explore.source.Source
-import com.heyanle.easybangumi4.ui.home.explore.source.SourceTopAppBar
+import com.heyanle.easybangumi4.ui.main.explore.extension.Extension
+import com.heyanle.easybangumi4.ui.main.explore.extension.ExtensionTopAppBar
+import com.heyanle.easybangumi4.ui.main.explore.source.Source
+import com.heyanle.easybangumi4.ui.main.explore.source.SourceTopAppBar
 import com.heyanle.okkv2.core.okkv
 import kotlinx.coroutines.launch
 

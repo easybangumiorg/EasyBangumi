@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.ui.home.update
+package com.heyanle.easybangumi4.ui.main.update
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

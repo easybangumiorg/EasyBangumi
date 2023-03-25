@@ -1,16 +1,19 @@
-package com.heyanle.easybangumi4.ui.home
+package com.heyanle.easybangumi4.ui.main
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.Column
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.Report
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarOutline
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Report
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,10 +36,11 @@ import com.google.accompanist.pager.rememberPagerState
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.ui.common.SourceContainer
 import com.heyanle.easybangumi4.ui.history.History
-import com.heyanle.easybangumi4.ui.home.explore.Explore
-import com.heyanle.easybangumi4.ui.home.more.More
-import com.heyanle.easybangumi4.ui.home.star.Star
-import com.heyanle.easybangumi4.ui.home.update.Update
+import com.heyanle.easybangumi4.ui.main.explore.Explore
+import com.heyanle.easybangumi4.ui.main.home.Home
+import com.heyanle.easybangumi4.ui.main.more.More
+import com.heyanle.easybangumi4.ui.main.star.Star
+import com.heyanle.easybangumi4.ui.main.update.Update
 import com.heyanle.okkv2.core.okkv
 import kotlinx.coroutines.launch
 
@@ -45,13 +49,29 @@ import kotlinx.coroutines.launch
  * https://github.com/heyanLE
  */
 // 番剧页面相关的子页面
-sealed class HomePage(
+sealed class MainPage(
     val route: String,
     val tabLabel: @Composable (() -> Unit),
     val icon: @Composable ((Boolean) -> Unit),
     val content: @Composable (() -> Unit),
 ) {
-    object StarPage : HomePage(
+
+    object HomePage: MainPage(
+        route = "home",
+        tabLabel = { Text(text = stringResource(id = R.string.home)) },
+        icon = {
+            Icon(
+                if (it) Icons.Filled.Home else Icons.Outlined.Home,
+                contentDescription = stringResource(id = R.string.home)
+            )
+        },
+        content = {
+            SourceContainer {
+                Home()
+            }
+        },
+    )
+    object StarPage : MainPage(
         route = "star",
         tabLabel = { Text(text = stringResource(id = R.string.my_anim)) },
         icon = {
@@ -67,7 +87,7 @@ sealed class HomePage(
         },
     )
 
-    object UpdatePage : HomePage(
+    object UpdatePage : MainPage(
         route = "update",
         tabLabel = { Text(text = stringResource(id = R.string.update)) },
         icon = {
@@ -82,7 +102,7 @@ sealed class HomePage(
         }
     )
 
-    object HistoryPage : HomePage(
+    object HistoryPage : MainPage(
         route = "history",
         tabLabel = { Text(text = stringResource(id = R.string.history)) },
         icon = {
@@ -97,7 +117,7 @@ sealed class HomePage(
         }
     )
 
-    object ExplorePage : HomePage(
+    object ExplorePage : MainPage(
         route = "explore",
         tabLabel = { Text(text = stringResource(id = R.string.explore)) },
         icon = {
@@ -111,7 +131,7 @@ sealed class HomePage(
         }
     )
 
-    object MorePage : HomePage(
+    object MorePage : MainPage(
         route = "more",
         tabLabel = { Text(text = stringResource(id = R.string.more)) },
         icon = {
@@ -128,15 +148,16 @@ sealed class HomePage(
 
 }
 
-val HomePageItems = listOf(
-    HomePage.StarPage,
-    HomePage.UpdatePage,
+val MainPageItems = listOf(
+    MainPage.HomePage,
+    MainPage.StarPage,
+    MainPage.UpdatePage,
     // HomePage.HistoryPage,
-    HomePage.ExplorePage,
-    HomePage.MorePage,
+    MainPage.ExplorePage,
+    MainPage.MorePage,
 )
 
-val LocalHomeViewModel = staticCompositionLocalOf<HomeViewModel> {
+val LocalMainViewModel = staticCompositionLocalOf<MainViewModel> {
     error("HomeViewModel Not Provide")
 }
 
@@ -145,20 +166,20 @@ var homePageIndexOkkv by okkv("home_page_index", 0)
 
 @OptIn(
     ExperimentalPagerApi::class, ExperimentalMaterial3Api::class,
-    ExperimentalAnimationApi::class
+    ExperimentalAnimationApi::class, ExperimentalMaterialApi::class
 )
 @Composable
-fun Home() {
+fun Main() {
 
     val pagerState =
-        rememberPagerState(initialPage = if (homePageIndexOkkv >= 0 && homePageIndexOkkv < HomePageItems.size) homePageIndexOkkv else 0)
+        rememberPagerState(initialPage = if (homePageIndexOkkv >= 0 && homePageIndexOkkv < MainPageItems.size) homePageIndexOkkv else 0)
 
     val scope = rememberCoroutineScope()
 
-    val vm = viewModel<HomeViewModel>()
+    val vm = viewModel<MainViewModel>()
 
     CompositionLocalProvider(
-        LocalHomeViewModel provides vm
+        LocalMainViewModel provides vm
     ) {
         Surface(
             color = MaterialTheme.colorScheme.background,
@@ -170,15 +191,15 @@ fun Home() {
                     userScrollEnabled = false,
                     state = pagerState,
                     modifier = Modifier.weight(1f),
-                    count = HomePageItems.size,
+                    count = MainPageItems.size,
                 ) {
-                    HomePageItems[it].content()
+                    MainPageItems[it].content()
 
                 }
 
                 if (vm.customBottomBar == null) {
                     NavigationBar() {
-                        HomePageItems.forEachIndexed { i, page ->
+                        MainPageItems.forEachIndexed { i, page ->
                             val select = pagerState.currentPage == i
                             NavigationBarItem(
                                 icon = {
@@ -200,6 +221,8 @@ fun Home() {
                     vm.customBottomBar?.let { it() }
                 }
             }
+
+
 
         }
     }

@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.ui.home.star
+package com.heyanle.easybangumi4.ui.main.star
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
@@ -65,7 +65,7 @@ import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.PagingCommon
 import com.heyanle.easybangumi4.ui.common.SelectionTopAppBar
 import com.heyanle.easybangumi4.ui.common.pagingCommon
-import com.heyanle.easybangumi4.ui.home.LocalHomeViewModel
+import com.heyanle.easybangumi4.ui.main.LocalMainViewModel
 
 /**
  * Created by HeYanLe on 2023/3/18 17:04.
@@ -77,7 +77,7 @@ import com.heyanle.easybangumi4.ui.home.LocalHomeViewModel
 @Composable
 fun Star() {
 
-    val homeViewModel = LocalHomeViewModel.current
+    val homeViewModel = LocalMainViewModel.current
     val vm = viewModel<StarViewModel>()
 
     val selectionBottomBar = remember<@Composable () -> Unit> {

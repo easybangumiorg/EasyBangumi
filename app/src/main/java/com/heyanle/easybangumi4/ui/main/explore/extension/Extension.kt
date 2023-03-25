@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.ui.home.explore.extension
+package com.heyanle.easybangumi4.ui.main.explore.extension
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize

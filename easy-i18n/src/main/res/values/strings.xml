@@ -50,6 +50,8 @@
     <string name="explore">浏览</string>
     <string name="more">更多</string>
 
+    <string name="choose_source">选择番源</string>
+
     <string name="today">今天</string>
     <string name="yesterday">昨天</string>
     <string name="day_age">%1$s 天前</string>
