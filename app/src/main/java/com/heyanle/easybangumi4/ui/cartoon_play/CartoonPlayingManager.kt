@@ -190,7 +190,10 @@ object CartoonPlayingManager: Player.Listener {
 
         state = PlayingState.Loading(playLineIndex, playLine, realEpisode)
         playComponent.getPlayInfo(
-            CartoonSummary(cartoon.id, cartoon.url, cartoon.source),
+            CartoonSummary(
+                id = cartoon.id,
+                url = cartoon.url,
+                source = cartoon.source),
             playLine,
             episode
         )

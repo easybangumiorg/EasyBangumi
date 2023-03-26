@@ -1,5 +1,6 @@
 package com.heyanle.easybangumi4.ui.common
 
+import android.content.Context
 import android.os.Bundle
 import android.view.ViewGroup
 import androidx.compose.foundation.background
@@ -7,20 +8,17 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.Surface
 import androidx.compose.material.rememberModalBottomSheetState
-import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
@@ -31,16 +29,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.AndroidUiDispatcher
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.compositionContext
+import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.zIndex
-import androidx.core.widget.NestedScrollView
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.ViewModelStore
@@ -104,86 +102,94 @@ fun MD3BottomSheet(
 // TODO 添加 header
 @Composable
 fun EasyBottomSheetDialog(
-    onDismissRequest: ()->Unit,
+    onDismissRequest: () -> Unit,
     sheetContent: @Composable ColumnScope.() -> Unit,
-){
+) {
 
     val ctx = LocalContext.current
     val colorScheme = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
     val shape = MaterialTheme.shapes
+    val nestedScrollInterop = rememberNestedScrollInteropConnection()
     val dialog = remember(sheetContent) {
         BottomSheetDialog(ctx, R.style.BottomSheetDialogStyle).apply {
-
-            val nest = NestedScrollView(ctx)
+            val nest = CoordinatorLayout(ctx)
             nest.layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-
-            val composeView = ComposeView(ctx).apply {
-                //setBackgroundColor(colorScheme.background.toArgb())
-                setContent {
-                    MaterialTheme(
-                        colorScheme = colorScheme,
-                        typography = typography,
-                        shapes = shape
+            val contentComposeView = getComposeView(ctx) {
+                MaterialTheme(
+                    colorScheme = colorScheme,
+                    typography = typography,
+                    shapes = shape
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp))
+                            .clip(RoundedCornerShape(16.dp))
+                            .nestedScroll(nestedScrollInterop)
                     ) {
-                        Surface(
-                            shape = RoundedCornerShape(16.dp, 16.dp),
-                            color = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
-                            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                        ) {
-                            Column() {
-                                // DragHandle
-                                Box(
-                                    Modifier
-                                        .padding(vertical = 10.dp)
-                                        .width(32.dp)
-                                        .height(4.dp)
-                                        .clip(RoundedCornerShape(2.dp))
-                                        .alpha(0.4f)
-                                        .background(MaterialTheme.colorScheme.onSurfaceVariant)
-                                        .align(Alignment.CenterHorizontally)
-                                )
-                                sheetContent()
-                            }
-                        }
-
+                        Box(
+                            Modifier
+                                .padding(vertical = 10.dp)
+                                .width(32.dp)
+                                .height(4.dp)
+                                .clip(RoundedCornerShape(2.dp))
+                                .alpha(0.4f)
+                                .background(colorScheme.onSurfaceVariant)
+                                .align(Alignment.CenterHorizontally)
+                        )
+                        sheetContent()
                     }
-
-                }
-                val lifecycleOwner = MyLifecycleOwner()
-                lifecycleOwner.performRestore(null)
-                lifecycleOwner.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
-                setViewTreeLifecycleOwner(lifecycleOwner)
-                this.setViewTreeSavedStateRegistryOwner(lifecycleOwner)
-
-                val viewModelStore = ViewModelStore()
-                setViewTreeViewModelStoreOwner(object: ViewModelStoreOwner {
-                    override val viewModelStore: ViewModelStore
-                        get() = viewModelStore
-                })
-
-                val coroutineContext = AndroidUiDispatcher.CurrentThread
-                val runRecomposeScope = CoroutineScope(coroutineContext)
-                val reComposer = Recomposer(coroutineContext)
-                this.compositionContext = reComposer
-                runRecomposeScope.launch {
-                    reComposer.runRecomposeAndApplyChanges()
                 }
             }
-            nest.addView(composeView)
+
+            nest.addView(contentComposeView)
             setContentView(nest)
+
             setOnDismissListener {
                 onDismissRequest()
             }
         }
     }
 
-    DisposableEffect(key1 = Unit){
+    DisposableEffect(key1 = Unit) {
         dialog.show()
         onDispose {
             dialog.hide()
         }
     }
+}
+
+fun getComposeView(
+    ctx: Context,
+    content: @Composable () -> Unit
+): ComposeView {
+    return ComposeView(ctx).apply {
+        //setBackgroundColor(colorScheme.background.toArgb())
+        setContent {
+            content()
+        }
+        val lifecycleOwner = MyLifecycleOwner()
+        lifecycleOwner.performRestore(null)
+        lifecycleOwner.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
+        setViewTreeLifecycleOwner(lifecycleOwner)
+        this.setViewTreeSavedStateRegistryOwner(lifecycleOwner)
+
+        val viewModelStore = ViewModelStore()
+        setViewTreeViewModelStoreOwner(object : ViewModelStoreOwner {
+            override val viewModelStore: ViewModelStore
+                get() = viewModelStore
+        })
+
+        val coroutineContext = AndroidUiDispatcher.CurrentThread
+        val runRecomposeScope = CoroutineScope(coroutineContext)
+        val reComposer = Recomposer(coroutineContext)
+        this.compositionContext = reComposer
+        runRecomposeScope.launch {
+            reComposer.runRecomposeAndApplyChanges()
+        }
+    }
+
 }
 
 internal class MyLifecycleOwner : SavedStateRegistryOwner {
