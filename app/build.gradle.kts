@@ -109,6 +109,8 @@ dependencies {
     implementation("androidx.compose.animation:animation:${Version.compose_animation}")
     implementation("androidx.compose.animation:animation-core:${Version.compose_animation}")
     implementation("androidx.compose.animation:animation-graphics:${Version.compose_animation}")
+    implementation("androidx.compose.foundation:foundation:${Version.compose_foundation}")
+    implementation("androidx.compose.foundation:foundation-layout:${Version.compose_foundation}")
 
     debugImplementation("androidx.compose.ui:ui-tooling:${Version.compose_ui}")
     debugImplementation("androidx.compose.ui:ui-test-manifest:${Version.compose_ui}")

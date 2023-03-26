@@ -8,6 +8,7 @@ import com.google.android.exoplayer2.DefaultLoadControl
 import com.google.android.exoplayer2.DefaultRenderersFactory
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.analytics.DefaultAnalyticsCollector
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
@@ -317,6 +318,20 @@ object CartoonPlayingManager: Player.Listener {
             saveLoopJob?.cancel()
             saveLoopJob = null
         }
+    }
+
+    override fun onPlayerError(error: PlaybackException) {
+        super.onPlayerError(error)
+        val playLineIndex = state.playLineIndex() ?: return
+        val playLine = state.playLine() ?: return
+        val curEpisode = state.episode() ?: return
+        error(
+            errMsg = error.message?:error.errorCodeName,
+            throwable = error,
+            playLineIndex = playLineIndex,
+            playLine = playLine,
+            episode = curEpisode,
+        )
     }
 
     private fun innerPlay(playerInfo: PlayerInfo, adviceProgress: Long = 0L) {

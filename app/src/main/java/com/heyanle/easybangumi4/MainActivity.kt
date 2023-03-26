@@ -21,6 +21,7 @@ import androidx.compose.ui.res.stringResource
 import com.heyanle.easybangumi4.source.SourceMaster
 import com.heyanle.easybangumi4.theme.EasyTheme
 import com.heyanle.easybangumi4.ui.common.MoeSnackBar
+import com.heyanle.easybangumi4.utils.MediaUtils
 import com.heyanle.okkv2.core.okkv
 
 /**
@@ -36,7 +37,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         // initUtils(BangumiApp.INSTANCE)
         // networkHelper.defaultUA = WebView(this).getDefaultUserAgentString()
-//        MediaHelper.setIsDecorFitsSystemWindows(this, false)
+        MediaUtils.setIsDecorFitsSystemWindows(this, false)
 
         setContent {
 
