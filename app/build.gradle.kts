@@ -96,7 +96,7 @@ dependencies {
 
     implementation("androidx.paging:paging-runtime-ktx:${Version.paging}")
     implementation("androidx.paging:paging-compose:1.0.0-alpha18")
-    implementation("com.github.heyanLE.EasyPlayer:eplayer-core:${Version.easy_player}")
+    implementation("com.github.WhichWho:EasyPlayer2:${Version.easy_player}")
 
     // implementation(platform("androidx.compose:compose-bom:${Version.compose_bom}"))
     implementation("androidx.compose.ui:ui:${Version.compose_ui}")
@@ -131,8 +131,6 @@ dependencies {
     implementation("com.google.android.exoplayer:extension-rtmp:${Version.exoplayer}")
 
     implementation("androidx.media:media:${Version.media}")
-
-    implementation("com.github.heyanLE.EasyPlayer:eplayer-core:${Version.easy_player}")
 
     implementation("androidx.room:room-runtime:${Version.androidx_room}")
     implementation("androidx.room:room-ktx:${Version.androidx_room}")
