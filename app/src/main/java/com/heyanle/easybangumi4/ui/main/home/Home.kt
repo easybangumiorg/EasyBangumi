@@ -9,6 +9,8 @@ import androidx.compose.animation.with
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
@@ -116,33 +118,39 @@ fun Home() {
     val animSources = LocalSourceBundleController.current
     if(isSheetShow){
         EasyBottomSheetDialog(onDismissRequest = { isSheetShow = false }) {
-            ListItem(headlineContent = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.choose_source)) })
-            Divider()
-            repeat(10){
-                for (page in animSources.pages()) {
-                    ListItem(
-                        headlineContent = { Text(text = page.source.label) },
-                        leadingContent = {
-                            val icon = remember {
-                                animSources.icon(page.source.key)
+            Column {
+                ListItem(headlineContent = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.choose_source)) })
+                Divider()
+            }
+
+            LazyColumn(){
+                repeat(10){
+                    items(animSources.pages()){page ->
+                        ListItem(
+                            headlineContent = { Text(text = page.source.label) },
+                            leadingContent = {
+                                val icon = remember {
+                                    animSources.icon(page.source.key)
+                                }
+                                OkImage(
+                                    modifier = Modifier.size(32.dp),
+                                    image = icon?.getIconFactory()?.invoke(),
+                                    contentDescription = page.source.label
+                                )
+                            },
+                            trailingContent = {
+                                RadioButton(
+                                    selected = state.selectionKey == page.source.key,
+                                    onClick = {
+                                        isSheetShow = false
+                                        vm.changeSelectionSource(page.source.key)
+                                    })
                             }
-                            OkImage(
-                                modifier = Modifier.size(32.dp),
-                                image = icon?.getIconFactory()?.invoke(),
-                                contentDescription = page.source.label
-                            )
-                        },
-                        trailingContent = {
-                            RadioButton(
-                                selected = state.selectionKey == page.source.key,
-                                onClick = {
-                                    isSheetShow = false
-                                    vm.changeSelectionSource(page.source.key)
-                                })
-                        }
-                    )
+                        )
+                    }
                 }
             }
+
 
 
         }
