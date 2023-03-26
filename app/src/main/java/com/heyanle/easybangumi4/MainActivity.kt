@@ -21,8 +21,6 @@ import androidx.compose.ui.res.stringResource
 import com.heyanle.easybangumi4.source.SourceMaster
 import com.heyanle.easybangumi4.theme.EasyTheme
 import com.heyanle.easybangumi4.ui.common.MoeSnackBar
-import com.heyanle.eplayer_core.EasyPlayerManager
-import com.heyanle.eplayer_core.utils.MediaHelper
 import com.heyanle.okkv2.core.okkv
 
 /**
@@ -38,7 +36,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         // initUtils(BangumiApp.INSTANCE)
         // networkHelper.defaultUA = WebView(this).getDefaultUserAgentString()
-        MediaHelper.setIsDecorFitsSystemWindows(this, false)
+//        MediaHelper.setIsDecorFitsSystemWindows(this, false)
 
         setContent {
 
@@ -95,6 +93,6 @@ class MainActivity : ComponentActivity() {
             }
 
         }
-        EasyPlayerManager.enableOrientation = false
+//        EasyPlayerManager.enableOrientation = false
     }
 }

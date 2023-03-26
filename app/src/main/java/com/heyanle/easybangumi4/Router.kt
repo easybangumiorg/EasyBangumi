@@ -30,6 +30,7 @@ import com.heyanle.easybangumi4.ui.main.Main
 import com.heyanle.easybangumi4.ui.setting.AppearanceSetting
 import com.heyanle.easybangumi4.ui.sourcehome.SourceHome
 import com.heyanle.easybangumi4.utils.TODO
+import com.heyanle.easybangumi4.utils.loge
 import java.lang.ref.WeakReference
 import java.net.URLDecoder
 import java.net.URLEncoder
@@ -190,7 +191,9 @@ fun Nav() {
                 val id = it.arguments?.getString("id") ?: ""
                 val source = it.arguments?.getString("source") ?: ""
                 val url = it.arguments?.getString("url") ?: ""
-
+                LaunchedEffect(Unit) {
+                    "id:$id, source: $source, url: $url".loge()
+                }
                 val lineIndex = it.arguments?.getInt("lineIndex") ?: -1
                 val episode = it.arguments?.getInt("episode") ?: -1
                 val adviceProgress = it.arguments?.getLong("adviceProgress") ?: -1L
