@@ -44,8 +44,10 @@ suspend fun <T> withResult(
             SourceResult.Complete(block())
         }
     } catch (e: ParserException) {
+        e.printStackTrace()
         SourceResult.Error<T>(e, true)
     } catch (e: Exception) {
+        e.printStackTrace()
         SourceResult.Error<T>(e, false)
     }
 
