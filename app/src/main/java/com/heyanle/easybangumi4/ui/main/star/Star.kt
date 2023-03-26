@@ -65,7 +65,7 @@ import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.PagingCommon
 import com.heyanle.easybangumi4.ui.common.SelectionTopAppBar
 import com.heyanle.easybangumi4.ui.common.pagingCommon
-import com.heyanle.easybangumi4.ui.main.LocalMainViewModel
+import com.heyanle.easybangumi4.ui.main.MainViewModel
 
 /**
  * Created by HeYanLe on 2023/3/18 17:04.
@@ -77,7 +77,7 @@ import com.heyanle.easybangumi4.ui.main.LocalMainViewModel
 @Composable
 fun Star() {
 
-    val homeViewModel = LocalMainViewModel.current
+    val homeViewModel = viewModel<MainViewModel>()
     val vm = viewModel<StarViewModel>()
 
     val selectionBottomBar = remember<@Composable () -> Unit> {

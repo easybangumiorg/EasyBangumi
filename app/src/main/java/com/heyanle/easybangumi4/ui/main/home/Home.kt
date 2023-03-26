@@ -6,6 +6,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.with
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
@@ -13,16 +14,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetState
-import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Sync
-import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -30,11 +30,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
@@ -42,12 +41,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.navigationSearch
 import com.heyanle.easybangumi4.source.LocalSourceBundleController
-import com.heyanle.easybangumi4.ui.common.EasyBottomSheetDialog
-import com.heyanle.easybangumi4.ui.common.MD3BottomSheet
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.common.page.CartoonPageListTab
 import com.heyanle.easybangumi4.ui.common.page.CartoonPageUI
-import com.heyanle.easybangumi4.ui.main.LocalMainViewModel
+import com.heyanle.easybangumi4.ui.main.MainViewModel
+import kotlinx.coroutines.launch
 
 /**
  * Created by HeYanLe on 2023/3/25 15:47.
@@ -58,18 +56,10 @@ import com.heyanle.easybangumi4.ui.main.LocalMainViewModel
 fun Home() {
 
     val vm = viewModel<HomeViewModel>()
+    val mainVM = viewModel<MainViewModel>()
     val nav = LocalNavController.current
 
     val state by vm.stateFlow.collectAsState()
-
-//    val sheetState: ModalBottomSheetState =
-//        rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
-
-    var isSheetShow by remember {
-        mutableStateOf(false)
-    }
-
-    val mainViewModel = LocalMainViewModel.current
 
     val scope = rememberCoroutineScope()
 
@@ -77,8 +67,9 @@ fun Home() {
         HomeTopAppBar(
             title = state.topAppBarTitle,
             onChangeClick = {
-                isSheetShow = true
-
+                scope.launch {
+                    mainVM.bottomSheetState.show()
+                }
             },
             onSearchClick = { nav.navigationSearch(state.selectionKey) }
         )
@@ -113,48 +104,8 @@ fun Home() {
                 }
             }
         }
-
     }
-    val animSources = LocalSourceBundleController.current
-    if(isSheetShow){
-        EasyBottomSheetDialog(onDismissRequest = { isSheetShow = false }) {
-            Column {
-                ListItem(headlineContent = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.choose_source)) })
-                Divider()
-            }
 
-            LazyColumn(){
-                repeat(10){
-                    items(animSources.pages()){page ->
-                        ListItem(
-                            headlineContent = { Text(text = page.source.label) },
-                            leadingContent = {
-                                val icon = remember {
-                                    animSources.icon(page.source.key)
-                                }
-                                OkImage(
-                                    modifier = Modifier.size(32.dp),
-                                    image = icon?.getIconFactory()?.invoke(),
-                                    contentDescription = page.source.label
-                                )
-                            },
-                            trailingContent = {
-                                RadioButton(
-                                    selected = state.selectionKey == page.source.key,
-                                    onClick = {
-                                        isSheetShow = false
-                                        vm.changeSelectionSource(page.source.key)
-                                    })
-                            }
-                        )
-                    }
-                }
-            }
-
-
-
-        }
-    }
 
 //    HomeBottomSheet(sheetState = sheetState, defSourceKey = state.selectionKey, onSourceClick = {
 //        vm.changeSelectionSource(it)
@@ -166,18 +117,31 @@ fun Home() {
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun HomeBottomSheet(
-    sheetState: ModalBottomSheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden),
-    defSourceKey: String,
-    onSourceClick: (String) -> Unit,
+    bottomSheet: ModalBottomSheetState
 ) {
-    MD3BottomSheet(
-        sheetState = sheetState
-    ){
-        val animSources = LocalSourceBundleController.current
-        ListItem(headlineContent = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.choose_source)) })
-        Divider()
-        for (page in animSources.pages()) {
+    val animSources = LocalSourceBundleController.current
+    val vm = viewModel<HomeViewModel>()
+
+    val state = vm.stateFlow.collectAsState()
+
+    val scope = rememberCoroutineScope()
+
+    ListItem(
+        headlineContent = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.choose_source)) },
+        colors = ListItemDefaults.colors(
+            containerColor = Color.Transparent
+        ),
+    )
+    Divider()
+    LazyColumn() {
+        items(animSources.pages()) { page ->
             ListItem(
+                modifier = Modifier.clickable {
+                    vm.changeSelectionSource(page.source.key)
+                    scope.launch {
+                        bottomSheet.hide()
+                    }
+                },
                 headlineContent = { Text(text = page.source.label) },
                 leadingContent = {
                     val icon = remember {
@@ -191,11 +155,20 @@ fun HomeBottomSheet(
                 },
                 trailingContent = {
                     RadioButton(
-                        selected = defSourceKey == page.source.key,
-                        onClick = { onSourceClick(page.source.key) })
-                }
+                        selected = state.value.selectionKey == page.source.key,
+                        onClick = {
+                            vm.changeSelectionSource(page.source.key)
+                            scope.launch {
+                                bottomSheet.hide()
+                            }
+                        })
+                },
+                colors = ListItemDefaults.colors(
+                    containerColor = Color.Transparent
+                ),
             )
         }
+
     }
 
 

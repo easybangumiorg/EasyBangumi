@@ -1,5 +1,6 @@
 package com.heyanle.easybangumi4.ui.cartoon_play
 
+import android.app.Activity
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -17,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -52,6 +54,7 @@ fun CartoonPlay(
     url: String,
     enterData: CartoonPlayViewModel.EnterData? = null
 ) {
+
 
     val summary = CartoonSummary(id, source, url)
     val owner = DetailedViewModel.getViewModelStoreOwner(summary)
@@ -94,7 +97,7 @@ fun CartoonPlay(
         }
     }
 
-    LaunchedEffect(key1 = Unit){
+    LaunchedEffect(key1 = Unit) {
         detailedVM.checkUpdate()
     }
 
@@ -114,11 +117,11 @@ fun CartoonPlay(
     ) {
 
 
-
         EasyPlayerScaffold(
             modifier = Modifier.fillMaxSize(),
             vm = controlVM,
             videoFloat = {
+                val ctx = LocalContext.current as Activity
                 LaunchedEffect(key1 = CartoonPlayingManager.state) {
                     when (CartoonPlayingManager.state) {
                         is CartoonPlayingManager.PlayingState.Playing -> {
@@ -127,7 +130,10 @@ fun CartoonPlay(
                         }
 
                         is CartoonPlayingManager.PlayingState.Loading -> {}
-                        is CartoonPlayingManager.PlayingState.Error -> {}
+                        is CartoonPlayingManager.PlayingState.Error -> {
+                            it.onFullScreen(false, false, ctx)
+                        }
+
                         else -> {}
                     }
                 }
@@ -144,9 +150,13 @@ fun CartoonPlay(
                     is CartoonPlayingManager.PlayingState.Error -> {
                         ErrorPage(
                             modifier = Modifier
-                                .fillMaxSize(),
+                                .fillMaxSize()
+                                .background(Color.Black),
                             errorMsg = state.errMsg,
                             clickEnable = true,
+                            other = {
+                                Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.click_to_retry))
+                            },
                             onClick = {
                                 CartoonPlayingManager.defaultScope.launch {
                                     CartoonPlayingManager.refresh()
@@ -220,9 +230,11 @@ fun CartoonPlay(
                 color = MaterialTheme.colorScheme.background,
                 contentColor = MaterialTheme.colorScheme.onBackground
             ) {
-                Box(modifier = Modifier
-                    .fillMaxSize()
-                    .navigationBarsPadding()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .navigationBarsPadding()
+                ) {
                     CartoonPlayUI(
                         detailedVM = detailedVM,
                         cartoonPlayVM = cartoonPlayVM,
@@ -412,7 +424,7 @@ fun CartoonPlayDetailed(
                         transitionSpec = {
                             fadeIn(animationSpec = tween(300, delayMillis = 300)) with
                                     fadeOut(animationSpec = tween(300, delayMillis = 0))
-                        }
+                        }, label = ""
                     ) {
                         if (it) {
                             CartoonDescCard(cartoon)
@@ -429,7 +441,9 @@ fun CartoonPlayDetailed(
                                     contentDescription = cartoon.title
                                 )
                                 Spacer(modifier = Modifier.size(8.dp))
-                                Column {
+                                Column(
+                                    modifier = Modifier.weight(1f)
+                                ) {
                                     Text(
                                         modifier = Modifier,
                                         text = (cartoon.title),

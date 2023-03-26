@@ -54,7 +54,6 @@ class HomeViewModel : ViewModel() {
                         it.copy(
                             isLoading = false,
                             pages = emptyList(),
-                            selectionKey = "",
                             topAppBarTitle = ""
                         )
                     }
@@ -70,7 +69,7 @@ class HomeViewModel : ViewModel() {
                     }
                     _stateFlow.update {
                         val realIndex =
-                            if (it.selectionIndex >= 0 && it.selectionIndex < it.pages.size && !it.pages[it.selectionIndex].newScreen)
+                            if (it.selectionIndex >= 0 && it.selectionIndex < pages.size && !pages[it.selectionIndex].newScreen)
                                 it.selectionIndex else index
                         it.copy(
                             isLoading = false,
