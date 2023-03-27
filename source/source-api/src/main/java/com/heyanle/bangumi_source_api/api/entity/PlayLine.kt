@@ -7,7 +7,7 @@ import androidx.annotation.Keep
  * https://github.com/heyanLE
  */
 @Keep
-class PlayLine(
+open class PlayLine(
     val id: String, // 源自己维护和判断
     val label: String,
     val episode: ArrayList<String>,

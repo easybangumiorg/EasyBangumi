@@ -38,7 +38,7 @@ class DetailedViewModel(
         class Info(
             val detail: Cartoon,
             val playLine: List<PlayLine>,
-
+            val isShowPlayLine: Boolean = true,
             ) : DetailedState()
 
         class Error(
@@ -64,7 +64,7 @@ class DetailedViewModel(
             detailedComponent.getAll(cartoonSummary)
                 .complete {
 
-                    detailedState = DetailedState.Info(it.data.first, it.data.second)
+                    detailedState = DetailedState.Info(it.data.first, it.data.second, it.data.second !is DetailedComponent.NonPlayLine)
                     val isStar = withContext(Dispatchers.IO) {
                         val cartoonStar = DB.cartoonStar.getByCartoonSummary(
                             it.data.first.id,
