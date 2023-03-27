@@ -14,6 +14,11 @@ import com.heyanle.bangumi_source_api.api.entity.PlayLine
 @Keep
 interface DetailedComponent : Component {
 
+
+    class NonPlayLine(
+        playLine: PlayLine
+    ): List<PlayLine> by listOf(playLine)
+
     /**
      * 获取番剧详细信息
      */
