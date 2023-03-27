@@ -26,6 +26,8 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
@@ -34,6 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
@@ -51,7 +54,10 @@ import kotlinx.coroutines.launch
  * Created by HeYanLe on 2023/3/25 15:47.
  * https://github.com/heyanLE
  */
-@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterialApi::class)
+@OptIn(
+    ExperimentalAnimationApi::class, ExperimentalMaterialApi::class,
+    ExperimentalMaterial3Api::class
+)
 @Composable
 fun Home() {
 
@@ -63,8 +69,11 @@ fun Home() {
 
     val scope = rememberCoroutineScope()
 
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+
     Column {
         HomeTopAppBar(
+            scrollBehavior = scrollBehavior,
             title = state.topAppBarTitle,
             onChangeClick = {
                 scope.launch {
@@ -74,21 +83,32 @@ fun Home() {
             onSearchClick = { nav.navigationSearch(state.selectionKey) }
         )
 
-        CartoonPageListTab(
-            state.pages,
-            selectionIndex = state.selectionIndex,
-            onPageClick = {
-                vm.changeSelectionPage(it)
-            }
-        )
+        if (state.isShowLabel) {
+            CartoonPageListTab(
+                state.pages,
+                selectionIndex = state.selectionIndex,
+                onPageClick = {
+                    vm.changeSelectionPage(it)
+                }
+            )
 
-        Divider()
+            Divider()
+        }
+
+
 
 
         AnimatedContent(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f),
+                .weight(1f)
+                .let {
+                    if (!state.isShowLabel) {
+                        it.nestedScroll(scrollBehavior.nestedScrollConnection)
+                    } else {
+                        it
+                    }
+                },
             targetState = kotlin.runCatching { state.pages[state.selectionIndex] }.getOrNull(),
             transitionSpec = {
                 fadeIn(animationSpec = tween(300, delayMillis = 300)) with
@@ -178,11 +198,13 @@ fun HomeBottomSheet(
 @Composable
 fun HomeTopAppBar(
     title: String,
+    scrollBehavior: TopAppBarScrollBehavior?,
     onChangeClick: () -> Unit,
     onSearchClick: () -> Unit,
 ) {
 
     TopAppBar(
+        scrollBehavior = scrollBehavior,
         navigationIcon = {
             IconButton(onClick = { onChangeClick() }) {
                 Icon(

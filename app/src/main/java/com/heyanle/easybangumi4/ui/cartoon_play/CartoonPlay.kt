@@ -193,7 +193,11 @@ fun CartoonPlay(
                 ) {
 
                     // 手势
-                    GestureController(vm = it, modifier = Modifier.fillMaxSize())
+                    SimpleGestureController(
+                        vm = it, modifier = Modifier.fillMaxSize(), longTouchText = stringResource(
+                            id = com.heyanle.easy_i18n.R.string.long_press_fast_forward
+                        )
+                    )
 
                     // 顶部工具栏
                     SimpleTopBar(
@@ -309,6 +313,7 @@ fun CartoonPlayPage(
         playingPlayLine = CartoonPlayingManager.state.playLine(),
         playingEpisode = CartoonPlayingManager.state.episode(),
         listState = listState,
+        showPlayLine = detailedState.isShowPlayLine,
         onLineSelect = {
             cartoonPlayVM.selectedLineIndex = it
         },
@@ -356,6 +361,7 @@ fun CartoonPlayPage(
 fun CartoonPlayDetailed(
     modifier: Modifier,
     cartoon: Cartoon,
+
     playLines: List<PlayLine>,
     selectLineIndex: Int,
     playingPlayLine: PlayLine?,
@@ -363,6 +369,8 @@ fun CartoonPlayDetailed(
     listState: LazyGridState = rememberLazyGridState(),
     onLineSelect: (Int) -> Unit,
     onEpisodeClick: (Int, PlayLine, Int) -> Unit,
+
+    showPlayLine: Boolean = true,
 
     isStar: Boolean,
     onStar: (Boolean) -> Unit,
@@ -515,61 +523,65 @@ fun CartoonPlayDetailed(
                     )
                 }
             } else {
-                item(
-                    span = {
-                        // LazyGridItemSpanScope:
-                        // maxLineSpan
-                        GridItemSpan(maxLineSpan)
-                    }
-                ) {
 
-                    ScrollableTabRow(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(0.dp, 8.dp),
-                        selectedTabIndex = 0.coerceAtLeast(
-                            unEmptyLinesIndex.indexOf(
-                                selectLineIndex
-                            )
-                        ),
-                        edgePadding = 0.dp,
-                        divider = {
+                if(showPlayLine){
+                    item(
+                        span = {
+                            // LazyGridItemSpanScope:
+                            // maxLineSpan
+                            GridItemSpan(maxLineSpan)
                         }
-
                     ) {
-                        unEmptyLinesIndex.forEach { index ->
-                            val playLine = playLines[index]
-                            Tab(
-                                selected = index == selectLineIndex,
-                                onClick = {
-                                    onLineSelect(index)
-                                },
-                                unselectedContentColor = MaterialTheme.colorScheme.primary.copy(
-                                    0.4f
-                                ),
-                                text = {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Text(text = playLine.label)
 
-                                        if (playLines[index] == playingPlayLine) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .padding(2.dp, 0.dp, 0.dp, 0.dp)
-                                                    .size(8.dp)
-                                                    .background(
-                                                        MaterialTheme.colorScheme.primary,
-                                                        CircleShape
-                                                    )
-                                            )
+                        ScrollableTabRow(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(0.dp, 8.dp),
+                            selectedTabIndex = 0.coerceAtLeast(
+                                unEmptyLinesIndex.indexOf(
+                                    selectLineIndex
+                                )
+                            ),
+                            edgePadding = 0.dp,
+                            divider = {
+                            }
+
+                        ) {
+                            unEmptyLinesIndex.forEach { index ->
+                                val playLine = playLines[index]
+                                Tab(
+                                    selected = index == selectLineIndex,
+                                    onClick = {
+                                        onLineSelect(index)
+                                    },
+                                    unselectedContentColor = MaterialTheme.colorScheme.primary.copy(
+                                        0.4f
+                                    ),
+                                    text = {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(text = playLine.label)
+
+                                            if (playLines[index] == playingPlayLine) {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .padding(2.dp, 0.dp, 0.dp, 0.dp)
+                                                        .size(8.dp)
+                                                        .background(
+                                                            MaterialTheme.colorScheme.primary,
+                                                            CircleShape
+                                                        )
+                                                )
+                                            }
                                         }
                                     }
-                                }
-                            )
+                                )
+                            }
                         }
                     }
                 }
+
 
                 if (selectLineIndex >= 0 && selectLineIndex < playLines.size && unEmptyLinesIndex.contains(
                         selectLineIndex

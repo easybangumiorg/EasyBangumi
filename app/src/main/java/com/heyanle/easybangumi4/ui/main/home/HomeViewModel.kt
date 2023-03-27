@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewModelScope
+import com.heyanle.bangumi_source_api.api.component.page.PageComponent
 import com.heyanle.bangumi_source_api.api.component.page.SourcePage
 import com.heyanle.easybangumi4.source.SourceMaster
 import com.heyanle.okkv2.core.okkv
@@ -33,6 +34,7 @@ class HomeViewModel : ViewModel() {
         val pages: List<SourcePage> = emptyList(),
         val selectionIndex: Int = 0,
         //val selectionPage: SourcePage? = null,
+        val isShowLabel: Boolean = true,
         val topAppBarTitle: String = "",
         val selectionKey: String,
     )
@@ -75,6 +77,7 @@ class HomeViewModel : ViewModel() {
                             isLoading = false,
                             pages = pages,
                             selectionKey = pa.source.key,
+                            isShowLabel = pages !is PageComponent.NonLabelSinglePage,
                             topAppBarTitle = pa.source.label,
                             selectionIndex = realIndex
                         )

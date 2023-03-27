@@ -8,7 +8,11 @@ import com.heyanle.bangumi_source_api.api.component.Component
  * https://github.com/heyanLE
  */
 @Keep
-interface PageComponent: Component {
+interface PageComponent : Component {
+
+    class NonLabelSinglePage(
+        cartoonPage: SourcePage
+    ) : List<SourcePage> by listOf(cartoonPage)
 
     fun getPages(): List<SourcePage>
 
