@@ -27,6 +27,7 @@ import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlay
 import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.history.History
 import com.heyanle.easybangumi4.ui.main.Main
+import com.heyanle.easybangumi4.ui.search.Search
 import com.heyanle.easybangumi4.ui.setting.AppearanceSetting
 import com.heyanle.easybangumi4.ui.sourcehome.SourceHome
 import com.heyanle.easybangumi4.utils.TODO
@@ -57,17 +58,23 @@ const val SOURCE_HOME = "source_home"
 
 const val HISTORY = "history"
 
+const val SEARCH = "search"
+
 const val APPEARANCE_SETTING = "appearance_setting"
 
-fun NavHostController.navigationSearch(defKey: String){
-    TODO("搜索")
+fun NavHostController.navigationSearch(defSourceKey: String) {
+    navigate("${SEARCH}?&defSourceKey=${defSourceKey}")
+}
+
+fun NavHostController.navigationSearch(defSearchKey: String, defSourceKey: String) {
+    navigate("${SEARCH}?defSearchKey=${defSearchKey}&defSourceKey=${defSourceKey}")
 }
 
 fun NavHostController.navigationSourceHome(key: String) {
     navigate("${SOURCE_HOME}?key=${key}")
 }
 
-fun NavHostController.navigationDetailed(id: String, url: String, source: String){
+fun NavHostController.navigationDetailed(id: String, url: String, source: String) {
     val el = URLEncoder.encode(url, "utf-8")
     val ed = URLEncoder.encode(id, "utf-8")
     // easyTODO("详情页")
@@ -80,7 +87,6 @@ fun NavHostController.navigationDetailed(cartoonCover: CartoonCover) {
     // easyTODO("详情页")
     navigate("${DETAILED}?url=${url}&source=${cartoonCover.source}&id=${id}")
 }
-
 
 
 fun NavHostController.navigationDetailed(
@@ -111,7 +117,7 @@ fun NavHostController.navigationDetailed(
 
 fun NavHostController.navigationDLNA(
     cartoonCover: CartoonCover
-){
+) {
     TODO("投屏")
 }
 
@@ -119,13 +125,12 @@ fun NavHostController.navigationDLNA(
     cartoonCover: CartoonCover,
     lineIndex: Int,
     episode: Int,
-){
+) {
     TODO("投屏")
 }
 
 // 缺省路由
 const val DEFAULT = MAIN
-
 
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -235,6 +240,26 @@ fun Nav() {
                 ) {
                     History()
                 }
+
+            }
+
+            composable(
+                "${SEARCH}?defSearchKey={defSearchKey}&defSourceKey={defSourceKey}",
+                arguments = listOf(
+                    navArgument("defSearchKey") { defaultValue = "" },
+                    navArgument("defSourceKey") { defaultValue = "" },
+                )
+            ) {
+                val defSearchKey = it.arguments?.getString("defSearchKey") ?: ""
+                val defSourceKey = it.arguments?.getString("defSourceKey") ?: ""
+                NormalSystemBarColor()
+                Surface(
+                    color = MaterialTheme.colorScheme.background,
+                    contentColor = MaterialTheme.colorScheme.onBackground
+                ) {
+                    Search(defSearchKey = defSearchKey, defSourceKey = defSourceKey)
+                }
+
 
             }
 

@@ -34,6 +34,7 @@ import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
 import com.heyanle.bangumi_source_api.api.entity.PlayLine
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.R
+import com.heyanle.easybangumi4.navigationSearch
 import com.heyanle.easybangumi4.ui.common.*
 import com.heyanle.easybangumi4.utils.TODO
 import com.heyanle.easybangumi4.utils.loge
@@ -57,20 +58,29 @@ fun CartoonPlay(
 
 
     val summary = CartoonSummary(id, source, url)
-    val owner = DetailedViewModel.getViewModelStoreOwner(summary)
-    DetailedContainer(sourceKey = source) { _, sou, det ->
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.onBackground
+    ) {
 
-        val detailedVM =
-            viewModel<DetailedViewModel>(factory = DetailedViewModelFactory(summary, det))
-        val cartoonPlayViewModel = viewModel<CartoonPlayViewModel>()
-        CartoonPlay(
-            detailedVM = detailedVM,
-            cartoonPlayVM = cartoonPlayViewModel,
-            cartoonSummary = summary,
-            source = sou,
-            enterData = enterData
-        )
+        DetailedContainer(sourceKey = source) { _, sou, det ->
+
+            val detailedVM =
+                viewModel<DetailedViewModel>(factory = DetailedViewModelFactory(summary, det))
+            val cartoonPlayViewModel = viewModel<CartoonPlayViewModel>()
+            CartoonPlay(
+                detailedVM = detailedVM,
+                cartoonPlayVM = cartoonPlayViewModel,
+                cartoonSummary = summary,
+                source = sou,
+                enterData = enterData
+            )
+        }
+
+
     }
+
 
 }
 
@@ -109,144 +119,134 @@ fun CartoonPlay(
 
 
     val lazyGridState = rememberLazyGridState()
-
-    Surface(
+    EasyPlayerScaffold(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background,
-        contentColor = MaterialTheme.colorScheme.onBackground
-    ) {
-
-
-        EasyPlayerScaffold(
-            modifier = Modifier.fillMaxSize(),
-            vm = controlVM,
-            videoFloat = {
-                val ctx = LocalContext.current as Activity
-                LaunchedEffect(key1 = CartoonPlayingManager.state) {
-                    when (CartoonPlayingManager.state) {
-                        is CartoonPlayingManager.PlayingState.Playing -> {
-                            it.onPrepare()
-                            // CartoonPlayingManager.trySaveHistory()
-                        }
-
-                        is CartoonPlayingManager.PlayingState.Loading -> {}
-                        is CartoonPlayingManager.PlayingState.Error -> {
-                            it.onFullScreen(false, false, ctx)
-                        }
-
-                        else -> {}
-                    }
-                }
-                when (val state = CartoonPlayingManager.state) {
-                    is CartoonPlayingManager.PlayingState.Playing -> {}
-                    is CartoonPlayingManager.PlayingState.Loading -> {
-                        LoadingPage(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clickable { }
-                        )
+        vm = controlVM,
+        videoFloat = {
+            val ctx = LocalContext.current as Activity
+            LaunchedEffect(key1 = CartoonPlayingManager.state) {
+                when (CartoonPlayingManager.state) {
+                    is CartoonPlayingManager.PlayingState.Playing -> {
+                        it.onPrepare()
+                        // CartoonPlayingManager.trySaveHistory()
                     }
 
+                    is CartoonPlayingManager.PlayingState.Loading -> {}
                     is CartoonPlayingManager.PlayingState.Error -> {
-                        ErrorPage(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(Color.Black),
-                            errorMsg = state.errMsg,
-                            clickEnable = true,
-                            other = {
-                                Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.click_to_retry))
-                            },
-                            onClick = {
-                                CartoonPlayingManager.defaultScope.launch {
-                                    CartoonPlayingManager.refresh()
-                                }
-                            }
-                        )
+                        it.onFullScreen(false, false, ctx)
                     }
 
                     else -> {}
                 }
-                if (!it.isFullScreen) {
-                    FilledIconButton(
-                        modifier = Modifier.padding(8.dp),
-                        colors = IconButtonDefaults.iconButtonColors(
-                            containerColor = Color.Black.copy(0.6f),
-                            contentColor = Color.White
-                        ),
-                        onClick = {
-                            nav.popBackStack()
-                        }) {
-                        Icon(
-                            imageVector = Icons.Filled.KeyboardArrowLeft,
-                            stringResource(id = com.heyanle.easy_i18n.R.string.back)
-                        )
-                    }
+            }
+            when (val state = CartoonPlayingManager.state) {
+                is CartoonPlayingManager.PlayingState.Playing -> {}
+                is CartoonPlayingManager.PlayingState.Loading -> {
+                    LoadingPage(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clickable { }
+                    )
                 }
 
-
-            },
-            control = {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                ) {
-
-                    // 手势
-                    SimpleGestureController(
-                        vm = it, modifier = Modifier.fillMaxSize(), longTouchText = stringResource(
-                            id = com.heyanle.easy_i18n.R.string.long_press_fast_forward
-                        )
-                    )
-
-                    // 顶部工具栏
-                    SimpleTopBar(
-                        vm = it,
+                is CartoonPlayingManager.PlayingState.Error -> {
+                    ErrorPage(
                         modifier = Modifier
-                            .align(Alignment.TopCenter)
+                            .fillMaxSize()
+                            .background(Color.Black),
+                        errorMsg = state.errMsg,
+                        clickEnable = true,
+                        other = {
+                            Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.click_to_retry))
+                        },
+                        onClick = {
+                            CartoonPlayingManager.defaultScope.launch {
+                                CartoonPlayingManager.refresh()
+                            }
+                        }
                     )
+                }
 
-                    // 底部工具栏
-                    SimpleBottomBar(
-                        vm = it,
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                    ) {
-
-                    }
-
-                    // 锁定按钮
-                    LockBtn(vm = it)
-
-                    // 加载按钮
-                    ProgressBox(vm = it)
+                else -> {}
+            }
+            if (!it.isFullScreen) {
+                FilledIconButton(
+                    modifier = Modifier.padding(8.dp),
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = Color.Black.copy(0.6f),
+                        contentColor = Color.White
+                    ),
+                    onClick = {
+                        nav.popBackStack()
+                    }) {
+                    Icon(
+                        imageVector = Icons.Filled.KeyboardArrowLeft,
+                        stringResource(id = com.heyanle.easy_i18n.R.string.back)
+                    )
                 }
             }
-        ) {
-            Spacer(
+
+
+        },
+        control = {
+            Box(
                 modifier = Modifier
-                    .background(MaterialTheme.colorScheme.primary)
-                    .height(2.dp)
-                    .fillMaxWidth(),
-            )
-            Surface(
-                modifier = Modifier.weight(1f),
-                color = MaterialTheme.colorScheme.background,
-                contentColor = MaterialTheme.colorScheme.onBackground
+                    .fillMaxSize()
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .navigationBarsPadding()
-                ) {
-                    CartoonPlayUI(
-                        detailedVM = detailedVM,
-                        cartoonPlayVM = cartoonPlayVM,
-                        listState = lazyGridState
+
+                // 手势
+                SimpleGestureController(
+                    vm = it, modifier = Modifier.fillMaxSize(), longTouchText = stringResource(
+                        id = com.heyanle.easy_i18n.R.string.long_press_fast_forward
                     )
-                    FastScrollToTopFab(listState = lazyGridState)
+                )
+
+                // 顶部工具栏
+                SimpleTopBar(
+                    vm = it,
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                )
+
+                // 底部工具栏
+                SimpleBottomBar(
+                    vm = it,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                ) {
+
                 }
 
+                // 锁定按钮
+                LockBtn(vm = it)
+
+                // 加载按钮
+                ProgressBox(vm = it)
+            }
+        }
+    ) {
+        Spacer(
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.primary)
+                .height(2.dp)
+                .fillMaxWidth(),
+        )
+        Surface(
+            modifier = Modifier.weight(1f),
+            color = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.onBackground
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .navigationBarsPadding()
+            ) {
+                CartoonPlayUI(
+                    detailedVM = detailedVM,
+                    cartoonPlayVM = cartoonPlayVM,
+                    listState = lazyGridState
+                )
+                FastScrollToTopFab(listState = lazyGridState)
             }
 
         }
@@ -305,6 +305,7 @@ fun CartoonPlayPage(
     detailedState: DetailedViewModel.DetailedState.Info,
     listState: LazyGridState = rememberLazyGridState()
 ) {
+    val nav = LocalNavController.current
     CartoonPlayDetailed(
         modifier = Modifier.fillMaxSize(),
         cartoon = detailedState.detail,
@@ -341,7 +342,8 @@ fun CartoonPlayPage(
             detailedVM.setCartoonStar(it, detailedState.detail, detailedState.playLine)
         },
         onSearch = {
-            TODO("搜索同名番")
+            nav.navigationSearch(detailedState.detail.title, detailedState.detail.source)
+            //TODO("搜索同名番")
         },
         onWeb = {
             runCatching {

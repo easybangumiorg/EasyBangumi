@@ -1,13 +1,10 @@
 package com.heyanle.easybangumi4.ui.cartoon_play
 
-import androidx.collection.LruCache
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStore
-import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewModelScope
 import com.heyanle.bangumi_source_api.api.component.detailed.DetailedComponent
 import com.heyanle.bangumi_source_api.api.entity.Cartoon
@@ -123,36 +120,6 @@ class DetailedViewModel(
         }
     }
 
-
-    /**
-     * lru 复用
-     */
-    companion object {
-        private val viewModelOwnerStore = object : LruCache<CartoonSummary, ViewModelStore>(3) {
-            override fun entryRemoved(
-                evicted: Boolean,
-                key: CartoonSummary,
-                oldValue: ViewModelStore,
-                newValue: ViewModelStore?
-            ) {
-                super.entryRemoved(evicted, key, oldValue, newValue)
-                oldValue.clear()
-            }
-        }
-
-        fun getViewModelStoreOwner(summer: CartoonSummary) = object : ViewModelStoreOwner {
-
-            override val viewModelStore: ViewModelStore
-                get() {
-                    var viewModelStore = viewModelOwnerStore.get(summer)
-                    if (viewModelStore == null) {
-                        viewModelStore = ViewModelStore()
-                        viewModelOwnerStore.put(summer, viewModelStore)
-                    }
-                    return viewModelStore
-                }
-        }
-    }
 
 }
 
