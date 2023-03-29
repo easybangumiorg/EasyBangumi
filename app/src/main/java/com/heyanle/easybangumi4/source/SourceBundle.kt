@@ -129,6 +129,10 @@ class SourceBundle(
         return searchMap[key]
     }
 
+    fun searches(): List<SearchComponent> {
+        return searchMap.values.toList()
+    }
+
     fun config(key: String): ConfigSource? {
         return configMap[key]
     }
