@@ -40,7 +40,6 @@ object SourceLibraryMaster {
     val sourceLibraryFlow = MutableStateFlow<List<Pair<Source, SourceConfig>>>(emptyList())
 
 
-
     init {
         scope.launch {
             combine(
@@ -53,11 +52,12 @@ object SourceLibraryMaster {
                 }
                 sources to transformConfig(sources, configMap)
             }.collectLatest { p ->
+                configOkkv = Gson().toJson(p.second.values.toList())
                 val l = p.first.flatMap {
                     val config =
                         p.second[it.key] ?: return@flatMap emptyList<Pair<Source, SourceConfig>>()
                     listOf(it to config)
-                }
+                }.sortedBy { it.second.order }
 
                 sourceLibraryFlow.emit(l)
             }
@@ -71,6 +71,24 @@ object SourceLibraryMaster {
                 putAll(config)
             }
         }
+    }
+
+    fun enable(sourceKey: String) {
+        val map = configFlow.value.toMutableMap()
+        val old = map[sourceKey]
+        if (old != null) {
+            map[sourceKey] = map[sourceKey]!!.copy(enable = true)
+        }
+        newOkkvConfig(map)
+    }
+
+    fun disable(sourceKey: String) {
+        val map = configFlow.value.toMutableMap()
+        val old = map[sourceKey]
+        if (old != null) {
+            map[sourceKey] = map[sourceKey]!!.copy(enable = false)
+        }
+        newOkkvConfig(map)
     }
 
     private fun transformConfig(
@@ -92,7 +110,6 @@ object SourceLibraryMaster {
         }
         return configs
     }
-
 
 
     private fun getOkkvConfig(): Map<String, SourceConfig> {

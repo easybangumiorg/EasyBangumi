@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.HistoryToggleOff
+import androidx.compose.material.icons.outlined.Report
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
@@ -23,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.heyanle.easybangumi4.ABOUT
 import com.heyanle.easybangumi4.APPEARANCE_SETTING
 import com.heyanle.easybangumi4.HISTORY
 import com.heyanle.easybangumi4.LocalNavController
@@ -91,6 +93,21 @@ fun More() {
                 )
             }
         )
+
+        Divider()
+        ListItem(
+            modifier = Modifier.clickable {
+                nav.navigate(ABOUT)
+            },
+            headlineContent = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.about)) },
+            leadingContent = {
+                Icon(
+                    Icons.Outlined.Report,
+                    contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.about)
+                )
+            }
+        )
+
     }
 
 }

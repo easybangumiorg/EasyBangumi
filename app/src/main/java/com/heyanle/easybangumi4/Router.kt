@@ -23,6 +23,7 @@ import com.heyanle.bangumi_source_api.api.entity.CartoonCover
 import com.heyanle.easybangumi4.source.utils.WebViewUserHelperImpl
 import com.heyanle.easybangumi4.theme.NormalSystemBarColor
 import com.heyanle.easybangumi4.ui.WebViewUser
+import com.heyanle.easybangumi4.ui.about.About
 import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlay
 import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.history.History
@@ -59,6 +60,8 @@ const val SOURCE_HOME = "source_home"
 const val HISTORY = "history"
 
 const val SEARCH = "search"
+
+const val ABOUT = "about"
 
 const val APPEARANCE_SETTING = "appearance_setting"
 
@@ -261,6 +264,11 @@ fun Nav() {
                 }
 
 
+            }
+
+            composable(ABOUT){
+                NormalSystemBarColor()
+                About()
             }
 
         }

@@ -52,5 +52,7 @@ object Version {
     const val compose_runtime = "1.4.0-rc01"
     const val compose_ui = "1.4.0-rc01"
 
+    const val compose_lazy_reorder = "0.9.6"
+
 
 }

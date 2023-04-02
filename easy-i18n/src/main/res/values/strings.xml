@@ -46,8 +46,10 @@
     <string name="home">主页</string>
     <string name="my_anim">追番</string>
     <string name="update">更新</string>
+    <string name="check_update">检查更新</string>
     <string name="mine_history">历史</string>
     <string name="explore">浏览</string>
+    <string name="manage">管理</string>
     <string name="more">更多</string>
 
     <string name="choose_source">选择番源</string>
