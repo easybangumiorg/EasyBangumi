@@ -122,7 +122,9 @@ class SourceBundle(
     }
 
     fun pages(): List<PageComponent> {
-        return pageMap.values.toList()
+        return pageMap.toList().map {
+            it.second
+        }
     }
 
     fun search(key: String): SearchComponent? {
@@ -130,7 +132,9 @@ class SourceBundle(
     }
 
     fun searches(): List<SearchComponent> {
-        return searchMap.values.toList()
+        return searchMap.toList().map {
+            it.second
+        }
     }
 
     fun config(key: String): ConfigSource? {

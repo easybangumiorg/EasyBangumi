@@ -1,5 +1,6 @@
 package com.heyanle.easybangumi4
 
+import android.app.Activity
 import android.app.ActivityManager
 import android.app.Application
 import android.content.Context
@@ -11,6 +12,7 @@ import android.widget.Toast
 import com.heyanle.easy_crasher.CrashHandler
 import com.heyanle.easybangumi4.db.AppDatabase
 import com.heyanle.easybangumi4.source.utils.initUtils
+import com.heyanle.easybangumi4.utils.AppCenterManager
 import com.heyanle.easybangumi4.utils.exo_ssl.CropUtil
 import com.heyanle.easybangumi4.utils.exo_ssl.TrustAllHostnameVerifier
 import com.heyanle.extension_load.ExtensionInit
@@ -22,6 +24,8 @@ import com.microsoft.appcenter.AppCenter
 import com.microsoft.appcenter.analytics.Analytics
 import com.microsoft.appcenter.crashes.Crashes
 import com.microsoft.appcenter.distribute.Distribute
+import com.microsoft.appcenter.distribute.DistributeListener
+import com.microsoft.appcenter.distribute.ReleaseDetails
 import javax.net.ssl.HttpsURLConnection
 
 
@@ -107,6 +111,23 @@ class App: Application() {
                     )
                     // 禁用自动更新 使用手动更新
                     Distribute.disableAutomaticCheckForUpdate()
+
+                    Distribute.setListener(object: DistributeListener {
+                        override fun onReleaseAvailable(
+                            activity: Activity?,
+                            releaseDetails: ReleaseDetails?
+                        ): Boolean {
+                            releaseDetails?.let {
+                                AppCenterManager.releaseDetail.value = it
+                                AppCenterManager.showReleaseDialog.value = true
+                            }
+                            return true
+                        }
+
+                        override fun onNoReleaseAvailable(activity: Activity?) {
+
+                        }
+                    })
                 }
             }.onFailure {
                 it.printStackTrace()

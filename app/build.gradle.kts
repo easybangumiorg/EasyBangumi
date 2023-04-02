@@ -156,6 +156,8 @@ dependencies {
     implementation("org.fourthline.cling:cling-core:${Version.cling}")
     implementation("org.fourthline.cling:cling-support:${Version.cling}")
 
+    implementation("org.burnoutcrew.composereorderable:reorderable:${Version.compose_lazy_reorder}")
+
     implementation(project(":easy-dlna"))
     implementation(project(":easy-crasher"))
     implementation(project(":easy-i18n"))

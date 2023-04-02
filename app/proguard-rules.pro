@@ -57,3 +57,6 @@
 # jsoup
 -keep class org.jsoup.** {*;}
 
+# jsoup
+-keep class com.google.gson.** {*;}
+
