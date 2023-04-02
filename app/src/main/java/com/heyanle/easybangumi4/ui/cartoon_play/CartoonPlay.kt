@@ -27,7 +27,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.google.accompanist.pager.ExperimentalPagerApi
 import com.heyanle.bangumi_source_api.api.Source
 import com.heyanle.bangumi_source_api.api.entity.Cartoon
 import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
@@ -189,16 +188,13 @@ fun CartoonPlay(
 
         },
         control = {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
+            Box(Modifier.fillMaxSize()) {
 
                 // 手势
                 SimpleGestureController(
-                    vm = it, modifier = Modifier.fillMaxSize(), longTouchText = stringResource(
-                        id = com.heyanle.easy_i18n.R.string.long_press_fast_forward
-                    )
+                    vm = it,
+                    modifier = Modifier.fillMaxSize(),
+                    longTouchText = stringResource(id = com.heyanle.easy_i18n.R.string.long_press_fast_forward)
                 )
 
                 // 顶部工具栏
@@ -211,11 +207,8 @@ fun CartoonPlay(
                 // 底部工具栏
                 SimpleBottomBar(
                     vm = it,
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                ) {
-
-                }
+                    modifier = Modifier.align(Alignment.BottomCenter)
+                )
 
                 // 锁定按钮
                 LockBtn(vm = it)
@@ -256,7 +249,6 @@ fun CartoonPlay(
 }
 
 
-@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun CartoonPlayUI(
     detailedVM: DetailedViewModel,
@@ -264,16 +256,10 @@ fun CartoonPlayUI(
     listState: LazyGridState = rememberLazyGridState()
 ) {
 
-    val scope = rememberCoroutineScope()
-
-
-
     when (val detailedState = detailedVM.detailedState) {
         is DetailedViewModel.DetailedState.Info -> {
-
             CartoonPlayPage(detailedVM, cartoonPlayVM, detailedState, listState)
         }
-
         is DetailedViewModel.DetailedState.Error -> {
             ErrorPage(
                 modifier = Modifier.fillMaxSize(),
@@ -285,14 +271,12 @@ fun CartoonPlayUI(
                 other = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.click_to_retry)) }
             )
         }
-
         is DetailedViewModel.DetailedState.Loading -> {
             LoadingPage(
                 modifier = Modifier.fillMaxSize()
             )
         }
-
-        else -> {}
+        else -> Unit
     }
 
 }
@@ -526,7 +510,7 @@ fun CartoonPlayDetailed(
                 }
             } else {
 
-                if(showPlayLine){
+                if (showPlayLine) {
                     item(
                         span = {
                             // LazyGridItemSpanScope:
