@@ -27,20 +27,22 @@ object SourceMaster {
     private val _animSourceFlow = MutableStateFlow(SourceBundle(emptyList()))
     val animSourceFlow = _animSourceFlow.asStateFlow()
 
+
     init {
         scope.launch {
             SourceLibraryMaster.sourceLibraryFlow.collectLatest {
-                _animSourceFlow.emit(SourceBundle(it.map { it.first }))
+                _animSourceFlow.emit(SourceBundle(it.filter { it.second.enable }
+                    .sortedBy { it.second.order }.map { it.first }))
             }
         }
     }
 
 
     @Composable
-    fun SourceHost(content: @Composable ()->Unit){
+    fun SourceHost(content: @Composable () -> Unit) {
         val sourceBundle = animSourceFlow.collectAsState()
         CompositionLocalProvider(
-            LocalSourceBundleController provides  sourceBundle.value
+            LocalSourceBundleController provides sourceBundle.value
         ) {
             content()
         }

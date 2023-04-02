@@ -77,7 +77,7 @@ class MainActivity : ComponentActivity() {
                             Text(text = "尝鲜版须知")
                         },
                         text = {
-                            Text(text = "4.0 尝鲜版还有很多问题，很多细节没有完善，因而能与旧版共存。仅供尝鲜，目前源适配也有问题，无法看番，请等待正式版！！")
+                            Text(text = "4.0 尝鲜版还有很多问题，很多细节没有完善，因而能与旧版共存。仅供尝鲜，请等待正式版！！")
                         },
                         confirmButton = {
                             TextButton(onClick = {

@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.ui.main.explore.extension
+package com.heyanle.easybangumi4.ui.main.source_manage.extension
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,7 +28,7 @@ import com.heyanle.extension_load.model.Extension
 @Composable
 fun ExtensionTopAppBar(behavior: TopAppBarScrollBehavior){
     TopAppBar(
-        title = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.explore)) },
+        title = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.manage)) },
         scrollBehavior = behavior
     )
 }

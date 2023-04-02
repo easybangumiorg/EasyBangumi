@@ -52,10 +52,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.ui.common.SourceContainer
 import com.heyanle.easybangumi4.ui.history.History
-import com.heyanle.easybangumi4.ui.main.explore.Explore
 import com.heyanle.easybangumi4.ui.main.home.Home
 import com.heyanle.easybangumi4.ui.main.home.HomeBottomSheet
 import com.heyanle.easybangumi4.ui.main.more.More
+import com.heyanle.easybangumi4.ui.main.source_manage.SourceManager
 import com.heyanle.easybangumi4.ui.main.star.Star
 import com.heyanle.easybangumi4.ui.main.update.Update
 import com.heyanle.okkv2.core.okkv
@@ -140,17 +140,17 @@ sealed class MainPage @OptIn(ExperimentalMaterialApi::class) constructor(
         }
     )
 
-    object ExplorePage : MainPage(
-        route = "explore",
-        tabLabel = { Text(text = stringResource(id = R.string.explore)) },
+    object SourceManagePage : MainPage(
+        route = "source_manage",
+        tabLabel = { Text(text = stringResource(id = R.string.manage)) },
         icon = {
             Icon(
                 if (it) Icons.Filled.Explore else Icons.Outlined.Explore,
-                contentDescription = stringResource(id = R.string.explore)
+                contentDescription = stringResource(id = R.string.manage)
             )
         },
         content = {
-            Explore()
+            SourceManager()
         }
     )
 
@@ -176,7 +176,7 @@ val MainPageItems = listOf(
     MainPage.StarPage,
     MainPage.UpdatePage,
     // HomePage.HistoryPage,
-    MainPage.ExplorePage,
+    MainPage.SourceManagePage,
     MainPage.MorePage,
 )
 
