@@ -207,7 +207,7 @@ fun SourceHomeTopAppBar(
                                 onSearch(searchText.value)
                             }
                         ),
-                        maxLines = 1,
+                        singleLine = true,
                         modifier = Modifier.focusRequester(focusRequester),
                         colors = TextFieldDefaults.textFieldColors(
                             containerColor = Color.Transparent,
