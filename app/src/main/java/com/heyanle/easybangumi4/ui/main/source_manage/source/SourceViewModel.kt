@@ -85,6 +85,8 @@ class SourceViewModel : ViewModel() {
                 config[it] = config[it]!!.copy(order = i)
             }
         }
+        SourceLibraryMaster.newOkkvConfig(config)
+
     }
 
     fun enable(sourceKey: String) {
