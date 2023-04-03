@@ -92,6 +92,10 @@
     <string name="no_play_line">没有播放线路</string>
 
     <string name="no_source">没有番剧源</string>
+    <string name="click_to_get">点击获取</string>
+    
+    <string name="announcement">公告</string>
+
     <string name="no_history">没有历史记录</string>
 
     <string name="source_not_found">番剧源不存在</string>
