@@ -3,6 +3,7 @@ package com.heyanle.easybangumi4.source
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.heyanle.bangumi_source_api.api.Source
+import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.extension_load.ExtensionController
 import com.heyanle.extension_load.model.Extension
 import com.heyanle.okkv2.core.okkv
@@ -53,6 +54,7 @@ object SourceLibraryMaster {
                 sources to transformConfig(sources, configMap)
             }.collectLatest { p ->
                 configOkkv = Gson().toJson(p.second.values.toList())
+                configOkkv.loge("SourceLibraryMaster")
                 val l = p.first.flatMap {
                     val config =
                         p.second[it.key] ?: return@flatMap emptyList<Pair<Source, SourceConfig>>()
