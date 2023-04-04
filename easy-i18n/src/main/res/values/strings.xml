@@ -93,6 +93,13 @@
 
     <string name="no_source">没有番剧源</string>
     <string name="click_to_get">点击获取</string>
+
+    <string name="website_get">网站获取（需要翻墙）</string>
+    <string name="group_get">进群获取（推荐）</string>
+
+    <string name="add_group_get">点击复制群号进群获取！</string>
+
+    <string name="try_qq_group">如果网站打不开或没有扩展可进群获取，群号在更多-关于界面</string>
     
     <string name="announcement">公告</string>
 
@@ -147,6 +154,8 @@
     <string name="author">作者</string>
     <string name="github">Github</string>
     <string name="qq_groud">QQ群</string>
+
+    <string name="website">官网</string>
 
     <string name="version">当前版本</string>
 

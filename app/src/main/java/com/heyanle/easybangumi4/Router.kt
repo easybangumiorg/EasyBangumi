@@ -30,7 +30,6 @@ import com.heyanle.easybangumi4.ui.history.History
 import com.heyanle.easybangumi4.ui.main.Main
 import com.heyanle.easybangumi4.ui.search.Search
 import com.heyanle.easybangumi4.ui.setting.AppearanceSetting
-import com.heyanle.easybangumi4.ui.sourcehome.SourceHome
 import com.heyanle.easybangumi4.utils.TODO
 import com.heyanle.easybangumi4.utils.loge
 import java.lang.ref.WeakReference
@@ -162,18 +161,18 @@ fun Nav() {
 
             }
 
-            composable(
-                route = "${SOURCE_HOME}?key={key}",
-                arguments = listOf(
-                    navArgument("key") { defaultValue = "" },
-                )
-            ) {
-                NormalSystemBarColor()
-                SourceHome(
-                    it.arguments?.getString("key") ?: "",
-                )
-
-            }
+//            composable(
+//                route = "${SOURCE_HOME}?key={key}",
+//                arguments = listOf(
+//                    navArgument("key") { defaultValue = "" },
+//                )
+//            ) {
+//                NormalSystemBarColor()
+//                SourceHome(
+//                    it.arguments?.getString("key") ?: "",
+//                )
+//
+//            }
 
             composable(
                 route = "${DETAILED}?url={url}&source={source}&id={id}&lineIndex={lineIndex}&episode={episode}&adviceProgress={adviceProgress}",

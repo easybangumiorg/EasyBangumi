@@ -3,11 +3,13 @@ package com.heyanle.easybangumi4.ui.common
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Build
+import androidx.compose.foundation.Image
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -32,27 +34,36 @@ fun OkImage(
     errorColor: Color = MaterialTheme.colorScheme.error,
     placeholder: Color = MaterialTheme.colorScheme.secondaryContainer,
 ) {
-    AsyncImage(
-        model = ImageRequest
-            .Builder(LocalContext.current)
-            .data(image)
-            .placeholder(ColorDrawable(placeholder.toArgb()))
-            .crossfade(crossFade)
-            .apply {
-                if (isGif) {
-                    decoderFactory(
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
-                            ImageDecoderDecoder.Factory()
-                        else GifDecoder.Factory()
-                    )
+    if (image is ImageVector) {
+        Image(
+            imageVector = image,
+            modifier = modifier,
+            contentDescription = contentDescription
+        )
+    }else{
+        AsyncImage(
+            model = ImageRequest
+                .Builder(LocalContext.current)
+                .data(image)
+                .placeholder(ColorDrawable(placeholder.toArgb()))
+                .crossfade(crossFade)
+                .apply {
+                    if (isGif) {
+                        decoderFactory(
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
+                                ImageDecoderDecoder.Factory()
+                            else GifDecoder.Factory()
+                        )
+                    }
                 }
-            }
-            .error(ColorDrawable(errorColor.toArgb()))
-            .build(),
-        contentDescription = contentDescription,
-        contentScale = contentScale,
-        modifier = Modifier.then(modifier)
-    )
+                .error(ColorDrawable(errorColor.toArgb()))
+                .build(),
+            contentDescription = contentDescription,
+            contentScale = contentScale,
+            modifier = Modifier.then(modifier)
+        )
+    }
+
 }
 
 @Composable

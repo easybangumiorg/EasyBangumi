@@ -26,13 +26,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import com.heyanle.easybangumi4.BuildConfig
+import com.heyanle.easybangumi4.C
 import com.heyanle.easybangumi4.LocalNavController
-import com.heyanle.easybangumi4.R
+import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.ui.main.more.EasyBangumiCard
 import com.heyanle.easybangumi4.utils.openUrl
@@ -63,7 +63,8 @@ fun About() {
                         nav.popBackStack()
                     }) {
                         Icon(
-                            imageVector = Icons.Filled.ArrowBack, stringResource(id = com.heyanle.easy_i18n.R.string.back)
+                            imageVector = Icons.Filled.ArrowBack,
+                            stringResource(id = com.heyanle.easy_i18n.R.string.back)
                         )
                     }
                 },
@@ -120,136 +121,68 @@ fun About() {
                 Divider()
 
                 val manager: ClipboardManager = LocalClipboardManager.current
-                ListItem(
-                    colors = ListItemDefaults.colors(
-                        containerColor = Color.Transparent
-                    ),
-                    modifier = Modifier.clickable {
-                        manager.setText(AnnotatedString("729848189"))
-                        "复制成功".moeSnackBar()
-                    },
-                    headlineContent = {
-                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.qq_groud))
-                    },
-                    trailingContent = {
-                        Text(text = "729848189")
-                    },
-                    leadingContent = {
-                        Icon(
-                            modifier = Modifier
-                                .size(24.dp),
-                            painter = painterResource(id = R.drawable.qq),
-                            contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.qq_groud)
-                        )
-                    },
-                )
-                ListItem(
-                    colors = ListItemDefaults.colors(
-                        containerColor = Color.Transparent
-                    ),
-                    modifier = Modifier.clickable {
-                        manager.setText(AnnotatedString("370345983"))
-                        "复制成功".moeSnackBar()
-                    },
-                    headlineContent = {
-                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.qq_groud))
-                    },
-                    trailingContent = {
-                        Text(text = "370345983")
-                    },
-                    leadingContent = {
-                        Icon(
-                            modifier = Modifier
-                                .size(24.dp),
-                            painter = painterResource(id = R.drawable.qq),
-                            contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.qq_groud)
-                        )
-                    },
-                )
 
-                ListItem(
-                    colors = ListItemDefaults.colors(
-                        containerColor = Color.Transparent
-                    ),
-                    modifier = Modifier.clickable {
-                        kotlin.runCatching {
-                            "https://pd.qq.com/s/4q8rd0285".openUrl()
-                        }.onFailure {
-                            it.printStackTrace()
+                C.aboutList.forEach {
+                    when (it) {
+                        is C.About.Url -> {
+                            ListItem(
+                                colors = ListItemDefaults.colors(
+                                    containerColor = Color.Transparent
+                                ),
+                                modifier = Modifier.clickable {
+                                    kotlin.runCatching {
+                                        it.url.openUrl()
+                                    }.onFailure {
+                                        it.printStackTrace()
+                                    }
+
+                                },
+                                headlineContent = {
+                                    Text(text = it.title)
+                                },
+                                trailingContent = {
+                                    Text(text = it.msg)
+                                },
+                                leadingContent = {
+                                    OkImage(
+                                        modifier = Modifier
+                                            .size(24.dp),
+                                        image = it.icon,
+                                        contentDescription = it.title,
+                                        crossFade = false
+                                    )
+                                },
+                            )
                         }
 
-                    },
-                    headlineContent = {
-                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.qq_chanel))
-                    },
-                    trailingContent = {
-                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.click_to_add))
-                    },
-                    leadingContent = {
-                        Icon(
-                            modifier = Modifier
-                                .size(24.dp),
-                            painter = painterResource(id = R.drawable.qq),
-                            contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.qq_chanel)
-                        )
-                    },
-                )
-
-                ListItem(
-                    colors = ListItemDefaults.colors(
-                        containerColor = Color.Transparent
-                    ),
-                    modifier = Modifier.clickable {
-                        kotlin.runCatching {
-                            "https://t.me/easybangumi".openUrl()
-                        }.onFailure {
-                            it.printStackTrace()
+                        is C.About.Copy -> {
+                            ListItem(
+                                colors = ListItemDefaults.colors(
+                                    containerColor = Color.Transparent
+                                ),
+                                modifier = Modifier.clickable {
+                                    manager.setText(AnnotatedString(it.copyValue))
+                                    "复制成功".moeSnackBar()
+                                },
+                                headlineContent = {
+                                    Text(text = it.title)
+                                },
+                                trailingContent = {
+                                    Text(text = it.msg)
+                                },
+                                leadingContent = {
+                                    OkImage(
+                                        modifier = Modifier
+                                            .size(24.dp),
+                                        image = it.icon,
+                                        contentDescription = it.title,
+                                        crossFade = false
+                                    )
+                                },
+                            )
                         }
-
-                    },
-                    headlineContent = {
-                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.telegram))
-                    },
-                    trailingContent = {
-                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.click_to_add))
-                    },
-                    leadingContent = {
-                        Icon(
-                            modifier = Modifier
-                                .size(24.dp),
-                            painter = painterResource(id = R.drawable.telegram),
-                            contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.telegram)
-                        )
-                    },
-                )
-
-                ListItem(
-                    colors = ListItemDefaults.colors(
-                        containerColor = Color.Transparent
-                    ),
-                    modifier = Modifier.clickable {
-                        kotlin.runCatching {
-                            "https://github.com/easybangumiorg/EasyBangumi".openUrl()
-                        }.onFailure {
-                            it.printStackTrace()
-                        }
-
-                    },
-                    headlineContent = {
-                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.github))
-                    },
-                    trailingContent = {
-                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.click_to_explore))
-                    },
-                    leadingContent = {
-                        Icon(
-                            modifier = Modifier
-                                .size(24.dp),
-                            painter = painterResource(id = R.drawable.github),
-                            contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.click_to_explore)
-                        )
-                    },
-                )
+                    }
+                }
 
             }
         }
