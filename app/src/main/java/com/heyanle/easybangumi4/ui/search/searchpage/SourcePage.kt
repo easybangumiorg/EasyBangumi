@@ -6,11 +6,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -41,21 +45,23 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
 import com.google.accompanist.flowlayout.FlowRow
 import com.heyanle.bangumi_source_api.api.component.search.SearchComponent
+import com.heyanle.bangumi_source_api.api.entity.CartoonCover
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.navigationDetailed
+import com.heyanle.easybangumi4.ui.common.CartoonCard
 import com.heyanle.easybangumi4.ui.common.EmptyPage
 import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.PagingCommon
 import com.heyanle.easybangumi4.ui.common.pagingCommon
 import com.heyanle.easybangumi4.ui.search.SearchViewModel
-import com.heyanle.easybangumi4.ui.sourcehome.search.CartoonSearchItem
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -230,5 +236,40 @@ fun SearchEmptyPage(
             }
         }
 
+    }
+}
+
+@Composable
+fun CartoonSearchItem(
+    modifier: Modifier = Modifier,
+    cartoonCover: CartoonCover,
+    onClick: (CartoonCover) -> Unit,
+) {
+    Row (
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(4.dp))
+            .clickable {
+                onClick(cartoonCover)
+            }
+            .padding(4.dp)
+            .then(modifier),
+        horizontalArrangement = Arrangement.Start
+    ) {
+        if(cartoonCover.coverUrl != null){
+            CartoonCard(cover = cartoonCover.coverUrl?:"", name = cartoonCover.title, source = null)
+
+            Spacer(modifier = Modifier.size(8.dp))
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(text = cartoonCover.title, maxLines = 2, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodyLarge)
+                Spacer(modifier = Modifier.size(8.dp))
+                Text(text = cartoonCover.intro?:"", style = MaterialTheme.typography.bodyLarge,)
+            }
+        }else{
+            Text(text = cartoonCover.title, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+            Text(text = cartoonCover.intro?:"", maxLines = 1, overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onSurface)
+        }
     }
 }
