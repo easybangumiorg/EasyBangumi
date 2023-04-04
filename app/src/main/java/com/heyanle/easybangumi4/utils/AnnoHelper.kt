@@ -1,17 +1,24 @@
 package com.heyanle.easybangumi4.utils
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
+import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
+import com.google.gson.reflect.TypeToken
 import com.heyanle.easy_i18n.R
+import com.heyanle.easybangumi4.BuildConfig
 import com.heyanle.okkv2.core.okkv
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.Request
 
 /**
@@ -22,13 +29,33 @@ object AnnoHelper {
 
     private const val checkCD = 30 * 60 * 1000L
 
+    data class AnnoItem(
+        var title: String,
+        var content: String,
+        @SerializedName("publish_time")
+        var publishTime: String,
+        @SerializedName("version_code")
+        var versionCode: String,
+    )
+
+
+    var annoList = mutableStateListOf<AnnoItem>()
+
+    private var showedAnnoListOkkv by okkv("showed_anno_list", "[]")
+    private var showedAnnoList: List<AnnoItem>
+        get() {
+            return Gson().fromJson<List<AnnoItem>>(showedAnnoListOkkv, object: TypeToken<List<AnnoItem>>(){}.type)
+        }
+        set(value) {
+            showedAnnoListOkkv = Gson().toJson(value)
+        }
+
+
     var lastCheckTime by okkv("anno_last_check_time", 0L)
-    var lastAnnoName by okkv<String>("last_anno_name", "")
-    val annoString = mutableStateOf<String?>(null)
 
     const val baseUrl =
         "https://raw.githubusercontent.com/easybangumiorg/EasyBangumi-sources/main/announcement/"
-    const val lastUrl = "${baseUrl}LATEST.txt"
+    const val lastUrl = "${baseUrl}LATEST.json"
 
     private val scope = MainScope()
 
@@ -36,21 +63,24 @@ object AnnoHelper {
         scope.launch(Dispatchers.IO) {
             kotlin.runCatching {
                 val now = System.currentTimeMillis()
-                if (now - lastCheckTime >= checkCD) {
+                if (now - lastCheckTime >= checkCD || BuildConfig.DEBUG) {
                     lastCheckTime = now
 
                     OkhttpHelper.client.newCall(
                         Request.Builder().url(lastUrl).get().build()
                     ).execute().body?.string()
-                        ?.let { name ->
-                            if (name.isNotEmpty() && lastAnnoName != name) {
+                        ?.let { json ->
 
-                                val anno = getAnno(name)
-                                anno?.let {
-                                    lastAnnoName = name
-                                    annoString.value = it
-                                }
+                            val list = Gson().fromJson<List<AnnoItem>>(
+                                json,
+                                object : TypeToken<List<AnnoItem>>() {}.type
+                            )
 
+                            val anno = checkAnno(list)
+                            showedAnnoList += anno
+                            withContext(Dispatchers.Main) {
+                                annoList.clear()
+                                annoList.addAll(list)
                             }
                         }
 
@@ -62,10 +92,31 @@ object AnnoHelper {
         }
     }
 
-    private fun getAnno(fileName: String): String? {
-        return OkhttpHelper.client.newCall(
-            Request.Builder().url("${baseUrl}${fileName}").get().build()
-        ).execute().body?.string()
+    private fun checkAnno(list: List<AnnoItem>): List<AnnoItem> {
+        val showed = showedAnnoList
+        return list.filter {
+            // 版本检查
+            var isMatch = false
+            for(v in it.versionCode.split("|")){
+                try {
+                    val dd = v.split("~")
+                    val startString = dd[0]
+                    val endString = dd[1]
+                    val start = if(startString == "*") 0 else startString.toInt()
+                    val end = if(endString == "*") Int.MAX_VALUE else endString.toInt()
+                    if(BuildConfig.VERSION_CODE in start..end){
+                        isMatch = true
+                        break
+                    }
+                }catch (e: Exception){
+                    e.printStackTrace()
+                }
+            }
+            isMatch
+        }.filter {
+            // 是否展示检查
+            !showed.contains(it)
+        }
     }
 
     @Composable
@@ -74,20 +125,27 @@ object AnnoHelper {
             AnnoHelper.init()
         }
 
-        annoString.value?.let {
+        if(annoList.isNotEmpty()){
+            val showed = remember(annoList) {
+                annoList.first()
+            }
             AlertDialog(
                 onDismissRequest = {
-                    annoString.value = null
+                    annoList.remove(showed)
                 },
                 title = {
-                    Text(text = stringResource(id = R.string.announcement) + lastAnnoName)
+                    Text(text = stringResource(id = R.string.announcement) + " " + showed.title)
                 },
                 text = {
-                    Text(text = it)
+                    Column {
+                        Text(text = showed.publishTime)
+                        Text(text = showed.content)
+                    }
+
                 },
                 confirmButton = {
                     TextButton(onClick = {
-                        annoString.value = null
+                        annoList.remove(showed)
                     }) {
                         Text(text = stringResource(id = R.string.confirm))
                     }

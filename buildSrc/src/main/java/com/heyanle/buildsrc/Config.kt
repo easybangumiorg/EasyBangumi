@@ -6,7 +6,7 @@ package com.heyanle.buildsrc
  */
 object Config {
 
-    val APP_CENTER_SECRET = "APP_CENTER_SECRET"
+    const val APP_CENTER_SECRET = "APP_CENTER_SECRET"
 
     fun getPrivateValue(key: String): String {
         return kotlin.runCatching {

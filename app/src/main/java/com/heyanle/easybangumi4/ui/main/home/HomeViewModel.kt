@@ -86,34 +86,6 @@ class HomeViewModel : ViewModel() {
             }
         }
 
-//        viewModelScope.launch {
-//            combine(
-//                _stateFlow.map { it.pages }.distinctUntilChanged(),
-//                _stateFlow.map { it.selectionIndex }.distinctUntilChanged()
-//            ) { list, index ->
-//                if (index >= 0 && index < list.size && !list[index].newScreen) {
-//                    index to list[index]
-//                } else {
-//                    var ii = -1
-//                    val pages = list
-//                    for (i in pages.indices) {
-//                        if (!pages[i].newScreen) {
-//                            ii = i
-//                            break
-//                        }
-//                    }
-//                    ii to if (ii == -1) null else list[ii]
-//                }
-//            }.collectLatest { p ->
-//                _stateFlow.update {
-//                    it.copy(
-//                        selectionIndex = p.first,
-//                        selectionPage = p.second
-//                    )
-//                }
-//            }
-//        }
-
     }
 
     fun changeSelectionPage(index: Int) {
@@ -126,9 +98,16 @@ class HomeViewModel : ViewModel() {
 
     fun changeSelectionSource(key: String) {
         _stateFlow.update {
-            it.copy(
-                selectionKey = key
-            )
+            if(it.selectionKey != key){
+                it.copy(
+                    selectionKey = key,
+                    selectionIndex = -1,
+
+                )
+            }else{
+                it
+            }
+
         }
     }
 
