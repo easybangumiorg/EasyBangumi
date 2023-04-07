@@ -24,10 +24,10 @@
 - [x] 多主题
 - [x] 倍速播放
 - [x] 播放历史
-- [x] 投屏功能
-- [ ] 添加源管理
+- [ ] 投屏功能
+- [x] 添加源管理
 - [ ] 添加弹幕功能
-- [ ] 插件化，添加插件市场
+- [x] 插件化，添加插件市场
 - [ ] 种子 & 磁力下载，添加种子站
 - [ ] 种子站订阅，管理
 
@@ -39,13 +39,18 @@
 
 # 截图
 
-| <img src="./screenshots/1.png" /> | <img src="./screenshots/2.png" />  | <img src="./screenshots/3.png"  /> |
+| <img src="./screenshots/1.jpg" /> | <img src="./screenshots/2.jpg" />  | <img src="./screenshots/3.jpg"  /> |
 |:---------------------------------:|:----------------------------------:|:----------------------------------:|
-| <img src="./screenshots/4.png" /> | <img src="./screenshots/5.png"  /> | <img src="./screenshots/7.png"  /> |
+| <img src="./screenshots/4.jpg" /> | <img src="./screenshots/5.jpg"  /> | <img src="./screenshots/7.jpg"  /> |
 
-<img src="./screenshots/6.png"/> 
+<img src="./screenshots/6.jpg"/> 
 
 # 更新列表
+
+- 2023/04/07 4.0.3
+  全新 4.0 版本，全新 MD3 UI  
+  添加 插件化，扩展可在官网或群下载  
+  添加 番剧更新检测  
 
 - 2023/02/18 3.1.3  
   新增 Omofun 源
