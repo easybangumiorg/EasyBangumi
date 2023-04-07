@@ -116,6 +116,14 @@ fun CartoonPlay(
         }
     }
 
+    var showEpisodeWin by remember {
+        mutableStateOf(false)
+    }
+
+    var showSpeedWin by remember {
+        mutableStateOf(false)
+    }
+
 
     val lazyGridState = rememberLazyGridState()
     EasyPlayerScaffold(
@@ -168,6 +176,19 @@ fun CartoonPlay(
 
                 else -> {}
             }
+
+
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.CenterEnd
+            ){
+                Column(
+
+                ) {
+
+                }
+            }
+
             if (!it.isFullScreen) {
                 FilledIconButton(
                     modifier = Modifier.padding(8.dp),
