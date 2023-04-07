@@ -60,7 +60,9 @@ class DetailedViewModel(
             detailedState = DetailedState.Loading
             detailedComponent.getAll(cartoonSummary)
                 .complete {
-
+//                    it.data.second.loge("DetailedViewModel")
+//                    it.data.second.size.loge("DetailedViewModel")
+//                    it.data.second.first().episode.size.loge("DetailedViewModel")
                     detailedState = DetailedState.Info(it.data.first, it.data.second, it.data.second !is DetailedComponent.NonPlayLine)
                     val isStar = withContext(Dispatchers.IO) {
                         val cartoonStar = DB.cartoonStar.getByCartoonSummary(

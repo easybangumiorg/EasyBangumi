@@ -250,7 +250,7 @@ class YhdmParser : ISourceParser, IHomeParser, IDetailParser, IPlayerParser, ISe
             }
 
             val result = runCatching {
-                doc.select("div.area div.bofang div#playbox")[0].attr("data-vid").split("$")[0]
+                doc.select("body div.player div#playbox")[0].attr("data-vid").split("$")[0]
             }.getOrElse {
                 it.printStackTrace()
                 return@withContext ISourceParser.ParserResult.Error(it, true)

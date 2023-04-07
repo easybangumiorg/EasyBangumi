@@ -36,18 +36,24 @@ object AnnoHelper {
         var publishTime: String,
         @SerializedName("version_code")
         var versionCode: String,
-    )
+    ) {
+
+    }
 
 
     var annoList = mutableStateListOf<AnnoItem>()
 
     private var showedAnnoListOkkv by okkv("showed_anno_list", "[]")
-    private var showedAnnoList: List<AnnoItem>
+    private var showedAnnoList: Set<AnnoItem>
         get() {
-            return Gson().fromJson<List<AnnoItem>>(showedAnnoListOkkv, object: TypeToken<List<AnnoItem>>(){}.type)
+            return Gson().fromJson<List<AnnoItem>>(
+                showedAnnoListOkkv,
+                object : TypeToken<List<AnnoItem>>() {}.type
+            ).toSet()
         }
         set(value) {
-            showedAnnoListOkkv = Gson().toJson(value)
+            showedAnnoListOkkv = Gson().toJson(value.toList())
+            //showedAnnoListOkkv.loge("AnnoHelper")
         }
 
 
@@ -77,10 +83,12 @@ object AnnoHelper {
                             )
 
                             val anno = checkAnno(list)
-                            showedAnnoList += anno
+                            val d = showedAnnoList.toMutableSet()
+                            d.addAll(anno)
+                            showedAnnoList = d
                             withContext(Dispatchers.Main) {
                                 annoList.clear()
-                                annoList.addAll(list)
+                                annoList.addAll(anno)
                             }
                         }
 
@@ -94,27 +102,31 @@ object AnnoHelper {
 
     private fun checkAnno(list: List<AnnoItem>): List<AnnoItem> {
         val showed = showedAnnoList
+//        showed.forEach {
+//            it.loge("AnnoHelper")
+//        }
         return list.filter {
             // 版本检查
             var isMatch = false
-            for(v in it.versionCode.split("|")){
+            for (v in it.versionCode.split("|")) {
                 try {
                     val dd = v.split("~")
                     val startString = dd[0]
                     val endString = dd[1]
-                    val start = if(startString == "*") 0 else startString.toInt()
-                    val end = if(endString == "*") Int.MAX_VALUE else endString.toInt()
-                    if(BuildConfig.VERSION_CODE in start..end){
+                    val start = if (startString == "*") 0 else startString.toInt()
+                    val end = if (endString == "*") Int.MAX_VALUE else endString.toInt()
+                    if (BuildConfig.VERSION_CODE in start..end) {
                         isMatch = true
                         break
                     }
-                }catch (e: Exception){
+                } catch (e: Exception) {
                     e.printStackTrace()
                 }
             }
             isMatch
         }.filter {
             // 是否展示检查
+            showed.contains(it).loge("2AnnoHelper")
             !showed.contains(it)
         }
     }
@@ -125,7 +137,7 @@ object AnnoHelper {
             AnnoHelper.init()
         }
 
-        if(annoList.isNotEmpty()){
+        if (annoList.isNotEmpty()) {
             val showed = remember(annoList) {
                 annoList.first()
             }
