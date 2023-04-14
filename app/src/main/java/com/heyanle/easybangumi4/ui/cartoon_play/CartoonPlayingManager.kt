@@ -184,6 +184,7 @@ object CartoonPlayingManager: Player.Listener {
         episode: Int = 0,
         adviceProgress: Long = 0L,
     ) {
+        exoPlayer.pause()
         if (playLine.episode.isEmpty()) {
             return
         }

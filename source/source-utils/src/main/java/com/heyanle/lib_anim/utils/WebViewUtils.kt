@@ -15,7 +15,7 @@ import android.webkit.WebView
 object WebViewUtil {
     const val SPOOF_PACKAGE_NAME = "org.chromium.chrome"
 
-    const val MINIMUM_WEBVIEW_VERSION = 105
+    const val MINIMUM_WEBVIEW_VERSION = 110
 
     fun supportsWebView(context: Context): Boolean {
         try {
@@ -64,6 +64,10 @@ private fun WebView.getWebViewMajorVersion(): Int {
 
 // 获取手机自带浏览器的 UA
 fun WebView.getDefaultUserAgentString(): String {
+//    if(isOutdated()){
+//        return "Mozilla/5.0 (Linux; Android 13; RMX3551 Build/SKQ1.220617.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/103.0.5060.129 Mobile Safari/537.36"
+//    }
+
     val originalUA: String = settings.userAgentString
 
     // Next call to getUserAgentString() will get us the default

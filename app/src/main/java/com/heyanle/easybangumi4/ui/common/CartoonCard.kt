@@ -66,7 +66,7 @@ fun CartoonCardWithCover(
             Text(
                 style = MaterialTheme.typography.bodySmall,
                 text = cartoonCover.title,
-                maxLines = 1,
+                maxLines = 2,
                 textAlign = TextAlign.Start,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -142,7 +142,7 @@ fun CartoonStarCardWithCover(
             Text(
                 style = MaterialTheme.typography.bodySmall,
                 text = cartoon.title,
-                maxLines = 1,
+                maxLines = 2,
                 textAlign = TextAlign.Start,
                 overflow = TextOverflow.Ellipsis,
                 color = if(selected) MaterialTheme.colorScheme.onPrimary else Color.Unspecified

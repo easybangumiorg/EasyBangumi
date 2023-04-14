@@ -128,7 +128,7 @@ fun SourceListPageContentWithCover(
                     modifier = Modifier
                         .fillMaxSize(),
                     state = lazyGridState,
-                    columns = GridCells.Adaptive(150.dp),
+                    columns = GridCells.Adaptive(100.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
