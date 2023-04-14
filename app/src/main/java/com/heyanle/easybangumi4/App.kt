@@ -8,10 +8,9 @@ import android.os.Build
 import android.os.Looper
 import android.os.Process
 import android.util.Log
-import android.widget.Toast
 import com.heyanle.easy_crasher.CrashHandler
 import com.heyanle.easybangumi4.db.AppDatabase
-import com.heyanle.easybangumi4.source.utils.initUtils
+import com.heyanle.easybangumi4.preferences.WebViewCompatiblePreferences
 import com.heyanle.easybangumi4.utils.AppCenterManager
 import com.heyanle.easybangumi4.utils.exo_ssl.CropUtil
 import com.heyanle.easybangumi4.utils.exo_ssl.TrustAllHostnameVerifier
@@ -49,27 +48,26 @@ class App: Application() {
             initOkkv()
 
 
-
             HttpsURLConnection.setDefaultSSLSocketFactory(CropUtil.getUnsafeSslSocketFactory())
             HttpsURLConnection.setDefaultHostnameVerifier(TrustAllHostnameVerifier())
 
             initAppCenter()
 
-            initExtension()
+            //initExtension()
 
             initDataBase()
-            kotlin.runCatching {
-                initUtils(this)
-            }.onFailure {
-                it.printStackTrace()
-                Toast.makeText(this, it.message, Toast.LENGTH_SHORT).show()
-            }
+//            kotlin.runCatching {
+//                initUtils(this)
+//            }.onFailure {
+//                it.printStackTrace()
+//                Toast.makeText(this, it.message, Toast.LENGTH_SHORT).show()
+//            }
         }
     }
 
     override fun getPackageName(): String {
-        // This causes freezes in Android 6/7 for some reason
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             try {
                 // Override the value passed as X-Requested-With in WebView requests
                 val stackTrace = Looper.getMainLooper().thread.stackTrace
@@ -80,6 +78,10 @@ class App: Application() {
                     )
                 }
                 if (chromiumElement?.methodName.equals("getAll", ignoreCase = true)) {
+                    if(WebViewCompatiblePreferences.stateFlow.value){
+                        // 兼容模式不改写
+                        return super.getPackageName()
+                    }
                     return WebViewUtil.SPOOF_PACKAGE_NAME
                 }
             } catch (e: Exception) {
@@ -148,7 +150,7 @@ class App: Application() {
         return packageName == if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             getProcessName()
         }else{
-            getProcessName(this)
+            getProcessName(this) ?: packageName
         }
 
     }

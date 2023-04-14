@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
@@ -19,10 +20,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import com.heyanle.easybangumi4.source.SourceMaster
+import com.heyanle.easybangumi4.source.utils.initUtils
 import com.heyanle.easybangumi4.theme.EasyTheme
 import com.heyanle.easybangumi4.ui.common.MoeSnackBar
 import com.heyanle.easybangumi4.utils.AnnoHelper
 import com.heyanle.easybangumi4.utils.MediaUtils
+import com.heyanle.extension_load.ExtensionInit
+import com.heyanle.extension_load.IconFactoryImpl
 import com.heyanle.okkv2.core.okkv
 
 /**
@@ -33,9 +37,21 @@ class MainActivity : ComponentActivity() {
 
     var first by okkv("first_visible", def = true)
 
+    private fun init(){
+        ExtensionInit.init(this, IconFactoryImpl())
+        kotlin.runCatching {
+            initUtils(this)
+        }.onFailure {
+            it.printStackTrace()
+            Toast.makeText(this, it.message, Toast.LENGTH_SHORT).show()
+        }
+    }
+
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        init()
         // initUtils(BangumiApp.INSTANCE)
         // networkHelper.defaultUA = WebView(this).getDefaultUserAgentString()
         MediaUtils.setIsDecorFitsSystemWindows(this, false)

@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.HistoryToggleOff
+import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.outlined.Report
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
@@ -30,6 +31,7 @@ import com.heyanle.easybangumi4.HISTORY
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.R
 import com.heyanle.easybangumi4.preferences.InPrivatePreferences
+import com.heyanle.easybangumi4.preferences.WebViewCompatiblePreferences
 import com.heyanle.easybangumi4.ui.common.BooleanPreferenceItem
 import com.heyanle.easybangumi4.ui.common.OkImage
 
@@ -94,6 +96,23 @@ fun More() {
             }
         )
 
+        Divider()
+
+        BooleanPreferenceItem(
+            title = {
+                Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.web_view_compatible))
+            },
+            subtitle = {
+                Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.web_view_compatible_msg))
+            },
+            icon = {
+                Icon(
+                    Icons.Filled.Public,
+                    contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.web_view_compatible)
+                )
+            },
+            preference = WebViewCompatiblePreferences
+        )
         Divider()
         ListItem(
             modifier = Modifier.clickable {

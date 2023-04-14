@@ -14,15 +14,16 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import androidx.webkit.WebResourceErrorCompat
 import androidx.webkit.WebViewClientCompat
+import com.heyanle.lib_anim.utils.network.webview_helper.WebViewHelperImpl.BlobIntercept
 import com.heyanle.lib_anim.utils.setDefaultSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.apache.commons.text.StringEscapeUtils
 import java.io.ByteArrayInputStream
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
-import org.apache.commons.text.StringEscapeUtils
 
 /**
  * Created by HeYanLe on 2023/2/3 22:39.

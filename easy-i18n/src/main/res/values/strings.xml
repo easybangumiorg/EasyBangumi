@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">纯纯看番 尝鲜版</string>
+    <string name="app_name">纯纯看番</string>
 
     <string name="anim">动画</string>
     <string name="watch_anim">看动画</string>
@@ -213,6 +213,10 @@
     <string name="theme_strawberry">草莓巧克力</string>
     <string name="theme_tako">薰衣草</string>
     <string name="theme_tealturqoise">浪潮</string>
+
+    <string name="web_view_init_error_msg">WebView 初始化失败，可能会导致部分源无法使用，可尝试在更多中开启兼容模式。</string>
+    <string name="web_view_compatible">WebView 兼容模式</string>
+    <string name="web_view_compatible_msg">WebView 旧版本初始化失败可尝试开启</string>
 
 
 </resources>
