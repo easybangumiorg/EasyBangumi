@@ -12,6 +12,9 @@ import kotlinx.coroutines.flow.asStateFlow
 // 无痕模式
 object InPrivatePreferences: Preference<Boolean>("inPrivate", false)
 
+// 兼容模式
+object WebViewCompatiblePreferences: Preference<Boolean>("webViewCompatible", false)
+
 
 open class Preference <T: Any> (
     key: String,
