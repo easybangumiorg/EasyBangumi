@@ -43,6 +43,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -53,9 +54,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
+import com.heyanle.easybangumi4.preferences.PadModePreferences
 import com.heyanle.easybangumi4.theme.DarkMode
 import com.heyanle.easybangumi4.theme.EasyThemeController
 import com.heyanle.easybangumi4.theme.EasyThemeMode
+import com.heyanle.easybangumi4.ui.common.IntPreferenceItem
 import com.heyanle.easybangumi4.utils.stringRes
 
 /**
@@ -116,7 +119,27 @@ fun AppearanceSetting() {
                 )
 
                 ThemeModeItem()
+
+                Text(
+                    modifier = Modifier.padding(horizontal = 12.dp),
+                    text = stringResource(id = R.string.show),
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                IntPreferenceItem(
+                    title = { Text(text = stringResource(id = R.string.pad_mode)) },
+                    textList = remember {
+                        listOf(
+                            stringRes(R.string.auto),
+                            stringRes(R.string.always_on),
+                            stringRes(R.string.always_off),
+                        )
+                    },
+                    preference = PadModePreferences
+                )
+
             }
+
 
         }
     }

@@ -73,7 +73,9 @@ var explorePageIndex by okkv("explorePageInitPageIndex", 0)
 @Composable
 fun SourceManager() {
 
-    val pagerState = rememberPagerState(initialPage = explorePageIndex)
+    val pagerState = rememberPagerState(initialPage = explorePageIndex, 0f) {
+        ExplorePageItems.size
+    }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scope = rememberCoroutineScope()
 
@@ -106,7 +108,6 @@ fun SourceManager() {
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
-            pageCount = ExplorePageItems.size,
             state = pagerState
         ) {
             val page = ExplorePageItems[it]

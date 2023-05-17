@@ -56,8 +56,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
         jvmTarget = "1.8"
@@ -95,7 +95,7 @@ dependencies {
     debugImplementation( "com.squareup.leakcanary:leakcanary-android:${Version.leakcanary}")
 
     implementation("androidx.paging:paging-runtime-ktx:${Version.paging}")
-    implementation("androidx.paging:paging-compose:1.0.0-alpha18")
+    implementation("androidx.paging:paging-compose:1.0.0-alpha19")
     implementation("com.github.easybangumiorg:EasyPlayer2:${Version.easy_player}")
 
     // implementation(platform("androidx.compose:compose-bom:${Version.compose_bom}"))
@@ -111,6 +111,9 @@ dependencies {
     implementation("androidx.compose.animation:animation-graphics:${Version.compose_animation}")
     implementation("androidx.compose.foundation:foundation:${Version.compose_foundation}")
     implementation("androidx.compose.foundation:foundation-layout:${Version.compose_foundation}")
+
+    implementation("androidx.window:window:${Version.androidx_window}")
+    implementation("androidx.compose.material3:material3-window-size-class:${Version.compose_material3}")
 
     debugImplementation("androidx.compose.ui:ui-tooling:${Version.compose_ui}")
     debugImplementation("androidx.compose.ui:ui-test-manifest:${Version.compose_ui}")
