@@ -15,8 +15,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.ui.common.ExtensionContainer
 import com.heyanle.easybangumi4.ui.common.OkImage
+import com.heyanle.easybangumi4.utils.IntentHelper
 import com.heyanle.extension_load.model.Extension
 
 /**
@@ -26,24 +28,26 @@ import com.heyanle.extension_load.model.Extension
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExtensionTopAppBar(behavior: TopAppBarScrollBehavior){
+fun ExtensionTopAppBar(behavior: TopAppBarScrollBehavior) {
     TopAppBar(
         title = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.manage)) },
         scrollBehavior = behavior
     )
 }
+
 @Composable
-fun Extension (){
+fun Extension() {
     ExtensionContainer(
         modifier = Modifier.fillMaxSize()
     ) {
-        LazyColumn(modifier = Modifier.fillMaxSize()){
-            items(it){ extension ->
-                ExtensionItem(extension = extension, onClick = {
-
-                }, onAction = {
-
-                })
+        LazyColumn(modifier = Modifier.fillMaxSize()) {
+            items(it) { extension ->
+                ExtensionItem(extension = extension,
+                    onClick = {
+                        IntentHelper.openAppDetailed(it.pkgName, APP)
+                    }, onAction = {
+                        IntentHelper.openAppDetailed(it.pkgName, APP)
+                    })
             }
         }
     }
@@ -51,11 +55,11 @@ fun Extension (){
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExtensionItem (
+fun ExtensionItem(
     extension: Extension,
-    onClick: (Extension)->Unit,
-    onAction: (Extension)->Unit,
-){
+    onClick: (Extension) -> Unit,
+    onAction: (Extension) -> Unit,
+) {
 
     ListItem(
         modifier = Modifier.clickable {
@@ -70,14 +74,15 @@ fun ExtensionItem (
             )
         },
         trailingContent = {
-            when(extension){
+            when (extension) {
                 is Extension.Installed -> {
                     TextButton(onClick = {
                         onAction(extension)
                     }) {
-                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.setting))
+                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.detailed))
                     }
                 }
+
                 is Extension.InstallError -> {
                     TextButton(
                         enabled = false,
