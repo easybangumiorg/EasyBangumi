@@ -65,7 +65,9 @@ fun Search(
 
     val pagerState =
         rememberPagerState(searchComponents.indexOfFirst { it.source.key == defSourceKey }
-            .coerceIn(0, searchComponents.size - 1))
+            .coerceIn(0, searchComponents.size - 1), 0f){
+            searchComponents.size
+        }
 
     val focusRequester = remember {
         FocusRequester()
@@ -129,7 +131,6 @@ fun Search(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
-                pageCount = searchComponents.size,
                 state = pagerState
             ) {
 
