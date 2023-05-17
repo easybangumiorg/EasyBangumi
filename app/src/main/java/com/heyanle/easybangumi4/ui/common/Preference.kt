@@ -70,7 +70,8 @@ fun IntPreferenceItem(
     title: @Composable (() -> Unit),
     icon: @Composable (() -> Unit)? = null,
     textList: List<String>,
-    preference: Preference<Int>
+    preference: Preference<Int>,
+    onChange: (Int)->Unit = {},
 ) {
     var showDialog by remember {
         mutableStateOf(false)
@@ -107,6 +108,7 @@ fun IntPreferenceItem(
                                 scope.launch {
                                     showDialog = false
                                     preference.set(it)
+                                    onChange(it)
                                 }
                             }
                         ) {
@@ -117,6 +119,7 @@ fun IntPreferenceItem(
                                 scope.launch {
                                     showDialog = false
                                     preference.set(it)
+                                    onChange(it)
                                 }
                             })
                             Spacer(modifier = Modifier.size(4.dp))

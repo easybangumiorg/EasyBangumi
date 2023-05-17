@@ -224,5 +224,7 @@
     <string name="web_view_compatible">WebView 兼容模式</string>
     <string name="web_view_compatible_msg">WebView 旧版本初始化失败可尝试开启</string>
 
+    <string name="some_page_should_reboot">某些界面需要重启软件刷新</string>
+
 
 </resources>
