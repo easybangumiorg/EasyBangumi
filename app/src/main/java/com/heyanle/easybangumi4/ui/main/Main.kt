@@ -5,12 +5,15 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
@@ -35,11 +38,18 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,6 +60,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
+import com.heyanle.easybangumi4.LocalWindowSizeController
+import com.heyanle.easybangumi4.preferences.PadModePreferences
 import com.heyanle.easybangumi4.ui.common.SourceContainer
 import com.heyanle.easybangumi4.ui.history.History
 import com.heyanle.easybangumi4.ui.main.home.Home
@@ -186,13 +198,13 @@ var homePageIndexOkkv by okkv("home_page_index", 0)
 @OptIn(
     ExperimentalMaterial3Api::class,
     ExperimentalAnimationApi::class, ExperimentalMaterialApi::class,
-    ExperimentalFoundationApi::class
+    ExperimentalFoundationApi::class, ExperimentalMaterial3WindowSizeClassApi::class
 )
 @Composable
 fun Main() {
 
     val pagerState =
-        rememberPagerState(initialPage = if (homePageIndexOkkv >= 0 && homePageIndexOkkv < MainPageItems.size) homePageIndexOkkv else 0)
+        rememberPagerState(initialPage = if (homePageIndexOkkv >= 0 && homePageIndexOkkv < MainPageItems.size) homePageIndexOkkv else 0,0F) { MainPageItems.size }
 
     val scope = rememberCoroutineScope()
 
@@ -233,41 +245,91 @@ fun Main() {
 
             }) {
 
-            Column() {
-                HorizontalPager(
-                    userScrollEnabled = false,
-                    state = pagerState,
-                    modifier = Modifier.weight(1f),
-                    pageCount = MainPageItems.size,
-                ) {
-                    MainPageItems[it].content()
+            val windowSize = LocalWindowSizeController.current
+            windowSize.heightSizeClass
 
+            val padMode by PadModePreferences.stateFlow.collectAsState()
+            val isPad = remember( key1 = windowSize, key2 = padMode ) {
+                when(padMode){
+                    0 -> windowSize.widthSizeClass != WindowWidthSizeClass.Compact
+                    1 -> true
+                    else -> false
                 }
+            }
 
-                if (vm.customBottomBar == null) {
-                    NavigationBar() {
+            if(!isPad){
+                Column() {
+                    HorizontalPager(
+                        userScrollEnabled = false,
+                        state = pagerState,
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        MainPageItems[it].content()
+
+                    }
+
+                    if (vm.customBottomBar == null) {
+                        NavigationBar() {
+                            MainPageItems.forEachIndexed { i, page ->
+                                val select = pagerState.currentPage == i
+                                NavigationBarItem(
+                                    icon = {
+                                        page.icon(select)
+                                    },
+                                    label = page.tabLabel,
+                                    selected = select,
+                                    alwaysShowLabel = false,
+                                    onClick = {
+                                        scope.launch {
+                                            pagerState.scrollToPage(i)
+                                        }
+                                        homePageIndexOkkv = i
+                                    }
+                                )
+                            }
+                        }
+                    } else {
+                        vm.customBottomBar?.let { it() }
+                    }
+                }
+            }else{
+                Row {
+                    NavigationRail (
+                        containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
+
+                    ){
                         MainPageItems.forEachIndexed { i, page ->
                             val select = pagerState.currentPage == i
-                            NavigationBarItem(
-                                icon = {
-                                    page.icon(select)
-                                },
-                                label = page.tabLabel,
+                            NavigationRailItem(
                                 selected = select,
-                                alwaysShowLabel = false,
                                 onClick = {
                                     scope.launch {
                                         pagerState.scrollToPage(i)
                                     }
                                     homePageIndexOkkv = i
-                                }
+                                },
+                                icon = {page.icon(select) },
+                                label = page.tabLabel,
+                                alwaysShowLabel = false,
                             )
                         }
                     }
-                } else {
-                    vm.customBottomBar?.let { it() }
+                    Column(
+                        modifier = Modifier.fillMaxHeight().weight(1f)
+                    ) {
+                        VerticalPager(state = pagerState, userScrollEnabled = false,modifier = Modifier.weight(1f), ) {
+                            MainPageItems[it].content()
+                        }
+                        if (vm.customBottomBar != null) {
+                            vm.customBottomBar?.let { it() }
+                        }
+                    }
+
                 }
             }
+
+
+
 
 
         }

@@ -43,6 +43,12 @@
 
     <string name="long_press_fast_forward">长按倍速播放中</string>
 
+    <string name="show">显示</string>
+    <string name="pad_mode">平板模式</string>
+    <string name="auto">自动</string>
+    <string name="always_on">开启</string>
+    <string name="always_off">关闭</string>
+
     <string name="home">主页</string>
     <string name="my_anim">追番</string>
     <string name="update">更新</string>

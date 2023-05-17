@@ -70,8 +70,6 @@ fun EasyTheme(
         }
     }
 
-
-
     LaunchedEffect(key1 = colorScheme) {
         EasyThemeController.curThemeColor = colorScheme
     }

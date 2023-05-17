@@ -199,7 +199,7 @@ public fun <T : Any> LazyStaggeredGridScope.items(
             }
         }
     ) { index ->
-        itemContent(items[index])
+        this@items.itemContent(items[index])
     }
 }
 

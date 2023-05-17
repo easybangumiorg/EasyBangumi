@@ -12,6 +12,12 @@ import kotlinx.coroutines.flow.asStateFlow
 // 无痕模式
 object InPrivatePreferences: Preference<Boolean>("inPrivate", false)
 
+// 平板模式
+// 0 自动
+// 1 关闭
+// 2 开启
+object PadModePreferences: Preference<Int>("padMode", 0)
+
 // 兼容模式
 object WebViewCompatiblePreferences: Preference<Boolean>("webViewCompatible", false)
 

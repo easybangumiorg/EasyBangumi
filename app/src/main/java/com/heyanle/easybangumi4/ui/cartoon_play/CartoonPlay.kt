@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,8 +33,10 @@ import com.heyanle.bangumi_source_api.api.entity.Cartoon
 import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
 import com.heyanle.bangumi_source_api.api.entity.PlayLine
 import com.heyanle.easybangumi4.LocalNavController
+import com.heyanle.easybangumi4.LocalWindowSizeController
 import com.heyanle.easybangumi4.R
 import com.heyanle.easybangumi4.navigationSearch
+import com.heyanle.easybangumi4.preferences.PadModePreferences
 import com.heyanle.easybangumi4.ui.common.*
 import com.heyanle.easybangumi4.utils.TODO
 import com.heyanle.easybangumi4.utils.loge
@@ -54,17 +57,13 @@ fun CartoonPlay(
     url: String,
     enterData: CartoonPlayViewModel.EnterData? = null
 ) {
-
-
     val summary = CartoonSummary(id, source, url)
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background,
         contentColor = MaterialTheme.colorScheme.onBackground
     ) {
-
         DetailedContainer(sourceKey = source) { _, sou, det ->
-
             val detailedVM =
                 viewModel<DetailedViewModel>(factory = DetailedViewModelFactory(summary, det))
             val cartoonPlayViewModel = viewModel<CartoonPlayViewModel>()
@@ -76,11 +75,7 @@ fun CartoonPlay(
                 enterData = enterData
             )
         }
-
-
     }
-
-
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -93,7 +88,17 @@ fun CartoonPlay(
     enterData: CartoonPlayViewModel.EnterData? = null,
 ) {
 
-    val controlVM = ControlViewModelFactory.viewModel(CartoonPlayingManager.exoPlayer)
+    val windowSize = LocalWindowSizeController.current
+    val padMode by PadModePreferences.stateFlow.collectAsState()
+    val isPad = remember( key1 = windowSize, key2 = padMode ) {
+        when(padMode){
+            0 -> windowSize.widthSizeClass != WindowWidthSizeClass.Compact
+            1 -> true
+            else -> false
+        }
+    }
+
+    val controlVM = ControlViewModelFactory.viewModel(CartoonPlayingManager.exoPlayer, isPad)
     val nav = LocalNavController.current
 
     LaunchedEffect(key1 = detailedVM.detailedState) {
@@ -124,11 +129,12 @@ fun CartoonPlay(
         mutableStateOf(false)
     }
 
-
     val lazyGridState = rememberLazyGridState()
-    EasyPlayerScaffold(
+    EasyPlayerScaffoldBase(
         modifier = Modifier.fillMaxSize(),
         vm = controlVM,
+        isPadMode = isPad,
+        contentWeight = 0.5f,
         videoFloat = {
             val ctx = LocalContext.current as Activity
             LaunchedEffect(key1 = CartoonPlayingManager.state) {
@@ -137,12 +143,10 @@ fun CartoonPlay(
                         it.onPrepare()
                         // CartoonPlayingManager.trySaveHistory()
                     }
-
                     is CartoonPlayingManager.PlayingState.Loading -> {}
                     is CartoonPlayingManager.PlayingState.Error -> {
                         it.onFullScreen(false, false, ctx)
                     }
-
                     else -> {}
                 }
             }
@@ -155,7 +159,6 @@ fun CartoonPlay(
                             .clickable { }
                     )
                 }
-
                 is CartoonPlayingManager.PlayingState.Error -> {
                     ErrorPage(
                         modifier = Modifier
@@ -177,14 +180,12 @@ fun CartoonPlay(
                 else -> {}
             }
 
-
+            // 倍速窗口
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.CenterEnd
             ){
-                Column(
-
-                ) {
+                Column {
 
                 }
             }
@@ -205,8 +206,6 @@ fun CartoonPlay(
                     )
                 }
             }
-
-
         },
         control = {
             Box(Modifier.fillMaxSize()) {
@@ -239,34 +238,67 @@ fun CartoonPlay(
             }
         }
     ) {
-        Spacer(
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.primary)
-                .height(2.dp)
-                .fillMaxWidth(),
-        )
-        Surface(
-            modifier = Modifier.weight(1f),
-            color = MaterialTheme.colorScheme.background,
-            contentColor = MaterialTheme.colorScheme.onBackground
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .navigationBarsPadding()
-            ) {
-                CartoonPlayUI(
-                    detailedVM = detailedVM,
-                    cartoonPlayVM = cartoonPlayVM,
-                    listState = lazyGridState
+        val contentColumn:@Composable ()->Unit = {
+            Column {
+                Surface(
+                    modifier = Modifier.weight(1f),
+                    color = MaterialTheme.colorScheme.background,
+                    contentColor = MaterialTheme.colorScheme.onBackground
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .navigationBarsPadding()
+                    ) {
+                        CartoonPlayUI(
+                            detailedVM = detailedVM,
+                            cartoonPlayVM = cartoonPlayVM,
+                            listState = lazyGridState
+                        )
+                        FastScrollToTopFab(listState = lazyGridState)
+                    }
+                }
+            }
+        }
+        if(isPad){
+
+            Column {
+                Spacer(
+                    modifier = Modifier
+                        .background(Color.Black)
+                        .fillMaxWidth()
+                        .windowInsetsTopHeight(WindowInsets.statusBars),
                 )
-                FastScrollToTopFab(listState = lazyGridState)
+                Row(
+                    modifier = Modifier
+                ) {
+
+                    Spacer(
+                        modifier = Modifier
+                            .background(MaterialTheme.colorScheme.primary)
+                            .width(2.dp)
+                            .fillMaxHeight(),
+                    )
+                    Box(){
+                        contentColumn()
+                    }
+
+                }
             }
 
+
+        }else{
+            Column {
+                Spacer(
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.primary)
+                        .height(2.dp)
+                        .fillMaxWidth(),
+                )
+                contentColumn()
+            }
         }
-
     }
-
 }
 
 
@@ -479,6 +511,7 @@ fun CartoonPlayDetailed(
                             }
                         }
                     }
+
                     // 箭头
                     Box(
                         modifier = Modifier
@@ -489,10 +522,7 @@ fun CartoonPlayDetailed(
                             contentDescription = cartoon.title
                         )
                     }
-
                 }
-
-
             }
 
             item(
@@ -513,7 +543,6 @@ fun CartoonPlayDetailed(
                     Spacer(modifier = Modifier.size(8.dp))
                     Divider()
                 }
-
             }
 
             if (unEmptyLinesIndex.isEmpty()) {

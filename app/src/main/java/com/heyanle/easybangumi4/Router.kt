@@ -144,7 +144,6 @@ fun Nav() {
         navControllerRef = WeakReference(nav)
     }
     CompositionLocalProvider(LocalNavController provides nav) {
-
         AnimatedNavHost(nav, DEFAULT,
             modifier = Modifier.fillMaxSize(),
             enterTransition = { slideInHorizontally(tween()) { it } },
