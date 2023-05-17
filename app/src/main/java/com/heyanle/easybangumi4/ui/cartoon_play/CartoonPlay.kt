@@ -90,7 +90,7 @@ fun CartoonPlay(
 
     val windowSize = LocalWindowSizeController.current
     val padMode by PadModePreferences.stateFlow.collectAsState()
-    val isPad = remember( key1 = windowSize, key2 = padMode ) {
+    val isPad = remember(  ) {
         when(padMode){
             0 -> windowSize.widthSizeClass != WindowWidthSizeClass.Compact
             1 -> true

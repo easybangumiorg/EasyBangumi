@@ -44,6 +44,7 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -59,7 +60,9 @@ import com.heyanle.easybangumi4.theme.DarkMode
 import com.heyanle.easybangumi4.theme.EasyThemeController
 import com.heyanle.easybangumi4.theme.EasyThemeMode
 import com.heyanle.easybangumi4.ui.common.IntPreferenceItem
+import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.stringRes
+import kotlinx.coroutines.launch
 
 /**
  * Created by HeYanLe on 2023/3/22 17:04.
@@ -72,6 +75,8 @@ fun AppearanceSetting() {
     val nav = LocalNavController.current
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+
+    val scope = rememberCoroutineScope()
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -136,7 +141,11 @@ fun AppearanceSetting() {
                         )
                     },
                     preference = PadModePreferences
-                )
+                ){
+                    scope.launch {
+                        stringRes(R.string.some_page_should_reboot).moeSnackBar()
+                    }
+                }
 
             }
 
