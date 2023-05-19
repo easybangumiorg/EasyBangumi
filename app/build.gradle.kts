@@ -1,4 +1,4 @@
-
+@file:Suppress("UnstableApiUsage")
 import com.heyanle.buildsrc.Android
 import com.heyanle.buildsrc.Config
 import com.heyanle.buildsrc.Version
@@ -8,7 +8,7 @@ import com.heyanle.buildsrc.project
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("kotlin-kapt")
+    id("com.google.devtools.ksp") version "1.8.21-1.0.11"
 }
 
 android {
@@ -26,21 +26,21 @@ android {
             useSupportLibrary = true
         }
 
-        javaCompileOptions {
-            annotationProcessorOptions {
-                arguments["room.schemaLocation"] = "$projectDir/schemas".toString()
-            }
-        }
-
         buildConfigField(
             "String",
             Config.APP_CENTER_SECRET,
             "\"${Config.getPrivateValue(Config.APP_CENTER_SECRET)}\""
         )
+
+        ksp {
+            arg("room.schemaLocation", "$projectDir/schemas")
+            arg("room.generateKotlin", "true")
+        }
+
     }
 
 
-    packagingOptions {
+    packaging {
         resources.excludes.add("META-INF/beans.xml")
     }
 
@@ -59,15 +59,19 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    kotlin {
+        jvmToolchain(11)
+    }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11"
+        freeCompilerArgs = freeCompilerArgs + "-Xjvm-default=all"
     }
     buildFeatures {
         compose = true
         viewBinding = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.1"
+        kotlinCompilerExtensionVersion = "1.4.7"
     }
 
 }
@@ -143,7 +147,7 @@ dependencies {
     implementation("androidx.room:room-paging:${Version.androidx_room}")
     implementation("androidx.room:room-common:${Version.androidx_room}")
 
-    kapt("androidx.room:room-compiler:${Version.androidx_room}")
+    ksp("androidx.room:room-compiler:${Version.androidx_room}")
 
     implementation("com.microsoft.appcenter:appcenter-analytics:${Version.app_center}")
     implementation("com.microsoft.appcenter:appcenter-crashes:${Version.app_center}")
