@@ -97,6 +97,7 @@ dependencies {
     implementation("androidx.paging:paging-runtime-ktx:${Version.paging}")
     implementation("androidx.paging:paging-compose:1.0.0-alpha19")
     implementation("com.github.easybangumiorg:EasyPlayer2:${Version.easy_player}")
+//    implementation("loli.ball:easyplayer2:1.0.0.test") // for local maven test only
 
     // implementation(platform("androidx.compose:compose-bom:${Version.compose_bom}"))
     implementation("androidx.compose.ui:ui:${Version.compose_ui}")
