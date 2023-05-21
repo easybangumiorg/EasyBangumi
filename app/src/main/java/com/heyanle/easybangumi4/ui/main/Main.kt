@@ -1,3 +1,4 @@
+@file:OptIn(ExperimentalMaterialApi::class)
 package com.heyanle.easybangumi4.ui.main
 
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -297,7 +298,7 @@ fun Main() {
                     NavigationRail (
                         containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
 
-                    ){
+                        ){
                         MainPageItems.forEachIndexed { i, page ->
                             val select = pagerState.currentPage == i
                             NavigationRailItem(
@@ -315,7 +316,9 @@ fun Main() {
                         }
                     }
                     Column(
-                        modifier = Modifier.fillMaxHeight().weight(1f)
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .weight(1f)
                     ) {
                         VerticalPager(state = pagerState, userScrollEnabled = false,modifier = Modifier.weight(1f), ) {
                             MainPageItems[it].content()
@@ -327,9 +330,6 @@ fun Main() {
 
                 }
             }
-
-
-
 
 
         }
