@@ -99,7 +99,7 @@ dependencies {
     debugImplementation( "com.squareup.leakcanary:leakcanary-android:${Version.leakcanary}")
 
     implementation("androidx.paging:paging-runtime-ktx:${Version.paging}")
-    implementation("androidx.paging:paging-compose:1.0.0-alpha19")
+    implementation("androidx.paging:paging-compose:1.0.0-alpha20")
     implementation("com.github.easybangumiorg:EasyPlayer2:${Version.easy_player}")
 //    implementation("loli.ball:easyplayer2:1.0.0.test") // for local maven test only
 

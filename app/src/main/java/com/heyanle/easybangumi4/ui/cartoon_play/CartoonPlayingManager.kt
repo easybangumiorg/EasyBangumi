@@ -34,6 +34,7 @@ import com.heyanle.easybangumi4.utils.stringRes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -176,6 +177,8 @@ object CartoonPlayingManager: Player.Listener {
         return true
     }
 
+    private var lastJob: Job? = null
+
     private suspend fun changePlay(
         playComponent: PlayComponent,
         cartoon: Cartoon,
@@ -191,29 +194,40 @@ object CartoonPlayingManager: Player.Listener {
         val realEpisode = if (episode < 0 || episode >= playLine.episode.size) 0 else episode
 
         state = PlayingState.Loading(playLineIndex, playLine, realEpisode)
-        playComponent.getPlayInfo(
-            CartoonSummary(
-                id = cartoon.id,
-                url = cartoon.url,
-                source = cartoon.source),
-            playLine,
-            episode
-        )
-            .complete {
-                innerPlay(it.data, adviceProgress)
-                state = PlayingState.Playing(
-                    playLineIndex, it.data, playLine, episode,
-                )
-            }
-            .error {
-                it.throwable.printStackTrace()
-                error(
-                    if (it.isParserError) stringRes(
-                        com.heyanle.easy_i18n.R.string.source_error
-                    ) else stringRes(com.heyanle.easy_i18n.R.string.loading_error),
-                    it.throwable, playLineIndex, playLine, episode
-                )
-            }
+
+        lastJob?.cancel()
+        lastJob = null
+        lastJob = defaultScope.launch {
+            playComponent.getPlayInfo(
+                CartoonSummary(
+                    id = cartoon.id,
+                    url = cartoon.url,
+                    source = cartoon.source),
+                playLine,
+                episode
+            )
+                .complete {
+                    if(isActive){
+                        innerPlay(it.data, adviceProgress)
+                        state = PlayingState.Playing(
+                            playLineIndex, it.data, playLine, episode,
+                        )
+                    }
+
+                }
+                .error {
+                    if(isActive) {
+                        it.throwable.printStackTrace()
+                        error(
+                            if (it.isParserError) stringRes(
+                                com.heyanle.easy_i18n.R.string.source_error
+                            ) else stringRes(com.heyanle.easy_i18n.R.string.loading_error),
+                            it.throwable, playLineIndex, playLine, episode
+                        )
+                    }
+                }
+        }
+
 
     }
 

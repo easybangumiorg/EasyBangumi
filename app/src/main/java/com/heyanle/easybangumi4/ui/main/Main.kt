@@ -45,12 +45,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -61,8 +57,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
-import com.heyanle.easybangumi4.LocalWindowSizeController
-import com.heyanle.easybangumi4.preferences.PadModePreferences
 import com.heyanle.easybangumi4.ui.common.SourceContainer
 import com.heyanle.easybangumi4.ui.history.History
 import com.heyanle.easybangumi4.ui.main.home.Home
@@ -71,6 +65,7 @@ import com.heyanle.easybangumi4.ui.main.more.More
 import com.heyanle.easybangumi4.ui.main.source_manage.SourceManager
 import com.heyanle.easybangumi4.ui.main.star.Star
 import com.heyanle.easybangumi4.ui.main.update.Update
+import com.heyanle.easybangumi4.utils.isCurPadeMode
 import com.heyanle.okkv2.core.okkv
 import kotlinx.coroutines.launch
 
@@ -246,17 +241,7 @@ fun Main() {
 
             }) {
 
-            val windowSize = LocalWindowSizeController.current
-            windowSize.heightSizeClass
-
-            val padMode by PadModePreferences.stateFlow.collectAsState()
-            val isPad = remember() {
-                when(padMode){
-                    0 -> windowSize.widthSizeClass != WindowWidthSizeClass.Compact
-                    1 -> true
-                    else -> false
-                }
-            }
+            val isPad = isCurPadeMode()
 
             if(!isPad){
                 Column() {
@@ -266,7 +251,6 @@ fun Main() {
                         modifier = Modifier.weight(1f),
                     ) {
                         MainPageItems[it].content()
-
                     }
 
                     if (vm.customBottomBar == null) {
