@@ -6,14 +6,16 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,12 +35,11 @@ import com.heyanle.bangumi_source_api.api.entity.Cartoon
 import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
 import com.heyanle.bangumi_source_api.api.entity.PlayLine
 import com.heyanle.easybangumi4.LocalNavController
-import com.heyanle.easybangumi4.LocalWindowSizeController
 import com.heyanle.easybangumi4.R
 import com.heyanle.easybangumi4.navigationSearch
-import com.heyanle.easybangumi4.preferences.PadModePreferences
 import com.heyanle.easybangumi4.ui.common.*
 import com.heyanle.easybangumi4.utils.TODO
+import com.heyanle.easybangumi4.utils.isCurPadeMode
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.easybangumi4.utils.openUrl
 import kotlinx.coroutines.launch
@@ -78,6 +79,15 @@ fun CartoonPlay(
     }
 }
 
+private val speedConfig = linkedMapOf(
+    "0.5X" to 0.5f,
+    "0.75X" to 0.75f,
+    "1.0X" to 1f,
+    "1.25X" to 1.25f,
+    "1.5X" to 1.5f,
+    "2.0X" to 2f,
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CartoonPlay(
@@ -87,16 +97,7 @@ fun CartoonPlay(
     source: Source,
     enterData: CartoonPlayViewModel.EnterData? = null,
 ) {
-
-    val windowSize = LocalWindowSizeController.current
-    val padMode by PadModePreferences.stateFlow.collectAsState()
-    val isPad = remember(  ) {
-        when(padMode){
-            0 -> windowSize.widthSizeClass != WindowWidthSizeClass.Compact
-            1 -> true
-            else -> false
-        }
-    }
+    val isPad = isCurPadeMode()
 
     val controlVM = ControlViewModelFactory.viewModel(CartoonPlayingManager.exoPlayer, isPad)
     val nav = LocalNavController.current
@@ -129,24 +130,29 @@ fun CartoonPlay(
         mutableStateOf(false)
     }
 
+    LaunchedEffect(key1 = controlVM.curSpeed){
+        controlVM.curSpeed.loge("CartoonPlay")
+    }
     val lazyGridState = rememberLazyGridState()
     EasyPlayerScaffoldBase(
         modifier = Modifier.fillMaxSize(),
         vm = controlVM,
         isPadMode = isPad,
         contentWeight = 0.5f,
-        videoFloat = {
+        videoFloat = { model ->
             val ctx = LocalContext.current as Activity
             LaunchedEffect(key1 = CartoonPlayingManager.state) {
                 when (CartoonPlayingManager.state) {
                     is CartoonPlayingManager.PlayingState.Playing -> {
-                        it.onPrepare()
+                        model.onPrepare()
                         // CartoonPlayingManager.trySaveHistory()
                     }
+
                     is CartoonPlayingManager.PlayingState.Loading -> {}
                     is CartoonPlayingManager.PlayingState.Error -> {
-                        it.onFullScreen(false, false, ctx)
+                        model.onFullScreen(false, false, ctx)
                     }
+
                     else -> {}
                 }
             }
@@ -156,15 +162,25 @@ fun CartoonPlay(
                     LoadingPage(
                         modifier = Modifier
                             .fillMaxSize()
-                            .clickable { }
+                            .clickable(
+                                onClick = {
+
+                                },
+                                indication = null,
+                                interactionSource = remember {
+                                    MutableInteractionSource()
+                                }
+                            )
                     )
                 }
+
                 is CartoonPlayingManager.PlayingState.Error -> {
                     ErrorPage(
                         modifier = Modifier
                             .fillMaxSize()
                             .background(Color.Black),
                         errorMsg = state.errMsg,
+                        errorMsgColor = Color.White.copy(0.6f),
                         clickEnable = true,
                         other = {
                             Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.click_to_retry))
@@ -180,17 +196,53 @@ fun CartoonPlay(
                 else -> {}
             }
 
-            // 倍速窗口
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.CenterEnd
-            ){
-                Column {
 
+            // 倍速窗口
+            AnimatedVisibility(
+                showSpeedWin,
+                enter = slideInHorizontally(tween()) { it },
+                exit = slideOutHorizontally(tween()) { it },
+
+                ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clickable(
+                            onClick = {
+                                showSpeedWin = false
+                            },
+                            indication = null,
+                            interactionSource = remember {
+                                MutableInteractionSource()
+                            }
+                        ),
+                    contentAlignment = Alignment.CenterEnd,
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .background(Color.Black.copy(0.6f))
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        speedConfig.forEach {
+
+                            Text(
+                                text = it.key,
+                                modifier = Modifier
+                                    .clickable {
+                                        controlVM.setSpeed(it.value)
+                                    }
+                                    .padding(16.dp, 8.dp),
+                                color = if (controlVM.curSpeed == it.value) MaterialTheme.colorScheme.primary else Color.White
+                            )
+                        }
+                    }
                 }
+
             }
 
-            if (!it.isFullScreen) {
+
+            if (!model.isFullScreen) {
                 FilledIconButton(
                     modifier = Modifier.padding(8.dp),
                     colors = IconButtonDefaults.iconButtonColors(
@@ -228,7 +280,13 @@ fun CartoonPlay(
                 SimpleBottomBar(
                     vm = it,
                     modifier = Modifier.align(Alignment.BottomCenter)
-                )
+                ) {
+                    Text(
+                        modifier = Modifier.clickable {
+                            showSpeedWin = true
+                        },
+                        text = stringResource(id = com.heyanle.easy_i18n.R.string.speed))
+                }
 
                 // 锁定按钮
                 LockBtn(vm = it)
@@ -238,7 +296,7 @@ fun CartoonPlay(
             }
         }
     ) {
-        val contentColumn:@Composable ()->Unit = {
+        val contentColumn: @Composable () -> Unit = {
             Column {
                 Surface(
                     modifier = Modifier.weight(1f),
@@ -260,7 +318,7 @@ fun CartoonPlay(
                 }
             }
         }
-        if(isPad){
+        if (isPad) {
 
             Column {
                 Spacer(
@@ -279,7 +337,7 @@ fun CartoonPlay(
                             .width(2.dp)
                             .fillMaxHeight(),
                     )
-                    Box(){
+                    Box() {
                         contentColumn()
                     }
 
@@ -287,7 +345,7 @@ fun CartoonPlay(
             }
 
 
-        }else{
+        } else {
             Column {
                 Spacer(
                     modifier = Modifier
@@ -313,6 +371,7 @@ fun CartoonPlayUI(
         is DetailedViewModel.DetailedState.Info -> {
             CartoonPlayPage(detailedVM, cartoonPlayVM, detailedState, listState)
         }
+
         is DetailedViewModel.DetailedState.Error -> {
             ErrorPage(
                 modifier = Modifier.fillMaxSize(),
@@ -324,11 +383,13 @@ fun CartoonPlayUI(
                 other = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.click_to_retry)) }
             )
         }
+
         is DetailedViewModel.DetailedState.Loading -> {
             LoadingPage(
                 modifier = Modifier.fillMaxSize()
             )
         }
+
         else -> Unit
     }
 
