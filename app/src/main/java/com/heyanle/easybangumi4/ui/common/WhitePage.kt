@@ -34,6 +34,7 @@ fun ErrorPage(
     modifier: Modifier = Modifier,
     image: Any = R.drawable.error_ikuyo,
     errorMsg: String = "",
+    errorMsgColor: Color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
     clickEnable: Boolean = false,
     other: @Composable () -> Unit = {},
     onClick: () -> Unit = {},
@@ -48,7 +49,7 @@ fun ErrorPage(
             } else {
                 it
             }
-        }, image, errorMsg, other
+        }, image, errorMsg, errorMsgColor, other = other
     )
 }
 
@@ -58,7 +59,7 @@ fun EmptyPage(
     emptyMsg: String = stringResource(id = com.heyanle.easy_i18n.R.string.is_empty),
     other: @Composable () -> Unit = {},
 ) {
-    WhitePage(modifier, R.drawable.empty_bocchi, emptyMsg, other)
+    WhitePage(modifier, R.drawable.empty_bocchi, emptyMsg, other = other)
 }
 
 @Composable
@@ -67,7 +68,7 @@ fun LoadingPage(
     loadingMsg: String = stringResource(id = com.heyanle.easy_i18n.R.string.loading),
     other: @Composable () -> Unit = {},
 ) {
-    WhitePage(modifier, Uri.parse("file:///android_asset/loading_ryo.gif"), loadingMsg, other)
+    WhitePage(modifier, Uri.parse("file:///android_asset/loading_ryo.gif"), loadingMsg, other = other)
 }
 
 @Composable
@@ -75,6 +76,7 @@ fun WhitePage(
     modifier: Modifier = Modifier,
     image: Any,
     message: String = "",
+    errorMsgColor: Color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
     other: @Composable () -> Unit = {},
 ) {
     Box(
@@ -98,7 +100,7 @@ fun WhitePage(
             Spacer(modifier = Modifier.height(10.dp))
             Text(
                 text = message,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                color = errorMsgColor,
                 fontStyle = FontStyle.Italic,
                 textAlign = TextAlign.Center
             )
