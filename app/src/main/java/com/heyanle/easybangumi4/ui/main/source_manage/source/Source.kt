@@ -6,7 +6,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -27,7 +31,9 @@ import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.source.SourceLibraryMaster
 import com.heyanle.easybangumi4.ui.common.OkImage
+import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.loge
+import com.heyanle.easybangumi4.utils.stringRes
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorderAfterLongPress
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
@@ -42,7 +48,14 @@ import org.burnoutcrew.reorderable.reorderable
 fun SourceTopAppBar(behavior: TopAppBarScrollBehavior) {
     TopAppBar(
         title = { Text(text = stringResource(id = R.string.manage)) },
-        scrollBehavior = behavior
+        scrollBehavior = behavior,
+        actions = {
+            IconButton(onClick = {
+                stringRes(R.string.long_touch_to_drag).moeSnackBar()
+            }) {
+                Icon(Icons.Filled.Sort, stringResource(id = R.string.long_touch_to_drag))
+            }
+        }
     )
 }
 
@@ -102,8 +115,6 @@ fun Source() {
 
                 }
             }
-
-
         }
     }
 }
@@ -142,7 +153,8 @@ fun SourceItem(
                 image = icon?.getIconFactory()?.invoke(),
                 contentDescription = source.label,
                 crossFade = false,
-                placeholder = Color.Transparent
+                placeholder = null,
+                errorColor = null,
             )
         }
     )

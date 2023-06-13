@@ -225,6 +225,7 @@
     <string name="web_view_compatible_msg">WebView 旧版本初始化失败可尝试开启</string>
 
     <string name="some_page_should_reboot">某些界面需要重启软件刷新</string>
+    <string name="long_touch_to_drag">长按可拖拽排序</string>
 
 
 </resources>
