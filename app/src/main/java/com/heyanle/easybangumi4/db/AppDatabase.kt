@@ -23,7 +23,7 @@ import com.heyanle.easybangumi4.db.entity.SearchHistory
         SearchHistory::class,
     ],
     autoMigrations = [],
-    version = 2,
+    version = 3,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {

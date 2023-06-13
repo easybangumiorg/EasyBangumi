@@ -148,13 +148,14 @@ object CartoonPlayingManager: Player.Listener {
 
     suspend fun tryNext(
         defaultProgress: Long = 0L,
+        isReverse: Boolean = false,
     ): Boolean {
         val playingState = (state as? PlayingState.Playing) ?: return false
-        val target = playingState.curEpisode + 1
+        val target = if(isReverse)playingState.curEpisode - 1 else playingState.curEpisode + 1
         if (target < 0 || target >= playingState.playLine.episode.size) {
             return false
         }
-        changeEpisode(playingState.curEpisode + 1, defaultProgress)
+        changeEpisode(target, defaultProgress)
         return true
     }
 
@@ -378,9 +379,11 @@ object CartoonPlayingManager: Player.Listener {
 
             exoPlayer.setMediaSource(media, adviceProgress)
             exoPlayer.prepare()
+            exoPlayer.playWhenReady = true
         } else {
             // 已经在播放同一部，直接 seekTo 对应 progress
             exoPlayer.seekTo(adviceProgress)
+            exoPlayer.playWhenReady = true
         }
     }
     private fun error(
