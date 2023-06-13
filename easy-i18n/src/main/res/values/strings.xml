@@ -170,6 +170,8 @@
     <string name="speed">倍速</string>
     <string name="episode">选集</string>
 
+    <string name="replay">重播</string>
+
     <string name="replay_error">重播失败 QAQ，请手动选集</string>
 
     <string name="last_episode_title">上次看到： %1$s</string>
@@ -226,6 +228,12 @@
 
     <string name="some_page_should_reboot">某些界面需要重启软件刷新</string>
     <string name="long_touch_to_drag">长按可拖拽排序</string>
+
+    <string name="try_play_next">尝试播放下一集！</string>
+
+    <string name="play_list">播放列表</string>
+
+    <string name="reverse">列表反转</string>
 
 
 </resources>
