@@ -16,7 +16,7 @@ object Version {
     const val google_material = "1.9.0"
     const val jsoup = "1.15.4"
     const val okhttp3 = "4.10.0"
-    const val paging = "3.1.1"
+    const val paging = "3.2.0-beta01"
     const val androidx_swipe_refresh_layout = "1.0.0"
     const val androidx_preference = "1.2.0"
     const val gson = "2.10"
@@ -28,7 +28,7 @@ object Version {
     const val androidx_lifecycle_view_model = "2.6.1"
     const val androidx_lifecycle_runtime_ktx = "2.6.1"
     const val exoplayer = "2.18.7"
-    const val easy_player = "1.1.6"
+    const val easy_player = "1.1.7"
 
     const val accompanist = "0.31.2-alpha"
     const val navigation_compose = "2.7.0-alpha01"
