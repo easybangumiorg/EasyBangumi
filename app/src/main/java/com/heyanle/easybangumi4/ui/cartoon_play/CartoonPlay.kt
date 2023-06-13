@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -38,24 +39,27 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CastConnected
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarOutline
+import androidx.compose.material.icons.filled.WifiProtectedSetup
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ScrollableTabRow
@@ -79,6 +83,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -101,14 +106,17 @@ import com.heyanle.easybangumi4.utils.TODO
 import com.heyanle.easybangumi4.utils.isCurPadeMode
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.easybangumi4.utils.openUrl
+import com.heyanle.easybangumi4.utils.stringRes
+import com.heyanle.easybangumi4.utils.toast
 import kotlinx.coroutines.launch
+import loli.ball.easyplayer2.ControlViewModel
 import loli.ball.easyplayer2.ControlViewModelFactory
 import loli.ball.easyplayer2.EasyPlayerScaffoldBase
+import loli.ball.easyplayer2.ElectricityTopBar
 import loli.ball.easyplayer2.LockBtn
 import loli.ball.easyplayer2.ProgressBox
 import loli.ball.easyplayer2.SimpleBottomBar
 import loli.ball.easyplayer2.SimpleGestureController
-import loli.ball.easyplayer2.SimpleTopBar
 import java.util.Arrays
 
 /**
@@ -167,13 +175,17 @@ fun CartoonPlay(
     val controlVM = ControlViewModelFactory.viewModel(CartoonPlayingManager.exoPlayer, isPad)
     val nav = LocalNavController.current
 
+    val act = LocalContext.current as Activity
+
     LaunchedEffect(key1 = detailedVM.detailedState) {
         val sta = detailedVM.detailedState
         if (sta is DetailedViewModel.DetailedState.None) {
             detailedVM.load()
         } else if (sta is DetailedViewModel.DetailedState.Info) {
             // 加载好之后进入 播放环节
-            cartoonPlayVM.onDetailedLoaded(cartoonSummary, sta, enterData)
+            cartoonPlayVM.onDetailedLoaded(cartoonSummary, sta, enterData, onTitle = {
+                controlVM.title = it
+            })
         }
     }
 
@@ -195,7 +207,7 @@ fun CartoonPlay(
         mutableStateOf(false)
     }
 
-    LaunchedEffect(key1 = controlVM.curSpeed){
+    LaunchedEffect(key1 = controlVM.curSpeed) {
         controlVM.curSpeed.loge("CartoonPlay")
     }
     val lazyGridState = rememberLazyGridState()
@@ -221,8 +233,49 @@ fun CartoonPlay(
                     else -> {}
                 }
             }
+            LaunchedEffect(key1 = controlVM.controlState) {
+                if (controlVM.controlState == ControlViewModel.ControlState.Ended) {
+                    CartoonPlayingManager.tryNext(isReverse = detailedVM.isReverse)
+                    stringRes(com.heyanle.easy_i18n.R.string.try_play_next).toast()
+                }
+            }
             when (val state = CartoonPlayingManager.state) {
-                is CartoonPlayingManager.PlayingState.Playing -> {}
+                is CartoonPlayingManager.PlayingState.Playing -> {
+                    if (controlVM.controlState == ControlViewModel.ControlState.Ended) {
+                        Box(
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            IconButton(
+                                modifier = Modifier.align(Alignment.Center),
+                                onClick = {
+                                    CartoonPlayingManager.defaultScope.launch {
+                                        CartoonPlayingManager.refresh()
+                                    }
+                                }) {
+                                Icon(
+                                    Icons.Filled.Replay,
+                                    contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.replay_error)
+                                )
+                            }
+
+
+                            if (controlVM.isFullScreen) {
+                                IconButton(
+                                    modifier = Modifier.align(Alignment.TopStart),
+                                    onClick = {
+                                        controlVM.onFullScreen(false, false, act)
+                                    }) {
+                                    Icon(
+                                        Icons.Filled.ArrowBack,
+                                        contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.back)
+                                    )
+                                }
+                            }
+
+                        }
+                    }
+                }
+
                 is CartoonPlayingManager.PlayingState.Loading -> {
                     LoadingPage(
                         modifier = Modifier
@@ -285,15 +338,21 @@ fun CartoonPlay(
                 ) {
                     Column(
                         modifier = Modifier
+                            .defaultMinSize(180.dp, Dp.Unspecified)
                             .fillMaxHeight()
                             .background(Color.Black.copy(0.6f))
-                            .verticalScroll(rememberScrollState())
+                            .verticalScroll(rememberScrollState()),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
                         speedConfig.forEach {
 
                             Text(
+                                textAlign = TextAlign.Center,
                                 text = it.key,
                                 modifier = Modifier
+                                    .defaultMinSize(180.dp, Dp.Unspecified)
+                                    .clip(RoundedCornerShape(8.dp))
                                     .clickable {
                                         controlVM.setSpeed(it.value)
                                     }
@@ -305,6 +364,64 @@ fun CartoonPlay(
                 }
 
             }
+
+            CartoonPlayingManager.state.playLine()?.let { playLine ->
+                // 选集
+                AnimatedVisibility(
+                    showEpisodeWin && controlVM.isFullScreen,
+                    enter = slideInHorizontally(tween()) { it },
+                    exit = slideOutHorizontally(tween()) { it },
+
+                    ) {
+
+                    val isReverse = detailedVM.isReverse
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clickable(
+                                onClick = {
+                                    showEpisodeWin = false
+                                },
+                                indication = null,
+                                interactionSource = remember {
+                                    MutableInteractionSource()
+                                }
+                            ),
+                        contentAlignment = Alignment.CenterEnd,
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .defaultMinSize(180.dp, Dp.Unspecified)
+                                .background(Color.Black.copy(0.6f))
+                                .verticalScroll(rememberScrollState()),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            for (i in 0 until playLine.episode.size) {
+                                val index = if (isReverse) playLine.episode.size - 1 - i else i
+                                val s = playLine.episode[index]
+                                Text(
+                                    textAlign = TextAlign.Center,
+                                    text = s,
+                                    modifier = Modifier
+                                        .defaultMinSize(180.dp, Dp.Unspecified)
+                                        .clickable {
+                                            CartoonPlayingManager.defaultScope.launch {
+                                                CartoonPlayingManager.changeEpisode(index)
+                                            }
+                                        }
+                                        .padding(16.dp, 8.dp),
+                                    color = if (CartoonPlayingManager.state.episode() == index) MaterialTheme.colorScheme.primary else Color.White
+                                )
+                            }
+                        }
+                    }
+
+                }
+            }
+
+
 
 
             if (!model.isFullScreen) {
@@ -330,12 +447,14 @@ fun CartoonPlay(
                 // 手势
                 SimpleGestureController(
                     vm = it,
-                    modifier = Modifier.fillMaxSize().padding(6.dp, 16.dp),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(6.dp, 64.dp),
                     longTouchText = stringResource(id = com.heyanle.easy_i18n.R.string.long_press_fast_forward)
                 )
 
                 // 顶部工具栏
-                SimpleTopBar(
+                ElectricityTopBar(
                     vm = it,
                     modifier = Modifier
                         .align(Alignment.TopCenter)
@@ -344,13 +463,36 @@ fun CartoonPlay(
                 // 底部工具栏
                 SimpleBottomBar(
                     vm = it,
-                    modifier = Modifier.align(Alignment.BottomCenter)
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                    paddingValues = if (controlVM.isFullScreen) PaddingValues(
+                        0.dp,
+                        0.dp,
+                        0.dp,
+                        8.dp
+                    ) else PaddingValues(0.dp)
                 ) {
                     Text(
-                        modifier = Modifier.clickable {
-                            showSpeedWin = true
-                        },
-                        text = stringResource(id = com.heyanle.easy_i18n.R.string.speed))
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .clickable {
+                                showSpeedWin = true
+                            }
+                            .padding(8.dp),
+                        text = stringResource(id = com.heyanle.easy_i18n.R.string.speed),
+                        color = Color.White
+                    )
+                    if (it.isFullScreen) {
+                        Text(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .clickable {
+                                    showEpisodeWin = true
+                                }
+                                .padding(8.dp),
+                            text = stringResource(id = com.heyanle.easy_i18n.R.string.episode),
+                            color = Color.White
+                        )
+                    }
                 }
 
                 // 锁定按钮
@@ -376,7 +518,10 @@ fun CartoonPlay(
                         CartoonPlayUI(
                             detailedVM = detailedVM,
                             cartoonPlayVM = cartoonPlayVM,
-                            listState = lazyGridState
+                            listState = lazyGridState,
+                            onTitle = {
+                                controlVM.title = it
+                            }
                         )
                         FastScrollToTopFab(listState = lazyGridState)
                     }
@@ -429,12 +574,13 @@ fun CartoonPlay(
 fun CartoonPlayUI(
     detailedVM: DetailedViewModel,
     cartoonPlayVM: CartoonPlayViewModel,
-    listState: LazyGridState = rememberLazyGridState()
+    listState: LazyGridState = rememberLazyGridState(),
+    onTitle: (String) -> Unit,
 ) {
 
     when (val detailedState = detailedVM.detailedState) {
         is DetailedViewModel.DetailedState.Info -> {
-            CartoonPlayPage(detailedVM, cartoonPlayVM, detailedState, listState)
+            CartoonPlayPage(detailedVM, cartoonPlayVM, detailedState, listState, onTitle = onTitle)
         }
 
         is DetailedViewModel.DetailedState.Error -> {
@@ -466,7 +612,8 @@ fun CartoonPlayPage(
     detailedVM: DetailedViewModel,
     cartoonPlayVM: CartoonPlayViewModel,
     detailedState: DetailedViewModel.DetailedState.Info,
-    listState: LazyGridState = rememberLazyGridState()
+    listState: LazyGridState = rememberLazyGridState(),
+    onTitle: (String)->Unit,
 ) {
     val nav = LocalNavController.current
     CartoonPlayDetailed(
@@ -482,6 +629,7 @@ fun CartoonPlayPage(
             cartoonPlayVM.selectedLineIndex = it
         },
         onEpisodeClick = { playLineIndex, playLine, episode ->
+            onTitle(detailedState.detail.title + " - " + playLine.episode[episode])
             if (CartoonPlayingManager.state.playLine() == playLine) {
                 CartoonPlayingManager.defaultScope.launch {
                     CartoonPlayingManager.changeEpisode(episode, 0L)
@@ -501,12 +649,14 @@ fun CartoonPlayPage(
         },
         isStar = detailedVM.isStar,
         onStar = {
-            detailedState.playLine
             detailedVM.setCartoonStar(it, detailedState.detail, detailedState.playLine)
+        },
+        isReversal = detailedVM.isReverse,
+        onReversal = {
+            detailedVM.setCartoonReverse(it, detailedState.detail)
         },
         onSearch = {
             nav.navigationSearch(detailedState.detail.title, detailedState.detail.source)
-            //TODO("搜索同名番")
         },
         onWeb = {
             runCatching {
@@ -539,10 +689,15 @@ fun CartoonPlayDetailed(
 
     isStar: Boolean,
     onStar: (Boolean) -> Unit,
+
+    isReversal: Boolean = false,
+    onReversal: (Boolean) -> Unit,// 外界不需要处理 playLines 的翻转，内部处理
+
     onSearch: () -> Unit,
     onWeb: () -> Unit,
     onDlna: () -> Unit,
 ) {
+
 
     // 将非空的 播放线路 下标存成离散序列
     val unEmptyLinesIndex = remember(playLines) {
@@ -686,73 +841,97 @@ fun CartoonPlayDetailed(
                 }
             } else {
 
-                if (showPlayLine) {
-                    item(
-                        span = {
-                            // LazyGridItemSpanScope:
-                            // maxLineSpan
-                            GridItemSpan(maxLineSpan)
-                        }
+                item(
+                    span = {
+                        // LazyGridItemSpanScope:
+                        // maxLineSpan
+                        GridItemSpan(maxLineSpan)
+                    }
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
 
-                        ScrollableTabRow(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(0.dp, 8.dp),
-                            selectedTabIndex = 0.coerceAtLeast(
-                                unEmptyLinesIndex.indexOf(
-                                    selectLineIndex
-                                )
-                            ),
-                            edgePadding = 0.dp,
-                            divider = {
-                            }
+                        if (showPlayLine) {
+                            ScrollableTabRow(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(0.dp, 8.dp),
+                                selectedTabIndex = 0.coerceAtLeast(
+                                    unEmptyLinesIndex.indexOf(
+                                        selectLineIndex
+                                    )
+                                ),
+                                edgePadding = 0.dp,
+                                divider = {
+                                }
 
-                        ) {
-                            unEmptyLinesIndex.forEach { index ->
-                                val playLine = playLines[index]
-                                Tab(
-                                    selected = index == selectLineIndex,
-                                    onClick = {
-                                        onLineSelect(index)
-                                    },
-                                    unselectedContentColor = MaterialTheme.colorScheme.primary.copy(
-                                        0.4f
-                                    ),
-                                    text = {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Text(text = playLine.label)
+                            ) {
+                                unEmptyLinesIndex.forEach { index ->
+                                    val playLine = playLines[index]
+                                    Tab(
+                                        selected = index == selectLineIndex,
+                                        onClick = {
+                                            onLineSelect(index)
+                                        },
+                                        unselectedContentColor = MaterialTheme.colorScheme.primary.copy(
+                                            0.4f
+                                        ),
+                                        text = {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Text(text = playLine.label)
 
-                                            if (playLines[index] == playingPlayLine) {
-                                                Box(
-                                                    modifier = Modifier
-                                                        .padding(2.dp, 0.dp, 0.dp, 0.dp)
-                                                        .size(8.dp)
-                                                        .background(
-                                                            MaterialTheme.colorScheme.primary,
-                                                            CircleShape
-                                                        )
-                                                )
+                                                if (playLines[index] == playingPlayLine) {
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .padding(2.dp, 0.dp, 0.dp, 0.dp)
+                                                            .size(8.dp)
+                                                            .background(
+                                                                MaterialTheme.colorScheme.primary,
+                                                                CircleShape
+                                                            )
+                                                    )
+                                                }
                                             }
                                         }
-                                    }
-                                )
+                                    )
+                                }
                             }
+                        } else {
+                            Text(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(16.dp, 0.dp),
+                                text = stringResource(id = com.heyanle.easy_i18n.R.string.play_list)
+                            )
+                        }
+
+                        IconButton(onClick = {
+                            onReversal(!isReversal)
+                        }) {
+                            Icon(
+                                Icons.Filled.WifiProtectedSetup,
+                                stringResource(id = com.heyanle.easy_i18n.R.string.reverse),
+                                tint = if (isReversal) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
+                            )
                         }
                     }
                 }
-
 
                 if (selectLineIndex >= 0 && selectLineIndex < playLines.size && unEmptyLinesIndex.contains(
                         selectLineIndex
                     )
                 ) {
-                    itemsIndexed(playLines[selectLineIndex].episode) { index, item ->
+                    items(playLines[selectLineIndex].episode.size) {
+                        val index =
+                            if (isReversal) playLines[selectLineIndex].episode.size - 1 - it else it
+                        val item = playLines[selectLineIndex].episode[index]
 
                         val select =
                             playLines[selectLineIndex] == playingPlayLine && index == playingEpisode
+
                         Column(
                             modifier = Modifier
                                 .padding(4.dp)

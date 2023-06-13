@@ -38,6 +38,10 @@ data class CartoonStar(
 
     var status: Int,
 
+    var watchProcess: String, // 播放进度 “1/11”，在追番页面展示
+
+    var reversal: Boolean, // 是否反转集数
+
     var createTime: Long = System.currentTimeMillis(),
 
     var playLineString: String,
@@ -76,7 +80,9 @@ data class CartoonStar(
                 playLineString = Gson().toJson(playLines)?:"[]",
                 isInitializer = true,
                 lastUpdateTime = 0L,
-                isUpdate = cartoon.isUpdate
+                isUpdate = cartoon.isUpdate,
+                reversal = false,
+                watchProcess = ""
             )
         }
     }
@@ -97,6 +103,8 @@ data class CartoonStar(
             isInitializer = false,
             lastUpdateTime = 0L,
             isUpdate = false,
+            reversal = false,
+            watchProcess = ""
         )
     }
 
