@@ -93,7 +93,7 @@ object ExtensionLoader {
                     readme = readme,
                     icon = kotlin.runCatching { pkgManager.getApplicationIcon(pkgInfo.packageName) }
                         .getOrNull(),
-                    errMsg = "插件版本过旧",
+                    errMsg = "插件版本或APP版本过旧",
                     exception = null,
                 )
             }

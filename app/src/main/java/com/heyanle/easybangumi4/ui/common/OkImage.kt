@@ -31,8 +31,8 @@ fun OkImage(
     isGif: Boolean = false,
     contentScale: ContentScale = ContentScale.Crop,
     crossFade: Boolean = true,
-    errorColor: Color = MaterialTheme.colorScheme.error,
-    placeholder: Color = MaterialTheme.colorScheme.secondaryContainer,
+    errorColor: Color? = MaterialTheme.colorScheme.error,
+    placeholder: Color? = MaterialTheme.colorScheme.secondaryContainer,
 ) {
     if (image is ImageVector) {
         Image(
@@ -45,7 +45,11 @@ fun OkImage(
             model = ImageRequest
                 .Builder(LocalContext.current)
                 .data(image)
-                .placeholder(ColorDrawable(placeholder.toArgb()))
+                .apply {
+                    placeholder?.let {
+                        placeholder(ColorDrawable(it.toArgb()))
+                    }
+                }
                 .crossfade(crossFade)
                 .apply {
                     if (isGif) {
@@ -56,7 +60,11 @@ fun OkImage(
                         )
                     }
                 }
-                .error(ColorDrawable(errorColor.toArgb()))
+                .apply {
+                    errorColor?.let {
+                        error(ColorDrawable(it.toArgb()))
+                    }
+                }
                 .build(),
             contentDescription = contentDescription,
             contentScale = contentScale,

@@ -2,7 +2,7 @@ package com.heyanle.easybangumi4.ui.cartoon_play
 
 
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -28,7 +28,7 @@ class CartoonPlayViewModel: ViewModel() {
         }
     }
 
-    var selectedLineIndex by mutableStateOf(0)
+    var selectedLineIndex by mutableIntStateOf(0)
 
     fun onDetailedLoaded(
         cartoonSummary: CartoonSummary,
