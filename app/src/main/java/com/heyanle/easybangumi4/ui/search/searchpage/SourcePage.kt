@@ -49,7 +49,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.items
 import com.google.accompanist.flowlayout.FlowRow
 import com.heyanle.bangumi_source_api.api.component.search.SearchComponent
 import com.heyanle.bangumi_source_api.api.entity.CartoonCover
@@ -145,12 +144,13 @@ fun SearchPage(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
                 ) {
-                    items(page) {
-                        it?.let {
+                    items(page.itemCount){
+                        page[it]?.let {
                             CartoonSearchItem(cartoonCover = it) {
                                 nav.navigationDetailed(it)
                             }
                         }
+
                     }
                     pagingCommon(page)
 
