@@ -1,7 +1,9 @@
 
 import com.heyanle.buildsrc.Android
 import com.heyanle.buildsrc.Config
+import com.heyanle.buildsrc.RoomSchemaArgProvider
 import com.heyanle.buildsrc.Version
+import com.heyanle.buildsrc.androidTestImplementation
 import com.heyanle.buildsrc.implementation
 import com.heyanle.buildsrc.project
 
@@ -22,6 +24,8 @@ android {
         versionCode = Android.versionCode
         versionName = Android.versionName
 
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -33,10 +37,15 @@ android {
         )
 
         ksp {
-            arg("room.schemaLocation", "$projectDir/schemas")
             arg("room.generateKotlin", "true")
+            arg(RoomSchemaArgProvider(File(projectDir, "schemas")))
         }
 
+    }
+
+    sourceSets {
+        // Adds exported schema location as test app assets.
+        getByName("androidTest").assets.srcDir("$projectDir/schemas")
     }
 
 
@@ -95,6 +104,7 @@ dependencies {
     implementation("androidx.fragment:fragment-ktx:${Version.androidx_fragment_ktx}")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:${Version.androidx_lifecycle_runtime_ktx}")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:${Version.androidx_lifecycle_view_model}")
+    implementation("androidx.test.ext:junit-ktx:1.1.5")
 
     debugImplementation( "com.squareup.leakcanary:leakcanary-android:${Version.leakcanary}")
 
@@ -122,6 +132,7 @@ dependencies {
 
     debugImplementation("androidx.compose.ui:ui-tooling:${Version.compose_ui}")
     debugImplementation("androidx.compose.ui:ui-test-manifest:${Version.compose_ui}")
+    androidTestImplementation ("androidx.compose.ui:ui-test-junit4:${Version.compose_ui}")
 
     implementation("com.google.accompanist:accompanist-navigation-animation:${Version.accompanist}")
     implementation("com.google.accompanist:accompanist-systemuicontroller:${Version.accompanist}")
@@ -147,6 +158,9 @@ dependencies {
     implementation("androidx.room:room-paging:${Version.androidx_room}")
     implementation("androidx.room:room-common:${Version.androidx_room}")
 
+    testImplementation("androidx.room:room-testing:${Version.androidx_room}")
+    androidTestImplementation("androidx.room:room-testing:${Version.androidx_room}")
+
     ksp("androidx.room:room-compiler:${Version.androidx_room}")
 
     implementation("com.microsoft.appcenter:appcenter-analytics:${Version.app_center}")
@@ -171,4 +185,13 @@ dependencies {
     implementation(project(":easy-i18n"))
     implementation(project(":extension:extension-core"))
     implementation(com.heyanle.buildsrc.SourceExtension.extensionApi)
+
+
+
+    testImplementation ("junit:junit:${Version.junit}")
+
+    androidTestImplementation ("androidx.test.ext:junit:${Version.androidx_test_junit}")
+    androidTestImplementation ("androidx.test.espresso:espresso-core:${Version.espresso_core}")
+
+
 }
