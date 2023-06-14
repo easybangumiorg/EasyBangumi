@@ -74,8 +74,8 @@ fun About() {
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .verticalScroll(rememberScrollState())
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
+                    .verticalScroll(rememberScrollState())
             ) {
                 EasyBangumiCard()
 
@@ -149,7 +149,8 @@ fun About() {
                                             .size(24.dp),
                                         image = it.icon,
                                         contentDescription = it.title,
-                                        crossFade = false
+                                        crossFade = false,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 },
                             )
@@ -176,7 +177,8 @@ fun About() {
                                             .size(24.dp),
                                         image = it.icon,
                                         contentDescription = it.title,
-                                        crossFade = false
+                                        crossFade = false,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 },
                             )
