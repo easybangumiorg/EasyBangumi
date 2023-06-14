@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.heyanle.easybangumi4.DB
 import com.heyanle.easybangumi4.db.dao.CartoonHistoryDao
 import com.heyanle.easybangumi4.db.dao.CartoonStarDao
@@ -42,10 +44,17 @@ abstract class AppDatabase : RoomDatabase() {
             DB = Room.databaseBuilder(
                 context,
                 AppDatabase::class.java, "easy_cartoon"
-            ).fallbackToDestructiveMigration()
-                .apply {
+            ).apply {
+                addMigrations(MIGRATION_2_3)
+            }.build()
+        }
 
-                }.build()
+
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE CartoonStar ADD COLUMN reversal INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE CartoonStar ADD COLUMN watchProcess TEXT NOT NULL DEFAULT ''")
+            }
         }
     }
 
