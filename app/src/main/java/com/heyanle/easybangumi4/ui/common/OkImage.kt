@@ -8,10 +8,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import coil.compose.AsyncImage
 import coil.decode.GifDecoder
@@ -33,43 +35,58 @@ fun OkImage(
     crossFade: Boolean = true,
     errorColor: Color? = MaterialTheme.colorScheme.error,
     placeholder: Color? = MaterialTheme.colorScheme.secondaryContainer,
+    tint: Color? = null,
 ) {
-    if (image is ImageVector) {
-        Image(
-            imageVector = image,
-            modifier = modifier,
-            contentDescription = contentDescription
-        )
-    }else{
-        AsyncImage(
-            model = ImageRequest
-                .Builder(LocalContext.current)
-                .data(image)
-                .apply {
-                    placeholder?.let {
-                        placeholder(ColorDrawable(it.toArgb()))
+    when (image) {
+        is ImageVector -> {
+            Image(
+                imageVector = image,
+                modifier = modifier,
+                contentDescription = contentDescription,
+                colorFilter = if(tint == null) null else ColorFilter.tint(tint)
+            )
+        }
+
+        is Int -> {
+            Image(
+                painterResource(id = image),
+                modifier = modifier,
+                contentDescription = contentDescription,
+                colorFilter = if(tint == null) null else ColorFilter.tint(tint)
+            )
+        }
+
+        else -> {
+            AsyncImage(
+                model = ImageRequest
+                    .Builder(LocalContext.current)
+                    .data(image)
+                    .apply {
+                        placeholder?.let {
+                            placeholder(ColorDrawable(it.toArgb()))
+                        }
                     }
-                }
-                .crossfade(crossFade)
-                .apply {
-                    if (isGif) {
-                        decoderFactory(
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
-                                ImageDecoderDecoder.Factory()
-                            else GifDecoder.Factory()
-                        )
+                    .crossfade(crossFade)
+                    .apply {
+                        if (isGif) {
+                            decoderFactory(
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
+                                    ImageDecoderDecoder.Factory()
+                                else GifDecoder.Factory()
+                            )
+                        }
                     }
-                }
-                .apply {
-                    errorColor?.let {
-                        error(ColorDrawable(it.toArgb()))
+                    .apply {
+                        errorColor?.let {
+                            error(ColorDrawable(it.toArgb()))
+                        }
                     }
-                }
-                .build(),
-            contentDescription = contentDescription,
-            contentScale = contentScale,
-            modifier = Modifier.then(modifier)
-        )
+                    .build(),
+                contentDescription = contentDescription,
+                contentScale = contentScale,
+                modifier = Modifier.then(modifier)
+            )
+        }
     }
 
 }

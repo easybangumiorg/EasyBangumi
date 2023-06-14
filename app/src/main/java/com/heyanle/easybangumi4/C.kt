@@ -46,8 +46,8 @@ object C {
             About.Copy(
                 icon = R.drawable.qq,
                 title = stringRes(com.heyanle.easy_i18n.R.string.qq_groud),
-                msg = "370345983",
-                copyValue = "370345983"
+                msg = "765995255",
+                copyValue = "765995255"
             ),
             About.Url(
                 icon = R.drawable.qq,
