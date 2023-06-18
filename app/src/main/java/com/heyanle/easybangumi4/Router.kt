@@ -20,17 +20,19 @@ import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.heyanle.bangumi_source_api.api.entity.CartoonCover
+import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
 import com.heyanle.easybangumi4.source.utils.WebViewUserHelperImpl
 import com.heyanle.easybangumi4.theme.NormalSystemBarColor
 import com.heyanle.easybangumi4.ui.WebViewUser
 import com.heyanle.easybangumi4.ui.about.About
 import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlay
 import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlayViewModel
+import com.heyanle.easybangumi4.ui.dlna.Dlna
+import com.heyanle.easybangumi4.ui.dlna.DlnaViewModel
 import com.heyanle.easybangumi4.ui.history.History
 import com.heyanle.easybangumi4.ui.main.Main
 import com.heyanle.easybangumi4.ui.search.Search
 import com.heyanle.easybangumi4.ui.setting.AppearanceSetting
-import com.heyanle.easybangumi4.utils.TODO
 import com.heyanle.easybangumi4.utils.loge
 import java.lang.ref.WeakReference
 import java.net.URLDecoder
@@ -61,6 +63,8 @@ const val HISTORY = "history"
 const val SEARCH = "search"
 
 const val ABOUT = "about"
+
+const val DLNA = ""
 
 const val APPEARANCE_SETTING = "appearance_setting"
 
@@ -104,6 +108,18 @@ fun NavHostController.navigationDetailed(
     navigate("${DETAILED}?url=${url}&source=${cartoonCover.source}&id=${id}&lineIndex=${lineIndex}&episode=${episode}&adviceProgress=${adviceProgress}")
 }
 
+fun NavHostController.navigationDlna(
+    cartoonCover: CartoonSummary,
+    lineIndex: Int,
+    episode: Int,
+) {
+    // easyTODO("详情页")
+    val url = URLEncoder.encode(cartoonCover.url, "utf-8")
+    val id = URLEncoder.encode(cartoonCover.id, "utf-8")
+    // easyTODO("详情页")
+    navigate("${DLNA}?url=${url}&source=${cartoonCover.source}&id=${id}&lineIndex=${lineIndex}&episode=${episode}")
+}
+
 fun NavHostController.navigationDetailed(
     id: String, url: String, source: String,
     lineIndex: Int,
@@ -115,20 +131,6 @@ fun NavHostController.navigationDetailed(
     val ed = URLEncoder.encode(id, "utf-8")
     // easyTODO("详情页")
     navigate("${DETAILED}?url=${el}&source=${source}&id=${ed}&lineIndex=${lineIndex}&episode=${episode}&adviceProgress=${adviceProgress}")
-}
-
-fun NavHostController.navigationDLNA(
-    cartoonCover: CartoonCover
-) {
-    TODO("投屏")
-}
-
-fun NavHostController.navigationDLNA(
-    cartoonCover: CartoonCover,
-    lineIndex: Int,
-    episode: Int,
-) {
-    TODO("投屏")
 }
 
 // 缺省路由
@@ -267,6 +269,35 @@ fun Nav() {
             composable(ABOUT){
                 NormalSystemBarColor()
                 About()
+            }
+
+            composable(
+                "${DLNA}?url={url}&source={source}&id={id}&lineIndex={lineIndex}&episode={episode}",
+                arguments = listOf(
+                    navArgument("url") { defaultValue = "" },
+                    navArgument("source") { defaultValue = "" },
+                    navArgument("id") { defaultValue = "" },
+                    navArgument("lineIndex") {
+                        defaultValue = -1
+                        type = NavType.IntType
+                    },
+                    navArgument("episode") {
+                        defaultValue = -1
+                        type = NavType.IntType
+                    },
+                )
+            ){
+                val id = it.arguments?.getString("id") ?: ""
+                val source = it.arguments?.getString("source") ?: ""
+                val url = it.arguments?.getString("url") ?: ""
+                LaunchedEffect(Unit) {
+                    "id:$id, source: $source, url: $url".loge()
+                }
+                val lineIndex = it.arguments?.getInt("lineIndex") ?: -1
+                val episode = it.arguments?.getInt("episode") ?: -1
+
+                NormalSystemBarColor()
+                Dlna(id = id, source = source, url = url, DlnaViewModel.EnterData(lineIndex, episode))
             }
 
         }

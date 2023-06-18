@@ -80,7 +80,7 @@ fun WhitePage(
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            OkImage(modifier = Modifier.size(64.dp), image = image, contentDescription = message)
+            OkImage(modifier = Modifier.size(64.dp), image = image, isGif = true,contentDescription = message)
 
             Spacer(modifier = Modifier.height(10.dp))
             Text(

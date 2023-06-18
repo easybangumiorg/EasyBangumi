@@ -12,8 +12,10 @@ import android.webkit.ValueCallback
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
+import androidx.annotation.CallSuper
 import androidx.webkit.WebResourceErrorCompat
 import androidx.webkit.WebViewClientCompat
+import androidx.webkit.WebViewCompat
 import com.heyanle.lib_anim.utils.network.webview_helper.WebViewHelperImpl.BlobIntercept
 import com.heyanle.lib_anim.utils.setDefaultSettings
 import kotlinx.coroutines.Dispatchers
@@ -128,30 +130,32 @@ class WebViewHelperImpl(
         }
 
 
-//        /**
-//         * 拦截无关资源文件
-//         *
-//         * 注意，该方法运行在线程池内
-//         */
-//        @SuppressLint("RequiresFeature")
-//        @CallSuper
-//        override fun shouldInterceptRequest(
-//            view: WebView,
-//            request: WebResourceRequest?
-//        ) = run {
-//            val url = request?.url?.toString()
-//                ?: return@run super.shouldInterceptRequest(view, request)
-//            //阻止无关资源加载，加快获取速度
-//            if (!targetRegex.matches(url) && url.containStrs(*blockRes)) {
-//                //Log.d("禁止加载", url)
-//                //转发回onLoadResource
-//                if (blockReqForward)
-//                    view.post { WebViewCompat.getWebViewClient(view).onLoadResource(view, url) }
-//                blockWebResourceRequest
-//            } else
-//                super.shouldInterceptRequest(view, request)
-//        }
+        /**
+         * 拦截无关资源文件
+         *
+         * 注意，该方法运行在线程池内
+         */
+        @SuppressLint("RequiresFeature")
+        @CallSuper
+        override fun shouldInterceptRequest(
+            view: WebView,
+            request: WebResourceRequest?
+        ) = run {
+            val url = request?.url?.toString()
+                ?: return@run super.shouldInterceptRequest(view, request)
+            //阻止无关资源加载，加快获取速度
+            if (!targetRegex.matches(url) && url.containStrs(*blockRes)) {
+                //Log.d("禁止加载", url)
+                //转发回onLoadResource
+                if (blockReqForward)
+                    view.post { WebViewCompat.getWebViewClient(view).onLoadResource(view, url) }
+                blockWebResourceRequest
+            } else
+                super.shouldInterceptRequest(view, request)
+        }
     }
+
+
 
     override suspend fun getRenderedHtmlCode(
         url: String,
@@ -386,4 +390,13 @@ class WebViewHelperImpl(
             }
         }
     }
+}
+
+fun String.containStrs(vararg str: String): Boolean {
+    str.forEach {
+        if(this.contains(it)){
+            return true
+        }
+    }
+    return false
 }

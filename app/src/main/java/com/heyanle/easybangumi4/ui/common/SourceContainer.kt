@@ -80,6 +80,59 @@ fun SourceContainer(
 }
 
 @Composable
+fun SourceContainerBase(
+    modifier: Modifier = Modifier,
+    hasSource: (SourceBundle)->Boolean,
+    errorContainerColor: Color = Color.Transparent,
+    content: @Composable (SourceBundle) -> Unit,
+){
+    val animSources = LocalSourceBundleController.current
+    val anim = animSources
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .then(modifier)
+    ) {
+        if (!hasSource(anim)) {
+            val nav = LocalNavController.current
+            ErrorPage(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(errorContainerColor),
+                errorMsg = stringResource(id = com.heyanle.easy_i18n.R.string.no_source),
+                clickEnable = false,
+                other = {
+                    Column {
+                        TextButton(onClick = {
+                            stringRes(R.string.try_qq_group).toast()
+                            kotlin.runCatching {
+                                C.extensionUrl.openUrl()
+                            }.onFailure {
+                                it.printStackTrace()
+                            }
+                        }) {
+                            Text(text = stringResource(id = R.string.website_get))
+                        }
+
+                        TextButton(onClick = {
+                            stringRes(R.string.add_group_get).moeSnackBar()
+                            nav.navigate(ABOUT)
+
+                        }) {
+                            Text(text = stringResource(id = R.string.group_get))
+                        }
+                    }
+
+
+                }
+            )
+        } else {
+            content(anim)
+        }
+    }
+}
+
+@Composable
 fun PageContainer(
     sourceKey: String,
     modifier: Modifier = Modifier,
