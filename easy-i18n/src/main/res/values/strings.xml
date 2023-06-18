@@ -15,6 +15,7 @@
 
     <string name="is_empty">内容为空</string>
     <string name="loading">加载中</string>
+    <string name="parsing">解析中</string>
 
     <string name="cancel">取消</string>
     <string name="confirm">确定</string>

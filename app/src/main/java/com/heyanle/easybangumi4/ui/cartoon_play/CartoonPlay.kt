@@ -93,6 +93,7 @@ import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
 import com.heyanle.bangumi_source_api.api.entity.PlayLine
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.R
+import com.heyanle.easybangumi4.navigationDlna
 import com.heyanle.easybangumi4.navigationSearch
 import com.heyanle.easybangumi4.ui.common.Action
 import com.heyanle.easybangumi4.ui.common.ActionRow
@@ -102,7 +103,6 @@ import com.heyanle.easybangumi4.ui.common.ErrorPage
 import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.OkImage
-import com.heyanle.easybangumi4.utils.TODO
 import com.heyanle.easybangumi4.utils.isCurPadeMode
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.easybangumi4.utils.openUrl
@@ -196,6 +196,7 @@ fun CartoonPlay(
     DisposableEffect(key1 = Unit) {
         onDispose {
             CartoonPlayingManager.trySaveHistory()
+            CartoonPlayingManager.release()
         }
     }
 
@@ -212,7 +213,9 @@ fun CartoonPlay(
     }
     val lazyGridState = rememberLazyGridState()
     EasyPlayerScaffoldBase(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .navigationBarsPadding(),
         vm = controlVM,
         isPadMode = isPad,
         contentWeight = 0.5f,
@@ -277,19 +280,36 @@ fun CartoonPlay(
                 }
 
                 is CartoonPlayingManager.PlayingState.Loading -> {
-                    LoadingPage(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clickable(
-                                onClick = {
+                    Box {
+                        LoadingPage(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color.Black)
+                                .clickable(
+                                    onClick = {
 
-                                },
-                                indication = null,
-                                interactionSource = remember {
-                                    MutableInteractionSource()
-                                }
-                            )
-                    )
+                                    },
+                                    indication = null,
+                                    interactionSource = remember {
+                                        MutableInteractionSource()
+                                    }
+                                ),
+                            loadingMsg = stringResource(id = com.heyanle.easy_i18n.R.string.parsing)
+                        )
+                        if (controlVM.isFullScreen) {
+                            IconButton(
+                                modifier = Modifier.align(Alignment.TopStart),
+                                onClick = {
+                                    controlVM.onFullScreen(false, false, act)
+                                }) {
+                                Icon(
+                                    Icons.Filled.ArrowBack,
+                                    contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.back)
+                                )
+                            }
+                        }
+                    }
+
                 }
 
                 is CartoonPlayingManager.PlayingState.Error -> {
@@ -465,11 +485,11 @@ fun CartoonPlay(
                     vm = it,
                     modifier = Modifier.align(Alignment.BottomCenter),
                     paddingValues = if (controlVM.isFullScreen) PaddingValues(
+                        16.dp,
                         0.dp,
-                        0.dp,
-                        0.dp,
+                        16.dp,
                         8.dp
-                    ) else PaddingValues(0.dp)
+                    ) else PaddingValues(8.dp, 0.dp)
                 ) {
                     Text(
                         modifier = Modifier
@@ -513,7 +533,6 @@ fun CartoonPlay(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .navigationBarsPadding()
                     ) {
                         CartoonPlayUI(
                             detailedVM = detailedVM,
@@ -613,7 +632,7 @@ fun CartoonPlayPage(
     cartoonPlayVM: CartoonPlayViewModel,
     detailedState: DetailedViewModel.DetailedState.Info,
     listState: LazyGridState = rememberLazyGridState(),
-    onTitle: (String)->Unit,
+    onTitle: (String) -> Unit,
 ) {
     val nav = LocalNavController.current
     CartoonPlayDetailed(
@@ -666,7 +685,7 @@ fun CartoonPlayPage(
             }
         },
         onDlna = {
-            TODO("投屏")
+            nav.navigationDlna(CartoonSummary(detailedState.detail.id, detailedState.detail.source, detailedState.detail.url), CartoonPlayingManager.state.playLineIndex()?: -1, CartoonPlayingManager.state.episode())
         }
     )
 }
