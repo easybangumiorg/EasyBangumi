@@ -54,6 +54,7 @@ object CartoonPlayingManager: Player.Listener {
             val playLineIndex: Int,
             val playLine: PlayLine,
             val curEpisode: Int,
+            val cartoon: Cartoon,
         ) : PlayingState()
 
         class Playing(
@@ -61,6 +62,7 @@ object CartoonPlayingManager: Player.Listener {
             val playerInfo: PlayerInfo,
             val playLine: PlayLine,
             val curEpisode: Int,
+            val cartoon: Cartoon,
         ) : PlayingState()
 
         class Error(
@@ -188,13 +190,21 @@ object CartoonPlayingManager: Player.Listener {
         episode: Int = 0,
         adviceProgress: Long = 0L,
     ) {
+        val sta = state
+        if(sta is PlayingState.Playing){
+            if(sta.cartoon == cartoon && sta.playLineIndex == playLineIndex && episode == sta.curEpisode){
+                innerPlay(sta.playerInfo, adviceProgress)
+                return
+            }
+        }
+
         exoPlayer.pause()
         if (playLine.episode.isEmpty()) {
             return
         }
         val realEpisode = if (episode < 0 || episode >= playLine.episode.size) 0 else episode
 
-        state = PlayingState.Loading(playLineIndex, playLine, realEpisode)
+        state = PlayingState.Loading(playLineIndex, playLine, realEpisode, cartoon)
 
         lastJob?.cancel()
         lastJob = null
@@ -211,7 +221,7 @@ object CartoonPlayingManager: Player.Listener {
                     if(isActive){
                         innerPlay(it.data, adviceProgress)
                         state = PlayingState.Playing(
-                            playLineIndex, it.data, playLine, episode,
+                            playLineIndex, it.data, playLine, episode, cartoon
                         )
                     }
 
@@ -399,6 +409,11 @@ object CartoonPlayingManager: Player.Listener {
 
     private fun ExoPlayer.isMedia(): Boolean {
         return exoPlayer.playbackState == Player.STATE_BUFFERING || exoPlayer.playbackState == Player.STATE_READY
+    }
+
+    fun release(){
+        lastJob?.cancel()
+        exoPlayer.stop()
     }
 
 }

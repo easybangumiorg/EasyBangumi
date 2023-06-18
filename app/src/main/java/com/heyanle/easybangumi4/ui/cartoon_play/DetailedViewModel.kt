@@ -24,7 +24,7 @@ import kotlinx.coroutines.withContext
  * https://github.com/heyanLE
  */
 class DetailedViewModel(
-    val cartoonSummary: CartoonSummary,
+    private val cartoonSummary: CartoonSummary,
     private val detailedComponent: DetailedComponent,
 ) : ViewModel() {
 
