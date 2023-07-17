@@ -6,7 +6,10 @@ import androidx.annotation.Keep
 class PlayerInfo(
     val decodeType: Int = DECODE_TYPE_OTHER,
     val uri: String = "",
+
 ) {
+
+    var header: Map<String, String>? = null
     companion object {
         // 这里跟 exoplayer 对应的类型需要对应
 

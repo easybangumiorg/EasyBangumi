@@ -2,6 +2,7 @@ package com.heyanle.bangumi_source_api.api
 
 import androidx.annotation.Keep
 import com.heyanle.bangumi_source_api.api.component.Component
+import com.heyanle.lib_anim.utils.SourceContext
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -11,12 +12,12 @@ import kotlin.coroutines.EmptyCoroutineContext
  * https://github.com/heyanLE
  */
 @Keep
-interface Source {
+interface Source: SourceContext {
 
     /**
      * Must be unique
      */
-    val key: String
+    override val key: String
 
     val label: String
 

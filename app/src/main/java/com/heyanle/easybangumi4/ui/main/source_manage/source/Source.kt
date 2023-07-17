@@ -153,7 +153,7 @@ fun SourceItem(
                 image = icon?.getIconFactory()?.invoke(),
                 contentDescription = source.label,
                 crossFade = false,
-                placeholder = null,
+                placeholderColor = null,
                 errorColor = null,
             )
         }

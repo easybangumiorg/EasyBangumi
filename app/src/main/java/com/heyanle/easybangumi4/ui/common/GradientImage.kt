@@ -46,7 +46,7 @@ fun GradientImage(
             image = image,
             contentDescription = contentDescription,
             errorColor = Color.Transparent,
-            placeholder = Color.Transparent,
+            placeholderColor = Color.Transparent,
         )
     }
 

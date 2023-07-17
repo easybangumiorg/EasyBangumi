@@ -9,6 +9,6 @@ import com.heyanle.bangumi_source_api.api.Source
  */
 @Keep
 interface ConfigSource : Source {
-    fun getConfigs(): List<ConfigField<*>>
+    fun getConfigs(): List<ConfigField>
 
 }

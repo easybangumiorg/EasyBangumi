@@ -10,10 +10,6 @@ import androidx.annotation.Keep
 lateinit var configFactory: ConfigFactory
 @Keep
 interface ConfigFactory {
-    fun currentConfigString(field: ConfigField<String>): String
-    fun currentConfigInt(field: ConfigField<Int>): Int
-    fun currentConfigLong(field: ConfigField<Long>): Long
-    fun currentConfigDouble(field: ConfigField<Double>): Double
-    fun currentConfigBoolean(field: ConfigField<Boolean>): Boolean
+    fun currentConfigString(field: ConfigField): String
 
 }

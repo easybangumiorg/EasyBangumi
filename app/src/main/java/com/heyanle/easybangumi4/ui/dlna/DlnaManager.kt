@@ -47,16 +47,10 @@ object DlnaManager {
 
     val isInit = AtomicBoolean(false)
 
-
     /**
      * 投屏控制器
      */
     private val mClingPlayControl: ClingPlayControl = ClingPlayControl()
-
-
-    init {
-        // AndroidLoggingHandler.injectJavaLogger()
-    }
 
     /** 用于监听发现设备  */
     private val mBrowseRegistryListener = BrowseRegistryListener().apply {
@@ -174,9 +168,6 @@ object DlnaManager {
         }.onFailure {
             it.printStackTrace()
         }
-
-
-
         isInit.set(false)
         curDevice.value = null
         dmrDevices.clear()
