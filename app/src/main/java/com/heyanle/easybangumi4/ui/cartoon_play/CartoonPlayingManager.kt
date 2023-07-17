@@ -19,6 +19,7 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.google.android.exoplayer2.upstream.DefaultDataSource
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSource
 import com.google.android.exoplayer2.util.Clock
 import com.heyanle.bangumi_source_api.api.component.play.PlayComponent
 import com.heyanle.bangumi_source_api.api.entity.Cartoon
@@ -366,12 +367,12 @@ object CartoonPlayingManager: Player.Listener {
 
         // 如果播放器当前状态不在播放，则肯定要刷新播放源
         if (!exoPlayer.isMedia() || lastPlayerInfo?.uri != playerInfo.uri || lastPlayerInfo?.decodeType != playerInfo.decodeType) {
-            val defaultDataSourceFactory =
-                DefaultDataSource.Factory(APP)
+
             val dataSourceFactory: DataSource.Factory = DefaultDataSource.Factory(
                 APP,
-                defaultDataSourceFactory
+                DefaultHttpDataSource.Factory().setDefaultRequestProperties(playerInfo.header?: emptyMap())
             )
+
             val media = when (playerInfo.decodeType) {
                 C.CONTENT_TYPE_DASH -> DashMediaSource.Factory(dataSourceFactory)
                     .createMediaSource(MediaItem.fromUri(playerInfo.uri))

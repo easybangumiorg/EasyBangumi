@@ -34,7 +34,9 @@ fun OkImage(
     contentScale: ContentScale = ContentScale.Crop,
     crossFade: Boolean = true,
     errorColor: Color? = MaterialTheme.colorScheme.error,
-    placeholder: Color? = MaterialTheme.colorScheme.secondaryContainer,
+    errorRes: Int? = null,
+    placeholderColor: Color? = MaterialTheme.colorScheme.secondaryContainer,
+    placeholderRes: Int? = null,
     tint: Color? = null,
 ) {
     when (image) {
@@ -62,9 +64,14 @@ fun OkImage(
                     .Builder(LocalContext.current)
                     .data(image)
                     .apply {
-                        placeholder?.let {
-                            placeholder(ColorDrawable(it.toArgb()))
+                        if(placeholderRes == null){
+                            placeholderColor?.let {
+                                placeholder(ColorDrawable(it.toArgb()))
+                            }
+                        }else{
+                            placeholder(placeholderRes)
                         }
+
                     }
                     .crossfade(crossFade)
                     .apply {
@@ -77,9 +84,14 @@ fun OkImage(
                         }
                     }
                     .apply {
-                        errorColor?.let {
-                            error(ColorDrawable(it.toArgb()))
+                        if(errorRes == null){
+                            errorColor?.let {
+                                error(ColorDrawable(it.toArgb()))
+                            }
+                        }else{
+                            error(errorRes)
                         }
+
                     }
                     .build(),
                 contentDescription = contentDescription,

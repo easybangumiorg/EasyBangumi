@@ -26,7 +26,7 @@ object ExtensionLoader {
 
     // 当前容器支持的 扩展库 版本区间
     private const val LIB_VERSION_MIN = 1
-    private const val LIB_VERSION_MAX = 1
+    private const val LIB_VERSION_MAX = 2
 
     private const val PACKAGE_FLAGS =
         PackageManager.GET_CONFIGURATIONS or PackageManager.GET_SIGNATURES
@@ -82,7 +82,7 @@ object ExtensionLoader {
             val libVersion = appInfo.metaData.getInt(METADATA_SOURCE_LIB_VERSION)
             val readme = appInfo.metaData.getString(METADATA_README)
             // 库版本管理
-            if (libVersion < LIB_VERSION_MIN || libVersion > LIB_VERSION_MAX) {
+            if (libVersion < LIB_VERSION_MIN) {
                 "Lib version is ${libVersion}, while only versions " + "${LIB_VERSION_MIN} to ${LIB_VERSION_MAX} are allowed".loge("ExtensionLoader")
                 return Extension.InstallError(
                     label = extName,
@@ -93,7 +93,22 @@ object ExtensionLoader {
                     readme = readme,
                     icon = kotlin.runCatching { pkgManager.getApplicationIcon(pkgInfo.packageName) }
                         .getOrNull(),
-                    errMsg = "插件版本或APP版本过旧",
+                    errMsg = "拓展版本过旧",
+                    exception = null,
+                )
+            }
+            if (libVersion > LIB_VERSION_MAX) {
+                "Lib version is ${libVersion}, while only versions " + "${LIB_VERSION_MIN} to ${LIB_VERSION_MAX} are allowed".loge("ExtensionLoader")
+                return Extension.InstallError(
+                    label = extName,
+                    pkgName = pkgInfo.packageName,
+                    versionName = versionName,
+                    versionCode = versionCode,
+                    libVersion = libVersion,
+                    readme = readme,
+                    icon = kotlin.runCatching { pkgManager.getApplicationIcon(pkgInfo.packageName) }
+                        .getOrNull(),
+                    errMsg = "纯纯看番本体 APP 版本过旧",
                     exception = null,
                 )
             }
