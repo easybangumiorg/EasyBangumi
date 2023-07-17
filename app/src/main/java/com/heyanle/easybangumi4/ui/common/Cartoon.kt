@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.heyanle.easybangumi4.R
 
 /**
  * Created by HeYanLe on 2023/3/16 23:17.
@@ -36,7 +37,8 @@ fun CartoonCard(
             image = cover,
             contentDescription = name,
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxSize(),
+            errorRes = R.drawable.placeholder
         )
         source?.let {
             Text(

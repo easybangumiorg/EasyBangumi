@@ -5,7 +5,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.with
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -519,7 +519,7 @@ fun CartoonPlayDetailed(
                         modifier = Modifier,
                         targetState = isExpended,
                         transitionSpec = {
-                            fadeIn(animationSpec = tween(300, delayMillis = 300)) with
+                            fadeIn(animationSpec = tween(300, delayMillis = 300)) togetherWith
                                     fadeOut(animationSpec = tween(300, delayMillis = 0))
                         }, label = ""
                     ) {

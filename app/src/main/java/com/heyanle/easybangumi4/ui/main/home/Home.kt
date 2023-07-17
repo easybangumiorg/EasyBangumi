@@ -5,7 +5,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.with
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -99,10 +99,7 @@ fun Home() {
 
             Divider()
         }
-
-
-
-
+        
         AnimatedContent(
             modifier = Modifier
                 .fillMaxWidth()
@@ -116,7 +113,7 @@ fun Home() {
                 },
             targetState = kotlin.runCatching { state.pages[state.selectionIndex] }.getOrNull(),
             transitionSpec = {
-                fadeIn(animationSpec = tween(300, delayMillis = 300)) with
+                fadeIn(animationSpec = tween(300, delayMillis = 300)) togetherWith
                         fadeOut(animationSpec = tween(300, delayMillis = 0))
             }, label = ""
         ) {
@@ -130,13 +127,9 @@ fun Home() {
             }
         }
     }
-
-
 //    HomeBottomSheet(sheetState = sheetState, defSourceKey = state.selectionKey, onSourceClick = {
 //        vm.changeSelectionSource(it)
 //    })
-
-
 }
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -193,10 +186,7 @@ fun HomeBottomSheet(
                 ),
             )
         }
-
     }
-
-
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

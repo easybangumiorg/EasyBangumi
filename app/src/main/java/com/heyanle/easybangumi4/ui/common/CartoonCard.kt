@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.heyanle.bangumi_source_api.api.entity.CartoonCover
+import com.heyanle.easybangumi4.R
 import com.heyanle.easybangumi4.db.entity.CartoonStar
 import com.heyanle.easybangumi4.source.LocalSourceBundleController
 
@@ -59,7 +60,8 @@ fun CartoonCardWithCover(
                     .aspectRatio(19 / 27F)
                     .clip(RoundedCornerShape(4.dp)),
                 image = cartoonCover.coverUrl,
-                contentDescription = cartoonCover.title
+                contentDescription = cartoonCover.title,
+                errorRes = R.drawable.placeholder,
             )
 
             Spacer(modifier = Modifier.size(4.dp))
@@ -110,45 +112,44 @@ fun CartoonStarCardWithCover(
         horizontalAlignment = Alignment.Start,
     ) {
         val sourceBundle = LocalSourceBundleController.current
-        if (cartoon.coverUrl.isNotEmpty()) {
-            Box(
-                modifier = Modifier
-                    .aspectRatio(19 / 27F)
-                    .clip(RoundedCornerShape(4.dp)),
-            ) {
-                OkImage(
-                    modifier = Modifier.fillMaxSize(),
-                    image = cartoon.coverUrl,
-                    contentDescription = cartoon.title
-                )
-                if (showSourceLabel) {
-                    Text(
-                        fontSize = 13.sp,
-                        text = sourceBundle.source(cartoon.source)?.label
-                            ?: cartoon.source,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier
-                            .background(
-                                MaterialTheme.colorScheme.primary,
-                                RoundedCornerShape(0.dp, 0.dp, 4.dp, 0.dp)
-                            )
-                            .padding(4.dp, 0.dp)
-                    )
-                }
-            }
-
-
-            Spacer(modifier = Modifier.size(4.dp))
-            Text(
-                style = MaterialTheme.typography.bodySmall,
-                text = cartoon.title,
-                maxLines = 2,
-                textAlign = TextAlign.Start,
-                overflow = TextOverflow.Ellipsis,
-                color = if(selected) MaterialTheme.colorScheme.onPrimary else Color.Unspecified
+        Box(
+            modifier = Modifier
+                .aspectRatio(19 / 27F)
+                .clip(RoundedCornerShape(4.dp)),
+        ) {
+            OkImage(
+                modifier = Modifier.fillMaxSize(),
+                image = cartoon.coverUrl?:"",
+                contentDescription = cartoon.title,
+                errorRes = R.drawable.placeholder,
             )
-            Spacer(modifier = Modifier.size(4.dp))
+            if (showSourceLabel) {
+                Text(
+                    fontSize = 13.sp,
+                    text = sourceBundle.source(cartoon.source)?.label
+                        ?: cartoon.source,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier
+                        .background(
+                            MaterialTheme.colorScheme.primary,
+                            RoundedCornerShape(0.dp, 0.dp, 4.dp, 0.dp)
+                        )
+                        .padding(4.dp, 0.dp)
+                )
+            }
         }
+
+
+        Spacer(modifier = Modifier.size(4.dp))
+        Text(
+            style = MaterialTheme.typography.bodySmall,
+            text = cartoon.title,
+            maxLines = 2,
+            textAlign = TextAlign.Start,
+            overflow = TextOverflow.Ellipsis,
+            color = if(selected) MaterialTheme.colorScheme.onPrimary else Color.Unspecified
+        )
+        Spacer(modifier = Modifier.size(4.dp))
     }
 }
 

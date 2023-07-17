@@ -7,12 +7,11 @@ import androidx.annotation.Keep
  * https://github.com/heyanLE
  */
 @Keep
-sealed class ConfigType<T> {
+sealed class ConfigType {
 
-    class Edit<T> : ConfigType<T>()
+    object Edit : ConfigType()
 
-    class Selection<T>(
-        val list: List<T>,
-    ) : ConfigType<T>()
-
+    class Selection(
+        val list: List<String>,
+    ) : ConfigType()
 }

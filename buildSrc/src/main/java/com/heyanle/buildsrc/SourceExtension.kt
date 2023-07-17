@@ -6,7 +6,7 @@ package com.heyanle.buildsrc
  */
 
 object SourceExtension {
-    const val LIB_VERSION = "1.0-SNAPSHOT"
+    const val LIB_VERSION = "1.2-SNAPSHOT"
 
     const val sourceApi = "io.github.easybangumiorg:source-api:${LIB_VERSION}"
     const val sourceUtils = "io.github.easybangumiorg:source-utils:${LIB_VERSION}"
