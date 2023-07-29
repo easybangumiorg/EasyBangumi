@@ -46,7 +46,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
-import com.heyanle.easybangumi4.db.entity.CartoonStar
+import com.heyanle.easybangumi4.base.entity.CartoonStar
 import com.heyanle.easybangumi4.navigationDetailed
 import com.heyanle.easybangumi4.source.LocalSourceBundleController
 import com.heyanle.easybangumi4.ui.common.EmptyPage

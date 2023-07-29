@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.db.entity
+package com.heyanle.easybangumi4.base.entity
 
 import androidx.room.Entity
 

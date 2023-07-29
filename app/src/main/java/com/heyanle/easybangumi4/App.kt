@@ -9,7 +9,7 @@ import android.os.Looper
 import android.os.Process
 import android.util.Log
 import com.heyanle.easy_crasher.CrashHandler
-import com.heyanle.easybangumi4.db.AppDatabase
+import com.heyanle.easybangumi4.base.db.AppDatabase
 import com.heyanle.easybangumi4.preferences.WebViewCompatiblePreferences
 import com.heyanle.easybangumi4.utils.AppCenterManager
 import com.heyanle.easybangumi4.utils.exo_ssl.CropUtil

@@ -28,7 +28,7 @@ import com.heyanle.bangumi_source_api.api.entity.PlayLine
 import com.heyanle.bangumi_source_api.api.entity.PlayerInfo
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.DB
-import com.heyanle.easybangumi4.db.entity.CartoonHistory
+import com.heyanle.easybangumi4.base.entity.CartoonHistory
 import com.heyanle.easybangumi4.preferences.InPrivatePreferences
 import com.heyanle.easybangumi4.source.SourceMaster
 import com.heyanle.easybangumi4.utils.stringRes

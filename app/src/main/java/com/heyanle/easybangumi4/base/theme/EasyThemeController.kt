@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.theme
+package com.heyanle.easybangumi4.base.theme
 
 import android.annotation.SuppressLint
 import android.os.Build
