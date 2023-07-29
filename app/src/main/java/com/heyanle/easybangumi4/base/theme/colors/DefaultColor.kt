@@ -1,39 +1,38 @@
-package com.heyanle.easybangumi4.theme.colors
+package com.heyanle.easybangumi4.base.theme.colors
 
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 
 /**
- * Created by HeYanLe on 2023/2/18 23:11.
+ * Created by HeYanLe on 2023/2/18 23:08.
  * https://github.com/heyanLE
  */
-object TealturqoiseColor {
+object DefaultColor {
     
     object Light {
-        val primary = Color(0xFF008080)
+        val primary = Color(0xFF0057CE)
         val onPrimary = Color(0xFFFFFFFF)
-        val primaryContainer = Color(0xFF008080)
-        val onPrimaryContainer = Color(0xFFFFFFFF)
-        val secondary = Color(0xFF008080)
+        val primaryContainer = Color(0xFFD8E2FF)
+        val onPrimaryContainer = Color(0xFF001947)
+        val secondary = Color(0xFF0057CE)
         val onSecondary = Color(0xFFFFFFFF)
-        val secondaryContainer = Color(0xFFBFDFDF)
-        val onSecondaryContainer = Color(0xFF008080)
-        val tertiary = Color(0xFFFF7F7F)
-        val onTertiary = Color(0xFF000000)
-        val tertiaryContainer = Color(0xFF2A1616)
-        val onTertiaryContainer = Color(0xFFFF7F7F)
-        val background = Color(0xFFFAFAFA)
-        val onBackground = Color(0xFF050505)
-        val surface = Color(0xFFFAFAFA)
-        val onSurface = Color(0xFF050505)
-        val surfaceVariant = Color(0xFFDAE5E2)
-        val onSurfaceVariant = Color(0xFF050505)
-        val outline = Color(0xFF6F7977)
-        val inverseOnSurface = Color(0xFFFAFAFA)
-        val inverseSurface = Color(0xFF050505)
-        val primaryInverse = Color(0xFF40E0D0)
-        val elevationOverlay = Color(0xFFBFDFDF)
+        val secondaryContainer = Color(0xFFD8E2FF)
+        val onSecondaryContainer = Color(0xFF001947)
+        val tertiary = Color(0xFF006E17)
+        val onTertiary = Color(0xFFFFFFFF)
+        val tertiaryContainer = Color(0xFF95F990)
+        val onTertiaryContainer = Color(0xFF002202)
+        val background = Color(0xFFFDFBFF)
+        val onBackground = Color(0xFF1B1B1E)
+        val surface = Color(0xFFFDFBFF)
+        val onSurface = Color(0xFF1B1B1E)
+        val surfaceVariant = Color(0xFFE1E2EC)
+        val onSurfaceVariant = Color(0xFF44464E)
+        val outline = Color(0xFF757780)
+        val inverseOnSurface = Color(0xFFF2F0F4)
+        val inverseSurface = Color(0xFF303033)
+        val primaryInverse = Color(0xFFAEC6FF)
 
         val colorScheme = lightColorScheme(
             primary = primary,
@@ -62,29 +61,28 @@ object TealturqoiseColor {
     }
     
     object Dark {
-        val primary = Color(0xFF40E0D0)
-        val onPrimary = Color(0xFF000000)
-        val primaryContainer = Color(0xFF40E0D0)
-        val onPrimaryContainer = Color(0xFF000000)
-        val secondary = Color(0xFF40E0D0)
-        val onSecondary = Color(0xFF000000)
-        val secondaryContainer = Color(0xFF18544E)
-        val onSecondaryContainer = Color(0xFF40E0D0)
-        val tertiary = Color(0xFFBF1F2F)
-        val onTertiary = Color(0xFFFFFFFF)
-        val tertiaryContainer = Color(0xFF200508)
-        val onTertiaryContainer = Color(0xFFBF1F2F)
-        val background = Color(0xFF202125)
-        val onBackground = Color(0xFFDFDEDA)
-        val surface = Color(0xFF202125)
-        val onSurface = Color(0xFFDFDEDA)
-        val surfaceVariant = Color(0xFF3F4947)
-        val onSurfaceVariant = Color(0xFFDFDEDA)
-        val outline = Color(0xFF899391)
-        val inverseOnSurface = Color(0xFF202125)
-        val inverseSurface = Color(0xFFDFDEDA)
-        val primaryInverse = Color(0xFF008080)
-        val elevationOverlay = Color(0xFF18544E)
+        val primary = Color(0xFFAEC6FF)
+        val onPrimary = Color(0xFF002C71)
+        val primaryContainer = Color(0xFF00419E)
+        val onPrimaryContainer = Color(0xFFD8E2FF)
+        val secondary = Color(0xFFAEC6FF)
+        val onSecondary = Color(0xFF002C71)
+        val secondaryContainer = Color(0xFF00419E)
+        val onSecondaryContainer = Color(0xFFD8E2FF)
+        val tertiary = Color(0xFF7ADC77)
+        val onTertiary = Color(0xFF003907)
+        val tertiaryContainer = Color(0xFF00530D)
+        val onTertiaryContainer = Color(0xFF95F990)
+        val background = Color(0xFF1B1B1E)
+        val onBackground = Color(0xFFE4E2E6)
+        val surface = Color(0xFF1B1B1E)
+        val onSurface = Color(0xFFE4E2E6)
+        val surfaceVariant = Color(0xFF44464E)
+        val onSurfaceVariant = Color(0xFFC5C6D0)
+        val outline = Color(0xFF8E9099)
+        val inverseOnSurface = Color(0xFF1B1B1E)
+        val inverseSurface = Color(0xFFE4E2E6)
+        val primaryInverse = Color(0xFF0057CE)
 
         val colorScheme = darkColorScheme(
             primary = primary,

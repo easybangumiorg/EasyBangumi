@@ -89,7 +89,7 @@ fun ExtensionItem(
                         onClick = {
 
                         }) {
-                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.loading_error))
+                        Text(text = extension.errMsg)
                     }
                 }
             }

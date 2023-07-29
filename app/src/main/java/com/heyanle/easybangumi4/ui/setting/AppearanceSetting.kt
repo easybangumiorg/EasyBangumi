@@ -56,9 +56,9 @@ import androidx.compose.ui.unit.dp
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.preferences.PadModePreferences
-import com.heyanle.easybangumi4.theme.DarkMode
-import com.heyanle.easybangumi4.theme.EasyThemeController
-import com.heyanle.easybangumi4.theme.EasyThemeMode
+import com.heyanle.easybangumi4.base.theme.DarkMode
+import com.heyanle.easybangumi4.base.theme.EasyThemeController
+import com.heyanle.easybangumi4.base.theme.EasyThemeMode
 import com.heyanle.easybangumi4.ui.common.IntPreferenceItem
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.stringRes

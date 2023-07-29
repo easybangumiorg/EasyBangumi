@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.db.dao
+package com.heyanle.easybangumi4.base.db.dao
 
 import androidx.paging.PagingSource
 import androidx.room.Dao
@@ -7,7 +7,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
-import com.heyanle.easybangumi4.db.entity.CartoonHistory
+import com.heyanle.easybangumi4.base.entity.CartoonHistory
 
 /**
  * Created by HeYanLe on 2023/3/7 14:57.

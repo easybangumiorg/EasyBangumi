@@ -4,7 +4,7 @@ import androidx.compose.runtime.mutableStateOf
 import com.heyanle.bangumi_source_api.api.SourceResult
 import com.heyanle.bangumi_source_api.api.entity.Cartoon
 import com.heyanle.easybangumi4.DB
-import com.heyanle.easybangumi4.db.entity.CartoonStar
+import com.heyanle.easybangumi4.base.entity.CartoonStar
 import com.heyanle.easybangumi4.source.SourceMaster
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.okkv2.core.okkv

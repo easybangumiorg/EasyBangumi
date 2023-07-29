@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.theme
+package com.heyanle.easybangumi4.base.theme
 
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.Typography
@@ -7,12 +7,12 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import com.heyanle.easybangumi4.theme.colors.DefaultColor
-import com.heyanle.easybangumi4.theme.colors.GreenappleColor
-import com.heyanle.easybangumi4.theme.colors.MidnightduskColor
-import com.heyanle.easybangumi4.theme.colors.StrawberryColor
-import com.heyanle.easybangumi4.theme.colors.TakoColor
-import com.heyanle.easybangumi4.theme.colors.TealturqoiseColor
+import com.heyanle.easybangumi4.base.theme.colors.DefaultColor
+import com.heyanle.easybangumi4.base.theme.colors.GreenappleColor
+import com.heyanle.easybangumi4.base.theme.colors.MidnightduskColor
+import com.heyanle.easybangumi4.base.theme.colors.StrawberryColor
+import com.heyanle.easybangumi4.base.theme.colors.TakoColor
+import com.heyanle.easybangumi4.base.theme.colors.TealturqoiseColor
 
 
 /**
