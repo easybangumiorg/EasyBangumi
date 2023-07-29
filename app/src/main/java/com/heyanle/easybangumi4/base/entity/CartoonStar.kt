@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.db.entity
+package com.heyanle.easybangumi4.base.entity
 
 import androidx.room.Entity
 import androidx.room.Ignore
@@ -42,6 +42,8 @@ data class CartoonStar(
 
     var reversal: Boolean, // 是否反转集数
 
+    var dictionary: String, // 番剧分类
+
     var createTime: Long = System.currentTimeMillis(),
 
     var playLineString: String,
@@ -82,7 +84,8 @@ data class CartoonStar(
                 lastUpdateTime = 0L,
                 isUpdate = cartoon.isUpdate,
                 reversal = false,
-                watchProcess = ""
+                watchProcess = "",
+                dictionary = "",
             )
         }
     }
@@ -104,7 +107,8 @@ data class CartoonStar(
             lastUpdateTime = 0L,
             isUpdate = false,
             reversal = false,
-            watchProcess = ""
+            watchProcess = "",
+            dictionary = "",
         )
     }
 

@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.db
+package com.heyanle.easybangumi4.base.db
 
 import android.content.Context
 import androidx.room.Database
@@ -7,12 +7,12 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.heyanle.easybangumi4.DB
-import com.heyanle.easybangumi4.db.dao.CartoonHistoryDao
-import com.heyanle.easybangumi4.db.dao.CartoonStarDao
-import com.heyanle.easybangumi4.db.dao.SearchHistoryDao
-import com.heyanle.easybangumi4.db.entity.CartoonHistory
-import com.heyanle.easybangumi4.db.entity.CartoonStar
-import com.heyanle.easybangumi4.db.entity.SearchHistory
+import com.heyanle.easybangumi4.base.db.dao.CartoonHistoryDao
+import com.heyanle.easybangumi4.base.db.dao.CartoonStarDao
+import com.heyanle.easybangumi4.base.db.dao.SearchHistoryDao
+import com.heyanle.easybangumi4.base.entity.CartoonHistory
+import com.heyanle.easybangumi4.base.entity.CartoonStar
+import com.heyanle.easybangumi4.base.entity.SearchHistory
 
 /**
  * Created by HeYanLe on 2023/1/17 0:26.
@@ -46,6 +46,7 @@ abstract class AppDatabase : RoomDatabase() {
                 AppDatabase::class.java, "easy_cartoon"
             ).apply {
                 addMigrations(MIGRATION_2_3)
+                addMigrations(MIGRATION_3_4)
             }.build()
         }
 
@@ -54,6 +55,12 @@ abstract class AppDatabase : RoomDatabase() {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE CartoonStar ADD COLUMN reversal INTEGER NOT NULL DEFAULT 0")
                 db.execSQL("ALTER TABLE CartoonStar ADD COLUMN watchProcess TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE CartoonStar ADD COLUMN dictionary TEXT NOT NULL DEFAULT ''")
             }
         }
     }

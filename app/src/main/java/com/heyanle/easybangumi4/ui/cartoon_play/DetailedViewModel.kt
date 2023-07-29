@@ -12,7 +12,7 @@ import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
 import com.heyanle.bangumi_source_api.api.entity.PlayLine
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.DB
-import com.heyanle.easybangumi4.db.entity.CartoonStar
+import com.heyanle.easybangumi4.base.entity.CartoonStar
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.easybangumi4.utils.stringRes
 import kotlinx.coroutines.Dispatchers

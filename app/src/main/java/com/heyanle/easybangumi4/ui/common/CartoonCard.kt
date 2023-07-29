@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.heyanle.bangumi_source_api.api.entity.CartoonCover
 import com.heyanle.easybangumi4.R
-import com.heyanle.easybangumi4.db.entity.CartoonStar
+import com.heyanle.easybangumi4.base.entity.CartoonStar
 import com.heyanle.easybangumi4.source.LocalSourceBundleController
 
 /**

@@ -26,8 +26,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.heyanle.easybangumi4.utils.stringRes
-import com.heyanle.easybangumi4.theme.DarkMode
-import com.heyanle.easybangumi4.theme.EasyThemeController
+import com.heyanle.easybangumi4.base.theme.DarkMode
+import com.heyanle.easybangumi4.base.theme.EasyThemeController
 import kotlinx.coroutines.*
 
 val moeSnackBarQueue = mutableStateListOf<MoeSnackBarData>()

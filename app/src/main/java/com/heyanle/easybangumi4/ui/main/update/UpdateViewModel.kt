@@ -3,7 +3,7 @@ package com.heyanle.easybangumi4.ui.main.update
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.DB
-import com.heyanle.easybangumi4.db.entity.CartoonStar
+import com.heyanle.easybangumi4.base.entity.CartoonStar
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.insertSeparators
 import com.heyanle.easybangumi4.utils.stringRes
