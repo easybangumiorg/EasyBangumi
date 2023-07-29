@@ -3,23 +3,26 @@ package com.heyanle.easybangumi4.base.theme
 import android.annotation.SuppressLint
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
-import androidx.compose.runtime.mutableStateOf
-import com.heyanle.okkv2.core.okkv
+import com.heyanle.easybangumi4.setting.SettingPreferences
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 /**
  * Created by HeYanLe on 2023/2/18 23:49.
  * https://github.com/heyanLE
  */
-enum class DarkMode {
-    Auto, Dark, Light
-}
 
 data class EasyThemeState(
     val themeMode: EasyThemeMode,
-    val darkMode: DarkMode,
+    val darkMode: SettingPreferences.DarkMode,
     val isDynamicColor: Boolean,
 ) {
     @SuppressLint("ComposableNaming")
@@ -27,54 +30,57 @@ data class EasyThemeState(
     @ReadOnlyComposable
     fun isDark(): Boolean {
         return when (darkMode) {
-            DarkMode.Dark -> true
-            DarkMode.Light -> false
+            SettingPreferences.DarkMode.Dark -> true
+            SettingPreferences.DarkMode.Light -> false
             else -> isSystemInDarkTheme()
         }
     }
 }
 
-object EasyThemeController {
+class EasyThemeController(
+    private val settingPreferences: SettingPreferences
+) {
 
-    var curThemeColor: ColorScheme? = null
+    private val scope = MainScope()
 
-    private var themeModeOkkv by okkv("theme_mode", EasyThemeMode.Default.name)
-    private var darkModeOkkv by okkv("dark_mode", DarkMode.Auto.name)
-    private var isDynamicColorOkkv by okkv<Boolean>("is_dynamic_color", def = true)
-
-    val easyThemeState = mutableStateOf(
+    private val _themeFlow = MutableStateFlow(
         EasyThemeState(
-            kotlin.runCatching { EasyThemeMode.valueOf(themeModeOkkv) }.getOrElse { EasyThemeMode.Default },
-            DarkMode.valueOf(darkModeOkkv),
-            isDynamicColorOkkv && isSupportDynamicColor()
+            settingPreferences.themeMode.get(),
+            settingPreferences.darkMode.get(),
+            settingPreferences.isThemeDynamic.get()
         )
     )
+    val themeFlow = _themeFlow.asStateFlow()
 
-
-    fun changeDarkMode(darkMode: DarkMode) {
-        darkModeOkkv = darkMode.name
-        easyThemeState.value = easyThemeState.value.copy(
-            darkMode = darkMode
-        )
+    init {
+        scope.launch {
+            combine(
+                settingPreferences.isThemeDynamic.flow(),
+                settingPreferences.darkMode.flow(),
+                settingPreferences.themeMode.flow(),
+            ) { dy, dark, theme ->
+                EasyThemeState(
+                    theme, dark, dy
+                )
+            }.distinctUntilChanged().collectLatest {
+                _themeFlow.update {
+                    it
+                }
+            }
+        }
     }
 
-    fun changeThemeMode(themeMode: EasyThemeMode, isDynamicColor: Boolean = easyThemeState.value.isDynamicColor) {
-        themeModeOkkv = themeMode.name
-        isDynamicColorOkkv = isDynamicColor
-        easyThemeState.value = easyThemeState.value.copy(
-            themeMode = themeMode,
-            isDynamicColor = isDynamicColor
-        )
 
+    fun changeDarkMode(darkMode: SettingPreferences.DarkMode) {
+        settingPreferences.darkMode.set(darkMode)
     }
 
-    fun changeIsDynamicColor(isDynamicColor: Boolean) {
-        // 安卓 12 才有该功能
-        val real = (isDynamicColor && isSupportDynamicColor())
-        isDynamicColorOkkv = real
-        easyThemeState.value = easyThemeState.value.copy(
-            isDynamicColor = isDynamicColor && isSupportDynamicColor()
-        )
+    fun changeThemeMode(
+        themeMode: EasyThemeMode,
+        isDynamicColor: Boolean = themeFlow.value.isDynamicColor
+    ) {
+        settingPreferences.isThemeDynamic.set(isDynamicColor)
+        settingPreferences.themeMode.set(themeMode)
     }
 
     fun isSupportDynamicColor(): Boolean {

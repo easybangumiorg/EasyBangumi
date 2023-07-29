@@ -106,6 +106,9 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:${Version.androidx_lifecycle_view_model}")
     implementation("androidx.test.ext:junit-ktx:1.1.5")
 
+    implementation("androidx.preference:preference:${Version.androidx_preference}")
+    implementation("androidx.preference:preference-ktx:${Version.androidx_preference}")
+
     debugImplementation( "com.squareup.leakcanary:leakcanary-android:${Version.leakcanary}")
 
     implementation("androidx.paging:paging-runtime-ktx:${Version.paging}")
@@ -126,6 +129,7 @@ dependencies {
     implementation("androidx.compose.animation:animation-graphics:${Version.compose_animation}")
     implementation("androidx.compose.foundation:foundation:${Version.compose_foundation}")
     implementation("androidx.compose.foundation:foundation-layout:${Version.compose_foundation}")
+
 
     implementation("androidx.window:window:${Version.androidx_window}")
     implementation("androidx.compose.material3:material3-window-size-class:${Version.compose_material3}")
@@ -183,6 +187,7 @@ dependencies {
     implementation(project(":easy-dlna"))
     implementation(project(":easy-crasher"))
     implementation(project(":easy-i18n"))
+    implementation(project(":injekt"))
     implementation(project(":extension:extension-core"))
     implementation(com.heyanle.buildsrc.SourceExtension.extensionApi)
 

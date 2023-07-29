@@ -25,10 +25,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import com.heyanle.easy_i18n.R
-import com.heyanle.easybangumi4.source.SourceMaster
-import com.heyanle.easybangumi4.source.utils.initUtils
 import com.heyanle.easybangumi4.base.theme.EasyTheme
-import com.heyanle.easybangumi4.ui.common.MoeSnackBar
+import com.heyanle.easybangumi4.compose.common.MoeSnackBar
+import com.heyanle.easybangumi4.source.SourcesHost
+import com.heyanle.easybangumi4.source.utils.initUtils
 import com.heyanle.easybangumi4.utils.AnnoHelper
 import com.heyanle.easybangumi4.utils.MediaUtils
 import com.heyanle.extension_load.ExtensionInit
@@ -82,7 +82,7 @@ class MainActivity : ComponentActivity() {
                                 interactionSource = remember { MutableInteractionSource() },
                                 onClick = { focusManager.clearFocus() })
                     ) {
-                        SourceMaster.SourceHost {
+                        SourcesHost {
                             Nav()
                             EasyTheme {
                                 MoeSnackBar(Modifier.statusBarsPadding())

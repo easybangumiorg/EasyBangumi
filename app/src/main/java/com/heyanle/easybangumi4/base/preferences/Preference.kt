@@ -10,13 +10,13 @@ import kotlinx.coroutines.flow.StateFlow
  */
 interface Preference <T> {
 
-    val key: String
+    fun key(): String
 
-    val value: T
-
-    val default: T
+    fun get(): T
 
     fun set(value: T)
+
+    fun defaultValue(): T
 
     fun isSet(): Boolean
 
@@ -28,4 +28,4 @@ interface Preference <T> {
 
 }
 
-inline fun <reified T, R : T> Preference<T>.getAndSet(crossinline block: (T) -> R) = set(block(value))
+inline fun <reified T, R : T> Preference<T>.getAndSet(crossinline block: (T) -> R) = set(block(get()))

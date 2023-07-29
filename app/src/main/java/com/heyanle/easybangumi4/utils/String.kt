@@ -4,7 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import com.heyanle.easybangumi4.APP
-import com.heyanle.easybangumi4.ui.common.moeSnackBar
+import com.heyanle.easybangumi4.compose.common.moeSnackBar
 
 /**
  * Created by HeYanLe on 2022/12/23 17:53.

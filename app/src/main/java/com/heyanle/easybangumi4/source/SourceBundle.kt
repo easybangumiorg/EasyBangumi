@@ -20,6 +20,11 @@ class SourceBundle(
     list: List<Source>
 ) {
 
+    companion object {
+        val NONE = SourceBundle(emptyList())
+    }
+
+
     private val sourceMap = linkedMapOf<String, Source>()
 
     private val configMap = linkedMapOf<String, ConfigSource>()
