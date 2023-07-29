@@ -16,6 +16,7 @@ import com.heyanle.easybangumi4.utils.exo_ssl.CropUtil
 import com.heyanle.easybangumi4.utils.exo_ssl.TrustAllHostnameVerifier
 import com.heyanle.extension_load.ExtensionInit
 import com.heyanle.extension_load.IconFactoryImpl
+import com.heyanle.injekt.core.Injekt
 import com.heyanle.lib_anim.utils.WebViewUtil
 import com.heyanle.okkv2.MMKVStore
 import com.heyanle.okkv2.core.Okkv
@@ -53,15 +54,9 @@ class App: Application() {
 
             initAppCenter()
 
-            //initExtension()
+            DatabaseModule(this).registerWith(Injekt)
+            PreferencesModule(this).registerWith(Injekt)
 
-            initDataBase()
-//            kotlin.runCatching {
-//                initUtils(this)
-//            }.onFailure {
-//                it.printStackTrace()
-//                Toast.makeText(this, it.message, Toast.LENGTH_SHORT).show()
-//            }
         }
     }
 
@@ -141,10 +136,6 @@ class App: Application() {
         ExtensionInit.init(this, IconFactoryImpl())
     }
 
-    private fun initDataBase(){
-
-        AppDatabase.init(this)
-    }
 
     private fun isMainProcess(): Boolean{
         return packageName == if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {

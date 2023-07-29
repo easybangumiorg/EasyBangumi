@@ -4,9 +4,7 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.room.migration.Migration
-import androidx.sqlite.db.SupportSQLiteDatabase
-import com.heyanle.easybangumi4.DB
+import com.heyanle.easybangumi4.Migrate
 import com.heyanle.easybangumi4.base.db.dao.CartoonHistoryDao
 import com.heyanle.easybangumi4.base.db.dao.CartoonStarDao
 import com.heyanle.easybangumi4.base.db.dao.SearchHistoryDao
@@ -25,7 +23,7 @@ import com.heyanle.easybangumi4.base.entity.SearchHistory
         SearchHistory::class,
     ],
     autoMigrations = [],
-    version = 3,
+    version = 4,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -40,28 +38,15 @@ abstract class AppDatabase : RoomDatabase() {
     val cartoonHistory: CartoonHistoryDao by lazy { cartoonHistoryDao() }
 
     companion object {
-        fun init(context: Context) {
-            DB = Room.databaseBuilder(
+        fun build(context: Context): AppDatabase {
+            return Room.databaseBuilder(
                 context,
                 AppDatabase::class.java, "easy_cartoon"
             ).apply {
-                addMigrations(MIGRATION_2_3)
-                addMigrations(MIGRATION_3_4)
+                Migrate.getDBMigration().forEach {
+                    addMigrations(it)
+                }
             }.build()
-        }
-
-
-        val MIGRATION_2_3 = object : Migration(2, 3) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("ALTER TABLE CartoonStar ADD COLUMN reversal INTEGER NOT NULL DEFAULT 0")
-                db.execSQL("ALTER TABLE CartoonStar ADD COLUMN watchProcess TEXT NOT NULL DEFAULT ''")
-            }
-        }
-
-        val MIGRATION_3_4 = object : Migration(3, 4) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("ALTER TABLE CartoonStar ADD COLUMN dictionary TEXT NOT NULL DEFAULT ''")
-            }
         }
     }
 

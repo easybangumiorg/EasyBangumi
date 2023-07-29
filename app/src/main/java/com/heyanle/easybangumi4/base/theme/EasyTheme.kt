@@ -1,20 +1,21 @@
 package com.heyanle.easybangumi4.base.theme
 
 import android.os.Build
-import android.util.Log
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.heyanle.easybangumi4.setting.SettingPreferences
+import com.heyanle.injekt.core.Injekt
 
 /**
  * Created by HeYanLe on 2023/2/19 0:02.
@@ -26,9 +27,11 @@ fun NormalSystemBarColor(
     getStatusBarDark: (Boolean)->Boolean = {!it},
     getNavigationBarDark: (Boolean)->Boolean = {!it},
 ){
-    val isDark = when (EasyThemeController.easyThemeState.value.darkMode) {
-        DarkMode.Dark -> true
-        DarkMode.Light -> false
+    val themeController: EasyThemeController by Injekt.injectLazy()
+    val themeState by themeController.themeFlow.collectAsState()
+    val isDark = when (themeState.darkMode) {
+        SettingPreferences.DarkMode.Dark -> true
+        SettingPreferences.DarkMode.Light -> false
         else -> isSystemInDarkTheme()
     }
 
@@ -47,13 +50,13 @@ fun NormalSystemBarColor(
 fun EasyTheme(
     content: @Composable () -> Unit
 ) {
+    val themeController: EasyThemeController by Injekt.injectLazy()
+    val themeState by themeController.themeFlow.collectAsState()
 
-    val easyThemeState by EasyThemeController.easyThemeState
-
-    val isDynamic = easyThemeState.isDynamicColor && EasyThemeController.isSupportDynamicColor()
-    val isDark = when (easyThemeState.darkMode) {
-        DarkMode.Dark -> true
-        DarkMode.Light -> false
+    val isDynamic = themeState.isDynamicColor && themeController.isSupportDynamicColor()
+    val isDark = when (themeState.darkMode) {
+        SettingPreferences.DarkMode.Dark -> true
+        SettingPreferences.DarkMode.Light -> false
         else -> isSystemInDarkTheme()
     }
 
@@ -65,13 +68,8 @@ fun EasyTheme(
         }
 
         else -> {
-            Log.d("EasyTheme", easyThemeState.themeMode.name)
-            easyThemeState.themeMode.getColorScheme(isDark)
+            themeState.themeMode.getColorScheme(isDark)
         }
-    }
-
-    LaunchedEffect(key1 = colorScheme) {
-        EasyThemeController.curThemeColor = colorScheme
     }
 
     MaterialTheme(

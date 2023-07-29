@@ -2,7 +2,7 @@ package com.heyanle.easybangumi4.source.utils
 
 import android.widget.Toast
 import com.heyanle.easybangumi4.APP
-import com.heyanle.easybangumi4.ui.common.moeSnackBar
+import com.heyanle.easybangumi4.compose.common.moeSnackBar
 import com.heyanle.lib_anim.utils.StringHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
