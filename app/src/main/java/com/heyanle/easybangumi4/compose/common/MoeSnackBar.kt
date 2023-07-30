@@ -1,9 +1,19 @@
 package com.heyanle.easybangumi4.compose.common
 
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.DismissDirection
@@ -18,15 +28,23 @@ import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.heyanle.easybangumi4.utils.stringRes
-import com.heyanle.easybangumi4.base.theme.DarkMode
 import com.heyanle.easybangumi4.base.theme.EasyThemeController
-import kotlinx.coroutines.*
+import com.heyanle.easybangumi4.preferences.SettingPreferences
+import com.heyanle.easybangumi4.utils.stringRes
+import com.heyanle.injekt.core.Injekt
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 val moeSnackBarQueue = mutableStateListOf<MoeSnackBarData>()
 
@@ -57,6 +75,7 @@ data class MoeSnackBarData @OptIn(ExperimentalMaterialApi::class) constructor(
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun MoeSnackBar(modifier: Modifier = Modifier) {
+    val themeController: EasyThemeController by Injekt.injectLazy()
     Column(
         Modifier
             .fillMaxSize()
@@ -64,10 +83,10 @@ fun MoeSnackBar(modifier: Modifier = Modifier) {
             .wrapContentHeight(Alignment.Top)
             .verticalScroll(rememberScrollState())
     ) {
-        val state by EasyThemeController.easyThemeState
+        val state = themeController.themeFlow.collectAsState().value
         val isDark = when (state.darkMode) {
-            DarkMode.Dark -> true
-            DarkMode.Light -> false
+            SettingPreferences.DarkMode.Dark -> true
+            SettingPreferences.DarkMode.Light -> false
             else -> isSystemInDarkTheme()
         }
         moeSnackBarQueue.forEach {

@@ -26,6 +26,9 @@ interface CartoonStarDao {
     suspend fun delete(cartoonStar: CartoonStar)
 
     @Query("SELECT * FROM CartoonStar ORDER BY createTime DESC")
+    suspend fun getAll(): List<CartoonStar>
+
+    @Query("SELECT * FROM CartoonStar ORDER BY createTime DESC")
     fun flowAll(): Flow<List<CartoonStar>>
 
 

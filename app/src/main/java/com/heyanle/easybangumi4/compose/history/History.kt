@@ -13,8 +13,10 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -53,19 +55,18 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.paging.compose.collectAsLazyPagingItems
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.base.entity.CartoonHistory
-import com.heyanle.easybangumi4.navigationDetailed
-import com.heyanle.easybangumi4.source.LocalSourceBundleController
 import com.heyanle.easybangumi4.compose.common.CartoonCard
 import com.heyanle.easybangumi4.compose.common.EasyClearDialog
 import com.heyanle.easybangumi4.compose.common.EasyDeleteDialog
+import com.heyanle.easybangumi4.compose.common.EmptyPage
 import com.heyanle.easybangumi4.compose.common.FastScrollToTopFab
-import com.heyanle.easybangumi4.compose.common.PagingCommon
+import com.heyanle.easybangumi4.compose.common.LoadingPage
 import com.heyanle.easybangumi4.compose.common.SelectionTopAppBar
-import com.heyanle.easybangumi4.compose.common.pagingCommon
+import com.heyanle.easybangumi4.navigationDetailed
+import com.heyanle.easybangumi4.source.LocalSourceBundleController
 import loli.ball.easyplayer2.utils.TimeUtils
 
 /**
@@ -212,55 +213,64 @@ fun HistoryList(
     val lazyListState = rememberLazyListState()
 
 
-    val flow = state.pager
-    val lazyPagingItems = flow.collectAsLazyPagingItems()
-
     val haptic = LocalHapticFeedback.current
 
     Box(modifier = Modifier.fillMaxSize()) {
 
-        if (lazyPagingItems.itemCount > 0) {
-            LazyColumn(
+        LazyColumn(
 
-                modifier = Modifier.fillMaxSize().run {
+            modifier = Modifier
+                .fillMaxSize()
+                .run {
                     if (scrollBehavior != null) {
                         nestedScroll(scrollBehavior.nestedScrollConnection)
                     } else {
                         this
                     }
                 },
-                state = lazyListState,
-                contentPadding = PaddingValues(0.dp, 0.dp, 0.dp, 96.dp)
-            ) {
-
-                items(lazyPagingItems.itemCount){
-                    lazyPagingItems[it]?.let { history ->
-                        HistoryItem(
-                            cartoonHistory = history,
-                            onClick = {
-                                if (state.selection.isEmpty()) {
-                                    onItemClick(it)
-                                } else {
-                                    vm.onSelectionChange(it)
-                                }
-                            },
-                            isSelect = state.selection.contains(history),
-                            onDelete = onItemDelete,
-                            onLongPress = {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                vm.onSelectionChange(it)
-                            },
-                            isShowDelete = state.selection.isEmpty()
-                        )
-                    }
-
+            state = lazyListState,
+            contentPadding = PaddingValues(0.dp, 0.dp, 0.dp, 96.dp)
+        ) {
+            if (state.isLoading) {
+                item {
+                    LoadingPage(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(300.dp)
+                    )
                 }
-                pagingCommon(lazyPagingItems)
-
-
+            } else if (state.history.isEmpty()) {
+                item {
+                    EmptyPage(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(300.dp)
+                    )
+                }
+            } else {
+                items(state.history) {
+                    HistoryItem(
+                        cartoonHistory = it,
+                        onClick = {
+                            if (state.selection.isEmpty()) {
+                                onItemClick(it)
+                            } else {
+                                vm.onSelectionChange(it)
+                            }
+                        },
+                        isSelect = state.selection.contains(it),
+                        onDelete = onItemDelete,
+                        onLongPress = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            vm.onSelectionChange(it)
+                        },
+                        isShowDelete = state.selection.isEmpty()
+                    )
+                }
             }
+
+
         }
-        PagingCommon(items = lazyPagingItems)
 
 
         FastScrollToTopFab(listState = lazyListState)

@@ -29,9 +29,9 @@ import com.heyanle.bangumi_source_api.api.IconSource
 import com.heyanle.bangumi_source_api.api.Source
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
-import com.heyanle.easybangumi4.source.SourceLibraryController
 import com.heyanle.easybangumi4.compose.common.OkImage
 import com.heyanle.easybangumi4.compose.common.moeSnackBar
+import com.heyanle.easybangumi4.preferences.SourcePreferences
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.easybangumi4.utils.stringRes
 import org.burnoutcrew.reorderable.ReorderableItem
@@ -122,7 +122,7 @@ fun Source() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SourceItem(
-    config: SourceLibraryController.SourceConfig,
+    config: SourcePreferences.SourceConfig,
     source: Source,
     onCheckedChange: (Source, Boolean) -> Unit,
 ) {

@@ -2,7 +2,7 @@ package com.heyanle.easybangumi4.utils
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.heyanle.injekt.core.injectLazy
+import com.heyanle.injekt.core.Injekt
 
 /**
  * Created by HeYanLe on 2023/7/29 21:40.
@@ -10,11 +10,11 @@ import com.heyanle.injekt.core.injectLazy
  */
 
 inline fun <reified T> String.jsonTo(): T {
-    val gson by injectLazy<Gson>()
+    val gson by Injekt.injectLazy<Gson>()
     return gson.fromJson<T>(this, object: TypeToken<T>() {}.type)
 }
 
 fun Any.toJson(): String {
-    val gson by injectLazy<Gson>()
+    val gson by Injekt.injectLazy<Gson>()
     return gson.toJson(this)
 }

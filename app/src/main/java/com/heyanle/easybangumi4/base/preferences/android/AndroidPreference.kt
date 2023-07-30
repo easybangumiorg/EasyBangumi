@@ -58,8 +58,9 @@ sealed class AndroidPreference<T>(
         return keyFlow
             .filter { it == key || it == null }
             .onStart { emit("ignition") }
-            .map { get() }
-            .conflate()
+            .map {
+                get()
+            }.conflate()
     }
 
     override fun stateIn(scope: CoroutineScope): StateFlow<T> {

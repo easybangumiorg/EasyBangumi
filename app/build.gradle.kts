@@ -106,7 +106,6 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:${Version.androidx_lifecycle_view_model}")
     implementation("androidx.test.ext:junit-ktx:1.1.5")
 
-    implementation("androidx.preference:preference:${Version.androidx_preference}")
     implementation("androidx.preference:preference-ktx:${Version.androidx_preference}")
 
     debugImplementation( "com.squareup.leakcanary:leakcanary-android:${Version.leakcanary}")

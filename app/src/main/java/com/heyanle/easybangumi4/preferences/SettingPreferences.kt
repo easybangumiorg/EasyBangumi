@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.setting
+package com.heyanle.easybangumi4.preferences
 
 import com.heyanle.easybangumi4.base.preferences.PreferenceStore
 import com.heyanle.easybangumi4.base.preferences.getEnum
@@ -16,12 +16,6 @@ class SettingPreferences(
     // 无痕模式
     val isInPrivate = preferenceStore.getBoolean("in_private", false)
 
-
-
-    // WebView 兼容模式
-    val webViewCompatible = preferenceStore.getBoolean("web_view_compatible", false)
-
-
     // 外观设置
     // 夜间模式
     enum class DarkMode {
@@ -35,7 +29,12 @@ class SettingPreferences(
 
     // 平板模式
     enum class PadMode {
-        AUTO, DISABLE, ENABLE
+        AUTO, ENABLE, DISABLE
     }
     val padMode = preferenceStore.getEnum<PadMode>("pad_mode", PadMode.AUTO)
+
+    // 是否在收藏里显示更新
+    val isShowUpdateInStar = preferenceStore.getBoolean("update_in_star", true)
+
+
 }

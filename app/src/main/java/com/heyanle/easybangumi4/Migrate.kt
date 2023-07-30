@@ -3,11 +3,15 @@ package com.heyanle.easybangumi4
 import android.content.Context
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.heyanle.easybangumi4.base.preferences.PreferenceStore
+import com.heyanle.easybangumi4.base.preferences.android.AndroidPreferenceStore
+import com.heyanle.easybangumi4.base.preferences.mmkv.MMKVPreferenceStore
 import com.heyanle.easybangumi4.base.theme.EasyThemeMode
-import com.heyanle.easybangumi4.setting.SettingPreferences
-import com.heyanle.easybangumi4.source.SourcePreferences
+import com.heyanle.easybangumi4.preferences.SettingMMKVPreferences
+import com.heyanle.easybangumi4.preferences.SettingPreferences
+import com.heyanle.easybangumi4.preferences.SourcePreferences
 import com.heyanle.easybangumi4.utils.jsonTo
+import com.heyanle.injekt.api.get
+import com.heyanle.injekt.core.Injekt
 import com.heyanle.okkv2.core.okkv
 
 /**
@@ -30,18 +34,33 @@ object Migrate {
     }
     private val MIGRATION_3_4 = object : Migration(3, 4) {
         override fun migrate(db: SupportSQLiteDatabase) {
-            db.execSQL("ALTER TABLE CartoonStar ADD COLUMN dictionary TEXT NOT NULL DEFAULT ''")
+            db.execSQL("ALTER TABLE CartoonStar ADD COLUMN tags TEXT NOT NULL DEFAULT ''")
         }
     }
 
-    fun preferenceUpdate(
+    fun tryUpdate(
+        context: Context
+    ){
+        preferenceUpdate(
+            context,
+            Injekt.get(),
+            Injekt.get(),
+            Injekt.get(),
+            Injekt.get(),
+            Injekt.get(),
+        )
+    }
+
+    private fun preferenceUpdate(
         context: Context,
-        preferenceStore: PreferenceStore,
+        androidPreferenceStore: AndroidPreferenceStore,
+        mmkvPreferenceStore: MMKVPreferenceStore,
         settingPreferences: SettingPreferences,
         sourcePreferences: SourcePreferences,
+        settingMMKVPreferences: SettingMMKVPreferences,
     ){
 
-        val lastVersionCode = preferenceStore.getInt("last_version_code", 0).get()
+        val lastVersionCode = androidPreferenceStore.getInt("last_version_code", 0).get()
         val curVersionCode = BuildConfig.VERSION_CODE
 
         if(lastVersionCode < curVersionCode){
@@ -68,7 +87,8 @@ object Migrate {
 
                 settingPreferences.isInPrivate.set(isPrivateOkkv)
                 settingPreferences.padMode.set(SettingPreferences.PadMode.values()[padModeOkkv])
-                settingPreferences.webViewCompatible.set(webViewCompatibleOkkv)
+
+                settingMMKVPreferences.webViewCompatible.set(webViewCompatibleOkkv)
 
                 // 源配置变更
                 var configOkkv by okkv("source_config", "[]")
@@ -81,6 +101,7 @@ object Migrate {
             }
         }
 
+        androidPreferenceStore.getInt("last_version_code", 0).set(curVersionCode)
 
     }
 

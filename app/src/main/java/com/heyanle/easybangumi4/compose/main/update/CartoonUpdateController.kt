@@ -3,9 +3,9 @@ package com.heyanle.easybangumi4.compose.main.update
 import androidx.compose.runtime.mutableStateOf
 import com.heyanle.bangumi_source_api.api.SourceResult
 import com.heyanle.bangumi_source_api.api.entity.Cartoon
-import com.heyanle.easybangumi4.DB
+import com.heyanle.easybangumi4.base.db.dao.CartoonStarDao
 import com.heyanle.easybangumi4.base.entity.CartoonStar
-import com.heyanle.easybangumi4.source.SourceMaster
+import com.heyanle.easybangumi4.source.SourceLibraryController
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.okkv2.core.okkv
 import kotlinx.coroutines.Dispatchers
@@ -31,7 +31,10 @@ import kotlinx.coroutines.withContext
  * Created by HeYanLe on 2023/3/19 16:43.
  * https://github.com/heyanLE
  */
-object UpdateMaster {
+class CartoonUpdateController(
+    private val cartoonStarDao: CartoonStarDao,
+    private val sourceLibraryController: SourceLibraryController,
+) {
 
     private val scope = MainScope()
     private var job: Job? = null
@@ -52,8 +55,8 @@ object UpdateMaster {
     suspend fun tryUpdate(
         isStrict: Boolean
     ): Boolean {
-        val flow = withContext(Dispatchers.IO){
-            DB.cartoonStar.getAll().asFlow()
+        val flow = withContext(Dispatchers.IO) {
+            cartoonStarDao.getAll().asFlow()
                 .filter {
                     it.isInitializer && !it.isUpdate
                 }
@@ -78,11 +81,12 @@ object UpdateMaster {
                         kotlin.runCatching {
                             emit(star to star.toCartoon()?.let { cartoon ->
                                 cartoon.source.loge("UpdateMaster ")
-                                val res = (SourceMaster.animSourceFlow.value.update(cartoon.source)
-                                    ?.update(
-                                        cartoon,
-                                        star.getPlayLine()
-                                    ))
+                                val res =
+                                    (sourceLibraryController.sourceBundleFlow.value.update(cartoon.source)
+                                        ?.update(
+                                            cartoon,
+                                            star.getPlayLine()
+                                        ))
                                 res.loge("UpdateMaster")
                                 (res as? SourceResult.Complete<Cartoon>)?.data
                             })
@@ -104,7 +108,7 @@ object UpdateMaster {
                     }
                     .toList().let {
                         val now = System.currentTimeMillis()
-                        DB.cartoonStar.modify(it, now)
+                        cartoonStarDao.modify(it, now)
                         loadingError.update {
                             null
                         }
@@ -118,7 +122,6 @@ object UpdateMaster {
                             false
                         }
                     }
-
 
 
             }

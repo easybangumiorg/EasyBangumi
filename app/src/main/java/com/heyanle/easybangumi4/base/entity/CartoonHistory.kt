@@ -23,4 +23,25 @@ data class CartoonHistory(
     val lastEpisodeTitle: String,
     val lastProcessTime: Long,
     val createTime: Long,
-)
+){
+    fun matches(query: String): Boolean{
+        var matched = false
+        for(match in query.split(',')){
+            val regex = getMatchReg(match)
+            if(name.matches(regex)){
+                matched = true
+                break
+            }
+        }
+        return matched
+
+    }
+
+    private fun getMatchReg(query: String): Regex {
+        return buildString {
+            append("(.*)(")
+            append(query.split("").joinToString(")(.*)("))
+            append(")(.*)")
+        }.toRegex(RegexOption.IGNORE_CASE)
+    }
+}

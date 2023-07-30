@@ -18,6 +18,7 @@ interface PreferenceStore {
 
     fun getStringSet(key: String, defaultValue: Set<String> = emptySet()): Preference<Set<String>>
 
+
     fun <T> getObject(
         key: String,
         defaultValue: T,

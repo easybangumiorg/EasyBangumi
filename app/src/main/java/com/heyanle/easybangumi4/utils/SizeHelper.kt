@@ -6,7 +6,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import com.heyanle.easybangumi4.LocalWindowSizeController
-import com.heyanle.easybangumi4.preferences.PadModePreferences
+import com.heyanle.easybangumi4.preferences.SettingPreferences
+import com.heyanle.injekt.core.Injekt
 
 /**
  * Created by HeYanLe on 2023/6/4 16:42.
@@ -15,14 +16,16 @@ import com.heyanle.easybangumi4.preferences.PadModePreferences
 @Composable
 fun isCurPadeMode(): Boolean {
     val windowSize = LocalWindowSizeController.current
-
-    val padMode by PadModePreferences.stateFlow.collectAsState()
+    val settingPreferences: SettingPreferences by Injekt.injectLazy()
+    val padMode by settingPreferences.padMode.flow()
+        .collectAsState(settingPreferences.padMode.get())
     val isPad = remember(padMode, windowSize) {
-        when(padMode){
-            0 -> windowSize.widthSizeClass == WindowWidthSizeClass.Expanded
-            1 -> true
+        when (padMode) {
+            SettingPreferences.PadMode.AUTO -> windowSize.widthSizeClass == WindowWidthSizeClass.Expanded
+            SettingPreferences.PadMode.ENABLE -> true
             else -> false
         }
     }
+    padMode.loge("SizeHelper")
     return isPad
 }

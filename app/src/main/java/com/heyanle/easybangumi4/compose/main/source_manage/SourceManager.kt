@@ -16,6 +16,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import com.heyanle.easybangumi4.compose.common.TabIndicator
 import com.heyanle.easybangumi4.compose.main.source_manage.extension.Extension
 import com.heyanle.easybangumi4.compose.main.source_manage.extension.ExtensionTopAppBar
 import com.heyanle.easybangumi4.compose.main.source_manage.source.Source
@@ -89,7 +90,10 @@ fun SourceManager() {
         ExplorePageItems[pagerState.currentPage].topAppBar(scrollBehavior)
         TabRow(
             selectedTabIndex = pagerState.currentPage,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            indicator = {
+                TabIndicator(currentTabPosition = it[pagerState.currentPage])
+            },
         ) {
             ExplorePageItems.forEachIndexed { index, explorePage ->
                 Tab(selected = index == pagerState.currentPage,
@@ -108,7 +112,7 @@ fun SourceManager() {
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
-            state = pagerState
+            state = pagerState,
         ) {
             val page = ExplorePageItems[it]
             page.content()

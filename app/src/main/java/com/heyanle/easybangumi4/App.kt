@@ -9,8 +9,7 @@ import android.os.Looper
 import android.os.Process
 import android.util.Log
 import com.heyanle.easy_crasher.CrashHandler
-import com.heyanle.easybangumi4.base.db.AppDatabase
-import com.heyanle.easybangumi4.preferences.WebViewCompatiblePreferences
+import com.heyanle.easybangumi4.preferences.SettingMMKVPreferences
 import com.heyanle.easybangumi4.utils.AppCenterManager
 import com.heyanle.easybangumi4.utils.exo_ssl.CropUtil
 import com.heyanle.easybangumi4.utils.exo_ssl.TrustAllHostnameVerifier
@@ -34,9 +33,15 @@ import javax.net.ssl.HttpsURLConnection
  * https://github.com/heyanLE
  */
 lateinit var APP: App
-lateinit var DB: AppDatabase
 
 class App: Application() {
+
+    companion object {
+        init {
+            RootModule.registerWith(Injekt)
+        }
+    }
+
 
 
     override fun onCreate() {
@@ -56,6 +61,7 @@ class App: Application() {
 
             DatabaseModule(this).registerWith(Injekt)
             PreferencesModule(this).registerWith(Injekt)
+            ControllerModule(this).registerWith(Injekt)
 
         }
     }
@@ -73,7 +79,8 @@ class App: Application() {
                     )
                 }
                 if (chromiumElement?.methodName.equals("getAll", ignoreCase = true)) {
-                    if(WebViewCompatiblePreferences.stateFlow.value){
+                    val settingPreferences: SettingMMKVPreferences by Injekt.injectLazy()
+                    if(settingPreferences.webViewCompatible.get()){
                         // 兼容模式不改写
                         return super.getPackageName()
                     }
