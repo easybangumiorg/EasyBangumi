@@ -43,6 +43,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -55,13 +56,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
-import com.heyanle.easybangumi4.preferences.PadModePreferences
-import com.heyanle.easybangumi4.base.theme.DarkMode
 import com.heyanle.easybangumi4.base.theme.EasyThemeController
 import com.heyanle.easybangumi4.base.theme.EasyThemeMode
-import com.heyanle.easybangumi4.compose.common.IntPreferenceItem
+import com.heyanle.easybangumi4.compose.common.EmumPreferenceItem
 import com.heyanle.easybangumi4.compose.common.moeSnackBar
+import com.heyanle.easybangumi4.preferences.SettingPreferences
 import com.heyanle.easybangumi4.utils.stringRes
+import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.launch
 
 /**
@@ -77,6 +78,8 @@ fun AppearanceSetting() {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     val scope = rememberCoroutineScope()
+
+    val settingPreferences: SettingPreferences by Injekt.injectLazy()
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -131,21 +134,22 @@ fun AppearanceSetting() {
                     color = MaterialTheme.colorScheme.primary
                 )
 
-                IntPreferenceItem(
-                    title = { Text(text = stringResource(id = R.string.pad_mode)) },
-                    textList = remember {
+                EmumPreferenceItem<SettingPreferences.PadMode>(
+                    title = {  Text(text = stringResource(id = R.string.pad_mode)) },
+                    textList =  remember {
                         listOf(
                             stringRes(R.string.auto),
                             stringRes(R.string.always_on),
                             stringRes(R.string.always_off),
                         )
                     },
-                    preference = PadModePreferences
-                ){
-                    scope.launch {
-                        stringRes(R.string.some_page_should_reboot).moeSnackBar()
+                    preference = settingPreferences.padMode,
+                    onChangeListener = {
+                        scope.launch {
+                            stringRes(R.string.some_page_should_reboot).moeSnackBar()
+                        }
                     }
-                }
+                )
 
             }
 
@@ -158,11 +162,13 @@ fun AppearanceSetting() {
 
 @Composable
 fun DarkModeItem() {
-    val theme = EasyThemeController.easyThemeState.value
+    val themeController: EasyThemeController by Injekt.injectLazy()
+    val themeState = themeController.themeFlow.collectAsState()
+    val theme = themeState.value
     val list = listOf(
-        Triple(Icons.Filled.Android, stringRes(R.string.dark_auto), DarkMode.Auto),
-        Triple(Icons.Filled.WbSunny, stringRes(R.string.dark_off), DarkMode.Light),
-        Triple(Icons.Filled.NightsStay, stringRes(R.string.dark_on), DarkMode.Dark)
+        Triple(Icons.Filled.Android, stringRes(R.string.dark_auto), SettingPreferences.DarkMode.Auto),
+        Triple(Icons.Filled.WbSunny, stringRes(R.string.dark_off), SettingPreferences.DarkMode.Light),
+        Triple(Icons.Filled.NightsStay, stringRes(R.string.dark_on), SettingPreferences.DarkMode.Dark)
     )
 
     val enableColor = MaterialTheme.colorScheme.primary
@@ -187,7 +193,7 @@ fun DarkModeItem() {
                     .clip(RoundedCornerShape(6.dp))
                     .clickable {
                         if (theme.darkMode != mode) {
-                            EasyThemeController.changeDarkMode(mode)
+                            themeController.changeDarkMode(mode)
                         }
                     }
                     .padding(12.dp)
@@ -210,11 +216,13 @@ fun DarkModeItem() {
 
 @Composable
 fun ThemeModeItem() {
-    val theme = EasyThemeController.easyThemeState.value
+    val themeController: EasyThemeController by Injekt.injectLazy()
+    val themeState = themeController.themeFlow.collectAsState()
+    val theme =themeState.value
     val isDark = when (theme.darkMode) {
-        DarkMode.Dark -> true
-        DarkMode.Light -> false
-        DarkMode.Auto -> isSystemInDarkTheme()
+        SettingPreferences.DarkMode.Dark -> true
+        SettingPreferences.DarkMode.Light -> false
+        SettingPreferences.DarkMode.Auto -> isSystemInDarkTheme()
     }
 
     val context = LocalContext.current
@@ -226,7 +234,7 @@ fun ThemeModeItem() {
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         contentPadding = PaddingValues(start = 6.dp, end = 6.dp)
     ) {
-        if (EasyThemeController.isSupportDynamicColor() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        if (themeController.isSupportDynamicColor() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val dynamicColor =
                 if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
             item {
@@ -236,7 +244,7 @@ fun ThemeModeItem() {
                     stringResource(id = R.string.is_dynamic_color)
                 ) {
                     if (!theme.isDynamicColor) {
-                        EasyThemeController.changeIsDynamicColor(true)
+                        themeController.changeThemeMode(theme.themeMode, true)
                     }
 
                 }
@@ -248,7 +256,7 @@ fun ThemeModeItem() {
                 colorScheme = if (isDark) it.darkColorScheme else it.lightColorScheme,
                 stringResource(id = it.titleResId)
             ) {
-                EasyThemeController.changeThemeMode(it, false)
+                themeController.changeThemeMode(it, false)
             }
 
         }

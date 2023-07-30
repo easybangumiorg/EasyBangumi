@@ -27,11 +27,12 @@ import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
 import com.heyanle.bangumi_source_api.api.entity.PlayLine
 import com.heyanle.bangumi_source_api.api.entity.PlayerInfo
 import com.heyanle.easybangumi4.APP
-import com.heyanle.easybangumi4.DB
+import com.heyanle.easybangumi4.base.db.dao.CartoonHistoryDao
 import com.heyanle.easybangumi4.base.entity.CartoonHistory
-import com.heyanle.easybangumi4.preferences.InPrivatePreferences
-import com.heyanle.easybangumi4.source.SourceMaster
+import com.heyanle.easybangumi4.preferences.SettingPreferences
+import com.heyanle.easybangumi4.source.SourceLibraryController
 import com.heyanle.easybangumi4.utils.stringRes
+import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
@@ -46,6 +47,10 @@ import kotlinx.coroutines.withContext
 object CartoonPlayingManager: Player.Listener {
 
     val defaultScope = MainScope()
+
+    val settingPreference: SettingPreferences by Injekt.injectLazy()
+    val sourceLibraryController: SourceLibraryController by Injekt.injectLazy()
+    val cartoonHistoryDao: CartoonHistoryDao by Injekt.injectLazy()
 
 
     sealed class PlayingState {
@@ -143,7 +148,8 @@ object CartoonPlayingManager: Player.Listener {
         defaultEpisode: Int = 0,
         defaultProgress: Long = 0L,
     ) {
-        val playComponent = SourceMaster.animSourceFlow.value.play(sourceKey) ?: return
+
+        val playComponent = sourceLibraryController.sourceBundleFlow.value.play(sourceKey) ?: return
         CartoonPlayingManager.playComponent = playComponent
         CartoonPlayingManager.cartoon = cartoon
         changePlay(playComponent, cartoon, playLineIndex, playLine, defaultEpisode, defaultProgress)
@@ -244,7 +250,7 @@ object CartoonPlayingManager: Player.Listener {
     }
 
     private suspend fun innerTrySaveHistory(ps: Long = -1){
-        if(InPrivatePreferences.stateFlow.value){
+        if(settingPreference.isInPrivate.get()){
             return
 
         }
@@ -280,13 +286,13 @@ object CartoonPlayingManager: Player.Listener {
             createTime = System.currentTimeMillis()
         )
         withContext(Dispatchers.IO){
-            DB.cartoonHistory.modify(history)
+            cartoonHistoryDao.modify(history)
         }
 
     }
 
     fun trySaveHistory(ps: Long = -1) {
-        if(InPrivatePreferences.stateFlow.value){
+        if(settingPreference.isInPrivate.get()){
             return
         }
         var process = ps
@@ -320,7 +326,7 @@ object CartoonPlayingManager: Player.Listener {
 
                 createTime = System.currentTimeMillis()
             )
-            DB.cartoonHistory.modify(history)
+            cartoonHistoryDao.modify(history)
         }
     }
 

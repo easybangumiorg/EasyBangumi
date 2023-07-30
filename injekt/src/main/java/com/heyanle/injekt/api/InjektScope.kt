@@ -40,4 +40,5 @@ abstract class InjektScope: InjektRegistry, InjektFactory {
     inline fun <reified R : Any> addScopedPerThreadFactory(noinline scopedFactoryCalledPerThread: InjektScope.() -> R) {
         addPerThreadFactory(fullType<R>()) { this.scopedFactoryCalledPerThread() }
     }
+
 }

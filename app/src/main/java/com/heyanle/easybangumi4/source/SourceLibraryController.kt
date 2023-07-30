@@ -1,16 +1,21 @@
 package com.heyanle.easybangumi4.source
 
 import com.heyanle.bangumi_source_api.api.Source
+import com.heyanle.easybangumi4.preferences.SourcePreferences
+import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.extension_load.ExtensionController
 import com.heyanle.extension_load.model.Extension
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /**
@@ -29,12 +34,18 @@ class SourceLibraryController(
 
     private val configFlow = sourcePreferences.configs.stateIn(scope)
 
-    val sourceLibraryFlow = MutableStateFlow<List<Pair<Source, SourcePreferences.SourceConfig>>>(emptyList())
-    val sourceBundleFlow: Flow<SourceBundle>
-        get() = sourceLibraryFlow.map { pairs ->
+    val sourceLibraryFlow =
+        MutableStateFlow<List<Pair<Source, SourcePreferences.SourceConfig>>>(emptyList())
+    val sourceBundleFlow: StateFlow<SourceBundle> = sourceLibraryFlow.map { pairs ->
+            "ddd".loge("SourceLibrary")
             SourceBundle(pairs.filter { it.second.enable }
                 .sortedBy { it.second.order }.map { it.first })
-        }
+        }.distinctUntilChanged().stateIn(
+            scope,
+            SharingStarted.Lazily,
+            SourceBundle(sourceLibraryFlow.value.filter { it.second.enable }
+                .sortedBy { it.second.order }.map { it.first })
+        )
 
 
     init {
@@ -42,9 +53,9 @@ class SourceLibraryController(
             combine(
                 configFlow,
                 ExtensionController.installedExtensionsFlow.filterIsInstance<ExtensionController.ExtensionState.Extensions>()
-                    .map { it.extensions })
+                    .map { it.extensions }.distinctUntilChanged().stateIn(scope)
+            )
             { configMap, extensions ->
-
 
                 val sources = extensions.filterIsInstance<Extension.Installed>().flatMap {
                     it.sources
@@ -53,7 +64,8 @@ class SourceLibraryController(
             }.collectLatest { p ->
                 val l = p.first.flatMap {
                     val config =
-                        p.second[it.key] ?: return@flatMap emptyList<Pair<Source, SourcePreferences.SourceConfig>>()
+                        p.second[it.key]
+                            ?: return@flatMap emptyList<Pair<Source, SourcePreferences.SourceConfig>>()
                     listOf(it to config)
                 }.sortedBy { it.second.order }
                 sourceLibraryFlow.emit(l)
@@ -65,7 +77,7 @@ class SourceLibraryController(
     private fun realConfig(
         list: List<Source>,
         current: Map<String, SourcePreferences.SourceConfig>,
-    ): Map<String, SourcePreferences.SourceConfig>{
+    ): Map<String, SourcePreferences.SourceConfig> {
         val cacheList = hashMapOf<String, Source>()
         list.forEach {
             if ((cacheList[it.key]?.versionCode ?: -1) < it.versionCode) {
@@ -82,6 +94,9 @@ class SourceLibraryController(
         return configs
     }
 
+    fun newConfig(map: Map<String, SourcePreferences.SourceConfig>) {
+        sourcePreferences.configs.set(map)
+    }
 
     fun enable(sourceKey: String) {
         val map = configFlow.value.toMutableMap()

@@ -23,7 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.heyanle.easybangumi4.preferences.Preference
+import com.heyanle.easybangumi4.base.preferences.Preference
 import kotlinx.coroutines.launch
 
 /**
@@ -39,7 +39,7 @@ fun BooleanPreferenceItem(
     preference: Preference<Boolean>
 ) {
 
-    val value by preference.stateFlow.collectAsState()
+    val value by preference.flow().collectAsState(preference.get())
     val scope = rememberCoroutineScope()
 
     ListItem(
@@ -64,6 +64,76 @@ fun BooleanPreferenceItem(
 
 }
 
+@Composable
+inline fun  <reified T: Enum<T>> EmumPreferenceItem(
+    modifier: Modifier = Modifier,
+    noinline title: @Composable (() -> Unit),
+    noinline icon: @Composable (() -> Unit)? = null,
+    textList: List<String>,
+    preference: Preference<T>,
+    noinline onChangeListener: (T)->Unit,
+){
+    var showDialog by remember {
+        mutableStateOf(false)
+    }
+
+    val value by preference.flow().collectAsState(preference.get())
+    val scope = rememberCoroutineScope()
+
+    ListItem(
+        modifier = modifier.clickable {
+            showDialog = true
+        },
+        headlineContent = title,
+        leadingContent = icon,
+        supportingContent = {
+            Text(text = textList[value.ordinal])
+        },
+    )
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            confirmButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.cancel))
+                }
+            },
+            title = title,
+            text = {
+                LazyColumn(){
+                    items(textList.size){
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.clickable {
+                                scope.launch {
+                                    showDialog = false
+                                    val t = enumValues<T>()[it]
+                                    preference.set(t)
+                                    onChangeListener(t)
+                                }
+                            }
+                        ) {
+                            Spacer(modifier = Modifier.size(4.dp))
+                            Text(text = textList[it])
+                            Spacer(modifier = Modifier.weight(1f))
+                            RadioButton(selected = it == value.ordinal, onClick = {
+                                scope.launch {
+                                    showDialog = false
+                                    val t = enumValues<T>()[it]
+                                    preference.set(t)
+                                    onChangeListener(t)
+                                }
+                            })
+                            Spacer(modifier = Modifier.size(4.dp))
+                        }
+                    }
+                }
+            }
+        )
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun IntPreferenceItem(
@@ -78,7 +148,7 @@ fun IntPreferenceItem(
         mutableStateOf(false)
     }
 
-    val value by preference.stateFlow.collectAsState()
+    val value by preference.flow().collectAsState(preference.get())
     val scope = rememberCoroutineScope()
 
     ListItem(

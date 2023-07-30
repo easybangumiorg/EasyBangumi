@@ -47,12 +47,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.base.entity.CartoonStar
-import com.heyanle.easybangumi4.navigationDetailed
-import com.heyanle.easybangumi4.source.LocalSourceBundleController
 import com.heyanle.easybangumi4.compose.common.EmptyPage
 import com.heyanle.easybangumi4.compose.common.LoadingImage
 import com.heyanle.easybangumi4.compose.common.LoadingPage
 import com.heyanle.easybangumi4.compose.common.OkImage
+import com.heyanle.easybangumi4.navigationDetailed
+import com.heyanle.easybangumi4.source.LocalSourceBundleController
 import java.text.DateFormat
 
 /**
@@ -71,10 +71,6 @@ fun Update() {
     val nav = LocalNavController.current
 
     Column {
-        UpdateTopAppBar(
-            scrollBehavior = scrollBehavior,
-            onUpdate = { vm.update(it) }
-        )
 
         if (state.isLoading) {
             LoadingPage(
@@ -243,7 +239,7 @@ fun UpdateStateTime(
 ) {
     if (state.lastUpdateTime > 0 && ! state.isUpdating) {
         Text(
-            modifier = Modifier.padding(16.dp, 0.dp),
+            modifier = Modifier.padding(16.dp, 4.dp),
             text = stringResource(
                 id = R.string.last_update_at,
                 DateFormat.getDateInstance(

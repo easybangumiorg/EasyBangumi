@@ -4,7 +4,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heyanle.bangumi_source_api.api.Source
+import com.heyanle.easybangumi4.preferences.SourcePreferences
 import com.heyanle.easybangumi4.source.SourceLibraryController
+import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -22,21 +24,21 @@ class SourceViewModel : ViewModel() {
         mutableStateOf<List<String>>(emptyList())
 
     val configState =
-        mutableStateOf<Map<String, SourceLibraryController.SourceConfig>>(mapOf())
+        mutableStateOf<Map<String, SourcePreferences.SourceConfig>>(mapOf())
 
+    private val sourceController: SourceLibraryController by Injekt.injectLazy()
 
     init {
         viewModelScope.launch {
-            SourceLibraryController.sourceLibraryFlow.collectLatest {
-
-                if (it.size != sourceLibraryState.value.size) {
-                    sourceLibraryState.value = it.sortedBy {
+            sourceController.sourceLibraryFlow.collectLatest { libs ->
+                if (libs.size != sourceLibraryState.value.size) {
+                    sourceLibraryState.value = libs.sortedBy {
                         it.second.order
                     }.map { it.first.key }
 
-                    val map = hashMapOf<String, SourceLibraryController.SourceConfig>()
+                    val map = hashMapOf<String, SourcePreferences.SourceConfig>()
                     val sourceMap = hashMapOf<String, Source>()
-                    it.forEach {
+                    libs.forEach {
                         map[it.second.key] = it.second
                         sourceMap[it.second.key] = it.first
                     }
@@ -46,28 +48,27 @@ class SourceViewModel : ViewModel() {
                 }
                 var isUpdate = false
                 val oldSet = sourceLibraryState.value.toSet()
-                it.forEach {
+                libs.forEach {
                     if (!oldSet.contains(it.first.key)) {
                         isUpdate = true
                     }
                 }
                 if (isUpdate) {
-                    sourceLibraryState.value = it.sortedBy {
+                    sourceLibraryState.value = libs.sortedBy {
                         it.second.order
                     }.map { it.first.key }
 
-                    val map = hashMapOf<String, SourceLibraryController.SourceConfig>()
+                    val map = hashMapOf<String, SourcePreferences.SourceConfig>()
                     val sourceMap = hashMapOf<String, Source>()
-                    it.forEach {
+                    libs.forEach {
                         map[it.second.key] = it.second
                         sourceMap[it.second.key] = it.first
                     }
                     configState.value = map
                     sourceMapState.value = sourceMap
                 }
-
-
             }
+
         }
     }
 
@@ -85,26 +86,28 @@ class SourceViewModel : ViewModel() {
                 config[it] = config[it]!!.copy(order = i)
             }
         }
-        SourceLibraryController.newOkkvConfig(config)
+        sourceController.newConfig(config)
 
     }
 
     fun enable(sourceKey: String) {
-        SourceLibraryController.enable(sourceKey)
         val map = configState.value.toMutableMap()
         map[sourceKey]?.let {
             map[sourceKey] = it.copy(enable = true)
         }
         configState.value = map
+        sourceController.enable(sourceKey)
     }
 
     fun disable(sourceKey: String) {
-        SourceLibraryController.disable(sourceKey)
         val map = configState.value.toMutableMap()
         map[sourceKey]?.let {
             map[sourceKey] = it.copy(enable = false)
         }
         configState.value = map
+
+        // 不会修改数量，这里不会触发刷新
+        sourceController.disable(sourceKey)
     }
 
 }

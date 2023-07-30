@@ -11,10 +11,11 @@ import com.heyanle.bangumi_source_api.api.entity.Cartoon
 import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
 import com.heyanle.bangumi_source_api.api.entity.PlayLine
 import com.heyanle.easy_i18n.R
-import com.heyanle.easybangumi4.DB
+import com.heyanle.easybangumi4.base.db.dao.CartoonStarDao
 import com.heyanle.easybangumi4.base.entity.CartoonStar
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.easybangumi4.utils.stringRes
+import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -49,9 +50,12 @@ class DetailedViewModel(
     var isStar by mutableStateOf(false)
     var isReverse by mutableStateOf(false)
 
+    val cartoonStarDao: CartoonStarDao by Injekt.injectLazy()
+
+
     fun checkUpdate(){
         viewModelScope.launch(Dispatchers.IO) {
-            val star = DB.cartoonStar.getByCartoonSummary(cartoonSummary.id, cartoonSummary.source, cartoonSummary.url)
+            val star = cartoonStarDao.getByCartoonSummary(cartoonSummary.id, cartoonSummary.source, cartoonSummary.url)
             if(star?.isUpdate == true){
                 load()
             }
@@ -67,7 +71,7 @@ class DetailedViewModel(
 //                    it.data.second.first().episode.size.loge("DetailedViewModel")
                     detailedState = DetailedState.Info(it.data.first, it.data.second, it.data.second !is DetailedComponent.NonPlayLine)
                     val starInfo = withContext(Dispatchers.IO) {
-                        val cartoonStar = DB.cartoonStar.getByCartoonSummary(
+                        val cartoonStar = cartoonStarDao.getByCartoonSummary(
                             it.data.first.id,
                             it.data.first.source,
                             it.data.first.url
@@ -75,7 +79,7 @@ class DetailedViewModel(
 
                         cartoonStar?.let { star ->
                             val nStar = CartoonStar.fromCartoon(it.data.first, it.data.second)
-                            DB.cartoonStar.update(
+                            cartoonStarDao.update(
                                 nStar.copy(
                                     watchProcess = star.watchProcess,
                                     reversal = star.reversal,
@@ -106,7 +110,7 @@ class DetailedViewModel(
         viewModelScope.launch {
             if (isStar) {
                 withContext(Dispatchers.IO) {
-                    DB.cartoonStar.modify(CartoonStar.fromCartoon(cartoon, playLines).apply {
+                    cartoonStarDao.modify(CartoonStar.fromCartoon(cartoon, playLines).apply {
                         reversal = isReverse
                     })
                 }
@@ -116,7 +120,7 @@ class DetailedViewModel(
                 }
             } else {
                 withContext(Dispatchers.IO) {
-                    DB.cartoonStar
+                    cartoonStarDao
                         .deleteByCartoonSummary(
                             cartoon.id,
                             cartoon.source,
@@ -135,14 +139,14 @@ class DetailedViewModel(
         this.isReverse = isReverse
         if (isStar) {
             viewModelScope.launch(Dispatchers.IO) {
-                val cartoonStar = DB.cartoonStar.getByCartoonSummary(
+                val cartoonStar = cartoonStarDao.getByCartoonSummary(
                     cartoon.id,
                     cartoon.source,
                     cartoon.url
                 )
 
                 cartoonStar?.let { star ->
-                    DB.cartoonStar.update(
+                    cartoonStarDao.update(
                         star.copy(
                             reversal = isReverse
                         )

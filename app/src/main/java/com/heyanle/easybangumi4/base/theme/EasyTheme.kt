@@ -14,7 +14,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.heyanle.easybangumi4.setting.SettingPreferences
+import com.heyanle.easybangumi4.preferences.SettingPreferences
+import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.injekt.core.Injekt
 
 /**
@@ -52,6 +53,7 @@ fun EasyTheme(
 ) {
     val themeController: EasyThemeController by Injekt.injectLazy()
     val themeState by themeController.themeFlow.collectAsState()
+    themeState.loge("EasyTheme")
 
     val isDynamic = themeState.isDynamicColor && themeController.isSupportDynamicColor()
     val isDark = when (themeState.darkMode) {

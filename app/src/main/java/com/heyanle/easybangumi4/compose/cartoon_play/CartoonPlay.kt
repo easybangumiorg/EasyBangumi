@@ -93,8 +93,6 @@ import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
 import com.heyanle.bangumi_source_api.api.entity.PlayLine
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.R
-import com.heyanle.easybangumi4.navigationDlna
-import com.heyanle.easybangumi4.navigationSearch
 import com.heyanle.easybangumi4.compose.common.Action
 import com.heyanle.easybangumi4.compose.common.ActionRow
 import com.heyanle.easybangumi4.compose.common.DetailedContainer
@@ -103,6 +101,9 @@ import com.heyanle.easybangumi4.compose.common.ErrorPage
 import com.heyanle.easybangumi4.compose.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.compose.common.LoadingPage
 import com.heyanle.easybangumi4.compose.common.OkImage
+import com.heyanle.easybangumi4.compose.common.TabIndicator
+import com.heyanle.easybangumi4.navigationDlna
+import com.heyanle.easybangumi4.navigationSearch
 import com.heyanle.easybangumi4.utils.isCurPadeMode
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.easybangumi4.utils.openUrl
@@ -685,7 +686,15 @@ fun CartoonPlayPage(
             }
         },
         onDlna = {
-            nav.navigationDlna(CartoonSummary(detailedState.detail.id, detailedState.detail.source, detailedState.detail.url), CartoonPlayingManager.state.playLineIndex()?: -1, CartoonPlayingManager.state.episode())
+            nav.navigationDlna(
+                CartoonSummary(
+                    detailedState.detail.id,
+                    detailedState.detail.source,
+                    detailedState.detail.url
+                ),
+                CartoonPlayingManager.state.playLineIndex() ?: -1,
+                CartoonPlayingManager.state.episode()
+            )
         }
     )
 }
@@ -882,6 +891,15 @@ fun CartoonPlayDetailed(
                                     )
                                 ),
                                 edgePadding = 0.dp,
+                                indicator = {
+                                    TabIndicator(
+                                        currentTabPosition = it[0.coerceAtLeast(
+                                            unEmptyLinesIndex.indexOf(
+                                                selectLineIndex
+                                            )
+                                        )]
+                                    )
+                                },
                                 divider = {
                                 }
 

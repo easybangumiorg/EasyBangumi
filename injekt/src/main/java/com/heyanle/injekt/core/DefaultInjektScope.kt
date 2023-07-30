@@ -97,4 +97,17 @@ class DefaultInjektScope : InjektScope() {
     override fun <T : Any> hasFactory(forType: TypeReference<T>): Boolean {
         return factories.getByKey(forType.type) != null || keyedFactories.getByKey(forType.type) != null
     }
+
+    override fun <O: Any, T: O> addAlias(existingRegisteredType: TypeReference<T>, otherAncestorOrInterface: TypeReference<O>) {
+        // factories existing or not, and data type compatibility is checked in the InjektRegistrar interface default methods
+        val existingFactory = factories.getByKey(existingRegisteredType.type)
+        val existingKeyedFactory = keyedFactories.getByKey(existingRegisteredType.type)
+
+        if (existingFactory != null) {
+            factories[otherAncestorOrInterface.type] = existingFactory
+        }
+        if (existingKeyedFactory != null) {
+            keyedFactories[otherAncestorOrInterface.type] = existingKeyedFactory
+        }
+    }
 }

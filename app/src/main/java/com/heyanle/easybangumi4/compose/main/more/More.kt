@@ -16,7 +16,7 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.HistoryToggleOff
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.outlined.Report
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
@@ -27,13 +27,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.heyanle.easybangumi4.ABOUT
 import com.heyanle.easybangumi4.APPEARANCE_SETTING
-import com.heyanle.easybangumi4.HISTORY
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.R
-import com.heyanle.easybangumi4.preferences.InPrivatePreferences
-import com.heyanle.easybangumi4.preferences.WebViewCompatiblePreferences
+import com.heyanle.easybangumi4.SOURCE_MANAGER
 import com.heyanle.easybangumi4.compose.common.BooleanPreferenceItem
 import com.heyanle.easybangumi4.compose.common.OkImage
+import com.heyanle.easybangumi4.preferences.SettingMMKVPreferences
+import com.heyanle.easybangumi4.preferences.SettingPreferences
+import com.heyanle.injekt.core.Injekt
 
 /**
  * Created by HeYanLe on 2023/3/22 15:29.
@@ -45,6 +46,9 @@ fun More() {
 
     val nav = LocalNavController.current
 
+    val settingPreferences: SettingPreferences by Injekt.injectLazy()
+    val settingMMKVPreferences: SettingMMKVPreferences by Injekt.injectLazy()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -52,7 +56,7 @@ fun More() {
             .statusBarsPadding()
     ) {
         EasyBangumiCard()
-        Divider()
+        HorizontalDivider()
         BooleanPreferenceItem(
             title = {
                 Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.in_private))
@@ -66,19 +70,19 @@ fun More() {
                     contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.in_private)
                 )
             },
-            preference = InPrivatePreferences
+            preference = settingPreferences.isInPrivate
         )
-        Divider()
+        HorizontalDivider()
 
         ListItem(
             modifier = Modifier.clickable {
-                nav.navigate(HISTORY)
+                nav.navigate(SOURCE_MANAGER)
             },
-            headlineContent = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.history)) },
+            headlineContent = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.source_manage)) },
             leadingContent = {
                 Icon(
                     Icons.Filled.History,
-                    contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.history)
+                    contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.source_manage)
                 )
             }
         )
@@ -98,7 +102,7 @@ fun More() {
 
 
 
-        Divider()
+        HorizontalDivider()
 
         BooleanPreferenceItem(
             title = {
@@ -113,9 +117,9 @@ fun More() {
                     contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.web_view_compatible)
                 )
             },
-            preference = WebViewCompatiblePreferences
+            preference = settingMMKVPreferences.webViewCompatible
         )
-        Divider()
+        HorizontalDivider()
         ListItem(
             modifier = Modifier.clickable {
                 nav.navigate(ABOUT)
