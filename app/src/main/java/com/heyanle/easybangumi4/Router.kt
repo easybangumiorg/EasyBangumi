@@ -21,7 +21,6 @@ import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.heyanle.bangumi_source_api.api.entity.CartoonCover
 import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
-import com.heyanle.easybangumi4.source.utils.WebViewUserHelperImpl
 import com.heyanle.easybangumi4.base.theme.NormalSystemBarColor
 import com.heyanle.easybangumi4.compose.WebViewUser
 import com.heyanle.easybangumi4.compose.about.About
@@ -31,8 +30,10 @@ import com.heyanle.easybangumi4.compose.dlna.Dlna
 import com.heyanle.easybangumi4.compose.dlna.DlnaViewModel
 import com.heyanle.easybangumi4.compose.history.History
 import com.heyanle.easybangumi4.compose.main.Main
+import com.heyanle.easybangumi4.compose.main.source_manage.SourceManager
 import com.heyanle.easybangumi4.compose.search.Search
 import com.heyanle.easybangumi4.compose.setting.AppearanceSetting
+import com.heyanle.easybangumi4.source.utils.WebViewUserHelperImpl
 import com.heyanle.easybangumi4.utils.loge
 import java.lang.ref.WeakReference
 import java.net.URLDecoder
@@ -59,6 +60,8 @@ const val WEB_VIEW_USER = "web_view_user"
 const val SOURCE_HOME = "source_home"
 
 const val HISTORY = "history"
+
+const val SOURCE_MANAGER = "source_manager"
 
 const val SEARCH = "search"
 
@@ -244,6 +247,16 @@ fun Nav() {
                     History()
                 }
 
+            }
+
+            composable(SOURCE_MANAGER) {
+                NormalSystemBarColor()
+                Surface(
+                    color = MaterialTheme.colorScheme.background,
+                    contentColor = MaterialTheme.colorScheme.onBackground
+                ) {
+                    SourceManager()
+                }
             }
 
             composable(

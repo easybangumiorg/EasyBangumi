@@ -59,6 +59,12 @@
     <string name="manage">管理</string>
     <string name="more">更多</string>
 
+    <string name="change_tag">修改标签</string>
+
+    <string name="no_tag">你还没有标签</string>
+    <string name="click_to_manage_tag">跳转到标签管理页？</string>
+
+    <string name="source_manage">番源管理</string>
     <string name="choose_source">选择番源</string>
 
     <string name="today">今天</string>
@@ -77,6 +83,8 @@
 
     <string name="start_update_strict">开始全量更新</string>
     <string name="start_update">开始更新</string>
+    <string name="start_update_selection">开始更新所选</string>
+    <string name="start_update_tag">开始更新当前标签</string>
     <string name="doing_update_wait">正在更新中，请等待上一次更新完成！</string>
 
     <string name="refresh">刷新</string>
@@ -215,6 +223,8 @@
 
     <string name="video">视频</string>
     <string name="detailed">详情</string>
+
+    <string name="default_word">默认</string>
 
     <string name="theme_default">默认</string>
     <string name="theme_greenapple">青苹果</string>

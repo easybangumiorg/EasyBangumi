@@ -42,7 +42,7 @@ data class CartoonStar(
 
     var reversal: Boolean, // 是否反转集数
 
-    var dictionary: String, // 番剧分类
+    var tags: String, // 番剧分类 "1, 2, 3" 的格式
 
     var createTime: Long = System.currentTimeMillis(),
 
@@ -85,7 +85,7 @@ data class CartoonStar(
                 isUpdate = cartoon.isUpdate,
                 reversal = false,
                 watchProcess = "",
-                dictionary = "",
+                tags = "",
             )
         }
     }
@@ -108,7 +108,7 @@ data class CartoonStar(
             isUpdate = false,
             reversal = false,
             watchProcess = "",
-            dictionary = "",
+            tags = "",
         )
     }
 

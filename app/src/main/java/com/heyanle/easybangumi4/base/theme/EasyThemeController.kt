@@ -5,13 +5,14 @@ import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
-import com.heyanle.easybangumi4.setting.SettingPreferences
+import com.heyanle.easybangumi4.preferences.SettingPreferences
+import com.heyanle.easybangumi4.utils.loge
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -55,16 +56,18 @@ class EasyThemeController(
     init {
         scope.launch {
             combine(
-                settingPreferences.isThemeDynamic.flow(),
-                settingPreferences.darkMode.flow(),
-                settingPreferences.themeMode.flow(),
+                settingPreferences.isThemeDynamic.flow().stateIn(scope),
+                settingPreferences.darkMode.flow().stateIn(scope),
+                settingPreferences.themeMode.flow().stateIn(scope),
             ) { dy, dark, theme ->
+                theme.loge("EasyTheme")
                 EasyThemeState(
                     theme, dark, dy
                 )
-            }.distinctUntilChanged().collectLatest {
+            }.collectLatest {new ->
                 _themeFlow.update {
-                    it
+                    it.loge("EasyTheme")
+                    new
                 }
             }
         }

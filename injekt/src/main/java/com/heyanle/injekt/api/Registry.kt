@@ -14,6 +14,8 @@ interface InjektRegistry {
     fun <R: Any, K: Any> addPerKeyFactory(forType: TypeReference<R>, factoryCalledPerKey: (K) -> R)
     fun <R: Any, K: Any> addPerThreadPerKeyFactory(forType: TypeReference<R>, factoryCalledPerKeyPerThread: (K) -> R)
     fun <T: Any> hasFactory(forType: TypeReference<T>): Boolean
+
+    fun <O: Any, T: O> addAlias(existingRegisteredType: TypeReference<T>, otherAncestorOrInterface: TypeReference<O>)
 }
 
 inline fun <reified T: Any> InjektRegistry.hasFactory(): Boolean {
@@ -44,5 +46,5 @@ inline fun <reified R: Any, K: Any> InjektRegistry.addPerThreadPerKeyFactory(noi
     addPerThreadPerKeyFactory(fullType<R>(), factoryCalledPerKeyPerThread)
 }
 
-//inline fun <reified EXISTINGREGISTERED: ANCESTORTYPE, reified ANCESTORTYPE: Any> InjektRegistry.addAlias() = addAlias(fullType<EXISTINGREGISTERED>(), fullType<ANCESTORTYPE>())
+inline fun <reified EXISTINGREGISTERED: ANCESTORTYPE, reified ANCESTORTYPE: Any> InjektRegistry.addAlias() = addAlias(fullType<EXISTINGREGISTERED>(), fullType<ANCESTORTYPE>())
 

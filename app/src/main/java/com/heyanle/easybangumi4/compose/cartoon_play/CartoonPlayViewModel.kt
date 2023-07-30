@@ -7,7 +7,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
-import com.heyanle.easybangumi4.DB
+import com.heyanle.easybangumi4.base.db.dao.CartoonHistoryDao
+import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -29,6 +30,8 @@ class CartoonPlayViewModel: ViewModel() {
     }
 
     var selectedLineIndex by mutableIntStateOf(0)
+
+    val cartoonHistoryDao: CartoonHistoryDao by Injekt.injectLazy()
 
     fun onDetailedLoaded(
         cartoonSummary: CartoonSummary,
@@ -77,7 +80,8 @@ class CartoonPlayViewModel: ViewModel() {
 
     private suspend fun getEnterDataFromHistory(cartoonSummary: CartoonSummary,): EnterData {
         return withContext(Dispatchers.IO) {
-            val hist = DB.cartoonHistory.getFromCartoonSummary(
+
+            val hist = cartoonHistoryDao.getFromCartoonSummary(
                 cartoonSummary.id,
                 cartoonSummary.source,
                 cartoonSummary.url,

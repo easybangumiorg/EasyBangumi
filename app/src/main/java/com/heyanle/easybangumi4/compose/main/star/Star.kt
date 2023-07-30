@@ -2,14 +2,17 @@ package com.heyanle.easybangumi4.compose.main.star
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -17,18 +20,20 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.filled.Update
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
@@ -52,49 +57,47 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.collectAsLazyPagingItems
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.base.entity.CartoonStar
 import com.heyanle.easybangumi4.compose.common.CartoonStarCardWithCover
 import com.heyanle.easybangumi4.compose.common.EasyDeleteDialog
+import com.heyanle.easybangumi4.compose.common.EasyMutiSelectionDialog
+import com.heyanle.easybangumi4.compose.common.EmptyPage
 import com.heyanle.easybangumi4.compose.common.FastScrollToTopFab
-import com.heyanle.easybangumi4.compose.common.LoadingPage
-import com.heyanle.easybangumi4.compose.common.PagingCommon
 import com.heyanle.easybangumi4.compose.common.SelectionTopAppBar
-import com.heyanle.easybangumi4.compose.common.pagingCommon
+import com.heyanle.easybangumi4.compose.common.TabPage
 import com.heyanle.easybangumi4.compose.main.MainViewModel
+import com.heyanle.easybangumi4.compose.main.update.Update
 import com.heyanle.easybangumi4.navigationDetailed
 
 /**
- * Created by HeYanLe on 2023/3/18 17:04.
+ * Created by HeYanLe on 2023/7/29 23:21.
  * https://github.com/heyanLE
  */
-
-
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun Star() {
 
-    val homeViewModel = viewModel<MainViewModel>()
-    val vm = viewModel<StarViewModel>()
+    val homeVM = viewModel<MainViewModel>()
+    val starVM = viewModel<StarViewModel>()
 
     val selectionBottomBar = remember<@Composable () -> Unit> {
         {
             StarSelectionBottomBar(
-                onDelete = { vm.dialogDeleteSelection() },
-                onChangeUpdateStrategy = { vm.dialogChangeUpdate() },
-                onUpdate = { vm.onUpdate() })
+                onDelete = { starVM.dialogDeleteSelection() },
+                onChangeTag = { starVM.dialogChangeTag() },
+                onUpdate = { starVM.onUpdateSelection() }
+            )
 
         }
     }
+
     val nav = LocalNavController.current
 
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    //val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
-
-    val state by vm.stateFlow.collectAsState()
+    val state by starVM.stateFlow.collectAsState()
 
     val focusRequester = remember {
         FocusRequester()
@@ -102,23 +105,24 @@ fun Star() {
 
     LaunchedEffect(key1 = state.selection.isEmpty()) {
         if (state.selection.isEmpty()) {
-            homeViewModel.customBottomBar = null
+            homeVM.customBottomBar = null
         } else {
-            homeViewModel.customBottomBar = selectionBottomBar
+            homeVM.customBottomBar = selectionBottomBar
         }
     }
 
     DisposableEffect(key1 = Unit) {
         onDispose {
-            vm.onSelectionExit()
-            homeViewModel.customBottomBar = null
+            starVM.onSelectionExit()
+            homeVM.customBottomBar = null
         }
     }
+
 
     BackHandler(
         enabled = state.selection.isNotEmpty()
     ) {
-        vm.onSelectionExit()
+        starVM.onSelectionExit()
     }
 
     Column {
@@ -131,118 +135,159 @@ fun Star() {
                     }
 
                 }
-                SelectionTopAppBar(
-                    selectionItemsCount = state.selection.size,
-                    onExit = {
-                        vm.onSelectionExit()
-                    },
-                )
+                SelectionTopAppBar(selectionItemsCount = state.selection.size, onExit = {
+                    starVM.onSelectionExit()
+                }, onSelectAll = {
+                    starVM.onSelectAll()
+                }, onSelectInvert = {
+                    starVM.onSelectInvert()
+                })
             } else {
                 StarTopAppBar(
-                    scrollBehavior = scrollBehavior,
+                    //scrollBehavior = scrollBehavior,
                     focusRequester = focusRequester,
                     isSearch = state.searchQuery != null,
                     text = state.searchQuery ?: "",
                     onTextChange = {
-                        vm.onSearch(it)
+                        starVM.onSearch(it)
                     },
                     starNum = state.starCount,
                     onSearchClick = {
-                        vm.onSearch("")
+                        starVM.onSearch("")
                     },
-                    onFilter = {
-                        com.heyanle.easybangumi4.utils.TODO("过滤器")
+                    onUpdate = {
+                        starVM.onUpdateAll()
                     },
                     onSearch = {
-                        vm.onSearch(it)
+                        starVM.onSearch(it)
                     },
                     onSearchExit = {
-                        vm.onSearch(null)
-                    }
-                )
+                        starVM.onSearch(null)
+                    })
             }
         }
 
 
-        StarList(
-            isLoading = state.isLoading,
-            nestedScrollConnection = scrollBehavior.nestedScrollConnection,
-            starCartoonList = state.pager.collectAsLazyPagingItems(),
-            selectionSet = state.selection,
-            onStarClick = {
-                if (state.selection.isEmpty()) {
-                    nav.navigationDetailed(it.id, it.url, it.source)
-                } else {
-                    vm.onSelectionChange(it)
+        TabPage(initialPage = state.tabs.indexOf(state.curTab).coerceAtLeast(0),
+            tabSize = state.tabs.size,
+            onTabSelect = {
+                runCatching {
+                    starVM.changeTab(state.tabs[it])
+                }.onFailure {
+                    it.printStackTrace()
                 }
             },
-            onStarLongPress = {
-                vm.onSelectionChange(it)
-            })
+            tabs = { i, b ->
+                Row {
+                    val tab = state.tabs[i]
+                    val starNum = state.data[state.tabs[i]]?.size ?: 0
+                    Text(text = StarViewModel.tagLabel(tab))
+                    Badge(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    ) {
+                        Text(text = if (starNum <= 999) "$starNum" else "999+")
+                    }
+                }
 
+            }) {
+            val tab = state.tabs[it]
+            if (tab == StarViewModel.UPDATE_TAG) {
+                // TODO 优化
+                Update()
+            } else {
+                val list = state.data[tab] ?: emptyList()
+                StarList(
+                    //nestedScrollConnection = scrollBehavior.nestedScrollConnection,
+                    starCartoon = list, selectionSet = state.selection, onStarClick = {
+                        if (state.selection.isEmpty()) {
+                            nav.navigationDetailed(it.id, it.url, it.source)
+                        } else {
+                            starVM.onSelectionChange(it)
+                        }
+                    }, onStarLongPress = {
+                        starVM.onSelectionLongPress(it)
+                    })
+            }
+        }
     }
 
-    val deleteDialog = state.dialog as? StarViewModel.DialogState.Delete
-    EasyDeleteDialog(
-        show = deleteDialog != null,
-        onDelete = {
-            deleteDialog
-                ?.let {
-                    vm.delete(it.selection.toList())
-                }
-            vm.dialogDismiss()
-        },
-        onDismissRequest = {
-            vm.dialogDismiss()
-        }
-    )
-
-
-}
-
-@Composable
-fun StarSelectionBottomBar(
-    onDelete: () -> Unit,
-    onChangeUpdateStrategy: () -> Unit,
-    onUpdate: () -> Unit,
-) {
-
-    BottomAppBar(
-        actions = {
-            IconButton(onClick = {
-                onChangeUpdateStrategy()
-            }) {
-                Icon(
-                    Icons.Filled.Settings,
-                    contentDescription = stringResource(id = R.string.setting)
+    when (val sta = state.dialog) {
+        is StarViewModel.DialogState.ChangeTag -> {
+            val tags = state.tabs.filter { it != StarViewModel.DEFAULT_TAG && it != StarViewModel.UPDATE_TAG }
+            if(tags.isEmpty()){
+                AlertDialog(
+                    title = {
+                        Text(text = stringResource(id = R.string.no_tag))
+                    },
+                    text = {
+                        Text(text = stringResource(id = R.string.click_to_manage_tag))
+                    },
+                    confirmButton = {
+                        TextButton(
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.Transparent,
+                                contentColor = MaterialTheme.colorScheme.onBackground
+                            ),
+                            onClick = {
+                                //TODO
+                                starVM.dialogDismiss()
+                                //starVM.onSelectionExit()
+                            }) {
+                            Text(text = stringResource(id = R.string.confirm))
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.Transparent,
+                                contentColor = MaterialTheme.colorScheme.onBackground
+                            ),
+                            onClick = {
+                                starVM.dialogDismiss()
+                                //starVM.onSelectionExit()
+                            }) {
+                            Text(text = stringResource(id = R.string.cancel))
+                        }
+                    },
+                    onDismissRequest = {
+                        starVM.dialogDismiss()
+                    }
                 )
+            }else{
+                EasyMutiSelectionDialog(show = true,
+                    title = {
+                            Text(text = stringResource(id = R.string.change_tag))
+                    },
+                    items = tags,
+                    initSelection = sta.getTags(),
+                    onConfirm = {
+                        starVM.changeTagSelection(sta.selection, it)
+                    },
+                    onDismissRequest = {
+                        starVM.dialogDismiss()
+                    })
             }
 
-            IconButton(onClick = {
-                onUpdate()
+        }
+
+        is StarViewModel.DialogState.Delete -> {
+            EasyDeleteDialog(show = true, onDelete = {
+                starVM.deleteSelection(sta.selection)
             }) {
-                Icon(Icons.Filled.Update, contentDescription = stringResource(id = R.string.update))
-            }
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { onDelete() },
-                containerColor = MaterialTheme.colorScheme.errorContainer,
-                contentColor = MaterialTheme.colorScheme.onErrorContainer
-            ) {
-                Icon(Icons.Filled.Delete, contentDescription = stringResource(id = R.string.delete))
+                starVM.dialogDismiss()
             }
         }
-    )
 
-
+        else -> {}
+    }
 }
+
 
 @Composable
 fun StarList(
-    isLoading: Boolean,
     nestedScrollConnection: NestedScrollConnection? = null,
-    starCartoonList: LazyPagingItems<CartoonStar>,
+    starCartoon: List<CartoonStar>,
     selectionSet: Set<CartoonStar>,
     isHapticFeedback: Boolean = true,
     onStarClick: (CartoonStar) -> Unit,
@@ -252,54 +297,83 @@ fun StarList(
     val lazyGridState = rememberLazyGridState()
     val haptic = LocalHapticFeedback.current
 
-    if (isLoading) {
-        LoadingPage(modifier = Modifier.fillMaxSize())
-    } else {
-        if (starCartoonList.itemCount > 0) {
-
-            LazyVerticalGrid(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .run {
-                        if (nestedScrollConnection != null) {
-                            nestedScroll(nestedScrollConnection)
-                        } else {
-                            this
-                        }
-                    },
-                state = lazyGridState,
-                columns = GridCells.Adaptive(100.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
-            ) {
-                items(starCartoonList.itemCount) { int ->
-                    val star = starCartoonList[int]
-                    if (star != null) {
-                        CartoonStarCardWithCover(
-                            selected = selectionSet.contains(star),
-                            cartoon = star,
-                            showSourceLabel = true,
-                            onClick = {
-                                onStarClick(it)
-                            },
-                            onLongPress = {
-                                if (isHapticFeedback) {
-                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                }
-                                onStarLongPress(it)
-                            },
-                        )
-                    }
-
+    LazyVerticalGrid(
+        modifier = Modifier
+            .fillMaxSize()
+            .run {
+                if (nestedScrollConnection != null) {
+                    nestedScroll(nestedScrollConnection)
+                } else {
+                    this
                 }
-                pagingCommon(starCartoonList)
+            },
+        state = lazyGridState,
+        columns = GridCells.Adaptive(100.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
+    ) {
+        if (starCartoon.isEmpty()) {
+            item(span = {
+                // LazyGridItemSpanScope:
+                // maxLineSpan
+                GridItemSpan(maxLineSpan)
+            }) {
+                EmptyPage(
+                    modifier = Modifier.height(256.dp)
+                )
             }
         }
-        PagingCommon(items = starCartoonList)
-        FastScrollToTopFab(listState = lazyGridState)
-
+        items(starCartoon) { star ->
+            CartoonStarCardWithCover(
+                selected = selectionSet.contains(star),
+                cartoon = star,
+                showSourceLabel = true,
+                onClick = {
+                    onStarClick(it)
+                },
+                onLongPress = {
+                    if (isHapticFeedback) {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    }
+                    onStarLongPress(it)
+                },
+            )
+        }
     }
+    FastScrollToTopFab(listState = lazyGridState)
+}
+
+@Composable
+fun StarSelectionBottomBar(
+    onDelete: () -> Unit,
+    onChangeTag: () -> Unit,
+    onUpdate: () -> Unit,
+) {
+
+    BottomAppBar(actions = {
+        IconButton(onClick = {
+            onChangeTag()
+        }) {
+            Icon(
+                Icons.Filled.Tag, contentDescription = stringResource(id = R.string.change_tag)
+            )
+        }
+
+        IconButton(onClick = {
+            onUpdate()
+        }) {
+            Icon(Icons.Filled.Update, contentDescription = stringResource(id = R.string.update))
+        }
+    }, floatingActionButton = {
+        FloatingActionButton(
+            onClick = { onDelete() },
+            containerColor = MaterialTheme.colorScheme.errorContainer,
+            contentColor = MaterialTheme.colorScheme.onErrorContainer
+        ) {
+            Icon(Icons.Filled.Delete, contentDescription = stringResource(id = R.string.delete))
+        }
+    })
 
 
 }
@@ -315,13 +389,14 @@ fun StarTopAppBar(
     isSearch: Boolean,
     starNum: Int,
     onSearchClick: () -> Unit,
-    onFilter: () -> Unit,
+    onUpdate: () -> Unit,
     onSearch: (String) -> Unit,
     onSearchExit: () -> Unit,
 ) {
 
-    TopAppBar(
-        scrollBehavior = scrollBehavior, navigationIcon = {
+    TopAppBar(colors = TopAppBarDefaults.topAppBarColors(scrolledContainerColor = MaterialTheme.colorScheme.surface),
+        scrollBehavior = scrollBehavior,
+        navigationIcon = {
             if (isSearch) {
                 IconButton(onClick = {
                     onSearchExit()
@@ -331,7 +406,8 @@ fun StarTopAppBar(
                     )
                 }
             }
-        }, title = {
+        },
+        title = {
             LaunchedEffect(key1 = isSearch) {
                 if (isSearch) {
                     focusRequester.requestFocus()
@@ -371,14 +447,22 @@ fun StarTopAppBar(
                 }
 
             }
-        }, actions = {
+        },
+        actions = {
             if (!isSearch) {
                 IconButton(onClick = {
                     onSearchClick()
                 }) {
                     Icon(
-                        imageVector = Icons.Filled.Search,
-                        stringResource(id = R.string.search)
+                        imageVector = Icons.Filled.Search, stringResource(id = R.string.search)
+                    )
+                }
+
+                IconButton(onClick = {
+                    onUpdate()
+                }) {
+                    Icon(
+                        imageVector = Icons.Filled.Update, stringResource(id = R.string.update)
                     )
                 }
             } else if (text.isNotEmpty()) {
@@ -386,20 +470,11 @@ fun StarTopAppBar(
                     onTextChange("")
                 }) {
                     Icon(
-                        imageVector = Icons.Filled.Clear,
-                        stringResource(id = R.string.clear)
+                        imageVector = Icons.Filled.Clear, stringResource(id = R.string.clear)
                     )
                 }
             }
 
-            IconButton(onClick = {
-                onFilter()
-            }) {
-                Icon(
-                    imageVector = Icons.Filled.FilterList,
-                    stringResource(id = R.string.filter)
-                )
-            }
 
         })
 }

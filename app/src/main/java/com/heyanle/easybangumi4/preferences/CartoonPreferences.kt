@@ -1,27 +1,25 @@
-package com.heyanle.easybangumi4.source
+package com.heyanle.easybangumi4.preferences
 
 import com.heyanle.easybangumi4.base.preferences.PreferenceStore
 import com.heyanle.easybangumi4.utils.jsonTo
 import com.heyanle.easybangumi4.utils.toJson
 
 /**
- * Created by HeYanLe on 2023/7/29 21:34.
+ * Created by HeYanLe on 2023/7/30 13:10.
  * https://github.com/heyanLE
  */
-class SourcePreferences(
+class CartoonPreferences(
     private val preferenceStore: PreferenceStore
 ) {
-    data class SourceConfig(
-        val key: String,
-        val enable: Boolean,
+
+    data class CartoonTag(
+        val label: String,
         val order: Int,
     )
-
-
-    // 源配置
-    val configs = preferenceStore.getObject(
-        "source_config",
-        mapOf<String, SourceConfig>(),
+    // 番剧标签
+    val tags = preferenceStore.getObject(
+        "cartoon_tags",
+        listOf<CartoonTag>(),
         {
             it.toJson()
         },
@@ -29,6 +27,4 @@ class SourcePreferences(
             it.jsonTo()
         }
     )
-
-
 }

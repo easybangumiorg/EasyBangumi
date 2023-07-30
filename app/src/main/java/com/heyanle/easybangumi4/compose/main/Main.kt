@@ -25,14 +25,12 @@ import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MoreHoriz
-import androidx.compose.material.icons.filled.Report
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarOutline
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.MoreHoriz
-import androidx.compose.material.icons.outlined.Report
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
@@ -64,7 +62,6 @@ import com.heyanle.easybangumi4.compose.main.home.HomeBottomSheet
 import com.heyanle.easybangumi4.compose.main.more.More
 import com.heyanle.easybangumi4.compose.main.source_manage.SourceManager
 import com.heyanle.easybangumi4.compose.main.star.Star
-import com.heyanle.easybangumi4.compose.main.update.Update
 import com.heyanle.easybangumi4.utils.isCurPadeMode
 import com.heyanle.okkv2.core.okkv
 import kotlinx.coroutines.launch
@@ -118,28 +115,28 @@ sealed class MainPage @OptIn(ExperimentalMaterialApi::class) constructor(
         },
     )
 
-    object UpdatePage : MainPage(
-        route = "update",
-        tabLabel = { Text(text = stringResource(id = R.string.update)) },
-        icon = {
-            Icon(
-                if (it) Icons.Filled.Report else Icons.Outlined.Report,
-                contentDescription = stringResource(id = R.string.update)
-            )
-        },
-        content = {
-            Update()
-            //Text(text = stringResource(id = R.string.update))
-        }
-    )
+//    object UpdatePage : MainPage(
+//        route = "update",
+//        tabLabel = { Text(text = stringResource(id = R.string.update)) },
+//        icon = {
+//            Icon(
+//                if (it) Icons.Filled.Report else Icons.Outlined.Report,
+//                contentDescription = stringResource(id = R.string.update)
+//            )
+//        },
+//        content = {
+//            Update()
+//            //Text(text = stringResource(id = R.string.update))
+//        }
+//    )
 
     object HistoryPage : MainPage(
         route = "history",
-        tabLabel = { Text(text = stringResource(id = R.string.history)) },
+        tabLabel = { Text(text = stringResource(id = R.string.mine_history)) },
         icon = {
             Icon(
                 if (it) Icons.Filled.History else Icons.Outlined.History,
-                contentDescription = stringResource(id = R.string.history)
+                contentDescription = stringResource(id = R.string.mine_history)
             )
         },
         content = {
@@ -182,9 +179,8 @@ sealed class MainPage @OptIn(ExperimentalMaterialApi::class) constructor(
 val MainPageItems = listOf(
     MainPage.HomePage,
     MainPage.StarPage,
-    MainPage.UpdatePage,
-    // HomePage.HistoryPage,
-    MainPage.SourceManagePage,
+    MainPage.HistoryPage,
+    // MainPage.SourceManagePage,
     MainPage.MorePage,
 )
 
@@ -263,7 +259,7 @@ fun Main() {
                                     },
                                     label = page.tabLabel,
                                     selected = select,
-                                    alwaysShowLabel = false,
+                                    alwaysShowLabel = true,
                                     onClick = {
                                         scope.launch {
                                             pagerState.scrollToPage(i)

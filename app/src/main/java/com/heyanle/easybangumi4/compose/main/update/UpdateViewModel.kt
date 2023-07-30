@@ -2,12 +2,13 @@ package com.heyanle.easybangumi4.compose.main.update
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.heyanle.easybangumi4.DB
+import com.heyanle.easybangumi4.base.db.dao.CartoonStarDao
 import com.heyanle.easybangumi4.base.entity.CartoonStar
 import com.heyanle.easybangumi4.compose.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.insertSeparators
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.easybangumi4.utils.toDateKey
+import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -46,13 +47,16 @@ class UpdateViewModel : ViewModel() {
     private val _stateFlow = MutableStateFlow(State())
     val stateFlow = _stateFlow.asStateFlow()
 
+    private val cartoonUpdateController: CartoonUpdateController by Injekt.injectLazy()
+    private val cartoonStarDao: CartoonStarDao by Injekt.injectLazy()
+
     init {
         viewModelScope.launch {
             combine(
                 getCartoonStarFlow(),
-                UpdateMaster.isUpdate,
-                UpdateMaster.loadingError,
-                UpdateMaster.lastUpdateTime,
+                cartoonUpdateController.isUpdate,
+                cartoonUpdateController.loadingError,
+                cartoonUpdateController.lastUpdateTime,
             ) { list, isUpdating, loadingError, lastUpdateTime ->
 
                 val transform: (State)->State = {
@@ -131,7 +135,7 @@ class UpdateViewModel : ViewModel() {
 
     fun update(isStrict: Boolean) {
         viewModelScope.launch {
-            if (UpdateMaster.tryUpdate(isStrict)) {
+            if (cartoonUpdateController.tryUpdate(isStrict)) {
                 stringRes(if (isStrict) com.heyanle.easy_i18n.R.string.start_update_strict else com.heyanle.easy_i18n.R.string.start_update)
                     .moeSnackBar()
             }else{
@@ -142,7 +146,7 @@ class UpdateViewModel : ViewModel() {
     }
 
     private fun getCartoonStarFlow(): Flow<List<CartoonStar>> {
-        return DB.cartoonStar.flowAll().map {
+        return cartoonStarDao.flowAll().map {
             it.filter {
                 it.isUpdate && it.isInitializer
             }

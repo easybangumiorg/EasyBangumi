@@ -3,20 +3,19 @@ package com.heyanle.easybangumi4.compose.history
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
-import androidx.paging.PagingData
-import androidx.paging.cachedIn
-import com.heyanle.easybangumi4.DB
+import com.heyanle.easybangumi4.base.db.dao.CartoonHistoryDao
 import com.heyanle.easybangumi4.base.entity.CartoonHistory
-import com.heyanle.easybangumi4.preferences.InPrivatePreferences
+import com.heyanle.easybangumi4.preferences.SettingPreferences
+import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -30,9 +29,10 @@ class HistoryViewModel : ViewModel() {
     val lazyListState = LazyListState(0, 0)
 
     data class HistoryState(
-        var pager: Flow<PagingData<CartoonHistory>>,
+        val isLoading: Boolean = true,
+        var history: List<CartoonHistory> = emptyList(),
         var searchKey: String? = null,
-        var isInPrivate: Boolean = InPrivatePreferences.stateFlow.value,
+        var isInPrivate: Boolean = false,
         var selection: Set<CartoonHistory> = emptySet(),
         var dialog: Dialog? = null,
     )
@@ -45,35 +45,43 @@ class HistoryViewModel : ViewModel() {
         object Clear : Dialog()
     }
 
-    private val allPager = getAllPager().flow.cachedIn(viewModelScope)
+    private val settingPreferences: SettingPreferences by Injekt.injectLazy()
+    private val cartoonHistoryDao: CartoonHistoryDao by Injekt.injectLazy()
 
-    private val _stateFlow = MutableStateFlow(HistoryState(allPager))
+
+    private val _stateFlow = MutableStateFlow(HistoryState())
     val stateFlow = _stateFlow.asStateFlow()
+
+    private var lastSelectHistory: CartoonHistory? = null
 
 
     init {
         viewModelScope.launch {
-            // 搜索处理
-            stateFlow.map { it.searchKey }.distinctUntilChanged().collectLatest { key ->
+            // 搜索和加载
+            combine(
+                cartoonHistoryDao.flowAllOrderByTime().distinctUntilChanged(),
+                stateFlow.map { it.searchKey }.distinctUntilChanged(),
+            ) { data, key ->
                 if (key.isNullOrEmpty()) {
                     _stateFlow.update {
-                        it.copy(pager = allPager)
+                        it.copy(isLoading = false, history = data)
                     }
                 } else {
-                    _stateFlow.update {
-                        it.copy(pager = getSearchPager(key).flow)
+                    _stateFlow.update { state ->
+                        state.copy(isLoading = false, history = data.filter { it.matches(key) })
                     }
                 }
-            }
+            }.collect()
         }
 
         // 无痕模式
         viewModelScope.launch {
-            InPrivatePreferences.stateFlow.collectLatest { v ->
-                _stateFlow.update {
-                    it.copy(isInPrivate = v)
+            settingPreferences.isInPrivate.flow().distinctUntilChanged()
+                .stateIn(viewModelScope).collectLatest { v ->
+                    _stateFlow.update {
+                        it.copy(isInPrivate = v)
+                    }
                 }
-            }
         }
     }
 
@@ -99,7 +107,61 @@ class HistoryViewModel : ViewModel() {
         }
     }
 
-    fun onSelectionExit(){
+    fun onSelectAll() {
+        _stateFlow.update {
+            it.copy(
+                selection = it.history.toSet()
+            )
+        }
+    }
+
+    fun onSelectInvert() {
+        _stateFlow.update {
+            val dd = it.history
+            val selection = it.selection.toMutableSet()
+            dd.forEach { history ->
+                if (selection.contains(history)) {
+                    selection.remove(history)
+                } else {
+                    selection.add(history)
+                }
+            }
+            it.copy(
+                selection = selection
+            )
+        }
+
+    }
+
+    fun onSelectionLongPress(cartoonHistory: CartoonHistory) {
+        if (lastSelectHistory == null || lastSelectHistory == cartoonHistory) {
+            onSelectionChange(cartoonHistory)
+            return
+        }
+        _stateFlow.update {
+            val selection = it.selection.toMutableSet()
+            val lastList = it.history
+            val a = lastList.indexOf(lastSelectHistory)
+            val b = lastList.indexOf(cartoonHistory)
+            val start = a.coerceAtMost(b)
+            val end = a.coerceAtLeast(b)
+            for (i in start..end) {
+                if (i >= 0 && i < lastList.size) {
+                    val star = lastList[i]
+                    if (selection.contains(star)) {
+                        selection.remove(star)
+                    } else {
+                        selection.add(star)
+                    }
+                }
+            }
+            it.copy(
+                selection = selection
+            )
+        }
+    }
+
+    fun onSelectionExit() {
         _stateFlow.update {
             it.copy(selection = emptySet())
         }
@@ -110,7 +172,7 @@ class HistoryViewModel : ViewModel() {
     fun dialogDeleteSelection() {
         _stateFlow.update {
             val selection = it.selection
-            it.copy( dialog = Dialog.Delete(selection))
+            it.copy(dialog = Dialog.Delete(selection))
         }
     }
 
@@ -137,7 +199,7 @@ class HistoryViewModel : ViewModel() {
     fun delete(cartoonHistory: CartoonHistory) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                DB.cartoonHistory.deleteByCartoonSummary(
+                cartoonHistoryDao.deleteByCartoonSummary(
                     cartoonHistory.id,
                     cartoonHistory.source,
                     cartoonHistory.url,
@@ -149,15 +211,15 @@ class HistoryViewModel : ViewModel() {
     fun delete(cartoonHistory: List<CartoonHistory>) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                DB.cartoonHistory.delete(cartoonHistory)
+                cartoonHistoryDao.delete(cartoonHistory)
             }
         }
     }
 
-    fun  clear() {
+    fun clear() {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                DB.cartoonHistory.clear()
+                cartoonHistoryDao.clear()
             }
         }
     }
@@ -165,19 +227,4 @@ class HistoryViewModel : ViewModel() {
     // 内部方法
 
 
-    private fun getAllPager(): Pager<Int, CartoonHistory> {
-        return Pager(
-            PagingConfig(pageSize = 50)
-        ) {
-            DB.cartoonHistory.getAllOrderByTime()
-        }
-    }
-
-    private fun getSearchPager(keyword: String): Pager<Int, CartoonHistory> {
-        return Pager(
-            PagingConfig(pageSize = 50)
-        ) {
-            DB.cartoonHistory.getSearchOrderByTime(keyword)
-        }
-    }
 }

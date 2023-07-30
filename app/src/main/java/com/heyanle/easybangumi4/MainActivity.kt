@@ -61,7 +61,7 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        Migrate.tryUpdate(this)
         init()
         // initUtils(BangumiApp.INSTANCE)
         // networkHelper.defaultUA = WebView(this).getDefaultUserAgentString()
