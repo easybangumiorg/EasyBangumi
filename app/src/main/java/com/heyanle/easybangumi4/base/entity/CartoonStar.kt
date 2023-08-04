@@ -7,6 +7,7 @@ import com.google.gson.reflect.TypeToken
 import com.heyanle.bangumi_source_api.api.entity.Cartoon
 import com.heyanle.bangumi_source_api.api.entity.CartoonCover
 import com.heyanle.bangumi_source_api.api.entity.CartoonImpl
+import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
 import com.heyanle.bangumi_source_api.api.entity.PlayLine
 
 /**
@@ -57,10 +58,10 @@ data class CartoonStar(
     private var genres: List<String>? = null
 
     fun getGenres(): List<String>? {
-        if(genre.isEmpty()){
+        if (genre.isEmpty()) {
             return null
         }
-        if(genres == null){
+        if (genres == null) {
             genres = genre.split(", ").map { it.trim() }.filterNot { it.isBlank() }.distinct()
         }
         return genres
@@ -79,7 +80,7 @@ data class CartoonStar(
                 description = cartoon.description ?: "",
                 updateStrategy = cartoon.updateStrategy,
                 status = cartoon.status,
-                playLineString = Gson().toJson(playLines)?:"[]",
+                playLineString = Gson().toJson(playLines) ?: "[]",
                 isInitializer = true,
                 lastUpdateTime = 0L,
                 isUpdate = cartoon.isUpdate,
@@ -113,7 +114,7 @@ data class CartoonStar(
     }
 
     fun toCartoon(): Cartoon? {
-        return if(isInitializer) CartoonImpl(
+        return if (isInitializer) CartoonImpl(
             id = this.id,
             source = this.source,
             url = this.url,
@@ -139,11 +140,11 @@ data class CartoonStar(
         }
     }
 
-    fun matches(query: String): Boolean{
+    fun matches(query: String): Boolean {
         var matched = false
-        for(match in query.split(',')){
+        for (match in query.split(',')) {
             val regex = getMatchReg(match)
-            if(title.matches(regex)){
+            if (title.matches(regex)) {
                 matched = true
                 break
             }
@@ -161,6 +162,25 @@ data class CartoonStar(
     }
 
 
+    fun getSummary(): CartoonSummary {
+        return CartoonSummary(id, source, url)
+    }
+
+    fun getIdentify(): String {
+        return "${id},${source},${url}"
+    }
+
+    fun match(identify: String): Boolean {
+        return this.getIdentify() == identify
+    }
+
+    fun match(cartoon: Cartoon): Boolean {
+        return this.id == cartoon.id && this.source == cartoon.source && this.url == cartoon.url
+    }
+
+    fun match(cartoon: CartoonCover): Boolean {
+        return this.id == cartoon.id && this.source == cartoon.source && this.url == cartoon.url
+    }
 
 
 }
