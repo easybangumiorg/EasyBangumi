@@ -2,6 +2,7 @@ package com.heyanle.easybangumi4.compose.search
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -9,13 +10,26 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.bangumi_source_api.api.component.search.SearchComponent
+import com.heyanle.bangumi_source_api.api.entity.CartoonCover
+import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
+import com.heyanle.bangumi_source_api.api.entity.toIdentify
+import com.heyanle.easy_i18n.R
+import com.heyanle.easybangumi4.base.db.dao.CartoonStarDao
 import com.heyanle.easybangumi4.base.db.dao.SearchHistoryDao
+import com.heyanle.easybangumi4.base.entity.CartoonStar
+import com.heyanle.easybangumi4.compose.common.moeSnackBar
+import com.heyanle.easybangumi4.source.SourceLibraryController
 import com.heyanle.easybangumi4.utils.ViewModelOwnerMap
+import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 /**

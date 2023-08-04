@@ -40,12 +40,14 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.heyanle.bangumi_source_api.api.component.page.SourcePage
 import com.heyanle.bangumi_source_api.api.entity.CartoonCover
+import com.heyanle.bangumi_source_api.api.entity.toIdentify
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.compose.common.CartoonCardWithCover
 import com.heyanle.easybangumi4.compose.common.CartoonCardWithoutCover
 import com.heyanle.easybangumi4.compose.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.compose.common.PagingCommon
 import com.heyanle.easybangumi4.compose.common.pagingCommon
+import com.heyanle.easybangumi4.compose.main.star.CoverStarViewModel
 import com.heyanle.easybangumi4.navigationDetailed
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -68,6 +70,7 @@ fun SourceListPage(
 ) {
 
     val vm = viewModel<SourceListViewModel>(factory = SourceListViewModelFactory(listPage))
+    val coverStarVm = viewModel<CoverStarViewModel>()
     val scope = rememberCoroutineScope()
 
 
@@ -77,6 +80,7 @@ fun SourceListPage(
         is SourcePage.SingleCartoonPage.WithCover -> {
             SourceListPageContentWithCover(
                 vm = vm,
+                coverStarVm = coverStarVm,
                 pagingItems = pi,
                 scope = scope,
                 header = header
@@ -86,6 +90,7 @@ fun SourceListPage(
         is SourcePage.SingleCartoonPage.WithoutCover -> {
             SourceListPageContentWithoutCover(
                 vm = vm,
+                coverStarVm = coverStarVm,
                 pagingItems = pi,
                 scope = scope,
                 header = header
@@ -101,6 +106,7 @@ fun SourceListPage(
 fun SourceListPageContentWithCover(
     modifier: Modifier = Modifier,
     vm: SourceListViewModel,
+    coverStarVm: CoverStarViewModel,
     pagingItems: LazyPagingItems<CartoonCover>,
     scope: CoroutineScope,
     header: (@Composable () -> Unit)? = null,
@@ -117,7 +123,7 @@ fun SourceListPageContentWithCover(
         }
     })
 
-    val starSet = vm.starFlow.collectAsState(initial = emptySet())
+    val starSet = coverStarVm.starFlow.collectAsState(initial = emptySet())
 
     val haptic = LocalHapticFeedback.current
     val lazyGridState = rememberLazyGridState()
@@ -150,18 +156,18 @@ fun SourceListPageContentWithCover(
                             it()
                         }
                     }
-                    items(items.itemCount) {
+                    items(items.itemCount) { int ->
 
-                        items[it]?.let {
+                        items[int]?.let { cover ->
                             CartoonCardWithCover(
                                 modifier = Modifier.fillMaxWidth(),
-                                star = vm.isCoverCur(it) || starSet.value.contains("${it.id} ${it.source} ${it.url}"),
-                                cartoonCover = it,
+                                star = coverStarVm.isCoverStaring(cover) || starSet.value.contains(cover.toIdentify()),
+                                cartoonCover = cover,
                                 onClick = {
                                     nav.navigationDetailed(it)
                                 },
                                 onLongPress = {
-                                    vm.longPress(it)
+                                    coverStarVm.star(it)
                                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 },
                             )
@@ -199,6 +205,7 @@ fun SourceListPageContentWithCover(
 fun SourceListPageContentWithoutCover(
     modifier: Modifier = Modifier,
     vm: SourceListViewModel,
+    coverStarVm: CoverStarViewModel,
     pagingItems: LazyPagingItems<CartoonCover>,
     scope: CoroutineScope,
     header: (@Composable () -> Unit)? = null,
@@ -214,7 +221,7 @@ fun SourceListPageContentWithoutCover(
             refreshing = false
         }
     })
-    val starSet = vm.starFlow.collectAsState(initial = emptySet())
+    val starSet = coverStarVm.starFlow.collectAsState(initial = emptySet())
 
     val lazyState = rememberLazyStaggeredGridState()
 
@@ -243,16 +250,16 @@ fun SourceListPageContentWithoutCover(
                             it()
                         }
                     }
-                    items(items.itemCount) {
-                        items[it]?.let {
+                    items(items.itemCount) { index ->
+                        items[index]?.let { cover ->
                             CartoonCardWithoutCover(
-                                cartoonCover = it,
-                                star =  vm.isCoverCur(it) || starSet.value.contains("${it.id} ${it.source} ${it.url}"),
+                                cartoonCover = cover,
+                                star =  coverStarVm.isCoverStaring(cover) || starSet.value.contains(cover.toIdentify()),
                                 onClick = {
                                     nav.navigationDetailed(it)
                                 },
                                 onLongPress = {
-                                    vm.longPress(it)
+                                    coverStarVm.star(it)
                                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 },
                             )
