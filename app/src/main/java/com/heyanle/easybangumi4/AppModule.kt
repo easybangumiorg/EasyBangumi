@@ -7,7 +7,7 @@ import com.heyanle.easybangumi4.base.preferences.PreferenceStore
 import com.heyanle.easybangumi4.base.preferences.android.AndroidPreferenceStore
 import com.heyanle.easybangumi4.base.preferences.mmkv.MMKVPreferenceStore
 import com.heyanle.easybangumi4.base.theme.EasyThemeController
-import com.heyanle.easybangumi4.compose.main.update.CartoonUpdateController
+import com.heyanle.easybangumi4.compose.main.star.update.CartoonUpdateController
 import com.heyanle.easybangumi4.preferences.CartoonPreferences
 import com.heyanle.easybangumi4.preferences.SettingMMKVPreferences
 import com.heyanle.easybangumi4.preferences.SettingPreferences

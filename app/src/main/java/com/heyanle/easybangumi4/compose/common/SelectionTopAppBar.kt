@@ -45,7 +45,8 @@ fun SelectionTopAppBar(
                     imageVector = Icons.Filled.Close, stringResource(id = R.string.close)
                 )
             }
-        }, title = {
+        },
+        title = {
             Text(text = selectionItemsCount.toString())
         }, actions = {
             if (onSelectAll != null) {

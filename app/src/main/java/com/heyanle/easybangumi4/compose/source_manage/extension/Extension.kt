@@ -1,11 +1,15 @@
-package com.heyanle.easybangumi4.compose.main.source_manage.extension
+package com.heyanle.easybangumi4.compose.source_manage.extension
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -15,7 +19,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.APP
+import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.compose.common.ExtensionContainer
 import com.heyanle.easybangumi4.compose.common.OkImage
 import com.heyanle.easybangumi4.utils.IntentHelper
@@ -29,7 +35,17 @@ import com.heyanle.extension_load.model.Extension
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExtensionTopAppBar(behavior: TopAppBarScrollBehavior) {
+    val nav = LocalNavController.current
     TopAppBar(
+        navigationIcon = {
+            IconButton(onClick = {
+                nav.popBackStack()
+            }) {
+                Icon(
+                    imageVector = Icons.Filled.ArrowBack, stringResource(id = R.string.close)
+                )
+            }
+        },
         title = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.manage)) },
         scrollBehavior = behavior
     )

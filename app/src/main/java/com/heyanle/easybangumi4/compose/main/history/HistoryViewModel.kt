@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.compose.history
+package com.heyanle.easybangumi4.compose.main.history
 
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.lifecycle.ViewModel
@@ -99,6 +99,7 @@ class HistoryViewModel : ViewModel() {
 
     // 多选
     fun onSelectionChange(cartoonHistory: CartoonHistory) {
+        lastSelectHistory = cartoonHistory
         _stateFlow.update {
             val selection = if (it.selection.contains(cartoonHistory)) {
                 it.selection.minus(cartoonHistory)
@@ -141,8 +142,13 @@ class HistoryViewModel : ViewModel() {
         _stateFlow.update {
             val selection = it.selection.toMutableSet()
             val lastList = it.history
-            val a = lastList.indexOf(lastSelectHistory)
+            var a = lastList.indexOf(lastSelectHistory)
             val b = lastList.indexOf(cartoonHistory)
+            if (b > a) {
+                a += 1
+            } else if (a > b) {
+                a -= 1
+            }
             val start = a.coerceAtMost(b)
             val end = a.coerceAtLeast(b)
             for (i in start..end) {
@@ -159,9 +165,11 @@ class HistoryViewModel : ViewModel() {
                 selection = selection
             )
         }
+        lastSelectHistory = cartoonHistory
     }
 
     fun onSelectionExit() {
+        lastSelectHistory = null
         _stateFlow.update {
             it.copy(selection = emptySet())
         }
