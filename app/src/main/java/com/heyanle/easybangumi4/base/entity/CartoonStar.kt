@@ -9,6 +9,7 @@ import com.heyanle.bangumi_source_api.api.entity.CartoonCover
 import com.heyanle.bangumi_source_api.api.entity.CartoonImpl
 import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
 import com.heyanle.bangumi_source_api.api.entity.PlayLine
+import java.net.URLEncoder
 
 /**
  * Created by HeYanLe on 2023/3/4 14:26.
@@ -166,12 +167,12 @@ data class CartoonStar(
         return CartoonSummary(id, source, url)
     }
 
-    fun getIdentify(): String {
-        return "${id},${source},${url}"
+    fun toIdentify(): String {
+        return "${id},${source},${URLEncoder.encode(url, "utf-8")}"
     }
 
     fun match(identify: String): Boolean {
-        return this.getIdentify() == identify
+        return this.toIdentify() == identify
     }
 
     fun match(cartoon: Cartoon): Boolean {
