@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.compose.main.update
+package com.heyanle.easybangumi4.compose.main.star.update
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

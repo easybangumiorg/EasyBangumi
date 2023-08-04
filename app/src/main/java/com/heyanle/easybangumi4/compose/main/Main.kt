@@ -56,11 +56,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.compose.common.SourceContainer
-import com.heyanle.easybangumi4.compose.history.History
+import com.heyanle.easybangumi4.compose.main.history.History
 import com.heyanle.easybangumi4.compose.main.home.Home
 import com.heyanle.easybangumi4.compose.main.home.HomeBottomSheet
 import com.heyanle.easybangumi4.compose.main.more.More
-import com.heyanle.easybangumi4.compose.main.source_manage.SourceManager
+import com.heyanle.easybangumi4.compose.source_manage.SourceManager
 import com.heyanle.easybangumi4.compose.main.star.Star
 import com.heyanle.easybangumi4.utils.isCurPadeMode
 import com.heyanle.okkv2.core.okkv

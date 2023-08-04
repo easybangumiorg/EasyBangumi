@@ -68,7 +68,7 @@ import com.heyanle.easybangumi4.compose.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.compose.common.SelectionTopAppBar
 import com.heyanle.easybangumi4.compose.common.TabPage
 import com.heyanle.easybangumi4.compose.main.MainViewModel
-import com.heyanle.easybangumi4.compose.main.update.Update
+import com.heyanle.easybangumi4.compose.main.star.update.Update
 import com.heyanle.easybangumi4.navigationDetailed
 
 /**

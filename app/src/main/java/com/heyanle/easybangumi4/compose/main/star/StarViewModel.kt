@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.base.db.dao.CartoonStarDao
 import com.heyanle.easybangumi4.base.entity.CartoonStar
 import com.heyanle.easybangumi4.compose.common.moeSnackBar
-import com.heyanle.easybangumi4.compose.main.update.CartoonUpdateController
+import com.heyanle.easybangumi4.compose.main.star.update.CartoonUpdateController
 import com.heyanle.easybangumi4.preferences.CartoonPreferences
 import com.heyanle.easybangumi4.preferences.SettingPreferences
 import com.heyanle.easybangumi4.utils.stringRes
@@ -225,9 +225,10 @@ class StarViewModel : ViewModel() {
     }
 
     fun onSelectionChange(cartoonStar: CartoonStar) {
+        lastSelectCartoon = cartoonStar
+        lastSelectTag = stateFlow.value.curTab
         _stateFlow.update {
-            lastSelectCartoon = cartoonStar
-            lastSelectTag = stateFlow.value.curTab
+
             val selection = if (it.selection.contains(cartoonStar)) {
                 it.selection.minus(cartoonStar)
             } else it.selection.plus(cartoonStar)
@@ -237,8 +238,6 @@ class StarViewModel : ViewModel() {
 
     fun onSelectionLongPress(cartoonStar: CartoonStar) {
         if (lastSelectTag != null && lastSelectTag == stateFlow.value.curTab) {
-            lastSelectCartoon = cartoonStar
-            lastSelectTag = stateFlow.value.curTab
             _stateFlow.update {
                 val selection = it.selection.toMutableSet()
                 val lastList = it.data[lastSelectTag] ?: listOf()
@@ -246,7 +245,7 @@ class StarViewModel : ViewModel() {
                 val b = lastList.indexOf(cartoonStar)
                 if (b > a) {
                     a += 1
-                } else if (a < b) {
+                } else if (a > b) {
                     a -= 1
                 }
                 val start = a.coerceAtMost(b)
@@ -265,6 +264,8 @@ class StarViewModel : ViewModel() {
                     selection = selection
                 )
             }
+            lastSelectCartoon = cartoonStar
+            lastSelectTag = stateFlow.value.curTab
         } else {
             // 如果和上一个不在同一个收藏夹就走普通点击逻辑
             onSelectionChange(cartoonStar)

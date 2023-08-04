@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.compose.main.source_manage
+package com.heyanle.easybangumi4.compose.source_manage
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
@@ -17,10 +17,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.heyanle.easybangumi4.compose.common.TabIndicator
-import com.heyanle.easybangumi4.compose.main.source_manage.extension.Extension
-import com.heyanle.easybangumi4.compose.main.source_manage.extension.ExtensionTopAppBar
-import com.heyanle.easybangumi4.compose.main.source_manage.source.Source
-import com.heyanle.easybangumi4.compose.main.source_manage.source.SourceTopAppBar
+import com.heyanle.easybangumi4.compose.source_manage.extension.Extension
+import com.heyanle.easybangumi4.compose.source_manage.extension.ExtensionTopAppBar
+import com.heyanle.easybangumi4.compose.source_manage.source.Source
+import com.heyanle.easybangumi4.compose.source_manage.source.SourceTopAppBar
 import com.heyanle.okkv2.core.okkv
 import kotlinx.coroutines.launch
 

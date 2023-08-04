@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.compose.main.source_manage.source
+package com.heyanle.easybangumi4.compose.source_manage.source
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
