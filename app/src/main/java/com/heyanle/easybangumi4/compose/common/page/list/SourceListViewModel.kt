@@ -42,7 +42,7 @@ class SourceListViewModel(
         cartoonStarDao.flowAll()
             .map {
                 it.map {
-                    "${it.id} ${it.source} ${it.url}"
+                    it.getIdentify()
                 }.toSet()
             }.stateIn(viewModelScope, SharingStarted.Lazily, emptySet())
 

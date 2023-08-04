@@ -81,10 +81,6 @@ class StarViewModel : ViewModel() {
     private val _stateFlow = MutableStateFlow(State(data = emptyMap()))
     val stateFlow = _stateFlow.asStateFlow()
 
-    private val _tagsFlow = cartoonPreferences.tags.flow().map { cartoonTags ->
-        cartoonTags.sortedBy { it.order }
-    }.stateIn(viewModelScope, SharingStarted.Lazily, cartoonPreferences.tags.get())
-
 
     // 最后一个选择的，用于长按区间反选
     private var lastSelectCartoon: CartoonStar? = null
