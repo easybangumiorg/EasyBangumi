@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.compose.main.update
+package com.heyanle.easybangumi4.compose.main.star.update
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -59,7 +59,7 @@ class UpdateViewModel : ViewModel() {
                 cartoonUpdateController.lastUpdateTime,
             ) { list, isUpdating, loadingError, lastUpdateTime ->
 
-                val transform: (State)->State = {
+                val transform: (State)-> State = {
                     it.copy(
                         isLoading = false,
                         isUpdating = isUpdating,

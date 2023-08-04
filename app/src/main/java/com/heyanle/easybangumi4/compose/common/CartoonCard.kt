@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -36,33 +37,66 @@ import com.heyanle.easybangumi4.source.LocalSourceBundleController
  * https://github.com/heyanLE
  */
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CartoonCardWithCover(
     modifier: Modifier = Modifier,
+    star: Boolean = false,
     cartoonCover: CartoonCover,
     onClick: (CartoonCover) -> Unit,
+    onLongPress: ((CartoonCover) -> Unit)? = null,
 ) {
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(4.dp))
-            .clickable {
-                onClick(cartoonCover)
-            }
+            .combinedClickable(
+                onClick = {
+                    onClick(cartoonCover)
+                },
+                onLongClick = {
+                    onLongPress?.invoke(cartoonCover)
+                }
+            )
             .padding(4.dp),
         horizontalAlignment = Alignment.Start,
     ) {
         if (!cartoonCover.coverUrl.isNullOrEmpty()) {
-            OkImage(
+            Box(
                 modifier = Modifier
-                    .then(modifier)
                     .aspectRatio(19 / 27F)
                     .clip(RoundedCornerShape(4.dp)),
-                image = cartoonCover.coverUrl,
-                contentDescription = cartoonCover.title,
-                errorRes = R.drawable.placeholder,
-            )
+            ) {
+                OkImage(
+                    modifier = Modifier.fillMaxSize(),
+                    image = cartoonCover.coverUrl?:"",
+                    contentDescription = cartoonCover.title,
+                    errorRes = R.drawable.placeholder,
+                )
+                if (star) {
+                    Text(
+                        fontSize = 13.sp,
+                        text = stringResource(id = com.heyanle.easy_i18n.R.string.stared_min),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier
+                            .background(
+                                MaterialTheme.colorScheme.primary,
+                                RoundedCornerShape(0.dp, 0.dp, 4.dp, 0.dp)
+                            )
+                            .padding(4.dp, 0.dp)
+                    )
+                }
+            }
+//            OkImage(
+//                modifier = Modifier
+//                    .then(modifier)
+//                    .aspectRatio(19 / 27F)
+//                    .clip(RoundedCornerShape(4.dp)),
+//                image = cartoonCover.coverUrl,
+//                contentDescription = cartoonCover.title,
+//                errorRes = R.drawable.placeholder,
+//            )
 
             Spacer(modifier = Modifier.size(4.dp))
             Text(
@@ -153,22 +187,29 @@ fun CartoonStarCardWithCover(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun CartoonCardWithoutCover(
     modifier: Modifier = Modifier,
+    star: Boolean = false,
     cartoonCover: CartoonCover,
     onClick: (CartoonCover) -> Unit,
+    onLongPress: ((CartoonCover) -> Unit)? = null,
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .then(modifier)
             .clip(RoundedCornerShape(4.dp))
-            .border(1.dp, MaterialTheme.colorScheme.outline.copy(0.6f), RoundedCornerShape(4.dp))
-            .clickable {
-                onClick(cartoonCover)
-            }
+            .border(1.dp, if(star) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(0.6f), RoundedCornerShape(4.dp))
+            .combinedClickable(
+                onClick = {
+                    onClick(cartoonCover)
+                },
+                onLongClick = {
+                    onLongPress?.invoke(cartoonCover)
+                }
+            )
             .padding(8.dp),
     ) {
 
@@ -182,6 +223,16 @@ fun CartoonCardWithoutCover(
         cartoonCover.intro?.let {
             Text(
                 text = it,
+                color = MaterialTheme.colorScheme.secondary,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.End
+            )
+        }
+        if(star){
+            Text(
+                text = stringResource(id = com.heyanle.easy_i18n.R.string.stared_min),
                 color = MaterialTheme.colorScheme.secondary,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,

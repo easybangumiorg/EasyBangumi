@@ -24,6 +24,7 @@ import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,6 +32,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.LazyPagingItems
@@ -38,12 +41,12 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.heyanle.bangumi_source_api.api.component.page.SourcePage
 import com.heyanle.bangumi_source_api.api.entity.CartoonCover
 import com.heyanle.easybangumi4.LocalNavController
-import com.heyanle.easybangumi4.navigationDetailed
 import com.heyanle.easybangumi4.compose.common.CartoonCardWithCover
 import com.heyanle.easybangumi4.compose.common.CartoonCardWithoutCover
 import com.heyanle.easybangumi4.compose.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.compose.common.PagingCommon
 import com.heyanle.easybangumi4.compose.common.pagingCommon
+import com.heyanle.easybangumi4.navigationDetailed
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -114,6 +117,9 @@ fun SourceListPageContentWithCover(
         }
     })
 
+    val starSet = vm.starFlow.collectAsState(initial = emptySet())
+
+    val haptic = LocalHapticFeedback.current
     val lazyGridState = rememberLazyGridState()
     Box(
         modifier = Modifier
@@ -149,10 +155,16 @@ fun SourceListPageContentWithCover(
                         items[it]?.let {
                             CartoonCardWithCover(
                                 modifier = Modifier.fillMaxWidth(),
-                                cartoonCover = it
-                            ) {
-                                nav.navigationDetailed(it)
-                            }
+                                star = vm.isCoverCur(it) || starSet.value.contains("${it.id} ${it.source} ${it.url}"),
+                                cartoonCover = it,
+                                onClick = {
+                                    nav.navigationDetailed(it)
+                                },
+                                onLongPress = {
+                                    vm.longPress(it)
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                },
+                            )
                         }
 
                     }
@@ -163,7 +175,7 @@ fun SourceListPageContentWithCover(
             Column(
                 modifier = Modifier.fillMaxSize()
             ) {
-                if(items.itemCount <= 0){
+                if (items.itemCount <= 0) {
                     Spacer(modifier = Modifier.size(4.dp))
                     header?.invoke()
                 }
@@ -202,8 +214,11 @@ fun SourceListPageContentWithoutCover(
             refreshing = false
         }
     })
+    val starSet = vm.starFlow.collectAsState(initial = emptySet())
 
     val lazyState = rememberLazyStaggeredGridState()
+
+    val haptic = LocalHapticFeedback.current
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -212,7 +227,7 @@ fun SourceListPageContentWithoutCover(
     ) {
 
         pagingItems.let { items ->
-            if(pagingItems.itemCount > 0) {
+            if (pagingItems.itemCount > 0) {
                 LazyVerticalStaggeredGrid(
                     columns = StaggeredGridCells.Adaptive(150.dp),
                     state = lazyState,
@@ -231,10 +246,16 @@ fun SourceListPageContentWithoutCover(
                     items(items.itemCount) {
                         items[it]?.let {
                             CartoonCardWithoutCover(
-                                cartoonCover = it
-                            ) {
-                                nav.navigationDetailed(it)
-                            }
+                                cartoonCover = it,
+                                star =  vm.isCoverCur(it) || starSet.value.contains("${it.id} ${it.source} ${it.url}"),
+                                onClick = {
+                                    nav.navigationDetailed(it)
+                                },
+                                onLongPress = {
+                                    vm.longPress(it)
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                },
+                            )
                         }
 
                     }
@@ -244,7 +265,7 @@ fun SourceListPageContentWithoutCover(
             Column(
                 modifier = Modifier.fillMaxSize(),
             ) {
-                if(items.itemCount <= 0) {
+                if (items.itemCount <= 0) {
                     Spacer(modifier = Modifier.size(4.dp))
                     header?.invoke()
                 }

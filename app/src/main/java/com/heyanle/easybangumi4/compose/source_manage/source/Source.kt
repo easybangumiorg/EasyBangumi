@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.compose.main.source_manage.source
+package com.heyanle.easybangumi4.compose.source_manage.source
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -46,7 +47,17 @@ import org.burnoutcrew.reorderable.reorderable
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SourceTopAppBar(behavior: TopAppBarScrollBehavior) {
+    val nav = LocalNavController.current
     TopAppBar(
+        navigationIcon = {
+            IconButton(onClick = {
+                nav.popBackStack()
+            }) {
+                Icon(
+                    imageVector = Icons.Filled.ArrowBack, stringResource(id = R.string.close)
+                )
+            }
+        },
         title = { Text(text = stringResource(id = R.string.manage)) },
         scrollBehavior = behavior,
         actions = {

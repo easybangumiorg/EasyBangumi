@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.compose.history
+package com.heyanle.easybangumi4.compose.main.history
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
@@ -76,7 +76,9 @@ import loli.ball.easyplayer2.utils.TimeUtils
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
-fun History() {
+fun History(
+    showBack: Boolean = false
+) {
     val vm = viewModel<HistoryViewModel>()
 
     val nav = LocalNavController.current
@@ -140,9 +142,11 @@ fun History() {
                     onTextChange = {
                         vm.search(it)
                     },
-                    onBack = {
-                        nav.popBackStack()
-                    },
+                    onBack = if (showBack) {
+                        {
+                            nav.popBackStack()
+                        }
+                    } else null,
                     onSearchExit = {
                         vm.exitSearch()
                     }
@@ -262,7 +266,7 @@ fun HistoryList(
                         onDelete = onItemDelete,
                         onLongPress = {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            vm.onSelectionChange(it)
+                            vm.onSelectionLongPress(it)
                         },
                         isShowDelete = state.selection.isEmpty()
                     )
@@ -373,7 +377,7 @@ fun HistoryTopAppBar(
     isSearch: Boolean,
     focusRequester: FocusRequester,
     text: String,
-    onBack: () -> Unit,
+    onBack: (() -> Unit)? = null,
     onSearchClick: () -> Unit,
     onClear: () -> Unit,
     onSearch: (String) -> Unit,
@@ -382,18 +386,26 @@ fun HistoryTopAppBar(
 ) {
     TopAppBar(
         scrollBehavior = scrollBehavior, navigationIcon = {
-            IconButton(onClick = {
-                if (isSearch) {
+            if (isSearch) {
+                IconButton(onClick = {
                     onSearchExit()
-                } else {
-                    onBack()
+                }) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBack, stringResource(id = R.string.back)
+                    )
                 }
-
-            }) {
-                Icon(
-                    imageVector = Icons.Filled.ArrowBack, stringResource(id = R.string.back)
-                )
+            } else {
+                onBack?.let {
+                    IconButton(onClick = {
+                        it()
+                    }) {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBack, stringResource(id = R.string.back)
+                        )
+                    }
+                }
             }
+
         }, title = {
             if (isSearch) {
                 LaunchedEffect(key1 = Unit) {

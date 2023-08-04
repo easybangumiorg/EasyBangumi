@@ -28,9 +28,9 @@ import com.heyanle.easybangumi4.compose.cartoon_play.CartoonPlay
 import com.heyanle.easybangumi4.compose.cartoon_play.CartoonPlayViewModel
 import com.heyanle.easybangumi4.compose.dlna.Dlna
 import com.heyanle.easybangumi4.compose.dlna.DlnaViewModel
-import com.heyanle.easybangumi4.compose.history.History
+import com.heyanle.easybangumi4.compose.main.history.History
 import com.heyanle.easybangumi4.compose.main.Main
-import com.heyanle.easybangumi4.compose.main.source_manage.SourceManager
+import com.heyanle.easybangumi4.compose.source_manage.SourceManager
 import com.heyanle.easybangumi4.compose.search.Search
 import com.heyanle.easybangumi4.compose.setting.AppearanceSetting
 import com.heyanle.easybangumi4.source.utils.WebViewUserHelperImpl

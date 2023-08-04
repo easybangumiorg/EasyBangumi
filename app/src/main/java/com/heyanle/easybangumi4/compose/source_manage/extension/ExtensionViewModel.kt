@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.compose.main.source_manage.extension
+package com.heyanle.easybangumi4.compose.source_manage.extension
 
 import androidx.lifecycle.ViewModel
 

@@ -156,6 +156,9 @@
 
     <string name="click_star">点击追番</string>
     <string name="stared">已经追番</string>
+    <string name="stared_min">已追番</string>
+
+    <string name="detailed_error">获取番剧详情错误</string>
 
     <string name="web_view">WebView</string>
 
