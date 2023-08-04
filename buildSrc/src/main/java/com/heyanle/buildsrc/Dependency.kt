@@ -21,7 +21,7 @@ object Version {
     const val androidx_preference = "1.2.0"
     const val gson = "2.10"
     const val leakcanary = "2.7"
-    const val kotlinx_coroutines = "1.6.4"
+    const val kotlinx_coroutines = "1.7.1"
     const val glide = "4.14.2"
     const val okkv2 = "1.3.5"
     const val junit = "4.13.2"
