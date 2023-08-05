@@ -2,20 +2,17 @@ package com.heyanle.easybangumi4.source
 
 import com.heyanle.bangumi_source_api.api.Source
 import com.heyanle.easybangumi4.preferences.SourcePreferences
-import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.extension_load.ExtensionController
 import com.heyanle.extension_load.model.Extension
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
@@ -27,48 +24,75 @@ import kotlinx.coroutines.launch
  */
 @OptIn(FlowPreview::class)
 class SourceLibraryController(
-    private val sourcePreferences: SourcePreferences
+    private val sourcePreferences: SourcePreferences,
+    private val migrationController: SourceMigrationController,
 ) {
 
     val scope = MainScope()
 
     private val configFlow = sourcePreferences.configs.stateIn(scope)
 
-    val sourceLibraryFlow =
+    val isLoading = MutableStateFlow(true)
+
+    private val _sourceLibraryFlow =
         MutableStateFlow<List<Pair<Source, SourcePreferences.SourceConfig>>>(emptyList())
-    val sourceBundleFlow: StateFlow<SourceBundle> = sourceLibraryFlow.map { pairs ->
-            "ddd".loge("SourceLibrary")
-            SourceBundle(pairs.filter { it.second.enable }
-                .sortedBy { it.second.order }.map { it.first })
-        }.distinctUntilChanged().stateIn(
-            scope,
-            SharingStarted.Lazily,
-            SourceBundle(sourceLibraryFlow.value.filter { it.second.enable }
-                .sortedBy { it.second.order }.map { it.first })
-        )
+    val sourceLibraryFlow = _sourceLibraryFlow.asStateFlow()
+
+    private val _sourceBundleFlow: MutableStateFlow<SourceBundle> =
+        MutableStateFlow(SourceBundle(emptyList()))
+    val sourceBundleFlow = _sourceBundleFlow.asStateFlow()
 
 
     init {
         scope.launch {
             combine(
                 configFlow,
-                ExtensionController.installedExtensionsFlow.filterIsInstance<ExtensionController.ExtensionState.Extensions>()
-                    .map { it.extensions }.distinctUntilChanged().stateIn(scope)
+                ExtensionController.installedExtensionsFlow
+                    .stateIn(scope)
             )
-            { configMap, extensions ->
+            { configMap, extensionState ->
+                when (extensionState) {
+                    is ExtensionController.ExtensionState.Extensions -> {
+                        val sources =
+                            extensionState.extensions.filterIsInstance<Extension.Installed>()
+                                .flatMap {
+                                    it.sources
+                                }
+                        migrationController.migration(sources)
+                        val rc = realConfig(sources, configMap)
+                        val l = sources.flatMap {
+                            val config =
+                                rc[it.key]
+                                    ?: return@flatMap emptyList<Pair<Source, SourcePreferences.SourceConfig>>()
+                            listOf(it to config)
+                        }.sortedBy { it.second.order }
+                        _sourceLibraryFlow.emit(l)
+                        isLoading.emit(false)
+                    }
 
-                val sources = extensions.filterIsInstance<Extension.Installed>().flatMap {
-                    it.sources
+                    is ExtensionController.ExtensionState.Loading -> {
+                        isLoading.update {
+                            true
+                        }
+                    }
+
+                    else -> {
+                    }
                 }
-                sources to realConfig(sources, configMap)
-            }.collectLatest { p ->
-                val l = p.first.flatMap {
-                    val config =
-                        p.second[it.key]
-                            ?: return@flatMap emptyList<Pair<Source, SourcePreferences.SourceConfig>>()
-                    listOf(it to config)
-                }.sortedBy { it.second.order }
-                sourceLibraryFlow.emit(l)
+            }.collect()
+        }
+
+        // 迁移中的源暂时关闭
+        scope.launch {
+            combine(
+                sourceLibraryFlow,
+                migrationController.migratingSource
+            ) { sl, mi ->
+                SourceBundle(sl.filter { it.second.enable && !mi.contains(it.first) }
+                    .sortedBy { it.second.order }.map { it.first })
+
+            }.collectLatest { bundle ->
+                _sourceBundleFlow.emit(bundle)
             }
         }
 

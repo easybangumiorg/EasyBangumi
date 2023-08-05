@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -32,6 +33,7 @@ class UpdateViewModel : ViewModel() {
     data class State(
         val isLoading: Boolean = true,
         val isUpdating: Boolean = false,
+        val searchKey: String = "",
         val updateCartoonList: List<UpdateItem> = emptyList(),
         val updateCount: Int = 0,
         val lastUpdateTime: Long = -1,
@@ -39,9 +41,9 @@ class UpdateViewModel : ViewModel() {
     )
 
     sealed class UpdateItem {
-        data class Header(val header: String): UpdateItem()
+        data class Header(val header: String) : UpdateItem()
 
-        data class Cartoon(val star: CartoonStar): UpdateItem()
+        data class Cartoon(val star: CartoonStar) : UpdateItem()
     }
 
     private val _stateFlow = MutableStateFlow(State())
@@ -53,24 +55,26 @@ class UpdateViewModel : ViewModel() {
     init {
         viewModelScope.launch {
             combine(
+                _stateFlow.map { it.searchKey }.distinctUntilChanged(),
                 getCartoonStarFlow(),
                 cartoonUpdateController.isUpdate,
                 cartoonUpdateController.loadingError,
                 cartoonUpdateController.lastUpdateTime,
-            ) { list, isUpdating, loadingError, lastUpdateTime ->
+            ) { searchKey, list, isUpdating, loadingError, lastUpdateTime ->
 
-                val transform: (State)-> State = {
+                val transform: (State) -> State = {
                     it.copy(
+                        searchKey = searchKey,
                         isLoading = false,
                         isUpdating = isUpdating,
-                        updateCartoonList = list.toUpdateItems(),
+                        updateCartoonList = list.toUpdateItems(searchKey),
                         updateCount = list.size,
                         lastUpdateTime = lastUpdateTime,
                         lastUpdateError = loadingError,
                     )
                 }
                 transform
-            }.collectLatest {transform ->
+            }.collectLatest { transform ->
                 _stateFlow.update {
                     transform(it)
                 }
@@ -89,10 +93,17 @@ class UpdateViewModel : ViewModel() {
 //        }
     }
 
-    private fun List<CartoonStar>.toUpdateItems(): List<UpdateItem> {
-        return map {
+    fun search(
+        key: String
+    ){
+        _stateFlow.update {
+            it.copy(searchKey = key)
+        }
+    }
+    private fun List<CartoonStar>.toUpdateItems(searchKey: String): List<UpdateItem> {
+        return filter { searchKey.isEmpty() || it.match(searchKey) }.map {
             UpdateItem.Cartoon(it)
-        }.insertSeparators{before, after ->
+        }.insertSeparators { before, after ->
 
             val beforeDate = before?.star?.lastUpdateTime?.toDateKey() ?: Date(0)
             val afterDate = after?.star?.lastUpdateTime?.toDateKey() ?: Date(0)
@@ -106,21 +117,22 @@ class UpdateViewModel : ViewModel() {
                     afterCalendar.clear(Calendar.SECOND)
                     afterCalendar.clear(Calendar.MILLISECOND)
 
-                    val todayCalendar =  Calendar.getInstance(Locale.getDefault())
+                    val todayCalendar = Calendar.getInstance(Locale.getDefault())
                     todayCalendar.time = Date(System.currentTimeMillis())
                     todayCalendar.clear(Calendar.HOUR_OF_DAY)
                     todayCalendar.clear(Calendar.MINUTE)
                     todayCalendar.clear(Calendar.SECOND)
                     todayCalendar.clear(Calendar.MILLISECOND)
 
-                    val diffDays = (todayCalendar.timeInMillis - afterCalendar.timeInMillis)/(24 * 60 * 60 * 1000)
-                    val text = when(diffDays){
+                    val diffDays =
+                        (todayCalendar.timeInMillis - afterCalendar.timeInMillis) / (24 * 60 * 60 * 1000)
+                    val text = when (diffDays) {
                         0L -> stringRes(com.heyanle.easy_i18n.R.string.today)
                         1L -> stringRes(com.heyanle.easy_i18n.R.string.yesterday)
                         else -> {
-                            if(diffDays <= 7L){
+                            if (diffDays <= 7L) {
                                 stringRes(com.heyanle.easy_i18n.R.string.day_age, diffDays)
-                            }else{
+                            } else {
                                 DateFormat.getDateInstance(DateFormat.SHORT).format(afterDate)
                             }
                         }
@@ -138,7 +150,7 @@ class UpdateViewModel : ViewModel() {
             if (cartoonUpdateController.tryUpdate(isStrict)) {
                 stringRes(if (isStrict) com.heyanle.easy_i18n.R.string.start_update_strict else com.heyanle.easy_i18n.R.string.start_update)
                     .moeSnackBar()
-            }else{
+            } else {
                 stringRes(com.heyanle.easy_i18n.R.string.doing_update_wait).moeSnackBar()
             }
         }

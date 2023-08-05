@@ -28,11 +28,14 @@ import com.heyanle.easybangumi4.compose.cartoon_play.CartoonPlay
 import com.heyanle.easybangumi4.compose.cartoon_play.CartoonPlayViewModel
 import com.heyanle.easybangumi4.compose.dlna.Dlna
 import com.heyanle.easybangumi4.compose.dlna.DlnaViewModel
-import com.heyanle.easybangumi4.compose.main.history.History
 import com.heyanle.easybangumi4.compose.main.Main
-import com.heyanle.easybangumi4.compose.source_manage.SourceManager
+import com.heyanle.easybangumi4.compose.main.history.History
 import com.heyanle.easybangumi4.compose.search.Search
-import com.heyanle.easybangumi4.compose.setting.AppearanceSetting
+import com.heyanle.easybangumi4.compose.setting.Setting
+import com.heyanle.easybangumi4.compose.setting.SettingPage
+import com.heyanle.easybangumi4.compose.source_config.SourceConfig
+import com.heyanle.easybangumi4.compose.source_manage.SourceManager
+import com.heyanle.easybangumi4.compose.tags.CartoonTag
 import com.heyanle.easybangumi4.source.utils.WebViewUserHelperImpl
 import com.heyanle.easybangumi4.utils.loge
 import java.lang.ref.WeakReference
@@ -67,16 +70,24 @@ const val SEARCH = "search"
 
 const val ABOUT = "about"
 
-const val DLNA = ""
+const val SOURCE_CONFIG = "source_config"
 
+const val DLNA = "dlna"
+
+const val SETTING = "setting"
+
+const val TAG_MANAGE = "tag_manage"
 const val APPEARANCE_SETTING = "appearance_setting"
 
 fun NavHostController.navigationSearch(defSourceKey: String) {
-    navigate("${SEARCH}?&defSourceKey=${defSourceKey}")
+    val ed = URLEncoder.encode(defSourceKey, "utf-8")
+    navigate("${SEARCH}?&defSourceKey=${ed}")
 }
 
 fun NavHostController.navigationSearch(defSearchKey: String, defSourceKey: String) {
-    navigate("${SEARCH}?defSearchKey=${defSearchKey}&defSourceKey=${defSourceKey}")
+    val ed = URLEncoder.encode(defSearchKey, "utf-8")
+    val es = URLEncoder.encode(defSourceKey, "utf-8")
+    navigate("${SEARCH}?defSearchKey=${ed}&defSourceKey=${es}")
 }
 
 fun NavHostController.navigationSourceHome(key: String) {
@@ -86,15 +97,17 @@ fun NavHostController.navigationSourceHome(key: String) {
 fun NavHostController.navigationDetailed(id: String, url: String, source: String) {
     val el = URLEncoder.encode(url, "utf-8")
     val ed = URLEncoder.encode(id, "utf-8")
+    val es = URLEncoder.encode(source, "utf-8")
     // easyTODO("详情页")
-    navigate("${DETAILED}?url=${el}&source=${source}&id=${ed}")
+    navigate("${DETAILED}?url=${el}&source=${es}&id=${ed}")
 }
 
 fun NavHostController.navigationDetailed(cartoonCover: CartoonCover) {
     val url = URLEncoder.encode(cartoonCover.url, "utf-8")
     val id = URLEncoder.encode(cartoonCover.id, "utf-8")
+    val es = URLEncoder.encode(cartoonCover.source, "utf-8")
     // easyTODO("详情页")
-    navigate("${DETAILED}?url=${url}&source=${cartoonCover.source}&id=${id}")
+    navigate("${DETAILED}?url=${url}&source=${es}&id=${id}")
 }
 
 
@@ -107,8 +120,9 @@ fun NavHostController.navigationDetailed(
     // easyTODO("详情页")
     val url = URLEncoder.encode(cartoonCover.url, "utf-8")
     val id = URLEncoder.encode(cartoonCover.id, "utf-8")
+    val es = URLEncoder.encode(cartoonCover.source, "utf-8")
     // easyTODO("详情页")
-    navigate("${DETAILED}?url=${url}&source=${cartoonCover.source}&id=${id}&lineIndex=${lineIndex}&episode=${episode}&adviceProgress=${adviceProgress}")
+    navigate("${DETAILED}?url=${url}&source=${es}&id=${id}&lineIndex=${lineIndex}&episode=${episode}&adviceProgress=${adviceProgress}")
 }
 
 fun NavHostController.navigationDlna(
@@ -119,8 +133,9 @@ fun NavHostController.navigationDlna(
     // easyTODO("详情页")
     val url = URLEncoder.encode(cartoonCover.url, "utf-8")
     val id = URLEncoder.encode(cartoonCover.id, "utf-8")
+    val ed = URLEncoder.encode(cartoonCover.source, "utf-8")
     // easyTODO("详情页")
-    navigate("${DLNA}?url=${url}&source=${cartoonCover.source}&id=${id}&lineIndex=${lineIndex}&episode=${episode}")
+    navigate("${DLNA}?url=${url}&source=${ed}&id=${id}&lineIndex=${lineIndex}&episode=${episode}")
 }
 
 fun NavHostController.navigationDetailed(
@@ -132,8 +147,26 @@ fun NavHostController.navigationDetailed(
     // easyTODO("详情页")
     val el = URLEncoder.encode(url, "utf-8")
     val ed = URLEncoder.encode(id, "utf-8")
+    val es = URLEncoder.encode(source, "utf-8")
     // easyTODO("详情页")
-    navigate("${DETAILED}?url=${el}&source=${source}&id=${ed}&lineIndex=${lineIndex}&episode=${episode}&adviceProgress=${adviceProgress}")
+    navigate("${DETAILED}?url=${el}&source=${es}&id=${ed}&lineIndex=${lineIndex}&episode=${episode}&adviceProgress=${adviceProgress}")
+}
+
+fun NavHostController.navigationSourceConfig(
+    source: String
+) {
+    val es = URLEncoder.encode(source, "utf-8")
+    navigate("${SOURCE_CONFIG}?source_key=${es}")
+}
+
+fun NavHostController.navigationSetting(
+    settingPage: SettingPage
+){
+    navigate("${SETTING}/${settingPage.router}")
+}
+
+fun NavHostController.navigationCartoonTag(){
+    navigate(TAG_MANAGE)
 }
 
 // 缺省路由
@@ -215,16 +248,27 @@ fun Nav() {
                 )
                 CartoonPlay(
                     id = URLDecoder.decode(id, "utf-8"),
-                    source = source,
+                    source = URLDecoder.decode(source, "utf-8"),
                     url = URLDecoder.decode(url, "utf-8"),
                     CartoonPlayViewModel.EnterData(lineIndex, episode, adviceProgress)
                 )
             }
 
-            composable(APPEARANCE_SETTING) {
+            composable(
+                "${SETTING}/{router}",
+                arguments = listOf(
+                    navArgument("router") { defaultValue = SettingPage.Appearance.router },
+                )
+            ){
+                val router = it.arguments?.getString("router")?:SettingPage.Appearance.router
                 NormalSystemBarColor()
-                AppearanceSetting()
+                Setting(router = router)
             }
+
+//            composable(APPEARANCE_SETTING) {
+//                NormalSystemBarColor()
+//                AppearanceSetting()
+//            }
 
             composable(WEB_VIEW_USER) {
                 kotlin.runCatching {
@@ -273,13 +317,16 @@ fun Nav() {
                     color = MaterialTheme.colorScheme.background,
                     contentColor = MaterialTheme.colorScheme.onBackground
                 ) {
-                    Search(defSearchKey = defSearchKey, defSourceKey = defSourceKey)
+                    Search(
+                        defSearchKey = URLDecoder.decode(defSearchKey, "utf-8"),
+                        defSourceKey = URLDecoder.decode(defSourceKey, "utf-8")
+                    )
                 }
 
 
             }
 
-            composable(ABOUT){
+            composable(ABOUT) {
                 NormalSystemBarColor()
                 About()
             }
@@ -299,7 +346,7 @@ fun Nav() {
                         type = NavType.IntType
                     },
                 )
-            ){
+            ) {
                 val id = it.arguments?.getString("id") ?: ""
                 val source = it.arguments?.getString("source") ?: ""
                 val url = it.arguments?.getString("url") ?: ""
@@ -310,9 +357,29 @@ fun Nav() {
                 val episode = it.arguments?.getInt("episode") ?: -1
 
                 NormalSystemBarColor()
-                Dlna(id = id, source = source, url = url, DlnaViewModel.EnterData(lineIndex, episode))
+                Dlna(
+                    id = URLDecoder.decode(id, "utf-8"),
+                    source = URLDecoder.decode(source, "utf-8"),
+                    url = URLDecoder.decode(url, "utf-8"),
+                    DlnaViewModel.EnterData(lineIndex, episode)
+                )
             }
 
+            composable(
+                "${SOURCE_CONFIG}?source_key={key}",
+                arguments = listOf(
+                    navArgument("key") { defaultValue = "" },
+                )
+            ) {
+                val source = it.arguments?.getString("key") ?: ""
+                NormalSystemBarColor()
+                SourceConfig(sourceKey = URLDecoder.decode(source, "utf-8"))
+            }
+
+            composable(TAG_MANAGE){
+                NormalSystemBarColor()
+                CartoonTag()
+            }
         }
     }
 

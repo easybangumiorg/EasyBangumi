@@ -8,6 +8,6 @@ interface PreferenceHelper {
 
     fun save(key: String, value: String)
 
-    fun load(key: String, def: String)
+    fun load(key: String, def: String): String
 
 }

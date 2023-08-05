@@ -1,6 +1,8 @@
 package com.heyanle.easybangumi4.preferences
 
-import com.heyanle.easybangumi4.base.preferences.PreferenceStore
+import com.heyanle.bangumi_source_api.api.Source
+import com.heyanle.easybangumi4.base.preferences.Preference
+import com.heyanle.easybangumi4.base.preferences.hekv.HeKVPreferenceStore
 import com.heyanle.easybangumi4.utils.jsonTo
 import com.heyanle.easybangumi4.utils.toJson
 
@@ -9,12 +11,13 @@ import com.heyanle.easybangumi4.utils.toJson
  * https://github.com/heyanLE
  */
 class SourcePreferences(
-    private val preferenceStore: PreferenceStore
+    private val preferenceStore: HeKVPreferenceStore
 ) {
     data class SourceConfig(
         val key: String,
         val enable: Boolean,
         val order: Int,
+        val versionCode: Int = 0,
     )
 
 
@@ -29,6 +32,13 @@ class SourcePreferences(
             it.jsonTo()
         }
     )
+
+    // 获取本地存储的源版本，用于判断是否需要迁移
+    fun getLastVersion(
+        source: Source
+    ): Preference<Int>{
+        return preferenceStore.getInt("version-${source.key}", source.versionCode)
+    }
 
 
 }

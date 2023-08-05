@@ -37,7 +37,7 @@ class CartoonPlayViewModel: ViewModel() {
         cartoonSummary: CartoonSummary,
         info: DetailedViewModel.DetailedState.Info,
         enter: EnterData?,
-        onTitle: (String)->Unit={},
+        //onTitle: (String)->Unit={},
     ){
         //enter.loge("CartoonPlay")
         viewModelScope.launch {
@@ -60,7 +60,7 @@ class CartoonPlayViewModel: ViewModel() {
             }
             //realEnter.loge("CartoonPlay")
             CartoonPlayingManager.changeLine(cartoonSummary.source, info.detail, lineIndex ,info.playLine[lineIndex], realEnter.episode, realEnter.adviceProgress)
-            onTitle(info.detail.title + " - " + info.playLine[lineIndex].episode[realEnter.episode])
+            //onTitle(info.detail.title + " - " + info.playLine[lineIndex].episode[realEnter.episode])
         }
 
     }
