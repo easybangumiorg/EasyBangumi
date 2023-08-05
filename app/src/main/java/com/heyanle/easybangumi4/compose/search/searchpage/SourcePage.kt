@@ -1,16 +1,23 @@
 package com.heyanle.easybangumi4.compose.search.searchpage
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -39,15 +46,18 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.google.accompanist.flowlayout.FlowRow
 import com.heyanle.bangumi_source_api.api.component.search.SearchComponent
@@ -59,6 +69,7 @@ import com.heyanle.easybangumi4.compose.common.EmptyPage
 import com.heyanle.easybangumi4.compose.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.compose.common.PagingCommon
 import com.heyanle.easybangumi4.compose.common.pagingCommon
+import com.heyanle.easybangumi4.compose.main.star.CoverStarViewModel
 import com.heyanle.easybangumi4.compose.search.SearchViewModel
 import com.heyanle.easybangumi4.navigationDetailed
 import kotlinx.coroutines.delay
@@ -80,6 +91,7 @@ fun SearchPage(
 
     val realSearchKey by searchViewModel.searchFlow.collectAsState()
     val vm = SearchPageViewModelFactory.newViewModel(searchComponent = searchComponent)
+    val starVm = viewModel<CoverStarViewModel>()
 
     val scope = rememberCoroutineScope()
 
@@ -106,6 +118,7 @@ fun SearchPage(
     })
 
     val lazyListState = rememberLazyListState()
+    val haptic = LocalHapticFeedback.current
 
     if (page == null) {
         SearchEmptyPage(
@@ -129,7 +142,7 @@ fun SearchPage(
 
             if (page.itemCount > 0) {
                 LazyColumn(
-                    modifier = Modifier.nestedScroll(object: NestedScrollConnection {
+                    modifier = Modifier.nestedScroll(object : NestedScrollConnection {
                         override fun onPostScroll(
                             consumed: Offset,
                             available: Offset,
@@ -144,11 +157,18 @@ fun SearchPage(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
                 ) {
-                    items(page.itemCount){
+                    items(page.itemCount) {
                         page[it]?.let {
-                            CartoonSearchItem(cartoonCover = it) {
-                                nav.navigationDetailed(it)
-                            }
+                            CartoonSearchItem(
+                                cartoonCover = it,
+                                isStar = starVm.isCoverStarted(it),
+                                onClick = {
+                                    nav.navigationDetailed(it)
+                                },
+                                onLongPress = {
+                                    starVm.star(it)
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                })
                         }
 
                     }
@@ -239,37 +259,91 @@ fun SearchEmptyPage(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CartoonSearchItem(
     modifier: Modifier = Modifier,
     cartoonCover: CartoonCover,
+    isStar: Boolean = false,
     onClick: (CartoonCover) -> Unit,
+    onLongPress: (CartoonCover) -> Unit,
 ) {
-    Row (
+    Row(
         modifier = Modifier
             .fillMaxWidth()
+            .height(IntrinsicSize.Min)
             .clip(RoundedCornerShape(4.dp))
-            .clickable {
-                onClick(cartoonCover)
-            }
+            .combinedClickable(
+                onClick = {
+                    onClick(cartoonCover)
+                },
+                onLongClick = {
+                    onLongPress(cartoonCover)
+                }
+            )
             .padding(4.dp)
             .then(modifier),
         horizontalArrangement = Arrangement.Start
     ) {
-        if(cartoonCover.coverUrl != null){
-            CartoonCard(cover = cartoonCover.coverUrl?:"", name = cartoonCover.title, source = null)
+        if (cartoonCover.coverUrl != null) {
+            CartoonCard(
+                cover = cartoonCover.coverUrl ?: "",
+                name = cartoonCover.title,
+                source = null
+            )
 
-            Spacer(modifier = Modifier.size(8.dp))
+            Spacer(modifier = Modifier.fillMaxHeight().width(8.dp))
             Column(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f).fillMaxHeight()
             ) {
-                Text(text = cartoonCover.title, maxLines = 2, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    text = cartoonCover.title,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.bodyLarge
+                )
                 Spacer(modifier = Modifier.size(8.dp))
-                Text(text = cartoonCover.intro?:"", style = MaterialTheme.typography.bodyLarge,)
+                Text(text = cartoonCover.intro ?: "", style = MaterialTheme.typography.bodyLarge)
+                if(isStar){
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(
+                        fontSize = 13.sp,
+                        text = stringResource(id = R.string.stared_min),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier
+                            .background(
+                                MaterialTheme.colorScheme.primary,
+                                RoundedCornerShape(4.dp)
+                            )
+                            .padding(8.dp, 4.dp)
+                            .align(Alignment.End),
+                    )
+                }
             }
-        }else{
-            Text(text = cartoonCover.title, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
-            Text(text = cartoonCover.intro?:"", maxLines = 1, overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onSurface)
+        } else {
+            Text(
+                text = cartoonCover.title,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                text = cartoonCover.intro ?: "",
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                fontSize = 13.sp,
+                text = stringResource(id = R.string.stared_min),
+                color = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier
+                    .background(
+                        MaterialTheme.colorScheme.primary,
+                        RoundedCornerShape(4.dp)
+                    )
+                    .padding(8.dp, 4.dp)
+            )
         }
     }
 }

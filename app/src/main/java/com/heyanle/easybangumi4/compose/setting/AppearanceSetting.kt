@@ -8,12 +8,12 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -27,19 +27,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Android
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.NightsStay
 import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
@@ -50,6 +46,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -71,90 +68,64 @@ import kotlinx.coroutines.launch
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppearanceSetting() {
+fun ColumnScope.AppearanceSetting(
+    nestedScrollConnection: NestedScrollConnection
+) {
 
     val nav = LocalNavController.current
-
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     val scope = rememberCoroutineScope()
 
     val settingPreferences: SettingPreferences by Injekt.injectLazy()
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background,
-        contentColor = MaterialTheme.colorScheme.onBackground
+    Column(
+        modifier = Modifier
+            .weight(1f)
+            .nestedScroll(nestedScrollConnection)
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Column {
-            TopAppBar(
-                title = { Text(text = stringResource(id = R.string.appearance_setting)) },
-                navigationIcon = {
-                    IconButton(onClick = {
-                        nav.popBackStack()
-                    }) {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowBack,
-                            stringResource(id = R.string.back)
-                        )
-                    }
-                },
-                scrollBehavior = scrollBehavior
 
-            )
+        Text(
+            modifier = Modifier.padding(horizontal = 12.dp),
+            text = stringResource(id = R.string.dark_mode),
+            color = MaterialTheme.colorScheme.primary
+        )
 
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .nestedScroll(scrollBehavior.nestedScrollConnection)
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
 
-                Text(
-                    modifier = Modifier.padding(horizontal = 12.dp),
-                    text = stringResource(id = R.string.dark_mode),
-                    color = MaterialTheme.colorScheme.primary
+        DarkModeItem()
+
+        Text(
+            modifier = Modifier.padding(horizontal = 12.dp),
+            text = stringResource(id = R.string.theme),
+            color = MaterialTheme.colorScheme.primary
+        )
+
+        ThemeModeItem()
+
+        Text(
+            modifier = Modifier.padding(horizontal = 12.dp),
+            text = stringResource(id = R.string.show),
+            color = MaterialTheme.colorScheme.primary
+        )
+
+        EmumPreferenceItem<SettingPreferences.PadMode>(
+            title = {  Text(text = stringResource(id = R.string.pad_mode)) },
+            textList =  remember {
+                listOf(
+                    stringRes(R.string.auto),
+                    stringRes(R.string.always_on),
+                    stringRes(R.string.always_off),
                 )
-
-
-                DarkModeItem()
-
-                Text(
-                    modifier = Modifier.padding(horizontal = 12.dp),
-                    text = stringResource(id = R.string.theme),
-                    color = MaterialTheme.colorScheme.primary
-                )
-
-                ThemeModeItem()
-
-                Text(
-                    modifier = Modifier.padding(horizontal = 12.dp),
-                    text = stringResource(id = R.string.show),
-                    color = MaterialTheme.colorScheme.primary
-                )
-
-                EmumPreferenceItem<SettingPreferences.PadMode>(
-                    title = {  Text(text = stringResource(id = R.string.pad_mode)) },
-                    textList =  remember {
-                        listOf(
-                            stringRes(R.string.auto),
-                            stringRes(R.string.always_on),
-                            stringRes(R.string.always_off),
-                        )
-                    },
-                    preference = settingPreferences.padMode,
-                    onChangeListener = {
-                        scope.launch {
-                            stringRes(R.string.some_page_should_reboot).moeSnackBar()
-                        }
-                    }
-                )
-
+            },
+            preference = settingPreferences.padMode,
+            onChangeListener = {
+                scope.launch {
+                    stringRes(R.string.some_page_should_reboot).moeSnackBar()
+                }
             }
+        )
 
-
-        }
     }
 
 

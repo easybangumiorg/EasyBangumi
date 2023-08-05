@@ -52,13 +52,13 @@ object C {
             About.Url(
                 icon = R.drawable.qq,
                 title = stringRes(com.heyanle.easy_i18n.R.string.qq_chanel),
-                msg = stringRes(com.heyanle.easy_i18n.R.string.click_to_add),
+                msg = stringRes(com.heyanle.easy_i18n.R.string.click_to_join),
                 url = "https://pd.qq.com/s/4q8rd0285"
             ),
             About.Url(
                 icon = R.drawable.telegram,
                 title = stringRes(com.heyanle.easy_i18n.R.string.telegram),
-                msg = stringRes(com.heyanle.easy_i18n.R.string.click_to_add),
+                msg = stringRes(com.heyanle.easy_i18n.R.string.click_to_join),
                 url = "https://t.me/easybangumi"
             ),
             About.Url(

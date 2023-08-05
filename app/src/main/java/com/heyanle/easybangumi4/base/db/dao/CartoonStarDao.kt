@@ -31,8 +31,8 @@ interface CartoonStarDao {
     @Query("SELECT * FROM CartoonStar ORDER BY createTime DESC")
     fun flowAll(): Flow<List<CartoonStar>>
 
-
-
+    @Query("SELECT * FROM CartoonStar WHERE source=(:source)")
+    suspend fun getAllBySource(source: String): List<CartoonStar>
     @Query("SELECT * FROM CartoonStar WHERE id=(:id) AND source=(:source) AND url=(:url)")
     suspend fun getByCartoonSummary(id: String, source: String, url: String): CartoonStar?
 
@@ -65,6 +65,16 @@ interface CartoonStarDao {
             } else {
                 update(cartoonStar.copy(createTime = old.createTime, lastUpdateTime = lastUpdateTime?:cartoonStar.lastUpdateTime))
             }
+        }
+    }
+
+    @Transaction
+    suspend fun migration(old: List<CartoonStar>, new: List<CartoonStar>){
+        old.forEach {
+            deleteByCartoonSummary(it.id, it.source, it.url)
+        }
+        new.forEach {
+            modify(it)
         }
     }
 

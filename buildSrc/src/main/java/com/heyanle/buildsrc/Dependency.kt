@@ -28,7 +28,7 @@ object Version {
     const val androidx_lifecycle_view_model = "2.6.1"
     const val androidx_lifecycle_runtime_ktx = "2.6.1"
     const val exoplayer = "2.19.0"
-    const val easy_player = "1.2.3"
+    const val easy_player = "1.2.5"
 
     const val accompanist = "0.31.2-alpha"
     const val navigation_compose = "2.7.0-rc01"

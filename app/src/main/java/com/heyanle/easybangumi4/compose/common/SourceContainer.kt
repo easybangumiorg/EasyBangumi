@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -19,9 +21,11 @@ import com.heyanle.easybangumi4.C
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.source.LocalSourceBundleController
 import com.heyanle.easybangumi4.source.SourceBundle
+import com.heyanle.easybangumi4.source.SourceLibraryController
 import com.heyanle.easybangumi4.utils.openUrl
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.easybangumi4.utils.toast
+import com.heyanle.injekt.core.Injekt
 
 /**
  * Created by HeYanLe on 2023/2/22 23:53.
@@ -33,14 +37,22 @@ fun SourceContainer(
     errorContainerColor: Color = Color.Transparent,
     content: @Composable (SourceBundle) -> Unit,
 ) {
+    val sourceLibraryController: SourceLibraryController by Injekt.injectLazy()
     val animSources = LocalSourceBundleController.current
+    val isLoading by sourceLibraryController.isLoading.collectAsState()
     val anim = animSources
     Box(
         modifier = Modifier
             .fillMaxSize()
             .then(modifier)
     ) {
-        if (anim.empty()) {
+        if (isLoading) {
+            LoadingPage(
+                modifier = Modifier
+                    .fillMaxSize(),
+                loadingMsg = stringResource(id = R.string.source_loading)
+            )
+        } else if (anim.empty()) {
             val nav = LocalNavController.current
             ErrorPage(
                 modifier = Modifier
@@ -82,18 +94,27 @@ fun SourceContainer(
 @Composable
 fun SourceContainerBase(
     modifier: Modifier = Modifier,
-    hasSource: (SourceBundle)->Boolean,
+    hasSource: (SourceBundle) -> Boolean,
     errorContainerColor: Color = Color.Transparent,
     content: @Composable (SourceBundle) -> Unit,
-){
+) {
     val animSources = LocalSourceBundleController.current
     val anim = animSources
+
+    val sourceLibraryController: SourceLibraryController by Injekt.injectLazy()
+    val isLoading by sourceLibraryController.isLoading.collectAsState()
     Box(
         modifier = Modifier
             .fillMaxSize()
             .then(modifier)
     ) {
-        if (!hasSource(anim)) {
+        if (isLoading) {
+            LoadingPage(
+                modifier = Modifier
+                    .fillMaxSize(),
+                loadingMsg = stringResource(id = R.string.source_loading)
+            )
+        } else if (!hasSource(anim)) {
             val nav = LocalNavController.current
             ErrorPage(
                 modifier = Modifier

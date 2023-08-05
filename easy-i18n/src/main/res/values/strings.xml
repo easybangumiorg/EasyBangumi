@@ -24,10 +24,15 @@
 
     <string name="info_moesnackbar_swipe">右划关闭 →</string>
 
+    <string name="now_in_private">当前处于无痕模式</string>
     <string name="in_private">无痕模式</string>
     <string name="in_private_msg">暂停记录观看历史</string>
 
     <string name="appearance_setting">外观设置</string>
+    <string name="player_setting">播放设置</string>
+    
+    <string name="use_external_player">使用外置播放器</string>
+    <string name="player_orientation_mode">跟随传感器切换全屏</string>
 
     <string name="theme">主题</string>
 
@@ -59,10 +64,17 @@
     <string name="manage">管理</string>
     <string name="more">更多</string>
 
+    <string name="delete_tag">删除标签</string>
+    <string name="rename_tag">重命名标签</string>
+    <string name="new_tag">新建标签</string>
     <string name="change_tag">修改标签</string>
 
     <string name="no_tag">你还没有标签</string>
     <string name="click_to_manage_tag">跳转到标签管理页？</string>
+
+    <string name="tag_manage">标签管理</string>
+
+    <string name="source_config">番剧配置</string>
 
     <string name="source_manage">番源管理</string>
     <string name="choose_source">选择番源</string>
@@ -106,6 +118,9 @@
 
     <string name="no_play_line">没有播放线路</string>
 
+    <string name="migrating">数据升级中</string>
+
+    <string name="source_loading">番剧源加载中</string>
     <string name="no_source">没有番剧源</string>
     <string name="click_to_get">点击获取</string>
 
@@ -215,7 +230,7 @@
 
     <string name="telegram">Telegram</string>
 
-    <string name="click_to_add">点击加入</string>
+    <string name="click_to_join">点击加入</string>
     <string name="click_to_explore">点击浏览</string>
 
     <string name="extension">扩展</string>
@@ -242,6 +257,8 @@
 
     <string name="some_page_should_reboot">某些界面需要重启软件刷新</string>
     <string name="long_touch_to_drag">长按可拖拽排序</string>
+
+    <string name="click_to_add">点击新增</string>
 
     <string name="try_play_next">尝试播放下一集！</string>
 

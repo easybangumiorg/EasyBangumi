@@ -24,7 +24,6 @@ import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,7 +39,6 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.heyanle.bangumi_source_api.api.component.page.SourcePage
 import com.heyanle.bangumi_source_api.api.entity.CartoonCover
-import com.heyanle.bangumi_source_api.api.entity.toIdentify
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.compose.common.CartoonCardWithCover
 import com.heyanle.easybangumi4.compose.common.CartoonCardWithoutCover
@@ -123,8 +121,6 @@ fun SourceListPageContentWithCover(
         }
     })
 
-    val starSet = coverStarVm.starFlow.collectAsState(initial = emptySet())
-
     val haptic = LocalHapticFeedback.current
     val lazyGridState = rememberLazyGridState()
     Box(
@@ -161,7 +157,7 @@ fun SourceListPageContentWithCover(
                         items[int]?.let { cover ->
                             CartoonCardWithCover(
                                 modifier = Modifier.fillMaxWidth(),
-                                star = coverStarVm.isCoverStaring(cover) || starSet.value.contains(cover.toIdentify()),
+                                star = coverStarVm.isCoverStarted(cover) ,
                                 cartoonCover = cover,
                                 onClick = {
                                     nav.navigationDetailed(it)
@@ -221,7 +217,6 @@ fun SourceListPageContentWithoutCover(
             refreshing = false
         }
     })
-    val starSet = coverStarVm.starFlow.collectAsState(initial = emptySet())
 
     val lazyState = rememberLazyStaggeredGridState()
 
@@ -254,7 +249,7 @@ fun SourceListPageContentWithoutCover(
                         items[index]?.let { cover ->
                             CartoonCardWithoutCover(
                                 cartoonCover = cover,
-                                star =  coverStarVm.isCoverStaring(cover) || starSet.value.contains(cover.toIdentify()),
+                                star =  coverStarVm.isCoverStarted(cover),
                                 onClick = {
                                     nav.navigationDetailed(it)
                                 },

@@ -21,6 +21,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -32,9 +33,12 @@ import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.compose.common.OkImage
 import com.heyanle.easybangumi4.compose.common.moeSnackBar
+import com.heyanle.easybangumi4.navigationSourceConfig
 import com.heyanle.easybangumi4.preferences.SourcePreferences
+import com.heyanle.easybangumi4.source.SourceMigrationController
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.easybangumi4.utils.stringRes
+import com.heyanle.injekt.core.Injekt
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorderAfterLongPress
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
@@ -82,6 +86,9 @@ fun Source() {
         vm.onDragEnd()
     })
 
+    val migrationController: SourceMigrationController by Injekt.injectLazy()
+    val migratingSet = migrationController.migratingSource.collectAsState()
+
     LazyColumn(
         state = state.listState,
         modifier = Modifier
@@ -89,8 +96,8 @@ fun Source() {
             .reorderable(state)
             .detectReorderAfterLongPress(state)
     ) {
-        items(vm.sourceLibraryState.value, key = {it}) { sourceKey ->
-            ReorderableItem(reorderableState = state, key = sourceKey, ) {
+        items(vm.sourceLibraryState.value, key = { it }) { sourceKey ->
+            ReorderableItem(reorderableState = state, key = sourceKey) {
                 it.loge("Source")
                 vm.configState.value[sourceKey]?.let { config ->
                     vm.sourceMapState.value[sourceKey]?.let { source ->
@@ -110,6 +117,7 @@ fun Source() {
                                 },
                         ) {
                             SourceItem(
+                                isMigrate = migratingSet.value.contains(source),
                                 config = config,
                                 source = source,
                                 onCheckedChange = { source: Source, b: Boolean ->
@@ -119,6 +127,11 @@ fun Source() {
                                         vm.disable(source.key)
                                     }
                                 },
+                                onClick = {
+                                    if (migratingSet.value.contains(it) && config.enable) {
+                                        nav.navigationSourceConfig(it.key)
+                                    }
+                                }
                             )
                         }
                     }
@@ -133,9 +146,11 @@ fun Source() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SourceItem(
+    isMigrate: Boolean,
     config: SourcePreferences.SourceConfig,
     source: Source,
     onCheckedChange: (Source, Boolean) -> Unit,
+    onClick: (Source) -> Unit,
 ) {
 
     val icon = source as? IconSource
@@ -154,9 +169,14 @@ fun SourceItem(
             )
         },
         trailingContent = {
-            Switch(checked = config.enable, onCheckedChange = {
-                onCheckedChange(source, it)
-            })
+            if (isMigrate) {
+                Text(text = stringResource(id = R.string.migrating))
+            } else {
+                Switch(checked = config.enable, onCheckedChange = {
+                    onCheckedChange(source, it)
+                })
+            }
+
         },
         leadingContent = {
             OkImage(
