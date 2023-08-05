@@ -61,9 +61,9 @@ import java.text.DateFormat
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Update() {
-
-    val vm = viewModel<UpdateViewModel>()
+fun Update(
+    vm: UpdateViewModel = viewModel<UpdateViewModel>()
+) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     val state by vm.stateFlow.collectAsState()
@@ -185,13 +185,12 @@ fun UpdateStateCard(
                 .fillMaxWidth()
                 .padding(16.dp, 0.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .background(MaterialTheme.colorScheme.primary)
                 .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             LoadingImage(modifier = Modifier.size(40.dp))
             Spacer(modifier = Modifier.size(8.dp))
-            Text(text = stringResource(id = R.string.doing_update), color = MaterialTheme.colorScheme.onPrimary)
+            Text(text = stringResource(id = R.string.doing_update),)
         }
     } else if (state.lastUpdateError != null) {
         Row(

@@ -23,7 +23,8 @@ object Migrate {
 
     fun getDBMigration() = listOf(
         MIGRATION_2_3,
-        MIGRATION_3_4
+        MIGRATION_3_4,
+        MIGRATION_4_5
     )
 
     private val MIGRATION_2_3 = object : Migration(2, 3) {
@@ -38,9 +39,15 @@ object Migrate {
         }
     }
 
+    private val MIGRATION_4_5 = object : Migration(4, 5) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("CREATE TABLE IF NOT EXISTS CartoonTag (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, label TEXT NOT NULL DEFAULT '', 'order' INTEGER NOT NULL DEFAULT 0)")
+        }
+    }
+
     fun tryUpdate(
         context: Context
-    ){
+    ) {
         preferenceUpdate(
             context,
             Injekt.get(),
@@ -58,17 +65,17 @@ object Migrate {
         settingPreferences: SettingPreferences,
         sourcePreferences: SourcePreferences,
         settingMMKVPreferences: SettingMMKVPreferences,
-    ){
+    ) {
 
         val lastVersionCode = androidPreferenceStore.getInt("last_version_code", 0).get()
         val curVersionCode = BuildConfig.VERSION_CODE
 
-        if(lastVersionCode < curVersionCode){
+        if (lastVersionCode < curVersionCode) {
             // 后续版本在这里加数据迁移
 
 
             // 65
-            if(lastVersionCode < 65){
+            if (lastVersionCode < 65) {
                 // preference 架构变更
 
                 // 主题存储变更
@@ -104,8 +111,6 @@ object Migrate {
         androidPreferenceStore.getInt("last_version_code", 0).set(curVersionCode)
 
     }
-
-
 
 
 }

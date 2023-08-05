@@ -52,6 +52,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -252,6 +253,16 @@ fun HistoryList(
                     )
                 }
             } else {
+                if(state.isInPrivate){
+                    item {
+                        Text(
+                            modifier = Modifier.padding(16.dp, 4.dp),
+                            text = stringResource(id = R.string.now_in_private),
+                            style = MaterialTheme.typography.bodySmall,
+                            fontStyle = FontStyle.Italic,
+                        )
+                    }
+                }
                 items(state.history) {
                     HistoryItem(
                         cartoonHistory = it,

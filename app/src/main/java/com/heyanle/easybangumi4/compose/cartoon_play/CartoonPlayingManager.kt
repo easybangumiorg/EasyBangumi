@@ -1,8 +1,10 @@
 package com.heyanle.easybangumi4.compose.cartoon_play
 
+import android.content.Intent
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.net.toUri
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.DefaultLoadControl
 import com.google.android.exoplayer2.DefaultRenderersFactory
@@ -29,6 +31,7 @@ import com.heyanle.bangumi_source_api.api.entity.PlayerInfo
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.base.db.dao.CartoonHistoryDao
 import com.heyanle.easybangumi4.base.entity.CartoonHistory
+import com.heyanle.easybangumi4.compose.common.moeSnackBar
 import com.heyanle.easybangumi4.preferences.SettingPreferences
 import com.heyanle.easybangumi4.source.SourceLibraryController
 import com.heyanle.easybangumi4.utils.stringRes
@@ -44,7 +47,7 @@ import kotlinx.coroutines.withContext
  * Created by HeYanLe on 2023/3/7 14:45.
  * https://github.com/heyanLE
  */
-object CartoonPlayingManager: Player.Listener {
+object CartoonPlayingManager : Player.Listener {
 
     val defaultScope = MainScope()
 
@@ -85,6 +88,15 @@ object CartoonPlayingManager: Player.Listener {
                 is Loading -> playLine
                 is Playing -> playLine
                 is Error -> playLine
+            }
+        }
+
+        fun cartoon(): Cartoon? {
+            return when (this) {
+                None -> null
+                is Loading -> cartoon
+                is Playing -> cartoon
+                is Error -> cartoon
             }
         }
 
@@ -160,7 +172,7 @@ object CartoonPlayingManager: Player.Listener {
         isReverse: Boolean = false,
     ): Boolean {
         val playingState = (state as? PlayingState.Playing) ?: return false
-        val target = if(isReverse)playingState.curEpisode - 1 else playingState.curEpisode + 1
+        val target = if (isReverse) playingState.curEpisode - 1 else playingState.curEpisode + 1
         if (target < 0 || target >= playingState.playLine.episode.size) {
             return false
         }
@@ -198,8 +210,8 @@ object CartoonPlayingManager: Player.Listener {
         adviceProgress: Long = 0L,
     ) {
         val sta = state
-        if(sta is PlayingState.Playing){
-            if(sta.cartoon == cartoon && sta.playLineIndex == playLineIndex && episode == sta.curEpisode){
+        if (sta is PlayingState.Playing) {
+            if (sta.cartoon == cartoon && sta.playLineIndex == playLineIndex && episode == sta.curEpisode) {
                 innerPlay(sta.playerInfo, adviceProgress)
                 return
             }
@@ -220,12 +232,13 @@ object CartoonPlayingManager: Player.Listener {
                 CartoonSummary(
                     id = cartoon.id,
                     url = cartoon.url,
-                    source = cartoon.source),
+                    source = cartoon.source
+                ),
                 playLine,
                 episode
             )
                 .complete {
-                    if(isActive){
+                    if (isActive) {
                         innerPlay(it.data, adviceProgress)
                         state = PlayingState.Playing(
                             playLineIndex, it.data, playLine, episode, cartoon
@@ -234,7 +247,7 @@ object CartoonPlayingManager: Player.Listener {
 
                 }
                 .error {
-                    if(isActive) {
+                    if (isActive) {
                         it.throwable.printStackTrace()
                         error(
                             if (it.isParserError) stringRes(
@@ -249,8 +262,8 @@ object CartoonPlayingManager: Player.Listener {
 
     }
 
-    private suspend fun innerTrySaveHistory(ps: Long = -1){
-        if(settingPreference.isInPrivate.get()){
+    private suspend fun innerTrySaveHistory(ps: Long = -1) {
+        if (settingPreference.isInPrivate.get()) {
             return
 
         }
@@ -285,14 +298,14 @@ object CartoonPlayingManager: Player.Listener {
 
             createTime = System.currentTimeMillis()
         )
-        withContext(Dispatchers.IO){
+        withContext(Dispatchers.IO) {
             cartoonHistoryDao.modify(history)
         }
 
     }
 
     fun trySaveHistory(ps: Long = -1) {
-        if(settingPreference.isInPrivate.get()){
+        if (settingPreference.isInPrivate.get()) {
             return
         }
         var process = ps
@@ -332,8 +345,8 @@ object CartoonPlayingManager: Player.Listener {
 
     override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
         super.onPlayWhenReadyChanged(playWhenReady, reason)
-        if(!playWhenReady && exoPlayer.isMedia()){
-            defaultScope.launch (Dispatchers.Main) {
+        if (!playWhenReady && exoPlayer.isMedia()) {
+            defaultScope.launch(Dispatchers.Main) {
                 innerTrySaveHistory()
             }
         }
@@ -341,13 +354,13 @@ object CartoonPlayingManager: Player.Listener {
 
     override fun onIsPlayingChanged(isPlaying: Boolean) {
         super.onIsPlayingChanged(isPlaying)
-        if(isPlaying){
-            if(saveLoopJob == null || saveLoopJob?.isActive != true){
+        if (isPlaying) {
+            if (saveLoopJob == null || saveLoopJob?.isActive != true) {
                 saveLoopJob = defaultScope.launch(Dispatchers.Main) {
                     innerTrySaveHistory()
                 }
             }
-        }else{
+        } else {
             saveLoopJob?.cancel()
             saveLoopJob = null
         }
@@ -359,7 +372,7 @@ object CartoonPlayingManager: Player.Listener {
         val playLine = state.playLine() ?: return
         val curEpisode = state.episode() ?: return
         error(
-            errMsg = error.message?:error.errorCodeName,
+            errMsg = error.message ?: error.errorCodeName,
             throwable = error,
             playLineIndex = playLineIndex,
             playLine = playLine,
@@ -371,12 +384,34 @@ object CartoonPlayingManager: Player.Listener {
 
         trySaveHistory(adviceProgress)
 
+        if (settingPreference.useExternalVideoPlayer.get()) {
+            kotlin.runCatching {
+                APP.startActivity(Intent().apply {
+                    setDataAndType(playerInfo.uri.toUri(), "video/*")
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    // for mx player https://mx.j2inter.com/api
+                    putExtra("video_list", arrayOf(playerInfo.uri.toUri()))
+                    val array = Array<String>((playerInfo.header?.size ?: 0) * 2) { "" }
+                    val list = arrayListOf<String>()
+                    playerInfo.header?.iterator()?.forEach {
+                        list.add(it.key)
+                        list.add(it.value)
+                    }
+                    putExtra("headers", list.toTypedArray())
+                })
+            }.onFailure {
+                stringRes(com.heyanle.easy_i18n.R.string.loading_error).moeSnackBar()
+            }
+            return
+        }
+
         // 如果播放器当前状态不在播放，则肯定要刷新播放源
         if (!exoPlayer.isMedia() || lastPlayerInfo?.uri != playerInfo.uri || lastPlayerInfo?.decodeType != playerInfo.decodeType) {
 
             val dataSourceFactory: DataSource.Factory = DefaultDataSource.Factory(
                 APP,
-                DefaultHttpDataSource.Factory().setDefaultRequestProperties(playerInfo.header?: emptyMap())
+                DefaultHttpDataSource.Factory()
+                    .setDefaultRequestProperties(playerInfo.header ?: emptyMap())
             )
 
             val media = when (playerInfo.decodeType) {
@@ -403,6 +438,7 @@ object CartoonPlayingManager: Player.Listener {
             exoPlayer.playWhenReady = true
         }
     }
+
     private fun error(
         errMsg: String,
         throwable: Throwable? = null,
@@ -418,7 +454,7 @@ object CartoonPlayingManager: Player.Listener {
         return exoPlayer.playbackState == Player.STATE_BUFFERING || exoPlayer.playbackState == Player.STATE_READY
     }
 
-    fun release(){
+    fun release() {
         lastJob?.cancel()
         exoPlayer.stop()
     }

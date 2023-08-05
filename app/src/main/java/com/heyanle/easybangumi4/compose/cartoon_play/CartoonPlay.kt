@@ -69,6 +69,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -104,11 +105,13 @@ import com.heyanle.easybangumi4.compose.common.OkImage
 import com.heyanle.easybangumi4.compose.common.TabIndicator
 import com.heyanle.easybangumi4.navigationDlna
 import com.heyanle.easybangumi4.navigationSearch
+import com.heyanle.easybangumi4.preferences.SettingPreferences
 import com.heyanle.easybangumi4.utils.isCurPadeMode
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.easybangumi4.utils.openUrl
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.easybangumi4.utils.toast
+import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.launch
 import loli.ball.easyplayer2.ControlViewModel
 import loli.ball.easyplayer2.ControlViewModelFactory
@@ -184,9 +187,7 @@ fun CartoonPlay(
             detailedVM.load()
         } else if (sta is DetailedViewModel.DetailedState.Info) {
             // 加载好之后进入 播放环节
-            cartoonPlayVM.onDetailedLoaded(cartoonSummary, sta, enterData, onTitle = {
-                controlVM.title = it
-            })
+            cartoonPlayVM.onDetailedLoaded(cartoonSummary, sta, enterData,)
         }
     }
 
@@ -212,6 +213,32 @@ fun CartoonPlay(
     LaunchedEffect(key1 = controlVM.curSpeed) {
         controlVM.curSpeed.loge("CartoonPlay")
     }
+
+
+    LaunchedEffect(key1 = CartoonPlayingManager.state) {
+        val list = CartoonPlayingManager.state.playLine()?.episode?: emptyList<String>()
+        val index = CartoonPlayingManager.state.episode()
+        val text = list.getOrElse(index){""}
+
+        list.loge("CartoonPlay")
+        index.loge("CartoonPlay")
+        text.loge("CartoonPlay")
+        controlVM.title =
+            CartoonPlayingManager.state.cartoon()?.title + " - " + text
+        controlVM.title.loge("CartoonPlay")
+    }
+
+    val settingPreferences: SettingPreferences by Injekt.injectLazy()
+    val orMode = settingPreferences.playerOrientationMode.flow()
+        .collectAsState(initial = SettingPreferences.PlayerOrientationMode.Auto)
+    LaunchedEffect(key1 = orMode) {
+        controlVM.orientationEnableMode = when (orMode.value) {
+            SettingPreferences.PlayerOrientationMode.Auto -> ControlViewModel.OrientationEnableMode.AUTO
+            SettingPreferences.PlayerOrientationMode.Enable -> ControlViewModel.OrientationEnableMode.ENABLE
+            SettingPreferences.PlayerOrientationMode.Disable -> ControlViewModel.OrientationEnableMode.DISABLE
+        }
+    }
+
     val lazyGridState = rememberLazyGridState()
     EasyPlayerScaffoldBase(
         modifier = Modifier
@@ -229,7 +256,8 @@ fun CartoonPlay(
                         // CartoonPlayingManager.trySaveHistory()
                     }
 
-                    is CartoonPlayingManager.PlayingState.Loading -> {}
+                    is CartoonPlayingManager.PlayingState.Loading -> {
+                    }
                     is CartoonPlayingManager.PlayingState.Error -> {
                         model.onFullScreen(false, false, ctx)
                     }
@@ -539,9 +567,9 @@ fun CartoonPlay(
                             detailedVM = detailedVM,
                             cartoonPlayVM = cartoonPlayVM,
                             listState = lazyGridState,
-                            onTitle = {
-                                controlVM.title = it
-                            }
+//                            onTitle = {
+//                                controlVM.title = it
+//                            }
                         )
                         FastScrollToTopFab(listState = lazyGridState)
                     }
@@ -595,12 +623,12 @@ fun CartoonPlayUI(
     detailedVM: DetailedViewModel,
     cartoonPlayVM: CartoonPlayViewModel,
     listState: LazyGridState = rememberLazyGridState(),
-    onTitle: (String) -> Unit,
+    //onTitle: (String) -> Unit,
 ) {
 
     when (val detailedState = detailedVM.detailedState) {
         is DetailedViewModel.DetailedState.Info -> {
-            CartoonPlayPage(detailedVM, cartoonPlayVM, detailedState, listState, onTitle = onTitle)
+            CartoonPlayPage(detailedVM, cartoonPlayVM, detailedState, listState)
         }
 
         is DetailedViewModel.DetailedState.Error -> {
@@ -633,7 +661,7 @@ fun CartoonPlayPage(
     cartoonPlayVM: CartoonPlayViewModel,
     detailedState: DetailedViewModel.DetailedState.Info,
     listState: LazyGridState = rememberLazyGridState(),
-    onTitle: (String) -> Unit,
+    //onTitle: (String) -> Unit,
 ) {
     val nav = LocalNavController.current
     CartoonPlayDetailed(
@@ -649,7 +677,7 @@ fun CartoonPlayPage(
             cartoonPlayVM.selectedLineIndex = it
         },
         onEpisodeClick = { playLineIndex, playLine, episode ->
-            onTitle(detailedState.detail.title + " - " + playLine.episode[episode])
+            //onTitle(detailedState.detail.title + " - " + playLine.episode[episode])
             if (CartoonPlayingManager.state.playLine() == playLine) {
                 CartoonPlayingManager.defaultScope.launch {
                     CartoonPlayingManager.changeEpisode(episode, 0L)

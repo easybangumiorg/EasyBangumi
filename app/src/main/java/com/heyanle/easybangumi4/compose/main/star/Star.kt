@@ -69,6 +69,8 @@ import com.heyanle.easybangumi4.compose.common.SelectionTopAppBar
 import com.heyanle.easybangumi4.compose.common.TabPage
 import com.heyanle.easybangumi4.compose.main.MainViewModel
 import com.heyanle.easybangumi4.compose.main.star.update.Update
+import com.heyanle.easybangumi4.compose.main.star.update.UpdateViewModel
+import com.heyanle.easybangumi4.navigationCartoonTag
 import com.heyanle.easybangumi4.navigationDetailed
 
 /**
@@ -81,6 +83,7 @@ fun Star() {
 
     val homeVM = viewModel<MainViewModel>()
     val starVM = viewModel<StarViewModel>()
+    val updateVM = viewModel<UpdateViewModel>()
 
     val selectionBottomBar = remember<@Composable () -> Unit> {
         {
@@ -160,6 +163,7 @@ fun Star() {
                     },
                     onSearch = {
                         starVM.onSearch(it)
+                        updateVM.search(it)
                     },
                     onSearchExit = {
                         starVM.onSearch(null)
@@ -193,8 +197,7 @@ fun Star() {
             }) {
             val tab = state.tabs[it]
             if (tab == StarViewModel.UPDATE_TAG) {
-                // TODO 优化
-                Update()
+                Update(updateVM)
             } else {
                 val list = state.data[tab] ?: emptyList()
                 StarList(
@@ -214,8 +217,9 @@ fun Star() {
 
     when (val sta = state.dialog) {
         is StarViewModel.DialogState.ChangeTag -> {
-            val tags = state.tabs.filter { it != StarViewModel.DEFAULT_TAG && it != StarViewModel.UPDATE_TAG }
-            if(tags.isEmpty()){
+            val tags =
+                state.tabs.filter { it != StarViewModel.DEFAULT_TAG && it != StarViewModel.UPDATE_TAG }
+            if (tags.isEmpty()) {
                 AlertDialog(
                     title = {
                         Text(text = stringResource(id = R.string.no_tag))
@@ -232,7 +236,7 @@ fun Star() {
                             onClick = {
                                 //TODO
                                 starVM.dialogDismiss()
-                                //starVM.onSelectionExit()
+                                nav.navigationCartoonTag()
                             }) {
                             Text(text = stringResource(id = R.string.confirm))
                         }
@@ -254,15 +258,19 @@ fun Star() {
                         starVM.dialogDismiss()
                     }
                 )
-            }else{
+            } else {
                 EasyMutiSelectionDialog(show = true,
                     title = {
-                            Text(text = stringResource(id = R.string.change_tag))
+                        Text(text = stringResource(id = R.string.change_tag))
                     },
                     items = tags,
                     initSelection = sta.getTags(),
                     onConfirm = {
                         starVM.changeTagSelection(sta.selection, it)
+                        starVM.onSelectionExit()
+                    },
+                    onManage = {
+                        nav.navigationCartoonTag()
                     },
                     onDismissRequest = {
                         starVM.dialogDismiss()

@@ -3,12 +3,12 @@ package com.heyanle.easybangumi4.source
 import com.heyanle.bangumi_source_api.api.IconSource
 import com.heyanle.bangumi_source_api.api.Source
 import com.heyanle.bangumi_source_api.api.component.Component
+import com.heyanle.bangumi_source_api.api.component.configuration.ConfigComponent
 import com.heyanle.bangumi_source_api.api.component.detailed.DetailedComponent
 import com.heyanle.bangumi_source_api.api.component.page.PageComponent
 import com.heyanle.bangumi_source_api.api.component.play.PlayComponent
 import com.heyanle.bangumi_source_api.api.component.search.SearchComponent
 import com.heyanle.bangumi_source_api.api.component.update.UpdateComponent
-import com.heyanle.bangumi_source_api.api.configuration.ConfigSource
 import com.heyanle.easybangumi4.utils.loge
 
 
@@ -27,7 +27,7 @@ class SourceBundle(
 
     private val sourceMap = linkedMapOf<String, Source>()
 
-    private val configMap = linkedMapOf<String, ConfigSource>()
+    private val configMap = linkedMapOf<String, ConfigComponent>()
 
     private val iconMap = linkedMapOf<String, IconSource>()
 
@@ -41,6 +41,8 @@ class SourceBundle(
 
     private val updateMap = linkedMapOf<String, UpdateComponent>()
 
+    //private val migrateMap = linkedMapOf<String, MiSou>()
+
     init {
         list.forEach {
             register(it)
@@ -53,11 +55,6 @@ class SourceBundle(
         ) {
             sourceMap[source.key] = source
 
-            if (source is ConfigSource) {
-                configMap[source.key] = source
-            }else{
-                configMap.remove(source.key)
-            }
 
             if (source is IconSource) {
                 iconMap[source.key] = source
@@ -70,6 +67,7 @@ class SourceBundle(
             searchMap.remove(source.key)
             detailedMap.remove(source.key)
             updateMap.remove(source.key)
+            configMap.remove(source.key)
 
 
             val components = arrayListOf<Component>()
@@ -102,6 +100,9 @@ class SourceBundle(
 
                 if(it is UpdateComponent) {
                     updateMap[it.source.key] = it
+                }
+                if(it is ConfigComponent) {
+                    configMap[it.source.key] = it
                 }
             }
 
@@ -142,7 +143,7 @@ class SourceBundle(
         }
     }
 
-    fun config(key: String): ConfigSource? {
+    fun config(key: String): ConfigComponent? {
         return configMap[key]
     }
 

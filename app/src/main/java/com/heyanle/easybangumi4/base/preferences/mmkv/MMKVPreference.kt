@@ -23,7 +23,7 @@ class MMKVPreference<T : Any>(
     private val flow = MutableStateFlow(valueOkkv)
 
     override fun key(): String {
-        TODO("Not yet implemented")
+        return key
     }
 
     override fun get(): T {

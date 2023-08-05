@@ -36,5 +36,13 @@ class SettingPreferences(
     // 是否在收藏里显示更新
     val isShowUpdateInStar = preferenceStore.getBoolean("update_in_star", true)
 
+    // 播放设置
+    enum class PlayerOrientationMode {
+        Auto, Enable, Disable
+    }
+    val playerOrientationMode = preferenceStore.getEnum<PlayerOrientationMode>("player_orientation_mode", PlayerOrientationMode.Auto)
+
+    var useExternalVideoPlayer = preferenceStore.getBoolean("use_external_video_player", false)
+
 
 }

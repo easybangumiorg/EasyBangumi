@@ -5,6 +5,8 @@ import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.BuildConfig
 import com.heyanle.easybangumi4.compose.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.stringRes
+import com.heyanle.injekt.api.get
+import com.heyanle.injekt.core.Injekt
 import com.heyanle.lib_anim.utils.AppHelper
 import com.heyanle.lib_anim.utils.FileHelper
 import com.heyanle.lib_anim.utils.fileHelper
@@ -13,6 +15,7 @@ import com.heyanle.lib_anim.utils.network.networkHelper
 import com.heyanle.lib_anim.utils.network.webViewUserHelper
 import com.heyanle.lib_anim.utils.network.webview_helper.WebViewHelperImpl
 import com.heyanle.lib_anim.utils.network.webview_helper.webViewHelper
+import com.heyanle.lib_anim.utils.provider.sourceProviderController
 import com.heyanle.lib_anim.utils.stringHelper
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -36,6 +39,8 @@ fun initUtils(context: Context) {
         stringHelper = StringHelperImpl()
         webViewHelper = WebViewHelperImpl(context)
         webViewUserHelper = WebViewUserHelperImpl
+
+        sourceProviderController = Injekt.get()
     }
 
 }
