@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.compose.source_manage.source
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
@@ -35,6 +36,7 @@ import com.heyanle.easybangumi4.compose.common.OkImage
 import com.heyanle.easybangumi4.compose.common.moeSnackBar
 import com.heyanle.easybangumi4.navigationSourceConfig
 import com.heyanle.easybangumi4.preferences.SourcePreferences
+import com.heyanle.easybangumi4.source.LocalSourceBundleController
 import com.heyanle.easybangumi4.source.SourceMigrationController
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.easybangumi4.utils.stringRes
@@ -96,47 +98,43 @@ fun Source() {
             .reorderable(state)
             .detectReorderAfterLongPress(state)
     ) {
-        items(vm.sourceLibraryState.value, key = { it }) { sourceKey ->
-            ReorderableItem(reorderableState = state, key = sourceKey) {
+        items(vm.sourceConfigs, key = { it.first.key }) { pair ->
+            val source = pair.first
+            val config = pair.second
+            val bundle = LocalSourceBundleController.current
+            ReorderableItem(reorderableState = state, key = pair.first.key) {
                 it.loge("Source")
-                vm.configState.value[sourceKey]?.let { config ->
-                    vm.sourceMapState.value[sourceKey]?.let { source ->
-
-                        Box(
-                            modifier = Modifier
-                                .run {
-                                    if (it) {
-                                        background(
-                                            MaterialTheme.colorScheme.surfaceColorAtElevation(
-                                                3.dp
-                                            )
-                                        )
-                                    } else {
-                                        this
-                                    }
-                                },
-                        ) {
-                            SourceItem(
-                                isMigrate = migratingSet.value.contains(source),
-                                config = config,
-                                source = source,
-                                onCheckedChange = { source: Source, b: Boolean ->
-                                    if (b) {
-                                        vm.enable(source.key)
-                                    } else {
-                                        vm.disable(source.key)
-                                    }
-                                },
-                                onClick = {
-                                    if (migratingSet.value.contains(it) && config.enable) {
-                                        nav.navigationSourceConfig(it.key)
-                                    }
-                                }
-                            )
+                Box(
+                    modifier = Modifier
+                        .run {
+                            if (it) {
+                                background(
+                                    MaterialTheme.colorScheme.surfaceColorAtElevation(
+                                        3.dp
+                                    )
+                                )
+                            } else {
+                                this
+                            }
+                        },
+                ) {
+                    SourceItem(
+                        isMigrate = migratingSet.value.contains(source),
+                        config = config,
+                        source = source,
+                        onCheckedChange = { source: Source, b: Boolean ->
+                            if (b) {
+                                vm.enable(config)
+                            } else {
+                                vm.disable(config)
+                            }
+                        },
+                        onClick = {
+                            if (migratingSet.value.contains(it) && config.enable && bundle.config(it.key) != null) {
+                                nav.navigationSourceConfig(it.key)
+                            }
                         }
-                    }
-
-
+                    )
                 }
             }
         }
@@ -159,7 +157,9 @@ fun SourceItem(
         colors = ListItemDefaults.colors(
             containerColor = Color.Transparent
         ),
-        modifier = Modifier,
+        modifier = Modifier.clickable {
+            onClick(source)
+        },
         headlineContent = {
             Text(text = source.label)
         },
