@@ -1,5 +1,6 @@
 package com.heyanle.easybangumi4.base.hekv
 
+import com.heyanle.easybangumi4.utils.loge
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -60,6 +61,7 @@ class HeKV(
     }
 
     fun put(key: String, value: String){
+        "${key}, ${value}".loge("HEKV")
         readWriteLock.write {
             if(value.isEmpty()){
                 map.remove(key)
@@ -74,7 +76,7 @@ class HeKV(
                     it.printStackTrace()
                 }
                 runCatching {
-                    keyFlow.tryEmit(key)
+                    keyFlow.emit(key)
                 }.onFailure {
                     it.printStackTrace()
                 }
@@ -138,7 +140,7 @@ class HeKV(
         }
         if(file.exists()){
             // 写入新一行
-            file.appendText("|${URLEncoder.encode(key, "utf-8")}|${URLEncoder.encode(value, "utf-8")}|")
+            file.appendText("|${URLEncoder.encode(key, "utf-8")}|${URLEncoder.encode(value, "utf-8")}|\n")
         }
         return file.readLines().size
     }
@@ -161,10 +163,13 @@ class HeKV(
                 // 一行完整的数据应该是 |key|value|
                 // 被 | 分割成 4 部分，中间两部分是 key 和 value
                 val ls = line.split("|")
+                "line ${line}".loge("HeKV")
+                "lssize ${ls.size}".loge("HeKV")
                 if(ls.size == 4){
                     val key = URLDecoder.decode(ls[1], "utf-8")
                     val value = URLDecoder.decode(ls[2], "utf-8")
                     map[key] = value
+                    "size4 ${key}, ${value}".loge("HeKV")
                 }
             }
 
