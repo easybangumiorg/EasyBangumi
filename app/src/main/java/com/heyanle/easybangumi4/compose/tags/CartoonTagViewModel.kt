@@ -23,15 +23,6 @@ class CartoonTagViewModel : ViewModel() {
 
     private val cartoonTagDao: CartoonTagDao by Injekt.injectLazy()
 
-    var state by mutableStateOf(State(true, emptyList(), emptySet(), null))
-
-    data class State(
-        val isLoading: Boolean = false, // 只有初始状态会为 true
-        val tags: List<CartoonTag>, // 排序中会和数据库里的不同,
-        val selection: Set<CartoonTag>,
-        val dialog: Dialog? = null,
-    )
-
     sealed class Dialog {
 
         class Delete(

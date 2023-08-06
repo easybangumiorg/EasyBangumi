@@ -46,7 +46,7 @@ class SourceLibraryController(
     init {
         scope.launch {
             combine(
-                configFlow,
+                sourcePreferences.configs.flow().stateIn(scope),
                 ExtensionController.installedExtensionsFlow
                     .stateIn(scope)
             )
@@ -122,11 +122,19 @@ class SourceLibraryController(
         sourcePreferences.configs.set(map)
     }
 
+    fun newConfig(config: SourcePreferences.SourceConfig){
+        val map = sourcePreferences.configs.get().toMutableMap()
+        map[config.key] = config
+        sourcePreferences.configs.set(map)
+    }
+
     fun enable(sourceKey: String) {
         val map = configFlow.value.toMutableMap()
         val old = map[sourceKey]
         if (old != null) {
             map[sourceKey] = map[sourceKey]!!.copy(enable = true)
+        }else{
+            map[sourceKey] = SourcePreferences.SourceConfig(key = sourceKey, enable = true, order = Int.MAX_VALUE)
         }
         sourcePreferences.configs.set(map)
     }
@@ -136,6 +144,8 @@ class SourceLibraryController(
         val old = map[sourceKey]
         if (old != null) {
             map[sourceKey] = map[sourceKey]!!.copy(enable = false)
+        }else{
+            map[sourceKey] = SourcePreferences.SourceConfig(key = sourceKey, enable = false, order = Int.MAX_VALUE)
         }
         sourcePreferences.configs.set(map)
     }
