@@ -1,0 +1,110 @@
+package com.heyanle.easybangumi4.exo
+
+import android.app.Application
+import androidx.media3.database.DatabaseProvider
+import androidx.media3.database.StandaloneDatabaseProvider
+import androidx.media3.datasource.DefaultHttpDataSource
+import androidx.media3.datasource.cache.Cache
+import androidx.media3.datasource.cache.CacheDataSink
+import androidx.media3.datasource.cache.CacheDataSource
+import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
+import androidx.media3.datasource.cache.NoOpCacheEvictor
+import androidx.media3.datasource.cache.SimpleCache
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.offline.DownloadManager
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import com.heyanle.easybangumi4.preferences.SettingPreferences
+import com.heyanle.easybangumi4.utils.getCachePath
+import com.heyanle.easybangumi4.utils.getFilePath
+import com.heyanle.injekt.api.InjektModule
+import com.heyanle.injekt.api.InjektScope
+import com.heyanle.injekt.api.addPerKeyFactory
+import com.heyanle.injekt.api.addSingletonFactory
+import com.heyanle.injekt.api.get
+import java.io.File
+import java.util.concurrent.Executors
+
+/**
+ * Created by HeYanLe on 2023/8/13 14:23.
+ * https://github.com/heyanLE
+ */
+@androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
+class MediaModule(
+    private val application: Application
+) : InjektModule {
+    override fun InjektScope.registerInjectables() {
+        addSingletonFactory<DatabaseProvider> {
+            StandaloneDatabaseProvider(application)
+        }
+
+        addSingletonFactory {
+            MediaCacheDB(application)
+        }
+
+        addSingletonFactory {
+            val settingPreferences: SettingPreferences = get()
+            val cacheSize = settingPreferences.cacheSizeMB.get()
+            val dataSourceFactory = get<CacheDataSource.Factory>(cacheSize)
+            val mediaSourceFactory =
+                DefaultMediaSourceFactory(application).setDataSourceFactory(dataSourceFactory)
+            ExoPlayer.Builder(application)
+                //.setRenderersFactory(MixRenderersFactory(app))
+                .setMediaSourceFactory(mediaSourceFactory)
+                .build()
+        }
+
+        // 以下实体都跟缓存上限有关，0 为无限制或下载
+
+        // Cache
+        addPerKeyFactory<Cache, Long> { cacheSize ->
+            if (cacheSize == 0L) { // 缓存无上限直接缓存到下载地址
+                val downloadFolder = File(application.getFilePath(), "download")
+                SimpleCache(downloadFolder, NoOpCacheEvictor(), get())
+            } else {
+                val lruEvictor = LeastRecentlyUsedCacheEvictor(cacheSize)
+                SimpleCache(
+                    File(application.getCachePath("media")),
+                    lruEvictor,
+                    MediaCacheDB(application)
+                )
+            }
+        }
+
+        // CacheDataSource.Factory
+        addPerKeyFactory<CacheDataSource.Factory, Long> { cacheSize ->
+            val cache = get<Cache>(cacheSize)
+            if (cacheSize == 0L) {
+                CacheDataSource.Factory()
+                    .setCache(cache)
+                    .setCacheWriteDataSinkFactory(null) // 只读不写，只允许下载器写
+                    .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
+            } else {
+                val streamDataSinkFactory = CacheDataSink.Factory().setCache(cache)
+                CacheDataSource.Factory()
+                    .setCache(cache)
+                    // 将 无限制的 下载 dataSource 组合
+                    .setUpstreamDataSourceFactory(get<CacheDataSource.Factory>(0))
+                    .setCacheWriteDataSinkFactory(streamDataSinkFactory)
+                    .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
+            }
+
+        }
+
+        // CacheDataSource
+        addPerKeyFactory<CacheDataSource, Long> { cacheSize ->
+            val factory = get<CacheDataSource.Factory>(cacheSize)
+            factory.createDataSource()
+        }
+
+        addSingletonFactory {
+            DownloadManager(
+                application,
+                get<MediaCacheDB>(),
+                get<Cache>(0),
+                DefaultHttpDataSource.Factory(),
+                Executors.newFixedThreadPool(6)
+            )
+        }
+
+    }
+}

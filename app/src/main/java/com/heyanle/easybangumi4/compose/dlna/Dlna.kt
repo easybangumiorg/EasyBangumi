@@ -73,11 +73,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.heyanle.bangumi_source_api.api.component.detailed.DetailedComponent
 import com.heyanle.bangumi_source_api.api.component.play.PlayComponent
-import com.heyanle.bangumi_source_api.api.entity.Cartoon
 import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
 import com.heyanle.bangumi_source_api.api.entity.PlayLine
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
+import com.heyanle.easybangumi4.base.entity.CartoonInfo
 import com.heyanle.easybangumi4.compose.cartoon_play.CartoonDescCard
 import com.heyanle.easybangumi4.compose.common.Action
 import com.heyanle.easybangumi4.compose.common.EmptyPage
@@ -152,7 +152,6 @@ fun DlnaPage(
 
     val vm = DlnaViewModelFactory.new(
         cartoonSummary = CartoonSummary(id, source, url),
-        detailedComponent = detailComponent,
         playComponent = playComponent,
         enterData = enterData,
     )
@@ -301,7 +300,8 @@ fun DlnaPage(
                 when (val detailedState = vm.detailedState) {
                     is DlnaViewModel.DetailedState.Loading -> {
                         LoadingPage(
-                            modifier = Modifier.fillMaxWidth())
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
 
                     is DlnaViewModel.DetailedState.Error -> {
@@ -452,7 +452,7 @@ fun DlnaDeviceAction(
 @Composable
 fun CartoonPlayDetailed(
     modifier: Modifier,
-    cartoon: Cartoon,
+    cartoon: CartoonInfo,
 
     playLines: List<PlayLine>,
     selectLineIndex: Int,

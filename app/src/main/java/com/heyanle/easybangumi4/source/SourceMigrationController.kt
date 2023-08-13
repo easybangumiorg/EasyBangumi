@@ -98,7 +98,13 @@ class SourceMigrationController(
                 when (res) {
                     is SourceResult.Complete -> {
                         log("拉取成功 ${it.id} ${res.data.first.title}")
-                        listOf(CartoonStar.fromCartoon(res.data.first, res.data.second))
+                        listOf(
+                            CartoonStar.fromCartoon(
+                                res.data.first,
+                                source.label,
+                                res.data.second
+                            )
+                        )
                     }
 
                     else -> {
@@ -133,7 +139,7 @@ class SourceMigrationController(
 
     }
 
-    fun clear(){
+    fun clear() {
         _logs.update {
             emptyList()
         }

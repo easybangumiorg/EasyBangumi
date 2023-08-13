@@ -5,11 +5,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heyanle.bangumi_source_api.api.entity.CartoonCover
-import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
 import com.heyanle.bangumi_source_api.api.entity.toIdentify
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.base.db.dao.CartoonStarDao
 import com.heyanle.easybangumi4.base.entity.CartoonStar
+import com.heyanle.easybangumi4.cartoon.CartoonRepository
 import com.heyanle.easybangumi4.compose.common.moeSnackBar
 import com.heyanle.easybangumi4.source.SourceLibraryController
 import com.heyanle.easybangumi4.utils.stringRes
@@ -46,6 +46,8 @@ class CoverStarViewModel : ViewModel() {
 
     private val sourceController: SourceLibraryController by Injekt.injectLazy()
 
+    private val cartoonRepository: CartoonRepository by Injekt.injectLazy()
+
     init {
         viewModelScope.launch {
             starFlow.collectLatest {
@@ -69,26 +71,31 @@ class CoverStarViewModel : ViewModel() {
                 )
             } else {
                 staringCartoon[identify] = true
-                sourceController.sourceBundleFlow.value.detailed(cartoonCover.source)?.getAll(
-                    CartoonSummary(cartoonCover.id, cartoonCover.source, cartoonCover.url)
-                )?.complete {
-                    cartoonStarDao.modify(
-                        CartoonStar.fromCartoon(it.data.first, it.data.second).apply {
-                            reversal = false
-                        })
-                    staringCartoon.remove(identify)
-                }?.error {
-                    it.throwable.printStackTrace()
-                    if (isActive) {
-                        staringCartoon.remove(identify)
-                        (stringRes(R.string.detailed_error) + it.throwable.message).moeSnackBar()
+
+                cartoonRepository.getCartoonInfoWithPlayLines(
+                    cartoonCover.id,
+                    cartoonCover.source,
+                    cartoonCover.url
+                )
+                    .onOK {
+                        cartoonStarDao.modify(
+                            CartoonStar.fromCartoonInfo(it.first, it.second).apply {
+                                reversal = false
+                            })
+                    }.onError {
+                        it.throwable?.printStackTrace()
+                        if (isActive) {
+                            staringCartoon.remove(identify)
+                            (stringRes(R.string.detailed_error) + it.throwable?.message).moeSnackBar()
+                        }
                     }
-                }
             }
         }
     }
 
     fun isCoverStarted(cartoonCover: CartoonCover): Boolean {
-        return staringCartoon[cartoonCover.toIdentify()] == true || starState.value.contains(cartoonCover.toIdentify())
+        return staringCartoon[cartoonCover.toIdentify()] == true || starState.value.contains(
+            cartoonCover.toIdentify()
+        )
     }
 }

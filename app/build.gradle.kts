@@ -151,8 +151,8 @@ dependencies {
     implementation("io.coil-kt:coil-compose:${Version.coil}")
     implementation("io.coil-kt:coil-gif:${Version.coil}")
 
-    implementation("com.google.android.exoplayer:exoplayer:${Version.exoplayer}")
-    implementation("com.google.android.exoplayer:extension-rtmp:${Version.exoplayer}")
+//    implementation("com.google.android.exoplayer:exoplayer:${Version.exoplayer}")
+//    implementation("com.google.android.exoplayer:extension-rtmp:${Version.exoplayer}")
 
     implementation("androidx.media:media:${Version.media}")
 

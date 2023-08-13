@@ -17,7 +17,10 @@ import androidx.compose.ui.unit.dp
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.compose.common.BooleanPreferenceItem
 import com.heyanle.easybangumi4.compose.common.EmumPreferenceItem
+import com.heyanle.easybangumi4.compose.common.LongEditPreferenceItem
+import com.heyanle.easybangumi4.compose.common.moeSnackBar
 import com.heyanle.easybangumi4.preferences.SettingPreferences
+import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.injekt.core.Injekt
 
 /**
@@ -61,6 +64,12 @@ fun ColumnScope.PlayerSetting(
 
             }
         )
+
+        LongEditPreferenceItem(title = {
+            Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.max_cache_size_mb))
+        }, preference = settingPreferences.cacheSizeMB, onChange = {
+            stringRes(com.heyanle.easy_i18n.R.string.should_reboot).moeSnackBar()
+        })
 
 
     }

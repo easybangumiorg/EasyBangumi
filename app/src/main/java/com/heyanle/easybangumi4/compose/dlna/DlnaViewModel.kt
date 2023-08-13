@@ -11,12 +11,14 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.bangumi_source_api.api.component.detailed.DetailedComponent
 import com.heyanle.bangumi_source_api.api.component.play.PlayComponent
-import com.heyanle.bangumi_source_api.api.entity.Cartoon
 import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
 import com.heyanle.bangumi_source_api.api.entity.PlayLine
 import com.heyanle.bangumi_source_api.api.entity.PlayerInfo
 import com.heyanle.easy_i18n.R
+import com.heyanle.easybangumi4.base.entity.CartoonInfo
+import com.heyanle.easybangumi4.cartoon.CartoonRepository
 import com.heyanle.easybangumi4.utils.stringRes
+import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -27,7 +29,6 @@ import kotlinx.coroutines.launch
  */
 class DlnaViewModel(
     private val cartoonSummary: CartoonSummary,
-    private val detailedComponent: DetailedComponent,
     private val playComponent: PlayComponent,
     private val enterData: EnterData? = null,
 ) : ViewModel() {
@@ -43,7 +44,7 @@ class DlnaViewModel(
         object Loading : DetailedState()
 
         class Info(
-            val detail: Cartoon,
+            val detail: CartoonInfo,
             val playLine: List<PlayLine>,
             val isShowPlayLine: Boolean = true,
         ) : DetailedState()
@@ -112,6 +113,8 @@ class DlnaViewModel(
         }
     }
 
+    private val cartoonRepository: CartoonRepository by Injekt.injectLazy()
+
     var playingState by mutableStateOf<PlayingState>(PlayingState.None)
 
     var selectedLineIndex by mutableIntStateOf(0)
@@ -122,18 +125,18 @@ class DlnaViewModel(
         lastJob?.cancel()
         lastJob = viewModelScope.launch {
             detailedState = DetailedState.Loading
-            detailedComponent.getAll(cartoonSummary)
-                .complete {
+            cartoonRepository.getCartoonInfoWithPlayLines(cartoonSummary.id, cartoonSummary.source, cartoonSummary.url)
+                .onOK {
                     if (!isActive) {
-                        return@complete
+                        return@onOK
                     }
 //                    it.data.second.loge("DetailedViewModel")
 //                    it.data.second.size.loge("DetailedViewModel")
 //                    it.data.second.first().episode.size.loge("DetailedViewModel")
                     val info = DetailedState.Info(
-                        it.data.first,
-                        it.data.second,
-                        it.data.second !is DetailedComponent.NonPlayLine
+                        it.first,
+                        it.second,
+                        it.second !is DetailedComponent.NonPlayLine
                     )
                     detailedState = info
 
@@ -144,18 +147,16 @@ class DlnaViewModel(
 
                         loadPlay(info, enterData.lineIndex, enterData.episode)
                     }
-
-                }.error {
+                }.onError {
                     if (!isActive) {
-                        return@error
+                        return@onError
                     }
                     detailedState = DetailedState.Error(
-                        if (it.isParserError) stringRes(
-                            R.string.source_error
-                        ) + it.throwable.message else stringRes(R.string.loading_error) + it.throwable.message,
+                        it.errorMsg,
                         it.throwable
                     )
                 }
+
         }
     }
 
@@ -203,7 +204,6 @@ class DlnaViewModel(
 
 class DlnaViewModelFactory(
     private val cartoonSummary: CartoonSummary,
-    private val detailedComponent: DetailedComponent,
     private val playComponent: PlayComponent,
     private val enterData: DlnaViewModel.EnterData? = null,
 ) : ViewModelProvider.Factory {
@@ -213,14 +213,12 @@ class DlnaViewModelFactory(
         @Composable
         fun new(
             cartoonSummary: CartoonSummary,
-            detailedComponent: DetailedComponent,
             playComponent: PlayComponent,
             enterData: DlnaViewModel.EnterData? = null,
         ): DlnaViewModel {
             return viewModel<DlnaViewModel>(
                 factory = DlnaViewModelFactory(
                     cartoonSummary,
-                    detailedComponent,
                     playComponent,
                     enterData
                 )
@@ -232,7 +230,7 @@ class DlnaViewModelFactory(
     @SuppressWarnings("unchecked")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(DlnaViewModel::class.java))
-            return DlnaViewModel(cartoonSummary, detailedComponent, playComponent, enterData) as T
+            return DlnaViewModel(cartoonSummary, playComponent, enterData) as T
         throw RuntimeException("unknown class :" + modelClass.name)
     }
 }
