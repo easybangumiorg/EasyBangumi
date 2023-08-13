@@ -88,6 +88,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.media3.exoplayer.ExoPlayer
 import com.heyanle.bangumi_source_api.api.Source
 import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
 import com.heyanle.bangumi_source_api.api.entity.PlayLine
@@ -169,7 +170,7 @@ private val speedConfig = linkedMapOf(
 @OptIn(ExperimentalMaterial3Api::class)
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 @Composable
-fun  CartoonPlay(
+fun CartoonPlay(
     detailedVM: DetailedViewModel,
     cartoonPlayVM: CartoonPlayViewModel,
     cartoonSummary: CartoonSummary,
@@ -179,7 +180,10 @@ fun  CartoonPlay(
     val isPad = isCurPadeMode()
 
     val cartoonPlayingController: CartoonPlayingController by Injekt.injectLazy()
-    val controlVM = ControlViewModelFactory.viewModel(Injekt.get(), isPad)
+    val controlVM = ControlViewModelFactory.viewModel(Injekt.get<ExoPlayer>().let {
+        it.toString().loge("ExoPlayer-----")
+        it
+    }, isPad)
     val nav = LocalNavController.current
 
     val act = LocalContext.current as Activity
@@ -190,7 +194,7 @@ fun  CartoonPlay(
             detailedVM.load()
         } else if (sta is DetailedViewModel.DetailedState.Info) {
             // 加载好之后进入 播放环节
-            cartoonPlayVM.onDetailedLoaded(cartoonSummary, sta, enterData,)
+            cartoonPlayVM.onDetailedLoaded(cartoonSummary, sta, enterData)
         }
     }
 
@@ -219,9 +223,9 @@ fun  CartoonPlay(
 
 
     LaunchedEffect(key1 = cartoonPlayingController.state) {
-        val list = cartoonPlayingController.state.playLine()?.episode?: emptyList<String>()
+        val list = cartoonPlayingController.state.playLine()?.episode ?: emptyList<String>()
         val index = cartoonPlayingController.state.episode()
-        val text = list.getOrElse(index){""}
+        val text = list.getOrElse(index) { "" }
 
         list.loge("CartoonPlay")
         index.loge("CartoonPlay")
@@ -261,6 +265,7 @@ fun  CartoonPlay(
 
                     is CartoonPlayingController.PlayingState.Loading -> {
                     }
+
                     is CartoonPlayingController.PlayingState.Error -> {
                         model.onFullScreen(false, false, ctx)
                     }
@@ -674,7 +679,7 @@ fun CartoonPlayPage(
         cartoon = detailedState.detail,
         playLines = detailedState.playLine,
         selectLineIndex = cartoonPlayVM.selectedLineIndex,
-        playingPlayLineIndex = cartoonPlayingController.state.playLineIndex()?:-1,
+        playingPlayLineIndex = cartoonPlayingController.state.playLineIndex() ?: -1,
         playingEpisode = cartoonPlayingController.state.episode(),
         listState = listState,
         showPlayLine = detailedState.isShowPlayLine,

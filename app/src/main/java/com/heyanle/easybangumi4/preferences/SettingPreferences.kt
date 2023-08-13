@@ -3,6 +3,7 @@ package com.heyanle.easybangumi4.preferences
 import com.heyanle.easybangumi4.base.preferences.PreferenceStore
 import com.heyanle.easybangumi4.base.preferences.getEnum
 import com.heyanle.easybangumi4.base.theme.EasyThemeMode
+import com.heyanle.easybangumi4.utils.mb
 
 /**
  * 设置
@@ -45,7 +46,7 @@ class SettingPreferences(
     var useExternalVideoPlayer = preferenceStore.getBoolean("use_external_video_player", false)
 
     // 最大缓存
-    var cacheSizeMB = preferenceStore.getLong("cache_size_mb", 2000)
+    var cacheSize = preferenceStore.getLong("cache_size", 2000.mb.toLong())
 
     // 缓存番剧数据过期时间（小时）
     var cartoonInfoCacheTimeHour = preferenceStore.getLong("cartoon_cache_time_hour", 12)
