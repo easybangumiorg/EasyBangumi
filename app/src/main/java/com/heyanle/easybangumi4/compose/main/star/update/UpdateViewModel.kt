@@ -101,7 +101,7 @@ class UpdateViewModel : ViewModel() {
         }
     }
     private fun List<CartoonStar>.toUpdateItems(searchKey: String): List<UpdateItem> {
-        return filter { searchKey.isEmpty() || it.match(searchKey) }.map {
+        return filter { searchKey.isEmpty() || it.matches(searchKey) }.map {
             UpdateItem.Cartoon(it)
         }.insertSeparators { before, after ->
 
@@ -125,13 +125,14 @@ class UpdateViewModel : ViewModel() {
                     todayCalendar.clear(Calendar.MILLISECOND)
 
                     val diffDays =
-                        (todayCalendar.timeInMillis - afterCalendar.timeInMillis) / (24 * 60 * 60 * 1000)
+                        (todayCalendar.timeInMillis - afterCalendar.timeInMillis) / (24 * 60 * 60 * 1000L)
                     val text = when (diffDays) {
                         0L -> stringRes(com.heyanle.easy_i18n.R.string.today)
                         1L -> stringRes(com.heyanle.easy_i18n.R.string.yesterday)
                         else -> {
                             if (diffDays <= 7L) {
-                                stringRes(com.heyanle.easy_i18n.R.string.day_age, diffDays)
+                                val d = diffDays.toString()
+                                stringRes(com.heyanle.easy_i18n.R.string.day_age, d)
                             } else {
                                 DateFormat.getDateInstance(DateFormat.SHORT).format(afterDate)
                             }

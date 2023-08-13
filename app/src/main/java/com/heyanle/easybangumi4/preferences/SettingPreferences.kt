@@ -44,5 +44,11 @@ class SettingPreferences(
 
     var useExternalVideoPlayer = preferenceStore.getBoolean("use_external_video_player", false)
 
+    // 最大缓存
+    var cacheSizeMB = preferenceStore.getLong("cache_size_mb", 2000)
+
+    // 缓存番剧数据过期时间（小时）
+    var cartoonInfoCacheTimeHour = preferenceStore.getLong("cartoon_cache_time_hour", 12)
+
 
 }

@@ -39,6 +39,7 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.compose.common.EmptyPage
+import com.heyanle.easybangumi4.compose.common.TabIndicator
 import com.heyanle.easybangumi4.compose.search.searchpage.SearchPage
 import com.heyanle.easybangumi4.source.LocalSourceBundleController
 import kotlinx.coroutines.launch
@@ -65,7 +66,7 @@ fun Search(
 
     val pagerState =
         rememberPagerState(searchComponents.indexOfFirst { it.source.key == defSourceKey }
-            .coerceIn(0, searchComponents.size - 1), 0f){
+            .coerceIn(0, searchComponents.size - 1), 0f) {
             searchComponents.size
         }
 
@@ -87,7 +88,7 @@ fun Search(
             },
             onTextChange = {
                 vm.searchBarText.value = it
-                if(it.isEmpty()){
+                if (it.isEmpty()) {
                     vm.search(it)
                 }
             }
@@ -104,12 +105,20 @@ fun Search(
                 edgePadding = 0.dp,
                 selectedTabIndex = pagerState.currentPage,
                 divider = {},
+                indicator = {
+                    TabIndicator(
+                        currentTabPosition = it[0.coerceAtLeast(
+                            pagerState.currentPage
+                        )]
+                    )
+                },
                 modifier = Modifier.fillMaxWidth()
             ) {
 
 
                 searchComponents.forEachIndexed { index, searchComponent ->
-                    Tab(selected = index == pagerState.currentPage,
+                    Tab(
+                        selected = index == pagerState.currentPage,
                         onClick = {
                             scope.launch {
                                 pagerState.animateScrollToPage(index)

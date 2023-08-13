@@ -12,12 +12,11 @@ import com.heyanle.bangumi_source_api.api.entity.PlayLine
 import java.net.URLEncoder
 
 /**
- * Created by HeYanLe on 2023/3/4 14:26.
+ * Created by HeYanLe on 2023/8/13 16:29.
  * https://github.com/heyanLE
  */
 @Entity(primaryKeys = ["id", "source", "url"])
-data class CartoonStar(
-
+data class CartoonInfo(
     var id: String,              // 标识，由源自己支持，用于区分番剧
 
     var source: String,
@@ -26,13 +25,13 @@ data class CartoonStar(
 
     var title: String,
 
-    var genre: String,          // 标签，一般为 "xx, xx"
+    var genre: String,          // 标签，为 "xx, xx"，源 id
+
+    var sourceName: String,     // 源名称
 
     var coverUrl: String,
 
     var intro: String,
-
-    var sourceName: String,
 
     var description: String,
 
@@ -50,13 +49,12 @@ data class CartoonStar(
 
     var createTime: Long = System.currentTimeMillis(),
 
-    var playLineString: String,
+    var playLineString: String, // List<PlayLine> 的 json 数据，可能为 ""
 
     var isInitializer: Boolean = false,
 
     var lastUpdateTime: Long = 0L,
 ) {
-
     @Ignore
     private var genres: List<String>? = null
 
@@ -65,38 +63,18 @@ data class CartoonStar(
             return null
         }
         if (genres == null) {
-            genres = genre.split(", ").map { it.trim() }.filterNot { it.isBlank() }.distinct()
+            genres = genre.split(",").map { it.trim() }.filterNot { it.isBlank() }.distinct()
         }
         return genres
     }
 
     companion object {
-
-        fun fromCartoonInfo(cartoon: CartoonInfo, playLines: List<PlayLine>): CartoonStar {
-            return CartoonStar(
-                id = cartoon.id,
-                source = cartoon.source,
-                url = cartoon.url,
-                title = cartoon.title,
-                genre = cartoon.genre ?: "",
-                coverUrl = cartoon.coverUrl ?: "",
-                intro = cartoon.intro ?: "",
-                description = cartoon.description ?: "",
-                updateStrategy = cartoon.updateStrategy,
-                status = cartoon.status,
-                playLineString = Gson().toJson(playLines) ?: "[]",
-                isInitializer = true,
-                lastUpdateTime = 0L,
-                isUpdate = cartoon.isUpdate,
-                reversal = false,
-                watchProcess = "",
-                tags = "",
-                sourceName = cartoon.sourceName
-            )
-        }
-
-        fun fromCartoon(cartoon: Cartoon, sourceName: String, playLines: List<PlayLine>): CartoonStar {
-            return CartoonStar(
+        fun fromCartoon(
+            cartoon: Cartoon,
+            sourceName: String,
+            playLines: List<PlayLine>
+        ): CartoonInfo {
+            return CartoonInfo(
                 id = cartoon.id,
                 source = cartoon.source,
                 url = cartoon.url,
@@ -119,27 +97,28 @@ data class CartoonStar(
         }
     }
 
-//    fun fromCartoon(cartoon: CartoonCover): CartoonStar {
-//        return CartoonStar(
-//            id = cartoon.id,
-//            source = cartoon.source,
-//            url = cartoon.url,
-//            title = cartoon.title,
-//            genre = "",
-//            coverUrl = cartoon.coverUrl ?: "",
-//            intro = cartoon.intro ?: "",
-//            description = "",
-//            updateStrategy = Cartoon.UPDATE_STRATEGY_NEVER,
-//            status = Cartoon.STATUS_UNKNOWN,
-//            playLineString = "",
-//            isInitializer = false,
-//            lastUpdateTime = 0L,
-//            isUpdate = false,
-//            reversal = false,
-//            watchProcess = "",
-//            tags = "",
-//        )
-//    }
+    fun fromCartoon(cartoon: CartoonCover, sourceName: String): CartoonInfo {
+        return CartoonInfo(
+            id = cartoon.id,
+            source = cartoon.source,
+            url = cartoon.url,
+            title = cartoon.title,
+            genre = "",
+            coverUrl = cartoon.coverUrl ?: "",
+            intro = cartoon.intro ?: "",
+            description = "",
+            updateStrategy = Cartoon.UPDATE_STRATEGY_NEVER,
+            status = Cartoon.STATUS_UNKNOWN,
+            playLineString = "",
+            isInitializer = false,
+            lastUpdateTime = 0L,
+            isUpdate = false,
+            reversal = false,
+            watchProcess = "",
+            tags = "",
+            sourceName = sourceName
+        )
+    }
 
     fun toCartoon(): Cartoon? {
         return if (isInitializer) CartoonImpl(
@@ -210,5 +189,10 @@ data class CartoonStar(
         return this.id == cartoon.id && this.source == cartoon.source && this.url == cartoon.url
     }
 
+}
 
+fun CartoonSummary.isChild(
+    cartoon: CartoonInfo
+): Boolean {
+    return id == cartoon.id && source == cartoon.source && url == cartoon.url
 }

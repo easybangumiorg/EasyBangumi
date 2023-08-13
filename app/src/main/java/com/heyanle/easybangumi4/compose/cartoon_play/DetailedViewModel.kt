@@ -7,14 +7,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.heyanle.bangumi_source_api.api.component.detailed.DetailedComponent
-import com.heyanle.bangumi_source_api.api.entity.Cartoon
 import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
 import com.heyanle.bangumi_source_api.api.entity.PlayLine
-import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.base.db.dao.CartoonStarDao
+import com.heyanle.easybangumi4.base.entity.CartoonInfo
 import com.heyanle.easybangumi4.base.entity.CartoonStar
+import com.heyanle.easybangumi4.base.entity.isChild
+import com.heyanle.easybangumi4.cartoon.CartoonRepository
 import com.heyanle.easybangumi4.utils.loge
-import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -26,7 +26,6 @@ import kotlinx.coroutines.withContext
  */
 class DetailedViewModel(
     private val cartoonSummary: CartoonSummary,
-    private val detailedComponent: DetailedComponent,
 ) : ViewModel() {
 
     sealed class DetailedState {
@@ -35,7 +34,7 @@ class DetailedViewModel(
         object Loading : DetailedState()
 
         class Info(
-            val detail: Cartoon,
+            val detail: CartoonInfo,
             val playLine: List<PlayLine>,
             val isShowPlayLine: Boolean = true,
             ) : DetailedState()
@@ -50,7 +49,9 @@ class DetailedViewModel(
     var isStar by mutableStateOf(false)
     var isReverse by mutableStateOf(false)
 
-    val cartoonStarDao: CartoonStarDao by Injekt.injectLazy()
+    private val cartoonRepository: CartoonRepository by Injekt.injectLazy()
+
+    private val cartoonStarDao: CartoonStarDao by Injekt.injectLazy()
 
 
     fun checkUpdate(){
@@ -64,21 +65,18 @@ class DetailedViewModel(
     fun load() {
         viewModelScope.launch {
             detailedState = DetailedState.Loading
-            detailedComponent.getAll(cartoonSummary)
-                .complete {
-//                    it.data.second.loge("DetailedViewModel")
-//                    it.data.second.size.loge("DetailedViewModel")
-//                    it.data.second.first().episode.size.loge("DetailedViewModel")
-                    detailedState = DetailedState.Info(it.data.first, it.data.second, it.data.second !is DetailedComponent.NonPlayLine)
+            cartoonRepository.getCartoonInfoWithPlayLines(cartoonSummary.id, cartoonSummary.source, cartoonSummary.url)
+                .onOK {
+                    detailedState = DetailedState.Info(it.first, it.second, it.second !is DetailedComponent.NonPlayLine)
                     val starInfo = withContext(Dispatchers.IO) {
                         val cartoonStar = cartoonStarDao.getByCartoonSummary(
-                            it.data.first.id,
-                            it.data.first.source,
-                            it.data.first.url
+                            it.first.id,
+                            it.first.source,
+                            it.first.url
                         )
 
                         cartoonStar?.let { star ->
-                            val nStar = CartoonStar.fromCartoon(it.data.first, it.data.second)
+                            val nStar = CartoonStar.fromCartoonInfo(it.first, it.second)
                             cartoonStarDao.update(
                                 nStar.copy(
                                     watchProcess = star.watchProcess,
@@ -95,22 +93,20 @@ class DetailedViewModel(
                     this@DetailedViewModel.isStar = isStar
                     isRev.loge("DetailedViewModel")
                     this@DetailedViewModel.isReverse = isRev
-                }.error {
+                }.onError {
                     detailedState = DetailedState.Error(
-                        if (it.isParserError) stringRes(
-                            R.string.source_error
-                        ) else stringRes(R.string.loading_error),
+                        it.errorMsg,
                         it.throwable
                     )
                 }
         }
     }
 
-    fun setCartoonStar(isStar: Boolean, cartoon: Cartoon, playLines: List<PlayLine>) {
+    fun setCartoonStar(isStar: Boolean, cartoon: CartoonInfo, playLines: List<PlayLine>) {
         viewModelScope.launch {
             if (isStar) {
                 withContext(Dispatchers.IO) {
-                    cartoonStarDao.modify(CartoonStar.fromCartoon(cartoon, playLines).apply {
+                    cartoonStarDao.modify(CartoonStar.fromCartoonInfo(cartoon, playLines).apply {
                         reversal = isReverse
                     })
                 }
@@ -135,7 +131,7 @@ class DetailedViewModel(
         }
     }
 
-    fun setCartoonReverse(isReverse: Boolean, cartoon: Cartoon){
+    fun setCartoonReverse(isReverse: Boolean, cartoon: CartoonInfo){
         this.isReverse = isReverse
         if (isStar) {
             viewModelScope.launch(Dispatchers.IO) {
@@ -161,14 +157,13 @@ class DetailedViewModel(
 
 class DetailedViewModelFactory(
     private val cartoonSummary: CartoonSummary,
-    private val detailedComponent: DetailedComponent,
 ) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
     @SuppressWarnings("unchecked")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(DetailedViewModel::class.java))
-            return DetailedViewModel(cartoonSummary, detailedComponent) as T
+            return DetailedViewModel(cartoonSummary) as T
         throw RuntimeException("unknown class :" + modelClass.name)
     }
 }
