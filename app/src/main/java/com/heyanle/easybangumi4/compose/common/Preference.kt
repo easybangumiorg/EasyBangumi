@@ -16,6 +16,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -275,6 +276,79 @@ fun StringEditPreferenceItem(
             text = {
 
                 OutlinedTextField(value = tv, onValueChange = { tv = it })
+            }
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun LongEditPreferenceItem(
+    modifier: Modifier = Modifier,
+    title: @Composable (() -> Unit),
+    icon: @Composable (() -> Unit)? = null,
+    preference: Preference<Long>,
+    onChange: (Long) -> Unit = {},
+) {
+
+    val value by preference.flow().collectAsState(preference.get())
+    val scope = rememberCoroutineScope()
+    LongEditPreferenceItem(
+        modifier, title, icon, value
+    ) {
+        scope.launch {
+            preference.set(it)
+            onChange(it)
+        }
+    }
+
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun LongEditPreferenceItem(
+    modifier: Modifier = Modifier,
+    title: @Composable (() -> Unit),
+    icon: @Composable (() -> Unit)? = null,
+    value: Long,
+    onEdit: (Long) -> Unit = {},
+) {
+    var showDialog by remember {
+        mutableStateOf(false)
+    }
+
+    ListItem(
+        modifier = modifier.clickable {
+            showDialog = true
+        },
+        headlineContent = title,
+        leadingContent = icon,
+        supportingContent = {
+            Text(text = value.toString())
+        },
+    )
+
+    if (showDialog) {
+
+        var tv by remember {
+            mutableLongStateOf(value)
+        }
+
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDialog = false
+                    onEdit(tv)
+                }) {
+                    Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.confirm))
+                }
+            },
+            title = title,
+            text = {
+                OutlinedTextField(
+                    value = tv.toString(),
+                    onValueChange = { tv = it.toLongOrNull() ?: 0L })
             }
         )
     }

@@ -9,6 +9,8 @@ import android.os.Looper
 import android.os.Process
 import android.util.Log
 import com.heyanle.easy_crasher.CrashHandler
+import com.heyanle.easybangumi4.cartoon.CartoonModule
+import com.heyanle.easybangumi4.exo.MediaModule
 import com.heyanle.easybangumi4.preferences.SettingMMKVPreferences
 import com.heyanle.easybangumi4.utils.AppCenterManager
 import com.heyanle.easybangumi4.utils.exo_ssl.CropUtil
@@ -34,7 +36,7 @@ import javax.net.ssl.HttpsURLConnection
  */
 lateinit var APP: App
 
-class App: Application() {
+class App : Application() {
 
     companion object {
         init {
@@ -43,11 +45,10 @@ class App: Application() {
     }
 
 
-
     override fun onCreate() {
         super.onCreate()
         APP = this
-        if (isMainProcess()){
+        if (isMainProcess()) {
 
             initCrasher()
 
@@ -59,9 +60,11 @@ class App: Application() {
 
             initAppCenter()
 
+            MediaModule(this).registerWith(Injekt)
             DatabaseModule(this).registerWith(Injekt)
             PreferencesModule(this).registerWith(Injekt)
             ControllerModule(this).registerWith(Injekt)
+            CartoonModule(this).registerWith(Injekt)
 
         }
     }
@@ -80,7 +83,7 @@ class App: Application() {
                 }
                 if (chromiumElement?.methodName.equals("getAll", ignoreCase = true)) {
                     val settingPreferences: SettingMMKVPreferences by Injekt.injectLazy()
-                    if(settingPreferences.webViewCompatible.get()){
+                    if (settingPreferences.webViewCompatible.get()) {
                         // 兼容模式不改写
                         return super.getPackageName()
                     }
@@ -116,7 +119,7 @@ class App: Application() {
                     // 禁用自动更新 使用手动更新
                     Distribute.disableAutomaticCheckForUpdate()
 
-                    Distribute.setListener(object: DistributeListener {
+                    Distribute.setListener(object : DistributeListener {
                         override fun onReleaseAvailable(
                             activity: Activity?,
                             releaseDetails: ReleaseDetails?
@@ -139,15 +142,15 @@ class App: Application() {
         }
     }
 
-    private fun initExtension(){
+    private fun initExtension() {
         ExtensionInit.init(this, IconFactoryImpl())
     }
 
 
-    private fun isMainProcess(): Boolean{
+    private fun isMainProcess(): Boolean {
         return packageName == if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             getProcessName()
-        }else{
+        } else {
             getProcessName(this) ?: packageName
         }
 

@@ -5,37 +5,30 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.net.toUri
-import com.google.android.exoplayer2.C
-import com.google.android.exoplayer2.DefaultLoadControl
-import com.google.android.exoplayer2.DefaultRenderersFactory
-import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.MediaItem
-import com.google.android.exoplayer2.PlaybackException
-import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.analytics.DefaultAnalyticsCollector
-import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
-import com.google.android.exoplayer2.source.ProgressiveMediaSource
-import com.google.android.exoplayer2.source.dash.DashMediaSource
-import com.google.android.exoplayer2.source.hls.HlsMediaSource
-import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
-import com.google.android.exoplayer2.upstream.DataSource
-import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
-import com.google.android.exoplayer2.upstream.DefaultDataSource
-import com.google.android.exoplayer2.upstream.DefaultHttpDataSource
-import com.google.android.exoplayer2.util.Clock
+import androidx.media3.common.C
+import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DataSource
+import androidx.media3.datasource.DefaultDataSource
+import androidx.media3.datasource.DefaultHttpDataSource
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.dash.DashMediaSource
+import androidx.media3.exoplayer.hls.HlsMediaSource
+import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import com.heyanle.bangumi_source_api.api.component.play.PlayComponent
-import com.heyanle.bangumi_source_api.api.entity.Cartoon
 import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
 import com.heyanle.bangumi_source_api.api.entity.PlayLine
 import com.heyanle.bangumi_source_api.api.entity.PlayerInfo
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.base.db.dao.CartoonHistoryDao
 import com.heyanle.easybangumi4.base.entity.CartoonHistory
+import com.heyanle.easybangumi4.base.entity.CartoonInfo
 import com.heyanle.easybangumi4.compose.common.moeSnackBar
 import com.heyanle.easybangumi4.preferences.SettingPreferences
 import com.heyanle.easybangumi4.source.SourceLibraryController
 import com.heyanle.easybangumi4.utils.stringRes
-import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
@@ -43,17 +36,19 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-/**
+ /**
  * Created by HeYanLe on 2023/3/7 14:45.
  * https://github.com/heyanLE
  */
-object CartoonPlayingManager : Player.Listener {
+ @UnstableApi
+class CartoonPlayingController(
+    private val settingPreference: SettingPreferences,
+    private val sourceLibraryController: SourceLibraryController,
+    private val cartoonHistoryDao: CartoonHistoryDao,
+    private val exoPlayer: ExoPlayer,
+) : Player.Listener {
 
     val defaultScope = MainScope()
-
-    val settingPreference: SettingPreferences by Injekt.injectLazy()
-    val sourceLibraryController: SourceLibraryController by Injekt.injectLazy()
-    val cartoonHistoryDao: CartoonHistoryDao by Injekt.injectLazy()
 
 
     sealed class PlayingState {
@@ -63,7 +58,7 @@ object CartoonPlayingManager : Player.Listener {
             val playLineIndex: Int,
             val playLine: PlayLine,
             val curEpisode: Int,
-            val cartoon: Cartoon,
+            val cartoon: CartoonInfo,
         ) : PlayingState()
 
         class Playing(
@@ -71,10 +66,11 @@ object CartoonPlayingManager : Player.Listener {
             val playerInfo: PlayerInfo,
             val playLine: PlayLine,
             val curEpisode: Int,
-            val cartoon: Cartoon,
+            val cartoon: CartoonInfo,
         ) : PlayingState()
 
         class Error(
+            val cartoon: CartoonInfo?,
             val playLineIndex: Int,
             val errMsg: String,
             val throwable: Throwable?,
@@ -91,7 +87,7 @@ object CartoonPlayingManager : Player.Listener {
             }
         }
 
-        fun cartoon(): Cartoon? {
+        fun cartoon(): CartoonInfo? {
             return when (this) {
                 None -> null
                 is Loading -> cartoon
@@ -125,24 +121,10 @@ object CartoonPlayingManager : Player.Listener {
     private var lastPlayerInfo: PlayerInfo? = null
 
     private var playComponent: PlayComponent? = null
-    private var cartoon: Cartoon? = null
+    private var cartoon: CartoonInfo? = null
 
     private var saveLoopJob: Job? = null
 
-
-    val exoPlayer: ExoPlayer by lazy {
-        ExoPlayer.Builder(
-            APP,
-            DefaultRenderersFactory(APP),
-            DefaultMediaSourceFactory(APP),
-            DefaultTrackSelector(APP),
-            DefaultLoadControl(),
-            DefaultBandwidthMeter.getSingletonInstance(APP),
-            DefaultAnalyticsCollector(Clock.DEFAULT)
-        ).build().apply {
-            addListener(CartoonPlayingManager)
-        }
-    }
 
     suspend fun refresh() {
         val cartoonSummary = cartoon ?: return
@@ -154,7 +136,7 @@ object CartoonPlayingManager : Player.Listener {
 
     suspend fun changeLine(
         sourceKey: String,
-        cartoon: Cartoon,
+        cartoon: CartoonInfo,
         playLineIndex: Int,
         playLine: PlayLine,
         defaultEpisode: Int = 0,
@@ -162,8 +144,8 @@ object CartoonPlayingManager : Player.Listener {
     ) {
 
         val playComponent = sourceLibraryController.sourceBundleFlow.value.play(sourceKey) ?: return
-        CartoonPlayingManager.playComponent = playComponent
-        CartoonPlayingManager.cartoon = cartoon
+        this.playComponent = playComponent
+        this.cartoon = cartoon
         changePlay(playComponent, cartoon, playLineIndex, playLine, defaultEpisode, defaultProgress)
     }
 
@@ -203,7 +185,7 @@ object CartoonPlayingManager : Player.Listener {
 
     private suspend fun changePlay(
         playComponent: PlayComponent,
-        cartoon: Cartoon,
+        cartoon: CartoonInfo,
         playLineIndex: Int,
         playLine: PlayLine,
         episode: Int = 0,
@@ -446,7 +428,7 @@ object CartoonPlayingManager : Player.Listener {
         playLine: PlayLine,
         episode: Int,
     ) {
-        state = PlayingState.Error(playLineIndex, errMsg, throwable, playLine, episode)
+        state = PlayingState.Error(cartoon, playLineIndex, errMsg, throwable, playLine, episode)
     }
 
 

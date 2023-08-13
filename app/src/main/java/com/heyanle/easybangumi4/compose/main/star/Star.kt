@@ -153,6 +153,7 @@ fun Star() {
                     text = state.searchQuery ?: "",
                     onTextChange = {
                         starVM.onSearch(it)
+                        updateVM.search(it)
                     },
                     starNum = state.starCount,
                     onSearchClick = {
@@ -167,6 +168,7 @@ fun Star() {
                     },
                     onSearchExit = {
                         starVM.onSearch(null)
+                        updateVM.search("")
                     })
             }
         }

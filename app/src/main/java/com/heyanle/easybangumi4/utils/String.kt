@@ -12,7 +12,7 @@ import com.heyanle.easybangumi4.compose.common.moeSnackBar
  */
 
 fun stringRes(resId: Int, vararg formatArgs: Any): String {
-    return APP.getString(resId, formatArgs)
+    return APP.getString(resId, *formatArgs)
 }
 
 fun String.openUrl() = runCatching {

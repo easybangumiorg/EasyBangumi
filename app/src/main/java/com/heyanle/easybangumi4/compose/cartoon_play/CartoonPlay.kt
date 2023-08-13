@@ -89,11 +89,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.bangumi_source_api.api.Source
-import com.heyanle.bangumi_source_api.api.entity.Cartoon
 import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
 import com.heyanle.bangumi_source_api.api.entity.PlayLine
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.R
+import com.heyanle.easybangumi4.base.entity.CartoonInfo
 import com.heyanle.easybangumi4.compose.common.Action
 import com.heyanle.easybangumi4.compose.common.ActionRow
 import com.heyanle.easybangumi4.compose.common.DetailedContainer
@@ -111,6 +111,7 @@ import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.easybangumi4.utils.openUrl
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.easybangumi4.utils.toast
+import com.heyanle.injekt.api.get
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.launch
 import loli.ball.easyplayer2.ControlViewModel
@@ -143,7 +144,7 @@ fun CartoonPlay(
     ) {
         DetailedContainer(sourceKey = source) { _, sou, det ->
             val detailedVM =
-                viewModel<DetailedViewModel>(factory = DetailedViewModelFactory(summary, det))
+                viewModel<DetailedViewModel>(factory = DetailedViewModelFactory(summary))
             val cartoonPlayViewModel = viewModel<CartoonPlayViewModel>()
             CartoonPlay(
                 detailedVM = detailedVM,
@@ -166,8 +167,9 @@ private val speedConfig = linkedMapOf(
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
+@androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 @Composable
-fun CartoonPlay(
+fun  CartoonPlay(
     detailedVM: DetailedViewModel,
     cartoonPlayVM: CartoonPlayViewModel,
     cartoonSummary: CartoonSummary,
@@ -176,7 +178,8 @@ fun CartoonPlay(
 ) {
     val isPad = isCurPadeMode()
 
-    val controlVM = ControlViewModelFactory.viewModel(CartoonPlayingManager.exoPlayer, isPad)
+    val cartoonPlayingController: CartoonPlayingController by Injekt.injectLazy()
+    val controlVM = ControlViewModelFactory.viewModel(Injekt.get(), isPad)
     val nav = LocalNavController.current
 
     val act = LocalContext.current as Activity
@@ -197,8 +200,8 @@ fun CartoonPlay(
 
     DisposableEffect(key1 = Unit) {
         onDispose {
-            CartoonPlayingManager.trySaveHistory()
-            CartoonPlayingManager.release()
+            cartoonPlayingController.trySaveHistory()
+            cartoonPlayingController.release()
         }
     }
 
@@ -215,16 +218,16 @@ fun CartoonPlay(
     }
 
 
-    LaunchedEffect(key1 = CartoonPlayingManager.state) {
-        val list = CartoonPlayingManager.state.playLine()?.episode?: emptyList<String>()
-        val index = CartoonPlayingManager.state.episode()
+    LaunchedEffect(key1 = cartoonPlayingController.state) {
+        val list = cartoonPlayingController.state.playLine()?.episode?: emptyList<String>()
+        val index = cartoonPlayingController.state.episode()
         val text = list.getOrElse(index){""}
 
         list.loge("CartoonPlay")
         index.loge("CartoonPlay")
         text.loge("CartoonPlay")
         controlVM.title =
-            CartoonPlayingManager.state.cartoon()?.title + " - " + text
+            cartoonPlayingController.state.cartoon()?.title + " - " + text
         controlVM.title.loge("CartoonPlay")
     }
 
@@ -249,16 +252,16 @@ fun CartoonPlay(
         contentWeight = 0.5f,
         videoFloat = { model ->
             val ctx = LocalContext.current as Activity
-            LaunchedEffect(key1 = CartoonPlayingManager.state) {
-                when (CartoonPlayingManager.state) {
-                    is CartoonPlayingManager.PlayingState.Playing -> {
+            LaunchedEffect(key1 = cartoonPlayingController.state) {
+                when (cartoonPlayingController.state) {
+                    is CartoonPlayingController.PlayingState.Playing -> {
                         model.onPrepare()
                         // CartoonPlayingManager.trySaveHistory()
                     }
 
-                    is CartoonPlayingManager.PlayingState.Loading -> {
+                    is CartoonPlayingController.PlayingState.Loading -> {
                     }
-                    is CartoonPlayingManager.PlayingState.Error -> {
+                    is CartoonPlayingController.PlayingState.Error -> {
                         model.onFullScreen(false, false, ctx)
                     }
 
@@ -267,12 +270,12 @@ fun CartoonPlay(
             }
             LaunchedEffect(key1 = controlVM.controlState) {
                 if (controlVM.controlState == ControlViewModel.ControlState.Ended) {
-                    CartoonPlayingManager.tryNext(isReverse = detailedVM.isReverse)
+                    cartoonPlayingController.tryNext(isReverse = detailedVM.isReverse)
                     stringRes(com.heyanle.easy_i18n.R.string.try_play_next).toast()
                 }
             }
-            when (val state = CartoonPlayingManager.state) {
-                is CartoonPlayingManager.PlayingState.Playing -> {
+            when (val state = cartoonPlayingController.state) {
+                is CartoonPlayingController.PlayingState.Playing -> {
                     if (controlVM.controlState == ControlViewModel.ControlState.Ended) {
                         Box(
                             modifier = Modifier.fillMaxSize()
@@ -280,8 +283,8 @@ fun CartoonPlay(
                             IconButton(
                                 modifier = Modifier.align(Alignment.Center),
                                 onClick = {
-                                    CartoonPlayingManager.defaultScope.launch {
-                                        CartoonPlayingManager.refresh()
+                                    cartoonPlayingController.defaultScope.launch {
+                                        cartoonPlayingController.refresh()
                                     }
                                 }) {
                                 Icon(
@@ -308,7 +311,7 @@ fun CartoonPlay(
                     }
                 }
 
-                is CartoonPlayingManager.PlayingState.Loading -> {
+                is CartoonPlayingController.PlayingState.Loading -> {
                     Box {
                         LoadingPage(
                             modifier = Modifier
@@ -341,7 +344,7 @@ fun CartoonPlay(
 
                 }
 
-                is CartoonPlayingManager.PlayingState.Error -> {
+                is CartoonPlayingController.PlayingState.Error -> {
                     ErrorPage(
                         modifier = Modifier
                             .fillMaxSize()
@@ -353,8 +356,8 @@ fun CartoonPlay(
                             Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.click_to_retry))
                         },
                         onClick = {
-                            CartoonPlayingManager.defaultScope.launch {
-                                CartoonPlayingManager.refresh()
+                            cartoonPlayingController.defaultScope.launch {
+                                cartoonPlayingController.refresh()
                             }
                         }
                     )
@@ -414,7 +417,7 @@ fun CartoonPlay(
 
             }
 
-            CartoonPlayingManager.state.playLine()?.let { playLine ->
+            cartoonPlayingController.state.playLine()?.let { playLine ->
                 // 选集
                 AnimatedVisibility(
                     showEpisodeWin && controlVM.isFullScreen,
@@ -456,12 +459,12 @@ fun CartoonPlay(
                                     modifier = Modifier
                                         .defaultMinSize(180.dp, Dp.Unspecified)
                                         .clickable {
-                                            CartoonPlayingManager.defaultScope.launch {
-                                                CartoonPlayingManager.changeEpisode(index)
+                                            cartoonPlayingController.defaultScope.launch {
+                                                cartoonPlayingController.changeEpisode(index)
                                             }
                                         }
                                         .padding(16.dp, 8.dp),
-                                    color = if (CartoonPlayingManager.state.episode() == index) MaterialTheme.colorScheme.primary else Color.White
+                                    color = if (cartoonPlayingController.state.episode() == index) MaterialTheme.colorScheme.primary else Color.White
                                 )
                             }
                         }
@@ -656,6 +659,7 @@ fun CartoonPlayUI(
 
 
 @Composable
+@androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 fun CartoonPlayPage(
     detailedVM: DetailedViewModel,
     cartoonPlayVM: CartoonPlayViewModel,
@@ -663,14 +667,15 @@ fun CartoonPlayPage(
     listState: LazyGridState = rememberLazyGridState(),
     //onTitle: (String) -> Unit,
 ) {
+    val cartoonPlayingController: CartoonPlayingController by Injekt.injectLazy()
     val nav = LocalNavController.current
     CartoonPlayDetailed(
         modifier = Modifier.fillMaxSize(),
         cartoon = detailedState.detail,
         playLines = detailedState.playLine,
         selectLineIndex = cartoonPlayVM.selectedLineIndex,
-        playingPlayLine = CartoonPlayingManager.state.playLine(),
-        playingEpisode = CartoonPlayingManager.state.episode(),
+        playingPlayLineIndex = cartoonPlayingController.state.playLineIndex()?:-1,
+        playingEpisode = cartoonPlayingController.state.episode(),
         listState = listState,
         showPlayLine = detailedState.isShowPlayLine,
         onLineSelect = {
@@ -678,13 +683,13 @@ fun CartoonPlayPage(
         },
         onEpisodeClick = { playLineIndex, playLine, episode ->
             //onTitle(detailedState.detail.title + " - " + playLine.episode[episode])
-            if (CartoonPlayingManager.state.playLine() == playLine) {
-                CartoonPlayingManager.defaultScope.launch {
-                    CartoonPlayingManager.changeEpisode(episode, 0L)
+            if (cartoonPlayingController.state.playLine() == playLine) {
+                cartoonPlayingController.defaultScope.launch {
+                    cartoonPlayingController.changeEpisode(episode, 0L)
                 }
             } else {
-                CartoonPlayingManager.defaultScope.launch {
-                    CartoonPlayingManager.changeLine(
+                cartoonPlayingController.defaultScope.launch {
+                    cartoonPlayingController.changeLine(
                         detailedState.detail.source,
                         detailedState.detail,
                         playLineIndex,
@@ -720,8 +725,8 @@ fun CartoonPlayPage(
                     detailedState.detail.source,
                     detailedState.detail.url
                 ),
-                CartoonPlayingManager.state.playLineIndex() ?: -1,
-                CartoonPlayingManager.state.episode()
+                cartoonPlayingController.state.playLineIndex() ?: -1,
+                cartoonPlayingController.state.episode()
             )
         }
     )
@@ -731,11 +736,11 @@ fun CartoonPlayPage(
 @Composable
 fun CartoonPlayDetailed(
     modifier: Modifier,
-    cartoon: Cartoon,
+    cartoon: CartoonInfo,
 
     playLines: List<PlayLine>,
     selectLineIndex: Int,
-    playingPlayLine: PlayLine?,
+    playingPlayLineIndex: Int = -1,
     playingEpisode: Int,
     listState: LazyGridState = rememberLazyGridState(),
     onLineSelect: (Int) -> Unit,
@@ -753,6 +758,11 @@ fun CartoonPlayDetailed(
     onWeb: () -> Unit,
     onDlna: () -> Unit,
 ) {
+
+//    LaunchedEffect(key1 = playLines, key2 = playingPlayLine){
+//        playLines.toString().loge("CartoonPlay")
+//        playingPlayLine.toString().loge("CartoonPlay")
+//    }
 
 
     // 将非空的 播放线路 下标存成离散序列
@@ -948,7 +958,7 @@ fun CartoonPlayDetailed(
                                             ) {
                                                 Text(text = playLine.label)
 
-                                                if (playLines[index] == playingPlayLine) {
+                                                if (index == playingPlayLineIndex) {
                                                     Box(
                                                         modifier = Modifier
                                                             .padding(2.dp, 0.dp, 0.dp, 0.dp)
@@ -995,7 +1005,7 @@ fun CartoonPlayDetailed(
                         val item = playLines[selectLineIndex].episode[index]
 
                         val select =
-                            playLines[selectLineIndex] == playingPlayLine && index == playingEpisode
+                            selectLineIndex == playingPlayLineIndex && index == playingEpisode
 
                         Column(
                             modifier = Modifier
@@ -1046,7 +1056,7 @@ fun CartoonPlayDetailed(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun CartoonDescCard(
-    cartoon: Cartoon
+    cartoon: CartoonInfo
 ) {
 
 

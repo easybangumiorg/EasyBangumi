@@ -17,6 +17,7 @@ import kotlinx.coroutines.withContext
  * Created by HeYanLe on 2023/3/7 21:18.
  * https://github.com/heyanLE
  */
+@androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 class CartoonPlayViewModel: ViewModel() {
 
     data class EnterData(
@@ -31,7 +32,8 @@ class CartoonPlayViewModel: ViewModel() {
 
     var selectedLineIndex by mutableIntStateOf(0)
 
-    val cartoonHistoryDao: CartoonHistoryDao by Injekt.injectLazy()
+    private val cartoonHistoryDao: CartoonHistoryDao by Injekt.injectLazy()
+    private val cartoonPlayingController: CartoonPlayingController by Injekt.injectLazy()
 
     fun onDetailedLoaded(
         cartoonSummary: CartoonSummary,
@@ -59,7 +61,7 @@ class CartoonPlayViewModel: ViewModel() {
                 return@launch
             }
             //realEnter.loge("CartoonPlay")
-            CartoonPlayingManager.changeLine(cartoonSummary.source, info.detail, lineIndex ,info.playLine[lineIndex], realEnter.episode, realEnter.adviceProgress)
+            cartoonPlayingController.changeLine(cartoonSummary.source, info.detail, lineIndex ,info.playLine[lineIndex], realEnter.episode, realEnter.adviceProgress)
             //onTitle(info.detail.title + " - " + info.playLine[lineIndex].episode[realEnter.episode])
         }
 

@@ -34,6 +34,11 @@
     <string name="use_external_player">使用外置播放器</string>
     <string name="player_orientation_mode">跟随传感器切换全屏</string>
 
+    <string name="channel_name">下载</string>
+
+    <string name="max_cache_size_mb">视频最大缓存 单位：MB</string>
+    <string name="should_reboot">重启 APP 生效</string>
+
     <string name="theme">主题</string>
 
     <string name="dark_mode">夜间模式</string>

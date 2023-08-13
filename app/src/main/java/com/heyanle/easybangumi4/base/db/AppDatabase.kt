@@ -1,7 +1,6 @@
 package com.heyanle.easybangumi4.base.db
 
 import android.content.Context
-import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -26,8 +25,8 @@ import com.heyanle.easybangumi4.base.entity.SearchHistory
         SearchHistory::class,
         CartoonTag::class,
     ],
-    autoMigrations = [AutoMigration(4, 5)],
-    version = 5,
+    autoMigrations = [],
+    version = 6,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -50,7 +49,7 @@ abstract class AppDatabase : RoomDatabase() {
                 context,
                 AppDatabase::class.java, "easy_cartoon"
             ).apply {
-                Migrate.getDBMigration().forEach {
+                Migrate.AppDB.getDBMigration().forEach {
                     addMigrations(it)
                 }
             }.build()

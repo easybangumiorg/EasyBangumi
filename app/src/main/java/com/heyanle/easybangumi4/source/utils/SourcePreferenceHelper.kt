@@ -2,7 +2,7 @@ package com.heyanle.easybangumi4.source.utils
 
 import android.content.Context
 import com.heyanle.easybangumi4.base.hekv.HeKV
-import com.heyanle.easybangumi4.utils.getDataPath
+import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.lib_anim.utils.SourceContext
 import com.heyanle.lib_anim.utils.preference.PreferenceHelper
 import java.util.concurrent.ConcurrentHashMap
@@ -28,7 +28,7 @@ class SourcePreferenceHelper(
     }
 
 
-    private val hekv = HeKV(context.getDataPath("source-preference"), source.key)
+    private val hekv = HeKV(context.getFilePath("source-preference"), source.key)
 
     override fun load(key: String, def: String): String {
         return hekv.get(key, def)

@@ -79,17 +79,23 @@ class CartoonUpdateController(
                 flow.flatMapMerge(3) { star ->
                     kotlinx.coroutines.flow.flow {
                         kotlin.runCatching {
-                            emit(star to star.toCartoon()?.let { cartoon ->
+                            val update =
+                                (sourceLibraryController.sourceBundleFlow.value.update(star.source))
+                            val key = if (star.sourceName == (update?.source?.label ?: star.sourceName)) star else star.copy(
+                                sourceName = update?.source?.label ?: star.sourceName
+                            )
+                            val value = star.toCartoon()?.let { cartoon ->
                                 cartoon.source.loge("UpdateMaster ")
                                 val res =
-                                    (sourceLibraryController.sourceBundleFlow.value.update(cartoon.source)
+                                    (update
                                         ?.update(
                                             cartoon,
                                             star.getPlayLine()
                                         ))
                                 res.loge("UpdateMaster")
                                 (res as? SourceResult.Complete<Cartoon>)?.data
-                            })
+                            }
+                            emit(key to value)
                         }.getOrElse {
                             it.printStackTrace()
                         }
@@ -98,7 +104,11 @@ class CartoonUpdateController(
                     it.second != null
                 }.filterIsInstance<Pair<CartoonStar, Cartoon>>()
                     .map {
-                        CartoonStar.fromCartoon(it.second, it.first.getPlayLine())
+                        CartoonStar.fromCartoon(
+                            it.second,
+                            it.first.sourceName,
+                            it.first.getPlayLine()
+                        )
                     }
                     .catch { throwable ->
                         throwable.printStackTrace()
