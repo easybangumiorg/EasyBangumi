@@ -8,6 +8,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
@@ -17,9 +19,10 @@ import androidx.compose.ui.unit.dp
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.compose.common.BooleanPreferenceItem
 import com.heyanle.easybangumi4.compose.common.EmumPreferenceItem
-import com.heyanle.easybangumi4.compose.common.LongEditPreferenceItem
+import com.heyanle.easybangumi4.compose.common.StringSelectPreferenceItem
 import com.heyanle.easybangumi4.compose.common.moeSnackBar
 import com.heyanle.easybangumi4.preferences.SettingPreferences
+import com.heyanle.easybangumi4.utils.mb
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.injekt.core.Injekt
 
@@ -65,11 +68,24 @@ fun ColumnScope.PlayerSetting(
             }
         )
 
-        LongEditPreferenceItem(title = {
-            Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.max_cache_size_mb))
-        }, preference = settingPreferences.cacheSizeMB, onChange = {
+        val size = listOf(
+            0L to stringRes(com.heyanle.easy_i18n.R.string.disable),
+            500L.mb to "500MB",
+            1000L.mb to "1GB",
+            2000L.mb to "2GB",
+            3000L.mb to "3GB",
+            5000L.mb to "5GB",
+        )
+        val sizePre by settingPreferences.cacheSize.flow()
+            .collectAsState(settingPreferences.cacheSize.get())
+        StringSelectPreferenceItem(
+            title = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.max_cache_size)) },
+            textList = size.map { it.second },
+            select = size.indexOfFirst { it.first == sizePre }.let { if (it == -1) 0 else it }
+        ) {
+            settingPreferences.cacheSize.set(size[it].first)
             stringRes(com.heyanle.easy_i18n.R.string.should_reboot).moeSnackBar()
-        })
+        }
 
 
     }
