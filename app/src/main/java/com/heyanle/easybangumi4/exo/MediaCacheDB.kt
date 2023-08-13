@@ -14,7 +14,7 @@ import androidx.media3.database.DatabaseProvider
  */
 @UnstableApi
 class MediaCacheDB(context: Context) :
-    SQLiteOpenHelper(context, "exoplayer_music_cache.db", null, 1),
+    SQLiteOpenHelper(context, "exoplayer_cache.db", null, 1),
     DatabaseProvider {
     override fun onCreate(db: SQLiteDatabase) = Unit
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) = Unit
