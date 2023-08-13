@@ -3,6 +3,7 @@ package com.heyanle.easybangumi4
 import android.app.Application
 import com.google.gson.Gson
 import com.heyanle.easybangumi4.base.db.AppDatabase
+import com.heyanle.easybangumi4.base.db.AppLocalDatabase
 import com.heyanle.easybangumi4.base.db.CacheDatabase
 import com.heyanle.easybangumi4.base.hekv.HeKV
 import com.heyanle.easybangumi4.base.preferences.PreferenceStore
@@ -135,5 +136,12 @@ class DatabaseModule(
             get<CacheDatabase>().cartoonInfo
         }
 
+        addSingletonFactory {
+            AppLocalDatabase.build(application)
+        }
+
+        addSingletonFactory {
+            get<AppLocalDatabase>().cartoonDownload
+        }
     }
 }
