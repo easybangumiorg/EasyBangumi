@@ -26,6 +26,7 @@ import com.heyanle.easybangumi4.base.db.dao.CartoonHistoryDao
 import com.heyanle.easybangumi4.base.entity.CartoonHistory
 import com.heyanle.easybangumi4.base.entity.CartoonInfo
 import com.heyanle.easybangumi4.compose.common.moeSnackBar
+import com.heyanle.easybangumi4.exo.MediaSourceFactory
 import com.heyanle.easybangumi4.preferences.SettingPreferences
 import com.heyanle.easybangumi4.source.SourceLibraryController
 import com.heyanle.easybangumi4.utils.stringRes
@@ -36,15 +37,16 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
- /**
+/**
  * Created by HeYanLe on 2023/3/7 14:45.
  * https://github.com/heyanLE
  */
- @UnstableApi
+@UnstableApi
 class CartoonPlayingController(
     private val settingPreference: SettingPreferences,
     private val sourceLibraryController: SourceLibraryController,
     private val cartoonHistoryDao: CartoonHistoryDao,
+    private val mediaSourceFactory: MediaSourceFactory,
     private val exoPlayer: ExoPlayer,
 ) : Player.Listener {
 
@@ -390,26 +392,7 @@ class CartoonPlayingController(
         // 如果播放器当前状态不在播放，则肯定要刷新播放源
         if (!exoPlayer.isMedia() || lastPlayerInfo?.uri != playerInfo.uri || lastPlayerInfo?.decodeType != playerInfo.decodeType) {
 
-            val dataSourceFactory: DataSource.Factory = DefaultDataSource.Factory(
-                APP,
-                DefaultHttpDataSource.Factory()
-                    .setDefaultRequestProperties(playerInfo.header ?: emptyMap())
-            )
-
-            val media = when (playerInfo.decodeType) {
-                C.CONTENT_TYPE_DASH -> DashMediaSource.Factory(dataSourceFactory)
-                    .createMediaSource(MediaItem.fromUri(playerInfo.uri))
-
-                C.CONTENT_TYPE_HLS -> HlsMediaSource.Factory(dataSourceFactory)
-                    .createMediaSource(
-                        MediaItem.fromUri(playerInfo.uri)
-                    )
-
-                else -> ProgressiveMediaSource.Factory(dataSourceFactory)
-                    .createMediaSource(
-                        MediaItem.fromUri(playerInfo.uri)
-                    )
-            }
+            val media = mediaSourceFactory.get(playerInfo)
 
             exoPlayer.setMediaSource(media, adviceProgress)
             exoPlayer.prepare()

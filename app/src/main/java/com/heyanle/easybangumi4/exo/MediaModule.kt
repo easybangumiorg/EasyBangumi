@@ -18,7 +18,6 @@ import com.heyanle.easybangumi4.preferences.SettingPreferences
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.easybangumi4.utils.loge
-import com.heyanle.easybangumi4.utils.mb
 import com.heyanle.injekt.api.InjektModule
 import com.heyanle.injekt.api.InjektScope
 import com.heyanle.injekt.api.addPerKeyFactory
@@ -50,7 +49,7 @@ class MediaModule(
 
         addSingletonFactory {
             val settingPreferences: SettingPreferences = get()
-            val cacheSize = settingPreferences.cacheSizeMB.get()
+            val cacheSize = settingPreferences.cacheSize.get()
             cacheSize.loge("MediaModule")
             val dataSourceFactory = get<CacheDataSource.Factory>(cacheSize)
             val mediaSourceFactory =
@@ -58,22 +57,29 @@ class MediaModule(
             ExoPlayer.Builder(application)
                 //.setRenderersFactory(MixRenderersFactory(app))
                 .setMediaSourceFactory(mediaSourceFactory)
-                .build()
+                .build().also {
+                    it.loge("ExoPlayer-----")
+                }
         }
 
         addSingletonFactory<HttpDataSource.Factory> {
             DefaultHttpDataSource.Factory()
         }
 
-        // 以下实体都跟缓存上限有关，0 为无限制或下载
+        addSingletonFactory {
+            MediaSourceFactory(get<Cache>(true), get<Cache>(false))
+        }
 
+        // 以下实体都跟缓存上限有关，0 为无限制或下载
         // Cache
-        addPerKeyFactory<Cache, Long> { cacheSize ->
-            if (cacheSize == 0L) { // 缓存无上限直接缓存到下载地址
+        addPerKeyFactory<Cache, Boolean> { isDownload ->
+            if (isDownload) {
                 val downloadFolder = File(application.getFilePath(), "download")
                 SimpleCache(downloadFolder, NoOpCacheEvictor(), get<StandaloneDatabaseProvider>())
             } else {
-                val lruEvictor = LeastRecentlyUsedCacheEvictor(cacheSize.mb)
+                val settingPreferences: SettingPreferences = get()
+                val cacheSize = settingPreferences.cacheSize.get()
+                val lruEvictor = LeastRecentlyUsedCacheEvictor(cacheSize)
                 SimpleCache(
                     File(application.getCachePath("media")),
                     lruEvictor,
@@ -84,7 +90,7 @@ class MediaModule(
 
         // CacheDataSource.Factory
         addPerKeyFactory<CacheDataSource.Factory, Long> { cacheSize ->
-            val cache = get<Cache>(cacheSize)
+            val cache = get<Cache>(false)
             if (cacheSize == 0L) {
                 CacheDataSource.Factory()
                     .setCache(cache)
@@ -113,7 +119,7 @@ class MediaModule(
             DownloadManager(
                 application,
                 get<StandaloneDatabaseProvider>(),
-                get<Cache>(0),
+                get<Cache>(true),
                 get<HttpDataSource.Factory>(),
                 Executors.newFixedThreadPool(6)
             )

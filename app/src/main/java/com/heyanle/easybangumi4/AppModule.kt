@@ -69,7 +69,7 @@ class ControllerModule(
 
         addSingletonFactory {
             CartoonPlayingController(
-                get(), get(), get(), get()
+                get(), get(), get(), get(), get()
             )
         }
     }
