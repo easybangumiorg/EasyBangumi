@@ -14,6 +14,7 @@ import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.offline.DownloadManager
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import com.heyanle.easybangumi4.download.DownloadController
 import com.heyanle.easybangumi4.preferences.SettingPreferences
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.getFilePath
@@ -64,6 +65,10 @@ class MediaModule(
 
         addSingletonFactory<HttpDataSource.Factory> {
             DefaultHttpDataSource.Factory()
+        }
+
+        addSingletonFactory {
+            HeaderDataSourceFactory(application)
         }
 
         addSingletonFactory {
@@ -120,8 +125,17 @@ class MediaModule(
                 application,
                 get<StandaloneDatabaseProvider>(),
                 get<Cache>(true),
-                get<HttpDataSource.Factory>(),
+                get<HeaderDataSourceFactory>(),
                 Executors.newFixedThreadPool(6)
+            )
+        }
+
+        addSingletonFactory {
+            DownloadController(
+                application,
+                get(),
+                get(),
+                get(),
             )
         }
 

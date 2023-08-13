@@ -3,7 +3,6 @@ package com.heyanle.easybangumi4.compose.common
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -117,7 +116,7 @@ fun CartoonStarCardWithCover(
     modifier: Modifier = Modifier,
     selected: Boolean = false,
     cartoon: CartoonStar,
-    showSourceLabel: Boolean = true,
+    showSourceLabel: Boolean,
     onClick: (CartoonStar) -> Unit,
     onLongPress: (CartoonStar) -> Unit,
 ) {
@@ -161,7 +160,7 @@ fun CartoonStarCardWithCover(
                 Text(
                     fontSize = 13.sp,
                     text = sourceBundle.source(cartoon.source)?.label
-                        ?: cartoon.source,
+                        ?: cartoon.sourceName,
                     color = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier
                         .background(

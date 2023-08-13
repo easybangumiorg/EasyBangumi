@@ -58,6 +58,10 @@ object Migrate {
         fun getDBMigration() = emptyList<Migration>()
     }
 
+    object AppLocalDB {
+        fun getDBMigration() = emptyList<Migration>()
+    }
+
 
 
     fun tryUpdate(
