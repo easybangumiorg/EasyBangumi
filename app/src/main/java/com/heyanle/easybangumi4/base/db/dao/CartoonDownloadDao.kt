@@ -1,5 +1,6 @@
 package com.heyanle.easybangumi4.base.db.dao
 
+import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
@@ -11,6 +12,7 @@ import kotlinx.coroutines.flow.Flow
  * Created by HeYanLe on 2023/8/13 22:39.
  * https://github.com/heyanLE
  */
+@Dao
 interface CartoonDownloadDao {
 
     @Insert
