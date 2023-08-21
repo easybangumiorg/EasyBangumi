@@ -31,6 +31,7 @@ import com.heyanle.easybangumi4.source.SourcesHost
 import com.heyanle.easybangumi4.source.utils.initUtils
 import com.heyanle.easybangumi4.utils.AnnoHelper
 import com.heyanle.easybangumi4.utils.MediaUtils
+import com.heyanle.easybangumi4.utils.ReleaseDialog
 import com.heyanle.extension_load.ExtensionInit
 import com.heyanle.extension_load.IconFactoryImpl
 import com.heyanle.okkv2.core.okkv
@@ -87,6 +88,7 @@ class MainActivity : ComponentActivity() {
                             EasyTheme {
                                 MoeSnackBar(Modifier.statusBarsPadding())
                             }
+                            ReleaseDialog()
                         }
 
                     }
