@@ -66,13 +66,13 @@ class MMKVObjectPreference<T>(
 ) : Preference<T> {
 
     private var valueOkkv by okkv(key, def = serializer(defaultValue))
-    private val flow = MutableStateFlow(defaultValue)
+    private val flow = MutableStateFlow(deserializer(valueOkkv))
     override fun key(): String {
         return key
     }
 
     override fun get(): T {
-        return deserializer(valueOkkv)
+        return flow.value
     }
 
     override fun set(value: T) {
