@@ -2,8 +2,8 @@
 import com.heyanle.buildsrc.implementation
 
 plugins {
-    id("com.android.library")
-    id("org.jetbrains.kotlin.android")
+    alias(build.plugins.android.library)
+    alias(build.plugins.kotlin.android)
 }
 
 android {
@@ -36,7 +36,7 @@ android {
 }
 
 dependencies {
-    implementation("org.fourthline.cling:cling-core:${com.heyanle.buildsrc.Version.cling}")
+    implementation(libs.bundles.cling)
     implementation("org.fourthline.cling:cling-support:${com.heyanle.buildsrc.Version.cling}")
     //jetty()
     //servlet()

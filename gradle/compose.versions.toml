@@ -1,0 +1,48 @@
+[versions]
+animation = "1.5.0"
+compiler = "1.4.3"
+foundation = "1.5.0"
+material = "1.5.0"
+material3 = "1.2.0-alpha05"
+runtime = "1.5.0"
+ui = "1.5.0"
+[libraries]
+ui = {module = "androidx.compose.ui:ui", version.ref = "ui"}
+ui_graphics = {module = "androidx.compose.ui:ui-graphics", version.ref = "ui"}
+ui_tooling = {module = "androidx.compose.ui:ui-tooling",version.ref = "ui"}
+ui_tooling_preview = {module = "androidx.compose.ui:ui-tooling-preview", version.ref = "ui"}
+ui_test_manifest = {module = "androidx.compose.ui:ui-test-manifest", version.ref = "ui"}
+ui_test_junit4 = {module = "androidx.compose.ui:ui-test-junit4", version.ref = "ui"}
+
+material3 = {module = "androidx.compose.material3:material3", version.ref = "material3"}
+material3_window_size_clazz = {module = "androidx.compose.material3:material3-window-size-class", version.ref = "material3"}
+
+material_icon_core = {module = "androidx.compose.material:material-icons-core", version.ref = "material"}
+material_icon_extended = {module = "androidx.compose.material:material-icons-extended", version.ref = "material"}
+
+runtime_livedate = {module = "androidx.compose.runtime:runtime-livedata", version.ref = "runtime"}
+
+animation = {module = "androidx.compose.animation:animation", version.ref = "animation"}
+animation_core = {module = "androidx.compose.animation:animation-core", version.ref = "animation"}
+animation_graphics = {module = "androidx.compose.animation:animation-graphics", version.ref = "animation"}
+
+foundation = {module = "androidx.compose.foundation:foundation", version.ref = "foundation"}
+foundation_layout = {module = "androidx.compose.foundation:foundation-layout", version.ref = "foundation"}
+
+
+[bundles]
+ui = [
+    "ui", "ui_graphics", "ui_tooling_preview"
+]
+material = [
+    "material_icon_core", "material_icon_extended"
+]
+runtime = [
+    "runtime_livedate"
+]
+animation = [
+    "animation", "animation_core", "animation_graphics"
+]
+foundation = [
+    "foundation", "foundation_layout"
+]

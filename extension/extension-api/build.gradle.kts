@@ -5,10 +5,15 @@ import com.heyanle.buildsrc.Version
 import org.jetbrains.kotlin.konan.properties.Properties
 
 plugins {
-    id("com.android.library")
-    id("org.jetbrains.kotlin.android")
+//    id("com.android.library")
+//    id("org.jetbrains.kotlin.android")
     id("maven-publish")
     id("signing")
+    alias(build.plugins.android.library)
+    alias(build.plugins.kotlin.android)
+//    alias(build.plugins.maven.publish)
+//    alias(build.plugins.signing)
+
 }
 
 android {
@@ -138,11 +143,11 @@ afterEvaluate {
 
 
 dependencies {
-    api(SourceExtension.sourceApi)
-    api(SourceExtension.sourceUtils)
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-android:${Version.kotlinx_coroutines}")
-    api("com.squareup.okhttp3:okhttp:${Version.okhttp3}")
-    api("com.google.code.gson:gson:${Version.gson}")
-    api( "org.jsoup:jsoup:${Version.jsoup}")
+    api(extension.source.api)
+    api(extension.source.utils)
+    api(libs.kotlin.coroutines.android)
+    api(libs.okhttp3)
+    api(libs.gson)
+    api(libs.jsoup)
 
 }

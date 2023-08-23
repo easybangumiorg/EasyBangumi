@@ -1,0 +1,68 @@
+[versions]
+activity_ktx = "1.7.2"
+fragment_ktx = "1.6.1"
+core_ktx = "1.10.1"
+appcompat = "1.6.1"
+annotation = "1.6.0"
+lifecycle_view_model = "2.6.1"
+lifecycle_runtime_ktx = "2.6.1"
+test_junit = "1.1.5"
+webkit = "1.7.0"
+espresso_core = "3.5.1"
+
+room = "2.6.0-alpha03"
+
+window = "1.2.0-beta01"
+preference = "1.2.1"
+
+paging = "3.2.0"
+media = "1.6.0"
+
+google_material = "1.9.0"
+[libraries]
+core_ktx = { module = "androidx.core:core-ktx", version.ref = "core_ktx" }
+appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
+activity_ktx = { module = "androidx.activity:activity-ktx", version.ref = "activity_ktx" }
+fragment_ktx = { module = "androidx.fragment:fragment-ktx", version.ref = "fragment_ktx" }
+lifecycle_runtime_ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle_runtime_ktx" }
+lifecycle_viewmode_ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycle_view_model" }
+junit_ktx = { module = "androidx.test.ext:junit-ktx", version.ref = "test_junit" }
+annotation = { module = "androidx.annotation:annotation", version.ref = "annotation" }
+
+preference_ktx = { module = "androidx.preference:preference-ktx", version.ref = "preference" }
+
+paging_runtime_ktx = { module = "androidx.paging:paging-runtime-ktx", version.ref = "paging" }
+paging_compose = { module = "androidx.paging:paging-common-ktx", version.ref = "paging" }
+
+window = { module = "androidx.window:window", version.ref = "window" }
+
+medie = { module = "androidx.media:media", version.ref = "media" }
+
+room_runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
+room_ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
+room_common = { module = "androidx.room:room-common", version.ref = "room" }
+room_testing = { module = "androidx.room:room-testing", version.ref = "room" }
+room_compiler = { module = "androidx.compose.compiler:compiler", version.ref = "room" }
+
+room_paging = { module = "androidx.room:room-paging", version.ref = "room" }
+
+webkit = { module = "androidx.webkit:webkit", version.ref = "webkit" }
+
+test_ext_junit_ktx = {module = "androidx.test.ext:junit-ktx", version.ref = "test_junit"}
+test_ext_junit = { module = "androidx.test.ext:junit", version.ref = "test_junit" }
+test_espresso_core = { module = "androidx.test.espresso:espresso-core", version.ref = "espresso_core" }
+
+google_material = {module = "com.google.android.material:material", version.ref = "google_material"}
+
+[bundles]
+room_impl = ["room_ktx", "room_common", "room_runtime"]
+core = [
+    "core_ktx", "appcompat", "activity_ktx", "fragment_ktx",
+    "lifecycle_runtime_ktx", "lifecycle_viewmode_ktx", "junit_ktx",
+    "annotation", "test_ext_junit_ktx",
+]
+test_core = [
+    "test_ext_junit", "test_espresso_core"
+]
+
+
