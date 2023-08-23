@@ -5,8 +5,8 @@ import com.heyanle.buildsrc.Version
 import org.jetbrains.kotlin.konan.properties.Properties
 
 plugins {
-    id("com.android.library")
-    id("org.jetbrains.kotlin.android")
+    alias(build.plugins.android.library)
+    alias(build.plugins.kotlin.android)
     id("maven-publish")
     id("signing")
 }
@@ -137,11 +137,10 @@ afterEvaluate {
 
 
 dependencies {
-    compileOnly("androidx.webkit:webkit:${Version.androidx_webkit}")
-    compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-android:${Version.kotlinx_coroutines}")
-    compileOnly("org.jsoup:jsoup:${Version.jsoup}")
-    compileOnly("com.squareup.okhttp3:okhttp:${Version.okhttp3}")
-    compileOnly("com.squareup.okhttp3:logging-interceptor:${Version.okhttp3}")
-    compileOnly("com.google.code.gson:gson:${Version.gson}")
-    compileOnly("org.apache.commons:commons-text:${Version.commons_text}")
+    compileOnly(androidx.webkit)
+    compileOnly(libs.kotlin.coroutines.android)
+    compileOnly(libs.jsoup)
+    compileOnly(libs.bundles.okhttp3)
+    compileOnly(libs.gson)
+    compileOnly(libs.commons.text)
 }

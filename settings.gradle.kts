@@ -20,6 +20,20 @@ dependencyResolutionManagement {
         mavenCentral()
 
     }
+    versionCatalogs {
+        create("androidx") {
+            from(files("gradle/androidx.versions.toml"))
+        }
+        create("compose") {
+            from(files("gradle/compose.versions.toml"))
+        }
+        create("build") {
+            from(files("gradle/build.versions.toml"))
+        }
+        create("extension") {
+            from(files("gradle/extension.versions.toml"))
+        }
+    }
 }
 
 rootProject.name = "EasyBangumi"

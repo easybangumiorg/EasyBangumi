@@ -2,8 +2,10 @@
 import com.heyanle.buildsrc.Android
 
 plugins {
-    id("com.android.library")
-    id("org.jetbrains.kotlin.android")
+    alias(build.plugins.android.library)
+    alias(build.plugins.kotlin.android)
+//    id("com.android.library")
+//    id("org.jetbrains.kotlin.android")
 }
 
 android {
@@ -36,6 +38,6 @@ android {
 }
 
 dependencies {
-    implementation("androidx.core:core-ktx:${com.heyanle.buildsrc.Version.androidx_core_ktx}")
-    implementation("androidx.appcompat:appcompat:${com.heyanle.buildsrc.Version.androidx_appcompat}")
+    implementation(androidx.core.ktx)
+    implementation(androidx.appcompat)
 }

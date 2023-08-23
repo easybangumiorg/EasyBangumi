@@ -2,8 +2,8 @@ import com.heyanle.buildsrc.SourceExtension
 import com.heyanle.buildsrc.Version
 
 plugins {
-    id("com.android.library")
-    id("org.jetbrains.kotlin.android")
+    alias(build.plugins.android.library)
+    alias(build.plugins.kotlin.android)
 }
 
 android {
@@ -34,8 +34,8 @@ android {
 }
 
 dependencies {
-    implementation("androidx.appcompat:appcompat:${Version.androidx_appcompat}")
-    implementation(SourceExtension.extensionApi)
-    implementation(SourceExtension.sourceApi)
-    implementation(SourceExtension.sourceUtils)
+    implementation(androidx.appcompat)
+    implementation(extension.source.utils)
+    implementation(extension.source.api)
+    implementation(extension.extension.api)
 }
