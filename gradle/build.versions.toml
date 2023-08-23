@@ -1,0 +1,14 @@
+[versions]
+android_gradle_plugin = "8.2.0-alpha16"
+kotlin = "1.8.21"
+ksp = "1.8.21-1.0.11"
+
+[plugins]
+android_application = {id = "com.android.application", version.ref = "android_gradle_plugin"}
+android_library = {id = "com.android.library", version.ref = "android_gradle_plugin"}
+kotlin_android = {id = "org.jetbrains.kotlin.android", version.ref = "kotlin"}
+kotlin_jvm = {id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin"}
+ksp = {id = "com.google.devtools.ksp", version.ref = "ksp"}
+#maven_publish = {id = "maven-publish"}
+#signing = {id = "signing"}
+
