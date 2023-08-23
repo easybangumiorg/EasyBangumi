@@ -32,7 +32,8 @@ annotation = { module = "androidx.annotation:annotation", version.ref = "annotat
 preference_ktx = { module = "androidx.preference:preference-ktx", version.ref = "preference" }
 
 paging_runtime_ktx = { module = "androidx.paging:paging-runtime-ktx", version.ref = "paging" }
-paging_compose = { module = "androidx.paging:paging-common-ktx", version.ref = "paging" }
+paging_common = { module = "androidx.paging:paging-common-ktx", version.ref = "paging" }
+paging_compose = { module = "androidx.paging:paging-compose", version.ref = "paging"}
 
 window = { module = "androidx.window:window", version.ref = "window" }
 
@@ -42,7 +43,7 @@ room_runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room_ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 room_common = { module = "androidx.room:room-common", version.ref = "room" }
 room_testing = { module = "androidx.room:room-testing", version.ref = "room" }
-room_compiler = { module = "androidx.compose.compiler:compiler", version.ref = "room" }
+room_compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 
 room_paging = { module = "androidx.room:room-paging", version.ref = "room" }
 

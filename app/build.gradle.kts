@@ -54,14 +54,16 @@ android {
     }
 
     buildTypes {
+        debug {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles("proguard-rules.pro")
+        }
         release {
-            postprocessing {
-                isRemoveUnusedCode = true
-                isRemoveUnusedResources = true
-                isObfuscate = false
-                isOptimizeCode = true
-                proguardFiles("proguard-rules.pro")
-            }
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles("proguard-rules.pro")
+
         }
     }
     compileOptions {
@@ -94,9 +96,12 @@ dependencies {
 
     implementation(androidx.bundles.room.impl)
     implementation(androidx.room.paging)
+    annotationProcessor(androidx.room.compiler)
     ksp(androidx.room.compiler)
     testImplementation(androidx.room.testing)
     androidTestImplementation(androidx.room.testing)
+
+    implementation(androidx.preference.ktx)
 
     implementation(androidx.medie)
 
@@ -106,8 +111,15 @@ dependencies {
 
     implementation(androidx.window)
 
+    implementation(androidx.paging.common)
     implementation(androidx.paging.compose)
     implementation(androidx.paging.runtime.ktx)
+
+    implementation(compose.bundles.ui)
+    implementation(compose.bundles.animation)
+    implementation(compose.bundles.foundation)
+    implementation(compose.bundles.material)
+    implementation(compose.bundles.material3)
 
     implementation(libs.bundles.okhttp3)
     implementation(libs.bundles.cling)
@@ -125,6 +137,7 @@ dependencies {
 
     implementation(libs.easyplayer2)
     implementation(libs.accompanist.systemuicontroller)
+    implementation(libs.accompanist.swiperefresh)
     implementation(libs.navigtion.compose)
     implementation(libs.coil.compose)
     implementation(libs.coil.gif)
