@@ -1,7 +1,7 @@
 [versions]
 android_gradle_plugin = "8.2.0-alpha16"
-kotlin = "1.8.21"
-ksp = "1.8.21-1.0.11"
+kotlin = "1.8.22"
+ksp = "1.8.22-1.0.11"
 
 [plugins]
 android_application = {id = "com.android.application", version.ref = "android_gradle_plugin"}

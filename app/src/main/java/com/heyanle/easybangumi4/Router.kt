@@ -13,12 +13,13 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavHost
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.google.accompanist.navigation.animation.AnimatedNavHost
-import com.google.accompanist.navigation.animation.composable
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.heyanle.bangumi_source_api.api.entity.CartoonCover
 import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
 import com.heyanle.easybangumi4.base.theme.NormalSystemBarColor
@@ -177,12 +178,12 @@ const val DEFAULT = MAIN
 @Composable
 fun Nav() {
 
-    val nav = rememberAnimatedNavController()
+    val nav = rememberNavController()
     LaunchedEffect(key1 = nav) {
         navControllerRef = WeakReference(nav)
     }
     CompositionLocalProvider(LocalNavController provides nav) {
-        AnimatedNavHost(nav, DEFAULT,
+        NavHost(nav, DEFAULT,
             modifier = Modifier.fillMaxSize(),
             enterTransition = { slideInHorizontally(tween()) { it } },
             exitTransition = { slideOutHorizontally(tween()) { -it } + fadeOut(tween()) },
@@ -271,7 +272,7 @@ fun Nav() {
 //            }
 
             composable(WEB_VIEW_USER) {
-                kotlin.runCatching {
+                runCatching {
                     val wb = WebViewUserHelperImpl.webViewRef?.get() ?: throw NullPointerException()
                     val onCheck =
                         WebViewUserHelperImpl.onCheck?.get() ?: throw NullPointerException()

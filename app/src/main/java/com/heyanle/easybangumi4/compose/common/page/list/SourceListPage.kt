@@ -18,10 +18,6 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -37,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.heyanle.bangumi_source_api.api.component.page.SourcePage
 import com.heyanle.bangumi_source_api.api.entity.CartoonCover
 import com.heyanle.easybangumi4.LocalNavController
@@ -57,7 +54,7 @@ import kotlinx.coroutines.launch
  */
 
 @OptIn(
-    ExperimentalMaterialApi::class, ExperimentalAnimationApi::class,
+    ExperimentalAnimationApi::class,
     ExperimentalFoundationApi::class
 )
 @Composable
@@ -99,7 +96,6 @@ fun SourceListPage(
 
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun SourceListPageContentWithCover(
     modifier: Modifier = Modifier,
@@ -112,7 +108,7 @@ fun SourceListPageContentWithCover(
     ) {
     val nav = LocalNavController.current
     var refreshing by remember { mutableStateOf(false) }
-    val state = rememberPullRefreshState(refreshing, onRefresh = {
+    val state = rememberSwipeRefreshState(refreshing, onRefresh = {
         scope.launch {
             refreshing = true
             vm.refresh()
@@ -120,6 +116,9 @@ fun SourceListPageContentWithCover(
             refreshing = false
         }
     })
+    com.google.accompanist.swiperefresh.SwipeRefresh(state = , onRefresh = { /*TODO*/ }) {
+        
+    }
 
     val haptic = LocalHapticFeedback.current
     val lazyGridState = rememberLazyGridState()

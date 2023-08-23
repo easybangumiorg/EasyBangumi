@@ -40,6 +40,7 @@ junit = { module = "junit:junit", version.ref = "junit" }
 easyplayer2 = { module = "com.github.easybangumiorg:EasyPlayer2", version.ref = "easyplayer2" }
 
 accompanist_systemuicontroller = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanist" }
+accompanist_swiperefresh = {module = "com.google.accompanist:accompanist-swiperefresh", version.ref = "accompanist"}
 
 navigtion_compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation_compose" }
 

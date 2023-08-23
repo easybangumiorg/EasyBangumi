@@ -1,8 +1,5 @@
 package com.heyanle.easybangumi4.compose.main
 
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ModalBottomSheetState
-import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -15,8 +12,6 @@ import androidx.lifecycle.ViewModel
  */
 class MainViewModel: ViewModel() {
 
-    @OptIn(ExperimentalMaterialApi::class)
-    val bottomSheetState = ModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
 
     var customBottomBar by mutableStateOf<(@Composable ()->Unit)?>(null)
 
