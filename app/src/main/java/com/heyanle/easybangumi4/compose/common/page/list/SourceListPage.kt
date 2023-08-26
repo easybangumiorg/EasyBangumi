@@ -19,8 +19,10 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,7 +43,6 @@ import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.compose.common.CartoonCardWithCover
 import com.heyanle.easybangumi4.compose.common.CartoonCardWithoutCover
 import com.heyanle.easybangumi4.compose.common.FastScrollToTopFab
-import com.heyanle.easybangumi4.compose.common.MD3PullRefreshIndicator
 import com.heyanle.easybangumi4.compose.common.PagingCommon
 import com.heyanle.easybangumi4.compose.common.pagingCommon
 import com.heyanle.easybangumi4.compose.main.star.CoverStarViewModel
@@ -184,14 +185,14 @@ fun SourceListPageContentWithCover(
             }
         }
 
-        MD3PullRefreshIndicator(refreshing, state, modifier)
-//        PullRefreshIndicator(
-//            refreshing,
-//            state,
-//            Modifier.align(Alignment.TopCenter),
-//            backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
-//            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-//        )
+        //MD3PullRefreshIndicator(refreshing, state, modifier)
+        PullRefreshIndicator(
+            refreshing,
+            state,
+            Modifier.align(Alignment.TopCenter),
+            backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
+            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        )
         FastScrollToTopFab(listState = lazyGridState, after = 20)
     }
 }
@@ -276,10 +277,12 @@ fun SourceListPageContentWithoutCover(
 
         }
 
-        MD3PullRefreshIndicator(
+        PullRefreshIndicator(
             refreshing,
             state,
             Modifier.align(Alignment.TopCenter),
+            backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
+            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
         )
         FastScrollToTopFab(lazyState, after = 20)
     }

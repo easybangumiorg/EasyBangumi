@@ -79,7 +79,7 @@ android {
         viewBinding = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = compose.versions.compiler.get()
+        kotlinCompilerExtensionVersion = build.versions.compose.compiler.get()
     }
 
 }

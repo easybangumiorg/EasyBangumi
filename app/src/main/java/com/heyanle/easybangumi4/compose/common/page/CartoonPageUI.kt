@@ -61,7 +61,7 @@ fun CartoonPageListTab(
                 onClick = {
                     onPageClick(i)
                 },
-                label = { Text(page.label) },
+                label = { Text(text = page.label) },
                 colors = FilterChipDefaults.filterChipColors(),
             )
 
