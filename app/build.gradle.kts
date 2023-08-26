@@ -2,9 +2,6 @@
 import com.heyanle.buildsrc.Android
 import com.heyanle.buildsrc.Config
 import com.heyanle.buildsrc.RoomSchemaArgProvider
-import com.heyanle.buildsrc.Version
-import com.heyanle.buildsrc.androidTestImplementation
-import com.heyanle.buildsrc.implementation
 import com.heyanle.buildsrc.project
 
 plugins {
@@ -67,8 +64,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlin {
         jvmToolchain(11)

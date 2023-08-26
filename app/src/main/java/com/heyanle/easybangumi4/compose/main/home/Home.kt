@@ -1,7 +1,6 @@
 package com.heyanle.easybangumi4.compose.main.home
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -57,13 +56,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easybangumi4.LocalNavController
-import com.heyanle.easybangumi4.navigationSearch
-import com.heyanle.easybangumi4.source.LocalSourceBundleController
 import com.heyanle.easybangumi4.compose.common.OkImage
 import com.heyanle.easybangumi4.compose.common.page.CartoonPageListTab
 import com.heyanle.easybangumi4.compose.common.page.CartoonPageUI
-import com.heyanle.easybangumi4.compose.main.MainPageItems
 import com.heyanle.easybangumi4.compose.main.MainViewModel
+import com.heyanle.easybangumi4.navigationSearch
+import com.heyanle.easybangumi4.source.LocalSourceBundleController
 import kotlinx.coroutines.launch
 
 /**
@@ -94,40 +92,43 @@ fun Home() {
         mutableStateOf(false)
     }
 
-    ModalBottomSheet(
-        scrimColor = Color.Black.copy(alpha = 0.32f),
-        onDismissRequest = {
-                           showChangeSheet.value = false
-        },
-        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-        containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
-            3.dp
-        ),
-        content = {
-            CompositionLocalProvider(
-                LocalContentColor provides MaterialTheme.colorScheme.onSurface
-            ) {
-                Column(
+    if(showChangeSheet.value){
+        ModalBottomSheet(
+            scrimColor = Color.Black.copy(alpha = 0.32f),
+            onDismissRequest = {
+                showChangeSheet.value = false
+            },
+            shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
+                3.dp
+            ),
+            content = {
+                CompositionLocalProvider(
+                    LocalContentColor provides MaterialTheme.colorScheme.onSurface
                 ) {
-                    Box(
-                        Modifier
-                            .padding(vertical = 10.dp)
-                            .width(32.dp)
-                            .height(4.dp)
-                            .clip(RoundedCornerShape(2.dp))
-                            .alpha(0.4f)
-                            .background(MaterialTheme.colorScheme.onSurfaceVariant)
-                            .align(Alignment.CenterHorizontally)
-                    )
-                    HomeBottomSheet {
-                        showChangeSheet.value = false
+                    Column(
+                    ) {
+                        Box(
+                            Modifier
+                                .padding(vertical = 10.dp)
+                                .width(32.dp)
+                                .height(4.dp)
+                                .clip(RoundedCornerShape(2.dp))
+                                .alpha(0.4f)
+                                .background(MaterialTheme.colorScheme.onSurfaceVariant)
+                                .align(Alignment.CenterHorizontally)
+                        )
+                        HomeBottomSheet {
+                            showChangeSheet.value = false
+                        }
+                        Spacer(modifier = Modifier.navigationBarsPadding())
                     }
-                    Spacer(modifier = Modifier.navigationBarsPadding())
+
                 }
 
-            }
+            })
 
-        })
+    }
 
     Column {
         HomeTopAppBar(
@@ -135,7 +136,7 @@ fun Home() {
             title = state.topAppBarTitle,
             onChangeClick = {
                 scope.launch {
-                    mainVM.bottomSheetState.show()
+                    showChangeSheet.value = true
                 }
             },
             onSearchClick = { nav.navigationSearch(state.selectionKey) }

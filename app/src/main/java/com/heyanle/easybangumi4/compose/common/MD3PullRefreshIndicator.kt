@@ -95,7 +95,7 @@ fun MD3PullRefreshIndicator(
     ) {
         Crossfade(
             targetState = refreshing,
-            animationSpec = tween(durationMillis = CrossfadeDurationMs)
+            animationSpec = tween(durationMillis = CrossfadeDurationMs), label = ""
         ) { refreshing ->
             Box(
                 modifier = Modifier.fillMaxSize(),

@@ -14,7 +14,7 @@ exoplayer = "2.19.0" # 使用 media 里的
 easyplayer2 = "1.2.7"
 
 accompanist = "0.31.2-alpha"
-navigation_compose = "2.7.0"
+navigation_compose = "2.7.1"
 coil = "2.4.0"
 appcenter = "5.0.2"
 commons_text = "1.10.0"
@@ -22,7 +22,7 @@ cling = "2.1.2"
 
 compose_lazy_reorder = "0.9.6"
 
-kotlinx_coroutines = "1.7.1"
+kotlinx_coroutines = "1.7.3"
 [libraries]
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 okhttp3 = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp3" }
