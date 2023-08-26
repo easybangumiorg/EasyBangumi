@@ -16,18 +16,17 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.DismissDirection
-import androidx.compose.material.DismissState
-import androidx.compose.material.DismissValue
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.SwipeToDismiss
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DismissDirection
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDefaults
+import androidx.compose.material3.SwipeToDismiss
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDismissState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -54,7 +53,7 @@ object MoeSnackBar {
     const val INFINITY = -1L
 }
 
-data class MoeSnackBarData @OptIn(ExperimentalMaterialApi::class) constructor(
+data class MoeSnackBarData  constructor(
     val message: MutableState<String>,
     val modifier: Modifier = Modifier.padding(8.dp, 8.dp, 8.dp, 0.dp),
     val duration: Long = MoeSnackBar.SHORT,
@@ -66,13 +65,12 @@ data class MoeSnackBarData @OptIn(ExperimentalMaterialApi::class) constructor(
     val animationDuration: Int = 250,
     val show: MutableState<Boolean> = mutableStateOf(false),
     val shouldClear: MutableState<Boolean> = mutableStateOf(false),
-    var dismissState: DismissState = DismissState(DismissValue.Default),
     var isCancelPressed: Boolean = false,
     var isConfirmPressed: Boolean = false,
     val content: @Composable ((MoeSnackBarData) -> Unit)? = null,
 )
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MoeSnackBar(modifier: Modifier = Modifier) {
     val themeController: EasyThemeController by Injekt.injectLazy()
@@ -102,42 +100,44 @@ fun MoeSnackBar(modifier: Modifier = Modifier) {
                 enter = expandVertically(tween(it.animationDuration)) + fadeIn(tween(it.animationDuration)),
                 exit = shrinkVertically(tween(it.animationDuration)) + fadeOut(tween(it.animationDuration))
             ) {
+                val dismissState = rememberDismissState()
                 SwipeToDismiss(
-                    state = it.dismissState.apply {
+                    state = dismissState.apply {
                         if (isDismissed(DismissDirection.StartToEnd)) it.dismiss()
                     },
                     background = {},
                     directions = setOf(DismissDirection.StartToEnd),
-                ) {
-                    if (it.content != null) it.content.run { this(it) } else {
-                        Snackbar(
-                            modifier = it.modifier,
-                            action = {
-                                Row {
-                                    it.onConfirm?.run {
-                                        TextButton({
-                                            it.isConfirmPressed = true
-                                            this(it)
-                                        }) {
-                                            Text(
-                                                it.confirmLabel,
-                                                color = MaterialTheme.colorScheme.secondary
-                                            )
+                    dismissContent = {
+                        if (it.content != null) it.content.run { this(it) } else {
+                            Snackbar(
+                                modifier = it.modifier,
+                                action = {
+                                    Row {
+                                        it.onConfirm?.run {
+                                            TextButton({
+                                                it.isConfirmPressed = true
+                                                this(it)
+                                            }) {
+                                                Text(
+                                                    it.confirmLabel,
+                                                    color = MaterialTheme.colorScheme.secondary
+                                                )
+                                            }
+                                        }
+                                        it.onCancel?.run {
+                                            TextButton({
+                                                it.isCancelPressed = true
+                                                this(it)
+                                            }) { Text(it.cancelLabel) }
                                         }
                                     }
-                                    it.onCancel?.run {
-                                        TextButton({
-                                            it.isCancelPressed = true
-                                            this(it)
-                                        }) { Text(it.cancelLabel) }
-                                    }
-                                }
-                            },
-                            actionOnNewLine = it.onConfirm != null
-                        ) { Text(it.message.value) }
+                                },
+                                actionOnNewLine = it.onConfirm != null
+                            ) { Text(it.message.value) }
 
+                        }
                     }
-                }
+                )
             }
         }
         if (moeSnackBarQueue.size > 0)
