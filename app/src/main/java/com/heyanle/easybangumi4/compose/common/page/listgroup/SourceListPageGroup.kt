@@ -137,7 +137,7 @@ fun SourceListGroupTab(
                         .clickable {
                             onClick(it)
                         }
-                        .padding(8.dp, 4.dp),
+                        .padding(8.dp, 0.dp),
                     color = if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onBackground,
                     fontWeight = FontWeight.W900,
                     text = it.label,
