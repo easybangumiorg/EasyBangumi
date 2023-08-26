@@ -22,9 +22,9 @@ class SourceListGroupViewModel(
 ): ViewModel() {
 
     sealed class GroupState {
-        object None: GroupState()
+        data object None: GroupState()
 
-        object Loading: GroupState()
+        data object Loading: GroupState()
 
         class Group(val list: List<SourcePage.SingleCartoonPage>): GroupState()
 
@@ -52,7 +52,7 @@ class SourceListGroupViewModel(
     }
 
     sealed class CurListPageState {
-        object None: CurListPageState()
+        data object None: CurListPageState()
 
         class Page(val pageListPage: SourcePage.SingleCartoonPage): CurListPageState()
 
