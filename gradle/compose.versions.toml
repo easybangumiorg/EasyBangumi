@@ -1,6 +1,6 @@
 [versions]
 animation = "1.5.0"
-compiler = "1.4.8"
+compiler = "1.5.1"
 foundation = "1.5.0"
 material = "1.5.0"
 material3 = "1.2.0-alpha05"
@@ -17,6 +17,7 @@ ui_test_junit4 = {module = "androidx.compose.ui:ui-test-junit4", version.ref = "
 material3 = {module = "androidx.compose.material3:material3", version.ref = "material3"}
 material3_window_size_clazz = {module = "androidx.compose.material3:material3-window-size-class", version.ref = "material3"}
 
+material = {module = "androidx.compose.material:material", version.ref = "material"}
 material_icon_core = {module = "androidx.compose.material:material-icons-core", version.ref = "material"}
 material_icon_extended = {module = "androidx.compose.material:material-icons-extended", version.ref = "material"}
 
@@ -35,7 +36,7 @@ ui = [
     "ui", "ui_graphics", "ui_tooling_preview"
 ]
 material = [
-    "material_icon_core", "material_icon_extended"
+    "material", "material_icon_core", "material_icon_extended"
 ]
 material3 = [
     "material3", "material3_window_size_clazz"

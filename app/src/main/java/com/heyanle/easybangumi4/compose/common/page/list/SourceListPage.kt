@@ -18,7 +18,9 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,13 +35,13 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.heyanle.bangumi_source_api.api.component.page.SourcePage
 import com.heyanle.bangumi_source_api.api.entity.CartoonCover
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.compose.common.CartoonCardWithCover
 import com.heyanle.easybangumi4.compose.common.CartoonCardWithoutCover
 import com.heyanle.easybangumi4.compose.common.FastScrollToTopFab
+import com.heyanle.easybangumi4.compose.common.MD3PullRefreshIndicator
 import com.heyanle.easybangumi4.compose.common.PagingCommon
 import com.heyanle.easybangumi4.compose.common.pagingCommon
 import com.heyanle.easybangumi4.compose.main.star.CoverStarViewModel
@@ -96,6 +98,7 @@ fun SourceListPage(
 
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun SourceListPageContentWithCover(
     modifier: Modifier = Modifier,
@@ -108,7 +111,7 @@ fun SourceListPageContentWithCover(
     ) {
     val nav = LocalNavController.current
     var refreshing by remember { mutableStateOf(false) }
-    val state = rememberSwipeRefreshState(refreshing, onRefresh = {
+    val state = rememberPullRefreshState(refreshing, onRefresh = {
         scope.launch {
             refreshing = true
             vm.refresh()
@@ -116,9 +119,6 @@ fun SourceListPageContentWithCover(
             refreshing = false
         }
     })
-    com.google.accompanist.swiperefresh.SwipeRefresh(state = , onRefresh = { /*TODO*/ }) {
-        
-    }
 
     val haptic = LocalHapticFeedback.current
     val lazyGridState = rememberLazyGridState()
@@ -184,13 +184,14 @@ fun SourceListPageContentWithCover(
             }
         }
 
-        PullRefreshIndicator(
-            refreshing,
-            state,
-            Modifier.align(Alignment.TopCenter),
-            backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
-            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-        )
+        MD3PullRefreshIndicator(refreshing, state, modifier)
+//        PullRefreshIndicator(
+//            refreshing,
+//            state,
+//            Modifier.align(Alignment.TopCenter),
+//            backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
+//            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+//        )
         FastScrollToTopFab(listState = lazyGridState, after = 20)
     }
 }
@@ -275,12 +276,10 @@ fun SourceListPageContentWithoutCover(
 
         }
 
-        PullRefreshIndicator(
+        MD3PullRefreshIndicator(
             refreshing,
             state,
             Modifier.align(Alignment.TopCenter),
-            backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
-            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
         )
         FastScrollToTopFab(lazyState, after = 20)
     }
