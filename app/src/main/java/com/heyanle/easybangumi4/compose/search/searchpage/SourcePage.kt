@@ -7,6 +7,8 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -59,7 +61,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.google.accompanist.flowlayout.FlowRow
 import com.heyanle.bangumi_source_api.api.component.search.SearchComponent
 import com.heyanle.bangumi_source_api.api.entity.CartoonCover
 import com.heyanle.easy_i18n.R
@@ -194,6 +195,7 @@ fun SearchPage(
 
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SearchEmptyPage(
     historyList: List<String>,
@@ -227,8 +229,8 @@ fun SearchEmptyPage(
             }
 
             FlowRow(
-                mainAxisSpacing = 4.dp,
-                crossAxisSpacing = 4.dp
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 historyList.forEach {
                     Surface(

@@ -1,6 +1,6 @@
 [versions]
-android_gradle_plugin = "8.2.0-alpha16"
-kotlin = "1.8.22"
+android_gradle_plugin = "8.1.0"
+kotlin = "1.9.0"
 ksp = "1.8.22-1.0.11"
 
 [plugins]
