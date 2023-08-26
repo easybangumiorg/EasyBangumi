@@ -1,4 +1,3 @@
-@file:OptIn(ExperimentalMaterialApi::class)
 package com.heyanle.easybangumi4.compose.main
 
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -17,9 +16,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ModalBottomSheetLayout
-import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.History
@@ -35,6 +31,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationRail
@@ -71,15 +68,13 @@ import kotlinx.coroutines.launch
  * https://github.com/heyanLE
  */
 // 番剧页面相关的子页面
-sealed class MainPage @OptIn(ExperimentalMaterialApi::class) constructor(
+sealed class MainPage constructor(
     val route: String,
     val tabLabel: @Composable (() -> Unit),
     val icon: @Composable ((Boolean) -> Unit),
     val content: @Composable (() -> Unit),
-    val bottomSheetContent: @Composable ((ModalBottomSheetState) -> Unit)? = null,
 ) {
 
-    @OptIn(ExperimentalMaterialApi::class)
     object HomePage : MainPage(
         route = "home",
         tabLabel = { Text(text = stringResource(id = R.string.home)) },
@@ -94,9 +89,6 @@ sealed class MainPage @OptIn(ExperimentalMaterialApi::class) constructor(
                 Home()
             }
         },
-        bottomSheetContent = {
-            HomeBottomSheet(it)
-        }
     )
 
     object StarPage : MainPage(
@@ -189,7 +181,6 @@ var homePageIndexOkkv by okkv("home_page_index", 0)
 
 @OptIn(
     ExperimentalMaterial3Api::class,
-    ExperimentalAnimationApi::class, ExperimentalMaterialApi::class,
     ExperimentalFoundationApi::class, ExperimentalMaterial3WindowSizeClassApi::class
 )
 @Composable
@@ -206,113 +197,80 @@ fun Main() {
         color = MaterialTheme.colorScheme.background,
         contentColor = MaterialTheme.colorScheme.onBackground
     ) {
-        ModalBottomSheetLayout(
-            scrimColor = Color.Black.copy(alpha = 0.32f),
-            sheetState = vm.bottomSheetState,
-            sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-            sheetBackgroundColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
-                3.dp
-            ),
-            sheetContent = {
-                CompositionLocalProvider(
-                    LocalContentColor provides MaterialTheme.colorScheme.onSurface
+        val isPad = isCurPadeMode()
+
+        if(!isPad){
+            Column() {
+                HorizontalPager(
+                    userScrollEnabled = false,
+                    state = pagerState,
+                    modifier = Modifier.weight(1f),
                 ) {
-                    Column(
-                    ) {
-                        Box(
-                            Modifier
-                                .padding(vertical = 10.dp)
-                                .width(32.dp)
-                                .height(4.dp)
-                                .clip(RoundedCornerShape(2.dp))
-                                .alpha(0.4f)
-                                .background(MaterialTheme.colorScheme.onSurfaceVariant)
-                                .align(Alignment.CenterHorizontally)
-                        )
-                        MainPageItems[pagerState.currentPage].bottomSheetContent?.invoke(vm.bottomSheetState)
-                        Spacer(modifier = Modifier.navigationBarsPadding())
-                    }
-
+                    MainPageItems[it].content()
                 }
 
-            }) {
-
-            val isPad = isCurPadeMode()
-
-            if(!isPad){
-                Column() {
-                    HorizontalPager(
-                        userScrollEnabled = false,
-                        state = pagerState,
-                        modifier = Modifier.weight(1f),
-                    ) {
-                        MainPageItems[it].content()
-                    }
-
-                    if (vm.customBottomBar == null) {
-                        NavigationBar() {
-                            MainPageItems.forEachIndexed { i, page ->
-                                val select = pagerState.currentPage == i
-                                NavigationBarItem(
-                                    icon = {
-                                        page.icon(select)
-                                    },
-                                    label = page.tabLabel,
-                                    selected = select,
-                                    alwaysShowLabel = true,
-                                    onClick = {
-                                        scope.launch {
-                                            pagerState.scrollToPage(i)
-                                        }
-                                        homePageIndexOkkv = i
-                                    }
-                                )
-                            }
-                        }
-                    } else {
-                        vm.customBottomBar?.let { it() }
-                    }
-                }
-            }else{
-                Row {
-                    NavigationRail (
-                        containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
-
-                        ){
+                if (vm.customBottomBar == null) {
+                    NavigationBar() {
                         MainPageItems.forEachIndexed { i, page ->
                             val select = pagerState.currentPage == i
-                            NavigationRailItem(
+                            NavigationBarItem(
+                                icon = {
+                                    page.icon(select)
+                                },
+                                label = page.tabLabel,
                                 selected = select,
+                                alwaysShowLabel = true,
                                 onClick = {
                                     scope.launch {
                                         pagerState.scrollToPage(i)
                                     }
                                     homePageIndexOkkv = i
-                                },
-                                icon = {page.icon(select) },
-                                label = page.tabLabel,
-                                alwaysShowLabel = false,
+                                }
                             )
                         }
                     }
-                    Column(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .weight(1f)
-                    ) {
-                        VerticalPager(state = pagerState, userScrollEnabled = false,modifier = Modifier.weight(1f), ) {
-                            MainPageItems[it].content()
-                        }
-                        if (vm.customBottomBar != null) {
-                            vm.customBottomBar?.let { it() }
-                        }
-                    }
-
+                } else {
+                    vm.customBottomBar?.let { it() }
                 }
             }
+        }else{
+            Row {
+                NavigationRail (
+                    containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
 
+                    ){
+                    MainPageItems.forEachIndexed { i, page ->
+                        val select = pagerState.currentPage == i
+                        NavigationRailItem(
+                            selected = select,
+                            onClick = {
+                                scope.launch {
+                                    pagerState.scrollToPage(i)
+                                }
+                                homePageIndexOkkv = i
+                            },
+                            icon = {page.icon(select) },
+                            label = page.tabLabel,
+                            alwaysShowLabel = false,
+                        )
+                    }
+                }
+                Column(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .weight(1f)
+                ) {
+                    VerticalPager(state = pagerState, userScrollEnabled = false,modifier = Modifier.weight(1f), ) {
+                        MainPageItems[it].content()
+                    }
+                    if (vm.customBottomBar != null) {
+                        vm.customBottomBar?.let { it() }
+                    }
+                }
 
+            }
         }
+
 
 
     }
