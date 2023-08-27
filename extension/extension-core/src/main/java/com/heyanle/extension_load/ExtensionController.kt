@@ -1,9 +1,7 @@
 package com.heyanle.extension_load
 
 import android.content.Context
-import com.heyanle.extension_api.iconFactory
 import com.heyanle.extension_load.model.Extension
-import com.heyanle.extension_load.model.LoadResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
@@ -12,8 +10,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.last
-import kotlinx.coroutines.flow.retryWhen
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.concurrent.atomic.AtomicBoolean
@@ -30,9 +27,9 @@ object ExtensionController {
 
     sealed class ExtensionState {
 
-        object None : ExtensionState()
+        data object None : ExtensionState()
 
-        object Loading : ExtensionState()
+        data object Loading : ExtensionState()
 
         class Extensions(
             val extensions: List<Extension>
@@ -57,11 +54,15 @@ object ExtensionController {
         }
         lastJob?.cancel()
         lastJob = loadScope.launch() {
-            _installedExtensionsFlow.emit(ExtensionState.Loading)
+            _installedExtensionsFlow.update {
+                ExtensionState.Loading
+            }
             val extensions = withContext(Dispatchers.IO) {
                 ExtensionLoader.getAllExtension(context)
             }
-            _installedExtensionsFlow.emit(ExtensionState.Extensions(extensions))
+            _installedExtensionsFlow.update {
+                ExtensionState.Extensions(extensions)
+            }
         }
 
 

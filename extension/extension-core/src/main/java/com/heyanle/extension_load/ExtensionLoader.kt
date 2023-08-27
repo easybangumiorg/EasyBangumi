@@ -39,7 +39,7 @@ object ExtensionLoader {
     fun getAllExtension(context: Context): List<Extension> {
         val pkgManager = context.packageManager
 
-        @Suppress("DEPRECATION") val installedPkgs =
+        val installedPkgs =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 pkgManager.getInstalledPackages(PackageManager.PackageInfoFlags.of(PACKAGE_FLAGS.toLong()))
             } else {

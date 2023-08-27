@@ -69,7 +69,7 @@ fun BangumiCard(
                     MaterialTheme.colorScheme.secondary,
                     RoundedCornerShape(0.dp, 0.dp, 8.dp, 0.dp)
                 )
-                .padding(8.dp, 0.dp)
+                .padding(8.dp, 4.dp)
         )
 
     }

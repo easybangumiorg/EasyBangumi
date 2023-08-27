@@ -43,6 +43,7 @@ class SettingPreferences(
     }
     val playerOrientationMode = preferenceStore.getEnum<PlayerOrientationMode>("player_orientation_mode", PlayerOrientationMode.Auto)
 
+    // 使用外置播放器
     var useExternalVideoPlayer = preferenceStore.getBoolean("use_external_video_player", false)
 
     // 最大缓存

@@ -18,7 +18,7 @@ import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.outlined.Report
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
@@ -60,7 +60,7 @@ fun More() {
             .statusBarsPadding()
     ) {
         EasyBangumiCard()
-        HorizontalDivider()
+        Divider()
         BooleanPreferenceItem(
             title = {
                 Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.in_private))
@@ -76,7 +76,7 @@ fun More() {
             },
             preference = settingPreferences.isInPrivate
         )
-        HorizontalDivider()
+        Divider()
 
         ListItem(
             modifier = Modifier.clickable {
@@ -104,7 +104,7 @@ fun More() {
             }
         )
 
-        HorizontalDivider()
+        Divider()
 
         ListItem(
             modifier = Modifier.clickable {
@@ -134,7 +134,7 @@ fun More() {
 
 
 
-        //HorizontalDivider()
+        //Divider()
 
         BooleanPreferenceItem(
             title = {
@@ -151,7 +151,7 @@ fun More() {
             },
             preference = settingMMKVPreferences.webViewCompatible
         )
-        HorizontalDivider()
+        Divider()
         ListItem(
             modifier = Modifier.clickable {
                 nav.navigate(ABOUT)

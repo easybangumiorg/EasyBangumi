@@ -113,6 +113,7 @@ dependencies {
     implementation(androidx.paging.runtime.ktx)
 
     implementation(compose.bundles.ui)
+    implementation(compose.bundles.runtime)
     implementation(compose.bundles.animation)
     implementation(compose.bundles.foundation)
     implementation(compose.bundles.material)

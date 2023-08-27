@@ -2,7 +2,7 @@ package com.heyanle.easybangumi4.preferences
 
 import com.heyanle.bangumi_source_api.api.Source
 import com.heyanle.easybangumi4.base.preferences.Preference
-import com.heyanle.easybangumi4.base.preferences.hekv.HeKVPreferenceStore
+import com.heyanle.easybangumi4.base.preferences.PreferenceStore
 import com.heyanle.easybangumi4.utils.jsonTo
 import com.heyanle.easybangumi4.utils.toJson
 
@@ -11,9 +11,9 @@ import com.heyanle.easybangumi4.utils.toJson
  * https://github.com/heyanLE
  */
 class SourcePreferences(
-    private val preferenceStore: HeKVPreferenceStore
+    private val preferenceStore: PreferenceStore
 ) {
-    data class SourceConfig(
+    data class LocalSourceConfig(
         val key: String,
         val enable: Boolean,
         val order: Int,
@@ -24,7 +24,7 @@ class SourcePreferences(
     // 源配置
     val configs = preferenceStore.getObject(
         "source_config",
-        mapOf<String, SourceConfig>(),
+        mapOf<String, LocalSourceConfig>(),
         {
             it.toJson()
         },

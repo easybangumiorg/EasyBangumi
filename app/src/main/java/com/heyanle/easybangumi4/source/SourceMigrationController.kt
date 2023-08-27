@@ -34,6 +34,8 @@ class SourceMigrationController(
     private val dispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
 
+    private val configsPre = sourcePreferences.configs
+
     private val _migratingSource: MutableStateFlow<Set<Source>> = MutableStateFlow(emptySet())
     val migratingSource = _migratingSource.asStateFlow()
 
@@ -52,6 +54,18 @@ class SourceMigrationController(
 
     }
 
+    fun needMigrate(source: Source): Boolean {
+        val vp = sourcePreferences.getLastVersion(source)
+        // 源没支持迁移
+        if (source !is MigrateSource) {
+            return false
+        }
+        // 源表示不用迁移
+        if (!source.needMigrate(vp.get())) {
+            return false
+        }
+        return true
+    }
     private suspend fun innerMigration(
         source: Source
     ) {
@@ -62,6 +76,7 @@ class SourceMigrationController(
         if (source !is MigrateSource) {
             return
         }
+
         // 源表示不用迁移
         val vp = sourcePreferences.getLastVersion(source)
         if (!source.needMigrate(vp.get())) {
