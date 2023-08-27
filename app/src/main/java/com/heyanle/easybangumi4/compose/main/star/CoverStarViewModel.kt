@@ -11,7 +11,6 @@ import com.heyanle.easybangumi4.base.db.dao.CartoonStarDao
 import com.heyanle.easybangumi4.base.entity.CartoonStar
 import com.heyanle.easybangumi4.cartoon.CartoonRepository
 import com.heyanle.easybangumi4.compose.common.moeSnackBar
-import com.heyanle.easybangumi4.source.SourceLibraryController
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.flow.SharingStarted
@@ -43,8 +42,6 @@ class CoverStarViewModel : ViewModel() {
     // 当开始收藏任务后先加到该临时列表，收藏失败或者成功都移除
     // 该列表中的番剧在展示上视为已收藏
     private val staringCartoon = mutableStateMapOf<String, Boolean>()
-
-    private val sourceController: SourceLibraryController by Injekt.injectLazy()
 
     private val cartoonRepository: CartoonRepository by Injekt.injectLazy()
 

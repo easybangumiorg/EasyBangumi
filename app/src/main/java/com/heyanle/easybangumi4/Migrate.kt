@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.heyanle.easybangumi4.base.preferences.android.AndroidPreferenceStore
+import com.heyanle.easybangumi4.base.preferences.hekv.HeKVPreferenceStore
 import com.heyanle.easybangumi4.base.preferences.mmkv.MMKVPreferenceStore
 import com.heyanle.easybangumi4.base.theme.EasyThemeMode
 import com.heyanle.easybangumi4.preferences.SettingMMKVPreferences
@@ -74,6 +75,7 @@ object Migrate {
             Injekt.get(),
             Injekt.get(),
             Injekt.get(),
+            Injekt.get(),
         )
     }
 
@@ -81,6 +83,7 @@ object Migrate {
         context: Context,
         androidPreferenceStore: AndroidPreferenceStore,
         mmkvPreferenceStore: MMKVPreferenceStore,
+        heKVPreferenceStore: HeKVPreferenceStore,
         settingPreferences: SettingPreferences,
         sourcePreferences: SourcePreferences,
         settingMMKVPreferences: SettingMMKVPreferences,
@@ -90,8 +93,6 @@ object Migrate {
         val curVersionCode = BuildConfig.VERSION_CODE
 
         if (lastVersionCode < curVersionCode) {
-            // 后续版本在这里加数据迁移
-
 
             // 65
             if (lastVersionCode < 65) {
@@ -118,8 +119,8 @@ object Migrate {
 
                 // 源配置变更
                 var configOkkv by okkv("source_config", "[]")
-                val list: List<SourcePreferences.SourceConfig> = configOkkv.jsonTo()
-                val map = hashMapOf<String, SourcePreferences.SourceConfig>()
+                val list: List<SourcePreferences.LocalSourceConfig> = configOkkv.jsonTo()
+                val map = hashMapOf<String, SourcePreferences.LocalSourceConfig>()
                 list.forEach {
                     map[it.key] = it
                 }

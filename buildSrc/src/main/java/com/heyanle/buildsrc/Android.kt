@@ -9,7 +9,7 @@ object Android {
     const val targetSdk = 34
     const val compileSdk = 34
 
-    const val versionCode = 67
+    const val versionCode = 68
     const val versionName = "4.1.2"
 
 
