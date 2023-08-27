@@ -1,6 +1,3 @@
-import com.heyanle.buildsrc.SourceExtension
-import com.heyanle.buildsrc.Version
-
 plugins {
     alias(build.plugins.android.library)
     alias(build.plugins.kotlin.android)
@@ -38,4 +35,6 @@ dependencies {
     implementation(extension.source.utils)
     implementation(extension.source.api)
     implementation(extension.extension.api)
+    implementation(project(":easy-i18n"))
+
 }

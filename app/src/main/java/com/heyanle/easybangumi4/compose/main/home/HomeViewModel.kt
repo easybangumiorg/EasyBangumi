@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewModelScope
 import com.heyanle.bangumi_source_api.api.component.page.PageComponent
 import com.heyanle.bangumi_source_api.api.component.page.SourcePage
-import com.heyanle.easybangumi4.source.SourceLibraryController
+import com.heyanle.easybangumi4.source.SourceController
 import com.heyanle.injekt.core.Injekt
 import com.heyanle.okkv2.core.okkv
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -29,7 +30,7 @@ class HomeViewModel : ViewModel() {
     private val _stateFlow = MutableStateFlow(HomeState(selectionKey = selectionKeyOkkv))
     val stateFlow = _stateFlow.asStateFlow()
 
-    private val sourceController: SourceLibraryController by Injekt.injectLazy()
+    private val sourceController: SourceController by Injekt.injectLazy()
 
 
     data class HomeState(
@@ -46,7 +47,8 @@ class HomeViewModel : ViewModel() {
     init {
         viewModelScope.launch {
             combine(
-                sourceController.sourceBundleFlow,
+                sourceController.sourceState.filterIsInstance<SourceController.SourceState.Completely>()
+                    .map { it.sourceBundle },
                 _stateFlow.map { it.selectionKey }.distinctUntilChanged()
             ) { sourceBundle, s ->
                 val pages = sourceBundle.pages()
@@ -101,13 +103,13 @@ class HomeViewModel : ViewModel() {
 
     fun changeSelectionSource(key: String) {
         _stateFlow.update {
-            if(it.selectionKey != key){
+            if (it.selectionKey != key) {
                 it.copy(
                     selectionKey = key,
                     selectionIndex = -1,
 
-                )
-            }else{
+                    )
+            } else {
                 it
             }
 

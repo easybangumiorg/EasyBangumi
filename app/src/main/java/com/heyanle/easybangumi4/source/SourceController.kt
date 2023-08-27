@@ -2,60 +2,74 @@ package com.heyanle.easybangumi4.source
 
 import com.heyanle.bangumi_source_api.api.Source
 import com.heyanle.easybangumi4.preferences.SourcePreferences
+import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.extension_load.ExtensionController
 import com.heyanle.extension_load.model.Extension
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.concurrent.Executors
 
 /**
- * Flow<List<Extensions.Installed>> --↘
- * Flow<Map<String, SourceConfig>>  --→ Flow<List<Pair<Source, SourceConfig>>> -> Flow<SourceBundle>
- *
- * Created by HeYanLe on 2023/2/22 21:43.
+ * Created by HeYanLe on 2023/8/27 15:35.
  * https://github.com/heyanLE
  */
-@OptIn(FlowPreview::class)
-class SourceLibraryController(
+class SourceController(
     private val sourcePreferences: SourcePreferences,
     private val migrationController: SourceMigrationController,
 ) {
 
-    val scope = MainScope()
+    companion object {
+        private const val TAG = "SourceController"
+    }
+
+
+    private val dispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+    private val scope = CoroutineScope(SupervisorJob() + dispatcher)
 
     private val configFlow = sourcePreferences.configs.stateIn(scope)
-
-    val isLoading = MutableStateFlow(true)
 
     private val _sourceLibraryFlow =
         MutableStateFlow<List<Pair<Source, SourcePreferences.LocalSourceConfig>>>(emptyList())
     val sourceLibraryFlow = _sourceLibraryFlow.asStateFlow()
 
-    private val _sourceBundleFlow: MutableStateFlow<SourceBundle> =
-        MutableStateFlow(SourceBundle(emptyList()))
-    val sourceBundleFlow = _sourceBundleFlow.asStateFlow()
+    sealed class SourceState {
+        data object None : SourceState()
 
+        data object Loading : SourceState()
+
+        data class Migrating(
+            val source: List<Source>,
+        ) : SourceState()
+
+        data class Completely(
+            val sourceBundle: SourceBundle,
+        ) : SourceState()
+    }
+
+    private val _sourceState = MutableStateFlow<SourceState>(SourceState.None)
+    val sourceState = _sourceState.asStateFlow()
 
     init {
         scope.launch {
             combine(
                 migrationController.migratingSource.stateIn(scope),
-                sourcePreferences.configs.flow().stateIn(scope),
+                sourcePreferences.configs.stateIn(scope = scope),
                 ExtensionController.installedExtensionsFlow
-                    .stateIn(scope)
-            )
-            { migratingSet, configMap, extensionState ->
-                if(migratingSet.isNotEmpty()){
-                    return@combine
+            ) { migrating, configs, extensionState ->
+                if (migrating.isNotEmpty()) {
+                    return@combine SourceState.Migrating(migrating.toList())
                 }
-                when (extensionState) {
+                when (
+                    extensionState
+                ) {
                     is ExtensionController.ExtensionState.Extensions -> {
                         val sources =
                             extensionState.extensions.filterIsInstance<Extension.Installed>()
@@ -63,7 +77,11 @@ class SourceLibraryController(
                                     it.sources
                                 }
                         migrationController.migration(sources)
-                        val rc = realConfig(sources, configMap)
+                        val migrationSources = sources.filter {
+                            migrationController.needMigrate(it)
+                        }
+
+                        val rc = realConfig(sources, configs)
                         val l = sources.flatMap {
                             val config =
                                 rc[it.key]
@@ -73,39 +91,36 @@ class SourceLibraryController(
                         _sourceLibraryFlow.update {
                             l
                         }
-                        isLoading.update {
-                            false
+
+
+                        if (migrationSources.isNotEmpty()) {
+                            migrationController.migration(migrationSources)
+                            SourceState.Migrating(migrationSources)
+                        } else {
+                            SourceState.Completely(SourceBundle(sources.filter {
+                                rc[it.key]?.enable ?: true
+                            }.sortedBy {
+                                rc[it.key]?.order ?: Int.MAX_VALUE
+                            }))
                         }
+
                     }
 
                     is ExtensionController.ExtensionState.Loading -> {
-                        isLoading.update {
-                            true
-                        }
+                        SourceState.Loading
                     }
 
                     else -> {
+                        SourceState.None
                     }
                 }
-            }.collect()
-        }
-
-        // 迁移中的源暂时关闭
-        scope.launch {
-            combine(
-                sourceLibraryFlow,
-                migrationController.migratingSource
-            ) { sl, mi ->
-                SourceBundle(sl.filter { it.second.enable && !mi.contains(it.first) }
-                    .sortedBy { it.second.order }.map { it.first })
-
-            }.collectLatest { bundle ->
-                _sourceBundleFlow.update {
-                    bundle
+            }.collectLatest { state ->
+                state.loge(TAG)
+                _sourceState.update {
+                    state
                 }
             }
         }
-
     }
 
     private fun realConfig(
@@ -126,6 +141,12 @@ class SourceLibraryController(
             }
         }
         return configs
+    }
+
+    fun bundleIfEmpty(): SourceBundle {
+        return ((_sourceState.value as? SourceState.Completely)?.sourceBundle) ?: SourceBundle(
+            emptyList()
+        )
     }
 
     fun newConfig(map: Map<String, SourcePreferences.LocalSourceConfig>) {

@@ -5,18 +5,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.net.toUri
-import androidx.media3.common.C
-import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.datasource.DataSource
-import androidx.media3.datasource.DefaultDataSource
-import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.dash.DashMediaSource
-import androidx.media3.exoplayer.hls.HlsMediaSource
-import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import com.heyanle.bangumi_source_api.api.component.play.PlayComponent
 import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
 import com.heyanle.bangumi_source_api.api.entity.PlayLine
@@ -28,7 +20,7 @@ import com.heyanle.easybangumi4.base.entity.CartoonInfo
 import com.heyanle.easybangumi4.compose.common.moeSnackBar
 import com.heyanle.easybangumi4.exo.MediaSourceFactory
 import com.heyanle.easybangumi4.preferences.SettingPreferences
-import com.heyanle.easybangumi4.source.SourceLibraryController
+import com.heyanle.easybangumi4.source.SourceController
 import com.heyanle.easybangumi4.utils.stringRes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -44,7 +36,7 @@ import kotlinx.coroutines.withContext
 @UnstableApi
 class CartoonPlayingController(
     private val settingPreference: SettingPreferences,
-    private val sourceLibraryController: SourceLibraryController,
+    private val sourceController: SourceController,
     private val cartoonHistoryDao: CartoonHistoryDao,
     private val mediaSourceFactory: MediaSourceFactory,
     private val exoPlayer: ExoPlayer,
@@ -145,7 +137,7 @@ class CartoonPlayingController(
         defaultProgress: Long = 0L,
     ) {
 
-        val playComponent = sourceLibraryController.sourceBundleFlow.value.play(sourceKey) ?: return
+        val playComponent = sourceController.bundleIfEmpty().play(sourceKey) ?: return
         this.playComponent = playComponent
         this.cartoon = cartoon
         changePlay(playComponent, cartoon, playLineIndex, playLine, defaultEpisode, defaultProgress)

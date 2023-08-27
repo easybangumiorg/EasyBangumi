@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heyanle.bangumi_source_api.api.Source
 import com.heyanle.easybangumi4.preferences.SourcePreferences
-import com.heyanle.easybangumi4.source.SourceLibraryController
+import com.heyanle.easybangumi4.source.SourceController
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.flow.collectLatest
@@ -19,10 +19,11 @@ import kotlinx.coroutines.launch
  */
 class SourceViewModel : ViewModel() {
 
-    var sourceConfigs by mutableStateOf<List<Pair<Source, SourcePreferences.SourceConfig>>>(emptyList())
+    var sourceConfigs by mutableStateOf<List<Pair<Source, SourcePreferences.LocalSourceConfig>>>(emptyList())
         private set
 
-    private val sourceController: SourceLibraryController by Injekt.injectLazy()
+    private val sourceController: SourceController by Injekt.injectLazy()
+    private val sourcePreferences: SourcePreferences by Injekt.injectLazy()
 
     init {
         viewModelScope.launch {
@@ -43,7 +44,7 @@ class SourceViewModel : ViewModel() {
     }
 
     fun onDragEnd() {
-        val map = hashMapOf<String, SourcePreferences.SourceConfig>()
+        val map = hashMapOf<String, SourcePreferences.LocalSourceConfig>()
         sourceConfigs.forEachIndexed { index, pair ->
             map[pair.first.key] = pair.second.copy(order = index)
         }
@@ -53,11 +54,11 @@ class SourceViewModel : ViewModel() {
     }
 
 
-    fun enable(sourceConfig: SourcePreferences.SourceConfig) {
+    fun enable(sourceConfig: SourcePreferences.LocalSourceConfig) {
         sourceController.newConfig(sourceConfig.copy(enable = true))
     }
 
-    fun disable(sourceConfig: SourcePreferences.SourceConfig) {
+    fun disable(sourceConfig: SourcePreferences.LocalSourceConfig) {
         sourceController.newConfig(sourceConfig.copy(enable = false))
     }
 

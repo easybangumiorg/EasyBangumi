@@ -16,7 +16,7 @@ import com.heyanle.easybangumi4.compose.main.star.update.CartoonUpdateController
 import com.heyanle.easybangumi4.preferences.SettingMMKVPreferences
 import com.heyanle.easybangumi4.preferences.SettingPreferences
 import com.heyanle.easybangumi4.preferences.SourcePreferences
-import com.heyanle.easybangumi4.source.SourceLibraryController
+import com.heyanle.easybangumi4.source.SourceController
 import com.heyanle.easybangumi4.source.SourceMigrationController
 import com.heyanle.easybangumi4.source.utils.SourceProviderControllerImpl
 import com.heyanle.easybangumi4.utils.getFilePath
@@ -58,7 +58,7 @@ class ControllerModule(
             CartoonUpdateController(get(), get())
         }
         addSingletonFactory {
-            SourceLibraryController(get(), get())
+            SourceController(get(), get())
         }
         addSingletonFactory {
             SourceMigrationController(application, get(), get())
@@ -100,7 +100,7 @@ class PreferencesModule(
             SettingPreferences(get<AndroidPreferenceStore>())
         }
         addSingletonFactory {
-            SourcePreferences(get())
+            SourcePreferences(get<HeKVPreferenceStore>())
         }
         addSingletonFactory {
             SettingMMKVPreferences(get<MMKVPreferenceStore>())

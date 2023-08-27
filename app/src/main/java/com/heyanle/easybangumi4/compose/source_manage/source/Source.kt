@@ -145,7 +145,7 @@ fun Source() {
 @Composable
 fun SourceItem(
     isMigrate: Boolean,
-    config: SourcePreferences.SourceConfig,
+    config: SourcePreferences.LocalSourceConfig,
     source: Source,
     onCheckedChange: (Source, Boolean) -> Unit,
     onClick: (Source) -> Unit,

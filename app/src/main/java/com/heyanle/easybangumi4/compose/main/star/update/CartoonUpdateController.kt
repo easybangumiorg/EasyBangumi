@@ -5,7 +5,7 @@ import com.heyanle.bangumi_source_api.api.SourceResult
 import com.heyanle.bangumi_source_api.api.entity.Cartoon
 import com.heyanle.easybangumi4.base.db.dao.CartoonStarDao
 import com.heyanle.easybangumi4.base.entity.CartoonStar
-import com.heyanle.easybangumi4.source.SourceLibraryController
+import com.heyanle.easybangumi4.source.SourceController
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.okkv2.core.okkv
 import kotlinx.coroutines.Dispatchers
@@ -33,7 +33,7 @@ import kotlinx.coroutines.withContext
  */
 class CartoonUpdateController(
     private val cartoonStarDao: CartoonStarDao,
-    private val sourceLibraryController: SourceLibraryController,
+    private val sourceController: SourceController,
 ) {
 
     private val scope = MainScope()
@@ -80,7 +80,7 @@ class CartoonUpdateController(
                     kotlinx.coroutines.flow.flow {
                         kotlin.runCatching {
                             val update =
-                                (sourceLibraryController.sourceBundleFlow.value.update(star.source))
+                                (sourceController.bundleIfEmpty().update(star.source))
                             val key = if (star.sourceName == (update?.source?.label ?: star.sourceName)) star else star.copy(
                                 sourceName = update?.source?.label ?: star.sourceName
                             )

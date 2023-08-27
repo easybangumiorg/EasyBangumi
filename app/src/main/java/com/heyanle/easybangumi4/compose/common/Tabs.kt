@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
  */
 @Composable
 fun TabIndicator(currentTabPosition: TabPosition) {
-    TabRowDefaults.SecondaryIndicator(
+    TabRowDefaults.Indicator(
         Modifier
             .tabIndicatorOffset(currentTabPosition)
             .padding(horizontal = 8.dp)

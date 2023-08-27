@@ -560,30 +560,6 @@ fun CartoonPlay(
             }
         }
     ) {
-        val contentColumn: @Composable () -> Unit = {
-            Column {
-                Surface(
-                    modifier = Modifier.weight(1f),
-                    color = MaterialTheme.colorScheme.background,
-                    contentColor = MaterialTheme.colorScheme.onBackground
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                    ) {
-                        CartoonPlayUI(
-                            detailedVM = detailedVM,
-                            cartoonPlayVM = cartoonPlayVM,
-                            listState = lazyGridState,
-//                            onTitle = {
-//                                controlVM.title = it
-//                            }
-                        )
-                        FastScrollToTopFab(listState = lazyGridState)
-                    }
-                }
-            }
-        }
         if (isPad) {
 
             Column {
@@ -604,7 +580,11 @@ fun CartoonPlay(
                             .fillMaxHeight(),
                     )
                     Box() {
-                        contentColumn()
+                        PlayContent(
+                            detailedVM,
+                            cartoonPlayVM,
+                            lazyGridState
+                        )
                     }
 
                 }
@@ -619,12 +599,45 @@ fun CartoonPlay(
                         .height(2.dp)
                         .fillMaxWidth(),
                 )
-                contentColumn()
+                PlayContent(
+                    detailedVM,
+                    cartoonPlayVM,
+                    lazyGridState
+                )
             }
         }
     }
 }
 
+@Composable
+fun PlayContent(
+    detailedVM: DetailedViewModel,
+    cartoonPlayVM: CartoonPlayViewModel,
+    lazyGridState: LazyGridState,
+){
+    Column {
+        Surface(
+            modifier = Modifier.weight(1f),
+            color = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.onBackground
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
+                CartoonPlayUI(
+                    detailedVM = detailedVM,
+                    cartoonPlayVM = cartoonPlayVM,
+                    listState = lazyGridState,
+//                            onTitle = {
+//                                controlVM.title = it
+//                            }
+                )
+                FastScrollToTopFab(listState = lazyGridState)
+            }
+        }
+    }
+}
 
 @Composable
 fun CartoonPlayUI(
@@ -797,6 +810,7 @@ fun CartoonPlayDetailed(
         }
 
         LazyVerticalGrid(
+            modifier = Modifier.fillMaxSize(),
             columns = GridCells.Adaptive(128.dp),
             state = listState,
             contentPadding = PaddingValues(0.dp, 0.dp, 0.dp, 96.dp)
@@ -811,6 +825,7 @@ fun CartoonPlayDetailed(
 
                 Column(
                     modifier = Modifier
+                        .fillMaxWidth()
                         .clickable {
                             isExpended = !isExpended
                         }
@@ -863,6 +878,7 @@ fun CartoonPlayDetailed(
                             }
                         }
                     }
+
 
                     // 箭头
                     Box(
@@ -1004,52 +1020,61 @@ fun CartoonPlayDetailed(
                         selectLineIndex
                     )
                 ) {
-                    items(playLines[selectLineIndex].episode.size) {
-                        val index =
-                            if (isReversal) playLines[selectLineIndex].episode.size - 1 - it else it
-                        val item = playLines[selectLineIndex].episode[index]
+                    val episode = playLines[selectLineIndex].episode
+                    if(episode.isNotEmpty()){
+                        items(episode.size, key = {
+                            val index =
+                                if (isReversal) episode.size - 1 - it else it
+                            episode[index]
+                        }) {
+                            val index =
+                                if (isReversal) episode.size - 1 - it else it
+                            val item = episode[index]
 
-                        val select =
-                            selectLineIndex == playingPlayLineIndex && index == playingEpisode
+                            val select =
+                                selectLineIndex == playingPlayLineIndex && index == playingEpisode
 
-                        Column(
-                            modifier = Modifier
-                                .padding(4.dp)
-                                .fillMaxWidth()
-                                //.then(modifier)
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(if (select) MaterialTheme.colorScheme.secondary else Color.Transparent)
-                                .run {
-                                    if (select) {
-                                        this
-                                    } else {
-                                        border(
-                                            1.dp,
-                                            MaterialTheme.colorScheme.outline.copy(0.6f),
-                                            RoundedCornerShape(4.dp)
-                                        )
+                            Box(
+                                modifier = Modifier
+                                    .padding(4.dp)
+                                    .fillMaxWidth()
+                                    //.then(modifier)
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(if (select) MaterialTheme.colorScheme.secondary else Color.Transparent)
+                                    .run {
+                                        if (select) {
+                                            this
+                                        } else {
+                                            border(
+                                                1.dp,
+                                                MaterialTheme.colorScheme.outline.copy(0.6f),
+                                                RoundedCornerShape(4.dp)
+                                            )
 
+                                        }
                                     }
-                                }
-                                .clickable {
-                                    onEpisodeClick(
-                                        selectLineIndex,
-                                        playLines[selectLineIndex],
-                                        index
-                                    )
-                                }
-                                .padding(8.dp),
-                        ) {
+                                    .clickable {
+                                        onEpisodeClick(
+                                            selectLineIndex,
+                                            playLines[selectLineIndex],
+                                            index
+                                        )
+                                    }
+                                    .padding(8.dp),
+                            ) {
 
-                            Text(
-                                color = if (select) MaterialTheme.colorScheme.onSecondary else Color.Unspecified,
-                                text = item,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                textAlign = TextAlign.Center,
-                            )
+                                Text(
+                                    color = if (select) MaterialTheme.colorScheme.onSecondary else Color.Unspecified,
+                                    text = item,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    textAlign = TextAlign.Center,
+                                )
+                            }
                         }
                     }
+
+
                 }
             }
         }
@@ -1063,13 +1088,13 @@ fun CartoonPlayDetailed(
 fun CartoonDescCard(
     cartoon: CartoonInfo
 ) {
-
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
     ) {
         Row(
+            modifier = Modifier
+                .fillMaxWidth(),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.Top,
         ) {
@@ -1084,7 +1109,9 @@ fun CartoonDescCard(
 
             Spacer(modifier = Modifier.size(8.dp))
 
-            Column {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
                 Text(
                     modifier = Modifier,
                     text = cartoon.title,
@@ -1092,21 +1119,18 @@ fun CartoonDescCard(
                     overflow = TextOverflow.Ellipsis,
                 )
 
-
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    cartoon.getGenres()?.forEach {
-                        Surface(
-                            shape = CircleShape,
-                            modifier =
-                            Modifier
-                                .padding(2.dp, 8.dp),
-                            color = MaterialTheme.colorScheme.secondaryContainer,
-                        ) {
+                Spacer(Modifier.size(16.dp))
+                val list = cartoon.getGenres()
+                if(list?.isNotEmpty() == true){
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        list.forEach {
                             Text(
                                 modifier = Modifier
                                     .clip(CircleShape)
+                                    .background( MaterialTheme.colorScheme.secondaryContainer)
                                     .clickable {
                                     }
                                     .padding(8.dp, 4.dp),
@@ -1119,13 +1143,9 @@ fun CartoonDescCard(
                     }
                 }
             }
-
-
         }
-
         Text(modifier = Modifier.padding(8.dp), text = cartoon.description ?: cartoon.intro ?: "")
     }
-
 }
 
 @Composable

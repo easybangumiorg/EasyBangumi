@@ -10,7 +10,7 @@ test_junit = "1.1.5"
 webkit = "1.7.0"
 espresso_core = "3.5.1"
 
-room = "2.6.0-alpha03"
+room = "2.6.0-beta01"
 
 window = "1.2.0-beta01"
 preference = "1.2.1"
