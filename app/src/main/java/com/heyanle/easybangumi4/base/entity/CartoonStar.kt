@@ -95,7 +95,7 @@ data class CartoonStar(
             )
         }
 
-        fun fromCartoon(cartoon: Cartoon, sourceName: String, playLines: List<PlayLine>): CartoonStar {
+        fun fromCartoon(cartoon: Cartoon, sourceName: String, playLines: List<PlayLine>, tags: String): CartoonStar {
             return CartoonStar(
                 id = cartoon.id,
                 source = cartoon.source,
@@ -113,7 +113,7 @@ data class CartoonStar(
                 isUpdate = cartoon.isUpdate,
                 reversal = false,
                 watchProcess = "",
-                tags = "",
+                tags = tags,
                 sourceName = sourceName
             )
         }

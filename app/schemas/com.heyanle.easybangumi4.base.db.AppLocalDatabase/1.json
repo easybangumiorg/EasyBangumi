@@ -2,12 +2,18 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "8bcde67ef2f14b58bd1917a3b55f73ef",
+    "identityHash": "d6fe37ca77303dfbae808af17ace150d",
     "entities": [
       {
         "tableName": "CartoonDownload",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `url` TEXT NOT NULL, `source` TEXT NOT NULL, `name` TEXT NOT NULL, `cover` TEXT NOT NULL, `sourceName` TEXT NOT NULL, `playLineIndex` INTEGER NOT NULL, `playLineString` TEXT NOT NULL, `episodeIndex` INTEGER NOT NULL, `episodeLabel` TEXT NOT NULL, `downloadId` TEXT NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY(`downloadId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`downloadId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `id` TEXT NOT NULL, `url` TEXT NOT NULL, `source` TEXT NOT NULL, `name` TEXT NOT NULL, `cover` TEXT NOT NULL, `sourceName` TEXT NOT NULL, `playLineIndex` INTEGER NOT NULL, `playLineString` TEXT NOT NULL, `episodeIndex` INTEGER NOT NULL, `episodeLabel` TEXT NOT NULL, `taskId` TEXT NOT NULL, `tsPath` TEXT NOT NULL, `path` TEXT NOT NULL, `status` INTEGER NOT NULL, `createTime` INTEGER NOT NULL)",
         "fields": [
+          {
+            "fieldPath": "downloadId",
+            "columnName": "downloadId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
           {
             "fieldPath": "id",
             "columnName": "id",
@@ -69,9 +75,27 @@
             "notNull": true
           },
           {
-            "fieldPath": "downloadId",
-            "columnName": "downloadId",
+            "fieldPath": "taskId",
+            "columnName": "taskId",
             "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tsPath",
+            "columnName": "tsPath",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "path",
+            "columnName": "path",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
@@ -82,7 +106,7 @@
           }
         ],
         "primaryKey": {
-          "autoGenerate": false,
+          "autoGenerate": true,
           "columnNames": [
             "downloadId"
           ]
@@ -94,7 +118,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '8bcde67ef2f14b58bd1917a3b55f73ef')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd6fe37ca77303dfbae808af17ace150d')"
     ]
   }
 }

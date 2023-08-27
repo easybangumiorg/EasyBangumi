@@ -11,14 +11,14 @@ import com.heyanle.easybangumi4.base.preferences.android.AndroidPreferenceStore
 import com.heyanle.easybangumi4.base.preferences.hekv.HeKVPreferenceStore
 import com.heyanle.easybangumi4.base.preferences.mmkv.MMKVPreferenceStore
 import com.heyanle.easybangumi4.base.theme.EasyThemeController
-import com.heyanle.easybangumi4.compose.cartoon_play.CartoonPlayingController
-import com.heyanle.easybangumi4.compose.main.star.update.CartoonUpdateController
 import com.heyanle.easybangumi4.preferences.SettingMMKVPreferences
 import com.heyanle.easybangumi4.preferences.SettingPreferences
 import com.heyanle.easybangumi4.preferences.SourcePreferences
 import com.heyanle.easybangumi4.source.SourceController
 import com.heyanle.easybangumi4.source.SourceMigrationController
 import com.heyanle.easybangumi4.source.utils.SourceProviderControllerImpl
+import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlayingController
+import com.heyanle.easybangumi4.ui.main.star.update.CartoonUpdateController
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.injekt.api.InjektModule
 import com.heyanle.injekt.api.InjektScope
@@ -136,9 +136,10 @@ class DatabaseModule(
             get<CacheDatabase>().cartoonInfo
         }
 
-        addSingletonFactory {
-            AppLocalDatabase.build(application)
-        }
+        //todo
+//        addSingletonFactory {
+//            AppLocalDatabase.build(application)
+//        }
 
         addSingletonFactory {
             get<AppLocalDatabase>().cartoonDownload

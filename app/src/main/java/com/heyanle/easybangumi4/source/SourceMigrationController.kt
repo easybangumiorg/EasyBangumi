@@ -7,6 +7,7 @@ import com.heyanle.bangumi_source_api.api.SourceResult
 import com.heyanle.bangumi_source_api.api.component.configuration.ConfigComponent
 import com.heyanle.bangumi_source_api.api.component.detailed.DetailedComponent
 import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
+import com.heyanle.bangumi_source_api.api.entity.toIdentify
 import com.heyanle.easybangumi4.base.db.dao.CartoonStarDao
 import com.heyanle.easybangumi4.base.entity.CartoonStar
 import com.heyanle.easybangumi4.preferences.SourcePreferences
@@ -117,7 +118,8 @@ class SourceMigrationController(
                             CartoonStar.fromCartoon(
                                 res.data.first,
                                 source.label,
-                                res.data.second
+                                res.data.second,
+                                stars.find { it.toIdentify() == res.data.first.toIdentify() }?.tags?:""
                             )
                         )
                     }

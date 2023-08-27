@@ -26,7 +26,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.base.theme.EasyTheme
-import com.heyanle.easybangumi4.compose.common.MoeSnackBar
+import com.heyanle.easybangumi4.ui.common.MoeSnackBar
 import com.heyanle.easybangumi4.source.SourcesHost
 import com.heyanle.easybangumi4.source.utils.initUtils
 import com.heyanle.easybangumi4.utils.AnnoHelper

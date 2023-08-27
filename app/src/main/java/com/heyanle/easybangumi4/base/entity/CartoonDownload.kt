@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.base.entity
 
 import androidx.room.Entity
+import androidx.room.PrimaryKey
 import java.net.URLEncoder
 
 /**
@@ -8,9 +9,11 @@ import java.net.URLEncoder
  * Created by HeYanLe on 2023/8/13 22:29.
  * https://github.com/heyanLE
  */
-@Entity(primaryKeys = ["downloadId"])
+@Entity()
 data class CartoonDownload(
 
+    @PrimaryKey(autoGenerate = true)
+    val downloadId: Int = 0,
     val id: String,
     val url: String,
     val source: String,
@@ -26,7 +29,10 @@ data class CartoonDownload(
     val episodeIndex: Int,
     val episodeLabel: String,
 
-    val downloadId: String,
+    val taskId: String = "",
+    val tsPath: String = "",
+    val path: String = "",
+    val status: Int = 0, // 0->Init 1->Parsing 2->Downloading 3->MP4ing 4-> Completely
 
     val createTime: Long,
 ) {
@@ -41,6 +47,7 @@ data class CartoonDownload(
             episodeIndex: Int
         ): CartoonDownload {
             return CartoonDownload(
+                0,
                 cartoonInfo.id,
                 cartoonInfo.url,
                 cartoonInfo.source,
@@ -53,13 +60,13 @@ data class CartoonDownload(
                 episodeIndex,
                 episodeLabel,
                 downloadId,
-                System.currentTimeMillis()
+                createTime = System.currentTimeMillis(),
             )
         }
     }
 
     fun toIdentify(): String {
-        return "${id},${source},${URLEncoder.encode(url, "utf-8")}"
+        return "${id},${source},${URLEncoder.encode(url, "utf-8")},${playLineIndex}-${episodeIndex}"
     }
 
 }

@@ -3,7 +3,7 @@ package com.heyanle.easybangumi4.source.utils
 import android.content.Context
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.BuildConfig
-import com.heyanle.easybangumi4.compose.common.moeSnackBar
+import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.injekt.api.get
 import com.heyanle.injekt.core.Injekt
