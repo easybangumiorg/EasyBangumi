@@ -19,7 +19,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.heyanle.easybangumi4.R
-import com.heyanle.easybangumi4.compose.common.OkImage
+import com.heyanle.easybangumi4.ui.common.OkImage
 import com.microsoft.appcenter.distribute.Distribute
 import com.microsoft.appcenter.distribute.ReleaseDetails
 import java.util.concurrent.atomic.AtomicBoolean

@@ -52,13 +52,13 @@ android {
 
     buildTypes {
         debug {
-//            isMinifyEnabled = true
-//            isShrinkResources = true
+            isMinifyEnabled = true
+            isShrinkResources = false
             proguardFiles("proguard-rules.pro")
         }
         release {
             isMinifyEnabled = true
-            isShrinkResources = true
+            isShrinkResources = false
             proguardFiles("proguard-rules.pro")
 
         }
@@ -126,7 +126,7 @@ dependencies {
     implementation(libs.jsoup)
     implementation(libs.gson)
 
-    debugImplementation(libs.leakcanary)
+    //debugImplementation(libs.leakcanary)
 
     implementation(libs.glide)
     implementation(libs.okkv2)
@@ -143,12 +143,16 @@ dependencies {
     implementation(libs.bundles.cling)
     implementation(libs.compose.reorderable)
 
+//    ksp(libs.aria.compiler)
+//    //annotationProcessor(libs.aria.compiler)
+//    implementation(libs.aria)
+//    implementation(libs.aria.m3u8)
+
     implementation(project(":easy-dlna"))
     implementation(project(":easy-crasher"))
     implementation(project(":easy-i18n"))
     implementation(project(":injekt"))
     implementation(project(":extension:extension-core"))
-
 
     implementation(extension.extension.api)
 

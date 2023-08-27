@@ -1,6 +1,6 @@
 package com.heyanle.easybangumi4.utils
 
-import com.heyanle.easybangumi4.compose.common.moeSnackBar
+import com.heyanle.easybangumi4.ui.common.moeSnackBar
 
 /**
  * Created by HeYanLe on 2023/3/1 15:59.

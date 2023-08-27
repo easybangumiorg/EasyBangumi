@@ -27,7 +27,7 @@ interface CartoonDownloadDao {
     @Query("SELECT * FROM cartoondownload")
     fun flowAll(): Flow<List<CartoonDownload>>
 
-    @Query("DELETE FROM cartoonDownload WHERE downloadId=(:downloadId)")
-    suspend fun deleteWithDownloadId(downloadId: String)
+    @Query("DELETE FROM cartoonDownload WHERE taskId=(:taskId)")
+    suspend fun deleteWithDownloadId(taskId: String)
 
 }

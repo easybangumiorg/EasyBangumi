@@ -37,18 +37,6 @@ object C {
                 msg = stringRes(com.heyanle.easy_i18n.R.string.click_to_explore),
                 url = "https://easybangumi.org"
             ),
-            About.Copy(
-                icon = R.drawable.qq,
-                title = stringRes(com.heyanle.easy_i18n.R.string.qq_groud),
-                msg = "729848189",
-                copyValue = "729848189"
-            ),
-            About.Copy(
-                icon = R.drawable.qq,
-                title = stringRes(com.heyanle.easy_i18n.R.string.qq_groud),
-                msg = "765995255",
-                copyValue = "765995255"
-            ),
             About.Url(
                 icon = R.drawable.qq,
                 title = stringRes(com.heyanle.easy_i18n.R.string.qq_chanel),
@@ -66,6 +54,36 @@ object C {
                 title = stringRes(com.heyanle.easy_i18n.R.string.github),
                 msg = stringRes(com.heyanle.easy_i18n.R.string.click_to_explore),
                 url = "https://github.com/easybangumiorg/EasyBangumi"
+            ),
+            About.Copy(
+                icon = R.drawable.qq,
+                title = stringRes(com.heyanle.easy_i18n.R.string.qq_groud),
+                msg = "729848189",
+                copyValue = "729848189"
+            ),
+            About.Copy(
+                icon = R.drawable.qq,
+                title = stringRes(com.heyanle.easy_i18n.R.string.qq_groud),
+                msg = "765995255",
+                copyValue = "765995255"
+            ),
+            About.Copy(
+                icon = R.drawable.qq,
+                title = stringRes(com.heyanle.easy_i18n.R.string.qq_groud),
+                msg = "870258047",
+                copyValue = "870258047"
+            ),
+            About.Copy(
+                icon = R.drawable.qq,
+                title = stringRes(com.heyanle.easy_i18n.R.string.qq_groud),
+                msg = "112649996",
+                copyValue = "112649996"
+            ),
+            About.Copy(
+                icon = R.drawable.qq,
+                title = stringRes(com.heyanle.easy_i18n.R.string.qq_groud),
+                msg = "296752043",
+                copyValue = "296752043"
             ),
         )
     }

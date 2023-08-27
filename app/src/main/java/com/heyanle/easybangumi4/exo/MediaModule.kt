@@ -12,9 +12,7 @@ import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.NoOpCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.offline.DownloadManager
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
-import com.heyanle.easybangumi4.download.DownloadController
 import com.heyanle.easybangumi4.preferences.SettingPreferences
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.getFilePath
@@ -25,7 +23,6 @@ import com.heyanle.injekt.api.addPerKeyFactory
 import com.heyanle.injekt.api.addSingletonFactory
 import com.heyanle.injekt.api.get
 import java.io.File
-import java.util.concurrent.Executors
 
 /**
  * Created by HeYanLe on 2023/8/13 14:23.
@@ -72,7 +69,7 @@ class MediaModule(
         }
 
         addSingletonFactory {
-            MediaSourceFactory(get<Cache>(true), get<Cache>(false))
+            MediaSourceFactory(get<Cache>(false))
         }
 
         // 以下实体都跟缓存上限有关，0 为无限制或下载
@@ -120,24 +117,6 @@ class MediaModule(
             factory.createDataSource()
         }
 
-        addSingletonFactory {
-            DownloadManager(
-                application,
-                get<StandaloneDatabaseProvider>(),
-                get<Cache>(true),
-                get<HeaderDataSourceFactory>(),
-                Executors.newFixedThreadPool(6)
-            )
-        }
-
-        addSingletonFactory {
-            DownloadController(
-                application,
-                get(),
-                get(),
-                get(),
-            )
-        }
 
     }
 }

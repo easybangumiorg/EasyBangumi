@@ -23,6 +23,9 @@ cling = "2.1.2"
 compose_lazy_reorder = "0.9.6"
 
 kotlinx_coroutines = "1.7.3"
+
+aria = "3.8.16"
+
 [libraries]
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 okhttp3 = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp3" }
@@ -40,7 +43,7 @@ junit = { module = "junit:junit", version.ref = "junit" }
 easyplayer2 = { module = "com.github.easybangumiorg:EasyPlayer2", version.ref = "easyplayer2" }
 
 accompanist_systemuicontroller = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanist" }
-accompanist_swiperefresh = {module = "com.google.accompanist:accompanist-swiperefresh", version.ref = "accompanist"}
+accompanist_swiperefresh = { module = "com.google.accompanist:accompanist-swiperefresh", version.ref = "accompanist" }
 
 navigtion_compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation_compose" }
 
@@ -51,13 +54,17 @@ appcenter_analytics = { module = "com.microsoft.appcenter:appcenter-analytics", 
 appcenter_crashes = { module = "com.microsoft.appcenter:appcenter-crashes", version.ref = "appcenter" }
 appcenter_distribute = { module = "com.microsoft.appcenter:appcenter-distribute", version.ref = "appcenter" }
 
-commons_text = {module = "org.apache.commons:commons-text", version.ref = "commons_text"}
+commons_text = { module = "org.apache.commons:commons-text", version.ref = "commons_text" }
 
-cling_core = {module = "org.fourthline.cling:cling-core", version.ref = "cling"}
-cling_support = {module = "org.fourthline.cling:cling-support", version.ref = "cling"}
-compose-reorderable = {module = "org.burnoutcrew.composereorderable:reorderable", version.ref = "compose_lazy_reorder"}
+cling_core = { module = "org.fourthline.cling:cling-core", version.ref = "cling" }
+cling_support = { module = "org.fourthline.cling:cling-support", version.ref = "cling" }
+compose-reorderable = { module = "org.burnoutcrew.composereorderable:reorderable", version.ref = "compose_lazy_reorder" }
 
-kotlin_coroutines_android = {module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx_coroutines"}
+kotlin_coroutines_android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx_coroutines" }
+
+aria = { module = "me.laoyuyu.aria:core", version.ref = "aria" }
+aria_compiler = { module = "me.laoyuyu.aria:compiler", version.ref = "aria" }
+aria_m3u8 = { module = "me.laoyuyu.aria:m3u8Component", version.ref = "aria" }
 
 [bundles]
 okhttp3 = ["okhttp3", "okhttp3_logging_interceptor"]
