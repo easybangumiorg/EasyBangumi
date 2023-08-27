@@ -18,7 +18,6 @@ import com.heyanle.bangumi_source_api.api.entity.PlayerInfo
  * https://github.com/heyanLE
  */
 class MediaSourceFactory(
-    private val downloadCache: Cache,
     private val normalCache: Cache,
 ) {
 
@@ -31,15 +30,10 @@ class MediaSourceFactory(
         val dataSourceFactory: DataSource.Factory = DefaultHttpDataSource.Factory()
             .setDefaultRequestProperties(playerInfo.header ?: emptyMap())
 
-        val downloadCacheDataSourceFactory = CacheDataSource.Factory()
-            .setCache(downloadCache)
-            .setUpstreamDataSourceFactory(dataSourceFactory)
-            .setCacheWriteDataSinkFactory(null)
-            .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
         val streamDataSinkFactory = CacheDataSink.Factory().setCache(normalCache)
         val normalCacheDataSourceFactory = CacheDataSource.Factory()
             .setCache(normalCache)
-            .setUpstreamDataSourceFactory(downloadCacheDataSourceFactory)
+            .setUpstreamDataSourceFactory(dataSourceFactory)
             .setCacheWriteDataSinkFactory(streamDataSinkFactory)
             .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
 

@@ -50,6 +50,7 @@
     volatile <fields>;
 }
 
+-keep class com.tencent.mmkv.** {*;}
 
 # okhttp
 -keep class okhttp3.** {*;}
@@ -72,4 +73,6 @@
 -dontwarn org.openjsse.javax.net.ssl.SSLParameters
 -dontwarn org.openjsse.javax.net.ssl.SSLSocket
 -dontwarn org.openjsse.net.ssl.OpenJSSE
+
+-dontwarn androidx.window.extensions.area.ExtensionWindowAreaPresentation
 
