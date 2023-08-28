@@ -32,7 +32,7 @@ data class CartoonDownload(
     val taskId: String = "",
     val tsPath: String = "",
     val path: String = "",
-    val status: Int = 0, // 0->Init 1->Parsing 2->Downloading 3->MP4ing 4-> Completely
+    val status: Int = 0, // 0->Init 1->Parsing 2->Downloading 3->Converting 4-> Completely
 
     val createTime: Long,
 ) {
