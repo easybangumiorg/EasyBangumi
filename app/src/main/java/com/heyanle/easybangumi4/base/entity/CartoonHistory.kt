@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.base.entity
 
 import androidx.room.Entity
+import com.heyanle.easybangumi4.utils.getMatchReg
 
 /**
  * Created by HeYanLe on 2023/3/7 14:55.
@@ -27,7 +28,7 @@ data class CartoonHistory(
     fun matches(query: String): Boolean{
         var matched = false
         for(match in query.split(',')){
-            val regex = getMatchReg(match)
+            val regex = match.getMatchReg()
             if(name.matches(regex)){
                 matched = true
                 break
@@ -37,11 +38,4 @@ data class CartoonHistory(
 
     }
 
-    private fun getMatchReg(query: String): Regex {
-        return buildString {
-            append("(.*)(")
-            append(query.split("").joinToString(")(.*)("))
-            append(")(.*)")
-        }.toRegex(RegexOption.IGNORE_CASE)
-    }
 }

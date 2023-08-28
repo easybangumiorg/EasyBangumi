@@ -9,6 +9,7 @@ import com.heyanle.bangumi_source_api.api.entity.CartoonCover
 import com.heyanle.bangumi_source_api.api.entity.CartoonImpl
 import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
 import com.heyanle.bangumi_source_api.api.entity.PlayLine
+import com.heyanle.easybangumi4.utils.getMatchReg
 import java.net.URLEncoder
 
 /**
@@ -95,7 +96,12 @@ data class CartoonStar(
             )
         }
 
-        fun fromCartoon(cartoon: Cartoon, sourceName: String, playLines: List<PlayLine>, tags: String): CartoonStar {
+        fun fromCartoon(
+            cartoon: Cartoon,
+            sourceName: String,
+            playLines: List<PlayLine>,
+            tags: String
+        ): CartoonStar {
             return CartoonStar(
                 id = cartoon.id,
                 source = cartoon.source,
@@ -171,7 +177,7 @@ data class CartoonStar(
     fun matches(query: String): Boolean {
         var matched = false
         for (match in query.split(',')) {
-            val regex = getMatchReg(match)
+            val regex = match.getMatchReg()
             if (title.matches(regex)) {
                 matched = true
                 break
@@ -179,14 +185,6 @@ data class CartoonStar(
         }
         return matched
 
-    }
-
-    private fun getMatchReg(query: String): Regex {
-        return buildString {
-            append("(.*)(")
-            append(query.split("").joinToString(")(.*)("))
-            append(")(.*)")
-        }.toRegex(RegexOption.IGNORE_CASE)
     }
 
 

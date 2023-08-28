@@ -65,8 +65,8 @@ fun Search(
     val scope = rememberCoroutineScope()
 
     val pagerState =
-        rememberPagerState(searchComponents.indexOfFirst { it.source.key == defSourceKey }
-            .coerceIn(0, searchComponents.size - 1), 0f) {
+        rememberPagerState(if(searchComponents.isNotEmpty()) searchComponents.indexOfFirst { it.source.key == defSourceKey }
+            .coerceIn(0, searchComponents.size - 1) else 0, 0f) {
             searchComponents.size
         }
 

@@ -11,6 +11,22 @@ import com.heyanle.easybangumi4.ui.common.moeSnackBar
  * https://github.com/heyanLE
  */
 
+private val regCharSet = setOf<Char>(
+    '*', '.', '?', '+', '$', '^', '[', ']', '(', ')', '{', '}', '|', '\\', '/'
+)
+fun String.getMatchReg(): Regex{
+    return buildString {
+        append("(.*)(")
+        append(this@getMatchReg.toCharArray().toList().filter { it != ' ' }.joinToString(")(.*)(") {
+            if (regCharSet.contains(it)) {
+                "\${it}"
+            } else it + ""
+
+        })
+        append(")(.*)")
+    }.toRegex(RegexOption.IGNORE_CASE)
+}
+
 fun stringRes(resId: Int, vararg formatArgs: Any): String {
     return APP.getString(resId, *formatArgs)
 }
