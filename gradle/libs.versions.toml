@@ -30,10 +30,10 @@ androidx-test-ext-junit = "1.1.5"
 espresso-core = "3.5.1"
 appcompat = "1.6.1"
 material = "1.9.0"
-agp = "8.1.1"
-kotlin = "1.8.21"
 
 ffmpeg-kit = "6.0"
+
+ktor = "2.3.3"
 
 [libraries]
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
@@ -82,13 +82,12 @@ material = { group = "com.google.android.material", name = "material", version.r
 
 ffmpeg-kit = {module = "com.arthenica:ffmpeg-kit-full", version.ref="ffmpeg-kit"}
 
+ktor_android = {module = "io.ktor:ktor-client-android", version.ref = "ktor"}
+
 [bundles]
 okhttp3 = ["okhttp3", "okhttp3_logging_interceptor"]
 cling = ["cling_core", "cling_support"]
 appcenter = ["appcenter_analytics", "appcenter_crashes", "appcenter_distribute"]
-[plugins]
-androidLibrary = { id = "com.android.library", version.ref = "agp" }
-kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 
 
 
