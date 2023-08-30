@@ -21,6 +21,7 @@ import com.heyanle.easybangumi4.exo.MediaSourceFactory
 import com.heyanle.easybangumi4.preferences.SettingPreferences
 import com.heyanle.easybangumi4.source.SourceController
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
+import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.easybangumi4.utils.stringRes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -158,7 +159,7 @@ class CartoonPlayingController(
         playLine: PlayLine,
         episode: Int,
     ){
-        val playComponent = sourceController.bundleIfEmpty().play(sourceKey) ?: return
+        val playComponent = sourceController.awaitBundle().play(sourceKey) ?: return
         val sta = state
         if(sta is PlayingState.Playing){
             if(sta.cartoon.toIdentify() == cartoon.toIdentify() && sta.playLineIndex == playLineIndex && sta.curEpisode == episode){
@@ -200,7 +201,7 @@ class CartoonPlayingController(
         defaultProgress: Long = 0L,
     ) {
 
-        val playComponent = sourceController.bundleIfEmpty().play(sourceKey) ?: return
+        val playComponent = sourceController.awaitBundle().play(sourceKey) ?: return
         this.playComponent = playComponent
         this.cartoon = cartoon
         changePlay(playComponent, cartoon, playLineIndex, playLine, defaultEpisode, defaultProgress)
@@ -422,6 +423,7 @@ class CartoonPlayingController(
     private fun innerPlay(playerInfo: PlayerInfo, adviceProgress: Long = 0L) {
 
         trySaveHistory(adviceProgress)
+        playerInfo.uri.loge("CartoonPlayingController")
 
         if (settingPreference.useExternalVideoPlayer.get()) {
             kotlin.runCatching {

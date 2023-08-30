@@ -10,12 +10,20 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.cancel
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 /**
  * Created by HeYanLe on 2023/8/27 15:35.
@@ -149,6 +157,12 @@ class SourceController(
         )
     }
 
+    // 等到下一个番剧源就绪状态
+    suspend fun awaitBundle(): SourceBundle {
+        return _sourceState.filterIsInstance<SourceState.Completely>().first().sourceBundle
+
+    }
+
     fun newConfig(map: Map<String, SourcePreferences.LocalSourceConfig>) {
         sourcePreferences.configs.set(map)
     }
@@ -158,28 +172,5 @@ class SourceController(
         map[config.key] = config
         sourcePreferences.configs.set(map)
     }
-
-    fun enable(sourceKey: String) {
-        val map = configFlow.value.toMutableMap()
-        val old = map[sourceKey]
-        if (old != null) {
-            map[sourceKey] = map[sourceKey]!!.copy(enable = true)
-        }else{
-            map[sourceKey] = SourcePreferences.LocalSourceConfig(key = sourceKey, enable = true, order = Int.MAX_VALUE)
-        }
-        sourcePreferences.configs.set(map)
-    }
-
-    fun disable(sourceKey: String) {
-        val map = configFlow.value.toMutableMap()
-        val old = map[sourceKey]
-        if (old != null) {
-            map[sourceKey] = map[sourceKey]!!.copy(enable = false)
-        }else{
-            map[sourceKey] = SourcePreferences.LocalSourceConfig(key = sourceKey, enable = false, order = Int.MAX_VALUE)
-        }
-        sourcePreferences.configs.set(map)
-    }
-
 
 }

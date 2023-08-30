@@ -65,7 +65,7 @@ class DetailedViewModel(
     fun load() {
         viewModelScope.launch {
             detailedState = DetailedState.Loading
-            cartoonRepository.getCartoonInfoWithPlayLines(cartoonSummary.id, cartoonSummary.source, cartoonSummary.url)
+            cartoonRepository.awaitCartoonInfoWithPlayLines(cartoonSummary.id, cartoonSummary.source, cartoonSummary.url)
                 .onOK {
                     detailedState = DetailedState.Info(it.first, it.second, it.second !is DetailedComponent.NonPlayLine)
                     val starInfo = withContext(Dispatchers.IO) {

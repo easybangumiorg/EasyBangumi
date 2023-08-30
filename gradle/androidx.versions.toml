@@ -23,6 +23,7 @@ google_material = "1.9.0"
 core_ktx = { module = "androidx.core:core-ktx", version.ref = "core_ktx" }
 appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 activity_ktx = { module = "androidx.activity:activity-ktx", version.ref = "activity_ktx" }
+activity_compose = {module = "androidx.activity:activity-compose", version.ref = "activity_ktx"}
 fragment_ktx = { module = "androidx.fragment:fragment-ktx", version.ref = "fragment_ktx" }
 lifecycle_runtime_ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle_runtime_ktx" }
 lifecycle_viewmode_ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycle_view_model" }
@@ -60,7 +61,7 @@ room_impl = ["room_ktx", "room_common", "room_runtime"]
 core = [
     "core_ktx", "appcompat", "activity_ktx", "fragment_ktx",
     "lifecycle_runtime_ktx", "lifecycle_viewmode_ktx", "junit_ktx",
-    "annotation", "test_ext_junit_ktx",
+    "annotation", "test_ext_junit_ktx", "activity_compose"
 ]
 test_core = [
     "test_ext_junit", "test_espresso_core"
