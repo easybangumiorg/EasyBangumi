@@ -25,6 +25,15 @@ compose_lazy_reorder = "0.9.6"
 kotlinx_coroutines = "1.7.3"
 
 aria = "3.8.16"
+core-ktx = "1.10.1"
+androidx-test-ext-junit = "1.1.5"
+espresso-core = "3.5.1"
+appcompat = "1.6.1"
+material = "1.9.0"
+agp = "8.1.1"
+kotlin = "1.8.21"
+
+ffmpeg-kit = "6.0"
 
 [libraries]
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
@@ -65,11 +74,21 @@ kotlin_coroutines_android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines
 aria = { module = "me.laoyuyu.aria:core", version.ref = "aria" }
 aria_compiler = { module = "me.laoyuyu.aria:compiler", version.ref = "aria" }
 aria_m3u8 = { module = "me.laoyuyu.aria:m3u8", version.ref = "aria" }
+core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
+androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-ext-junit" }
+espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso-core" }
+appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+
+ffmpeg-kit = {module = "com.arthenica:ffmpeg-kit-full", version.ref="ffmpeg-kit"}
 
 [bundles]
 okhttp3 = ["okhttp3", "okhttp3_logging_interceptor"]
 cling = ["cling_core", "cling_support"]
 appcenter = ["appcenter_analytics", "appcenter_crashes", "appcenter_distribute"]
+[plugins]
+androidLibrary = { id = "com.android.library", version.ref = "agp" }
+kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 
 
 

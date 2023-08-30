@@ -125,7 +125,7 @@ class DlnaViewModel(
         lastJob?.cancel()
         lastJob = viewModelScope.launch {
             detailedState = DetailedState.Loading
-            cartoonRepository.getCartoonInfoWithPlayLines(cartoonSummary.id, cartoonSummary.source, cartoonSummary.url)
+            cartoonRepository.awaitCartoonInfoWithPlayLines(cartoonSummary.id, cartoonSummary.source, cartoonSummary.url)
                 .onOK {
                     if (!isActive) {
                         return@onOK

@@ -80,7 +80,7 @@ class CartoonUpdateController(
                     kotlinx.coroutines.flow.flow {
                         kotlin.runCatching {
                             val update =
-                                (sourceController.bundleIfEmpty().update(star.source))
+                                (sourceController.awaitBundle().update(star.source))
                             val key = if (star.sourceName == (update?.source?.label ?: star.sourceName)) star else star.copy(
                                 sourceName = update?.source?.label ?: star.sourceName
                             )

@@ -15,19 +15,19 @@ class CartoonNetworkDataSource(
     private val sourceController: SourceController
 ) {
 
-    suspend fun getCartoonWithPlayLines(
+    suspend fun awaitCartoonWithPlayLines(
         id: String,
         source: String,
         url: String
     ): DataResult<Pair<Cartoon, List<PlayLine>>> {
-        val result = sourceController.bundleIfEmpty().detailed(source)
+        val result = sourceController.awaitBundle().detailed(source)
             ?.getAll(CartoonSummary(id, source, url))
             ?: return DataResult.error("没有番剧源")
         return result.toDataResult()
     }
 
-    suspend fun getPlayLines(id: String, source: String, url: String): DataResult<List<PlayLine>> {
-        val result = sourceController.bundleIfEmpty().detailed(source)
+    suspend fun awaitPlayLines(id: String, source: String, url: String): DataResult<List<PlayLine>> {
+        val result = sourceController.awaitBundle().detailed(source)
             ?.getPlayLine(CartoonSummary(id, source, url))
             ?: return DataResult.error("没有番剧源")
         return  result.toDataResult()
