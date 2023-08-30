@@ -1,7 +1,6 @@
 package com.heyanle.app_download
 
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import java.util.concurrent.ConcurrentHashMap
