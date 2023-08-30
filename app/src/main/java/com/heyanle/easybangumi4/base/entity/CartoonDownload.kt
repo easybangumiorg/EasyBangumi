@@ -32,7 +32,11 @@ data class CartoonDownload(
     val taskId: String = "",
     val tsPath: String = "",
     val path: String = "",
-    val status: Int = 0, // 0->Init 1->Parsing 2->Downloading 3->Converting 4-> Completely
+    val status: Int = 0, // 0->Init 2->Downloading 3->Converting 4-> Completely
+
+    val playerInfoString: String = "", // PlayerInfo
+
+    val process: Float = 0f, // 仅作为重启后首次展示的进度， -1 为当前任务状态不支持展示进度
 
     val createTime: Long,
 ) {

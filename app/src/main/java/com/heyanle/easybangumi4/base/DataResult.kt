@@ -85,7 +85,7 @@ fun <T> SourceResult<T>.toDataResult(): DataResult<T> =
         }
     }
 
-public inline fun <T, R> DataResult<T>.map(crossinline transform: (value: T) -> R): DataResult<R> =
+public inline fun <T, R> DataResult<T>.map(transform: (value: T) -> R): DataResult<R> =
     when (this) {
         is DataResult.Ok -> {
             DataResult.ok(transform(data))

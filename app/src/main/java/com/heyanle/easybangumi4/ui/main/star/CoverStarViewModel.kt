@@ -69,7 +69,7 @@ class CoverStarViewModel : ViewModel() {
             } else {
                 staringCartoon[identify] = true
 
-                cartoonRepository.getCartoonInfoWithPlayLines(
+                cartoonRepository.awaitCartoonInfoWithPlayLines(
                     cartoonCover.id,
                     cartoonCover.source,
                     cartoonCover.url

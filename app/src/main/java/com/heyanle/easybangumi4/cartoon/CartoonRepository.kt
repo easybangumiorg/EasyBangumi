@@ -24,7 +24,7 @@ class CartoonRepository(
     private val sourceController: SourceController
 ) {
 
-    suspend fun getCartoonInfoWithPlayLines(
+    suspend fun awaitCartoonInfoWithPlayLines(
         id: String,
         source: String,
         url: String
@@ -39,12 +39,12 @@ class CartoonRepository(
                     .isEmpty() || current - oldUpdateTime >= expDiff
             ) {
                 // 过期或者不存在 走网络
-                val netResult = cartoonNetworkDataSource.getCartoonWithPlayLines(id, source, url)
+                val netResult = cartoonNetworkDataSource.awaitCartoonWithPlayLines(id, source, url)
                 // 异步更新
                 launch(Dispatchers.IO) {
                     if (netResult is DataResult.Ok) {
                         val sourceName =
-                            sourceController.bundleIfEmpty().source(source)?.label
+                            sourceController.awaitBundle().source(source)?.label
                                 ?: ""
                         val info = CartoonInfo.fromCartoon(
                             netResult.data.first,
@@ -55,9 +55,10 @@ class CartoonRepository(
                     }
                 }
 
+
                 val res = netResult.map {
                     val sourceName =
-                        sourceController.bundleIfEmpty().source(source)?.label ?: ""
+                        sourceController.awaitBundle().source(source)?.label ?: ""
                     CartoonInfo.fromCartoon(
                         it.first,
                         sourceName,

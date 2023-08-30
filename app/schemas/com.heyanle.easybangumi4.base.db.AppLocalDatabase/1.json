@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "d6fe37ca77303dfbae808af17ace150d",
+    "identityHash": "3c7473c2d4be25097b7b423ad1e04395",
     "entities": [
       {
         "tableName": "CartoonDownload",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`downloadId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `id` TEXT NOT NULL, `url` TEXT NOT NULL, `source` TEXT NOT NULL, `name` TEXT NOT NULL, `cover` TEXT NOT NULL, `sourceName` TEXT NOT NULL, `playLineIndex` INTEGER NOT NULL, `playLineString` TEXT NOT NULL, `episodeIndex` INTEGER NOT NULL, `episodeLabel` TEXT NOT NULL, `taskId` TEXT NOT NULL, `tsPath` TEXT NOT NULL, `path` TEXT NOT NULL, `status` INTEGER NOT NULL, `createTime` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`downloadId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `id` TEXT NOT NULL, `url` TEXT NOT NULL, `source` TEXT NOT NULL, `name` TEXT NOT NULL, `cover` TEXT NOT NULL, `sourceName` TEXT NOT NULL, `playLineIndex` INTEGER NOT NULL, `playLineString` TEXT NOT NULL, `episodeIndex` INTEGER NOT NULL, `episodeLabel` TEXT NOT NULL, `taskId` TEXT NOT NULL, `tsPath` TEXT NOT NULL, `path` TEXT NOT NULL, `status` INTEGER NOT NULL, `playerInfoString` TEXT NOT NULL, `process` REAL NOT NULL, `createTime` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "downloadId",
@@ -99,6 +99,18 @@
             "notNull": true
           },
           {
+            "fieldPath": "playerInfoString",
+            "columnName": "playerInfoString",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "process",
+            "columnName": "process",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
             "fieldPath": "createTime",
             "columnName": "createTime",
             "affinity": "INTEGER",
@@ -118,7 +130,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd6fe37ca77303dfbae808af17ace150d')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3c7473c2d4be25097b7b423ad1e04395')"
     ]
   }
 }

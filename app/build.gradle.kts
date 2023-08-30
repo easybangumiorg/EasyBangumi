@@ -143,10 +143,10 @@ dependencies {
     implementation(libs.bundles.cling)
     implementation(libs.compose.reorderable)
 
-//    ksp(libs.aria.compiler)
-//    //annotationProcessor(libs.aria.compiler)
-//    implementation(libs.aria)
-//    implementation(libs.aria.m3u8)
+    ksp(libs.aria.compiler)
+    //annotationProcessor(libs.aria.compiler)
+    implementation(libs.aria)
+    implementation(libs.aria.m3u8)
 
     implementation(project(":easy-dlna"))
     implementation(project(":easy-crasher"))
