@@ -1,6 +1,5 @@
+
 import com.heyanle.buildsrc.Android
-import com.heyanle.buildsrc.Config
-import com.heyanle.buildsrc.RoomSchemaArgProvider
 
 plugins {
     alias(build.plugins.android.application)
@@ -84,5 +83,7 @@ dependencies {
     ksp(androidx.room.compiler)
     testImplementation(androidx.room.testing)
     androidTestImplementation(androidx.room.testing)
+
+    implementation(libs.jeff.m3u8)
 
 }
