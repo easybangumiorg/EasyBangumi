@@ -39,7 +39,7 @@ fun SourceContainer(
     errorContainerColor: Color = Color.Transparent,
     content: @Composable (SourceBundle) -> Unit,
 ) {
-    SourceContainerBase(modifier, {true}, errorContainerColor, content)
+    SourceContainerBase(modifier, {it.searches().isNotEmpty()}, errorContainerColor, content)
 }
 
 @Composable
