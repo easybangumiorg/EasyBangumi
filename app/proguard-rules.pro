@@ -52,6 +52,8 @@
 
 -keep class com.tencent.mmkv.** {*;}
 
+-keep class org.apache.commons.** {*;}
+
 # okhttp
 -keep class okhttp3.** {*;}
 
@@ -60,6 +62,9 @@
 
 # jsoup
 -keep class com.google.gson.** {*;}
+
+-dontwarn javax.script.ScriptEngine
+-dontwarn javax.script.ScriptEngineManager
 
 -dontwarn javax.enterprise.context.ApplicationScoped
 -dontwarn javax.enterprise.inject.Alternative

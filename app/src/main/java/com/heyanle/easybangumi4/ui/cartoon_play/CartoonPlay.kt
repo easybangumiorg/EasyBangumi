@@ -341,7 +341,8 @@ fun CartoonPlay(
                                         MutableInteractionSource()
                                     }
                                 ),
-                            loadingMsg = stringResource(id = com.heyanle.easy_i18n.R.string.parsing)
+                            loadingMsg = stringResource(id = com.heyanle.easy_i18n.R.string.parsing),
+                            msgColor = Color.White.copy(0.6f)
                         )
                         IconButton(
                             modifier = Modifier.align(Alignment.TopStart),
@@ -350,7 +351,8 @@ fun CartoonPlay(
                             }) {
                             Icon(
                                 Icons.Filled.ArrowBack,
-                                contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.back)
+                                contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.back),
+                                tint = Color.White
                             )
                         }
                     }
