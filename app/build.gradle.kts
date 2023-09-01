@@ -89,6 +89,7 @@ android {
 dependencies {
 
     implementation(androidx.bundles.core)
+    implementation(files("../libs/bcprov-jdk16-139.jar"))
     androidTestImplementation (androidx.bundles.test.core)
 
     implementation(androidx.bundles.room.impl)
@@ -147,6 +148,8 @@ dependencies {
     //annotationProcessor(libs.aria.compiler)
     implementation(libs.aria)
     implementation(libs.aria.m3u8)
+
+    implementation(libs.jeff.m3u8)
 
     implementation(project(":easy-dlna"))
     implementation(project(":easy-crasher"))

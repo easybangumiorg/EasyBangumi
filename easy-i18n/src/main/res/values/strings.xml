@@ -273,5 +273,11 @@
 
     <string name="reverse">列表反转</string>
 
+    <string name="downloading">下载中</string>
+    <string name="download_error">下载失败</string>
+    <string name="decrypting">解密中</string>
+    <string name="decrypt_error">解密失败</string>
+    <string name="transcoding">转码中</string>
+    <string name="transcode_error">转码失败</string>
 
 </resources>
