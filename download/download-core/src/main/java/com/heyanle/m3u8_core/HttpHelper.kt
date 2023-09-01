@@ -6,6 +6,4 @@ package com.heyanle.m3u8_core
 
 suspend fun getText(url: String ){
 
-
-
 }
