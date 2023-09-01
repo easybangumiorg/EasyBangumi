@@ -127,20 +127,15 @@ class DatabaseModule(
         addSingletonFactory {
             get<AppDatabase>().cartoonTag
         }
-
         addSingletonFactory {
             CacheDatabase.build(application)
         }
-
         addSingletonFactory {
             get<CacheDatabase>().cartoonInfo
         }
-
-        //todo
-//        addSingletonFactory {
-//            AppLocalDatabase.build(application)
-//        }
-
+        addSingletonFactory {
+            AppLocalDatabase.build(application)
+        }
         addSingletonFactory {
             get<AppLocalDatabase>().cartoonDownload
         }

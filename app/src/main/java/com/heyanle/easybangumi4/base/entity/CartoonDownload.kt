@@ -2,6 +2,7 @@ package com.heyanle.easybangumi4.base.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.heyanle.bangumi_source_api.api.entity.PlayerInfo
 import java.net.URLEncoder
 
 /**
@@ -21,22 +22,19 @@ data class CartoonDownload(
     val name: String,
     val cover: String,
 
+    val decodeType: Int = PlayerInfo.DECODE_TYPE_OTHER,
+    val downloadUri: String = "",
+
     val sourceName: String,
 
-    val playLineIndex: Int,
-    val playLineString: String,
+    val playLineLabel: String,
 
-    val episodeIndex: Int,
     val episodeLabel: String,
 
-    val taskId: String = "",
-    val tsPath: String = "",
-    val path: String = "",
-    val status: Int = 0, // 0->Init 2->Downloading 3->Converting 4-> Completely
+    val taskId: Long = 0L,
 
-    val playerInfoString: String = "", // PlayerInfo
-
-    val process: Float = 0f, // 仅作为重启后首次展示的进度， -1 为当前任务状态不支持展示进度
+    val status: Int = 0, // 0->Ariaing 2->Decrypting 3->Transcoding 4-> Completely -1->Error
+    val errorMsg: String = "", // 错误信息
 
     val createTime: Long,
 ) {
@@ -44,11 +42,10 @@ data class CartoonDownload(
     companion object {
         fun fromCartoonInfo(
             cartoonInfo: CartoonInfo,
-            downloadId: String,
+            downloadId: Long,
             playLineLabel: String,
-            playLineIndex: Int,
             episodeLabel: String,
-            episodeIndex: Int
+            playerInfo: PlayerInfo,
         ): CartoonDownload {
             return CartoonDownload(
                 0,
@@ -57,11 +54,10 @@ data class CartoonDownload(
                 cartoonInfo.source,
                 cartoonInfo.title,
                 cartoonInfo.coverUrl,
+                playerInfo.decodeType,
+                playerInfo.uri,
                 cartoonInfo.sourceName,
-
-                playLineIndex,
                 playLineLabel,
-                episodeIndex,
                 episodeLabel,
                 downloadId,
                 createTime = System.currentTimeMillis(),
@@ -69,8 +65,12 @@ data class CartoonDownload(
         }
     }
 
+    fun toCartoonIdentify(): String {
+        return "${id},${source},${URLEncoder.encode(url, "utf-8")}"
+    }
+
     fun toIdentify(): String {
-        return "${id},${source},${URLEncoder.encode(url, "utf-8")},${playLineIndex}-${episodeIndex}"
+        return "${toCartoonIdentify()}-${playLineLabel},${episodeLabel}"
     }
 
 }
