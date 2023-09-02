@@ -27,7 +27,6 @@ abstract class AppLocalDatabase: RoomDatabase() {
     val cartoonDownload: CartoonDownloadDao by lazy {cartoonDownloadDao() }
 
     companion object {
-        // 还未使用，先不新建了
         fun build(context: Context): AppLocalDatabase {
             return Room.databaseBuilder(
                 context,

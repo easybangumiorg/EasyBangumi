@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "3c7473c2d4be25097b7b423ad1e04395",
+    "identityHash": "18ad2370cd24c3ddfb7a926f84df9e84",
     "entities": [
       {
         "tableName": "CartoonDownload",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`downloadId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `id` TEXT NOT NULL, `url` TEXT NOT NULL, `source` TEXT NOT NULL, `name` TEXT NOT NULL, `cover` TEXT NOT NULL, `sourceName` TEXT NOT NULL, `playLineIndex` INTEGER NOT NULL, `playLineString` TEXT NOT NULL, `episodeIndex` INTEGER NOT NULL, `episodeLabel` TEXT NOT NULL, `taskId` TEXT NOT NULL, `tsPath` TEXT NOT NULL, `path` TEXT NOT NULL, `status` INTEGER NOT NULL, `playerInfoString` TEXT NOT NULL, `process` REAL NOT NULL, `createTime` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`downloadId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `id` TEXT NOT NULL, `url` TEXT NOT NULL, `source` TEXT NOT NULL, `name` TEXT NOT NULL, `cover` TEXT NOT NULL, `decodeType` INTEGER NOT NULL, `downloadUri` TEXT NOT NULL, `sourceName` TEXT NOT NULL, `playLineLabel` TEXT NOT NULL, `episodeLabel` TEXT NOT NULL, `taskId` INTEGER NOT NULL, `status` INTEGER NOT NULL, `errorMsg` TEXT NOT NULL, `createTime` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "downloadId",
@@ -45,27 +45,27 @@
             "notNull": true
           },
           {
+            "fieldPath": "decodeType",
+            "columnName": "decodeType",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "downloadUri",
+            "columnName": "downloadUri",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
             "fieldPath": "sourceName",
             "columnName": "sourceName",
             "affinity": "TEXT",
             "notNull": true
           },
           {
-            "fieldPath": "playLineIndex",
-            "columnName": "playLineIndex",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "playLineString",
-            "columnName": "playLineString",
+            "fieldPath": "playLineLabel",
+            "columnName": "playLineLabel",
             "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "episodeIndex",
-            "columnName": "episodeIndex",
-            "affinity": "INTEGER",
             "notNull": true
           },
           {
@@ -77,19 +77,7 @@
           {
             "fieldPath": "taskId",
             "columnName": "taskId",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "tsPath",
-            "columnName": "tsPath",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "path",
-            "columnName": "path",
-            "affinity": "TEXT",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
@@ -99,15 +87,9 @@
             "notNull": true
           },
           {
-            "fieldPath": "playerInfoString",
-            "columnName": "playerInfoString",
+            "fieldPath": "errorMsg",
+            "columnName": "errorMsg",
             "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "process",
-            "columnName": "process",
-            "affinity": "REAL",
             "notNull": true
           },
           {
@@ -130,7 +112,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3c7473c2d4be25097b7b423ad1e04395')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '18ad2370cd24c3ddfb7a926f84df9e84')"
     ]
   }
 }

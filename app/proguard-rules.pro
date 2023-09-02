@@ -63,6 +63,22 @@
 # jsoup
 -keep class com.google.gson.** {*;}
 
+# aria
+-dontwarn com.arialyy.aria.**
+-keep class com.arialyy.aria.**{*;}
+-keep class **$$DownloadListenerProxy{ *; }
+-keep class **$$UploadListenerProxy{ *; }
+-keep class **$$DownloadGroupListenerProxy{ *; }
+-keep class **$$DGSubListenerProxy{ *; }
+-keepclasseswithmembernames class * {
+    @Download.* <methods>;
+    @Upload.* <methods>;
+    @DownloadGroup.* <methods>;
+}
+
+# m3u8 ffmepg lib
+-keep class com.jeffmony.** {*;}
+
 -dontwarn javax.script.ScriptEngine
 -dontwarn javax.script.ScriptEngineManager
 

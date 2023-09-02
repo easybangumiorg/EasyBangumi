@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.Looper
 import android.os.Process
 import android.util.Log
+import com.arialyy.aria.core.Aria
 import com.heyanle.easy_crasher.CrashHandler
 import com.heyanle.easybangumi4.cartoon.CartoonModule
 import com.heyanle.easybangumi4.exo.MediaModule
@@ -49,6 +50,8 @@ class App : Application() {
         super.onCreate()
         APP = this
         if (isMainProcess()) {
+
+            Aria.init(this)
 
             initCrasher()
 

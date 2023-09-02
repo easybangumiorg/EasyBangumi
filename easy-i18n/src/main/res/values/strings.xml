@@ -273,6 +273,8 @@
 
     <string name="reverse">列表反转</string>
 
+    <string name="download_history">下载记录</string>
+    <string name="pausing">暂停中</string>
     <string name="downloading">下载中</string>
     <string name="download_error">下载失败</string>
     <string name="decrypting">解密中</string>
