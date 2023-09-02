@@ -22,12 +22,14 @@ import androidx.navigation.navArgument
 import com.heyanle.bangumi_source_api.api.entity.CartoonCover
 import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
 import com.heyanle.easybangumi4.base.theme.NormalSystemBarColor
+import com.heyanle.easybangumi4.source.utils.WebViewUserHelperImpl
 import com.heyanle.easybangumi4.ui.WebViewUser
 import com.heyanle.easybangumi4.ui.about.About
 import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlay
 import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.dlna.Dlna
 import com.heyanle.easybangumi4.ui.dlna.DlnaViewModel
+import com.heyanle.easybangumi4.ui.download.Download
 import com.heyanle.easybangumi4.ui.main.Main
 import com.heyanle.easybangumi4.ui.main.history.History
 import com.heyanle.easybangumi4.ui.search.Search
@@ -36,7 +38,6 @@ import com.heyanle.easybangumi4.ui.setting.SettingPage
 import com.heyanle.easybangumi4.ui.source_config.SourceConfig
 import com.heyanle.easybangumi4.ui.source_manage.SourceManager
 import com.heyanle.easybangumi4.ui.tags.CartoonTag
-import com.heyanle.easybangumi4.source.utils.WebViewUserHelperImpl
 import com.heyanle.easybangumi4.utils.loge
 import java.lang.ref.WeakReference
 import java.net.URLDecoder
@@ -75,6 +76,8 @@ const val SOURCE_CONFIG = "source_config"
 const val DLNA = "dlna"
 
 const val SETTING = "setting"
+
+const val DOWNLOAD = "download"
 
 const val TAG_MANAGE = "tag_manage"
 const val APPEARANCE_SETTING = "appearance_setting"
@@ -379,6 +382,11 @@ fun Nav() {
             composable(TAG_MANAGE){
                 NormalSystemBarColor()
                 CartoonTag()
+            }
+
+            composable(DOWNLOAD){
+                NormalSystemBarColor()
+                Download()
             }
         }
     }

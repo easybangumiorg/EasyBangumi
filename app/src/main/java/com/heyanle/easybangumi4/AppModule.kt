@@ -11,6 +11,9 @@ import com.heyanle.easybangumi4.base.preferences.android.AndroidPreferenceStore
 import com.heyanle.easybangumi4.base.preferences.hekv.HeKVPreferenceStore
 import com.heyanle.easybangumi4.base.preferences.mmkv.MMKVPreferenceStore
 import com.heyanle.easybangumi4.base.theme.EasyThemeController
+import com.heyanle.easybangumi4.download.DownloadBus
+import com.heyanle.easybangumi4.download.DownloadController
+import com.heyanle.easybangumi4.download.LocalCartoonController
 import com.heyanle.easybangumi4.preferences.SettingMMKVPreferences
 import com.heyanle.easybangumi4.preferences.SettingPreferences
 import com.heyanle.easybangumi4.preferences.SourcePreferences
@@ -26,6 +29,7 @@ import com.heyanle.injekt.api.addAlias
 import com.heyanle.injekt.api.addSingletonFactory
 import com.heyanle.injekt.api.get
 import com.heyanle.lib_anim.utils.provider.SourceProviderController
+import java.io.File
 
 /**
  * Created by HeYanLe on 2023/7/29 20:15.
@@ -72,6 +76,22 @@ class ControllerModule(
             CartoonPlayingController(
                 get(), get(), get(), get(), get()
             )
+        }
+
+        addSingletonFactory {
+            DownloadController(
+                File(application.getFilePath("download")),
+                get(),
+                get(),
+                get()
+            )
+        }
+        addSingletonFactory {
+            DownloadBus()
+        }
+
+        addSingletonFactory {
+            LocalCartoonController(application)
         }
     }
 }

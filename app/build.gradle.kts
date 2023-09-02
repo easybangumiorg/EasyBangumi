@@ -2,6 +2,7 @@
 import com.heyanle.buildsrc.Android
 import com.heyanle.buildsrc.Config
 import com.heyanle.buildsrc.RoomSchemaArgProvider
+import com.heyanle.buildsrc.implementation
 import com.heyanle.buildsrc.project
 
 plugins {
@@ -137,6 +138,7 @@ dependencies {
     implementation(libs.easyplayer2)
     implementation(libs.accompanist.systemuicontroller)
     implementation(libs.accompanist.swiperefresh)
+    implementation(libs.accompanist.permissions)
     implementation(libs.navigtion.compose)
     implementation(libs.coil.compose)
     implementation(libs.coil.gif)

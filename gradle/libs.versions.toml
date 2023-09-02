@@ -54,6 +54,7 @@ easyplayer2 = { module = "com.github.easybangumiorg:EasyPlayer2", version.ref = 
 
 accompanist_systemuicontroller = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanist" }
 accompanist_swiperefresh = { module = "com.google.accompanist:accompanist-swiperefresh", version.ref = "accompanist" }
+accompanist_permissions = {module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanist" }
 
 navigtion_compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation_compose" }
 

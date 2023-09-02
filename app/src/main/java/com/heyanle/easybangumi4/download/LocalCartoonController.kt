@@ -18,7 +18,16 @@ class LocalCartoonController(
     fun getTargetFile(
         download: CartoonDownload
     ): File {
-        TODO()
+        return File(rootFile+"/${download.createTime}/${download.playLineLabel}/${download.episodeLabel}.mp4")
     }
+
+    fun getTargetFile(
+        time: Long,
+        playLineLabel: String,
+        episodeLabel: String,
+    ): File{
+        return File(rootFile+"/${time}/${playLineLabel}/${episodeLabel}.mp4")
+    }
+
 
 }
