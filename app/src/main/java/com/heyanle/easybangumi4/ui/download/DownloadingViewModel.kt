@@ -1,10 +1,13 @@
 package com.heyanle.easybangumi4.ui.download
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.base.db.dao.CartoonDownloadDao
 import com.heyanle.easybangumi4.base.entity.CartoonDownload
+import com.heyanle.easybangumi4.download.DownloadBus
 import com.heyanle.injekt.core.Injekt
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 
 /**
  * Created by HeYanLe on 2023/8/27 22:05.
@@ -13,23 +16,12 @@ import kotlinx.coroutines.flow.map
 class DownloadingViewModel: ViewModel() {
 
     private val downloadDao: CartoonDownloadDao by Injekt.injectLazy()
+    private val downloadBus: DownloadBus by Injekt.injectLazy()
 
-    sealed class DownloadingItem {
-        data class Header(
-            val coverUrl: String,
-            val title: String,
-            val desc: String
-        ) : DownloadingItem()
+    val flow = downloadDao.flowAll().stateIn(viewModelScope, SharingStarted.Lazily, listOf())
 
-        data class Downloading(
-            val cartoonDownload: CartoonDownload,
-            val downloadingProcess: Float,
-            val status: String,
-        ) : DownloadingItem()
-    }
-
-    private val flow = downloadDao.flowAll().map {
-
+    fun info(download: CartoonDownload): DownloadBus.DownloadingInfo{
+        return downloadBus.getInfo(download.toIdentify())
     }
 
 }

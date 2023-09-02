@@ -22,7 +22,7 @@ class MediaSourceFactory(
 ) {
 
     /**
-     * Http <- 下载区 (exoplayer 无法写，只能下载器写) <- 缓存区
+     * Http <- 缓存区
      */
     @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
     fun get(playerInfo: PlayerInfo): MediaSource {

@@ -46,10 +46,11 @@ data class CartoonDownload(
             playLineLabel: String,
             episodeLabel: String,
             playerInfo: PlayerInfo,
+            createTime: Long = System.currentTimeMillis()
         ): CartoonDownload {
             return CartoonDownload(
-                0,
-                cartoonInfo.id,
+                downloadId = 0,
+                id = cartoonInfo.id,
                 cartoonInfo.url,
                 cartoonInfo.source,
                 cartoonInfo.title,
@@ -59,8 +60,8 @@ data class CartoonDownload(
                 cartoonInfo.sourceName,
                 playLineLabel,
                 episodeLabel,
-                downloadId,
-                createTime = System.currentTimeMillis(),
+                taskId = downloadId,
+                createTime = createTime,
             )
         }
     }

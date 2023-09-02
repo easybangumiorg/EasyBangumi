@@ -1,31 +1,39 @@
 package com.heyanle.easybangumi4.download
 
 import com.arialyy.aria.core.Aria
+import com.arialyy.aria.core.common.HttpOption
+import com.arialyy.aria.core.download.DownloadTaskListener
 import com.arialyy.aria.core.download.m3u8.M3U8VodOption
+import com.arialyy.aria.core.task.DownloadTask
 import com.heyanle.bangumi_source_api.api.entity.PlayLine
 import com.heyanle.bangumi_source_api.api.entity.PlayerInfo
 import com.heyanle.easybangumi4.base.db.dao.CartoonDownloadDao
 import com.heyanle.easybangumi4.base.entity.CartoonDownload
 import com.heyanle.easybangumi4.base.entity.CartoonInfo
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
+import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.easybangumi4.utils.stringRes
 import com.jeffmony.m3u8library.VideoProcessManager
 import com.jeffmony.m3u8library.listener.IVideoTransformListener
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.apache.commons.lang3.StringUtils
 import java.io.File
 import java.net.URI
 import java.net.URL
 import java.security.spec.AlgorithmParameterSpec
+import java.util.concurrent.Executors
 import java.util.regex.Pattern
 import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 /**
  * Created by HeYanLe on 2023/8/27 20:07.
@@ -36,14 +44,75 @@ class DownloadController(
     private val downloadBus: DownloadBus,
     private val cartoonDownloadDao: CartoonDownloadDao,
     private val localCartoonController: LocalCartoonController,
-) {
+): DownloadTaskListener {
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private val dispatcher = Dispatchers.IO.limitedParallelism(3)
+    // 单线程模型
+    private val dispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
     private val mainScope = MainScope()
 
+    private val flow = cartoonDownloadDao.flowAll().stateIn(scope, SharingStarted.Lazily, emptyList())
+
     private val aria = Aria.download(this)
+
+    init {
+        aria.register()
+        // 有点脏，先这样写，后续在优化把
+        scope.launch {
+            flow.collect {
+                val needHelp =
+                    it.filter { it.decodeType == PlayerInfo.DECODE_TYPE_HLS && it.status == 2 || it.status == 3}
+                needHelp.firstOrNull()?.let {
+                    it.loge("DownloadController")
+                    when (it.status) {
+                        2 -> {
+                            try {
+                                decrypt(it)
+                                updateDownload(
+                                    it.copy(
+                                        status = 3,
+                                    )
+                                )
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                                e.message?.moeSnackBar()
+                                updateDownload(
+                                    it.copy(
+                                        status = -1,
+                                        errorMsg = stringRes(com.heyanle.easy_i18n.R.string.decrypt_error)
+                                    )
+                                )
+                            }
+
+                        }
+
+                        3 -> {
+                            try {
+                                val entity = aria.getDownloadEntity(it.taskId)?.m3U8Entity
+                                deleteM3U8WithTs(entity?.filePath?:"")
+                                transcode(it)
+
+//                                updateDownload(
+//                                    it.copy(
+//                                        status = 4,
+//                                    )
+//                                )
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                                e.message?.moeSnackBar()
+                                updateDownload(
+                                    it.copy(
+                                        status = -1,
+                                        errorMsg = stringRes(com.heyanle.easy_i18n.R.string.transcode_error)
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     //private val d = M3U8VodOption
 
@@ -52,14 +121,14 @@ class DownloadController(
             val list = arrayListOf<String>()
             val pattern = "[0-9a-zA-Z]+[.]ts"
             val r = Pattern.compile(pattern)
-            for(i in tsUrls.indices){
+            for (i in tsUrls.indices) {
                 val tspath = tsUrls[i]
-                if(tspath.startsWith("http://") ||tspath.startsWith("https://")){
+                if (tspath.startsWith("http://") || tspath.startsWith("https://")) {
                     list.add(tspath)
-                }else if(r.matcher(tspath).find()){
-                    val e = m3u8Url.lastIndexOf("/")+1
-                    list.add(m3u8Url.substring(0, e)+tspath)
-                }else{
+                } else if (r.matcher(tspath).find()) {
+                    val e = m3u8Url.lastIndexOf("/") + 1
+                    list.add(m3u8Url.substring(0, e) + tspath)
+                } else {
                     val host = URI(m3u8Url).host
                     list.add("$host/$tspath")
                 }
@@ -67,11 +136,11 @@ class DownloadController(
             list
         }
         setBandWidthUrlConverter { m3u8Url, bandWidthUrl ->
-            if(bandWidthUrl.startsWith("http://") || bandWidthUrl.startsWith("https://")){
+            if (bandWidthUrl.startsWith("http://") || bandWidthUrl.startsWith("https://")) {
                 bandWidthUrl
-            }else{
+            } else {
                 val url = URL(m3u8Url)
-                url.protocol + "://" + url.host + ":" + url.port+ "/" + bandWidthUrl
+                url.protocol + "://" + url.host + ":" + url.port + "/" + bandWidthUrl
             }
         }
         setUseDefConvert(false)
@@ -84,19 +153,55 @@ class DownloadController(
     ) {
 
         scope.launch {
-            for(it in download){
+            for (it in download) {
                 val index = it.second
-                if(index < 0 || index >= it.first.episode.size){
+                if (index < 0 || index >= it.first.episode.size) {
                     continue
                 }
                 val episodeLabel = it.first.episode[index]
-                val identify =   "${cartoonInfo.toIdentify()}-${it.first.label},${episodeLabel}"
-                val taskId = aria.load(it.first.episode[it.second])
-                    .setFilePath(File(cacheFile, "${identify}.source.m3u8").absolutePath)
-                    .m3u8VodOption(m3u8Option)
-                    .create()
-                val cartoonDownload = CartoonDownload.fromCartoonInfo(cartoonInfo, taskId, it.first.label, episodeLabel, it.third)
-                cartoonDownloadDao.insert(cartoonDownload)
+                val identify = "${cartoonInfo.toIdentify()}-${it.first.label},${episodeLabel}"
+                val time = System.currentTimeMillis()
+                if(it.third.decodeType == PlayerInfo.DECODE_TYPE_HLS){
+                    val taskId = aria.load(it.third.uri)
+                        .option(HttpOption().apply {
+                            it.third.header?.iterator()?.forEach {
+                                addHeader(it.key, it.value)
+                            }
+                        })
+                        .setFilePath(File(cacheFile, "${time}.source.m3u8").absolutePath)
+                        .m3u8VodOption(m3u8Option)
+                        .ignoreCheckPermissions()
+                        .create()
+                    val cartoonDownload = CartoonDownload.fromCartoonInfo(
+                        cartoonInfo,
+                        taskId,
+                        it.first.label,
+                        episodeLabel,
+                        it.third,
+                        time,
+                    )
+                    cartoonDownloadDao.insert(cartoonDownload)
+                }else{
+                    val taskId = aria.load(it.third.uri)
+                        .option(HttpOption().apply {
+                            it.third.header?.iterator()?.forEach {
+                                addHeader(it.key, it.value)
+                            }
+                        })
+                        .setFilePath(localCartoonController.getTargetFile(time, it.first.label, episodeLabel).absolutePath)
+                        .ignoreCheckPermissions()
+                        .create()
+                    val cartoonDownload = CartoonDownload.fromCartoonInfo(
+                        cartoonInfo,
+                        taskId,
+                        it.first.label,
+                        episodeLabel,
+                        it.third,
+                        time
+                    )
+                    cartoonDownloadDao.insert(cartoonDownload)
+                }
+
             }
         }
     }
@@ -105,6 +210,9 @@ class DownloadController(
     private suspend fun decrypt(
         download: CartoonDownload
     ) {
+        if (download.status != 2) {
+            return
+        }
         val entity = aria.getDownloadEntity(download.taskId).m3U8Entity
         if (entity == null) {
             updateDownload(
@@ -128,8 +236,9 @@ class DownloadController(
             return
         }
 
-        val target = File(cacheFile, "${download.toIdentify()}.m3u8.temp")
-        val realTarget = File(cacheFile, "${download.toIdentify()}.m3u8")
+        val target = File(cacheFile, "${download.createTime}.m3u8.temp")
+        val realTarget = File(cacheFile, "${download.createTime}.m3u8")
+        target.delete()
         if (!target.createNewFile() || !target.canWrite()) {
             updateDownload(
                 download.copy(
@@ -139,6 +248,12 @@ class DownloadController(
             )
             return
         }
+        mainScope.launch {
+            info.status.value = stringRes(com.heyanle.easy_i18n.R.string.decrypting)
+            info.process.value = -1f
+            info.subStatus.value = ""
+        }
+
         // 将本地 m3u8 文件中的 ts 全都解密改写成 tsh 文件
         // 输出新的 m3u8 文件，去除 key 标签，文件路径改为 tsh
         // 如果 tsh 文件的文件头是 png，则去除改文件头
@@ -161,6 +276,12 @@ class DownloadController(
                     val ts = it.next()
                     val file = File(ts)
                     val targetFile = File("${ts}h")
+                    // 大于 500M 的就不走自行解密了，防止 OOM，直接丢 ffmpeg 转
+                    if (file.length() >= 500 * 1024 * 1024) {
+                        realTarget.delete()
+                        localM3U8.renameTo(realTarget)
+                        return
+                    }
                     tsFiles.add(file)
                     // ts -> tsh
                     targetTsFiles.add(targetFile)
@@ -180,16 +301,44 @@ class DownloadController(
             }
         }
         writer.flush()
-        info.status.value = stringRes(com.heyanle.easy_i18n.R.string.decrypting)
+
         // 开始解密咯！
         val needDecrypt = !entity.method.isNullOrEmpty()
         val keyFile = File(entity.filePath)
         val keyB = keyFile.readBytes()
+        mainScope.launch {
+            info.status.value = stringRes(com.heyanle.easy_i18n.R.string.decrypting)
+            info.process.value = 0f
+            info.subStatus.value = "0/${tsFiles.size}"
+        }
         for (i in 0 until tsFiles.size.coerceAtMost(targetTsFiles.size)) {
+            mainScope.launch {
+                info.status.value = stringRes(com.heyanle.easy_i18n.R.string.decrypting)
+                info.process.value = if(tsFiles.size == 0) 0f else{ (i+1)/(tsFiles.size).toFloat()}
+                info.subStatus.value = "${i+1}/${tsFiles.size}"
+            }
             val ts = tsFiles[i]
             val tsh = targetTsFiles[i]
-            tsh.createNewFile()
-            if (!ts.canRead() || !tsh.canWrite()) {
+            val parent = tsh.parentFile
+            if(parent == null){
+                updateDownload(
+                    download.copy(
+                        status = -1,
+                        errorMsg = stringRes(com.heyanle.easy_i18n.R.string.decrypt_error)
+                    )
+                )
+                return
+            }
+
+            val tshTemp = File(parent, tsh.name+".temp")
+            // ts 文件不在 tsh 文件存在 tsh.temp 文件不存在这说明该文件解密过了，直接跳过
+            if(!ts.exists() && tsh.exists() && !tshTemp.exists()){
+                continue
+            }
+            tsh.delete()
+            tshTemp.delete()
+            tshTemp.createNewFile()
+            if (!tshTemp.canRead() || !tshTemp.canWrite()) {
                 updateDownload(
                     download.copy(
                         status = -1,
@@ -214,10 +363,15 @@ class DownloadController(
                 rr[2] = 0xff.toByte()
                 rr[3] = 0xff.toByte()
             }
-            tsh.writeBytes(rr)
+            tshTemp.writeBytes(rr)
+            tshTemp.renameTo(tsh)
+            ts.delete()
         }
 
         target.renameTo(realTarget)
+        updateDownload(download.copy(
+            status = 3
+        ))
 
     }
 
@@ -225,8 +379,12 @@ class DownloadController(
     private suspend fun transcode(
         download: CartoonDownload
     ) {
+        if (download.status != 3) {
+            return
+        }
+
         val info = downloadBus.getInfo(download.toIdentify())
-        val m3u8 = File(cacheFile, "${download.toIdentify()}.m3u8")
+        val m3u8 = File(cacheFile, "${download.createTime}.m3u8")
         if (!m3u8.exists() || !m3u8.canRead()) {
             updateDownload(
                 download.copy(
@@ -247,52 +405,52 @@ class DownloadController(
             )
             return
         }
-        val target = File(parentFile, realTarget.name + ".temp")
-        if (!parentFile.exists()) {
-            updateDownload(
-                download.copy(
-                    status = -1,
-                    errorMsg = stringRes(com.heyanle.easy_i18n.R.string.transcode_error)
-                )
-            )
-            return
-        }
+        parentFile.mkdirs()
+        val target = File(parentFile, realTarget.name + ".temp.mp4")
         mainScope.launch {
             info.status.value = stringRes(com.heyanle.easy_i18n.R.string.transcoding)
             info.subStatus.value = ""
         }
-        // 开始转码
-        VideoProcessManager.getInstance().transformM3U8ToMp4(
-            m3u8.absolutePath,
-            target.absolutePath,
-            object : IVideoTransformListener {
-                override fun onTransformProgress(progress: Float) {
-                    mainScope.launch {
-                        info.process.value = progress
+        val res = suspendCoroutine<Boolean> {
+            // 开始转码
+            VideoProcessManager.getInstance().transformM3U8ToMp4(
+                m3u8.absolutePath,
+                target.absolutePath,
+                object : IVideoTransformListener {
+                    override fun onTransformProgress(progress: Float) {
+                        mainScope.launch {
+                            info.status.value = stringRes(com.heyanle.easy_i18n.R.string.transcoding)
+                            info.process.value = progress
+                            info.subStatus.value = "${(progress*100).toInt()}%"
+                        }
                     }
-                }
 
-                override fun onTransformFailed(e: Exception?) {
-                    e?.printStackTrace()
-                    e?.message?.moeSnackBar()
-                    scope.launch {
-                        updateDownload(
-                            download.copy(
-                                status = -1,
-                                errorMsg = stringRes(com.heyanle.easy_i18n.R.string.transcode_error)
-                            )
-                        )
-                    }
-                }
+                    override fun onTransformFailed(e: Exception?) {
+                        e?.printStackTrace()
+                        e?.message?.moeSnackBar()
+                        it.resume(false)
 
-                override fun onTransformFinished() {
-                    scope.launch {
-                        target.renameTo(realTarget)
-                        updateDownload(download.copy(status = 4))
+                    }
+
+                    override fun onTransformFinished() {
+                        it.resume(true)
                     }
                 }
-            }
-        )
+            )
+        }
+       if(res){
+           target.renameTo(realTarget)
+           updateDownload(download.copy(status = 4))
+           downloadBus.remove(download.toIdentify())
+           deleteM3U8WithTs(m3u8.absolutePath)
+       }else{
+           updateDownload(
+               download.copy(
+                   status = -1,
+                   errorMsg = stringRes(com.heyanle.easy_i18n.R.string.transcode_error)
+               )
+           )
+       }
     }
 
     private suspend fun updateDownload(download: CartoonDownload) {
@@ -350,5 +508,125 @@ class DownloadController(
         return data
     }
 
+    private fun deleteM3U8WithTs(path: String){
+        val file = File(path)
+        if(!file.exists() || !file.canRead()){
+            return
+        }
+        val it = file.readLines().iterator()
+        while(it.hasNext()){
+            val line = it.next()
+            if (line.startsWith("#EXTINF")) {
+                if(it.hasNext()){
+                    val ts = it.next()
+                    val tsFile = File(ts)
+                    tsFile.delete()
+                }
+            }
+        }
+        file.delete()
+    }
 
+    override fun onWait(task: DownloadTask?) {
+        //TODO("Not yet implemented")
+        task?.let { t ->
+            mainScope.launch {
+                cartoonDownloadDao.findByTaskId(t.entity.id)?.let { download ->
+                    val info = downloadBus.getInfo(download.toIdentify())
+                    info.status.value = ""
+                    info.process.value = if(download.decodeType == PlayerInfo.DECODE_TYPE_OTHER) t.entity.percent/100f else -1f
+                    info.subStatus.value = ""
+                }
+            }
+        }
+    }
+
+    override fun onPre(task: DownloadTask?) {
+        //TODO("Not yet implemented")
+        onTaskRunning(task)
+    }
+
+    override fun onTaskPre(task: DownloadTask?) {
+        //TODO("Not yet implemented")
+    }
+
+    override fun onTaskResume(task: DownloadTask?) {
+        //TODO("Not yet implemented")
+        onTaskRunning(task)
+    }
+
+    override fun onTaskStart(task: DownloadTask?) {
+        //TODO("Not yet implemented")
+        onTaskRunning(task)
+    }
+
+    override fun onTaskStop(task: DownloadTask?) {
+        //TODO("Not yet implemented")
+        task?.let { t ->
+            mainScope.launch {
+                cartoonDownloadDao.findByTaskId(t.entity.id)?.let { download ->
+                    val info = downloadBus.getInfo(download.toIdentify())
+                    info.status.value = stringRes(com.heyanle.easy_i18n.R.string.pausing)
+                    info.process.value = if(download.decodeType == PlayerInfo.DECODE_TYPE_OTHER) t.entity.percent/100f else -1f
+                    info.subStatus.value = if(download.decodeType == PlayerInfo.DECODE_TYPE_OTHER) t.convertSpeed else t.convertCurrentProgress
+                }
+            }
+        }
+    }
+
+    override fun onTaskCancel(task: DownloadTask?) {
+        //TODO("Not yet implemented")
+    }
+
+    override fun onTaskFail(task: DownloadTask?, e: java.lang.Exception?) {
+       // TODO("Not yet implemented")
+        task?.let { t ->
+            mainScope.launch {
+                e?.printStackTrace()
+                e?.message?.moeSnackBar()
+                cartoonDownloadDao.findByTaskId(t.entity.id)?.let { download ->
+                    updateDownload(download.copy(
+                        status = -1,
+                        errorMsg = stringRes(com.heyanle.easy_i18n.R.string.download_error)
+                    ))
+                }
+            }
+        }
+    }
+
+    override fun onTaskComplete(task: DownloadTask?) {
+
+        //TODO("Not yet implemented")
+        task?.let { t ->
+            mainScope.launch {
+                task?.entity?.id.loge("DownloadController")
+                cartoonDownloadDao.findByTaskId(t.entity.id)?.let { download ->
+                    if(download.decodeType == PlayerInfo.DECODE_TYPE_OTHER){
+                        downloadBus.remove(download.toIdentify())
+                        updateDownload(download.copy(status = 4))
+                    }else{
+                        updateDownload(download.copy(status = 2))
+                    }
+                }
+            }
+        }
+    }
+
+    override fun onTaskRunning(task: DownloadTask?) {
+        //TODO("Not yet implemented")
+        task?.let { t ->
+            mainScope.launch {
+                cartoonDownloadDao.findByTaskId(t.entity.id)?.let { download ->
+                    val info = downloadBus.getInfo(download.toIdentify())
+                    info.status.value = stringRes(com.heyanle.easy_i18n.R.string.downloading)
+                    info.process.value = if(download.decodeType == PlayerInfo.DECODE_TYPE_OTHER) t.entity.percent/100f else -1f
+                    info.subStatus.value = if(download.decodeType == PlayerInfo.DECODE_TYPE_OTHER) t.convertSpeed else t.convertCurrentProgress
+                }
+            }
+        }
+    }
+
+    override fun onNoSupportBreakPoint(task: DownloadTask?) {
+        //TODO("Not yet implemented")
+    }
 }

@@ -26,4 +26,8 @@ class DownloadBus() {
         }
     }
 
+    fun remove(key: String) {
+        map.remove(key = key)
+    }
+
 }

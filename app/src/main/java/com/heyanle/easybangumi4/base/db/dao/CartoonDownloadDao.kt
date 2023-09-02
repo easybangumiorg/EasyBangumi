@@ -24,6 +24,9 @@ interface CartoonDownloadDao {
     @Delete
     suspend fun delete(cartoonDownload: CartoonDownload)
 
+    @Query("SELECT * FROM cartoondownload WHERE taskId=(:taskId) LIMIT 1")
+    suspend fun findByTaskId(taskId: Long): CartoonDownload?
+
     @Query("SELECT * FROM cartoondownload")
     fun flowAll(): Flow<List<CartoonDownload>>
 

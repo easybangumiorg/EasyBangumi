@@ -97,12 +97,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.exoplayer.ExoPlayer
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import com.heyanle.bangumi_source_api.api.Source
 import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
 import com.heyanle.bangumi_source_api.api.entity.PlayLine
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.R
 import com.heyanle.easybangumi4.base.entity.CartoonInfo
+import com.heyanle.easybangumi4.download.DownloadController
 import com.heyanle.easybangumi4.navigationDlna
 import com.heyanle.easybangumi4.navigationSearch
 import com.heyanle.easybangumi4.preferences.SettingPreferences
@@ -177,7 +181,7 @@ private val speedConfig = linkedMapOf(
     "2.0X" to 2f,
 )
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 @Composable
 fun CartoonPlay(
@@ -189,6 +193,10 @@ fun CartoonPlay(
 ) {
     val isPad = isCurPadeMode()
 
+    val permissionState = rememberPermissionState(
+        android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+    )
+    val downloadController: DownloadController by Injekt.injectLazy()
     val cartoonPlayingController: CartoonPlayingController by Injekt.injectLazy()
     val controlVM = ControlViewModelFactory.viewModel(Injekt.get<ExoPlayer>().let {
         it.toString().loge("ExoPlayer-----")
@@ -489,8 +497,6 @@ fun CartoonPlay(
             }
 
 
-
-
 //            if (!model.isFullScreen) {
 //                FilledIconButton(
 //                    modifier = Modifier.padding(8.dp),
@@ -529,14 +535,34 @@ fun CartoonPlay(
                 )
 
 
-                NormalVideoTopBar(it, showTools = cartoonPlayingController.state is CartoonPlayingController.PlayingState.Playing, onBack = {
-                    nav.popBackStack()
-                }, onSpeed = {
-                    showSpeedWin = true
-                }, onPlayExt = {
-
-                    cartoonPlayingController.playCurExternal()
-                })
+                NormalVideoTopBar(it,
+                    showTools = cartoonPlayingController.state is CartoonPlayingController.PlayingState.Playing,
+                    onBack = {
+                        nav.popBackStack()
+                    },
+                    onSpeed = {
+                        showSpeedWin = true
+                    },
+                    onPlayExt = {
+                        (cartoonPlayingController.state as? CartoonPlayingController.PlayingState.Playing)?.let {
+                            downloadController.newDownload(
+                                it.cartoon,
+                                listOf(Triple(it.playLine, it.curEpisode, it.playerInfo))
+                            )
+                        }
+                        if(permissionState.status.isGranted){
+                            (cartoonPlayingController.state as? CartoonPlayingController.PlayingState.Playing)?.let {
+                                downloadController.newDownload(
+                                    it.cartoon,
+                                    listOf(Triple(it.playLine, it.curEpisode, it.playerInfo))
+                                )
+                            }
+                        }else{
+                            permissionState.launchPermissionRequest()
+                        }
+                        // cartoonPlayingController.playCurExternal()
+                    }
+                )
 
                 // 底部工具栏
                 SimpleBottomBar(
@@ -1283,7 +1309,7 @@ fun NormalVideoTopBar(
 
             Spacer(modifier = Modifier.weight(1f))
 
-            if(showTools){
+            if (showTools) {
                 IconButton(onClick = onSpeed) {
                     Icon(
                         Icons.Filled.Speed,
@@ -1300,7 +1326,6 @@ fun NormalVideoTopBar(
                     )
                 }
             }
-
 
 
         }
@@ -1324,38 +1349,41 @@ fun FullScreenVideoTopBar(
             BackBtn {
                 vm.onFullScreen(false, ctx = ctx)
             }
-            Text(modifier = Modifier.weight(1f),text = vm.title, color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(
+                modifier = Modifier.weight(1f),
+                text = vm.title,
+                color = Color.White,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
 
 //            Spacer(modifier = Modifier.weight(1f))
 
             val br = rememberBatteryReceiver()
 
 
-            val ic = if(br.isCharge.value){
+            val ic = if (br.isCharge.value) {
                 Icons.Filled.BatteryChargingFull
-            }else{
-                if(br.electricity.value <= 10){
+            } else {
+                if (br.electricity.value <= 10) {
                     Icons.Filled.Battery0Bar
-                }else if(br.electricity.value <= 20){
+                } else if (br.electricity.value <= 20) {
                     Icons.Filled.Battery2Bar
-                }else if(br.electricity.value <= 40){
+                } else if (br.electricity.value <= 40) {
                     Icons.Filled.Battery3Bar
-                }
-                else if(br.electricity.value <= 60){
+                } else if (br.electricity.value <= 60) {
                     Icons.Filled.Battery4Bar
-                } else if(br.electricity.value <= 70){
+                } else if (br.electricity.value <= 70) {
                     Icons.Filled.Battery5Bar
-                }else if(br.electricity.value <= 90) {
+                } else if (br.electricity.value <= 90) {
                     Icons.Filled.Battery6Bar
-                }else{
+                } else {
                     Icons.Filled.BatteryFull
                 }
             }
-            Icon(ic, "el", modifier = Modifier.rotate(90F),tint = Color.White)
+            Icon(ic, "el", modifier = Modifier.rotate(90F), tint = Color.White)
             Text(text = "${br.electricity.value}%", color = Color.White)
             Spacer(modifier = Modifier.size(16.dp))
-
-
 
 
         }
