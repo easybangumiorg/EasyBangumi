@@ -63,6 +63,10 @@ object Migrate {
         fun getDBMigration() = emptyList<Migration>()
     }
 
+    object DownloadDB {
+        fun getDBMigration() = emptyList<Migration>()
+    }
+
 
 
     fun tryUpdate(
@@ -113,12 +117,12 @@ object Migrate {
                 val webViewCompatibleOkkv by okkv("webViewCompatible", def = false)
 
                 settingPreferences.isInPrivate.set(isPrivateOkkv)
-                settingPreferences.padMode.set(SettingPreferences.PadMode.values()[padModeOkkv])
+                settingPreferences.padMode.set(SettingPreferences.PadMode.entries[padModeOkkv])
 
                 settingMMKVPreferences.webViewCompatible.set(webViewCompatibleOkkv)
 
                 // 源配置变更
-                var configOkkv by okkv("source_config", "[]")
+                val configOkkv by okkv("source_config", "[]")
                 val list: List<SourcePreferences.LocalSourceConfig> = configOkkv.jsonTo()
                 val map = hashMapOf<String, SourcePreferences.LocalSourceConfig>()
                 list.forEach {

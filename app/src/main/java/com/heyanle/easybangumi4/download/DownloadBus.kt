@@ -3,6 +3,8 @@ package com.heyanle.easybangumi4.download
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -29,5 +31,8 @@ class DownloadBus() {
     fun remove(key: String) {
         map.remove(key = key)
     }
+
+    private val _working = MutableStateFlow<Set<String>>(emptySet())
+    val working = _working.asStateFlow()
 
 }
