@@ -82,6 +82,7 @@ class DetailedViewModel(
                                     watchProcess = star.watchProcess,
                                     reversal = star.reversal,
                                     createTime = star.createTime,
+                                    tags = star.tags,
                                     isUpdate = false
                                 )
                             )
