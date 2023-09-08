@@ -98,7 +98,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.exoplayer.ExoPlayer
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.heyanle.bangumi_source_api.api.Source
 import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
@@ -544,23 +543,23 @@ fun CartoonPlay(
                         showSpeedWin = true
                     },
                     onPlayExt = {
-                        (cartoonPlayingController.state as? CartoonPlayingController.PlayingState.Playing)?.let {
-                            downloadController.newDownload(
-                                it.cartoon,
-                                listOf(Triple(it.playLine, it.curEpisode, it.playerInfo))
-                            )
-                        }
-                        if(permissionState.status.isGranted){
-                            (cartoonPlayingController.state as? CartoonPlayingController.PlayingState.Playing)?.let {
-                                downloadController.newDownload(
-                                    it.cartoon,
-                                    listOf(Triple(it.playLine, it.curEpisode, it.playerInfo))
-                                )
-                            }
-                        }else{
-                            permissionState.launchPermissionRequest()
-                        }
-                        // cartoonPlayingController.playCurExternal()
+//                        (cartoonPlayingController.state as? CartoonPlayingController.PlayingState.Playing)?.let {
+//                            downloadController.newDownload(
+//                                it.cartoon,
+//                                listOf(Triple(it.playLine, it.curEpisode, it.playerInfo))
+//                            )
+//                        }
+//                        if(permissionState.status.isGranted){
+//                            (cartoonPlayingController.state as? CartoonPlayingController.PlayingState.Playing)?.let {
+//                                downloadController.newDownload(
+//                                    it.cartoon,
+//                                    listOf(Triple(it.playLine, it.curEpisode, it.playerInfo))
+//                                )
+//                            }
+//                        }else{
+//                            permissionState.launchPermissionRequest()
+//                        }
+                        cartoonPlayingController.playCurExternal()
                     }
                 )
 
@@ -1071,11 +1070,7 @@ fun CartoonPlayDetailed(
                 ) {
                     val episode = playLines[selectLineIndex].episode
                     if (episode.isNotEmpty()) {
-                        items(episode.size, key = {
-                            val index =
-                                if (isReversal) episode.size - 1 - it else it
-                            episode[index]
-                        }) {
+                        items(episode.size) {
                             val index =
                                 if (isReversal) episode.size - 1 - it else it
                             val item = episode[index]
