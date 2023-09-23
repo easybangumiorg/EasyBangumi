@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.ui.cartoon_play
 
 import android.app.Activity
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -56,16 +57,20 @@ import androidx.compose.material.icons.filled.Battery6Bar
 import androidx.compose.material.icons.filled.BatteryChargingFull
 import androidx.compose.material.icons.filled.BatteryFull
 import androidx.compose.material.icons.filled.CastConnected
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarOutline
 import androidx.compose.material.icons.filled.WifiProtectedSetup
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -195,7 +200,7 @@ fun CartoonPlay(
     val permissionState = rememberPermissionState(
         android.Manifest.permission.WRITE_EXTERNAL_STORAGE
     )
-    val downloadController: DownloadController by Injekt.injectLazy()
+//    val downloadControllerOld: DownloadControllerOld by Injekt.injectLazy()
     val cartoonPlayingController: CartoonPlayingController by Injekt.injectLazy()
     val controlVM = ControlViewModelFactory.viewModel(Injekt.get<ExoPlayer>().let {
         it.toString().loge("ExoPlayer-----")
@@ -734,6 +739,7 @@ fun CartoonPlayPage(
     //onTitle: (String) -> Unit,
 ) {
     val cartoonPlayingController: CartoonPlayingController by Injekt.injectLazy()
+    val downloadController: DownloadController by Injekt.injectLazy()
     val nav = LocalNavController.current
     CartoonPlayDetailed(
         modifier = Modifier.fillMaxSize(),
@@ -794,6 +800,11 @@ fun CartoonPlayPage(
                 cartoonPlayingController.state.playLineIndex() ?: -1,
                 cartoonPlayingController.state.episode()
             )
+        },
+        onDownload = { playLine: PlayLine, selection: List<Int> ->
+            downloadController.newDownload(detailedState.detail, selection.map {
+                playLine to it
+            })
         }
     )
 }
@@ -823,13 +834,27 @@ fun CartoonPlayDetailed(
     onSearch: () -> Unit,
     onWeb: () -> Unit,
     onDlna: () -> Unit,
+    onDownload: (PlayLine, List<Int>) -> Unit,
 ) {
+
+    val currentDownloadPlayLine = remember {
+        mutableStateOf<PlayLine?>(null)
+    }
+    val currentDownloadSelect = remember {
+        mutableStateOf(setOf<Int>())
+    }
+
 
 //    LaunchedEffect(key1 = playLines, key2 = playingPlayLine){
 //        playLines.toString().loge("CartoonPlay")
 //        playingPlayLine.toString().loge("CartoonPlay")
 //    }
 
+    if(currentDownloadPlayLine.value != null){
+        BackHandler {
+            currentDownloadPlayLine.value = null
+        }
+    }
 
     // 将非空的 播放线路 下标存成离散序列
     val unEmptyLinesIndex = remember(playLines) {
@@ -851,14 +876,14 @@ fun CartoonPlayDetailed(
 
 
 
-    Box(modifier = modifier) {
+    Column(modifier = modifier) {
 
         var isExpended by remember {
             mutableStateOf(false)
         }
 
         LazyVerticalGrid(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.weight(1f),
             columns = GridCells.Adaptive(128.dp),
             state = listState,
             contentPadding = PaddingValues(0.dp, 0.dp, 0.dp, 96.dp)
@@ -951,10 +976,20 @@ fun CartoonPlayDetailed(
                 Column {
                     CartoonActions(
                         isStar = isStar,
+                        isDownloading = currentDownloadPlayLine.value != null,
                         onStar = onStar,
                         onSearch = onSearch,
                         onWeb = onWeb,
-                        onDlna = onDlna
+                        onDlna = onDlna,
+                        onDownload = {
+                            if (currentDownloadPlayLine.value == null) {
+                                currentDownloadPlayLine.value = playLines[selectLineIndex]
+                                currentDownloadSelect.value = setOf()
+                            } else {
+                                currentDownloadPlayLine.value = null
+                            }
+
+                        },
                     )
                     Spacer(modifier = Modifier.size(8.dp))
                     Divider()
@@ -987,70 +1022,95 @@ fun CartoonPlayDetailed(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
 
-                        if (showPlayLine) {
-                            ScrollableTabRow(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .padding(0.dp, 8.dp),
-                                selectedTabIndex = 0.coerceAtLeast(
-                                    unEmptyLinesIndex.indexOf(
-                                        selectLineIndex
-                                    )
-                                ),
-                                edgePadding = 0.dp,
-                                indicator = {
-                                    TabIndicator(
-                                        currentTabPosition = it[0.coerceAtLeast(
-                                            unEmptyLinesIndex.indexOf(
-                                                selectLineIndex
-                                            )
-                                        )]
-                                    )
-                                },
-                                divider = {
-                                }
+                        if (currentDownloadPlayLine.value == null) {
+                            if (showPlayLine) {
+                                ScrollableTabRow(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .padding(0.dp, 8.dp),
+                                    selectedTabIndex = 0.coerceAtLeast(
+                                        unEmptyLinesIndex.indexOf(
+                                            selectLineIndex
+                                        )
+                                    ),
+                                    edgePadding = 0.dp,
+                                    indicator = {
+                                        TabIndicator(
+                                            currentTabPosition = it[0.coerceAtLeast(
+                                                unEmptyLinesIndex.indexOf(
+                                                    selectLineIndex
+                                                )
+                                            )]
+                                        )
+                                    },
+                                    divider = {
+                                    }
 
-                            ) {
-                                unEmptyLinesIndex.forEach { index ->
-                                    val playLine = playLines[index]
-                                    Tab(
-                                        selected = index == selectLineIndex,
-                                        onClick = {
-                                            onLineSelect(index)
-                                        },
-                                        unselectedContentColor = MaterialTheme.colorScheme.primary.copy(
-                                            0.4f
-                                        ),
-                                        text = {
-                                            Row(
-                                                verticalAlignment = Alignment.CenterVertically
-                                            ) {
-                                                Text(text = playLine.label)
+                                ) {
+                                    unEmptyLinesIndex.forEach { index ->
+                                        val playLine = playLines[index]
+                                        Tab(
+                                            selected = index == selectLineIndex,
+                                            onClick = {
+                                                onLineSelect(index)
+                                            },
+                                            unselectedContentColor = MaterialTheme.colorScheme.primary.copy(
+                                                0.4f
+                                            ),
+                                            text = {
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    Text(text = playLine.label)
 
-                                                if (index == playingPlayLineIndex) {
-                                                    Box(
-                                                        modifier = Modifier
-                                                            .padding(2.dp, 0.dp, 0.dp, 0.dp)
-                                                            .size(8.dp)
-                                                            .background(
-                                                                MaterialTheme.colorScheme.primary,
-                                                                CircleShape
-                                                            )
-                                                    )
+                                                    if (index == playingPlayLineIndex) {
+                                                        Box(
+                                                            modifier = Modifier
+                                                                .padding(2.dp, 0.dp, 0.dp, 0.dp)
+                                                                .size(8.dp)
+                                                                .background(
+                                                                    MaterialTheme.colorScheme.primary,
+                                                                    CircleShape
+                                                                )
+                                                        )
+                                                    }
                                                 }
                                             }
-                                        }
-                                    )
+                                        )
+                                    }
                                 }
+                            } else {
+                                Text(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .padding(16.dp, 0.dp),
+                                    text = stringResource(id = com.heyanle.easy_i18n.R.string.play_list)
+                                )
                             }
                         } else {
                             Text(
                                 modifier = Modifier
                                     .weight(1f)
                                     .padding(16.dp, 0.dp),
-                                text = stringResource(id = com.heyanle.easy_i18n.R.string.play_list)
+                                text = stringResource(id = com.heyanle.easy_i18n.R.string.select_to_download)
                             )
+                            IconButton(onClick = {
+                                currentDownloadPlayLine.value?.let {
+                                    val set = hashSetOf<Int>()
+                                    it.episode.forEachIndexed { index, _ ->
+                                        set.add(index)
+                                    }
+                                    currentDownloadSelect.value = set
+                                }
+
+                            }) {
+                                Icon(
+                                    Icons.Filled.SelectAll,
+                                    stringResource(id = com.heyanle.easy_i18n.R.string.select_all),
+                                )
+                            }
                         }
+
 
                         IconButton(onClick = {
                             onReversal(!isReversal)
@@ -1078,15 +1138,15 @@ fun CartoonPlayDetailed(
                             val select =
                                 selectLineIndex == playingPlayLineIndex && index == playingEpisode
 
-                            Box(
+                            Row(
                                 modifier = Modifier
                                     .padding(4.dp)
                                     .fillMaxWidth()
                                     //.then(modifier)
                                     .clip(RoundedCornerShape(4.dp))
-                                    .background(if (select) MaterialTheme.colorScheme.secondary else Color.Transparent)
+                                    .background(if (select && currentDownloadPlayLine.value == null) MaterialTheme.colorScheme.secondary else Color.Transparent)
                                     .run {
-                                        if (select) {
+                                        if (select && currentDownloadPlayLine.value == null) {
                                             this
                                         } else {
                                             border(
@@ -1098,32 +1158,81 @@ fun CartoonPlayDetailed(
                                         }
                                     }
                                     .clickable {
-                                        onEpisodeClick(
-                                            selectLineIndex,
-                                            playLines[selectLineIndex],
-                                            index
-                                        )
+                                        if(currentDownloadPlayLine.value != null){
+                                            onEpisodeClick(
+                                                selectLineIndex,
+                                                playLines[selectLineIndex],
+                                                index
+                                            )
+                                        }else{
+                                            val check = currentDownloadSelect.value.contains(index)
+                                            if (!check) {
+                                                currentDownloadSelect.value += index
+                                            } else {
+                                                currentDownloadSelect.value -= index
+                                                if(currentDownloadSelect.value.isEmpty()){
+                                                    currentDownloadPlayLine.value = null
+                                                }
+                                            }
+                                        }
+
                                     }
                                     .padding(8.dp),
                             ) {
 
                                 Text(
-                                    color = if (select) MaterialTheme.colorScheme.onSecondary else Color.Unspecified,
+                                    color = if (select && currentDownloadPlayLine.value == null) MaterialTheme.colorScheme.onSecondary else Color.Unspecified,
                                     text = item,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
-                                    textAlign = TextAlign.Center,
                                 )
+                                Spacer(Modifier.weight(1f))
+                                if (currentDownloadPlayLine.value != null) {
+                                    Checkbox(
+                                        checked = currentDownloadSelect.value.contains(index),
+                                        onCheckedChange = {
+                                            if (it) {
+                                                currentDownloadSelect.value += index
+                                            } else {
+                                                currentDownloadSelect.value -= index
+                                                if(currentDownloadSelect.value.isEmpty()){
+                                                    currentDownloadPlayLine.value = null
+                                                }
+                                            }
+
+                                        }
+                                    )
+                                }
+
                             }
                         }
                     }
-
-
                 }
             }
         }
-
     }
+    currentDownloadPlayLine.value?.let { dowPlayLine ->
+        Box(contentAlignment = Alignment.BottomEnd, modifier = Modifier.fillMaxSize()) {
+            ExtendedFloatingActionButton(
+                modifier = Modifier
+                    .padding(16.dp, 40.dp),
+                text = {
+                    Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.start_download))
+                },
+                icon = {
+                    Icon(
+                        Icons.Filled.Download,
+                        contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.start_download)
+                    )
+                },
+                onClick = {
+                    currentDownloadPlayLine.value = null
+                    onDownload(dowPlayLine, currentDownloadSelect.value.toList())
+                }
+            )
+        }
+    }
+
 }
 
 
@@ -1195,10 +1304,12 @@ fun CartoonDescCard(
 @Composable
 fun CartoonActions(
     isStar: Boolean,
+    isDownloading: Boolean,
     onStar: (Boolean) -> Unit,
     onSearch: () -> Unit,
     onWeb: () -> Unit,
     onDlna: () -> Unit,
+    onDownload: () -> Unit,
 ) {
     ActionRow(
         modifier = Modifier.fillMaxWidth()
@@ -1206,7 +1317,7 @@ fun CartoonActions(
         val starIcon =
             if (isStar) Icons.Filled.Star else Icons.Filled.StarOutline
         val starTextId =
-            if (isStar) com.heyanle.easy_i18n.R.string.stared else com.heyanle.easy_i18n.R.string.click_star
+            if (isStar) com.heyanle.easy_i18n.R.string.started_miro else com.heyanle.easy_i18n.R.string.star
         // 点击追番
         Action(
             icon = {
@@ -1233,12 +1344,12 @@ fun CartoonActions(
             icon = {
                 Icon(
                     Icons.Filled.Search,
-                    stringResource(id = com.heyanle.easy_i18n.R.string.search_same_bangumi)
+                    stringResource(id = com.heyanle.easy_i18n.R.string.search)
                 )
             },
             msg = {
                 Text(
-                    text = stringResource(id = com.heyanle.easy_i18n.R.string.search_same_bangumi),
+                    text = stringResource(id = com.heyanle.easy_i18n.R.string.search),
                     fontSize = 12.sp
                 )
             },
@@ -1260,6 +1371,25 @@ fun CartoonActions(
                 )
             },
             onClick = onWeb
+        )
+
+        // 下载
+        Action(
+            icon = {
+                Icon(
+                    Icons.Filled.Download,
+                    stringResource(id = com.heyanle.easy_i18n.R.string.download),
+                    tint = if (isDownloading) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
+                )
+            },
+            msg = {
+                Text(
+                    text = stringResource(id = com.heyanle.easy_i18n.R.string.download),
+                    color = if (isDownloading) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
+                    fontSize = 12.sp
+                )
+            },
+            onClick = onDownload
         )
 
         // 投屏

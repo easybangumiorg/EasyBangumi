@@ -1,5 +1,6 @@
 package com.heyanle.easybangumi4.ui.download
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -40,7 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
-import com.heyanle.easybangumi4.base.entity.CartoonDownload
+import com.heyanle.easybangumi4.download.entity.DownloadItem
 import com.heyanle.easybangumi4.ui.common.OkImage
 
 /**
@@ -81,7 +82,9 @@ fun Download() {
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
             ) {
                 items(list) {
-                    DownloadItem(it, vm) {}
+                    DownloadItem(it, vm) {
+                        vm.click(it)
+                    }
                 }
             }
         }
@@ -91,23 +94,26 @@ fun Download() {
 
 @Composable
 fun DownloadItem(
-    cartoonDownload: CartoonDownload,
+    downloadItem: DownloadItem,
     downloadingViewModel: DownloadingViewModel,
-    onClick: (CartoonDownload) -> Unit,
+    onClick: (DownloadItem) -> Unit,
 ) {
-    val info = downloadingViewModel.info(cartoonDownload)
+    val info = downloadingViewModel.info(downloadItem)
     Row(
         modifier = Modifier
             .padding(8.dp, 4.dp)
             .height(IntrinsicSize.Min)
+            .clickable {
+                onClick(downloadItem)
+            }
     ) {
         OkImage(
             modifier = Modifier
                 .width(95.dp)
                 .aspectRatio(19 / 13.5F)
                 .clip(RoundedCornerShape(4.dp)),
-            image = cartoonDownload.cover,
-            contentDescription = cartoonDownload.name
+            image = downloadItem.cartoonCover,
+            contentDescription = downloadItem.cartoonTitle
         )
         Spacer(modifier = Modifier.size(8.dp))
         Column(
@@ -118,14 +124,14 @@ fun DownloadItem(
         ) {
             Text(
                 modifier = Modifier,
-                text = (cartoonDownload.name),
+                text = (downloadItem.cartoonTitle),
                 style = MaterialTheme.typography.titleMedium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
                 modifier = Modifier,
-                text = "${cartoonDownload.episodeLabel}-${cartoonDownload.playLineLabel}",
+                text = "${downloadItem.episodeLabel}-${downloadItem.playLine.label}",
                 style = MaterialTheme.typography.titleMedium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

@@ -74,6 +74,7 @@ fun EasyTheme(
         }
     }
 
+
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
