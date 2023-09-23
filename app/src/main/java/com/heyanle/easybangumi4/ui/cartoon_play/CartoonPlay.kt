@@ -1154,11 +1154,10 @@ fun CartoonPlayDetailed(
                                                 MaterialTheme.colorScheme.outline.copy(0.6f),
                                                 RoundedCornerShape(4.dp)
                                             )
-
                                         }
                                     }
                                     .clickable {
-                                        if(currentDownloadPlayLine.value != null){
+                                        if(currentDownloadPlayLine.value == null){
                                             onEpisodeClick(
                                                 selectLineIndex,
                                                 playLines[selectLineIndex],
@@ -1188,6 +1187,7 @@ fun CartoonPlayDetailed(
                                 )
                                 Spacer(Modifier.weight(1f))
                                 if (currentDownloadPlayLine.value != null) {
+                                    Spacer(Modifier.size(4.dp))
                                     Checkbox(
                                         checked = currentDownloadSelect.value.contains(index),
                                         onCheckedChange = {
