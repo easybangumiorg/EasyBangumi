@@ -9,17 +9,14 @@ dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         mavenLocal()
-        mavenCentral()
         maven { url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/") }
+        mavenCentral()
         google()
         maven {
             url = uri("http://4thline.org/m2")
             isAllowInsecureProtocol = true
         }
-
         maven { url = uri("https://jitpack.io") }
-
-
     }
     versionCatalogs {
         create("androidx") {

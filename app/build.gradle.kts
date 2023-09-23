@@ -2,7 +2,6 @@
 import com.heyanle.buildsrc.Android
 import com.heyanle.buildsrc.Config
 import com.heyanle.buildsrc.RoomSchemaArgProvider
-import com.heyanle.buildsrc.implementation
 import com.heyanle.buildsrc.project
 
 plugins {
@@ -39,6 +38,11 @@ android {
             arg(RoomSchemaArgProvider(File(projectDir, "schemas")))
         }
 
+        ndk{
+            // 打包生成的 APK 文件指挥包含 ARM 指令集的动态库
+            abiFilters += "arm64-v8a"
+        }
+
     }
 
     sourceSets {
@@ -52,14 +56,16 @@ android {
     }
 
     buildTypes {
-        debug {
-            isMinifyEnabled = true
-            isShrinkResources = false
-            proguardFiles("proguard-rules.pro")
-        }
+//        debug {
+//            isMinifyEnabled = true
+//            isShrinkResources = false
+//            proguardFiles("proguard-rules.pro")
+//        }
         release {
-            isMinifyEnabled = true
-            isShrinkResources = false
+//            isRemoveUnusedCode = true
+//            isRemoveUnusedResources = true
+//            isObfuscate = false
+//            isOptimizeCode = true
             proguardFiles("proguard-rules.pro")
 
         }
