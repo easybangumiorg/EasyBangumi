@@ -50,9 +50,9 @@ class DownloadController(
                     if (it.state == 0 || it.state == 1 && !parses.contains(it)) {
                         "parse ${it}".logi(TAG)
                         parseWrap.parse(it)
-                    } else if (it.state == 2 && it.ariaId < 0) {
+                    } else if (it.state == 2) {
                         "aria ${it}".logi(TAG)
-                        ariaWrap.push(it)
+                        ariaWrap.tryPush(it)
                     } else if (it.state == 3 && !trancodes.contains(it)) {
                         "transcode ${it}".logi(TAG)
                         transcodeWrap.transcode(it)
