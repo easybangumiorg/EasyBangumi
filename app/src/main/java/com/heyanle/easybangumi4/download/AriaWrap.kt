@@ -4,6 +4,7 @@ import com.arialyy.aria.core.Aria
 import com.arialyy.aria.core.common.HttpOption
 import com.arialyy.aria.core.download.DownloadTaskListener
 import com.arialyy.aria.core.download.m3u8.M3U8VodOption
+import com.arialyy.aria.core.inf.IEntity
 import com.arialyy.aria.core.inf.IEntity.STATE_RUNNING
 import com.arialyy.aria.core.inf.IEntity.STATE_STOP
 import com.arialyy.aria.core.task.DownloadTask
@@ -29,6 +30,7 @@ class AriaWrap(
     init {
         aria.register()
     }
+
     private val m3u8Option = M3U8VodOption().apply {
         setVodTsUrlConvert { m3u8Url, tsUrls ->
             val list = arrayListOf<String>()
@@ -60,53 +62,70 @@ class AriaWrap(
         generateIndexFile()
     }
 
-    fun push(downloadItem: DownloadItem) {
+    fun tryPush(downloadItem: DownloadItem) {
+        val entity = aria.getDownloadEntity(downloadItem.ariaId)
+        if (entity != null) {
+            val info = downloadBus.getInfo(downloadItem.uuid)
+            if (info.status.value.isEmpty() && info.subStatus.value.isEmpty()) {
+                if (entity.state == IEntity.STATE_STOP) {
+                    aria.load(downloadItem.ariaId).resume()
+                    return
+                }
+            }
+        }
         val info = downloadItem.playerInfo
         if (info == null) {
             error(downloadItem.uuid, stringRes(com.heyanle.easy_i18n.R.string.download_error))
             return
         }
-        if (info.decodeType == PlayerInfo.DECODE_TYPE_OTHER) {
-            val path = downloadItem.filePathWithoutSuffix + ".mp4"
-            val taskId = aria.load(info.uri)
-                .setExtendField(downloadItem.uuid)
-                .option(HttpOption().apply {
-                    info.header?.iterator()?.forEach {
-                        addHeader(it.key, it.value)
-                    }
-                })
-                .setFilePath(path)
-                .ignoreCheckPermissions()
-                .create()
-            pushCompletely(downloadItem, taskId)
-        } else if (info.decodeType == PlayerInfo.DECODE_TYPE_HLS) {
-            val path = downloadItem.filePathWithoutSuffix + "aria.m3u8"
-            val taskId = aria.load(info.uri)
-                .setExtendField(downloadItem.uuid)
-                .option(HttpOption().apply {
-                    info.header?.iterator()?.forEach {
-                        addHeader(it.key, it.value)
-                    }
-                })
-                .setFilePath(path)
-                .m3u8VodOption(m3u8Option)
-                .ignoreCheckPermissions()
-                .create()
-            pushCompletely(downloadItem, taskId)
-        } else {
-            error(downloadItem.uuid, stringRes(com.heyanle.easy_i18n.R.string.download_error))
+        when (info.decodeType) {
+            PlayerInfo.DECODE_TYPE_OTHER -> {
+                val path = downloadItem.filePathWithoutSuffix + ".mp4"
+                val taskId = aria.load(info.uri)
+                    .setExtendField(downloadItem.uuid)
+                    .option(HttpOption().apply {
+                        info.header?.iterator()?.forEach {
+                            addHeader(it.key, it.value)
+                        }
+                    })
+                    .setFilePath(path)
+                    .ignoreCheckPermissions()
+                    .create()
+                pushCompletely(downloadItem, taskId)
+            }
+
+            PlayerInfo.DECODE_TYPE_HLS -> {
+                val path = downloadItem.filePathWithoutSuffix + "aria.m3u8"
+                val taskId = aria.load(info.uri)
+                    .setExtendField(downloadItem.uuid)
+                    .option(HttpOption().apply {
+                        info.header?.iterator()?.forEach {
+                            addHeader(it.key, it.value)
+                        }
+                    })
+                    .setFilePath(path)
+                    .m3u8VodOption(m3u8Option)
+                    .ignoreCheckPermissions()
+                    .create()
+                pushCompletely(downloadItem, taskId)
+            }
+
+            else -> {
+                error(downloadItem.uuid, stringRes(com.heyanle.easy_i18n.R.string.download_error))
+            }
         }
 
     }
 
 
-    fun click(downloadItem: DownloadItem){
+    fun click(downloadItem: DownloadItem) {
         aria.load(downloadItem.ariaId)?.let {
             it.taskState.logi("AriaWrap")
-            when(it.taskState){
+            when (it.taskState) {
                 STATE_STOP -> {
                     resume(downloadItem)
                 }
+
                 STATE_RUNNING -> {
                     pause(downloadItem)
                 }
@@ -115,11 +134,11 @@ class AriaWrap(
         }
     }
 
-    fun pause(downloadItem: DownloadItem){
+    fun pause(downloadItem: DownloadItem) {
         aria.load(downloadItem.ariaId).ignoreCheckPermissions().stop()
     }
 
-    fun resume(downloadItem: DownloadItem){
+    fun resume(downloadItem: DownloadItem) {
         aria.load(downloadItem.ariaId).ignoreCheckPermissions().resume()
     }
 
@@ -203,8 +222,9 @@ class AriaWrap(
             t.extendField?.let { uuid ->
                 val info = downloadBus.getInfo(uuid)
                 info.status.value = stringRes(com.heyanle.easy_i18n.R.string.pausing)
-                info.process.value =  if (t.entity.fileSize <= 0L) -1f else t.entity.percent / 100f
-                info.subStatus.value = if(t.entity.fileSize > 0L) t.convertSpeed else t.convertCurrentProgress
+                info.process.value = if (t.entity.fileSize <= 0L) -1f else t.entity.percent / 100f
+                info.subStatus.value =
+                    if (t.entity.fileSize > 0L) t.convertSpeed else t.convertCurrentProgress
 
             }
         }
@@ -240,7 +260,7 @@ class AriaWrap(
                 val info = downloadBus.getInfo(uuid)
                 info.status.value = stringRes(com.heyanle.easy_i18n.R.string.downloading)
                 info.process.value = if (t.entity.fileSize <= 0L) -1f else t.entity.percent / 100f
-                info.subStatus.value = t.convertSpeed?:""
+                info.subStatus.value = t.convertSpeed ?: ""
             }
         }
     }
