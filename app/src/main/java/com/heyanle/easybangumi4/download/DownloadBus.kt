@@ -3,16 +3,13 @@ package com.heyanle.easybangumi4.download
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * Created by HeYanLe on 2023/8/27 22:12.
+ * Created by HeYanLe on 2023/9/17 15:39.
  * https://github.com/heyanLE
  */
-class DownloadBus() {
-
+class DownloadBus {
     class DownloadingInfo(
         val status: MutableState<String> = mutableStateOf(""),
         // -1 不支持进度
@@ -31,8 +28,4 @@ class DownloadBus() {
     fun remove(key: String) {
         map.remove(key = key)
     }
-
-    private val _working = MutableStateFlow<Set<String>>(emptySet())
-    val working = _working.asStateFlow()
-
 }

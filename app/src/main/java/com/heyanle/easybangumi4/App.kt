@@ -11,6 +11,7 @@ import android.util.Log
 import com.arialyy.aria.core.Aria
 import com.heyanle.easy_crasher.CrashHandler
 import com.heyanle.easybangumi4.cartoon.CartoonModule
+import com.heyanle.easybangumi4.download.DownloadModule
 import com.heyanle.easybangumi4.exo.MediaModule
 import com.heyanle.easybangumi4.preferences.SettingMMKVPreferences
 import com.heyanle.easybangumi4.utils.AppCenterManager
@@ -52,6 +53,7 @@ class App : Application() {
         if (isMainProcess()) {
 
             Aria.init(this)
+            Aria.get(this).downloadConfig.isConvertSpeed = true
 
             initCrasher()
 
@@ -68,6 +70,7 @@ class App : Application() {
             PreferencesModule(this).registerWith(Injekt)
             ControllerModule(this).registerWith(Injekt)
             CartoonModule(this).registerWith(Injekt)
+            DownloadModule(this).registerWith(Injekt)
 
         }
     }

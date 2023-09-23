@@ -131,6 +131,7 @@
     <string name="no_source">没有番剧源</string>
     <string name="click_to_get">点击获取</string>
 
+
     <string name="website_get">网站获取（需科学上网）</string>
     <string name="group_get">进群获取（推荐）</string>
 
@@ -180,6 +181,9 @@
     <string name="stared">已经追番</string>
     <string name="stared_min">已追番</string>
 
+    <string name="star">追番</string>
+    <string name="started_miro">已追</string>
+
     <string name="detailed_error">获取番剧详情错误</string>
 
     <string name="web_view">WebView</string>
@@ -199,7 +203,7 @@
 
     <string name="version">当前版本</string>
 
-    <string name="open_source_url">打开原网站</string>
+    <string name="open_source_url">网站</string>
 
     <string name="speed">倍速</string>
     <string name="episode">选集</string>
@@ -272,6 +276,11 @@
     <string name="play_list">播放列表</string>
 
     <string name="reverse">列表反转</string>
+
+    <string name="select_to_download">选择要下载的番剧</string>
+
+    <string name="start_download">开始下载</string>
+    <string name="download">下载</string>
 
     <string name="download_history">下载记录</string>
     <string name="pausing">暂停中</string>
