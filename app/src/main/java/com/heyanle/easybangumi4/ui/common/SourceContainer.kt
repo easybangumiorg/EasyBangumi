@@ -20,6 +20,7 @@ import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.ABOUT
 import com.heyanle.easybangumi4.C
 import com.heyanle.easybangumi4.LocalNavController
+import com.heyanle.easybangumi4.getter.SourceStateGetter
 import com.heyanle.easybangumi4.source.LocalSourceBundleController
 import com.heyanle.easybangumi4.source.SourceBundle
 import com.heyanle.easybangumi4.source.SourceController
@@ -52,8 +53,8 @@ fun SourceContainerBase(
     val animSources = LocalSourceBundleController.current
     val anim = animSources
 
-    val sourceController: SourceController by Injekt.injectLazy()
-    val state by sourceController.sourceState.collectAsState()
+    val sourceStateGetter: SourceStateGetter by Injekt.injectLazy()
+    val state by sourceStateGetter.flowState().collectAsState()
     LaunchedEffect(state){
         state.logi("SourceController")
     }

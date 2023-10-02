@@ -3,8 +3,8 @@ package com.heyanle.easybangumi4.ui.main.history
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.heyanle.easybangumi4.base.db.dao.CartoonHistoryDao
-import com.heyanle.easybangumi4.base.entity.CartoonHistory
+import com.heyanle.easybangumi4.cartoon.db.dao.CartoonHistoryDao
+import com.heyanle.easybangumi4.cartoon.entity.CartoonHistory
 import com.heyanle.easybangumi4.preferences.SettingPreferences
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.Dispatchers

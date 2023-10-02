@@ -13,6 +13,7 @@ import com.heyanle.easy_crasher.CrashHandler
 import com.heyanle.easybangumi4.cartoon.CartoonModule
 import com.heyanle.easybangumi4.download.DownloadModule
 import com.heyanle.easybangumi4.exo.MediaModule
+import com.heyanle.easybangumi4.getter.GetterModule
 import com.heyanle.easybangumi4.preferences.SettingMMKVPreferences
 import com.heyanle.easybangumi4.utils.AppCenterManager
 import com.heyanle.easybangumi4.utils.exo_ssl.CropUtil
@@ -71,6 +72,7 @@ class App : Application() {
             ControllerModule(this).registerWith(Injekt)
             CartoonModule(this).registerWith(Injekt)
             DownloadModule(this).registerWith(Injekt)
+            GetterModule(this).registerWith(Injekt)
 
         }
     }

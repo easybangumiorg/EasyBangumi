@@ -1,8 +1,11 @@
-package com.heyanle.easybangumi4.download
+package com.heyanle.easybangumi4.download.step
 
 import android.content.Context
+import com.heyanle.easy_i18n.R
+import com.heyanle.easybangumi4.download.DownloadBus
+import com.heyanle.easybangumi4.download.DownloadController
 import com.heyanle.easybangumi4.download.entity.DownloadItem
-import com.heyanle.easybangumi4.download.utils.M3U8Utils
+import com.heyanle.easybangumi4.download_old.utils.M3U8Utils
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.stringRes
@@ -16,56 +19,53 @@ import kotlinx.coroutines.launch
 import java.io.File
 
 /**
- * Created by HeYanLe on 2023/9/17 16:05.
- * https://github.com/heyanLE
+ * Created by heyanlin on 2023/10/2.
  */
-class TranscodeWrap(
+class TranscodeStep(
     private val context: Context,
-    private val baseDownloadController: BaseDownloadController,
+    private val downloadController: DownloadController,
     private val downloadBus: DownloadBus,
-) {
+) : BaseStep {
+
+    companion object {
+        const val NAME = "transcode"
+    }
 
     private val mainScope = MainScope()
 
     private val cacheFile = context.getCachePath("transcode")
 
-    private val _flow = MutableStateFlow<Set<DownloadItem>>(emptySet())
+    private val _flow =
+        MutableStateFlow<Set<com.heyanle.easybangumi4.download_old.entity.DownloadItem>>(emptySet())
     val flow = _flow.asStateFlow()
 
-
-    fun  transcode(
-        downloadItem: DownloadItem
-    ) {
+    override fun invoke(downloadItem: DownloadItem) {
         if (!decrypt(downloadItem)) {
             error(downloadItem, stringRes(com.heyanle.easy_i18n.R.string.decrypt_error))
-            _flow.update {
-                it - downloadItem
-            }
             return
         }
-        if (!ffmpeg(downloadItem, {
-                it?.moeSnackBar()
-                error(
-                    downloadItem,
-                    it?.message ?: stringRes(com.heyanle.easy_i18n.R.string.transcode_error)
-                )
-            }, {
-                completely(downloadItem)
-                _flow.update {
-                    it - downloadItem
+        if (!ffmpeg(
+                downloadItem = downloadItem,
+                onError = {
+                    it?.moeSnackBar()
+                    error(
+                        downloadItem,
+                        it?.message ?: stringRes(com.heyanle.easy_i18n.R.string.transcode_error)
+                    )
+                },
+                onCompletely = {
+                    completely(downloadItem)
                 }
-            })) {
+            )
+        ) {
             error(downloadItem, stringRes(com.heyanle.easy_i18n.R.string.transcode_error))
-            _flow.update {
-                it - downloadItem
-            }
             return
         }
     }
 
     private fun decrypt(downloadItem: DownloadItem): Boolean {
         val info = downloadBus.getInfo(downloadItem.uuid)
-        val entity = downloadItem.m3U8Entity ?: return false
+        val entity = downloadItem.bundle.m3U8Entity ?: return false
         val localM3U8 = File(entity.filePath)
 
         if (!localM3U8.exists() || !localM3U8.canRead()) {
@@ -79,7 +79,7 @@ class TranscodeWrap(
             return false
         }
         mainScope.launch {
-            info.status.value = stringRes(com.heyanle.easy_i18n.R.string.decrypting)
+            info.status.value = stringRes(R.string.decrypting)
             info.process.value = -1f
             info.subStatus.value = ""
         }
@@ -130,13 +130,13 @@ class TranscodeWrap(
         val keyFile = File(entity.filePath)
         val keyB = keyFile.readBytes()
         mainScope.launch {
-            info.status.value = stringRes(com.heyanle.easy_i18n.R.string.decrypting)
+            info.status.value = stringRes(R.string.decrypting)
             info.process.value = 0f
             info.subStatus.value = "0/${tsFiles.size}"
         }
         for (i in 0 until tsFiles.size.coerceAtMost(targetTsFiles.size)) {
             mainScope.launch {
-                info.status.value = stringRes(com.heyanle.easy_i18n.R.string.decrypting)
+                info.status.value = stringRes(R.string.decrypting)
                 info.process.value = if (tsFiles.size == 0) 0f else {
                     (i + 1) / (tsFiles.size).toFloat()
                 }
@@ -196,7 +196,7 @@ class TranscodeWrap(
         parentFile.mkdirs()
         val target = File(parentFile, realTarget.name + ".temp.mp4")
         mainScope.launch {
-            info.status.value = stringRes(com.heyanle.easy_i18n.R.string.transcoding)
+            info.status.value = stringRes(R.string.transcoding)
             info.subStatus.value = ""
             info.process.value = 0f
         }
@@ -206,7 +206,7 @@ class TranscodeWrap(
             object : IVideoTransformListener {
                 override fun onTransformProgress(progress: Float) {
                     mainScope.launch {
-                        info.status.value = stringRes(com.heyanle.easy_i18n.R.string.transcoding)
+                        info.status.value = stringRes(R.string.transcoding)
                         info.process.value = progress
                         info.subStatus.value = "${(progress * 100).toInt()}%"
                     }
@@ -220,6 +220,7 @@ class TranscodeWrap(
                 override fun onTransformFinished() {
                     target.renameTo(realTarget)
                     M3U8Utils.deleteM3U8WithTs(m3u8.absolutePath)
+                    downloadItem.bundle.realFilePath = realTarget.absolutePath
                     onCompletely()
                 }
             }
@@ -228,32 +229,19 @@ class TranscodeWrap(
     }
 
     private fun error(downloadItem: DownloadItem, error: String) {
-        baseDownloadController.updateDownloadItem {
-            it.map {
-                if (it != downloadItem) {
-                    it
-                } else {
-                    it.copy(
-                        state = -1,
-                        errorMsg = error
-                    )
-                }
-            }
+        downloadController.updateDownloadItem(downloadItem.uuid) {
+            it.copy(
+                state = -1,
+                errorMsg = error
+            )
         }
     }
 
     private fun completely(downloadItem: DownloadItem) {
-        baseDownloadController.updateDownloadItem {
-            it.map {
-                if (it != downloadItem) {
-                    it
-                } else {
-                    it.copy(
-                        state = 4,
-                    )
-                }
-            }
+        downloadController.updateDownloadItem(downloadItem.uuid) {
+            it.copy(
+                state = 1
+            )
         }
     }
-
 }

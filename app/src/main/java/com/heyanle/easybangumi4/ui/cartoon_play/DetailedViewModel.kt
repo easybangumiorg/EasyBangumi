@@ -9,11 +9,12 @@ import androidx.lifecycle.viewModelScope
 import com.heyanle.bangumi_source_api.api.component.detailed.DetailedComponent
 import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
 import com.heyanle.bangumi_source_api.api.entity.PlayLine
-import com.heyanle.easybangumi4.base.db.dao.CartoonStarDao
-import com.heyanle.easybangumi4.base.entity.CartoonInfo
-import com.heyanle.easybangumi4.base.entity.CartoonStar
-import com.heyanle.easybangumi4.base.entity.isChild
+import com.heyanle.easybangumi4.cartoon.db.dao.CartoonStarDao
+import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
+import com.heyanle.easybangumi4.cartoon.entity.CartoonStar
+import com.heyanle.easybangumi4.cartoon.entity.isChild
 import com.heyanle.easybangumi4.cartoon.CartoonRepository
+import com.heyanle.easybangumi4.getter.CartoonInfoGetter
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.Dispatchers
@@ -49,7 +50,7 @@ class DetailedViewModel(
     var isStar by mutableStateOf(false)
     var isReverse by mutableStateOf(false)
 
-    private val cartoonRepository: CartoonRepository by Injekt.injectLazy()
+    private val cartoonInfoGetter: CartoonInfoGetter by Injekt.injectLazy()
 
     private val cartoonStarDao: CartoonStarDao by Injekt.injectLazy()
 
@@ -65,7 +66,7 @@ class DetailedViewModel(
     fun load() {
         viewModelScope.launch {
             detailedState = DetailedState.Loading
-            cartoonRepository.awaitCartoonInfoWithPlayLines(cartoonSummary.id, cartoonSummary.source, cartoonSummary.url)
+            cartoonInfoGetter.awaitCartoonInfoWithPlayLines(cartoonSummary.id, cartoonSummary.source, cartoonSummary.url)
                 .onOK {
                     detailedState = DetailedState.Info(it.first, it.second, it.second !is DetailedComponent.NonPlayLine)
                     val starInfo = withContext(Dispatchers.IO) {

@@ -1,12 +1,12 @@
-package com.heyanle.easybangumi4.base.db
+package com.heyanle.easybangumi4.cartoon.db
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.heyanle.easybangumi4.Migrate
-import com.heyanle.easybangumi4.base.db.dao.CartoonInfoDao
-import com.heyanle.easybangumi4.base.entity.CartoonInfo
+import com.heyanle.easybangumi4.cartoon.db.dao.CartoonInfoDao
+import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 
 /**
  * 用于缓存的数据库，可以管理大小和单独删除

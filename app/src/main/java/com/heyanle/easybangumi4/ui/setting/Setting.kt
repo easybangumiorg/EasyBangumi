@@ -40,11 +40,18 @@ sealed class SettingPage(
     }, {
         PlayerSetting(nestedScrollConnection = it)
     })
+
+    object Download : SettingPage("download", {
+        Text(text = stringResource(id = R.string.download_setting))
+    }, {
+        DownloadSetting(nestedScrollConnection = it)
+    })
 }
 
 val settingPages = mapOf(
     SettingPage.Appearance.router to SettingPage.Appearance,
     SettingPage.Player.router to SettingPage.Player,
+    SettingPage.Download.router to SettingPage.Download,
 )
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -111,8 +111,8 @@ import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
 import com.heyanle.bangumi_source_api.api.entity.PlayLine
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.R
-import com.heyanle.easybangumi4.base.entity.CartoonInfo
-import com.heyanle.easybangumi4.download.DownloadController
+import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
+import com.heyanle.easybangumi4.download.DownloadDispatcher
 import com.heyanle.easybangumi4.navigationDlna
 import com.heyanle.easybangumi4.navigationSearch
 import com.heyanle.easybangumi4.preferences.SettingPreferences
@@ -741,7 +741,7 @@ fun CartoonPlayPage(
     //onTitle: (String) -> Unit,
 ) {
     val cartoonPlayingController: CartoonPlayingController by Injekt.injectLazy()
-    val downloadController: DownloadController by Injekt.injectLazy()
+    val downloadDispatcher: DownloadDispatcher by Injekt.injectLazy()
     val nav = LocalNavController.current
     CartoonPlayDetailed(
         modifier = Modifier.fillMaxSize(),
@@ -804,7 +804,7 @@ fun CartoonPlayPage(
             )
         },
         onDownload = { playLine: PlayLine, selection: List<Int> ->
-            downloadController.newDownload(detailedState.detail, selection.map {
+            downloadDispatcher.newDownload(detailedState.detail, selection.map {
                 playLine to it
             })
         }

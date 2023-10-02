@@ -7,9 +7,10 @@ import androidx.lifecycle.viewModelScope
 import com.heyanle.bangumi_source_api.api.entity.CartoonCover
 import com.heyanle.bangumi_source_api.api.entity.toIdentify
 import com.heyanle.easy_i18n.R
-import com.heyanle.easybangumi4.base.db.dao.CartoonStarDao
-import com.heyanle.easybangumi4.base.entity.CartoonStar
+import com.heyanle.easybangumi4.cartoon.db.dao.CartoonStarDao
+import com.heyanle.easybangumi4.cartoon.entity.CartoonStar
 import com.heyanle.easybangumi4.cartoon.CartoonRepository
+import com.heyanle.easybangumi4.getter.CartoonInfoGetter
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.injekt.core.Injekt
@@ -43,7 +44,7 @@ class CoverStarViewModel : ViewModel() {
     // 该列表中的番剧在展示上视为已收藏
     private val staringCartoon = mutableStateMapOf<String, Boolean>()
 
-    private val cartoonRepository: CartoonRepository by Injekt.injectLazy()
+    private val cartoonInfoGetter: CartoonInfoGetter by Injekt.injectLazy()
 
     init {
         viewModelScope.launch {
@@ -69,7 +70,7 @@ class CoverStarViewModel : ViewModel() {
             } else {
                 staringCartoon[identify] = true
 
-                cartoonRepository.awaitCartoonInfoWithPlayLines(
+                cartoonInfoGetter.awaitCartoonInfoWithPlayLines(
                     cartoonCover.id,
                     cartoonCover.source,
                     cartoonCover.url
