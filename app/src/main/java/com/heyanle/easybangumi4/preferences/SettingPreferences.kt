@@ -2,13 +2,13 @@ package com.heyanle.easybangumi4.preferences
 
 import android.app.Application
 import android.os.Environment
-import com.heyanle.easybangumi4.R
 import com.heyanle.easybangumi4.base.preferences.PreferenceStore
 import com.heyanle.easybangumi4.base.preferences.getEnum
 import com.heyanle.easybangumi4.base.theme.EasyThemeMode
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.easybangumi4.utils.mb
 import com.heyanle.easybangumi4.utils.stringRes
+import java.io.File
 
 /**
  * 设置
@@ -69,15 +69,15 @@ class SettingPreferences(
 
     // 下载番剧路径
     val downloadPathSelection = arrayListOf<Pair<String, String>>().apply {
-        add(stringRes(com.heyanle.easy_i18n.R.string.private_download_path) to application.getFilePath("download"))
+        add(application.getFilePath("download") to stringRes(com.heyanle.easy_i18n.R.string.private_download_path))
         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)?.let {
-            add(stringRes(com.heyanle.easy_i18n.R.string.public_download_path) to it.absolutePath)
+            add(File(it, "easyBangumi").absolutePath to stringRes(com.heyanle.easy_i18n.R.string.public_download_path))
         }
         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES)?.let {
-            add(stringRes(com.heyanle.easy_i18n.R.string.public_movie_path) to it.absolutePath)
+            add(File(it, "easyBangumi").absolutePath to stringRes(com.heyanle.easy_i18n.R.string.public_movie_path))
         }
         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM)?.let {
-            add(stringRes(com.heyanle.easy_i18n.R.string.public_dcim_path) to it.absolutePath)
+            add(File(it, "easyBangumi").absolutePath to stringRes(com.heyanle.easy_i18n.R.string.public_dcim_path))
         }
     }
     var downloadPath = preferenceStore.getString("cartoon_download_path", application.getFilePath("download") )

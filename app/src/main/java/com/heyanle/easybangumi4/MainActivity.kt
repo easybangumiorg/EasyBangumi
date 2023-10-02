@@ -26,7 +26,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.base.theme.EasyTheme
-import com.heyanle.easybangumi4.download_old.DownloadController
 import com.heyanle.easybangumi4.source.SourcesHost
 import com.heyanle.easybangumi4.source.utils.initUtils
 import com.heyanle.easybangumi4.ui.common.MoeSnackBar
@@ -35,7 +34,6 @@ import com.heyanle.easybangumi4.utils.MediaUtils
 import com.heyanle.easybangumi4.utils.ReleaseDialog
 import com.heyanle.extension_load.ExtensionInit
 import com.heyanle.extension_load.IconFactoryImpl
-import com.heyanle.injekt.core.Injekt
 import com.heyanle.okkv2.core.okkv
 
 /**
@@ -59,8 +57,8 @@ class MainActivity : ComponentActivity() {
             it.printStackTrace()
             Toast.makeText(this, it.message, Toast.LENGTH_SHORT).show()
         }
-        val downloadController: DownloadController by Injekt.injectLazy()
-        downloadController.init()
+//        val downloadController: DownloadController by Injekt.injectLazy()
+//        downloadController.init()
     }
 
     @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class)

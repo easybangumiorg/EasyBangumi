@@ -7,6 +7,13 @@ import com.heyanle.easybangumi4.download.entity.DownloadItem
  */
 interface BaseStep {
 
+    fun init(downloadItem: DownloadItem): DownloadItem? {
+        if (downloadItem.state == 1) {
+            return downloadItem.copy(state = 0)
+        }
+        return downloadItem
+    }
+
     fun invoke(downloadItem: DownloadItem)
 
     fun onClick(downloadItem: DownloadItem): Boolean = false

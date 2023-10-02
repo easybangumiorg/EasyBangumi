@@ -147,6 +147,19 @@ fun More() {
             }
         )
 
+        ListItem(
+            modifier = Modifier.clickable {
+                nav.navigationSetting(SettingPage.Download)
+            },
+            headlineContent = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.download_setting)) },
+            leadingContent = {
+                Icon(
+                    Icons.Filled.Download,
+                    contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.download_setting)
+                )
+            }
+        )
+
 
 
         //Divider()
