@@ -2,9 +2,8 @@ package com.heyanle.easybangumi4
 
 import android.app.Application
 import com.google.gson.Gson
-import com.heyanle.easybangumi4.base.db.AppDatabase
-import com.heyanle.easybangumi4.base.db.AppLocalDatabase
-import com.heyanle.easybangumi4.base.db.CacheDatabase
+import com.heyanle.easybangumi4.cartoon.db.AppDatabase
+import com.heyanle.easybangumi4.cartoon.db.CacheDatabase
 import com.heyanle.easybangumi4.base.hekv.HeKV
 import com.heyanle.easybangumi4.base.preferences.PreferenceStore
 import com.heyanle.easybangumi4.base.preferences.android.AndroidPreferenceStore
@@ -113,7 +112,7 @@ class PreferencesModule(
         addAlias<AndroidPreferenceStore, PreferenceStore>()
 
         addSingletonFactory {
-            SettingPreferences(get<AndroidPreferenceStore>())
+            SettingPreferences(application, get<AndroidPreferenceStore>())
         }
         addSingletonFactory {
             SourcePreferences(get<HeKVPreferenceStore>())
@@ -148,12 +147,6 @@ class DatabaseModule(
         }
         addSingletonFactory {
             get<CacheDatabase>().cartoonInfo
-        }
-        addSingletonFactory {
-            AppLocalDatabase.build(application)
-        }
-        addSingletonFactory {
-            get<AppLocalDatabase>().cartoonDownload
         }
     }
 }

@@ -24,6 +24,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -46,10 +47,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
@@ -59,6 +66,7 @@ import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.download.entity.DownloadItem
 import com.heyanle.easybangumi4.download.entity.LocalCartoon
+import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.common.TabIndicator
 import kotlinx.coroutines.launch
@@ -215,16 +223,40 @@ fun Download() {
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun LocalCartoonPage(
     localCartoonViewModel: LocalCartoonViewModel
-){
+) {
     val list = localCartoonViewModel.localCartoonFlow.collectAsState()
     val state = rememberLazyListState()
-    Box(modifier = Modifier.fillMaxSize()){
+    val keyboard = LocalSoftwareKeyboardController.current
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .nestedScroll(object : NestedScrollConnection {
+                    override fun onPreScroll(
+                        available: Offset,
+                        source: NestedScrollSource
+                    ): Offset {
+                        keyboard?.hide()
+                        return super.onPreScroll(available, source)
+                    }
+                }),
+            state = state,
+        ) {
+            items(list.value) {
+                LocalCartoonItem(localCartoon = it, onClick = {
 
+                })
+            }
+        }
+        
+        FastScrollToTopFab(listState = state)
     }
 }
+
 @Composable
 fun Downloading(
     downloadViewModel: DownloadViewModel,
@@ -308,12 +340,11 @@ fun DownloadItem(
 @Composable
 fun LocalCartoonItem(
     localCartoon: LocalCartoon,
-    localCartoonViewModel: LocalCartoonViewModel,
     onClick: (LocalCartoon) -> Unit,
-){
+) {
     val num = remember(localCartoon) {
         var res = 0
-        localCartoon.playLines.forEach { res += it.list.size  }
+        localCartoon.playLines.forEach { res += it.list.size }
         return@remember res
     }
     Row(
@@ -342,6 +373,13 @@ fun LocalCartoonItem(
             Text(
                 modifier = Modifier,
                 text = (localCartoon.cartoonTitle),
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                modifier = Modifier,
+                text = stringResource(id = R.string.video_num_x, num),
                 style = MaterialTheme.typography.titleMedium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

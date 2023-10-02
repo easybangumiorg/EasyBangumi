@@ -3,8 +3,8 @@ package com.heyanle.easybangumi4.ui.download
 import androidx.compose.ui.focus.FocusRequester
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.heyanle.easybangumi4.download.BaseDownloadController
 import com.heyanle.easybangumi4.download.entity.LocalCartoon
+import com.heyanle.easybangumi4.getter.LocalCartoonGetter
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
  */
 class LocalCartoonViewModel : ViewModel() {
 
-    private val baseDownloadController: BaseDownloadController by Injekt.injectLazy()
+    private val localCartoonGetter: LocalCartoonGetter by Injekt.injectLazy()
 
     private val _localCartoonFlow = MutableStateFlow<List<LocalCartoon>>(emptyList())
     val localCartoonFlow = _localCartoonFlow.asStateFlow()
@@ -32,7 +32,7 @@ class LocalCartoonViewModel : ViewModel() {
     init {
         viewModelScope.launch {
             combine(
-                baseDownloadController.localCartoon.stateIn(
+               localCartoonGetter.flowLocalCartoon().stateIn(
                     viewModelScope,
                 ),
                 _keyword

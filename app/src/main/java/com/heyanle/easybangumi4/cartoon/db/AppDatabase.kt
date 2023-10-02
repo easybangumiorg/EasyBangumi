@@ -1,18 +1,18 @@
-package com.heyanle.easybangumi4.base.db
+package com.heyanle.easybangumi4.cartoon.db
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.heyanle.easybangumi4.Migrate
-import com.heyanle.easybangumi4.base.db.dao.CartoonHistoryDao
-import com.heyanle.easybangumi4.base.db.dao.CartoonStarDao
-import com.heyanle.easybangumi4.base.db.dao.CartoonTagDao
-import com.heyanle.easybangumi4.base.db.dao.SearchHistoryDao
-import com.heyanle.easybangumi4.base.entity.CartoonHistory
-import com.heyanle.easybangumi4.base.entity.CartoonStar
-import com.heyanle.easybangumi4.base.entity.CartoonTag
-import com.heyanle.easybangumi4.base.entity.SearchHistory
+import com.heyanle.easybangumi4.cartoon.db.dao.CartoonHistoryDao
+import com.heyanle.easybangumi4.cartoon.db.dao.CartoonStarDao
+import com.heyanle.easybangumi4.cartoon.db.dao.CartoonTagDao
+import com.heyanle.easybangumi4.cartoon.db.dao.SearchHistoryDao
+import com.heyanle.easybangumi4.cartoon.entity.CartoonHistory
+import com.heyanle.easybangumi4.cartoon.entity.CartoonStar
+import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
+import com.heyanle.easybangumi4.cartoon.entity.SearchHistory
 
 /**
  * Created by HeYanLe on 2023/1/17 0:26.

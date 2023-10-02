@@ -8,8 +8,8 @@ import com.heyanle.bangumi_source_api.api.component.configuration.ConfigComponen
 import com.heyanle.bangumi_source_api.api.component.detailed.DetailedComponent
 import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
 import com.heyanle.bangumi_source_api.api.entity.toIdentify
-import com.heyanle.easybangumi4.base.db.dao.CartoonStarDao
-import com.heyanle.easybangumi4.base.entity.CartoonStar
+import com.heyanle.easybangumi4.cartoon.db.dao.CartoonStarDao
+import com.heyanle.easybangumi4.cartoon.entity.CartoonStar
 import com.heyanle.easybangumi4.preferences.SourcePreferences
 import com.heyanle.easybangumi4.source.utils.SourcePreferenceHelper
 import kotlinx.coroutines.CoroutineScope

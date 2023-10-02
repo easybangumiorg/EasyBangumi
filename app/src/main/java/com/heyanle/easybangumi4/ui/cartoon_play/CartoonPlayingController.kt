@@ -14,12 +14,12 @@ import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
 import com.heyanle.bangumi_source_api.api.entity.PlayLine
 import com.heyanle.bangumi_source_api.api.entity.PlayerInfo
 import com.heyanle.easybangumi4.APP
-import com.heyanle.easybangumi4.base.db.dao.CartoonHistoryDao
-import com.heyanle.easybangumi4.base.entity.CartoonHistory
-import com.heyanle.easybangumi4.base.entity.CartoonInfo
+import com.heyanle.easybangumi4.cartoon.db.dao.CartoonHistoryDao
+import com.heyanle.easybangumi4.cartoon.entity.CartoonHistory
+import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.exo.MediaSourceFactory
+import com.heyanle.easybangumi4.getter.SourceStateGetter
 import com.heyanle.easybangumi4.preferences.SettingPreferences
-import com.heyanle.easybangumi4.source.SourceController
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.easybangumi4.utils.stringRes
@@ -37,7 +37,7 @@ import kotlinx.coroutines.withContext
 @UnstableApi
 class CartoonPlayingController(
     private val settingPreference: SettingPreferences,
-    private val sourceController: SourceController,
+    private val sourceStateGetter: SourceStateGetter,
     private val cartoonHistoryDao: CartoonHistoryDao,
     private val mediaSourceFactory: MediaSourceFactory,
     private val exoPlayer: ExoPlayer,
@@ -159,7 +159,7 @@ class CartoonPlayingController(
         playLine: PlayLine,
         episode: Int,
     ){
-        val playComponent = sourceController.awaitBundle().play(sourceKey) ?: return
+        val playComponent = sourceStateGetter.awaitBundle().play(sourceKey) ?: return
         val sta = state
         if(sta is PlayingState.Playing){
             if(sta.cartoon.toIdentify() == cartoon.toIdentify() && sta.playLineIndex == playLineIndex && sta.curEpisode == episode){
@@ -201,7 +201,7 @@ class CartoonPlayingController(
         defaultProgress: Long = 0L,
     ) {
 
-        val playComponent = sourceController.awaitBundle().play(sourceKey) ?: return
+        val playComponent = sourceStateGetter.awaitBundle().play(sourceKey) ?: return
         this.playComponent = playComponent
         this.cartoon = cartoon
         changePlay(playComponent, cartoon, playLineIndex, playLine, defaultEpisode, defaultProgress)
