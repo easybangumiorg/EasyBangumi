@@ -10,6 +10,7 @@ import com.arialyy.aria.core.inf.IEntity.STATE_STOP
 import com.arialyy.aria.core.task.DownloadTask
 import com.heyanle.bangumi_source_api.api.entity.PlayerInfo
 import com.heyanle.easybangumi4.download.entity.DownloadItem
+import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.stringRes
 import java.net.URI
@@ -69,9 +70,9 @@ class AriaWrap(
             if (info.status.value.isEmpty() && info.subStatus.value.isEmpty()) {
                 if (entity.state == IEntity.STATE_STOP) {
                     aria.load(downloadItem.ariaId).resume()
-                    return
                 }
             }
+            return
         }
         val info = downloadItem.playerInfo
         if (info == null) {
@@ -198,15 +199,24 @@ class AriaWrap(
 //                info.subStatus.value = ""
 //            }
 //        }
-        onTaskRunning(task)
+        task?.let { t ->
+            t.extendField?.let { uuid ->
+                val info = downloadBus.getInfo(uuid)
+                info.status.value = stringRes(com.heyanle.easy_i18n.R.string.waiting)
+                info.process.value = if (t.entity.fileSize <= 0L) -1f else t.entity.percent / 100f
+                info.subStatus.value =
+                    if (t.entity.fileSize > 0L) t.convertSpeed else t.convertCurrentProgress
+
+            }
+        }
     }
 
     override fun onPre(task: DownloadTask?) {
-        onTaskRunning(task)
+        //onTaskRunning(task)
     }
 
     override fun onTaskPre(task: DownloadTask?) {
-        onTaskRunning(task)
+        //onTaskRunning(task)
     }
 
     override fun onTaskResume(task: DownloadTask?) {
@@ -214,7 +224,7 @@ class AriaWrap(
     }
 
     override fun onTaskStart(task: DownloadTask?) {
-        onTaskRunning(task)
+        //onTaskRunning(task)
     }
 
     override fun onTaskStop(task: DownloadTask?) {
@@ -267,5 +277,6 @@ class AriaWrap(
 
     override fun onNoSupportBreakPoint(task: DownloadTask?) {
         //TODO("Not yet implemented")
+        stringRes(com.heyanle.easy_i18n.R.string.no_support_break_point).moeSnackBar()
     }
 }

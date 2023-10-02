@@ -12,14 +12,14 @@ import com.heyanle.injekt.core.Injekt
  * Created by HeYanLe on 2023/8/27 22:05.
  * https://github.com/heyanLE
  */
-class DownloadingViewModel: ViewModel() {
+class DownloadViewModel: ViewModel() {
 
     private val downloadDao: CartoonDownloadDao by Injekt.injectLazy()
     private val downloadBus: DownloadBus by Injekt.injectLazy()
     private val downloadController: DownloadController by Injekt.injectLazy()
     private val baseDownloadController: BaseDownloadController by Injekt.injectLazy()
 
-    val flow = baseDownloadController.downloadItem
+    val downloadingFlow = baseDownloadController.downloadItem
 
     fun info(download: DownloadItem): DownloadBus.DownloadingInfo{
         return downloadBus.getInfo(download.uuid)

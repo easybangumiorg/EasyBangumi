@@ -1,5 +1,7 @@
 package com.heyanle.easybangumi4.download.entity
 
+import com.heyanle.easybangumi4.utils.getMatchReg
+
 /**
  * Created by HeYanLe on 2023/9/17 15:41.
  * https://github.com/heyanLE
@@ -17,7 +19,21 @@ data class LocalCartoon (
     val cartoonGenre: String,
 
     var playLines: ArrayList<LocalPlayLine> = arrayListOf(),
-){}
+){
+
+    fun match(query: String): Boolean{
+        var matched = false
+        for (match in query.split(',')) {
+            val regex = match.getMatchReg()
+            if (cartoonTitle.matches(regex)) {
+                matched = true
+                break
+            }
+        }
+        return matched
+    }
+
+}
 
 data class LocalPlayLine(
     val id: String,

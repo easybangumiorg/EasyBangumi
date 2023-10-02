@@ -5,6 +5,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -82,6 +83,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -1199,11 +1201,9 @@ fun CartoonPlayDetailed(
                                                     currentDownloadPlayLine.value = null
                                                 }
                                             }
-
                                         }
                                     )
                                 }
-
                             }
                         }
                     }
@@ -1213,9 +1213,11 @@ fun CartoonPlayDetailed(
     }
     currentDownloadPlayLine.value?.let { dowPlayLine ->
         Box(contentAlignment = Alignment.BottomEnd, modifier = Modifier.fillMaxSize()) {
+            val up = remember { derivedStateOf { listState.firstVisibleItemIndex > 10 } }
+            val downPadding by animateDpAsState(if(up.value) 80.dp else 40.dp, label = "")
             ExtendedFloatingActionButton(
                 modifier = Modifier
-                    .padding(16.dp, 40.dp),
+                    .padding(16.dp, downPadding),
                 text = {
                     Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.start_download))
                 },
