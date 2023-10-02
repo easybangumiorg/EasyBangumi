@@ -2,10 +2,11 @@ package com.heyanle.easybangumi4.ui.main.star
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.heyanle.easybangumi4.base.db.dao.CartoonStarDao
-import com.heyanle.easybangumi4.base.db.dao.CartoonTagDao
-import com.heyanle.easybangumi4.base.entity.CartoonStar
-import com.heyanle.easybangumi4.base.entity.CartoonTag
+import com.heyanle.easy_i18n.R
+import com.heyanle.easybangumi4.cartoon.db.dao.CartoonStarDao
+import com.heyanle.easybangumi4.cartoon.db.dao.CartoonTagDao
+import com.heyanle.easybangumi4.cartoon.entity.CartoonStar
+import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.ui.main.star.update.CartoonUpdateController
 import com.heyanle.easybangumi4.preferences.SettingPreferences
@@ -30,8 +31,8 @@ import kotlinx.coroutines.launch
 class StarViewModel : ViewModel() {
 
     companion object {
-        val DEFAULT_TAG = CartoonTag(-1, stringRes(com.heyanle.easy_i18n.R.string.default_word), -1)
-        val UPDATE_TAG = CartoonTag(-2, stringRes(com.heyanle.easy_i18n.R.string.update), -2)
+        val DEFAULT_TAG = CartoonTag(-1, stringRes(R.string.default_word), -1)
+        val UPDATE_TAG = CartoonTag(-2, stringRes(R.string.update), -2)
 
         fun tagLabel(tag: CartoonTag): String {
             return when (tag) {

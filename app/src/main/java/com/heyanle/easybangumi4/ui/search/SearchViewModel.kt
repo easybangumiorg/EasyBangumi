@@ -9,7 +9,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.bangumi_source_api.api.component.search.SearchComponent
-import com.heyanle.easybangumi4.base.db.dao.SearchHistoryDao
+import com.heyanle.easybangumi4.cartoon.db.dao.SearchHistoryDao
 import com.heyanle.easybangumi4.utils.ViewModelOwnerMap
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.Dispatchers

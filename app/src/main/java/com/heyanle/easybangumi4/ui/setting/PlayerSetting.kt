@@ -68,16 +68,10 @@ fun ColumnScope.PlayerSetting(
             }
         )
 
-        val size = listOf(
-            0L to stringRes(com.heyanle.easy_i18n.R.string.disable),
-            500L.mb to "500MB",
-            1000L.mb to "1GB",
-            2000L.mb to "2GB",
-            3000L.mb to "3GB",
-            5000L.mb to "5GB",
-        )
+
         val sizePre by settingPreferences.cacheSize.flow()
             .collectAsState(settingPreferences.cacheSize.get())
+        val size = settingPreferences.cacheSizeSelection
         StringSelectPreferenceItem(
             title = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.max_cache_size)) },
             textList = size.map { it.second },

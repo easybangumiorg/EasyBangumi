@@ -32,6 +32,8 @@
 
     <string name="appearance_setting">外观设置</string>
     <string name="player_setting">播放设置</string>
+
+    <string name="download_setting">下载设置</string>
     
     <string name="use_external_player">使用外置播放器</string>
     <string name="player_orientation_mode">跟随传感器切换全屏</string>
@@ -299,4 +301,16 @@
 
     <string name="no_support_break_point">该源不支持断点下载哦！</string>
 
+    <string name="video_num_x">共%1$d个视频</string>
+
+    <string name="download_path">番剧本地下载路径</string>
+
+    <string name="private_download_path">软件私有目录</string>
+    <string name="public_download_path">公共下载目录</string>
+    <string name="public_movie_path">公共电影目录</string>
+    <string name="public_dcim_path">相机目录</string>
+    <string name="next_download_work">下一个下载任务生效</string>
+
+    <string name="retry_when_permission">授予权限后请再次设置！</string>
+    <string name="please_permission">请授予权限体验完整功能</string>
 </resources>

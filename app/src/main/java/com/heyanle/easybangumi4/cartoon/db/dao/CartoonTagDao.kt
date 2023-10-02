@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.base.db.dao
+package com.heyanle.easybangumi4.cartoon.db.dao
 
 import androidx.room.Dao
 import androidx.room.Delete
@@ -6,7 +6,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
-import com.heyanle.easybangumi4.base.entity.CartoonTag
+import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
 import kotlinx.coroutines.flow.Flow
 
 /**

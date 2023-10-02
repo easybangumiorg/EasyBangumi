@@ -1,30 +1,33 @@
-package com.heyanle.easybangumi4.download
+package com.heyanle.easybangumi4.download.step
 
 import com.arialyy.aria.core.Aria
 import com.arialyy.aria.core.common.HttpOption
 import com.arialyy.aria.core.download.DownloadTaskListener
 import com.arialyy.aria.core.download.m3u8.M3U8VodOption
 import com.arialyy.aria.core.inf.IEntity
-import com.arialyy.aria.core.inf.IEntity.STATE_RUNNING
-import com.arialyy.aria.core.inf.IEntity.STATE_STOP
 import com.arialyy.aria.core.task.DownloadTask
 import com.heyanle.bangumi_source_api.api.entity.PlayerInfo
+import com.heyanle.easy_i18n.R
+import com.heyanle.easybangumi4.download.DownloadBus
+import com.heyanle.easybangumi4.download.DownloadController
 import com.heyanle.easybangumi4.download.entity.DownloadItem
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
-import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.stringRes
 import java.net.URI
 import java.net.URL
 import java.util.regex.Pattern
 
 /**
- * Created by HeYanLe on 2023/9/17 15:50.
- * https://github.com/heyanLE
+ * Created by heyanlin on 2023/10/2.
  */
-class AriaWrap(
+class AriaStep(
+    private val downloadController: DownloadController,
     private val downloadBus: DownloadBus,
-    private val baseDownloadController: BaseDownloadController
-) : DownloadTaskListener {
+) : BaseStep, DownloadTaskListener {
+
+    companion object {
+        const val NAME = "aria"
+    }
 
     private val aria = Aria.download(this)
 
@@ -63,20 +66,20 @@ class AriaWrap(
         generateIndexFile()
     }
 
-    fun tryPush(downloadItem: DownloadItem) {
-        val entity = aria.getDownloadEntity(downloadItem.ariaId)
+    override fun invoke(downloadItem: DownloadItem) {
+        val entity = aria.getDownloadEntity(downloadItem.bundle.ariaId)
         if (entity != null) {
             val info = downloadBus.getInfo(downloadItem.uuid)
             if (info.status.value.isEmpty() && info.subStatus.value.isEmpty()) {
                 if (entity.state == IEntity.STATE_STOP) {
-                    aria.load(downloadItem.ariaId).resume()
+                    aria.load(downloadItem.bundle.ariaId).resume()
                 }
             }
             return
         }
-        val info = downloadItem.playerInfo
+        val info = downloadItem.bundle.playerInfo
         if (info == null) {
-            error(downloadItem.uuid, stringRes(com.heyanle.easy_i18n.R.string.download_error))
+            error(downloadItem.uuid, stringRes(R.string.download_error))
             return
         }
         when (info.decodeType) {
@@ -115,80 +118,38 @@ class AriaWrap(
                 error(downloadItem.uuid, stringRes(com.heyanle.easy_i18n.R.string.download_error))
             }
         }
-
-    }
-
-
-    fun click(downloadItem: DownloadItem) {
-        aria.load(downloadItem.ariaId)?.let {
-            it.taskState.logi("AriaWrap")
-            when (it.taskState) {
-                STATE_STOP -> {
-                    resume(downloadItem)
-                }
-
-                STATE_RUNNING -> {
-                    pause(downloadItem)
-                }
-            }
-
-        }
-    }
-
-    fun pause(downloadItem: DownloadItem) {
-        aria.load(downloadItem.ariaId).ignoreCheckPermissions().stop()
-    }
-
-    fun resume(downloadItem: DownloadItem) {
-        aria.load(downloadItem.ariaId).ignoreCheckPermissions().resume()
-    }
-
-
-    private fun error(uuid: String, error: String) {
-        baseDownloadController.updateDownloadItem {
-            it.map {
-                if (it.uuid != uuid) {
-                    it
-                } else {
-                    it.copy(
-                        state = -1,
-                        errorMsg = error,
-                    )
-                }
-            }
-        }
     }
 
     private fun pushCompletely(downloadItem: DownloadItem, taskId: Long) {
-        baseDownloadController.updateDownloadItem {
-            it.map {
-                if (it != downloadItem) {
-                    it
-                } else {
-                    it.copy(
-                        state = 2,
-                        ariaId = taskId,
-                    )
+        downloadController.updateDownloadItem(downloadItem.uuid) {
+            it.copy(
+                bundle = it.bundle.apply {
+                    ariaId = taskId
                 }
-            }
+            )
         }
     }
 
     private fun downloadCompletely(uuid: String, task: DownloadTask) {
-        baseDownloadController.updateDownloadItem {
-            it.map {
-                if (it.uuid != uuid) {
-                    it
-                } else {
-                    it.copy(
-                        state = 3,
-                        m3U8Entity = task.entity.m3U8Entity,
-                    )
+        downloadController.updateDownloadItem(uuid) {
+            it.copy(
+                state = 1,
+                bundle = it.bundle.apply {
+                    m3U8Entity = task.entity.m3U8Entity
+                    realFilePath = it.filePathWithoutSuffix + ".mp4"
                 }
-            }
+            )
         }
     }
 
+    private fun error(uuid: String, error: String) {
+        downloadController.updateDownloadItem(uuid) {
+            it.copy(
+                state = -1,
+                errorMsg = error,
+            )
+        }
+    }
 
     override fun onWait(task: DownloadTask?) {
 //        task?.let { t ->

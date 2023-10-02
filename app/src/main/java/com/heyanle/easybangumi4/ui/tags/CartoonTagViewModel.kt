@@ -5,8 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.heyanle.easybangumi4.base.db.dao.CartoonTagDao
-import com.heyanle.easybangumi4.base.entity.CartoonTag
+import com.heyanle.easybangumi4.cartoon.db.dao.CartoonTagDao
+import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.launch
 

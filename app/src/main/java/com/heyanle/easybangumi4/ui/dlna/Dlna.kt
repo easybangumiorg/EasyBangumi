@@ -77,7 +77,7 @@ import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
 import com.heyanle.bangumi_source_api.api.entity.PlayLine
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
-import com.heyanle.easybangumi4.base.entity.CartoonInfo
+import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.ui.cartoon_play.CartoonDescCard
 import com.heyanle.easybangumi4.ui.common.Action
 import com.heyanle.easybangumi4.ui.common.EmptyPage
