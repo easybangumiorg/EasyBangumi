@@ -36,7 +36,7 @@ sealed class ExplorePage @OptIn(ExperimentalMaterial3Api::class) constructor(
 ) {
 
     @OptIn(ExperimentalMaterial3Api::class)
-    object SourcePage : ExplorePage(
+    data object SourcePage : ExplorePage(
         tabLabel = {
             Text(stringResource(id = com.heyanle.easy_i18n.R.string.source))
         },
@@ -49,7 +49,7 @@ sealed class ExplorePage @OptIn(ExperimentalMaterial3Api::class) constructor(
     )
 
     @OptIn(ExperimentalMaterial3Api::class)
-    object ExtensionPage : ExplorePage(
+    data object ExtensionPage : ExplorePage(
         tabLabel = {
             Text(stringResource(id = com.heyanle.easy_i18n.R.string.extension))
         },

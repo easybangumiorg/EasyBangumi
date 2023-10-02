@@ -17,6 +17,8 @@
     <string name="loading">加载中</string>
     <string name="parsing">解析中</string>
 
+    <string name="waiting">等待中</string>
+
     <string name="cancel">取消</string>
     <string name="confirm">确定</string>
 
@@ -282,6 +284,7 @@
     <string name="start_download">开始下载</string>
     <string name="download">下载</string>
 
+    <string name="local_download">本地下载</string>
     <string name="download_history">下载记录</string>
     <string name="pausing">暂停中</string>
     <string name="downloading">下载中</string>
@@ -290,5 +293,10 @@
     <string name="decrypt_error">解密失败</string>
     <string name="transcoding">转码中</string>
     <string name="transcode_error">转码失败</string>
+
+    <string name="download_completely">下载完成</string>
+    <string name="finished">已完成</string>
+
+    <string name="no_support_break_point">该源不支持断点下载哦！</string>
 
 </resources>

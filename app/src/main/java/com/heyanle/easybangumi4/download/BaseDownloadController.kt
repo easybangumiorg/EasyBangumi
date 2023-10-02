@@ -36,6 +36,7 @@ class BaseDownloadController(
     val downloadItem = _downloadItem.asStateFlow()
 
     private val _localCartoon = MutableStateFlow<List<LocalCartoon>>(emptyList())
+    val localCartoon = _localCartoon.asStateFlow()
 
     init {
         scope.launch(Dispatchers.IO) {
