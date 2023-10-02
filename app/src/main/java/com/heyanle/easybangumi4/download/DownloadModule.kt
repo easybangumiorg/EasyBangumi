@@ -3,6 +3,7 @@ package com.heyanle.easybangumi4.download
 import android.app.Application
 import com.heyanle.easybangumi4.download.step.AriaStep
 import com.heyanle.easybangumi4.download.step.BaseStep
+import com.heyanle.easybangumi4.download.step.CopyStep
 import com.heyanle.easybangumi4.download.step.ParseStep
 import com.heyanle.easybangumi4.download.step.TranscodeStep
 import com.heyanle.injekt.api.InjektModule
@@ -28,14 +29,19 @@ class DownloadModule(
         }
 
         addSingletonFactory {
-            DownloadDispatcher(get(), get(), get())
+            DownloadDispatcher(application, get(), get(), get())
+        }
+
+        addSingletonFactory {
+            DownloadBus()
         }
 
         addScopedPerKeyFactory<BaseStep, String> {
             when(it){
                 ParseStep.NAME -> ParseStep(get(), get(), get())
                 AriaStep.NAME -> AriaStep(get(), get())
-                TranscodeStep.NAME -> TranscodeStep(application, get())
+                TranscodeStep.NAME -> TranscodeStep(application, get(), get())
+                CopyStep.NAME -> CopyStep(get(), get())
                 else -> throw InjektionException("No registered BaseStep with ${it}")
             }
         }

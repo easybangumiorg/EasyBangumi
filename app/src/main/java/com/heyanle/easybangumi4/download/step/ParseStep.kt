@@ -7,7 +7,6 @@ import com.heyanle.easybangumi4.download.DownloadBus
 import com.heyanle.easybangumi4.download.DownloadController
 import com.heyanle.easybangumi4.download.entity.DownloadItem
 import com.heyanle.easybangumi4.getter.SourceStateGetter
-import com.heyanle.easybangumi4.source.SourceController
 import com.heyanle.easybangumi4.utils.stringRes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
@@ -23,7 +22,7 @@ class ParseStep(
     private val sourceStateGetter: SourceStateGetter,
     private val downloadController: DownloadController,
     private val downloadBus: DownloadBus,
-): BaseStep {
+) : BaseStep {
 
     companion object {
         const val NAME = "parse"
@@ -33,6 +32,7 @@ class ParseStep(
     private val dispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
     private val mainScope = MainScope()
+
     override fun invoke(downloadItem: DownloadItem) {
         scope.launch {
             mainScope.launch {
@@ -42,12 +42,16 @@ class ParseStep(
                 info.subStatus.value = ""
             }
             val play = sourceStateGetter.awaitBundle().play(downloadItem.cartoonSource)
-            if (play == null){
+            if (play == null) {
                 error(downloadItem.uuid, stringRes(R.string.source_not_found))
                 return@launch
             }
             play.getPlayInfo(
-                CartoonSummary(downloadItem.cartoonId, downloadItem.cartoonSource, downloadItem.cartoonUrl), downloadItem.playLine,
+                CartoonSummary(
+                    downloadItem.cartoonId,
+                    downloadItem.cartoonSource,
+                    downloadItem.cartoonUrl
+                ), downloadItem.playLine,
                 downloadItem.episodeIndex
             )
                 .complete {
@@ -69,13 +73,21 @@ class ParseStep(
         }
     }
 
-    private fun completely(downloadItem: DownloadItem, playerInfo: PlayerInfo){
-        downloadController.updateDownloadItem(downloadItem.uuid){
+    private fun completely(downloadItem: DownloadItem, playerInfo: PlayerInfo) {
+        downloadController.updateDownloadItem(downloadItem.uuid) {
             it.copy(
-                state = 1,
-                stepsChain = if(playerInfo.decodeType == PlayerInfo.DECODE_TYPE_HLS) it.stepsChain + TranscodeStep.NAME else it.stepsChain,
+                state = 2,
+                stepsChain = it.stepsChain.flatMap {
+                    if(playerInfo.decodeType == PlayerInfo.DECODE_TYPE_HLS && it == AriaStep.NAME){
+                        listOf(AriaStep.NAME, TranscodeStep.NAME)
+                    }else{
+                        listOf(it)
+                    }
+                },
                 bundle = it.bundle.apply {
                     this.playerInfo = playerInfo
+                    this.downloadFileName =
+                        if (playerInfo.decodeType == PlayerInfo.DECODE_TYPE_HLS) it.fileNameWithoutSuffix + ".aria.m3u8" else it.fileNameWithoutSuffix + ".mp4"
                 }
             )
         }
