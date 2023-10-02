@@ -2,9 +2,11 @@ package com.heyanle.easybangumi4.download
 
 import android.content.Context
 import com.heyanle.easybangumi4.download.entity.DownloadItem
+import com.heyanle.easybangumi4.download.step.BaseStep
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.easybangumi4.utils.jsonTo
 import com.heyanle.easybangumi4.utils.toJson
+import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,6 +40,20 @@ class DownloadController(
             if (downloadItemJson.exists()) {
                 runCatching {
                     val d = downloadItemJson.readText().jsonTo<List<DownloadItem>>()
+                        .flatMap {
+                            val name = it.stepsChain.getOrNull(it.currentSteps)
+                            if(name == null){
+                                return@flatMap emptyList<DownloadItem>()
+                            }else{
+                                val step by Injekt.injectLazy<BaseStep>(name)
+                                val n = step.init(it)
+                                if(n == null){
+                                    return@flatMap emptyList<DownloadItem>()
+                                }else{
+                                    return@flatMap listOf(n)
+                                }
+                            }
+                        }
                     _downloadItem.update {
                         d
                     }

@@ -27,7 +27,7 @@ data class DownloadItem(
     val episodeIndex: Int,
 
 
-    val state: Int, // -1 -> error, 0 -> doing, 1 -> waiting（当前步骤完成等待调度） 2 -> Completely
+    val state: Int, // -1 -> error, 0 -> waiting ,1 -> doing, 2 -> step completely（当前步骤完成等待调度） 3 -> Completely
     val currentSteps: Int, // 当前步骤
 
     val stepsChain: List<String>, // 该任务需要的所有步骤
@@ -35,10 +35,11 @@ data class DownloadItem(
     val bundle: DownloadBundle = DownloadBundle(),
     val errorMsg: String = "",
 
-    val filePathWithoutSuffix: String, // 下载目标路径+文件名不含后缀
+    val folder: String, // 目标路径
+    val fileNameWithoutSuffix: String, // 目标文件名
 ) {
 
-    fun needDispatcher() = state == 1
+    fun needDispatcher() = state == 0 || state == 2
 }
 
 /**
@@ -49,9 +50,11 @@ data class DownloadBundle(
     var playerInfo: PlayerInfo? = null,
     // aria 任务
     var ariaId: Long = -1,
+    var downloadFolder: String = "",
+    var downloadFileName: String = "",
     // aria 的 m3u8 实体（如果是流媒体的解码形式）
     // 含 m3u8 最终下载路径
     var m3U8Entity: M3U8Entity? = null,
 
-    var realFilePath: String = "", // 最终下载的路径+文件名含后缀
+    var filePathBeforeCopy: String = "", // 复制前路径
 )

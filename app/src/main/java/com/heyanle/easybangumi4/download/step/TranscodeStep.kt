@@ -5,16 +5,14 @@ import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.download.DownloadBus
 import com.heyanle.easybangumi4.download.DownloadController
 import com.heyanle.easybangumi4.download.entity.DownloadItem
-import com.heyanle.easybangumi4.download_old.utils.M3U8Utils
+import com.heyanle.easybangumi4.download.utils.M3U8Utils
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.stringRes
 import com.jeffmony.m3u8library.VideoProcessManager
 import com.jeffmony.m3u8library.listener.IVideoTransformListener
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -35,31 +33,30 @@ class TranscodeStep(
 
     private val cacheFile = context.getCachePath("transcode")
 
-    private val _flow =
-        MutableStateFlow<Set<com.heyanle.easybangumi4.download_old.entity.DownloadItem>>(emptySet())
-    val flow = _flow.asStateFlow()
 
     override fun invoke(downloadItem: DownloadItem) {
-        if (!decrypt(downloadItem)) {
-            error(downloadItem, stringRes(com.heyanle.easy_i18n.R.string.decrypt_error))
-            return
-        }
-        if (!ffmpeg(
-                downloadItem = downloadItem,
-                onError = {
-                    it?.moeSnackBar()
-                    error(
-                        downloadItem,
-                        it?.message ?: stringRes(com.heyanle.easy_i18n.R.string.transcode_error)
-                    )
-                },
-                onCompletely = {
-                    completely(downloadItem)
-                }
-            )
-        ) {
-            error(downloadItem, stringRes(com.heyanle.easy_i18n.R.string.transcode_error))
-            return
+        mainScope.launch(Dispatchers.IO) {
+            if (!decrypt(downloadItem)) {
+                error(downloadItem, stringRes(com.heyanle.easy_i18n.R.string.decrypt_error))
+                return@launch
+            }
+            if (!ffmpeg(
+                    downloadItem = downloadItem,
+                    onError = {
+                        it?.moeSnackBar()
+                        error(
+                            downloadItem,
+                            it?.message ?: stringRes(com.heyanle.easy_i18n.R.string.transcode_error)
+                        )
+                    },
+                    onCompletely = {
+                        completely(downloadItem)
+                    }
+                )
+            ) {
+                error(downloadItem, stringRes(com.heyanle.easy_i18n.R.string.transcode_error))
+                return@launch
+            }
         }
     }
 
@@ -191,7 +188,7 @@ class TranscodeStep(
         if (!m3u8.exists() || !m3u8.canRead()) {
             return false
         }
-        val realTarget = File(downloadItem.filePathWithoutSuffix + ".mp4")
+        val realTarget = File(downloadItem.bundle.filePathBeforeCopy)
         val parentFile = realTarget.parentFile ?: return false
         parentFile.mkdirs()
         val target = File(parentFile, realTarget.name + ".temp.mp4")
@@ -220,7 +217,6 @@ class TranscodeStep(
                 override fun onTransformFinished() {
                     target.renameTo(realTarget)
                     M3U8Utils.deleteM3U8WithTs(m3u8.absolutePath)
-                    downloadItem.bundle.realFilePath = realTarget.absolutePath
                     onCompletely()
                 }
             }
@@ -240,7 +236,7 @@ class TranscodeStep(
     private fun completely(downloadItem: DownloadItem) {
         downloadController.updateDownloadItem(downloadItem.uuid) {
             it.copy(
-                state = 1
+                state = 2
             )
         }
     }

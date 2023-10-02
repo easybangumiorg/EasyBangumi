@@ -24,7 +24,6 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -223,7 +222,7 @@ fun Download() {
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun LocalCartoonPage(
     localCartoonViewModel: LocalCartoonViewModel
@@ -252,7 +251,7 @@ fun LocalCartoonPage(
                 })
             }
         }
-        
+
         FastScrollToTopFab(listState = state)
     }
 }
@@ -323,15 +322,24 @@ fun DownloadItem(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(info.status.value)
-                Text(info.subStatus.value)
-            }
-            if (info.process.value == -1f) {
-                LinearProgressIndicator()
-            } else {
-                LinearProgressIndicator(info.process.value)
-            }
+                if (downloadItem.state == -1) {
+                    Text(stringResource(R.string.download_error), maxLines = 1)
+                    Text(downloadItem.errorMsg, maxLines = 1)
+                } else {
+                    Text(info.status.value, maxLines = 1)
+                    Text(info.subStatus.value, maxLines = 1)
+                }
 
+            }
+            if (downloadItem.state == -1) {
+                LinearProgressIndicator(0f)
+            } else {
+                if (info.process.value == -1f) {
+                    LinearProgressIndicator()
+                } else {
+                    LinearProgressIndicator(info.process.value)
+                }
+            }
         }
     }
 }

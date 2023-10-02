@@ -82,7 +82,7 @@ class LocalCartoonController(
                 }
                 val newEpisode = LocalEpisode(
                     label = downloadItem.episodeLabel,
-                    path = downloadItem.bundle.realFilePath
+                    path = File(downloadItem.folder, downloadItem.fileNameWithoutSuffix+".mp4").absolutePath
                 )
                 newLines.list.add(newEpisode)
                 d

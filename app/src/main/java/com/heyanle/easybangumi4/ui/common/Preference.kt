@@ -159,6 +159,7 @@ fun StringSelectPreferenceItem(
     icon: @Composable (() -> Unit)? = null,
     textList: List<String>,
     select: Int,
+    subTitle: (Int) -> String = {textList[it]},
     onChange: (Int) -> Unit = {},
 ) {
     var showDialog by remember {
@@ -172,7 +173,7 @@ fun StringSelectPreferenceItem(
         headlineContent = title,
         leadingContent = icon,
         supportingContent = {
-            Text(text = textList.get(select))
+            Text(text = subTitle(select))
         },
     )
 

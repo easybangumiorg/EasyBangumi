@@ -13,6 +13,7 @@ import com.heyanle.easybangumi4.download.DownloadController
 import com.heyanle.easybangumi4.download.entity.DownloadItem
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.stringRes
+import java.io.File
 import java.net.URI
 import java.net.URL
 import java.util.regex.Pattern
@@ -66,13 +67,31 @@ class AriaStep(
         generateIndexFile()
     }
 
+    override fun init(downloadItem: DownloadItem): DownloadItem? {
+        val entity = aria.getDownloadEntity(downloadItem.bundle.ariaId)
+            ?: return downloadItem.copy(
+                state = 0,
+            )
+        return when(entity.state){
+            IEntity.STATE_COMPLETE -> downloadItem.copy(state = 2)
+            IEntity.STATE_CANCEL -> null
+            IEntity.STATE_FAIL -> downloadItem.copy(
+                state = -1,
+                errorMsg = ""
+            )
+            else -> {
+                aria.load(downloadItem.bundle.ariaId).ignoreCheckPermissions().resume()
+                downloadItem.copy(state = 1)
+            }
+        }
+    }
     override fun invoke(downloadItem: DownloadItem) {
         val entity = aria.getDownloadEntity(downloadItem.bundle.ariaId)
         if (entity != null) {
             val info = downloadBus.getInfo(downloadItem.uuid)
             if (info.status.value.isEmpty() && info.subStatus.value.isEmpty()) {
                 if (entity.state == IEntity.STATE_STOP) {
-                    aria.load(downloadItem.bundle.ariaId).resume()
+                    aria.load(downloadItem.bundle.ariaId).ignoreCheckPermissions().resume()
                 }
             }
             return
@@ -84,7 +103,7 @@ class AriaStep(
         }
         when (info.decodeType) {
             PlayerInfo.DECODE_TYPE_OTHER -> {
-                val path = downloadItem.filePathWithoutSuffix + ".mp4"
+                val path = File(downloadItem.bundle.downloadFolder, downloadItem.bundle.downloadFileName).absolutePath
                 val taskId = aria.load(info.uri)
                     .setExtendField(downloadItem.uuid)
                     .option(HttpOption().apply {
@@ -99,7 +118,7 @@ class AriaStep(
             }
 
             PlayerInfo.DECODE_TYPE_HLS -> {
-                val path = downloadItem.filePathWithoutSuffix + "aria.m3u8"
+                val path = File(downloadItem.bundle.downloadFolder, downloadItem.bundle.downloadFileName).absolutePath
                 val taskId = aria.load(info.uri)
                     .setExtendField(downloadItem.uuid)
                     .option(HttpOption().apply {
@@ -121,6 +140,10 @@ class AriaStep(
     }
 
     private fun pushCompletely(downloadItem: DownloadItem, taskId: Long) {
+        if(taskId == -1L){
+            error(downloadItem.uuid, stringRes(R.string.download_create_failed))
+            return
+        }
         downloadController.updateDownloadItem(downloadItem.uuid) {
             it.copy(
                 bundle = it.bundle.apply {
@@ -133,10 +156,9 @@ class AriaStep(
     private fun downloadCompletely(uuid: String, task: DownloadTask) {
         downloadController.updateDownloadItem(uuid) {
             it.copy(
-                state = 1,
+                state = 2,
                 bundle = it.bundle.apply {
                     m3U8Entity = task.entity.m3U8Entity
-                    realFilePath = it.filePathWithoutSuffix + ".mp4"
                 }
             )
         }
@@ -237,7 +259,6 @@ class AriaStep(
     }
 
     override fun onNoSupportBreakPoint(task: DownloadTask?) {
-        //TODO("Not yet implemented")
         stringRes(com.heyanle.easy_i18n.R.string.no_support_break_point).moeSnackBar()
     }
 }
