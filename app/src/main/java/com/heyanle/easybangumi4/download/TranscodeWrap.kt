@@ -33,7 +33,7 @@ class TranscodeWrap(
     val flow = _flow.asStateFlow()
 
 
-    fun transcode(
+    fun  transcode(
         downloadItem: DownloadItem
     ) {
         if (!decrypt(downloadItem)) {
