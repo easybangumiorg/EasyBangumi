@@ -501,8 +501,6 @@ fun CartoonPlay(
 
                 }
             }
-
-
 //            if (!model.isFullScreen) {
 //                FilledIconButton(
 //                    modifier = Modifier.padding(8.dp),

@@ -16,6 +16,8 @@ interface BaseStep {
 
     fun invoke(downloadItem: DownloadItem)
 
+    fun onRemove(downloadItem: DownloadItem)
+
     fun onClick(downloadItem: DownloadItem): Boolean = false
 
 

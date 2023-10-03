@@ -65,6 +65,7 @@ import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.download.entity.DownloadItem
 import com.heyanle.easybangumi4.download.entity.LocalCartoon
+import com.heyanle.easybangumi4.source.LocalSourceBundleController
 import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.common.TabIndicator
@@ -359,6 +360,7 @@ fun LocalCartoonItem(
         modifier = Modifier
             .padding(8.dp, 4.dp)
             .height(IntrinsicSize.Min)
+            .clip(RoundedCornerShape(4.dp))
             .clickable {
                 onClick(localCartoon)
             }
@@ -381,6 +383,13 @@ fun LocalCartoonItem(
             Text(
                 modifier = Modifier,
                 text = (localCartoon.cartoonTitle),
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                modifier = Modifier,
+                text = localCartoon.sourceLabel,
                 style = MaterialTheme.typography.titleMedium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
