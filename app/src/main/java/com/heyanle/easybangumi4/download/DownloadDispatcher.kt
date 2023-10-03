@@ -12,6 +12,7 @@ import com.heyanle.easybangumi4.download.step.CopyStep
 import com.heyanle.easybangumi4.download.step.ParseStep
 import com.heyanle.easybangumi4.getter.DownloadItemGetter
 import com.heyanle.easybangumi4.preferences.SettingPreferences
+import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.injekt.api.get
@@ -39,12 +40,16 @@ class DownloadDispatcher(
         private const val reservedChars = "|\\?*<\":>+[]/'!"
     }
 
+    private val cacheRoot = application.getCachePath("download")
     private val dispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
     private val atomLong = AtomicLong(0)
 
     init {
         scope.launch {
+            // 先清理垃圾
+            removeDirty()
+
             downloadItemGetter.flowDownloadItem().collect {
                 Log.i(TAG, "${it.size}")
                 it.find { it.needDispatcher() }?.let {
@@ -54,7 +59,42 @@ class DownloadDispatcher(
         }
     }
 
+    fun removeDownload(downloadItem: DownloadItem) {
+        val name = downloadItem.stepsChain.getOrElse(downloadItem.currentSteps){""}
+        if(name.isNotEmpty()){
+            getStep(name).onRemove(downloadItem)
+        }
+    }
+
     fun clickDownload(downloadItem: DownloadItem): Boolean {
+        if(downloadItem.state == -1){
+            // 错误的任务点击重下
+            val uuid = "${System.nanoTime()}-${atomLong.getAndIncrement()}"
+            var fileName =
+                "${downloadItem.cartoonTitle}-${downloadItem.playLine.label}-${downloadItem.episodeLabel}-${uuid}"
+            fileName = fileName.flatMap {
+                if (reservedChars.contains(it) || it == '\n' || it == ' ' || it == '\t' || it == '\r') {
+                    emptyList()
+                } else {
+                    listOf(it)
+                }
+            }.joinToString("")
+            val realTarget = settingPreferences.downloadPath.get()
+            val downloadRoot = File(cacheRoot, uuid)
+            downloadRoot.mkdirs()
+            val new = downloadItem.copy(
+                uuid = uuid,
+                folder = realTarget,
+                fileNameWithoutSuffix = fileName,
+                bundle = DownloadBundle(
+                    downloadFolder = downloadRoot.absolutePath,
+                    filePathBeforeCopy = File(downloadRoot, "$fileName.mp4").absolutePath,
+                    needRefreshMedia = settingPreferences.needRefreshMedia.contains(realTarget)
+                )
+            )
+            newDownload(listOf(new))
+            return true
+        }
         val name = downloadItem.stepsChain.getOrNull(downloadItem.currentSteps)
         if (name != null) {
             val step = getStep(name = name)
@@ -76,18 +116,11 @@ class DownloadDispatcher(
                         listOf(it)
                     }
                 }.joinToString("")
-                val file = settingPreferences.downloadPath.get()
-                val dd = settingPreferences.downloadPathSelection.find {
-                    it.first == file
-                }?.second?:""
+                val realTarget = settingPreferences.downloadPath.get()
+                val downloadRoot = File(cacheRoot, uuid)
+                downloadRoot.mkdirs()
 
-                val downloadTarget =
-                    if(dd == stringRes(com.heyanle.easy_i18n.R.string.public_movie_path) || dd == stringRes(
-                            com.heyanle.easy_i18n.R.string.public_dcim_path)){
-                        application.getFilePath("download")
-                    }else{
-                        file
-                    }
+
                 DownloadItem(
                     uuid = uuid,
                     cartoonId = cartoonInfo.id,
@@ -102,23 +135,43 @@ class DownloadDispatcher(
                     episodeIndex = it.second,
                     state = 0,
                     currentSteps = 0,
-                    stepsChain = if(downloadTarget == file)listOf(ParseStep.NAME, AriaStep.NAME)else listOf(ParseStep.NAME, AriaStep.NAME, CopyStep.NAME) ,
-                    folder = file,
+                    stepsChain =  listOf(ParseStep.NAME, AriaStep.NAME, CopyStep.NAME) ,
+                    folder = realTarget,
                     fileNameWithoutSuffix = fileName,
+                    sourceLabel = cartoonInfo.sourceName,
                     bundle = DownloadBundle(
-                        downloadFolder = downloadTarget,
-                        filePathBeforeCopy = File(downloadTarget, "$fileName.mp4").absolutePath
+                        downloadFolder = downloadRoot.absolutePath,
+                        filePathBeforeCopy = File(downloadRoot, "$fileName.mp4").absolutePath,
+                        needRefreshMedia = settingPreferences.needRefreshMedia.contains(realTarget)
                     )
                 )
             }
+            newDownload(new)
             downloadController.update {
                 (it ?: emptyList()) + new
             }
         }
     }
 
+    private fun newDownload(downloadItems: List<DownloadItem>){
+        downloadController.update {
+            (it ?: emptyList()) + downloadItems
+        }
+    }
+
     private fun dispatch(downloadItem: DownloadItem) {
         if (!downloadItem.needDispatcher()) {
+            return
+        }
+        if(downloadItem.state == -1 || downloadItem.isRemoved){
+            if(downloadItem.bundle.downloadFolder.isNotEmpty()){
+                File(downloadItem.bundle.downloadFolder).delete()
+            }
+            if(downloadItem.isRemoved){
+                downloadController.update {
+                    it?.minus(downloadItem)?: emptyList()
+                }
+            }
             return
         }
         val nextIndex =
@@ -154,8 +207,24 @@ class DownloadDispatcher(
                 )
             }
         }
+        scope.launch {
+            // 每次调度后清理垃圾
+            removeDirty()
+        }
+    }
 
-
+    private suspend fun removeDirty(){
+        val ignoreUUID = hashSetOf<String>()
+        downloadItemGetter.awaitDownloadItem().forEach {
+            if(it.state != -1 && it.state != 3 && !it.isRemoved){
+                ignoreUUID.add(it.uuid)
+            }
+        }
+        File(cacheRoot).listFiles()?.forEach {
+            if(it != null && it.exists() && !ignoreUUID.contains(it.name)){
+                it.delete()
+            }
+        }
     }
 
     private fun getStep(name: String) = Injekt.get<BaseStep>(name)

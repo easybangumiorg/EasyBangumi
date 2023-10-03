@@ -16,6 +16,7 @@ data class DownloadItem(
     val cartoonSource: String,
 
     // 展示数据
+    val sourceLabel: String,
     val cartoonTitle: String,
     val cartoonCover: String,
     val cartoonDescription: String,
@@ -37,9 +38,11 @@ data class DownloadItem(
 
     val folder: String, // 目标路径
     val fileNameWithoutSuffix: String, // 目标文件名
+
+    val isRemoved: Boolean = false, // 是否删除，除了 ariaStep 其他步骤需要等该步骤处理完才能清理
 ) {
 
-    fun needDispatcher() = state == 0 || state == 2
+    fun needDispatcher() = state == 0 || state == 2 || state == -1 || isRemoved
 }
 
 /**
@@ -57,4 +60,6 @@ data class DownloadBundle(
     var m3U8Entity: M3U8Entity? = null,
 
     var filePathBeforeCopy: String = "", // 复制前路径
+
+    var needRefreshMedia: Boolean = false, // 是否需要下载完刷新媒体
 )

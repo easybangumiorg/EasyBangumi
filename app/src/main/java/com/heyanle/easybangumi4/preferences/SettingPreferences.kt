@@ -71,17 +71,26 @@ class SettingPreferences(
     val downloadPathSelection = arrayListOf<Pair<String, String>>().apply {
         add(application.getFilePath("download") to stringRes(com.heyanle.easy_i18n.R.string.private_download_path))
         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)?.let {
-            add(File(it, "easyBangumi").absolutePath to stringRes(com.heyanle.easy_i18n.R.string.public_download_path))
+            add(File(it, "EasyBangumi").absolutePath to stringRes(com.heyanle.easy_i18n.R.string.public_download_path))
         }
         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES)?.let {
-            add(File(it, "easyBangumi").absolutePath to stringRes(com.heyanle.easy_i18n.R.string.public_movie_path))
+            add(File(it, "EasyBangumi").absolutePath to stringRes(com.heyanle.easy_i18n.R.string.public_movie_path))
         }
         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM)?.let {
-            add(File(it, "easyBangumi").absolutePath to stringRes(com.heyanle.easy_i18n.R.string.public_dcim_path))
+            add(File(it, "EasyBangumi").absolutePath to stringRes(com.heyanle.easy_i18n.R.string.public_dcim_path))
+        }
+    }
+    // 需要刷新媒体的路径
+    val needRefreshMedia = hashSetOf<String>().apply {
+        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)?.let {
+            add(File(it, "EasyBangumi").absolutePath)
+        }
+        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES)?.let {
+            add(File(it, "EasyBangumi").absolutePath)
+        }
+        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM)?.let {
+            add(File(it, "EasyBangumi").absolutePath)
         }
     }
     var downloadPath = preferenceStore.getString("cartoon_download_path", application.getFilePath("download") )
-
-
-
 }

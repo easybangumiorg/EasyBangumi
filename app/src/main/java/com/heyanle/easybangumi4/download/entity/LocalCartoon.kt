@@ -13,6 +13,7 @@ data class LocalCartoon (
     val cartoonSource: String,
 
     // 展示数据
+    val sourceLabel: String,
     val cartoonTitle: String,
     val cartoonCover: String,
     val cartoonDescription: String,

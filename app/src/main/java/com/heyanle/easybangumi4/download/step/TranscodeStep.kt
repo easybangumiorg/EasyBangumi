@@ -31,8 +31,6 @@ class TranscodeStep(
 
     private val mainScope = MainScope()
 
-    private val cacheFile = context.getCachePath("transcode")
-
 
     override fun invoke(downloadItem: DownloadItem) {
         mainScope.launch(Dispatchers.IO) {
@@ -60,6 +58,12 @@ class TranscodeStep(
         }
     }
 
+    override fun onRemove(downloadItem: DownloadItem) {
+        downloadController.updateDownloadItem(downloadItem.uuid){
+            it.copy(isRemoved = true)
+        }
+    }
+
     private fun decrypt(downloadItem: DownloadItem): Boolean {
         val info = downloadBus.getInfo(downloadItem.uuid)
         val entity = downloadItem.bundle.m3U8Entity ?: return false
@@ -68,9 +72,9 @@ class TranscodeStep(
         if (!localM3U8.exists() || !localM3U8.canRead()) {
             return false
         }
-        val target = File(cacheFile, "${downloadItem.uuid}.m3u8.temp")
-        val realTarget = File(cacheFile, "${downloadItem.uuid}.m3u8")
-        File(cacheFile).mkdirs()
+        val target = File(downloadItem.bundle.downloadFolder, "${downloadItem.uuid}.m3u8.temp")
+        val realTarget = File(downloadItem.bundle.downloadFolder, "${downloadItem.uuid}.m3u8")
+        File(downloadItem.bundle.downloadFolder).mkdirs()
         target.delete()
         if (!target.createNewFile() || !target.canWrite()) {
             return false
@@ -184,7 +188,7 @@ class TranscodeStep(
         onCompletely: () -> Unit
     ): Boolean {
         val info = downloadBus.getInfo(downloadItem.uuid)
-        val m3u8 = File(cacheFile, "${downloadItem.uuid}.m3u8")
+        val m3u8 = File(downloadItem.bundle.downloadFolder, "${downloadItem.uuid}.m3u8")
         if (!m3u8.exists() || !m3u8.canRead()) {
             return false
         }

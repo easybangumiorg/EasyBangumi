@@ -25,39 +25,56 @@ class CopyStep(
     private val scope = MainScope()
     override fun invoke(downloadItem: DownloadItem) {
         scope.launch(Dispatchers.IO) {
-            val source = File(downloadItem.bundle.filePathBeforeCopy)
-            val target = File(downloadItem.folder, downloadItem.fileNameWithoutSuffix + ".mp4")
-            if(source.absolutePath == target.absolutePath){
-                downloadController.updateDownloadItem(downloadItem.uuid){
+            try {
+                val source = File(downloadItem.bundle.filePathBeforeCopy)
+                val target = File(downloadItem.folder, downloadItem.fileNameWithoutSuffix + ".mp4")
+                if (source.absolutePath == target.absolutePath) {
+                    downloadController.updateDownloadItem(downloadItem.uuid) {
+                        it.copy(
+                            state = 2
+                        )
+                    }
+                    return@launch
+                }
+                scope.launch {
+                    downloadBus.getInfo(downloadItem.uuid).apply {
+                        status.value = stringRes(com.heyanle.easy_i18n.R.string.copying)
+                        this.subStatus.value = ""
+                        this.process.value = 0f
+                    }
+                }
+                if (!target.exists()) {
+                    downloadController.updateDownloadItem(downloadItem.uuid) {
+                        it.copy(
+                            state = -1
+                        )
+                    }
+                    return@launch
+                }
+                target.delete()
+                source.copyTo(target)
+                source.delete()
+                downloadController.updateDownloadItem(downloadItem.uuid) {
                     it.copy(
                         state = 2
                     )
                 }
-                return@launch
-            }
-            scope.launch {
-                downloadBus.getInfo(downloadItem.uuid).apply {
-                    status.value = stringRes(com.heyanle.easy_i18n.R.string.copying)
-                    this.subStatus.value = ""
-                    this.process.value = 0f
-                }
-            }
-            if(!target.exists()){
-                downloadController.updateDownloadItem(downloadItem.uuid){
+            } catch (e: Exception) {
+                e.printStackTrace()
+                downloadController.updateDownloadItem(downloadItem.uuid) {
                     it.copy(
-                        state = -1
+                        state = -1,
+                        errorMsg = e.message ?: ""
                     )
                 }
-                return@launch
             }
-            target.delete()
-            source.copyTo(target)
-            source.delete()
-            downloadController.updateDownloadItem(downloadItem.uuid){
-                it.copy(
-                    state = 2
-                )
-            }
+
+        }
+    }
+
+    override fun onRemove(downloadItem: DownloadItem) {
+        downloadController.updateDownloadItem(downloadItem.uuid){
+            it.copy(isRemoved = true)
         }
     }
 
