@@ -64,6 +64,12 @@ class ParseStep(
         }
     }
 
+    override fun onRemove(downloadItem: DownloadItem) {
+        downloadController.updateDownloadItem(downloadItem.uuid){
+            it.copy(isRemoved = true)
+        }
+    }
+
     private fun error(uuid: String, error: String) {
         downloadController.updateDownloadItem(uuid) {
             it.copy(

@@ -139,6 +139,29 @@ class AriaStep(
         }
     }
 
+    override fun onClick(downloadItem: DownloadItem): Boolean {
+        val entity = aria.getDownloadEntity(downloadItem.bundle.ariaId)
+            ?: return false
+        when(entity.state){
+            IEntity.STATE_RUNNING, IEntity.STATE_WAIT -> {
+                aria.load(downloadItem.bundle.ariaId).stop()
+            }
+            IEntity.STATE_STOP -> {
+                aria.load(downloadItem.bundle.ariaId).resume()
+            }
+            else -> return false
+        }
+        return true
+    }
+
+
+    override fun onRemove(downloadItem: DownloadItem) {
+        aria.load(downloadItem.bundle.ariaId)?.cancel(true)
+        downloadController.updateDownloadItem(downloadItem.uuid){
+            it.copy(isRemoved = true)
+        }
+    }
+
     private fun pushCompletely(downloadItem: DownloadItem, taskId: Long) {
         if(taskId == -1L){
             error(downloadItem.uuid, stringRes(R.string.download_create_failed))

@@ -57,6 +57,7 @@ class LocalCartoonController(
                 }
                 val new = if (old == null) {
                     val newLocal = LocalCartoon(
+                        sourceLabel = downloadItem.sourceLabel,
                         cartoonId = downloadItem.cartoonId,
                         cartoonUrl = downloadItem.cartoonUrl,
                         cartoonSource = downloadItem.cartoonSource,

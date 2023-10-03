@@ -3,6 +3,8 @@ package com.heyanle.easybangumi4.download
 import android.content.Context
 import com.heyanle.easybangumi4.download.entity.DownloadItem
 import com.heyanle.easybangumi4.download.step.BaseStep
+import com.heyanle.easybangumi4.download.utils.MediaScanUtils
+import com.heyanle.easybangumi4.utils.MediaUtils
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.easybangumi4.utils.jsonTo
 import com.heyanle.easybangumi4.utils.toJson
@@ -107,6 +109,13 @@ class DownloadController(
                 if (_downloadItem.compareAndSet(prevValue, new)) {
                     save()
                     break
+                }
+            }
+            // 刷新图库
+            if(downloadItem.bundle.needRefreshMedia){
+                val realFile = File(downloadItem.folder, downloadItem.fileNameWithoutSuffix+".mp4")
+                if(realFile.exists()){
+                    MediaScanUtils.mediaScan(context, realFile.absolutePath)
                 }
             }
         }
