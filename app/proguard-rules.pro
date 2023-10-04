@@ -109,9 +109,35 @@
     public void *ButtonClicked(android.view.View);
 }
 
+#优化  不优化输入的类文件
+-dontoptimize
+
+#避免混淆泛型
+-keepattributes Singature
+
+#保护注解
+-keepattributes *Annotation
+
+-keepattributes *Annotation*
+-keep class com.lidroid.** { *; }
+-keep class * extends java.lang.annotation.Annotation { *; }
+
+#保持 Parcelable 不被混淆
+-keep class * implements android.os.Parcelable {
+  public static final android.os.Parcelable$Creator *;
+}
+
+#保持 Serializable 不被混淆
+-keepnames class * implements java.io.Serializable
+
+#不混淆资源类
+-keepclassmembers class **.R$* {
+    public static <fields>;
+}
+
 -dontwarn javax.script.ScriptEngine
 -dontwarn javax.script.ScriptEngineManager
-
+-dontwarn javax.inject.Qualifier
 -dontwarn javax.enterprise.context.ApplicationScoped
 -dontwarn javax.enterprise.inject.Alternative
 -dontwarn javax.inject.Inject
