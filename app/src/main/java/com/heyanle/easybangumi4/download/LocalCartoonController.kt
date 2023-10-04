@@ -15,7 +15,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
-import java.util.concurrent.atomic.AtomicLong
 
 /**
  * Created by heyanlin on 2023/10/2.
@@ -31,21 +30,29 @@ class LocalCartoonController(
     private val _localCartoon = MutableStateFlow<List<LocalCartoon>?>(null)
     val localCartoon = _localCartoon.asStateFlow()
 
-    private val atomLong = AtomicLong(0)
-
     init {
+
         scope.launch(Dispatchers.IO) {
             if(!localCartoonJson.exists() && localCartoonJsonTem.exists()){
                 localCartoonJsonTem.renameTo(localCartoonJson)
             }
             if(localCartoonJson.exists()){
                 runCatching {
-                    val d = localCartoonJson.readText().jsonTo<List<LocalCartoon>>()
+                    val json = localCartoonJson.readText()
+                    val d = json.jsonTo<List<LocalCartoon>>()?: emptyList()
+                    d.forEach {
+                        it.clearDirty()
+                    }
                     _localCartoon.update {
                         d
                     }
                 }.onFailure {
                     it.printStackTrace()
+                    localCartoonJson.delete()
+                    localCartoonJsonTem.delete()
+                    _localCartoon.update {
+                        emptyList()
+                    }
                 }
             }
         }
@@ -109,4 +116,5 @@ class LocalCartoonController(
         localCartoonJsonTem.writeText(value.toJson())
         localCartoonJsonTem.renameTo(localCartoonJson)
     }
+
 }

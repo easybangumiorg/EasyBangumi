@@ -4,11 +4,17 @@ import android.content.Context
 import com.heyanle.easybangumi4.download.entity.DownloadItem
 import com.heyanle.easybangumi4.download.step.BaseStep
 import com.heyanle.easybangumi4.download.utils.MediaScanUtils
-import com.heyanle.easybangumi4.utils.MediaUtils
+import com.heyanle.easybangumi4.navControllerRef
+import com.heyanle.easybangumi4.navigationSetting
+import com.heyanle.easybangumi4.ui.common.MoeDialogData
+import com.heyanle.easybangumi4.ui.common.dismiss
+import com.heyanle.easybangumi4.ui.common.show
+import com.heyanle.easybangumi4.ui.setting.SettingPage
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.easybangumi4.utils.jsonTo
 import com.heyanle.easybangumi4.utils.toJson
 import com.heyanle.injekt.core.Injekt
+import com.heyanle.okkv2.core.okkv
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,7 +48,7 @@ class DownloadController(
             if (downloadItemJson.exists()) {
                 runCatching {
                     val d = downloadItemJson.readText().jsonTo<List<DownloadItem>>()
-                        .flatMap {
+                        ?.flatMap {
                             val name = it.stepsChain.getOrNull(it.currentSteps)
                             if(name == null){
                                 return@flatMap emptyList<DownloadItem>()
@@ -57,7 +63,7 @@ class DownloadController(
                             }
                         }
                     _downloadItem.update {
-                        d
+                        d?: emptyList()
                     }
                 }.onFailure {
                     it.printStackTrace()
@@ -129,6 +135,33 @@ class DownloadController(
             downloadItemJsonTemp.renameTo(downloadItemJson)
         }
 
+    }
+
+    var first by okkv("download_first_visible", def = true)
+
+    fun tryShowFirstDownloadDialog(){
+        if(!first){
+            first = false
+            showDownloadHelpDialog()
+        }
+    }
+
+    fun showDownloadHelpDialog(){
+        MoeDialogData(
+            text = """1、下载后的视频和原来的番剧没有强关联，从普通页面中依然是从网络播放，需要从下载记录中进入才会播放本地文件。
+                
+2、下载将经历 解析 下载 转码 复制四个步骤，其中转码步骤会将视频转码成 mp4 。
+
+3、可在下载设置界面中设置下载文件的路径，当选择的是公共目录时会同步刷新到相册。""",
+            title = "下载功能须知",
+            confirmLabel = "下载设置",
+            onConfirm = {
+                navControllerRef?.get()?.navigationSetting(SettingPage.Download)
+            },
+            onDismiss = {
+                it.dismiss()
+            }
+        ).show()
     }
 
 

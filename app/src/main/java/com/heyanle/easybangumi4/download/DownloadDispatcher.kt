@@ -13,8 +13,7 @@ import com.heyanle.easybangumi4.download.step.ParseStep
 import com.heyanle.easybangumi4.getter.DownloadItemGetter
 import com.heyanle.easybangumi4.preferences.SettingPreferences
 import com.heyanle.easybangumi4.utils.getCachePath
-import com.heyanle.easybangumi4.utils.getFilePath
-import com.heyanle.easybangumi4.utils.stringRes
+import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.injekt.api.get
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.CoroutineScope
@@ -51,7 +50,12 @@ class DownloadDispatcher(
             removeDirty()
 
             downloadItemGetter.flowDownloadItem().collect {
-                Log.i(TAG, "${it.size}")
+                Log.i(TAG, "refresh ${it.size}")
+                if(it.count {
+                    it.state == 0 || it.state == 1 || it.state == 2
+                    } > 0){
+                    DownloadService.tryStart()
+                }
                 it.find { it.needDispatcher() }?.let {
                     dispatch(it)
                 }
@@ -86,6 +90,8 @@ class DownloadDispatcher(
                 uuid = uuid,
                 folder = realTarget,
                 fileNameWithoutSuffix = fileName,
+                state = 0,
+                currentSteps = 0,
                 bundle = DownloadBundle(
                     downloadFolder = downloadRoot.absolutePath,
                     filePathBeforeCopy = File(downloadRoot, "$fileName.mp4").absolutePath,
@@ -105,6 +111,7 @@ class DownloadDispatcher(
 
     fun newDownload(cartoonInfo: CartoonInfo, download: List<Pair<PlayLine, Int>>) {
         scope.launch {
+            "newDownload ${cartoonInfo.title} ${download.size}".logi(TAG)
             val new = download.map {
                 val uuid = "${System.nanoTime()}-${atomLong.getAndIncrement()}"
                 var fileName =
@@ -147,9 +154,6 @@ class DownloadDispatcher(
                 )
             }
             newDownload(new)
-            downloadController.update {
-                (it ?: emptyList()) + new
-            }
         }
     }
 
@@ -160,6 +164,7 @@ class DownloadDispatcher(
     }
 
     private fun dispatch(downloadItem: DownloadItem) {
+        "dispatch ${downloadItem}".logi(TAG)
         if (!downloadItem.needDispatcher()) {
             return
         }
@@ -222,7 +227,7 @@ class DownloadDispatcher(
         }
         File(cacheRoot).listFiles()?.forEach {
             if(it != null && it.exists() && !ignoreUUID.contains(it.name)){
-                it.delete()
+                it.deleteRecursively()
             }
         }
     }

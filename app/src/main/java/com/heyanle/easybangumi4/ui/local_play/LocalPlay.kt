@@ -1,11 +1,9 @@
 package com.heyanle.easybangumi4.ui.local_play
 
 import android.app.Activity
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -48,29 +46,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Airplay
-import androidx.compose.material.icons.filled.Battery0Bar
-import androidx.compose.material.icons.filled.Battery2Bar
-import androidx.compose.material.icons.filled.Battery3Bar
-import androidx.compose.material.icons.filled.Battery4Bar
-import androidx.compose.material.icons.filled.Battery5Bar
-import androidx.compose.material.icons.filled.Battery6Bar
-import androidx.compose.material.icons.filled.BatteryChargingFull
-import androidx.compose.material.icons.filled.BatteryFull
-import androidx.compose.material.icons.filled.CastConnected
-import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.More
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.filled.Speed
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.StarOutline
 import androidx.compose.material.icons.filled.WifiProtectedSetup
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -81,7 +64,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -89,10 +71,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -102,21 +82,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.exoplayer.ExoPlayer
-import com.heyanle.bangumi_source_api.api.entity.PlayLine
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
-import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.download.entity.LocalCartoon
 import com.heyanle.easybangumi4.download.entity.LocalEpisode
 import com.heyanle.easybangumi4.download.entity.LocalPlayLine
 import com.heyanle.easybangumi4.navigationSearch
-import com.heyanle.easybangumi4.ui.cartoon_play.CartoonActions
-import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlayUI
-import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlayViewModel
-import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlayingController
-import com.heyanle.easybangumi4.ui.cartoon_play.DetailedViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.FullScreenVideoTopBar
-import com.heyanle.easybangumi4.ui.cartoon_play.NormalVideoTopBar
 import com.heyanle.easybangumi4.ui.cartoon_play.speedConfig
 import com.heyanle.easybangumi4.ui.common.Action
 import com.heyanle.easybangumi4.ui.common.ActionRow
@@ -140,8 +112,6 @@ import loli.ball.easyplayer2.ProgressBox
 import loli.ball.easyplayer2.SimpleBottomBar
 import loli.ball.easyplayer2.SimpleGestureController
 import loli.ball.easyplayer2.TopControl
-import loli.ball.easyplayer2.utils.rememberBatteryReceiver
-import java.util.Arrays
 
 /**
  * Created by heyanlin on 2023/9/25.
@@ -343,6 +313,11 @@ fun LocalPlay(
                         onBack = { nav.popBackStack() },
                         onSpeed = {
                             showSpeedWin = true
+                        },
+                        onPlayExt = {
+                            vm.flow.value.curPlayingEpisode?.let {
+                                vm.externalPlay(it)
+                            }
                         }
                     )
 
@@ -876,6 +851,7 @@ fun LocalVideoTopBar(
     showTools: Boolean,
     onBack: () -> Unit,
     onSpeed: () -> Unit,
+    onPlayExt: () -> Unit,
 ) {
     AnimatedVisibility(
         modifier = modifier,
@@ -895,6 +871,13 @@ fun LocalVideoTopBar(
                         Icons.Filled.Speed,
                         tint = Color.White,
                         contentDescription = stringResource(R.string.speed)
+                    )
+                }
+                IconButton(onClick = onPlayExt) {
+                    Icon(
+                        Icons.Filled.Airplay,
+                        tint = Color.White,
+                        contentDescription = null
                     )
                 }
             }

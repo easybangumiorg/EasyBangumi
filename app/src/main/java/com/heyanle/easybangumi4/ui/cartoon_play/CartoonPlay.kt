@@ -109,9 +109,11 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.heyanle.bangumi_source_api.api.Source
 import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
 import com.heyanle.bangumi_source_api.api.entity.PlayLine
+import com.heyanle.easybangumi4.DOWNLOAD
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.R
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
+import com.heyanle.easybangumi4.download.DownloadController
 import com.heyanle.easybangumi4.download.DownloadDispatcher
 import com.heyanle.easybangumi4.navigationDlna
 import com.heyanle.easybangumi4.navigationSearch
@@ -125,6 +127,7 @@ import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.common.TabIndicator
+import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.isCurPadeMode
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.easybangumi4.utils.openUrl
@@ -802,6 +805,12 @@ fun CartoonPlayPage(
             )
         },
         onDownload = { playLine: PlayLine, selection: List<Int> ->
+            stringRes(com.heyanle.easy_i18n.R.string.add_download_completely).moeSnackBar(
+                confirmLabel = stringRes(com.heyanle.easy_i18n.R.string.click_to_view),
+                onConfirm = {
+                    nav.navigate(DOWNLOAD)
+                }
+            )
             downloadDispatcher.newDownload(detailedState.detail, selection.map {
                 playLine to it
             })
@@ -988,7 +997,8 @@ fun CartoonPlayDetailed(
                             } else {
                                 currentDownloadPlayLine.value = null
                             }
-
+                            val downloadController: DownloadController by Injekt.injectLazy()
+                            downloadController.tryShowFirstDownloadDialog()
                         },
                     )
                     Spacer(modifier = Modifier.size(8.dp))

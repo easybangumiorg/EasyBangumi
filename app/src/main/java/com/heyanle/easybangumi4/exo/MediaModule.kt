@@ -12,7 +12,6 @@ import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.NoOpCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import com.heyanle.easybangumi4.preferences.SettingPreferences
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.getFilePath
@@ -46,15 +45,8 @@ class MediaModule(
         }
 
         addSingletonFactory {
-            val settingPreferences: SettingPreferences = get()
-            val cacheSize = settingPreferences.cacheSize.get()
-            cacheSize.loge("MediaModule")
-            val dataSourceFactory = get<CacheDataSource.Factory>(cacheSize)
-            val mediaSourceFactory =
-                DefaultMediaSourceFactory(application).setDataSourceFactory(dataSourceFactory)
             ExoPlayer.Builder(application)
                 //.setRenderersFactory(MixRenderersFactory(app))
-                .setMediaSourceFactory(mediaSourceFactory)
                 .build().also {
                     it.loge("ExoPlayer-----")
                 }

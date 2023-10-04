@@ -28,13 +28,18 @@ import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.base.theme.EasyTheme
 import com.heyanle.easybangumi4.source.SourcesHost
 import com.heyanle.easybangumi4.source.utils.initUtils
+import com.heyanle.easybangumi4.ui.common.MoeDialog
 import com.heyanle.easybangumi4.ui.common.MoeSnackBar
+import com.heyanle.easybangumi4.ui.main.star.update.CartoonUpdateController
 import com.heyanle.easybangumi4.utils.AnnoHelper
 import com.heyanle.easybangumi4.utils.MediaUtils
 import com.heyanle.easybangumi4.utils.ReleaseDialog
 import com.heyanle.extension_load.ExtensionInit
 import com.heyanle.extension_load.IconFactoryImpl
+import com.heyanle.injekt.core.Injekt
 import com.heyanle.okkv2.core.okkv
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 
 /**
  * Created by HeYanLe on 2023/2/19 13:08.
@@ -48,6 +53,7 @@ val LocalWindowSizeController = staticCompositionLocalOf<WindowSizeClass> {
 class MainActivity : ComponentActivity() {
 
     var first by okkv("first_visible", def = true)
+    val scope = MainScope()
 
     private fun init(){
         ExtensionInit.init(this, IconFactoryImpl())
@@ -56,6 +62,10 @@ class MainActivity : ComponentActivity() {
         }.onFailure {
             it.printStackTrace()
             Toast.makeText(this, it.message, Toast.LENGTH_SHORT).show()
+        }
+        scope.launch {
+            val updateController: CartoonUpdateController by Injekt.injectLazy()
+            updateController.tryUpdate(false)
         }
 //        val downloadController: DownloadController by Injekt.injectLazy()
 //        downloadController.init()
@@ -89,6 +99,7 @@ class MainActivity : ComponentActivity() {
                             Nav()
                             EasyTheme {
                                 MoeSnackBar(Modifier.statusBarsPadding())
+                                MoeDialog()
                             }
                             ReleaseDialog()
                         }
