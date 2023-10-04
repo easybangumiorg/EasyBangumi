@@ -30,6 +30,7 @@ import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.dlna.Dlna
 import com.heyanle.easybangumi4.ui.dlna.DlnaViewModel
 import com.heyanle.easybangumi4.ui.download.Download
+import com.heyanle.easybangumi4.ui.local_play.LocalPlay
 import com.heyanle.easybangumi4.ui.main.Main
 import com.heyanle.easybangumi4.ui.main.history.History
 import com.heyanle.easybangumi4.ui.search.Search
@@ -58,6 +59,7 @@ const val NAV = "nav"
 const val MAIN = "home"
 
 const val DETAILED = "detailed"
+const val LOCAL_PLAY = "local_play"
 
 const val WEB_VIEW_USER = "web_view_user"
 
@@ -155,6 +157,12 @@ fun NavHostController.navigationDetailed(
     navigate("${DETAILED}?url=${el}&source=${es}&id=${ed}&lineIndex=${lineIndex}&episode=${episode}&adviceProgress=${adviceProgress}")
 }
 
+fun NavHostController.navigationLocalPlay(
+    uuid: String
+){
+    val uuid = URLEncoder.encode(uuid, "utf-8")
+    navigate("${LOCAL_PLAY}?uuid=${uuid}")
+}
 fun NavHostController.navigationSourceConfig(
     source: String
 ) {
@@ -164,11 +172,11 @@ fun NavHostController.navigationSourceConfig(
 
 fun NavHostController.navigationSetting(
     settingPage: SettingPage
-){
+) {
     navigate("${SETTING}/${settingPage.router}")
 }
 
-fun NavHostController.navigationCartoonTag(){
+fun NavHostController.navigationCartoonTag() {
     navigate(TAG_MANAGE)
 }
 
@@ -258,12 +266,27 @@ fun Nav() {
             }
 
             composable(
+                "${LOCAL_PLAY}?uuid={uuid}",
+                arguments = listOf(
+                    navArgument("uuid") { defaultValue = "" },
+                )
+            ) {
+                NormalSystemBarColor(
+                    getStatusBarDark = {
+                        false
+                    }
+                )
+                val uuid = it.arguments?.getString("uuid") ?: ""
+                LocalPlay(uuid = URLDecoder.decode(uuid, "utf-8"))
+            }
+
+            composable(
                 "${SETTING}/{router}",
                 arguments = listOf(
                     navArgument("router") { defaultValue = SettingPage.Appearance.router },
                 )
-            ){
-                val router = it.arguments?.getString("router")?:SettingPage.Appearance.router
+            ) {
+                val router = it.arguments?.getString("router") ?: SettingPage.Appearance.router
                 NormalSystemBarColor()
                 Setting(router = router)
             }
@@ -379,12 +402,12 @@ fun Nav() {
                 SourceConfig(sourceKey = URLDecoder.decode(source, "utf-8"))
             }
 
-            composable(TAG_MANAGE){
+            composable(TAG_MANAGE) {
                 NormalSystemBarColor()
                 CartoonTag()
             }
 
-            composable(DOWNLOAD){
+            composable(DOWNLOAD) {
                 NormalSystemBarColor()
                 Download()
             }

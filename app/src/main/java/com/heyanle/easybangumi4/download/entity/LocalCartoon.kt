@@ -1,5 +1,6 @@
 package com.heyanle.easybangumi4.download.entity
 
+import androidx.room.Ignore
 import com.heyanle.easybangumi4.utils.getMatchReg
 
 /**
@@ -7,6 +8,10 @@ import com.heyanle.easybangumi4.utils.getMatchReg
  * https://github.com/heyanLE
  */
 data class LocalCartoon (
+
+    // uuid
+    val uuid: String,
+
     // cartoon 外键
     val cartoonId: String,
     val cartoonUrl: String,
@@ -32,6 +37,19 @@ data class LocalCartoon (
             }
         }
         return matched
+    }
+
+    @Ignore
+    private var genres: List<String>? = null
+
+    fun getGenres(): List<String>? {
+        if (cartoonGenre.isEmpty()) {
+            return null
+        }
+        if (genres == null) {
+            genres = cartoonGenre.split(",").map { it.trim() }.filterNot { it.isBlank() }.distinct()
+        }
+        return genres
     }
 
 }

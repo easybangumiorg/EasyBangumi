@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * Created by heyanlin on 2023/10/2.
@@ -29,6 +30,8 @@ class LocalCartoonController(
 
     private val _localCartoon = MutableStateFlow<List<LocalCartoon>?>(null)
     val localCartoon = _localCartoon.asStateFlow()
+
+    private val atomLong = AtomicLong(0)
 
     init {
         scope.launch(Dispatchers.IO) {
@@ -57,6 +60,7 @@ class LocalCartoonController(
                 }
                 val new = if (old == null) {
                     val newLocal = LocalCartoon(
+                        uuid = downloadItem.uuid,
                         sourceLabel = downloadItem.sourceLabel,
                         cartoonId = downloadItem.cartoonId,
                         cartoonUrl = downloadItem.cartoonUrl,
