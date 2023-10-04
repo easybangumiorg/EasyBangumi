@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -29,6 +30,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Help
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -43,6 +45,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -65,18 +68,18 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.heyanle.bangumi_source_api.api.entity.CartoonCover
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
+import com.heyanle.easybangumi4.download.DownloadController
 import com.heyanle.easybangumi4.download.entity.DownloadItem
 import com.heyanle.easybangumi4.download.entity.LocalCartoon
 import com.heyanle.easybangumi4.navigationLocalPlay
-import com.heyanle.easybangumi4.source.LocalSourceBundleController
 import com.heyanle.easybangumi4.ui.common.EasyClearDialog
 import com.heyanle.easybangumi4.ui.common.EasyDeleteDialog
 import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.common.TabIndicator
+import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.launch
 
 /**
@@ -110,14 +113,26 @@ sealed class DownloadPage(
                     }
                 },
                 actions = {
-                    if(vm.selection.isNotEmpty()){
+                    if (vm.selection.isNotEmpty()) {
                         IconButton(onClick = {
-                            vm.removeDownloadItem.value = vm.selection.keys
+                            val set = mutableSetOf<DownloadItem>()
+                            set.addAll(vm.selection.keys)
+                            vm.removeDownloadItem.value = set
                             vm.selection.clear()
                         }) {
                             Icon(
                                 imageVector = Icons.Filled.Delete,
                                 stringResource(id = R.string.delete)
+                            )
+                        }
+                    }else{
+                        IconButton(onClick = {
+                            val downloadController: DownloadController by Injekt.injectLazy()
+                            downloadController.showDownloadHelpDialog()
+                        }){
+                            Icon(
+                                imageVector = Icons.Filled.Help,
+                                stringResource(id = R.string.download)
                             )
                         }
                     }
@@ -148,6 +163,15 @@ sealed class DownloadPage(
                     if (!isSearch) {
                         Text(stringResource(R.string.local_download))
                     } else {
+                        LaunchedEffect(key1 = isSearch) {
+                            if (isSearch) {
+                                runCatching {
+                                    localVM.focusRequester.requestFocus()
+                                }.onFailure {
+                                    it.printStackTrace()
+                                }
+                            }
+                        }
                         TextField(keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                             keyboardActions = KeyboardActions(onSearch = {
                                 localVM.search(keyword.value)
@@ -192,6 +216,7 @@ sealed class DownloadPage(
                             isSearch = true
                             try {
                                 localVM.focusRequester.requestFocus()
+
                             } catch (e: Exception) {
                                 e.printStackTrace()
                             }
@@ -224,6 +249,10 @@ val DownloadPageItems = listOf(
 fun Download() {
     val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState(0) { 2 }
+    LaunchedEffect(Unit) {
+        val downloadController: DownloadController by Injekt.injectLazy()
+        downloadController.tryShowFirstDownloadDialog()
+    }
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background,
@@ -306,31 +335,45 @@ fun Downloading(
     val list by downloadViewModel.downloadingFlow.collectAsState()
     LazyColumn(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxSize(),
+        contentPadding = PaddingValues(4.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         items(list) {
             DownloadItem(it, downloadViewModel, onClick = {
-                if(downloadViewModel.selection.isEmpty()){
+                if (downloadViewModel.selection.isEmpty()) {
                     downloadViewModel.click(it)
-                }else{
-                    downloadViewModel.selection.put(it, true)
+                } else {
+                    if(downloadViewModel.selection.containsKey(it)){
+                        downloadViewModel.selection.remove(it)
+                    }else{
+                        downloadViewModel.selection.put(it, true)
+                    }
                 }
+            }, onLongPress = {
+                downloadViewModel.selection.put(it, true)
             })
         }
     }
 
-    EasyClearDialog(
-        show = downloadViewModel.removeDownloadItem.value?.isNotEmpty() == true,
-        onDelete = {
-            downloadViewModel.removeDownloadItem.value?.let {
-                downloadViewModel.remove(it)
+    if(downloadViewModel.removeDownloadItem.value?.isNotEmpty() == true){
+        EasyDeleteDialog(
+            message = {
+                      Text(stringResource(R.string.delete_confirmation_num, downloadViewModel.removeDownloadItem.value?.size?:0))
+            },
+            show = downloadViewModel.removeDownloadItem.value?.isNotEmpty() == true,
+            onDelete = {
+                downloadViewModel.removeDownloadItem.value?.let {
+                    downloadViewModel.remove(it)
+                }
+                downloadViewModel.removeDownloadItem.value = null
+            },
+            onDismissRequest = {
+                downloadViewModel.removeDownloadItem.value = null
             }
-            downloadViewModel.removeDownloadItem.value = null
-        },
-        onDismissRequest = {
-            downloadViewModel.removeDownloadItem.value = null
-        }
-    )
+        )
+    }
+
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -345,8 +388,14 @@ fun DownloadItem(
     val isSelect = downloadViewModel.selection.getOrElse(downloadItem) { false }
     Row(
         modifier = Modifier
-            .padding(8.dp, 4.dp)
-            .height(IntrinsicSize.Min)
+            .clip(RoundedCornerShape(4.dp))
+            .run {
+                if (isSelect) {
+                    background(MaterialTheme.colorScheme.primary)
+                } else {
+                    this
+                }
+            }
             .combinedClickable(
                 onClick = {
                     onClick(downloadItem)
@@ -355,13 +404,9 @@ fun DownloadItem(
                     onLongPress?.invoke(downloadItem)
                 }
             )
-            .run {
-                if (isSelect) {
-                    background(MaterialTheme.colorScheme.primary)
-                } else {
-                    this
-                }
-            }
+            .padding(8.dp, 4.dp)
+            .height(IntrinsicSize.Min)
+
     ) {
         OkImage(
             modifier = Modifier
@@ -400,11 +445,27 @@ fun DownloadItem(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 if (downloadItem.state == -1) {
-                    Text(stringResource(R.string.download_error), maxLines = 1, color = if (isSelect) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground)
-                    Text(downloadItem.errorMsg, maxLines = 1, color = if (isSelect) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground)
+                    Text(
+                        stringResource(R.string.download_error),
+                        maxLines = 1,
+                        color = if (isSelect) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground
+                    )
+                    Text(
+                        downloadItem.errorMsg,
+                        maxLines = 1,
+                        color = if (isSelect) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground
+                    )
                 } else {
-                    Text(info.status.value, maxLines = 1, color = if (isSelect) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground)
-                    Text(info.subStatus.value, maxLines = 1, color = if (isSelect) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground)
+                    Text(
+                        info.status.value,
+                        maxLines = 1,
+                        color = if (isSelect) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground
+                    )
+                    Text(
+                        info.subStatus.value,
+                        maxLines = 1,
+                        color = if (isSelect) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground
+                    )
                 }
 
             }

@@ -144,10 +144,10 @@ class AriaStep(
             ?: return false
         when(entity.state){
             IEntity.STATE_RUNNING, IEntity.STATE_WAIT -> {
-                aria.load(downloadItem.bundle.ariaId).stop()
+                aria.load(downloadItem.bundle.ariaId).ignoreCheckPermissions().stop()
             }
             IEntity.STATE_STOP -> {
-                aria.load(downloadItem.bundle.ariaId).resume()
+                aria.load(downloadItem.bundle.ariaId).ignoreCheckPermissions().resume()
             }
             else -> return false
         }
@@ -156,7 +156,7 @@ class AriaStep(
 
 
     override fun onRemove(downloadItem: DownloadItem) {
-        aria.load(downloadItem.bundle.ariaId)?.cancel(true)
+        aria.load(downloadItem.bundle.ariaId)?.ignoreCheckPermissions()?.cancel(true)
         downloadController.updateDownloadItem(downloadItem.uuid){
             it.copy(isRemoved = true)
         }
@@ -209,9 +209,9 @@ class AriaStep(
             t.extendField?.let { uuid ->
                 val info = downloadBus.getInfo(uuid)
                 info.status.value = stringRes(com.heyanle.easy_i18n.R.string.waiting)
-                info.process.value = if (t.entity.fileSize <= 0L) -1f else t.entity.percent / 100f
+                info.process.value = if ((t.entity.fileSize) <= 0L) -1f else ((t.entity.percent) / 100f)
                 info.subStatus.value =
-                    if (t.entity.fileSize > 0L) t.convertSpeed else t.convertCurrentProgress
+                    if (t.entity.fileSize > 0L) t.convertSpeed?:"" else t.convertCurrentProgress ?:""
 
             }
         }

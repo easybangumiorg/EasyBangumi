@@ -25,7 +25,7 @@ compose_lazy_reorder = "0.9.6"
 kotlinx_coroutines = "1.7.3"
 
 aria = "3.8.16"
-core-ktx = "1.10.1"
+core-ktx = "1.12.0"
 androidx-test-ext-junit = "1.1.5"
 espresso-core = "3.5.1"
 appcompat = "1.6.1"
@@ -36,6 +36,8 @@ ffmpeg-kit = "6.0"
 ktor = "2.3.3"
 
 jeff_m3u8 = "1.2.0"
+
+moshi = "1.14.0"
 [libraries]
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 okhttp3 = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp3" }
@@ -88,6 +90,7 @@ ktor_android = {module = "io.ktor:ktor-client-android", version.ref = "ktor"}
 
 jeff-m3u8 = {module = "com.github.JeffMony:JeffM3U8Lib", version.ref = "jeff_m3u8"}
 
+moshi = {module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshi"}
 [bundles]
 okhttp3 = ["okhttp3", "okhttp3_logging_interceptor"]
 cling = ["cling_core", "cling_support"]

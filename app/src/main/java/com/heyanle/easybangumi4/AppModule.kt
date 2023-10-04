@@ -2,14 +2,14 @@ package com.heyanle.easybangumi4
 
 import android.app.Application
 import com.google.gson.Gson
-import com.heyanle.easybangumi4.cartoon.db.AppDatabase
-import com.heyanle.easybangumi4.cartoon.db.CacheDatabase
 import com.heyanle.easybangumi4.base.hekv.HeKV
 import com.heyanle.easybangumi4.base.preferences.PreferenceStore
 import com.heyanle.easybangumi4.base.preferences.android.AndroidPreferenceStore
 import com.heyanle.easybangumi4.base.preferences.hekv.HeKVPreferenceStore
 import com.heyanle.easybangumi4.base.preferences.mmkv.MMKVPreferenceStore
 import com.heyanle.easybangumi4.base.theme.EasyThemeController
+import com.heyanle.easybangumi4.cartoon.db.AppDatabase
+import com.heyanle.easybangumi4.cartoon.db.CacheDatabase
 import com.heyanle.easybangumi4.preferences.SettingMMKVPreferences
 import com.heyanle.easybangumi4.preferences.SettingPreferences
 import com.heyanle.easybangumi4.preferences.SourcePreferences
@@ -18,6 +18,7 @@ import com.heyanle.easybangumi4.source.SourceMigrationController
 import com.heyanle.easybangumi4.source.utils.SourceProviderControllerImpl
 import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlayingController
 import com.heyanle.easybangumi4.ui.main.star.update.CartoonUpdateController
+import com.heyanle.easybangumi4.utils.MoshiArrayListJsonAdapter
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.injekt.api.InjektModule
 import com.heyanle.injekt.api.InjektScope
@@ -25,6 +26,8 @@ import com.heyanle.injekt.api.addAlias
 import com.heyanle.injekt.api.addSingletonFactory
 import com.heyanle.injekt.api.get
 import com.heyanle.lib_anim.utils.provider.SourceProviderController
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 
 /**
  * Created by HeYanLe on 2023/7/29 20:15.
@@ -36,6 +39,12 @@ object RootModule : InjektModule {
     override fun InjektScope.registerInjectables() {
         addSingletonFactory {
             Gson()
+        }
+        addSingletonFactory {
+            Moshi.Builder()
+                .add(MoshiArrayListJsonAdapter.FACTORY)
+                .addLast(KotlinJsonAdapterFactory())
+                .build()
         }
     }
 
