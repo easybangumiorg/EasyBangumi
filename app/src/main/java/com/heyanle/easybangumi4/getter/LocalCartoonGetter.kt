@@ -27,4 +27,8 @@ class LocalCartoonGetter(
     suspend fun findWithSummary(id: String, source: String, url: String): LocalCartoon? {
         return awaitLocalCartoon().find { it.cartoonId == id && it.cartoonSource == source && it.cartoonUrl == url }
     }
+
+    suspend fun findWithUUID(uuid: String): LocalCartoon? {
+        return awaitLocalCartoon().find { it.uuid == uuid }
+    }
 }

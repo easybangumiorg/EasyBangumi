@@ -1,7 +1,9 @@
 package com.heyanle.easybangumi4.ui.download
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,6 +28,8 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -61,11 +65,15 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.heyanle.bangumi_source_api.api.entity.CartoonCover
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.download.entity.DownloadItem
 import com.heyanle.easybangumi4.download.entity.LocalCartoon
+import com.heyanle.easybangumi4.navigationLocalPlay
 import com.heyanle.easybangumi4.source.LocalSourceBundleController
+import com.heyanle.easybangumi4.ui.common.EasyClearDialog
+import com.heyanle.easybangumi4.ui.common.EasyDeleteDialog
 import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.common.TabIndicator
@@ -88,6 +96,7 @@ sealed class DownloadPage(
         },
         topAppBar = {
             val nav = LocalNavController.current
+            val vm = viewModel<DownloadViewModel>()
             TopAppBar(
                 title = { Text(stringResource(R.string.local_download)) },
                 navigationIcon = {
@@ -100,6 +109,19 @@ sealed class DownloadPage(
                         )
                     }
                 },
+                actions = {
+                    if(vm.selection.isNotEmpty()){
+                        IconButton(onClick = {
+                            vm.removeDownloadItem.value = vm.selection.keys
+                            vm.selection.clear()
+                        }) {
+                            Icon(
+                                imageVector = Icons.Filled.Delete,
+                                stringResource(id = R.string.delete)
+                            )
+                        }
+                    }
+                }
             )
         },
         content = {
@@ -164,6 +186,25 @@ sealed class DownloadPage(
                         )
                     }
                 },
+                actions = {
+                    IconButton(onClick = {
+                        if (!isSearch) {
+                            isSearch = true
+                            try {
+                                localVM.focusRequester.requestFocus()
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
+                        } else {
+                            localVM.search(keyword.value)
+                        }
+                    }) {
+                        Icon(
+                            imageVector = Icons.Filled.Search,
+                            stringResource(id = R.string.search)
+                        )
+                    }
+                }
             )
         },
         content = {
@@ -231,6 +272,7 @@ fun LocalCartoonPage(
     val list = localCartoonViewModel.localCartoonFlow.collectAsState()
     val state = rememberLazyListState()
     val keyboard = LocalSoftwareKeyboardController.current
+    val nav = LocalNavController.current
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier
@@ -248,7 +290,7 @@ fun LocalCartoonPage(
         ) {
             items(list.value) {
                 LocalCartoonItem(localCartoon = it, onClick = {
-
+                    nav.navigationLocalPlay(it.uuid)
                 })
             }
         }
@@ -267,26 +309,58 @@ fun Downloading(
             .fillMaxSize()
     ) {
         items(list) {
-            DownloadItem(it, downloadViewModel) {
-                downloadViewModel.click(it)
-            }
+            DownloadItem(it, downloadViewModel, onClick = {
+                if(downloadViewModel.selection.isEmpty()){
+                    downloadViewModel.click(it)
+                }else{
+                    downloadViewModel.selection.put(it, true)
+                }
+            })
         }
     }
+
+    EasyClearDialog(
+        show = downloadViewModel.removeDownloadItem.value?.isNotEmpty() == true,
+        onDelete = {
+            downloadViewModel.removeDownloadItem.value?.let {
+                downloadViewModel.remove(it)
+            }
+            downloadViewModel.removeDownloadItem.value = null
+        },
+        onDismissRequest = {
+            downloadViewModel.removeDownloadItem.value = null
+        }
+    )
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DownloadItem(
     downloadItem: DownloadItem,
     downloadViewModel: DownloadViewModel,
     onClick: (DownloadItem) -> Unit,
+    onLongPress: ((DownloadItem) -> Unit)? = null,
 ) {
     val info = downloadViewModel.info(downloadItem)
+    val isSelect = downloadViewModel.selection.getOrElse(downloadItem) { false }
     Row(
         modifier = Modifier
             .padding(8.dp, 4.dp)
             .height(IntrinsicSize.Min)
-            .clickable {
-                onClick(downloadItem)
+            .combinedClickable(
+                onClick = {
+                    onClick(downloadItem)
+                },
+                onLongClick = {
+                    onLongPress?.invoke(downloadItem)
+                }
+            )
+            .run {
+                if (isSelect) {
+                    background(MaterialTheme.colorScheme.primary)
+                } else {
+                    this
+                }
             }
     ) {
         OkImage(
@@ -310,6 +384,7 @@ fun DownloadItem(
                 style = MaterialTheme.typography.titleMedium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
+                color = if (isSelect) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground
             )
             Text(
                 modifier = Modifier,
@@ -317,6 +392,7 @@ fun DownloadItem(
                 style = MaterialTheme.typography.titleMedium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
+                color = if (isSelect) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground
             )
             Spacer(modifier = Modifier.weight(1f))
             Row(
@@ -324,11 +400,11 @@ fun DownloadItem(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 if (downloadItem.state == -1) {
-                    Text(stringResource(R.string.download_error), maxLines = 1)
-                    Text(downloadItem.errorMsg, maxLines = 1)
+                    Text(stringResource(R.string.download_error), maxLines = 1, color = if (isSelect) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground)
+                    Text(downloadItem.errorMsg, maxLines = 1, color = if (isSelect) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground)
                 } else {
-                    Text(info.status.value, maxLines = 1)
-                    Text(info.subStatus.value, maxLines = 1)
+                    Text(info.status.value, maxLines = 1, color = if (isSelect) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground)
+                    Text(info.subStatus.value, maxLines = 1, color = if (isSelect) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground)
                 }
 
             }
