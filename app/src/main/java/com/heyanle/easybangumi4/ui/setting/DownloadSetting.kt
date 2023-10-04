@@ -70,9 +70,9 @@ fun ColumnScope.DownloadSetting(
                 stringRes(R.string.please_permission).moeSnackBar()
                 permissionState.launchMultiplePermissionRequest()
             } else {
-                if(selection[it].second == stringRes(R.string.public_movie_path) ||selection[it].second == stringRes(R.string.public_dcim_path) ){
-                    stringRes(R.string.no_support_download_direct).moeSnackBar()
-                }
+//                if(selection[it].second == stringRes(R.string.public_movie_path) ||selection[it].second == stringRes(R.string.public_dcim_path) ){
+//                    stringRes(R.string.no_support_download_direct).moeSnackBar()
+//                }
                 settingPreferences.downloadPath.set(selection[it].first)
                 stringRes(R.string.next_download_work).moeSnackBar()
             }

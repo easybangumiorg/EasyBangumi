@@ -29,7 +29,7 @@ class SourcePreferences(
             it.toJson()
         },
         {
-            it.jsonTo()
+            it.jsonTo()?: mapOf()
         }
     )
 

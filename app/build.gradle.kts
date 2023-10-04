@@ -62,10 +62,8 @@ android {
 //            proguardFiles("proguard-rules.pro")
 //        }
         release {
-//            isRemoveUnusedCode = true
-//            isRemoveUnusedResources = true
-//            isObfuscate = false
-//            isOptimizeCode = true
+            isMinifyEnabled = true
+            isShrinkResources = false
             proguardFiles("proguard-rules.pro")
 
         }
@@ -133,6 +131,7 @@ dependencies {
 
     implementation(libs.jsoup)
     implementation(libs.gson)
+    implementation(libs.moshi)
 
     //debugImplementation(libs.leakcanary)
 

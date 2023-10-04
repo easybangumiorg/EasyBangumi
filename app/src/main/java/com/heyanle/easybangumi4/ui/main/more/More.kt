@@ -110,11 +110,11 @@ fun More() {
             modifier = Modifier.clickable {
                 nav.navigate(DOWNLOAD)
             },
-            headlineContent = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.download_history)) },
+            headlineContent = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.local_download)) },
             leadingContent = {
                 Icon(
                     Icons.Filled.Download,
-                    contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.download_history)
+                    contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.local_download)
                 )
             }
         )

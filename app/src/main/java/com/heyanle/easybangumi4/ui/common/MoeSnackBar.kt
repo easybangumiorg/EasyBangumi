@@ -45,6 +45,8 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+val mainMoeScope = MainScope()
+
 val moeSnackBarQueue = mutableStateListOf<MoeSnackBarData>()
 
 object MoeSnackBar {
@@ -120,7 +122,7 @@ fun MoeSnackBar(modifier: Modifier = Modifier) {
                                             }) {
                                                 Text(
                                                     it.confirmLabel,
-                                                    color = MaterialTheme.colorScheme.secondary
+                                                    color = MaterialTheme.colorScheme.primary
                                                 )
                                             }
                                         }
@@ -162,7 +164,7 @@ fun MoeSnackBar(modifier: Modifier = Modifier) {
 }
 
 fun MoeSnackBarData.dismiss() = apply {
-    MainScope().launch {
+    mainMoeScope.launch {
         onDismiss?.run { this(this@dismiss) }
         show.value = false
         delay(animationDuration.toLong())
@@ -177,7 +179,7 @@ private fun clearIfAllClosed() {
 }
 
 fun MoeSnackBarData.show() = apply {
-    MainScope().launch {
+    mainMoeScope.launch {
         moeSnackBarQueue += this@show
     }
 }

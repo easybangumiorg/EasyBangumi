@@ -73,8 +73,8 @@ class HeKVPreferenceStore(
                 it.toList().toJson()
             },
             deserializer = {
-                val d: List<String> = it.jsonTo()
-                d.toSet()
+                val d: List<String>? = it.jsonTo()
+                d?.toSet()?:defaultValue
             }
         )
     }

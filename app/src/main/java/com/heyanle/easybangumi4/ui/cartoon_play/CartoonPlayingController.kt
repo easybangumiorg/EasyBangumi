@@ -130,7 +130,7 @@ class CartoonPlayingController(
     }
 
     private fun innerPlayExternal(playerInfo: PlayerInfo){
-        APP.startActivity(Intent().apply {
+        APP.startActivity(Intent("android.intent.action.VIEW").apply {
             setDataAndType(playerInfo.uri.toUri(), "video/*")
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             // for mx player https://mx.j2inter.com/api
@@ -427,7 +427,7 @@ class CartoonPlayingController(
 
         if (settingPreference.useExternalVideoPlayer.get()) {
             kotlin.runCatching {
-                APP.startActivity(Intent().apply {
+                APP.startActivity(Intent("android.intent.action.VIEW").apply {
                     setDataAndType(playerInfo.uri.toUri(), "video/*")
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     // for mx player https://mx.j2inter.com/api

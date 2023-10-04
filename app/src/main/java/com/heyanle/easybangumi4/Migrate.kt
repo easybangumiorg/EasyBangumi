@@ -10,10 +10,12 @@ import com.heyanle.easybangumi4.base.theme.EasyThemeMode
 import com.heyanle.easybangumi4.preferences.SettingMMKVPreferences
 import com.heyanle.easybangumi4.preferences.SettingPreferences
 import com.heyanle.easybangumi4.preferences.SourcePreferences
+import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.easybangumi4.utils.jsonTo
 import com.heyanle.injekt.api.get
 import com.heyanle.injekt.core.Injekt
 import com.heyanle.okkv2.core.okkv
+import java.io.File
 
 /**
  * preferences 更新
@@ -81,6 +83,9 @@ object Migrate {
             Injekt.get(),
             Injekt.get(),
         )
+        controllerUpdate(
+            context = context,
+        )
     }
 
     private fun preferenceUpdate(
@@ -123,7 +128,7 @@ object Migrate {
 
                 // 源配置变更
                 val configOkkv by okkv("source_config", "[]")
-                val list: List<SourcePreferences.LocalSourceConfig> = configOkkv.jsonTo()
+                val list: List<SourcePreferences.LocalSourceConfig> = configOkkv.jsonTo()?: emptyList()
                 val map = hashMapOf<String, SourcePreferences.LocalSourceConfig>()
                 list.forEach {
                     map[it.key] = it
@@ -134,6 +139,21 @@ object Migrate {
 
         androidPreferenceStore.getInt("last_version_code", 0).set(curVersionCode)
 
+    }
+
+    private fun controllerUpdate(
+        context: Context,
+    ){
+        
+        val rootFolder = File(context.getFilePath("download"))
+
+        // 本地番剧 json 文件更新
+        val localCartoonJson = File(rootFolder, "local.json")
+        val localCartoonJsonTem = File(rootFolder, "local.json.bk")
+
+        // 下载记录 json 文件更新
+        val downloadItemJson = File(rootFolder, "item.json")
+        val downloadItemJsonTemp = File(rootFolder, "item.json.bk")
     }
 
 

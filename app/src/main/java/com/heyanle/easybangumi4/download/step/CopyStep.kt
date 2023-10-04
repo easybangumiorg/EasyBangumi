@@ -43,7 +43,7 @@ class CopyStep(
                         this.process.value = 0f
                     }
                 }
-                if (!target.exists()) {
+                if (!source.exists()) {
                     downloadController.updateDownloadItem(downloadItem.uuid) {
                         it.copy(
                             state = -1

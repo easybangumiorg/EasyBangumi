@@ -2,6 +2,7 @@ package com.heyanle.easybangumi4.download.entity
 
 import androidx.room.Ignore
 import com.heyanle.easybangumi4.utils.getMatchReg
+import java.io.File
 
 /**
  * Created by HeYanLe on 2023/9/17 15:41.
@@ -26,6 +27,24 @@ data class LocalCartoon (
 
     var playLines: ArrayList<LocalPlayLine> = arrayListOf(),
 ){
+
+    fun clearDirty(){
+        val removeLine = mutableSetOf<LocalPlayLine>()
+        playLines.forEach {
+            val removeEpisode = mutableSetOf<LocalEpisode>()
+            it.list.forEach {
+                val f = File(it.path)
+                if(!f.exists()){
+                    removeEpisode.add(it)
+                }
+            }
+            it.list.removeAll(removeEpisode)
+            if(it.list.isEmpty()){
+                removeLine.add(it)
+            }
+        }
+        playLines.removeAll(removeLine)
+    }
 
     fun match(query: String): Boolean{
         var matched = false

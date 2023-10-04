@@ -1,22 +1,22 @@
 package com.heyanle.easybangumi4.ui.local_play
 
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
-import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
-import com.heyanle.easybangumi4.cartoon.db.dao.CartoonHistoryDao
+import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.download.entity.LocalCartoon
 import com.heyanle.easybangumi4.download.entity.LocalEpisode
 import com.heyanle.easybangumi4.download.entity.LocalPlayLine
 import com.heyanle.easybangumi4.getter.LocalCartoonGetter
 import com.heyanle.easybangumi4.preferences.SettingPreferences
-import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlayViewModel
-import com.heyanle.easybangumi4.ui.cartoon_play.DetailedViewModel
 import com.heyanle.injekt.core.Injekt
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -24,7 +24,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import java.io.File
 
 /**
  * Created by heyanlin on 2023/9/25.
@@ -137,13 +137,35 @@ class LocalPlayViewModel(
     fun tryNext(){}
 
 
+    fun externalPlay(episode: LocalEpisode){
+        runCatching {
+            val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                FileProvider.getUriForFile(APP, "com.heyanle.easybangumi4.fileProvider", File(episode.path))
+            }else{
+                Uri.fromFile(File(episode.path))
+            }
+            APP.startActivity(Intent("android.intent.action.VIEW").apply {
+                APP.grantUriPermission(APP.getPackageName(), uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                setDataAndType(uri, "video/*")
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                // for mx player https://mx.j2inter.com/api
+                putExtra("video_list", arrayOf(uri))
+            })
+        }.onFailure {
+            it.printStackTrace()
+        }
+
+
+    }
 
     private fun innerPlay(episode: LocalEpisode) {
-//        if (settingPreferences.useExternalVideoPlayer.get()) {
-//            externalPlay(episode)
-//            return
-//        }
-        exoPlayer.setMediaItem(MediaItem.fromUri(episode.path))
+        if (settingPreferences.useExternalVideoPlayer.get()) {
+            externalPlay(episode)
+            return
+        }
+
+        exoPlayer.setMediaItem(MediaItem.fromUri(Uri.fromFile(File(episode.path))))
         playingTitle.value = episode.label
         exoPlayer.prepare()
         exoPlayer.playWhenReady = true

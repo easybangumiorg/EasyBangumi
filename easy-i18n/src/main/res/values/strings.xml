@@ -240,6 +240,8 @@
 
     <string name="dlna_alert">如果没反应可点击刷新再次投送!</string>
 
+    <string name="delete_confirmation_num">确定要删除该%1$d项吗？</string>
+
     <string name="delete_confirmation">确定要删除吗？</string>
     <string name="clear_confirmation">确定要清空吗？</string>
     
@@ -292,11 +294,14 @@
     <string name="download_history">下载记录</string>
     <string name="pausing">暂停中</string>
     <string name="downloading">下载中</string>
+    <string name="add_download_completely">添加下载任务成功</string>
     <string name="download_error">下载失败</string>
     <string name="decrypting">解密中</string>
     <string name="decrypt_error">解密失败</string>
     <string name="transcoding">转码中</string>
     <string name="transcode_error">转码失败</string>
+
+    <string name="click_to_view">点击查看</string>
 
     <string name="download_completely">下载完成</string>
     <string name="finished">已完成</string>
@@ -304,6 +309,8 @@
     <string name="no_support_break_point">该源不支持断点下载哦！</string>
 
     <string name="video_num_x">共%1$d个视频</string>
+
+    <string name="x_downloading">%1$d个任务下载中</string>
 
     <string name="copying">复制中</string>
 
