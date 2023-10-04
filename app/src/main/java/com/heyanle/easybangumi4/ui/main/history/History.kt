@@ -253,7 +253,7 @@ fun HistoryList(
                     )
                 }
             } else {
-                if(state.isInPrivate){
+                if (state.isInPrivate) {
                     item {
                         Text(
                             modifier = Modifier.padding(16.dp, 4.dp),

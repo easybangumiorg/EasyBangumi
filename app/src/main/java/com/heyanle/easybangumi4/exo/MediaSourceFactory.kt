@@ -2,6 +2,7 @@ package com.heyanle.easybangumi4.exo
 
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.datasource.cache.Cache
@@ -17,6 +18,7 @@ import com.heyanle.bangumi_source_api.api.entity.PlayerInfo
  * Created by HeYanLe on 2023/8/13 21:21.
  * https://github.com/heyanLE
  */
+@UnstableApi
 class MediaSourceFactory(
     private val normalCache: Cache,
 ) {
