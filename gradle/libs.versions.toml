@@ -38,6 +38,10 @@ ktor = "2.3.3"
 jeff_m3u8 = "1.2.0"
 
 moshi = "1.14.0"
+
+koin = "3.5.0"
+agp = "8.1.1"
+kotlin = "1.9.0"
 [libraries]
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 okhttp3 = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp3" }
@@ -56,7 +60,7 @@ easyplayer2 = { module = "com.github.easybangumiorg:EasyPlayer2", version.ref = 
 
 accompanist_systemuicontroller = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanist" }
 accompanist_swiperefresh = { module = "com.google.accompanist:accompanist-swiperefresh", version.ref = "accompanist" }
-accompanist_permissions = {module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanist" }
+accompanist_permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanist" }
 
 navigtion_compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation_compose" }
 
@@ -84,17 +88,19 @@ espresso-core = { group = "androidx.test.espresso", name = "espresso-core", vers
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 
-ffmpeg-kit = {module = "com.arthenica:ffmpeg-kit-full", version.ref="ffmpeg-kit"}
+ffmpeg-kit = { module = "com.arthenica:ffmpeg-kit-full", version.ref = "ffmpeg-kit" }
 
-ktor_android = {module = "io.ktor:ktor-client-android", version.ref = "ktor"}
+ktor_android = { module = "io.ktor:ktor-client-android", version.ref = "ktor" }
 
-jeff-m3u8 = {module = "com.github.JeffMony:JeffM3U8Lib", version.ref = "jeff_m3u8"}
+jeff-m3u8 = { module = "com.github.JeffMony:JeffM3U8Lib", version.ref = "jeff_m3u8" }
 
-moshi = {module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshi"}
+moshi = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshi" }
+
+koin = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 [bundles]
 okhttp3 = ["okhttp3", "okhttp3_logging_interceptor"]
 cling = ["cling_core", "cling_support"]
 appcenter = ["appcenter_analytics", "appcenter_crashes", "appcenter_distribute"]
-
-
-
+[plugins]
+androidLibrary = { id = "com.android.library", version.ref = "agp" }
+kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

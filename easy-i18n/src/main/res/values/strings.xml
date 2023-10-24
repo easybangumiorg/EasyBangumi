@@ -325,4 +325,9 @@
 
     <string name="retry_when_permission">授予权限后请再次设置！</string>
     <string name="please_permission">请授予权限体验完整功能</string>
+
+    <!--easy-extension-->
+    <string name="app_too_old">纯纯看番版本过旧</string>
+    <string name="extension_too_old">插件版本过旧</string>
+    <string name="load_error">加载错误</string>
 </resources>
