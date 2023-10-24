@@ -6,8 +6,8 @@ import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.content.pm.PackageInfoCompat
-import com.heyanle.bangumi_source_api.api.Source
-import com.heyanle.bangumi_source_api.api.SourceFactory
+import com.heyanle.easybangumi4.source_api.Source
+import com.heyanle.easybangumi4.source_api.SourceFactory
 import com.heyanle.extension_api.ExtensionSource
 import com.heyanle.extension_load.model.Extension
 import com.heyanle.extension_load.utils.loge
