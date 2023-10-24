@@ -56,7 +56,7 @@ class ExtensionLoader(
         appInfo.sourceDir = path
         appInfo.publicSourceDir = path
         val classLoader = DexClassLoader(path, cacheFolder, null, context.classLoader)
-        return innerLoad(packageManager, pkgInfo, appInfo, classLoader)
+        return innerLoad(packageManager, pkgInfo, appInfo, classLoader, Extension.TYPE_FILE)
 
     }
 
@@ -70,7 +70,7 @@ class ExtensionLoader(
         } ?: return null
         val appInfo = pkgInfo.applicationInfo ?: return null
         val classLoader = PathClassLoader(appInfo.sourceDir, null, context.classLoader)
-        return innerLoad(packageManager, pkgInfo, appInfo, classLoader)
+        return innerLoad(packageManager, pkgInfo, appInfo, classLoader, Extension.TYPE_APP)
     }
 
     private fun innerLoad(
@@ -78,6 +78,7 @@ class ExtensionLoader(
         pkgInfo: PackageInfo,
         appInfo: ApplicationInfo,
         classLoader: ClassLoader, // 最终的 pathClassLoader，已经指定了文件路径
+        loadType: Int,
     ): Extension? {
         if (!isPackageAnExtension(pkgInfo)) {
             return null
@@ -106,6 +107,7 @@ class ExtensionLoader(
                         .getOrNull(),
                     errMsg = context.getString(com.heyanle.easy_i18n.R.string.extension_too_old),
                     exception = null,
+                    loadType = loadType,
                 )
             }
             if (libVersion > LIB_VERSION_MAX) {
@@ -124,6 +126,7 @@ class ExtensionLoader(
                     }.getOrNull(),
                     errMsg = context.getString(com.heyanle.easy_i18n.R.string.app_too_old),
                     exception = null,
+                    loadType = loadType,
                 )
             }
             val sources = (appInfo.metaData.getString(METADATA_SOURCE_CLASS) ?: "").split(";").map {
@@ -158,6 +161,7 @@ class ExtensionLoader(
                             .getOrNull(),
                         errMsg = context.getString(com.heyanle.easy_i18n.R.string.load_error),
                         exception = e,
+                        loadType = loadType,
                     )
                 }
             }.map {
@@ -177,6 +181,7 @@ class ExtensionLoader(
                     .getOrNull(),
                 sources = sources,
                 resources = pkgManager.getResourcesForApplication(appInfo),
+                loadType = loadType,
             )
         } catch (e: Exception) {
             return null

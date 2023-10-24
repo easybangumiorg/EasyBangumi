@@ -15,7 +15,12 @@ sealed class Extension {
     abstract val libVersion: Int
     abstract val readme: String?
     abstract val icon: Drawable?
-    abstract val loader: ExtensionLoader
+    abstract val loadType: Int
+
+    companion object {
+        const val TYPE_APP = 0
+        const val TYPE_FILE = 1
+    }
 
     data class Installed(
         override val label: String,
@@ -25,7 +30,7 @@ sealed class Extension {
         override val libVersion: Int,
         override val readme: String?,
         override val icon: Drawable?,
-        override val loader: ExtensionLoader,
+        override val loadType: Int,
         val sources: List<Source>,
         val resources: Resources?,
     ): Extension()
@@ -38,7 +43,7 @@ sealed class Extension {
         override val libVersion: Int,
         override val readme: String?,
         override val icon: Drawable?,
-        override val loader: ExtensionLoader,
+        override val loadType: Int,
         val exception: Exception?,
         val errMsg: String,
     ): Extension()
