@@ -1,79 +1,40 @@
-package com.heyanle.easy_extension
+package com.heyanle.easy_extension.loader
 
 import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
-import android.os.Build
 import androidx.core.content.pm.PackageInfoCompat
+import com.heyanle.easy_extension.Extension
 import com.heyanle.easy_extension.utils.loge
 import com.heyanle.easybangumi4.source_api.Source
 import com.heyanle.easybangumi4.source_api.SourceFactory
 import com.heyanle.extension_api.ExtensionSource
-import com.heyanle.extension_load.R
-import dalvik.system.DexClassLoader
-import dalvik.system.PathClassLoader
-import java.io.File
 
 /**
- * Created by heyanlin on 2023/10/24.
+ * Created by heyanlin on 2023/10/25.
  */
-class ExtensionLoader(
-    private val context: Context
-) {
+abstract class AbsExtensionLoader(
+    protected val context: Context
+): ExtensionLoader {
 
     companion object {
-        private const val TAG = "ExtensionLoader"
-        private const val EXTENSION_FEATURE = "easybangumi.extension"
-        private const val METADATA_SOURCE_CLASS = "easybangumi.extension.source"
-        private const val METADATA_SOURCE_LIB_VERSION = "easybangumi.extension.lib.version"
-        private const val METADATA_README = "easybangumi.extension.readme"
+        const val TAG = "AbsExtensionLoader"
+        const val EXTENSION_FEATURE = "easybangumi.extension"
+        const val METADATA_SOURCE_CLASS = "easybangumi.extension.source"
+        const val METADATA_SOURCE_LIB_VERSION = "easybangumi.extension.lib.version"
+        const val METADATA_README = "easybangumi.extension.readme"
 
         // 当前容器支持的 扩展库 版本区间
-        private const val LIB_VERSION_MIN = 3
-        private const val LIB_VERSION_MAX = 3
+        const val LIB_VERSION_MIN = 3
+        const val LIB_VERSION_MAX = 3
 
-        private const val PACKAGE_FLAGS =
+        const val PACKAGE_FLAGS =
             PackageManager.GET_CONFIGURATIONS or PackageManager.GET_SIGNATURES
     }
 
-
-    private val packageManager = context.packageManager
-    private val cacheFolder =
-        context.externalCacheDir?.let { File(it, "extension-apk-cache") }?.absolutePath ?: File(
-            context.cacheDir,
-            "extension-apk-cache"
-        ).absolutePath
-
-    fun loadFromFile(path: String): Extension? {
-        val file = File(path)
-        if (!file.exists() || !file.canRead()) {
-            return null
-        }
-        val pkgInfo =
-            packageManager.getPackageArchiveInfo(path, PackageManager.GET_ACTIVITIES) ?: return null
-        val appInfo = pkgInfo.applicationInfo ?: return null
-        appInfo.sourceDir = path
-        appInfo.publicSourceDir = path
-        val classLoader = DexClassLoader(path, cacheFolder, null, context.classLoader)
-        return innerLoad(packageManager, pkgInfo, appInfo, classLoader, Extension.TYPE_FILE)
-
-    }
-
-    fun loadFromApp(pkgName: String): Extension? {
-        val pkgInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            packageManager.getPackageInfo(
-                pkgName, PackageManager.PackageInfoFlags.of(PACKAGE_FLAGS.toLong())
-            )
-        } else {
-            packageManager.getPackageInfo(pkgName, PACKAGE_FLAGS)
-        } ?: return null
-        val appInfo = pkgInfo.applicationInfo ?: return null
-        val classLoader = PathClassLoader(appInfo.sourceDir, null, context.classLoader)
-        return innerLoad(packageManager, pkgInfo, appInfo, classLoader, Extension.TYPE_APP)
-    }
-
-    private fun innerLoad(
+    protected val packageManager = context.packageManager
+    protected fun innerLoad(
         pkgManager: PackageManager,
         pkgInfo: PackageInfo,
         appInfo: ApplicationInfo,
@@ -93,10 +54,11 @@ class ExtensionLoader(
             val readme = appInfo.metaData.getString(METADATA_README)
             // 库版本管理
             if (libVersion < LIB_VERSION_MIN) {
-                "Lib version is ${libVersion}, while only versions " + "$LIB_VERSION_MIN to $LIB_VERSION_MAX are allowed".loge(
+                "Lib version is ${libVersion}, while only versions " + "${LIB_VERSION_MIN} to ${LIB_VERSION_MAX} are allowed".loge(
                     TAG
                 )
                 return Extension.InstallError(
+                    key = key,
                     label = extName,
                     pkgName = pkgInfo.packageName,
                     versionName = versionName,
@@ -108,13 +70,15 @@ class ExtensionLoader(
                     errMsg = context.getString(com.heyanle.easy_i18n.R.string.extension_too_old),
                     exception = null,
                     loadType = loadType,
+                    sourcePath = appInfo.sourceDir,
                 )
             }
             if (libVersion > LIB_VERSION_MAX) {
-                "Lib version is ${libVersion}, while only versions " + "$LIB_VERSION_MIN to $LIB_VERSION_MAX are allowed".loge(
+                "Lib version is ${libVersion}, while only versions " + "${LIB_VERSION_MIN} to ${LIB_VERSION_MAX} are allowed".loge(
                     "ExtensionLoader"
                 )
                 return Extension.InstallError(
+                    key = key,
                     label = extName,
                     pkgName = pkgInfo.packageName,
                     versionName = versionName,
@@ -127,6 +91,7 @@ class ExtensionLoader(
                     errMsg = context.getString(com.heyanle.easy_i18n.R.string.app_too_old),
                     exception = null,
                     loadType = loadType,
+                    sourcePath = appInfo.sourceDir,
                 )
             }
             val sources = (appInfo.metaData.getString(METADATA_SOURCE_CLASS) ?: "").split(";").map {
@@ -151,6 +116,7 @@ class ExtensionLoader(
                     "Extension load error: $extName".loge("ExtensionLoader")
                     e.printStackTrace()
                     return Extension.InstallError(
+                        key = key,
                         label = extName,
                         pkgName = pkgInfo.packageName,
                         versionName = versionName,
@@ -162,6 +128,7 @@ class ExtensionLoader(
                         errMsg = context.getString(com.heyanle.easy_i18n.R.string.load_error),
                         exception = e,
                         loadType = loadType,
+                        sourcePath = appInfo.sourceDir,
                     )
                 }
             }.map {
@@ -171,6 +138,7 @@ class ExtensionLoader(
                 it
             }
             return Extension.Installed(
+                key = key,
                 label = extName,
                 pkgName = pkgInfo.packageName,
                 versionName = versionName,
@@ -182,6 +150,7 @@ class ExtensionLoader(
                 sources = sources,
                 resources = pkgManager.getResourcesForApplication(appInfo),
                 loadType = loadType,
+                sourcePath = appInfo.sourceDir,
             )
         } catch (e: Exception) {
             return null
@@ -189,7 +158,8 @@ class ExtensionLoader(
 
     }
 
-    private fun isPackageAnExtension(pkgInfo: PackageInfo): Boolean {
+    protected fun isPackageAnExtension(pkgInfo: PackageInfo): Boolean {
         return pkgInfo.reqFeatures.orEmpty().any { it.name == EXTENSION_FEATURE }
     }
+
 }
