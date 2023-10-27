@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.source
+package com.heyanle.easybangumi4.source_old
 
 import android.app.Application
 import com.heyanle.bangumi_source_api.api.MigrateSource
@@ -11,7 +11,7 @@ import com.heyanle.bangumi_source_api.api.entity.toIdentify
 import com.heyanle.easybangumi4.cartoon.db.dao.CartoonStarDao
 import com.heyanle.easybangumi4.cartoon.entity.CartoonStar
 import com.heyanle.easybangumi4.preferences.SourcePreferences
-import com.heyanle.easybangumi4.source.utils.SourcePreferenceHelper
+import com.heyanle.easybangumi4.source_old.utils.SourcePreferenceHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher

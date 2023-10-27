@@ -160,11 +160,13 @@ dependencies {
 
     implementation(libs.jeff.m3u8)
 
+    implementation(libs.koin)
+
     implementation(project(":easy-dlna"))
     implementation(project(":easy-crasher"))
     implementation(project(":easy-i18n"))
     implementation(project(":injekt"))
-    implementation(project(":extension:extension-core"))
+    
 
     implementation(extension.extension.api)
 

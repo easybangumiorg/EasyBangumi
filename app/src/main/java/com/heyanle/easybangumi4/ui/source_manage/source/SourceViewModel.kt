@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heyanle.bangumi_source_api.api.Source
 import com.heyanle.easybangumi4.preferences.SourcePreferences
-import com.heyanle.easybangumi4.source.SourceController
+import com.heyanle.easybangumi4.source_old.SourceController
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.flow.collectLatest

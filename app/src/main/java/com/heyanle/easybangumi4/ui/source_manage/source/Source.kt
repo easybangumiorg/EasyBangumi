@@ -36,8 +36,8 @@ import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.navigationSourceConfig
 import com.heyanle.easybangumi4.preferences.SourcePreferences
-import com.heyanle.easybangumi4.source.LocalSourceBundleController
-import com.heyanle.easybangumi4.source.SourceMigrationController
+import com.heyanle.easybangumi4.source_old.LocalSourceBundleController
+import com.heyanle.easybangumi4.source_old.SourceMigrationController
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.injekt.core.Injekt

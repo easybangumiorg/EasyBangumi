@@ -7,7 +7,6 @@ import androidx.lifecycle.viewModelScope
 import com.heyanle.bangumi_source_api.api.component.page.PageComponent
 import com.heyanle.bangumi_source_api.api.component.page.SourcePage
 import com.heyanle.easybangumi4.getter.SourceStateGetter
-import com.heyanle.easybangumi4.source.SourceController
 import com.heyanle.injekt.core.Injekt
 import com.heyanle.okkv2.core.okkv
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,7 +14,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch

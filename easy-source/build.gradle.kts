@@ -37,5 +37,6 @@ dependencies {
     implementation(extension.extension.api)
     implementation(libs.koin)
     implementation(project(":easy-i18n"))
+    implementation(project(":easy-extension"))
 
 }
