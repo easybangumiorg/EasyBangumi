@@ -13,9 +13,9 @@ import com.heyanle.easybangumi4.cartoon.db.CacheDatabase
 import com.heyanle.easybangumi4.preferences.SettingMMKVPreferences
 import com.heyanle.easybangumi4.preferences.SettingPreferences
 import com.heyanle.easybangumi4.preferences.SourcePreferences
-import com.heyanle.easybangumi4.source.SourceController
-import com.heyanle.easybangumi4.source.SourceMigrationController
-import com.heyanle.easybangumi4.source.utils.SourceProviderControllerImpl
+import com.heyanle.easybangumi4.source_old.SourceController
+import com.heyanle.easybangumi4.source_old.SourceMigrationController
+import com.heyanle.easybangumi4.source_old.utils.SourceProviderControllerImpl
 import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlayingController
 import com.heyanle.easybangumi4.ui.main.star.update.CartoonUpdateController
 import com.heyanle.easybangumi4.utils.MoshiArrayListJsonAdapter
@@ -25,7 +25,6 @@ import com.heyanle.injekt.api.InjektScope
 import com.heyanle.injekt.api.addAlias
 import com.heyanle.injekt.api.addSingletonFactory
 import com.heyanle.injekt.api.get
-import com.heyanle.lib_anim.utils.provider.SourceProviderController
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 
@@ -74,7 +73,6 @@ class ControllerModule(
         addSingletonFactory {
             SourceProviderControllerImpl(application)
         }
-        addAlias<SourceProviderControllerImpl, SourceProviderController>()
 
         addSingletonFactory {
             CartoonPlayingController(

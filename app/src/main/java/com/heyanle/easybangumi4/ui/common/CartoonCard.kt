@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.sp
 import com.heyanle.bangumi_source_api.api.entity.CartoonCover
 import com.heyanle.easybangumi4.R
 import com.heyanle.easybangumi4.cartoon.entity.CartoonStar
-import com.heyanle.easybangumi4.source.LocalSourceBundleController
+import com.heyanle.easybangumi4.source_old.LocalSourceBundleController
 
 /**
  * Created by HeYanLe on 2023/2/25 21:04.

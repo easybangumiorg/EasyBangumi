@@ -21,9 +21,9 @@ import com.heyanle.easybangumi4.ABOUT
 import com.heyanle.easybangumi4.C
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.getter.SourceStateGetter
-import com.heyanle.easybangumi4.source.LocalSourceBundleController
-import com.heyanle.easybangumi4.source.SourceBundle
-import com.heyanle.easybangumi4.source.SourceController
+import com.heyanle.easybangumi4.source_old.LocalSourceBundleController
+import com.heyanle.easybangumi4.source_old.SourceBundle
+import com.heyanle.easybangumi4.source_old.SourceController
 import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.openUrl
 import com.heyanle.easybangumi4.utils.stringRes

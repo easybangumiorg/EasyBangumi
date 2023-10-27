@@ -1,7 +1,7 @@
 package com.heyanle.easybangumi4.getter
 
-import com.heyanle.easybangumi4.source.SourceBundle
-import com.heyanle.easybangumi4.source.SourceController
+import com.heyanle.easybangumi4.source_old.SourceBundle
+import com.heyanle.easybangumi4.source_old.SourceController
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filterIsInstance

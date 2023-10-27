@@ -2,7 +2,6 @@ package com.heyanle.easybangumi4.ui.source_config
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -27,7 +26,7 @@ import com.heyanle.easybangumi4.ui.common.BooleanPreferenceItem
 import com.heyanle.easybangumi4.ui.common.SourceContainerBase
 import com.heyanle.easybangumi4.ui.common.StringEditPreferenceItem
 import com.heyanle.easybangumi4.ui.common.StringSelectPreferenceItem
-import com.heyanle.easybangumi4.source.utils.SourcePreferenceHelper
+import com.heyanle.easybangumi4.source_old.utils.SourcePreferenceHelper
 
 /**
  * Created by HeYanLe on 2023/8/5 21:36.

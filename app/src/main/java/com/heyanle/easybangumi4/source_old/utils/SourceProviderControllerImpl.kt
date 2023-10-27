@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.source.utils
+package com.heyanle.easybangumi4.source_old.utils
 
 import android.content.Context
 import com.heyanle.easy_i18n.R
