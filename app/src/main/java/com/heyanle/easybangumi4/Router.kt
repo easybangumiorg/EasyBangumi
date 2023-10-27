@@ -22,7 +22,7 @@ import androidx.navigation.navArgument
 import com.heyanle.bangumi_source_api.api.entity.CartoonCover
 import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
 import com.heyanle.easybangumi4.base.theme.NormalSystemBarColor
-import com.heyanle.easybangumi4.source.utils.WebViewUserHelperImpl
+import com.heyanle.easybangumi4.source_old.utils.WebViewUserHelperImpl
 import com.heyanle.easybangumi4.ui.WebViewUser
 import com.heyanle.easybangumi4.ui.about.About
 import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlay

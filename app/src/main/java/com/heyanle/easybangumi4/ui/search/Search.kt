@@ -41,7 +41,7 @@ import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.ui.common.EmptyPage
 import com.heyanle.easybangumi4.ui.common.TabIndicator
 import com.heyanle.easybangumi4.ui.search.searchpage.SearchPage
-import com.heyanle.easybangumi4.source.LocalSourceBundleController
+import com.heyanle.easybangumi4.source_old.LocalSourceBundleController
 import kotlinx.coroutines.launch
 
 /**
