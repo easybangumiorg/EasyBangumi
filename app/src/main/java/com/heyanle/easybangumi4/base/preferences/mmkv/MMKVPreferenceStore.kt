@@ -3,8 +3,8 @@ package com.heyanle.easybangumi4.base.preferences.mmkv
 import android.content.Context
 import com.heyanle.easybangumi4.base.preferences.Preference
 import com.heyanle.easybangumi4.base.preferences.PreferenceStore
-import com.heyanle.easybangumi4.utils.jsonTo
-import com.heyanle.easybangumi4.utils.toJson
+import com.heyanle.easybangumi4.base.utils.jsonTo
+import com.heyanle.easybangumi4.base.utils.toJson
 
 /**
  * Created by HeYanLe on 2023/7/30 19:20.

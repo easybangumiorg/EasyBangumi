@@ -41,18 +41,18 @@ object AnnoHelper {
     }
 
 
-    var annoList = mutableStateListOf<AnnoItem>()
+    var annoList = mutableStateListOf<com.heyanle.easybangumi4.utils.AnnoHelper.AnnoItem>()
 
     private var showedAnnoListOkkv by okkv("showed_anno_list", "[]")
-    private var showedAnnoList: Set<AnnoItem>
+    private var showedAnnoList: Set<_root_ide_package_.com.heyanle.easybangumi4.utils.AnnoHelper.AnnoItem>
         get() {
-            return Gson().fromJson<List<AnnoItem>>(
-                showedAnnoListOkkv,
-                object : TypeToken<List<AnnoItem>>() {}.type
+            return Gson().fromJson<List<_root_ide_package_.com.heyanle.easybangumi4.utils.AnnoHelper.AnnoItem>>(
+                _root_ide_package_.com.heyanle.easybangumi4.utils.AnnoHelper.showedAnnoListOkkv,
+                object : TypeToken<List<_root_ide_package_.com.heyanle.easybangumi4.utils.AnnoHelper.AnnoItem>>() {}.type
             ).toSet()
         }
         set(value) {
-            showedAnnoListOkkv = Gson().toJson(value.toList())
+            _root_ide_package_.com.heyanle.easybangumi4.utils.AnnoHelper.showedAnnoListOkkv = Gson().toJson(value.toList())
             //showedAnnoListOkkv.loge("AnnoHelper")
         }
 
@@ -61,34 +61,37 @@ object AnnoHelper {
 
     const val baseUrl =
         "https://raw.githubusercontent.com/easybangumiorg/EasyBangumi-sources/main/announcement/"
-    const val lastUrl = "${baseUrl}LATEST.json"
+    const val lastUrl = "${_root_ide_package_.com.heyanle.easybangumi4.utils.AnnoHelper.baseUrl}LATEST.json"
 
     private val scope = MainScope()
 
     fun init() {
-        scope.launch(Dispatchers.IO) {
+        _root_ide_package_.com.heyanle.easybangumi4.utils.AnnoHelper.scope.launch(Dispatchers.IO) {
             kotlin.runCatching {
                 val now = System.currentTimeMillis()
-                if (now - lastCheckTime >= checkCD || BuildConfig.DEBUG) {
-                    lastCheckTime = now
+                if (now - _root_ide_package_.com.heyanle.easybangumi4.utils.AnnoHelper.lastCheckTime >= _root_ide_package_.com.heyanle.easybangumi4.utils.AnnoHelper.checkCD || BuildConfig.DEBUG) {
+                    _root_ide_package_.com.heyanle.easybangumi4.utils.AnnoHelper.lastCheckTime = now
 
-                    OkhttpHelper.client.newCall(
-                        Request.Builder().url(lastUrl).get().build()
+                    _root_ide_package_.com.heyanle.easybangumi4.utils.OkhttpHelper.client.newCall(
+                        Request.Builder().url(_root_ide_package_.com.heyanle.easybangumi4.utils.AnnoHelper.lastUrl).get().build()
                     ).execute().body?.string()
                         ?.let { json ->
 
-                            val list = Gson().fromJson<List<AnnoItem>>(
+                            val list = Gson().fromJson<List<_root_ide_package_.com.heyanle.easybangumi4.utils.AnnoHelper.AnnoItem>>(
                                 json,
-                                object : TypeToken<List<AnnoItem>>() {}.type
+                                object : TypeToken<List<_root_ide_package_.com.heyanle.easybangumi4.utils.AnnoHelper.AnnoItem>>() {}.type
                             )
 
-                            val anno = checkAnno(list)
-                            val d = showedAnnoList.toMutableSet()
+                            val anno =
+                                _root_ide_package_.com.heyanle.easybangumi4.utils.AnnoHelper.checkAnno(
+                                    list
+                                )
+                            val d = _root_ide_package_.com.heyanle.easybangumi4.utils.AnnoHelper.showedAnnoList.toMutableSet()
                             d.addAll(anno)
-                            showedAnnoList = d
+                            _root_ide_package_.com.heyanle.easybangumi4.utils.AnnoHelper.showedAnnoList = d
                             withContext(Dispatchers.Main) {
-                                annoList.clear()
-                                annoList.addAll(anno)
+                                _root_ide_package_.com.heyanle.easybangumi4.utils.AnnoHelper.annoList.clear()
+                                _root_ide_package_.com.heyanle.easybangumi4.utils.AnnoHelper.annoList.addAll(anno)
                             }
                         }
 
@@ -100,8 +103,8 @@ object AnnoHelper {
         }
     }
 
-    private fun checkAnno(list: List<AnnoItem>): List<AnnoItem> {
-        val showed = showedAnnoList
+    private fun checkAnno(list: List<_root_ide_package_.com.heyanle.easybangumi4.utils.AnnoHelper.AnnoItem>): List<_root_ide_package_.com.heyanle.easybangumi4.utils.AnnoHelper.AnnoItem> {
+        val showed = _root_ide_package_.com.heyanle.easybangumi4.utils.AnnoHelper.showedAnnoList
 //        showed.forEach {
 //            it.loge("AnnoHelper")
 //        }
@@ -134,16 +137,16 @@ object AnnoHelper {
     @Composable
     fun ComposeDialog() {
         LaunchedEffect(key1 = Unit) {
-            AnnoHelper.init()
+            _root_ide_package_.com.heyanle.easybangumi4.utils.AnnoHelper.init()
         }
 
-        if (annoList.isNotEmpty()) {
-            val showed = remember(annoList) {
-                annoList.first()
+        if (_root_ide_package_.com.heyanle.easybangumi4.utils.AnnoHelper.annoList.isNotEmpty()) {
+            val showed = remember(_root_ide_package_.com.heyanle.easybangumi4.utils.AnnoHelper.annoList) {
+                _root_ide_package_.com.heyanle.easybangumi4.utils.AnnoHelper.annoList.first()
             }
             AlertDialog(
                 onDismissRequest = {
-                    annoList.remove(showed)
+                    _root_ide_package_.com.heyanle.easybangumi4.utils.AnnoHelper.annoList.remove(showed)
                 },
                 title = {
                     Text(text = stringResource(id = R.string.announcement) + " " + showed.title)
@@ -157,7 +160,7 @@ object AnnoHelper {
                 },
                 confirmButton = {
                     TextButton(onClick = {
-                        annoList.remove(showed)
+                        _root_ide_package_.com.heyanle.easybangumi4.utils.AnnoHelper.annoList.remove(showed)
                     }) {
                         Text(text = stringResource(id = R.string.confirm))
                     }

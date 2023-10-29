@@ -1,12 +1,14 @@
 package com.heyanle.easybangumi4.download.step
 
-import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
-import com.heyanle.bangumi_source_api.api.entity.PlayerInfo
+
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.download.DownloadBus
 import com.heyanle.easybangumi4.download.DownloadController
 import com.heyanle.easybangumi4.download.entity.DownloadItem
 import com.heyanle.easybangumi4.getter.SourceStateGetter
+import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
+import com.heyanle.easybangumi4.source_api.entity.Episode
+import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
 import com.heyanle.easybangumi4.utils.stringRes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
@@ -52,7 +54,7 @@ class ParseStep(
                     downloadItem.cartoonSource,
                     downloadItem.cartoonUrl
                 ), downloadItem.playLine,
-                downloadItem.episodeIndex
+                downloadItem.episode
             )
                 .complete {
                     completely(downloadItem, it.data)

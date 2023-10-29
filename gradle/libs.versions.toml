@@ -96,7 +96,10 @@ jeff-m3u8 = { module = "com.github.JeffMony:JeffM3U8Lib", version.ref = "jeff_m3
 
 moshi = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshi" }
 
-koin = { module = "io.insert-koin:koin-core", version.ref = "koin" }
+koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
+koin-android = {module =  "io.insert-koin:koin-android", version.ref = "koin"}
+koin-compose = {module = "io.insert-koin:koin-compose", version.ref = "koin"}
+
 [bundles]
 okhttp3 = ["okhttp3", "okhttp3_logging_interceptor"]
 cling = ["cling_core", "cling_support"]

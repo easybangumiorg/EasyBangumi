@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.cartoon.db.dao.CartoonHistoryDao
 import com.heyanle.easybangumi4.cartoon.entity.CartoonHistory
 import com.heyanle.easybangumi4.preferences.SettingPreferences
-import com.heyanle.injekt.core.Injekt
+import org.koin.mp.KoinPlatform.getKoin
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -45,8 +45,8 @@ class HistoryViewModel : ViewModel() {
         object Clear : Dialog()
     }
 
-    private val settingPreferences: SettingPreferences by Injekt.injectLazy()
-    private val cartoonHistoryDao: CartoonHistoryDao by Injekt.injectLazy()
+    private val settingPreferences: SettingPreferences by getKoin().inject()
+    private val cartoonHistoryDao: CartoonHistoryDao by getKoin().inject()
 
 
     private val _stateFlow = MutableStateFlow(HistoryState())

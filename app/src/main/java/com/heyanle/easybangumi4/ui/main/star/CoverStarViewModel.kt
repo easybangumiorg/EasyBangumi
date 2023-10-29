@@ -13,7 +13,7 @@ import com.heyanle.easybangumi4.cartoon.CartoonRepository
 import com.heyanle.easybangumi4.getter.CartoonInfoGetter
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.stringRes
-import com.heyanle.injekt.core.Injekt
+import org.koin.mp.KoinPlatform.getKoin
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
@@ -28,7 +28,7 @@ import kotlinx.coroutines.launch
  */
 class CoverStarViewModel : ViewModel() {
 
-    private val cartoonStarDao: CartoonStarDao by Injekt.injectLazy()
+    private val cartoonStarDao: CartoonStarDao by getKoin().inject()
     val starFlow =
         cartoonStarDao.flowAll()
             .map { stars ->
@@ -44,7 +44,7 @@ class CoverStarViewModel : ViewModel() {
     // 该列表中的番剧在展示上视为已收藏
     private val staringCartoon = mutableStateMapOf<String, Boolean>()
 
-    private val cartoonInfoGetter: CartoonInfoGetter by Injekt.injectLazy()
+    private val cartoonInfoGetter: CartoonInfoGetter by getKoin().inject()
 
     init {
         viewModelScope.launch {

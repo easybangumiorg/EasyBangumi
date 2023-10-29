@@ -22,10 +22,10 @@ import androidx.compose.ui.unit.dp
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.LocalNavController
+import com.heyanle.easybangumi4.extension.Extension
 import com.heyanle.easybangumi4.ui.common.ExtensionContainer
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.utils.IntentHelper
-import com.heyanle.extension_load.model.Extension
 
 /**
  * Created by HeYanLe on 2023/2/21 23:33.

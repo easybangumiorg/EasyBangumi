@@ -1,9 +1,9 @@
 package com.heyanle.easybangumi4.download.step
 
+import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.easybangumi4.download.DownloadBus
 import com.heyanle.easybangumi4.download.DownloadController
 import com.heyanle.easybangumi4.download.entity.DownloadItem
-import com.heyanle.easybangumi4.utils.stringRes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
