@@ -2,7 +2,6 @@ package com.heyanle.easybangumi4.download
 
 import android.app.Application
 import android.util.Log
-import com.heyanle.bangumi_source_api.api.entity.PlayLine
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.download.entity.DownloadBundle
 import com.heyanle.easybangumi4.download.entity.DownloadItem
@@ -11,11 +10,13 @@ import com.heyanle.easybangumi4.download.step.BaseStep
 import com.heyanle.easybangumi4.download.step.CopyStep
 import com.heyanle.easybangumi4.download.step.ParseStep
 import com.heyanle.easybangumi4.getter.DownloadItemGetter
-import com.heyanle.easybangumi4.preferences.SettingPreferences
+import com.heyanle.easybangumi4.setting.SettingPreferences
+import com.heyanle.easybangumi4.source_api.entity.Episode
+import com.heyanle.easybangumi4.source_api.entity.PlayLine
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.injekt.api.get
-import com.heyanle.injekt.core.Injekt
+import org.koin.mp.KoinPlatform.getKoin
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -75,7 +76,7 @@ class DownloadDispatcher(
             // 错误的任务点击重下
             val uuid = "${System.nanoTime()}-${atomLong.getAndIncrement()}"
             var fileName =
-                "${downloadItem.cartoonTitle}-${downloadItem.playLine.label}-${downloadItem.episodeLabel}-${uuid}"
+                "${downloadItem.cartoonTitle}-${downloadItem.playLine.label}-${downloadItem.episode.label}-${uuid}"
             fileName = fileName.flatMap {
                 if (reservedChars.contains(it) || it == '\n' || it == ' ' || it == '\t' || it == '\r') {
                     emptyList()
@@ -138,8 +139,7 @@ class DownloadDispatcher(
                     cartoonDescription = cartoonInfo.description,
                     cartoonGenre = cartoonInfo.genre,
                     playLine = it.first,
-                    episodeLabel = it.first.episode.getOrElse(it.second) { "" },
-                    episodeIndex = it.second,
+                    episode = it.first.episode.getOrElse(it.second) { Episode("", "", 0) },
                     state = 0,
                     currentSteps = 0,
                     stepsChain =  listOf(ParseStep.NAME, AriaStep.NAME, CopyStep.NAME) ,

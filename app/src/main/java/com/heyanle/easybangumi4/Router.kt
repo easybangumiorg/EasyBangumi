@@ -19,10 +19,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.heyanle.bangumi_source_api.api.entity.CartoonCover
-import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
-import com.heyanle.easybangumi4.base.theme.NormalSystemBarColor
-import com.heyanle.easybangumi4.source_old.utils.WebViewUserHelperImpl
+import com.heyanle.easybangumi4.source_api.entity.CartoonCover
+import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
+import com.heyanle.easybangumi4.theme.NormalSystemBarColor
 import com.heyanle.easybangumi4.ui.WebViewUser
 import com.heyanle.easybangumi4.ui.about.About
 import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlay
@@ -298,11 +297,11 @@ fun Nav() {
 
             composable(WEB_VIEW_USER) {
                 runCatching {
-                    val wb = WebViewUserHelperImpl.webViewRef?.get() ?: throw NullPointerException()
-                    val onCheck =
-                        WebViewUserHelperImpl.onCheck?.get() ?: throw NullPointerException()
-                    val onStop = WebViewUserHelperImpl.onStop?.get() ?: throw NullPointerException()
-                    WebViewUser(webView = wb, onCheck = onCheck, onStop = onStop)
+//                    val wb = WebViewUserHelperImpl.webViewRef?.get() ?: throw NullPointerException()
+//                    val onCheck =
+//                        WebViewUserHelperImpl.onCheck?.get() ?: throw NullPointerException()
+//                    val onStop = WebViewUserHelperImpl.onStop?.get() ?: throw NullPointerException()
+//                    WebViewUser(webView = wb, onCheck = onCheck, onStop = onStop)
                 }.onFailure {
                     nav.popBackStack()
                 }

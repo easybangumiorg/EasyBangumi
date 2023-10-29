@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.cartoon.db.dao.CartoonTagDao
 import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
-import com.heyanle.injekt.core.Injekt
+import org.koin.mp.KoinPlatform.getKoin
 import kotlinx.coroutines.launch
 
 /**
@@ -21,7 +21,7 @@ class CartoonTagViewModel : ViewModel() {
     var tags by mutableStateOf<List<CartoonTag>>(emptyList())
         private set
 
-    private val cartoonTagDao: CartoonTagDao by Injekt.injectLazy()
+    private val cartoonTagDao: CartoonTagDao by getKoin().inject()
 
     sealed class Dialog {
 

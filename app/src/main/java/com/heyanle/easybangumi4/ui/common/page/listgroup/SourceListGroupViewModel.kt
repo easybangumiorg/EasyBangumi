@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewModelScope
 import com.heyanle.bangumi_source_api.api.component.page.SourcePage
+import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.utils.stringRes
 import kotlinx.coroutines.launch
 
@@ -44,8 +45,8 @@ class SourceListGroupViewModel(
                     it.throwable.printStackTrace()
                     groupState =
                         GroupState.Error(
-                            if(it.isParserError) stringRes(com.heyanle.easy_i18n.R.string.source_error)
-                            else it.throwable.message?:stringRes(com.heyanle.easy_i18n.R.string.loading_error)
+                            if (it.isParserError) stringRes(R.string.source_error)
+                            else it.throwable.message ?: stringRes(R.string.loading_error)
                         )
                 }
         }

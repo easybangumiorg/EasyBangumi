@@ -1,8 +1,9 @@
 package com.heyanle.easybangumi4.download.entity
 
 import com.arialyy.aria.core.download.M3U8Entity
-import com.heyanle.bangumi_source_api.api.entity.PlayLine
-import com.heyanle.bangumi_source_api.api.entity.PlayerInfo
+import com.heyanle.easybangumi4.source_api.entity.Episode
+import com.heyanle.easybangumi4.source_api.entity.PlayLine
+import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
 
 /**
  * Created by HeYanLe on 2023/9/17 15:40.
@@ -23,9 +24,7 @@ data class DownloadItem(
     val cartoonGenre: String,
 
     val playLine: PlayLine,
-
-    val episodeLabel: String,
-    val episodeIndex: Int,
+    val episode: Episode,
 
 
     val state: Int, // -1 -> error, 0 -> waiting ,1 -> doing, 2 -> step completely（当前步骤完成等待调度） 3 -> Completely

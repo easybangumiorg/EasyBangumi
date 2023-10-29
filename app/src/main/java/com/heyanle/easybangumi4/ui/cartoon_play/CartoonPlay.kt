@@ -134,7 +134,7 @@ import com.heyanle.easybangumi4.utils.openUrl
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.easybangumi4.utils.toast
 import com.heyanle.injekt.api.get
-import com.heyanle.injekt.core.Injekt
+import org.koin.mp.KoinPlatform.getKoin
 import kotlinx.coroutines.launch
 import loli.ball.easyplayer2.BackBtn
 import loli.ball.easyplayer2.ControlViewModel
@@ -205,8 +205,8 @@ fun CartoonPlay(
     val permissionState = rememberPermissionState(
         android.Manifest.permission.WRITE_EXTERNAL_STORAGE
     )
-//    val downloadControllerOld: DownloadControllerOld by Injekt.injectLazy()
-    val cartoonPlayingController: CartoonPlayingController by Injekt.injectLazy()
+//    val downloadControllerOld: DownloadControllerOld by getKoin().inject()
+    val cartoonPlayingController: CartoonPlayingController by getKoin().inject()
     val controlVM = ControlViewModelFactory.viewModel(Injekt.get<ExoPlayer>().let {
         it.toString().loge("ExoPlayer-----")
         it
@@ -262,7 +262,7 @@ fun CartoonPlay(
         controlVM.title.loge("CartoonPlay")
     }
 
-    val settingPreferences: SettingPreferences by Injekt.injectLazy()
+    val settingPreferences: SettingPreferences by getKoin().inject()
     val orMode = settingPreferences.playerOrientationMode.flow()
         .collectAsState(initial = SettingPreferences.PlayerOrientationMode.Auto)
     LaunchedEffect(key1 = orMode) {
@@ -741,8 +741,8 @@ fun CartoonPlayPage(
     listState: LazyGridState = rememberLazyGridState(),
     //onTitle: (String) -> Unit,
 ) {
-    val cartoonPlayingController: CartoonPlayingController by Injekt.injectLazy()
-    val downloadDispatcher: DownloadDispatcher by Injekt.injectLazy()
+    val cartoonPlayingController: CartoonPlayingController by getKoin().inject()
+    val downloadDispatcher: DownloadDispatcher by getKoin().inject()
     val nav = LocalNavController.current
     CartoonPlayDetailed(
         modifier = Modifier.fillMaxSize(),
@@ -997,7 +997,7 @@ fun CartoonPlayDetailed(
                             } else {
                                 currentDownloadPlayLine.value = null
                             }
-                            val downloadController: DownloadController by Injekt.injectLazy()
+                            val downloadController: DownloadController by getKoin().inject()
                             downloadController.tryShowFirstDownloadDialog()
                         },
                     )

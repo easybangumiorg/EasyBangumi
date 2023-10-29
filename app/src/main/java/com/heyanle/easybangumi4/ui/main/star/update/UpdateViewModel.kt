@@ -8,7 +8,7 @@ import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.insertSeparators
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.easybangumi4.utils.toDateKey
-import com.heyanle.injekt.core.Injekt
+import org.koin.mp.KoinPlatform.getKoin
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -49,8 +49,8 @@ class UpdateViewModel : ViewModel() {
     private val _stateFlow = MutableStateFlow(State())
     val stateFlow = _stateFlow.asStateFlow()
 
-    private val cartoonUpdateController: CartoonUpdateController by Injekt.injectLazy()
-    private val cartoonStarDao: CartoonStarDao by Injekt.injectLazy()
+    private val cartoonUpdateController: CartoonUpdateController by getKoin().inject()
+    private val cartoonStarDao: CartoonStarDao by getKoin().inject()
 
     init {
         viewModelScope.launch {

@@ -8,10 +8,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.heyanle.bangumi_source_api.api.component.search.SearchComponent
 import com.heyanle.easybangumi4.cartoon.db.dao.SearchHistoryDao
+import com.heyanle.easybangumi4.source_api.component.search.SearchComponent
 import com.heyanle.easybangumi4.utils.ViewModelOwnerMap
-import com.heyanle.injekt.core.Injekt
+import org.koin.mp.KoinPlatform.getKoin
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,7 +35,7 @@ class SearchViewModel(
 
     val searchHistory = mutableStateListOf<String>()
 
-    private val searchHistoryDao: SearchHistoryDao by Injekt.injectLazy()
+    private val searchHistoryDao: SearchHistoryDao by getKoin().inject()
 
     init {
         viewModelScope.launch {

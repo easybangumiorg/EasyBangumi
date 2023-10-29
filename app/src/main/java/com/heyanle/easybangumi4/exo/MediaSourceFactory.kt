@@ -12,7 +12,7 @@ import androidx.media3.exoplayer.dash.DashMediaSource
 import androidx.media3.exoplayer.hls.HlsMediaSource
 import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
-import com.heyanle.bangumi_source_api.api.entity.PlayerInfo
+import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
 
 /**
  * Created by HeYanLe on 2023/8/13 21:21.

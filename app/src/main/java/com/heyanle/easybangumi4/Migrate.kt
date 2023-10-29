@@ -1,25 +1,10 @@
 package com.heyanle.easybangumi4
 
-import android.content.Context
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.heyanle.easybangumi4.base.preferences.android.AndroidPreferenceStore
-import com.heyanle.easybangumi4.base.preferences.hekv.HeKVPreferenceStore
-import com.heyanle.easybangumi4.base.preferences.mmkv.MMKVPreferenceStore
-import com.heyanle.easybangumi4.base.theme.EasyThemeMode
-import com.heyanle.easybangumi4.preferences.SettingMMKVPreferences
-import com.heyanle.easybangumi4.preferences.SettingPreferences
-import com.heyanle.easybangumi4.preferences.SourcePreferences
-import com.heyanle.easybangumi4.utils.getFilePath
-import com.heyanle.easybangumi4.utils.jsonTo
-import com.heyanle.injekt.api.get
-import com.heyanle.injekt.core.Injekt
-import com.heyanle.okkv2.core.okkv
-import java.io.File
 
 /**
- * preferences 更新
- * Created by HeYanLe on 2023/7/29 17:38.
+ * Created by HeYanLe on 2023/10/29 15:08.
  * https://github.com/heyanLE
  */
 object Migrate {
@@ -60,101 +45,5 @@ object Migrate {
     object CacheDB {
         fun getDBMigration() = emptyList<Migration>()
     }
-
-    object AppLocalDB {
-        fun getDBMigration() = emptyList<Migration>()
-    }
-
-    object DownloadDB {
-        fun getDBMigration() = emptyList<Migration>()
-    }
-
-
-
-    fun tryUpdate(
-        context: Context
-    ) {
-        preferenceUpdate(
-            context,
-            Injekt.get(),
-            Injekt.get(),
-            Injekt.get(),
-            Injekt.get(),
-            Injekt.get(),
-            Injekt.get(),
-        )
-        controllerUpdate(
-            context = context,
-        )
-    }
-
-    private fun preferenceUpdate(
-        context: Context,
-        androidPreferenceStore: AndroidPreferenceStore,
-        mmkvPreferenceStore: MMKVPreferenceStore,
-        heKVPreferenceStore: HeKVPreferenceStore,
-        settingPreferences: SettingPreferences,
-        sourcePreferences: SourcePreferences,
-        settingMMKVPreferences: SettingMMKVPreferences,
-    ) {
-
-        val lastVersionCode = androidPreferenceStore.getInt("last_version_code", 0).get()
-        val curVersionCode = BuildConfig.VERSION_CODE
-
-        if (lastVersionCode < curVersionCode) {
-
-            // 65
-            if (lastVersionCode < 65) {
-                // preference 架构变更
-
-                // 主题存储变更
-                val themeModeOkkv by okkv("theme_mode", EasyThemeMode.Default.name)
-                val darkModeOkkv by okkv("dark_mode", SettingPreferences.DarkMode.Auto.name)
-                val isDynamicColorOkkv by okkv<Boolean>("is_dynamic_color", def = true)
-
-                settingPreferences.themeMode.set(EasyThemeMode.valueOf(themeModeOkkv))
-                settingPreferences.darkMode.set(SettingPreferences.DarkMode.valueOf(darkModeOkkv))
-                settingPreferences.isThemeDynamic.set(isDynamicColorOkkv)
-
-                // 其他配置变更
-                val isPrivateOkkv by okkv("inPrivate", def = false)
-                val padModeOkkv by okkv("padMode", def = 0)
-                val webViewCompatibleOkkv by okkv("webViewCompatible", def = false)
-
-                settingPreferences.isInPrivate.set(isPrivateOkkv)
-                settingPreferences.padMode.set(SettingPreferences.PadMode.entries[padModeOkkv])
-
-                settingMMKVPreferences.webViewCompatible.set(webViewCompatibleOkkv)
-
-                // 源配置变更
-                val configOkkv by okkv("source_config", "[]")
-                val list: List<SourcePreferences.LocalSourceConfig> = configOkkv.jsonTo()?: emptyList()
-                val map = hashMapOf<String, SourcePreferences.LocalSourceConfig>()
-                list.forEach {
-                    map[it.key] = it
-                }
-                sourcePreferences.configs.set(map)
-            }
-        }
-
-        androidPreferenceStore.getInt("last_version_code", 0).set(curVersionCode)
-
-    }
-
-    private fun controllerUpdate(
-        context: Context,
-    ){
-        
-        val rootFolder = File(context.getFilePath("download"))
-
-        // 本地番剧 json 文件更新
-        val localCartoonJson = File(rootFolder, "local.json")
-        val localCartoonJsonTem = File(rootFolder, "local.json.bk")
-
-        // 下载记录 json 文件更新
-        val downloadItemJson = File(rootFolder, "item.json")
-        val downloadItemJsonTemp = File(rootFolder, "item.json.bk")
-    }
-
 
 }
