@@ -16,7 +16,7 @@ import com.heyanle.easybangumi4.download.entity.LocalEpisode
 import com.heyanle.easybangumi4.download.entity.LocalPlayLine
 import com.heyanle.easybangumi4.getter.LocalCartoonGetter
 import com.heyanle.easybangumi4.preferences.SettingPreferences
-import com.heyanle.injekt.core.Injekt
+import org.koin.mp.KoinPlatform.getKoin
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -33,9 +33,9 @@ class LocalPlayViewModel(
     private val uuid: String,
 ) : ViewModel() {
 
-    private val exoPlayer: ExoPlayer by Injekt.injectLazy()
-    private val settingPreferences: SettingPreferences by Injekt.injectLazy()
-    private val localCartoonGetter: LocalCartoonGetter by Injekt.injectLazy()
+    private val exoPlayer: ExoPlayer by getKoin().inject()
+    private val settingPreferences: SettingPreferences by getKoin().inject()
+    private val localCartoonGetter: LocalCartoonGetter by getKoin().inject()
 
     data class LocalPlayState(
         val isLoading: Boolean = false,

@@ -28,7 +28,7 @@ import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.openUrl
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.easybangumi4.utils.toast
-import com.heyanle.injekt.core.Injekt
+import org.koin.mp.KoinPlatform.getKoin
 
 /**
  * Created by HeYanLe on 2023/2/22 23:53.
@@ -53,7 +53,7 @@ fun SourceContainerBase(
     val animSources = LocalSourceBundleController.current
     val anim = animSources
 
-    val sourceStateGetter: SourceStateGetter by Injekt.injectLazy()
+    val sourceStateGetter: SourceStateGetter by getKoin().inject()
     val state by sourceStateGetter.flowState().collectAsState()
     LaunchedEffect(state){
         state.logi("SourceController")
@@ -78,7 +78,7 @@ fun SourceContainerBase(
                         modifier = Modifier
                             .fillMaxSize()
                             .background(errorContainerColor),
-                        errorMsg = stringResource(id = com.heyanle.easy_i18n.R.string.no_source),
+                        errorMsg = stringResource(id = R.string.no_source),
                         clickEnable = false,
                         other = {
                             Column {

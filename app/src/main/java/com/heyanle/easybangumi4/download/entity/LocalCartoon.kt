@@ -1,7 +1,7 @@
 package com.heyanle.easybangumi4.download.entity
 
 import androidx.room.Ignore
-import com.heyanle.easybangumi4.utils.getMatchReg
+import com.heyanle.easybangumi4.base.utils.getMatchReg
 import java.io.File
 
 /**
@@ -80,6 +80,7 @@ data class LocalPlayLine(
 )
 
 data class LocalEpisode(
+    val order: Int,
     val label: String,
     val path: String,
 )

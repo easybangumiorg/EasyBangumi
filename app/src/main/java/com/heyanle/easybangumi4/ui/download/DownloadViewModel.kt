@@ -9,7 +9,7 @@ import com.heyanle.easybangumi4.download.DownloadController
 import com.heyanle.easybangumi4.download.DownloadDispatcher
 import com.heyanle.easybangumi4.download.entity.DownloadItem
 import com.heyanle.easybangumi4.getter.DownloadItemGetter
-import com.heyanle.injekt.core.Injekt
+import org.koin.mp.KoinPlatform.getKoin
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 
@@ -19,14 +19,14 @@ import kotlinx.coroutines.flow.stateIn
  */
 class DownloadViewModel : ViewModel() {
 
-    private val downloadBus: DownloadBus by Injekt.injectLazy()
+    private val downloadBus: DownloadBus by getKoin().inject()
 
 
-    private val downloadItemGetter: DownloadItemGetter by Injekt.injectLazy()
+    private val downloadItemGetter: DownloadItemGetter by getKoin().inject()
     val downloadingFlow = downloadItemGetter.flowDownloadItem()
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-    private val downloadDispatcher: DownloadDispatcher by Injekt.injectLazy()
+    private val downloadDispatcher: DownloadDispatcher by getKoin().inject()
 
     val selection = mutableStateMapOf<DownloadItem, Boolean>()
 

@@ -8,8 +8,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.heyanle.extension_load.ExtensionController
-import com.heyanle.extension_load.model.Extension
+import com.heyanle.easybangumi4.extension.Extension
+import com.heyanle.easybangumi4.extension.ExtensionController
+import com.heyanle.easybangumi4.getter.ExtensionGetter
+import org.koin.core.context.GlobalContext.get
+import org.koin.core.context.startKoin
+import org.koin.java.KoinJavaComponent.getKoin
 
 /**
  * Created by HeYanLe on 2023/2/22 19:29.
@@ -21,22 +25,25 @@ fun ExtensionContainer(
     modifier: Modifier = Modifier,
     loadingContainerColor: Color = Color.Transparent,
     content: @Composable (List<Extension>) -> Unit,
-){
-    val state by ExtensionController.installedExtensionsFlow.collectAsState()
+) {
+
+    val extension: ExtensionGetter by getKoin().inject()
+    val state by extension.flowExtensionState().collectAsState()
     Box(
         modifier = Modifier
             .fillMaxSize()
             .then(modifier)
     ) {
-        when(val sta = state){
-            is ExtensionController.ExtensionState.None -> {}
-            is ExtensionController.ExtensionState.Loading -> {
-                LoadingPage(modifier = Modifier.fillMaxSize().background(loadingContainerColor))
-            }
-            is ExtensionController.ExtensionState.Extensions -> {
-                content(sta.extensions)
-            }
+        if (state.isLoading) {
+            LoadingPage(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(loadingContainerColor)
+            )
+        } else {
+            content((state.appExtensions + state.fileExtension).values.toList())
         }
+
     }
 
 

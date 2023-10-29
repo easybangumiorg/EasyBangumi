@@ -16,7 +16,7 @@ import com.heyanle.easybangumi4.cartoon.entity.isChild
 import com.heyanle.easybangumi4.cartoon.CartoonRepository
 import com.heyanle.easybangumi4.getter.CartoonInfoGetter
 import com.heyanle.easybangumi4.utils.loge
-import com.heyanle.injekt.core.Injekt
+import org.koin.mp.KoinPlatform.getKoin
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -50,9 +50,9 @@ class DetailedViewModel(
     var isStar by mutableStateOf(false)
     var isReverse by mutableStateOf(false)
 
-    private val cartoonInfoGetter: CartoonInfoGetter by Injekt.injectLazy()
+    private val cartoonInfoGetter: CartoonInfoGetter by getKoin().inject()
 
-    private val cartoonStarDao: CartoonStarDao by Injekt.injectLazy()
+    private val cartoonStarDao: CartoonStarDao by getKoin().inject()
 
 
     fun checkUpdate(){

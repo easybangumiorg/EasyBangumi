@@ -19,7 +19,7 @@ import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.CartoonRepository
 import com.heyanle.easybangumi4.getter.CartoonInfoGetter
 import com.heyanle.easybangumi4.utils.stringRes
-import com.heyanle.injekt.core.Injekt
+import org.koin.mp.KoinPlatform.getKoin
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -114,7 +114,7 @@ class DlnaViewModel(
         }
     }
 
-    private val cartoonInfoGetter: CartoonInfoGetter by Injekt.injectLazy()
+    private val cartoonInfoGetter: CartoonInfoGetter by getKoin().inject()
 
     var playingState by mutableStateOf<PlayingState>(PlayingState.None)
 

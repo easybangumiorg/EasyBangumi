@@ -59,7 +59,7 @@ import com.heyanle.easybangumi4.ui.common.EmumPreferenceItem
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.preferences.SettingPreferences
 import com.heyanle.easybangumi4.utils.stringRes
-import com.heyanle.injekt.core.Injekt
+import org.koin.mp.KoinPlatform.getKoin
 import kotlinx.coroutines.launch
 
 /**
@@ -76,7 +76,7 @@ fun ColumnScope.AppearanceSetting(
 
     val scope = rememberCoroutineScope()
 
-    val settingPreferences: SettingPreferences by Injekt.injectLazy()
+    val settingPreferences: SettingPreferences by getKoin().inject()
 
     Column(
         modifier = Modifier
@@ -133,7 +133,7 @@ fun ColumnScope.AppearanceSetting(
 
 @Composable
 fun DarkModeItem() {
-    val themeController: EasyThemeController by Injekt.injectLazy()
+    val themeController: EasyThemeController by getKoin().inject()
     val themeState = themeController.themeFlow.collectAsState()
     val theme = themeState.value
     val list = listOf(
@@ -187,7 +187,7 @@ fun DarkModeItem() {
 
 @Composable
 fun ThemeModeItem() {
-    val themeController: EasyThemeController by Injekt.injectLazy()
+    val themeController: EasyThemeController by getKoin().inject()
     val themeState = themeController.themeFlow.collectAsState()
     val theme =themeState.value
     val isDark = when (theme.darkMode) {

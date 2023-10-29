@@ -6,13 +6,13 @@ import com.arialyy.aria.core.download.DownloadTaskListener
 import com.arialyy.aria.core.download.m3u8.M3U8VodOption
 import com.arialyy.aria.core.inf.IEntity
 import com.arialyy.aria.core.task.DownloadTask
-import com.heyanle.bangumi_source_api.api.entity.PlayerInfo
 import com.heyanle.easy_i18n.R
+import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.easybangumi4.download.DownloadBus
 import com.heyanle.easybangumi4.download.DownloadController
 import com.heyanle.easybangumi4.download.entity.DownloadItem
+import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
-import com.heyanle.easybangumi4.utils.stringRes
 import java.io.File
 import java.net.URI
 import java.net.URL

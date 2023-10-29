@@ -8,7 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
 import com.heyanle.easybangumi4.cartoon.db.dao.CartoonHistoryDao
-import com.heyanle.injekt.core.Injekt
+import org.koin.mp.KoinPlatform.getKoin
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -32,8 +32,8 @@ class CartoonPlayViewModel: ViewModel() {
 
     var selectedLineIndex by mutableIntStateOf(0)
 
-    private val cartoonHistoryDao: CartoonHistoryDao by Injekt.injectLazy()
-    private val cartoonPlayingController: CartoonPlayingController by Injekt.injectLazy()
+    private val cartoonHistoryDao: CartoonHistoryDao by getKoin().inject()
+    private val cartoonPlayingController: CartoonPlayingController by getKoin().inject()
 
     fun onDetailedLoaded(
         cartoonSummary: CartoonSummary,

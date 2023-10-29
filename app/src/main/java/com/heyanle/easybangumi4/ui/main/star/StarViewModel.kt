@@ -12,7 +12,7 @@ import com.heyanle.easybangumi4.ui.main.star.update.CartoonUpdateController
 import com.heyanle.easybangumi4.preferences.SettingPreferences
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.easybangumi4.utils.stringRes
-import com.heyanle.injekt.core.Injekt
+import org.koin.mp.KoinPlatform.getKoin
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
@@ -81,11 +81,11 @@ class StarViewModel : ViewModel() {
         ) : DialogState()
     }
 
-    private val cartoonTagDao: CartoonTagDao by Injekt.injectLazy()
-    private val cartoonStarDao: CartoonStarDao by Injekt.injectLazy()
-    private val settingPreferences: SettingPreferences by Injekt.injectLazy()
+    private val cartoonTagDao: CartoonTagDao by getKoin().inject()
+    private val cartoonStarDao: CartoonStarDao by getKoin().inject()
+    private val settingPreferences: SettingPreferences by getKoin().inject()
 
-    private val updateController: CartoonUpdateController by Injekt.injectLazy()
+    private val updateController: CartoonUpdateController by getKoin().inject()
 
     private val _stateFlow = MutableStateFlow(State(data = emptyMap()))
     val stateFlow = _stateFlow.asStateFlow()

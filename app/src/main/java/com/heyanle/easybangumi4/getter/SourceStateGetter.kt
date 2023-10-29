@@ -1,7 +1,7 @@
 package com.heyanle.easybangumi4.getter
 
-import com.heyanle.easybangumi4.source_old.SourceBundle
-import com.heyanle.easybangumi4.source_old.SourceController
+import com.heyanle.easybangumi4.source.SourceController
+import com.heyanle.easybangumi4.source.bundle.SourceBundle
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filterIsInstance
@@ -17,15 +17,15 @@ class SourceStateGetter(
 
     // 等到下一个番剧源就绪状态
     suspend fun awaitBundle(): SourceBundle {
-        return sourceController.sourceState.filterIsInstance<SourceController.SourceState.Completely>().first().sourceBundle
+        return sourceController.configSource.map { SourceBundle(it) }.first()
     }
 
     fun flowBundle(): Flow<SourceBundle> {
-        return sourceController.sourceState.filterIsInstance<SourceController.SourceState.Completely>().map { it.sourceBundle }
+        return sourceController.configSource.map { SourceBundle(it) }
     }
 
-    fun flowState(): StateFlow<SourceController.SourceState> {
-        return sourceController.sourceState
+    fun flowState(): StateFlow<SourceController.SourceInfoState> {
+        return sourceController.sourceInfo
     }
 
 }
