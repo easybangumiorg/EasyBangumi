@@ -3,6 +3,7 @@ package com.heyanle.easybangumi4.source.utils
 import android.annotation.SuppressLint
 import android.content.Context
 import android.webkit.WebView
+import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.source_api.utils.api.WebViewHelper
 import com.heyanle.injekt.core.Injekt
 
@@ -13,7 +14,7 @@ import com.heyanle.injekt.core.Injekt
 @SuppressLint("StaticFieldLeak")
 object WebViewHelperImpl: WebViewHelper {
 
-    val globalWebView = WebView(getKoin().get<Context>())
+    val globalWebView = WebView(APP)
 
     override suspend fun getRenderedHtmlCode(
         url: String,

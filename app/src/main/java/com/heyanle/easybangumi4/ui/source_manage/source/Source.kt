@@ -28,16 +28,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.heyanle.bangumi_source_api.api.IconSource
-import com.heyanle.bangumi_source_api.api.Source
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.navigationSourceConfig
-import com.heyanle.easybangumi4.preferences.SourcePreferences
-import com.heyanle.easybangumi4.source_old.LocalSourceBundleController
-import com.heyanle.easybangumi4.source_old.SourceMigrationController
+import com.heyanle.easybangumi4.source.ConfigSource
+import com.heyanle.easybangumi4.source.LocalSourceBundleController
+import com.heyanle.easybangumi4.source.SourceConfig
+import com.heyanle.easybangumi4.source.SourceInfo
+import com.heyanle.easybangumi4.source_api.IconSource
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.injekt.core.Injekt
@@ -88,8 +88,6 @@ fun Source() {
         vm.onDragEnd()
     })
 
-    val migrationController: SourceMigrationController by Injekt.injectLazy()
-    val migratingSet = migrationController.migratingSource.collectAsState()
 
     LazyColumn(
         state = state.listState,
@@ -98,11 +96,12 @@ fun Source() {
             .reorderable(state)
             .detectReorderAfterLongPress(state)
     ) {
-        items(vm.sourceConfigs, key = { it.first.key }) { pair ->
-            val source = pair.first
-            val config = pair.second
+        items(vm.configSourceList, key = { it.source.source.key }) { configSource ->
+            val sourceInfo = configSource.source
+            val source = sourceInfo.source
+            val config = configSource.config
             val bundle = LocalSourceBundleController.current
-            ReorderableItem(reorderableState = state, key = pair.first.key) {
+            ReorderableItem(reorderableState = state, key = source.key) {
                 it.loge("Source")
                 Box(
                     modifier = Modifier
@@ -119,19 +118,17 @@ fun Source() {
                         },
                 ) {
                     SourceItem(
-                        isMigrate = migratingSet.value.contains(source),
-                        config = config,
-                        source = source,
-                        onCheckedChange = { source: Source, b: Boolean ->
+                        configSource,
+                        onCheckedChange = { source: ConfigSource, b: Boolean ->
                             if (b) {
-                                vm.enable(config)
+                                vm.enable(source)
                             } else {
-                                vm.disable(config)
+                                vm.disable(source)
                             }
                         },
                         onClick = {
-                            if (migratingSet.value.contains(it) && config.enable && bundle.config(it.key) != null) {
-                                nav.navigationSourceConfig(it.key)
+                            if(it.source is SourceInfo.Loaded && it.config.enable && bundle.preference(it.source.source.key) != null){
+                                nav.navigationSourceConfig(it.source.source.key)
                             }
                         }
                     )
@@ -144,37 +141,44 @@ fun Source() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SourceItem(
-    isMigrate: Boolean,
-    config: SourcePreferences.LocalSourceConfig,
-    source: Source,
-    onCheckedChange: (Source, Boolean) -> Unit,
-    onClick: (Source) -> Unit,
+    configSource: ConfigSource,
+    onCheckedChange: (ConfigSource, Boolean) -> Unit,
+    onClick: (ConfigSource) -> Unit,
 ) {
 
-    val icon = source as? IconSource
+    val sourceInfo = configSource.source
+    val config = configSource.config
+    val icon = sourceInfo.source as? IconSource
 
     ListItem(
         colors = ListItemDefaults.colors(
             containerColor = Color.Transparent
         ),
         modifier = Modifier.clickable {
-            onClick(source)
+            onClick(configSource)
         },
         headlineContent = {
-            Text(text = source.label)
+            Text(text = sourceInfo.source.label)
         },
         supportingContent = {
             Text(
-                text = source.version,
+                text = sourceInfo.source.version,
             )
         },
         trailingContent = {
-            if (isMigrate) {
-                Text(text = stringResource(id = R.string.migrating))
-            } else {
-                Switch(checked = config.enable, onCheckedChange = {
-                    onCheckedChange(source, it)
-                })
+            when(sourceInfo){
+                is SourceInfo.Migrating -> {
+                    Text(text = stringResource(id = R.string.migrating))
+                }
+                is SourceInfo.Loaded -> {
+                    Switch(checked = config.enable, onCheckedChange = {
+                        onCheckedChange(configSource, it)
+                    })
+                }
+                is SourceInfo.Error -> {
+                    Text(text = sourceInfo.msg)
+
+                }
             }
 
         },
@@ -182,7 +186,7 @@ fun SourceItem(
             OkImage(
                 modifier = Modifier.size(40.dp),
                 image = icon?.getIconFactory()?.invoke(),
-                contentDescription = source.label,
+                contentDescription = sourceInfo.source.label,
                 crossFade = false,
                 placeholderColor = null,
                 errorColor = null,

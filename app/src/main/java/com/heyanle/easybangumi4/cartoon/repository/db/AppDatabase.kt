@@ -26,7 +26,7 @@ import com.heyanle.easybangumi4.cartoon.entity.SearchHistory
         CartoonTag::class,
     ],
     autoMigrations = [],
-    version = 6,
+    version = 7,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {

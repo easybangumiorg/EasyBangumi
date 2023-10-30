@@ -35,8 +35,8 @@ import com.heyanle.easybangumi4.R
 import com.heyanle.easybangumi4.SOURCE_MANAGER
 import com.heyanle.easybangumi4.navigationCartoonTag
 import com.heyanle.easybangumi4.navigationSetting
-import com.heyanle.easybangumi4.preferences.SettingMMKVPreferences
-import com.heyanle.easybangumi4.preferences.SettingPreferences
+import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
+import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.ui.common.BooleanPreferenceItem
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.setting.SettingPage

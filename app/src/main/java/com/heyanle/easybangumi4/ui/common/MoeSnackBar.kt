@@ -37,8 +37,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.heyanle.easybangumi4.base.theme.EasyThemeController
-import com.heyanle.easybangumi4.preferences.SettingPreferences
+import com.heyanle.easybangumi4.setting.SettingPreferences
+import com.heyanle.easybangumi4.theme.EasyThemeController
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.MainScope

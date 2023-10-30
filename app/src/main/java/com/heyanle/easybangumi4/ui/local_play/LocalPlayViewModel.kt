@@ -15,7 +15,7 @@ import com.heyanle.easybangumi4.download.entity.LocalCartoon
 import com.heyanle.easybangumi4.download.entity.LocalEpisode
 import com.heyanle.easybangumi4.download.entity.LocalPlayLine
 import com.heyanle.easybangumi4.getter.LocalCartoonGetter
-import com.heyanle.easybangumi4.preferences.SettingPreferences
+import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

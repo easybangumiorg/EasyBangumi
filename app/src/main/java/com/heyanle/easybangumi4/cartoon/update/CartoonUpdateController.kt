@@ -1,11 +1,11 @@
 package com.heyanle.easybangumi4.source
 
 import androidx.compose.runtime.mutableStateOf
-import com.heyanle.bangumi_source_api.api.SourceResult
-import com.heyanle.bangumi_source_api.api.entity.Cartoon
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonStarDao
 import com.heyanle.easybangumi4.cartoon.entity.CartoonStar
 import com.heyanle.easybangumi4.getter.SourceStateGetter
+import com.heyanle.easybangumi4.source_api.SourceResult
+import com.heyanle.easybangumi4.source_api.entity.Cartoon
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.okkv2.core.okkv
 import kotlinx.coroutines.Dispatchers
@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flatMapMerge
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.flow.update
@@ -77,7 +78,7 @@ class CartoonUpdateController(
             job?.cancel("New Update Task")
             job = scope.launch(Dispatchers.IO) {
                 flow.flatMapMerge(3) { star ->
-                    kotlinx.coroutines.flow.flow {
+                    flow {
                         kotlin.runCatching {
                             val update =
                                 (sourceStateGetter.awaitBundle().update(star.source))

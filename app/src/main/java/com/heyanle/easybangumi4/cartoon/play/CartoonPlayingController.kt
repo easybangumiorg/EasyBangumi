@@ -330,8 +330,12 @@ class CartoonPlayingController(
 
             lastLinesIndex = playLineIndex,
             lastLineTitle = playLine.label,
+            lastLineId = playLine.id,
+
             lastEpisodeIndex = curEpisode,
-            lastEpisodeTitle = playLine.episode[curEpisode],
+            lastEpisodeTitle = playLine.episode[curEpisode].label ?:"",
+            lastEpisodeId = playLine.episode[curEpisode].id,
+            lastEpisodeOrder = playLine.episode[curEpisode].order,
             lastProcessTime = process,
 
             createTime = System.currentTimeMillis()
