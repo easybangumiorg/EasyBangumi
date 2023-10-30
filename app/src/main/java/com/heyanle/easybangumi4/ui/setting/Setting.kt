@@ -29,19 +29,19 @@ sealed class SettingPage(
     val title: @Composable () -> Unit,
     val content: @Composable ColumnScope.(NestedScrollConnection) -> Unit,
 ) {
-    object Appearance : SettingPage("appearance", {
+    data object Appearance : SettingPage("appearance", {
         Text(text = stringResource(id = R.string.appearance_setting))
     }, {
         AppearanceSetting(it)
     })
 
-    object Player : SettingPage("player", {
+    data object Player : SettingPage("player", {
         Text(text = stringResource(id = R.string.player_setting))
     }, {
         PlayerSetting(nestedScrollConnection = it)
     })
 
-    object Download : SettingPage("download", {
+    data object Download : SettingPage("download", {
         Text(text = stringResource(id = R.string.download_setting))
     }, {
         DownloadSetting(nestedScrollConnection = it)

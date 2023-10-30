@@ -1,5 +1,8 @@
 package com.heyanle.easybangumi4
 
+import android.os.Bundle
+import android.os.PersistableBundle
+import androidx.activity.ComponentActivity
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.staticCompositionLocalOf
 
@@ -12,5 +15,9 @@ val LocalWindowSizeController = staticCompositionLocalOf<WindowSizeClass> {
     error("AppNavController Not Provide")
 }
 
-class MainActivity {
+class MainActivity : ComponentActivity(){
+
+
+
+
 }

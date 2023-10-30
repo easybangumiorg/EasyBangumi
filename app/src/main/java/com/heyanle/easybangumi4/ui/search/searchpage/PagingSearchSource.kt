@@ -2,9 +2,9 @@ package com.heyanle.easybangumi4.ui.search.searchpage
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import com.heyanle.bangumi_source_api.api.SourceResult
-import com.heyanle.bangumi_source_api.api.component.search.SearchComponent
-import com.heyanle.bangumi_source_api.api.entity.CartoonCover
+import com.heyanle.easybangumi4.source_api.SourceResult
+import com.heyanle.easybangumi4.source_api.component.search.SearchComponent
+import com.heyanle.easybangumi4.source_api.entity.CartoonCover
 import com.heyanle.easybangumi4.utils.logi
 
 /**
