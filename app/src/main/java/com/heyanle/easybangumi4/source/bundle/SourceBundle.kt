@@ -109,14 +109,19 @@ class SourceBundle(
         }
     }
 
-    fun sources(): List<SourceInfo.Loaded> {
-        val res = ArrayList<SourceInfo.Loaded>()
-        res.addAll(sourceMap.values)
+
+    fun sourceInfo(key: String) : SourceInfo? {
+        return sourceMap[key]
+    }
+
+    fun sources(): List<Source> {
+        val res = ArrayList<Source>()
+        res.addAll(sourceMap.values.map { it.source })
         return res
     }
 
-    fun source(key: String): SourceInfo.Loaded? {
-        return sourceMap[key]
+    fun source(key: String): Source? {
+        return sourceMap[key]?.source
     }
 
     fun page(key: String): PageComponent? {

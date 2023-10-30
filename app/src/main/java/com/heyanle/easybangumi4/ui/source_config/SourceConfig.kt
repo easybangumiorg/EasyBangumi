@@ -1,7 +1,9 @@
 package com.heyanle.easybangumi4.ui.source_config
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -20,7 +22,13 @@ import androidx.compose.ui.res.stringResource
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.LocalNavController
+import com.heyanle.easybangumi4.source.SourceConfig
+import com.heyanle.easybangumi4.source.SourceInfo
+import com.heyanle.easybangumi4.source_api.component.preference.PreferenceComponent
+import com.heyanle.easybangumi4.source_api.component.preference.SourcePreference
+import com.heyanle.easybangumi4.source_api.utils.api.PreferenceHelper
 import com.heyanle.easybangumi4.ui.common.BooleanPreferenceItem
+import com.heyanle.easybangumi4.ui.common.ErrorPage
 import com.heyanle.easybangumi4.ui.common.SourceContainerBase
 import com.heyanle.easybangumi4.ui.common.StringEditPreferenceItem
 import com.heyanle.easybangumi4.ui.common.StringSelectPreferenceItem
@@ -39,39 +47,56 @@ fun SourceConfig(
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     SourceContainerBase(hasSource = {
-        it.config(sourceKey) != null
+        it.preference(sourceKey) != null
     }) {
-        it.source(sourceKey)?.let { source ->
-            it.config(sourceKey)?.let { config ->
-                Column {
-                    TopAppBar(
-                        title = {
-                            Text(
-                                text = stringResource(id = com.heyanle.easy_i18n.R.string.source_config) + " - " + source?.label
-                            )
-                        },
-                        navigationIcon = {
-                            IconButton(onClick = {
-                                nav.popBackStack()
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Filled.ArrowBack,
-                                    stringResource(id = R.string.back)
+        val sourceInfo = it.sourceInfo(sourceKey)
+        when (sourceInfo) {
+            is SourceInfo.Migrating -> {
+                ErrorPage(
+                    modifier = Modifier.fillMaxSize(),
+                    errorMsg = stringResource(id = R.string.migrating),
+                )
+            }
+
+            is SourceInfo.Loaded -> {
+                it.preference(sourceKey)?.let { config ->
+                    val preferenceHelper = sourceInfo.componentBundle.get<PreferenceHelper>()
+                    Column {
+                        TopAppBar(
+                            title = {
+                                Text(
+                                    text = stringResource(id = com.heyanle.easy_i18n.R.string.source_config) + " - " + sourceInfo.source.label
                                 )
-                            }
+                            },
+                            navigationIcon = {
+                                IconButton(onClick = {
+                                    nav.popBackStack()
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Filled.ArrowBack,
+                                        stringResource(id = R.string.back)
+                                    )
+                                }
 
-                        },
-                        scrollBehavior = scrollBehavior
-                    )
+                            },
+                            scrollBehavior = scrollBehavior
+                        )
 
-                    ConfigList(
-                        sourcePreferenceHelper = SourcePreferenceHelper.of(APP, source),
-                        configComponent = config,
-                        nestedScrollConnection = scrollBehavior.nestedScrollConnection
-                    )
+                        preferenceHelper?.let {
+                            ConfigList(
+                                sourcePreferenceHelper = it,
+                                configComponent = config,
+                                nestedScrollConnection = scrollBehavior.nestedScrollConnection
+                            )
+                        }
+
+                    }
                 }
             }
 
+            else -> {
+
+            }
         }
 
 
@@ -82,22 +107,25 @@ fun SourceConfig(
 @Composable
 fun ConfigList(
     modifier: Modifier = Modifier,
-    sourcePreferenceHelper: SourcePreferenceHelper,
-    configComponent: ConfigComponent,
+    sourcePreferenceHelper: PreferenceHelper,
+    configComponent: PreferenceComponent,
     nestedScrollConnection: NestedScrollConnection
 ) {
-
+    val list = remember(configComponent) {
+        configComponent.register()
+    }
     LazyColumn(
         modifier = modifier.nestedScroll(nestedScrollConnection)
     ) {
-        items(configComponent.configs()) { config ->
+
+        items(list) { config ->
 
 
             when (config) {
-                is SourceConfig.Switch -> {
+                is SourcePreference.Switch -> {
                     val value = remember(config) {
                         mutableStateOf(
-                            sourcePreferenceHelper.load(config.key, config.def)
+                            sourcePreferenceHelper.get(config.key, config.def)
                                 .toBooleanStrictOrNull() ?: false
                         )
                     }
@@ -107,15 +135,15 @@ fun ConfigList(
                         },
                         change = value.value,
                         onChange = {
-                            sourcePreferenceHelper.save(config.key, it.toString())
+                            sourcePreferenceHelper.put(config.key, it.toString())
                             value.value = it
                         }
                     )
                 }
 
-                is SourceConfig.Edit -> {
+                is SourcePreference.Edit -> {
                     val value = remember(config) {
-                        mutableStateOf(sourcePreferenceHelper.load(config.key, config.def))
+                        mutableStateOf(sourcePreferenceHelper.get(config.key, config.def))
                     }
                     StringEditPreferenceItem(
                         title = {
@@ -123,15 +151,15 @@ fun ConfigList(
                         },
                         value = value.value,
                         onEdit = {
-                            sourcePreferenceHelper.save(config.key, it.toString())
+                            sourcePreferenceHelper.put(config.key, it.toString())
                             value.value = it
                         }
                     )
                 }
 
-                is SourceConfig.Selection -> {
+                is SourcePreference.Selection -> {
                     val value = remember(config) {
-                        mutableStateOf(sourcePreferenceHelper.load(config.key, config.def))
+                        mutableStateOf(sourcePreferenceHelper.get(config.key, config.def))
                     }
 
                     StringSelectPreferenceItem(
@@ -140,7 +168,7 @@ fun ConfigList(
                     ) {
                         if (config.selections.isNotEmpty()) {
                             value.value = config.selections.getOrElse(it) { config.selections[0] }
-                            sourcePreferenceHelper.save(
+                            sourcePreferenceHelper.put(
                                 config.key,
                                 config.selections.getOrElse(it) { config.selections[0] })
                         }

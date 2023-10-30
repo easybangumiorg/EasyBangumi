@@ -60,9 +60,14 @@ fun Extension() {
             items(it) { extension ->
                 ExtensionItem(extension = extension,
                     onClick = {
-                        IntentHelper.openAppDetailed(it.pkgName, APP)
+                        if (it.loadType == Extension.TYPE_APP) {
+                            IntentHelper.openAppDetailed(it.pkgName, APP)
+                        }
+
                     }, onAction = {
-                        IntentHelper.openAppDetailed(it.pkgName, APP)
+                        if (it.loadType == Extension.TYPE_APP) {
+                            IntentHelper.openAppDetailed(it.pkgName, APP)
+                        }
                     })
             }
         }

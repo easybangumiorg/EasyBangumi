@@ -15,6 +15,7 @@ object Migrate {
             MIGRATION_3_4,
             MIGRATION_4_5,
             MIGRATION_5_6,
+            MIGRATION_6_7
         )
 
         private val MIGRATION_2_3 = object : Migration(2, 3) {
@@ -38,6 +39,12 @@ object Migrate {
         private val MIGRATION_5_6 = object : Migration(5, 6) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE CartoonStar ADD COLUMN sourceName TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
+        private val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE CartoonHistory ADD COLUMN lastLineId TEXT NOT NULL DEFAULT '', lastEpisodeId TEXT NOT NULL DEFAULT '', lastEpisodeOrder INTEGER NOT NULL DEFAULT -1")
             }
         }
     }

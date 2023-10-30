@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.Color
 import com.heyanle.easybangumi4.extension.Extension
 import com.heyanle.easybangumi4.extension.ExtensionController
 import com.heyanle.easybangumi4.getter.ExtensionGetter
+import com.heyanle.injekt.core.Injekt
 import org.koin.core.context.GlobalContext.get
 import org.koin.core.context.startKoin
 import org.koin.java.KoinJavaComponent.getKoin

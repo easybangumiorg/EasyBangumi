@@ -433,7 +433,7 @@ fun DownloadItem(
             )
             Text(
                 modifier = Modifier,
-                text = "${downloadItem.episodeLabel}-${downloadItem.playLine.label}",
+                text = "${downloadItem.episode.label}-${downloadItem.playLine.label}",
                 style = MaterialTheme.typography.titleMedium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

@@ -12,7 +12,7 @@ import androidx.core.app.NotificationCompat
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.MainActivity
 import com.heyanle.easybangumi4.R
-import com.heyanle.easybangumi4.base.utils.logi
+import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.easybangumi4.download.entity.DownloadItem
 import com.heyanle.injekt.core.Injekt

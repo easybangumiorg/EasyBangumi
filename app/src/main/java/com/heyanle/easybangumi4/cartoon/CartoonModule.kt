@@ -1,6 +1,10 @@
 package com.heyanle.easybangumi4.cartoon
 
 import android.app.Application
+import com.heyanle.easybangumi4.cartoon.repository.CartoonNetworkDataSource
+import com.heyanle.easybangumi4.cartoon.repository.CartoonRepository
+import com.heyanle.easybangumi4.cartoon.repository.db.AppDatabase
+import com.heyanle.easybangumi4.cartoon.repository.db.CacheDatabase
 import com.heyanle.easybangumi4.source.CartoonUpdateController
 import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlayingController
 import com.heyanle.injekt.api.InjektModule
@@ -16,6 +20,45 @@ class CartoonModule(
 ) : InjektModule {
 
     override fun InjektScope.registerInjectables() {
+
+        addSingletonFactory {
+            AppDatabase.build(application)
+        }
+
+        addSingletonFactory {
+            CacheDatabase.build(application)
+        }
+
+        addSingletonFactory {
+            get<AppDatabase>().cartoonHistory
+        }
+
+        addSingletonFactory {
+            get<AppDatabase>().cartoonStar
+        }
+
+        addSingletonFactory {
+            get<AppDatabase>().cartoonTag
+        }
+
+        addSingletonFactory {
+            get<AppDatabase>().searchHistory
+        }
+
+        addSingletonFactory {
+            get<CacheDatabase>().cartoonInfo
+        }
+
+
+
+        addSingletonFactory {
+            CartoonNetworkDataSource(get())
+        }
+
+        addSingletonFactory {
+            CartoonRepository(get(), get(), get(), get())
+        }
+
         addSingletonFactory {
             CartoonUpdateController(get(), get())
         }

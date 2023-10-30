@@ -5,9 +5,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.heyanle.bangumi_source_api.api.Source
-import com.heyanle.easybangumi4.preferences.SourcePreferences
-import com.heyanle.easybangumi4.source_old.SourceController
+import com.heyanle.easybangumi4.source.ConfigSource
+import com.heyanle.easybangumi4.source.SourceConfig
+import com.heyanle.easybangumi4.source.SourceController
+import com.heyanle.easybangumi4.source.SourcePreferences
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.flow.collectLatest
@@ -19,7 +20,7 @@ import kotlinx.coroutines.launch
  */
 class SourceViewModel : ViewModel() {
 
-    var sourceConfigs by mutableStateOf<List<Pair<Source, SourcePreferences.LocalSourceConfig>>>(emptyList())
+    var configSourceList by mutableStateOf<List<ConfigSource>>(emptyList())
         private set
 
     private val sourceController: SourceController by Injekt.injectLazy()
@@ -27,9 +28,9 @@ class SourceViewModel : ViewModel() {
 
     init {
         viewModelScope.launch {
-            sourceController.sourceLibraryFlow.collectLatest { libs ->
+            sourceController.configSource.collectLatest { libs ->
                 libs.loge("SourceViewModel")
-                sourceConfigs = libs
+                configSourceList = libs
             }
 
         }
@@ -37,29 +38,41 @@ class SourceViewModel : ViewModel() {
 
     fun move(from: Int, to: Int) {
 
-        sourceConfigs = sourceConfigs.toMutableList().apply {
+        configSourceList = configSourceList.toMutableList().apply {
             add(to, removeAt(from))
 
         }
     }
 
     fun onDragEnd() {
-        val map = hashMapOf<String, SourcePreferences.LocalSourceConfig>()
-        sourceConfigs.forEachIndexed { index, pair ->
-            map[pair.first.key] = pair.second.copy(order = index)
+        val map = hashMapOf<String, SourceConfig>()
+        configSourceList.forEachIndexed { index, configSource ->
+            map[configSource.source.source.key] = configSource.config.copy(order = index)
         }
-
-        sourceController.newConfig(map)
-
+        sourcePreferences.configs.set(map)
     }
 
 
-    fun enable(sourceConfig: SourcePreferences.LocalSourceConfig) {
-        sourceController.newConfig(sourceConfig.copy(enable = true))
+    fun enable(sourceConfig: ConfigSource) {
+        val map = sourcePreferences.configs.get().toMutableMap()
+        val config = map[sourceConfig.source.source.key]?.copy(enable = false) ?: SourceConfig(
+            sourceConfig.source.source.key,
+            Int.MAX_VALUE,
+            true
+        )
+        map[sourceConfig.source.source.key] = config
+        sourcePreferences.configs.set(map)
     }
 
-    fun disable(sourceConfig: SourcePreferences.LocalSourceConfig) {
-        sourceController.newConfig(sourceConfig.copy(enable = false))
+    fun disable(sourceConfig: ConfigSource) {
+        val map = sourcePreferences.configs.get().toMutableMap()
+        val config = map[sourceConfig.source.source.key]?.copy(enable = false) ?: SourceConfig(
+            sourceConfig.source.source.key,
+            Int.MAX_VALUE,
+            false
+        )
+        map[sourceConfig.source.source.key] = config
+        sourcePreferences.configs.set(map)
     }
 
 }
