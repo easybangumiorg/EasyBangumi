@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.cartoon.db.dao
+package com.heyanle.easybangumi4.cartoon.repository.db.dao
 
 import androidx.room.Dao
 import androidx.room.Delete

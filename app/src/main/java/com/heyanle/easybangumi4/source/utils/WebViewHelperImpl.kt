@@ -1,13 +1,19 @@
 package com.heyanle.easybangumi4.source.utils
 
+import android.annotation.SuppressLint
+import android.content.Context
 import android.webkit.WebView
 import com.heyanle.easybangumi4.source_api.utils.api.WebViewHelper
+import com.heyanle.injekt.core.Injekt
 
 /**
  * Created by HeYanLe on 2023/10/29 17:38.
  * https://github.com/heyanLE
  */
+@SuppressLint("StaticFieldLeak")
 object WebViewHelperImpl: WebViewHelper {
+
+    val globalWebView = WebView(getKoin().get<Context>())
 
     override suspend fun getRenderedHtmlCode(
         url: String,

@@ -15,7 +15,7 @@ import com.heyanle.easybangumi4.R
 import com.heyanle.easybangumi4.base.utils.logi
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.easybangumi4.download.entity.DownloadItem
-import org.koin.mp.KoinPlatform.getKoin
+import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.collectLatest
@@ -51,7 +51,7 @@ class DownloadService : Service() {
     private var notificationChannel: NotificationChannel? = null
 
     private val scope = MainScope()
-    private val downloadController: DownloadController by getKoin().inject()
+    private val downloadController: DownloadController by Injekt.injectLazy()
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }

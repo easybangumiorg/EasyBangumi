@@ -6,7 +6,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.staticCompositionLocalOf
 import com.heyanle.easybangumi4.getter.SourceStateGetter
 import com.heyanle.easybangumi4.source.bundle.SourceBundle
-import org.koin.mp.KoinPlatform.getKoin
+import com.heyanle.injekt.core.Injekt
 
 /**
  * Created by HeYanLe on 2023/2/22 20:41.
@@ -19,7 +19,7 @@ val LocalSourceBundleController = staticCompositionLocalOf<SourceBundle> {
 
 @Composable
 fun SourcesHost(content: @Composable () -> Unit) {
-    val sourceStateGetter: SourceStateGetter by getKoin().inject()
+    val sourceStateGetter: SourceStateGetter by Injekt.injectLazy()
     val state = sourceStateGetter.flowBundle().collectAsState(
         initial = SourceBundle(
             emptyList()

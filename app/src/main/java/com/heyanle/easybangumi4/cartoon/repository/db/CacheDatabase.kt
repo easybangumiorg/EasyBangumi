@@ -1,11 +1,11 @@
-package com.heyanle.easybangumi4.cartoon.db
+package com.heyanle.easybangumi4.cartoon.repository.db
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.heyanle.easybangumi4.Migrate
-import com.heyanle.easybangumi4.cartoon.db.dao.CartoonInfoDao
+import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 
 /**

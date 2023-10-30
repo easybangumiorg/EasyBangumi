@@ -24,7 +24,7 @@ import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.preferences.SettingPreferences
 import com.heyanle.easybangumi4.utils.mb
 import com.heyanle.easybangumi4.utils.stringRes
-import org.koin.mp.KoinPlatform.getKoin
+import com.heyanle.injekt.core.Injekt
 
 /**
  * Created by HeYanLe on 2023/8/5 23:02.
@@ -40,7 +40,7 @@ fun ColumnScope.PlayerSetting(
 
     val scope = rememberCoroutineScope()
 
-    val settingPreferences: SettingPreferences by getKoin().inject()
+    val settingPreferences: SettingPreferences by Injekt.injectLazy()
 
     Column(
         modifier = Modifier

@@ -6,20 +6,16 @@ import com.heyanle.easy_crasher.CrashHandler
 import com.heyanle.easybangumi4.base.preferences.PreferenceStore
 import com.heyanle.easybangumi4.base.preferences.android.AndroidPreferenceStore
 import com.heyanle.easybangumi4.base.preferences.mmkv.MMKVPreferenceStore
-import com.heyanle.easybangumi4.utils.exo_ssl.CropUtil
-import com.heyanle.easybangumi4.base.utils.exo_ssl.TrustAllHostnameVerifier
-import com.heyanle.easybangumi4.exo.mediaModule
+import com.heyanle.easybangumi4.cartoon.CartoonModule
+import com.heyanle.easybangumi4.exo.MediaModule
 import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
+import com.heyanle.easybangumi4.setting.SettingModule
 import com.heyanle.easybangumi4.theme.EasyThemeController
+import com.heyanle.easybangumi4.utils.exo_ssl.CropUtil
+import com.heyanle.easybangumi4.utils.exo_ssl.TrustAllHostnameVerifier
+import com.heyanle.injekt.core.Injekt
 import com.heyanle.okkv2.MMKVStore
 import com.heyanle.okkv2.core.Okkv
-import org.koin.android.ext.koin.androidContext
-import org.koin.android.ext.koin.androidLogger
-import org.koin.core.context.loadKoinModules
-import org.koin.core.context.startKoin
-import org.koin.core.logger.Level
-import org.koin.dsl.binds
-import org.koin.dsl.module
 import javax.net.ssl.HttpsURLConnection
 
 /**
@@ -33,7 +29,7 @@ object Scheduler {
      * application#init
      */
     fun runOnAppInit(application: Application) {
-        initKoin(application)
+        RootModule(application).registerWith(Injekt)
     }
 
     /**
@@ -41,8 +37,10 @@ object Scheduler {
      */
     fun runOnAppCreate(application: Application) {
         initCrasher(application)
-        loadSettingModule(application)
-        loadKoinModules(mediaModule)
+        SettingModule(application).registerWith(Injekt)
+        ControllerModule(application).registerWith(Injekt)
+        CartoonModule(application).registerWith(Injekt)
+        MediaModule(application).registerWith(Injekt)
         initAppCenter(application)
         initOkkv(application)
         initAria(application)
@@ -59,51 +57,6 @@ object Scheduler {
      */
     fun runOnMainActivityCreate() {}
 
-    /**
-     * 初始化 koin
-     */
-    private fun initKoin(application: Application){
-        startKoin {
-            androidLogger(Level.INFO)
-            androidContext(application)
-            module {
-                single {
-                    application
-                }
-
-                // 以下配置需要提前
-                single {
-                    MMKVPreferenceStore(application)
-                }
-
-                single {
-                    SettingMMKVPreferences(get())
-                }
-            }
-        }
-    }
-
-    /**
-     * 装置设置相关 module
-     */
-    private fun loadSettingModule(application: Application){
-        loadKoinModules(module {
-            single {
-                AndroidPreferenceStore(application)
-            } binds arrayOf(AndroidPreferenceStore::class, PreferenceStore::class)
-        })
-    }
-
-    /**
-     * 装配各种 controller （一些属于比较大型业务的 controller 会装配在对应业务的 module 里）
-     */
-    private fun loadControllerModule(application: Application){
-        loadKoinModules(module {
-            single {
-                EasyThemeController(get())
-            }
-        })
-    }
 
     /**
      * 全局异常捕获 + crash 界面
@@ -116,7 +69,7 @@ object Scheduler {
      * 允许 http 链接
      */
     private fun initTrustAllHost(){
-        HttpsURLConnection.setDefaultSSLSocketFactory(com.heyanle.easybangumi4.utils.exo_ssl.CropUtil.getUnsafeSslSocketFactory())
+        HttpsURLConnection.setDefaultSSLSocketFactory(CropUtil.getUnsafeSslSocketFactory())
         HttpsURLConnection.setDefaultHostnameVerifier(TrustAllHostnameVerifier())
     }
 

@@ -1,5 +1,7 @@
 package com.heyanle.injekt.api
 
+import kotlin.reflect.KClass
+
 /**
  * Created by HeYanLe on 2023/7/29 19:33.
  * https://github.com/heyanLE
@@ -47,4 +49,3 @@ inline fun <reified R: Any, K: Any> InjektRegistry.addPerThreadPerKeyFactory(noi
 }
 
 inline fun <reified EXISTINGREGISTERED: ANCESTORTYPE, reified ANCESTORTYPE: Any> InjektRegistry.addAlias() = addAlias(fullType<EXISTINGREGISTERED>(), fullType<ANCESTORTYPE>())
-

@@ -7,13 +7,12 @@ import androidx.lifecycle.viewModelScope
 import com.heyanle.bangumi_source_api.api.entity.CartoonCover
 import com.heyanle.bangumi_source_api.api.entity.toIdentify
 import com.heyanle.easy_i18n.R
-import com.heyanle.easybangumi4.cartoon.db.dao.CartoonStarDao
+import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonStarDao
 import com.heyanle.easybangumi4.cartoon.entity.CartoonStar
-import com.heyanle.easybangumi4.cartoon.CartoonRepository
 import com.heyanle.easybangumi4.getter.CartoonInfoGetter
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.stringRes
-import org.koin.mp.KoinPlatform.getKoin
+import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
@@ -28,7 +27,7 @@ import kotlinx.coroutines.launch
  */
 class CoverStarViewModel : ViewModel() {
 
-    private val cartoonStarDao: CartoonStarDao by getKoin().inject()
+    private val cartoonStarDao: CartoonStarDao by Injekt.injectLazy()
     val starFlow =
         cartoonStarDao.flowAll()
             .map { stars ->
@@ -44,7 +43,7 @@ class CoverStarViewModel : ViewModel() {
     // 该列表中的番剧在展示上视为已收藏
     private val staringCartoon = mutableStateMapOf<String, Boolean>()
 
-    private val cartoonInfoGetter: CartoonInfoGetter by getKoin().inject()
+    private val cartoonInfoGetter: CartoonInfoGetter by Injekt.injectLazy()
 
     init {
         viewModelScope.launch {
