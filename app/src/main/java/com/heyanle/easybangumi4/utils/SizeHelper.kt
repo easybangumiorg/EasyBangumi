@@ -7,7 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import com.heyanle.easybangumi4.LocalWindowSizeController
 import com.heyanle.easybangumi4.setting.SettingPreferences
-import org.koin.mp.KoinPlatform.getKoin
+import com.heyanle.injekt.core.Injekt
 
 /**
  * Created by HeYanLe on 2023/6/4 16:42.
@@ -16,7 +16,7 @@ import org.koin.mp.KoinPlatform.getKoin
 @Composable
 fun isCurPadeMode(): Boolean {
     val windowSize = LocalWindowSizeController.current
-    val settingPreferences: SettingPreferences by getKoin().inject()
+    val settingPreferences: SettingPreferences by Injekt.injectLazy()
     val padMode by settingPreferences.padMode.flow()
         .collectAsState(settingPreferences.padMode.get())
     val isPad = remember(padMode, windowSize) {

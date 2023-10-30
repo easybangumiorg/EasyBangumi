@@ -1,7 +1,7 @@
 package com.heyanle.easybangumi4.cartoon.entity
 
 import androidx.room.Entity
-import com.heyanle.easybangumi4.base.utils.getMatchReg
+import com.heyanle.easybangumi4.utils.getMatchReg
 
 /**
  * Created by HeYanLe on 2023/3/7 14:55.
@@ -17,6 +17,13 @@ data class CartoonHistory(
     val name: String,
     val cover: String,
     val intro: String,
+
+    val lastLineId: String,
+    val lastLineLabel: String,
+
+    val lastEpisodeId: String,
+    val lastEpisodeLabel: String,
+    val lastEpisodeOrder: String,
 
     val lastLinesIndex: Int,
     val lastEpisodeIndex: Int,

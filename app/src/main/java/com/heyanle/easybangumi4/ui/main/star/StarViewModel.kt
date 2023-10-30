@@ -3,16 +3,16 @@ package com.heyanle.easybangumi4.ui.main.star
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heyanle.easy_i18n.R
-import com.heyanle.easybangumi4.cartoon.db.dao.CartoonStarDao
-import com.heyanle.easybangumi4.cartoon.db.dao.CartoonTagDao
+import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonStarDao
+import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonTagDao
 import com.heyanle.easybangumi4.cartoon.entity.CartoonStar
 import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
-import com.heyanle.easybangumi4.ui.main.star.update.CartoonUpdateController
+import com.heyanle.easybangumi4.source.CartoonUpdateController
 import com.heyanle.easybangumi4.preferences.SettingPreferences
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.easybangumi4.utils.stringRes
-import org.koin.mp.KoinPlatform.getKoin
+import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
@@ -81,11 +81,11 @@ class StarViewModel : ViewModel() {
         ) : DialogState()
     }
 
-    private val cartoonTagDao: CartoonTagDao by getKoin().inject()
-    private val cartoonStarDao: CartoonStarDao by getKoin().inject()
-    private val settingPreferences: SettingPreferences by getKoin().inject()
+    private val cartoonTagDao: CartoonTagDao by Injekt.injectLazy()
+    private val cartoonStarDao: CartoonStarDao by Injekt.injectLazy()
+    private val settingPreferences: SettingPreferences by Injekt.injectLazy()
 
-    private val updateController: CartoonUpdateController by getKoin().inject()
+    private val updateController: CartoonUpdateController by Injekt.injectLazy()
 
     private val _stateFlow = MutableStateFlow(State(data = emptyMap()))
     val stateFlow = _stateFlow.asStateFlow()

@@ -1,9 +1,9 @@
-package com.heyanle.easybangumi4.ui.main.star.update
+package com.heyanle.easybangumi4.source
 
 import androidx.compose.runtime.mutableStateOf
 import com.heyanle.bangumi_source_api.api.SourceResult
 import com.heyanle.bangumi_source_api.api.entity.Cartoon
-import com.heyanle.easybangumi4.cartoon.db.dao.CartoonStarDao
+import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonStarDao
 import com.heyanle.easybangumi4.cartoon.entity.CartoonStar
 import com.heyanle.easybangumi4.getter.SourceStateGetter
 import com.heyanle.easybangumi4.utils.loge

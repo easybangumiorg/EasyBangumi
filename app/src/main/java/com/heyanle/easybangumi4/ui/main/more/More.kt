@@ -40,7 +40,7 @@ import com.heyanle.easybangumi4.preferences.SettingPreferences
 import com.heyanle.easybangumi4.ui.common.BooleanPreferenceItem
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.setting.SettingPage
-import org.koin.mp.KoinPlatform.getKoin
+import com.heyanle.injekt.core.Injekt
 
 /**
  * Created by HeYanLe on 2023/3/22 15:29.
@@ -52,8 +52,8 @@ fun More() {
 
     val nav = LocalNavController.current
 
-    val settingPreferences: SettingPreferences by getKoin().inject()
-    val settingMMKVPreferences: SettingMMKVPreferences by getKoin().inject()
+    val settingPreferences: SettingPreferences by Injekt.injectLazy()
+    val settingMMKVPreferences: SettingMMKVPreferences by Injekt.injectLazy()
 
     Column(
         modifier = Modifier

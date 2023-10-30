@@ -2,13 +2,14 @@ package com.heyanle.easybangumi4.ui.main.star.update
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.heyanle.easybangumi4.cartoon.db.dao.CartoonStarDao
+import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonStarDao
 import com.heyanle.easybangumi4.cartoon.entity.CartoonStar
+import com.heyanle.easybangumi4.source.CartoonUpdateController
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.insertSeparators
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.easybangumi4.utils.toDateKey
-import org.koin.mp.KoinPlatform.getKoin
+import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -49,8 +50,8 @@ class UpdateViewModel : ViewModel() {
     private val _stateFlow = MutableStateFlow(State())
     val stateFlow = _stateFlow.asStateFlow()
 
-    private val cartoonUpdateController: CartoonUpdateController by getKoin().inject()
-    private val cartoonStarDao: CartoonStarDao by getKoin().inject()
+    private val cartoonUpdateController: CartoonUpdateController by Injekt.injectLazy()
+    private val cartoonStarDao: CartoonStarDao by Injekt.injectLazy()
 
     init {
         viewModelScope.launch {

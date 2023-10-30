@@ -9,14 +9,13 @@ import androidx.lifecycle.viewModelScope
 import com.heyanle.bangumi_source_api.api.component.detailed.DetailedComponent
 import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
 import com.heyanle.bangumi_source_api.api.entity.PlayLine
-import com.heyanle.easybangumi4.cartoon.db.dao.CartoonStarDao
+import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonStarDao
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.entity.CartoonStar
 import com.heyanle.easybangumi4.cartoon.entity.isChild
-import com.heyanle.easybangumi4.cartoon.CartoonRepository
 import com.heyanle.easybangumi4.getter.CartoonInfoGetter
 import com.heyanle.easybangumi4.utils.loge
-import org.koin.mp.KoinPlatform.getKoin
+import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -50,9 +49,9 @@ class DetailedViewModel(
     var isStar by mutableStateOf(false)
     var isReverse by mutableStateOf(false)
 
-    private val cartoonInfoGetter: CartoonInfoGetter by getKoin().inject()
+    private val cartoonInfoGetter: CartoonInfoGetter by Injekt.injectLazy()
 
-    private val cartoonStarDao: CartoonStarDao by getKoin().inject()
+    private val cartoonStarDao: CartoonStarDao by Injekt.injectLazy()
 
 
     fun checkUpdate(){

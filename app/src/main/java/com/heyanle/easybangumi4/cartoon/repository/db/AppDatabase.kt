@@ -1,14 +1,14 @@
-package com.heyanle.easybangumi4.cartoon.db
+package com.heyanle.easybangumi4.cartoon.repository.db
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.heyanle.easybangumi4.Migrate
-import com.heyanle.easybangumi4.cartoon.db.dao.CartoonHistoryDao
-import com.heyanle.easybangumi4.cartoon.db.dao.CartoonStarDao
-import com.heyanle.easybangumi4.cartoon.db.dao.CartoonTagDao
-import com.heyanle.easybangumi4.cartoon.db.dao.SearchHistoryDao
+import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonHistoryDao
+import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonStarDao
+import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonTagDao
+import com.heyanle.easybangumi4.cartoon.repository.db.dao.SearchHistoryDao
 import com.heyanle.easybangumi4.cartoon.entity.CartoonHistory
 import com.heyanle.easybangumi4.cartoon.entity.CartoonStar
 import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
