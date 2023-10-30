@@ -53,11 +53,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
-import com.heyanle.easybangumi4.base.theme.EasyThemeController
-import com.heyanle.easybangumi4.base.theme.EasyThemeMode
+import com.heyanle.easybangumi4.setting.SettingPreferences
+import com.heyanle.easybangumi4.theme.EasyThemeController
+import com.heyanle.easybangumi4.theme.EasyThemeMode
 import com.heyanle.easybangumi4.ui.common.EmumPreferenceItem
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
-import com.heyanle.easybangumi4.preferences.SettingPreferences
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.launch

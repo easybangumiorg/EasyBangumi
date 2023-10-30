@@ -61,8 +61,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.heyanle.bangumi_source_api.api.component.search.SearchComponent
-import com.heyanle.bangumi_source_api.api.entity.CartoonCover
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.ui.common.CartoonCard
@@ -73,6 +71,8 @@ import com.heyanle.easybangumi4.ui.common.pagingCommon
 import com.heyanle.easybangumi4.ui.main.star.CoverStarViewModel
 import com.heyanle.easybangumi4.ui.search.SearchViewModel
 import com.heyanle.easybangumi4.navigationDetailed
+import com.heyanle.easybangumi4.source_api.component.search.SearchComponent
+import com.heyanle.easybangumi4.source_api.entity.CartoonCover
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 

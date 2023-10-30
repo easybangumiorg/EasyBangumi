@@ -13,17 +13,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import com.heyanle.bangumi_source_api.api.Source
-import com.heyanle.bangumi_source_api.api.component.detailed.DetailedComponent
-import com.heyanle.bangumi_source_api.api.component.page.SourcePage
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.ABOUT
 import com.heyanle.easybangumi4.C
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.getter.SourceStateGetter
-import com.heyanle.easybangumi4.source_old.LocalSourceBundleController
-import com.heyanle.easybangumi4.source_old.SourceBundle
-import com.heyanle.easybangumi4.source_old.SourceController
+import com.heyanle.easybangumi4.source.LocalSourceBundleController
+import com.heyanle.easybangumi4.source.SourceController
+import com.heyanle.easybangumi4.source.bundle.SourceBundle
+import com.heyanle.easybangumi4.source_api.Source
+import com.heyanle.easybangumi4.source_api.component.detailed.DetailedComponent
+import com.heyanle.easybangumi4.source_api.component.page.SourcePage
 import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.openUrl
 import com.heyanle.easybangumi4.utils.stringRes
@@ -64,14 +64,14 @@ fun SourceContainerBase(
             .then(modifier)
     ) {
         when(state){
-            is SourceController.SourceState.Loading -> {
+            is SourceController.SourceInfoState.Loading -> {
                 LoadingPage(
                     modifier = Modifier
                         .fillMaxSize(),
                     loadingMsg = stringResource(id = R.string.source_loading)
                 )
             }
-            is SourceController.SourceState.Completely -> {
+            is SourceController.SourceInfoState.Info -> {
                 if (!hasSource(anim)) {
                     val nav = LocalNavController.current
                     ErrorPage(
@@ -108,16 +108,6 @@ fun SourceContainerBase(
                 } else {
                     content(anim)
                 }
-            }
-            is SourceController.SourceState.Migrating -> {
-                LoadingPage(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    loadingMsg = stringResource(id = R.string.migrating)
-                )
-            }
-            else -> {
-                Text("text")
             }
         }
     }
