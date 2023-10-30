@@ -3,7 +3,7 @@ package com.easybangumi.easy_source
 import org.koin.core.context.startKoin
 import org.koin.core.qualifier.named
 import org.koin.core.scope.Scope
-import org.koin.mp.KoinPlatform.getKoin
+import com.heyanle.injekt.core.Injekt
 
 /**
  * Created by heyanlin on 2023/10/26.

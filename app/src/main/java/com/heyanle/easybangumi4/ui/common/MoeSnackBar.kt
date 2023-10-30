@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.sp
 import com.heyanle.easybangumi4.base.theme.EasyThemeController
 import com.heyanle.easybangumi4.preferences.SettingPreferences
 import com.heyanle.easybangumi4.utils.stringRes
-import org.koin.mp.KoinPlatform.getKoin
+import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -75,7 +75,7 @@ data class MoeSnackBarData  constructor(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MoeSnackBar(modifier: Modifier = Modifier) {
-    val themeController: EasyThemeController by getKoin().inject()
+    val themeController: EasyThemeController by Injekt.injectLazy()
     Column(
         Modifier
             .fillMaxSize()

@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.cartoon
+package com.heyanle.easybangumi4.cartoon.repository
 
 /**
  * Created by HeYanLe on 2023/10/29 15:04.

@@ -40,7 +40,7 @@ import com.heyanle.easybangumi4.source_old.LocalSourceBundleController
 import com.heyanle.easybangumi4.source_old.SourceMigrationController
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.easybangumi4.utils.stringRes
-import org.koin.mp.KoinPlatform.getKoin
+import com.heyanle.injekt.core.Injekt
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorderAfterLongPress
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
@@ -88,7 +88,7 @@ fun Source() {
         vm.onDragEnd()
     })
 
-    val migrationController: SourceMigrationController by getKoin().inject()
+    val migrationController: SourceMigrationController by Injekt.injectLazy()
     val migratingSet = migrationController.migratingSource.collectAsState()
 
     LazyColumn(

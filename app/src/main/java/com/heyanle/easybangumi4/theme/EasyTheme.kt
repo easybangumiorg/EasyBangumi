@@ -16,7 +16,7 @@ import androidx.compose.ui.platform.LocalView
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.utils.loge
-import org.koin.mp.KoinPlatform.getKoin
+import com.heyanle.injekt.core.Injekt
 
 /**
  * Created by HeYanLe on 2023/2/19 0:02.
@@ -28,7 +28,7 @@ fun NormalSystemBarColor(
     getStatusBarDark: (Boolean)->Boolean = {!it},
     getNavigationBarDark: (Boolean)->Boolean = {!it},
 ){
-    val themeController: EasyThemeController by getKoin().inject()
+    val themeController: EasyThemeController by Injekt.injectLazy()
     val themeState by themeController.themeFlow.collectAsState()
     val isDark = when (themeState.darkMode) {
         SettingPreferences.DarkMode.Dark -> true
@@ -51,7 +51,7 @@ fun NormalSystemBarColor(
 fun EasyTheme(
     content: @Composable () -> Unit
 ) {
-    val themeController: EasyThemeController by getKoin().inject()
+    val themeController: EasyThemeController by Injekt.injectLazy()
     val themeState by themeController.themeFlow.collectAsState()
     themeState.loge("EasyTheme")
 

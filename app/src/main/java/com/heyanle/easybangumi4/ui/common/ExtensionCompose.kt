@@ -27,7 +27,7 @@ fun ExtensionContainer(
     content: @Composable (List<Extension>) -> Unit,
 ) {
 
-    val extension: ExtensionGetter by getKoin().inject()
+    val extension: ExtensionGetter by Injekt.injectLazy()
     val state by extension.flowExtensionState().collectAsState()
     Box(
         modifier = Modifier

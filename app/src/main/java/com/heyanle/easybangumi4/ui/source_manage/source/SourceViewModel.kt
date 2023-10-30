@@ -9,7 +9,7 @@ import com.heyanle.bangumi_source_api.api.Source
 import com.heyanle.easybangumi4.preferences.SourcePreferences
 import com.heyanle.easybangumi4.source_old.SourceController
 import com.heyanle.easybangumi4.utils.loge
-import org.koin.mp.KoinPlatform.getKoin
+import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -22,8 +22,8 @@ class SourceViewModel : ViewModel() {
     var sourceConfigs by mutableStateOf<List<Pair<Source, SourcePreferences.LocalSourceConfig>>>(emptyList())
         private set
 
-    private val sourceController: SourceController by getKoin().inject()
-    private val sourcePreferences: SourcePreferences by getKoin().inject()
+    private val sourceController: SourceController by Injekt.injectLazy()
+    private val sourcePreferences: SourcePreferences by Injekt.injectLazy()
 
     init {
         viewModelScope.launch {

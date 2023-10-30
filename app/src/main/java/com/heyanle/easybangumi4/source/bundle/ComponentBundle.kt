@@ -5,6 +5,7 @@ import com.heyanle.easybangumi4.source.SourceException
 import com.heyanle.easybangumi4.source.utils.StringHelperImpl
 import com.heyanle.easybangumi4.source.utils.WebViewHelperImpl
 import com.heyanle.easybangumi4.source_api.Source
+import com.heyanle.easybangumi4.source_api.component.ComponentWrapper
 import com.heyanle.easybangumi4.source_api.component.detailed.DetailedComponent
 import com.heyanle.easybangumi4.source_api.component.page.PageComponent
 import com.heyanle.easybangumi4.source_api.component.play.PlayComponent
@@ -88,7 +89,7 @@ class ComponentBundle(
         }
 
         // 不允许注入除 工具，Component 以及 source 里 register 以外的类
-        if(!utilsClazz.contains(clazz) || !componentClazz.contains(clazz) || registerClazz.contains(clazz)){
+        if(!utilsClazz.contains(clazz) && !componentClazz.contains(clazz) && registerClazz.contains(clazz) && clazz != ComponentWrapper::class){
             throw SourceException("尝试非法注入： ${clazz.simpleName}")
         }
 
@@ -135,6 +136,11 @@ class ComponentBundle(
             if(it.isInstance(instance)){
                 bundle[it] = instance
             }
+        }
+
+        // ComponentWrapper 自动装配 source
+        if(instance is ComponentWrapper) {
+            instance.innerSource = source
         }
         return instance
     }

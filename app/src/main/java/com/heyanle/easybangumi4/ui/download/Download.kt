@@ -79,7 +79,7 @@ import com.heyanle.easybangumi4.ui.common.EasyDeleteDialog
 import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.common.TabIndicator
-import org.koin.mp.KoinPlatform.getKoin
+import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.launch
 
 /**
@@ -127,7 +127,7 @@ sealed class DownloadPage(
                         }
                     }else{
                         IconButton(onClick = {
-                            val downloadController: DownloadController by getKoin().inject()
+                            val downloadController: DownloadController by Injekt.injectLazy()
                             downloadController.showDownloadHelpDialog()
                         }){
                             Icon(
@@ -250,7 +250,7 @@ fun Download() {
     val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState(0) { 2 }
     LaunchedEffect(Unit) {
-        val downloadController: DownloadController by getKoin().inject()
+        val downloadController: DownloadController by Injekt.injectLazy()
         downloadController.tryShowFirstDownloadDialog()
     }
     Surface(
