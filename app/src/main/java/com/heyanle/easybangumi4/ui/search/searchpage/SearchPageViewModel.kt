@@ -10,8 +10,8 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.heyanle.bangumi_source_api.api.component.search.SearchComponent
-import com.heyanle.bangumi_source_api.api.entity.CartoonCover
+import com.heyanle.easybangumi4.source_api.component.search.SearchComponent
+import com.heyanle.easybangumi4.source_api.entity.CartoonCover
 import kotlinx.coroutines.flow.Flow
 
 /**

@@ -17,8 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
-import com.heyanle.bangumi_source_api.api.component.configuration.ConfigComponent
-import com.heyanle.bangumi_source_api.api.component.configuration.SourceConfig
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.LocalNavController
@@ -26,7 +24,6 @@ import com.heyanle.easybangumi4.ui.common.BooleanPreferenceItem
 import com.heyanle.easybangumi4.ui.common.SourceContainerBase
 import com.heyanle.easybangumi4.ui.common.StringEditPreferenceItem
 import com.heyanle.easybangumi4.ui.common.StringSelectPreferenceItem
-import com.heyanle.easybangumi4.source_old.utils.SourcePreferenceHelper
 
 /**
  * Created by HeYanLe on 2023/8/5 21:36.
