@@ -4,9 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewModelScope
-import com.heyanle.bangumi_source_api.api.component.page.PageComponent
-import com.heyanle.bangumi_source_api.api.component.page.SourcePage
 import com.heyanle.easybangumi4.getter.SourceStateGetter
+import com.heyanle.easybangumi4.source_api.component.page.PageComponent
+import com.heyanle.easybangumi4.source_api.component.page.SourcePage
 import com.heyanle.injekt.core.Injekt
 import com.heyanle.okkv2.core.okkv
 import kotlinx.coroutines.flow.MutableStateFlow

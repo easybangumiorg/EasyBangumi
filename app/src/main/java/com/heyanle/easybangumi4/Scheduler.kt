@@ -8,6 +8,7 @@ import com.heyanle.easybangumi4.base.preferences.android.AndroidPreferenceStore
 import com.heyanle.easybangumi4.base.preferences.mmkv.MMKVPreferenceStore
 import com.heyanle.easybangumi4.cartoon.CartoonModule
 import com.heyanle.easybangumi4.exo.MediaModule
+import com.heyanle.easybangumi4.getter.GetterModule
 import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
 import com.heyanle.easybangumi4.setting.SettingModule
 import com.heyanle.easybangumi4.theme.EasyThemeController
@@ -41,6 +42,7 @@ object Scheduler {
         ControllerModule(application).registerWith(Injekt)
         CartoonModule(application).registerWith(Injekt)
         MediaModule(application).registerWith(Injekt)
+        GetterModule(application).registerWith(Injekt)
         initAppCenter(application)
         initOkkv(application)
         initAria(application)

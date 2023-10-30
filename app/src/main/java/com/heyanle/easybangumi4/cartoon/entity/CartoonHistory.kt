@@ -19,11 +19,9 @@ data class CartoonHistory(
     val intro: String,
 
     val lastLineId: String,
-    val lastLineLabel: String,
 
     val lastEpisodeId: String,
-    val lastEpisodeLabel: String,
-    val lastEpisodeOrder: String,
+    val lastEpisodeOrder: Int,
 
     val lastLinesIndex: Int,
     val lastEpisodeIndex: Int,
