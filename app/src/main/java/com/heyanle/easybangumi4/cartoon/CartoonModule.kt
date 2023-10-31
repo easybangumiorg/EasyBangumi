@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.cartoon
 
 import android.app.Application
+import com.heyanle.easybangumi4.cartoon.play.CartoonPlayingController
 import com.heyanle.easybangumi4.cartoon.repository.CartoonNetworkDataSource
 import com.heyanle.easybangumi4.cartoon.repository.CartoonRepository
 import com.heyanle.easybangumi4.cartoon.repository.db.AppDatabase
@@ -62,7 +63,7 @@ class CartoonModule(
             CartoonUpdateController(get(), get())
         }
         addSingletonFactory {
-            CartoonPlayingControllerOld(
+            CartoonPlayingController(
                 get(), get(), get(), get(), get()
             )
         }

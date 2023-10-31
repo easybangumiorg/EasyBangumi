@@ -9,14 +9,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.heyanle.bangumi_source_api.api.component.detailed.DetailedComponent
-import com.heyanle.bangumi_source_api.api.component.play.PlayComponent
-import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
-import com.heyanle.bangumi_source_api.api.entity.PlayLine
-import com.heyanle.bangumi_source_api.api.entity.PlayerInfo
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.getter.CartoonInfoGetter
+import com.heyanle.easybangumi4.source_api.component.detailed.DetailedComponent
+import com.heyanle.easybangumi4.source_api.component.play.PlayComponent
+import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
+import com.heyanle.easybangumi4.source_api.entity.PlayLine
+import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.Job
@@ -172,7 +172,7 @@ class DlnaViewModel(
         lastJob = viewModelScope.launch {
             playingState =
                 PlayingState.Loading(lineIndex, detailInfo.playLine[lineIndex], episode, detailInfo)
-            playComponent.getPlayInfo(cartoonSummary, detailInfo.playLine[lineIndex], episode)
+            playComponent.getPlayInfo(cartoonSummary, detailInfo.playLine[lineIndex], detailInfo.playLine[lineIndex].episode[episode])
                 .complete {
                     if (!isActive) {
                         return@complete

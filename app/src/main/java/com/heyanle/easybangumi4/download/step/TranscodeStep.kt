@@ -86,7 +86,7 @@ class TranscodeStep(
         }
         // 将本地 m3u8 文件中的 ts 全都解密改写成 tsh 文件
         // 输出新的 m3u8 文件，去除 key 标签，文件路径改为 tsh
-        // 如果 tsh 文件的文件头是 png，则去除改文件头
+        // 如果 tsh 文件的文件头是 png，则去除文件头
         val it = localM3U8.readLines().iterator()
         val writer = target.writer(Charsets.UTF_8).buffered()
         val tsFiles = arrayListOf<File>()

@@ -71,14 +71,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.heyanle.bangumi_source_api.api.component.detailed.DetailedComponent
-import com.heyanle.bangumi_source_api.api.component.play.PlayComponent
-import com.heyanle.bangumi_source_api.api.entity.CartoonSummary
-import com.heyanle.bangumi_source_api.api.entity.PlayLine
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
-import com.heyanle.easybangumi4.ui.cartoon_play_old.CartoonDescCard
+import com.heyanle.easybangumi4.source_api.component.detailed.DetailedComponent
+import com.heyanle.easybangumi4.source_api.component.play.PlayComponent
+import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
+import com.heyanle.easybangumi4.source_api.entity.PlayLine
+import com.heyanle.easybangumi4.ui.cartoon_play.CartoonTitleCard
 import com.heyanle.easybangumi4.ui.common.Action
 import com.heyanle.easybangumi4.ui.common.EmptyPage
 import com.heyanle.easybangumi4.ui.common.ErrorPage
@@ -524,7 +524,7 @@ fun CartoonPlayDetailed(
                         }, label = ""
                     ) {
                         if (it) {
-                            CartoonDescCard(cartoon)
+                            CartoonTitleCard(cartoon)
                         } else {
                             Row(
                                 modifier = Modifier
@@ -701,7 +701,7 @@ fun CartoonPlayDetailed(
 
                             Text(
                                 color = if (select) MaterialTheme.colorScheme.onSecondary else Color.Unspecified,
-                                text = item,
+                                text = item.label,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 textAlign = TextAlign.Center,
