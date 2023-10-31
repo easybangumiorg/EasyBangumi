@@ -19,6 +19,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.heyanle.easybangumi4.source.utils.WebViewHelperImpl
 import com.heyanle.easybangumi4.source_api.entity.CartoonCover
 import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
 import com.heyanle.easybangumi4.theme.NormalSystemBarColor
@@ -38,7 +39,9 @@ import com.heyanle.easybangumi4.ui.setting.SettingPage
 import com.heyanle.easybangumi4.ui.source_config.SourceConfig
 import com.heyanle.easybangumi4.ui.source_manage.SourceManager
 import com.heyanle.easybangumi4.ui.tags.CartoonTag
+import com.heyanle.easybangumi4.utils.jsonTo
 import com.heyanle.easybangumi4.utils.loge
+import com.heyanle.easybangumi4.utils.toJson
 import java.lang.ref.WeakReference
 import java.net.URLDecoder
 import java.net.URLEncoder
@@ -143,17 +146,16 @@ fun NavHostController.navigationDlna(
 }
 
 fun NavHostController.navigationDetailed(
-    id: String, url: String, source: String,
-    lineIndex: Int,
-    episode: Int,
-    adviceProgress: Long,
+    i: String, u: String, s: String,
+    e: CartoonPlayViewModel.EnterData,
 ) {
     // easyTODO("详情页")
-    val el = URLEncoder.encode(url, "utf-8")
-    val ed = URLEncoder.encode(id, "utf-8")
-    val es = URLEncoder.encode(source, "utf-8")
+    val url = URLEncoder.encode(u, "utf-8")
+    val id = URLEncoder.encode(i, "utf-8")
+    val ed = URLEncoder.encode(s, "utf-8")
+    val enterData = URLEncoder.encode(e.toJson(), "utf-8")
     // easyTODO("详情页")
-    navigate("${DETAILED}?url=${el}&source=${es}&id=${ed}&lineIndex=${lineIndex}&episode=${episode}&adviceProgress=${adviceProgress}")
+    navigate("${DETAILED}?url=${url}&source=${ed}&id=${id}&enter_date=${enterData}")
 }
 
 fun NavHostController.navigationLocalPlay(
@@ -208,38 +210,13 @@ fun Nav() {
 
             }
 
-//            composable(
-//                route = "${SOURCE_HOME}?key={key}",
-//                arguments = listOf(
-//                    navArgument("key") { defaultValue = "" },
-//                )
-//            ) {
-//                NormalSystemBarColor()
-//                SourceHome(
-//                    it.arguments?.getString("key") ?: "",
-//                )
-//
-//            }
-
             composable(
-                route = "${DETAILED}?url={url}&source={source}&id={id}&lineIndex={lineIndex}&episode={episode}&adviceProgress={adviceProgress}",
+                route = "${DETAILED}?url={url}&source={source}&id={id}&enter_data={enter_data}",
                 arguments = listOf(
                     navArgument("url") { defaultValue = "" },
                     navArgument("source") { defaultValue = "" },
                     navArgument("id") { defaultValue = "" },
-                    navArgument("lineIndex") {
-                        defaultValue = -1
-                        type = NavType.IntType
-                    },
-                    navArgument("episode") {
-                        defaultValue = -1
-                        type = NavType.IntType
-                    },
-                    navArgument("adviceProgress") {
-                        defaultValue = -1L
-                        type = NavType.LongType
-                    },
-
+                    navArgument("enter_data") { defaultValue = "{}" },
                     )
             ) {
                 val id = it.arguments?.getString("id") ?: ""
@@ -248,19 +225,23 @@ fun Nav() {
                 LaunchedEffect(Unit) {
                     "id:$id, source: $source, url: $url".loge()
                 }
-                val lineIndex = it.arguments?.getInt("lineIndex") ?: -1
-                val episode = it.arguments?.getInt("episode") ?: -1
-                val adviceProgress = it.arguments?.getLong("adviceProgress") ?: -1L
+
+                var enterDataString = it.arguments?.getString("enter_data") ?: ""
+                enterDataString = URLDecoder.decode(enterDataString, "utf-8")
                 NormalSystemBarColor(
                     getStatusBarDark = {
                         false
                     }
                 )
+
+                val enterData = kotlin.runCatching {
+                    enterDataString.jsonTo<CartoonPlayViewModel.EnterData>()
+                }.getOrNull()
                 CartoonPlay(
                     id = URLDecoder.decode(id, "utf-8"),
                     source = URLDecoder.decode(source, "utf-8"),
                     url = URLDecoder.decode(url, "utf-8"),
-                    CartoonPlayViewModel.EnterData(lineIndex, episode, adviceProgress)
+                    enterData
                 )
             }
 
@@ -290,18 +271,12 @@ fun Nav() {
                 Setting(router = router)
             }
 
-//            composable(APPEARANCE_SETTING) {
-//                NormalSystemBarColor()
-//                AppearanceSetting()
-//            }
-
             composable(WEB_VIEW_USER) {
                 runCatching {
-//                    val wb = WebViewUserHelperImpl.webViewRef?.get() ?: throw NullPointerException()
-//                    val onCheck =
-//                        WebViewUserHelperImpl.onCheck?.get() ?: throw NullPointerException()
-//                    val onStop = WebViewUserHelperImpl.onStop?.get() ?: throw NullPointerException()
-//                    WebViewUser(webView = wb, onCheck = onCheck, onStop = onStop)
+                    val wb = WebViewHelperImpl.webViewRef?.get() ?: throw NullPointerException()
+                    val onCheck = WebViewHelperImpl.check?.get() ?: throw NullPointerException()
+                    val onStop = WebViewHelperImpl.stop?.get() ?: throw NullPointerException()
+                    WebViewUser(webView = wb, onCheck = onCheck, onStop = onStop)
                 }.onFailure {
                     nav.popBackStack()
                 }

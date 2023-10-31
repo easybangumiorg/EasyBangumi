@@ -4,12 +4,12 @@ import androidx.room.Entity
 import androidx.room.Ignore
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.heyanle.easybangumi4.base.utils.getMatchReg
 import com.heyanle.easybangumi4.source_api.entity.Cartoon
 import com.heyanle.easybangumi4.source_api.entity.CartoonCover
 import com.heyanle.easybangumi4.source_api.entity.CartoonImpl
 import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
 import com.heyanle.easybangumi4.source_api.entity.PlayLine
+import com.heyanle.easybangumi4.utils.getMatchReg
 import java.net.URLEncoder
 
 /**

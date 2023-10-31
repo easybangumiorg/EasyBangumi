@@ -5,7 +5,6 @@ import com.google.gson.Gson
 import com.heyanle.easybangumi4.source.SourceController
 import com.heyanle.easybangumi4.theme.EasyThemeController
 import com.heyanle.easybangumi4.source.CartoonUpdateController
-import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlayingController
 import com.heyanle.easybangumi4.utils.MoshiArrayListJsonAdapter
 import com.heyanle.injekt.api.InjektModule
 import com.heyanle.injekt.api.InjektScope
@@ -54,7 +53,7 @@ class ControllerModule(
             CartoonUpdateController(get(), get())
         }
         addSingletonFactory {
-            CartoonPlayingController(
+            CartoonPlayingControllerOld(
                 get(), get(), get(), get(), get()
             )
         }

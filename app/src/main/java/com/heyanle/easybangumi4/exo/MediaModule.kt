@@ -12,12 +12,15 @@ import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.NoOpCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.exoplayer.ExoPlayer
+import com.heyanle.easybangumi4.base.preferences.PreferenceStore
+import com.heyanle.easybangumi4.base.preferences.android.AndroidPreferenceStore
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.injekt.api.InjektModule
 import com.heyanle.injekt.api.InjektScope
+import com.heyanle.injekt.api.addAlias
 import com.heyanle.injekt.api.addPerKeyFactory
 import com.heyanle.injekt.api.addSingletonFactory
 import com.heyanle.injekt.api.get
@@ -45,12 +48,16 @@ class MediaModule(
         }
 
         addSingletonFactory {
-            ExoPlayer.Builder(application)
-                //.setRenderersFactory(MixRenderersFactory(app))
-                .build().also {
-                    it.loge("ExoPlayer-----")
-                }
+            EasyExoPlayer(
+                ExoPlayer.Builder(application)
+                    //.setRenderersFactory(MixRenderersFactory(app))
+                    .build().also {
+                        it.loge("ExoPlayer-----")
+                    }
+            )
         }
+        // 强制使用 EasyExoPlayer
+        addAlias<EasyExoPlayer, ExoPlayer>()
 
         addSingletonFactory<HttpDataSource.Factory> {
             DefaultHttpDataSource.Factory()

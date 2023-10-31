@@ -7,6 +7,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.easybangumi4.setting.SettingPreferences
+import com.heyanle.injekt.api.addSingletonFactory
+import com.heyanle.injekt.api.get
+import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
