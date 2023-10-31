@@ -88,8 +88,8 @@ import com.heyanle.easybangumi4.download.entity.LocalCartoon
 import com.heyanle.easybangumi4.download.entity.LocalEpisode
 import com.heyanle.easybangumi4.download.entity.LocalPlayLine
 import com.heyanle.easybangumi4.navigationSearch
-import com.heyanle.easybangumi4.ui.cartoon_play_old.FullScreenVideoTopBar
-import com.heyanle.easybangumi4.ui.cartoon_play_old.speedConfig
+import com.heyanle.easybangumi4.ui.cartoon_play.FullScreenVideoTopBar
+import com.heyanle.easybangumi4.ui.cartoon_play.speedConfig
 import com.heyanle.easybangumi4.ui.common.Action
 import com.heyanle.easybangumi4.ui.common.ActionRow
 import com.heyanle.easybangumi4.ui.common.EmptyPage

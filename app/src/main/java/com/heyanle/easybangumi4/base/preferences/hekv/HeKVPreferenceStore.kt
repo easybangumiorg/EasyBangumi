@@ -3,8 +3,8 @@ package com.heyanle.easybangumi4.base.preferences.hekv
 import com.heyanle.easybangumi4.base.hekv.HeKV
 import com.heyanle.easybangumi4.base.preferences.Preference
 import com.heyanle.easybangumi4.base.preferences.PreferenceStore
-import com.heyanle.easybangumi4.base.utils.jsonTo
-import com.heyanle.easybangumi4.base.utils.toJson
+import com.heyanle.easybangumi4.utils.jsonTo
+import com.heyanle.easybangumi4.utils.toJson
 
 /**
  * Created by HeYanLe on 2023/8/5 19:17.

@@ -2,7 +2,7 @@ package com.heyanle.easybangumi4.extension.loader
 
 import android.content.Context
 import android.content.pm.PackageManager
-import com.heyanle.easy_extension.Extension
+import com.heyanle.easybangumi4.extension.Extension
 import dalvik.system.DexClassLoader
 import dalvik.system.PathClassLoader
 import java.io.File

@@ -7,8 +7,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
-import com.heyanle.bangumi_source_api.api.component.page.SourcePage
-import com.heyanle.bangumi_source_api.api.entity.CartoonCover
+import com.heyanle.easybangumi4.source_api.component.page.SourcePage
+import com.heyanle.easybangumi4.source_api.entity.CartoonCover
 import com.heyanle.easybangumi4.ui.common.page.paging.ListPagePagingSource
 
 /**
