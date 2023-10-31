@@ -2,6 +2,7 @@ package com.heyanle.easybangumi4
 
 import android.app.Application
 import com.google.gson.Gson
+import com.heyanle.easybangumi4.cartoon.play.CartoonPlayingController
 import com.heyanle.easybangumi4.source.SourceController
 import com.heyanle.easybangumi4.theme.EasyThemeController
 import com.heyanle.easybangumi4.source.CartoonUpdateController
@@ -48,14 +49,6 @@ class ControllerModule(
 
         addSingletonFactory {
             SourceController(get(), get(), get())
-        }
-        addSingletonFactory {
-            CartoonUpdateController(get(), get())
-        }
-        addSingletonFactory {
-            CartoonPlayingControllerOld(
-                get(), get(), get(), get(), get()
-            )
         }
     }
 }

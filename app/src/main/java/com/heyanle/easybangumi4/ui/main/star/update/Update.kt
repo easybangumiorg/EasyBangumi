@@ -52,7 +52,7 @@ import com.heyanle.easybangumi4.ui.common.LoadingImage
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.navigationDetailed
-import com.heyanle.easybangumi4.source_old.LocalSourceBundleController
+import com.heyanle.easybangumi4.source.LocalSourceBundleController
 import java.text.DateFormat
 
 /**

@@ -5,10 +5,10 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import androidx.core.content.pm.PackageInfoCompat
-import com.heyanle.easy_extension.Extension
-import com.heyanle.easy_extension.utils.loge
+import com.heyanle.easybangumi4.extension.Extension
 import com.heyanle.easybangumi4.source_api.Source
 import com.heyanle.easybangumi4.source_api.SourceFactory
+import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.extension_api.ExtensionSource
 
 /**

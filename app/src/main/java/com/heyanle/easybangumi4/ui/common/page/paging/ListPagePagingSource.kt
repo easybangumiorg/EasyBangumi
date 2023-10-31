@@ -3,8 +3,8 @@ package com.heyanle.easybangumi4.ui.common.page.paging
 import android.util.Log
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import com.heyanle.bangumi_source_api.api.entity.CartoonCover
-import com.heyanle.bangumi_source_api.api.component.page.SourcePage
+import com.heyanle.easybangumi4.source_api.component.page.SourcePage
+import com.heyanle.easybangumi4.source_api.entity.CartoonCover
 
 /**
  * Created by HeYanLe on 2023/2/25 20:46.
