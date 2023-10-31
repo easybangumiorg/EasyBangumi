@@ -162,7 +162,6 @@ dependencies {
 
     implementation(libs.koin.core)
     implementation(libs.koin.android)
-    implementation(libs.koin.compose)
 
     implementation(project(":easy-dlna"))
     implementation(project(":easy-crasher"))
