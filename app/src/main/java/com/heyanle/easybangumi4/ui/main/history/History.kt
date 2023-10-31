@@ -67,7 +67,8 @@ import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.SelectionTopAppBar
 import com.heyanle.easybangumi4.navigationDetailed
-import com.heyanle.easybangumi4.source_old.LocalSourceBundleController
+import com.heyanle.easybangumi4.source.LocalSourceBundleController
+import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlayViewModel
 import loli.ball.easyplayer2.utils.TimeUtils
 
 /**
@@ -160,13 +161,21 @@ fun History(
             vm = vm,
             state = state,
             onItemClick = {
+                val enterData = CartoonPlayViewModel.EnterData(
+                    it.lastLineId,
+                    it.lastLineTitle,
+                    it.lastLinesIndex,
+                    it.lastEpisodeId,
+                    it.lastEpisodeTitle,
+                    it.lastEpisodeOrder,
+                    it.lastEpisodeIndex,
+                    it.lastProcessTime
+                )
                 nav.navigationDetailed(
                     it.id,
                     it.url,
                     it.source,
-                    it.lastLinesIndex,
-                    it.lastEpisodeIndex,
-                    it.lastProcessTime
+                    enterData
                 )
             },
 

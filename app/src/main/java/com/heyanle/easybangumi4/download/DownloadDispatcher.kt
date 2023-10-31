@@ -110,13 +110,13 @@ class DownloadDispatcher(
         return false
     }
 
-    fun newDownload(cartoonInfo: CartoonInfo, download: List<Pair<PlayLine, Int>>) {
+    fun newDownload(cartoonInfo: CartoonInfo, download: List<Pair<PlayLine, Episode>>) {
         scope.launch {
             "newDownload ${cartoonInfo.title} ${download.size}".logi(TAG)
             val new = download.map {
                 val uuid = "${System.nanoTime()}-${atomLong.getAndIncrement()}"
                 var fileName =
-                    "${cartoonInfo.title}-${it.first.label}-${it.first.episode.getOrElse(it.second) { "" }}-${uuid}"
+                    "${cartoonInfo.title}-${it.first.label}-${it.second.label}-${uuid}"
                 fileName = fileName.flatMap {
                     if (reservedChars.contains(it) || it == '\n' || it == ' ' || it == '\t' || it == '\r') {
                         emptyList()
@@ -139,7 +139,7 @@ class DownloadDispatcher(
                     cartoonDescription = cartoonInfo.description,
                     cartoonGenre = cartoonInfo.genre,
                     playLine = it.first,
-                    episode = it.first.episode.getOrElse(it.second) { Episode("", "", 0) },
+                    episode = it.second,
                     state = 0,
                     currentSteps = 0,
                     stepsChain =  listOf(ParseStep.NAME, AriaStep.NAME, CopyStep.NAME) ,

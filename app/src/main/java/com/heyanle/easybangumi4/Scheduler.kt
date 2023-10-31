@@ -38,11 +38,13 @@ object Scheduler {
      */
     fun runOnAppCreate(application: Application) {
         initCrasher(application)
+
         SettingModule(application).registerWith(Injekt)
         ControllerModule(application).registerWith(Injekt)
         CartoonModule(application).registerWith(Injekt)
         MediaModule(application).registerWith(Injekt)
         GetterModule(application).registerWith(Injekt)
+
         initAppCenter(application)
         initOkkv(application)
         initAria(application)

@@ -6,6 +6,7 @@ import android.webkit.WebView
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.source_api.utils.api.WebViewHelper
 import com.heyanle.injekt.core.Injekt
+import java.lang.ref.WeakReference
 
 /**
  * Created by HeYanLe on 2023/10/29 17:38.
@@ -15,6 +16,9 @@ import com.heyanle.injekt.core.Injekt
 object WebViewHelperImpl: WebViewHelper {
 
     val globalWebView = WebView(APP)
+    val webViewRef : WeakReference<WebView>? = null
+    val check: WeakReference<(WebView) -> Boolean>? = null
+    val stop: WeakReference<(WebView) -> Unit>? = null
 
     override suspend fun getRenderedHtmlCode(
         url: String,
