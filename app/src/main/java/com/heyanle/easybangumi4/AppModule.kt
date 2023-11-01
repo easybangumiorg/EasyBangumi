@@ -18,6 +18,7 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
  * Created by heyanlin on 2023/10/30.
  */
 
+// 这里注册的时机最早，在 Application 的 构造函数中注册
 class RootModule(
     private val application: Application,
 ): InjektModule {
@@ -38,6 +39,7 @@ class ControllerModule(
     private val application: Application
 ) : InjektModule {
 
+    // 大部分 Controller 都在自己业务的 Module 里注册，这里注册一些额外的
     @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
     override fun InjektScope.registerInjectables() {
         addSingletonFactory {
@@ -45,10 +47,6 @@ class ControllerModule(
         }
         addSingletonFactory {
             EasyThemeController(get())
-        }
-
-        addSingletonFactory {
-            SourceController(get(), get(), get())
         }
     }
 }

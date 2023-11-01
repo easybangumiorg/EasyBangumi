@@ -47,7 +47,7 @@ class SourceViewModel : ViewModel() {
     fun onDragEnd() {
         val map = hashMapOf<String, SourceConfig>()
         configSourceList.forEachIndexed { index, configSource ->
-            map[configSource.source.source.key] = configSource.config.copy(order = index)
+            map[configSource.sourceInfo.source.key] = configSource.config.copy(order = index)
         }
         sourcePreferences.configs.set(map)
     }
@@ -55,23 +55,23 @@ class SourceViewModel : ViewModel() {
 
     fun enable(sourceConfig: ConfigSource) {
         val map = sourcePreferences.configs.get().toMutableMap()
-        val config = map[sourceConfig.source.source.key]?.copy(enable = false) ?: SourceConfig(
-            sourceConfig.source.source.key,
+        val config = map[sourceConfig.sourceInfo.source.key]?.copy(enable = false) ?: SourceConfig(
+            sourceConfig.sourceInfo.source.key,
             Int.MAX_VALUE,
             true
         )
-        map[sourceConfig.source.source.key] = config
+        map[sourceConfig.sourceInfo.source.key] = config
         sourcePreferences.configs.set(map)
     }
 
     fun disable(sourceConfig: ConfigSource) {
         val map = sourcePreferences.configs.get().toMutableMap()
-        val config = map[sourceConfig.source.source.key]?.copy(enable = false) ?: SourceConfig(
-            sourceConfig.source.source.key,
+        val config = map[sourceConfig.sourceInfo.source.key]?.copy(enable = false) ?: SourceConfig(
+            sourceConfig.sourceInfo.source.key,
             Int.MAX_VALUE,
             false
         )
-        map[sourceConfig.source.source.key] = config
+        map[sourceConfig.sourceInfo.source.key] = config
         sourcePreferences.configs.set(map)
     }
 

@@ -13,6 +13,8 @@ import com.heyanle.easybangumi4.source.SourcePreferences
 import com.heyanle.easybangumi4.theme.EasyThemeMode
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.easybangumi4.utils.jsonTo
+import com.heyanle.injekt.api.get
+import com.heyanle.injekt.core.Injekt
 import com.heyanle.okkv2.core.okkv
 import java.io.File
 
@@ -65,6 +67,20 @@ object Migrate {
     object CacheDB {
         fun getDBMigration() = emptyList<Migration>()
     }
+
+    fun update(context: Context){
+        preferenceUpdate(
+            context,
+            Injekt.get(),
+            Injekt.get(),
+            Injekt.get(),
+            Injekt.get(),
+            Injekt.get(),
+            Injekt.get(),
+        )
+    }
+
+
 
     private fun preferenceUpdate(
         context: Context,

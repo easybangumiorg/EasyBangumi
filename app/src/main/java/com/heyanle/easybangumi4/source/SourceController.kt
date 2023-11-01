@@ -108,6 +108,7 @@ class SourceController(
     private fun loadSource(source: Source): SourceInfo {
         return try {
             val bundle = ComponentBundle(source)
+            bundle.init()
             if (needMigrate(source, bundle)) {
                 SourceInfo.Migrating(source, bundle)
             } else {
