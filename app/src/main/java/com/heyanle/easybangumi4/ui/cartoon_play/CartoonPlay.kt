@@ -69,6 +69,7 @@ import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarOutline
 import androidx.compose.material.icons.filled.WifiProtectedSetup
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -116,6 +117,7 @@ import com.heyanle.easybangumi4.exo.EasyExoPlayer
 import com.heyanle.easybangumi4.navigationDlna
 import com.heyanle.easybangumi4.navigationSearch
 import com.heyanle.easybangumi4.setting.SettingPreferences
+import com.heyanle.easybangumi4.source_api.component.detailed.DetailedComponent
 import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
 import com.heyanle.easybangumi4.source_api.entity.Episode
 import com.heyanle.easybangumi4.source_api.entity.PlayLine
@@ -139,6 +141,10 @@ import loli.ball.easyplayer2.BackBtn
 import loli.ball.easyplayer2.ControlViewModel
 import loli.ball.easyplayer2.ControlViewModelFactory
 import loli.ball.easyplayer2.EasyPlayerScaffoldBase
+import loli.ball.easyplayer2.LockBtn
+import loli.ball.easyplayer2.ProgressBox
+import loli.ball.easyplayer2.SimpleBottomBar
+import loli.ball.easyplayer2.SimpleGestureController
 import loli.ball.easyplayer2.TopControl
 import loli.ball.easyplayer2.utils.rememberBatteryReceiver
 
@@ -247,6 +253,14 @@ fun CartoonPlay(
 
     val lazyGridState = rememberLazyGridState()
 
+    val showEpisodeWin = remember {
+        mutableStateOf(false)
+    }
+
+    val showSpeedWin = remember {
+        mutableStateOf(false)
+    }
+
     EasyPlayerScaffoldBase(
         modifier = Modifier
             .fillMaxSize()
@@ -255,14 +269,20 @@ fun CartoonPlay(
         isPadMode = isPad,
         contentWeight = 0.5f,
         videoFloat = {
-
-        },
-        control = {
             VideoFloat(
                 cartoonPlayingController = cartoonPlayingController,
                 playingState = playingState.value,
                 detailedVM = detailedVM,
-                controlVM = controlVM
+                controlVM = controlVM,
+                showSpeedWin, showEpisodeWin
+            )
+        },
+        control = {
+            VideoControl(
+                controlVM = controlVM,
+                playingState = playingState.value,
+                showSpeedWin = showSpeedWin,
+                showEpisodeWin = showEpisodeWin
             )
         }) {
         if (isPad) {
@@ -315,20 +335,118 @@ fun CartoonPlay(
 }
 
 @Composable
+fun VideoControl(
+    controlVM: ControlViewModel,
+    playingState: CartoonPlayingController.PlayingState,
+    showSpeedWin: MutableState<Boolean>,
+    showEpisodeWin: MutableState<Boolean>,
+) {
+    val cartoonPlayingController: CartoonPlayingController by Injekt.injectLazy()
+    val nav = LocalNavController.current
+    Box(Modifier.fillMaxSize()) {
+
+        // 手势
+        SimpleGestureController(
+            vm = controlVM,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(6.dp, 64.dp),
+            longTouchText = stringResource(id = com.heyanle.easy_i18n.R.string.long_press_fast_forward)
+        )
+
+
+        // 全屏顶部工具栏
+        FullScreenVideoTopBar(
+            vm = controlVM,
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+        )
+
+
+        NormalVideoTopBar(controlVM,
+            showTools = playingState is CartoonPlayingController.PlayingState.Playing,
+            onBack = {
+                nav.popBackStack()
+            },
+            onSpeed = {
+                showSpeedWin.value = true
+            },
+            onPlayExt = {
+//                        (cartoonPlayingController.state as? CartoonPlayingController.PlayingState.Playing)?.let {
+//                            downloadController.newDownload(
+//                                it.cartoon,
+//                                listOf(Triple(it.playLine, it.curEpisode, it.playerInfo))
+//                            )
+//                        }
+//                        if(permissionState.status.isGranted){
+//                            (cartoonPlayingController.state as? CartoonPlayingController.PlayingState.Playing)?.let {
+//                                downloadController.newDownload(
+//                                    it.cartoon,
+//                                    listOf(Triple(it.playLine, it.curEpisode, it.playerInfo))
+//                                )
+//                            }
+//                        }else{
+//                            permissionState.launchPermissionRequest()
+//                        }
+                cartoonPlayingController.playCurrentExternal()
+            }
+        )
+
+        // 底部工具栏
+        SimpleBottomBar(
+            vm = controlVM,
+            modifier = Modifier.align(Alignment.BottomCenter),
+            paddingValues = if (controlVM.isFullScreen) PaddingValues(
+                16.dp,
+                0.dp,
+                16.dp,
+                8.dp
+            ) else PaddingValues(8.dp, 0.dp)
+        ) {
+
+            if (it.isFullScreen) {
+                Text(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(4.dp))
+                        .clickable {
+                            showSpeedWin.value = true
+                        }
+                        .padding(8.dp),
+                    text = stringResource(id = com.heyanle.easy_i18n.R.string.speed),
+                    color = Color.White
+                )
+                Text(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(4.dp))
+                        .clickable {
+                            showEpisodeWin.value = true
+                        }
+                        .padding(8.dp),
+                    text = stringResource(id = com.heyanle.easy_i18n.R.string.episode),
+                    color = Color.White
+                )
+            }
+        }
+
+        // 锁定按钮
+        LockBtn(vm = controlVM)
+
+        // 加载按钮
+        ProgressBox(vm = controlVM)
+    }
+}
+
+@Composable
 fun VideoFloat(
     cartoonPlayingController: CartoonPlayingController,
     playingState: CartoonPlayingController.PlayingState,
     detailedVM: DetailedViewModel,
     controlVM: ControlViewModel,
+    showSpeedWin: MutableState<Boolean>,
+    showEpisodeWin: MutableState<Boolean>,
 ) {
     val ctx = LocalContext.current as Activity
-    var showEpisodeWin by remember {
-        mutableStateOf(false)
-    }
 
-    var showSpeedWin by remember {
-        mutableStateOf(false)
-    }
     LaunchedEffect(key1 = playingState) {
         when (playingState) {
             is CartoonPlayingController.PlayingState.Playing -> {
@@ -401,7 +519,7 @@ fun VideoFloat(
                         .background(Color.Black)
                         .clickable(
                             onClick = {
-
+                                cartoonPlayingController.refresh()
                             },
                             indication = null,
                             interactionSource = remember {
@@ -438,7 +556,7 @@ fun VideoFloat(
                     Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.click_to_retry))
                 },
                 onClick = {
-                    
+
                 }
             )
         }
@@ -449,7 +567,7 @@ fun VideoFloat(
 
     // 倍速窗口
     AnimatedVisibility(
-        showSpeedWin,
+        showSpeedWin.value,
         enter = slideInHorizontally(tween()) { it },
         exit = slideOutHorizontally(tween()) { it },
 
@@ -459,7 +577,7 @@ fun VideoFloat(
                 .fillMaxSize()
                 .clickable(
                     onClick = {
-                        showSpeedWin = false
+                        showSpeedWin.value = false
                     },
                     indication = null,
                     interactionSource = remember {
@@ -498,11 +616,11 @@ fun VideoFloat(
     }
 
     playingState.playLine()?.let { playLine ->
-        playingState.cartoon()?.let {  cartoonInfo ->  
-            playingState.episode()?.let {  episode ->
+        playingState.cartoon()?.let { cartoonInfo ->
+            playingState.episode()?.let { episode ->
                 // 选集
                 AnimatedVisibility(
-                    showEpisodeWin && controlVM.isFullScreen,
+                    showEpisodeWin.value && controlVM.isFullScreen,
                     enter = slideInHorizontally(tween()) { it },
                     exit = slideOutHorizontally(tween()) { it },
 
@@ -514,7 +632,7 @@ fun VideoFloat(
                             .fillMaxSize()
                             .clickable(
                                 onClick = {
-                                    showEpisodeWin = false
+                                    showEpisodeWin.value = false
                                 },
                                 indication = null,
                                 interactionSource = remember {
@@ -557,7 +675,7 @@ fun VideoFloat(
                 }
             }
         }
-        
+
     }
     playingState.playLine()?.let { playLine ->
 
@@ -662,6 +780,7 @@ fun CartoonPlayPage(
     listState: LazyGridState = rememberLazyGridState(),
     //onTitle: (String) -> Unit,
 ) {
+    val playingController: CartoonPlayingController by Injekt.injectLazy()
     val downloadDispatcher: DownloadDispatcher by Injekt.injectLazy()
     val nav = LocalNavController.current
     CartoonPlayDetailed(
@@ -670,12 +789,14 @@ fun CartoonPlayPage(
         selectLineIndex = cartoonPlayVM.selectedLineIndex,
         playingPlayLine = playingState.playLine(),
         playingEpisode = playingState.episode(),
+        showPlayLine = detailedState.isShowPlayLine,
         listState = listState,
+        isReversal = detailedVM.isReverse,
         onLineSelect = {
             cartoonPlayVM.selectedLineIndex = it
         },
         onEpisodeClick = { playLine, episode ->
-
+            playingController.changePlay(detailedState.detail, playLine, episode, 0)
         },
         isStar = detailedVM.isStar,
         onStar = {
@@ -1316,7 +1437,31 @@ fun LazyGridScope.cartoonEpisodeList(
 
                         }
                         .padding(8.dp),
-                ) {}
+                ) {
+                    Text(
+                        color = if (select && currentDownloadPlayLine.value == null) MaterialTheme.colorScheme.onSecondary else Color.Unspecified,
+                        text = item.label,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Spacer(Modifier.weight(1f))
+                    if (currentDownloadPlayLine.value != null) {
+                        Spacer(Modifier.size(4.dp))
+                        Checkbox(
+                            checked = currentDownloadSelect.value.contains(index),
+                            onCheckedChange = {
+                                if (it) {
+                                    currentDownloadSelect.value += index
+                                } else {
+                                    currentDownloadSelect.value -= index
+                                    if (currentDownloadSelect.value.isEmpty()) {
+                                        currentDownloadPlayLine.value = null
+                                    }
+                                }
+                            }
+                        )
+                    }
+                }
             }
 
         }
