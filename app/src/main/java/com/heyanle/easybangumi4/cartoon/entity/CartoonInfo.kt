@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.Ignore
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.heyanle.easybangumi4.source_api.component.detailed.DetailedComponent
 import com.heyanle.easybangumi4.source_api.entity.Cartoon
 import com.heyanle.easybangumi4.source_api.entity.CartoonCover
 import com.heyanle.easybangumi4.source_api.entity.CartoonImpl
@@ -50,6 +51,8 @@ data class CartoonInfo(
 
     var createTime: Long = System.currentTimeMillis(),
 
+    var isShowLine: Boolean,
+
     var playLineString: String, // List<PlayLine> 的 json 数据，可能为 ""
 
     var isInitializer: Boolean = false,
@@ -93,6 +96,7 @@ data class CartoonInfo(
                 reversal = false,
                 watchProcess = "",
                 tags = "",
+                isShowLine = playLines !is DetailedComponent.NonPlayLine,
                 sourceName = sourceName
             )
         }
@@ -117,6 +121,7 @@ data class CartoonInfo(
             reversal = false,
             watchProcess = "",
             tags = "",
+            isShowLine = true,
             sourceName = sourceName
         )
     }
@@ -137,7 +142,7 @@ data class CartoonInfo(
     }
 
     fun getPlayLine(): List<PlayLine> {
-        return kotlin.runCatching {
+        val list = kotlin.runCatching {
             Gson().fromJson<List<PlayLine>>(
                 playLineString,
                 object : TypeToken<List<PlayLine>>() {}.type
@@ -145,6 +150,11 @@ data class CartoonInfo(
         }.getOrElse {
             it.printStackTrace()
             emptyList()
+        }
+        if (isShowLine && list.size == 1) {
+            return list
+        } else {
+            return DetailedComponent.NonPlayLine(list.first())
         }
     }
 

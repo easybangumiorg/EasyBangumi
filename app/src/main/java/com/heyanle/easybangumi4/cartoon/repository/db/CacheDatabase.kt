@@ -18,7 +18,7 @@ import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
         CartoonInfo::class
     ],
     autoMigrations = [],
-    version = 1,
+    version = 2,
     exportSchema = true
 )
 abstract class CacheDatabase : RoomDatabase() {
@@ -31,6 +31,7 @@ abstract class CacheDatabase : RoomDatabase() {
                 context,
                 CacheDatabase::class.java, "easy_cache"
             ).apply {
+                fallbackToDestructiveMigration()
                 Migrate.CacheDB.getDBMigration().forEach {
                     addMigrations(it)
                 }

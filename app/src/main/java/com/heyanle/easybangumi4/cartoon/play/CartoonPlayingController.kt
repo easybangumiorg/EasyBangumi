@@ -131,6 +131,15 @@ class CartoonPlayingController(
         }
     }
 
+    fun refresh(){
+        val oldPlayingState = _state.value
+        val cartoon = oldPlayingState.cartoon() ?: return
+        val playLine = oldPlayingState.playLine() ?: return
+        val episode = oldPlayingState.episode() ?: return
+        changePlay(cartoon, playLine, episode)
+
+    }
+
     /**
      * 调用外部播放器播放，当前状态为 Playing 时候才有效
      * @return 当前播放状态是否为 Playing
@@ -235,6 +244,11 @@ class CartoonPlayingController(
                 )
             }
             return
+        }
+        _state.update {
+            PlayingState.Loading(
+                playLine, episode, cartoon
+            )
         }
         // 先暂停播放
         exoPlayer.pause()
