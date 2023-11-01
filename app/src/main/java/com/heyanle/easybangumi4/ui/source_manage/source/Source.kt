@@ -22,7 +22,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -35,12 +34,10 @@ import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.navigationSourceConfig
 import com.heyanle.easybangumi4.source.ConfigSource
 import com.heyanle.easybangumi4.source.LocalSourceBundleController
-import com.heyanle.easybangumi4.source.SourceConfig
 import com.heyanle.easybangumi4.source.SourceInfo
 import com.heyanle.easybangumi4.source_api.IconSource
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.easybangumi4.utils.stringRes
-import com.heyanle.injekt.core.Injekt
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorderAfterLongPress
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
@@ -96,8 +93,8 @@ fun Source() {
             .reorderable(state)
             .detectReorderAfterLongPress(state)
     ) {
-        items(vm.configSourceList, key = { it.source.source.key }) { configSource ->
-            val sourceInfo = configSource.source
+        items(vm.configSourceList, key = { it.sourceInfo.source.key }) { configSource ->
+            val sourceInfo = configSource.sourceInfo
             val source = sourceInfo.source
             val config = configSource.config
             val bundle = LocalSourceBundleController.current
@@ -127,8 +124,8 @@ fun Source() {
                             }
                         },
                         onClick = {
-                            if(it.source is SourceInfo.Loaded && it.config.enable && bundle.preference(it.source.source.key) != null){
-                                nav.navigationSourceConfig(it.source.source.key)
+                            if(it.sourceInfo is SourceInfo.Loaded && it.config.enable && bundle.preference(it.sourceInfo.source.key) != null){
+                                nav.navigationSourceConfig(it.sourceInfo.source.key)
                             }
                         }
                     )
@@ -146,7 +143,7 @@ fun SourceItem(
     onClick: (ConfigSource) -> Unit,
 ) {
 
-    val sourceInfo = configSource.source
+    val sourceInfo = configSource.sourceInfo
     val config = configSource.config
     val icon = sourceInfo.source as? IconSource
 

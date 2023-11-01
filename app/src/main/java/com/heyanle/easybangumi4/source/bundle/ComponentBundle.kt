@@ -17,6 +17,8 @@ import com.heyanle.easybangumi4.source_api.utils.api.OkhttpHelper
 import com.heyanle.easybangumi4.source_api.utils.api.PreferenceHelper
 import com.heyanle.easybangumi4.source_api.utils.api.StringHelper
 import com.heyanle.easybangumi4.source_api.utils.api.WebViewHelper
+import com.heyanle.injekt.api.get
+import com.heyanle.injekt.core.Injekt
 import org.koin.core.qualifier.named
 import org.koin.mp.KoinPlatform
 import java.util.concurrent.atomic.AtomicBoolean
@@ -24,6 +26,7 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 
 /**
+ * 持有一个源的所有 Component 以及工具类
  * Created by HeYanLe on 2023/10/29 18:10.
  * https://github.com/heyanLE
  */
@@ -60,21 +63,21 @@ class ComponentBundle(
 
     // 工具注入
     init {
-        put(StringHelper::class, StringHelperImpl)
-        put(NetworkHelper::class, KoinPlatform.getKoin().get())
-        put(OkhttpHelper::class, KoinPlatform.getKoin().get())
-        put(PreferenceHelper::class, KoinPlatform.getKoin().get(named(source.key)))
-        put(WebViewHelper::class, WebViewHelperImpl)
+        put(StringHelper::class, Injekt.get(source.key))
+        put(NetworkHelper::class, Injekt.get(source.key))
+        put(OkhttpHelper::class, Injekt.get(source.key))
+        put(PreferenceHelper::class, Injekt.get(source.key))
+        put(WebViewHelper::class, Injekt.get(source.key))
     }
 
     private fun put(clazz: KClass<*>, instance: Any) {
         bundle[clazz] = instance
     }
 
-    private fun init(){
-        if(init.compareAndSet(false, true)){
+    fun init() {
+        if (init.compareAndSet(false, true)) {
             registerClazz.forEach {
-                if(innerGet(it) == null){
+                if (innerGet(it) == null) {
                     throw SourceException("Component 装配错误")
                 }
             }
@@ -84,25 +87,28 @@ class ComponentBundle(
     private fun innerGet(clazz: KClass<*>, road: MutableSet<KClass<*>> = hashSetOf()): Any? {
 
         // source 本身可直接注入
-        if(clazz.isInstance(source)){
+        if (clazz.isInstance(source)) {
             return source
         }
 
         // 不允许注入除 工具，Component 以及 source 里 register 以外的类
-        if(!utilsClazz.contains(clazz) && !componentClazz.contains(clazz) && registerClazz.contains(clazz) && clazz != ComponentWrapper::class){
+        if (!utilsClazz.contains(clazz) && !componentClazz.contains(clazz) && registerClazz.contains(
+                clazz
+            ) && clazz != ComponentWrapper::class
+        ) {
             throw SourceException("尝试非法注入： ${clazz.simpleName}")
         }
 
         // 循环依赖
-        if(road.contains(clazz)){
+        if (road.contains(clazz)) {
             throw SourceException("${clazz.simpleName} 存在循环依赖")
         }
-        if(bundle.contains(clazz)){
+        if (bundle.contains(clazz)) {
             return bundle[clazz]
         }
         val cons = clazz.constructors
         // 只支持一个构造方法
-        if(cons.size != 1){
+        if (cons.size != 1) {
             throw SourceException("${clazz.simpleName} 有多个构造方法")
         }
         val con = cons.first()
@@ -111,11 +117,12 @@ class ComponentBundle(
         road.add(clazz)
         for (param in params) {
             // 只支持普通构造函数传参
-            if(param.kind != KParameter.Kind.VALUE){
+            if (param.kind != KParameter.Kind.VALUE) {
                 throw SourceException("${clazz.simpleName} 构造方法有特殊传参")
             }
             // 构造出错
-            val instance = innerGet(clazz, road) ?: throw SourceException("${clazz.simpleName} 装配错误")
+            val instance =
+                innerGet(clazz, road) ?: throw SourceException("${clazz.simpleName} 装配错误")
             targetParams.add(instance)
         }
         road.remove(clazz)
@@ -127,27 +134,33 @@ class ComponentBundle(
         }
         // 不允许实现 utils 接口
         utilsClazz.forEach {
-            if(it.isInstance(instance)){
+            if (it.isInstance(instance)) {
                 throw SourceException("${clazz.simpleName} 实现了 utils 中的接口")
             }
         }
         bundle[clazz] = instance
         componentClazz.forEach {
-            if(it.isInstance(instance)){
+            if (it.isInstance(instance)) {
                 bundle[it] = instance
             }
         }
 
         // ComponentWrapper 自动装配 source
-        if(instance is ComponentWrapper) {
+        if (instance is ComponentWrapper) {
             instance.innerSource = source
         }
         return instance
     }
 
     fun get(clazz: KClass<*>): Any? {
-        init()
-        if(bundle.contains(clazz)){
+        try {
+            init()
+        } catch (e: SourceException) {
+            e.printStackTrace()
+            return null
+        }
+
+        if (bundle.contains(clazz)) {
             return bundle[clazz]
         }
         return innerGet(clazz, arraySetOf())
@@ -157,7 +170,7 @@ class ComponentBundle(
         return get(T::class) as? T
     }
 
-    fun release(){
+    fun release() {
         bundle.clear()
     }
 
