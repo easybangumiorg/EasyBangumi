@@ -11,6 +11,9 @@ import androidx.annotation.RequiresApi
 import com.heyanle.easybangumi4.extension.loader.AppExtensionLoader
 import com.heyanle.easybangumi4.extension.loader.ExtensionLoaderFactory
 import com.heyanle.easybangumi4.extension.loader.FileExtensionLoader
+import com.heyanle.extension_api.iconFactory
+import com.heyanle.injekt.api.get
+import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
