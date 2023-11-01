@@ -25,7 +25,7 @@ class FileExtensionLoader(
             return null
         }
         val pkgInfo =
-            packageManager.getPackageArchiveInfo(path, PackageManager.GET_ACTIVITIES) ?: return null
+            packageManager.getPackageArchiveInfo(path, PackageManager.GET_ACTIVITIES or PackageManager.GET_META_DATA) ?: return null
         val appInfo = pkgInfo.applicationInfo ?: return null
         if(appInfo.sourceDir.isNullOrEmpty()){
             appInfo.sourceDir = path

@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -60,8 +61,8 @@ class EasyThemeController(
         scope.launch {
             combine(
                 settingPreferences.isThemeDynamic.flow().stateIn(scope),
-                settingPreferences.darkMode.flow().stateIn(scope),
-                settingPreferences.themeMode.flow().stateIn(scope),
+                settingPreferences.darkMode.flow().distinctUntilChanged().stateIn(scope),
+                settingPreferences.themeMode.flow().distinctUntilChanged().stateIn(scope),
             ) { dy, dark, theme ->
                 theme.loge("EasyTheme")
                 EasyThemeState(

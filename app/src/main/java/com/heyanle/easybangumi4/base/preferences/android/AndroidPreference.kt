@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
@@ -60,7 +61,7 @@ sealed class AndroidPreference<T>(
             .onStart { emit("ignition") }
             .map {
                 get()
-            }.conflate()
+            }.conflate().distinctUntilChanged()
     }
 
     override fun stateIn(scope: CoroutineScope): StateFlow<T> {

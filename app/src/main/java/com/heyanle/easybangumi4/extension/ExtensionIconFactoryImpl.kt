@@ -26,7 +26,7 @@ class ExtensionIconFactoryImpl(
         val extension =
             (state.appExtensions.values + state.fileExtension.values).filterIsInstance<Extension.Installed>()
                 .find {
-                    it.key == source.key
+                    it.sources.find { it.key == source.key } != null
                 } ?: return null
         return source.getIconResourcesId()?.let { resId ->
             extension.resources?.let {

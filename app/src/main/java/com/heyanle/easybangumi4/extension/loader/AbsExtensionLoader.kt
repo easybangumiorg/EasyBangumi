@@ -8,6 +8,7 @@ import androidx.core.content.pm.PackageInfoCompat
 import com.heyanle.easybangumi4.extension.Extension
 import com.heyanle.easybangumi4.source_api.Source
 import com.heyanle.easybangumi4.source_api.SourceFactory
+import com.heyanle.easybangumi4.utils.TimeLogUtils
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.extension_api.ExtensionSource
 
@@ -44,6 +45,7 @@ abstract class AbsExtensionLoader(
         if (!isPackageAnExtension(pkgInfo)) {
             return null
         }
+        TimeLogUtils.i("ExtensionLoader ${pkgInfo.packageName} inner start")
         try {
             val extName =
                 appInfo.loadLabel(pkgManager).toString().substringAfter("EasyBangumi: ")
@@ -137,6 +139,7 @@ abstract class AbsExtensionLoader(
                 }
                 it
             }
+            TimeLogUtils.i("ExtensionLoader ${pkgInfo.packageName} inner completely")
             return Extension.Installed(
                 key = key,
                 label = extName,
@@ -153,6 +156,7 @@ abstract class AbsExtensionLoader(
                 sourcePath = appInfo.sourceDir,
             )
         } catch (e: Exception) {
+            e.printStackTrace()
             return null
         }
 

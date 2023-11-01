@@ -5,6 +5,7 @@ import com.heyanle.easybangumi4.cartoon.entity.CartoonStar
 import com.heyanle.easybangumi4.extension.Extension
 import com.heyanle.easybangumi4.getter.ExtensionGetter
 import com.heyanle.easybangumi4.source.bundle.ComponentBundle
+import com.heyanle.easybangumi4.source.bundle.SourceBundle
 import com.heyanle.easybangumi4.source_api.MigrateSource
 import com.heyanle.easybangumi4.source_api.Source
 import com.heyanle.easybangumi4.source_api.SourceResult
@@ -14,12 +15,14 @@ import com.heyanle.easybangumi4.source_api.entity.Cartoon
 import com.heyanle.easybangumi4.source_api.entity.PlayLine
 import com.heyanle.easybangumi4.source_api.entity.toIdentify
 import com.heyanle.easybangumi4.source_api.utils.api.PreferenceHelper
+import com.heyanle.easybangumi4.utils.TimeLogUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterIsInstance
@@ -49,6 +52,9 @@ class SourceController(
     private val _configSource = MutableStateFlow<List<ConfigSource>>(emptyList())
     val configSource = _configSource.asStateFlow()
 
+    private val _sourceBundle = MutableStateFlow<SourceBundle?>(null)
+    val sourceBundle = _sourceBundle.asStateFlow()
+
 
     private val dispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     private val migrateScope = CoroutineScope(SupervisorJob() + dispatcher)
@@ -56,21 +62,29 @@ class SourceController(
 
     init {
         scope.launch {
-            extensionGetter.flowExtension().collectLatest {
-                val map = hashMapOf<String, Source>()
-                it.filterIsInstance<Extension.Installed>().flatMap {
-                    it.sources
-                }.forEach {
-                    val old = map[it.key]
-                    if (old == null || old.versionCode <= it.versionCode) {
-                        map[it.key] = it
+            extensionGetter.flowExtensionState().collectLatest { sta ->
+                if(sta.isLoading){
+                    _sourceInfo.update {
+                        SourceInfoState.Loading
                     }
-                }
-                val n = map.values.map {
-                    loadSource(it)
-                }
-                _sourceInfo.update {
-                    SourceInfoState.Info(n)
+                }else{
+                    TimeLogUtils.i("loadSource start")
+                    val it = sta.appExtensions.values + sta.fileExtension.values
+                    val map = hashMapOf<String, Source>()
+                    it.filterIsInstance<Extension.Installed>().flatMap {
+                        it.sources
+                    }.forEach {
+                        val old = map[it.key]
+                        if (old == null || old.versionCode <= it.versionCode) {
+                            map[it.key] = it
+                        }
+                    }
+                    val n = map.values.map {
+                        loadSource(it)
+                    }
+                    _sourceInfo.update {
+                        SourceInfoState.Info(n)
+                    }
                 }
             }
         }
@@ -90,22 +104,36 @@ class SourceController(
                 _sourceInfo.filterIsInstance<SourceInfoState.Info>().map { it.info },
                 sourcePreferences.configs.stateIn(scope)
             ) { sourceInfo, config ->
-                sourceInfo.map {
+                val d = sourceInfo.map {
                     val con =
                         config[it.source.key] ?: SourceConfig(it.source.key, Int.MAX_VALUE, true)
                     ConfigSource(it, con)
                 }
-
-            }.collectLatest {
+                d
+            }.collectLatest { list ->
                 _configSource.update {
-                    it
+                    list
                 }
             }
+        }
+
+        scope.launch {
+            combine(
+                _sourceInfo,
+                _configSource,
+            ){sta, config ->
+                if(sta is SourceInfoState.Info){
+                    _sourceBundle.update {
+                        SourceBundle(config)
+                    }
+                }
+            }.collect()
         }
 
     }
 
     private fun loadSource(source: Source): SourceInfo {
+        TimeLogUtils.i("loadSource ${source.key} start")
         return try {
             val bundle = ComponentBundle(source)
             bundle.init()
@@ -117,6 +145,7 @@ class SourceController(
         } catch (e: SourceException) {
             SourceInfo.Error(source, e.msg, e)
         } catch (e: Exception) {
+            e.printStackTrace()
             SourceInfo.Error(source, "加载错误：${e.message}", e)
         }
     }

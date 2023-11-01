@@ -71,9 +71,10 @@ class MainActivity : ComponentActivity(){
 
                     }
                     ReleaseDialog()
-                    AnnoHelper.ComposeDialog()
+
                 }
             }
+            AnnoHelper.ComposeDialog()
         }
     }
 }
