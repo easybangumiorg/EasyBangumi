@@ -48,6 +48,8 @@ class SourceBundle(
     init {
         list.sortedBy {
             it.config.order
+        }.map {
+            it.sourceInfo
         }.filterIsInstance<SourceInfo.Loaded>().forEach {
             register(it)
         }

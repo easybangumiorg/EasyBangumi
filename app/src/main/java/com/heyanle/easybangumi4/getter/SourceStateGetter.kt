@@ -17,11 +17,11 @@ class SourceStateGetter(
 
     // 等到下一个番剧源就绪状态
     suspend fun awaitBundle(): SourceBundle {
-        return sourceController.configSource.map { SourceBundle(it) }.first()
+        return sourceController.sourceBundle.filterIsInstance<SourceBundle>().first()
     }
 
     fun flowBundle(): Flow<SourceBundle> {
-        return sourceController.configSource.map { SourceBundle(it) }
+        return sourceController.sourceBundle.filterIsInstance()
     }
 
     fun flowState(): StateFlow<SourceController.SourceInfoState> {
