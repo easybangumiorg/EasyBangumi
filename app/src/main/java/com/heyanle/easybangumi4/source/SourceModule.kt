@@ -48,7 +48,7 @@ class SourceModule(
             }
         }
         addScopedPerKeyFactory<NetworkHelper, String> {
-            get<NetworkHelper>()
+            get<NetworkHelperImpl>()
         }
 
         // OkHttpHelper

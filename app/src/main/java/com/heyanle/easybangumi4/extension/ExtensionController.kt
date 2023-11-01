@@ -11,10 +11,13 @@ import androidx.annotation.RequiresApi
 import com.heyanle.easybangumi4.extension.loader.AppExtensionLoader
 import com.heyanle.easybangumi4.extension.loader.ExtensionLoaderFactory
 import com.heyanle.easybangumi4.extension.loader.FileExtensionLoader
+import com.heyanle.easybangumi4.utils.TimeLogUtils
+import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.extension_api.iconFactory
 import com.heyanle.injekt.api.get
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -47,17 +50,22 @@ class ExtensionController(
 ) {
 
     companion object {
+        private const val TAG = "ExtensionController"
         // app 内部下载文件的特殊后缀
         const val EXTENSION_SUFFIX = ".easybangumi.apk"
     }
 
     data class ExtensionState(
-        val isLoading: Boolean = true,
+        val isFileExtensionLoading: Boolean = true,
+        val isAppExtensionLoading: Boolean = true,
         val fileExtension: Map<String, Extension> = emptyMap(),
         val appExtensions: Map<String, Extension> = emptyMap(),
-    )
+    ){
+        val isLoading: Boolean
+            get() = isAppExtensionLoading || isFileExtensionLoading
+    }
 
-    private val dispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+    private val dispatcher = Dispatchers.IO
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
     private var lastScanFolderJob: Job? = null
     private var lastScanAppJob: Job? = null
@@ -79,7 +87,7 @@ class ExtensionController(
     fun init() {
         // 只有第一次需要提示加载中
         _state.update {
-            ExtensionState(true)
+            ExtensionState(true, true)
         }
         scanFolder()
         scanApp()
@@ -88,13 +96,13 @@ class ExtensionController(
     fun scanFolder() {
         lastScanFolderJob?.cancel()
         lastScanFolderJob = scope.launch {
+            TimeLogUtils.i("scanFolder star")
             // 先关闭监听
             fileObserver.stopWatching()
             val extensions = ExtensionLoaderFactory.getFileExtensionLoaders(
                 context,
                 extensionFolder
             ).map {
-                yield()
                 it.load()
             }.filterIsInstance<Extension>()
             updateExtensions(extensions, false)
@@ -105,21 +113,29 @@ class ExtensionController(
     fun scanApp() {
         lastScanAppJob?.cancel()
         lastScanAppJob = scope.launch {
-            extensionReceiver.unregister()
+            extensionReceiver.safeUnregister()
+            TimeLogUtils.i("scanApp star")
             val extensions = ExtensionLoaderFactory.getAppExtensionLoaders(
                 context,
-            ).map {
-                yield()
+            ).filter {
+                it.canLoad()
+            }.map {
                 it.load()
             }.filterIsInstance<Extension>()
+            extensions.forEach {
+                it.logi(TAG)
+            }
             updateExtensions(extensions, true)
             extensionReceiver.register()
         }
     }
 
     private fun updateExtensions(extensions: Collection<Extension>, isApp: Boolean) {
+        TimeLogUtils.i("updateExtension isApp: ${isApp}")
+        extensions.forEach {
+            it.logi(TAG)
+        }
         _state.update { state ->
-
             val map = hashMapOf<String, Extension>()
 
             extensions.forEach {
@@ -131,7 +147,8 @@ class ExtensionController(
                 map[it.key] = new
             }
             state.copy(
-                isLoading = false,
+                isFileExtensionLoading = if(isApp) state.isFileExtensionLoading else false,
+                isAppExtensionLoading = if(isApp) false else state.isAppExtensionLoading,
                 appExtensions = if (isApp) map else state.appExtensions,
                 fileExtension = if (isApp) state.fileExtension else map,
             )
@@ -261,7 +278,16 @@ class ExtensionController(
             }
         }
 
+        fun safeUnregister(){
+            try {
+                context.unregisterReceiver(this)
+            }catch (e: Exception){
+                e.printStackTrace()
+            }
+        }
+
         fun unregister() {
+
             context.unregisterReceiver(this)
         }
 

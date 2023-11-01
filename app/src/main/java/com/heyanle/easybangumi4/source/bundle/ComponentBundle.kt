@@ -4,6 +4,8 @@ import androidx.collection.arraySetOf
 import com.heyanle.easybangumi4.source.SourceException
 import com.heyanle.easybangumi4.source.utils.StringHelperImpl
 import com.heyanle.easybangumi4.source.utils.WebViewHelperImpl
+import com.heyanle.easybangumi4.source_api.IconSource
+import com.heyanle.easybangumi4.source_api.MigrateSource
 import com.heyanle.easybangumi4.source_api.Source
 import com.heyanle.easybangumi4.source_api.component.ComponentWrapper
 import com.heyanle.easybangumi4.source_api.component.detailed.DetailedComponent
@@ -17,6 +19,8 @@ import com.heyanle.easybangumi4.source_api.utils.api.OkhttpHelper
 import com.heyanle.easybangumi4.source_api.utils.api.PreferenceHelper
 import com.heyanle.easybangumi4.source_api.utils.api.StringHelper
 import com.heyanle.easybangumi4.source_api.utils.api.WebViewHelper
+import com.heyanle.extension_api.ExtensionIconSource
+import com.heyanle.extension_api.ExtensionSource
 import com.heyanle.injekt.api.get
 import com.heyanle.injekt.core.Injekt
 import org.koin.core.qualifier.named
@@ -33,6 +37,16 @@ import kotlin.reflect.KParameter
 class ComponentBundle(
     private val source: Source
 ) {
+
+    // Source 接口
+    private val sourceClazz: Set<KClass<*>> = setOf(
+        MigrateSource::class,
+        ExtensionSource::class,
+        IconSource::class,
+        ExtensionIconSource::class,
+        Source::class,
+
+    )
 
     // 工具类接口
     private val utilsClazz: Set<KClass<*>> = setOf(
@@ -68,9 +82,20 @@ class ComponentBundle(
         put(OkhttpHelper::class, Injekt.get(source.key))
         put(PreferenceHelper::class, Injekt.get(source.key))
         put(WebViewHelper::class, Injekt.get(source.key))
+
+        sourceClazz.forEach {
+            if(it.isInstance(source)){
+                putAnyway(it, source)
+            }
+        }
+
     }
 
-    private fun put(clazz: KClass<*>, instance: Any) {
+    private fun putAnyway(clazz: KClass<*>, instance: Any){
+        bundle[clazz] = instance
+    }
+
+    private fun <T : Any> put(clazz: KClass<T>, instance: T) {
         bundle[clazz] = instance
     }
 
@@ -92,20 +117,23 @@ class ComponentBundle(
         }
 
         // 不允许注入除 工具，Component 以及 source 里 register 以外的类
-        if (!utilsClazz.contains(clazz) && !componentClazz.contains(clazz) && registerClazz.contains(
-                clazz
-            ) && clazz != ComponentWrapper::class
+        if (!utilsClazz.contains(clazz) &&
+            !componentClazz.contains(clazz) &&
+            !registerClazz.contains(clazz) &&
+            clazz != ComponentWrapper::class
         ) {
             throw SourceException("尝试非法注入： ${clazz.simpleName}")
         }
 
-        // 循环依赖
-        if (road.contains(clazz)) {
-            throw SourceException("${clazz.simpleName} 存在循环依赖")
-        }
         if (bundle.contains(clazz)) {
             return bundle[clazz]
         }
+
+        // 循环依赖
+        if (road.contains(clazz)) {
+            throw SourceException("${clazz.simpleName} 存在循环依赖 ${road.map { it.simpleName }.joinToString(" ->")}")
+        }
+
         val cons = clazz.constructors
         // 只支持一个构造方法
         if (cons.size != 1) {
@@ -120,9 +148,10 @@ class ComponentBundle(
             if (param.kind != KParameter.Kind.VALUE) {
                 throw SourceException("${clazz.simpleName} 构造方法有特殊传参")
             }
+            val kClazz = param.type.classifier as? KClass<*> ?: throw SourceException("${clazz.simpleName} 装配错误 1")
             // 构造出错
             val instance =
-                innerGet(clazz, road) ?: throw SourceException("${clazz.simpleName} 装配错误")
+                innerGet(kClazz, road) ?: throw SourceException("${clazz.simpleName} 装配错误 2")
             targetParams.add(instance)
         }
         road.remove(clazz)
@@ -153,17 +182,7 @@ class ComponentBundle(
     }
 
     fun get(clazz: KClass<*>): Any? {
-        try {
-            init()
-        } catch (e: SourceException) {
-            e.printStackTrace()
-            return null
-        }
-
-        if (bundle.contains(clazz)) {
-            return bundle[clazz]
-        }
-        return innerGet(clazz, arraySetOf())
+        return bundle[clazz]
     }
 
     inline fun <reified T> get(): T? {

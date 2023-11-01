@@ -37,7 +37,7 @@ class CartoonTagViewModel : ViewModel() {
             val renameTag: CartoonTag
         ) : Dialog()
 
-        object Create : Dialog()
+        data object Create : Dialog()
     }
 
     init {
