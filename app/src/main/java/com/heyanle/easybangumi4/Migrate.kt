@@ -78,6 +78,7 @@ object Migrate {
             Injekt.get(),
             Injekt.get(),
         )
+        controllerUpdate(context)
     }
 
 

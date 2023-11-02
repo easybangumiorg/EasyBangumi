@@ -1,11 +1,10 @@
-package com.heyanle.easybangumi4.ui.download
+package com.heyanle.easybangumi4.ui.download.downloading
 
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.download.DownloadBus
-import com.heyanle.easybangumi4.download.DownloadController
 import com.heyanle.easybangumi4.download.DownloadDispatcher
 import com.heyanle.easybangumi4.download.entity.DownloadItem
 import com.heyanle.easybangumi4.getter.DownloadItemGetter
@@ -14,10 +13,9 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 
 /**
- * Created by HeYanLe on 2023/8/27 22:05.
- * https://github.com/heyanLE
+ * Created by heyanlin on 2023/11/2.
  */
-class DownloadViewModel : ViewModel() {
+class DownloadingViewModel : ViewModel() {
 
     private val downloadBus: DownloadBus by Injekt.injectLazy()
 
@@ -32,6 +30,27 @@ class DownloadViewModel : ViewModel() {
 
     val removeDownloadItem = mutableStateOf<Collection<DownloadItem>?>(null)
 
+    fun onSelectExit() {
+        selection.clear()
+    }
+
+    fun onSelectAll() {
+        downloadingFlow.value.forEach {
+            selection[it] = true
+        }
+    }
+
+    fun onSelectInvert() {
+        val current = selection.toMap()
+        downloadingFlow.value.forEach {
+            if (current.containsKey(it)) {
+                selection.remove(it)
+            } else {
+                selection[it] = true
+            }
+        }
+    }
+
     fun info(download: DownloadItem): DownloadBus.DownloadingInfo {
         return downloadBus.getInfo(download.uuid)
     }
@@ -45,5 +64,4 @@ class DownloadViewModel : ViewModel() {
             downloadDispatcher.removeDownload(it)
         }
     }
-
 }

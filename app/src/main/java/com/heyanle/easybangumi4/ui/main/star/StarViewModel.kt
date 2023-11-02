@@ -7,6 +7,9 @@ import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonStarDao
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonTagDao
 import com.heyanle.easybangumi4.cartoon.entity.CartoonStar
 import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
+import com.heyanle.easybangumi4.cartoon.tags.CartoonTagsController
+import com.heyanle.easybangumi4.cartoon.tags.isALL
+import com.heyanle.easybangumi4.cartoon.tags.isUpdate
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.source.CartoonUpdateController
@@ -17,6 +20,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -30,25 +34,13 @@ import kotlinx.coroutines.launch
  */
 class StarViewModel : ViewModel() {
 
-    companion object {
-        val DEFAULT_TAG = CartoonTag(-1, stringRes(R.string.default_word), -1)
-        val UPDATE_TAG = CartoonTag(-2, stringRes(R.string.update), -2)
-
-        fun tagLabel(tag: CartoonTag): String {
-            return when (tag) {
-                DEFAULT_TAG -> stringRes(com.heyanle.easy_i18n.R.string.default_word)
-                UPDATE_TAG -> stringRes(com.heyanle.easy_i18n.R.string.update)
-                else -> tag.label
-            }
-        }
-    }
 
     data class State(
         val isLoading: Boolean = true,
         val searchQuery: String? = null,
         val starCount: Int = 0,
-        val tabs: List<CartoonTag> = listOf(UPDATE_TAG, DEFAULT_TAG),
-        val curTab: CartoonTag = DEFAULT_TAG,
+        val tabs: List<CartoonTag> = listOf(),
+        val curTab: CartoonTag? = null,
         val data: Map<CartoonTag, List<CartoonStar>>,
         val selection: Set<CartoonStar> = setOf(),
         val hasActiveFilters: Boolean = false,
@@ -56,47 +48,39 @@ class StarViewModel : ViewModel() {
     )
 
     sealed class DialogState {
-        data class ChangeTag(
-            val selection: Set<CartoonStar>,
-            val tagMap: Map<Int, CartoonTag>,
-        ) : DialogState() {
-            fun getTags(): List<CartoonTag> {
-                val tags = mutableSetOf<CartoonTag>()
-                selection.forEach {
-                    it.tags.split(",").map { it.trim() }.forEach {
-                        it.toIntOrNull()?.let { id ->
-                            tagMap[id]?.let { tag ->
-                                tags.add(tag)
-                            }
-                        }
-
-                    }
-                }
-                return tags.toList()
-            }
-        }
+//        data class ChangeTag(
+//            val selection: Set<CartoonStar>,
+//            val tagMap: Map<Int, CartoonTag>,
+//        ) : DialogState() {
+//            fun getTags(): List<CartoonTag> {
+//                val tags = mutableSetOf<CartoonTag>()
+//                selection.forEach {
+//                    it.tags.split(",").map { it.trim() }.forEach {
+//                        it.toIntOrNull()?.let { id ->
+//                            tagMap[id]?.let { tag ->
+//                                tags.add(tag)
+//                            }
+//                        }
+//
+//                    }
+//                }
+//                return tags.toList()
+//            }
+//        }
 
         data class Delete(
             val selection: Set<CartoonStar>,
         ) : DialogState()
     }
 
-    private val cartoonTagDao: CartoonTagDao by Injekt.injectLazy()
     private val cartoonStarDao: CartoonStarDao by Injekt.injectLazy()
     private val settingPreferences: SettingPreferences by Injekt.injectLazy()
+    private val cartoonTagsController: CartoonTagsController by Injekt.injectLazy()
 
     private val updateController: CartoonUpdateController by Injekt.injectLazy()
 
     private val _stateFlow = MutableStateFlow(State(data = emptyMap()))
     val stateFlow = _stateFlow.asStateFlow()
-
-    val tagMapFlow = cartoonTagDao.flowAll().distinctUntilChanged().map {
-        val map = HashMap<Int, CartoonTag>()
-        it.forEach {
-            map[it.id] = it
-        }
-        map
-    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
 
 
     // 最后一个选择的，用于长按区间反选
@@ -104,63 +88,40 @@ class StarViewModel : ViewModel() {
     private var lastSelectTag: CartoonTag? = null
 
     init {
-        // 处理搜索和加载
         viewModelScope.launch {
             combine(
-                tagMapFlow,
+                cartoonTagsController.tagsList.map { it.sortedBy { it.order } }
+                    .distinctUntilChanged().stateIn(viewModelScope),
                 cartoonStarDao.flowAll(),
                 stateFlow.map { it.searchQuery }.distinctUntilChanged(),
-            ) { tagMap, starList, searchKey ->
+            ) { tagList, starList, searchKey ->
+                val tagsMap = HashMap<Int, CartoonTag>()
+                tagList.forEach {
+                    tagsMap[it.id] = it
+                }
                 if (searchKey.isNullOrEmpty()) {
+
                     _stateFlow.update {
                         it.copy(
+                            tabs = tagList,
+                            curTab = it.curTab?.id?.let { tagsMap[it] },
                             starCount = starList.size,
                             isLoading = false,
-                            data = starList.toMap(tagMap)
+                            data = starList.toMap(tagsMap)
                         )
                     }
                 } else {
                     _stateFlow.update {
                         it.copy(
+                            tabs = tagList,
+                            curTab = it.curTab?.id?.let { tagsMap[it] },
                             starCount = starList.size,
                             isLoading = false,
-                            data = starList.filter { it.matches(searchKey) }.toMap(tagMap)
+                            data = starList.filter { it.matches(searchKey) }.toMap(tagsMap)
                         )
                     }
                 }
             }.collect()
-        }
-
-        // 处理 默认 和 更新 两个 tag
-        viewModelScope.launch {
-            combine(
-                settingPreferences.isShowUpdateInStar.flow().distinctUntilChanged()
-                    .stateIn(viewModelScope),
-                cartoonTagDao.flowAll().distinctUntilChanged().map {
-                    it.sortedBy { it.order }
-                }.stateIn(viewModelScope)
-            ) { showUpdate, tabs ->
-                val ts = tabs.asSequence().filter {
-                    it != UPDATE_TAG && it != DEFAULT_TAG
-                }.sortedBy {
-                    it.order
-                }.toMutableList()
-                ts.add(0, DEFAULT_TAG)
-                if (showUpdate) {
-                    ts.add(0, UPDATE_TAG)
-                }
-                _stateFlow.update {
-                    it.copy(
-                        tabs = ts,
-                        curTab = if (!ts.contains(it.curTab)) {
-                            DEFAULT_TAG
-                        } else {
-                            it.curTab
-                        }
-                    )
-                }
-            }.collect()
-
         }
     }
 
@@ -297,10 +258,10 @@ class StarViewModel : ViewModel() {
     }
 
     fun dialogChangeTag() {
-        _stateFlow.update {
-            val selection = it.selection
-            it.copy(dialog = DialogState.ChangeTag(selection, tagMapFlow.value))
-        }
+//        _stateFlow.update {
+//            val selection = it.selection
+//            it.copy(dialog = DialogState.ChangeTag(selection, tagMapFlow.value))
+//        }
     }
 
     fun onUpdateSelection() {
@@ -316,7 +277,7 @@ class StarViewModel : ViewModel() {
     fun onUpdateAll() {
         viewModelScope.launch {
             //val list = if (stateFlow.value.curTab == UPDATE_TAG) cartoonStarDao.getAll() else stateFlow.value.data[stateFlow.value.curTab]?: emptyList()
-            if (stateFlow.value.curTab == UPDATE_TAG || stateFlow.value.curTab == DEFAULT_TAG) {
+            if (stateFlow.value.curTab?.isUpdate() == true || stateFlow.value.curTab?.isALL() == true) {
                 if (updateController.tryUpdate(true)) {
                     stringRes(com.heyanle.easy_i18n.R.string.start_update_strict).moeSnackBar()
                 } else {
@@ -360,9 +321,11 @@ class StarViewModel : ViewModel() {
 
                 }
         }
-        val all = arrayListOf<CartoonStar>()
-        all.addAll(this)
-        map[DEFAULT_TAG] = all
+        tagMap[CartoonTagsController.ALL_TAG_ID]?.let {
+            val all = arrayListOf<CartoonStar>()
+            all.addAll(this)
+            map[it] = all
+        }
         return map
     }
 

@@ -33,7 +33,6 @@ import kotlinx.coroutines.yield
  * PlayComponent -> CartoonPlayingController -> ExoPlayer
  * Created by heyanlin on 2023/10/31.
  */
-@androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 class CartoonPlayingController(
     private val settingPreference: SettingPreferences,
     private val sourceStateGetter: SourceStateGetter,

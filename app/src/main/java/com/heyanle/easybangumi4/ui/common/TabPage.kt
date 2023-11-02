@@ -40,7 +40,10 @@ fun ColumnScope.TabPage(
     ScrollableTabRow(
         selectedTabIndex = pagerState.currentPage,
         indicator = {
-            TabIndicator(currentTabPosition = it[pagerState.currentPage])
+            if(pagerState.currentPage in it.indices){
+                TabIndicator(currentTabPosition = it[pagerState.currentPage])
+            }
+
         },
         modifier = Modifier
             .fillMaxWidth(),
