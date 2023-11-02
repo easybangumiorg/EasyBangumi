@@ -7,6 +7,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonTagDao
 import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
+import com.heyanle.easybangumi4.cartoon.tags.CartoonTagsController
+import com.heyanle.easybangumi4.cartoon.tags.isALL
+import com.heyanle.easybangumi4.cartoon.tags.isUpdate
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.launch
 
@@ -21,7 +24,8 @@ class CartoonTagViewModel : ViewModel() {
     var tags by mutableStateOf<List<CartoonTag>>(emptyList())
         private set
 
-    private val cartoonTagDao: CartoonTagDao by Injekt.injectLazy()
+    //private val cartoonTagDao: CartoonTagDao by Injekt.injectLazy()
+    private val cartoonTagsController: CartoonTagsController by Injekt.injectLazy()
 
     sealed class Dialog {
 
@@ -42,7 +46,7 @@ class CartoonTagViewModel : ViewModel() {
 
     init {
         viewModelScope.launch {
-            cartoonTagDao.flowAll().collect {
+            cartoonTagsController.tagsList.collect {
                 tags = it.sortedBy { it.order }
             }
         }
@@ -59,7 +63,8 @@ class CartoonTagViewModel : ViewModel() {
             val ts = tags.mapIndexed { index, cartoonTag ->
                 cartoonTag.copy(order = index)
             }
-            cartoonTagDao.updateAll(ts)
+            cartoonTagsController.refresh(ts)
+            //cartoonTagDao.updateAll(ts)
         }
     }
 
@@ -68,7 +73,9 @@ class CartoonTagViewModel : ViewModel() {
     }
 
     fun dialogRename(cartoonTag: CartoonTag) {
-        dialog = Dialog.Rename(cartoonTag)
+        if(!cartoonTag.isUpdate() && !cartoonTag.isALL()){
+            dialog = Dialog.Rename(cartoonTag)
+        }
     }
 
     fun dialogCreate() {
@@ -82,16 +89,18 @@ class CartoonTagViewModel : ViewModel() {
 
     fun onDelete(cartoonTag: CartoonTag) {
         viewModelScope.launch {
-            cartoonTagDao.delete(cartoonTag)
+            cartoonTagsController.remove(cartoonTag)
 
         }
     }
 
     fun onRename(cartoonTag: CartoonTag, label: String) {
         viewModelScope.launch {
-            cartoonTagDao.update(
-                cartoonTag.copy(
-                    label = label
+            cartoonTagsController.refresh(
+                listOf(
+                    cartoonTag.copy(
+                        label = label
+                    )
                 )
             )
         }
@@ -99,8 +108,10 @@ class CartoonTagViewModel : ViewModel() {
 
     fun onCreate(label: String) {
         viewModelScope.launch {
-            cartoonTagDao.insert(
-                CartoonTag(0, label, tags.size + 1)
+            cartoonTagsController.refresh(
+                listOf(
+                    CartoonTag(0, label, tags.size + 1)
+                )
             )
         }
     }

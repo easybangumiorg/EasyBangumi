@@ -519,7 +519,6 @@ fun VideoFloat(
                         .background(Color.Black)
                         .clickable(
                             onClick = {
-                                cartoonPlayingController.refresh()
                             },
                             indication = null,
                             interactionSource = remember {
@@ -556,7 +555,7 @@ fun VideoFloat(
                     Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.click_to_retry))
                 },
                 onClick = {
-
+                    cartoonPlayingController.refresh()
                 }
             )
         }
@@ -1032,6 +1031,8 @@ fun LazyGridScope.cartoonMessage(
                                 .aspectRatio(19 / 13.5F)
                                 .clip(RoundedCornerShape(4.dp)),
                             image = cartoon.coverUrl,
+                            crossFade = false,
+                            errorRes = com.heyanle.easybangumi4.R.drawable.placeholder,
                             contentDescription = cartoon.title
                         )
                         Spacer(modifier = Modifier.size(8.dp))
@@ -1096,6 +1097,8 @@ fun CartoonTitleCard(
                     .aspectRatio(19 / 27F)
                     .clip(RoundedCornerShape(4.dp)),
                 image = cartoon.coverUrl,
+                crossFade = false,
+                errorRes = com.heyanle.easybangumi4.R.drawable.placeholder,
                 contentDescription = cartoon.title
             )
 
@@ -1434,7 +1437,6 @@ fun LazyGridScope.cartoonEpisodeList(
                                     }
                                 }
                             }
-
                         }
                         .padding(8.dp),
                 ) {
@@ -1463,7 +1465,6 @@ fun LazyGridScope.cartoonEpisodeList(
                     }
                 }
             }
-
         }
     }
 }
@@ -1506,8 +1507,6 @@ fun NormalVideoTopBar(
                     )
                 }
             }
-
-
         }
     }
 }

@@ -36,13 +36,13 @@ class ParseStep(
     private val mainScope = MainScope()
 
     override fun invoke(downloadItem: DownloadItem) {
+        mainScope.launch {
+            val info = downloadBus.getInfo(downloadItem.uuid)
+            info.process.value = -1f
+            info.status.value = stringRes(R.string.parsing)
+            info.subStatus.value = ""
+        }
         scope.launch {
-            mainScope.launch {
-                val info = downloadBus.getInfo(downloadItem.uuid)
-                info.process.value = -1f
-                info.status.value = stringRes(R.string.parsing)
-                info.subStatus.value = ""
-            }
             val play = sourceStateGetter.awaitBundle().play(downloadItem.cartoonSource)
             if (play == null) {
                 error(downloadItem.uuid, stringRes(R.string.source_not_found))
@@ -60,7 +60,7 @@ class ParseStep(
                     completely(downloadItem, it.data)
                 }
                 .error {
-                    error(downloadItem)
+                    error(downloadItem.uuid, it.throwable.message?:"")
                 }
 
         }

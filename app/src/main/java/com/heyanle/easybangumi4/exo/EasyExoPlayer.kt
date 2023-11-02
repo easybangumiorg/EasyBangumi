@@ -7,7 +7,6 @@ import androidx.media3.exoplayer.source.MediaSource
 /**
  * Created by heyanlin on 2023/10/31.
  */
-@UnstableApi
 class EasyExoPlayer(
     private val innerExoPlayer: ExoPlayer
 ) : ExoPlayer by innerExoPlayer {

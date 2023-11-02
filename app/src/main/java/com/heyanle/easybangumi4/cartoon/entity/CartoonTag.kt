@@ -13,4 +13,6 @@ data class CartoonTag(
     val id: Int = 0,
     val label: String,
     val order: Int,
-)
+){
+
+}

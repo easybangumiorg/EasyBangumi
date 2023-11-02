@@ -60,6 +60,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.cartoon.entity.CartoonStar
+import com.heyanle.easybangumi4.cartoon.tags.isUpdate
+import com.heyanle.easybangumi4.cartoon.tags.tagLabel
 import com.heyanle.easybangumi4.ui.common.CartoonStarCardWithCover
 import com.heyanle.easybangumi4.ui.common.EasyDeleteDialog
 import com.heyanle.easybangumi4.ui.common.EasyMutiSelectionDialog
@@ -187,7 +189,7 @@ fun Star() {
                 Row {
                     val tab = state.tabs[i]
                     val starNum = state.data[state.tabs[i]]?.size ?: 0
-                    Text(text = StarViewModel.tagLabel(tab))
+                    Text(text = tab.tagLabel())
                     Badge(
                         containerColor = MaterialTheme.colorScheme.primaryContainer,
                         contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -198,7 +200,7 @@ fun Star() {
 
             }) {
             val tab = state.tabs[it]
-            if (tab == StarViewModel.UPDATE_TAG) {
+            if (tab.isUpdate()) {
                 Update(updateVM)
             } else {
                 val list = state.data[tab] ?: emptyList()
@@ -218,68 +220,68 @@ fun Star() {
     }
 
     when (val sta = state.dialog) {
-        is StarViewModel.DialogState.ChangeTag -> {
-            val tags =
-                state.tabs.filter { it != StarViewModel.DEFAULT_TAG && it != StarViewModel.UPDATE_TAG }
-            if (tags.isEmpty()) {
-                AlertDialog(
-                    title = {
-                        Text(text = stringResource(id = R.string.no_tag))
-                    },
-                    text = {
-                        Text(text = stringResource(id = R.string.click_to_manage_tag))
-                    },
-                    confirmButton = {
-                        TextButton(
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.Transparent,
-                                contentColor = MaterialTheme.colorScheme.onBackground
-                            ),
-                            onClick = {
-                                //TODO
-                                starVM.dialogDismiss()
-                                nav.navigationCartoonTag()
-                            }) {
-                            Text(text = stringResource(id = R.string.confirm))
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.Transparent,
-                                contentColor = MaterialTheme.colorScheme.onBackground
-                            ),
-                            onClick = {
-                                starVM.dialogDismiss()
-                                //starVM.onSelectionExit()
-                            }) {
-                            Text(text = stringResource(id = R.string.cancel))
-                        }
-                    },
-                    onDismissRequest = {
-                        starVM.dialogDismiss()
-                    }
-                )
-            } else {
-                EasyMutiSelectionDialog(show = true,
-                    title = {
-                        Text(text = stringResource(id = R.string.change_tag))
-                    },
-                    items = tags,
-                    initSelection = sta.getTags(),
-                    onConfirm = {
-                        starVM.changeTagSelection(sta.selection, it)
-                        starVM.onSelectionExit()
-                    },
-                    onManage = {
-                        nav.navigationCartoonTag()
-                    },
-                    onDismissRequest = {
-                        starVM.dialogDismiss()
-                    })
-            }
-
-        }
+//        is StarViewModel.DialogState.ChangeTag -> {
+//            val tags =
+//                state.tabs.filter { it != StarViewModel.DEFAULT_TAG && it != StarViewModel.UPDATE_TAG }
+//            if (tags.isEmpty()) {
+//                AlertDialog(
+//                    title = {
+//                        Text(text = stringResource(id = R.string.no_tag))
+//                    },
+//                    text = {
+//                        Text(text = stringResource(id = R.string.click_to_manage_tag))
+//                    },
+//                    confirmButton = {
+//                        TextButton(
+//                            colors = ButtonDefaults.buttonColors(
+//                                containerColor = Color.Transparent,
+//                                contentColor = MaterialTheme.colorScheme.onBackground
+//                            ),
+//                            onClick = {
+//                                //TODO
+//                                starVM.dialogDismiss()
+//                                nav.navigationCartoonTag()
+//                            }) {
+//                            Text(text = stringResource(id = R.string.confirm))
+//                        }
+//                    },
+//                    dismissButton = {
+//                        TextButton(
+//                            colors = ButtonDefaults.buttonColors(
+//                                containerColor = Color.Transparent,
+//                                contentColor = MaterialTheme.colorScheme.onBackground
+//                            ),
+//                            onClick = {
+//                                starVM.dialogDismiss()
+//                                //starVM.onSelectionExit()
+//                            }) {
+//                            Text(text = stringResource(id = R.string.cancel))
+//                        }
+//                    },
+//                    onDismissRequest = {
+//                        starVM.dialogDismiss()
+//                    }
+//                )
+//            } else {
+//                EasyMutiSelectionDialog(show = true,
+//                    title = {
+//                        Text(text = stringResource(id = R.string.change_tag))
+//                    },
+//                    items = tags,
+//                    initSelection = sta.getTags(),
+//                    onConfirm = {
+//                        starVM.changeTagSelection(sta.selection, it)
+//                        starVM.onSelectionExit()
+//                    },
+//                    onManage = {
+//                        nav.navigationCartoonTag()
+//                    },
+//                    onDismissRequest = {
+//                        starVM.dialogDismiss()
+//                    })
+//            }
+//
+//        }
 
         is StarViewModel.DialogState.Delete -> {
             EasyDeleteDialog(show = true, onDelete = {
