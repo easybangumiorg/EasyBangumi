@@ -84,7 +84,6 @@ const val SETTING = "setting"
 const val DOWNLOAD = "download"
 
 const val TAG_MANAGE = "tag_manage"
-const val APPEARANCE_SETTING = "appearance_setting"
 
 fun NavHostController.navigationSearch(defSourceKey: String) {
     val ed = URLEncoder.encode(defSourceKey, "utf-8")

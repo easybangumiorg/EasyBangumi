@@ -75,10 +75,14 @@ class CoverStarViewModel : ViewModel() {
                     cartoonCover.url
                 )
                     .onOK {
-                        cartoonStarDao.modify(
-                            CartoonStar.fromCartoonInfo(it.first, it.second).apply {
-                                reversal = false
-                            })
+                        // 弱网优化，迟到的请求直接丢弃，实际上会加入缓存，不会浪费
+                        if(staringCartoon.containsKey(it.first.toIdentify())){
+                            cartoonStarDao.modify(
+                                CartoonStar.fromCartoonInfo(it.first, it.second).apply {
+                                    reversal = false
+                                })
+                            staringCartoon.remove(identify)
+                        }
                     }.onError {
                         it.throwable?.printStackTrace()
                         if (isActive) {

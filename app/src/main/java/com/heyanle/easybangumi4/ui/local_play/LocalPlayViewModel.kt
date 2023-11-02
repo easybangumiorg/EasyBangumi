@@ -14,6 +14,7 @@ import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.download.entity.LocalCartoon
 import com.heyanle.easybangumi4.download.entity.LocalEpisode
 import com.heyanle.easybangumi4.download.entity.LocalPlayLine
+import com.heyanle.easybangumi4.exo.EasyExoPlayer
 import com.heyanle.easybangumi4.getter.LocalCartoonGetter
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.injekt.core.Injekt
@@ -33,7 +34,11 @@ class LocalPlayViewModel(
     private val uuid: String,
 ) : ViewModel() {
 
-    private val exoPlayer: ExoPlayer by Injekt.injectLazy()
+    companion object {
+        const val TAG = "LocalPlayViewModel"
+    }
+
+    private val exoPlayer: EasyExoPlayer by Injekt.injectLazy()
     private val settingPreferences: SettingPreferences by Injekt.injectLazy()
     private val localCartoonGetter: LocalCartoonGetter by Injekt.injectLazy()
 
@@ -167,7 +172,7 @@ class LocalPlayViewModel(
 
         exoPlayer.setMediaItem(MediaItem.fromUri(Uri.fromFile(File(episode.path))))
         playingTitle.value = episode.label
-        exoPlayer.prepare()
+        exoPlayer.prepare(TAG)
         exoPlayer.playWhenReady = true
     }
 

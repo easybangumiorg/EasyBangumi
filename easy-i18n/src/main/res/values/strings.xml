@@ -261,6 +261,8 @@
     <string name="video">视频</string>
     <string name="detailed">详情</string>
 
+    <string name="all_word">全部</string>
+
     <string name="default_word">默认</string>
 
     <string name="theme_default">默认</string>

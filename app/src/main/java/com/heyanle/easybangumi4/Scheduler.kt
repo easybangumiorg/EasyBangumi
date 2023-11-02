@@ -9,6 +9,7 @@ import com.heyanle.easybangumi4.base.preferences.PreferenceStore
 import com.heyanle.easybangumi4.base.preferences.android.AndroidPreferenceStore
 import com.heyanle.easybangumi4.base.preferences.mmkv.MMKVPreferenceStore
 import com.heyanle.easybangumi4.cartoon.CartoonModule
+import com.heyanle.easybangumi4.download.DownloadModule
 import com.heyanle.easybangumi4.exo.MediaModule
 import com.heyanle.easybangumi4.extension.ExtensionController
 import com.heyanle.easybangumi4.extension.ExtensionModule
@@ -61,6 +62,7 @@ object Scheduler {
         GetterModule(application).registerWith(Injekt)
         ExtensionModule(application).registerWith(Injekt)
         SourceModule(application).registerWith(Injekt)
+        DownloadModule(application).registerWith(Injekt)
 
         initAppCenter(application)
         initOkkv(application)
