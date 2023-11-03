@@ -302,6 +302,7 @@ class CartoonPlayingController(
 
     }
 
+    @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
     private fun innerPlay(playerInfo: PlayerInfo, adviceProgress: Long = 0L) {
         if (settingPreference.useExternalVideoPlayer.get()) {
             innerPlayExternal(playerInfo)
