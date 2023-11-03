@@ -9,13 +9,16 @@ import kotlinx.coroutines.flow.MutableStateFlow
 class FilterWith<T>(
     val label: String,
     val filter: (T) -> Boolean,
-) {
+)
+
+class FilterState<T> (
+    val list: List<FilterWith<T>>,
+    val statusMap: MutableStateFlow<Map<FilterWith<T>, Int>>,
+){
 
     companion object {
-        const val STATUS_OFF = 0        // 关闭
-        const val STATUS_ON = 1         // 开启
-        const val STATUS_REVERSE = 2    // 反向
+        const val STATUS_OFF = 0
+        const val STATUS_ON = 1
+        const val STATUS_EXCLUDE = 2
     }
-
-    var status = MutableStateFlow(STATUS_OFF)
 }
