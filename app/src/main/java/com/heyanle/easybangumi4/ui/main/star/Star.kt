@@ -283,6 +283,8 @@ fun Star() {
 //
 //        }
 
+        is StarViewModel.DialogState.Proc -> {}
+
         is StarViewModel.DialogState.Delete -> {
             EasyDeleteDialog(show = true, onDelete = {
                 starVM.deleteSelection(sta.selection)
@@ -293,6 +295,13 @@ fun Star() {
 
         else -> {}
     }
+}
+
+@Composable
+fun CartoonStarProcBottomSheet(
+    vm: StarViewModel
+){
+
 }
 
 

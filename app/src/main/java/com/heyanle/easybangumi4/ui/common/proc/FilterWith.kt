@@ -1,5 +1,6 @@
 package com.heyanle.easybangumi4.ui.common.proc
 
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 
 /**
@@ -7,13 +8,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
  * Created by heyanlin on 2023/11/3.
  */
 class FilterWith<T>(
+    val id: String,
     val label: String,
     val filter: (T) -> Boolean,
 )
 
 class FilterState<T> (
     val list: List<FilterWith<T>>,
-    val statusMap: MutableStateFlow<Map<FilterWith<T>, Int>>,
+    val statusMap: Flow<Map<String, Int>>,
 ){
 
     companion object {

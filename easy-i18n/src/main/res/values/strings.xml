@@ -328,6 +328,16 @@
     <string name="retry_when_permission">授予权限后请再次设置！</string>
     <string name="please_permission">请授予权限体验完整功能</string>
 
+    <string name="sort_by_create_time">追番时间</string>
+    <string name="sort_by_update_time">更新时间</string>
+    <string name="sort_by_title">番剧名称</string>
+    <string name="sort_by_watch">最后观看时间</string>
+    <string name="sort_by_source">番剧源</string>
+
+    <string name="filter_with_is_update">有更新</string>
+    <string name="filter_with_has_tag">已设置标签</string>
+    <string name="filter_with_is_up">已设置置顶</string>
+
     <!--easy-extension-->
     <string name="app_too_old">纯纯看番版本过旧</string>
     <string name="extension_too_old">插件版本过旧</string>
