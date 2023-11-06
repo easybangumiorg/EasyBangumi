@@ -7,6 +7,7 @@ import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonStarDao
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonTagDao
 import com.heyanle.easybangumi4.cartoon.entity.CartoonStar
 import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
+import com.heyanle.easybangumi4.cartoon.star.CartoonStarController
 import com.heyanle.easybangumi4.cartoon.tags.CartoonTagsController
 import com.heyanle.easybangumi4.cartoon.tags.isALL
 import com.heyanle.easybangumi4.cartoon.tags.isUpdate
@@ -71,8 +72,11 @@ class StarViewModel : ViewModel() {
         data class Delete(
             val selection: Set<CartoonStar>,
         ) : DialogState()
+
+        data object Proc: DialogState()
     }
 
+    private val cartoonStarController: CartoonStarController by Injekt.injectLazy()
     private val cartoonStarDao: CartoonStarDao by Injekt.injectLazy()
     private val settingPreferences: SettingPreferences by Injekt.injectLazy()
     private val cartoonTagsController: CartoonTagsController by Injekt.injectLazy()
@@ -92,7 +96,7 @@ class StarViewModel : ViewModel() {
             combine(
                 cartoonTagsController.tagsList.map { it.sortedBy { it.order } }
                     .distinctUntilChanged().stateIn(viewModelScope),
-                cartoonStarDao.flowAll(),
+                cartoonStarController.flowCartoon().distinctUntilChanged().stateIn(viewModelScope),
                 stateFlow.map { it.searchQuery }.distinctUntilChanged(),
             ) { tagList, starList, searchKey ->
                 val tagsMap = HashMap<Int, CartoonTag>()

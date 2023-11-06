@@ -10,15 +10,20 @@ import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Tag
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
+import androidx.compose.material3.TriStateCheckbox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.VectorProperty
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.navigationCartoonTag
@@ -33,47 +38,82 @@ import kotlinx.coroutines.flow.update
 fun <T> FilterColumn(
     modifier: Modifier = Modifier,
     filterState: FilterState<T>,
-){}
+    onFilterClick: (FilterWith<T>, Int)-> Unit,
+) {
 
-// 搜索 Column
+    val statusMap by filterState.statusMap.collectAsState(emptyMap())
+    Column(
+        modifier = modifier
+    ) {
+        filterState.list.forEach { filterWith ->
+            val status = statusMap[filterWith.id] ?: FilterState.STATUS_OFF
+
+            FilterItem(item = filterWith, status = status, onClick = { item ->
+                onFilterClick(item, status)
+            })
+        }
+    }
+}
+
+@Composable
+fun <T> FilterItem(
+    item: FilterWith<T>,
+    status: Int,
+    onClick: (FilterWith<T>) -> Unit
+) {
+
+    ListItem(
+        modifier = Modifier.clickable {
+            onClick(item)
+        },
+        headlineContent = {
+            Text(text = item.label)
+        },
+        leadingContent = {
+            val state: ToggleableState = remember(status) {
+                when (status) {
+                    FilterState.STATUS_EXCLUDE -> {
+                        ToggleableState.Indeterminate
+                    }
+
+                    FilterState.STATUS_ON -> {
+                        ToggleableState.On
+                    }
+
+                    else -> {
+                        ToggleableState.Off
+                    }
+                }
+            }
+            TriStateCheckbox(state = state, onClick = { onClick(item) })
+        }
+    )
+}
+
+// 筛选 Column
 @Composable
 fun <T> SortColumn(
     modifier: Modifier = Modifier,
     sortState: SortState<T>,
+    onClick: (SortBy<T>, Int) -> Unit
 ) {
-    val current = sortState.current.collectAsState()
-    val isReverse = sortState.isReverse.collectAsState()
+    val current = sortState.current.collectAsState("")
+    val isReverse = sortState.isReverse.collectAsState(false)
     Column(
         modifier = modifier
     ) {
         sortState.sortList.forEach {
             val status = remember(current, isReverse) {
-                if (current.value != it) {
-                    0
+                if (current.value != it.id) {
+                    SortState.STATUS_OFF
                 } else if (isReverse.value) {
-                    2
+                    SortState.STATUS_REVERSE
                 } else {
-                    1
+                    SortState.STATUS_ON
                 }
             }
             SortItem(sortBy = it, status = status, onClick = { item ->
-                when (status) {
-                    0 -> {
-                        sortState.current.update {
-                            item
-                        }
-                    }
-                    1 -> {
-                        sortState.isReverse.update {
-                            true
-                        }
-                    }
-                    else -> {
-                        sortState.isReverse.update {
-                            false
-                        }
-                    }
-                }
+                onClick(it, status)
             })
         }
     }

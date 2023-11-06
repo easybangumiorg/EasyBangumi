@@ -6,6 +6,7 @@ import com.heyanle.easybangumi4.cartoon.repository.CartoonNetworkDataSource
 import com.heyanle.easybangumi4.cartoon.repository.CartoonRepository
 import com.heyanle.easybangumi4.cartoon.repository.db.AppDatabase
 import com.heyanle.easybangumi4.cartoon.repository.db.CacheDatabase
+import com.heyanle.easybangumi4.cartoon.star.CartoonStarController
 import com.heyanle.easybangumi4.cartoon.tags.CartoonTagsController
 import com.heyanle.easybangumi4.source.CartoonUpdateController
 import com.heyanle.injekt.api.InjektModule
@@ -71,6 +72,10 @@ class CartoonModule(
 
         addSingletonFactory {
             CartoonTagsController(get(), get())
+        }
+
+        addSingletonFactory {
+            CartoonStarController(get(), get())
         }
     }
 }
