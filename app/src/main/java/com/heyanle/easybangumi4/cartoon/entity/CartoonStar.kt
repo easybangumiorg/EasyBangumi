@@ -51,11 +51,15 @@ data class CartoonStar(
 
     var createTime: Long = System.currentTimeMillis(),
 
+    var upTime: Long = 0L, // 置顶时间
+
     var playLineString: String,
 
     var isInitializer: Boolean = false,
 
     var lastUpdateTime: Long = 0L,
+
+    var lastWatchTime: Long = 0L, // 最后观看时间
 ) {
 
     @Ignore
@@ -208,5 +212,6 @@ data class CartoonStar(
         return this.id == cartoon.id && this.source == cartoon.source && this.url == cartoon.url
     }
 
+    fun isUp() = upTime > 0L
 
 }
