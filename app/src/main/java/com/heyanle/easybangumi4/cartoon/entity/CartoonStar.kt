@@ -77,7 +77,7 @@ data class CartoonStar(
 
     companion object {
 
-        fun fromCartoonInfo(cartoon: CartoonInfo, playLines: List<PlayLine>): CartoonStar {
+        fun fromCartoonInfo(cartoon: CartoonInfo, playLines: List<PlayLine>, tags: String = ""): CartoonStar {
             return CartoonStar(
                 id = cartoon.id,
                 source = cartoon.source,
@@ -95,7 +95,7 @@ data class CartoonStar(
                 isUpdate = cartoon.isUpdate,
                 reversal = false,
                 watchProcess = "",
-                tags = "",
+                tags = tags,
                 sourceName = cartoon.sourceName
             )
         }

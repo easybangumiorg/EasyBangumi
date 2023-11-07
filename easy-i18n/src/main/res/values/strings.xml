@@ -77,10 +77,12 @@
     <string name="manage">管理</string>
     <string name="more">更多</string>
 
+    <string name="edit">编辑</string>
+
     <string name="delete_tag">删除标签</string>
     <string name="rename_tag">重命名标签</string>
     <string name="new_tag">新建标签</string>
-    <string name="change_tag">修改标签</string>
+    <string name="change_tag">编辑标签</string>
 
     <string name="no_tag">你还没有标签</string>
     <string name="click_to_manage_tag">跳转到标签管理页？</string>

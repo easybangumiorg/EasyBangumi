@@ -114,16 +114,17 @@ import com.heyanle.easybangumi4.cartoon.play.CartoonPlayingController
 import com.heyanle.easybangumi4.download.DownloadController
 import com.heyanle.easybangumi4.download.DownloadDispatcher
 import com.heyanle.easybangumi4.exo.EasyExoPlayer
+import com.heyanle.easybangumi4.navigationCartoonTag
 import com.heyanle.easybangumi4.navigationDlna
 import com.heyanle.easybangumi4.navigationSearch
 import com.heyanle.easybangumi4.setting.SettingPreferences
-import com.heyanle.easybangumi4.source_api.component.detailed.DetailedComponent
 import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
 import com.heyanle.easybangumi4.source_api.entity.Episode
 import com.heyanle.easybangumi4.source_api.entity.PlayLine
 import com.heyanle.easybangumi4.ui.common.Action
 import com.heyanle.easybangumi4.ui.common.ActionRow
 import com.heyanle.easybangumi4.ui.common.DetailedContainer
+import com.heyanle.easybangumi4.ui.common.EasyMutiSelectionDialog
 import com.heyanle.easybangumi4.ui.common.EmptyPage
 import com.heyanle.easybangumi4.ui.common.ErrorPage
 import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
@@ -161,6 +162,7 @@ fun CartoonPlay(
     val summary = remember(key1 = id, key2 = source, key3 = url) {
         CartoonSummary(id, source, url)
     }
+    val nav = LocalNavController.current
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background,
@@ -177,6 +179,26 @@ fun CartoonPlay(
                 cartoonSummary = summary,
                 enterData = enterData
             )
+
+            val starDialog = detailedVM.starDialogState
+            if (starDialog != null) {
+                EasyMutiSelectionDialog(
+                    show = true,
+                    title = {
+                        Text(text = stringResource(id = R.string.change_tag))
+                    },
+                    items = starDialog.tagList,
+                    initSelection = emptyList(),
+                    confirmText = stringRes(R.string.star),
+                    onConfirm = {
+                        detailedVM.starCartoon(starDialog.cartoon, starDialog.playLines, it)
+                    },
+                    onManage = {
+                        nav.navigationCartoonTag()
+                    }) {
+                    detailedVM.starDialogState = null
+                }
+            }
 
         }
     }
