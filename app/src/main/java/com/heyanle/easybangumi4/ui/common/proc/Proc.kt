@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.ui.common.proc
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -13,20 +14,24 @@ import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TriStateCheckbox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.VectorProperty
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.navigationCartoonTag
+import com.heyanle.easybangumi4.utils.logi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.update
 
@@ -43,7 +48,8 @@ fun <T> FilterColumn(
 
     val statusMap by filterState.statusMap.collectAsState(emptyMap())
     Column(
-        modifier = modifier
+        modifier = modifier,
+        verticalArrangement = Arrangement.Top
     ) {
         filterState.list.forEach { filterWith ->
             val status = statusMap[filterWith.id] ?: FilterState.STATUS_OFF
@@ -63,6 +69,9 @@ fun <T> FilterItem(
 ) {
 
     ListItem(
+        colors = ListItemDefaults.colors(
+            containerColor = Color.Transparent
+        ),
         modifier = Modifier.clickable {
             onClick(item)
         },
@@ -97,20 +106,22 @@ fun <T> SortColumn(
     sortState: SortState<T>,
     onClick: (SortBy<T>, Int) -> Unit
 ) {
-    val current = sortState.current.collectAsState("")
-    val isReverse = sortState.isReverse.collectAsState(false)
+    val current = sortState.current.collectAsState()
+    val isReverse = sortState.isReverse.collectAsState()
+    LaunchedEffect(key1 = current){
+        current.value.logi("Proc")
+    }
     Column(
-        modifier = modifier
+        modifier = modifier,
+        verticalArrangement = Arrangement.Top
     ) {
         sortState.sortList.forEach {
-            val status = remember(current, isReverse) {
-                if (current.value != it.id) {
-                    SortState.STATUS_OFF
-                } else if (isReverse.value) {
-                    SortState.STATUS_REVERSE
-                } else {
-                    SortState.STATUS_ON
-                }
+            val status = if (current.value != it.id) {
+                SortState.STATUS_OFF
+            } else if (isReverse.value) {
+                SortState.STATUS_REVERSE
+            } else {
+                SortState.STATUS_ON
             }
             SortItem(sortBy = it, status = status, onClick = { item ->
                 onClick(it, status)
@@ -126,6 +137,9 @@ fun <T> SortItem(
     onClick: (SortBy<T>) -> Unit,
 ) {
     ListItem(
+        colors = ListItemDefaults.colors(
+            containerColor = Color.Transparent
+        ),
         modifier = Modifier.clickable {
             onClick(sortBy)
         },
@@ -134,14 +148,14 @@ fun <T> SortItem(
         },
         leadingContent = {
             when (status) {
-                1 -> {
+                SortState.STATUS_ON -> {
                     Icon(
                         Icons.Filled.ArrowUpward,
                         contentDescription = sortBy.label
                     )
                 }
 
-                2 -> {
+                SortState.STATUS_REVERSE -> {
                     Icon(
                         Icons.Filled.ArrowDownward,
                         contentDescription = sortBy.label

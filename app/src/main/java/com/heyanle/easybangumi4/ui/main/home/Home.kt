@@ -89,9 +89,8 @@ fun Home() {
                 showChangeSheet.value = false
             },
             shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
-                3.dp
-            ),
+            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
+            contentColor = MaterialTheme.colorScheme.onSurface,
             content = {
                 CompositionLocalProvider(
                     LocalContentColor provides MaterialTheme.colorScheme.onSurface

@@ -14,8 +14,13 @@ import com.heyanle.easybangumi4.cartoon.tags.isUpdate
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.source.CartoonUpdateController
+import com.heyanle.easybangumi4.ui.common.proc.FilterState
+import com.heyanle.easybangumi4.ui.common.proc.FilterWith
+import com.heyanle.easybangumi4.ui.common.proc.SortBy
+import com.heyanle.easybangumi4.ui.common.proc.SortState
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.easybangumi4.utils.stringRes
+import com.heyanle.easybangumi4.utils.toJson
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -49,31 +54,40 @@ class StarViewModel : ViewModel() {
     )
 
     sealed class DialogState {
-//        data class ChangeTag(
-//            val selection: Set<CartoonStar>,
-//            val tagMap: Map<Int, CartoonTag>,
-//        ) : DialogState() {
-//            fun getTags(): List<CartoonTag> {
-//                val tags = mutableSetOf<CartoonTag>()
-//                selection.forEach {
-//                    it.tags.split(",").map { it.trim() }.forEach {
-//                        it.toIntOrNull()?.let { id ->
-//                            tagMap[id]?.let { tag ->
-//                                tags.add(tag)
-//                            }
-//                        }
-//
-//                    }
-//                }
-//                return tags.toList()
-//            }
-//        }
+        data class ChangeTag(
+            val selection: Set<CartoonStar>,
+            val tagList: List<CartoonTag>,
+        ) : DialogState() {
+
+            val tagMap: Map<Int, CartoonTag> by lazy {
+                val res = hashMapOf<Int, CartoonTag>()
+                tagList.forEach {
+                    res[it.id] = it
+                }
+                res
+            }
+
+            fun getTags(): List<CartoonTag> {
+                val tags = mutableSetOf<CartoonTag>()
+                selection.forEach {
+                    it.tags.split(",").map { it.trim() }.forEach {
+                        it.toIntOrNull()?.let { id ->
+                            tagMap[id]?.let { tag ->
+                                tags.add(tag)
+                            }
+                        }
+
+                    }
+                }
+                return tags.toList()
+            }
+        }
 
         data class Delete(
             val selection: Set<CartoonStar>,
         ) : DialogState()
 
-        data object Proc: DialogState()
+        data object Proc : DialogState()
     }
 
     private val cartoonStarController: CartoonStarController by Injekt.injectLazy()
@@ -262,10 +276,17 @@ class StarViewModel : ViewModel() {
     }
 
     fun dialogChangeTag() {
-//        _stateFlow.update {
-//            val selection = it.selection
-//            it.copy(dialog = DialogState.ChangeTag(selection, tagMapFlow.value))
-//        }
+        _stateFlow.update {
+            it.copy(dialog = DialogState.ChangeTag(it.selection, it.tabs))
+        }
+    }
+
+    fun dialogProc() {
+        _stateFlow.update {
+            it.copy(
+                dialog = DialogState.Proc
+            )
+        }
     }
 
     fun onUpdateSelection() {
@@ -298,6 +319,22 @@ class StarViewModel : ViewModel() {
 
         }
 
+    }
+
+    fun getFilterState(): FilterState<CartoonStar> {
+        return cartoonStarController.filterState
+    }
+
+    fun getSortState(): SortState<CartoonStar> {
+        return cartoonStarController.sortState
+    }
+
+    fun onFilterChange(filterWith: FilterWith<CartoonStar>, state: Int) {
+        cartoonStarController.onFilterChange(filterWith, state)
+    }
+
+    fun onSortChange(sortBy: SortBy<CartoonStar>, state: Int) {
+        cartoonStarController.onSortChange(sortBy, state)
     }
 
     fun dialogDismiss() {
