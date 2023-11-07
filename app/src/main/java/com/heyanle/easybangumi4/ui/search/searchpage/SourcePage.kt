@@ -335,17 +335,20 @@ fun CartoonSearchItem(
                 overflow = TextOverflow.Ellipsis,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            Text(
-                fontSize = 13.sp,
-                text = stringResource(id = R.string.stared_min),
-                color = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier
-                    .background(
-                        MaterialTheme.colorScheme.primary,
-                        RoundedCornerShape(4.dp)
-                    )
-                    .padding(8.dp, 4.dp)
-            )
+            if(isStar){
+                Text(
+                    fontSize = 13.sp,
+                    text = stringResource(id = R.string.stared_min),
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier
+                        .background(
+                            MaterialTheme.colorScheme.primary,
+                            RoundedCornerShape(4.dp)
+                        )
+                        .padding(8.dp, 4.dp)
+                )
+            }
+
         }
     }
 }

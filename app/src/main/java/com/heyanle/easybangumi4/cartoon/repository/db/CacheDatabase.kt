@@ -18,7 +18,7 @@ import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
         CartoonInfo::class
     ],
     autoMigrations = [],
-    version = 2,
+    version = 3,
     exportSchema = true
 )
 abstract class CacheDatabase : RoomDatabase() {

@@ -78,8 +78,8 @@ class CartoonStarController(
         sharePreferenceStore.getBoolean("cartoon_star_sort_is_reverse", false)
     val sortState = SortState(
         sortList = sortByList,
-        isReverse = sortIsReverseShare.flow(),
-        current = sortIdShare.flow()
+        isReverse = sortIsReverseShare.stateIn(scope),
+        current = sortIdShare.stateIn(scope)
     )
 
 
@@ -164,8 +164,8 @@ class CartoonStarController(
     // 处理置顶 - 排序 - 筛选
     fun flowCartoon(): Flow<List<CartoonStar>> {
         return combine(
-            sortState.current.distinctUntilChanged(),
-            sortState.isReverse.distinctUntilChanged(),
+            sortState.current,
+            sortState.isReverse,
             filterState.statusMap.distinctUntilChanged(),
             cartoonStarDao.flowAll()
         ) { currentSortId, isSortReverse, filterStateMap, starList ->
