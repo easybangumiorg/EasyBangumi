@@ -66,7 +66,8 @@ object Migrate {
 
         private val MIGRATION_7_8 = object: Migration(7, 8) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("ALTER TABLE CartoonStar ADD COLUMN upTime INTEGER NOT NULL DEFAULT 0, lastWatchTime  INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE CartoonStar ADD COLUMN upTime INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE CartoonStar ADD COLUMN lastWatchTime INTEGER NOT NULL DEFAULT 0")
             }
         }
     }

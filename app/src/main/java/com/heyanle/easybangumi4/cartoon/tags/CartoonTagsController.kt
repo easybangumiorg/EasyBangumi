@@ -65,7 +65,7 @@ class CartoonTagsController(
 
 fun CartoonTag.tagLabel(): String {
     return when (id) {
-        CartoonTagsController.ALL_TAG_ID -> stringRes(R.string.default_word)
+        CartoonTagsController.ALL_TAG_ID -> stringRes(R.string.all_word)
         CartoonTagsController.UPDATE_TAG_ID -> stringRes(R.string.update)
         else -> label
     }
@@ -77,4 +77,8 @@ fun CartoonTag.isUpdate(): Boolean{
 
 fun CartoonTag.isALL(): Boolean{
     return id == CartoonTagsController.ALL_TAG_ID
+}
+
+fun CartoonTag.isInner(): Boolean {
+    return isALL() || isUpdate()
 }

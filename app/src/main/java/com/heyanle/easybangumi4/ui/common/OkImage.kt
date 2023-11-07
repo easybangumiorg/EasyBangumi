@@ -4,6 +4,8 @@ import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Build
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -13,6 +15,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import coil.compose.AsyncImage
@@ -39,67 +42,97 @@ fun OkImage(
     placeholderRes: Int? = null,
     tint: Color? = null,
 ) {
-    when (image) {
-        is ImageVector -> {
+    var need = true
+    if (image == null || image == "" || (image is Int && image <= 0)) {
+        need = false
+        if (errorRes != null) {
             Image(
-                imageVector = image,
                 modifier = modifier,
-                contentDescription = contentDescription,
-                colorFilter = if(tint == null) null else ColorFilter.tint(tint)
-            )
-        }
-
-        is Int -> {
-            Image(
-                painterResource(id = image),
-                modifier = modifier,
-                contentDescription = contentDescription,
-                colorFilter = if(tint == null) null else ColorFilter.tint(tint)
-            )
-        }
-
-        else -> {
-            AsyncImage(
-                model = ImageRequest
-                    .Builder(LocalContext.current)
-                    .data(image)
-                    .apply {
-                        if(placeholderRes == null){
-                            placeholderColor?.let {
-                                placeholder(ColorDrawable(it.toArgb()))
-                            }
-                        }else{
-                            placeholder(placeholderRes)
-                        }
-
-                    }
-                    .crossfade(crossFade)
-                    .apply {
-                        if (isGif) {
-                            decoderFactory(
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
-                                    ImageDecoderDecoder.Factory()
-                                else GifDecoder.Factory()
-                            )
-                        }
-                    }
-                    .apply {
-                        if(errorRes == null){
-                            errorColor?.let {
-                                error(ColorDrawable(it.toArgb()))
-                            }
-                        }else{
-                            error(errorRes)
-                        }
-
-                    }
-                    .build(),
-                contentDescription = contentDescription,
                 contentScale = contentScale,
-                modifier = Modifier.then(modifier)
+                painter = painterResource(id = errorRes),
+                contentDescription = contentDescription
             )
+        } else if (errorColor != null) {
+            Box(modifier = modifier.background(errorColor))
+        } else if (placeholderRes != null) {
+            Image(
+                modifier = modifier,
+                contentScale = contentScale,
+                painter = painterResource(id = placeholderRes),
+                contentDescription = contentDescription
+            )
+        } else if (placeholderColor != null) {
+            Box(modifier = modifier.background(placeholderColor))
+        } else {
+            need = true
         }
     }
+    if (need) {
+        when (image) {
+            is ImageVector -> {
+                Image(
+                    imageVector = image,
+                    modifier = modifier,
+                    contentScale = contentScale,
+                    contentDescription = contentDescription,
+                    colorFilter = if (tint == null) null else ColorFilter.tint(tint)
+                )
+            }
+
+            is Int -> {
+                Image(
+                    painterResource(id = image),
+                    modifier = modifier,
+                    contentScale = contentScale,
+                    contentDescription = contentDescription,
+                    colorFilter = if (tint == null) null else ColorFilter.tint(tint)
+                )
+            }
+
+            else -> {
+                AsyncImage(
+                    model = ImageRequest
+                        .Builder(LocalContext.current)
+                        .data(image)
+                        .apply {
+                            if (placeholderRes == null) {
+                                placeholderColor?.let {
+                                    placeholder(ColorDrawable(it.toArgb()))
+                                }
+                            } else {
+                                placeholder(placeholderRes)
+                            }
+
+                        }
+                        .crossfade(crossFade)
+                        .apply {
+                            if (isGif) {
+                                decoderFactory(
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
+                                        ImageDecoderDecoder.Factory()
+                                    else GifDecoder.Factory()
+                                )
+                            }
+                        }
+                        .apply {
+                            if (errorRes == null) {
+                                errorColor?.let {
+                                    error(ColorDrawable(it.toArgb()))
+                                }
+                            } else {
+                                error(errorRes)
+                            }
+
+                        }
+                        .build(),
+                    contentDescription = contentDescription,
+                    contentScale = contentScale,
+                    modifier = Modifier.then(modifier)
+                )
+            }
+        }
+    }
+
 
 }
 

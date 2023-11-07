@@ -1,5 +1,10 @@
 package com.heyanle.easybangumi4
 
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
@@ -13,6 +18,10 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
+import androidx.navigation.NamedNavArgument
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavDeepLink
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -87,7 +96,9 @@ const val TAG_MANAGE = "tag_manage"
 
 fun NavHostController.navigationSearch(defSourceKey: String) {
     val ed = URLEncoder.encode(defSourceKey, "utf-8")
-    navigate("${SEARCH}?&defSourceKey=${ed}")
+    navigate("${SEARCH}?&defSourceKey=${ed}"){
+        launchSingleTop = true
+    }
 }
 
 fun NavHostController.navigationSearch(defSearchKey: String, defSourceKey: String) {
@@ -182,7 +193,6 @@ fun NavHostController.navigationCartoonTag() {
 
 // 缺省路由
 const val DEFAULT = MAIN
-
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable

@@ -66,7 +66,6 @@ fun EasyTheme(
         isDynamic && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
             if (isDark ) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-
         }
 
         else -> {

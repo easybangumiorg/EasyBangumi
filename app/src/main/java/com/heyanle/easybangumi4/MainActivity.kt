@@ -37,7 +37,7 @@ val LocalWindowSizeController = staticCompositionLocalOf<WindowSizeClass> {
     error("AppNavController Not Provide")
 }
 
-class MainActivity : ComponentActivity(){
+class MainActivity : ComponentActivity() {
 
     var first by okkv("first_visible", def = true)
 
@@ -51,7 +51,6 @@ class MainActivity : ComponentActivity(){
             CompositionLocalProvider(LocalWindowSizeController provides windowClazz) {
                 EasyTheme {
                     val focusManager = LocalFocusManager.current
-
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -62,19 +61,16 @@ class MainActivity : ComponentActivity(){
                     ) {
                         SourcesHost {
                             Nav()
-                            EasyTheme {
-                                MoeSnackBar(Modifier.statusBarsPadding())
-                                MoeDialog()
-                            }
-
                         }
-
+                        MoeSnackBar(Modifier.statusBarsPadding())
+                        MoeDialog()
+                        ReleaseDialog()
+                        AnnoHelper.ComposeDialog()
                     }
-                    ReleaseDialog()
 
                 }
             }
-            AnnoHelper.ComposeDialog()
+
         }
     }
 }

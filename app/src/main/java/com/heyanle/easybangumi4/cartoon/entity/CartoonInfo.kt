@@ -43,10 +43,6 @@ data class CartoonInfo(
 
     var status: Int,
 
-    var watchProcess: String, // 播放进度 “1/11”，在追番页面展示
-
-    var reversal: Boolean, // 是否反转集数
-
     var tags: String, // 番剧分类 "1, 2, 3" 的格式
 
     var createTime: Long = System.currentTimeMillis(),
@@ -55,9 +51,9 @@ data class CartoonInfo(
 
     var playLineString: String, // List<PlayLine> 的 json 数据，可能为 ""
 
-    var isInitializer: Boolean = false,
-
     var lastUpdateTime: Long = 0L,
+
+
 ) {
     @Ignore
     private var genres: List<String>? = null
@@ -90,11 +86,8 @@ data class CartoonInfo(
                 updateStrategy = cartoon.updateStrategy,
                 status = cartoon.status,
                 playLineString = Gson().toJson(playLines) ?: "[]",
-                isInitializer = true,
                 lastUpdateTime = 0L,
                 isUpdate = cartoon.isUpdate,
-                reversal = false,
-                watchProcess = "",
                 tags = "",
                 isShowLine = playLines !is DetailedComponent.NonPlayLine,
                 sourceName = sourceName
@@ -115,11 +108,8 @@ data class CartoonInfo(
             updateStrategy = Cartoon.UPDATE_STRATEGY_NEVER,
             status = Cartoon.STATUS_UNKNOWN,
             playLineString = "",
-            isInitializer = false,
             lastUpdateTime = 0L,
             isUpdate = false,
-            reversal = false,
-            watchProcess = "",
             tags = "",
             isShowLine = true,
             sourceName = sourceName
@@ -127,7 +117,7 @@ data class CartoonInfo(
     }
 
     fun toCartoon(): Cartoon? {
-        return if (isInitializer) CartoonImpl(
+        return CartoonImpl(
             id = this.id,
             source = this.source,
             url = this.url,
@@ -138,7 +128,7 @@ data class CartoonInfo(
             description = this.description ?: "",
             updateStrategy = this.updateStrategy,
             status = this.status
-        ) else null
+        )
     }
 
     fun getPlayLine(): List<PlayLine> {

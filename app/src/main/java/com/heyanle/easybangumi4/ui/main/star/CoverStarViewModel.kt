@@ -13,12 +13,15 @@ import com.heyanle.easybangumi4.source_api.entity.toIdentify
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.injekt.core.Injekt
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.yield
 
 /**
  * CartoonCover 的 star 逻辑抽取
@@ -75,17 +78,21 @@ class CoverStarViewModel : ViewModel() {
                     cartoonCover.url
                 )
                     .onOK {
-                        // 弱网优化，迟到的请求直接丢弃，实际上会加入缓存，不会浪费
-                        if(staringCartoon.containsKey(it.first.toIdentify())){
-                            cartoonStarDao.modify(
-                                CartoonStar.fromCartoonInfo(it.first, it.second).apply {
-                                    reversal = false
-                                })
-                            staringCartoon.remove(identify)
+                        yield()
+                        withContext(Dispatchers.Main){
+                            // 弱网优化，迟到的请求直接丢弃，实际上会加入缓存，不会浪费
+                            if(staringCartoon.containsKey(it.first.toIdentify())){
+                                cartoonStarDao.modify(
+                                    CartoonStar.fromCartoonInfo(it.first, it.second).apply {
+                                        reversal = false
+                                    })
+                                staringCartoon.remove(identify)
+                            }
                         }
                     }.onError {
                         it.throwable?.printStackTrace()
-                        if (isActive) {
+                        yield()
+                        withContext(Dispatchers.Main){
                             staringCartoon.remove(identify)
                             (stringRes(R.string.detailed_error) + it.throwable?.message).moeSnackBar()
                         }
