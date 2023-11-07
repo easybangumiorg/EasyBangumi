@@ -9,7 +9,10 @@ import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonStarDao
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.entity.CartoonStar
+import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
 import com.heyanle.easybangumi4.cartoon.entity.isChild
+import com.heyanle.easybangumi4.cartoon.tags.CartoonTagsController
+import com.heyanle.easybangumi4.cartoon.tags.isInner
 import com.heyanle.easybangumi4.getter.CartoonInfoGetter
 import com.heyanle.easybangumi4.source_api.component.detailed.DetailedComponent
 import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
@@ -17,6 +20,13 @@ import com.heyanle.easybangumi4.source_api.entity.PlayLine
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -37,7 +47,7 @@ class DetailedViewModel(
             val detail: CartoonInfo,
             val playLine: List<PlayLine>,
             val isShowPlayLine: Boolean = true,
-            ) : DetailedState()
+        ) : DetailedState()
 
         class Error(
             val errorMsg: String,
@@ -49,25 +59,68 @@ class DetailedViewModel(
     var isStar by mutableStateOf(false)
     var isReverse by mutableStateOf(false)
 
+    data class StarDialogState(
+        val cartoon: CartoonInfo,
+        val playLines: List<PlayLine>,
+        val tagList: List<CartoonTag>,
+    )
+
+    var starDialogState by mutableStateOf<StarDialogState?>(null)
+
     private val cartoonInfoGetter: CartoonInfoGetter by Injekt.injectLazy()
 
     private val cartoonStarDao: CartoonStarDao by Injekt.injectLazy()
 
+    private val cartoonTagsController: CartoonTagsController by Injekt.injectLazy()
 
-    fun checkUpdate(){
+
+    private val tagList = MutableStateFlow<List<CartoonTag>>(emptyList())
+
+    init {
+        viewModelScope.launch {
+            cartoonTagsController.tagsList.distinctUntilChanged()
+                .map {
+                    it.filter { !it.isInner() }
+                }
+                .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+                .collectLatest { l ->
+                    tagList.update {
+                        l
+                    }
+                }
+        }
+    }
+
+
+
+
+    fun checkUpdate() {
         viewModelScope.launch(Dispatchers.IO) {
-            val star = cartoonStarDao.getByCartoonSummary(cartoonSummary.id, cartoonSummary.source, cartoonSummary.url)
-            if(star?.isUpdate == true){
+            val star = cartoonStarDao.getByCartoonSummary(
+                cartoonSummary.id,
+                cartoonSummary.source,
+                cartoonSummary.url
+            )
+            if (star?.isUpdate == true) {
                 load()
             }
         }
     }
+
     fun load() {
         viewModelScope.launch {
             detailedState = DetailedState.Loading
-            cartoonInfoGetter.awaitCartoonInfoWithPlayLines(cartoonSummary.id, cartoonSummary.source, cartoonSummary.url)
+            cartoonInfoGetter.awaitCartoonInfoWithPlayLines(
+                cartoonSummary.id,
+                cartoonSummary.source,
+                cartoonSummary.url
+            )
                 .onOK {
-                    detailedState = DetailedState.Info(it.first, it.second, it.second !is DetailedComponent.NonPlayLine)
+                    detailedState = DetailedState.Info(
+                        it.first,
+                        it.second,
+                        it.second !is DetailedComponent.NonPlayLine
+                    )
                     val starInfo = withContext(Dispatchers.IO) {
                         val cartoonStar = cartoonStarDao.getByCartoonSummary(
                             it.first.id,
@@ -106,15 +159,13 @@ class DetailedViewModel(
     fun setCartoonStar(isStar: Boolean, cartoon: CartoonInfo, playLines: List<PlayLine>) {
         viewModelScope.launch {
             if (isStar) {
-                withContext(Dispatchers.IO) {
-                    cartoonStarDao.modify(CartoonStar.fromCartoonInfo(cartoon, playLines).apply {
-                        reversal = isReverse
-                    })
+                val tl = tagList.value
+                if (tl.find { !it.isInner() } != null) {
+                    starDialogState = StarDialogState(cartoon, playLines, tl)
+                } else {
+                    innerStarCartoon(cartoon, playLines, emptyList())
                 }
-                // AnimStarViewModel.refresh()
-                if (cartoonSummary.isChild(cartoon)) {
-                    this@DetailedViewModel.isStar = true
-                }
+
             } else {
                 withContext(Dispatchers.IO) {
                     cartoonStarDao
@@ -132,7 +183,37 @@ class DetailedViewModel(
         }
     }
 
-    fun setCartoonReverse(isReverse: Boolean, cartoon: CartoonInfo){
+    fun starCartoon(
+        cartoon: CartoonInfo,
+        playLines: List<PlayLine>,
+        tag: List<CartoonTag>
+    ) {
+        viewModelScope.launch {
+            innerStarCartoon(cartoon, playLines, tag)
+        }
+    }
+
+    private suspend fun innerStarCartoon(
+        cartoon: CartoonInfo,
+        playLines: List<PlayLine>,
+        tag: List<CartoonTag>
+    ) {
+        withContext(Dispatchers.IO) {
+            cartoonStarDao.modify(
+                CartoonStar.fromCartoonInfo(
+                    cartoon,
+                    playLines,
+                    tag.joinToString(", ") { it.id.toString() }).apply {
+                    reversal = isReverse
+                })
+        }
+        // AnimStarViewModel.refresh()
+        if (cartoonSummary.isChild(cartoon)) {
+            this@DetailedViewModel.isStar = true
+        }
+    }
+
+    fun setCartoonReverse(isReverse: Boolean, cartoon: CartoonInfo) {
         this.isReverse = isReverse
         if (isStar) {
             viewModelScope.launch(Dispatchers.IO) {
