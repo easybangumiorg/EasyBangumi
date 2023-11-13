@@ -100,6 +100,15 @@ class StarViewModel : ViewModel() {
     private val _stateFlow = MutableStateFlow(State(data = emptyMap()))
     val stateFlow = _stateFlow.asStateFlow()
 
+    val isFilter = cartoonStarController.filterState.statusMap.map {
+        for (entry in it) {
+            if (entry.value == FilterState.STATUS_ON || entry.value == FilterState.STATUS_EXCLUDE) {
+                return@map true
+            }
+        }
+        false
+    }
+
 
     // 最后一个选择的，用于长按区间反选
     private var lastSelectCartoon: CartoonStar? = null
