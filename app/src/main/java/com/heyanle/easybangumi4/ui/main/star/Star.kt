@@ -127,6 +127,8 @@ fun Star() {
 
     val state by starVM.stateFlow.collectAsState()
 
+    val isFilter by starVM.isFilter.collectAsState(initial = false)
+
     val focusRequester = remember {
         FocusRequester()
     }
@@ -175,6 +177,7 @@ fun Star() {
                     //scrollBehavior = scrollBehavior,
                     focusRequester = focusRequester,
                     isSearch = state.searchQuery != null,
+                    isFilter = isFilter,
                     text = state.searchQuery ?: "",
                     onTextChange = {
                         starVM.onSearch(it)
@@ -489,6 +492,7 @@ fun StarTopAppBar(
     text: String,
     onTextChange: (String) -> Unit,
     isSearch: Boolean,
+    isFilter: Boolean,
     starNum: Int,
     onSearchClick: () -> Unit,
     onUpdate: () -> Unit,
@@ -565,7 +569,8 @@ fun StarTopAppBar(
                     onFilterClick()
                 }) {
                     Icon(
-                        imageVector = Icons.Filled.FilterAlt, stringResource(id = R.string.filter)
+                        imageVector = Icons.Filled.FilterAlt, stringResource(id = R.string.filter),
+                        tint = if (isFilter) MaterialTheme.colorScheme.primary else LocalContentColor.current
                     )
                 }
 
