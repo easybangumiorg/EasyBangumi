@@ -15,10 +15,6 @@ import java.io.File
  */
 object OkhttpHelper {
 
-
-
-
-
     private val cacheDir: File by lazy {
         File(APP.cacheDir, "network_cache")
     }

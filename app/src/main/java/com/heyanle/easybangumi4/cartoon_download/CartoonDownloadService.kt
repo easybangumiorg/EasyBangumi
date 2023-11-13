@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.download
+package com.heyanle.easybangumi4.cartoon_download
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -14,7 +14,7 @@ import com.heyanle.easybangumi4.MainActivity
 import com.heyanle.easybangumi4.R
 import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.stringRes
-import com.heyanle.easybangumi4.download.entity.DownloadItem
+import com.heyanle.easybangumi4.cartoon_download.entity.DownloadItem
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
@@ -26,7 +26,7 @@ import kotlinx.coroutines.launch
  * Created by HeYanLe on 2023/10/4 22:43.
  * https://github.com/heyanLE
  */
-class DownloadService : Service() {
+class CartoonDownloadService : Service() {
 
     companion object {
         private const val NOTIFICATION_CHANNEL_ID = "DOWNLOAD_CHANNEL_ID"
@@ -38,9 +38,9 @@ class DownloadService : Service() {
         fun tryStart() {
             "tryStart".logi(TAG)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                APP.startForegroundService(Intent(APP, DownloadService::class.java))
+                APP.startForegroundService(Intent(APP, CartoonDownloadService::class.java))
             } else {
-                APP.startService(Intent(APP, DownloadService::class.java))
+                APP.startService(Intent(APP, CartoonDownloadService::class.java))
             }
         }
     }
@@ -51,21 +51,21 @@ class DownloadService : Service() {
     private var notificationChannel: NotificationChannel? = null
 
     private val scope = MainScope()
-    private val downloadController: DownloadController by Injekt.injectLazy()
+    private val cartoonDownloadController: CartoonDownloadController by Injekt.injectLazy()
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         "onStartCommand".logi(TAG)
-        val notification = getNotification(downloadController.downloadItem.value ?: emptyList())
+        val notification = getNotification(cartoonDownloadController.downloadItem.value ?: emptyList())
         if (notification == null) {
             stopSelf()
             return super.onStartCommand(intent, flags, startId)
         }
         startForeground(FOREGROUND_ID, notification)
         scope.launch {
-            downloadController.downloadItem.collectLatest {
+            cartoonDownloadController.downloadItem.collectLatest {
                 val n = getNotification(it ?: emptyList())
                 if (n == null) {
                     stopSelf()

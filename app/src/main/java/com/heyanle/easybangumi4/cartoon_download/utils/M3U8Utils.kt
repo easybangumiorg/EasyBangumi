@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.download.utils
+package com.heyanle.easybangumi4.cartoon_download.utils
 
 import org.apache.commons.lang3.StringUtils
 import java.io.File

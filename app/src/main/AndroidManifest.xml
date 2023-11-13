@@ -75,7 +75,7 @@
         </service>
 
 
-        <service android:name=".download.DownloadService"
+        <service android:name=".cartoon_download.CartoonDownloadService"
             android:foregroundServiceType="dataSync"
             android:enabled="true"/>
 

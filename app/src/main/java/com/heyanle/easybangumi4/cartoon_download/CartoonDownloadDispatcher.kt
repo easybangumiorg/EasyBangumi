@@ -1,14 +1,14 @@
-package com.heyanle.easybangumi4.download
+package com.heyanle.easybangumi4.cartoon_download
 
 import android.app.Application
 import android.util.Log
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
-import com.heyanle.easybangumi4.download.entity.DownloadBundle
-import com.heyanle.easybangumi4.download.entity.DownloadItem
-import com.heyanle.easybangumi4.download.step.AriaStep
-import com.heyanle.easybangumi4.download.step.BaseStep
-import com.heyanle.easybangumi4.download.step.CopyStep
-import com.heyanle.easybangumi4.download.step.ParseStep
+import com.heyanle.easybangumi4.cartoon_download.entity.DownloadBundle
+import com.heyanle.easybangumi4.cartoon_download.entity.DownloadItem
+import com.heyanle.easybangumi4.cartoon_download.step.AriaStep
+import com.heyanle.easybangumi4.cartoon_download.step.BaseStep
+import com.heyanle.easybangumi4.cartoon_download.step.CopyStep
+import com.heyanle.easybangumi4.cartoon_download.step.ParseStep
 import com.heyanle.easybangumi4.getter.DownloadItemGetter
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.source_api.entity.Episode
@@ -28,9 +28,9 @@ import java.util.concurrent.atomic.AtomicLong
 /**
  * Created by heyanlin on 2023/10/2.
  */
-class DownloadDispatcher(
+class CartoonDownloadDispatcher(
     private val application: Application,
-    private val downloadController: DownloadController,
+    private val cartoonDownloadController: CartoonDownloadController,
     private val downloadItemGetter: DownloadItemGetter,
     private val settingPreferences: SettingPreferences,
 ) {
@@ -55,7 +55,7 @@ class DownloadDispatcher(
                 if(it.count {
                     it.state == 0 || it.state == 1 || it.state == 2
                     } > 0){
-                    DownloadService.tryStart()
+                    CartoonDownloadService.tryStart()
                 }
                 it.find { it.needDispatcher() }?.let {
                     dispatch(it)
@@ -158,7 +158,7 @@ class DownloadDispatcher(
     }
 
     private fun newDownload(downloadItems: List<DownloadItem>){
-        downloadController.update {
+        cartoonDownloadController.update {
             (it ?: emptyList()) + downloadItems
         }
     }
@@ -173,7 +173,7 @@ class DownloadDispatcher(
                 File(downloadItem.bundle.downloadFolder).delete()
             }
             if(downloadItem.isRemoved){
-                downloadController.update {
+                cartoonDownloadController.update {
                     it?.minus(downloadItem)?: emptyList()
                 }
             }
@@ -182,12 +182,12 @@ class DownloadDispatcher(
         val nextIndex =
             if (downloadItem.state == 2) downloadItem.currentSteps + 1 else downloadItem.currentSteps
         if (nextIndex >= downloadItem.stepsChain.size) {
-            downloadController.downloadItemCompletely(downloadItem = downloadItem)
+            cartoonDownloadController.downloadItemCompletely(downloadItem = downloadItem)
             return
         }
         val name = downloadItem.stepsChain.getOrNull(nextIndex)
         if (name == null) {
-            downloadController.updateDownloadItem(downloadItem.uuid) {
+            cartoonDownloadController.updateDownloadItem(downloadItem.uuid) {
                 it.copy(
                     state = -1
                 )
@@ -195,7 +195,7 @@ class DownloadDispatcher(
             return
         }
         val step = getStep(name)
-        downloadController.updateDownloadItem(downloadItem.uuid) {
+        cartoonDownloadController.updateDownloadItem(downloadItem.uuid) {
             it.copy(
                 state = 1,
                 currentSteps = nextIndex
@@ -205,7 +205,7 @@ class DownloadDispatcher(
             step.invoke(downloadItem)
         } catch (e: Exception) {
             e.printStackTrace()
-            downloadController.updateDownloadItem(downloadItem.uuid) {
+            cartoonDownloadController.updateDownloadItem(downloadItem.uuid) {
                 it.copy(
                     state = -1,
                     errorMsg = e.message ?: ""

@@ -1,7 +1,7 @@
 package com.heyanle.easybangumi4.getter
 
-import com.heyanle.easybangumi4.download.LocalCartoonController
-import com.heyanle.easybangumi4.download.entity.LocalCartoon
+import com.heyanle.easybangumi4.cartoon_download.LocalCartoonController
+import com.heyanle.easybangumi4.cartoon_download.entity.LocalCartoon
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance

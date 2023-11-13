@@ -5,19 +5,14 @@ import android.app.Application
 import android.util.Log
 import com.arialyy.aria.core.Aria
 import com.heyanle.easy_crasher.CrashHandler
-import com.heyanle.easybangumi4.base.preferences.PreferenceStore
-import com.heyanle.easybangumi4.base.preferences.android.AndroidPreferenceStore
-import com.heyanle.easybangumi4.base.preferences.mmkv.MMKVPreferenceStore
 import com.heyanle.easybangumi4.cartoon.CartoonModule
-import com.heyanle.easybangumi4.download.DownloadModule
+import com.heyanle.easybangumi4.cartoon_download.CartoonDownloadModule
 import com.heyanle.easybangumi4.exo.MediaModule
 import com.heyanle.easybangumi4.extension.ExtensionController
 import com.heyanle.easybangumi4.extension.ExtensionModule
 import com.heyanle.easybangumi4.getter.GetterModule
-import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
 import com.heyanle.easybangumi4.setting.SettingModule
 import com.heyanle.easybangumi4.source.SourceModule
-import com.heyanle.easybangumi4.theme.EasyThemeController
 import com.heyanle.easybangumi4.utils.AppCenterManager
 import com.heyanle.easybangumi4.utils.exo_ssl.CropUtil
 import com.heyanle.easybangumi4.utils.exo_ssl.TrustAllHostnameVerifier
@@ -62,7 +57,7 @@ object Scheduler {
         GetterModule(application).registerWith(Injekt)
         ExtensionModule(application).registerWith(Injekt)
         SourceModule(application).registerWith(Injekt)
-        DownloadModule(application).registerWith(Injekt)
+        CartoonDownloadModule(application).registerWith(Injekt)
 
         initAppCenter(application)
         initOkkv(application)
