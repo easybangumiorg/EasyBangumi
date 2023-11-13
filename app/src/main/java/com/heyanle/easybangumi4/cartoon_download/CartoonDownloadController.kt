@@ -1,17 +1,12 @@
-package com.heyanle.easybangumi4.download
+package com.heyanle.easybangumi4.cartoon_download
 
 import android.content.Context
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.easybangumi4.utils.jsonTo
 import com.heyanle.easybangumi4.utils.toJson
-import com.heyanle.easybangumi4.download.entity.DownloadItem
-import com.heyanle.easybangumi4.download.step.BaseStep
-import com.heyanle.easybangumi4.download.utils.MediaScanUtils
-import com.heyanle.easybangumi4.navControllerRef
-import com.heyanle.easybangumi4.ui.common.MoeDialogData
-import com.heyanle.easybangumi4.ui.common.dismiss
-import com.heyanle.easybangumi4.ui.common.show
-import com.heyanle.easybangumi4.ui.setting.SettingPage
+import com.heyanle.easybangumi4.cartoon_download.entity.DownloadItem
+import com.heyanle.easybangumi4.cartoon_download.step.BaseStep
+import com.heyanle.easybangumi4.cartoon_download.utils.MediaScanUtils
 import com.heyanle.injekt.core.Injekt
 import com.heyanle.okkv2.core.okkv
 import kotlinx.coroutines.Dispatchers
@@ -26,7 +21,7 @@ import java.io.File
 /**
  * Created by heyanlin on 2023/10/2.
  */
-class DownloadController(
+class CartoonDownloadController(
     private val context: Context,
     private val localCartoonController: LocalCartoonController,
 ) {

@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.download.entity
+package com.heyanle.easybangumi4.cartoon_download.entity
 
 import androidx.room.Ignore
 import com.heyanle.easybangumi4.utils.getMatchReg

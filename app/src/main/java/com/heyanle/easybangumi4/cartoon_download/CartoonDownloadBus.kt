@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.download
+package com.heyanle.easybangumi4.cartoon_download
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableFloatStateOf
@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap
  * Created by HeYanLe on 2023/9/17 15:39.
  * https://github.com/heyanLE
  */
-class DownloadBus {
+class CartoonDownloadBus {
     class DownloadingInfo(
         val status: MutableState<String> = mutableStateOf(""),
         // -1 不支持进度

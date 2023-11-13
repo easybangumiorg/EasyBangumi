@@ -1,9 +1,9 @@
-package com.heyanle.easybangumi4.download.step
+package com.heyanle.easybangumi4.cartoon_download.step
 
 import com.heyanle.easybangumi4.utils.stringRes
-import com.heyanle.easybangumi4.download.DownloadBus
-import com.heyanle.easybangumi4.download.DownloadController
-import com.heyanle.easybangumi4.download.entity.DownloadItem
+import com.heyanle.easybangumi4.cartoon_download.CartoonDownloadBus
+import com.heyanle.easybangumi4.cartoon_download.CartoonDownloadController
+import com.heyanle.easybangumi4.cartoon_download.entity.DownloadItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
@@ -14,8 +14,8 @@ import java.io.File
  * https://github.com/heyanLE
  */
 class CopyStep(
-    private val downloadController: DownloadController,
-    private val downloadBus: DownloadBus,
+    private val cartoonDownloadController: CartoonDownloadController,
+    private val cartoonDownloadBus: CartoonDownloadBus,
 ) : BaseStep {
 
     companion object {
@@ -29,7 +29,7 @@ class CopyStep(
                 val source = File(downloadItem.bundle.filePathBeforeCopy)
                 val target = File(downloadItem.folder, downloadItem.fileNameWithoutSuffix + ".mp4")
                 if (source.absolutePath == target.absolutePath) {
-                    downloadController.updateDownloadItem(downloadItem.uuid) {
+                    cartoonDownloadController.updateDownloadItem(downloadItem.uuid) {
                         it.copy(
                             state = 2
                         )
@@ -37,14 +37,14 @@ class CopyStep(
                     return@launch
                 }
                 scope.launch {
-                    downloadBus.getInfo(downloadItem.uuid).apply {
+                    cartoonDownloadBus.getInfo(downloadItem.uuid).apply {
                         status.value = stringRes(com.heyanle.easy_i18n.R.string.copying)
                         this.subStatus.value = ""
                         this.process.value = 0f
                     }
                 }
                 if (!source.exists()) {
-                    downloadController.updateDownloadItem(downloadItem.uuid) {
+                    cartoonDownloadController.updateDownloadItem(downloadItem.uuid) {
                         it.copy(
                             state = -1
                         )
@@ -54,14 +54,14 @@ class CopyStep(
                 target.delete()
                 source.copyTo(target)
                 source.delete()
-                downloadController.updateDownloadItem(downloadItem.uuid) {
+                cartoonDownloadController.updateDownloadItem(downloadItem.uuid) {
                     it.copy(
                         state = 2
                     )
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                downloadController.updateDownloadItem(downloadItem.uuid) {
+                cartoonDownloadController.updateDownloadItem(downloadItem.uuid) {
                     it.copy(
                         state = -1,
                         errorMsg = e.message ?: ""
@@ -73,7 +73,7 @@ class CopyStep(
     }
 
     override fun onRemove(downloadItem: DownloadItem) {
-        downloadController.updateDownloadItem(downloadItem.uuid){
+        cartoonDownloadController.updateDownloadItem(downloadItem.uuid){
             it.copy(isRemoved = true)
         }
     }

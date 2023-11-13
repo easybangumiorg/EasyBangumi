@@ -9,11 +9,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
-import androidx.media3.exoplayer.ExoPlayer
 import com.heyanle.easybangumi4.APP
-import com.heyanle.easybangumi4.download.entity.LocalCartoon
-import com.heyanle.easybangumi4.download.entity.LocalEpisode
-import com.heyanle.easybangumi4.download.entity.LocalPlayLine
+import com.heyanle.easybangumi4.cartoon_download.entity.LocalCartoon
+import com.heyanle.easybangumi4.cartoon_download.entity.LocalEpisode
+import com.heyanle.easybangumi4.cartoon_download.entity.LocalPlayLine
 import com.heyanle.easybangumi4.exo.EasyExoPlayer
 import com.heyanle.easybangumi4.getter.LocalCartoonGetter
 import com.heyanle.easybangumi4.setting.SettingPreferences

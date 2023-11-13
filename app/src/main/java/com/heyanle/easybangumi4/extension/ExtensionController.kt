@@ -44,7 +44,7 @@ import java.util.concurrent.atomic.AtomicLong
  */
 class ExtensionController(
     private val context: Context,
-    private val extensionFolder: String,
+    val extensionFolder: String,
     private val cacheFolder: String,
     //private val extensionLoader: ExtensionLoader
 ) {
