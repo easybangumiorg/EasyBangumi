@@ -1,16 +1,14 @@
-package com.heyanle.easybangumi4.download
+package com.heyanle.easybangumi4.cartoon_download
 
 import android.content.Context
-import com.heyanle.easybangumi4.download.entity.DownloadItem
-import com.heyanle.easybangumi4.download.entity.LocalCartoon
-import com.heyanle.easybangumi4.download.entity.LocalEpisode
-import com.heyanle.easybangumi4.download.entity.LocalPlayLine
+import com.heyanle.easybangumi4.cartoon_download.entity.DownloadItem
+import com.heyanle.easybangumi4.cartoon_download.entity.LocalCartoon
+import com.heyanle.easybangumi4.cartoon_download.entity.LocalEpisode
+import com.heyanle.easybangumi4.cartoon_download.entity.LocalPlayLine
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.easybangumi4.utils.jsonTo
 import com.heyanle.easybangumi4.utils.toJson
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow

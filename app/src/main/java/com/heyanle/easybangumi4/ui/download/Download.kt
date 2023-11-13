@@ -17,7 +17,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import com.heyanle.easybangumi4.download.DownloadController
+import com.heyanle.easybangumi4.cartoon_download.CartoonDownloadController
 import com.heyanle.easybangumi4.ui.common.TabIndicator
 import com.heyanle.easybangumi4.ui.download.downloaded.Downloaded
 import com.heyanle.easybangumi4.ui.download.downloaded.DownloadedTopBar
@@ -62,8 +62,8 @@ fun Download() {
     val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState(0) { DownloadPageItems.size }
     LaunchedEffect(Unit) {
-        val downloadController: DownloadController by Injekt.injectLazy()
-        downloadController.tryShowFirstDownloadDialog()
+        val cartoonDownloadController: CartoonDownloadController by Injekt.injectLazy()
+        cartoonDownloadController.tryShowFirstDownloadDialog()
     }
     Surface(
         modifier = Modifier.fillMaxSize(),

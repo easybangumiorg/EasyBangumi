@@ -1,6 +1,6 @@
-package com.heyanle.easybangumi4.download.step
+package com.heyanle.easybangumi4.cartoon_download.step
 
-import com.heyanle.easybangumi4.download.entity.DownloadItem
+import com.heyanle.easybangumi4.cartoon_download.entity.DownloadItem
 
 /**
  * Created by heyanlin on 2023/10/2.

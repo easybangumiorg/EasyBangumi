@@ -28,7 +28,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Help
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -39,7 +38,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -53,8 +51,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.R
-import com.heyanle.easybangumi4.download.DownloadController
-import com.heyanle.easybangumi4.download.entity.DownloadItem
+import com.heyanle.easybangumi4.cartoon_download.CartoonDownloadController
+import com.heyanle.easybangumi4.cartoon_download.entity.DownloadItem
 import com.heyanle.easybangumi4.ui.common.EasyDeleteDialog
 import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.OkImage
@@ -176,8 +174,8 @@ fun DownloadingTopBar(){
                         }
                     }else{
                         IconButton(onClick = {
-                            val downloadController: DownloadController by Injekt.injectLazy()
-                            downloadController.showDownloadHelpDialog()
+                            val cartoonDownloadController: CartoonDownloadController by Injekt.injectLazy()
+                            cartoonDownloadController.showDownloadHelpDialog()
                         }){
                             Icon(
                                 imageVector = Icons.Filled.Help,

@@ -111,8 +111,8 @@ import com.heyanle.easybangumi4.DOWNLOAD
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.play.CartoonPlayingController
-import com.heyanle.easybangumi4.download.DownloadController
-import com.heyanle.easybangumi4.download.DownloadDispatcher
+import com.heyanle.easybangumi4.cartoon_download.CartoonDownloadController
+import com.heyanle.easybangumi4.cartoon_download.CartoonDownloadDispatcher
 import com.heyanle.easybangumi4.exo.EasyExoPlayer
 import com.heyanle.easybangumi4.navigationCartoonTag
 import com.heyanle.easybangumi4.navigationDlna
@@ -802,7 +802,7 @@ fun CartoonPlayPage(
     //onTitle: (String) -> Unit,
 ) {
     val playingController: CartoonPlayingController by Injekt.injectLazy()
-    val downloadDispatcher: DownloadDispatcher by Injekt.injectLazy()
+    val cartoonDownloadDispatcher: CartoonDownloadDispatcher by Injekt.injectLazy()
     val nav = LocalNavController.current
     CartoonPlayDetailed(
         cartoon = detailedState.detail,
@@ -854,7 +854,7 @@ fun CartoonPlayPage(
                     nav.navigate(DOWNLOAD)
                 }
             )
-            downloadDispatcher.newDownload(detailedState.detail, episodes.map {
+            cartoonDownloadDispatcher.newDownload(detailedState.detail, episodes.map {
                 playLine to it
             })
         }
@@ -937,8 +937,8 @@ fun CartoonPlayDetailed(
                         } else {
                             currentDownloadPlayLine.value = null
                         }
-                        val downloadController: DownloadController by Injekt.injectLazy()
-                        downloadController.tryShowFirstDownloadDialog()
+                        val cartoonDownloadController: CartoonDownloadController by Injekt.injectLazy()
+                        cartoonDownloadController.tryShowFirstDownloadDialog()
                     },
                 )
                 Spacer(modifier = Modifier.size(8.dp))

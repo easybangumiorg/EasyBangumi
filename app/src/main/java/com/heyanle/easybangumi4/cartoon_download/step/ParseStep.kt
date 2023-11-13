@@ -1,13 +1,12 @@
-package com.heyanle.easybangumi4.download.step
+package com.heyanle.easybangumi4.cartoon_download.step
 
 
 import com.heyanle.easy_i18n.R
-import com.heyanle.easybangumi4.download.DownloadBus
-import com.heyanle.easybangumi4.download.DownloadController
-import com.heyanle.easybangumi4.download.entity.DownloadItem
+import com.heyanle.easybangumi4.cartoon_download.CartoonDownloadBus
+import com.heyanle.easybangumi4.cartoon_download.CartoonDownloadController
+import com.heyanle.easybangumi4.cartoon_download.entity.DownloadItem
 import com.heyanle.easybangumi4.getter.SourceStateGetter
 import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
-import com.heyanle.easybangumi4.source_api.entity.Episode
 import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
 import com.heyanle.easybangumi4.utils.stringRes
 import kotlinx.coroutines.CoroutineScope
@@ -22,8 +21,8 @@ import java.util.concurrent.Executors
  */
 class ParseStep(
     private val sourceStateGetter: SourceStateGetter,
-    private val downloadController: DownloadController,
-    private val downloadBus: DownloadBus,
+    private val cartoonDownloadController: CartoonDownloadController,
+    private val cartoonDownloadBus: CartoonDownloadBus,
 ) : BaseStep {
 
     companion object {
@@ -37,7 +36,7 @@ class ParseStep(
 
     override fun invoke(downloadItem: DownloadItem) {
         mainScope.launch {
-            val info = downloadBus.getInfo(downloadItem.uuid)
+            val info = cartoonDownloadBus.getInfo(downloadItem.uuid)
             info.process.value = -1f
             info.status.value = stringRes(R.string.parsing)
             info.subStatus.value = ""
@@ -67,13 +66,13 @@ class ParseStep(
     }
 
     override fun onRemove(downloadItem: DownloadItem) {
-        downloadController.updateDownloadItem(downloadItem.uuid){
+        cartoonDownloadController.updateDownloadItem(downloadItem.uuid){
             it.copy(isRemoved = true)
         }
     }
 
     private fun error(uuid: String, error: String) {
-        downloadController.updateDownloadItem(uuid) {
+        cartoonDownloadController.updateDownloadItem(uuid) {
             it.copy(
                 state = -1,
                 errorMsg = error,
@@ -82,7 +81,7 @@ class ParseStep(
     }
 
     private fun completely(downloadItem: DownloadItem, playerInfo: PlayerInfo) {
-        downloadController.updateDownloadItem(downloadItem.uuid) {
+        cartoonDownloadController.updateDownloadItem(downloadItem.uuid) {
             it.copy(
                 state = 2,
                 stepsChain = it.stepsChain.flatMap {

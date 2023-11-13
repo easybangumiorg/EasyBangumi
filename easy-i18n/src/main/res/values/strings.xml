@@ -104,6 +104,8 @@
 
     <string name="doing_update">正在更新中</string>
 
+    <string name="easybangumi_too_old">纯纯看番版本过旧，请升级</string>
+
     <string name="update_error">更新错误</string>
 
     <string name="empty_update">没有番剧更新！</string>

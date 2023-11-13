@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.download.entity
+package com.heyanle.easybangumi4.cartoon_download.entity
 
 import com.arialyy.aria.core.download.M3U8Entity
 import com.heyanle.easybangumi4.source_api.entity.Episode

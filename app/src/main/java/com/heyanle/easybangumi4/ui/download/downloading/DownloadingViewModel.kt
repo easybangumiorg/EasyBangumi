@@ -4,9 +4,9 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.heyanle.easybangumi4.download.DownloadBus
-import com.heyanle.easybangumi4.download.DownloadDispatcher
-import com.heyanle.easybangumi4.download.entity.DownloadItem
+import com.heyanle.easybangumi4.cartoon_download.CartoonDownloadBus
+import com.heyanle.easybangumi4.cartoon_download.CartoonDownloadDispatcher
+import com.heyanle.easybangumi4.cartoon_download.entity.DownloadItem
 import com.heyanle.easybangumi4.getter.DownloadItemGetter
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.flow.SharingStarted
@@ -17,14 +17,14 @@ import kotlinx.coroutines.flow.stateIn
  */
 class DownloadingViewModel : ViewModel() {
 
-    private val downloadBus: DownloadBus by Injekt.injectLazy()
+    private val cartoonDownloadBus: CartoonDownloadBus by Injekt.injectLazy()
 
 
     private val downloadItemGetter: DownloadItemGetter by Injekt.injectLazy()
     val downloadingFlow = downloadItemGetter.flowDownloadItem()
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-    private val downloadDispatcher: DownloadDispatcher by Injekt.injectLazy()
+    private val cartoonDownloadDispatcher: CartoonDownloadDispatcher by Injekt.injectLazy()
 
     val selection = mutableStateMapOf<DownloadItem, Boolean>()
 
@@ -51,17 +51,17 @@ class DownloadingViewModel : ViewModel() {
         }
     }
 
-    fun info(download: DownloadItem): DownloadBus.DownloadingInfo {
-        return downloadBus.getInfo(download.uuid)
+    fun info(download: DownloadItem): CartoonDownloadBus.DownloadingInfo {
+        return cartoonDownloadBus.getInfo(download.uuid)
     }
 
     fun click(download: DownloadItem) {
-        downloadDispatcher.clickDownload(downloadItem = download)
+        cartoonDownloadDispatcher.clickDownload(downloadItem = download)
     }
 
     fun remove(selection: Collection<DownloadItem>) {
         selection.forEach {
-            downloadDispatcher.removeDownload(it)
+            cartoonDownloadDispatcher.removeDownload(it)
         }
     }
 }

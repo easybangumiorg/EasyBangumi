@@ -1,13 +1,12 @@
-package com.heyanle.easybangumi4.download.step
+package com.heyanle.easybangumi4.cartoon_download.step
 
 import android.content.Context
 import com.heyanle.easy_i18n.R
-import com.heyanle.easybangumi4.download.DownloadBus
-import com.heyanle.easybangumi4.download.DownloadController
-import com.heyanle.easybangumi4.download.entity.DownloadItem
-import com.heyanle.easybangumi4.download.utils.M3U8Utils
+import com.heyanle.easybangumi4.cartoon_download.CartoonDownloadBus
+import com.heyanle.easybangumi4.cartoon_download.CartoonDownloadController
+import com.heyanle.easybangumi4.cartoon_download.entity.DownloadItem
+import com.heyanle.easybangumi4.cartoon_download.utils.M3U8Utils
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
-import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.stringRes
 import com.jeffmony.m3u8library.VideoProcessManager
 import com.jeffmony.m3u8library.listener.IVideoTransformListener
@@ -21,8 +20,8 @@ import java.io.File
  */
 class TranscodeStep(
     private val context: Context,
-    private val downloadController: DownloadController,
-    private val downloadBus: DownloadBus,
+    private val cartoonDownloadController: CartoonDownloadController,
+    private val cartoonDownloadBus: CartoonDownloadBus,
 ) : BaseStep {
 
     companion object {
@@ -59,13 +58,13 @@ class TranscodeStep(
     }
 
     override fun onRemove(downloadItem: DownloadItem) {
-        downloadController.updateDownloadItem(downloadItem.uuid){
+        cartoonDownloadController.updateDownloadItem(downloadItem.uuid){
             it.copy(isRemoved = true)
         }
     }
 
     private fun decrypt(downloadItem: DownloadItem): Boolean {
-        val info = downloadBus.getInfo(downloadItem.uuid)
+        val info = cartoonDownloadBus.getInfo(downloadItem.uuid)
         val entity = downloadItem.bundle.m3U8Entity ?: return false
         val localM3U8 = File(entity.filePath)
 
@@ -187,7 +186,7 @@ class TranscodeStep(
         onError: (Exception?) -> Unit,
         onCompletely: () -> Unit
     ): Boolean {
-        val info = downloadBus.getInfo(downloadItem.uuid)
+        val info = cartoonDownloadBus.getInfo(downloadItem.uuid)
         val m3u8 = File(downloadItem.bundle.downloadFolder, "${downloadItem.uuid}.m3u8")
         if (!m3u8.exists() || !m3u8.canRead()) {
             return false
@@ -229,7 +228,7 @@ class TranscodeStep(
     }
 
     private fun error(downloadItem: DownloadItem, error: String) {
-        downloadController.updateDownloadItem(downloadItem.uuid) {
+        cartoonDownloadController.updateDownloadItem(downloadItem.uuid) {
             it.copy(
                 state = -1,
                 errorMsg = error
@@ -238,7 +237,7 @@ class TranscodeStep(
     }
 
     private fun completely(downloadItem: DownloadItem) {
-        downloadController.updateDownloadItem(downloadItem.uuid) {
+        cartoonDownloadController.updateDownloadItem(downloadItem.uuid) {
             it.copy(
                 state = 2
             )

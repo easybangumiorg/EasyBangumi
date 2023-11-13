@@ -1,11 +1,11 @@
-package com.heyanle.easybangumi4.download
+package com.heyanle.easybangumi4.cartoon_download
 
 import android.app.Application
-import com.heyanle.easybangumi4.download.step.AriaStep
-import com.heyanle.easybangumi4.download.step.BaseStep
-import com.heyanle.easybangumi4.download.step.CopyStep
-import com.heyanle.easybangumi4.download.step.ParseStep
-import com.heyanle.easybangumi4.download.step.TranscodeStep
+import com.heyanle.easybangumi4.cartoon_download.step.AriaStep
+import com.heyanle.easybangumi4.cartoon_download.step.BaseStep
+import com.heyanle.easybangumi4.cartoon_download.step.CopyStep
+import com.heyanle.easybangumi4.cartoon_download.step.ParseStep
+import com.heyanle.easybangumi4.cartoon_download.step.TranscodeStep
 import com.heyanle.injekt.api.InjektModule
 import com.heyanle.injekt.api.InjektScope
 import com.heyanle.injekt.api.InjektionException
@@ -15,7 +15,7 @@ import com.heyanle.injekt.api.get
 /**
  * Created by heyanlin on 2023/10/2.
  */
-class DownloadModule(
+class CartoonDownloadModule(
     private val application: Application
 ) : InjektModule {
 
@@ -25,15 +25,15 @@ class DownloadModule(
         }
 
         addSingletonFactory {
-            DownloadController(application, get())
+            CartoonDownloadController(application, get())
         }
 
         addSingletonFactory {
-            DownloadDispatcher(application, get(), get(), get())
+            CartoonDownloadDispatcher(application, get(), get(), get())
         }
 
         addSingletonFactory {
-            DownloadBus()
+            CartoonDownloadBus()
         }
 
         addScopedPerKeyFactory<BaseStep, String> {

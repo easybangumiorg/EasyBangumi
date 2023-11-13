@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.download.step
+package com.heyanle.easybangumi4.cartoon_download.step
 
 import com.arialyy.aria.core.Aria
 import com.arialyy.aria.core.common.HttpOption
@@ -8,9 +8,9 @@ import com.arialyy.aria.core.inf.IEntity
 import com.arialyy.aria.core.task.DownloadTask
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.utils.stringRes
-import com.heyanle.easybangumi4.download.DownloadBus
-import com.heyanle.easybangumi4.download.DownloadController
-import com.heyanle.easybangumi4.download.entity.DownloadItem
+import com.heyanle.easybangumi4.cartoon_download.CartoonDownloadBus
+import com.heyanle.easybangumi4.cartoon_download.CartoonDownloadController
+import com.heyanle.easybangumi4.cartoon_download.entity.DownloadItem
 import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import java.io.File
@@ -22,8 +22,8 @@ import java.util.regex.Pattern
  * Created by heyanlin on 2023/10/2.
  */
 class AriaStep(
-    private val downloadController: DownloadController,
-    private val downloadBus: DownloadBus,
+    private val cartoonDownloadController: CartoonDownloadController,
+    private val cartoonDownloadBus: CartoonDownloadBus,
 ) : BaseStep, DownloadTaskListener {
 
     companion object {
@@ -88,7 +88,7 @@ class AriaStep(
     override fun invoke(downloadItem: DownloadItem) {
         val entity = aria.getDownloadEntity(downloadItem.bundle.ariaId)
         if (entity != null) {
-            val info = downloadBus.getInfo(downloadItem.uuid)
+            val info = cartoonDownloadBus.getInfo(downloadItem.uuid)
             if (info.status.value.isEmpty() && info.subStatus.value.isEmpty()) {
                 if (entity.state == IEntity.STATE_STOP) {
                     aria.load(downloadItem.bundle.ariaId).ignoreCheckPermissions().resume()
@@ -157,7 +157,7 @@ class AriaStep(
 
     override fun onRemove(downloadItem: DownloadItem) {
         aria.load(downloadItem.bundle.ariaId)?.ignoreCheckPermissions()?.cancel(true)
-        downloadController.updateDownloadItem(downloadItem.uuid){
+        cartoonDownloadController.updateDownloadItem(downloadItem.uuid){
             it.copy(isRemoved = true)
         }
     }
@@ -167,7 +167,7 @@ class AriaStep(
             error(downloadItem.uuid, stringRes(R.string.download_create_failed))
             return
         }
-        downloadController.updateDownloadItem(downloadItem.uuid) {
+        cartoonDownloadController.updateDownloadItem(downloadItem.uuid) {
             it.copy(
                 bundle = it.bundle.apply {
                     ariaId = taskId
@@ -177,7 +177,7 @@ class AriaStep(
     }
 
     private fun downloadCompletely(uuid: String, task: DownloadTask) {
-        downloadController.updateDownloadItem(uuid) {
+        cartoonDownloadController.updateDownloadItem(uuid) {
             it.copy(
                 state = 2,
                 bundle = it.bundle.apply {
@@ -188,7 +188,7 @@ class AriaStep(
     }
 
     private fun error(uuid: String, error: String) {
-        downloadController.updateDownloadItem(uuid) {
+        cartoonDownloadController.updateDownloadItem(uuid) {
             it.copy(
                 state = -1,
                 errorMsg = error,
@@ -207,7 +207,7 @@ class AriaStep(
 //        }
         task?.let { t ->
             t.extendField?.let { uuid ->
-                val info = downloadBus.getInfo(uuid)
+                val info = cartoonDownloadBus.getInfo(uuid)
                 info.status.value = stringRes(com.heyanle.easy_i18n.R.string.waiting)
                 info.process.value = if ((t.entity.fileSize) <= 0L) -1f else ((t.entity.percent) / 100f)
                 info.subStatus.value =
@@ -236,7 +236,7 @@ class AriaStep(
     override fun onTaskStop(task: DownloadTask?) {
         task?.let { t ->
             t.extendField?.let { uuid ->
-                val info = downloadBus.getInfo(uuid)
+                val info = cartoonDownloadBus.getInfo(uuid)
                 info.status.value = stringRes(com.heyanle.easy_i18n.R.string.pausing)
                 info.process.value = if (t.entity.fileSize <= 0L) -1f else t.entity.percent / 100f
                 info.subStatus.value =
@@ -249,7 +249,7 @@ class AriaStep(
     override fun onTaskCancel(task: DownloadTask?) {
         task?.let { t ->
             t.extendField?.let { uuid ->
-                downloadBus.getInfo(uuid)
+                cartoonDownloadBus.getInfo(uuid)
             }
         }
     }
@@ -273,7 +273,7 @@ class AriaStep(
     override fun onTaskRunning(task: DownloadTask?) {
         task?.let { t ->
             t.extendField?.let { uuid ->
-                val info = downloadBus.getInfo(uuid)
+                val info = cartoonDownloadBus.getInfo(uuid)
                 info.status.value = stringRes(com.heyanle.easy_i18n.R.string.downloading)
                 info.process.value = if (t.entity.fileSize <= 0L) -1f else t.entity.percent / 100f
                 info.subStatus.value = t.convertSpeed ?: ""
