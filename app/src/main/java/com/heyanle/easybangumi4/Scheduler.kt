@@ -10,12 +10,15 @@ import com.heyanle.easybangumi4.cartoon_download.CartoonDownloadModule
 import com.heyanle.easybangumi4.exo.MediaModule
 import com.heyanle.easybangumi4.extension.ExtensionController
 import com.heyanle.easybangumi4.extension.ExtensionModule
+import com.heyanle.easybangumi4.extension.store.ExtensionStoreRemoteInfo
 import com.heyanle.easybangumi4.getter.GetterModule
 import com.heyanle.easybangumi4.setting.SettingModule
 import com.heyanle.easybangumi4.source.SourceModule
 import com.heyanle.easybangumi4.utils.AppCenterManager
 import com.heyanle.easybangumi4.utils.exo_ssl.CropUtil
 import com.heyanle.easybangumi4.utils.exo_ssl.TrustAllHostnameVerifier
+import com.heyanle.easybangumi4.utils.jsonTo
+import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.extension_api.IconFactory
 import com.heyanle.extension_api.iconFactory
 import com.heyanle.injekt.core.Injekt
@@ -63,6 +66,18 @@ object Scheduler {
         initOkkv(application)
         initAria(application)
         initTrustAllHost()
+
+        val d = """
+            {
+                "apiVersion": 4,
+                "infoList": [
+                    {
+                        "d": "a"
+                    }
+                ]
+            }
+        """.trimIndent().jsonTo<ExtensionStoreRemoteInfo>()
+        d.logi("")
     }
 
 
