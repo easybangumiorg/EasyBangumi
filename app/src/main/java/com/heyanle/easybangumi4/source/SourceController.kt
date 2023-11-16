@@ -17,6 +17,8 @@ import com.heyanle.easybangumi4.source_api.entity.toIdentify
 import com.heyanle.easybangumi4.source_api.utils.api.PreferenceHelper
 import com.heyanle.easybangumi4.utils.TimeLogUtils
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -57,7 +59,8 @@ class SourceController(
     val sourceBundle = _sourceBundle.asStateFlow()
 
 
-    private val dispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val dispatcher = Dispatchers.IO.limitedParallelism(1)
     private val migrateScope = CoroutineScope(SupervisorJob() + dispatcher)
     private val scope = MainScope()
 

@@ -18,6 +18,8 @@ import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.injekt.api.get
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
@@ -41,7 +43,8 @@ class CartoonDownloadDispatcher(
     }
 
     private val cacheRoot = application.getCachePath("download")
-    private val dispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val dispatcher = Dispatchers.IO.limitedParallelism(1)
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
     private val atomLong = AtomicLong(0)
 

@@ -2,6 +2,8 @@ package com.heyanle.easybangumi4.base.hekv
 
 import com.heyanle.easybangumi4.utils.loge
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
@@ -46,7 +48,8 @@ class HeKV(
     private val keyFlow = MutableSharedFlow<String>()
 
 
-    private val dispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val dispatcher = Dispatchers.IO.limitedParallelism(1)
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
 
     init {
