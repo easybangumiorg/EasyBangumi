@@ -1,6 +1,10 @@
 package com.heyanle.easybangumi4.extension.store
 
+import com.heyanle.easybangumi4.R
+import com.heyanle.easybangumi4.base.DataResult
 import com.heyanle.easybangumi4.bus.DownloadingBus
+import com.heyanle.easybangumi4.utils.OkhttpHelper
+import com.heyanle.easybangumi4.utils.stringRes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -10,7 +14,14 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.yield
+import okhttp3.Request
+import java.io.File
+import java.io.IOException
+import java.util.concurrent.CancellationException
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -68,6 +79,7 @@ class ExtensionStoreDispatcher(
     }
 
     private fun innerDownloadExtension(remoteInfo: ExtensionStoreRemoteInfo): Job {
+
         return scope.launch {
             // 下载
 
@@ -78,7 +90,59 @@ class ExtensionStoreDispatcher(
         }
     }
 
-    private suspend fun download(downloadUrl: String, path: String) {
+    private suspend fun CoroutineScope.download(
+        remoteInfo: ExtensionStoreRemoteInfoItem,
+        filePath: String,
+    ) {
+        withContext(dispatcher){
+            try {
+                val tempFile = File("${filePath}.temp")
+                val file = File(filePath)
+
+                tempFile.parent?.let {
+                    File(it).mkdirs()
+                }
+
+                file.delete()
+                tempFile.delete()
+                tempFile.createNewFile()
+                OkhttpHelper.client.newCall(Request.Builder().url(remoteInfo.fileUrl).get().build())
+                    .execute().use {  resp ->
+                        val body = resp.body
+                        if(!resp.isSuccessful || body == null){
+                            error(remoteInfo.pkg, resp.message?:"")
+                        }else{
+                            body.use {  b ->
+                                b.byteStream().use { stream ->
+                                    tempFile.outputStream().use { o ->
+
+                                        val fileSize = (resp.header("Content-Length", "-1")?:"-1").toLongOrNull() ?: -1L
+                                        val info = getInfo(remoteInfo)
+                                        info.status.value = stringRes(com.heyanle.easy_i18n.R.string.downloading)
+
+                                        val byteArray = ByteArray(1024*10)
+                                        var length = 0
+                                        var total = 0
+                                        do {
+                                            info.process.value = if(fileSize >= total) total/fileSize.toFloat() else -1f
+                                            length = stream.read(byteArray)
+                                            total += length
+                                            o.write(byteArray, 0, length)
+                                            o.flush()
+                                        } while (length != -1 && isActive)
+                                    }
+                                }
+                            }
+                            tempFile.renameTo(file)
+                        }
+                    }
+            }catch (e: IOException){
+                e.printStackTrace()
+                error(remoteInfo.pkg, e.message?:"", e)
+            }
+
+        }
+
 
     }
 
@@ -93,7 +157,7 @@ class ExtensionStoreDispatcher(
         }
     }
 
-    private fun error(pkg: String, errorMsg: String, throwable: Throwable?){
+    private fun error(pkg: String, errorMsg: String, throwable: Throwable? = null){
         update(pkg) {
             // 没有的任务直接放弃该次 error
             it?.copy(
@@ -102,6 +166,10 @@ class ExtensionStoreDispatcher(
                 throwable = throwable,
             )
         }
+    }
+
+    private fun getInfo(remoteInfo: ExtensionStoreRemoteInfoItem): DownloadingBus.DownloadingInfo{
+        return downloadingBus.getInfo(DownloadingBus.DownloadScene.EXTENSION, remoteInfo.pkg)
     }
 
     private fun update(pkg: String, block: (ExtensionDownloadInfo?) -> ExtensionDownloadInfo?) {
