@@ -90,6 +90,7 @@ material = { group = "com.google.android.material", name = "material", version.r
 
 ffmpeg-kit = { module = "com.arthenica:ffmpeg-kit-full", version.ref = "ffmpeg-kit" }
 
+ktor_core = {module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor_android = { module = "io.ktor:ktor-client-android", version.ref = "ktor" }
 
 jeff-m3u8 = { module = "com.github.JeffMony:JeffM3U8Lib", version.ref = "jeff_m3u8" }
