@@ -139,6 +139,7 @@ abstract class AbsExtensionLoader(
                 }
                 it
             }
+            appInfo.loadIcon(pkgManager)
             TimeLogUtils.i("ExtensionLoader ${pkgInfo.packageName} inner completely")
             return Extension.Installed(
                 key = key,
@@ -148,7 +149,7 @@ abstract class AbsExtensionLoader(
                 versionCode = versionCode,
                 libVersion = libVersion,
                 readme = readme,
-                icon = kotlin.runCatching { pkgManager.getApplicationIcon(pkgInfo.packageName) }
+                icon = kotlin.runCatching {   appInfo.loadIcon(pkgManager) }
                     .getOrNull(),
                 sources = sources,
                 resources = pkgManager.getResourcesForApplication(appInfo),

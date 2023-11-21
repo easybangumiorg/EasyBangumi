@@ -2,6 +2,7 @@ package com.heyanle.easybangumi4
 
 import android.app.Application
 import com.google.gson.Gson
+import com.heyanle.easybangumi4.bus.DownloadingBus
 import com.heyanle.easybangumi4.cartoon.play.CartoonPlayingController
 import com.heyanle.easybangumi4.source.SourceController
 import com.heyanle.easybangumi4.theme.EasyThemeController
@@ -47,6 +48,9 @@ class ControllerModule(
         }
         addSingletonFactory {
             EasyThemeController(get())
+        }
+        addSingletonFactory {
+            DownloadingBus()
         }
     }
 }

@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Store
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -21,6 +22,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.APP
+import com.heyanle.easybangumi4.EXTENSION_STORE
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.extension.Extension
 import com.heyanle.easybangumi4.ui.common.ExtensionContainer
@@ -47,6 +49,15 @@ fun ExtensionTopAppBar(behavior: TopAppBarScrollBehavior) {
             }
         },
         title = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.manage)) },
+        actions = {
+            IconButton(onClick = {
+                nav.navigate(EXTENSION_STORE)
+            }) {
+                Icon(
+                    imageVector = Icons.Filled.Store, stringResource(id = R.string.source_store)
+                )
+            }
+        },
         scrollBehavior = behavior
     )
 }

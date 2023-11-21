@@ -33,7 +33,7 @@ class CartoonDownloadModule(
         }
 
         addSingletonFactory {
-            CartoonDownloadBus()
+            CartoonDownloadBus(get())
         }
 
         addScopedPerKeyFactory<BaseStep, String> {

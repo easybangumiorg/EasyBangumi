@@ -1,6 +1,9 @@
 package com.heyanle.easybangumi4.extension
 
 import android.app.Application
+import com.heyanle.easybangumi4.extension.store.ExtensionStoreController
+import com.heyanle.easybangumi4.extension.store.ExtensionStoreDispatcher
+import com.heyanle.easybangumi4.extension.store.ExtensionStoreInfoRepository
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.extension_api.IconFactory
@@ -17,14 +20,30 @@ class ExtensionModule(
     private val application: Application
 ) : InjektModule {
 
+    private val extensionPath = application.getFilePath("extension")
+    private val extensionCachePath = application.getCachePath("extension")
+    private val storePath = application.getFilePath("extension-store")
+    private val storeCachePath = application.getCachePath("extension-store")
     override fun InjektScope.registerInjectables() {
         addSingletonFactory {
-            ExtensionController(application, application.getFilePath("extension"), application.getCachePath("extension"))
+            ExtensionController(application, extensionPath, extensionCachePath)
         }
 
         addSingletonFactory {
             ExtensionIconFactoryImpl(get())
         }
         addAlias<ExtensionIconFactoryImpl, IconFactory>()
+
+        addSingletonFactory {
+            ExtensionStoreInfoRepository()
+        }
+
+        addSingletonFactory {
+            ExtensionStoreDispatcher(storeCachePath, storePath, extensionPath, get())
+        }
+
+        addSingletonFactory {
+            ExtensionStoreController(get(), get())
+        }
     }
 }

@@ -1,5 +1,7 @@
 package com.heyanle.easybangumi4.extension.store
 
+import com.heyanle.easybangumi4.bus.DownloadingBus
+import com.heyanle.easybangumi4.utils.getMatchReg
 import com.squareup.moshi.Json
 
 /**
@@ -18,16 +20,17 @@ data class ExtensionStoreRemoteInfoItem(
     @Json(name = "package")
     val pkg: String,            // 包名
     val label: String,          // 名称
-    val iconBase64: String,     // 图标 base64
+    val iconUrl: String,        // 图标 url
     val versionName: String,    // 版本
     val versionCode: Int,
     val libVersion: Int,        // 对应源 api 的版本
-    val fileUrl: String,        // 文件下载地址
     val author: String,         // 作者
     val gitUrl: String,         // 仓库链接
     val releaseDesc: String,    // 仓库 release 描述
     val md5: String,            // 拓展文件 md5
-){
+    val fileUrl: String,        // 文件下载地址
+    val fileSize: Long,         // 文件大小
+) {
 
     fun getInstalledFileName() = "store-${pkg}.extension.apk"
 
@@ -37,7 +40,7 @@ data class ExtensionStoreRemoteInfoItem(
 // 插件市场插件 item，本地保存
 data class OfficialExtensionItem(
     val extensionStoreInfo: ExtensionStoreRemoteInfoItem,     // 本地文件对应的云端，做一个储存用于判断是否版本更新
-    val realFilePath: String,                           // 在 extension 文件夹里的路径
+    val realFilePath: String,                                 // 在 extension 文件夹里的路径
 )
 
 
@@ -45,10 +48,12 @@ data class OfficialExtensionItem(
 data class ExtensionStoreInfo(
     val remote: ExtensionStoreRemoteInfoItem,
     val local: OfficialExtensionItem? = null,   // 可能没下载
+    val downloadItem: ExtensionStoreDispatcher.ExtensionDownloadInfo? = null,
+    val downloadInfo: DownloadingBus.DownloadingInfo? = null,
     val state: Int,
     val errorMsg: String? = null,
     val throwable: Throwable? = null,
-){
+) {
 
     companion object {
         const val STATE_NO_DOWNLOAD = 0
@@ -57,4 +62,29 @@ data class ExtensionStoreInfo(
         const val STATE_INSTALLED = 3
         const val STATE_NEED_UPDATE = 4
     }
+
+    fun match(key: String): Boolean {
+        var matched = false
+        for (match in key.split(',')) {
+            val regex = match.getMatchReg()
+            if (remote.pkg.matches(regex)) {
+                matched = true
+                break
+            }
+            if (remote.label.matches(regex)) {
+                matched = true
+                break
+            }
+            if (remote.author.matches(regex)) {
+                matched = true
+                break
+            }
+            if (remote.versionName.matches(regex)) {
+                matched = true
+                break
+            }
+        }
+        return matched
+    }
+
 }
