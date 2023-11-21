@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Sort
+import androidx.compose.material.icons.filled.Store
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -28,6 +29,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
+import com.heyanle.easybangumi4.EXTENSION_STORE
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
@@ -68,6 +70,14 @@ fun SourceTopAppBar(behavior: TopAppBarScrollBehavior) {
                 stringRes(R.string.long_touch_to_drag).moeSnackBar()
             }) {
                 Icon(Icons.Filled.Sort, stringResource(id = R.string.long_touch_to_drag))
+            }
+
+            IconButton(onClick = {
+                nav.navigate(EXTENSION_STORE)
+            }) {
+                Icon(
+                    imageVector = Icons.Filled.Store, stringResource(id = R.string.source_store)
+                )
             }
         }
     )

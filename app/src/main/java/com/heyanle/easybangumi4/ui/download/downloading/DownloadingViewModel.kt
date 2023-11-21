@@ -4,6 +4,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.heyanle.easybangumi4.bus.DownloadingBus
 import com.heyanle.easybangumi4.cartoon_download.CartoonDownloadBus
 import com.heyanle.easybangumi4.cartoon_download.CartoonDownloadDispatcher
 import com.heyanle.easybangumi4.cartoon_download.entity.DownloadItem
@@ -51,7 +52,7 @@ class DownloadingViewModel : ViewModel() {
         }
     }
 
-    fun info(download: DownloadItem): CartoonDownloadBus.DownloadingInfo {
+    fun info(download: DownloadItem): DownloadingBus.DownloadingInfo {
         return cartoonDownloadBus.getInfo(download.uuid)
     }
 
