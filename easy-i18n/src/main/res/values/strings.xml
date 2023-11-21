@@ -89,7 +89,11 @@
 
     <string name="tag_manage">标签管理</string>
 
-    <string name="source_config">番剧配置</string>
+    <string name="source_store">拓展市场</string>
+
+    <string name="need_vpn">可能需要科学上网</string>
+
+    <string name="source_config">番源配置</string>
 
     <string name="source_manage">番源管理</string>
     <string name="choose_source">选择番源</string>
@@ -97,6 +101,8 @@
     <string name="today">今天</string>
     <string name="yesterday">昨天</string>
     <string name="day_age">%1$s 天前</string>
+
+    <string name="click_to_update">点击更新</string>
 
     <string name="update_strict">全量更新</string>
 

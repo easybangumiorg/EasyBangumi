@@ -25,32 +25,21 @@ import java.util.concurrent.Executors
 
 /**
  * 拓展市场 controller
- * 1. 远端拓展列表
- * 2. 远端拓展下载，下载到 cachePath 文件夹，一个拓展一般 600k，顶天也就 几m , 这里不支持断点下载
- * 3. 下载后复制到 extension 文件夹后在写入 json 文件，用于版本更新判断
- * 4. 在 cachePath 中只有当前启动正在下载的文件才保留，其他文件随时都会被删除
- *
- * 已下载源的 json 文件 official.json                     ↘
- * 源市场数据 RemoteExtensionStoreState                  ➡ ExtensionStoreState 市场页展示数据
- * 下载器的下载任务 Map<String, ExtensionDownloadInfo     ↗
+ * 1. 远端拓展列表 ExtensionStoreInfoRepository -> remoteStateFlow
+ * 2. 下载中拓展列表 ExtensionStoreDispatcher.downloadInfoFlow
+ * 3. 已下载拓展列表 ExtensionStoreDispatcher.installedExtension
+ * 三个流合并成  infoFlow 表示最终展示到界面上的数据
  * Created by heyanlin on 2023/11/13.
  */
 class ExtensionStoreController(
-    private val context: Context,
-    private val extensionController: ExtensionController,
+    private val extensionStoreDispatcher: ExtensionStoreDispatcher,
     private val extensionStoreInfoRepository: ExtensionStoreInfoRepository,
 ) {
 
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private val singleDispatcher = Dispatchers.IO.limitedParallelism(1)
     private val dispatcher = Dispatchers.IO
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
     private var lastJob: Job? = null
-
-    private val rootFolder = File(extensionController.extensionFolder)
-    private val extensionItemJson = File(rootFolder, "official.json")
-    private val extensionItemJsonTemp = File(rootFolder, "official.json.bk")
 
     sealed class RemoteExtensionStoreState{
         data object Loading: RemoteExtensionStoreState()
@@ -68,89 +57,65 @@ class ExtensionStoreController(
     sealed class ExtensionStoreState {
         data object Loading: ExtensionStoreState()
 
-        class Error(
+        data class Error(
             val errorMsg: String,
             val throwable: Throwable? = null,
         ): ExtensionStoreState()
 
-        class Info(
+        data class Info(
             val itemList: List<ExtensionStoreInfo> = emptyList()
         ): ExtensionStoreState()
     }
 
 
-    // 番剧下载 Info
-    // 只要 job 是 active 状态就代表正在下载，不支持断点续传
-    class ExtensionDownloadInfo(
-        val job: Job?,
-        val downloadPath: String,
-        val extensionPath: String,
-        val fileName: String,
-        val isError: Boolean = false,
-        val errorMsg: String = "",
-        val throwable: Throwable? = null,
-        val remoteInfo: ExtensionStoreRemoteInfo,
-        val status: MutableState<String> = mutableStateOf(""),
-        val subStatus: MutableState<String> = mutableStateOf(""),
-        val process: MutableState<Float> = mutableFloatStateOf(-1f)
-    )
 
 
     private val _remoteStateFlow = MutableStateFlow<RemoteExtensionStoreState>(RemoteExtensionStoreState.Loading)
     val remoteStateFlow = _remoteStateFlow.asStateFlow()
 
-    private val _installedExtension = MutableStateFlow<List<OfficialExtensionItem>?>(null)
-    val installedExtension = _installedExtension.asStateFlow()
-
-    private var lastSaveJob: Job? = null
 
     private val _infoFlow = MutableStateFlow<ExtensionStoreState>(ExtensionStoreState.Loading)
     val infoFlow = _infoFlow.asStateFlow()
-
-
-    // 不支持断点下载，该数据不用考虑持久化
-    private val _downloadInfoFlow = MutableStateFlow<Map<String, ExtensionDownloadInfo>>(emptyMap())
-    val downloadInfoFlow = _downloadInfoFlow.asStateFlow()
 
 
     init {
         scope.launch(Dispatchers.Main) {
             combine(
                 remoteStateFlow,
-                installedExtension,
-                _downloadInfoFlow,
+                extensionStoreDispatcher.installedExtension,
+                extensionStoreDispatcher.downloadInfoFlow,
             ) { remote, local, download ->
                 if (remote is RemoteExtensionStoreState.Loading || local == null) {
                     ExtensionStoreState.Loading
                 } else if (remote is RemoteExtensionStoreState.Error) {
                     ExtensionStoreState.Error(remote.errorMsg, remote.throwable)
                 } else if(remote is RemoteExtensionStoreState.Info) {
-                    val map = hashMapOf<String, OfficialExtensionItem>()
-                    local.forEach {
-                        map[it.extensionStoreInfo.pkg] = it
-                    }
+                    val map = local ?: emptyMap()
                     val list = remote.itemList.map {
                         val downloadItem = download[it.pkg]
                         //val isDownloading = download.containsKey(it.pkg) && (download[it.pkg]?.job?.isActive == true)
                         val localItem = map[it.pkg]
                         var status = ExtensionStoreInfo.STATE_NO_DOWNLOAD
                         if (downloadItem != null) {
-                            if (!downloadItem.isError && downloadItem.job?.isActive == true) {
-                                status = ExtensionStoreInfo.STATE_DOWNLOADING
+
+                            status = if (!downloadItem.isError && extensionStoreDispatcher.getJob(downloadItem.jobUUID)?.isActive == true) {
+                                ExtensionStoreInfo.STATE_DOWNLOADING
                             } else {
-                                status = ExtensionStoreInfo.STATE_ERROR
+                                ExtensionStoreInfo.STATE_ERROR
                             }
                         } else if (localItem != null) {
-                            if (localItem.extensionStoreInfo.md5.uppercase() != it.md5.uppercase()) {
-                                status = ExtensionStoreInfo.STATE_NEED_UPDATE
+                            status = if (localItem.extensionStoreInfo.md5.uppercase() != it.md5.uppercase()) {
+                                ExtensionStoreInfo.STATE_NEED_UPDATE
                             } else {
-                                status = ExtensionStoreInfo.STATE_INSTALLED
+                                ExtensionStoreInfo.STATE_INSTALLED
                             }
                         }
                         ExtensionStoreInfo(
                             remote = it,
                             local = localItem,
                             state = status,
+                            downloadItem = downloadItem,
+                            downloadInfo = if(status ==  ExtensionStoreInfo.STATE_DOWNLOADING) extensionStoreDispatcher.getDownloadingInfo(it.pkg) else null,
                             errorMsg = downloadItem?.errorMsg?:"",
                             throwable = downloadItem?.throwable
                         )
@@ -165,14 +130,10 @@ class ExtensionStoreController(
                 }
             }
         }
+    }
 
-        scope.launch {
-            _installedExtension.collectLatest {
-                if(it != null){
-                    saveJson(it)
-                }
-            }
-        }
+    init {
+        refresh()
     }
 
     fun refresh(){
@@ -202,21 +163,6 @@ class ExtensionStoreController(
                 }
         }
     }
-
-    private fun saveJson(list: List<OfficialExtensionItem>) {
-        lastSaveJob?.cancel()
-        lastSaveJob = scope.launch(singleDispatcher) {
-            extensionItemJsonTemp.delete()
-            extensionItemJsonTemp.createNewFile()
-            yield()
-            extensionItemJsonTemp.writeText(list.toJson())
-            yield()
-            extensionItemJson.delete()
-            extensionItemJsonTemp.renameTo(extensionItemJson)
-            yield()
-        }
-    }
-
 
 
 }

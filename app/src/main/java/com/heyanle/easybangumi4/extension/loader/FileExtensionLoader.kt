@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.extension.loader
 
 import android.content.Context
+import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import com.heyanle.easybangumi4.extension.Extension
 import dalvik.system.DexClassLoader
@@ -16,6 +17,10 @@ class FileExtensionLoader(
     private val path: String,
 ): AbsExtensionLoader(context) {
 
+    private val pkgInfo: PackageInfo? by lazy {
+        packageManager.getPackageArchiveInfo(path, PackageManager.GET_META_DATA or PackageManager.GET_META_DATA or PackageManager.GET_CONFIGURATIONS or PackageManager.GET_SIGNATURES)
+    }
+
     override val key: String
         get() = "file:${path}"
 
@@ -24,8 +29,7 @@ class FileExtensionLoader(
         if (!file.exists() || !file.canRead()) {
             return null
         }
-        val pkgInfo =
-            packageManager.getPackageArchiveInfo(path, PackageManager.GET_ACTIVITIES or PackageManager.GET_META_DATA) ?: return null
+        val pkgInfo = this.pkgInfo ?: return null
         val appInfo = pkgInfo.applicationInfo ?: return null
         if(appInfo.sourceDir.isNullOrEmpty()){
             appInfo.sourceDir = path
@@ -42,8 +46,7 @@ class FileExtensionLoader(
         if(!file.exists() || !file.canRead() || file.isDirectory){
             return false
         }
-        val pkgInfo =
-            packageManager.getPackageArchiveInfo(path, PackageManager.GET_ACTIVITIES) ?: return false
-        return isPackageAnExtension(pkgInfo)
+        val pkgInfo = this.pkgInfo ?: return false
+       return isPackageAnExtension(pkgInfo)
     }
 }
