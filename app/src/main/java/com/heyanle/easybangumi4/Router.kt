@@ -1,10 +1,5 @@
 package com.heyanle.easybangumi4
 
-import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedContentScope
-import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
@@ -18,10 +13,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
-import androidx.navigation.NamedNavArgument
-import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavDeepLink
-import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -43,7 +34,8 @@ import com.heyanle.easybangumi4.ui.extension_store.ExtensionStore
 import com.heyanle.easybangumi4.ui.local_play.LocalPlay
 import com.heyanle.easybangumi4.ui.main.Main
 import com.heyanle.easybangumi4.ui.main.history.History
-import com.heyanle.easybangumi4.ui.search.Search
+import com.heyanle.easybangumi4.ui.search_migrate.migrate.CartoonMigrate
+import com.heyanle.easybangumi4.ui.search_migrate.search.Search
 import com.heyanle.easybangumi4.ui.setting.Setting
 import com.heyanle.easybangumi4.ui.setting.SettingPage
 import com.heyanle.easybangumi4.ui.source_config.SourceConfig
@@ -83,6 +75,8 @@ const val SOURCE_MANAGER = "source_manager"
 
 const val SEARCH = "search"
 
+const val CARTOON_MIGRATE = "cartoon_migrate"
+
 const val ABOUT = "about"
 
 const val SOURCE_CONFIG = "source_config"
@@ -108,6 +102,12 @@ fun NavHostController.navigationSearch(defSearchKey: String, defSourceKey: Strin
     val ed = URLEncoder.encode(defSearchKey, "utf-8")
     val es = URLEncoder.encode(defSourceKey, "utf-8")
     navigate("${SEARCH}?defSearchKey=${ed}&defSourceKey=${es}")
+}
+
+fun NavHostController.navigationCartoonMigrate(defSearchKey: String, defSourceKey: List<String> = emptyList()) {
+    val ed = URLEncoder.encode(defSearchKey, "utf-8")
+    val es = URLEncoder.encode(defSourceKey.toJson(), "utf-8")
+    navigate("${CARTOON_MIGRATE}?defSearchKey=${ed}&defSourceKeys=${es}")
 }
 
 fun NavHostController.navigationSourceHome(key: String) {
@@ -333,6 +333,27 @@ fun Nav() {
                         defSearchKey = URLDecoder.decode(defSearchKey, "utf-8"),
                         defSourceKey = URLDecoder.decode(defSourceKey, "utf-8")
                     )
+                }
+
+
+            }
+
+            composable(
+                "${CARTOON_MIGRATE}?defSearchKey={defSearchKey}&defSourceKeys={defSourceKey}",
+                arguments = listOf(
+                    navArgument("defSearchKey") { defaultValue = "" },
+                    navArgument("defSourceKey") { defaultValue = "" },
+                )
+            ) {
+                val defSearchKey = it.arguments?.getString("defSearchKey") ?: ""
+                val defSourceKey = URLDecoder.decode(it.arguments?.getString("defSourceKey") ?: "", "utf-8")
+                val defSourcesKey = defSourceKey.jsonTo<List<String>>() ?: emptyList()
+                NormalSystemBarColor()
+                Surface(
+                    color = MaterialTheme.colorScheme.background,
+                    contentColor = MaterialTheme.colorScheme.onBackground
+                ) {
+                    CartoonMigrate(def = URLDecoder.decode(defSearchKey, "utf-8"), defSourceKey = defSourcesKey)
                 }
 
 

@@ -47,8 +47,7 @@ fun CartoonCardWithCover(
 ) {
 
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = modifier
             .clip(RoundedCornerShape(4.dp))
             .combinedClickable(
                 onClick = {
@@ -61,32 +60,32 @@ fun CartoonCardWithCover(
             .padding(4.dp),
         horizontalAlignment = Alignment.Start,
     ) {
-        if (!cartoonCover.coverUrl.isNullOrEmpty()) {
-            Box(
-                modifier = Modifier
-                    .aspectRatio(19 / 27F)
-                    .clip(RoundedCornerShape(4.dp)),
-            ) {
-                OkImage(
-                    modifier = Modifier.fillMaxSize(),
-                    image = cartoonCover.coverUrl?:"",
-                    contentDescription = cartoonCover.title,
-                    errorRes = R.drawable.placeholder,
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(19 / 27F)
+                .clip(RoundedCornerShape(4.dp)),
+        ) {
+            OkImage(
+                modifier = Modifier.fillMaxSize(),
+                image = cartoonCover.coverUrl?:"",
+                contentDescription = cartoonCover.title,
+                errorRes = R.drawable.placeholder,
+            )
+            if (star) {
+                Text(
+                    fontSize = 13.sp,
+                    text = stringResource(id = com.heyanle.easy_i18n.R.string.stared_min),
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier
+                        .background(
+                            MaterialTheme.colorScheme.primary,
+                            RoundedCornerShape(0.dp, 0.dp, 4.dp, 0.dp)
+                        )
+                        .padding(4.dp, 0.dp)
                 )
-                if (star) {
-                    Text(
-                        fontSize = 13.sp,
-                        text = stringResource(id = com.heyanle.easy_i18n.R.string.stared_min),
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier
-                            .background(
-                                MaterialTheme.colorScheme.primary,
-                                RoundedCornerShape(0.dp, 0.dp, 4.dp, 0.dp)
-                            )
-                            .padding(4.dp, 0.dp)
-                    )
-                }
             }
+        }
 //            OkImage(
 //                modifier = Modifier
 //                    .then(modifier)
@@ -97,16 +96,15 @@ fun CartoonCardWithCover(
 //                errorRes = R.drawable.placeholder,
 //            )
 
-            Spacer(modifier = Modifier.size(4.dp))
-            Text(
-                style = MaterialTheme.typography.bodySmall,
-                text = cartoonCover.title,
-                maxLines = 2,
-                textAlign = TextAlign.Start,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Spacer(modifier = Modifier.size(4.dp))
-        }
+        Spacer(modifier = Modifier.size(4.dp))
+        Text(
+            style = MaterialTheme.typography.bodySmall,
+            text = cartoonCover.title,
+            maxLines = 2,
+            textAlign = TextAlign.Start,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Spacer(modifier = Modifier.size(4.dp))
     }
 }
 

@@ -5,6 +5,7 @@ import android.app.Application
 import android.content.Context
 import android.os.Build
 import android.os.Process
+import kotlin.reflect.jvm.internal.impl.metadata.ProtoBuf
 
 /**
  * Created by HeYanLe on 2023/2/18 22:47.
@@ -20,6 +21,7 @@ class App : Application() {
 
 
     override fun onCreate() {
+
         super.onCreate()
         APP = this
         if (isMainProcess()) {

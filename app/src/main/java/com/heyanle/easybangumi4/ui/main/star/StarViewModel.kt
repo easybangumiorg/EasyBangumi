@@ -284,6 +284,7 @@ class StarViewModel : ViewModel() {
         }
     }
 
+
     fun dialogChangeTag() {
         _stateFlow.update {
             it.copy(dialog = DialogState.ChangeTag(it.selection, it.tabs))

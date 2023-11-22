@@ -13,6 +13,8 @@
 
     <string name="search">搜索</string>
 
+    <string name="change_source">修改源</string>
+
     <string name="is_empty">内容为空</string>
     <string name="loading">加载中</string>
     <string name="parsing">解析中</string>
@@ -142,6 +144,9 @@
     <string name="no_play_line">没有播放线路</string>
 
     <string name="migrating">数据升级中</string>
+
+    <string name="migrate_support_one">一次只能迁移一部番哦！</string>
+    <string name="long_press_to_star">长按可快速收藏</string>
 
     <string name="source_loading">番剧源加载中</string>
     <string name="no_source">没有番剧源</string>
