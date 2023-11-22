@@ -15,7 +15,7 @@ class ExtensionGetter(
     private val extensionController: ExtensionController
 ) {
 
-    fun flowExtensionState(): StateFlow<ExtensionController.ExtensionState> {
+    fun flowExtensionState(): StateFlow<ExtensionController.ExtensionLoaderState> {
         return extensionController.state
     }
 
