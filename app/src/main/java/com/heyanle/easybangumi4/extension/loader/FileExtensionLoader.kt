@@ -3,6 +3,7 @@ package com.heyanle.easybangumi4.extension.loader
 import android.content.Context
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
+import androidx.core.content.PackageManagerCompat
 import com.heyanle.easybangumi4.extension.Extension
 import dalvik.system.DexClassLoader
 import dalvik.system.PathClassLoader
@@ -18,7 +19,11 @@ class FileExtensionLoader(
 ): AbsExtensionLoader(context) {
 
     private val pkgInfo: PackageInfo? by lazy {
-        packageManager.getPackageArchiveInfo(path, PackageManager.GET_META_DATA or PackageManager.GET_META_DATA or PackageManager.GET_CONFIGURATIONS or PackageManager.GET_SIGNATURES)
+        val f = File(path)
+        // 安卓 14 适配，需要已读才能加载
+        f.setReadOnly()
+        //PackageManagerCompat.getPermissionRevocationVerifierApp()
+        packageManager.getPackageArchiveInfo(path, PackageManager.GET_META_DATA or PackageManager.GET_CONFIGURATIONS or PackageManager.GET_SIGNATURES)
     }
 
     override val key: String
@@ -37,7 +42,14 @@ class FileExtensionLoader(
         if(appInfo.publicSourceDir.isNullOrEmpty()){
             appInfo.publicSourceDir = path
         }
-        val classLoader = PathClassLoader(path, null, context.classLoader)
+        val classLoader = kotlin.runCatching {
+            val f = File(path)
+            f.setReadOnly()
+            PathClassLoader(path, context.classLoader)
+        }.getOrElse {
+            it.printStackTrace()
+            return null
+        }
         return innerLoad(packageManager, pkgInfo, appInfo, classLoader, Extension.TYPE_FILE)
     }
 

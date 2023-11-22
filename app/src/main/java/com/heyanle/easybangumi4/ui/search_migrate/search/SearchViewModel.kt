@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.ui.search
+package com.heyanle.easybangumi4.ui.search_migrate.search
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf

@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.ui.search.searchpage
+package com.heyanle.easybangumi4.ui.search_migrate.search.searchpage
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -12,6 +12,7 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.heyanle.easybangumi4.source_api.component.search.SearchComponent
 import com.heyanle.easybangumi4.source_api.entity.CartoonCover
+import com.heyanle.easybangumi4.ui.search_migrate.PagingSearchSource
 import kotlinx.coroutines.flow.Flow
 
 /**

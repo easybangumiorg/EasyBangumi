@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.SyncAlt
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.filled.Update
 import androidx.compose.material3.AlertDialog
@@ -82,6 +83,7 @@ import com.heyanle.easybangumi4.cartoon.tags.isALL
 import com.heyanle.easybangumi4.cartoon.tags.isInner
 import com.heyanle.easybangumi4.cartoon.tags.isUpdate
 import com.heyanle.easybangumi4.cartoon.tags.tagLabel
+import com.heyanle.easybangumi4.navigationCartoonMigrate
 import com.heyanle.easybangumi4.navigationCartoonTag
 import com.heyanle.easybangumi4.ui.common.CartoonStarCardWithCover
 import com.heyanle.easybangumi4.ui.common.EasyDeleteDialog
@@ -94,9 +96,11 @@ import com.heyanle.easybangumi4.ui.main.star.update.Update
 import com.heyanle.easybangumi4.ui.main.star.update.UpdateViewModel
 import com.heyanle.easybangumi4.navigationDetailed
 import com.heyanle.easybangumi4.ui.common.EasyMutiSelectionDialog
+import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.ui.common.proc.FilterColumn
 import com.heyanle.easybangumi4.ui.common.proc.SortColumn
 import com.heyanle.easybangumi4.utils.stateOf
+import com.heyanle.easybangumi4.utils.stringRes
 
 /**
  * Created by HeYanLe on 2023/7/29 23:21.
@@ -110,18 +114,30 @@ fun Star() {
     val starVM = viewModel<StarViewModel>()
     val updateVM = viewModel<UpdateViewModel>()
 
+    val nav = LocalNavController.current
+
     val selectionBottomBar = remember<@Composable () -> Unit> {
         {
             StarSelectionBottomBar(
                 onDelete = { starVM.dialogDeleteSelection() },
                 onChangeTag = { starVM.dialogChangeTag() },
-                onUpdate = { starVM.onUpdateSelection() }
+                onUpdate = { starVM.onUpdateSelection() },
+                onMigrate = {
+                    val selection = starVM.stateFlow.value.selection
+                    if(selection.size !=  1){
+                        stringRes(R.string.migrate_support_one).moeSnackBar()
+                    }else{
+                        selection.firstOrNull()?.let {
+                            nav.navigationCartoonMigrate(it.title)
+                        }
+
+                    }
+                }
             )
 
         }
     }
 
-    val nav = LocalNavController.current
 
     //val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
@@ -454,6 +470,7 @@ fun StarSelectionBottomBar(
     onDelete: () -> Unit,
     onChangeTag: () -> Unit,
     onUpdate: () -> Unit,
+    onMigrate: ()->Unit,
 ) {
 
     BottomAppBar(actions = {
@@ -469,6 +486,12 @@ fun StarSelectionBottomBar(
             onUpdate()
         }) {
             Icon(Icons.Filled.Update, contentDescription = stringResource(id = R.string.update))
+        }
+
+        IconButton(onClick = {
+            onMigrate()
+        }) {
+            Icon(Icons.Filled.SyncAlt, contentDescription = stringResource(id = R.string.migrating))
         }
     }, floatingActionButton = {
         FloatingActionButton(

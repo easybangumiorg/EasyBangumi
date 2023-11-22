@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.ui.common
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyListScope
@@ -187,4 +188,40 @@ fun <T : Any> LazyListScope.pagingCommon(items: LazyPagingItems<T>, isShowLoadin
         }
     }
 }
+
+fun <T : Any> LazyListScope.pagingCommonHor(items: LazyPagingItems<T>, isShowLoading: Boolean = true) {
+    when (items.loadState.append) {
+        is LoadState.Loading -> {
+            if (isShowLoading)
+                item() {
+                    LoadingPage(
+                        modifier = Modifier.fillMaxHeight(),
+                    )
+                }
+        }
+
+        is LoadState.Error -> {
+            item() {
+                val errorMsg =
+                    (items.loadState.append as? LoadState.Error)?.error?.message ?: stringRes(
+                        R.string.net_error
+                    )
+                ErrorPage(modifier = Modifier.fillMaxHeight(),
+                    errorMsg = errorMsg,
+                    clickEnable = true,
+                    other = {
+                        Text(text = stringResource(id = R.string.click_to_retry))
+                    },
+                    onClick = {
+                        items.retry()
+                    })
+            }
+        }
+
+        else -> {
+
+        }
+    }
+}
+
 
