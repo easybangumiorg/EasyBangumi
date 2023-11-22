@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicLong
  * extensionFolder 文件夹下的拓展 -↗
  * 注：
  * 1. 对于文件拓展，如果同一个拓展在文件夹里有两个文件，那么在这里依然识别为两个拓展，具体去重由上层 Source 实现
- * 2. 同样包名的拓展只会保留一个，版本高的，文件加载的，文件最后修改时间后的优先
+ * 2. 同样包名的拓展同一种加载方式只会保留一个
  * 3. 该组件会持续观察 extensionFolder 文件夹，直接在里面添加文件即可，后缀为 .easybangumi.apk
  * 4. 该组件会接受软件 安装-卸载-升级广播
  * Created by heyanlin on 2023/10/24.

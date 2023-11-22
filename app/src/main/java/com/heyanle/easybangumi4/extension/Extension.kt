@@ -37,7 +37,7 @@ sealed class Extension {
         override val sourcePath: String,
         val sources: List<Source>,
         val resources: Resources?,
-        val conflictExtension: List<Extension> = emptyList() // 包名重复的拓展，不会最终加载，只是展示出来供用户删除/卸载
+
     ): Extension()
 
     data class InstallError(
