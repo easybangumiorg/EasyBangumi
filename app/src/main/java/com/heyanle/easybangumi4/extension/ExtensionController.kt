@@ -13,23 +13,17 @@ import com.heyanle.easybangumi4.extension.loader.ExtensionLoaderFactory
 import com.heyanle.easybangumi4.extension.loader.FileExtensionLoader
 import com.heyanle.easybangumi4.utils.TimeLogUtils
 import com.heyanle.easybangumi4.utils.logi
-import com.heyanle.extension_api.iconFactory
-import com.heyanle.injekt.api.get
-import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.yield
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
-import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicLong
 
 /**
@@ -37,7 +31,7 @@ import java.util.concurrent.atomic.AtomicLong
  * extensionFolder 文件夹下的拓展 -↗
  * 注：
  * 1. 对于文件拓展，如果同一个拓展在文件夹里有两个文件，那么在这里依然识别为两个拓展，具体去重由上层 Source 实现
- * 2. 如果一个拓展同时存在于文件和安装，则在这里依然会识别为两个拓展，具体去重由上层 Source 实现
+ * 2. 同样包名的拓展只会保留一个，版本高的，文件加载的，文件最后修改时间后的优先
  * 3. 该组件会持续观察 extensionFolder 文件夹，直接在里面添加文件即可，后缀为 .easybangumi.apk
  * 4. 该组件会接受软件 安装-卸载-升级广播
  * Created by heyanlin on 2023/10/24.
@@ -55,7 +49,7 @@ class ExtensionController(
         const val EXTENSION_SUFFIX = ".easybangumi.apk"
     }
 
-    data class ExtensionState(
+    data class ExtensionLoaderState(
         val isFileExtensionLoading: Boolean = true,
         val isAppExtensionLoading: Boolean = true,
         val fileExtension: Map<String, Extension> = emptyMap(),
@@ -70,7 +64,7 @@ class ExtensionController(
     private var lastScanFolderJob: Job? = null
     private var lastScanAppJob: Job? = null
 
-    private val _state = MutableStateFlow<ExtensionState>(ExtensionState())
+    private val _state = MutableStateFlow<ExtensionLoaderState>(ExtensionLoaderState())
     val state = _state.asStateFlow()
 
     private val fileObserver = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -87,7 +81,7 @@ class ExtensionController(
     fun init() {
         // 只有第一次需要提示加载中
         _state.update {
-            ExtensionState(true, true)
+            ExtensionLoaderState(true, true)
         }
         scanFolder()
         scanApp()
