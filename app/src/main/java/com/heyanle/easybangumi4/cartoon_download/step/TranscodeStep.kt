@@ -167,11 +167,13 @@ class TranscodeStep(
             ) else s
             // 文件头伪装成 png
             val rr = res ?: s
-            if (rr[0].toInt() == 0x89 && rr[1].toInt() == 0x50 && rr[2].toInt() == 0x4E && rr[3].toInt() == 0x47) {
-                rr[0] = 0xff.toByte()
-                rr[1] = 0xff.toByte()
-                rr[2] = 0xff.toByte()
-                rr[3] = 0xff.toByte()
+            if(rr.size >= 4){
+                if (rr[0].toInt() == 0x89 && rr[1].toInt() == 0x50 && rr[2].toInt() == 0x4E && rr[3].toInt() == 0x47) {
+                    rr[0] = 0xff.toByte()
+                    rr[1] = 0xff.toByte()
+                    rr[2] = 0xff.toByte()
+                    rr[3] = 0xff.toByte()
+                }
             }
             tshTemp.writeBytes(rr)
             tshTemp.renameTo(tsh)
