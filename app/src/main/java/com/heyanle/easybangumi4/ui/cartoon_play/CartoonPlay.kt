@@ -927,7 +927,7 @@ fun CartoonPlayDetailed(
                     onWeb = onWeb,
                     onDlna = onDlna,
                     onDownload = {
-                        if (currentDownloadPlayLine.value == null) {
+                        if (currentDownloadPlayLine.value == null && selectLineIndex in playLines.indices) {
                             currentDownloadPlayLine.value = playLines[selectLineIndex]
                             currentDownloadSelect.value = setOf()
                         } else {
