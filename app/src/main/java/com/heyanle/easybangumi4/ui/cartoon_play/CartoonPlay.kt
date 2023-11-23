@@ -528,7 +528,6 @@ fun VideoFloat(
                             )
                         }
                     }
-
                 }
             }
         }
@@ -633,7 +632,6 @@ fun VideoFloat(
                 }
             }
         }
-
     }
 
     playingState.playLine()?.let { playLine ->
@@ -692,11 +690,9 @@ fun VideoFloat(
                             }
                         }
                     }
-
                 }
             }
         }
-
     }
     playingState.playLine()?.let { playLine ->
 

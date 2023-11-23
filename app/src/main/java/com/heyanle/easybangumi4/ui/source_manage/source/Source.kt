@@ -71,14 +71,6 @@ fun SourceTopAppBar(behavior: TopAppBarScrollBehavior) {
             }) {
                 Icon(Icons.Filled.Sort, stringResource(id = R.string.long_touch_to_drag))
             }
-
-            IconButton(onClick = {
-                nav.navigate(EXTENSION_STORE)
-            }) {
-                Icon(
-                    imageVector = Icons.Filled.Store, stringResource(id = R.string.source_store)
-                )
-            }
         }
     )
 }
