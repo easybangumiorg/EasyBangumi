@@ -72,16 +72,18 @@ var explorePageIndex by okkv("explorePageInitPageIndex", 0)
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun SourceManager() {
+fun SourceManager(
+    defIndex: Int = -1
+) {
 
-    val pagerState = rememberPagerState(initialPage = explorePageIndex, 0f) {
+    val pagerState = rememberPagerState(initialPage = if(defIndex ==  -1) explorePageIndex else defIndex, 0f) {
         ExplorePageItems.size
     }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(key1 = Unit) {
-        pagerState.scrollToPage(explorePageIndex)
+        pagerState.scrollToPage(if(defIndex ==  -1) explorePageIndex else defIndex)
     }
 
     Column(
