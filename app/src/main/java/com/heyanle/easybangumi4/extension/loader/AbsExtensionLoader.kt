@@ -10,6 +10,7 @@ import com.heyanle.easybangumi4.source_api.Source
 import com.heyanle.easybangumi4.source_api.SourceFactory
 import com.heyanle.easybangumi4.utils.TimeLogUtils
 import com.heyanle.easybangumi4.utils.loge
+import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.extension_api.ExtensionSource
 
 /**
@@ -46,6 +47,7 @@ abstract class AbsExtensionLoader(
             return null
         }
         TimeLogUtils.i("ExtensionLoader ${pkgInfo.packageName} inner start")
+        appInfo.publicSourceDir.logi(TAG)
         try {
             val extName =
                 appInfo.loadLabel(pkgManager).toString().substringAfter("EasyBangumi: ")
@@ -73,6 +75,7 @@ abstract class AbsExtensionLoader(
                     exception = null,
                     loadType = loadType,
                     sourcePath = appInfo.sourceDir,
+                    publicPath = appInfo.publicSourceDir
                 )
             }
             if (libVersion > LIB_VERSION_MAX) {
@@ -94,6 +97,7 @@ abstract class AbsExtensionLoader(
                     exception = null,
                     loadType = loadType,
                     sourcePath = appInfo.sourceDir,
+                    publicPath = appInfo.publicSourceDir
                 )
             }
             val sources = (appInfo.metaData.getString(METADATA_SOURCE_CLASS) ?: "").split(";").map {
@@ -131,6 +135,7 @@ abstract class AbsExtensionLoader(
                         exception = e,
                         loadType = loadType,
                         sourcePath = appInfo.sourceDir,
+                        publicPath = appInfo.publicSourceDir
                     )
                 }
             }.map {
@@ -155,6 +160,7 @@ abstract class AbsExtensionLoader(
                 resources = pkgManager.getResourcesForApplication(appInfo),
                 loadType = loadType,
                 sourcePath = appInfo.sourceDir,
+                publicPath = appInfo.publicSourceDir
             )
         } catch (e: Exception) {
             e.printStackTrace()

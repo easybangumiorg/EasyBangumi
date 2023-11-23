@@ -66,18 +66,6 @@ object Scheduler {
         initOkkv(application)
         initAria(application)
         initTrustAllHost()
-
-        val d = """
-            {
-                "apiVersion": 4,
-                "infoList": [
-                    {
-                        "d": "a"
-                    }
-                ]
-            }
-        """.trimIndent().jsonTo<ExtensionStoreRemoteInfo>()
-        d.logi("")
     }
 
 
