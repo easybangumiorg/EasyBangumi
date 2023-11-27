@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.Ignore
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.heyanle.easybangumi4.cartoon.play.PlayLineWrapper
 import com.heyanle.easybangumi4.source_api.entity.Cartoon
 import com.heyanle.easybangumi4.source_api.entity.CartoonCover
 import com.heyanle.easybangumi4.source_api.entity.CartoonImpl
@@ -46,6 +47,8 @@ data class CartoonStar(
     var watchProcess: String, // 播放进度 “1/11”，在追番页面展示
 
     var reversal: Boolean, // 是否反转集数
+
+    var sortByKey: String, // 排序名称
 
     var tags: String, // 番剧分类 "1, 2, 3" 的格式
 
@@ -94,6 +97,7 @@ data class CartoonStar(
                 lastUpdateTime = 0L,
                 isUpdate = cartoon.isUpdate,
                 reversal = false,
+                sortByKey = "",
                 watchProcess = "",
                 tags = tags,
                 sourceName = cartoon.sourceName
@@ -122,6 +126,7 @@ data class CartoonStar(
                 lastUpdateTime = 0L,
                 isUpdate = cartoon.isUpdate,
                 reversal = false,
+                sortByKey = "",
                 watchProcess = "",
                 tags = tags,
                 sourceName = sourceName

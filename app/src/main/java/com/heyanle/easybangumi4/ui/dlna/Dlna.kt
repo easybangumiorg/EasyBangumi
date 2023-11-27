@@ -78,7 +78,7 @@ import com.heyanle.easybangumi4.source_api.component.detailed.DetailedComponent
 import com.heyanle.easybangumi4.source_api.component.play.PlayComponent
 import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
 import com.heyanle.easybangumi4.source_api.entity.PlayLine
-import com.heyanle.easybangumi4.ui.cartoon_play.CartoonTitleCard
+import com.heyanle.easybangumi4.ui.cartoon_play_old.CartoonTitleCard
 import com.heyanle.easybangumi4.ui.common.Action
 import com.heyanle.easybangumi4.ui.common.EmptyPage
 import com.heyanle.easybangumi4.ui.common.ErrorPage

@@ -1,10 +1,9 @@
-package com.heyanle.easybangumi4.ui.cartoon_play
+package com.heyanle.easybangumi4.ui.cartoon_play_old
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.entity.CartoonStar
@@ -18,14 +17,11 @@ import com.heyanle.easybangumi4.getter.CartoonInfoGetter
 import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
 import com.heyanle.easybangumi4.source_api.entity.Episode
 import com.heyanle.easybangumi4.source_api.entity.PlayLine
-import com.heyanle.easybangumi4.ui.cartoon_play_old.DetailedViewModelOld
 import com.heyanle.easybangumi4.ui.common.proc.SortBy
-import com.heyanle.easybangumi4.ui.common.proc.SortState
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
@@ -45,20 +41,16 @@ class DetailedViewModel(
     private val cartoonSummary: CartoonSummary,
 ) : ViewModel() {
 
-    companion object {
-        const val SORT_DEFAULT_KEY = "default"
-    }
-
 
     val sortByDefault: SortBy<Episode> = SortBy<Episode>(
-        SORT_DEFAULT_KEY,
+        "default",
         stringRes(com.heyanle.easy_i18n.R.string.default_word)
     ) { o1, o2 ->
         o1.order - o2.order
     }
 
     val sortByLabel: SortBy<Episode> = SortBy<Episode>(
-        "label",
+        "default",
         stringRes(com.heyanle.easy_i18n.R.string.default_word)
     ) { o1, o2 ->
         o1.label.compareTo(o2.label)
@@ -78,7 +70,7 @@ class DetailedViewModel(
         val detail: CartoonInfo? = null,
         val playLine: List<PlayLine> = emptyList(),
         val isShowPlayLine: Boolean = true,
-        val currentSortKey: String = SORT_DEFAULT_KEY,
+        val currentSortKey: String = "",
         val isReverse: Boolean = false,
         val isStar: Boolean = false,
         val playLineWrappers: List<PlayLineWrapper> = emptyList(),
@@ -86,7 +78,7 @@ class DetailedViewModel(
 
     data class StarDialogState(
         val cartoon: CartoonInfo,
-        val playLines: List<PlayLineWrapper>,
+        val playLines: List<PlayLine>,
         val tagList: List<CartoonTag>,
     )
 
@@ -95,14 +87,6 @@ class DetailedViewModel(
 
     private val _stateFlow = MutableStateFlow<DetailedState>(DetailedState())
     val stateFlow = _stateFlow.asStateFlow()
-
-    val sortState = SortState<Episode>(
-        sortList,
-        stateFlow.map { it.currentSortKey }
-            .stateIn(viewModelScope, SharingStarted.Lazily, SORT_DEFAULT_KEY),
-        stateFlow.map { it.isReverse }.stateIn(viewModelScope, SharingStarted.Lazily, false)
-    )
-
 
     init {
 
@@ -203,7 +187,7 @@ class DetailedViewModel(
         }
     }
 
-    fun setCartoonStar(isStar: Boolean, cartoon: CartoonInfo, playLines: List<PlayLineWrapper>) {
+    fun setCartoonStar(isStar: Boolean, cartoon: CartoonInfo, playLines: List<PlayLine>) {
         viewModelScope.launch {
             if (isStar) {
                 val tl = cartoonTagsController.tagsList.first()
@@ -235,9 +219,10 @@ class DetailedViewModel(
     }
 
 
+
     fun starCartoon(
         cartoon: CartoonInfo,
-        playLines: List<PlayLineWrapper>,
+        playLines: List<PlayLine>,
         tag: List<CartoonTag>
     ) {
         viewModelScope.launch {
@@ -247,14 +232,14 @@ class DetailedViewModel(
 
     private suspend fun innerStarCartoon(
         cartoon: CartoonInfo,
-        playLines: List<PlayLineWrapper>,
+        playLines: List<PlayLine>,
         tag: List<CartoonTag>
     ) {
         withContext(Dispatchers.IO) {
             cartoonStarDao.modify(
                 CartoonStar.fromCartoonInfo(
                     cartoon,
-                    playLines.map { it.playLine },
+                    playLines,
                     tag.joinToString(", ") { it.id.toString() }).apply {
                     reversal = stateFlow.value.isReverse
                     sortByKey = stateFlow.value.currentSortKey
@@ -270,16 +255,11 @@ class DetailedViewModel(
         }
     }
 
-    fun setCartoonSort(
-        sortByKey: String,
-        isReverse: Boolean,
-        cartoon: CartoonInfo,
-        isStar: Boolean
-    ) {
+    fun setCartoonSort(sortBy: SortBy<PlayLine>, isReverse: Boolean, cartoon: CartoonInfo, isStar: Boolean) {
 
         _stateFlow.update {
             it.copy(
-                currentSortKey = sortByKey,
+                currentSortKey = sortBy.id,
                 isReverse = isReverse
             )
         }
@@ -295,7 +275,7 @@ class DetailedViewModel(
                     cartoonStarDao.update(
                         star.copy(
                             reversal = isReverse,
-                            sortByKey = sortByKey
+                            sortByKey = sortBy.id
                         )
                     )
                 }
@@ -303,18 +283,4 @@ class DetailedViewModel(
         }
     }
 
-}
-
-
-class DetailedViewModelFactory(
-    private val cartoonSummary: CartoonSummary,
-) : ViewModelProvider.Factory {
-
-    @Suppress("UNCHECKED_CAST")
-    @SuppressWarnings("unchecked")
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(DetailedViewModel::class.java))
-            return DetailedViewModel(cartoonSummary) as T
-        throw RuntimeException("unknown class :" + modelClass.name)
-    }
 }

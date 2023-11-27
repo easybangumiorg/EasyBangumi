@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.ui.cartoon_play
+package com.heyanle.easybangumi4.ui.cartoon_play_old
 
 import android.app.Activity
 import androidx.activity.compose.BackHandler
@@ -65,10 +65,10 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SelectAll
-import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarOutline
+import androidx.compose.material.icons.filled.WifiProtectedSetup
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -110,9 +110,7 @@ import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.DOWNLOAD
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
-import com.heyanle.easybangumi4.cartoon.play.CartoonPlayingController
 import com.heyanle.easybangumi4.cartoon.play.CartoonPlayingControllerOld
-import com.heyanle.easybangumi4.cartoon.play.PlayLineWrapper
 import com.heyanle.easybangumi4.cartoon_download.CartoonDownloadController
 import com.heyanle.easybangumi4.cartoon_download.CartoonDownloadDispatcher
 import com.heyanle.easybangumi4.exo.EasyExoPlayer
@@ -122,6 +120,7 @@ import com.heyanle.easybangumi4.navigationSearch
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
 import com.heyanle.easybangumi4.source_api.entity.Episode
+import com.heyanle.easybangumi4.source_api.entity.PlayLine
 import com.heyanle.easybangumi4.ui.common.Action
 import com.heyanle.easybangumi4.ui.common.ActionRow
 import com.heyanle.easybangumi4.ui.common.DetailedContainer
@@ -133,7 +132,6 @@ import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.common.TabIndicator
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
-import com.heyanle.easybangumi4.ui.common.proc.SortState
 import com.heyanle.easybangumi4.utils.isCurPadeMode
 import com.heyanle.easybangumi4.utils.openUrl
 import com.heyanle.easybangumi4.utils.stringRes
@@ -152,7 +150,7 @@ import loli.ball.easyplayer2.TopControl
 import loli.ball.easyplayer2.utils.rememberBatteryReceiver
 
 /**
- * Created by heyanlin on 2023/11/27.
+ * Created by heyanlin on 2023/10/31.
  */
 @Composable
 fun CartoonPlay(
@@ -161,7 +159,6 @@ fun CartoonPlay(
     url: String,
     enterData: CartoonPlayViewModel.EnterData? = null
 ) {
-
     val summary = remember(key1 = id, key2 = source, key3 = url) {
         CartoonSummary(id, source, url)
     }
@@ -173,7 +170,7 @@ fun CartoonPlay(
     ) {
         DetailedContainer(sourceKey = source) { _, sou, det ->
             val detailedVM =
-                viewModel<DetailedViewModel>(factory = DetailedViewModelFactory(summary))
+                viewModel<DetailedViewModelOld>(factory = DetailedViewModelFactory(summary))
             val cartoonPlayViewModel =
                 viewModel<CartoonPlayViewModel>()
             CartoonPlay(
@@ -219,35 +216,37 @@ val speedConfig = linkedMapOf(
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 @Composable
 fun CartoonPlay(
-    detailedVM: DetailedViewModel,
+    detailedVM: DetailedViewModelOld,
     cartoonPlayVM: CartoonPlayViewModel,
     cartoonSummary: CartoonSummary,
     enterData: CartoonPlayViewModel.EnterData? = null,
 ) {
     val isPad = isCurPadeMode()
 
-    val cartoonPlayingController: CartoonPlayingController by Injekt.injectLazy()
+    val cartoonPlayingControllerOld: CartoonPlayingControllerOld by Injekt.injectLazy()
     val controlVM = ControlViewModelFactory.viewModel(Injekt.get<EasyExoPlayer>(), isPad)
     val nav = LocalNavController.current
 
-    val detailState = detailedVM.stateFlow.collectAsState()
-    val playingState = cartoonPlayingController.state.collectAsState()
+    val playingState = cartoonPlayingControllerOld.state.collectAsState()
 
-    LaunchedEffect(key1 = detailState.value) {
-        val sta = detailState.value
-        if(!sta.isLoading && !sta.isError && sta.detail != null && sta.playLineWrappers.isNotEmpty()){
-            cartoonPlayVM.onDetailedLoaded(sta.detail, sta.playLineWrappers, enterData)
+    LaunchedEffect(key1 = detailedVM.detailedState) {
+        val sta = detailedVM.detailedState
+        if (sta is DetailedViewModelOld.DetailedState.None) {
+            detailedVM.load()
+        } else if (sta is DetailedViewModelOld.DetailedState.Info) {
+            // 加载好之后进入 播放环节
+            cartoonPlayVM.onDetailedLoaded(sta, enterData)
         }
     }
 
     LaunchedEffect(key1 = Unit) {
-        detailedVM.load()
+        detailedVM.checkUpdate()
     }
 
     DisposableEffect(key1 = Unit) {
         onDispose {
-            cartoonPlayingController.trySaveHistory()
-            cartoonPlayingController.release()
+            cartoonPlayingControllerOld.trySaveHistory()
+            cartoonPlayingControllerOld.release()
         }
     }
 
@@ -292,7 +291,7 @@ fun CartoonPlay(
         contentWeight = 0.5f,
         videoFloat = {
             VideoFloat(
-                cartoonPlayingController = cartoonPlayingController,
+                cartoonPlayingControllerOld = cartoonPlayingControllerOld,
                 playingState = playingState.value,
                 detailedVM = detailedVM,
                 controlVM = controlVM,
@@ -355,15 +354,14 @@ fun CartoonPlay(
 
 }
 
-
 @Composable
 fun VideoControl(
     controlVM: ControlViewModel,
-    playingState: CartoonPlayingController.PlayingState,
+    playingState: CartoonPlayingControllerOld.PlayingState,
     showSpeedWin: MutableState<Boolean>,
     showEpisodeWin: MutableState<Boolean>,
 ) {
-    val cartoonPlayingController: CartoonPlayingController by Injekt.injectLazy()
+    val cartoonPlayingControllerOld: CartoonPlayingControllerOld by Injekt.injectLazy()
     val nav = LocalNavController.current
     Box(Modifier.fillMaxSize()) {
 
@@ -373,7 +371,7 @@ fun VideoControl(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(6.dp, 64.dp),
-            longTouchText = stringResource(id = R.string.long_press_fast_forward)
+            longTouchText = stringResource(id = com.heyanle.easy_i18n.R.string.long_press_fast_forward)
         )
 
 
@@ -386,7 +384,7 @@ fun VideoControl(
 
 
         NormalVideoTopBar(controlVM,
-            showTools = playingState is CartoonPlayingController.PlayingState.Playing,
+            showTools = playingState is CartoonPlayingControllerOld.PlayingState.Playing,
             onBack = {
                 nav.popBackStack()
             },
@@ -394,7 +392,7 @@ fun VideoControl(
                 showSpeedWin.value = true
             },
             onPlayExt = {
-                cartoonPlayingController.playCurrentExternal()
+                cartoonPlayingControllerOld.playCurrentExternal()
             }
         )
 
@@ -418,7 +416,7 @@ fun VideoControl(
                             showSpeedWin.value = true
                         }
                         .padding(8.dp),
-                    text = stringResource(id = R.string.speed),
+                    text = stringResource(id = com.heyanle.easy_i18n.R.string.speed),
                     color = Color.White
                 )
                 Text(
@@ -428,7 +426,7 @@ fun VideoControl(
                             showEpisodeWin.value = true
                         }
                         .padding(8.dp),
-                    text = stringResource(id = R.string.episode),
+                    text = stringResource(id = com.heyanle.easy_i18n.R.string.episode),
                     color = Color.White
                 )
             }
@@ -444,9 +442,9 @@ fun VideoControl(
 
 @Composable
 fun VideoFloat(
-    cartoonPlayingController: CartoonPlayingController,
-    playingState: CartoonPlayingController.PlayingState,
-    detailedVM: DetailedViewModel,
+    cartoonPlayingControllerOld: CartoonPlayingControllerOld,
+    playingState: CartoonPlayingControllerOld.PlayingState,
+    detailedVM: DetailedViewModelOld,
     controlVM: ControlViewModel,
     showSpeedWin: MutableState<Boolean>,
     showEpisodeWin: MutableState<Boolean>,
@@ -455,15 +453,15 @@ fun VideoFloat(
 
     LaunchedEffect(key1 = playingState) {
         when (playingState) {
-            is CartoonPlayingController.PlayingState.Playing -> {
-                // controlVM.onPrepare()
+            is CartoonPlayingControllerOld.PlayingState.Playing -> {
+                controlVM.onPrepare()
                 // CartoonPlayingManager.trySaveHistory()
             }
 
-            is CartoonPlayingController.PlayingState.Loading -> {
+            is CartoonPlayingControllerOld.PlayingState.Loading -> {
             }
 
-            is CartoonPlayingController.PlayingState.Error -> {
+            is CartoonPlayingControllerOld.PlayingState.Error -> {
                 controlVM.onFullScreen(false, false, ctx)
             }
 
@@ -472,12 +470,12 @@ fun VideoFloat(
     }
     LaunchedEffect(key1 = controlVM.controlState) {
         if (controlVM.controlState == ControlViewModel.ControlState.Ended) {
-            cartoonPlayingController.tryNext()
-            stringRes(R.string.try_play_next).toast()
+            cartoonPlayingControllerOld.tryNext(isReverse = detailedVM.isReverse)
+            stringRes(com.heyanle.easy_i18n.R.string.try_play_next).toast()
         }
     }
     when (playingState) {
-        is CartoonPlayingController.PlayingState.Playing -> {
+        is CartoonPlayingControllerOld.PlayingState.Playing -> {
             if (controlVM.controlState == ControlViewModel.ControlState.Ended) {
                 Box(
                     modifier = Modifier.fillMaxSize()
@@ -485,7 +483,7 @@ fun VideoFloat(
                     IconButton(
                         modifier = Modifier.align(Alignment.Center),
                         onClick = {
-                            cartoonPlayingController.refresh()
+                            cartoonPlayingControllerOld.refresh()
                         }) {
                         Icon(
                             Icons.Filled.Replay,
@@ -514,7 +512,7 @@ fun VideoFloat(
             }
         }
 
-        is CartoonPlayingController.PlayingState.Loading -> {
+        is CartoonPlayingControllerOld.PlayingState.Loading -> {
             Box {
                 LoadingPage(
                     modifier = Modifier
@@ -546,7 +544,7 @@ fun VideoFloat(
 
         }
 
-        is CartoonPlayingController.PlayingState.Error -> {
+        is CartoonPlayingControllerOld.PlayingState.Error -> {
             ErrorPage(
                 modifier = Modifier
                     .fillMaxSize()
@@ -558,7 +556,7 @@ fun VideoFloat(
                     Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.click_to_retry))
                 },
                 onClick = {
-                    cartoonPlayingController.refresh()
+                    cartoonPlayingControllerOld.refresh()
                 }
             )
         }
@@ -627,6 +625,7 @@ fun VideoFloat(
 
                     ) {
 
+                    val isReverse = detailedVM.isReverse
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -650,16 +649,16 @@ fun VideoFloat(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center
                         ) {
-                            for (i in 0 until playLine.sortedEpisodeList.size) {
-                                val index =  i
-                                val s = playLine.sortedEpisodeList[index]
+                            for (i in 0 until playLine.episode.size) {
+                                val index = if (isReverse) playLine.episode.size - 1 - i else i
+                                val s = playLine.episode[index]
                                 Text(
                                     textAlign = TextAlign.Center,
                                     text = s.label,
                                     modifier = Modifier
                                         .defaultMinSize(180.dp, Dp.Unspecified)
                                         .clickable {
-                                            cartoonPlayingController.changePlay(
+                                            cartoonPlayingControllerOld.changePlay(
                                                 cartoonInfo,
                                                 playLine,
                                                 s
@@ -679,9 +678,9 @@ fun VideoFloat(
 
 @Composable
 fun PlayContent(
-    detailedVM: DetailedViewModel,
+    detailedVM: DetailedViewModelOld,
     cartoonPlayVM: CartoonPlayViewModel,
-    playingState: CartoonPlayingController.PlayingState,
+    playingState: CartoonPlayingControllerOld.PlayingState,
     lazyGridState: LazyGridState,
 ) {
     Column {
@@ -708,43 +707,43 @@ fun PlayContent(
 
 @Composable
 fun CartoonPlayUI(
-    detailedVM: DetailedViewModel,
+    detailedVM: DetailedViewModelOld,
     cartoonPlayVM: CartoonPlayViewModel,
-    playingState: CartoonPlayingController.PlayingState,
+    playingState: CartoonPlayingControllerOld.PlayingState,
     listState: LazyGridState = rememberLazyGridState(),
     //onTitle: (String) -> Unit,
 ) {
 
-    val state = detailedVM.stateFlow.collectAsState()
-    val sta = state.value
-    val detailed = sta.detail
-    if (sta.isLoading) {
-        LoadingPage(
-            modifier = Modifier.fillMaxSize()
-        )
-    } else if (sta.isError) {
-        ErrorPage(
-            modifier = Modifier.fillMaxSize(),
-            errorMsg = if (sta.errorMsg.isEmpty()) sta.throwable?.message ?: "" else sta.errorMsg,
-            clickEnable = true,
-            onClick = {
-                detailedVM.load()
-            },
-            other = { Text(text = stringResource(id = R.string.click_to_retry)) }
-        )
-    } else if (detailed != null) {
+    when (val detailedState = detailedVM.detailedState) {
+        is DetailedViewModelOld.DetailedState.Info -> {
+            CartoonPlayPage(
+                detailedVM,
+                cartoonPlayVM,
+                detailedState,
+                playingState,
+                listState
+            )
+        }
 
-        CartoonPlayPage(
-            detailedVM = detailedVM,
-            cartoonPlayVM = cartoonPlayVM,
-            isShowPlayLine = sta.isShowPlayLine,
-            cartoon = detailed,
-            isStar = sta.isStar,
-            sortState = detailedVM.sortState,
-            playingPlayLine = sta.playLineWrappers,
-            playingState = playingState,
-            listState = listState
-        )
+        is DetailedViewModelOld.DetailedState.Error -> {
+            ErrorPage(
+                modifier = Modifier.fillMaxSize(),
+                errorMsg = detailedState.errorMsg,
+                clickEnable = true,
+                onClick = {
+                    detailedVM.load()
+                },
+                other = { Text(text = stringResource(id = R.string.click_to_retry)) }
+            )
+        }
+
+        is DetailedViewModelOld.DetailedState.Loading -> {
+            LoadingPage(
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+
+        else -> Unit
     }
 
 }
@@ -752,44 +751,44 @@ fun CartoonPlayUI(
 @Composable
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 fun CartoonPlayPage(
-    detailedVM: DetailedViewModel,
+    detailedVM: DetailedViewModelOld,
     cartoonPlayVM: CartoonPlayViewModel,
-    isShowPlayLine: Boolean,
-    cartoon: CartoonInfo,
-    isStar: Boolean,
-    sortState: SortState<Episode>,
-    playingPlayLine: List<PlayLineWrapper>,
-    playingState: CartoonPlayingController.PlayingState,
+    detailedState: DetailedViewModelOld.DetailedState.Info,
+    playingState: CartoonPlayingControllerOld.PlayingState,
     listState: LazyGridState = rememberLazyGridState(),
     //onTitle: (String) -> Unit,
 ) {
-    val playingController: CartoonPlayingController by Injekt.injectLazy()
+    val playingController: CartoonPlayingControllerOld by Injekt.injectLazy()
     val cartoonDownloadDispatcher: CartoonDownloadDispatcher by Injekt.injectLazy()
     val nav = LocalNavController.current
     CartoonPlayDetailed(
-        cartoon = cartoon,
-        playLines = playingPlayLine,
+        cartoon = detailedState.detail,
+        playLines = detailedState.playLine,
         selectLineIndex = cartoonPlayVM.selectedLineIndex,
         playingPlayLine = playingState.playLine(),
         playingEpisode = playingState.episode(),
-        showPlayLine = isShowPlayLine,
+        showPlayLine = detailedState.isShowPlayLine,
         listState = listState,
+        isReversal = detailedVM.isReverse,
         onLineSelect = {
             cartoonPlayVM.selectedLineIndex = it
         },
         onEpisodeClick = { playLine, episode ->
-            playingController.changePlay(cartoon, playLine, episode, 0)
+            playingController.changePlay(detailedState.detail, playLine, episode, 0)
         },
-        isStar = isStar,
+        isStar = detailedVM.isStar,
         onStar = {
-            detailedVM.setCartoonStar(it, cartoon, playingPlayLine)
+            detailedVM.setCartoonStar(it, detailedState.detail, detailedState.playLine)
+        },
+        onReversal = {
+            detailedVM.setCartoonReverse(it, detailedState.detail)
         },
         onSearch = {
-            nav.navigationSearch(cartoon.title, cartoon.source)
+            nav.navigationSearch(detailedState.detail.title, detailedState.detail.source)
         },
         onWeb = {
             runCatching {
-                cartoon.url.openUrl()
+                detailedState.detail.url.openUrl()
             }.onFailure {
                 it.printStackTrace()
             }
@@ -797,15 +796,14 @@ fun CartoonPlayPage(
         onDlna = {
             nav.navigationDlna(
                 CartoonSummary(
-                    cartoon.id,
-                    cartoon.source,
-                    cartoon.url
+                    detailedState.detail.id,
+                    detailedState.detail.source,
+                    detailedState.detail.url
                 ),
-                playingPlayLine.indexOf(playingState.playLine()) ?: -1,
-                playingState.playLine()?.playLine?.episode?.indexOf(playingState.episode()) ?: -1
+                detailedState.playLine.indexOf(playingState.playLine()) ?: -1,
+                playingState.playLine()?.episode?.indexOf(playingState.episode()) ?: -1
             )
         },
-        sortState = sortState,
         onDownload = { playLine, episodes ->
             stringRes(R.string.add_download_completely).moeSnackBar(
                 confirmLabel = stringRes(R.string.click_to_view),
@@ -813,12 +811,9 @@ fun CartoonPlayPage(
                     nav.navigate(DOWNLOAD)
                 }
             )
-            cartoonDownloadDispatcher.newDownload(cartoon, episodes.map {
-                playLine.playLine to it
+            cartoonDownloadDispatcher.newDownload(detailedState.detail, episodes.map {
+                playLine to it
             })
-        },
-        onSortChange = { sortKey, isReverse ->
-            detailedVM.setCartoonSort(sortKey, isReverse, cartoon, isStar)
         }
     )
 }
@@ -828,32 +823,32 @@ fun CartoonPlayPage(
 fun CartoonPlayDetailed(
     cartoon: CartoonInfo,
 
-    playLines: List<PlayLineWrapper>,
+    playLines: List<PlayLine>,
     selectLineIndex: Int,
 
-    playingPlayLine: PlayLineWrapper?,
+    playingPlayLine: PlayLine?,
     playingEpisode: Episode?,
 
     listState: LazyGridState = rememberLazyGridState(),
 
     onLineSelect: (Int) -> Unit,
-    onEpisodeClick: (PlayLineWrapper, Episode) -> Unit,
+    onEpisodeClick: (PlayLine, Episode) -> Unit,
 
     showPlayLine: Boolean = true,
 
     isStar: Boolean,
     onStar: (Boolean) -> Unit,
 
-    sortState: SortState<Episode>,
+    isReversal: Boolean = false,
+    onReversal: (Boolean) -> Unit,// 外界不需要处理 playLines 的翻转，内部处理
 
     onSearch: () -> Unit,
     onWeb: () -> Unit,
     onDlna: () -> Unit,
-    onDownload: (PlayLineWrapper, List<Episode>) -> Unit,
-    onSortChange: (String, Boolean) -> Unit,
+    onDownload: (PlayLine, List<Episode>) -> Unit,
 ) {
     val currentDownloadPlayLine = remember {
-        mutableStateOf<PlayLineWrapper?>(null)
+        mutableStateOf<PlayLine?>(null)
     }
     val currentDownloadSelect = remember {
         mutableStateOf(setOf<Int>())
@@ -910,26 +905,27 @@ fun CartoonPlayDetailed(
 
         // 播放线路
         cartoonPlayLines(
-            playLines = playLines,
-            currentDownloadPlayLine = currentDownloadPlayLine,
-            showPlayLine = showPlayLine,
-            selectLineIndex = selectLineIndex,
-            sortState = sortState,
-            playingPlayLine = playingPlayLine,
-            currentDownloadSelect = currentDownloadSelect,
-            onLineSelect = onLineSelect,
-            onSortChange = onSortChange,
+            playLines,
+            currentDownloadPlayLine,
+            showPlayLine,
+            selectLineIndex,
+            playingPlayLine,
+            currentDownloadSelect,
+            isReversal,
+            onLineSelect,
+            onReversal
         )
 
         // 集数
         cartoonEpisodeList(
-            playLines = playLines,
-            selectLineIndex = selectLineIndex,
-            playingPlayLine = playingPlayLine,
-            playingEpisode = playingEpisode,
-            currentDownloadSelect = currentDownloadSelect,
-            currentDownloadPlayLine = currentDownloadPlayLine,
-            onEpisodeClick = onEpisodeClick
+            playLines,
+            selectLineIndex,
+            isReversal,
+            playingPlayLine,
+            playingEpisode,
+            currentDownloadSelect,
+            currentDownloadPlayLine,
+            onEpisodeClick
         )
 
     }
@@ -953,7 +949,7 @@ fun CartoonPlayDetailed(
                 onClick = {
                     currentDownloadPlayLine.value = null
                     onDownload(dowPlayLine, currentDownloadSelect.value.flatMap {
-                        val epi = dowPlayLine.sortedEpisodeList.getOrNull(it)
+                        val epi = dowPlayLine.episode.getOrNull(it)
                         if (epi == null) {
                             listOf()
                         } else {
@@ -965,6 +961,7 @@ fun CartoonPlayDetailed(
         }
     }
 }
+
 
 fun LazyGridScope.cartoonMessage(
     cartoon: CartoonInfo
@@ -1002,7 +999,7 @@ fun LazyGridScope.cartoonMessage(
                 }, label = ""
             ) {
                 if (it) {
-                    com.heyanle.easybangumi4.ui.cartoon_play_old.CartoonTitleCard(cartoon)
+                    CartoonTitleCard(cartoon)
                 } else {
                     Row(
                         modifier = Modifier
@@ -1239,16 +1236,17 @@ fun CartoonActions(
 }
 
 fun LazyGridScope.cartoonPlayLines(
-    playLines: List<PlayLineWrapper>,
-    currentDownloadPlayLine: MutableState<PlayLineWrapper?>,
+    playLines: List<PlayLine>,
+    currentDownloadPlayLine: MutableState<PlayLine?>,
     showPlayLine: Boolean,
     selectLineIndex: Int,
-    sortState: SortState<Episode>,
-    playingPlayLine: PlayLineWrapper?,
+    playingPlayLine: PlayLine?,
     currentDownloadSelect: MutableState<Set<Int>>,
+    isReversal: Boolean,
     onLineSelect: (Int) -> Unit,
-    onSortChange: (String, Boolean) -> Unit,
-) {
+    onReversal: (Boolean) -> Unit,
+
+    ) {
     // 播放线路
     if (playLines.isEmpty()) {
         item(
@@ -1302,7 +1300,7 @@ fun LazyGridScope.cartoonPlayLines(
                                         Row(
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            Text(text = playLine.playLine.label)
+                                            Text(text = playLine.label)
 
                                             if (playLine == playingPlayLine) {
                                                 Box(
@@ -1339,7 +1337,7 @@ fun LazyGridScope.cartoonPlayLines(
                     IconButton(onClick = {
                         currentDownloadPlayLine.value?.let {
                             val set = hashSetOf<Int>()
-                            it.sortedEpisodeList.forEachIndexed { index, _ ->
+                            it.episode.forEachIndexed { index, _ ->
                                 set.add(index)
                             }
                             currentDownloadSelect.value = set
@@ -1353,13 +1351,12 @@ fun LazyGridScope.cartoonPlayLines(
                     }
                 }
                 IconButton(onClick = {
-                    // TODO
+                    onReversal(!isReversal)
                 }) {
-                    val curKey = sortState.current.collectAsState()
                     Icon(
-                        Icons.Filled.Sort,
-                        stringResource(id = com.heyanle.easy_i18n.R.string.sort),
-                        tint = if (curKey.value != DetailedViewModel.SORT_DEFAULT_KEY) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
+                        Icons.Filled.WifiProtectedSetup,
+                        stringResource(id = com.heyanle.easy_i18n.R.string.reverse),
+                        tint = if (isReversal) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
                     )
                 }
             }
@@ -1368,18 +1365,19 @@ fun LazyGridScope.cartoonPlayLines(
 }
 
 fun LazyGridScope.cartoonEpisodeList(
-    playLines: List<PlayLineWrapper>,
+    playLines: List<PlayLine>,
     selectLineIndex: Int,
-    playingPlayLine: PlayLineWrapper?,
+    isReversal: Boolean,
+    playingPlayLine: PlayLine?,
     playingEpisode: Episode?,
     currentDownloadSelect: MutableState<Set<Int>>,
-    currentDownloadPlayLine: MutableState<PlayLineWrapper?>,
-    onEpisodeClick: (PlayLineWrapper, Episode) -> Unit,
+    currentDownloadPlayLine: MutableState<PlayLine?>,
+    onEpisodeClick: (PlayLine, Episode) -> Unit,
 ) {
     playLines.getOrNull(selectLineIndex)?.let { playLine ->
-        val episode = playLine.sortedEpisodeList
+        val episode = playLine.episode
         items(episode.size) {
-            val index = it
+            val index = if (isReversal) episode.size - 1 - it else it
             episode.getOrNull(index)?.let { item ->
                 val select =
                     playLine == playingPlayLine && item == playingEpisode
@@ -1449,7 +1447,6 @@ fun LazyGridScope.cartoonEpisodeList(
         }
     }
 }
-
 
 @Composable
 fun NormalVideoTopBar(
