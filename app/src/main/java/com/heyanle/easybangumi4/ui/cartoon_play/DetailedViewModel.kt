@@ -123,15 +123,12 @@ class DetailedViewModel(
                     cartoonStar?.let { star ->
                         val nStar =
                             CartoonStar.fromCartoonInfo(info, playLines)
-                        val key = if(sortList.find { it.id == star.sortByKey } == null){
-                            SORT_DEFAULT_KEY
-                        }else star.sortByKey
                         cartoonStarDao.update(
                             nStar.copy(
                                 watchProcess = star.watchProcess,
                                 reversal = star.reversal,
                                 createTime = star.createTime,
-                                sortByKey = key,
+                                sortByKey = star.sortByKey,
                                 tags = star.tags,
                                 isUpdate = false
                             )
@@ -139,9 +136,13 @@ class DetailedViewModel(
                     }
                     cartoonStar
                 }
+
+                val key = if(sortList.find { it.id == starInfo?.sortByKey } == null){
+                    SORT_DEFAULT_KEY
+                }else starInfo?.sortByKey?:""
                 _stateFlow.update {
                     it.copy(
-                        currentSortKey = starInfo?.sortByKey ?: "",
+                        currentSortKey = key,
                         isReverse = starInfo?.reversal ?: false,
                         isStar = starInfo != null
                     )
