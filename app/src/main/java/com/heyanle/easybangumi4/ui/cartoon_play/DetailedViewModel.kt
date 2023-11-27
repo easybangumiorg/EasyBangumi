@@ -15,10 +15,10 @@ import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonStarDao
 import com.heyanle.easybangumi4.cartoon.tags.CartoonTagsController
 import com.heyanle.easybangumi4.cartoon.tags.isInner
 import com.heyanle.easybangumi4.getter.CartoonInfoGetter
+import com.heyanle.easybangumi4.source_api.component.detailed.DetailedComponent
 import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
 import com.heyanle.easybangumi4.source_api.entity.Episode
 import com.heyanle.easybangumi4.source_api.entity.PlayLine
-import com.heyanle.easybangumi4.ui.cartoon_play_old.DetailedViewModelOld
 import com.heyanle.easybangumi4.ui.common.proc.SortBy
 import com.heyanle.easybangumi4.ui.common.proc.SortState
 import com.heyanle.easybangumi4.utils.stringRes
@@ -59,7 +59,7 @@ class DetailedViewModel(
 
     val sortByLabel: SortBy<Episode> = SortBy<Episode>(
         "label",
-        stringRes(com.heyanle.easy_i18n.R.string.default_word)
+        stringRes(com.heyanle.easy_i18n.R.string.name_word)
     ) { o1, o2 ->
         o1.label.compareTo(o2.label)
     }
@@ -123,12 +123,15 @@ class DetailedViewModel(
                     cartoonStar?.let { star ->
                         val nStar =
                             CartoonStar.fromCartoonInfo(info, playLines)
+                        val key = if(sortList.find { it.id == star.sortByKey } == null){
+                            SORT_DEFAULT_KEY
+                        }else star.sortByKey
                         cartoonStarDao.update(
                             nStar.copy(
                                 watchProcess = star.watchProcess,
                                 reversal = star.reversal,
                                 createTime = star.createTime,
-                                sortByKey = star.sortByKey,
+                                sortByKey = key,
                                 tags = star.tags,
                                 isUpdate = false
                             )
@@ -187,7 +190,8 @@ class DetailedViewModel(
                         isLoading = false,
                         isError = false,
                         detail = pair.first,
-                        playLine = pair.second
+                        playLine = pair.second,
+                        isShowPlayLine = pair.first.isShowLine
                     )
                 }
             }.onError { er ->

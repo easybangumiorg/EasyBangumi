@@ -74,7 +74,7 @@ object Migrate {
 
         private val MIGRATION_8_9 = object : Migration(8, 9) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("ALTER TABLE CartoonStar ADD COLUMN orderByKey TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE CartoonStar ADD COLUMN sortByKey TEXT NOT NULL DEFAULT ''")
             }
         }
     }

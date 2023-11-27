@@ -28,16 +28,14 @@ class CartoonRepository(
     suspend fun awaitCartoonInfoWithPlayLines(
         id: String,
         source: String,
-        url: String
+        url: String,
+        time: Long = System.currentTimeMillis(),
     ): DataResult<Pair<CartoonInfo, List<PlayLine>>> {
         return withContext(Dispatchers.IO) {
             val local = cartoonInfoDao.getByCartoonSummary(id, source, url)
             val oldUpdateTime = local?.lastUpdateTime ?: 0L
-            val current = System.currentTimeMillis()
-            val expDiff = settingPreferences.cartoonInfoCacheTimeHour.get()
-                .toDuration(DurationUnit.HOURS).inWholeMilliseconds
             if (local == null || local.getPlayLine()
-                    .isEmpty() || current - oldUpdateTime >= expDiff
+                    .isEmpty() || time > oldUpdateTime
             ) {
                 // 过期或者不存在 走网络
                 val netResult = cartoonNetworkDataSource.awaitCartoonWithPlayLines(id, source, url)
