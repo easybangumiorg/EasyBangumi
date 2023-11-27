@@ -4,7 +4,6 @@ import android.content.Intent
 import androidx.core.net.toUri
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
-import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.cartoon.entity.CartoonHistory
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
@@ -29,13 +28,12 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 
-
 /**
  * 番剧播放状态 controller，最终播放交给 exoplayer 这里是管理番，播放线路，哪一集以及解析
  * PlayComponent -> CartoonPlayingController -> ExoPlayer
  * Created by heyanlin on 2023/10/31.
  */
-class CartoonPlayingController(
+class CartoonPlayingControllerOld(
     private val settingPreference: SettingPreferences,
     private val sourceStateGetter: SourceStateGetter,
     private val cartoonHistoryDao: CartoonHistoryDao,
@@ -53,14 +51,14 @@ class CartoonPlayingController(
         data object Idle : PlayingState()
 
         data class Loading(
-            val playLine: PlayLineWrapper,
+            val playLine: PlayLine,
             val episode: Episode,
             val cartoon: CartoonInfo,
         ) : PlayingState()
 
         data class Playing(
             val playerInfo: PlayerInfo,
-            val playLine: PlayLineWrapper,
+            val playLine: PlayLine,
             val episode: Episode,
             val cartoon: CartoonInfo,
         ) : PlayingState()
@@ -69,7 +67,7 @@ class CartoonPlayingController(
             val cartoon: CartoonInfo?,
             val errMsg: String,
             val throwable: Throwable?,
-            val playLine: PlayLineWrapper,
+            val playLine: PlayLine,
             val episode: Episode,
         ) : PlayingState()
 
@@ -82,7 +80,7 @@ class CartoonPlayingController(
             }
         }
 
-        fun playLine(): PlayLineWrapper? {
+        fun playLine(): PlayLine? {
             return when(this){
                 is Loading -> playLine
                 is Playing -> playLine
@@ -102,9 +100,7 @@ class CartoonPlayingController(
 
     }
 
-
-    private val _state = MutableStateFlow<PlayingState>(
-        PlayingState.Idle)
+    private val _state = MutableStateFlow<PlayingState>(PlayingState.Idle)
     val state = _state.asStateFlow()
 
     private val scope = MainScope()
@@ -124,7 +120,7 @@ class CartoonPlayingController(
      */
     fun changePlay(
         cartoon: CartoonInfo,
-        playLine: PlayLineWrapper,
+        playLine: PlayLine,
         episode: Episode,
         adviceProgress: Long = 0L,
     ) {
@@ -180,11 +176,11 @@ class CartoonPlayingController(
                     name = curCartoon.title,
                     intro = curCartoon.intro ?: "",
 
-                    lastLinesIndex = curCartoon.getPlayLine().indexOf(oldPlayingState.playLine.playLine),
-                    lastLineTitle = oldPlayingState.playLine.playLine.label,
-                    lastLineId = oldPlayingState.playLine.playLine.id,
+                    lastLinesIndex = curCartoon.getPlayLine().indexOf(oldPlayingState.playLine),
+                    lastLineTitle = oldPlayingState.playLine.label,
+                    lastLineId = oldPlayingState.playLine.id,
 
-                    lastEpisodeIndex = oldPlayingState.playLine.playLine.episode.indexOf(oldPlayingState.episode),
+                    lastEpisodeIndex = oldPlayingState.playLine.episode.indexOf(oldPlayingState.episode),
                     lastEpisodeTitle = oldPlayingState.episode.label,
                     lastEpisodeId = oldPlayingState.episode.id,
                     lastEpisodeOrder = oldPlayingState.episode.order,
@@ -200,17 +196,18 @@ class CartoonPlayingController(
 
     fun tryNext(
         defaultProgress: Long = 0L,
+        isReverse: Boolean = false,
     ): Boolean {
         val playingState = (state.value as? PlayingState.Playing) ?: return false
-        val currentIndex = playingState.playLine.sortedEpisodeList.indexOf(playingState.episode)
-        val target = currentIndex + 1
-        if (target < 0 || target >= playingState.playLine.sortedEpisodeList.size) {
+        val currentIndex = playingState.playLine.episode.indexOf(playingState.episode)
+        val target = if (isReverse) currentIndex - 1 else currentIndex + 1
+        if (target < 0 || target >= playingState.playLine.episode.size) {
             return false
         }
         changePlay(
             playingState.cartoon,
             playingState.playLine,
-            playingState.playLine.sortedEpisodeList[target],
+            playingState.playLine.episode[target],
             defaultProgress
         )
         return true
@@ -221,9 +218,10 @@ class CartoonPlayingController(
         exoPlayer.stop()
     }
 
+
     private suspend fun CoroutineScope.innerChangePlay(
         cartoon: CartoonInfo,
-        playLine: PlayLineWrapper,
+        playLine: PlayLine,
         episode: Episode,
         adviceProgress: Long = 0L,
     ) {
@@ -259,7 +257,7 @@ class CartoonPlayingController(
             _state.update {
                 PlayingState.Error(
                     cartoon = cartoon,
-                    errMsg = stringRes(R.string.source_error),
+                    errMsg = stringRes(com.heyanle.easy_i18n.R.string.source_error),
                     throwable = null,
                     playLine = playLine,
                     episode = episode
@@ -269,7 +267,7 @@ class CartoonPlayingController(
         }
         playComponent.getPlayInfo(
             CartoonSummary(cartoon.id, cartoon.source, cartoon.url),
-            playLine.playLine,
+            playLine,
             episode
         )
             .complete { complete ->
@@ -293,7 +291,7 @@ class CartoonPlayingController(
                         PlayingState.Error(
                             cartoon = cartoon,
                             errMsg = if (error.isParserError) error.throwable.message
-                                ?: "" else stringRes(R.string.source_error),
+                                ?: "" else stringRes(com.heyanle.easy_i18n.R.string.source_error),
                             throwable = null,
                             playLine = playLine,
                             episode = episode
@@ -313,13 +311,13 @@ class CartoonPlayingController(
         // 如果播放器当前状态不在播放 || exoplayer 被其他业务使用过 || 缓存的上一个 PlayerInfo 与新的不一致
         // 则重新加载
         if (!exoPlayer.isMedia() ||
-            exoPlayer.scene != CartoonPlayingController.EXOPLAYER_SCENE ||
+            exoPlayer.scene != EXOPLAYER_SCENE ||
             currentPlayerInfo?.uri != playerInfo.uri ||
             currentPlayerInfo?.decodeType != playerInfo.decodeType
         ) {
             val media = mediaSourceFactory.get(playerInfo)
             exoPlayer.setMediaSource(media, adviceProgress)
-            exoPlayer.prepare(CartoonPlayingController.EXOPLAYER_SCENE)
+            exoPlayer.prepare(EXOPLAYER_SCENE)
             exoPlayer.playWhenReady = true
         } else {
             // 已经在播放同一部，直接 seekTo 对应 progress
@@ -349,4 +347,9 @@ class CartoonPlayingController(
     private fun ExoPlayer.isMedia(): Boolean {
         return playbackState == Player.STATE_BUFFERING || playbackState == Player.STATE_READY
     }
+
+    override fun onEvents(player: Player, events: Player.Events) {
+        super.onEvents(player, events)
+    }
+
 }

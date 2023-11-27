@@ -1,17 +1,15 @@
-package com.heyanle.easybangumi4.ui.cartoon_play
+package com.heyanle.easybangumi4.ui.cartoon_play_old
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
-import com.heyanle.easybangumi4.cartoon.play.CartoonPlayingController
 import com.heyanle.easybangumi4.cartoon.play.CartoonPlayingControllerOld
-import com.heyanle.easybangumi4.cartoon.play.PlayLineWrapper
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonHistoryDao
 import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
 import com.heyanle.easybangumi4.source_api.entity.Episode
+import com.heyanle.easybangumi4.source_api.entity.PlayLine
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -48,33 +46,32 @@ class CartoonPlayViewModel : ViewModel() {
     var selectedLineIndex by mutableIntStateOf(0)
 
     private val cartoonHistoryDao: CartoonHistoryDao by Injekt.injectLazy()
-    private val cartoonPlayingController: CartoonPlayingController by Injekt.injectLazy()
+    private val cartoonPlayingControllerOld: CartoonPlayingControllerOld by Injekt.injectLazy()
 
 
     fun onDetailedLoaded(
-        info: CartoonInfo,
-        playLineWrapper: List<PlayLineWrapper>,
+        info: DetailedViewModelOld.DetailedState.Info,
         enter: EnterData?,
     ) {
         viewModelScope.launch {
             var adviceProgress = enter?.adviceProgress ?: 0L
             // 直接 match
-            var matchPlayItem: Pair<PlayLineWrapper, Episode>? = null
+            var matchPlayItem: Pair<PlayLine, Episode>? = null
             if (enter != null) {
-                matchPlayItem = match(info, playLineWrapper, enter)
+                matchPlayItem = match(info, enter)
             }
             if (matchPlayItem == null) {
-                val data = getEnterDataFromHistory(info.getSummary())
+                val data = getEnterDataFromHistory(info.detail.getSummary())
                 adviceProgress = data.adviceProgress
-                matchPlayItem = match(info, playLineWrapper, data)
+                matchPlayItem = match(info, data)
             }
             if (matchPlayItem == null) {
                 adviceProgress = 0L
-                matchPlayItem = match(info, playLineWrapper, null)
+                matchPlayItem = match(info, null)
             }
             val realItem = matchPlayItem ?: return@launch
-            cartoonPlayingController.changePlay(
-                info,
+            cartoonPlayingControllerOld.changePlay(
+                info.detail,
                 realItem.first,
                 realItem.second,
                 adviceProgress.coerceAtLeast(0)
@@ -84,27 +81,26 @@ class CartoonPlayViewModel : ViewModel() {
     }
 
     private fun match(
-        info: CartoonInfo,
-        playLineWrapper: List<PlayLineWrapper>,
+        info: DetailedViewModelOld.DetailedState.Info,
         enter: EnterData?
-    ): Pair<PlayLineWrapper, Episode>? {
+    ): Pair<PlayLine, Episode>? {
         // enter 为 null 默认命中第一条线路第一集
         if (enter == null) {
-            val playLine = playLineWrapper.firstOrNull() ?: return null
-            val episode = playLine.playLine.episode.firstOrNull() ?: return null
+            val playLine = info.playLine.firstOrNull() ?: return null
+            val episode = playLine.episode.firstOrNull() ?: return null
             return playLine to episode
         }
         /**
          * 使用状态压缩进行优先级匹配，o(n) 即可
          */
-        var currentPlayLine: PlayLineWrapper? = null
+        var currentPlayLine: PlayLine? = null
         var currentPlayLineMask: Int = 0
-        playLineWrapper.forEachIndexed { index, playLine ->
+        info.playLine.forEachIndexed { index, playLine ->
             var mask = 0
-            if (enter.playLineId.isNotEmpty() && enter.playLineId == playLine.playLine.id) {
+            if (enter.playLineId.isNotEmpty() && enter.playLineId == playLine.id) {
                 mask = mask or 0b100
             }
-            if (enter.playLineLabel.isNotEmpty() && enter.playLineLabel == playLine.playLine.label) {
+            if (enter.playLineLabel.isNotEmpty() && enter.playLineLabel == playLine.label) {
                 mask = mask or 0b010
             }
             if (enter.playLineIndex >= 0 && enter.playLineIndex == index) {
@@ -122,7 +118,7 @@ class CartoonPlayViewModel : ViewModel() {
         }
         var currentEpisode: Episode? = null
         var currentEpisodeMask = 0
-        currentPlayLine?.playLine?.episode?.forEachIndexed { index, episode ->
+        currentPlayLine?.episode?.forEachIndexed { index, episode ->
             var mask = 0
             if (enter.episodeId.isNotEmpty() && enter.episodeId == episode.id) {
                 mask = mask or 0b1000

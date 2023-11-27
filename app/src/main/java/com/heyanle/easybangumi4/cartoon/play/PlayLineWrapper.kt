@@ -9,12 +9,19 @@ import com.heyanle.easybangumi4.source_api.entity.PlayLine
  */
 class PlayLineWrapper(
     val playLine: PlayLine,
-    val filter: (Episode) -> Boolean,
+    val isReverse: Boolean = false,
+    val filter: (Episode) -> Boolean = {true},
     val comparator: Comparator<Episode>,
 ){
 
     val sortedEpisodeList: List<Episode> by lazy {
-        playLine.episode.filter(filter).sortedWith(comparator)
+        playLine.episode.filter(filter).sortedWith { o1, o2 ->
+            if(isReverse){
+                - comparator.compare(o1, o2)
+            }else{
+                comparator.compare(o1, o2)
+            }
+        }
     }
 
 
