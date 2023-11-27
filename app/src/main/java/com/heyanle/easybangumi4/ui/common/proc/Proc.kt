@@ -12,6 +12,8 @@ import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
@@ -24,6 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.VectorProperty
 import androidx.compose.ui.res.stringResource
@@ -43,7 +46,7 @@ import kotlinx.coroutines.flow.update
 fun <T> FilterColumn(
     modifier: Modifier = Modifier,
     filterState: FilterState<T>,
-    onFilterClick: (FilterWith<T>, Int)-> Unit,
+    onFilterClick: (FilterWith<T>, Int) -> Unit,
 ) {
 
     val statusMap by filterState.statusMap.collectAsState(emptyMap())
@@ -99,6 +102,32 @@ fun <T> FilterItem(
     )
 }
 
+@Composable
+fun <T> SortDropDownMenu(
+    modifier: Modifier = Modifier,
+    isShow: Boolean,
+    sortState: SortState<T>,
+    onClick: (SortBy<T>, Int) -> Unit,
+    onDismissRequest: () -> Unit,
+) {
+    val current = sortState.current.collectAsState()
+    val isReverse = sortState.isReverse.collectAsState()
+    DropdownMenu(modifier = modifier, expanded = isShow, onDismissRequest = onDismissRequest) {
+        sortState.sortList.forEach {
+            val status = if (current.value != it.id) {
+                SortState.STATUS_OFF
+            } else if (isReverse.value) {
+                SortState.STATUS_REVERSE
+            } else {
+                SortState.STATUS_ON
+            }
+            SortDropDownMenuItem(sortBy = it, status = status, onClick = { item ->
+                onClick(it, status)
+            })
+        }
+    }
+}
+
 // 筛选 Column
 @Composable
 fun <T> SortColumn(
@@ -108,7 +137,7 @@ fun <T> SortColumn(
 ) {
     val current = sortState.current.collectAsState()
     val isReverse = sortState.isReverse.collectAsState()
-    LaunchedEffect(key1 = current){
+    LaunchedEffect(key1 = current) {
         current.value.logi("Proc")
     }
     Column(
@@ -128,6 +157,47 @@ fun <T> SortColumn(
             })
         }
     }
+}
+
+
+@Composable
+fun <T> SortDropDownMenuItem(
+    sortBy: SortBy<T>,
+    status: Int, // 0->off 1->on 2->reverse
+    onClick: (SortBy<T>) -> Unit,
+) {
+    DropdownMenuItem(
+        text = {
+            Text(text = sortBy.label)
+        },
+        leadingIcon = {
+            when (status) {
+                SortState.STATUS_ON -> {
+                    Icon(
+                        Icons.Filled.ArrowUpward,
+                        contentDescription = sortBy.label
+                    )
+                }
+
+                SortState.STATUS_REVERSE -> {
+                    Icon(
+                        Icons.Filled.ArrowDownward,
+                        contentDescription = sortBy.label
+                    )
+                }
+
+                else -> {
+                    Icon(
+                        Icons.Filled.ArrowDownward,
+                        modifier = Modifier.alpha(0f),
+                        contentDescription = sortBy.label
+                    )
+                }
+            }
+        },
+        onClick = {
+            onClick(sortBy)
+        })
 }
 
 @Composable

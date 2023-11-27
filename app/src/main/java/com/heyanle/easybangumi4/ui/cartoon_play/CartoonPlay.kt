@@ -133,6 +133,7 @@ import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.common.TabIndicator
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
+import com.heyanle.easybangumi4.ui.common.proc.SortDropDownMenu
 import com.heyanle.easybangumi4.ui.common.proc.SortState
 import com.heyanle.easybangumi4.utils.isCurPadeMode
 import com.heyanle.easybangumi4.utils.openUrl
@@ -1002,7 +1003,7 @@ fun LazyGridScope.cartoonMessage(
                 }, label = ""
             ) {
                 if (it) {
-                    com.heyanle.easybangumi4.ui.cartoon_play_old.CartoonTitleCard(cartoon)
+                    CartoonTitleCard(cartoon)
                 } else {
                     Row(
                         modifier = Modifier
@@ -1249,6 +1250,7 @@ fun LazyGridScope.cartoonPlayLines(
     onLineSelect: (Int) -> Unit,
     onSortChange: (String, Boolean) -> Unit,
 ) {
+
     // 播放线路
     if (playLines.isEmpty()) {
         item(
@@ -1271,6 +1273,9 @@ fun LazyGridScope.cartoonPlayLines(
                 GridItemSpan(maxLineSpan)
             }
         ) {
+            var isSortShow by remember {
+                mutableStateOf(false)
+            }
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -1354,15 +1359,36 @@ fun LazyGridScope.cartoonPlayLines(
                 }
                 IconButton(onClick = {
                     // TODO
+                    isSortShow = true
+
                 }) {
                     val curKey = sortState.current.collectAsState()
                     Icon(
                         Icons.Filled.Sort,
-                        stringResource(id = com.heyanle.easy_i18n.R.string.sort),
+                        stringResource(id = R.string.sort),
                         tint = if (curKey.value != DetailedViewModel.SORT_DEFAULT_KEY) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
                     )
+
+                    SortDropDownMenu(isShow = isSortShow, sortState = sortState, onClick = { sort, state ->
+                        when (state) {
+                            SortState.STATUS_OFF -> {
+                                onSortChange(sort.id, false)
+                            }
+
+                            SortState.STATUS_ON -> {
+                                onSortChange(sort.id, true)
+                            }
+
+                            else -> {
+                                onSortChange(sort.id, false)
+                            }
+                        }
+                    }) {
+                        isSortShow = false
+                    }
                 }
             }
+
         }
     }
 }
