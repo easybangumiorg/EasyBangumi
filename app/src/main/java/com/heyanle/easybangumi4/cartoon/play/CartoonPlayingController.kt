@@ -230,12 +230,13 @@ class CartoonPlayingController(
         val oldPlayingState = _state.value
         if (oldPlayingState is PlayingState.Playing &&
             oldPlayingState.cartoon == cartoon &&
-            oldPlayingState.playLine == playLine &&
+            oldPlayingState.playLine.playLine == playLine.playLine &&
             oldPlayingState.episode == episode
         ) {
             // 番剧 播放线路 集数都一致直接播放即可，不用解析了
+            // 切换排序时 playLineWrapper 会变但是 里面的 playLine 不变
             innerPlay(oldPlayingState.playerInfo, adviceProgress)
-            // 可能业务需要触发一下刷新，这里 copy 一下刷一下界面
+            // 可能业务需要触发一下刷新，这里改一下 PlayLineWrapper
             _state.update {
                 oldPlayingState.copy(
                     cartoon = cartoon,
