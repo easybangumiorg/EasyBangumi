@@ -25,8 +25,8 @@ import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
 import com.heyanle.easybangumi4.theme.NormalSystemBarColor
 import com.heyanle.easybangumi4.ui.WebViewUser
 import com.heyanle.easybangumi4.ui.about.About
-import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlay
-import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlayViewModel
+import com.heyanle.easybangumi4.ui.cartoon_play_old.CartoonPlay
+import com.heyanle.easybangumi4.ui.cartoon_play_old.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.dlna.Dlna
 import com.heyanle.easybangumi4.ui.dlna.DlnaViewModel
 import com.heyanle.easybangumi4.ui.download.Download

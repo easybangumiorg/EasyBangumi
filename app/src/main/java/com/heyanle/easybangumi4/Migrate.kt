@@ -31,7 +31,8 @@ object Migrate {
             MIGRATION_4_5,
             MIGRATION_5_6,
             MIGRATION_6_7,
-            MIGRATION_7_8
+            MIGRATION_7_8,
+            MIGRATION_8_9
         )
 
         private val MIGRATION_2_3 = object : Migration(2, 3) {
@@ -68,6 +69,12 @@ object Migrate {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE CartoonStar ADD COLUMN upTime INTEGER NOT NULL DEFAULT 0")
                 db.execSQL("ALTER TABLE CartoonStar ADD COLUMN lastWatchTime INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
+        private val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE CartoonStar ADD COLUMN orderByKey TEXT NOT NULL DEFAULT ''")
             }
         }
     }
