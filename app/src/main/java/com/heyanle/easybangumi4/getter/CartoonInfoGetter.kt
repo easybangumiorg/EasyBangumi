@@ -15,9 +15,10 @@ class CartoonInfoGetter(
     suspend fun awaitCartoonInfoWithPlayLines(
         id: String,
         source: String,
-        url: String
+        url: String,
+        time: Long = System.currentTimeMillis(),
     ): DataResult<Pair<CartoonInfo, List<PlayLine>>> {
-        return cartoonRepository.awaitCartoonInfoWithPlayLines(id, source, url)
+        return cartoonRepository.awaitCartoonInfoWithPlayLines(id, source, url, time)
     }
 
 }
