@@ -111,7 +111,6 @@ import com.heyanle.easybangumi4.DOWNLOAD
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.play.CartoonPlayingController
-import com.heyanle.easybangumi4.cartoon.play.CartoonPlayingControllerOld
 import com.heyanle.easybangumi4.cartoon.play.PlayLineWrapper
 import com.heyanle.easybangumi4.cartoon_download.CartoonDownloadController
 import com.heyanle.easybangumi4.cartoon_download.CartoonDownloadDispatcher
@@ -176,7 +175,7 @@ fun CartoonPlay(
             val detailedVM =
                 viewModel<DetailedViewModel>(factory = DetailedViewModelFactory(summary))
             val cartoonPlayViewModel =
-                viewModel<CartoonPlayViewModel>()
+                viewModel<CartoonPlayViewModel>(factory = CartoonPlayViewModelFactory(enterData))
             CartoonPlay(
                 detailedVM = detailedVM,
                 cartoonPlayVM = cartoonPlayViewModel,
@@ -236,8 +235,9 @@ fun CartoonPlay(
 
     LaunchedEffect(key1 = detailState.value) {
         val sta = detailState.value
-        if(!sta.isLoading && !sta.isError && sta.detail != null && sta.playLineWrappers.isNotEmpty()){
-            cartoonPlayVM.onDetailedLoaded(sta.detail, sta.playLineWrappers, enterData)
+        if(!sta.isLoading && !sta.isError && sta.detail != null && sta.playLine.isNotEmpty()){
+
+            cartoonPlayVM.onDetailedChange(sta.detail, sta.playLineWrappers)
         }
     }
 

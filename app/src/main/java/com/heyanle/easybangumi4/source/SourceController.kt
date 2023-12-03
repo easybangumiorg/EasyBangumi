@@ -118,20 +118,10 @@ class SourceController(
                 _configSource.update {
                     list
                 }
-            }
-        }
-
-        scope.launch {
-            combine(
-                _sourceInfo,
-                _configSource,
-            ){sta, config ->
-                if(sta is SourceInfoState.Info){
-                    _sourceBundle.update {
-                        SourceBundle(config)
-                    }
+                _sourceBundle.update {
+                    SourceBundle(list)
                 }
-            }.collect()
+            }
         }
 
     }

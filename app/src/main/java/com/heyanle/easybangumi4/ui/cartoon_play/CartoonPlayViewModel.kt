@@ -4,10 +4,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.play.CartoonPlayingController
-import com.heyanle.easybangumi4.cartoon.play.CartoonPlayingControllerOld
 import com.heyanle.easybangumi4.cartoon.play.PlayLineWrapper
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonHistoryDao
 import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
@@ -20,7 +20,9 @@ import kotlinx.coroutines.withContext
 /**
  * Created by heyanlin on 2023/10/31.
  */
-class CartoonPlayViewModel : ViewModel() {
+class CartoonPlayViewModel(
+    private var enter: EnterData?,
+) : ViewModel() {
 
     /**
      * 匹配播放线路 -> 匹配集数 -> 跳转进度
@@ -47,16 +49,32 @@ class CartoonPlayViewModel : ViewModel() {
 
     var selectedLineIndex by mutableIntStateOf(0)
 
+
     private val cartoonHistoryDao: CartoonHistoryDao by Injekt.injectLazy()
     private val cartoonPlayingController: CartoonPlayingController by Injekt.injectLazy()
 
 
-    fun onDetailedLoaded(
+    fun onDetailedChange(
         info: CartoonInfo,
         playLineWrapper: List<PlayLineWrapper>,
-        enter: EnterData?,
     ) {
         viewModelScope.launch {
+
+            val current = cartoonPlayingController.state.value
+            if(enter == null && current is CartoonPlayingController.PlayingState.Playing){
+                val oldPlayLine = current.playLine.playLine
+                val newPlayLine = playLineWrapper.find { it.playLine == oldPlayLine }
+                if(newPlayLine != null){
+                    cartoonPlayingController.changePlay(
+                        info,
+                        newPlayLine
+                    )
+                    return@launch
+                }
+
+            }
+
+
             var adviceProgress = enter?.adviceProgress ?: 0L
             // 直接 match
             var matchPlayItem: Pair<PlayLineWrapper, Episode>? = null
@@ -79,6 +97,7 @@ class CartoonPlayViewModel : ViewModel() {
                 realItem.second,
                 adviceProgress.coerceAtLeast(0)
             )
+            enter = null
         }
 
     }
@@ -167,4 +186,17 @@ class CartoonPlayViewModel : ViewModel() {
         }
     }
 
+}
+
+class CartoonPlayViewModelFactory(
+    private val enterData: CartoonPlayViewModel.EnterData?,
+) : ViewModelProvider.Factory {
+
+    @Suppress("UNCHECKED_CAST")
+    @SuppressWarnings("unchecked")
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(CartoonPlayViewModel::class.java))
+            return CartoonPlayViewModel(enterData) as T
+        throw RuntimeException("unknown class :" + modelClass.name)
+    }
 }
