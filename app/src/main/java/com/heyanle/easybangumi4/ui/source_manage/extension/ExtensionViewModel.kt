@@ -103,9 +103,14 @@ class ExtensionViewModel : ViewModel() {
                             ?: emptyList<ExtensionStoreInfo>()
                     val storeMap = hashMapOf<String, ExtensionStoreInfo>()
                     storeList.forEach { extensionStoreInfo ->
-                        extensionStoreInfo.local?.let {
-                            storeMap[it.realFilePath] = extensionStoreInfo
+                        if(extensionStoreInfo.local != null){
+                            extensionStoreInfo.local.let {
+                                storeMap[it.realFilePath] = extensionStoreInfo
+                            }
+                        }else{
+                            res.add(ExtensionItem.StoreInfo(extensionStoreInfo))
                         }
+
                     }
                     (extensions.appExtensions.values + extensions.fileExtension.values).forEach {
                         val storeInfo = storeMap[it.publicPath]
