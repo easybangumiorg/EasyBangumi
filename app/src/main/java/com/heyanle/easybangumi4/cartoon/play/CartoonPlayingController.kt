@@ -134,6 +134,20 @@ class CartoonPlayingController(
         }
     }
 
+
+    fun changePlay(
+        cartoon: CartoonInfo,
+        playLine: PlayLineWrapper,
+        reset: Boolean = false,
+    ){
+        lastChangeJob?.cancel()
+        lastChangeJob = scope.launch {
+            val oldPlayingState = _state.value
+            val episode = oldPlayingState.episode() ?: playLine.sortedEpisodeList.firstOrNull() ?: return@launch
+            innerChangePlay(cartoon, playLine, episode, if(reset) 0 else -1)
+        }
+    }
+
     fun refresh(){
         val oldPlayingState = _state.value
         val cartoon = oldPlayingState.cartoon() ?: return
@@ -225,7 +239,7 @@ class CartoonPlayingController(
         cartoon: CartoonInfo,
         playLine: PlayLineWrapper,
         episode: Episode,
-        adviceProgress: Long = 0L,
+        adviceProgress: Long = -1L,
     ) {
         val oldPlayingState = _state.value
         if (oldPlayingState is PlayingState.Playing &&
@@ -305,7 +319,7 @@ class CartoonPlayingController(
     }
 
     @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-    private fun innerPlay(playerInfo: PlayerInfo, adviceProgress: Long = 0L) {
+    private fun innerPlay(playerInfo: PlayerInfo, adviceProgress: Long = -1L) {
         if (settingPreference.useExternalVideoPlayer.get()) {
             innerPlayExternal(playerInfo)
             return
@@ -318,13 +332,16 @@ class CartoonPlayingController(
             currentPlayerInfo?.uri != playerInfo.uri ||
             currentPlayerInfo?.decodeType != playerInfo.decodeType
         ) {
+            currentPlayerInfo = playerInfo
             val media = mediaSourceFactory.get(playerInfo)
             exoPlayer.setMediaSource(media, adviceProgress)
             exoPlayer.prepare(CartoonPlayingController.EXOPLAYER_SCENE)
             exoPlayer.playWhenReady = true
         } else {
             // 已经在播放同一部，直接 seekTo 对应 progress
-            exoPlayer.seekTo(adviceProgress)
+            if(adviceProgress >= 0){
+                exoPlayer.seekTo(adviceProgress)
+            }
             exoPlayer.playWhenReady = true
         }
     }

@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
+import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.cartoon_download.entity.LocalCartoon
 import com.heyanle.easybangumi4.cartoon_download.entity.LocalEpisode
@@ -16,12 +17,19 @@ import com.heyanle.easybangumi4.cartoon_download.entity.LocalPlayLine
 import com.heyanle.easybangumi4.exo.EasyExoPlayer
 import com.heyanle.easybangumi4.getter.LocalCartoonGetter
 import com.heyanle.easybangumi4.setting.SettingPreferences
+import com.heyanle.easybangumi4.source_api.entity.Episode
+import com.heyanle.easybangumi4.ui.cartoon_play.DetailedViewModel
+import com.heyanle.easybangumi4.ui.common.proc.SortBy
+import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
@@ -35,7 +43,24 @@ class LocalPlayViewModel(
 
     companion object {
         const val TAG = "LocalPlayViewModel"
+        const val SORT_DEFAULT_KEY = "default"
     }
+
+    val sortByDefault: SortBy<LocalEpisode> = SortBy<LocalEpisode>(
+        SORT_DEFAULT_KEY,
+        stringRes(R.string.default_word)
+    ) { o1, o2 ->
+        o1.order - o2.order
+    }
+
+    val sortByLabel: SortBy<LocalEpisode> = SortBy<LocalEpisode>(
+        "label",
+        stringRes(R.string.name_word)
+    ) { o1, o2 ->
+        o1.label.compareTo(o2.label)
+    }
+
+    val sortList = listOf(sortByDefault, sortByLabel)
 
     private val exoPlayer: EasyExoPlayer by Injekt.injectLazy()
     private val settingPreferences: SettingPreferences by Injekt.injectLazy()
@@ -47,6 +72,9 @@ class LocalPlayViewModel(
         val selectPlayLine: Int = 0,
         val curPlayingLine: LocalPlayLine? = null,
         val curPlayingEpisode: LocalEpisode? = null,
+        val currentSortKey: String = SORT_DEFAULT_KEY,
+        val isReverse: Boolean = false,
+        val sorted: List<LocalPlayLineWrapper> = emptyList(),
     )
 
     private val _flow = MutableStateFlow(LocalPlayState(isLoading = true))
@@ -107,7 +135,7 @@ class LocalPlayViewModel(
             } else {
                 _flow.update {
                     it.copy(
-                        isLoading = false,
+                        isLoading = true,
                         localCartoon = local,
                         selectPlayLine = 0,
                         curPlayingLine = playLine,
@@ -116,6 +144,30 @@ class LocalPlayViewModel(
                 }
                 return@launch
             }
+        }
+
+        viewModelScope.launch {
+            combine(
+                _flow.map { it.currentSortKey }.distinctUntilChanged().stateIn(viewModelScope),
+                _flow.map { it.isReverse }.distinctUntilChanged().stateIn(viewModelScope),
+                _flow.map { it.localCartoon }.distinctUntilChanged().stateIn(viewModelScope),
+            ){ sortKey, isReverse, cartoon ->
+                cartoon ?: return@combine
+                val sort = sortList.find { it.id == sortKey } ?: sortByDefault
+                _flow.update {
+                    it.copy(
+                        isLoading = false,
+                        sorted = cartoon.playLines.map {
+                            LocalPlayLineWrapper(
+                                it,
+                                isReverse,
+                                {true},
+                                sort.comparator
+                            )
+                        }
+                    )
+                }
+            }.collect()
         }
 
 
