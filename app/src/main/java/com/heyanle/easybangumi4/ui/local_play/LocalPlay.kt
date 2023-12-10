@@ -1,9 +1,11 @@
 package com.heyanle.easybangumi4.ui.local_play
 
 import android.app.Activity
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -46,14 +48,20 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Airplay
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.More
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.SelectAll
+import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.WifiProtectedSetup
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -62,8 +70,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -87,18 +97,24 @@ import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.cartoon_download.entity.LocalCartoon
 import com.heyanle.easybangumi4.cartoon_download.entity.LocalEpisode
 import com.heyanle.easybangumi4.cartoon_download.entity.LocalPlayLine
+import com.heyanle.easybangumi4.navigationDetailed
 import com.heyanle.easybangumi4.navigationSearch
+import com.heyanle.easybangumi4.ui.cartoon_play.DetailedViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.FullScreenVideoTopBar
 import com.heyanle.easybangumi4.ui.cartoon_play.speedConfig
 import com.heyanle.easybangumi4.ui.common.Action
 import com.heyanle.easybangumi4.ui.common.ActionRow
+import com.heyanle.easybangumi4.ui.common.EasyDeleteDialog
 import com.heyanle.easybangumi4.ui.common.EmptyPage
 import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.common.TabIndicator
+import com.heyanle.easybangumi4.ui.common.proc.SortDropDownMenu
+import com.heyanle.easybangumi4.ui.common.proc.SortState
 import com.heyanle.easybangumi4.utils.isCurPadeMode
 import com.heyanle.easybangumi4.utils.loge
+import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.easybangumi4.utils.toast
 import com.heyanle.injekt.api.get
@@ -125,10 +141,12 @@ fun LocalPlay(
     val controlVM = ControlViewModelFactory.viewModel(Injekt.get<ExoPlayer>().let {
         it.toString().loge("ExoPlayer-----")
         it
-    }, isPad)
+    }, isPad, LocalPlayViewModel.TAG)
     val nav = LocalNavController.current
 
     val state by vm.flow.collectAsState()
+
+    val dialog by vm.dialogFlow.collectAsState()
 
     var showEpisodeWin by remember {
         mutableStateOf(false)
@@ -137,27 +155,43 @@ fun LocalPlay(
     var showSpeedWin by remember {
         mutableStateOf(false)
     }
+
+    LaunchedEffect(key1 = state.curPlayingEpisode){
+        state.curPlayingEpisode?.let {
+            vm.play(it)
+        }
+    }
+
+    DisposableEffect(key1 = Unit){
+        onDispose {
+            vm.clearPlay()
+        }
+    }
+
+    BackHandler(
+        state.deleteModePlayLine != null
+    ) {
+        vm.exitDeleteMode()
+    }
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background,
         contentColor = MaterialTheme.colorScheme.onBackground
     ) {
         val lazyGridState = rememberLazyGridState()
-        EasyPlayerScaffoldBase(
-            modifier = Modifier
-                .fillMaxSize()
-                .navigationBarsPadding(),
+        EasyPlayerScaffoldBase(modifier = Modifier
+            .fillMaxSize()
+            .navigationBarsPadding(),
             vm = controlVM,
             isPadMode = isPad,
             contentWeight = 0.5f,
             videoFloat = { model ->
                 val ctx = LocalContext.current as Activity
-                LaunchedEffect(key1 = controlVM.controlState) {
-                    if (controlVM.controlState == ControlViewModel.ControlState.Ended) {
-                        vm.tryNext()
-                        stringRes(com.heyanle.easy_i18n.R.string.try_play_next).toast()
-                    }
-                }
+//                LaunchedEffect(key1 = controlVM.controlState) {
+//                    if (controlVM.controlState == ControlViewModel.ControlState.Ended) {
+//                        vm.tryNext()
+//                    }
+//                }
 
 
                 // 倍速窗口
@@ -170,15 +204,11 @@ fun LocalPlay(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .clickable(
-                                onClick = {
-                                    showSpeedWin = false
-                                },
-                                indication = null,
-                                interactionSource = remember {
-                                    MutableInteractionSource()
-                                }
-                            ),
+                            .clickable(onClick = {
+                                showSpeedWin = false
+                            }, indication = null, interactionSource = remember {
+                                MutableInteractionSource()
+                            }),
                         contentAlignment = Alignment.CenterEnd,
                     ) {
                         Column(
@@ -192,8 +222,7 @@ fun LocalPlay(
                         ) {
                             speedConfig.forEach {
 
-                                Text(
-                                    textAlign = TextAlign.Center,
+                                Text(textAlign = TextAlign.Center,
                                     text = it.key,
                                     modifier = Modifier
                                         .defaultMinSize(180.dp, Dp.Unspecified)
@@ -202,15 +231,14 @@ fun LocalPlay(
                                             controlVM.setSpeed(it.value)
                                         }
                                         .padding(16.dp, 8.dp),
-                                    color = if (controlVM.curSpeed == it.value) MaterialTheme.colorScheme.primary else Color.White
-                                )
+                                    color = if (controlVM.curSpeed == it.value) MaterialTheme.colorScheme.primary else Color.White)
                             }
                         }
                     }
 
                 }
                 state.curPlayingLine?.let { localPlayLine ->
-// 选集
+                    // 选集
                     AnimatedVisibility(
                         showEpisodeWin && controlVM.isFullScreen,
                         enter = slideInHorizontally(tween()) { it },
@@ -223,15 +251,11 @@ fun LocalPlay(
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .clickable(
-                                    onClick = {
-                                        showEpisodeWin = false
-                                    },
-                                    indication = null,
-                                    interactionSource = remember {
-                                        MutableInteractionSource()
-                                    }
-                                ),
+                                .clickable(onClick = {
+                                    showEpisodeWin = false
+                                }, indication = null, interactionSource = remember {
+                                    MutableInteractionSource()
+                                }),
                             contentAlignment = Alignment.CenterEnd,
                         ) {
                             Column(
@@ -244,12 +268,9 @@ fun LocalPlay(
                                 verticalArrangement = Arrangement.Center
                             ) {
 
-                                for (i in 0 until localPlayLine.list.size) {
-                                    val index =
-                                        if (isReverse) localPlayLine.list.size - 1 - i else i
-                                    val s = localPlayLine.list[index]
-                                    Text(
-                                        textAlign = TextAlign.Center,
+                                for (i in 0 until localPlayLine.sortedEpisodeList.size) {
+                                    val s = localPlayLine.sortedEpisodeList[i]
+                                    Text(textAlign = TextAlign.Center,
                                         text = s.label,
                                         modifier = Modifier
                                             .defaultMinSize(180.dp, Dp.Unspecified)
@@ -257,8 +278,7 @@ fun LocalPlay(
                                                 vm.onEpisodeClick(localPlayLine, s)
                                             }
                                             .padding(16.dp, 8.dp),
-                                        color = if (state.curPlayingEpisode == s) MaterialTheme.colorScheme.primary else Color.White
-                                    )
+                                        color = if (state.curPlayingEpisode == s) MaterialTheme.colorScheme.primary else Color.White)
                                 }
                             }
                         }
@@ -295,20 +315,17 @@ fun LocalPlay(
                         longTouchText = stringResource(id = com.heyanle.easy_i18n.R.string.long_press_fast_forward)
                     )
 
-                    LaunchedEffect(key1 = vm.playingTitle.value){
+                    LaunchedEffect(key1 = vm.playingTitle.value) {
                         it.title = vm.playingTitle.value
                     }
 
                     // 全屏顶部工具栏
                     FullScreenVideoTopBar(
-                        vm = it,
-                        modifier = Modifier
-                            .align(Alignment.TopCenter)
+                        vm = it, modifier = Modifier.align(Alignment.TopCenter)
                     )
 
 
-                    LocalVideoTopBar(
-                        vm = it,
+                    LocalVideoTopBar(vm = it,
                         showTools = state.curPlayingEpisode != null,
                         onBack = { nav.popBackStack() },
                         onSpeed = {
@@ -318,8 +335,7 @@ fun LocalPlay(
                             vm.flow.value.curPlayingEpisode?.let {
                                 vm.externalPlay(it)
                             }
-                        }
-                    )
+                        })
 
 
                     // 底部工具栏
@@ -327,34 +343,27 @@ fun LocalPlay(
                         vm = it,
                         modifier = Modifier.align(Alignment.BottomCenter),
                         paddingValues = if (controlVM.isFullScreen) PaddingValues(
-                            16.dp,
-                            0.dp,
-                            16.dp,
-                            8.dp
+                            16.dp, 0.dp, 16.dp, 8.dp
                         ) else PaddingValues(8.dp, 0.dp)
                     ) {
 
                         if (it.isFullScreen) {
-                            Text(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(4.dp))
-                                    .clickable {
-                                        showSpeedWin = true
-                                    }
-                                    .padding(8.dp),
+                            Text(modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .clickable {
+                                    showSpeedWin = true
+                                }
+                                .padding(8.dp),
                                 text = stringResource(id = com.heyanle.easy_i18n.R.string.speed),
-                                color = Color.White
-                            )
-                            Text(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(4.dp))
-                                    .clickable {
-                                        showEpisodeWin = true
-                                    }
-                                    .padding(8.dp),
+                                color = Color.White)
+                            Text(modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .clickable {
+                                    showEpisodeWin = true
+                                }
+                                .padding(8.dp),
                                 text = stringResource(id = com.heyanle.easy_i18n.R.string.episode),
-                                color = Color.White
-                            )
+                                color = Color.White)
                         }
                     }
 
@@ -364,8 +373,7 @@ fun LocalPlay(
                     // 加载按钮
                     ProgressBox(vm = it)
                 }
-            }
-        ) {
+            }) {
             if (isPad) {
 
                 Column {
@@ -387,9 +395,7 @@ fun LocalPlay(
                         )
                         Box() {
                             PlayContent(
-                                vm,
-                                state,
-                                lazyGridState
+                                vm, state, lazyGridState
                             )
                         }
 
@@ -407,13 +413,27 @@ fun LocalPlay(
                             .fillMaxWidth(),
                     )
                     PlayContent(
-                        vm,
-                        state,
-                        lazyGridState
+                        vm, state, lazyGridState
                     )
                 }
             }
         }
+    }
+
+    when (val dia = dialog) {
+        is LocalPlayViewModel.DialogState.Delete -> {
+            EasyDeleteDialog(show = true, onDelete = { vm.onFinalDelete(dia.episodes) }, message = {
+                Text(
+                    text = stringResource(
+                        id = R.string.delete_confirmation_num, dia.episodes.size
+                    )
+                )
+            }, onDismissRequest = {
+                vm.onDismissRequest()
+            })
+        }
+
+        else -> {}
     }
 }
 
@@ -430,11 +450,31 @@ fun PlayContent(
             contentColor = MaterialTheme.colorScheme.onBackground
         ) {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
+                modifier = Modifier.fillMaxSize()
             ) {
                 LocalPlayUI(vm = vm, state)
                 FastScrollToTopFab(listState = lazyGridState)
+
+                if(state.deleteModePlayLine != null){
+                    Box(contentAlignment = Alignment.BottomEnd, modifier = Modifier.fillMaxSize()) {
+                        val up =
+                            remember { derivedStateOf { lazyGridState.firstVisibleItemIndex > 10 } }
+                        val downPadding by animateDpAsState(if (up.value) 80.dp else 40.dp, label = "")
+                        ExtendedFloatingActionButton(modifier = Modifier.padding(16.dp, downPadding),
+                            text = {
+                                Text(text = stringResource(id = R.string.delete_selection))
+                            },
+                            icon = {
+                                Icon(
+                                    Icons.Filled.Delete,
+                                    contentDescription = stringResource(id = R.string.delete_selection)
+                                )
+                            },
+                            onClick = {
+                                vm.onDeleteDialog()
+                            })
+                    }
+                }
             }
         }
     }
@@ -453,8 +493,7 @@ fun LocalPlayUI(
             modifier = Modifier.fillMaxSize()
         )
     } else {
-        CartoonPlayDetailed(
-            modifier = Modifier.fillMaxSize(),
+        CartoonPlayDetailed(modifier = Modifier.fillMaxSize(),
             state = state,
             cartoon = cartoon,
             onLineSelect = {
@@ -463,15 +502,29 @@ fun LocalPlayUI(
             onEpisodeClick = { line, episode ->
                 vm.onEpisodeClick(line, episode)
             },
-            isReversal = vm.isReversal.value,
-            onReversal = {
-                vm.isReversal.value = it
+            onEpisodeDeleteChange = { item, select ->
+                vm.onDeleteClick(item)
+            },
+            sortState = vm.sortState,
+            onSortChange = { key, isReverse ->
+                vm.onSortChange(key, isReverse)
+            },
+            onDeleteSelectionRevert = {
+                vm.onDeleteSelectionRevert()
             },
             onSearch = {
                 nav.navigationSearch(cartoon.cartoonTitle, cartoon.cartoonSource)
-            }) {
+            },
+            onDetailed = {
+                nav.navigationDetailed(cartoon.cartoonId, cartoon.cartoonUrl, cartoon.cartoonSource)
+            },
+            onDelete = {
+                state.curPlayingLine?.let {
+                    vm.deleteMode(it)
+                }
+            }
 
-        }
+        )
     }
 }
 
@@ -480,18 +533,21 @@ fun LocalPlayUI(
 fun CartoonPlayDetailed(
     modifier: Modifier,
     state: LocalPlayViewModel.LocalPlayState,
+    sortState: SortState<LocalEpisode>,
     cartoon: LocalCartoon,
     listState: LazyGridState = rememberLazyGridState(),
     onLineSelect: (Int) -> Unit,
-    onEpisodeClick: (LocalPlayLine, LocalEpisode) -> Unit,
-
-    isReversal: Boolean = false,
-    onReversal: (Boolean) -> Unit,// 外界不需要处理 playLines 的翻转，内部处理
-
+    onEpisodeClick: (LocalPlayLineWrapper, LocalEpisode) -> Unit,
+    onEpisodeDeleteChange: (LocalEpisode, Boolean) -> Unit,
+    onSortChange: (String, Boolean) -> Unit,
+    onDeleteSelectionRevert: () -> Unit,
     onSearch: () -> Unit,
     onDetailed: () -> Unit,
+    onDelete: () -> Unit,
 ) {
-
+    var isSortShow by remember {
+        mutableStateOf(false)
+    }
     Column(modifier = modifier) {
 
         var isExpended by remember {
@@ -504,29 +560,25 @@ fun CartoonPlayDetailed(
             state = listState,
             contentPadding = PaddingValues(0.dp, 0.dp, 0.dp, 96.dp)
         ) {
-            item(
-                span = {
-                    // LazyGridItemSpanScope:
-                    // maxLineSpan
-                    GridItemSpan(maxLineSpan)
-                }
-            ) {
-
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            isExpended = !isExpended
-                        }
-                        .padding(8.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
+            item(span = {
+                // LazyGridItemSpanScope:
+                // maxLineSpan
+                GridItemSpan(maxLineSpan)
+            }) {
+                Column(modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        isExpended = !isExpended
+                    }
+                    .padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                     AnimatedContent(
-                        modifier = Modifier,
-                        targetState = isExpended,
-                        transitionSpec = {
-                            fadeIn(animationSpec = tween(300, delayMillis = 300)) togetherWith
-                                    fadeOut(animationSpec = tween(300, delayMillis = 0))
+                        modifier = Modifier, targetState = isExpended, transitionSpec = {
+                            fadeIn(
+                                animationSpec = tween(
+                                    300,
+                                    delayMillis = 300
+                                )
+                            ) togetherWith fadeOut(animationSpec = tween(300, delayMillis = 0))
                         }, label = ""
                     ) {
                         if (it) {
@@ -568,11 +620,9 @@ fun CartoonPlayDetailed(
                         }
                     }
 
-
                     // 箭头
                     Box(
-                        modifier = Modifier
-                            .fillMaxWidth(), contentAlignment = Alignment.Center
+                        modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             if (isExpended) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
@@ -581,18 +631,17 @@ fun CartoonPlayDetailed(
                     }
                 }
             }
-
-            item(
-                span = {
-                    // LazyGridItemSpanScope:
-                    // maxLineSpan
-                    GridItemSpan(maxLineSpan)
-                }
-            ) {
+            item(span = {
+                // LazyGridItemSpanScope:
+                // maxLineSpan
+                GridItemSpan(maxLineSpan)
+            }) {
                 Column {
                     LocalCartoonActions(
+                        isDeleteMode = state.deleteModePlayLine != null,
                         onSearch = onSearch,
                         onNet = onDetailed,
+                        onDelete = onDelete,
                     )
                     Spacer(modifier = Modifier.size(8.dp))
                     Divider()
@@ -600,97 +649,142 @@ fun CartoonPlayDetailed(
             }
 
             if (cartoon.playLines.isEmpty()) {
-                item(
-                    span = {
-                        // LazyGridItemSpanScope:
-                        // maxLineSpan
-                        GridItemSpan(maxLineSpan)
-                    }
-                ) {
+                item(span = {
+                    // LazyGridItemSpanScope:
+                    // maxLineSpan
+                    GridItemSpan(maxLineSpan)
+                }) {
                     EmptyPage(
                         modifier = Modifier.fillMaxWidth(),
                         emptyMsg = stringResource(id = R.string.no_play_line)
                     )
                 }
             } else {
-
-                item(
-                    span = {
-                        // LazyGridItemSpanScope:
-                        // maxLineSpan
-                        GridItemSpan(maxLineSpan)
-                    }
-                ) {
+                item(span = {
+                    // LazyGridItemSpanScope:
+                    // maxLineSpan
+                    GridItemSpan(maxLineSpan)
+                }) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        ScrollableTabRow(
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(0.dp, 8.dp),
-                            selectedTabIndex = state.selectPlayLine,
-                            edgePadding = 0.dp,
-                            indicator = {
-                                if (state.selectPlayLine >= 0 && state.selectPlayLine < it.size) {
-                                    TabIndicator(
-                                        currentTabPosition = it[state.selectPlayLine]
-                                    )
-                                }
-                            },
-                            divider = { }
 
-                        ) {
-                            cartoon.playLines.forEachIndexed { index, localPlayLine ->
-                                Tab(
-                                    selected = state.selectPlayLine == index,
-                                    onClick = {
-                                        onLineSelect(index)
-                                    },
-                                    unselectedContentColor = MaterialTheme.colorScheme.primary.copy(
-                                        0.4f
+                        if (state.deleteModePlayLine == null) {
+                            if (state.sorted.size == 1) {
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = state.sorted.getOrNull(0)?.playLine?.label?.ifEmpty {
+                                        null
+                                    } ?: stringResource(
+                                        id = R.string.play_list
                                     ),
-                                    text = {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Text(text = localPlayLine.label)
-
-                                            if (state.curPlayingLine == localPlayLine) {
-                                                Box(
-                                                    modifier = Modifier
-                                                        .padding(2.dp, 0.dp, 0.dp, 0.dp)
-                                                        .size(8.dp)
-                                                        .background(
-                                                            MaterialTheme.colorScheme.primary,
-                                                            CircleShape
-                                                        )
-                                                )
-                                            }
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }else{
+                                ScrollableTabRow(modifier = Modifier
+                                    .weight(1f)
+                                    .padding(0.dp, 8.dp),
+                                    selectedTabIndex = state.selectPlayLine,
+                                    edgePadding = 0.dp,
+                                    indicator = {
+                                        if (state.selectPlayLine >= 0 && state.selectPlayLine < it.size) {
+                                            TabIndicator(
+                                                currentTabPosition = it[state.selectPlayLine]
+                                            )
                                         }
+                                    },
+                                    divider = { }) {
+                                    state.sorted.forEachIndexed { index, localPlayLineWrapper ->
+                                        val localPlayLine = localPlayLineWrapper.playLine
+                                        Tab(selected = state.selectPlayLine == index,
+                                            onClick = {
+                                                onLineSelect(index)
+                                            },
+                                            unselectedContentColor = MaterialTheme.colorScheme.primary.copy(
+                                                0.4f
+                                            ),
+                                            text = {
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    Text(text = localPlayLine.label)
+
+                                                    if (state.curPlayingLine == localPlayLineWrapper) {
+                                                        Box(
+                                                            modifier = Modifier
+                                                                .padding(
+                                                                    2.dp, 0.dp, 0.dp, 0.dp
+                                                                )
+                                                                .size(8.dp)
+                                                                .background(
+                                                                    MaterialTheme.colorScheme.primary,
+                                                                    CircleShape
+                                                                )
+                                                        )
+                                                    }
+                                                }
+                                            })
                                     }
+                                }
+                            }
+
+                        } else {
+                            // 删除模式的播放线路
+                            Text(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(16.dp, 0.dp),
+                                text = stringResource(id = com.heyanle.easy_i18n.R.string.select_to_delete)
+                            )
+                            IconButton(onClick = {
+                                onDeleteSelectionRevert()
+                            }) {
+                                Icon(
+                                    Icons.Filled.SelectAll,
+                                    stringResource(id = com.heyanle.easy_i18n.R.string.select_all),
                                 )
                             }
                         }
 
-
-
                         IconButton(onClick = {
-                            onReversal(!isReversal)
+                            // TODO
+                            isSortShow = true
+
                         }) {
+                            val curKey = sortState.current.collectAsState()
                             Icon(
-                                Icons.Filled.WifiProtectedSetup,
-                                stringResource(id = R.string.reverse),
-                                tint = if (isReversal) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
+                                Icons.Filled.Sort,
+                                stringResource(id = R.string.sort),
+                                tint = if (curKey.value != DetailedViewModel.SORT_DEFAULT_KEY) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
                             )
+
+                            SortDropDownMenu(isShow = isSortShow,
+                                sortState = sortState,
+                                onClick = { sort, state ->
+                                    when (state) {
+                                        SortState.STATUS_OFF -> {
+                                            onSortChange(sort.id, false)
+                                        }
+
+                                        SortState.STATUS_ON -> {
+                                            onSortChange(sort.id, true)
+                                        }
+
+                                        else -> {
+                                            onSortChange(sort.id, false)
+                                        }
+                                    }
+                                }) {
+                                isSortShow = false
+                            }
                         }
                     }
                 }
 
-                cartoon.playLines.getOrNull(state.selectPlayLine)?.let { localPlayLine ->
-                    val episode = localPlayLine.list
+                state.sorted.getOrNull(state.selectPlayLine)?.let { localPlayLine ->
+                    val episode = localPlayLine.sortedEpisodeList
                     items(episode.size) {
-                        val index =
-                            if (isReversal) episode.size - 1 - it else it
+                        val index = it
                         val item = episode[index]
                         val select = item == state.curPlayingEpisode
                         Row(
@@ -699,9 +793,9 @@ fun CartoonPlayDetailed(
                                 .fillMaxWidth()
                                 //.then(modifier)
                                 .clip(RoundedCornerShape(4.dp))
-                                .background(if (select) MaterialTheme.colorScheme.secondary else Color.Transparent)
+                                .background(if (select && state.deleteModePlayLine == null) MaterialTheme.colorScheme.secondary else Color.Transparent)
                                 .run {
-                                    if (select) {
+                                    if (select && state.deleteModePlayLine == null) {
                                         this
                                     } else {
                                         border(
@@ -712,24 +806,36 @@ fun CartoonPlayDetailed(
                                     }
                                 }
                                 .clickable {
-                                    onEpisodeClick(
-                                        localPlayLine, item
-                                    )
+                                    if (state.deleteModePlayLine == null) {
+                                        onEpisodeClick(
+                                            localPlayLine, item
+                                        )
+                                    } else {
+                                        onEpisodeDeleteChange(
+                                            item, !state.deleteSelection.contains(item)
+                                        )
+                                    }
 
                                 }
                                 .padding(8.dp),
                         ) {
-
                             Text(
-                                color = if (select) MaterialTheme.colorScheme.onSecondary else Color.Unspecified,
+                                color = if (select && state.deleteModePlayLine == null) MaterialTheme.colorScheme.onSecondary else Color.Unspecified,
                                 text = item.label,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                             )
+                            Spacer(Modifier.weight(1f))
+                            if (state.deleteModePlayLine != null) {
+                                Spacer(Modifier.size(4.dp))
+                                Checkbox(checked = state.deleteSelection.contains(item),
+                                    onCheckedChange = {
+                                        onEpisodeDeleteChange(item, it)
+                                    })
+                            }
                         }
                     }
                 }
-
             }
         }
     }
@@ -741,12 +847,10 @@ fun CartoonDescCard(
     cartoon: LocalCartoon
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = Modifier.fillMaxWidth()
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.Top,
         ) {
@@ -779,18 +883,15 @@ fun CartoonDescCard(
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         list.forEach {
-                            Text(
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.secondaryContainer)
-                                    .clickable {
-                                    }
-                                    .padding(8.dp, 4.dp),
+                            Text(modifier = Modifier
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.secondaryContainer)
+                                .clickable {}
+                                .padding(8.dp, 4.dp),
                                 color = MaterialTheme.colorScheme.onSecondaryContainer,
                                 fontWeight = FontWeight.W900,
                                 text = it,
-                                fontSize = 12.sp
-                            )
+                                fontSize = 12.sp)
                         }
                     }
                 }
@@ -802,44 +903,53 @@ fun CartoonDescCard(
 
 @Composable
 fun LocalCartoonActions(
+    isDeleteMode: Boolean,
     onSearch: () -> Unit,
     onNet: () -> Unit,
+    onDelete: () -> Unit,
 ) {
     ActionRow(
         modifier = Modifier.fillMaxWidth()
     ) {
         // 搜索同名番
-        Action(
-            icon = {
-                Icon(
-                    Icons.Filled.Search,
-                    stringResource(id = com.heyanle.easy_i18n.R.string.search)
-                )
-            },
-            msg = {
-                Text(
-                    text = stringResource(id = com.heyanle.easy_i18n.R.string.search),
-                    fontSize = 12.sp
-                )
-            },
-            onClick = onSearch
+        Action(icon = {
+            Icon(
+                Icons.Filled.Search, stringResource(id = com.heyanle.easy_i18n.R.string.search)
+            )
+        }, msg = {
+            Text(
+                text = stringResource(id = com.heyanle.easy_i18n.R.string.search),
+                fontSize = 12.sp
+            )
+        }, onClick = onSearch
         )
 
         // 打开原网站
-        Action(
-            icon = {
-                Icon(
-                    Icons.Filled.More,
-                    stringResource(id = com.heyanle.easy_i18n.R.string.detailed)
-                )
-            },
-            msg = {
-                Text(
-                    text = stringResource(id = com.heyanle.easy_i18n.R.string.detailed),
-                    fontSize = 12.sp
-                )
-            },
-            onClick = onNet
+        Action(icon = {
+            Icon(
+                Icons.Filled.More, stringResource(id = com.heyanle.easy_i18n.R.string.detailed)
+            )
+        }, msg = {
+            Text(
+                text = stringResource(id = com.heyanle.easy_i18n.R.string.detailed),
+                fontSize = 12.sp
+            )
+        }, onClick = onNet
+        )
+
+        // 删除视频
+        Action(icon = {
+            Icon(
+                Icons.Filled.Delete, stringResource(id = com.heyanle.easy_i18n.R.string.delete),
+                tint = if (isDeleteMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
+            )
+        }, msg = {
+            Text(
+                text = stringResource(id = com.heyanle.easy_i18n.R.string.delete),
+                fontSize = 12.sp,
+                color = if (isDeleteMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
+            )
+        }, onClick = onDelete
         )
     }
 }
@@ -875,9 +985,7 @@ fun LocalVideoTopBar(
                 }
                 IconButton(onClick = onPlayExt) {
                     Icon(
-                        Icons.Filled.Airplay,
-                        tint = Color.White,
-                        contentDescription = null
+                        Icons.Filled.Airplay, tint = Color.White, contentDescription = null
                     )
                 }
             }

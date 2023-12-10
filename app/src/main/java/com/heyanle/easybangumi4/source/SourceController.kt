@@ -3,7 +3,7 @@ package com.heyanle.easybangumi4.source
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonStarDao
 import com.heyanle.easybangumi4.cartoon.entity.CartoonStar
 import com.heyanle.easybangumi4.extension.Extension
-import com.heyanle.easybangumi4.getter.ExtensionGetter
+import com.heyanle.easybangumi4.case.ExtensionCase
 import com.heyanle.easybangumi4.source.bundle.ComponentBundle
 import com.heyanle.easybangumi4.source.bundle.SourceBundle
 import com.heyanle.easybangumi4.source_api.MigrateSource
@@ -15,30 +15,28 @@ import com.heyanle.easybangumi4.source_api.entity.Cartoon
 import com.heyanle.easybangumi4.source_api.entity.PlayLine
 import com.heyanle.easybangumi4.source_api.entity.toIdentify
 import com.heyanle.easybangumi4.source_api.utils.api.PreferenceHelper
+import com.heyanle.easybangumi4.utils.CoroutineProvider
 import com.heyanle.easybangumi4.utils.TimeLogUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.util.concurrent.Executors
 
 /**
  * 源业务层
  * Created by heyanlin on 2023/10/27.
  */
 class SourceController(
-    private val extensionGetter: ExtensionGetter,
+    private val extensionCase: ExtensionCase,
     private val sourcePreferences: SourcePreferences,
     private val cartoonStarDao: CartoonStarDao,
 ) {
@@ -60,13 +58,13 @@ class SourceController(
 
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val dispatcher = Dispatchers.IO.limitedParallelism(1)
+    private val dispatcher = CoroutineProvider.SINGLE
     private val migrateScope = CoroutineScope(SupervisorJob() + dispatcher)
     private val scope = MainScope()
 
     init {
         scope.launch {
-            extensionGetter.flowExtensionState().collectLatest { sta ->
+            extensionCase.flowExtensionState().collectLatest { sta ->
                 if(sta.isLoading){
                     _sourceInfo.update {
                         SourceInfoState.Loading

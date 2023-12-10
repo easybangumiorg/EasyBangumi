@@ -130,6 +130,10 @@ fun NavHostController.navigationDetailed(cartoonCover: CartoonCover) {
     navigate("${DETAILED}?url=${url}&source=${es}&id=${id}")
 }
 
+fun NavHostController.navigationSourceManager(defIndex: Int = -1) {
+    navigate("${SOURCE_MANAGER}?defIndex=${defIndex}")
+}
+
 
 fun NavHostController.navigationDetailed(
     cartoonCover: CartoonCover,
@@ -305,13 +309,22 @@ fun Nav() {
 
             }
 
-            composable(SOURCE_MANAGER) {
+            composable(
+                "${SOURCE_MANAGER}?defIndex={defIndex}",
+                arguments = listOf(
+                    navArgument("defIndex") {
+                        type = NavType.IntType
+                        defaultValue = -1
+                    }
+                )
+            ) {
+                val defSearchKey = it.arguments?.getInt("defIndex", -1) ?: -1
                 NormalSystemBarColor()
                 Surface(
                     color = MaterialTheme.colorScheme.background,
                     contentColor = MaterialTheme.colorScheme.onBackground
                 ) {
-                    SourceManager()
+                    SourceManager(defSearchKey)
                 }
             }
 

@@ -10,12 +10,10 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.heyanle.easybangumi4.getter.SourceStateGetter
-import com.heyanle.easybangumi4.source.SourceController
+import com.heyanle.easybangumi4.case.SourceStateCase
 import com.heyanle.easybangumi4.source_api.component.search.SearchComponent
 import com.heyanle.easybangumi4.source_api.entity.CartoonCover
 import com.heyanle.easybangumi4.ui.search_migrate.PagingSearchSource
-import com.heyanle.easybangumi4.ui.search_migrate.search.searchpage.SearchPageViewModel
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,7 +42,7 @@ class CartoonMigrateViewModel(
 
     private val _sourceKeys = MutableStateFlow<List<String>>(defSourceKey)
 
-    private val sourceStateGetter: SourceStateGetter by Injekt.injectLazy()
+    private val sourceStateCase: SourceStateCase by Injekt.injectLazy()
 
     data class MigrateItem(
         val searchComponent: SearchComponent,
@@ -73,7 +71,7 @@ class CartoonMigrateViewModel(
             combine(
                 _searchFlow,
                 _sourceKeys,
-                sourceStateGetter.flowBundle().stateIn(viewModelScope, SharingStarted.Lazily, null),
+                sourceStateCase.flowBundle().stateIn(viewModelScope, SharingStarted.Lazily, null),
             ) { searchKey, sourceKeys, sourceBundle ->
                 if (searchKey.isEmpty()) {
                     MigrateState.Empty

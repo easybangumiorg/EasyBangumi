@@ -49,7 +49,7 @@ object Migrate {
 
         private val MIGRATION_4_5 = object : Migration(4, 5) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("CREATE TABLE IF NOT EXISTS CartoonTag (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, label TEXT NOT NULL DEFAULT '', 'order' INTEGER NOT NULL DEFAULT 0)")
+                db.execSQL("CREATE TABLE CartoonTag (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, label TEXT NOT NULL DEFAULT '', 'order' INTEGER NOT NULL DEFAULT 0)")
             }
         }
 
@@ -61,7 +61,11 @@ object Migrate {
 
         private val MIGRATION_6_7 = object : Migration(6, 7) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("ALTER TABLE CartoonHistory ADD COLUMN lastLineId TEXT NOT NULL DEFAULT '', lastEpisodeId TEXT NOT NULL DEFAULT '', lastEpisodeOrder INTEGER NOT NULL DEFAULT -1")
+                db.execSQL("ALTER TABLE CartoonHistory ADD COLUMN lastLineId TEXT NOT NULL DEFAULT ''")
+
+                db.execSQL("ALTER TABLE CartoonHistory ADD COLUMN lastEpisodeId TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE CartoonHistory ADD COLUMN lastEpisodeOrder INTEGER NOT NULL DEFAULT 0")
+
             }
         }
 

@@ -10,7 +10,7 @@ import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonHistoryDao
 import com.heyanle.easybangumi4.exo.EasyExoPlayer
 import com.heyanle.easybangumi4.exo.MediaSourceFactory
-import com.heyanle.easybangumi4.getter.SourceStateGetter
+import com.heyanle.easybangumi4.case.SourceStateCase
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
 import com.heyanle.easybangumi4.source_api.entity.Episode
@@ -35,7 +35,7 @@ import kotlinx.coroutines.yield
  */
 class CartoonPlayingControllerOld(
     private val settingPreference: SettingPreferences,
-    private val sourceStateGetter: SourceStateGetter,
+    private val sourceStateCase: SourceStateCase,
     private val cartoonHistoryDao: CartoonHistoryDao,
     private val mediaSourceFactory: MediaSourceFactory,
     private val exoPlayer: EasyExoPlayer,
@@ -251,7 +251,7 @@ class CartoonPlayingControllerOld(
         }
         // 先暂停播放
         exoPlayer.pause()
-        val playComponent = sourceStateGetter.awaitBundle().play(cartoon.source)
+        val playComponent = sourceStateCase.awaitBundle().play(cartoon.source)
         yield() // 给个 cancel 时点
         if (playComponent == null) {
             _state.update {

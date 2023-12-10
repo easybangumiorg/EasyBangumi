@@ -1,6 +1,8 @@
 package com.heyanle.easybangumi4.extension.store
 
+import com.google.gson.annotations.Expose
 import com.heyanle.easybangumi4.bus.DownloadingBus
+import com.heyanle.easybangumi4.extension.ExtensionController
 import com.heyanle.easybangumi4.utils.getMatchReg
 import com.squareup.moshi.Json
 
@@ -20,19 +22,25 @@ data class ExtensionStoreRemoteInfoItem(
     @Json(name = "package")
     val pkg: String,            // 包名
     val label: String,          // 名称
-    val iconUrl: String,        // 图标 url
+    val icon: String,           // 图标
     val versionName: String,    // 版本
     val versionCode: Int,
+    @Json(name = "libApiVersion")
     val libVersion: Int,        // 对应源 api 的版本
     val author: String,         // 作者
     val gitUrl: String,         // 仓库链接
-    val releaseDesc: String,    // 仓库 release 描述
+    @Json(name = "desc")
+    val releaseDesc: String = "",    // 仓库 release 描述
     val md5: String,            // 拓展文件 md5
     val fileUrl: String,        // 文件下载地址
-    val fileSize: Long,         // 文件大小
+    val fileSize: Long = -1L,         // 文件大小
 ) {
 
-    fun getInstalledFileName() = "store-${pkg}.extension.apk"
+    fun getInstalledFileName() = "store-${pkg}.${ExtensionController.EXTENSION_SUFFIX}"
+
+
+    @Json(ignore = true)
+    val iconUrl: String get() = "${ExtensionStoreInfoRepository.EXTENSION_STORE_ICON_ROOT_URL}/${icon}"
 
 }
 

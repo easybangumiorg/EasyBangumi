@@ -17,7 +17,8 @@ import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.ABOUT
 import com.heyanle.easybangumi4.C
 import com.heyanle.easybangumi4.LocalNavController
-import com.heyanle.easybangumi4.getter.SourceStateGetter
+import com.heyanle.easybangumi4.case.SourceStateCase
+import com.heyanle.easybangumi4.navigationSourceManager
 import com.heyanle.easybangumi4.source.LocalSourceBundleController
 import com.heyanle.easybangumi4.source.SourceController
 import com.heyanle.easybangumi4.source.bundle.SourceBundle
@@ -53,8 +54,8 @@ fun SourceContainerBase(
     val animSources = LocalSourceBundleController.current
     val anim = animSources
 
-    val sourceStateGetter: SourceStateGetter by Injekt.injectLazy()
-    val state by sourceStateGetter.flowState().collectAsState()
+    val sourceStateCase: SourceStateCase by Injekt.injectLazy()
+    val state by sourceStateCase.flowState().collectAsState()
     LaunchedEffect(state){
         state.logi("SourceController")
     }
@@ -82,16 +83,25 @@ fun SourceContainerBase(
                         clickEnable = false,
                         other = {
                             Column {
+
                                 TextButton(onClick = {
-                                    stringRes(R.string.try_qq_group).toast()
-                                    kotlin.runCatching {
-                                        C.extensionUrl.openUrl()
-                                    }.onFailure {
-                                        it.printStackTrace()
-                                    }
+                                    nav.navigationSourceManager(1)
                                 }) {
-                                    Text(text = stringResource(id = R.string.website_get))
+                                    Text(text = stringResource(id = R.string.store_get))
                                 }
+
+
+//                                TextButton(onClick = {
+//                                    stringRes(R.string.try_qq_group).toast()
+//                                    kotlin.runCatching {
+//                                        C.extensionUrl.openUrl()
+//                                    }.onFailure {
+//                                        it.printStackTrace()
+//                                    }
+//                                }) {
+//                                    Text(text = stringResource(id = R.string.website_get))
+//                                }
+
 
                                 TextButton(onClick = {
                                     stringRes(R.string.add_group_get).moeSnackBar()

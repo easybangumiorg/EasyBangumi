@@ -234,6 +234,8 @@ fun ExtensionStore() {
                         }
                     )
                 }
+
+                else -> {}
             }
 
 

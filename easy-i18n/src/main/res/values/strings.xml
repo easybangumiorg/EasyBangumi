@@ -153,8 +153,12 @@
     <string name="click_to_get">点击获取</string>
 
 
+    <string name="store_err_need_vpn">插件市场加载失败，请尝试科学上网或者进群获取</string>
+    <string name="store_get">插件市场（需科学上网）</string>
     <string name="website_get">网站获取（需科学上网）</string>
-    <string name="group_get">进群获取（推荐）</string>
+    <string name="group_get">进群获取</string>
+
+    <string name="long_press_to_delete">文件方式加载的拓展可长按删除</string>
 
     <string name="add_group_get">点击复制群号进群获取！</string>
 
@@ -303,6 +307,10 @@
     <string name="reverse">列表反转</string>
 
     <string name="select_to_download">选择要下载的番剧</string>
+
+    <string name="select_to_delete">选择要删除的视频</string>
+
+    <string name="delete_selection">删除所选</string>
 
     <string name="start_download">开始下载</string>
     <string name="download">下载</string>

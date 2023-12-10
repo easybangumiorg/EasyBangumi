@@ -14,8 +14,7 @@ import com.heyanle.easybangumi4.cartoon.play.PlayLineWrapper
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonStarDao
 import com.heyanle.easybangumi4.cartoon.tags.CartoonTagsController
 import com.heyanle.easybangumi4.cartoon.tags.isInner
-import com.heyanle.easybangumi4.getter.CartoonInfoGetter
-import com.heyanle.easybangumi4.source_api.component.detailed.DetailedComponent
+import com.heyanle.easybangumi4.case.CartoonInfoCase
 import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
 import com.heyanle.easybangumi4.source_api.entity.Episode
 import com.heyanle.easybangumi4.source_api.entity.PlayLine
@@ -66,7 +65,7 @@ class DetailedViewModel(
 
     val sortList = listOf(sortByDefault, sortByLabel)
 
-    private val cartoonInfoGetter: CartoonInfoGetter by Injekt.injectLazy()
+    private val cartoonInfoCase: CartoonInfoCase by Injekt.injectLazy()
     private val cartoonStarDao: CartoonStarDao by Injekt.injectLazy()
     private val cartoonTagsController: CartoonTagsController by Injekt.injectLazy()
 
@@ -181,7 +180,7 @@ class DetailedViewModel(
             _stateFlow.update {
                 it.copy(isLoading = true)
             }
-            cartoonInfoGetter.awaitCartoonInfoWithPlayLines(
+            cartoonInfoCase.awaitCartoonInfoWithPlayLines(
                 cartoonSummary.id,
                 cartoonSummary.source,
                 cartoonSummary.url
