@@ -3,14 +3,18 @@ package com.heyanle.easybangumi4.ui.source_manage.extension
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.APP
+import com.heyanle.easybangumi4.R
 import com.heyanle.easybangumi4.extension.Extension
 import com.heyanle.easybangumi4.extension.ExtensionController
 import com.heyanle.easybangumi4.extension.store.ExtensionStoreController
 import com.heyanle.easybangumi4.extension.store.ExtensionStoreDispatcher
 import com.heyanle.easybangumi4.extension.store.ExtensionStoreInfo
 import com.heyanle.easybangumi4.extension.store.ExtensionStoreInfo.Companion.STATE_ERROR
+import com.heyanle.easybangumi4.ui.common.MoeDialogData
+import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.IntentHelper
 import com.heyanle.easybangumi4.utils.logi
+import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,6 +25,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.io.File
 
 /**
  * Created by HeYanLe on 2023/2/21 23:26.
@@ -103,11 +108,11 @@ class ExtensionViewModel : ViewModel() {
                             ?: emptyList<ExtensionStoreInfo>()
                     val storeMap = hashMapOf<String, ExtensionStoreInfo>()
                     storeList.forEach { extensionStoreInfo ->
-                        if(extensionStoreInfo.local != null){
+                        if (extensionStoreInfo.local != null) {
                             extensionStoreInfo.local.let {
                                 storeMap[it.realFilePath] = extensionStoreInfo
                             }
-                        }else{
+                        } else {
                             res.add(ExtensionItem.StoreInfo(extensionStoreInfo))
                         }
 
@@ -144,7 +149,8 @@ class ExtensionViewModel : ViewModel() {
             combine(
                 _stateFlow.map { it.searchKey }.distinctUntilChanged().stateIn(viewModelScope),
                 _stateFlow.map { it.currentTab }.distinctUntilChanged().stateIn(viewModelScope),
-                _stateFlow.map { if(it.isLoading) null else it.list }.distinctUntilChanged().stateIn(viewModelScope),
+                _stateFlow.map { if (it.isLoading) null else it.list }.distinctUntilChanged()
+                    .stateIn(viewModelScope),
             ) { search, tab, list ->
                 "feedback Flow".logi(TAG)
                 if (list == null) {
@@ -155,19 +161,22 @@ class ExtensionViewModel : ViewModel() {
                     } else {
                         list.filter { it.match(search) }
                     }
-                    val showList = when(tab){
+                    val showList = when (tab) {
                         0 -> searchList
                         1 -> searchList.filter {
                             it is ExtensionItem.StoreExtensionInfo && it.info.state == ExtensionStoreInfo.STATE_NEED_UPDATE
                         }
+
                         2 -> searchList.filter {
                             (it is ExtensionItem.StoreExtensionInfo &&
                                     (it.info.state == ExtensionStoreInfo.STATE_INSTALLED || it.info.state == ExtensionStoreInfo.STATE_NEED_UPDATE))
                                     || (it is ExtensionItem.ExtensionInfo)
                         }
+
                         3 -> searchList.filter {
                             it is ExtensionItem.StoreInfo && (it.info.state == ExtensionStoreInfo.STATE_ERROR || it.info.state == ExtensionStoreInfo.STATE_DOWNLOADING)
                         }
+
                         else -> emptyList()
                     }
 
@@ -182,7 +191,7 @@ class ExtensionViewModel : ViewModel() {
         }
     }
 
-    fun onSearchChange(searchKey: String?){
+    fun onSearchChange(searchKey: String?) {
         _stateFlow.update {
             it.copy(
                 searchKey = searchKey
@@ -190,7 +199,11 @@ class ExtensionViewModel : ViewModel() {
         }
     }
 
-    fun onTabClick(index: Int){
+
+    fun refresh(){
+        extensionStoreController.refresh()
+    }
+    fun onTabClick(index: Int) {
         _stateFlow.update {
             it.copy(
                 currentTab = index
@@ -200,8 +213,8 @@ class ExtensionViewModel : ViewModel() {
 
     fun onItemClick(
         item: ExtensionItem
-    ){
-        when(item){
+    ) {
+        when (item) {
             is ExtensionItem.StoreExtensionInfo -> {
                 val ext = item.extension
                 val info = item.info
@@ -209,17 +222,23 @@ class ExtensionViewModel : ViewModel() {
                 if (info.state == ExtensionStoreInfo.STATE_INSTALLED) {
                     if (ext.loadType == Extension.TYPE_APP) {
                         IntentHelper.openAppDetailed(ext.pkgName, APP)
+                    } else {
+                        stringRes(com.heyanle.easy_i18n.R.string.long_press_to_delete).moeSnackBar()
                     }
                 } else {
                     extensionStoreDispatcher.toggle(item.info.remote)
                 }
             }
+
             is ExtensionItem.ExtensionInfo -> {
                 val ext = item.extension
                 if (ext.loadType == Extension.TYPE_APP) {
                     IntentHelper.openAppDetailed(ext.pkgName, APP)
+                } else {
+                    stringRes(com.heyanle.easy_i18n.R.string.long_press_to_delete).moeSnackBar()
                 }
             }
+
             is ExtensionItem.StoreInfo -> {
                 extensionStoreDispatcher.toggle(item.info.remote)
             }
@@ -228,6 +247,41 @@ class ExtensionViewModel : ViewModel() {
 
     fun onItemLongPress(
         item: ExtensionItem
-    ){}
+    ) {
+        when (item) {
+            is ExtensionItem.ExtensionInfo -> {
+                val ext = item.extension
+                if (ext.loadType == Extension.TYPE_APP) {
+                    IntentHelper.openAppDetailed(ext.pkgName, APP)
+                } else {
+                    item.extension.publicPath?.let {
+                        File(it).delete()
+                    }
+                }
+            }
+            is ExtensionItem.StoreExtensionInfo -> {
+                val ext = item.extension
+                val info = item.info
+
+                if (info.state == ExtensionStoreInfo.STATE_INSTALLED) {
+                    if (ext.loadType == Extension.TYPE_APP) {
+                        IntentHelper.openAppDetailed(ext.pkgName, APP)
+                    } else {
+                        item.extension.publicPath?.let {
+                            File(it).delete()
+                        }
+                        item.info.local?.let {
+                            extensionStoreDispatcher.removeInstalled(item.info.local)
+                        }
+                    }
+                } else {
+                    extensionStoreDispatcher.remove(item.info.remote.pkg)
+                }
+            }
+            is ExtensionItem.StoreInfo -> {
+
+            }
+        }
+    }
 
 }

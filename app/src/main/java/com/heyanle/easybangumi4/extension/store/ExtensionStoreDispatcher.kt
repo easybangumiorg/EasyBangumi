@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.extension.store
 
 import com.heyanle.easybangumi4.bus.DownloadingBus
+import com.heyanle.easybangumi4.utils.CoroutineProvider
 import com.heyanle.easybangumi4.utils.OkhttpHelper
 import com.heyanle.easybangumi4.utils.jsonTo
 import com.heyanle.easybangumi4.utils.stringRes
@@ -36,8 +37,7 @@ class ExtensionStoreDispatcher(
 ) {
 
     // 单线程，保证各种数据处理是串行的
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private val singleDispatcher = Dispatchers.IO.limitedParallelism(1)
+    private val singleDispatcher = CoroutineProvider.SINGLE
     // 同时下载的番剧源个数
     @OptIn(ExperimentalCoroutinesApi::class)
     private val dispatcher = Dispatchers.IO.limitedParallelism(3)
@@ -72,12 +72,24 @@ class ExtensionStoreDispatcher(
     private val extensionItemJson = File(storeFolder, "official.json")
     private val extensionItemJsonTemp = File(storeFolder, "official.json.bk")
 
+    fun removeInstalled(item: OfficialExtensionItem) {
+        scope.launch(singleDispatcher) {
+            _installedExtension.update {
+                val map = it ?: return@update it
+                map.toMutableMap().apply {
+                    remove(item.extensionStoreInfo.pkg)
+                }
+            }
+        }
+    }
+
     // 如果正在下载则停止，否则下载
     fun toggle(remoteInfo: ExtensionStoreRemoteInfoItem) {
         scope.launch(singleDispatcher) {
             val currentMap = downloadInfoFlow.first()
             val current = currentMap[remoteInfo.pkg]
-            if(current != null && jobMap[current.jobUUID]?.isActive == true){
+            val info = _downloadInfoFlow.first()[remoteInfo.pkg]
+            if(current != null && jobMap[current.jobUUID]?.isActive == true && info != null && !info.isError){
                 remove(remoteInfo.pkg)
             }else{
                 innerDownloadExtension(remoteInfo)
@@ -195,6 +207,13 @@ class ExtensionStoreDispatcher(
         return withContext(dispatcher) {
             try {
 
+                getInfo(downInfo.remoteInfo).let { info ->
+                    info.status.value =
+                        stringRes(com.heyanle.easy_i18n.R.string.downloading)
+                    info.process.value = -1f
+                }
+
+
                 val parent = File(downInfo.downloadPath)
                 val tempFile = File(parent, "${downInfo.fileName}.temp")
                 val file = File(parent, downInfo.fileName)
@@ -258,7 +277,7 @@ class ExtensionStoreDispatcher(
 
     }
 
-    private fun remove(pkg: String) {
+    fun remove(pkg: String) {
         update(pkg) {
             val jobUUID = it?.jobUUID
             if (jobUUID != null) {

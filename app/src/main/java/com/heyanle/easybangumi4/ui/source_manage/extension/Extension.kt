@@ -5,6 +5,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,6 +24,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -31,8 +33,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Store
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -161,6 +165,14 @@ fun ExtensionTopAppBar(behavior: TopAppBarScrollBehavior) {
                         imageVector = Icons.Filled.Search, stringResource(id = R.string.search)
                     )
                 }
+
+                IconButton(onClick = {
+                    vm.refresh()
+                }) {
+                    Icon(
+                        imageVector = Icons.Filled.Refresh, stringResource(id = R.string.refresh)
+                    )
+                }
             } else {
                 IconButton(onClick = {
                     vm.onSearchChange(null)
@@ -280,6 +292,7 @@ fun StoreInfoItem(
     onLongPress: ((ExtensionViewModel.ExtensionItem) -> Unit)?,
 ) {
     val extensionStoreInfo = item.info
+
     ListItem(
         modifier = Modifier.let {
             if (onLongPress == null) {
@@ -302,6 +315,7 @@ fun StoreInfoItem(
         },
         supportingContent = {
             Row(
+                modifier = Modifier.horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
             ) {
 
@@ -392,15 +406,14 @@ fun StoreInfoItem(
                 }
 
                 ExtensionStoreInfo.STATE_DOWNLOADING -> {
-                    Box(modifier = Modifier.width(125.dp)) {
-                        val info = remember(extensionStoreInfo) {
-                            extensionStoreInfo.downloadInfo
-                        }
-                        if (info?.process?.value == -1f || info == null) {
-                            LinearProgressIndicator()
-                        } else {
-                            LinearProgressIndicator(info.process.value)
-                        }
+
+                    val info = remember(extensionStoreInfo) {
+                        extensionStoreInfo.downloadInfo
+                    }
+                    if (info?.process?.value == -1f || info == null) {
+                        CircularProgressIndicator()
+                    } else {
+                        CircularProgressIndicator(info.process.value)
                     }
 
                 }
@@ -426,9 +439,11 @@ fun StoreInfoItem(
                             extensionStoreInfo.errorMsg?.moeDialog()
                         }) {
                         Text(
+                            modifier = Modifier.width(32.dp),
                             text = if (extensionStoreInfo.errorMsg?.isNotEmpty() == true) extensionStoreInfo.errorMsg else stringResource(
                                 id = R.string.download_error
-                            )
+                            ),
+                            maxLines = 2
                         )
                     }
                 }
@@ -597,7 +612,6 @@ fun StoreExtensionInfoItem(
 
                 ExtensionStoreInfo.STATE_ERROR -> {
                     TextButton(
-                        enabled = false,
                         onClick = {
                             extensionStoreInfo.errorMsg?.moeDialog()
                         }) {
@@ -611,11 +625,20 @@ fun StoreExtensionInfoItem(
             }
         },
         leadingContent = {
-            OkImage(
-                modifier = Modifier.size(40.dp),
-                image = extensionStoreInfo.remote.iconUrl,
-                contentDescription = extensionStoreInfo.remote.label
-            )
+            if (item.extension.icon == null) {
+                OkImage(
+                    modifier = Modifier.size(40.dp),
+                    image = extensionStoreInfo.remote.iconUrl,
+                    contentDescription = extensionStoreInfo.remote.label
+                )
+            } else {
+                OkImage(
+                    modifier = Modifier.size(40.dp),
+                    image = item.extension.icon,
+                    contentDescription = extensionStoreInfo.remote.label
+                )
+            }
+
         }
     )
 }

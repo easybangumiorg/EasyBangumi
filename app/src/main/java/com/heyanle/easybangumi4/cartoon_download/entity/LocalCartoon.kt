@@ -8,7 +8,7 @@ import java.io.File
  * Created by HeYanLe on 2023/9/17 15:41.
  * https://github.com/heyanLE
  */
-data class LocalCartoon (
+data class LocalCartoon(
 
     // uuid
     val uuid: String,
@@ -25,28 +25,57 @@ data class LocalCartoon (
     val cartoonDescription: String,
     val cartoonGenre: String,
 
-    var playLines: ArrayList<LocalPlayLine> = arrayListOf(),
-){
+    var playLines: List<LocalPlayLine>,
+) {
 
-    fun clearDirty(){
-        val removeLine = mutableSetOf<LocalPlayLine>()
-        playLines.forEach {
-            val removeEpisode = mutableSetOf<LocalEpisode>()
-            it.list.forEach {
-                val f = File(it.path)
-                if(!f.exists()){
-                    removeEpisode.add(it)
+    fun clearDirty(): LocalCartoon {
+        return copy(
+            playLines = playLines.flatMap {
+                val new = it.clearDirty()
+                if (new.list.isEmpty()) {
+                    emptyList()
+                } else {
+                    listOf(new)
                 }
             }
-            it.list.removeAll(removeEpisode)
-            if(it.list.isEmpty()){
-                removeLine.add(it)
-            }
-        }
-        playLines.removeAll(removeLine)
+        )
     }
 
-    fun match(query: String): Boolean{
+    fun append(downloadItem: DownloadItem): LocalCartoon? {
+        if (downloadItem.cartoonId != cartoonId || downloadItem.cartoonUrl != cartoonUrl || downloadItem.cartoonSource != cartoonSource) {
+            return null
+        }
+        var isAppend = false
+        val list = playLines.map { playLine ->
+            playLine.append(downloadItem).also {
+                if (it != null) {
+                    isAppend = true
+                }
+            } ?: playLine
+        }
+        if (!isAppend) {
+            return copy(
+                playLines = list + LocalPlayLine(
+                    downloadItem.playLine.id, downloadItem.playLine.label, listOf(
+                        LocalEpisode(
+                            order = downloadItem.episode.order,
+                            label = downloadItem.episode.label,
+                            path = File(
+                                downloadItem.folder,
+                                downloadItem.fileNameWithoutSuffix + ".mp4"
+                            ).absolutePath
+                        )
+                    )
+                )
+            )
+        } else {
+            return copy(
+                playLines = list
+            )
+        }
+    }
+
+    fun match(query: String): Boolean {
         var matched = false
         for (match in query.split(',')) {
             val regex = match.getMatchReg()
@@ -76,8 +105,37 @@ data class LocalCartoon (
 data class LocalPlayLine(
     val id: String,
     val label: String,
-    val list: ArrayList<LocalEpisode> = arrayListOf(),
-)
+    val list: List<LocalEpisode> = listOf(),
+) {
+    fun clearDirty(): LocalPlayLine {
+        return copy(
+            list = list.flatMap {
+                val file = File(it.path)
+                if (file.exists()) {
+                    listOf(it)
+                } else {
+                    emptyList()
+                }
+            }
+        )
+    }
+
+    fun append(downloadItem: DownloadItem): LocalPlayLine? {
+        if (downloadItem.playLine.id != id || downloadItem.playLine.label != label) {
+            return null
+        }
+        return copy(
+            list = list + LocalEpisode(
+                order = downloadItem.episode.order,
+                label = downloadItem.episode.label,
+                path = File(
+                    downloadItem.folder,
+                    downloadItem.fileNameWithoutSuffix + ".mp4"
+                ).absolutePath
+            )
+        )
+    }
+}
 
 data class LocalEpisode(
     val order: Int,

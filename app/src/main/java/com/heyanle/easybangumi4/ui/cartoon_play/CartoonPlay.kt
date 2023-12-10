@@ -227,7 +227,7 @@ fun CartoonPlay(
     val isPad = isCurPadeMode()
 
     val cartoonPlayingController: CartoonPlayingController by Injekt.injectLazy()
-    val controlVM = ControlViewModelFactory.viewModel(Injekt.get<EasyExoPlayer>(), isPad)
+    val controlVM = ControlViewModelFactory.viewModel(Injekt.get<EasyExoPlayer>(), isPad, CartoonPlayingController.EXOPLAYER_SCENE)
     val nav = LocalNavController.current
 
     val detailState = detailedVM.stateFlow.collectAsState()
@@ -474,7 +474,6 @@ fun VideoFloat(
     LaunchedEffect(key1 = controlVM.controlState) {
         if (controlVM.controlState == ControlViewModel.ControlState.Ended) {
             cartoonPlayingController.tryNext()
-            stringRes(R.string.try_play_next).toast()
         }
     }
     when (playingState) {

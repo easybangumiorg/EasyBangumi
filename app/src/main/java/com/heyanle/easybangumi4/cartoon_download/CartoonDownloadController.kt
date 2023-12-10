@@ -126,6 +126,7 @@ class CartoonDownloadController(
             downloadItemJsonTemp.delete()
             downloadItemJsonTemp.createNewFile()
             downloadItemJsonTemp.writeText(it.toJson())
+            downloadItemJson.delete()
             downloadItemJsonTemp.renameTo(downloadItemJson)
         }
 

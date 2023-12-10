@@ -11,13 +11,13 @@ import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonHistoryDao
 import com.heyanle.easybangumi4.exo.EasyExoPlayer
 import com.heyanle.easybangumi4.exo.MediaSourceFactory
-import com.heyanle.easybangumi4.getter.SourceStateGetter
+import com.heyanle.easybangumi4.case.SourceStateCase
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
 import com.heyanle.easybangumi4.source_api.entity.Episode
-import com.heyanle.easybangumi4.source_api.entity.PlayLine
 import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
 import com.heyanle.easybangumi4.utils.stringRes
+import com.heyanle.easybangumi4.utils.toast
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -37,7 +37,7 @@ import kotlinx.coroutines.yield
  */
 class CartoonPlayingController(
     private val settingPreference: SettingPreferences,
-    private val sourceStateGetter: SourceStateGetter,
+    private val sourceStateCase: SourceStateCase,
     private val cartoonHistoryDao: CartoonHistoryDao,
     private val mediaSourceFactory: MediaSourceFactory,
     private val exoPlayer: EasyExoPlayer,
@@ -45,7 +45,7 @@ class CartoonPlayingController(
 
     companion object {
         private const val TAG = "CartoonPlayingController"
-        private const val EXOPLAYER_SCENE = TAG
+        const val EXOPLAYER_SCENE = TAG
     }
 
     sealed class PlayingState {
@@ -74,7 +74,7 @@ class CartoonPlayingController(
         ) : PlayingState()
 
         fun cartoon(): CartoonInfo? {
-            return when(this){
+            return when (this) {
                 is Loading -> cartoon
                 is Playing -> cartoon
                 is Error -> cartoon
@@ -83,7 +83,7 @@ class CartoonPlayingController(
         }
 
         fun playLine(): PlayLineWrapper? {
-            return when(this){
+            return when (this) {
                 is Loading -> playLine
                 is Playing -> playLine
                 is Error -> playLine
@@ -92,7 +92,7 @@ class CartoonPlayingController(
         }
 
         fun episode(): Episode? {
-            return when(this){
+            return when (this) {
                 is Loading -> episode
                 is Playing -> episode
                 is Error -> episode
@@ -103,8 +103,11 @@ class CartoonPlayingController(
     }
 
 
+    @Volatile
+    private var isWorking = false
     private val _state = MutableStateFlow<PlayingState>(
-        PlayingState.Idle)
+        PlayingState.Idle
+    )
     val state = _state.asStateFlow()
 
     private val scope = MainScope()
@@ -128,6 +131,7 @@ class CartoonPlayingController(
         episode: Episode,
         adviceProgress: Long = 0L,
     ) {
+        isWorking = true
         lastChangeJob?.cancel()
         lastChangeJob = scope.launch {
             innerChangePlay(cartoon, playLine, episode, adviceProgress)
@@ -139,16 +143,17 @@ class CartoonPlayingController(
         cartoon: CartoonInfo,
         playLine: PlayLineWrapper,
         reset: Boolean = false,
-    ){
+    ) {
         lastChangeJob?.cancel()
         lastChangeJob = scope.launch {
             val oldPlayingState = _state.value
-            val episode = oldPlayingState.episode() ?: playLine.sortedEpisodeList.firstOrNull() ?: return@launch
-            innerChangePlay(cartoon, playLine, episode, if(reset) 0 else -1)
+            val episode = oldPlayingState.episode() ?: playLine.sortedEpisodeList.firstOrNull()
+            ?: return@launch
+            innerChangePlay(cartoon, playLine, episode, if (reset) 0 else -1)
         }
     }
 
-    fun refresh(){
+    fun refresh() {
         val oldPlayingState = _state.value
         val cartoon = oldPlayingState.cartoon() ?: return
         val playLine = oldPlayingState.playLine() ?: return
@@ -163,7 +168,7 @@ class CartoonPlayingController(
      */
     fun playCurrentExternal(): Boolean {
         val oldPlayingState = _state.value
-        if(oldPlayingState is PlayingState.Playing ){
+        if (oldPlayingState is PlayingState.Playing) {
             innerPlayExternal(oldPlayingState.playerInfo)
             return true
         }
@@ -182,7 +187,7 @@ class CartoonPlayingController(
             process = 0L
         }
         val oldPlayingState = _state.value
-        if(oldPlayingState is PlayingState.Playing ){
+        if (oldPlayingState is PlayingState.Playing) {
             scope.launch(Dispatchers.IO) {
                 val curCartoon = oldPlayingState.cartoon
                 val history = CartoonHistory(
@@ -194,11 +199,14 @@ class CartoonPlayingController(
                     name = curCartoon.title,
                     intro = curCartoon.intro ?: "",
 
-                    lastLinesIndex = curCartoon.getPlayLine().indexOf(oldPlayingState.playLine.playLine),
+                    lastLinesIndex = curCartoon.getPlayLine()
+                        .indexOf(oldPlayingState.playLine.playLine),
                     lastLineTitle = oldPlayingState.playLine.playLine.label,
                     lastLineId = oldPlayingState.playLine.playLine.id,
 
-                    lastEpisodeIndex = oldPlayingState.playLine.playLine.episode.indexOf(oldPlayingState.episode),
+                    lastEpisodeIndex = oldPlayingState.playLine.playLine.episode.indexOf(
+                        oldPlayingState.episode
+                    ),
                     lastEpisodeTitle = oldPlayingState.episode.label,
                     lastEpisodeId = oldPlayingState.episode.id,
                     lastEpisodeOrder = oldPlayingState.episode.order,
@@ -221,6 +229,15 @@ class CartoonPlayingController(
         if (target < 0 || target >= playingState.playLine.sortedEpisodeList.size) {
             return false
         }
+
+        if (exoPlayer.scene != TAG) {
+            return false
+        }
+        if (!isWorking) {
+            return false
+
+        }
+        stringRes(R.string.try_play_next).toast()
         changePlay(
             playingState.cartoon,
             playingState.playLine,
@@ -231,8 +248,9 @@ class CartoonPlayingController(
     }
 
     fun release() {
+        isWorking = false
         lastChangeJob?.cancel()
-        exoPlayer.stop()
+        exoPlayer.stop(TAG)
     }
 
     private suspend fun CoroutineScope.innerChangePlay(
@@ -268,7 +286,7 @@ class CartoonPlayingController(
         }
         // 先暂停播放
         exoPlayer.pause()
-        val playComponent = sourceStateGetter.awaitBundle().play(cartoon.source)
+        val playComponent = sourceStateCase.awaitBundle().play(cartoon.source)
         yield() // 给个 cancel 时点
         if (playComponent == null) {
             _state.update {
@@ -339,7 +357,7 @@ class CartoonPlayingController(
             exoPlayer.playWhenReady = true
         } else {
             // 已经在播放同一部，直接 seekTo 对应 progress
-            if(adviceProgress >= 0){
+            if (adviceProgress >= 0) {
                 exoPlayer.seekTo(adviceProgress)
             }
             exoPlayer.playWhenReady = true

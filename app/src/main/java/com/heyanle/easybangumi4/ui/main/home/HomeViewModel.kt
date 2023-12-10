@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewModelScope
-import com.heyanle.easybangumi4.getter.SourceStateGetter
+import com.heyanle.easybangumi4.case.SourceStateCase
 import com.heyanle.easybangumi4.source_api.component.page.PageComponent
 import com.heyanle.easybangumi4.source_api.component.page.SourcePage
 import com.heyanle.injekt.core.Injekt
@@ -29,7 +29,7 @@ class HomeViewModel : ViewModel() {
     private val _stateFlow = MutableStateFlow(HomeState(selectionKey = selectionKeyOkkv))
     val stateFlow = _stateFlow.asStateFlow()
 
-    private val sourceStateGetter: SourceStateGetter by Injekt.injectLazy()
+    private val sourceStateCase: SourceStateCase by Injekt.injectLazy()
 
     data class HomeState(
         val isLoading: Boolean = true,
@@ -45,7 +45,7 @@ class HomeViewModel : ViewModel() {
     init {
         viewModelScope.launch {
             combine(
-                sourceStateGetter.flowBundle(),
+                sourceStateCase.flowBundle(),
                 _stateFlow.map { it.selectionKey }.distinctUntilChanged()
             ) { sourceBundle, s ->
                 val pages = sourceBundle.pages()

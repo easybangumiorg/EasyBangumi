@@ -3,7 +3,7 @@ package com.heyanle.easybangumi4.source
 import androidx.compose.runtime.mutableStateOf
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonStarDao
 import com.heyanle.easybangumi4.cartoon.entity.CartoonStar
-import com.heyanle.easybangumi4.getter.SourceStateGetter
+import com.heyanle.easybangumi4.case.SourceStateCase
 import com.heyanle.easybangumi4.source_api.SourceResult
 import com.heyanle.easybangumi4.source_api.entity.Cartoon
 import com.heyanle.easybangumi4.utils.loge
@@ -34,7 +34,7 @@ import kotlinx.coroutines.withContext
  */
 class CartoonUpdateController(
     private val cartoonStarDao: CartoonStarDao,
-    private val sourceStateGetter: SourceStateGetter,
+    private val sourceStateCase: SourceStateCase,
 ) {
 
     private val scope = MainScope()
@@ -81,7 +81,7 @@ class CartoonUpdateController(
                     flow {
                         kotlin.runCatching {
                             val update =
-                                (sourceStateGetter.awaitBundle().update(star.source))
+                                (sourceStateCase.awaitBundle().update(star.source))
                             val key = if (star.sourceName == (update?.source?.label ?: star.sourceName)) star else star.copy(
                                 sourceName = update?.source?.label ?: star.sourceName
                             )

@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.getter
+package com.heyanle.easybangumi4.case
 
 import com.heyanle.easybangumi4.source.SourceController
 import com.heyanle.easybangumi4.source.bundle.SourceBundle
@@ -6,12 +6,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 
 /**
  * Created by heyanlin on 2023/10/2.
  */
-class SourceStateGetter(
+class SourceStateCase(
     private val sourceController: SourceController,
 ) {
 

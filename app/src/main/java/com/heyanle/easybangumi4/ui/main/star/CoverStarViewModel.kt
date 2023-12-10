@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonStarDao
 import com.heyanle.easybangumi4.cartoon.entity.CartoonStar
-import com.heyanle.easybangumi4.getter.CartoonInfoGetter
+import com.heyanle.easybangumi4.case.CartoonInfoCase
 import com.heyanle.easybangumi4.source_api.entity.CartoonCover
 import com.heyanle.easybangumi4.source_api.entity.toIdentify
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
@@ -18,7 +18,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
@@ -46,7 +45,7 @@ class CoverStarViewModel : ViewModel() {
     // 该列表中的番剧在展示上视为已收藏
     private val staringCartoon = mutableStateMapOf<String, Boolean>()
 
-    private val cartoonInfoGetter: CartoonInfoGetter by Injekt.injectLazy()
+    private val cartoonInfoCase: CartoonInfoCase by Injekt.injectLazy()
 
     init {
         viewModelScope.launch {
@@ -72,7 +71,7 @@ class CoverStarViewModel : ViewModel() {
             } else {
                 staringCartoon[identify] = true
 
-                cartoonInfoGetter.awaitCartoonInfoWithPlayLines(
+                cartoonInfoCase.awaitCartoonInfoWithPlayLines(
                     cartoonCover.id,
                     cartoonCover.source,
                     cartoonCover.url

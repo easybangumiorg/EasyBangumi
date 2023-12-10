@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.staticCompositionLocalOf
-import com.heyanle.easybangumi4.getter.SourceStateGetter
+import com.heyanle.easybangumi4.case.SourceStateCase
 import com.heyanle.easybangumi4.source.bundle.SourceBundle
 import com.heyanle.injekt.core.Injekt
 
@@ -19,8 +19,8 @@ val LocalSourceBundleController = staticCompositionLocalOf<SourceBundle> {
 
 @Composable
 fun SourcesHost(content: @Composable () -> Unit) {
-    val sourceStateGetter: SourceStateGetter by Injekt.injectLazy()
-    val state = sourceStateGetter.flowBundle().collectAsState(
+    val sourceStateCase: SourceStateCase by Injekt.injectLazy()
+    val state = sourceStateCase.flowBundle().collectAsState(
         initial = SourceBundle(
             emptyList()
         )

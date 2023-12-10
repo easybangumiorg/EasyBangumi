@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.getter
+package com.heyanle.easybangumi4.case
 
 import android.app.Application
 import com.heyanle.injekt.api.InjektModule
@@ -9,25 +9,25 @@ import com.heyanle.injekt.api.get
 /**
  * Created by heyanlin on 2023/10/30.
  */
-class GetterModule(
+class CaseModule(
     private val application: Application
 ) : InjektModule {
 
     override fun InjektScope.registerInjectables() {
         addSingletonFactory {
-            CartoonInfoGetter(get())
+            CartoonInfoCase(get())
         }
         addSingletonFactory {
-            DownloadItemGetter(get())
+            CartoonDownloadCase(get(), get())
         }
         addSingletonFactory {
-            ExtensionGetter(get())
+            ExtensionCase(get())
         }
         addSingletonFactory {
-            SourceStateGetter(get())
+            SourceStateCase(get())
         }
         addSingletonFactory {
-            LocalCartoonGetter(get())
+            LocalCartoonCase(get())
         }
     }
 }

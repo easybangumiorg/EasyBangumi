@@ -5,24 +5,23 @@ import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.cartoon_download.CartoonDownloadBus
 import com.heyanle.easybangumi4.cartoon_download.CartoonDownloadController
 import com.heyanle.easybangumi4.cartoon_download.entity.DownloadItem
-import com.heyanle.easybangumi4.getter.SourceStateGetter
+import com.heyanle.easybangumi4.case.SourceStateCase
 import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
 import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
+import com.heyanle.easybangumi4.utils.CoroutineProvider
 import com.heyanle.easybangumi4.utils.stringRes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
-import java.util.concurrent.Executors
 
 /**
  * Created by heyanlin on 2023/10/2.
  */
 class ParseStep(
-    private val sourceStateGetter: SourceStateGetter,
+    private val sourceStateCase: SourceStateCase,
     private val cartoonDownloadController: CartoonDownloadController,
     private val cartoonDownloadBus: CartoonDownloadBus,
 ) : BaseStep {
@@ -33,7 +32,7 @@ class ParseStep(
 
     // 同时只能有一个 parsing 任务
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val dispatcher = Dispatchers.IO.limitedParallelism(1)
+    private val dispatcher = CoroutineProvider.SINGLE
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
     private val mainScope = MainScope()
 
@@ -45,7 +44,7 @@ class ParseStep(
             info.subStatus.value = ""
         }
         scope.launch {
-            val play = sourceStateGetter.awaitBundle().play(downloadItem.cartoonSource)
+            val play = sourceStateCase.awaitBundle().play(downloadItem.cartoonSource)
             if (play == null) {
                 error(downloadItem.uuid, stringRes(R.string.source_not_found))
                 return@launch

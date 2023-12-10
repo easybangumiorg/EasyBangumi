@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.getter
+package com.heyanle.easybangumi4.case
 
 import com.heyanle.easybangumi4.extension.Extension
 import com.heyanle.easybangumi4.extension.ExtensionController
@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.map
 /**
  * Created by heyanlin on 2023/10/25.
  */
-class ExtensionGetter(
+class ExtensionCase(
     private val extensionController: ExtensionController
 ) {
 
