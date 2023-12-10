@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.getter
+package com.heyanle.easybangumi4.case
 
 import com.heyanle.easybangumi4.base.DataResult
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
@@ -8,7 +8,7 @@ import com.heyanle.easybangumi4.source_api.entity.PlayLine
 /**
  * Created by heyanlin on 2023/10/2.
  */
-class CartoonInfoGetter(
+class CartoonInfoCase(
     private val cartoonRepository: CartoonRepository
 ) {
 

@@ -9,12 +9,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.heyanle.easybangumi4.extension.Extension
-import com.heyanle.easybangumi4.extension.ExtensionController
-import com.heyanle.easybangumi4.getter.ExtensionGetter
+import com.heyanle.easybangumi4.case.ExtensionCase
 import com.heyanle.injekt.core.Injekt
-import org.koin.core.context.GlobalContext.get
-import org.koin.core.context.startKoin
-import org.koin.java.KoinJavaComponent.getKoin
 
 /**
  * Created by HeYanLe on 2023/2/22 19:29.
@@ -28,7 +24,7 @@ fun ExtensionContainer(
     content: @Composable (List<Extension>) -> Unit,
 ) {
 
-    val extension: ExtensionGetter by Injekt.injectLazy()
+    val extension: ExtensionCase by Injekt.injectLazy()
     val state by extension.flowExtensionState().collectAsState()
     Box(
         modifier = Modifier

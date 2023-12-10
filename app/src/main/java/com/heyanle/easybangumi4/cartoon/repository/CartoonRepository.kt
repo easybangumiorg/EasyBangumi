@@ -4,14 +4,12 @@ import com.heyanle.easybangumi4.base.DataResult
 import com.heyanle.easybangumi4.base.map
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
-import com.heyanle.easybangumi4.getter.SourceStateGetter
+import com.heyanle.easybangumi4.case.SourceStateCase
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.source_api.entity.PlayLine
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.time.DurationUnit
-import kotlin.time.toDuration
 
 /**
  * Created by HeYanLe on 2023/10/29 15:04.
@@ -21,7 +19,7 @@ class CartoonRepository(
     private val settingPreferences: SettingPreferences,
     private val cartoonInfoDao: CartoonInfoDao,
     private val cartoonNetworkDataSource: CartoonNetworkDataSource,
-    private val sourceStateGetter: SourceStateGetter
+    private val sourceStateCase: SourceStateCase
 ) {
 
 
@@ -43,7 +41,7 @@ class CartoonRepository(
                 launch(Dispatchers.IO) {
                     if (netResult is DataResult.Ok) {
                         val sourceName =
-                            sourceStateGetter.awaitBundle().source(source)?.label
+                            sourceStateCase.awaitBundle().source(source)?.label
                                 ?: ""
                         val info = CartoonInfo.fromCartoon(
                             netResult.data.first,
@@ -57,7 +55,7 @@ class CartoonRepository(
 
                 val res = netResult.map {
                     val sourceName =
-                        sourceStateGetter.awaitBundle().source(source)?.label ?: ""
+                        sourceStateCase.awaitBundle().source(source)?.label ?: ""
                     CartoonInfo.fromCartoon(
                         it.first,
                         sourceName,

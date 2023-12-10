@@ -71,9 +71,7 @@ class CartoonPlayViewModel(
                     )
                     return@launch
                 }
-
             }
-
 
             var adviceProgress = enter?.adviceProgress ?: 0L
             // 直接 match
@@ -159,7 +157,6 @@ class CartoonPlayViewModel(
                 currentEpisode = episode
                 currentEpisodeMask = mask
             }
-
         }
         return (currentPlayLine ?: return null) to (currentEpisode ?: return null)
     }

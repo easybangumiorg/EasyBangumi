@@ -11,6 +11,7 @@ import androidx.annotation.RequiresApi
 import com.heyanle.easybangumi4.extension.loader.AppExtensionLoader
 import com.heyanle.easybangumi4.extension.loader.ExtensionLoaderFactory
 import com.heyanle.easybangumi4.extension.loader.FileExtensionLoader
+import com.heyanle.easybangumi4.source_api.utils.core.network.DELETE
 import com.heyanle.easybangumi4.utils.TimeLogUtils
 import com.heyanle.easybangumi4.utils.logi
 import kotlinx.coroutines.CoroutineScope
@@ -45,6 +46,7 @@ class ExtensionController(
 
     companion object {
         private const val TAG = "ExtensionController"
+
         // app 内部下载文件的特殊后缀
         const val EXTENSION_SUFFIX = ".easybangumi.apk"
     }
@@ -54,7 +56,7 @@ class ExtensionController(
         val isAppExtensionLoading: Boolean = true,
         val fileExtension: Map<String, Extension> = emptyMap(),
         val appExtensions: Map<String, Extension> = emptyMap(),
-    ){
+    ) {
         val isLoading: Boolean
             get() = isAppExtensionLoading || isFileExtensionLoading
     }
@@ -141,8 +143,8 @@ class ExtensionController(
                 map[it.key] = new
             }
             state.copy(
-                isFileExtensionLoading = if(isApp) state.isFileExtensionLoading else false,
-                isAppExtensionLoading = if(isApp) false else state.isAppExtensionLoading,
+                isFileExtensionLoading = if (isApp) state.isFileExtensionLoading else false,
+                isAppExtensionLoading = if (isApp) false else state.isAppExtensionLoading,
                 appExtensions = if (isApp) map else state.appExtensions,
                 fileExtension = if (isApp) state.fileExtension else map,
             )
@@ -218,7 +220,10 @@ class ExtensionController(
     // ======== 文件夹监听
 
     private fun onEvent(event: Int, path: String) {
-        if (path.endsWith(EXTENSION_SUFFIX)) {
+        if (event and FileObserver.DELETE == FileObserver.DELETE || event and FileObserver.DELETE_SELF == FileObserver.DELETE_SELF || path.endsWith(
+                EXTENSION_SUFFIX
+            )
+        ) {
             scanFolder()
         }
     }
@@ -229,12 +234,13 @@ class ExtensionController(
     inner class ExtensionFolderObserverQ(private val extensionFolder: String) :
         FileObserver(
             File(extensionFolder),
-            MODIFY or CLOSE_WRITE or DELETE_SELF or MOVED_TO or MOVED_FROM or MOVE_SELF
+            MODIFY or CLOSE_WRITE or DELETE_SELF or MOVED_TO or MOVED_FROM or MOVE_SELF or DELETE
         ) {
 
         override fun onEvent(event: Int, path: String?) {
-            path?.let {
-                this@ExtensionController.onEvent(event, it)
+            "${event} ${path} onEvent".logi(TAG)
+            if (event and DELETE == DELETE || event and DELETE_SELF == DELETE_SELF || path != null) {
+                this@ExtensionController.onEvent(event, path ?: "")
             }
         }
     }
@@ -242,11 +248,12 @@ class ExtensionController(
     inner class ExtensionFolderObserver(private val extensionFolder: String) :
         FileObserver(
             extensionFolder,
-            MODIFY or CLOSE_WRITE or DELETE_SELF or MOVED_TO or MOVED_FROM or MOVE_SELF
+            MODIFY or CLOSE_WRITE or DELETE_SELF or MOVED_TO or MOVED_FROM or MOVE_SELF or DELETE
         ) {
         override fun onEvent(event: Int, path: String?) {
-            path?.let {
-                this@ExtensionController.onEvent(event, it)
+            "${event} ${path} onEvent".logi(TAG)
+            if (event and DELETE == DELETE || event and DELETE_SELF == DELETE_SELF || path != null) {
+                this@ExtensionController.onEvent(event, path ?: "")
             }
         }
 
@@ -272,10 +279,10 @@ class ExtensionController(
             }
         }
 
-        fun safeUnregister(){
+        fun safeUnregister() {
             try {
                 context.unregisterReceiver(this)
-            }catch (e: Exception){
+            } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
@@ -291,7 +298,7 @@ class ExtensionController(
                 Intent.ACTION_PACKAGE_ADDED -> {
                     getPackageNameFromIntent(intent)?.let {
                         // 安装，如果安装的是拓展则刷新一波
-                        if(AppExtensionLoader(context, it).canLoad()){
+                        if (AppExtensionLoader(context, it).canLoad()) {
                             scanApp()
                         }
                     }

@@ -11,7 +11,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
-import com.heyanle.easybangumi4.getter.CartoonInfoGetter
+import com.heyanle.easybangumi4.case.CartoonInfoCase
 import com.heyanle.easybangumi4.source_api.component.detailed.DetailedComponent
 import com.heyanle.easybangumi4.source_api.component.play.PlayComponent
 import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
@@ -113,7 +113,7 @@ class DlnaViewModel(
         }
     }
 
-    private val cartoonInfoGetter: CartoonInfoGetter by Injekt.injectLazy()
+    private val cartoonInfoCase: CartoonInfoCase by Injekt.injectLazy()
 
     var playingState by mutableStateOf<PlayingState>(PlayingState.None)
 
@@ -125,7 +125,7 @@ class DlnaViewModel(
         lastJob?.cancel()
         lastJob = viewModelScope.launch {
             detailedState = DetailedState.Loading
-            cartoonInfoGetter.awaitCartoonInfoWithPlayLines(cartoonSummary.id, cartoonSummary.source, cartoonSummary.url)
+            cartoonInfoCase.awaitCartoonInfoWithPlayLines(cartoonSummary.id, cartoonSummary.source, cartoonSummary.url)
                 .onOK {
                     if (!isActive) {
                         return@onOK

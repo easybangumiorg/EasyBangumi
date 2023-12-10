@@ -40,9 +40,9 @@ android {
 
         ndk{
             // 打包生成的 APK 文件指挥包含 ARM 指令集的动态库
-//            abiFilters += "arm64-v8a"
-//            abiFilters += "armeabi-v7a"
-            abiFilters.addAll(arrayOf("armeabi", "armeabi-v7a" , "arm64-v8a", "x86", "x86_64"))
+            abiFilters += "arm64-v8a"
+            abiFilters += "armeabi-v7a"
+            //abiFilters.addAll(arrayOf("armeabi", "armeabi-v7a" , "arm64-v8a", "x86", "x86_64"))
         }
 
     }

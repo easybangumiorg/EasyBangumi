@@ -9,10 +9,11 @@ import com.heyanle.easybangumi4.cartoon_download.step.AriaStep
 import com.heyanle.easybangumi4.cartoon_download.step.BaseStep
 import com.heyanle.easybangumi4.cartoon_download.step.CopyStep
 import com.heyanle.easybangumi4.cartoon_download.step.ParseStep
-import com.heyanle.easybangumi4.getter.DownloadItemGetter
+import com.heyanle.easybangumi4.case.CartoonDownloadCase
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.source_api.entity.Episode
 import com.heyanle.easybangumi4.source_api.entity.PlayLine
+import com.heyanle.easybangumi4.utils.CoroutineProvider
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.injekt.api.get
@@ -21,10 +22,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.io.File
-import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicLong
 
 /**
@@ -33,7 +35,6 @@ import java.util.concurrent.atomic.AtomicLong
 class CartoonDownloadDispatcher(
     private val application: Application,
     private val cartoonDownloadController: CartoonDownloadController,
-    private val downloadItemGetter: DownloadItemGetter,
     private val settingPreferences: SettingPreferences,
 ) {
 
@@ -43,8 +44,7 @@ class CartoonDownloadDispatcher(
     }
 
     private val cacheRoot = application.getCachePath("download")
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private val dispatcher = Dispatchers.IO.limitedParallelism(1)
+    private val dispatcher = CoroutineProvider.SINGLE
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
     private val atomLong = AtomicLong(0)
 
@@ -53,7 +53,8 @@ class CartoonDownloadDispatcher(
             // 先清理垃圾
             removeDirty()
 
-            downloadItemGetter.flowDownloadItem().collect {
+            cartoonDownloadController.downloadItem.filter { it != null }
+                .filterIsInstance<List<DownloadItem>>().collect {
                 Log.i(TAG, "refresh ${it.size}")
                 if(it.count {
                     it.state == 0 || it.state == 1 || it.state == 2
@@ -74,7 +75,7 @@ class CartoonDownloadDispatcher(
         }
     }
 
-    fun clickDownload(downloadItem: DownloadItem): Boolean {
+    fun toggle(downloadItem: DownloadItem): Boolean {
         if(downloadItem.state == -1){
             // 错误的任务点击重下
             val uuid = "${System.nanoTime()}-${atomLong.getAndIncrement()}"
@@ -223,7 +224,8 @@ class CartoonDownloadDispatcher(
 
     private suspend fun removeDirty(){
         val ignoreUUID = hashSetOf<String>()
-        downloadItemGetter.awaitDownloadItem().forEach {
+        cartoonDownloadController.downloadItem.filter { it != null }
+            .filterIsInstance<List<DownloadItem>>().first().forEach {
             if(it.state != -1 && it.state != 3 && !it.isRemoved){
                 ignoreUUID.add(it.uuid)
             }

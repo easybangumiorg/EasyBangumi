@@ -4,7 +4,11 @@ import android.content.Context
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
+import com.heyanle.easybangumi4.R
 import com.heyanle.easybangumi4.extension.ExtensionController
+import com.heyanle.easybangumi4.ui.common.moeDialog
+import com.heyanle.easybangumi4.ui.common.moeSnackBar
+import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.easybangumi4.utils.toJson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -146,6 +150,8 @@ class ExtensionStoreController(
             extensionStoreInfoRepository.getInfoList()
                 .onError { err ->
                     yield()
+                    err.errorMsg.moeSnackBar()
+                    stringRes(com.heyanle.easy_i18n.R.string.store_err_need_vpn).moeSnackBar()
                     _remoteStateFlow.update {
                         RemoteExtensionStoreState.Error(
                             err.errorMsg,

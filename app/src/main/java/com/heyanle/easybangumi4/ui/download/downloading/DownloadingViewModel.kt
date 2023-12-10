@@ -6,9 +6,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.bus.DownloadingBus
 import com.heyanle.easybangumi4.cartoon_download.CartoonDownloadBus
-import com.heyanle.easybangumi4.cartoon_download.CartoonDownloadDispatcher
 import com.heyanle.easybangumi4.cartoon_download.entity.DownloadItem
-import com.heyanle.easybangumi4.getter.DownloadItemGetter
+import com.heyanle.easybangumi4.case.CartoonDownloadCase
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
@@ -21,11 +20,9 @@ class DownloadingViewModel : ViewModel() {
     private val cartoonDownloadBus: CartoonDownloadBus by Injekt.injectLazy()
 
 
-    private val downloadItemGetter: DownloadItemGetter by Injekt.injectLazy()
-    val downloadingFlow = downloadItemGetter.flowDownloadItem()
+    private val cartoonDownloadCase: CartoonDownloadCase by Injekt.injectLazy()
+    val downloadingFlow = cartoonDownloadCase.flowDownloadItem()
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-
-    private val cartoonDownloadDispatcher: CartoonDownloadDispatcher by Injekt.injectLazy()
 
     val selection = mutableStateMapOf<DownloadItem, Boolean>()
 
@@ -57,12 +54,12 @@ class DownloadingViewModel : ViewModel() {
     }
 
     fun click(download: DownloadItem) {
-        cartoonDownloadDispatcher.clickDownload(downloadItem = download)
+        cartoonDownloadCase.toggle(downloadItem = download)
     }
 
     fun remove(selection: Collection<DownloadItem>) {
         selection.forEach {
-            cartoonDownloadDispatcher.removeDownload(it)
+            cartoonDownloadCase.remove(it)
         }
     }
 }

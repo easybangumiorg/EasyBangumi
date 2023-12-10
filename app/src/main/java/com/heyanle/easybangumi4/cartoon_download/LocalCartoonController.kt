@@ -5,8 +5,10 @@ import com.heyanle.easybangumi4.cartoon_download.entity.DownloadItem
 import com.heyanle.easybangumi4.cartoon_download.entity.LocalCartoon
 import com.heyanle.easybangumi4.cartoon_download.entity.LocalEpisode
 import com.heyanle.easybangumi4.cartoon_download.entity.LocalPlayLine
+import com.heyanle.easybangumi4.utils.CoroutineProvider
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.easybangumi4.utils.jsonTo
+import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.toJson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -28,8 +30,7 @@ class LocalCartoonController(
     private val context: Context,
 ) {
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private val dispatcher = Dispatchers.IO.limitedParallelism(1)
+    private val dispatcher = CoroutineProvider.SINGLE
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
 
     private val rootFolder = File(context.getFilePath("download"))
@@ -41,6 +42,12 @@ class LocalCartoonController(
 
     init {
 
+        scope.launch {
+            _localCartoon.collectLatest {
+                it?.let(::save)
+            }
+        }
+
         scope.launch() {
             if (!localCartoonJson.exists() && localCartoonJsonTem.exists()) {
                 localCartoonJsonTem.renameTo(localCartoonJson)
@@ -50,11 +57,11 @@ class LocalCartoonController(
                     val json = localCartoonJson.readText()
                     var d = json.jsonTo<List<LocalCartoon>>() ?: emptyList()
                     d = d.flatMap {
-                        it.clearDirty()
-                        if(it.playLines.isEmpty()){
+                        val n = it.clearDirty()
+                        if(n.playLines.isEmpty()){
                             emptyList()
                         }else{
-                            listOf(it)
+                            listOf(n)
                         }
                     }
                     _localCartoon.update {
@@ -71,61 +78,51 @@ class LocalCartoonController(
             }
         }
 
-        scope.launch() {
-            _localCartoon.collectLatest {
-                it?.let {
-                    save(it)
-                }
-            }
-        }
+//        scope.launch() {
+//            _localCartoon.collect {
+//                it?.let {
+//                    save(it)
+//                }
+//            }
+//        }
     }
 
     fun onComplete(downloadItem: DownloadItem) {
         scope.launch() {
 
             val function: (List<LocalCartoon>?) -> List<LocalCartoon> = {
-                val d = it?.toMutableList() ?: mutableListOf()
-                val old = d.find {
-                    it.cartoonId == downloadItem.cartoonId && it.cartoonSource == downloadItem.cartoonSource && it.cartoonUrl == downloadItem.cartoonUrl
+
+                var append = false
+                val res = (it?: listOf()).toMutableList().map {
+                    it.append(downloadItem).also {
+                        if(it != null){
+                            append = true
+                        }
+                    }?:it
                 }
-                val new = if (old == null) {
-                    val newLocal = LocalCartoon(
-                        uuid = downloadItem.uuid,
-                        sourceLabel = downloadItem.sourceLabel,
-                        cartoonId = downloadItem.cartoonId,
-                        cartoonUrl = downloadItem.cartoonUrl,
-                        cartoonSource = downloadItem.cartoonSource,
-                        cartoonTitle = downloadItem.cartoonTitle,
-                        cartoonGenre = downloadItem.cartoonGenre,
-                        cartoonCover = downloadItem.cartoonCover,
-                        cartoonDescription = downloadItem.cartoonDescription
+                if(append) res  else res + LocalCartoon(
+                    uuid = downloadItem.uuid,
+                    sourceLabel = downloadItem.sourceLabel,
+                    cartoonId = downloadItem.cartoonId,
+                    cartoonUrl = downloadItem.cartoonUrl,
+                    cartoonSource = downloadItem.cartoonSource,
+                    cartoonTitle = downloadItem.cartoonTitle,
+                    cartoonGenre = downloadItem.cartoonGenre,
+                    cartoonCover = downloadItem.cartoonCover,
+                    cartoonDescription = downloadItem.cartoonDescription,
+                    playLines = listOf(
+                        LocalPlayLine(downloadItem.playLine.id, downloadItem.playLine.label, listOf(
+                            LocalEpisode(
+                                order = downloadItem.episode.order,
+                                label = downloadItem.episode.label,
+                                path = File(
+                                    downloadItem.folder,
+                                    downloadItem.fileNameWithoutSuffix + ".mp4"
+                                ).absolutePath
+                            )
+                        ))
                     )
-                    d.add(newLocal)
-                    newLocal
-                } else {
-                    old
-                }
-                val oldLines = new.playLines.find {
-                    it.id == downloadItem.playLine.id && it.label == downloadItem.playLine.label
-                }
-                val newLines = if (oldLines == null) {
-                    val newLine =
-                        LocalPlayLine(downloadItem.playLine.id, downloadItem.playLine.label)
-                    new.playLines.add(newLine)
-                    newLine
-                } else {
-                    oldLines
-                }
-                val newEpisode = LocalEpisode(
-                    order = downloadItem.episode.order,
-                    label = downloadItem.episode.label,
-                    path = File(
-                        downloadItem.folder,
-                        downloadItem.fileNameWithoutSuffix + ".mp4"
-                    ).absolutePath
                 )
-                newLines.list.add(newEpisode)
-                d
             }
             _localCartoon.update {
                 function(it)
@@ -142,11 +139,11 @@ class LocalCartoonController(
             }
             _localCartoon.update {
                 it?.flatMap {
-                    it.clearDirty()
-                    if(it.playLines.isEmpty()){
+                    val list = it.clearDirty()
+                    if(list.playLines.isEmpty()){
                         emptyList()
                     }else{
-                        listOf(it)
+                        listOf(list)
                     }
                 }
             }
@@ -160,11 +157,11 @@ class LocalCartoonController(
             }
             _localCartoon.update {
                 it?.flatMap {
-                    it.clearDirty()
-                    if(it.playLines.isEmpty()){
+                    val list = it.clearDirty()
+                    if(list.playLines.isEmpty()){
                         emptyList()
                     }else{
-                        listOf(it)
+                        listOf(list)
                     }
                 }
             }
@@ -172,8 +169,10 @@ class LocalCartoonController(
     }
 
     private fun save(value: List<LocalCartoon>) {
+        value.logi("LocalCartoonController")
         localCartoonJsonTem.delete()
         localCartoonJsonTem.createNewFile()
+        localCartoonJson.delete()
         localCartoonJsonTem.writeText(value.toJson())
         localCartoonJsonTem.renameTo(localCartoonJson)
     }
