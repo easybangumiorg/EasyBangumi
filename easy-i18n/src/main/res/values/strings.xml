@@ -40,6 +40,7 @@
     <string name="download_setting">下载设置</string>
     
     <string name="use_external_player">使用外置播放器</string>
+    <string name="player_bottom_nav_padding">播放器底部间距</string>
     <string name="player_orientation_mode">跟随传感器切换全屏</string>
 
     <string name="channel_name">下载</string>

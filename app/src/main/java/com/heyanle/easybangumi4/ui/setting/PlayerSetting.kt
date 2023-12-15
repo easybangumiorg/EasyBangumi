@@ -22,7 +22,6 @@ import com.heyanle.easybangumi4.ui.common.BooleanPreferenceItem
 import com.heyanle.easybangumi4.ui.common.EmumPreferenceItem
 import com.heyanle.easybangumi4.ui.common.StringSelectPreferenceItem
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
-import com.heyanle.easybangumi4.utils.mb
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.injekt.core.Injekt
 
@@ -53,6 +52,11 @@ fun ColumnScope.PlayerSetting(
         BooleanPreferenceItem(
             title = { Text(stringResource(id = com.heyanle.easy_i18n.R.string.use_external_player)) },
             preference = settingPreferences.useExternalVideoPlayer
+        )
+
+        BooleanPreferenceItem(
+            title = { Text(stringResource(id = com.heyanle.easy_i18n.R.string.player_bottom_nav_padding)) },
+            preference = settingPreferences.playerBottomNavigationBarPadding
         )
 
         EmumPreferenceItem(

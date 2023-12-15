@@ -47,10 +47,17 @@ class SettingPreferences(
     enum class PlayerOrientationMode {
         Auto, Enable, Disable
     }
-    val playerOrientationMode = preferenceStore.getEnum<PlayerOrientationMode>("player_orientation_mode", PlayerOrientationMode.Auto)
+
+    val playerOrientationMode = preferenceStore.getEnum<PlayerOrientationMode>(
+        "player_orientation_mode",
+        PlayerOrientationMode.Auto
+    )
 
     // 使用外置播放器
     var useExternalVideoPlayer = preferenceStore.getBoolean("use_external_video_player", false)
+
+    var playerBottomNavigationBarPadding =
+        preferenceStore.getBoolean("player_bottom_nav_padding", true)
 
     val cacheSizeSelection = listOf(
         0L to stringRes(com.heyanle.easy_i18n.R.string.disable),
@@ -60,6 +67,7 @@ class SettingPreferences(
         3000L.mb to "3GB",
         5000L.mb to "5GB",
     )
+
     // 最大缓存
     var cacheSize = preferenceStore.getLong("cache_size", 2000.mb.toLong())
 
