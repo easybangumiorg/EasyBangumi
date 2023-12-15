@@ -137,7 +137,6 @@ import com.heyanle.easybangumi4.ui.common.proc.SortState
 import com.heyanle.easybangumi4.utils.isCurPadeMode
 import com.heyanle.easybangumi4.utils.openUrl
 import com.heyanle.easybangumi4.utils.stringRes
-import com.heyanle.easybangumi4.utils.toast
 import com.heyanle.injekt.api.get
 import com.heyanle.injekt.core.Injekt
 import loli.ball.easyplayer2.BackBtn
@@ -287,7 +286,11 @@ fun CartoonPlay(
     EasyPlayerScaffoldBase(
         modifier = Modifier
             .fillMaxSize()
-            .navigationBarsPadding(),
+            .let {
+                if (settingPreferences.playerBottomNavigationBarPadding.get()) {
+                    it.navigationBarsPadding()
+                } else it
+            },
         vm = controlVM,
         isPadMode = isPad,
         contentWeight = 0.5f,
