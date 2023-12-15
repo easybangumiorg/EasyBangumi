@@ -251,7 +251,7 @@ fun CartoonPlay(
         }
     }
 
-    LaunchedEffect(key1 = playingState) {
+    LaunchedEffect(key1 = playingState.value) {
         val cartoon = playingState.value.cartoon()
         val episode = playingState.value.episode()
 
