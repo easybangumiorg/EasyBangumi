@@ -1,9 +1,6 @@
 package com.heyanle.easybangumi4.source.bundle
 
-import androidx.collection.arraySetOf
 import com.heyanle.easybangumi4.source.SourceException
-import com.heyanle.easybangumi4.source.utils.StringHelperImpl
-import com.heyanle.easybangumi4.source.utils.WebViewHelperImpl
 import com.heyanle.easybangumi4.source_api.IconSource
 import com.heyanle.easybangumi4.source_api.MigrateSource
 import com.heyanle.easybangumi4.source_api.Source
@@ -14,6 +11,7 @@ import com.heyanle.easybangumi4.source_api.component.play.PlayComponent
 import com.heyanle.easybangumi4.source_api.component.preference.PreferenceComponent
 import com.heyanle.easybangumi4.source_api.component.search.SearchComponent
 import com.heyanle.easybangumi4.source_api.component.update.UpdateComponent
+import com.heyanle.easybangumi4.source_api.utils.api.CaptchaHelper
 import com.heyanle.easybangumi4.source_api.utils.api.NetworkHelper
 import com.heyanle.easybangumi4.source_api.utils.api.OkhttpHelper
 import com.heyanle.easybangumi4.source_api.utils.api.PreferenceHelper
@@ -23,8 +21,6 @@ import com.heyanle.extension_api.ExtensionIconSource
 import com.heyanle.extension_api.ExtensionSource
 import com.heyanle.injekt.api.get
 import com.heyanle.injekt.core.Injekt
-import org.koin.core.qualifier.named
-import org.koin.mp.KoinPlatform
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
@@ -55,6 +51,7 @@ class ComponentBundle(
         OkhttpHelper::class,
         PreferenceHelper::class,
         WebViewHelper::class,
+        CaptchaHelper::class
     )
 
     // Component 接口
@@ -82,6 +79,7 @@ class ComponentBundle(
         put(OkhttpHelper::class, Injekt.get(source.key))
         put(PreferenceHelper::class, Injekt.get(source.key))
         put(WebViewHelper::class, Injekt.get(source.key))
+        put(CaptchaHelper::class, Injekt.get(source.key))
 
         sourceClazz.forEach {
             if(it.isInstance(source)){
