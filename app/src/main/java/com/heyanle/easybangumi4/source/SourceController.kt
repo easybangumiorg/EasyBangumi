@@ -1,7 +1,7 @@
 package com.heyanle.easybangumi4.source
 
-import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonStarDao
-import com.heyanle.easybangumi4.cartoon.entity.CartoonStar
+import com.heyanle.easybangumi4.cartoon.old.entity.CartoonStar
+import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
 import com.heyanle.easybangumi4.extension.Extension
 import com.heyanle.easybangumi4.case.ExtensionCase
 import com.heyanle.easybangumi4.source.bundle.ComponentBundle
@@ -18,7 +18,6 @@ import com.heyanle.easybangumi4.source_api.utils.api.PreferenceHelper
 import com.heyanle.easybangumi4.utils.CoroutineProvider
 import com.heyanle.easybangumi4.utils.TimeLogUtils
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.SupervisorJob
@@ -38,7 +37,7 @@ import kotlinx.coroutines.launch
 class SourceController(
     private val extensionCase: ExtensionCase,
     private val sourcePreferences: SourcePreferences,
-    private val cartoonStarDao: CartoonStarDao,
+    private val cartoonInfoDao: CartoonInfoDao,
 ) {
 
     sealed class SourceInfoState {
@@ -169,24 +168,25 @@ class SourceController(
         val so = sourceInfo.source
         if (so is MigrateSource) {
             if (so.needMigrate(old)) {
-                val oldStart = cartoonStarDao.getAllBySource(so.key)
-                val detailed = sourceInfo.componentBundle.get<DetailedComponent>()
-                if (detailed != null) {
-                    val news = so.onMigrate(oldStart.map { it.getSummary() }, old).map {
-                        detailed.getAll(it)
-                    }.filterIsInstance<SourceResult.Complete<Pair<Cartoon, List<PlayLine>>>>()
-                        .map { co ->
-                            CartoonStar.fromCartoon(
-                                co.data.first,
-                                sourceInfo.source.label,
-                                co.data.second,
-                                oldStart.find { it.toIdentify() == co.data.first.toIdentify() }?.tags
-                                    ?: ""
-                            )
-                        }
-                    cartoonStarDao.migration(oldStart, news)
-                }
+                val oldInfo = cartoonInfoDao.getAllBySource(so.key)
 
+
+                val detailed = sourceInfo.componentBundle.get<DetailedComponent>()
+
+
+                if (detailed != null) {
+                    oldInfo.forEach { info ->
+                        detailed.getAll(info.toSummary())
+                            .complete {
+                                val n = info.copyFromCartoon(
+                                    it.data.first,
+                                    detailed.source.label,
+                                    it.data.second
+                                )
+                                cartoonInfoDao.modify(n)
+                            }
+                    }
+                }
             }
         }
         _sourceInfo.update { sourceInfos ->

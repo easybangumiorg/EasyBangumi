@@ -5,24 +5,21 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
-import com.heyanle.easybangumi4.cartoon.play.CartoonPlayingController
-import com.heyanle.easybangumi4.cartoon.play.PlayLineWrapper
-import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonHistoryDao
-import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
+import com.heyanle.easybangumi4.cartoon.entity.PlayLineWrapper
 import com.heyanle.easybangumi4.source_api.entity.Episode
-import com.heyanle.injekt.core.Injekt
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
 /**
- * Created by heyanlin on 2023/10/31.
+ * Created by heyanle on 2023/12/17.
+ * https://github.com/heyanLE
  */
 class CartoonPlayViewModel(
-    private var enter: EnterData?,
-) : ViewModel() {
+    private var enter: EnterData? = null,
+): ViewModel() {
+
 
     /**
      * 匹配播放线路 -> 匹配集数 -> 跳转进度
@@ -45,63 +42,95 @@ class CartoonPlayViewModel(
         val episodeIndex: Int,
 
         val adviceProgress: Long,
-    )
+    ){
+        fun isEffective(): Boolean {
+            return playLineId.isNotEmpty() || playLineLabel.isNotEmpty() || playLineIndex >= 0
+                    || episodeId.isNotEmpty() || episodeLabel.isNotEmpty() || episodeOrder >= 0 || episodeIndex >= 0
+                    || adviceProgress > -1
+        }
+    }
+
+
+    data class CartoonPlayState(
+        val cartoonInfo: CartoonInfo,
+        val playLine: PlayLineWrapper,
+        val episode: Episode,
+    ){
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as CartoonPlayState
+
+            if (cartoonInfo != other.cartoonInfo) return false
+            if (playLine != other.playLine) return false
+            return episode == other.episode
+        }
+
+        override fun hashCode(): Int {
+            var result = cartoonInfo.hashCode()
+            result = 31 * result + playLine.hashCode()
+            result = 31 * result + episode.hashCode()
+            return result
+        }
+    }
+
 
     var selectedLineIndex by mutableIntStateOf(0)
 
+    private val _curringPlayStatus = MutableStateFlow<CartoonPlayState?>(null)
+    val curringPlayState = _curringPlayStatus.asStateFlow()
 
-    private val cartoonHistoryDao: CartoonHistoryDao by Injekt.injectLazy()
-    private val cartoonPlayingController: CartoonPlayingController by Injekt.injectLazy()
+    var adviceProgress: Long = -1L
 
-
-    fun onDetailedChange(
-        info: CartoonInfo,
-        playLineWrapper: List<PlayLineWrapper>,
-    ) {
-        viewModelScope.launch {
-
-            val current = cartoonPlayingController.state.value
-            if(enter == null && current is CartoonPlayingController.PlayingState.Playing){
-                val oldPlayLine = current.playLine.playLine
-                val newPlayLine = playLineWrapper.find { it.playLine == oldPlayLine }
-                if(newPlayLine != null){
-                    cartoonPlayingController.changePlay(
-                        info,
-                        newPlayLine
-                    )
-                    return@launch
-                }
+    fun onCartoonInfoChange(
+        info: CartoonInfo
+    ){
+        val old = _curringPlayStatus.value
+        val pair = if(enter == null || enter?.isEffective() != true){
+            if(adviceProgress == -1L && old == null){
+                adviceProgress = info.lastProcessTime
             }
-
-            var adviceProgress = enter?.adviceProgress ?: 0L
-            // 直接 match
-            var matchPlayItem: Pair<PlayLineWrapper, Episode>? = null
-            if (enter != null) {
-                matchPlayItem = match(info, playLineWrapper, enter)
+            info.matchHistoryEpisode
+        }else{
+            if(adviceProgress == -1L && old == null){
+                adviceProgress = enter?.adviceProgress?:0L
             }
-            if (matchPlayItem == null) {
-                val data = getEnterDataFromHistory(info.getSummary())
-                adviceProgress = data.adviceProgress
-                matchPlayItem = match(info, playLineWrapper, data)
-            }
-            if (matchPlayItem == null) {
-                adviceProgress = 0L
-                matchPlayItem = match(info, playLineWrapper, null)
-            }
-            val realItem = matchPlayItem ?: return@launch
-            cartoonPlayingController.changePlay(
-                info,
-                realItem.first,
-                realItem.second,
-                adviceProgress.coerceAtLeast(0)
-            )
-            enter = null
+            match(info.playLineWrapper, enter)
         }
 
+        // enter 只生效一次
+        enter = null
+
+        _curringPlayStatus.update {
+            if(pair != null){
+                CartoonPlayState(info, pair.first, pair.second)
+            }else{
+                null
+            }
+        }
+    }
+
+    fun changePlay(
+        cartoonInfo: CartoonInfo,
+        playLineWrapper: PlayLineWrapper,
+        episode: Episode,
+    ){
+        _curringPlayStatus.update {
+            CartoonPlayState(cartoonInfo, playLineWrapper, episode)
+        }
+    }
+
+    fun tryNext(){
+        val current = _curringPlayStatus.value ?: return
+        val index = current.playLine.sortedEpisodeList.indexOf(current.episode)  + 1
+        if(index <= 0|| index >= current.playLine.sortedEpisodeList.size){
+            return
+        }
+        changePlay(current.cartoonInfo, current.playLine, current.playLine.sortedEpisodeList[index])
     }
 
     private fun match(
-        info: CartoonInfo,
         playLineWrapper: List<PlayLineWrapper>,
         enter: EnterData?
     ): Pair<PlayLineWrapper, Episode>? {
@@ -159,28 +188,6 @@ class CartoonPlayViewModel(
             }
         }
         return (currentPlayLine ?: return null) to (currentEpisode ?: return null)
-    }
-
-    private suspend fun getEnterDataFromHistory(cartoonSummary: CartoonSummary): EnterData {
-        return withContext(Dispatchers.IO) {
-            val hist = cartoonHistoryDao.getFromCartoonSummary(
-                cartoonSummary.id,
-                cartoonSummary.source,
-                cartoonSummary.url,
-            )
-            return@withContext EnterData(
-                playLineId = hist?.lastLineId ?: "",
-                playLineLabel = hist?.lastLineTitle ?: "",
-                playLineIndex = hist?.lastLinesIndex ?: -1,
-
-                episodeId = hist?.lastEpisodeId ?: "",
-                episodeLabel = hist?.lastLineTitle ?: "",
-                episodeOrder = hist?.lastEpisodeOrder ?: -1,
-                episodeIndex = hist?.lastEpisodeIndex ?: -1,
-
-                adviceProgress = hist?.lastProcessTime ?: 0L
-            )
-        }
     }
 
 }

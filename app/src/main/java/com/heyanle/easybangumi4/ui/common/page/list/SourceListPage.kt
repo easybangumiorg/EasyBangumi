@@ -24,6 +24,7 @@ import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,6 +48,7 @@ import com.heyanle.easybangumi4.ui.main.star.CoverStarViewModel
 import com.heyanle.easybangumi4.navigationDetailed
 import com.heyanle.easybangumi4.source_api.component.page.SourcePage
 import com.heyanle.easybangumi4.source_api.entity.CartoonCover
+import com.heyanle.easybangumi4.source_api.entity.toIdentify
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -108,8 +110,8 @@ fun SourceListPageContentWithCover(
     pagingItems: LazyPagingItems<CartoonCover>,
     scope: CoroutineScope,
     header: (@Composable () -> Unit)? = null,
-
     ) {
+    val star = coverStarVm.setFlow.collectAsState(initial = setOf<String>())
     val nav = LocalNavController.current
     var refreshing by remember { mutableStateOf(false) }
     val state = rememberPullRefreshState(refreshing, onRefresh = {
@@ -157,7 +159,7 @@ fun SourceListPageContentWithCover(
                         items[int]?.let { cover ->
                             CartoonCardWithCover(
                                 modifier = Modifier.fillMaxWidth(),
-                                star = coverStarVm.isCoverStarted(cover) ,
+                                star = star.value.contains(cover.toIdentify()) ,
                                 cartoonCover = cover,
                                 onClick = {
                                     nav.navigationDetailed(it)
@@ -222,6 +224,8 @@ fun SourceListPageContentWithoutCover(
     val lazyState = rememberLazyStaggeredGridState()
 
     val haptic = LocalHapticFeedback.current
+
+    val star = coverStarVm.setFlow.collectAsState(initial = setOf<String>())
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -250,7 +254,7 @@ fun SourceListPageContentWithoutCover(
                         items[index]?.let { cover ->
                             CartoonCardWithoutCover(
                                 cartoonCover = cover,
-                                star =  coverStarVm.isCoverStarted(cover),
+                                star =  star.value.contains(cover.toIdentify()),
                                 onClick = {
                                     nav.navigationDetailed(it)
                                 },

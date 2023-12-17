@@ -46,7 +46,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
-import com.heyanle.easybangumi4.cartoon.entity.CartoonStar
+import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
+import com.heyanle.easybangumi4.cartoon.old.entity.CartoonStar
 import com.heyanle.easybangumi4.ui.common.EmptyPage
 import com.heyanle.easybangumi4.ui.common.LoadingImage
 import com.heyanle.easybangumi4.ui.common.LoadingPage
@@ -129,8 +130,8 @@ fun Update(
 
 @Composable
 fun UpdateCartoonCard(
-    cartoonStar: CartoonStar,
-    onClick: (CartoonStar) -> Unit,
+    cartoonStar: CartoonInfo,
+    onClick: (CartoonInfo) -> Unit,
 ) {
 
     val sourceBundle = LocalSourceBundleController.current
@@ -140,7 +141,7 @@ fun UpdateCartoonCard(
             onClick(cartoonStar)
         },
         headlineContent = {
-            Text(text = cartoonStar.title, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Text(text = cartoonStar.name, maxLines = 2, overflow = TextOverflow.Ellipsis)
         },
         trailingContent = {
             Text(
@@ -162,7 +163,7 @@ fun UpdateCartoonCard(
                     .size(40.dp)
                     .clip(RoundedCornerShape(4.dp)),
                 image = cartoonStar.coverUrl,
-                contentDescription = cartoonStar.title
+                contentDescription = cartoonStar.name
             )
         }
     )

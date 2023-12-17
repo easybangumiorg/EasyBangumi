@@ -1,8 +1,9 @@
 package com.heyanle.easybangumi4.cartoon.star
 
+import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.base.preferences.android.AndroidPreferenceStore
-import com.heyanle.easybangumi4.cartoon.entity.CartoonStar
-import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonStarDao
+import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
+import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
 import com.heyanle.easybangumi4.ui.common.proc.FilterState
 import com.heyanle.easybangumi4.ui.common.proc.FilterWith
 import com.heyanle.easybangumi4.ui.common.proc.SortBy
@@ -19,59 +20,59 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 /**
- * 番剧收藏，主要处理置顶，排序还筛选
- * Created by heyanlin on 2023/11/6.
+ * Created by heyanle on 2023/12/17.
+ * https://github.com/heyanLE
  */
 class CartoonStarController(
-    private val cartoonStarDao: CartoonStarDao,
+    private val cartoonInfoDao: CartoonInfoDao,
     private val sharePreferenceStore: AndroidPreferenceStore,
 ) {
 
     private val scope = MainScope()
 
     // 排序配置
-    private val sortByCreateTime = SortBy<CartoonStar>(
+    private val sortByStarTime = SortBy<CartoonInfo>(
         id = "CreateTime",
-        label = stringRes(com.heyanle.easy_i18n.R.string.sort_by_create_time),
+        label = stringRes(R.string.sort_by_create_time),
         comparator = { o1, o2 ->
-            (o1.createTime - o2.createTime).toInt()
+            (o1.starTime - o2.starTime).toInt()
         }
     )
-    private val sortByUpdateTime = SortBy<CartoonStar>(
+    private val sortByUpdateTime = SortBy<CartoonInfo>(
         id = "UpdateTime",
-        label = stringRes(com.heyanle.easy_i18n.R.string.sort_by_update_time),
+        label = stringRes(R.string.sort_by_update_time),
         comparator = { o1, o2 ->
             (o1.lastUpdateTime - o2.lastUpdateTime).toInt()
         }
     )
-    private val sortByTitle = SortBy<CartoonStar>(
+    private val sortByTitle = SortBy<CartoonInfo>(
         id = "Title",
-        label = stringRes(com.heyanle.easy_i18n.R.string.sort_by_title),
+        label = stringRes(R.string.sort_by_title),
         comparator = { o1, o2 ->
-            o1.title.compareTo(o2.title)
+            o1.name.compareTo(o2.name)
         }
     )
-    private val sortByLastWatchTime = SortBy<CartoonStar>(
+    private val sortByLastWatchTime = SortBy<CartoonInfo>(
         id = "LastWatchTime",
-        label = stringRes(com.heyanle.easy_i18n.R.string.sort_by_watch),
+        label = stringRes(R.string.sort_by_watch),
         comparator = { o1, o2 ->
-            (o1.lastWatchTime - o2.lastWatchTime).toInt()
+            (o1.lastHistoryTime - o2.lastHistoryTime).toInt()
         }
     )
-    private val sortBySource = SortBy<CartoonStar>(
+    private val sortBySource = SortBy<CartoonInfo>(
         id = "Source",
-        label = stringRes(com.heyanle.easy_i18n.R.string.sort_by_source),
+        label = stringRes(R.string.sort_by_source),
         comparator = { o1, o2 ->
             o1.source.compareTo(o2.source)
         }
     )
-    private val sortByList = listOf<SortBy<CartoonStar>>(
-        sortByCreateTime, sortByUpdateTime, sortByTitle, sortByLastWatchTime, sortBySource
+    private val sortByList = listOf<SortBy<CartoonInfo>>(
+        sortByStarTime, sortByUpdateTime, sortByTitle, sortByLastWatchTime, sortBySource
     )
 
     // 当前选择排序
     private val sortIdShare =
-        sharePreferenceStore.getString("cartoon_star_sort_id", sortByCreateTime.id)
+        sharePreferenceStore.getString("cartoon_star_sort_id", sortByStarTime.id)
 
     // 当前是否反转排序
     private val sortIsReverseShare =
@@ -84,25 +85,25 @@ class CartoonStarController(
 
 
     // 筛选配置
-    private val filterWithUpdate = FilterWith<CartoonStar>(
+    private val filterWithUpdate = FilterWith<CartoonInfo>(
         id = "Update",
-        label = stringRes(com.heyanle.easy_i18n.R.string.filter_with_is_update),
+        label = stringRes(R.string.filter_with_is_update),
         filter = {
             it.isUpdate
         }
     )
-    private val filterWithTag = FilterWith<CartoonStar>(
+    private val filterWithTag = FilterWith<CartoonInfo>(
         id = "Tag",
-        label = stringRes(com.heyanle.easy_i18n.R.string.filter_with_has_tag),
+        label = stringRes(R.string.filter_with_has_tag),
         filter = {
             it.tags.isNotEmpty()
         }
     )
-    private val filterWithUp = FilterWith<CartoonStar>(
+    private val filterWithUp = FilterWith<CartoonInfo>(
         id = "Up",
-        label = stringRes(com.heyanle.easy_i18n.R.string.filter_with_is_up),
+        label = stringRes(R.string.filter_with_is_up),
         filter = {
-            it.isUp()
+            it.upTime != 0L
         }
     )
     private val filterWithList = listOf(
@@ -118,13 +119,13 @@ class CartoonStarController(
         filterMapStringShare.get().jsonTo<Map<String, Int>>() ?: emptyMap()
     )
 
-    val filterState = FilterState<CartoonStar>(
+    val filterState = FilterState<CartoonInfo>(
         list = filterWithList,
         statusMap = filterMap
     )
 
 
-    fun onFilterChange(filterWith: FilterWith<CartoonStar>, state: Int) {
+    fun onFilterChange(filterWith: FilterWith<CartoonInfo>, state: Int) {
         val currentMap = filterMap.value.toMutableMap()
         when (state) {
             FilterState.STATUS_OFF -> {
@@ -142,7 +143,7 @@ class CartoonStarController(
         filterMapStringShare.set(currentMap.toJson())
     }
 
-    fun onSortChange(sortBy: SortBy<CartoonStar>, state: Int) {
+    fun onSortChange(sortBy: SortBy<CartoonInfo>, state: Int) {
         when (state) {
             SortState.STATUS_OFF -> {
                 sortIdShare.set(sortBy.id)
@@ -160,16 +161,15 @@ class CartoonStarController(
             }
         }
     }
-
     // 处理置顶 - 排序 - 筛选
-    fun flowCartoon(): Flow<List<CartoonStar>> {
+    fun flowCartoon(): Flow<List<CartoonInfo>> {
         return combine(
             sortState.current,
             sortState.isReverse,
             filterState.statusMap.distinctUntilChanged(),
-            cartoonStarDao.flowAll()
+            cartoonInfoDao.flowAllStar()
         ) { currentSortId, isSortReverse, filterStateMap, starList ->
-            val currentSort = sortByList.find { it.id == currentSortId } ?: sortByCreateTime
+            val currentSort = sortByList.find { it.id == currentSortId } ?: sortByStarTime
             val onFilter = filterWithList.filter {
                 filterStateMap[it.id] == FilterState.STATUS_ON
             }
@@ -208,6 +208,5 @@ class CartoonStarController(
             }
         }
     }
-
 
 }

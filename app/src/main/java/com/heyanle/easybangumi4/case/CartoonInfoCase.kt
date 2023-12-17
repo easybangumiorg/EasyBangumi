@@ -17,8 +17,8 @@ class CartoonInfoCase(
         source: String,
         url: String,
         time: Long = System.currentTimeMillis(),
-    ): DataResult<Pair<CartoonInfo, List<PlayLine>>> {
-        return cartoonRepository.awaitCartoonInfoWithPlayLines(id, source, url, time)
+    ): DataResult<CartoonInfo> {
+        return cartoonRepository.awaitCartoonInfoWIthPlayLines(id, source, url, time)
     }
 
 }

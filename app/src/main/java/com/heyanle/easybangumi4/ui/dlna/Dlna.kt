@@ -74,6 +74,7 @@ import androidx.compose.ui.unit.sp
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
+import com.heyanle.easybangumi4.cartoon.old.entity.CartoonInfoOld
 import com.heyanle.easybangumi4.source_api.component.detailed.DetailedComponent
 import com.heyanle.easybangumi4.source_api.component.play.PlayComponent
 import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
@@ -535,7 +536,7 @@ fun CartoonPlayDetailed(
                                         .aspectRatio(19 / 13.5F)
                                         .clip(RoundedCornerShape(4.dp)),
                                     image = cartoon.coverUrl,
-                                    contentDescription = cartoon.title
+                                    contentDescription = cartoon.name
                                 )
                                 Spacer(modifier = Modifier.size(8.dp))
                                 Column(
@@ -543,7 +544,7 @@ fun CartoonPlayDetailed(
                                 ) {
                                     Text(
                                         modifier = Modifier,
-                                        text = (cartoon.title),
+                                        text = (cartoon.name),
                                         style = MaterialTheme.typography.titleMedium,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis,
@@ -569,7 +570,7 @@ fun CartoonPlayDetailed(
                     ) {
                         Icon(
                             if (isExpended) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                            contentDescription = cartoon.title
+                            contentDescription = cartoon.name
                         )
                     }
                 }

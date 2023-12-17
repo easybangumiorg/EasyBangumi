@@ -20,14 +20,19 @@ class AppExtensionLoader(
     override val key: String
         get() = "app:${pkgName}"
 
-    val pkgInfo: PackageInfo? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        packageManager.getPackageInfo(
-            pkgName, PackageManager.PackageInfoFlags.of(PACKAGE_FLAGS.toLong())
-        )
-    } else {
-        packageManager.getPackageInfo(pkgName,
-            PACKAGE_FLAGS
-        )
+    val pkgInfo: PackageInfo? = runCatching {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            packageManager.getPackageInfo(
+                pkgName, PackageManager.PackageInfoFlags.of(PACKAGE_FLAGS.toLong())
+            )
+        } else {
+            packageManager.getPackageInfo(pkgName,
+                PACKAGE_FLAGS
+            )
+        }
+    }.getOrElse {
+        it.printStackTrace()
+        null
     }
 
     override fun load(): Extension? {

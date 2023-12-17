@@ -5,8 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heyanle.easy_i18n.R
-import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonStarDao
-import com.heyanle.easybangumi4.cartoon.entity.CartoonStar
+import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
+import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
 import com.heyanle.easybangumi4.case.CartoonInfoCase
 import com.heyanle.easybangumi4.source_api.entity.CartoonCover
 import com.heyanle.easybangumi4.source_api.entity.toIdentify
@@ -16,6 +16,7 @@ import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -29,80 +30,32 @@ import kotlinx.coroutines.yield
  */
 class CoverStarViewModel : ViewModel() {
 
-    private val cartoonStarDao: CartoonStarDao by Injekt.injectLazy()
-    val starFlow =
-        cartoonStarDao.flowAll()
-            .map { stars ->
-                stars.map {
-                    it.toIdentify()
-                }.toSet()
-            }.stateIn(viewModelScope, SharingStarted.Lazily, emptySet())
-
-    val starState = mutableStateOf<Set<String>>(starFlow.value)
-
-    // 因为收藏番剧需要拉取番剧所有数据，有耗时，因此这里触发收藏后先临时展示收藏完成
-    // 当开始收藏任务后先加到该临时列表，收藏失败或者成功都移除
-    // 该列表中的番剧在展示上视为已收藏
-    private val staringCartoon = mutableStateMapOf<String, Boolean>()
-
-    private val cartoonInfoCase: CartoonInfoCase by Injekt.injectLazy()
-
-    init {
-        viewModelScope.launch {
-            starFlow.collectLatest {
-                starState.value = it
-            }
+    private val cartoonInfoDao: CartoonInfoDao by Injekt.injectLazy()
+    val starFlow = cartoonInfoDao.flowAllStar()
+    val setFlow = starFlow.map {
+        val set = mutableSetOf<String>()
+        it.forEach {
+            set.add(it.toIdentify())
         }
+        set
     }
+
+
+
+
 
     fun star(cartoonCover: CartoonCover) {
         viewModelScope.launch {
-            val identify = cartoonCover.toIdentify()
-            val isStar = starFlow.value.contains(identify)
-            if (isStar || staringCartoon.contains(identify)) {
-                // 临时列表和数据库都删了
-                // 因为是主线程不用考虑并发问题
-                staringCartoon.remove(identify)
-                cartoonStarDao.deleteByCartoonSummary(
-                    cartoonCover.id,
-                    cartoonCover.source,
-                    cartoonCover.url
-                )
-            } else {
-                staringCartoon[identify] = true
-
-                cartoonInfoCase.awaitCartoonInfoWithPlayLines(
-                    cartoonCover.id,
-                    cartoonCover.source,
-                    cartoonCover.url
-                )
-                    .onOK {
-                        yield()
-                        withContext(Dispatchers.Main){
-                            // 弱网优化，迟到的请求直接丢弃，实际上会加入缓存，不会浪费
-                            if(staringCartoon.containsKey(it.first.toIdentify())){
-                                cartoonStarDao.modify(
-                                    CartoonStar.fromCartoonInfo(it.first, it.second).apply {
-                                        reversal = false
-                                    })
-                                staringCartoon.remove(identify)
-                            }
-                        }
-                    }.onError {
-                        it.throwable?.printStackTrace()
-                        yield()
-                        withContext(Dispatchers.Main){
-                            staringCartoon.remove(identify)
-                            (stringRes(R.string.detailed_error) + it.throwable?.message).moeSnackBar()
-                        }
-                    }
+            val old = cartoonInfoDao.getByCartoonSummary(cartoonCover.id, cartoonCover.source, cartoonCover.url)
+            if(old == null){
+                cartoonInfoDao.insert(CartoonInfo.fromCartoonCover(cartoonCover))
+            }else{
+                if(old.starTime > 0){
+                    cartoonInfoDao.modify(old.copy(starTime = 0, tags = "", upTime = 0))
+                }else{
+                    cartoonInfoDao.modify(old.copy(starTime = System.currentTimeMillis()))
+                }
             }
         }
-    }
-
-    fun isCoverStarted(cartoonCover: CartoonCover): Boolean {
-        return staringCartoon[cartoonCover.toIdentify()] == true || starState.value.contains(
-            cartoonCover.toIdentify()
-        )
     }
 }

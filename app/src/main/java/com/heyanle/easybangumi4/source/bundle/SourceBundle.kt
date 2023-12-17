@@ -41,8 +41,6 @@ class SourceBundle(
 
     private val detailedMap = linkedMapOf<String, DetailedComponent>()
 
-    private val updateMap = linkedMapOf<String, UpdateComponent>()
-
     //private val migrateMap = linkedMapOf<String, MiSou>()
 
     init {
@@ -69,7 +67,6 @@ class SourceBundle(
             pageMap.remove(source.key)
             searchMap.remove(source.key)
             detailedMap.remove(source.key)
-            updateMap.remove(source.key)
             preferenceMap.remove(source.key)
 
             if (source is IconSource) {
@@ -102,10 +99,6 @@ class SourceBundle(
 
             if (searchComponent != null) {
                 searchMap[source.key] = searchComponent
-            }
-
-            if (updateComponent != null) {
-                updateMap[source.key] = updateComponent
             }
 
         }
@@ -162,10 +155,6 @@ class SourceBundle(
     fun detailed(key: String): DetailedComponent? {
         key.loge("SourceBundle")
         return detailedMap[key]
-    }
-
-    fun update(key: String): UpdateComponent? {
-        return updateMap[key]
     }
 
     fun empty(): Boolean {

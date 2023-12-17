@@ -73,6 +73,7 @@ import com.heyanle.easybangumi4.ui.search_migrate.search.SearchViewModel
 import com.heyanle.easybangumi4.navigationDetailed
 import com.heyanle.easybangumi4.source_api.component.search.SearchComponent
 import com.heyanle.easybangumi4.source_api.entity.CartoonCover
+import com.heyanle.easybangumi4.source_api.entity.toIdentify
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -93,6 +94,7 @@ fun SearchPage(
     val realSearchKey by searchViewModel.searchFlow.collectAsState()
     val vm = SearchPageViewModelFactory.newViewModel(searchComponent = searchComponent)
     val starVm = viewModel<CoverStarViewModel>()
+    val starSet = starVm.setFlow.collectAsState(initial = setOf<String>())
 
     val scope = rememberCoroutineScope()
 
@@ -162,7 +164,7 @@ fun SearchPage(
                         page[it]?.let {
                             CartoonSearchItem(
                                 cartoonCover = it,
-                                isStar = starVm.isCoverStarted(it),
+                                isStar = starSet.value.contains(it.toIdentify()),
                                 onClick = {
                                     nav.navigationDetailed(it)
                                 },
@@ -294,9 +296,13 @@ fun CartoonSearchItem(
                 source = null
             )
 
-            Spacer(modifier = Modifier.fillMaxHeight().width(8.dp))
+            Spacer(modifier = Modifier
+                .fillMaxHeight()
+                .width(8.dp))
             Column(
-                modifier = Modifier.weight(1f).fillMaxHeight()
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
             ) {
                 Text(
                     text = cartoonCover.title,

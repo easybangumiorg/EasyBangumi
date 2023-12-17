@@ -1,7 +1,8 @@
-package com.heyanle.easybangumi4.cartoon.entity
+package com.heyanle.easybangumi4.cartoon.old.entity
 
 import androidx.room.Entity
 import com.heyanle.easybangumi4.utils.getMatchReg
+import java.net.URLEncoder
 
 /**
  * Created by HeYanLe on 2023/3/7 14:55.
@@ -41,6 +42,10 @@ data class CartoonHistory(
         }
         return matched
 
+    }
+
+    fun toIdentify(): String {
+        return "${id},${source},${URLEncoder.encode(url, "utf-8")}"
     }
 
 }

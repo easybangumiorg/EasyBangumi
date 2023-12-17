@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.cartoon.play
+package com.heyanle.easybangumi4.cartoon.old.play
 
 import android.content.Intent
 import androidx.core.net.toUri
@@ -6,9 +6,10 @@ import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.APP
-import com.heyanle.easybangumi4.cartoon.entity.CartoonHistory
-import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
-import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonHistoryDao
+import com.heyanle.easybangumi4.cartoon.old.entity.CartoonHistory
+import com.heyanle.easybangumi4.cartoon.old.entity.CartoonInfoOld
+import com.heyanle.easybangumi4.cartoon.old.repository.db.dao.CartoonHistoryDao
+import com.heyanle.easybangumi4.cartoon.entity.PlayLineWrapper
 import com.heyanle.easybangumi4.exo.EasyExoPlayer
 import com.heyanle.easybangumi4.exo.MediaSourceFactory
 import com.heyanle.easybangumi4.case.SourceStateCase
@@ -55,25 +56,25 @@ class CartoonPlayingController(
         data class Loading(
             val playLine: PlayLineWrapper,
             val episode: Episode,
-            val cartoon: CartoonInfo,
+            val cartoon: CartoonInfoOld,
         ) : PlayingState()
 
         data class Playing(
             val playerInfo: PlayerInfo,
             val playLine: PlayLineWrapper,
             val episode: Episode,
-            val cartoon: CartoonInfo,
+            val cartoon: CartoonInfoOld,
         ) : PlayingState()
 
         data class Error(
-            val cartoon: CartoonInfo?,
+            val cartoon: CartoonInfoOld?,
             val errMsg: String,
             val throwable: Throwable?,
             val playLine: PlayLineWrapper,
             val episode: Episode,
         ) : PlayingState()
 
-        fun cartoon(): CartoonInfo? {
+        fun cartoon(): CartoonInfoOld? {
             return when (this) {
                 is Loading -> cartoon
                 is Playing -> cartoon
@@ -126,7 +127,7 @@ class CartoonPlayingController(
      * @param adviceProgress 跳转进度
      */
     fun changePlay(
-        cartoon: CartoonInfo,
+        cartoon: CartoonInfoOld,
         playLine: PlayLineWrapper,
         episode: Episode,
         adviceProgress: Long = 0L,
@@ -140,7 +141,7 @@ class CartoonPlayingController(
 
 
     fun changePlay(
-        cartoon: CartoonInfo,
+        cartoon: CartoonInfoOld,
         playLine: PlayLineWrapper,
         reset: Boolean = false,
     ) {
@@ -254,7 +255,7 @@ class CartoonPlayingController(
     }
 
     private suspend fun CoroutineScope.innerChangePlay(
-        cartoon: CartoonInfo,
+        cartoon: CartoonInfoOld,
         playLine: PlayLineWrapper,
         episode: Episode,
         adviceProgress: Long = -1L,
@@ -346,14 +347,14 @@ class CartoonPlayingController(
         // 如果播放器当前状态不在播放 || exoplayer 被其他业务使用过 || 缓存的上一个 PlayerInfo 与新的不一致
         // 则重新加载
         if (!exoPlayer.isMedia() ||
-            exoPlayer.scene != CartoonPlayingController.EXOPLAYER_SCENE ||
+            exoPlayer.scene != EXOPLAYER_SCENE ||
             currentPlayerInfo?.uri != playerInfo.uri ||
             currentPlayerInfo?.decodeType != playerInfo.decodeType
         ) {
             currentPlayerInfo = playerInfo
             val media = mediaSourceFactory.get(playerInfo)
             exoPlayer.setMediaSource(media, adviceProgress)
-            exoPlayer.prepare(CartoonPlayingController.EXOPLAYER_SCENE)
+            exoPlayer.prepare(EXOPLAYER_SCENE)
             exoPlayer.playWhenReady = true
         } else {
             // 已经在播放同一部，直接 seekTo 对应 progress

@@ -5,10 +5,8 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -46,9 +44,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -59,7 +55,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -67,22 +62,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
-import com.heyanle.easybangumi4.LocalWindowSizeController
-import com.heyanle.easybangumi4.cartoon.entity.CartoonStar
-import com.heyanle.easybangumi4.cartoon.tags.isALL
-import com.heyanle.easybangumi4.cartoon.tags.isInner
-import com.heyanle.easybangumi4.cartoon.tags.isUpdate
-import com.heyanle.easybangumi4.cartoon.tags.tagLabel
+import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
+import com.heyanle.easybangumi4.cartoon.old.entity.CartoonStar
+import com.heyanle.easybangumi4.cartoon.old.tags.isInner
+import com.heyanle.easybangumi4.cartoon.old.tags.isUpdate
+import com.heyanle.easybangumi4.cartoon.old.tags.tagLabel
 import com.heyanle.easybangumi4.navigationCartoonMigrate
 import com.heyanle.easybangumi4.navigationCartoonTag
 import com.heyanle.easybangumi4.ui.common.CartoonStarCardWithCover
@@ -99,7 +90,6 @@ import com.heyanle.easybangumi4.ui.common.EasyMutiSelectionDialog
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.ui.common.proc.FilterColumn
 import com.heyanle.easybangumi4.ui.common.proc.SortColumn
-import com.heyanle.easybangumi4.utils.stateOf
 import com.heyanle.easybangumi4.utils.stringRes
 
 /**
@@ -123,15 +113,14 @@ fun Star() {
                 onChangeTag = { starVM.dialogChangeTag() },
                 onUpdate = { starVM.onUpdateSelection() },
                 onMigrate = {
-                    val selection = starVM.stateFlow.value.selection
-                    if(selection.size !=  1){
-                        stringRes(R.string.migrate_support_one).moeSnackBar()
-                    }else{
-                        selection.firstOrNull()?.let {
-                            nav.navigationCartoonMigrate(it.title)
-                        }
-
-                    }
+//                    val selection = starVM.stateFlow.value.selection
+//                    if(selection.size !=  1){
+//                        stringRes(R.string.migrate_support_one).moeSnackBar()
+//                    }else{
+//                        selection.firstOrNull()?.let {
+//                            nav.navigationCartoonMigrate(it.title)
+//                        }
+//                    }
                 }
             )
 
@@ -408,11 +397,11 @@ fun CartoonStarProcBottomSheet(
 @Composable
 fun StarList(
     nestedScrollConnection: NestedScrollConnection? = null,
-    starCartoon: List<CartoonStar>,
-    selectionSet: Set<CartoonStar>,
+    starCartoon: List<CartoonInfo>,
+    selectionSet: Set<CartoonInfo>,
     isHapticFeedback: Boolean = true,
-    onStarClick: (CartoonStar) -> Unit,
-    onStarLongPress: (CartoonStar) -> Unit,
+    onStarClick: (CartoonInfo) -> Unit,
+    onStarLongPress: (CartoonInfo) -> Unit,
 
     ) {
     val lazyGridState = rememberLazyGridState()
@@ -450,6 +439,9 @@ fun StarList(
                 selected = selectionSet.contains(star),
                 cartoon = star,
                 showSourceLabel = true,
+                showWatchProcess = true,
+                showIsUp = true,
+                showIsUpdate = true,
                 onClick = {
                     onStarClick(it)
                 },
