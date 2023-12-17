@@ -68,7 +68,7 @@ import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.SelectionTopAppBar
 import com.heyanle.easybangumi4.navigationDetailed
 import com.heyanle.easybangumi4.source.LocalSourceBundleController
-import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlayViewModel
+import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
 import loli.ball.easyplayer2.utils.TimeUtils
 
 /**

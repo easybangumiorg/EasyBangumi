@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.ui.cartoon_play
+package com.heyanle.easybangumi4.ui.cartoon_play.view_model
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.entity.PlayLineWrapper
+import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
 import com.heyanle.easybangumi4.source_api.entity.Episode
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -52,7 +53,7 @@ class CartoonPlayViewModel(
 
 
     data class CartoonPlayState(
-        val cartoonInfo: CartoonInfo,
+        val cartoonSummary: CartoonSummary,
         val playLine: PlayLineWrapper,
         val episode: Episode,
     ){
@@ -62,13 +63,13 @@ class CartoonPlayViewModel(
 
             other as CartoonPlayState
 
-            if (cartoonInfo != other.cartoonInfo) return false
+            if (cartoonSummary != other.cartoonSummary) return false
             if (playLine != other.playLine) return false
             return episode == other.episode
         }
 
         override fun hashCode(): Int {
-            var result = cartoonInfo.hashCode()
+            var result = cartoonSummary.hashCode()
             result = 31 * result + playLine.hashCode()
             result = 31 * result + episode.hashCode()
             return result
@@ -87,6 +88,9 @@ class CartoonPlayViewModel(
         info: CartoonInfo
     ){
         val old = _curringPlayStatus.value
+        if(old != null && old.cartoonSummary == info.toSummary()){
+            return
+        }
         val pair = if(enter == null || enter?.isEffective() != true){
             if(adviceProgress == -1L && old == null){
                 adviceProgress = info.lastProcessTime
@@ -104,7 +108,7 @@ class CartoonPlayViewModel(
 
         _curringPlayStatus.update {
             if(pair != null){
-                CartoonPlayState(info, pair.first, pair.second)
+                CartoonPlayState(info.toSummary(), pair.first, pair.second)
             }else{
                 null
             }
@@ -112,12 +116,21 @@ class CartoonPlayViewModel(
     }
 
     fun changePlay(
+        cartoonSummary: CartoonSummary,
+        playLineWrapper: PlayLineWrapper,
+        episode: Episode,
+    ){
+        _curringPlayStatus.update {
+            CartoonPlayState(cartoonSummary, playLineWrapper, episode)
+        }
+    }
+    fun changePlay(
         cartoonInfo: CartoonInfo,
         playLineWrapper: PlayLineWrapper,
         episode: Episode,
     ){
         _curringPlayStatus.update {
-            CartoonPlayState(cartoonInfo, playLineWrapper, episode)
+            CartoonPlayState(cartoonInfo.toSummary(), playLineWrapper, episode)
         }
     }
 
@@ -127,7 +140,10 @@ class CartoonPlayViewModel(
         if(index <= 0|| index >= current.playLine.sortedEpisodeList.size){
             return
         }
-        changePlay(current.cartoonInfo, current.playLine, current.playLine.sortedEpisodeList[index])
+        _curringPlayStatus.update {
+            CartoonPlayState(current.cartoonSummary,  current.playLine, current.playLine.sortedEpisodeList[index])
+        }
+
     }
 
     private fun match(

@@ -51,5 +51,9 @@ class CartoonModule(
         addSingletonFactory {
             CartoonTagsController(get(), get())
         }
+
+        addSingletonFactory {
+            CartoonUpdateController(get(), get())
+        }
     }
 }
