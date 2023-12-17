@@ -29,7 +29,7 @@ abstract class AbsExtensionLoader(
 
         // 当前容器支持的 扩展库 版本区间
         const val LIB_VERSION_MIN = 3
-        const val LIB_VERSION_MAX = 4
+        const val LIB_VERSION_MAX = 5
 
         const val PACKAGE_FLAGS =
             PackageManager.GET_CONFIGURATIONS or PackageManager.GET_SIGNATURES
