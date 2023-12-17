@@ -94,6 +94,7 @@ data class CartoonInfo(
                 source = cartoon.source,
                 url = cartoon.url,
 
+                isDetailed = true,
                 name = cartoon.title,
                 coverUrl = cartoon.coverUrl ?: "",
                 intro = cartoon.intro ?: "",
@@ -279,6 +280,7 @@ data class CartoonInfo(
             coverUrl = cartoon.coverUrl ?: "",
             intro = cartoon.intro ?: "",
 
+            isDetailed = true,
             genre = cartoon.genre ?: "",
             description = cartoon.description ?: "",
 

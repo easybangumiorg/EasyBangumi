@@ -10,7 +10,7 @@ import com.heyanle.easybangumi4.cartoon.tag.CartoonTagsController
 import com.heyanle.easybangumi4.cartoon.tag.isALL
 import com.heyanle.easybangumi4.cartoon.tag.isUpdate
 import com.heyanle.easybangumi4.setting.SettingPreferences
-import com.heyanle.easybangumi4.source.CartoonUpdateController
+import com.heyanle.easybangumi4.cartoon.CartoonUpdateController
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.ui.common.proc.FilterState
 import com.heyanle.easybangumi4.ui.common.proc.FilterWith
@@ -306,7 +306,7 @@ class StarViewModel : ViewModel() {
     fun onUpdateAll() {
         viewModelScope.launch {
             //val list = if (stateFlow.value.curTab == UPDATE_TAG) cartoonStarDao.getAll() else stateFlow.value.data[stateFlow.value.curTab]?: emptyList()
-            if (stateFlow.value.curTab?.isUpdate() == true || stateFlow.value.curTab?.isALL() == true) {
+            if (stateFlow.value.curTab?.isALL() == true) {
                 updateController.updateAll()
                 stringRes(com.heyanle.easy_i18n.R.string.start_update_strict).moeSnackBar()
             } else {

@@ -1,25 +1,22 @@
-package com.heyanle.easybangumi4.ui.cartoon_play
+package com.heyanle.easybangumi4.ui.cartoon_play.view_model
 
 import android.content.Intent
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import com.heyanle.easybangumi4.APP
-import com.heyanle.easybangumi4.R
-import com.heyanle.easybangumi4.cartoon.old.play.CartoonPlayingController
+import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
 import com.heyanle.easybangumi4.case.SourceStateCase
 import com.heyanle.easybangumi4.exo.MediaSourceFactory
 import com.heyanle.easybangumi4.source_api.entity.Episode
 import com.heyanle.easybangumi4.source_api.entity.PlayLine
 import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
-import com.heyanle.easybangumi4.utils.CoroutineProvider
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.injekt.core.Injekt
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,9 +30,11 @@ import kotlinx.coroutines.yield
  * https://github.com/heyanLE
  */
 class CartoonPlayingViewModel(
-): ViewModel() {
+) : ViewModel(), Player.Listener {
 
-    val exoPlayer =  ExoPlayer.Builder(APP).build()
+    val exoPlayer = ExoPlayer.Builder(APP).build().apply {
+        addListener(this@CartoonPlayingViewModel)
+    }
 
     private var cartoonPlayingState: CartoonPlayViewModel.CartoonPlayState? = null
     private var playingPlayLine: PlayLine? = null
@@ -49,17 +48,19 @@ class CartoonPlayingViewModel(
         val errorMsg: String = "",
         val errorThrowable: Throwable? = null
     )
+
     private val _playingState = MutableStateFlow<PlayingState>(PlayingState())
     val playingState = _playingState.asStateFlow()
 
-    private val dispatcher = CoroutineProvider.SINGLE
-    private val scope = CoroutineScope(SupervisorJob() + dispatcher)
+
+    private val scope = MainScope()
     private var lastJob: Job? = null
 
+    private val cartoonInfoDao: CartoonInfoDao by Injekt.injectLazy()
     private val mediaSourceFactory: MediaSourceFactory by Injekt.injectLazy()
     private val sourceStateCase: SourceStateCase by Injekt.injectLazy()
 
-    fun tryRefresh(){
+    fun tryRefresh() {
         lastJob?.cancel()
         lastJob = scope.launch {
             cartoonPlayingState?.let {
@@ -72,12 +73,11 @@ class CartoonPlayingViewModel(
     fun changePlay(
         cartoonPlayingState: CartoonPlayViewModel.CartoonPlayState?,
         adviceProcess: Long,
-    ){
+    ) {
         lastJob?.cancel()
         lastJob = scope.launch {
-            this@CartoonPlayingViewModel.cartoonPlayingState =  cartoonPlayingState
-            if(cartoonPlayingState == null){
-                exoPlayer.stop()
+            this@CartoonPlayingViewModel.cartoonPlayingState = cartoonPlayingState
+            if (cartoonPlayingState == null) {
                 _playingState.update {
                     it.copy(
                         isLoading = false,
@@ -85,15 +85,16 @@ class CartoonPlayingViewModel(
                         isError = false
                     )
                 }
-            }else{
-                if(playingPlayLine == cartoonPlayingState.playLine.playLine
+            } else {
+                if (playingPlayLine == cartoonPlayingState.playLine.playLine
                     && playingEpisode == cartoonPlayingState.episode
                     && _playingState.first().isPlaying
-                    && exoPlayer.isMedia()){
-                    if(adviceProcess >= 0){
+                    && exoPlayer.isMedia()
+                ) {
+                    if (adviceProcess >= 0) {
                         exoPlayer.seekTo(adviceProcess)
                     }
-                }else{
+                } else {
                     innerPlay(cartoonPlayingState, adviceProcess)
                 }
             }
@@ -133,16 +134,19 @@ class CartoonPlayingViewModel(
         })
     }
 
-    private suspend fun innerPlay( cartoonPlayingState: CartoonPlayViewModel.CartoonPlayState,
-                           adviceProcess: Long,){
+    private suspend fun innerPlay(
+        cartoonPlayingState: CartoonPlayViewModel.CartoonPlayState,
+        adviceProcess: Long,
+    ) {
 
+        exoPlayer.pause()
         _playingState.update {
             it.copy(
                 isLoading = true,
             )
         }
-        val play = sourceStateCase.awaitBundle().play(cartoonPlayingState.cartoonInfo.source)
-        if(play == null){
+        val play = sourceStateCase.awaitBundle().play(cartoonPlayingState.cartoonSummary.source)
+        if (play == null) {
             _playingState.update {
                 it.copy(
                     isLoading = false,
@@ -153,13 +157,13 @@ class CartoonPlayingViewModel(
             return
         }
         play.getPlayInfo(
-            cartoonPlayingState.cartoonInfo.toSummary(),
+            cartoonPlayingState.cartoonSummary,
             cartoonPlayingState.playLine.playLine,
             cartoonPlayingState.episode
         )
             .complete {
                 yield()
-                playingPlayLine =  cartoonPlayingState.playLine.playLine
+                playingPlayLine = cartoonPlayingState.playLine.playLine
                 playingEpisode = cartoonPlayingState.episode
                 innerPlay(it.data, adviceProcess)
             }
@@ -177,17 +181,18 @@ class CartoonPlayingViewModel(
 
 
     }
+
     @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-    private suspend fun  innerPlay(playerInfo: PlayerInfo, adviceProcess: Long){
+    private suspend fun innerPlay(playerInfo: PlayerInfo, adviceProcess: Long) {
         exoPlayer.pause()
-        if(this.playingInfo != null){
-            if(
+        if (this.playingInfo != null) {
+            if (
                 playingInfo?.uri == playerInfo.uri
                 && playingInfo?.decodeType == playerInfo.decodeType
                 && exoPlayer.isMedia()
-                ){
+            ) {
                 playingInfo = playerInfo
-                if(adviceProcess >= 0){
+                if (adviceProcess >= 0) {
                     exoPlayer.seekTo(adviceProcess)
                 }
                 exoPlayer.playWhenReady = true
@@ -216,10 +221,49 @@ class CartoonPlayingViewModel(
         }
     }
 
-    fun trySaveHistory(ps: Long = -1) {}
+    fun trySaveHistory(ps: Long = -1) {
+        val line = playingPlayLine ?: return
+        val epi = playingEpisode ?: return
+        val cartoon = cartoonPlayingState?.cartoonSummary ?: return
+        scope.launch {
+            val old = cartoonInfoDao.getByCartoonSummary(cartoon.id, cartoon.source, cartoon.url)
+            if (old != null) {
+                val lineIndex = old.playLine.indexOf(line)
+                if (lineIndex >= 0) {
+                    cartoonInfoDao.modify(
+                        old.copyHistory(
+                            lineIndex,
+                            line,
+                            epi,
+                            if (ps >= 0) ps else exoPlayer.currentPosition
+                        )
+                    )
+                }
 
-    fun onExit(){
+            }
+        }
+    }
+
+    fun onExit() {
+        if (_playingState.value.isPlaying && !exoPlayer.playWhenReady && exoPlayer.isMedia()) {
+            trySaveHistory()
+        }
         exoPlayer.pause()
+    }
+
+    override fun onPlaybackStateChanged(playbackState: Int) {
+        super.onPlaybackStateChanged(playbackState)
+        if (_playingState.value.isPlaying && !exoPlayer.playWhenReady && exoPlayer.isMedia()) {
+            trySaveHistory()
+        }
+
+    }
+
+    override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+        super.onPlayWhenReadyChanged(playWhenReady, reason)
+        if (_playingState.value.isPlaying && !exoPlayer.playWhenReady && exoPlayer.isMedia()) {
+            trySaveHistory()
+        }
     }
 
     override fun onCleared() {

@@ -1,7 +1,7 @@
 [versions]
-# 对应 library 版本 3
-version_code = "3"
-extensions = "1.4-SNAPSHOT"
+# 对应 library 版本 5
+version_code = "5"
+extensions = "1.5-SNAPSHOT"
 [libraries]
 source_api = {module = "io.github.easybangumiorg:source-api", version.ref = "extensions"}
 source_utils = {module = "io.github.easybangumiorg:source-utils", version.ref = "extensions"}

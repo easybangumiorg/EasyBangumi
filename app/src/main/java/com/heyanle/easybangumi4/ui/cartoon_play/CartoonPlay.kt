@@ -26,6 +26,11 @@ import com.heyanle.easybangumi4.navigationDlna
 import com.heyanle.easybangumi4.navigationSearch
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
+import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
+import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModelFactory
+import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayingViewModel
+import com.heyanle.easybangumi4.ui.cartoon_play.view_model.DetailedViewModel
+import com.heyanle.easybangumi4.ui.cartoon_play.view_model.DetailedViewModelFactory
 import com.heyanle.easybangumi4.ui.common.DetailedContainer
 import com.heyanle.easybangumi4.ui.common.EasyMutiSelectionDialog
 import com.heyanle.easybangumi4.ui.common.ErrorPage
@@ -144,15 +149,15 @@ fun CartoonPlay(
 
     DisposableEffect(key1 = Unit) {
         onDispose {
-            playingVM.trySaveHistory()
+            playingVM.onExit()
         }
     }
 
-    LaunchedEffect(key1 = playState) {
-        if (playState == null) {
+    LaunchedEffect(key1 = playState, key2 = detailState) {
+        if (playState == null || detailState.cartoonInfo == null) {
             controlVM.title = ""
         } else {
-            val cartoon = playState.cartoonInfo
+            val cartoon = detailState.cartoonInfo
             val episode = playState.episode
             controlVM.title = "${cartoon.name} - ${episode.label}"
         }
@@ -235,6 +240,8 @@ fun CartoonPlay(
                 selectLineIndex = playVM.selectedLineIndex,
                 playingPlayLine = playState?.playLine,
                 playingEpisode = playState?.episode,
+                showPlayLine = detailState.cartoonInfo.isShowLine,
+                listState = lazyGridState,
                 onLineSelect = {
                     playVM.selectedLineIndex = it
                 },

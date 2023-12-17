@@ -67,7 +67,11 @@ class CartoonRepository(
             val res = netResult.map {
                 val sourceName =
                     sourceStateCase.awaitBundle().source(source)?.label ?: ""
-                CartoonInfo.fromCartoon(
+                local?.copyFromCartoon(
+                    it.first,
+                    sourceName,
+                    it.second
+                )?:CartoonInfo.fromCartoon(
                     it.first,
                     sourceName,
                     it.second
