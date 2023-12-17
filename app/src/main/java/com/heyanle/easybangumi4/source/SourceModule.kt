@@ -3,9 +3,11 @@ package com.heyanle.easybangumi4.source
 import android.app.Application
 import com.heyanle.easybangumi4.BuildConfig
 import com.heyanle.easybangumi4.base.hekv.HeKV
+import com.heyanle.easybangumi4.source.utils.CaptchaHelperImpl
 import com.heyanle.easybangumi4.source.utils.PreferenceHelperImpl
 import com.heyanle.easybangumi4.source.utils.StringHelperImpl
 import com.heyanle.easybangumi4.source.utils.WebViewHelperImpl
+import com.heyanle.easybangumi4.source_api.utils.api.CaptchaHelper
 import com.heyanle.easybangumi4.source_api.utils.api.NetworkHelper
 import com.heyanle.easybangumi4.source_api.utils.api.OkhttpHelper
 import com.heyanle.easybangumi4.source_api.utils.api.PreferenceHelper
@@ -37,6 +39,10 @@ class SourceModule(
         // StringHelper
         addScopedPerKeyFactory<StringHelper, String> {
             StringHelperImpl
+        }
+
+        addScopedPerKeyFactory<CaptchaHelper, String> {
+            CaptchaHelperImpl
         }
 
         // NetworkHelper
