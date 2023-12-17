@@ -56,6 +56,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.navigationDetailed
+import com.heyanle.easybangumi4.source_api.entity.toIdentify
 import com.heyanle.easybangumi4.ui.common.CartoonCardWithCover
 import com.heyanle.easybangumi4.ui.common.EmptyPage
 import com.heyanle.easybangumi4.ui.common.LoadingPage
@@ -229,6 +230,7 @@ fun MigrateSourceItem(
     val page = sourceItem.flow.collectAsLazyPagingItems()
     val nav = LocalNavController.current
     val haptic = LocalHapticFeedback.current
+    val set = starVm.setFlow.collectAsState(initial = setOf<String>())
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -252,7 +254,7 @@ fun MigrateSourceItem(
                     page[it]?.let {
                         CartoonCardWithCover(
                             modifier = Modifier.width(100.dp),
-                            star = starVm.isCoverStarted(it) ,
+                            star = set.value.contains(it.toIdentify()) ,
                             cartoonCover = it,
                             onClick = {
                                 nav.navigationDetailed(it)

@@ -9,7 +9,6 @@ import com.heyanle.easybangumi4.cartoon_download.step.AriaStep
 import com.heyanle.easybangumi4.cartoon_download.step.BaseStep
 import com.heyanle.easybangumi4.cartoon_download.step.CopyStep
 import com.heyanle.easybangumi4.cartoon_download.step.ParseStep
-import com.heyanle.easybangumi4.case.CartoonDownloadCase
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.source_api.entity.Episode
 import com.heyanle.easybangumi4.source_api.entity.PlayLine
@@ -19,8 +18,6 @@ import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.injekt.api.get
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
@@ -116,11 +113,11 @@ class CartoonDownloadDispatcher(
 
     fun newDownload(cartoonInfo: CartoonInfo, download: List<Pair<PlayLine, Episode>>) {
         scope.launch {
-            "newDownload ${cartoonInfo.title} ${download.size}".logi(TAG)
+            "newDownload ${cartoonInfo.name} ${download.size}".logi(TAG)
             val new = download.map {
                 val uuid = "${System.nanoTime()}-${atomLong.getAndIncrement()}"
                 var fileName =
-                    "${cartoonInfo.title}-${it.first.label}-${it.second.label}-${uuid}"
+                    "${cartoonInfo.name}-${it.first.label}-${it.second.label}-${uuid}"
                 fileName = fileName.flatMap {
                     if (reservedChars.contains(it) || it == '\n' || it == ' ' || it == '\t' || it == '\r') {
                         emptyList()
@@ -138,7 +135,7 @@ class CartoonDownloadDispatcher(
                     cartoonId = cartoonInfo.id,
                     cartoonUrl = cartoonInfo.url,
                     cartoonSource = cartoonInfo.source,
-                    cartoonTitle = cartoonInfo.title,
+                    cartoonTitle = cartoonInfo.name,
                     cartoonCover = cartoonInfo.coverUrl,
                     cartoonDescription = cartoonInfo.description,
                     cartoonGenre = cartoonInfo.genre,

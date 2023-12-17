@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
+import com.heyanle.easybangumi4.cartoon.old.entity.CartoonInfoOld
 import com.heyanle.easybangumi4.case.CartoonInfoCase
 import com.heyanle.easybangumi4.source_api.component.detailed.DetailedComponent
 import com.heyanle.easybangumi4.source_api.component.play.PlayComponent
@@ -133,10 +134,11 @@ class DlnaViewModel(
 //                    it.data.second.loge("DetailedViewModel")
 //                    it.data.second.size.loge("DetailedViewModel")
 //                    it.data.second.first().episode.size.loge("DetailedViewModel")
+
                     val info = DetailedState.Info(
-                        it.first,
-                        it.second,
-                        it.second !is DetailedComponent.NonPlayLine
+                        it,
+                        it.playLine,
+                        it.isShowLine
                     )
                     detailedState = info
 

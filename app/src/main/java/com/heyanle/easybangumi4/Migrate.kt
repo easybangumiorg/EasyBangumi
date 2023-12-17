@@ -6,17 +6,35 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.heyanle.easybangumi4.base.preferences.android.AndroidPreferenceStore
 import com.heyanle.easybangumi4.base.preferences.hekv.HeKVPreferenceStore
 import com.heyanle.easybangumi4.base.preferences.mmkv.MMKVPreferenceStore
+import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
+import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
+import com.heyanle.easybangumi4.cartoon.entity.SearchHistory
+import com.heyanle.easybangumi4.cartoon.old.entity.CartoonHistory
+import com.heyanle.easybangumi4.cartoon.old.entity.CartoonInfoOld
+import com.heyanle.easybangumi4.cartoon.old.entity.CartoonStar
+import com.heyanle.easybangumi4.cartoon.old.repository.db.AppDatabase
+import com.heyanle.easybangumi4.cartoon.old.repository.db.CacheDatabase
+import com.heyanle.easybangumi4.cartoon.repository.db.CartoonDatabase
 import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.source.SourceConfig
 import com.heyanle.easybangumi4.source.SourcePreferences
+import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
 import com.heyanle.easybangumi4.theme.EasyThemeMode
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.easybangumi4.utils.jsonTo
 import com.heyanle.injekt.api.get
 import com.heyanle.injekt.core.Injekt
 import com.heyanle.okkv2.core.okkv
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import java.io.File
+import java.lang.Math.*
+import java.net.URLEncoder
 
 /**
  * Created by HeYanLe on 2023/10/29 15:08.
@@ -24,6 +42,16 @@ import java.io.File
  */
 object Migrate {
 
+    private val _isMigrating = MutableStateFlow<Boolean>(true)
+    val isMigrating = _isMigrating.asStateFlow()
+
+    private val scope = MainScope()
+
+    object CartoonDB {
+        fun getDBMigration() = listOf<Migration>()
+    }
+
+    // 弃用数据库
     object AppDB {
         fun getDBMigration() = listOf(
             MIGRATION_2_3,
@@ -96,6 +124,7 @@ object Migrate {
             Injekt.get(),
             Injekt.get(),
             Injekt.get(),
+            Injekt.get(),
         )
         controllerUpdate(context)
     }
@@ -110,51 +139,180 @@ object Migrate {
         settingPreferences: SettingPreferences,
         sourcePreferences: SourcePreferences,
         settingMMKVPreferences: SettingMMKVPreferences,
+        cartoonDatabase: CartoonDatabase,
     ) {
 
         val lastVersionCode = androidPreferenceStore.getInt("last_version_code", 0).get()
         val curVersionCode = BuildConfig.VERSION_CODE
 
+
+
         if (lastVersionCode < curVersionCode) {
 
-            // 65
-            if (lastVersionCode < 65) {
-                // preference 架构变更
+            scope.launch(Dispatchers.IO) {
+                // 73
+                if (lastVersionCode < 73) {
 
-                // 主题存储变更
-                val themeModeOkkv by okkv("theme_mode", EasyThemeMode.Default.name)
-                val darkModeOkkv by okkv("dark_mode", SettingPreferences.DarkMode.Auto.name)
-                val isDynamicColorOkkv by okkv<Boolean>("is_dynamic_color", def = true)
-
-                settingPreferences.themeMode.set(EasyThemeMode.valueOf(themeModeOkkv))
-                settingPreferences.darkMode.set(SettingPreferences.DarkMode.valueOf(darkModeOkkv))
-                settingPreferences.isThemeDynamic.set(isDynamicColorOkkv)
-
-                // 其他配置变更
-                val isPrivateOkkv by okkv("inPrivate", def = false)
-                val padModeOkkv by okkv("padMode", def = 0)
-                val webViewCompatibleOkkv by okkv("webViewCompatible", def = false)
-
-                settingPreferences.isInPrivate.set(isPrivateOkkv)
-                settingPreferences.padMode.set(SettingPreferences.PadMode.entries[padModeOkkv])
-
-                settingMMKVPreferences.webViewCompatible.set(webViewCompatibleOkkv)
-
-                // 源配置变更
-                val configOkkv by okkv("source_config", "[]")
-                val list: List<SourceConfig> = configOkkv.jsonTo()?: emptyList()
-                val map = hashMapOf<String, SourceConfig>()
-                list.forEach {
-                    map[it.key] = it
+                    // 数据库变更
+                    migrateCartoonDatabase73(AppDatabase.build(context), CacheDatabase.build(context), cartoonDatabase)
                 }
-                sourcePreferences.configs.set(map)
+
+                // 65
+                if (lastVersionCode < 65) {
+                    // preference 架构变更
+
+                    // 主题存储变更
+                    val themeModeOkkv by okkv("theme_mode", EasyThemeMode.Default.name)
+                    val darkModeOkkv by okkv("dark_mode", SettingPreferences.DarkMode.Auto.name)
+                    val isDynamicColorOkkv by okkv<Boolean>("is_dynamic_color", def = true)
+
+                    settingPreferences.themeMode.set(EasyThemeMode.valueOf(themeModeOkkv))
+                    settingPreferences.darkMode.set(SettingPreferences.DarkMode.valueOf(darkModeOkkv))
+                    settingPreferences.isThemeDynamic.set(isDynamicColorOkkv)
+
+                    // 其他配置变更
+                    val isPrivateOkkv by okkv("inPrivate", def = false)
+                    val padModeOkkv by okkv("padMode", def = 0)
+                    val webViewCompatibleOkkv by okkv("webViewCompatible", def = false)
+
+                    settingPreferences.isInPrivate.set(isPrivateOkkv)
+                    settingPreferences.padMode.set(SettingPreferences.PadMode.entries[padModeOkkv])
+
+                    settingMMKVPreferences.webViewCompatible.set(webViewCompatibleOkkv)
+
+                    // 源配置变更
+                    val configOkkv by okkv("source_config", "[]")
+                    val list: List<SourceConfig> = configOkkv.jsonTo()?: emptyList()
+                    val map = hashMapOf<String, SourceConfig>()
+                    list.forEach {
+                        map[it.key] = it
+                    }
+                    sourcePreferences.configs.set(map)
+                }
+
+                androidPreferenceStore.getInt("last_version_code", 0).set(curVersionCode)
+                _isMigrating.update {
+                    false
+                }
+            }
+
+
+        } else {
+            _isMigrating.update {
+                false
             }
         }
 
-        androidPreferenceStore.getInt("last_version_code", 0).set(curVersionCode)
-
     }
 
+
+    // 数据库变更 73 ===================================================
+    private suspend fun migrateCartoonDatabase73(
+        appDatabase: AppDatabase,
+        cacheDatabase: CacheDatabase,
+        cartoonDatabase: CartoonDatabase,
+    ){
+        val needMigrateSummary = hashSetOf<CartoonSummary>()
+
+        val starMap = hashMapOf<String, CartoonStar>()
+        val historyMap = hashMapOf<String, CartoonHistory>()
+        val infoMap = hashMapOf<String, CartoonInfoOld>()
+
+
+        appDatabase.cartoonStar.getAll().forEach {
+            needMigrateSummary.add(CartoonSummary(it.id, it.source, it.url))
+            starMap[it.toIdentify()] = it
+        }
+        appDatabase.cartoonHistory.getAll().forEach {
+            needMigrateSummary.add(CartoonSummary(it.id, it.source, it.url))
+            historyMap[it.toIdentify()] = it
+        }
+        cacheDatabase.cartoonInfo.getAll().forEach {
+            needMigrateSummary.add(CartoonSummary(it.id, it.source, it.url))
+            infoMap[it.toIdentify()] = it
+        }
+        cartoonDatabase.cartoonInfo.clearAll()
+        needMigrateSummary.flatMap {
+            val star = starMap[it.toIdentify()]
+            val history = historyMap[it.toIdentify()]
+            val infoOld = infoMap[it.toIdentify()]
+            val info = toCartoonInfo(it, star, history, infoOld)
+            if (info == null) {
+                emptyList()
+            } else {
+                listOf(info)
+            }
+        }.forEach {
+            cartoonDatabase.cartoonInfo.modify(it)
+        }
+
+        cartoonDatabase.searchHistory.clear()
+        appDatabase.searchHistory.getAll().forEach {
+            cartoonDatabase.searchHistory.modify(SearchHistory(it.id, it.timestamp, it.content))
+        }
+        appDatabase.searchHistory.clear()
+
+
+        cartoonDatabase.cartoonTag.clear()
+        appDatabase.cartoonTag.getAll().forEach {
+            cartoonDatabase.cartoonTag.insert(CartoonTag(it.id, it.label, it.order))
+        }
+        appDatabase.cartoonTag.clear()
+    }
+
+    private fun toCartoonInfo(
+        cartoonSummary: CartoonSummary,
+        cartoonStar: CartoonStar?,
+        cartoonHistory: CartoonHistory?,
+        cartoonInfo: CartoonInfoOld?,
+    ): CartoonInfo? {
+        return CartoonInfo(
+            id = cartoonSummary.id,
+            source = cartoonSummary.source,
+            url = cartoonSummary.url,
+
+            name = cartoonStar?.title?:cartoonHistory?.name?:cartoonInfo?.title?: return null,
+            coverUrl = cartoonStar?.coverUrl?:cartoonHistory?.cover?:cartoonInfo?.coverUrl?: return null,
+            intro = cartoonStar?.intro?:cartoonHistory?.intro?:cartoonInfo?.intro?: return null,
+
+            isDetailed = false, // 迁移就让他刷新一下数据吧
+
+            isShowLine = cartoonInfo?.isShowLine?:true,
+            sourceName = cartoonStar?.sourceName?:cartoonInfo?.sourceName?:return null,
+            reversal = cartoonStar?.reversal?:false,
+            sortByKey = cartoonStar?.sortByKey ?: "",
+
+            tags = cartoonStar?.tags?:cartoonInfo?.tags?:"",
+            starTime = cartoonStar?.createTime?:0L,
+            upTime = cartoonStar?.upTime?:0L,
+
+            isPlayLineLoad = false,
+
+            lastHistoryTime = cartoonHistory?.createTime?:0L,
+
+            lastLineId = cartoonHistory?.lastLineId?:"",
+            lastLinesIndex = cartoonHistory?.lastLinesIndex?:0,
+            lastLineLabel = cartoonHistory?.lastLineTitle?:"",
+
+            lastEpisodeId = cartoonHistory?.lastEpisodeId?:"",
+            lastEpisodeIndex = cartoonHistory?.lastEpisodeIndex?:0,
+            lastEpisodeLabel = cartoonHistory?.lastEpisodeTitle?:"",
+            lastEpisodeOrder = cartoonHistory?.lastEpisodeOrder?: 0,
+
+            lastProcessTime = cartoonHistory?.lastProcessTime?:0,
+
+            createTime = (cartoonHistory?.createTime ?: Long.MAX_VALUE).coerceAtMost(
+                (cartoonInfo?.createTime ?: Long.MAX_VALUE).coerceAtMost(
+                    cartoonStar?.createTime ?: Long.MAX_VALUE
+                )
+            ).coerceAtMost(System.currentTimeMillis())
+        )
+    }
+    private fun CartoonSummary.toIdentify(): String {
+        return "${id},${source},${URLEncoder.encode(url, "utf-8")}"
+    }
+
+    // ↑ 数据库变更 73 ===================================================
     private fun controllerUpdate(
         context: Context,
     ){

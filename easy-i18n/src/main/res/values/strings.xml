@@ -358,9 +358,14 @@
     <string name="sort_by_watch">最后观看时间</string>
     <string name="sort_by_source">番剧源</string>
 
+    <string name="need_update">有更新</string>
+
     <string name="filter_with_is_update">有更新</string>
     <string name="filter_with_has_tag">已设置标签</string>
     <string name="filter_with_is_up">已设置置顶</string>
+
+    <string name="push_pin">置顶</string>
+
 
     <string name="name_word">名称</string>
     <string name="sort">排序</string>

@@ -1,13 +1,14 @@
-package com.heyanle.easybangumi4.cartoon.play
+package com.heyanle.easybangumi4.cartoon.old.play
 
 import android.content.Intent
 import androidx.core.net.toUri
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
+import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.APP
-import com.heyanle.easybangumi4.cartoon.entity.CartoonHistory
-import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
-import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonHistoryDao
+import com.heyanle.easybangumi4.cartoon.old.entity.CartoonHistory
+import com.heyanle.easybangumi4.cartoon.old.entity.CartoonInfoOld
+import com.heyanle.easybangumi4.cartoon.old.repository.db.dao.CartoonHistoryDao
 import com.heyanle.easybangumi4.exo.EasyExoPlayer
 import com.heyanle.easybangumi4.exo.MediaSourceFactory
 import com.heyanle.easybangumi4.case.SourceStateCase
@@ -53,25 +54,25 @@ class CartoonPlayingControllerOld(
         data class Loading(
             val playLine: PlayLine,
             val episode: Episode,
-            val cartoon: CartoonInfo,
+            val cartoon: CartoonInfoOld,
         ) : PlayingState()
 
         data class Playing(
             val playerInfo: PlayerInfo,
             val playLine: PlayLine,
             val episode: Episode,
-            val cartoon: CartoonInfo,
+            val cartoon: CartoonInfoOld,
         ) : PlayingState()
 
         data class Error(
-            val cartoon: CartoonInfo?,
+            val cartoon: CartoonInfoOld?,
             val errMsg: String,
             val throwable: Throwable?,
             val playLine: PlayLine,
             val episode: Episode,
         ) : PlayingState()
 
-        fun cartoon(): CartoonInfo? {
+        fun cartoon(): CartoonInfoOld? {
             return when(this){
                 is Loading -> cartoon
                 is Playing -> cartoon
@@ -119,7 +120,7 @@ class CartoonPlayingControllerOld(
      * @param adviceProgress 跳转进度
      */
     fun changePlay(
-        cartoon: CartoonInfo,
+        cartoon: CartoonInfoOld,
         playLine: PlayLine,
         episode: Episode,
         adviceProgress: Long = 0L,
@@ -145,7 +146,7 @@ class CartoonPlayingControllerOld(
      */
     fun playCurrentExternal(): Boolean {
         val oldPlayingState = _state.value
-        if(oldPlayingState is PlayingState.Playing ){
+        if(oldPlayingState is PlayingState.Playing){
             innerPlayExternal(oldPlayingState.playerInfo)
             return true
         }
@@ -164,7 +165,7 @@ class CartoonPlayingControllerOld(
             process = 0L
         }
         val oldPlayingState = _state.value
-        if(oldPlayingState is PlayingState.Playing ){
+        if(oldPlayingState is PlayingState.Playing){
             scope.launch(Dispatchers.IO) {
                 val curCartoon = oldPlayingState.cartoon
                 val history = CartoonHistory(
@@ -220,7 +221,7 @@ class CartoonPlayingControllerOld(
 
 
     private suspend fun CoroutineScope.innerChangePlay(
-        cartoon: CartoonInfo,
+        cartoon: CartoonInfoOld,
         playLine: PlayLine,
         episode: Episode,
         adviceProgress: Long = 0L,
@@ -257,7 +258,7 @@ class CartoonPlayingControllerOld(
             _state.update {
                 PlayingState.Error(
                     cartoon = cartoon,
-                    errMsg = stringRes(com.heyanle.easy_i18n.R.string.source_error),
+                    errMsg = stringRes(R.string.source_error),
                     throwable = null,
                     playLine = playLine,
                     episode = episode
@@ -291,7 +292,7 @@ class CartoonPlayingControllerOld(
                         PlayingState.Error(
                             cartoon = cartoon,
                             errMsg = if (error.isParserError) error.throwable.message
-                                ?: "" else stringRes(com.heyanle.easy_i18n.R.string.source_error),
+                                ?: "" else stringRes(R.string.source_error),
                             throwable = null,
                             playLine = playLine,
                             episode = episode

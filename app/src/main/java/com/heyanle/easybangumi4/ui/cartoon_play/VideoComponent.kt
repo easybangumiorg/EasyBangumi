@@ -1,0 +1,494 @@
+package com.heyanle.easybangumi4.ui.cartoon_play
+
+import android.app.Activity
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Airplay
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Battery0Bar
+import androidx.compose.material.icons.filled.Battery2Bar
+import androidx.compose.material.icons.filled.Battery3Bar
+import androidx.compose.material.icons.filled.Battery4Bar
+import androidx.compose.material.icons.filled.Battery5Bar
+import androidx.compose.material.icons.filled.Battery6Bar
+import androidx.compose.material.icons.filled.BatteryChargingFull
+import androidx.compose.material.icons.filled.BatteryFull
+import androidx.compose.material.icons.filled.Replay
+import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import com.heyanle.easy_i18n.R
+import com.heyanle.easybangumi4.LocalNavController
+import com.heyanle.easybangumi4.ui.common.ErrorPage
+import com.heyanle.easybangumi4.ui.common.LoadingPage
+import loli.ball.easyplayer2.BackBtn
+import loli.ball.easyplayer2.ControlViewModel
+import loli.ball.easyplayer2.LockBtn
+import loli.ball.easyplayer2.ProgressBox
+import loli.ball.easyplayer2.SimpleBottomBar
+import loli.ball.easyplayer2.SimpleGestureController
+import loli.ball.easyplayer2.TopControl
+import loli.ball.easyplayer2.utils.rememberBatteryReceiver
+
+/**
+ * Created by heyanle on 2023/12/17.
+ * https://github.com/heyanLE
+ */
+@Composable
+fun VideoFloat(
+    cartoonPlayingViewModel: CartoonPlayingViewModel,
+    cartoonPlayViewModel: CartoonPlayViewModel,
+    playingState: CartoonPlayingViewModel.PlayingState,
+    playState: CartoonPlayViewModel.CartoonPlayState,
+    controlVM: ControlViewModel,
+    showSpeedWin: MutableState<Boolean>,
+    showEpisodeWin: MutableState<Boolean>,
+) {
+    val ctx = LocalContext.current as Activity
+
+    LaunchedEffect(key1 = playingState) {
+        if(playingState.isError) {
+            controlVM.onFullScreen(false, false, ctx)
+        }
+    }
+    LaunchedEffect(key1 = controlVM.controlState) {
+        if (controlVM.controlState == ControlViewModel.ControlState.Ended) {
+            cartoonPlayViewModel.tryNext()
+        }
+    }
+
+    if(playingState.isLoading){
+        Box {
+            LoadingPage(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black)
+                    .clickable(
+                        onClick = {
+                        },
+                        indication = null,
+                        interactionSource = remember {
+                            MutableInteractionSource()
+                        }
+                    ),
+                loadingMsg = stringResource(id = R.string.parsing),
+                msgColor = Color.White.copy(0.6f)
+            )
+            IconButton(
+                modifier = Modifier.align(Alignment.TopStart),
+                onClick = {
+                    controlVM.onFullScreen(false, false, ctx)
+                }) {
+                Icon(
+                    Icons.Filled.ArrowBack,
+                    contentDescription = stringResource(id = R.string.back),
+                    tint = Color.White
+                )
+            }
+        }
+    }else if(playingState.isError){
+        ErrorPage(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black),
+            errorMsg = playingState.errorMsg,
+            errorMsgColor = Color.White.copy(0.6f),
+            clickEnable = true,
+            other = {
+                Text(text = stringResource(id = R.string.click_to_retry))
+            },
+            onClick = {
+                cartoonPlayingViewModel.tryRefresh()
+            }
+        )
+    }else if(playingState.isPlaying){
+        if (controlVM.controlState == ControlViewModel.ControlState.Ended) {
+            Box(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                IconButton(
+                    modifier = Modifier.align(Alignment.Center),
+                    onClick = {
+                        cartoonPlayingViewModel.tryRefresh()
+                    }) {
+                    Icon(
+                        Icons.Filled.Replay,
+                        contentDescription = stringResource(id = R.string.replay)
+                    )
+                }
+
+
+                if (controlVM.isFullScreen) {
+                    IconButton(
+                        modifier = Modifier.align(Alignment.TopStart),
+                        onClick = {
+                            controlVM.onFullScreen(
+                                fullScreen = false,
+                                reverse = false,
+                                ctx = ctx
+                            )
+                        }) {
+                        Icon(
+                            Icons.Filled.ArrowBack,
+                            contentDescription = stringResource(id = R.string.back)
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+
+    // 倍速窗口
+    AnimatedVisibility(
+        showSpeedWin.value,
+        enter = slideInHorizontally(tween()) { it },
+        exit = slideOutHorizontally(tween()) { it },
+
+        ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable(
+                    onClick = {
+                        showSpeedWin.value = false
+                    },
+                    indication = null,
+                    interactionSource = remember {
+                        MutableInteractionSource()
+                    }
+                ),
+            contentAlignment = Alignment.CenterEnd,
+        ) {
+            Column(
+                modifier = Modifier
+                    .defaultMinSize(180.dp, Dp.Unspecified)
+                    .fillMaxHeight()
+                    .background(Color.Black.copy(0.6f))
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                speedConfig.forEach {
+
+                    Text(
+                        textAlign = TextAlign.Center,
+                        text = it.key,
+                        modifier = Modifier
+                            .defaultMinSize(180.dp, Dp.Unspecified)
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable {
+                                controlVM.setSpeed(it.value)
+                            }
+                            .padding(16.dp, 8.dp),
+                        color = if (controlVM.curSpeed == it.value) MaterialTheme.colorScheme.primary else Color.White
+                    )
+                }
+            }
+        }
+    }
+
+
+
+
+    val playLine =  playState.playLine
+    // 选集
+    AnimatedVisibility(
+        showEpisodeWin.value && controlVM.isFullScreen,
+        enter = slideInHorizontally(tween()) { it },
+        exit = slideOutHorizontally(tween()) { it },
+
+        ) {
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable(
+                    onClick = {
+                        showEpisodeWin.value = false
+                    },
+                    indication = null,
+                    interactionSource = remember {
+                        MutableInteractionSource()
+                    }
+                ),
+            contentAlignment = Alignment.CenterEnd,
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .defaultMinSize(180.dp, Dp.Unspecified)
+                    .background(Color.Black.copy(0.6f))
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                for (i in 0 until playLine.sortedEpisodeList.size) {
+                    val index = i
+                    val s = playLine.sortedEpisodeList[index]
+                    Text(
+                        textAlign = TextAlign.Center,
+                        text = s.label,
+                        modifier = Modifier
+                            .defaultMinSize(180.dp, Dp.Unspecified)
+                            .clickable {
+                                cartoonPlayViewModel.changePlay(
+                                    playState.cartoonInfo,
+                                    playLine,
+                                    playLine.sortedEpisodeList[i]
+                                )
+                            }
+                            .padding(16.dp, 8.dp),
+                        color = if (playState.episode == s) MaterialTheme.colorScheme.primary else Color.White
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun VideoControl(
+    controlVM: ControlViewModel,
+    cartoonPlayingVM: CartoonPlayingViewModel,
+    playingState: CartoonPlayingViewModel.PlayingState,
+    sourcePlayState: CartoonPlayViewModel.CartoonPlayState?,
+    showSpeedWin: MutableState<Boolean>,
+    showEpisodeWin: MutableState<Boolean>,
+) {
+    val nav = LocalNavController.current
+    val playState = sourcePlayState
+    if (playState == null) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(Color.Black)) {
+            IconButton(onClick = {
+                nav.popBackStack()
+            }) {
+                Icon(
+                    Icons.Filled.ArrowBack,
+                    tint = Color.White,
+                    contentDescription = null
+                )
+            }
+        }
+    } else {
+        Box(Modifier.fillMaxSize()) {
+
+            // 手势
+            SimpleGestureController(
+                vm = controlVM,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(6.dp, 64.dp),
+                longTouchText = stringResource(id = R.string.long_press_fast_forward)
+            )
+
+
+            // 全屏顶部工具栏
+            FullScreenVideoTopBar(
+                vm = controlVM,
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+            )
+
+
+            NormalVideoTopBar(controlVM,
+                showTools = playingState.isPlaying,
+                onBack = {
+                    nav.popBackStack()
+                },
+                onSpeed = {
+                    showSpeedWin.value = true
+                },
+                onPlayExt = {
+                    cartoonPlayingVM.playCurrentExternal()
+                    // cartoonPlayingController.playCurrentExternal()
+                }
+            )
+
+            // 底部工具栏
+            SimpleBottomBar(
+                vm = controlVM,
+                modifier = Modifier.align(Alignment.BottomCenter),
+                paddingValues = if (controlVM.isFullScreen) PaddingValues(
+                    16.dp,
+                    0.dp,
+                    16.dp,
+                    8.dp
+                ) else PaddingValues(8.dp, 0.dp)
+            ) {
+
+                if (it.isFullScreen) {
+                    Text(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .clickable {
+                                showSpeedWin.value = true
+                            }
+                            .padding(8.dp),
+                        text = stringResource(id = R.string.speed),
+                        color = Color.White
+                    )
+                    Text(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .clickable {
+                                showEpisodeWin.value = true
+                            }
+                            .padding(8.dp),
+                        text = stringResource(id = R.string.episode),
+                        color = Color.White
+                    )
+                }
+            }
+
+            // 锁定按钮
+            LockBtn(vm = controlVM)
+
+            // 加载按钮
+            ProgressBox(vm = controlVM)
+        }
+    }
+
+
+}
+
+@Composable
+fun FullScreenVideoTopBar(
+    vm: ControlViewModel,
+    modifier: Modifier = Modifier,
+    isShowOnNormalScreen: Boolean = false,
+) {
+    AnimatedVisibility(
+        modifier = modifier,
+        visible = vm.isShowOverlay() && (vm.isFullScreen || isShowOnNormalScreen),
+        exit = fadeOut(),
+        enter = fadeIn(),
+    ) {
+        TopControl {
+            val ctx = LocalContext.current as Activity
+            BackBtn {
+                vm.onFullScreen(false, ctx = ctx)
+            }
+            Text(
+                modifier = Modifier.weight(1f),
+                text = vm.title,
+                color = Color.White,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+
+//            Spacer(modifier = Modifier.weight(1f))
+
+            val br = rememberBatteryReceiver()
+
+
+            val ic = if (br.isCharge.value) {
+                Icons.Filled.BatteryChargingFull
+            } else {
+                if (br.electricity.value <= 10) {
+                    Icons.Filled.Battery0Bar
+                } else if (br.electricity.value <= 20) {
+                    Icons.Filled.Battery2Bar
+                } else if (br.electricity.value <= 40) {
+                    Icons.Filled.Battery3Bar
+                } else if (br.electricity.value <= 60) {
+                    Icons.Filled.Battery4Bar
+                } else if (br.electricity.value <= 70) {
+                    Icons.Filled.Battery5Bar
+                } else if (br.electricity.value <= 90) {
+                    Icons.Filled.Battery6Bar
+                } else {
+                    Icons.Filled.BatteryFull
+                }
+            }
+            Icon(ic, "el", modifier = Modifier.rotate(90F), tint = Color.White)
+            Text(text = "${br.electricity.value}%", color = Color.White)
+            Spacer(modifier = Modifier.size(16.dp))
+
+
+        }
+    }
+}
+
+@Composable
+fun NormalVideoTopBar(
+    vm: ControlViewModel,
+    modifier: Modifier = Modifier,
+    showTools: Boolean,
+    onBack: () -> Unit,
+    onSpeed: () -> Unit,
+    onPlayExt: () -> Unit,
+) {
+    AnimatedVisibility(
+        modifier = modifier,
+        visible = vm.isShowOverlay() && !vm.isFullScreen,
+        exit = fadeOut(),
+        enter = fadeIn(),
+    ) {
+        TopControl {
+            val ctx = LocalContext.current as Activity
+            BackBtn(onBack)
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            if (showTools) {
+                IconButton(onClick = onSpeed) {
+                    Icon(
+                        Icons.Filled.Speed,
+                        tint = Color.White,
+                        contentDescription = stringResource(R.string.speed)
+                    )
+                }
+
+                IconButton(onClick = onPlayExt) {
+                    Icon(
+                        Icons.Filled.Airplay,
+                        tint = Color.White,
+                        contentDescription = null
+                    )
+                }
+            }
+        }
+    }
+}

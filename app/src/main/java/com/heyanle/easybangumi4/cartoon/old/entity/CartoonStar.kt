@@ -1,10 +1,9 @@
-package com.heyanle.easybangumi4.cartoon.entity
+package com.heyanle.easybangumi4.cartoon.old.entity
 
 import androidx.room.Entity
 import androidx.room.Ignore
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.heyanle.easybangumi4.cartoon.play.PlayLineWrapper
 import com.heyanle.easybangumi4.source_api.entity.Cartoon
 import com.heyanle.easybangumi4.source_api.entity.CartoonCover
 import com.heyanle.easybangumi4.source_api.entity.CartoonImpl
@@ -80,7 +79,7 @@ data class CartoonStar(
 
     companion object {
 
-        fun fromCartoonInfo(cartoon: CartoonInfo, playLines: List<PlayLine>, tags: String = ""): CartoonStar {
+        fun fromCartoonInfo(cartoon: CartoonInfoOld, playLines: List<PlayLine>, tags: String = ""): CartoonStar {
             return CartoonStar(
                 id = cartoon.id,
                 source = cartoon.source,

@@ -6,6 +6,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,7 +14,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,7 +31,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.heyanle.easybangumi4.R
-import com.heyanle.easybangumi4.cartoon.entity.CartoonStar
+import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.source.LocalSourceBundleController
 import com.heyanle.easybangumi4.source_api.entity.CartoonCover
 
@@ -113,10 +117,13 @@ fun CartoonCardWithCover(
 fun CartoonStarCardWithCover(
     modifier: Modifier = Modifier,
     selected: Boolean = false,
-    cartoon: CartoonStar,
+    cartoon: CartoonInfo,
     showSourceLabel: Boolean,
-    onClick: (CartoonStar) -> Unit,
-    onLongPress: (CartoonStar) -> Unit,
+    showWatchProcess: Boolean,
+    showIsUp: Boolean,
+    showIsUpdate: Boolean,
+    onClick: (CartoonInfo) -> Unit,
+    onLongPress: (CartoonInfo) -> Unit,
 ) {
 
     Column(
@@ -151,7 +158,7 @@ fun CartoonStarCardWithCover(
             OkImage(
                 modifier = Modifier.fillMaxSize(),
                 image = cartoon.coverUrl?:"",
-                contentDescription = cartoon.title,
+                contentDescription = cartoon.name,
                 errorRes = R.drawable.placeholder,
             )
             if (showSourceLabel) {
@@ -161,20 +168,63 @@ fun CartoonStarCardWithCover(
                         ?: cartoon.sourceName,
                     color = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .background(
+                            MaterialTheme.colorScheme.primary,
+                            RoundedCornerShape(0.dp, 4.dp, 0.dp, 0.dp)
+                        )
+                        .padding(4.dp, 0.dp)
+                )
+            }
+            if (showWatchProcess && cartoon.lastHistoryTime != 0L) {
+                cartoon.matchHistoryEpisode?.let { last ->
+                    val index = last.first.sortedEpisodeList.indexOf(last.second)
+                    Text(
+                        fontSize = 13.sp,
+                        text = "${index+1}/${last.first.sortedEpisodeList.size}",
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .background(
+                                MaterialTheme.colorScheme.primary,
+                                RoundedCornerShape(0.dp, 0.dp, 0.dp, 4.dp)
+                            )
+                            .padding(4.dp, 0.dp)
+                    )
+                }
+            }
+
+
+            if(showIsUpdate || showIsUp){
+                Row (
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
                         .background(
                             MaterialTheme.colorScheme.primary,
                             RoundedCornerShape(0.dp, 0.dp, 4.dp, 0.dp)
                         )
                         .padding(4.dp, 0.dp)
-                )
+                ) {
+                    if(showIsUp && cartoon.upTime > 0L){
+                        Icon(Icons.Filled.PushPin, modifier = Modifier.size(13.dp),contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.push_pin) )
+                    }
+                    if(showIsUpdate && cartoon.isUpdate){
+                        Text(
+                            fontSize = 13.sp,
+                            text = stringResource(id = com.heyanle.easy_i18n.R.string.need_update),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                        )
+                    }
+                }
             }
+
         }
 
 
         Spacer(modifier = Modifier.size(4.dp))
         Text(
             style = MaterialTheme.typography.bodySmall,
-            text = cartoon.title,
+            text = cartoon.name,
             maxLines = 2,
             textAlign = TextAlign.Start,
             overflow = TextOverflow.Ellipsis,
@@ -198,7 +248,13 @@ fun CartoonCardWithoutCover(
             .fillMaxWidth()
             .then(modifier)
             .clip(RoundedCornerShape(4.dp))
-            .border(1.dp, if(star) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(0.6f), RoundedCornerShape(4.dp))
+            .border(
+                1.dp,
+                if (star) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(
+                    0.6f
+                ),
+                RoundedCornerShape(4.dp)
+            )
             .combinedClickable(
                 onClick = {
                     onClick(cartoonCover)

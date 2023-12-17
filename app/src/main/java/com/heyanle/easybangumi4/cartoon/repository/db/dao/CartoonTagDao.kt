@@ -31,6 +31,9 @@ interface CartoonTagDao {
     @Query("SELECT * FROM CartoonTag")
     fun flowAll(): Flow<List<CartoonTag>>
 
+    @Query("DELETE FROM CartoonTag WHERE 1=1")
+    suspend fun clear()
+
     @Transaction
     suspend fun updateAll(list: List<CartoonTag>) {
         list.forEach {

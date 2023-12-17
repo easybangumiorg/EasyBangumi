@@ -1,6 +1,9 @@
 package com.heyanle.easybangumi4.source.bundle
 
+import android.app.Application
+import android.content.Context
 import androidx.collection.arraySetOf
+import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.source.SourceException
 import com.heyanle.easybangumi4.source.utils.StringHelperImpl
 import com.heyanle.easybangumi4.source.utils.WebViewHelperImpl
@@ -37,6 +40,12 @@ import kotlin.reflect.KParameter
 class ComponentBundle(
     private val source: Source
 ) {
+
+    //其他允许注入的类
+    private val contextClazz: Set<KClass<*>> = setOf(
+        Context::class,
+        Application::class,
+    )
 
     // Source 接口
     private val sourceClazz: Set<KClass<*>> = setOf(
@@ -82,6 +91,9 @@ class ComponentBundle(
         put(OkhttpHelper::class, Injekt.get(source.key))
         put(PreferenceHelper::class, Injekt.get(source.key))
         put(WebViewHelper::class, Injekt.get(source.key))
+
+        put(Context::class, APP)
+        put(Application::class, APP)
 
         sourceClazz.forEach {
             if(it.isInstance(source)){

@@ -1,13 +1,13 @@
-package com.heyanle.easybangumi4.cartoon.tags
+package com.heyanle.easybangumi4.cartoon.old.tags
 
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
-import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonTagDao
+import com.heyanle.easybangumi4.cartoon.old.entity.CartoonTagOld
+import com.heyanle.easybangumi4.cartoon.old.repository.db.dao.CartoonTagDao
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.utils.stringRes
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
 
 /**
  * Created by heyanlin on 2023/11/2.
@@ -39,10 +39,10 @@ class CartoonTagsController(
             }
         }
         if (!findAll) {
-            res.add(CartoonTag(ALL_TAG_ID, stringRes(R.string.all_word), -1))
+            res.add(CartoonTagOld(ALL_TAG_ID, stringRes(R.string.all_word), -1))
         }
         if (!findUpdate && isShowUpdate) {
-            res.add(CartoonTag(UPDATE_TAG_ID, stringRes(R.string.update), -2))
+            res.add(CartoonTagOld(UPDATE_TAG_ID, stringRes(R.string.update), -2))
         }
         if (!isShowUpdate) {
             res.filter { it.id != UPDATE_TAG_ID }
@@ -52,11 +52,11 @@ class CartoonTagsController(
     }
 
 
-    suspend fun refresh(tags: List<CartoonTag>) {
+    suspend fun refresh(tags: List<CartoonTagOld>) {
         cartoonTagDao.updateAll(tags)
     }
 
-    suspend fun remove(cartoonTag: CartoonTag){
+    suspend fun remove(cartoonTag: CartoonTagOld){
         cartoonTagDao.delete(cartoonTag)
     }
 
