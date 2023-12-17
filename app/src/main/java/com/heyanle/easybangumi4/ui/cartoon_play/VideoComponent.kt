@@ -57,6 +57,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
+import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
+import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayingViewModel
 import com.heyanle.easybangumi4.ui.common.ErrorPage
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import loli.ball.easyplayer2.BackBtn
@@ -271,7 +273,7 @@ fun VideoFloat(
                             .defaultMinSize(180.dp, Dp.Unspecified)
                             .clickable {
                                 cartoonPlayViewModel.changePlay(
-                                    playState.cartoonInfo,
+                                    playState.cartoonSummary,
                                     playLine,
                                     playLine.sortedEpisodeList[i]
                                 )

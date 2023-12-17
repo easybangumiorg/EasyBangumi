@@ -675,8 +675,8 @@ fun LazyGridScope.cartoonEpisodeList(
         items(episode.size) {
             val index = it
             episode.getOrNull(index)?.let { item ->
-                val select =
-                    playLine == playingPlayLine && item == playingEpisode
+                val select =  playLine.playLine == playingPlayLine?.playLine && item == playingEpisode
+
                 Row(
                     modifier = Modifier
                         .padding(4.dp)

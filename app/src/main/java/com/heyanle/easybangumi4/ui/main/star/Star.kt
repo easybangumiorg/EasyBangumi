@@ -70,27 +70,20 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
-import com.heyanle.easybangumi4.cartoon.old.entity.CartoonStar
-import com.heyanle.easybangumi4.cartoon.old.tags.isInner
-import com.heyanle.easybangumi4.cartoon.old.tags.isUpdate
-import com.heyanle.easybangumi4.cartoon.old.tags.tagLabel
-import com.heyanle.easybangumi4.navigationCartoonMigrate
+import com.heyanle.easybangumi4.cartoon.tag.isInner
+import com.heyanle.easybangumi4.cartoon.tag.tagLabel
 import com.heyanle.easybangumi4.navigationCartoonTag
+import com.heyanle.easybangumi4.navigationDetailed
 import com.heyanle.easybangumi4.ui.common.CartoonStarCardWithCover
 import com.heyanle.easybangumi4.ui.common.EasyDeleteDialog
+import com.heyanle.easybangumi4.ui.common.EasyMutiSelectionDialog
 import com.heyanle.easybangumi4.ui.common.EmptyPage
 import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.SelectionTopAppBar
 import com.heyanle.easybangumi4.ui.common.TabPage
-import com.heyanle.easybangumi4.ui.main.MainViewModel
-import com.heyanle.easybangumi4.ui.main.star.update.Update
-import com.heyanle.easybangumi4.ui.main.star.update.UpdateViewModel
-import com.heyanle.easybangumi4.navigationDetailed
-import com.heyanle.easybangumi4.ui.common.EasyMutiSelectionDialog
-import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.ui.common.proc.FilterColumn
 import com.heyanle.easybangumi4.ui.common.proc.SortColumn
-import com.heyanle.easybangumi4.utils.stringRes
+import com.heyanle.easybangumi4.ui.main.MainViewModel
 
 /**
  * Created by HeYanLe on 2023/7/29 23:21.
@@ -102,7 +95,6 @@ fun Star() {
 
     val homeVM = viewModel<MainViewModel>()
     val starVM = viewModel<StarViewModel>()
-    val updateVM = viewModel<UpdateViewModel>()
 
     val nav = LocalNavController.current
 
@@ -186,7 +178,7 @@ fun Star() {
                     text = state.searchQuery ?: "",
                     onTextChange = {
                         starVM.onSearch(it)
-                        updateVM.search(it)
+
                     },
                     starNum = state.starCount,
                     onSearchClick = {
@@ -197,14 +189,14 @@ fun Star() {
                     },
                     onSearch = {
                         starVM.onSearch(it)
-                        updateVM.search(it)
+
                     },
                     onFilterClick = {
                         starVM.dialogProc()
                     },
                     onSearchExit = {
                         starVM.onSearch(null)
-                        updateVM.search("")
+
                     })
             }
         }
@@ -234,22 +226,18 @@ fun Star() {
 
             }) {
             val tab = state.tabs[it]
-            if (tab.isUpdate()) {
-                Update(updateVM)
-            } else {
-                val list = state.data[tab] ?: emptyList()
-                StarList(
-                    //nestedScrollConnection = scrollBehavior.nestedScrollConnection,
-                    starCartoon = list, selectionSet = state.selection, onStarClick = {
-                        if (state.selection.isEmpty()) {
-                            nav.navigationDetailed(it.id, it.url, it.source)
-                        } else {
-                            starVM.onSelectionChange(it)
-                        }
-                    }, onStarLongPress = {
-                        starVM.onSelectionLongPress(it)
-                    })
-            }
+            val list = state.data[tab] ?: emptyList()
+            StarList(
+                //nestedScrollConnection = scrollBehavior.nestedScrollConnection,
+                starCartoon = list, selectionSet = state.selection, onStarClick = {
+                    if (state.selection.isEmpty()) {
+                        nav.navigationDetailed(it.id, it.url, it.source)
+                    } else {
+                        starVM.onSelectionChange(it)
+                    }
+                }, onStarLongPress = {
+                    starVM.onSelectionLongPress(it)
+                })
         }
     }
 

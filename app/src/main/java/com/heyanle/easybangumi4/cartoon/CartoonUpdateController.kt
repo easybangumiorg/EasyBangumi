@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.source
+package com.heyanle.easybangumi4.cartoon
 
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
@@ -7,15 +7,12 @@ import com.heyanle.easybangumi4.source_api.SourceResult
 import com.heyanle.easybangumi4.source_api.entity.Cartoon
 import com.heyanle.easybangumi4.utils.CoroutineProvider
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.koin.core.component.getScopeId
 
 /**
  * Created by heyanle on 2023/12/17.

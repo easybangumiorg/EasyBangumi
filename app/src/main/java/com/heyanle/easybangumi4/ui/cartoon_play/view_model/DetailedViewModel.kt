@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.ui.cartoon_play
+package com.heyanle.easybangumi4.ui.cartoon_play.view_model
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
 import com.heyanle.easybangumi4.cartoon.entity.PlayLineWrapper
-import com.heyanle.easybangumi4.cartoon.old.entity.CartoonInfoOld
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
 import com.heyanle.easybangumi4.cartoon.tag.CartoonTagsController
 import com.heyanle.easybangumi4.cartoon.tag.isInner
@@ -24,7 +23,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 
@@ -48,7 +46,7 @@ class DetailedViewModel(
 
     val sortState = SortState<Episode>(
         PlayLineWrapper.sortList,
-        stateFlow.map { it.cartoonInfo }.filterIsInstance<CartoonInfo>().map { it.sortByKey }
+        stateFlow.map { it.cartoonInfo }.filterIsInstance<CartoonInfo>().map { it.sortByKey.ifEmpty { PlayLineWrapper.SORT_DEFAULT_KEY } }
             .stateIn(viewModelScope, SharingStarted.Lazily, PlayLineWrapper.SORT_DEFAULT_KEY),
         stateFlow.map { it.cartoonInfo }.filterIsInstance<CartoonInfo>().map { it.reversal }
             .stateIn(viewModelScope, SharingStarted.Lazily, false)

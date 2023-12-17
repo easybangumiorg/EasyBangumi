@@ -198,7 +198,7 @@ fun CartoonStarCardWithCover(
             if(showIsUpdate || showIsUp){
                 Row (
                     modifier = Modifier
-                        .align(Alignment.BottomStart)
+                        .align(Alignment.TopStart)
                         .background(
                             MaterialTheme.colorScheme.primary,
                             RoundedCornerShape(0.dp, 0.dp, 4.dp, 0.dp)
