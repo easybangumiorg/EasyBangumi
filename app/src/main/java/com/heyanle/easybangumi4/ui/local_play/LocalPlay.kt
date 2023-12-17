@@ -49,7 +49,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Airplay
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.More
@@ -57,7 +56,6 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material.icons.filled.Speed
-import androidx.compose.material.icons.filled.WifiProtectedSetup
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -94,12 +92,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.exoplayer.ExoPlayer
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
+import com.heyanle.easybangumi4.cartoon.entity.PlayLineWrapper
 import com.heyanle.easybangumi4.cartoon_download.entity.LocalCartoon
 import com.heyanle.easybangumi4.cartoon_download.entity.LocalEpisode
-import com.heyanle.easybangumi4.cartoon_download.entity.LocalPlayLine
 import com.heyanle.easybangumi4.navigationDetailed
 import com.heyanle.easybangumi4.navigationSearch
-import com.heyanle.easybangumi4.ui.cartoon_play.DetailedViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.FullScreenVideoTopBar
 import com.heyanle.easybangumi4.ui.cartoon_play.speedConfig
 import com.heyanle.easybangumi4.ui.common.Action
@@ -114,9 +111,6 @@ import com.heyanle.easybangumi4.ui.common.proc.SortDropDownMenu
 import com.heyanle.easybangumi4.ui.common.proc.SortState
 import com.heyanle.easybangumi4.utils.isCurPadeMode
 import com.heyanle.easybangumi4.utils.loge
-import com.heyanle.easybangumi4.utils.logi
-import com.heyanle.easybangumi4.utils.stringRes
-import com.heyanle.easybangumi4.utils.toast
 import com.heyanle.injekt.api.get
 import com.heyanle.injekt.core.Injekt
 import loli.ball.easyplayer2.BackBtn
@@ -755,7 +749,7 @@ fun CartoonPlayDetailed(
                             Icon(
                                 Icons.Filled.Sort,
                                 stringResource(id = R.string.sort),
-                                tint = if (curKey.value != DetailedViewModel.SORT_DEFAULT_KEY) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
+                                tint = if (curKey.value != PlayLineWrapper.SORT_DEFAULT_KEY) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
                             )
 
                             SortDropDownMenu(isShow = isSortShow,

@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.cartoon.repository.db.dao
+package com.heyanle.easybangumi4.cartoon.old.repository.db.dao
 
 import androidx.room.Dao
 import androidx.room.Delete
@@ -6,7 +6,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
-import com.heyanle.easybangumi4.cartoon.entity.CartoonHistory
+import com.heyanle.easybangumi4.cartoon.old.entity.CartoonHistory
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -30,6 +30,9 @@ interface CartoonHistoryDao {
 
     @Query("SELECT * FROM cartoonHistory ORDER BY createTime DESC")
     fun flowAllOrderByTime(): Flow<List<CartoonHistory>>
+
+    @Query("SELECT * FROM cartoonHistory")
+    suspend fun getAll(): List<CartoonHistory>
 
     @Query("SELECT * FROM cartoonHistory WHERE id=(:id) AND source=(:source) AND url=(:detailUrl)")
     suspend fun getFromCartoonSummary(id: String, source: String, detailUrl: String): CartoonHistory?

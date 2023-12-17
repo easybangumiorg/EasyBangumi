@@ -58,7 +58,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
-import com.heyanle.easybangumi4.cartoon.entity.CartoonHistory
+import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.ui.common.CartoonCard
 import com.heyanle.easybangumi4.ui.common.EasyClearDialog
 import com.heyanle.easybangumi4.ui.common.EasyDeleteDialog
@@ -163,10 +163,10 @@ fun History(
             onItemClick = {
                 val enterData = CartoonPlayViewModel.EnterData(
                     it.lastLineId,
-                    it.lastLineTitle,
+                    it.lastLineLabel,
                     it.lastLinesIndex,
                     it.lastEpisodeId,
-                    it.lastEpisodeTitle,
+                    it.lastEpisodeLabel,
                     it.lastEpisodeOrder,
                     it.lastEpisodeIndex,
                     it.lastProcessTime
@@ -220,8 +220,8 @@ fun HistoryList(
     scrollBehavior: TopAppBarScrollBehavior? = null,
     vm: HistoryViewModel = viewModel<HistoryViewModel>(),
     state: HistoryViewModel.HistoryState,
-    onItemClick: (CartoonHistory) -> Unit,
-    onItemDelete: (CartoonHistory) -> Unit,
+    onItemClick: (CartoonInfo) -> Unit,
+    onItemDelete: (CartoonInfo) -> Unit,
 ) {
 
     val lazyListState = rememberLazyListState()
@@ -306,12 +306,12 @@ fun HistoryList(
 @Composable
 fun HistoryItem(
     modifier: Modifier = Modifier,
-    cartoonHistory: CartoonHistory,
+    cartoonHistory: CartoonInfo,
     isSelect: Boolean,
     isShowDelete: Boolean,
-    onClick: (CartoonHistory) -> Unit,
-    onLongPress: (CartoonHistory) -> Unit,
-    onDelete: (CartoonHistory) -> Unit,
+    onClick: (CartoonInfo) -> Unit,
+    onLongPress: (CartoonInfo) -> Unit,
+    onDelete: (CartoonInfo) -> Unit,
 ) {
     val sourceBundle = LocalSourceBundleController.current
     Box(modifier = Modifier
@@ -341,7 +341,7 @@ fun HistoryItem(
         ) {
 
             CartoonCard(
-                cover = cartoonHistory.cover,
+                cover = cartoonHistory.coverUrl,
                 name = cartoonHistory.name,
                 source = sourceBundle.source(cartoonHistory.source)?.label
                     ?: cartoonHistory.source
@@ -357,7 +357,7 @@ fun HistoryItem(
                 Text(
                     text = stringResource(
                         id = R.string.last_episode_title,
-                        cartoonHistory.lastEpisodeTitle
+                        cartoonHistory.lastEpisodeLabel
                     ),
                     maxLines = 1,
                     color = if (isSelect) MaterialTheme.colorScheme.onPrimary.copy(0.6f) else MaterialTheme.colorScheme.onBackground.copy(

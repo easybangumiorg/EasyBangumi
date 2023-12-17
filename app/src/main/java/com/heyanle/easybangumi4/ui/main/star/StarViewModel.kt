@@ -2,31 +2,26 @@ package com.heyanle.easybangumi4.ui.main.star
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.heyanle.easy_i18n.R
-import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonStarDao
-import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonTagDao
-import com.heyanle.easybangumi4.cartoon.entity.CartoonStar
+import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
+import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
 import com.heyanle.easybangumi4.cartoon.star.CartoonStarController
-import com.heyanle.easybangumi4.cartoon.tags.CartoonTagsController
-import com.heyanle.easybangumi4.cartoon.tags.isALL
-import com.heyanle.easybangumi4.cartoon.tags.isUpdate
+import com.heyanle.easybangumi4.cartoon.tag.CartoonTagsController
+import com.heyanle.easybangumi4.cartoon.tag.isALL
+import com.heyanle.easybangumi4.cartoon.tag.isUpdate
 import com.heyanle.easybangumi4.setting.SettingPreferences
-import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.source.CartoonUpdateController
+import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.ui.common.proc.FilterState
 import com.heyanle.easybangumi4.ui.common.proc.FilterWith
 import com.heyanle.easybangumi4.ui.common.proc.SortBy
 import com.heyanle.easybangumi4.ui.common.proc.SortState
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.easybangumi4.utils.stringRes
-import com.heyanle.easybangumi4.utils.toJson
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -47,15 +42,15 @@ class StarViewModel : ViewModel() {
         val starCount: Int = 0,
         val tabs: List<CartoonTag> = listOf(),
         val curTab: CartoonTag? = null,
-        val data: Map<CartoonTag, List<CartoonStar>>,
-        val selection: Set<CartoonStar> = setOf(),
+        val data: Map<CartoonTag, List<CartoonInfo>>,
+        val selection: Set<CartoonInfo> = setOf(),
         val hasActiveFilters: Boolean = false,
         val dialog: DialogState? = null
     )
 
     sealed class DialogState {
         data class ChangeTag(
-            val selection: Set<CartoonStar>,
+            val selection: Set<CartoonInfo>,
             val tagList: List<CartoonTag>,
         ) : DialogState() {
 
@@ -84,14 +79,14 @@ class StarViewModel : ViewModel() {
         }
 
         data class Delete(
-            val selection: Set<CartoonStar>,
+            val selection: Set<CartoonInfo>,
         ) : DialogState()
 
         data object Proc : DialogState()
     }
 
     private val cartoonStarController: CartoonStarController by Injekt.injectLazy()
-    private val cartoonStarDao: CartoonStarDao by Injekt.injectLazy()
+    private val cartoonInfoDao: CartoonInfoDao by Injekt.injectLazy()
     private val settingPreferences: SettingPreferences by Injekt.injectLazy()
     private val cartoonTagsController: CartoonTagsController by Injekt.injectLazy()
 
@@ -111,7 +106,7 @@ class StarViewModel : ViewModel() {
 
 
     // 最后一个选择的，用于长按区间反选
-    private var lastSelectCartoon: CartoonStar? = null
+    private var lastSelectCartoon: CartoonInfo? = null
     private var lastSelectTag: CartoonTag? = null
 
     init {
@@ -152,15 +147,15 @@ class StarViewModel : ViewModel() {
         }
     }
 
-    fun deleteSelection(selection: Set<CartoonStar>) {
+    fun deleteSelection(selection: Set<CartoonInfo>) {
         viewModelScope.launch {
-            cartoonStarDao.delete(selection.toList())
+            cartoonInfoDao.deleteStar(selection.toList())
             dialogDismiss()
             onSelectionExit()
         }
     }
 
-    fun changeTagSelection(selection: Set<CartoonStar>, tags: List<CartoonTag>) {
+    fun changeTagSelection(selection: Set<CartoonInfo>, tags: List<CartoonTag>) {
         viewModelScope.launch {
             val tt = tags.map { it.id }.toList()
             val tag = tt.joinToString(", ") {
@@ -171,7 +166,7 @@ class StarViewModel : ViewModel() {
             val target = selection.map {
                 it.copy(tags = tag)
             }.toList()
-            cartoonStarDao.modify(target)
+            cartoonInfoDao.modify(target)
         }
     }
 
@@ -228,25 +223,24 @@ class StarViewModel : ViewModel() {
         }
     }
 
-    fun onSelectionChange(cartoonStar: CartoonStar) {
-        lastSelectCartoon = cartoonStar
+    fun onSelectionChange(cartoon: CartoonInfo) {
+        lastSelectCartoon = cartoon
         lastSelectTag = stateFlow.value.curTab
         _stateFlow.update {
-
-            val selection = if (it.selection.contains(cartoonStar)) {
-                it.selection.minus(cartoonStar)
-            } else it.selection.plus(cartoonStar)
+            val selection = if (it.selection.contains(cartoon)) {
+                it.selection.minus(cartoon)
+            } else it.selection.plus(cartoon)
             it.copy(selection = selection)
         }
     }
 
-    fun onSelectionLongPress(cartoonStar: CartoonStar) {
+    fun onSelectionLongPress(cartoonInfo: CartoonInfo) {
         if (lastSelectTag != null && lastSelectTag == stateFlow.value.curTab) {
             _stateFlow.update {
                 val selection = it.selection.toMutableSet()
                 val lastList = it.data[lastSelectTag] ?: listOf()
                 var a = lastList.indexOf(lastSelectCartoon)
-                val b = lastList.indexOf(cartoonStar)
+                val b = lastList.indexOf(cartoonInfo)
                 if (b > a) {
                     a += 1
                 } else if (a > b) {
@@ -268,11 +262,11 @@ class StarViewModel : ViewModel() {
                     selection = selection
                 )
             }
-            lastSelectCartoon = cartoonStar
+            lastSelectCartoon = cartoonInfo
             lastSelectTag = stateFlow.value.curTab
         } else {
             // 如果和上一个不在同一个收藏夹就走普通点击逻辑
-            onSelectionChange(cartoonStar)
+            onSelectionChange(cartoonInfo)
         }
     }
 
@@ -300,50 +294,44 @@ class StarViewModel : ViewModel() {
     }
 
     fun onUpdateSelection() {
-        val list = stateFlow.value.selection.toList() ?: emptyList()
-        onSelectionExit()
-        if (updateController.tryUpdate(list)) {
-            stringRes(com.heyanle.easy_i18n.R.string.start_update_selection).moeSnackBar()
-        } else {
-            stringRes(com.heyanle.easy_i18n.R.string.doing_update_wait).moeSnackBar()
-        }
+//        val list = stateFlow.value.selection.toList() ?: emptyList()
+//        onSelectionExit()
+//        if (updateController.tryUpdate(list)) {
+//            stringRes(com.heyanle.easy_i18n.R.string.start_update_selection).moeSnackBar()
+//        } else {
+//            stringRes(com.heyanle.easy_i18n.R.string.doing_update_wait).moeSnackBar()
+//        }
     }
 
     fun onUpdateAll() {
         viewModelScope.launch {
             //val list = if (stateFlow.value.curTab == UPDATE_TAG) cartoonStarDao.getAll() else stateFlow.value.data[stateFlow.value.curTab]?: emptyList()
             if (stateFlow.value.curTab?.isUpdate() == true || stateFlow.value.curTab?.isALL() == true) {
-                if (updateController.tryUpdate(true)) {
-                    stringRes(com.heyanle.easy_i18n.R.string.start_update_strict).moeSnackBar()
-                } else {
-                    stringRes(com.heyanle.easy_i18n.R.string.doing_update_wait).moeSnackBar()
-                }
+                updateController.updateAll()
+                stringRes(com.heyanle.easy_i18n.R.string.start_update_strict).moeSnackBar()
             } else {
                 val list = stateFlow.value.data[stateFlow.value.curTab] ?: emptyList()
-                if (updateController.tryUpdate(list)) {
-                    stringRes(com.heyanle.easy_i18n.R.string.start_update_tag).moeSnackBar()
-                } else {
-                    stringRes(com.heyanle.easy_i18n.R.string.doing_update_wait).moeSnackBar()
-                }
+                updateController.update(list)
+                stringRes(com.heyanle.easy_i18n.R.string.start_update_tag).moeSnackBar()
             }
 
         }
 
     }
 
-    fun getFilterState(): FilterState<CartoonStar> {
+    fun getFilterState(): FilterState<CartoonInfo> {
         return cartoonStarController.filterState
     }
 
-    fun getSortState(): SortState<CartoonStar> {
+    fun getSortState(): SortState<CartoonInfo> {
         return cartoonStarController.sortState
     }
 
-    fun onFilterChange(filterWith: FilterWith<CartoonStar>, state: Int) {
+    fun onFilterChange(filterWith: FilterWith<CartoonInfo>, state: Int) {
         cartoonStarController.onFilterChange(filterWith, state)
     }
 
-    fun onSortChange(sortBy: SortBy<CartoonStar>, state: Int) {
+    fun onSortChange(sortBy: SortBy<CartoonInfo>, state: Int) {
         cartoonStarController.onSortChange(sortBy, state)
     }
 
@@ -354,8 +342,8 @@ class StarViewModel : ViewModel() {
         }
     }
 
-    private fun List<CartoonStar>.toMap(tagMap: Map<Int, CartoonTag>): Map<CartoonTag, List<CartoonStar>> {
-        val map = hashMapOf<CartoonTag, ArrayList<CartoonStar>>()
+    private fun List<CartoonInfo>.toMap(tagMap: Map<Int, CartoonTag>): Map<CartoonTag, List<CartoonInfo>> {
+        val map = hashMapOf<CartoonTag, ArrayList<CartoonInfo>>()
         tagMap.asIterable().forEach {
             map[it.value] = arrayListOf()
         }
@@ -373,7 +361,7 @@ class StarViewModel : ViewModel() {
                 }
         }
         tagMap[CartoonTagsController.ALL_TAG_ID]?.let {
-            val all = arrayListOf<CartoonStar>()
+            val all = arrayListOf<CartoonInfo>()
             all.addAll(this)
             map[it] = all
         }

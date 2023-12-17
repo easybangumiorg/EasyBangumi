@@ -8,7 +8,7 @@ import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
 import com.heyanle.easybangumi4.source_api.entity.PlayLine
 
 /**
- * Created by HeYanLe on 2023/8/13 16:35.
+ * Created by heyanle on 2023/12/17.
  * https://github.com/heyanLE
  */
 class CartoonNetworkDataSource(

@@ -1,58 +1,40 @@
 package com.heyanle.easybangumi4.cartoon
 
 import android.app.Application
-import com.heyanle.easybangumi4.cartoon.play.CartoonPlayingController
-import com.heyanle.easybangumi4.cartoon.play.CartoonPlayingControllerOld
 import com.heyanle.easybangumi4.cartoon.repository.CartoonNetworkDataSource
 import com.heyanle.easybangumi4.cartoon.repository.CartoonRepository
-import com.heyanle.easybangumi4.cartoon.repository.db.AppDatabase
-import com.heyanle.easybangumi4.cartoon.repository.db.CacheDatabase
+import com.heyanle.easybangumi4.cartoon.repository.db.CartoonDatabase
 import com.heyanle.easybangumi4.cartoon.star.CartoonStarController
-import com.heyanle.easybangumi4.cartoon.tags.CartoonTagsController
-import com.heyanle.easybangumi4.source.CartoonUpdateController
+import com.heyanle.easybangumi4.cartoon.tag.CartoonTagsController
 import com.heyanle.injekt.api.InjektModule
 import com.heyanle.injekt.api.InjektScope
 import com.heyanle.injekt.api.addSingletonFactory
 import com.heyanle.injekt.api.get
 
 /**
- * Created by heyanlin on 2023/10/30.
+ * Created by heyanle on 2023/12/16.
+ * https://github.com/heyanLE
  */
 class CartoonModule(
     private val application: Application
 ) : InjektModule {
 
     override fun InjektScope.registerInjectables() {
-
         addSingletonFactory {
-            AppDatabase.build(application)
+            CartoonDatabase.build(application)
         }
 
         addSingletonFactory {
-            CacheDatabase.build(application)
+            get<CartoonDatabase>().cartoonInfo
         }
 
         addSingletonFactory {
-            get<AppDatabase>().cartoonHistory
+            get<CartoonDatabase>().cartoonTag
         }
 
         addSingletonFactory {
-            get<AppDatabase>().cartoonStar
+            get<CartoonDatabase>().searchHistory
         }
-
-        addSingletonFactory {
-            get<AppDatabase>().cartoonTag
-        }
-
-        addSingletonFactory {
-            get<AppDatabase>().searchHistory
-        }
-
-        addSingletonFactory {
-            get<CacheDatabase>().cartoonInfo
-        }
-
-
 
         addSingletonFactory {
             CartoonNetworkDataSource(get())
@@ -63,26 +45,11 @@ class CartoonModule(
         }
 
         addSingletonFactory {
-            CartoonUpdateController(get(), get())
-        }
-        addSingletonFactory {
-            CartoonPlayingControllerOld(
-                get(), get(), get(), get(), get()
-            )
-        }
-
-        addSingletonFactory {
-            CartoonPlayingController(
-                get(), get(), get(), get(), get()
-            )
+            CartoonStarController(get(), get())
         }
 
         addSingletonFactory {
             CartoonTagsController(get(), get())
-        }
-
-        addSingletonFactory {
-            CartoonStarController(get(), get())
         }
     }
 }

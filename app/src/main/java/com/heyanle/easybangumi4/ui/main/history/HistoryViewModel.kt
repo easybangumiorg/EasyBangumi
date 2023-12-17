@@ -3,8 +3,10 @@ package com.heyanle.easybangumi4.ui.main.history
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonHistoryDao
-import com.heyanle.easybangumi4.cartoon.entity.CartoonHistory
+import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
+import com.heyanle.easybangumi4.cartoon.old.repository.db.dao.CartoonHistoryDao
+import com.heyanle.easybangumi4.cartoon.old.entity.CartoonHistory
+import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.Dispatchers
@@ -30,36 +32,36 @@ class HistoryViewModel : ViewModel() {
 
     data class HistoryState(
         val isLoading: Boolean = true,
-        var history: List<CartoonHistory> = emptyList(),
+        var history: List<CartoonInfo> = emptyList(),
         var searchKey: String? = null,
         var isInPrivate: Boolean = false,
-        var selection: Set<CartoonHistory> = emptySet(),
+        var selection: Set<CartoonInfo> = emptySet(),
         var dialog: Dialog? = null,
     )
 
     sealed class Dialog {
         data class Delete(
-            val selection: Set<CartoonHistory>,
+            val selection: Set<CartoonInfo>,
         ) : Dialog()
 
         object Clear : Dialog()
     }
 
     private val settingPreferences: SettingPreferences by Injekt.injectLazy()
-    private val cartoonHistoryDao: CartoonHistoryDao by Injekt.injectLazy()
+    private val cartoonInfoDao: CartoonInfoDao by Injekt.injectLazy()
 
 
     private val _stateFlow = MutableStateFlow(HistoryState())
     val stateFlow = _stateFlow.asStateFlow()
 
-    private var lastSelectHistory: CartoonHistory? = null
+    private var lastSelectHistory: CartoonInfo? = null
 
 
     init {
         viewModelScope.launch {
             // 搜索和加载
             combine(
-                cartoonHistoryDao.flowAllOrderByTime().distinctUntilChanged(),
+                cartoonInfoDao.flowAllHistory().distinctUntilChanged(),
                 stateFlow.map { it.searchKey }.distinctUntilChanged(),
             ) { data, key ->
                 if (key.isNullOrEmpty()) {
@@ -98,7 +100,7 @@ class HistoryViewModel : ViewModel() {
     }
 
     // 多选
-    fun onSelectionChange(cartoonHistory: CartoonHistory) {
+    fun onSelectionChange(cartoonHistory: CartoonInfo) {
         lastSelectHistory = cartoonHistory
         _stateFlow.update {
             val selection = if (it.selection.contains(cartoonHistory)) {
@@ -134,7 +136,7 @@ class HistoryViewModel : ViewModel() {
 
     }
 
-    fun onSelectionLongPress(cartoonHistory: CartoonHistory) {
+    fun onSelectionLongPress(cartoonHistory: CartoonInfo) {
         if (lastSelectHistory == null || lastSelectHistory == cartoonHistory) {
             onSelectionChange(cartoonHistory)
             return
@@ -184,7 +186,7 @@ class HistoryViewModel : ViewModel() {
         }
     }
 
-    fun dialogDeleteOne(cartoonHistory: CartoonHistory) {
+    fun dialogDeleteOne(cartoonHistory: CartoonInfo) {
         _stateFlow.update {
             it.copy(selection = emptySet(), dialog = Dialog.Delete(setOf(cartoonHistory)))
         }
@@ -204,22 +206,18 @@ class HistoryViewModel : ViewModel() {
 
     // 数据操作
 
-    fun delete(cartoonHistory: CartoonHistory) {
+    fun delete(cartoonHistory: CartoonInfo) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                cartoonHistoryDao.deleteByCartoonSummary(
-                    cartoonHistory.id,
-                    cartoonHistory.source,
-                    cartoonHistory.url,
-                )
+                cartoonInfoDao.deleteHistory(cartoonHistory)
             }
         }
     }
 
-    fun delete(cartoonHistory: List<CartoonHistory>) {
+    fun delete(cartoonHistory: List<CartoonInfo>) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                cartoonHistoryDao.delete(cartoonHistory)
+                cartoonInfoDao.deleteHistory(cartoonHistory)
             }
         }
     }
@@ -227,7 +225,7 @@ class HistoryViewModel : ViewModel() {
     fun clear() {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                cartoonHistoryDao.clear()
+                cartoonInfoDao.clearHistory()
             }
         }
     }

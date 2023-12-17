@@ -33,7 +33,7 @@ interface SearchHistoryDao {
     @Delete
     suspend fun delete(historyBean: SearchHistory)
 
-    @Query("DELETE FROM SearchHistory")
+    @Query("DELETE FROM SearchHistory WHERE 1=1")
     suspend fun clear()
 
     @Transaction

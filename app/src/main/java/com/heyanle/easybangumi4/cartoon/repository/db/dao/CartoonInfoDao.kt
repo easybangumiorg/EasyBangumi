@@ -10,12 +10,13 @@ import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import kotlinx.coroutines.flow.Flow
 
 /**
- * Created by HeYanLe on 2023/8/13 16:46.
+ * Created by heyanle on 2023/12/16.
  * https://github.com/heyanLE
  */
 @Dao
 interface CartoonInfoDao {
 
+    // info
     @Insert
     suspend fun insert(cartoonInfo: CartoonInfo)
 
@@ -25,57 +26,87 @@ interface CartoonInfoDao {
     @Delete
     suspend fun delete(cartoonInfo: CartoonInfo)
 
-    @Query("SELECT * FROM CartoonInfo ORDER BY createTime DESC")
-    suspend fun getAll(): List<CartoonInfo>
-
-    @Query("SELECT * FROM CartoonInfo ORDER BY createTime DESC")
+    @Query("SELECT * FROM CartoonInfo")
     fun flowAll(): Flow<List<CartoonInfo>>
+
+    @Query("SELECT * FROM CartoonInfo WHERE id=(:id) AND source=(:source) AND url=(:detailUrl)")
+    suspend fun getByCartoonSummary(id: String, source: String, detailUrl: String): CartoonInfo?
 
     @Query("SELECT * FROM CartoonInfo WHERE source=(:source)")
     suspend fun getAllBySource(source: String): List<CartoonInfo>
-    @Query("SELECT * FROM CartoonInfo WHERE id=(:id) AND source=(:source) AND url=(:url)")
-    suspend fun getByCartoonSummary(id: String, source: String, url: String): CartoonInfo?
 
-    @Query("DELETE FROM CartoonInfo WHERE id=(:id) AND source=(:source) AND url=(:detailUrl)")
+    @Query("DELETE FROM cartoonInfo WHERE id=(:id) AND source=(:source) AND url=(:detailUrl)")
     suspend fun deleteByCartoonSummary(id: String, source: String, detailUrl: String)
 
-    @Transaction
-    suspend fun delete(cartoonInfo: List<CartoonInfo>){
-        cartoonInfo.forEach {
-            delete(it)
-        }
-    }
+    @Query("DELETE FROM cartoonInfo WHERE 1=1")
+    suspend fun clearAll()
 
     @Transaction
     suspend fun modify(cartoonInfo: CartoonInfo) {
         val old = getByCartoonSummary(cartoonInfo.id, cartoonInfo.source, cartoonInfo.url)
         if (old == null) {
-            insert(cartoonInfo.copy(createTime = System.currentTimeMillis(), lastUpdateTime = System.currentTimeMillis()))
+            insert(cartoonInfo.copy(createTime = System.currentTimeMillis()))
         } else {
-            update(cartoonInfo.copy(createTime = old.createTime, lastUpdateTime = System.currentTimeMillis()))
+            update(cartoonInfo.copy(createTime = old.createTime))
         }
     }
 
     @Transaction
-    suspend fun modify(starList: List<CartoonInfo>, lastUpdateTime: Long? = null) {
-        starList.forEach { cartoonInfo ->
-            val old = getByCartoonSummary(cartoonInfo.id, cartoonInfo.source, cartoonInfo.url)
-            if (old == null) {
-                insert(cartoonInfo.copy(createTime = System.currentTimeMillis(), lastUpdateTime = lastUpdateTime?:cartoonInfo.lastUpdateTime))
-            } else {
-                update(cartoonInfo.copy(createTime = old.createTime, lastUpdateTime = lastUpdateTime?:cartoonInfo.lastUpdateTime))
-            }
-        }
-    }
-
-    @Transaction
-    suspend fun migration(old: List<CartoonInfo>, new: List<CartoonInfo>){
-        old.forEach {
-            deleteByCartoonSummary(it.id, it.source, it.url)
-        }
-        new.forEach {
+    suspend fun modify(cartoonInfo: List<CartoonInfo>) {
+        cartoonInfo.forEach {
             modify(it)
         }
     }
-    
+
+
+    // history
+    @Query("SELECT * FROM cartooninfo WHERE lastHistoryTime>0 ORDER BY lastUpdateTime DESC")
+    fun flowAllHistory(): Flow<List<CartoonInfo>>
+
+    @Query("SELECT * FROM cartooninfo WHERE lastHistoryTime>0 ORDER BY lastUpdateTime DESC")
+    fun getAllHistory(): List<CartoonInfo>
+
+
+    @Transaction
+    suspend fun deleteHistory(cartoonInfo: CartoonInfo){
+        modify(cartoonInfo.copy(lastHistoryTime = 0,))
+    }
+
+    @Transaction
+    suspend fun deleteHistory(cartoon: List<CartoonInfo>){
+        cartoon.forEach {
+            modify(it.copy(lastHistoryTime = 0,))
+        }
+
+    }
+
+    @Transaction
+    suspend fun clearHistory() {
+        getAllHistory().forEach {
+            modify(it.copy(
+                lastHistoryTime = 0,
+            ))
+        }
+
+    }
+
+    // star
+    @Query("SELECT * FROM cartooninfo WHERE starTime>0")
+    fun flowAllStar(): Flow<List<CartoonInfo>>
+
+    @Transaction
+    suspend fun deleteStar(cartoonInfo: CartoonInfo){
+        modify(cartoonInfo.copy(starTime = 0, tags = "", upTime = 0))
+    }
+
+    @Transaction
+    suspend fun deleteStar(cartoonInfoList: List<CartoonInfo>){
+        cartoonInfoList.forEach {
+            modify(it.copy(starTime = 0, tags = "", upTime = 0))
+        }
+    }
+
+
+
+
 }

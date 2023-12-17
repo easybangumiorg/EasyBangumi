@@ -1,276 +1,170 @@
 package com.heyanle.easybangumi4.ui.cartoon_play
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
-import com.heyanle.easybangumi4.cartoon.entity.CartoonStar
 import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
-import com.heyanle.easybangumi4.cartoon.entity.isChild
-import com.heyanle.easybangumi4.cartoon.play.PlayLineWrapper
-import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonStarDao
-import com.heyanle.easybangumi4.cartoon.tags.CartoonTagsController
-import com.heyanle.easybangumi4.cartoon.tags.isInner
+import com.heyanle.easybangumi4.cartoon.entity.PlayLineWrapper
+import com.heyanle.easybangumi4.cartoon.old.entity.CartoonInfoOld
+import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
+import com.heyanle.easybangumi4.cartoon.tag.CartoonTagsController
+import com.heyanle.easybangumi4.cartoon.tag.isInner
 import com.heyanle.easybangumi4.case.CartoonInfoCase
 import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
 import com.heyanle.easybangumi4.source_api.entity.Episode
-import com.heyanle.easybangumi4.source_api.entity.PlayLine
-import com.heyanle.easybangumi4.ui.common.proc.SortBy
 import com.heyanle.easybangumi4.ui.common.proc.SortState
-import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.injekt.core.Injekt
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.yield
 
 /**
- * Created by heyanlin on 2023/11/27.
+ * Created by heyanle on 2023/12/17.
+ * https://github.com/heyanLE
  */
 class DetailedViewModel(
     private val cartoonSummary: CartoonSummary,
 ) : ViewModel() {
 
-    companion object {
-        const val SORT_DEFAULT_KEY = "default"
-    }
-
-
-    val sortByDefault: SortBy<Episode> = SortBy<Episode>(
-        SORT_DEFAULT_KEY,
-        stringRes(com.heyanle.easy_i18n.R.string.default_word)
-    ) { o1, o2 ->
-        o1.order - o2.order
-    }
-
-    val sortByLabel: SortBy<Episode> = SortBy<Episode>(
-        "label",
-        stringRes(com.heyanle.easy_i18n.R.string.name_word)
-    ) { o1, o2 ->
-        o1.label.compareTo(o2.label)
-    }
-
-    val sortList = listOf(sortByDefault, sortByLabel)
-
     private val cartoonInfoCase: CartoonInfoCase by Injekt.injectLazy()
-    private val cartoonStarDao: CartoonStarDao by Injekt.injectLazy()
+    private val cartoonInfoDao: CartoonInfoDao by Injekt.injectLazy()
     private val cartoonTagsController: CartoonTagsController by Injekt.injectLazy()
 
-    data class DetailedState(
+
+    private val _stateFlow = MutableStateFlow<DetailState>(DetailState())
+    val stateFlow = _stateFlow.asStateFlow()
+
+    private var job: Job? = null
+
+    val sortState = SortState<Episode>(
+        PlayLineWrapper.sortList,
+        stateFlow.map { it.cartoonInfo }.filterIsInstance<CartoonInfo>().map { it.sortByKey }
+            .stateIn(viewModelScope, SharingStarted.Lazily, PlayLineWrapper.SORT_DEFAULT_KEY),
+        stateFlow.map { it.cartoonInfo }.filterIsInstance<CartoonInfo>().map { it.reversal }
+            .stateIn(viewModelScope, SharingStarted.Lazily, false)
+    )
+
+
+    data class DetailState(
         val isLoading: Boolean = true,
         val isError: Boolean = false,
         val errorMsg: String = "",
         val throwable: Throwable? = null,
-        val detail: CartoonInfo? = null,
-        val playLine: List<PlayLine> = emptyList(),
-        val isShowPlayLine: Boolean = true,
-        val currentSortKey: String = SORT_DEFAULT_KEY,
-        val isReverse: Boolean = false,
-        val isStar: Boolean = false,
-        val playLineWrappers: List<PlayLineWrapper> = emptyList(),
+        val cartoonInfo: CartoonInfo? = null,
+        val starDialogState: StarDialogState? = null,
     )
 
     data class StarDialogState(
         val cartoon: CartoonInfo,
-        val playLines: List<PlayLineWrapper>,
         val tagList: List<CartoonTag>,
-    )
-
-    var starDialogState by mutableStateOf<StarDialogState?>(null)
-
-
-    private val _stateFlow = MutableStateFlow<DetailedState>(DetailedState())
-    val stateFlow = _stateFlow.asStateFlow()
-
-    val sortState = SortState<Episode>(
-        sortList,
-        stateFlow.map { it.currentSortKey }
-            .stateIn(viewModelScope, SharingStarted.Lazily, SORT_DEFAULT_KEY),
-        stateFlow.map { it.isReverse }.stateIn(viewModelScope, SharingStarted.Lazily, false)
     )
 
 
     init {
-
-        // 和收藏联动
-        viewModelScope.launch() {
-            combine(
-                stateFlow.map { it.detail }.filterIsInstance<CartoonInfo>().distinctUntilChanged()
-                    .stateIn(viewModelScope),
-                stateFlow.map { it.playLine }.distinctUntilChanged().stateIn(viewModelScope)
-            ) { info, playLines ->
-                val starInfo = withContext(Dispatchers.IO) {
-                    val cartoonStar = cartoonStarDao.getByCartoonSummary(
-                        info.id,
-                        info.source,
-                        info.url
-                    )
-
-                    cartoonStar?.let { star ->
-                        val nStar =
-                            CartoonStar.fromCartoonInfo(info, playLines)
-                        cartoonStarDao.update(
-                            nStar.copy(
-                                watchProcess = star.watchProcess,
-                                reversal = star.reversal,
-                                createTime = star.createTime,
-                                sortByKey = star.sortByKey,
-                                tags = star.tags,
-                                isUpdate = false
-                            )
-                        )
-                    }
-                    cartoonStar
-                }
-
-                val key = if(sortList.find { it.id == starInfo?.sortByKey } == null){
-                    SORT_DEFAULT_KEY
-                }else starInfo?.sortByKey?:""
-                _stateFlow.update {
-                    it.copy(
-                        currentSortKey = key,
-                        isReverse = starInfo?.reversal ?: false,
-                        isStar = starInfo != null
-                    )
-                }
-            }.collect()
-        }
-
-        // 排序
-        viewModelScope.launch {
-            combine(
-                stateFlow.map { it.playLine }.distinctUntilChanged().stateIn(viewModelScope),
-                stateFlow.map { it.currentSortKey }.distinctUntilChanged().stateIn(viewModelScope),
-                stateFlow.map { it.isReverse }.distinctUntilChanged().stateIn(viewModelScope),
-            ) { playLines, sortKey, isReverse ->
-                val sort = sortList.find { it.id == sortKey } ?: sortByDefault
-                val playLineWrappers = playLines.map {
-                    PlayLineWrapper(
-                        it,
-                        isReverse,
-                        { true },
-                        sort.comparator
-                    )
-                }
-                _stateFlow.update {
-                    it.copy(
-                        isLoading = false,
-                        playLineWrappers = playLineWrappers,
-                    )
-                }
-            }.collect()
-        }
+        load()
     }
 
     fun load() {
-        viewModelScope.launch {
+        job?.cancel()
+        job = viewModelScope.launch {
             _stateFlow.update {
-                it.copy(isLoading = true)
+                it.copy(isLoading = true, cartoonInfo = null)
             }
             cartoonInfoCase.awaitCartoonInfoWithPlayLines(
                 cartoonSummary.id,
                 cartoonSummary.source,
                 cartoonSummary.url
-            ).onOK { pair ->
-                _stateFlow.update {
-                    it.copy(
-                        isLoading = false,
-                        isError = false,
-                        detail = pair.first,
-                        playLine = pair.second,
-                        isShowPlayLine = pair.first.isShowLine
-                    )
-                }
-            }.onError { er ->
-                _stateFlow.update {
-                    it.copy(
-                        isLoading = false,
-                        isError = true,
-                        errorMsg = er.errorMsg,
-                        throwable = er.throwable
-                    )
-                }
-            }
-        }
-    }
-
-    fun setCartoonStar(isStar: Boolean, cartoon: CartoonInfo, playLines: List<PlayLineWrapper>) {
-        viewModelScope.launch {
-            if (isStar) {
-                val tl = cartoonTagsController.tagsList.first()
-                if (tl.find { !it.isInner() } != null) {
-                    starDialogState = StarDialogState(cartoon, playLines, tl)
-                } else {
-                    innerStarCartoon(cartoon, playLines, emptyList())
-                }
-
-            } else {
-                withContext(Dispatchers.IO) {
-                    cartoonStarDao
-                        .deleteByCartoonSummary(
-                            cartoon.id,
-                            cartoon.source,
-                            cartoon.url
-                        )
-                }
-                // AnimStarViewModel.refresh()
-                if (cartoonSummary.isChild(cartoon)) {
-                    _stateFlow.update {
-                        it.copy(
-                            isStar = false
+            )
+                .onOK {
+                    yield()
+                    _stateFlow.update { detail ->
+                        detail.copy(
+                            isLoading = false,
+                            isError = false,
+                            errorMsg = "",
+                            throwable = null,
+                            cartoonInfo = it,
+                            starDialogState = null
                         )
                     }
                 }
-            }
+                .onError { err ->
+                    yield()
+                    _stateFlow.update {
+                        it.copy(
+                            isLoading = false,
+                            isError = true,
+                            errorMsg = err.errorMsg,
+                            throwable = err.throwable,
+                            cartoonInfo = null,
+                            starDialogState = null
+                        )
+                    }
+                }
         }
     }
 
-
-    fun starCartoon(
-        cartoon: CartoonInfo,
-        playLines: List<PlayLineWrapper>,
-        tag: List<CartoonTag>
-    ) {
+    fun setCartoonStar(star: Boolean, cartoon: CartoonInfo) {
+        if (!cartoon.match(cartoonSummary)) {
+            return
+        }
         viewModelScope.launch {
-            innerStarCartoon(cartoon, playLines, tag)
+            if (star) {
+                val tl = cartoonTagsController.tagsList.first()
+                if (tl.find { !it.isInner() } != null) {
+                    _stateFlow.update {
+                        it.copy(
+                            starDialogState = StarDialogState(cartoon, tl.sortedBy { it.order })
+                        )
+                    }
+                } else {
+                    cartoonInfoDao.modify(
+                        cartoon.copy(
+                            starTime = System.currentTimeMillis(),
+                            tags = "",
+                            isUpdate = false,
+                        )
+                    )
+                    refreshFromDB()
+                }
+            } else {
+                cartoonInfoDao.modify(
+                    cartoon.copy(
+                        starTime = 0,
+                        tags = "",
+                        isUpdate = false,
+                    )
+                )
+                refreshFromDB()
+            }
         }
     }
 
-    private suspend fun innerStarCartoon(
+    fun dialogSetCartoonStar(
         cartoon: CartoonInfo,
-        playLines: List<PlayLineWrapper>,
-        tag: List<CartoonTag>
+        tag: List<CartoonTag>,
     ) {
-        withContext(Dispatchers.IO) {
-            cartoonStarDao.modify(
-                CartoonStar.fromCartoonInfo(
-                    cartoon,
-                    playLines.map { it.playLine },
-                    tag.joinToString(", ") { it.id.toString() }).apply {
-                    reversal = stateFlow.value.isReverse
-                    sortByKey = stateFlow.value.currentSortKey
-                })
+        if (!cartoon.match(cartoonSummary)) {
+            return
         }
-        // AnimStarViewModel.refresh()
-        if (cartoonSummary.isChild(cartoon)) {
-            _stateFlow.update {
-                it.copy(
-                    isStar = true
-                )
-            }
+        viewModelScope.launch {
+            val cartoonInfo = cartoon.copy(
+                starTime = System.currentTimeMillis(),
+                tags = tag.joinToString(", ") { it.id.toString() },
+                isUpdate = false,
+            )
+            cartoonInfoDao.modify(cartoonInfo)
+            refreshFromDB()
         }
     }
 
@@ -278,37 +172,49 @@ class DetailedViewModel(
         sortByKey: String,
         isReverse: Boolean,
         cartoon: CartoonInfo,
-        isStar: Boolean
     ) {
-
-        _stateFlow.update {
-            it.copy(
-                currentSortKey = sortByKey,
-                isReverse = isReverse
-            )
+        if (!cartoon.match(cartoonSummary)) {
+            return
         }
-        if (isStar) {
-            viewModelScope.launch(Dispatchers.IO) {
-                val cartoonStar = cartoonStarDao.getByCartoonSummary(
-                    cartoon.id,
-                    cartoon.source,
-                    cartoon.url
-                )
+        viewModelScope.launch {
+            val cartoonInfo = cartoon.copy(
+                sortByKey = sortByKey,
+                reversal = isReverse,
+            )
+            cartoonInfoDao.modify(cartoonInfo)
+            refreshFromDB()
+        }
+    }
 
-                cartoonStar?.let { star ->
-                    cartoonStarDao.update(
-                        star.copy(
-                            reversal = isReverse,
-                            sortByKey = sortByKey
-                        )
-                    )
-                }
+    fun dialogExit() {
+        viewModelScope.launch {
+            _stateFlow.update {
+                it.copy(
+                    starDialogState = null
+                )
             }
         }
     }
 
-}
+    private suspend fun refreshFromDB() {
+        val n =
+            cartoonInfoDao.getByCartoonSummary(
+                cartoonSummary.id,
+                cartoonSummary.source,
+                cartoonSummary.url
+            )
+        if (n != null && n.isDetailed) {
+            _stateFlow.update {
+                it.copy(
+                    cartoonInfo = n
+                )
+            }
+        } else {
+            load()
+        }
+    }
 
+}
 
 class DetailedViewModelFactory(
     private val cartoonSummary: CartoonSummary,

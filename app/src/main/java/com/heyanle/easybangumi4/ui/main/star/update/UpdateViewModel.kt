@@ -2,9 +2,10 @@ package com.heyanle.easybangumi4.ui.main.star.update
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonStarDao
-import com.heyanle.easybangumi4.cartoon.entity.CartoonStar
-import com.heyanle.easybangumi4.source.CartoonUpdateController
+import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
+import com.heyanle.easybangumi4.cartoon.old.entity.CartoonStar
+import com.heyanle.easybangumi4.cartoon.old.update.CartoonUpdateController
+import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.insertSeparators
 import com.heyanle.easybangumi4.utils.stringRes
@@ -44,20 +45,20 @@ class UpdateViewModel : ViewModel() {
     sealed class UpdateItem {
         data class Header(val header: String) : UpdateItem()
 
-        data class Cartoon(val star: CartoonStar) : UpdateItem()
+        data class Cartoon(val star: CartoonInfo) : UpdateItem()
     }
 
     private val _stateFlow = MutableStateFlow(State())
     val stateFlow = _stateFlow.asStateFlow()
 
     private val cartoonUpdateController: CartoonUpdateController by Injekt.injectLazy()
-    private val cartoonStarDao: CartoonStarDao by Injekt.injectLazy()
+    private val cartoonInfoDao: CartoonInfoDao by Injekt.injectLazy()
 
     init {
         viewModelScope.launch {
             combine(
                 _stateFlow.map { it.searchKey }.distinctUntilChanged(),
-                getCartoonStarFlow(),
+                cartoonInfoDao.flowAllStar().distinctUntilChanged(),
                 cartoonUpdateController.isUpdate,
                 cartoonUpdateController.loadingError,
                 cartoonUpdateController.lastUpdateTime,
@@ -101,7 +102,7 @@ class UpdateViewModel : ViewModel() {
             it.copy(searchKey = key)
         }
     }
-    private fun List<CartoonStar>.toUpdateItems(searchKey: String): List<UpdateItem> {
+    private fun List<CartoonInfo>.toUpdateItems(searchKey: String): List<UpdateItem> {
         return filter { searchKey.isEmpty() || it.matches(searchKey) }.map {
             UpdateItem.Cartoon(it)
         }.insertSeparators { before, after ->
@@ -159,11 +160,5 @@ class UpdateViewModel : ViewModel() {
 
     }
 
-    private fun getCartoonStarFlow(): Flow<List<CartoonStar>> {
-        return cartoonStarDao.flowAll().map {
-            it.filter {
-                it.isUpdate && it.isInitializer
-            }
-        }
-    }
+
 }

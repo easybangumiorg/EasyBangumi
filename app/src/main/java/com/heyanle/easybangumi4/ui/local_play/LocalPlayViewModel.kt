@@ -12,24 +12,22 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.APP
+import com.heyanle.easybangumi4.cartoon.entity.PlayLineWrapper
 import com.heyanle.easybangumi4.cartoon_download.entity.LocalCartoon
 import com.heyanle.easybangumi4.cartoon_download.entity.LocalEpisode
 import com.heyanle.easybangumi4.exo.EasyExoPlayer
 import com.heyanle.easybangumi4.case.LocalCartoonCase
 import com.heyanle.easybangumi4.setting.SettingPreferences
-import com.heyanle.easybangumi4.ui.cartoon_play.DetailedViewModel
 import com.heyanle.easybangumi4.ui.common.proc.SortBy
 import com.heyanle.easybangumi4.ui.common.proc.SortState
 import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.easybangumi4.utils.toast
 import com.heyanle.injekt.core.Injekt
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
@@ -102,7 +100,7 @@ class LocalPlayViewModel(
     val sortState = SortState<LocalEpisode>(
         sortList,
         flow.map { it.currentSortKey }
-            .stateIn(viewModelScope, SharingStarted.Lazily, DetailedViewModel.SORT_DEFAULT_KEY),
+            .stateIn(viewModelScope, SharingStarted.Lazily, PlayLineWrapper.SORT_DEFAULT_KEY),
         flow.map { it.isReverse }.stateIn(viewModelScope, SharingStarted.Lazily, false)
     )
 
