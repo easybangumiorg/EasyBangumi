@@ -34,12 +34,11 @@ import com.heyanle.easybangumi4.ui.extension_store.ExtensionStore
 import com.heyanle.easybangumi4.ui.local_play.LocalPlay
 import com.heyanle.easybangumi4.ui.main.Main
 import com.heyanle.easybangumi4.ui.main.history.History
-import com.heyanle.easybangumi4.ui.search_migrate.migrate.CartoonMigrate
-import com.heyanle.easybangumi4.ui.search_migrate.search.Search
 import com.heyanle.easybangumi4.ui.setting.Setting
 import com.heyanle.easybangumi4.ui.setting.SettingPage
 import com.heyanle.easybangumi4.ui.source_config.SourceConfig
 import com.heyanle.easybangumi4.ui.source_manage.SourceManager
+import com.heyanle.easybangumi4.ui.source_migrate.search.Search
 import com.heyanle.easybangumi4.ui.tags.CartoonTag
 import com.heyanle.easybangumi4.utils.jsonTo
 import com.heyanle.easybangumi4.utils.loge
@@ -343,7 +342,7 @@ fun Nav() {
                     contentColor = MaterialTheme.colorScheme.onBackground
                 ) {
                     Search(
-                        defSearchKey = URLDecoder.decode(defSearchKey, "utf-8"),
+                        defWord = URLDecoder.decode(defSearchKey, "utf-8"),
                         defSourceKey = URLDecoder.decode(defSourceKey, "utf-8")
                     )
                 }
@@ -366,7 +365,7 @@ fun Nav() {
                     color = MaterialTheme.colorScheme.background,
                     contentColor = MaterialTheme.colorScheme.onBackground
                 ) {
-                    CartoonMigrate(def = URLDecoder.decode(defSearchKey, "utf-8"), defSourceKey = defSourcesKey)
+                    //CartoonMigrate(def = URLDecoder.decode(defSearchKey, "utf-8"), defSourceKey = defSourcesKey)
                 }
 
 

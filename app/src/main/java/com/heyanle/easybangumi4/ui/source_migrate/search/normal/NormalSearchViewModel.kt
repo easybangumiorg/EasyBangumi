@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.ui.search_migrate.search.searchpage
+package com.heyanle.easybangumi4.ui.source_migrate.search.normal
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -10,35 +10,50 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import com.heyanle.easybangumi4.case.SourceStateCase
 import com.heyanle.easybangumi4.source_api.component.search.SearchComponent
 import com.heyanle.easybangumi4.source_api.entity.CartoonCover
-import com.heyanle.easybangumi4.ui.search_migrate.PagingSearchSource
+import com.heyanle.easybangumi4.ui.search_migrate_old.search.searchpage.SearchPageViewModel
+import com.heyanle.easybangumi4.ui.source_migrate.PagingSearchSource
+import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 
 /**
- * Created by HeYanLe on 2023/3/27 22:57.
- * https://github.com/heyanLE
+ * Created by heyanlin on 2023/12/18.
  */
-class SearchPageViewModel(
-    private val searchComponent: SearchComponent
+class NormalSearchViewModel(
+    private val searchComponent: SearchComponent,
 ) : ViewModel() {
 
+    // 当前搜索的关键字，用于刷新和懒加载判断
     var curKeyWord: String = ""
+
     val searchPagingState = mutableStateOf<Flow<PagingData<CartoonCover>>?>(null)
 
-    fun newSearchKey(searchKey: String) {
-        if (searchKey.isEmpty()) {
-            curKeyWord = ""
-            searchPagingState.value = null
-        } else if (searchKey != curKeyWord) {
-            curKeyWord = searchKey
-            searchPagingState.value = getPager(searchKey).flow.cachedIn(viewModelScope)
+    var isRefreshing = mutableStateOf(false)
 
+    fun newSearchKey(searchKey: String) {
+        viewModelScope.launch {
+            if (curKeyWord == searchKey) {
+                return@launch
+            }
+            if (searchKey.isEmpty()) {
+                curKeyWord = ""
+                searchPagingState.value = null
+                return@launch
+            }
+            curKeyWord = searchKey
+            searchPagingState.value =
+                getPager(searchKey, searchComponent).flow.cachedIn(viewModelScope)
         }
     }
 
-    
-    private fun getPager(keyword: String): Pager<Int, CartoonCover> {
+    private fun getPager(
+        keyword: String,
+        searchComponent: SearchComponent
+    ): Pager<Int, CartoonCover> {
+
         return Pager(
             PagingConfig(pageSize = 10),
             initialKey = searchComponent.getFirstSearchKey(keyword)
@@ -49,23 +64,15 @@ class SearchPageViewModel(
 
 }
 
-class SearchPageViewModelFactory(
+class NormalSearchViewModelFactory(
     private val searchComponent: SearchComponent
 ) : ViewModelProvider.Factory {
-
-    companion object {
-
-        @Composable
-        fun newViewModel(searchComponent: SearchComponent): SearchPageViewModel {
-            return viewModel(factory = SearchPageViewModelFactory(searchComponent))
-        }
-    }
 
     @Suppress("UNCHECKED_CAST")
     @SuppressWarnings("unchecked")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(SearchPageViewModel::class.java))
-            return SearchPageViewModel(searchComponent) as T
+        if (modelClass.isAssignableFrom(NormalSearchViewModel::class.java))
+            return NormalSearchViewModel(searchComponent) as T
         throw RuntimeException("unknown class :" + modelClass.name)
     }
 }
