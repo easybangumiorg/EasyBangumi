@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.ui.search_migrate
+package com.heyanle.easybangumi4.ui.source_migrate
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState

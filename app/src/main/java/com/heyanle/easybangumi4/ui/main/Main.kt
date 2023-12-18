@@ -4,6 +4,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -30,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -43,6 +45,7 @@ import com.heyanle.easybangumi4.ui.main.more.More
 import com.heyanle.easybangumi4.ui.source_manage.SourceManager
 import com.heyanle.easybangumi4.ui.main.star.Star
 import com.heyanle.easybangumi4.utils.isCurPadeMode
+import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.okkv2.core.okkv
 import kotlinx.coroutines.launch
 
@@ -172,6 +175,9 @@ fun Main() {
     val pagerState =
         rememberPagerState(initialPage = if (homePageIndexOkkv >= 0 && homePageIndexOkkv < MainPageItems.size) homePageIndexOkkv else 0,0F) { MainPageItems.size }
 
+    
+
+
     val scope = rememberCoroutineScope()
 
     val vm = viewModel<MainViewModel>()
@@ -185,7 +191,7 @@ fun Main() {
         if(!isPad){
             Column() {
                 HorizontalPager(
-                    userScrollEnabled = false,
+                    userScrollEnabled = true,
                     state = pagerState,
                     modifier = Modifier.weight(1f),
                 ) {
@@ -253,8 +259,10 @@ fun Main() {
 
             }
         }
-
-
+        
+        
+        
+        Text(modifier = Modifier.statusBarsPadding(), text = pagerState.targetPage.toString())
 
     }
 

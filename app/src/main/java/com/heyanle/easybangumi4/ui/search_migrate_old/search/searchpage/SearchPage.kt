@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.ui.search_migrate.search.searchpage
+package com.heyanle.easybangumi4.ui.search_migrate_old.search.searchpage
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -69,7 +69,7 @@ import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.PagingCommon
 import com.heyanle.easybangumi4.ui.common.pagingCommon
 import com.heyanle.easybangumi4.ui.main.star.CoverStarViewModel
-import com.heyanle.easybangumi4.ui.search_migrate.search.SearchViewModel
+import com.heyanle.easybangumi4.ui.search_migrate_old.search.SearchViewModel
 import com.heyanle.easybangumi4.navigationDetailed
 import com.heyanle.easybangumi4.source_api.component.search.SearchComponent
 import com.heyanle.easybangumi4.source_api.entity.CartoonCover
