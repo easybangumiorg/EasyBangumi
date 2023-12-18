@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.ui.search_migrate.search
+package com.heyanle.easybangumi4.ui.search_migrate_old.search
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
@@ -41,7 +41,7 @@ import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.source.LocalSourceBundleController
 import com.heyanle.easybangumi4.ui.common.EmptyPage
 import com.heyanle.easybangumi4.ui.common.TabIndicator
-import com.heyanle.easybangumi4.ui.search_migrate.search.searchpage.SearchPage
+import com.heyanle.easybangumi4.ui.search_migrate_old.search.searchpage.SearchPage
 import kotlinx.coroutines.launch
 
 /**

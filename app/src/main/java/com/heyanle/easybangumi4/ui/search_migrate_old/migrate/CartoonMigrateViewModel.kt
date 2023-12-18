@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.ui.search_migrate.migrate
+package com.heyanle.easybangumi4.ui.search_migrate_old.migrate
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -13,7 +13,7 @@ import androidx.paging.cachedIn
 import com.heyanle.easybangumi4.case.SourceStateCase
 import com.heyanle.easybangumi4.source_api.component.search.SearchComponent
 import com.heyanle.easybangumi4.source_api.entity.CartoonCover
-import com.heyanle.easybangumi4.ui.search_migrate.PagingSearchSource
+import com.heyanle.easybangumi4.ui.source_migrate.PagingSearchSource
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
