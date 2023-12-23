@@ -191,7 +191,7 @@ fun Main() {
         if(!isPad){
             Column() {
                 HorizontalPager(
-                    userScrollEnabled = true,
+                    userScrollEnabled = false,
                     state = pagerState,
                     modifier = Modifier.weight(1f),
                 ) {
@@ -259,11 +259,6 @@ fun Main() {
 
             }
         }
-        
-        
-        
-        Text(modifier = Modifier.statusBarsPadding(), text = pagerState.targetPage.toString())
-
     }
 
 

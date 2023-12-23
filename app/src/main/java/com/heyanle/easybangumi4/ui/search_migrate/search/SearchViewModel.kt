@@ -1,14 +1,12 @@
-package com.heyanle.easybangumi4.ui.source_migrate.search
+package com.heyanle.easybangumi4.ui.search_migrate.search
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.SearchHistoryDao
-import com.heyanle.easybangumi4.source_api.component.search.SearchComponent
 import com.heyanle.easybangumi4.utils.ViewModelOwnerMap
 import com.heyanle.injekt.core.Injekt
 import com.heyanle.okkv2.core.okkv
@@ -55,7 +53,9 @@ class SearchViewModel(
         _searchFlow.update {
             keyword
         }
-        addHistory(keyword)
+        if(keyword.isNotEmpty()){
+            addHistory(keyword)
+        }
     }
 
     private fun addHistory(keyword: String){

@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.ui.source_migrate.search
+package com.heyanle.easybangumi4.ui.search_migrate.search
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -54,8 +54,8 @@ import androidx.compose.ui.unit.sp
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.ui.common.EmptyPage
-import com.heyanle.easybangumi4.ui.source_migrate.search.gather.GatherSearch
-import com.heyanle.easybangumi4.ui.source_migrate.search.normal.NormalSearch
+import com.heyanle.easybangumi4.ui.search_migrate.search.gather.GatherSearch
+import com.heyanle.easybangumi4.ui.search_migrate.search.normal.NormalSearch
 
 /**
  * Created by heyanlin on 2023/12/18.
@@ -238,7 +238,8 @@ fun SearchTopAppBar(
                 placeholder = {
                     Text(
                         style = MaterialTheme.typography.titleLarge,
-                        text = stringResource(id = R.string.please_input_keyword_to_search)
+                        text = stringResource(id = R.string.please_input_keyword_to_search),
+                        maxLines = 1
                     )
                 })
         },
