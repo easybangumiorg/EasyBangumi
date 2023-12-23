@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.ui.source_migrate.search.gather
+package com.heyanle.easybangumi4.ui.search_migrate.search.gather
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -40,7 +40,7 @@ import com.heyanle.easybangumi4.ui.common.CartoonCardWithCover
 import com.heyanle.easybangumi4.ui.common.PagingCommon
 import com.heyanle.easybangumi4.ui.common.pagingCommonHor
 import com.heyanle.easybangumi4.ui.main.star.CoverStarViewModel
-import com.heyanle.easybangumi4.ui.source_migrate.search.SearchViewModel
+import com.heyanle.easybangumi4.ui.search_migrate.search.SearchViewModel
 
 /**
  * Created by heyanlin on 2023/12/18.
