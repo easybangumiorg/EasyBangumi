@@ -38,7 +38,7 @@ import com.heyanle.easybangumi4.ui.setting.Setting
 import com.heyanle.easybangumi4.ui.setting.SettingPage
 import com.heyanle.easybangumi4.ui.source_config.SourceConfig
 import com.heyanle.easybangumi4.ui.source_manage.SourceManager
-import com.heyanle.easybangumi4.ui.source_migrate.search.Search
+import com.heyanle.easybangumi4.ui.search_migrate.search.Search
 import com.heyanle.easybangumi4.ui.tags.CartoonTag
 import com.heyanle.easybangumi4.utils.jsonTo
 import com.heyanle.easybangumi4.utils.loge
