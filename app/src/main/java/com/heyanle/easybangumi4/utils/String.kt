@@ -14,17 +14,22 @@ import com.heyanle.easybangumi4.ui.common.moeSnackBar
 private val regCharSet = setOf<Char>(
     '*', '.', '?', '+', '$', '^', '[', ']', '(', ')', '{', '}', '|', '\\', '/'
 )
-fun String.getMatchReg(): Regex{
-    return buildString {
-        append("(.*)(")
-        append(this@getMatchReg.toCharArray().toList().filter { it != ' ' }.joinToString(")(.*)(") {
-            if (regCharSet.contains(it)) {
-                "\${it}"
-            } else it + ""
+fun String.getMatchReg(): Regex {
+    return runCatching {
+        buildString {
+            append("(.*)(")
+            append(this@getMatchReg.toCharArray().toList().filter { it != ' ' }.joinToString(")(.*)(") {
+                if (regCharSet.contains(it)) {
+                    "\${it}"
+                } else it + ""
 
-        })
-        append(")(.*)")
-    }.toRegex(RegexOption.IGNORE_CASE)
+            })
+            append(")(.*)")
+        }.toRegex(RegexOption.IGNORE_CASE)
+    }.getOrElse {
+        // 出错了就什么都不给你匹配
+        "".toRegex(RegexOption.IGNORE_CASE)
+    }
 }
 
 fun stringRes(resId: Int, vararg formatArgs: Any): String {
