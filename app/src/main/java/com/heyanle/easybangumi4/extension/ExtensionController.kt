@@ -298,8 +298,12 @@ class ExtensionController(
                 Intent.ACTION_PACKAGE_ADDED -> {
                     getPackageNameFromIntent(intent)?.let {
                         // 安装，如果安装的是拓展则刷新一波
-                        if (AppExtensionLoader(context, it).canLoad()) {
-                            scanApp()
+                        try {
+                            if (AppExtensionLoader(context, it).canLoad()) {
+                                scanApp()
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
                         }
                     }
                 }
