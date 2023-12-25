@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.ui.search_migrate.migrate
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.entity.PlayLineWrapper
@@ -11,6 +12,7 @@ import com.heyanle.easybangumi4.source_api.entity.CartoonCover
 import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
 import com.heyanle.easybangumi4.source_api.entity.Episode
 import com.heyanle.easybangumi4.source_api.entity.PlayLine
+import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -24,7 +26,7 @@ import kotlinx.coroutines.yield
  * Created by heyanle on 2023/12/23.
  * https://github.com/heyanLE
  */
-class MigrateItemVIewModel(
+class MigrateItemViewModel(
     private val cartoonInfo: CartoonInfo,
     private val defSources: List<String>,
 ) : ViewModel() {
@@ -250,4 +252,18 @@ class MigrateItemVIewModel(
     }
 
 
+}
+
+class MigrateItemViewModelFactory(
+    private val cartoonInfo: CartoonInfo,
+    private val defSources: List<String>,
+) : ViewModelProvider.Factory {
+
+    @Suppress("UNCHECKED_CAST")
+    @SuppressWarnings("unchecked")
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(MigrateItemViewModel::class.java))
+            return MigrateItemViewModel(cartoonInfo, defSources) as T
+        throw RuntimeException("unknown class :" + modelClass.name)
+    }
 }
