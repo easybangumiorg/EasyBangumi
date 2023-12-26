@@ -27,9 +27,12 @@ jobs:
           keyStorePassword: ${{ secrets.KEY_STORE_PWD }}
           keyPassword: ${{ secrets.KEY_PWD }}
       - name: rename-apk
-        run: mv app/build/outputs/apk/release/app-release-unsigned-signed.apk easybangumi-${{ github.ref_name }}.apk
+        run: |
+          mv app/build/outputs/apk/release/app-universal-release-unsigned-signed.apk easybangumi-universal-${{ github.ref_name }}.apk
+          mv app/build/outputs/apk/release/app-arm64-v8a-release-unsigned-signed.apk easybangumi-arm64-v8a-${{ github.ref_name }}.apk
+          mv app/build/outputs/apk/release/app-armeabi-v7a-release-unsigned-signed.apk easybangumi-armeabi-v7a-${{ github.ref_name }}.apk
       - name: Release
         run: |
-          gh release create -d ${{ github.ref_name }} kan-animation-${{ github.ref_name }}.apk
+          gh release create -d ${{ github.ref_name }} easybangumi-*-${{ github.ref_name }}.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
