@@ -7,6 +7,12 @@ import com.heyanle.easybangumi4.utils.toJson
 import com.heyanle.easybangumi4.cartoon_download.entity.DownloadItem
 import com.heyanle.easybangumi4.cartoon_download.step.BaseStep
 import com.heyanle.easybangumi4.cartoon_download.utils.MediaScanUtils
+import com.heyanle.easybangumi4.navControllerRef
+import com.heyanle.easybangumi4.navigationSetting
+import com.heyanle.easybangumi4.ui.common.MoeDialogData
+import com.heyanle.easybangumi4.ui.common.dismiss
+import com.heyanle.easybangumi4.ui.common.show
+import com.heyanle.easybangumi4.ui.setting.SettingPage
 import com.heyanle.injekt.core.Injekt
 import com.heyanle.okkv2.core.okkv
 import kotlinx.coroutines.Dispatchers
@@ -123,6 +129,7 @@ class CartoonDownloadController(
 
     private fun save() {
         _downloadItem.value?.let {
+            rootFolder.mkdirs()
             downloadItemJsonTemp.delete()
             downloadItemJsonTemp.createNewFile()
             downloadItemJsonTemp.writeText(it.toJson())
@@ -142,21 +149,21 @@ class CartoonDownloadController(
     }
 
     fun showDownloadHelpDialog(){
-//        MoeDialogData(
-//            text = """1、下载后的视频和原来的番剧没有强关联，从普通页面中依然是从网络播放，需要从下载记录中进入才会播放本地文件。
-//
-//2、下载将经历 解析 下载 转码 复制四个步骤，其中转码步骤会将视频转码成 mp4 。
-//
-//3、可在下载设置界面中设置下载文件的路径，当选择的是公共目录时会同步刷新到相册。""",
-//            title = "下载功能须知",
-//            confirmLabel = "下载设置",
-//            onConfirm = {
-//                navControllerRef?.get()?.navigationSetting(SettingPage.Download)
-//            },
-//            onDismiss = {
-//                it.dismiss()
-//            }
-//        ).show()
+        MoeDialogData(
+            text = """1、下载后的视频和原来的番剧没有强关联，从普通页面中依然是从网络播放，需要从下载记录中进入才会播放本地文件。
+
+2、下载将经历 解析 下载 转码 复制四个步骤，其中转码步骤会将视频转码成 mp4 。
+
+3、可在下载设置界面中设置下载文件的路径，当选择的是公共目录时会同步刷新到相册。""",
+            title = "下载功能须知",
+            confirmLabel = "下载设置",
+            onConfirm = {
+                navControllerRef?.get()?.navigationSetting(SettingPage.Download)
+            },
+            onDismiss = {
+                it.dismiss()
+            }
+        ).show()
     }
 
 

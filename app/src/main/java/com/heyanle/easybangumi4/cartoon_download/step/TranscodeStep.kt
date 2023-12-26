@@ -7,6 +7,8 @@ import com.heyanle.easybangumi4.cartoon_download.CartoonDownloadController
 import com.heyanle.easybangumi4.cartoon_download.entity.DownloadItem
 import com.heyanle.easybangumi4.cartoon_download.utils.M3U8Utils
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
+import com.heyanle.easybangumi4.utils.EasyMemoryInfo
+import com.heyanle.easybangumi4.utils.getMemoryInfo
 import com.heyanle.easybangumi4.utils.stringRes
 import com.jeffmony.m3u8library.VideoProcessManager
 import com.jeffmony.m3u8library.listener.IVideoTransformListener
@@ -14,6 +16,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import java.io.File
+import java.io.IOException
 
 /**
  * Created by heyanlin on 2023/10/2.
@@ -33,32 +36,38 @@ class TranscodeStep(
 
     override fun invoke(downloadItem: DownloadItem) {
         mainScope.launch(Dispatchers.IO) {
-            if (!decrypt(downloadItem)) {
-                error(downloadItem, stringRes(com.heyanle.easy_i18n.R.string.decrypt_error))
-                return@launch
+            try {
+                if (!decrypt(downloadItem)) {
+                    error(downloadItem, stringRes(com.heyanle.easy_i18n.R.string.decrypt_error))
+                    return@launch
+                }
+                if (!ffmpeg(
+                        downloadItem = downloadItem,
+                        onError = {
+                            it?.moeSnackBar()
+                            error(
+                                downloadItem,
+                                it?.message ?: stringRes(com.heyanle.easy_i18n.R.string.transcode_error)
+                            )
+                        },
+                        onCompletely = {
+                            completely(downloadItem)
+                        }
+                    )
+                ) {
+                    error(downloadItem, stringRes(com.heyanle.easy_i18n.R.string.transcode_error))
+                    return@launch
+                }
+            }catch (e: Exception){
+                e.printStackTrace()
+                error(downloadItem, stringRes(R.string.transcode_error) + e.message)
             }
-            if (!ffmpeg(
-                    downloadItem = downloadItem,
-                    onError = {
-                        it?.moeSnackBar()
-                        error(
-                            downloadItem,
-                            it?.message ?: stringRes(com.heyanle.easy_i18n.R.string.transcode_error)
-                        )
-                    },
-                    onCompletely = {
-                        completely(downloadItem)
-                    }
-                )
-            ) {
-                error(downloadItem, stringRes(com.heyanle.easy_i18n.R.string.transcode_error))
-                return@launch
-            }
+
         }
     }
 
     override fun onRemove(downloadItem: DownloadItem) {
-        cartoonDownloadController.updateDownloadItem(downloadItem.uuid){
+        cartoonDownloadController.updateDownloadItem(downloadItem.uuid) {
             it.copy(isRemoved = true)
         }
     }
@@ -90,38 +99,59 @@ class TranscodeStep(
         val writer = target.writer(Charsets.UTF_8).buffered()
         val tsFiles = arrayListOf<File>()
         val targetTsFiles = arrayListOf<File>()
-        while (it.hasNext()) {
-            val line = it.next()
-            if (line.startsWith("#EXTINF")) {
-                if (!it.hasNext()) {
-                    return false
-                } else {
-                    val ts = it.next()
-                    val file = File(ts)
-                    val targetFile = File("${ts}h")
-                    // 大于 500M 的就不走自行解密了，防止 OOM，直接丢 ffmpeg 转
-                    if (file.length() >= 500 * 1024 * 1024) {
-                        realTarget.delete()
-                        localM3U8.renameTo(realTarget)
-                        return true
+        val memoryInfo = EasyMemoryInfo(context)
+        memoryInfo.update()
+        // 内存不足直接跳过
+        if(memoryInfo.lowMemory){
+            realTarget.delete()
+            localM3U8.renameTo(realTarget)
+            return true
+        }
+        try {
+            while (it.hasNext()) {
+                val line = it.next()
+                if (line.startsWith("#EXTINF")) {
+                    if (!it.hasNext()) {
+                        return false
+                    } else {
+                        val ts = it.next()
+                        val file = File(ts)
+                        val targetFile = File("${ts}h")
+                        // 大于 500M 的就不走自行解密了，防止 OOM，直接丢 ffmpeg 转
+                        // 出现了90M 就 oom 的外网实例，这里改成如果大于当前可用内存 80% 以上就不解
+                        memoryInfo.update()
+                        if ( memoryInfo.availMem * 0.8 <= file.length()
+                            || (Runtime.getRuntime()?.freeMemory()?:Long.MAX_VALUE)*0.8 <= file.length() ) {
+                            realTarget.delete()
+                            localM3U8.renameTo(realTarget)
+                            return true
+                        }
+                        tsFiles.add(file)
+                        // ts -> tsh
+                        targetTsFiles.add(targetFile)
+                        writer.write(line)
+                        writer.newLine()
+                        writer.write(targetFile.absolutePath)
+                        writer.newLine()
                     }
-                    tsFiles.add(file)
-                    // ts -> tsh
-                    targetTsFiles.add(targetFile)
-
+                } else if (line.startsWith("#EXT-X-KEY")) {
+                    // 新的 m3u8 文件不用解密了
+                    continue
+                } else {
                     writer.write(line)
                     writer.newLine()
-                    writer.write(targetFile.absolutePath)
-                    writer.newLine()
                 }
-
-            } else if (line.startsWith("#EXT-X-KEY")) {
-                // 新的 m3u8 文件不用解密了
-                continue
-            } else {
-                writer.write(line)
-                writer.newLine()
             }
+        } catch (e: OutOfMemoryError) {
+            e.printStackTrace()
+            // oom 了 也放弃解密
+            realTarget.delete()
+            localM3U8.renameTo(realTarget)
+            return true
+        }catch (e: IOException) {
+            e.printStackTrace()
+            // 解密失败
+            return false
         }
         writer.flush()
 
@@ -147,7 +177,7 @@ class TranscodeStep(
             val parent = tsh.parentFile ?: return false
 
             val tshTemp = File(parent, tsh.name + ".temp")
-            // ts 文件不在 tsh 文件存在 tsh.temp 文件不存在这说明该文件解密过了，直接跳过
+            // ts 文件不在 tsh && 文件存在 && tsh.temp 文件不存在这说明该文件解密过了，直接跳过
             if (!ts.exists() && tsh.exists() && !tshTemp.exists()) {
                 continue
             }
@@ -167,7 +197,7 @@ class TranscodeStep(
             ) else s
             // 文件头伪装成 png
             val rr = res ?: s
-            if(rr.size >= 4){
+            if (rr.size >= 4) {
                 if (rr[0].toInt() == 0x89 && rr[1].toInt() == 0x50 && rr[2].toInt() == 0x4E && rr[3].toInt() == 0x47) {
                     rr[0] = 0xff.toByte()
                     rr[1] = 0xff.toByte()
