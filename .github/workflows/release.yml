@@ -35,4 +35,4 @@ jobs:
         run: |
           gh release create -d ${{ github.ref_name }} easybangumi-*-${{ github.ref_name }}.apk
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
