@@ -146,6 +146,9 @@
 
     <string name="migrating">数据升级中</string>
 
+    <string name="cartoon_migrate">番剧迁移</string>
+
+    <string name="help">帮助</string>
     <string name="migrate_support_one">一次只能迁移一部番哦！</string>
     <string name="long_press_to_star">长按可快速收藏</string>
 
