@@ -1,0 +1,118 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "18ad2370cd24c3ddfb7a926f84df9e84",
+    "entities": [
+      {
+        "tableName": "CartoonDownload",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`downloadId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `id` TEXT NOT NULL, `url` TEXT NOT NULL, `source` TEXT NOT NULL, `name` TEXT NOT NULL, `cover` TEXT NOT NULL, `decodeType` INTEGER NOT NULL, `downloadUri` TEXT NOT NULL, `sourceName` TEXT NOT NULL, `playLineLabel` TEXT NOT NULL, `episodeLabel` TEXT NOT NULL, `taskId` INTEGER NOT NULL, `status` INTEGER NOT NULL, `errorMsg` TEXT NOT NULL, `createTime` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "downloadId",
+            "columnName": "downloadId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "url",
+            "columnName": "url",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "source",
+            "columnName": "source",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cover",
+            "columnName": "cover",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "decodeType",
+            "columnName": "decodeType",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "downloadUri",
+            "columnName": "downloadUri",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceName",
+            "columnName": "sourceName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "playLineLabel",
+            "columnName": "playLineLabel",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "episodeLabel",
+            "columnName": "episodeLabel",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "taskId",
+            "columnName": "taskId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "errorMsg",
+            "columnName": "errorMsg",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createTime",
+            "columnName": "createTime",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "downloadId"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '18ad2370cd24c3ddfb7a926f84df9e84')"
+    ]
+  }
+}
