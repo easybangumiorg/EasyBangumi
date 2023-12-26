@@ -1,6 +1,5 @@
 
 import com.heyanle.buildsrc.Android
-import com.heyanle.buildsrc.Config
 import com.heyanle.buildsrc.RoomSchemaArgProvider
 import com.heyanle.buildsrc.project
 
