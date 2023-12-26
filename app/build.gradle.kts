@@ -34,11 +34,13 @@ android {
         }
         buildConfigField(
             "String",
-            "APP_CENTER_SECRET",
-            publishingProps.getProperty(
-                "appcenter.secret",
-                System.getenv("APPCENTER_SECRET")
-            )?:""
+            "app_center_secret",
+            "\"${
+                publishingProps.getProperty(
+                    "APP_CENTER_SECRET",
+                    System.getenv("APPCENTER_SECRET")
+                )
+            }\""
         )
 
         ksp {
@@ -46,13 +48,23 @@ android {
             arg(RoomSchemaArgProvider(File(projectDir, "schemas")))
         }
 
-        ndk{
-            // 打包生成的 APK 文件指挥包含 ARM 指令集的动态库
-            abiFilters += "arm64-v8a"
-            abiFilters += "armeabi-v7a"
-            //abiFilters.addAll(arrayOf("armeabi", "armeabi-v7a" , "arm64-v8a", "x86", "x86_64"))
-        }
+    }
 
+    splits {
+
+        // Configures multiple APKs based on ABI.
+        abi {
+            // Enables building multiple APKs per ABI.
+            isEnable = true
+            // By default all ABIs are included, so use reset() and include to specify that we only
+            // want APKs for x86 and x86_64.
+            // Resets the list of ABIs that Gradle should create APKs for to none.
+            reset()
+            // Specifies a list of ABIs that Gradle should create APKs for.
+            include("arm64-v8a", "armeabi-v7a")
+            // Specifies that we do not want to also generate a universal APK that includes all ABIs.
+            isUniversalApk = false
+        }
     }
 
     sourceSets {
