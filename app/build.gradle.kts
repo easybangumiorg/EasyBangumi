@@ -34,9 +34,9 @@ android {
         }
         buildConfigField(
             "String",
-            "app_center_secret",
+            "APP_CENTER_SECRET",
             publishingProps.getProperty(
-                "APP_CENTER_SECRET",
+                "appcenter.secret",
                 System.getenv("APPCENTER_SECRET")
             )?:""
         )
