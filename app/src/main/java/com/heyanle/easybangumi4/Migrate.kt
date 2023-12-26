@@ -150,13 +150,6 @@ object Migrate {
         if (lastVersionCode < curVersionCode) {
 
             scope.launch(Dispatchers.IO) {
-                // 73
-                if (lastVersionCode < 73) {
-
-                    // 数据库变更
-                    migrateCartoonDatabase73(AppDatabase.build(context), CacheDatabase.build(context), cartoonDatabase)
-                }
-
                 // 65
                 if (lastVersionCode < 65) {
                     // preference 架构变更
@@ -190,12 +183,18 @@ object Migrate {
                     sourcePreferences.configs.set(map)
                 }
 
+                // 73
+                if (lastVersionCode < 73) {
+
+                    // 数据库变更
+                    migrateCartoonDatabase73(AppDatabase.build(context), CacheDatabase.build(context), cartoonDatabase)
+                }
+
                 androidPreferenceStore.getInt("last_version_code", 0).set(curVersionCode)
                 _isMigrating.update {
                     false
                 }
             }
-
 
         } else {
             _isMigrating.update {

@@ -10,6 +10,7 @@ import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
 import com.heyanle.easybangumi4.utils.ViewModelOwnerMap
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -33,7 +34,8 @@ class MigrateViewModel(
         val infoList: List<CartoonInfo> = emptyList(),
         val selection: Set<CartoonInfo> = emptySet(),
     )
-    private val infoListFlow = MutableStateFlow<MigrateState>(MigrateState())
+    private val _infoListFlow = MutableStateFlow<MigrateState>(MigrateState())
+    val infoListFlow = _infoListFlow.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -43,7 +45,7 @@ class MigrateViewModel(
                 .map {
                     it.data
                 }
-            infoListFlow.update {
+            _infoListFlow.update {
                 it.copy(
                     false,
                     infoList
@@ -60,6 +62,16 @@ class MigrateViewModel(
         ownerMap.clear()
     }
 
+
+    fun selectChange(cartoonInfo: CartoonInfo){}
+
+    fun selectLongPress(cartoonInfo: CartoonInfo){}
+
+    fun selectExit(cartoonInfo: CartoonInfo){}
+
+    fun selectAll() {}
+
+    fun selectInvert() {}
 
 }
 
