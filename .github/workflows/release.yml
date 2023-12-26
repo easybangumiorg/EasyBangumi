@@ -15,7 +15,7 @@ jobs:
           java-version: 17
       - name: Build
         run: |
-          chmod a+x ./gradlew
+          chmod +x ./gradlew
           ./gradlew :app:assemble
       - name: sign-apk
         uses: r0adkll/sign-android-release@v1
