@@ -1,13 +1,19 @@
 
 import com.heyanle.buildsrc.Android
-import com.heyanle.buildsrc.Config
 import com.heyanle.buildsrc.RoomSchemaArgProvider
-import com.heyanle.buildsrc.project
+import java.util.Properties
 
 plugins {
     alias(build.plugins.android.application)
     alias(build.plugins.kotlin.android)
     alias(build.plugins.ksp)
+}
+
+val publishingProps = Properties()
+runCatching {
+    publishingProps.load(project.rootProject.file("publishing/publishing.properties").inputStream())
+}.onFailure {
+    // it.printStackTrace()
 }
 
 android {
@@ -26,11 +32,13 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
-
         buildConfigField(
             "String",
-            Config.APP_CENTER_SECRET,
-            "\"${Config.getPrivateValue(Config.APP_CENTER_SECRET)}\""
+            "app_center_secret",
+            publishingProps.getProperty(
+                "APP_CENTER_SECRET",
+                System.getenv("APPCENTER_SECRET")
+            )?:""
         )
 
         ksp {
