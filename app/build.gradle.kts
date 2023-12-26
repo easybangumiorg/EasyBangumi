@@ -63,7 +63,7 @@ android {
             // Specifies a list of ABIs that Gradle should create APKs for.
             include("arm64-v8a", "armeabi-v7a")
             // Specifies that we do not want to also generate a universal APK that includes all ABIs.
-            isUniversalApk = false
+            isUniversalApk = true
         }
     }
 
