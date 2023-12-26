@@ -1,5 +1,4 @@
 
-import com.heyanle.buildsrc.implementation
 
 plugins {
     alias(build.plugins.android.library)
@@ -37,7 +36,6 @@ android {
 
 dependencies {
     implementation(libs.bundles.cling)
-    implementation("org.fourthline.cling:cling-support:${com.heyanle.buildsrc.Version.cling}")
     //jetty()
     //servlet()
     implementation(files("libs/javax.servlet-3.0.0.v201103241009.jar"))
