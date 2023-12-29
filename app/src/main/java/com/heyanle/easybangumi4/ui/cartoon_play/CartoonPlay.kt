@@ -219,80 +219,87 @@ fun CartoonPlay(
             )
         }) {
 
-        if (detailState.isLoading) {
-            LoadingPage(
-                modifier = Modifier.fillMaxSize()
-            )
-        } else if (detailState.isError || detailState.cartoonInfo == null) {
-            ErrorPage(
-                modifier = Modifier.fillMaxSize(),
-                errorMsg = detailState.errorMsg.ifEmpty { detailState.throwable?.message ?: "" },
-                clickEnable = true,
-                onClick = {
-                    detailedVM.load()
-                },
-                other = { Text(text = stringResource(id = R.string.click_to_retry)) }
-            )
-        } else {
-            CartoonPlayDetailed(
-                cartoon = detailState.cartoonInfo,
-                playLines = detailState.cartoonInfo.playLineWrapper,
-                selectLineIndex = playVM.selectedLineIndex,
-                playingPlayLine = playState?.playLine,
-                playingEpisode = playState?.episode,
-                showPlayLine = detailState.cartoonInfo.isShowLine,
-                listState = lazyGridState,
-                onLineSelect = {
-                    playVM.selectedLineIndex = it
-                },
-                onEpisodeClick = { line, epi ->
-                    playVM.changePlay(detailState.cartoonInfo, line, epi)
-                },
-                isStar = detailState.cartoonInfo.starTime > 0,
-                onStar = {
-                    detailedVM.setCartoonStar(it, detailState.cartoonInfo)
-                },
-                sortState = detailedVM.sortState,
-                onSearch = {
-                    nav.navigationSearch(
-                        detailState.cartoonInfo.name,
-                        detailState.cartoonInfo.source
-                    )
-                },
-                onWeb = {
-                    runCatching {
-                        detailState.cartoonInfo.url.openUrl()
-                    }.onFailure {
-                        it.printStackTrace()
-                    }
-                },
-                onDlna = {
-                    nav.navigationDlna(
-                        CartoonSummary(
-                            detailState.cartoonInfo.id,
-                            detailState.cartoonInfo.source,
-                            detailState.cartoonInfo.url
-                        ),
-                        detailState.cartoonInfo.playLineWrapper.indexOf(playState?.playLine) ?: -1,
-                        playState?.playLine?.playLine?.episode?.indexOf(playState.episode) ?: -1
-                    )
-                },
-                onDownload = { playLine, episodes ->
-                    stringRes(R.string.add_download_completely).moeSnackBar(
-                        confirmLabel = stringRes(R.string.click_to_view),
-                        onConfirm = {
-                            nav.navigate(DOWNLOAD)
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.onBackground
+        ) {
+            if (detailState.isLoading) {
+                LoadingPage(
+                    modifier = Modifier.fillMaxSize()
+                )
+            } else if (detailState.isError || detailState.cartoonInfo == null) {
+                ErrorPage(
+                    modifier = Modifier.fillMaxSize(),
+                    errorMsg = detailState.errorMsg.ifEmpty { detailState.throwable?.message ?: "" },
+                    clickEnable = true,
+                    onClick = {
+                        detailedVM.load()
+                    },
+                    other = { Text(text = stringResource(id = R.string.click_to_retry)) }
+                )
+            } else {
+                CartoonPlayDetailed(
+                    cartoon = detailState.cartoonInfo,
+                    playLines = detailState.cartoonInfo.playLineWrapper,
+                    selectLineIndex = playVM.selectedLineIndex,
+                    playingPlayLine = playState?.playLine,
+                    playingEpisode = playState?.episode,
+                    showPlayLine = detailState.cartoonInfo.isShowLine,
+                    listState = lazyGridState,
+                    onLineSelect = {
+                        playVM.selectedLineIndex = it
+                    },
+                    onEpisodeClick = { line, epi ->
+                        playVM.changePlay(detailState.cartoonInfo, line, epi)
+                    },
+                    isStar = detailState.cartoonInfo.starTime > 0,
+                    onStar = {
+                        detailedVM.setCartoonStar(it, detailState.cartoonInfo)
+                    },
+                    sortState = detailedVM.sortState,
+                    onSearch = {
+                        nav.navigationSearch(
+                            detailState.cartoonInfo.name,
+                            detailState.cartoonInfo.source
+                        )
+                    },
+                    onWeb = {
+                        runCatching {
+                            detailState.cartoonInfo.url.openUrl()
+                        }.onFailure {
+                            it.printStackTrace()
                         }
-                    )
-                    cartoonDownloadDispatcher.newDownload(detailState.cartoonInfo, episodes.map {
-                        playLine.playLine to it
-                    })
-                },
-                onSortChange = { sortKey, isReverse ->
-                    detailedVM.setCartoonSort(sortKey, isReverse, detailState.cartoonInfo)
-                }
-            )
+                    },
+                    onDlna = {
+                        nav.navigationDlna(
+                            CartoonSummary(
+                                detailState.cartoonInfo.id,
+                                detailState.cartoonInfo.source,
+                                detailState.cartoonInfo.url
+                            ),
+                            detailState.cartoonInfo.playLineWrapper.indexOf(playState?.playLine) ?: -1,
+                            playState?.playLine?.playLine?.episode?.indexOf(playState.episode) ?: -1
+                        )
+                    },
+                    onDownload = { playLine, episodes ->
+                        stringRes(R.string.add_download_completely).moeSnackBar(
+                            confirmLabel = stringRes(R.string.click_to_view),
+                            onConfirm = {
+                                nav.navigate(DOWNLOAD)
+                            }
+                        )
+                        cartoonDownloadDispatcher.newDownload(detailState.cartoonInfo, episodes.map {
+                            playLine.playLine to it
+                        })
+                    },
+                    onSortChange = { sortKey, isReverse ->
+                        detailedVM.setCartoonSort(sortKey, isReverse, detailState.cartoonInfo)
+                    }
+                )
+            }
         }
+
     }
 }
 
