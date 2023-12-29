@@ -3,6 +3,7 @@ package com.heyanle.easybangumi4
 import android.app.Activity
 import android.app.Application
 import android.util.Log
+import android.widget.Toast
 import com.arialyy.aria.core.Aria
 import com.heyanle.easy_crasher.CrashHandler
 import com.heyanle.easybangumi4.cartoon.CartoonModule
@@ -13,6 +14,7 @@ import com.heyanle.easybangumi4.extension.ExtensionModule
 import com.heyanle.easybangumi4.case.CaseModule
 import com.heyanle.easybangumi4.setting.SettingModule
 import com.heyanle.easybangumi4.source.SourceModule
+import com.heyanle.easybangumi4.ui.common.moeDialog
 import com.heyanle.easybangumi4.utils.AppCenterManager
 import com.heyanle.easybangumi4.utils.exo_ssl.CropUtil
 import com.heyanle.easybangumi4.utils.exo_ssl.TrustAllHostnameVerifier
@@ -98,11 +100,12 @@ object Scheduler {
      * 初始化 App Center
      */
     private fun initAppCenter(application: Application){
+        Toast.makeText(application, BuildConfig.APP_CENTER_SECRET, Toast.LENGTH_SHORT).show()
         if (!BuildConfig.DEBUG) {
             kotlin.runCatching {
                 // https://appcenter.ms
                 val sc = BuildConfig.APP_CENTER_SECRET
-                Log.d("BangumiApp", "app center secret -> $sc")
+                Log.i("BangumiApp", "app center secret -> $sc")
                 if (sc.isNotEmpty()) {
                     AppCenter.start(
                         application, sc,
