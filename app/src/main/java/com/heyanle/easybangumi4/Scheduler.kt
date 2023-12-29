@@ -100,7 +100,6 @@ object Scheduler {
      * 初始化 App Center
      */
     private fun initAppCenter(application: Application){
-        Toast.makeText(application, BuildConfig.APP_CENTER_SECRET, Toast.LENGTH_SHORT).show()
         if (!BuildConfig.DEBUG) {
             kotlin.runCatching {
                 // https://appcenter.ms
