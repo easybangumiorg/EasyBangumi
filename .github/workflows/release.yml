@@ -19,7 +19,7 @@ jobs:
           chmod +x ./gradlew
           ./gradlew :app:assemble
         env:
-          APPCENTER_SECRET: ${{APPCENTER_SECRET}}
+          APPCENTER_SECRET: ${{ secrets.APPCENTER_SECRET }}
       - name: sign-apk
         uses: r0adkll/sign-android-release@v1
         with:
