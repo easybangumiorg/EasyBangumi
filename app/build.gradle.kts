@@ -42,6 +42,7 @@ android {
                 )
             }\""
         )
+        println("heyanlin ${System.getenv("APPCENTER_SECRET")}")
 
         ksp {
             arg("room.generateKotlin", "true")
