@@ -60,10 +60,10 @@ interface CartoonInfoDao {
 
 
     // history
-    @Query("SELECT * FROM cartooninfo WHERE lastHistoryTime>0 ORDER BY lastUpdateTime DESC")
+    @Query("SELECT * FROM cartooninfo WHERE lastHistoryTime>0 ORDER BY lastHistoryTime DESC")
     fun flowAllHistory(): Flow<List<CartoonInfo>>
 
-    @Query("SELECT * FROM cartooninfo WHERE lastHistoryTime>0 ORDER BY lastUpdateTime DESC")
+    @Query("SELECT * FROM cartooninfo WHERE lastHistoryTime>0 ORDER BY lastHistoryTime DESC")
     fun getAllHistory(): List<CartoonInfo>
 
 
