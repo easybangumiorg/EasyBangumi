@@ -119,12 +119,12 @@ fun CartoonPlay(
 }
 
 val speedConfig = linkedMapOf(
-    "0.5X" to 0.5f,
-    "0.75X" to 0.75f,
-    "1.0X" to 1f,
-    "1.25X" to 1.25f,
-    "1.5X" to 1.5f,
     "2.0X" to 2f,
+    "1.5X" to 1.5f,
+    "1.25X" to 1.25f,
+    "1.0X" to 1f,
+    "0.75X" to 0.75f,
+    "0.5X" to 0.5f,
 )
 
 

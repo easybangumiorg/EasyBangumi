@@ -1,24 +1,24 @@
 [versions]
-activity_ktx = "1.8.0"
+activity_ktx = "1.8.2"
 fragment_ktx = "1.6.2"
 core_ktx = "1.12.0"
 appcompat = "1.6.1"
-annotation = "1.7.0"
+annotation = "1.7.1"
 lifecycle_view_model = "2.6.2"
 lifecycle_runtime_ktx = "2.6.2"
 test_junit = "1.1.5"
-webkit = "1.8.0"
+webkit = "1.9.0"
 espresso_core = "3.5.1"
 
-room = "2.6.0"
+room = "2.6.1"
 
-window = "1.2.0-rc01"
+window = "1.2.0"
 preference = "1.2.1"
 
 paging = "3.2.1"
-media = "1.6.0"
+media = "1.7.0"
 
-google_material = "1.10.0"
+google_material = "1.11.0"
 [libraries]
 core_ktx = { module = "androidx.core:core-ktx", version.ref = "core_ktx" }
 appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }

@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -36,9 +38,12 @@ import androidx.compose.material.icons.filled.BatteryChargingFull
 import androidx.compose.material.icons.filled.BatteryFull
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -87,7 +92,7 @@ fun VideoFloat(
     val ctx = LocalContext.current as Activity
 
     LaunchedEffect(key1 = playingState) {
-        if(playingState.isError) {
+        if (playingState.isError) {
             controlVM.onFullScreen(false, false, ctx)
         }
     }
@@ -97,7 +102,7 @@ fun VideoFloat(
         }
     }
 
-    if(playingState.isLoading){
+    if (playingState.isLoading) {
         Box {
             LoadingPage(
                 modifier = Modifier
@@ -126,7 +131,7 @@ fun VideoFloat(
                 )
             }
         }
-    }else if(playingState.isError){
+    } else if (playingState.isError) {
         ErrorPage(
             modifier = Modifier
                 .fillMaxSize()
@@ -141,7 +146,7 @@ fun VideoFloat(
                 cartoonPlayingViewModel.tryRefresh()
             }
         )
-    }else if(playingState.isPlaying){
+    } else if (playingState.isPlaying) {
         if (controlVM.controlState == ControlViewModel.ControlState.Ended) {
             Box(
                 modifier = Modifier.fillMaxSize()
@@ -220,7 +225,7 @@ fun VideoFloat(
                             .clickable {
                                 controlVM.setSpeed(it.value)
                             }
-                            .padding(16.dp, 8.dp),
+                            .padding(16.dp, 16.dp),
                         color = if (controlVM.curSpeed == it.value) MaterialTheme.colorScheme.primary else Color.White
                     )
                 }
@@ -229,9 +234,7 @@ fun VideoFloat(
     }
 
 
-
-
-    val playLine =  playState.playLine
+    val playLine = playState.playLine
     // 选集
     AnimatedVisibility(
         showEpisodeWin.value && controlVM.isFullScreen,
@@ -244,9 +247,7 @@ fun VideoFloat(
             modifier = Modifier
                 .fillMaxSize()
                 .clickable(
-                    onClick = {
-                        showEpisodeWin.value = false
-                    },
+                    onClick = { showEpisodeWin.value = false },
                     indication = null,
                     interactionSource = remember {
                         MutableInteractionSource()
@@ -263,24 +264,31 @@ fun VideoFloat(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                for (i in 0 until playLine.sortedEpisodeList.size) {
-                    val index = i
-                    val s = playLine.sortedEpisodeList[index]
-                    Text(
-                        textAlign = TextAlign.Center,
-                        text = s.label,
+                playLine.sortedEpisodeList.forEach {
+                    val checked = playState.episode == it
+                    val color = if (checked) MaterialTheme.colorScheme.primary
+                    else Color.White
+                    OutlinedButton(
+                        onClick = {
+                            cartoonPlayViewModel.changePlay(
+                                playState.cartoonSummary,
+                                playLine,
+                                it
+                            )
+                        },
+                        shape = ShapeDefaults.Small,
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = color),
+                        border = if (checked) BorderStroke(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        else ButtonDefaults.outlinedButtonBorder,
                         modifier = Modifier
-                            .defaultMinSize(180.dp, Dp.Unspecified)
-                            .clickable {
-                                cartoonPlayViewModel.changePlay(
-                                    playState.cartoonSummary,
-                                    playLine,
-                                    playLine.sortedEpisodeList[i]
-                                )
-                            }
-                            .padding(16.dp, 8.dp),
-                        color = if (playState.episode == s) MaterialTheme.colorScheme.primary else Color.White
-                    )
+                            .fillMaxWidth(0.25f)
+                            .padding(horizontal = 8.dp)
+                    ) {
+                        Text(it.label)
+                    }
                 }
             }
         }
@@ -302,7 +310,8 @@ fun VideoControl(
         Box(
             Modifier
                 .fillMaxSize()
-                .background(Color.Black)) {
+                .background(Color.Black)
+        ) {
             IconButton(onClick = {
                 nav.popBackStack()
             }) {
@@ -365,20 +374,20 @@ fun VideoControl(
                         modifier = Modifier
                             .clip(RoundedCornerShape(4.dp))
                             .clickable {
-                                showSpeedWin.value = true
+                                showEpisodeWin.value = true
                             }
                             .padding(8.dp),
-                        text = stringResource(id = R.string.speed),
+                        text = stringResource(id = R.string.episode),
                         color = Color.White
                     )
                     Text(
                         modifier = Modifier
                             .clip(RoundedCornerShape(4.dp))
                             .clickable {
-                                showEpisodeWin.value = true
+                                showSpeedWin.value = true
                             }
                             .padding(8.dp),
-                        text = stringResource(id = R.string.episode),
+                        text = stringResource(id = R.string.speed),
                         color = Color.White
                     )
                 }
