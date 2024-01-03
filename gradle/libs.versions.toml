@@ -11,12 +11,12 @@ okkv2 = "1.3.5"
 junit = "4.13.2"
 
 exoplayer = "2.19.0" # 使用 media 里的
-easyplayer2 = "1.2.9"
+easyplayer2 = "1.2.10"
 
 accompanist = "0.31.2-alpha"
-navigation_compose = "2.7.5"
-coil = "2.4.0"
-appcenter = "5.0.2"
+navigation_compose = "2.7.6"
+coil = "2.5.0"
+appcenter = "5.0.4"
 commons_text = "1.10.0"
 cling = "2.1.2"
 
@@ -29,7 +29,7 @@ core-ktx = "1.12.0"
 androidx-test-ext-junit = "1.1.5"
 espresso-core = "3.5.1"
 appcompat = "1.6.1"
-material = "1.10.0"
+material = "1.11.0"
 
 ffmpeg-kit = "6.0"
 
@@ -41,7 +41,7 @@ moshi = "1.14.0"
 
 koin = "3.5.0"
 agp = "8.2.0"
-kotlin = "1.9.0"
+kotlin = "1.9.21"
 [libraries]
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 okhttp3 = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp3" }
