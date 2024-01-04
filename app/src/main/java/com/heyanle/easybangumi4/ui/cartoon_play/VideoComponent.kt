@@ -39,13 +39,9 @@ import androidx.compose.material.icons.filled.BatteryChargingFull
 import androidx.compose.material.icons.filled.BatteryFull
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.Speed
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -68,6 +64,7 @@ import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayingViewModel
 import com.heyanle.easybangumi4.ui.common.ErrorPage
 import com.heyanle.easybangumi4.ui.common.LoadingPage
+import com.heyanle.easybangumi4.ui.common.ToggleButton
 import loli.ball.easyplayer2.BackBtn
 import loli.ball.easyplayer2.ControlViewModel
 import loli.ball.easyplayer2.LockBtn
@@ -197,9 +194,7 @@ fun VideoFloat(
             modifier = Modifier
                 .fillMaxSize()
                 .clickable(
-                    onClick = {
-                        showSpeedWin.value = false
-                    },
+                    onClick = { showSpeedWin.value = false },
                     indication = null,
                     interactionSource = remember {
                         MutableInteractionSource()
@@ -216,19 +211,17 @@ fun VideoFloat(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                speedConfig.forEach {
-
+                speedConfig.forEach { (name, speed) ->
+                    val checked = controlVM.curSpeed == speed
                     Text(
                         textAlign = TextAlign.Center,
-                        text = it.key,
+                        text = name,
                         modifier = Modifier
                             .defaultMinSize(180.dp, Dp.Unspecified)
                             .clip(RoundedCornerShape(8.dp))
-                            .clickable {
-                                controlVM.setSpeed(it.value)
-                            }
-                            .padding(16.dp, 16.dp),
-                        color = if (controlVM.curSpeed == it.value) MaterialTheme.colorScheme.primary else Color.White
+                            .clickable { controlVM.setSpeed(speed) }
+                            .padding(16.dp, 14.dp),
+                        color = if (checked) MaterialTheme.colorScheme.primary else Color.White
                     )
                 }
             }
@@ -273,34 +266,20 @@ fun VideoFloat(
                 playLine.sortedEpisodeList.forEach {
                     item {
                         val checked = playState.episode == it
-                        if (checked) {
-                            FilledTonalButton(
-                                onClick = { },
-                                shape = ShapeDefaults.Small,
-                                colors = ButtonDefaults.filledTonalButtonColors(),
-                                modifier = Modifier
-                                    .fillMaxWidth(0.25f)
-                                    .padding(horizontal = 8.dp)
-                            ) {
-                                Text(it.label)
-                            }
-                        } else {
-                            OutlinedButton(
-                                onClick = {
-                                    cartoonPlayViewModel.changePlay(
-                                        playState.cartoonSummary,
-                                        playLine,
-                                        it
-                                    )
-                                },
-                                shape = ShapeDefaults.Small,
-                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
-                                modifier = Modifier
-                                    .fillMaxWidth(0.25f)
-                                    .padding(horizontal = 8.dp)
-                            ) {
-                                Text(it.label)
-                            }
+                        ToggleButton(
+                            checked = checked,
+                            onClick = {
+                                cartoonPlayViewModel.changePlay(
+                                    cartoonSummary = playState.cartoonSummary,
+                                    playLineWrapper = playLine,
+                                    episode = it
+                                )
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth(0.25f)
+                                .padding(horizontal = 8.dp)
+                        ) {
+                            Text(it.label)
                         }
                     }
                 }
@@ -492,7 +471,6 @@ fun NormalVideoTopBar(
         enter = fadeIn(),
     ) {
         TopControl {
-            val ctx = LocalContext.current as Activity
             BackBtn(onBack)
 
             Spacer(modifier = Modifier.weight(1f))
