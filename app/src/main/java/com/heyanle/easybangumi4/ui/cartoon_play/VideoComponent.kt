@@ -7,7 +7,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -22,6 +21,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -39,6 +40,7 @@ import androidx.compose.material.icons.filled.BatteryFull
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -240,9 +242,7 @@ fun VideoFloat(
         showEpisodeWin.value && controlVM.isFullScreen,
         enter = slideInHorizontally(tween()) { it },
         exit = slideOutHorizontally(tween()) { it },
-
-        ) {
-
+    ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -255,39 +255,53 @@ fun VideoFloat(
                 ),
             contentAlignment = Alignment.CenterEnd,
         ) {
-            Column(
+            val state = rememberLazyListState()
+            LaunchedEffect(playState) {
+                // 滚动到当前播放的视频位置
+                val index = playLine.sortedEpisodeList.indexOf(playState.episode)
+                state.scrollToItem(index)
+            }
+            LazyColumn(
                 modifier = Modifier
                     .fillMaxHeight()
                     .defaultMinSize(180.dp, Dp.Unspecified)
-                    .background(Color.Black.copy(0.6f))
-                    .verticalScroll(rememberScrollState()),
+                    .background(Color.Black.copy(0.6f)),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = Arrangement.Center,
+                state = state
             ) {
                 playLine.sortedEpisodeList.forEach {
-                    val checked = playState.episode == it
-                    val color = if (checked) MaterialTheme.colorScheme.primary
-                    else Color.White
-                    OutlinedButton(
-                        onClick = {
-                            cartoonPlayViewModel.changePlay(
-                                playState.cartoonSummary,
-                                playLine,
-                                it
-                            )
-                        },
-                        shape = ShapeDefaults.Small,
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = color),
-                        border = if (checked) BorderStroke(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        else ButtonDefaults.outlinedButtonBorder,
-                        modifier = Modifier
-                            .fillMaxWidth(0.25f)
-                            .padding(horizontal = 8.dp)
-                    ) {
-                        Text(it.label)
+                    item {
+                        val checked = playState.episode == it
+                        if (checked) {
+                            FilledTonalButton(
+                                onClick = { },
+                                shape = ShapeDefaults.Small,
+                                colors = ButtonDefaults.filledTonalButtonColors(),
+                                modifier = Modifier
+                                    .fillMaxWidth(0.25f)
+                                    .padding(horizontal = 8.dp)
+                            ) {
+                                Text(it.label)
+                            }
+                        } else {
+                            OutlinedButton(
+                                onClick = {
+                                    cartoonPlayViewModel.changePlay(
+                                        playState.cartoonSummary,
+                                        playLine,
+                                        it
+                                    )
+                                },
+                                shape = ShapeDefaults.Small,
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
+                                modifier = Modifier
+                                    .fillMaxWidth(0.25f)
+                                    .padding(horizontal = 8.dp)
+                            ) {
+                                Text(it.label)
+                            }
+                        }
                     }
                 }
             }
