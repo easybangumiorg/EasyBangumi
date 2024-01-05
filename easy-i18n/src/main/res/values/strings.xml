@@ -382,4 +382,6 @@
     <string name="app_too_old">纯纯看番版本过旧</string>
     <string name="extension_too_old">插件版本过旧</string>
     <string name="load_error">加载错误</string>
+    <string name="share">分享</string>
+    <string name="choose_target_app">选择分享应用</string>
 </resources>
