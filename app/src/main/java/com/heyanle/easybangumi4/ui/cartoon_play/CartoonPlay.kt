@@ -213,6 +213,7 @@ fun CartoonPlay(
                 controlVM = controlVM,
                 cartoonPlayingVM = playingVM,
                 playingState = playingState,
+                detailState = detailState,
                 sourcePlayState = playState,
                 showSpeedWin = showSpeedWin,
                 showEpisodeWin = showEpisodeWin,
