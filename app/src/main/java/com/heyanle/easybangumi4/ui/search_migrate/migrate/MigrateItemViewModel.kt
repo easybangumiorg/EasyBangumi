@@ -8,11 +8,11 @@ import com.heyanle.easybangumi4.cartoon.entity.PlayLineWrapper
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
 import com.heyanle.easybangumi4.case.SourceStateCase
 import com.heyanle.easybangumi4.source_api.component.search.SearchComponent
+import com.heyanle.easybangumi4.source_api.entity.Cartoon
 import com.heyanle.easybangumi4.source_api.entity.CartoonCover
 import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
 import com.heyanle.easybangumi4.source_api.entity.Episode
 import com.heyanle.easybangumi4.source_api.entity.PlayLine
-import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -37,7 +37,8 @@ class MigrateItemViewModel(
         val isLoadingPlay: Boolean = true,
 
         // 目标的番剧数据
-        val cartoon: CartoonCover? = null,
+        val cartoonCover: CartoonCover? = null,
+        val cartoon: Cartoon? = null,
         val playLineList: List<PlayLine> = emptyList(),
 
         // 待同步的播放数据
@@ -132,14 +133,14 @@ class MigrateItemViewModel(
                     it.copy(
                         isLoadingCover = false,
                         isLoadingPlay = false,
-                        cartoon = null,
+                        cartoonCover = null,
                     )
                 }
             } else {
                 _flow.update {
                     it.copy(
                         isLoadingCover = false,
-                        cartoon = res,
+                        cartoonCover = res,
                     )
                 }
                 changeCover(res)
@@ -165,7 +166,7 @@ class MigrateItemViewModel(
                 }
                 return@launch
             }
-            detailed.getPlayLine(
+            detailed.getAll(
                 CartoonSummary(
                     cartoonCover.id,
                     cartoonCover.source,
@@ -177,13 +178,14 @@ class MigrateItemViewModel(
                     _flow.update {
                         it.copy(
                             isLoadingPlay = false,
-                            playLineList = complete.data,
+                            playLineList = complete.data.second,
+                            cartoon = complete.data.first
                         )
                     }
                     yield()
                     val oldPlayState = cartoonInfo.matchHistoryEpisode
                     if (oldPlayState == null) {
-                        val first = complete.data.firstOrNull()
+                        val first = complete.data.second.firstOrNull()
                         if (first != null) {
                             changeEpisode(
                                 PlayLineWrapper.SORT_DEFAULT_KEY,
@@ -193,8 +195,8 @@ class MigrateItemViewModel(
                         }
                     } else {
                         val playLine =
-                            complete.data.find { it.episode.size == oldPlayState.first.playLine.episode.size }
-                                ?: complete.data.firstOrNull()
+                            complete.data.second.find { it.episode.size == oldPlayState.first.playLine.episode.size }
+                                ?: complete.data.second.firstOrNull()
                         if (playLine != null) {
                             val episode =
                                 playLine.episode.find { it.order == oldPlayState.second.order }
