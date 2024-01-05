@@ -248,12 +248,9 @@ fun VideoFloat(
                 ),
             contentAlignment = Alignment.CenterEnd,
         ) {
-            val state = rememberLazyListState()
-            LaunchedEffect(playState) {
-                // 滚动到当前播放的视频位置
-                val index = playLine.sortedEpisodeList.indexOf(playState.episode)
-                state.scrollToItem(index)
-            }
+            // 滚动到当前播放的视频位置
+            val initItem = playLine.sortedEpisodeList.indexOf(playState.episode)
+            val state = rememberLazyListState(initItem)
             LazyColumn(
                 modifier = Modifier
                     .fillMaxHeight()
