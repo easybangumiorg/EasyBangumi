@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
 class MigrateViewModel(
     private val summaries: List<CartoonSummary>,
     private val sources: List<String>,
-): ViewModel() {
+) : ViewModel() {
 
 
     private val ownerMap = ViewModelOwnerMap<CartoonInfo>()
@@ -34,8 +34,11 @@ class MigrateViewModel(
         val infoList: List<CartoonInfo> = emptyList(),
         val selection: Set<CartoonInfo> = emptySet(),
     )
+
     private val _infoListFlow = MutableStateFlow<MigrateState>(MigrateState())
     val infoListFlow = _infoListFlow.asStateFlow()
+
+    private var lastSelectInfo: CartoonInfo? = null
 
     init {
         viewModelScope.launch {
@@ -55,7 +58,8 @@ class MigrateViewModel(
     }
 
     fun getOwner(cartoonInfo: CartoonInfo) = ownerMap.getViewModelStoreOwner(cartoonInfo)
-    fun getItemViewModelFactory(cartoonInfo: CartoonInfo) = MigrateItemViewModelFactory(cartoonInfo, sources)
+    fun getItemViewModelFactory(cartoonInfo: CartoonInfo) =
+        MigrateItemViewModelFactory(cartoonInfo, sources)
 
     override fun onCleared() {
         super.onCleared()
@@ -63,15 +67,106 @@ class MigrateViewModel(
     }
 
 
-    fun selectChange(cartoonInfo: CartoonInfo){}
+    fun selectChange(cartoonInfo: CartoonInfo) {
+        _infoListFlow.update {
+            it.copy(
+                selection = it.selection.toMutableSet().apply {
+                    if (contains(cartoonInfo)) {
+                        remove(cartoonInfo)
+                    } else {
+                        add(cartoonInfo)
+                    }
+                }
+            )
+        }
+        lastSelectInfo = if (_infoListFlow.value.selection.isEmpty()) {
+            null
+        } else {
+            cartoonInfo
+        }
 
-    fun selectLongPress(cartoonInfo: CartoonInfo){}
+    }
 
-    fun selectExit(cartoonInfo: CartoonInfo){}
+    fun selectLongPress(cartoonInfo: CartoonInfo) {
+        if(lastSelectInfo == null){
+            selectChange(cartoonInfo)
+            return
+        }
+        val currInfo = _infoListFlow.value.infoList
+        val lastIndex = currInfo.indexOf(lastSelectInfo)
+        if(lastIndex == -1){
+            selectChange(cartoonInfo)
+            return
+        }
+        val nowIndex = currInfo.indexOf(cartoonInfo)
+        if(nowIndex == -1){
+            selectChange(cartoonInfo)
+            return
+        }
+        val min = lastIndex.coerceAtMost(nowIndex)
+        val max = lastIndex.coerceAtLeast(nowIndex)
 
-    fun selectAll() {}
+        _infoListFlow.update {
+            it.copy(
+                selection = it.selection.toMutableSet().apply {
+                    for(i in min..max){
+                        val car = currInfo.getOrNull(i) ?: continue
+                        if (contains(car)) {
+                            remove(car)
+                        } else {
+                            add(car)
+                        }
+                    }
 
-    fun selectInvert() {}
+                }
+            )
+        }
+        lastSelectInfo = if (_infoListFlow.value.selection.isEmpty()) {
+            null
+        } else {
+            cartoonInfo
+        }
+    }
+
+    fun selectExit() {
+        _infoListFlow.update {
+            it.copy(selection = setOf())
+        }
+        lastSelectInfo = null
+    }
+
+    fun selectAll() {
+        _infoListFlow.update {
+            it.copy(
+                selection = it.infoList.toSet()
+            )
+        }
+    }
+
+    fun selectInvert() {
+        _infoListFlow.update {
+            val currInfo = _infoListFlow.value.infoList
+            it.copy(
+                selection = it.selection.toMutableSet().apply {
+                    for (car in currInfo) {
+                        if (contains(car)) {
+                            remove(car)
+                        } else {
+                            add(car)
+                        }
+                    }
+                }
+            )
+        }
+    }
+
+    fun remove(cartoonInfo: CartoonInfo) {
+        _infoListFlow.update {
+            it.copy(
+                infoList = it.infoList.filter { it != cartoonInfo }
+            )
+        }
+    }
 
 }
 
