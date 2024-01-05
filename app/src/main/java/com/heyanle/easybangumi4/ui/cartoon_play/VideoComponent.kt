@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.ui.cartoon_play
 
 import android.app.Activity
+import android.graphics.BitmapFactory
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -38,6 +39,7 @@ import androidx.compose.material.icons.filled.Battery6Bar
 import androidx.compose.material.icons.filled.BatteryChargingFull
 import androidx.compose.material.icons.filled.BatteryFull
 import androidx.compose.material.icons.filled.Replay
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -47,6 +49,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -58,13 +61,26 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
+import coil.ImageLoader
+import coil.request.ImageRequest
 import com.heyanle.easy_i18n.R
+import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayingViewModel
+import com.heyanle.easybangumi4.ui.cartoon_play.view_model.DetailedViewModel
+import com.heyanle.easybangumi4.ui.common.CombineClickIconButton
 import com.heyanle.easybangumi4.ui.common.ErrorPage
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.ToggleButton
+import com.heyanle.easybangumi4.utils.OkhttpHelper
+import com.heyanle.easybangumi4.utils.bufferImageCache
+import com.heyanle.easybangumi4.utils.downloadImage
+import com.heyanle.easybangumi4.utils.shareImageText
+import com.heyanle.easybangumi4.utils.shareText
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import loli.ball.easyplayer2.BackBtn
 import loli.ball.easyplayer2.ControlViewModel
 import loli.ball.easyplayer2.LockBtn
@@ -73,6 +89,8 @@ import loli.ball.easyplayer2.SimpleBottomBar
 import loli.ball.easyplayer2.SimpleGestureController
 import loli.ball.easyplayer2.TopControl
 import loli.ball.easyplayer2.utils.rememberBatteryReceiver
+import okhttp3.OkHttpClient
+import okhttp3.Request
 
 /**
  * Created by heyanle on 2023/12/17.
@@ -291,10 +309,12 @@ fun VideoControl(
     cartoonPlayingVM: CartoonPlayingViewModel,
     playingState: CartoonPlayingViewModel.PlayingState,
     sourcePlayState: CartoonPlayViewModel.CartoonPlayState?,
+    detailState: DetailedViewModel.DetailState,
     showSpeedWin: MutableState<Boolean>,
     showEpisodeWin: MutableState<Boolean>,
 ) {
     val nav = LocalNavController.current
+    val scope = rememberCoroutineScope()
     val playState = sourcePlayState
     if (playState == null) {
         Box(
@@ -344,6 +364,23 @@ fun VideoControl(
                 onPlayExt = {
                     cartoonPlayingVM.playCurrentExternal()
                     // cartoonPlayingController.playCurrentExternal()
+                },
+                onShare = { withCover ->
+                    if (detailState.cartoonInfo == null) return@NormalVideoTopBar
+                    if (withCover) {
+                        scope.launch(Dispatchers.IO) {
+                            val image = downloadImage(detailState.cartoonInfo.coverUrl)
+                            if (image != null) {
+                                val imageFile = bufferImageCache(image)
+                                val imageUri = FileProvider.getUriForFile(
+                                    APP, "${APP.packageName}.fileProvider", imageFile
+                                )
+                                shareImageText(imageUri, detailState.cartoonInfo.url)
+                            }
+                        }
+                    } else {
+                        shareText(detailState.cartoonInfo.url)
+                    }
                 }
             )
 
@@ -460,6 +497,7 @@ fun NormalVideoTopBar(
     onBack: () -> Unit,
     onSpeed: () -> Unit,
     onPlayExt: () -> Unit,
+    onShare: (withCover: Boolean) -> Unit
 ) {
     AnimatedVisibility(
         modifier = modifier,
@@ -486,6 +524,17 @@ fun NormalVideoTopBar(
                         Icons.Filled.Airplay,
                         tint = Color.White,
                         contentDescription = null
+                    )
+                }
+
+                CombineClickIconButton(
+                    onClick = { onShare(true) },
+                    onLongClick = { onShare(false) }
+                ) {
+                    Icon(
+                        Icons.Filled.Share,
+                        tint = Color.White,
+                        contentDescription = stringResource(id = R.string.share)
                     )
                 }
             }
