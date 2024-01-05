@@ -4,6 +4,7 @@ import android.content.Intent
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
