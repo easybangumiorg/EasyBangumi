@@ -116,8 +116,8 @@ android {
 
 dependencies {
 
-    implementation(androidx.bundles.core)
     implementation(files("../libs/bcprov-jdk16-139.jar"))
+    implementation(androidx.bundles.core)
     androidTestImplementation (androidx.bundles.test.core)
 
     implementation(androidx.bundles.room.impl)

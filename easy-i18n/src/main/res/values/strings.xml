@@ -129,6 +129,8 @@
 
     <string name="change_device">切换设备</string>
 
+    <string name="research">重新搜索</string>
+
     <string name="screen_cast">投屏</string>
 
     <string name="net_error">网络错误</string>
@@ -145,6 +147,8 @@
     <string name="no_play_line">没有播放线路</string>
 
     <string name="migrating">数据升级中</string>
+
+    <string name="migrate_now">立刻迁移</string>
 
     <string name="cartoon_migrate">番剧迁移</string>
 
