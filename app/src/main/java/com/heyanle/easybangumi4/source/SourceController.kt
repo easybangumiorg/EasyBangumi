@@ -170,9 +170,7 @@ class SourceController(
             if (so.needMigrate(old)) {
                 val oldInfo = cartoonInfoDao.getAllBySource(so.key)
 
-
                 val detailed = sourceInfo.componentBundle.get<DetailedComponent>()
-
 
                 if (detailed != null) {
                     oldInfo.forEach { info ->
