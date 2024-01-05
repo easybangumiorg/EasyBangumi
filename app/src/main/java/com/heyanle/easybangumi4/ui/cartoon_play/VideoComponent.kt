@@ -273,7 +273,7 @@ fun VideoFloat(
                 modifier = Modifier
                     .fillMaxHeight()
                     .defaultMinSize(180.dp, Dp.Unspecified)
-                    .background(Color.Black.copy(0.6f)),
+                    .background(Color.Black.copy(0.8f)),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
                 state = state

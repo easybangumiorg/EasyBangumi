@@ -44,7 +44,11 @@ class MigrateItemViewModel(
         val sortKey: String = PlayLineWrapper.SORT_DEFAULT_KEY,
         val playLine: PlayLine? = null,
         val episode: Episode? = null,
-    )
+    ){
+        val playLineWrapper: PlayLineWrapper? by lazy {
+            PlayLineWrapper.fromKey(playLine ?: return@lazy null, sortKey, false)
+        }
+    }
 
     private val _flow = MutableStateFlow<MigrateItemState>(MigrateItemState())
     val flow = _flow.asStateFlow()
