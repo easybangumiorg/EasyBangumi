@@ -62,7 +62,6 @@ import com.heyanle.easybangumi4.ui.common.EasyDeleteDialog
 import com.heyanle.easybangumi4.ui.common.LoadingImage
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.common.SelectionTopAppBar
-import com.heyanle.easybangumi4.ui.common.proc.SortDropDownMenu
 
 /**
  * Created by heyanle on 2023/12/23.
@@ -220,7 +219,7 @@ fun MigrateItem(
             contentDescription = stringResource(id = R.string.cartoon_migrate)
         )
         Spacer(modifier = Modifier.size(8.dp))
-        val targetCover = sta.value.cartoon
+        val targetCover = sta.value.cartoonCover
         if (sta.value.isLoadingCover || sta.value.isLoadingPlay || targetCover == null) {
             LoadingImage()
         } else {
