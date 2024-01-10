@@ -161,6 +161,7 @@ class CartoonStarController(
             }
         }
     }
+
     // 处理置顶 - 排序 - 筛选
     fun flowCartoon(): Flow<List<CartoonInfo>> {
         return combine(
@@ -207,8 +208,12 @@ class CartoonStarController(
 //                    }
 //                    if (isSortReverse) -res else res
 //                }
-            val upList = list.filter { it.isUp() }.sortedWith {o1, o2 -> (o2.upTime - o1.upTime).toInt()}
-            val normalList = list.filter { !it.isUp() }.sortedWith(currentSort.comparator)
+            val upList =
+                list.filter { it.isUp() }.sortedWith { o1, o2 -> (o2.upTime - o1.upTime).toInt() }
+            val normalList = list.filter { !it.isUp() }.sortedWith() { o1, o2 ->
+                val res = currentSort.comparator.compare(o1, o2)
+                if (isSortReverse) -res else res
+            }
             upList + normalList
         }
     }
