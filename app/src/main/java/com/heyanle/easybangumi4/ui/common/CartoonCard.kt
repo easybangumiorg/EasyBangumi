@@ -24,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -206,7 +207,7 @@ fun CartoonStarCardWithCover(
                         .padding(4.dp, 0.dp)
                 ) {
                     if(showIsUp && cartoon.upTime > 0L){
-                        Icon(Icons.Filled.PushPin, modifier = Modifier.size(13.dp),contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.push_pin) )
+                        Icon(Icons.Filled.PushPin, modifier = Modifier.size(13.dp).rotate(-45f),contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.push_pin) , tint = MaterialTheme.colorScheme.onPrimary)
                     }
                     if(showIsUpdate && cartoon.isUpdate){
                         Text(

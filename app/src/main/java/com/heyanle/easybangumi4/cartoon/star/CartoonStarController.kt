@@ -35,14 +35,14 @@ class CartoonStarController(
         id = "CreateTime",
         label = stringRes(R.string.sort_by_create_time),
         comparator = { o1, o2 ->
-            (o1.starTime - o2.starTime).toInt()
+            o1.starTime.compareTo(o2.starTime)
         }
     )
     private val sortByUpdateTime = SortBy<CartoonInfo>(
         id = "UpdateTime",
         label = stringRes(R.string.sort_by_update_time),
         comparator = { o1, o2 ->
-            (o1.lastUpdateTime - o2.lastUpdateTime).toInt()
+            o1.lastUpdateTime.compareTo(o2.lastUpdateTime)
         }
     )
     private val sortByTitle = SortBy<CartoonInfo>(
@@ -56,7 +56,7 @@ class CartoonStarController(
         id = "LastWatchTime",
         label = stringRes(R.string.sort_by_watch),
         comparator = { o1, o2 ->
-            (o1.lastHistoryTime - o2.lastHistoryTime).toInt()
+            o1.lastHistoryTime.compareTo(o2.lastHistoryTime)
         }
     )
     private val sortBySource = SortBy<CartoonInfo>(
@@ -176,7 +176,7 @@ class CartoonStarController(
             val excludeFilter = filterWithList.filter {
                 filterStateMap[it.id] == FilterState.STATUS_EXCLUDE
             }
-            starList.filter {
+            val list = starList.filter {
                 var check = true
                 for (filterWith in onFilter) {
                     if (!filterWith.filter(it)) {
@@ -194,18 +194,22 @@ class CartoonStarController(
                     }
                 }
                 check
-            }.sortedWith { o1, o2 ->
-                val res = if (o1.isUp() && o2.isUp()) {
-                    (o2.upTime - o1.upTime).toInt()
-                } else if (o1.isUp() == o2.isUp()) {
-                    currentSort.comparator.compare(o1, o2)
-                } else if (o1.isUp()) {
-                    1
-                } else {
-                    -1
-                }
-                if (isSortReverse) -res else res
             }
+//                .sortedWith { o1, o2 ->
+//                    val res = if (o1.isUp() && o2.isUp()) {
+//                        (o2.upTime - o1.upTime).toInt()
+//                    } else if (o1.isUp() == o2.isUp()) {
+//                        currentSort.comparator.compare(o1, o2)
+//                    } else if (o1.isUp()) {
+//                        1
+//                    } else {
+//                        -1
+//                    }
+//                    if (isSortReverse) -res else res
+//                }
+            val upList = list.filter { it.isUp() }.sortedWith {o1, o2 -> (o2.upTime - o1.upTime).toInt()}
+            val normalList = list.filter { !it.isUp() }.sortedWith(currentSort.comparator)
+            upList + normalList
         }
     }
 

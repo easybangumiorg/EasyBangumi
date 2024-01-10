@@ -140,10 +140,7 @@ object AnnoHelper {
             init()
         }
 
-        if (annoList.isNotEmpty()) {
-            val showed = remember(annoList) {
-                annoList.first()
-            }
+        annoList.forEach { showed ->
             AlertDialog(
                 onDismissRequest = {
                     annoList.remove(showed)
@@ -167,9 +164,5 @@ object AnnoHelper {
                 }
             )
         }
-
-
     }
-
-
 }
