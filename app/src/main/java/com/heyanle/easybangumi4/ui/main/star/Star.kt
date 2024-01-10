@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FilterAlt
+import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SyncAlt
 import androidx.compose.material.icons.filled.Tag
@@ -113,6 +114,9 @@ fun Star() {
 //                            nav.navigationCartoonMigrate(it.title)
 //                        }
 //                    }
+                },
+                onUp = {
+                    starVM.onUpSelection()
                 }
             )
 
@@ -451,6 +455,7 @@ fun StarSelectionBottomBar(
     onChangeTag: () -> Unit,
     onUpdate: () -> Unit,
     onMigrate: ()->Unit,
+    onUp: ()->Unit,
 ) {
 
     BottomAppBar(actions = {
@@ -473,6 +478,13 @@ fun StarSelectionBottomBar(
         }) {
             Icon(Icons.Filled.SyncAlt, contentDescription = stringResource(id = R.string.migrating))
         }
+
+        IconButton(onClick = {
+            onUp()
+        }) {
+            Icon(Icons.Filled.PushPin, contentDescription = stringResource(id = R.string.filter_with_is_up))
+        }
+
     }, floatingActionButton = {
         FloatingActionButton(
             onClick = { onDelete() },

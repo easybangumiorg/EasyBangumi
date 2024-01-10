@@ -212,6 +212,7 @@ fun CartoonPlay(
             VideoControl(
                 controlVM = controlVM,
                 cartoonPlayingVM = playingVM,
+                cartoonPlayVM = playVM,
                 playingState = playingState,
                 detailState = detailState,
                 sourcePlayState = playState,
@@ -246,7 +247,7 @@ fun CartoonPlay(
                     selectLineIndex = playVM.selectedLineIndex,
                     playingPlayLine = playState?.playLine,
                     playingEpisode = playState?.episode,
-                    showPlayLine = detailState.cartoonInfo.isShowLine,
+                    showPlayLine = if(detailState.cartoonInfo.playLine.size > 1) true else detailState.cartoonInfo.isShowLine,
                     listState = lazyGridState,
                     onLineSelect = {
                         playVM.selectedLineIndex = it
