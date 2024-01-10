@@ -301,6 +301,24 @@ class StarViewModel : ViewModel() {
 //        } else {
 //            stringRes(com.heyanle.easy_i18n.R.string.doing_update_wait).moeSnackBar()
 //        }
+
+    }
+
+    fun onUpSelection(){
+        viewModelScope.launch {
+            val old = _stateFlow.value
+            var start = System.currentTimeMillis()
+            val set = old.selection.map {
+                it.copy(
+                    upTime = start ++
+                )
+            }
+            cartoonInfoDao.modify(set)
+            onSelectionExit()
+            dialogDismiss()
+        }
+
+
     }
 
     fun onUpdateAll() {

@@ -107,7 +107,7 @@ data class CartoonInfo(
                 status = cartoon.status,
                 sourceName = sourceName ?: "",
 
-                isShowLine = playLine is DetailedComponent.NonPlayLine,
+                isShowLine = playLine !is DetailedComponent.NonPlayLine,
                 isPlayLineLoad = playLine != null,
                 playLineString = playLine?.toJson() ?: ""
             )
@@ -289,6 +289,7 @@ data class CartoonInfo(
             status = cartoon.status,
             sourceName = sourceName ?: this.sourceName,
 
+            isShowLine = if(playLine == null) isShowLine else playLine !is DetailedComponent.NonPlayLine,
             isPlayLineLoad = playLine != null,
             playLineString = playLine?.toJson() ?: playLineString
         )

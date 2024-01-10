@@ -1,7 +1,6 @@
 package com.heyanle.easybangumi4.ui.cartoon_play
 
 import android.app.Activity
-import android.graphics.BitmapFactory
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -13,6 +12,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -38,6 +39,7 @@ import androidx.compose.material.icons.filled.Battery5Bar
 import androidx.compose.material.icons.filled.Battery6Bar
 import androidx.compose.material.icons.filled.BatteryChargingFull
 import androidx.compose.material.icons.filled.BatteryFull
+import androidx.compose.material.icons.filled.NavigateNext
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Speed
@@ -62,8 +64,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
-import coil.ImageLoader
-import coil.request.ImageRequest
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.LocalNavController
@@ -74,7 +74,6 @@ import com.heyanle.easybangumi4.ui.common.CombineClickIconButton
 import com.heyanle.easybangumi4.ui.common.ErrorPage
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.ToggleButton
-import com.heyanle.easybangumi4.utils.OkhttpHelper
 import com.heyanle.easybangumi4.utils.bufferImageCache
 import com.heyanle.easybangumi4.utils.downloadImage
 import com.heyanle.easybangumi4.utils.shareImageText
@@ -82,15 +81,17 @@ import com.heyanle.easybangumi4.utils.shareText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import loli.ball.easyplayer2.BackBtn
+import loli.ball.easyplayer2.BottomControl
 import loli.ball.easyplayer2.ControlViewModel
+import loli.ball.easyplayer2.FullScreenBtn
 import loli.ball.easyplayer2.LockBtn
+import loli.ball.easyplayer2.PlayPauseBtn
 import loli.ball.easyplayer2.ProgressBox
-import loli.ball.easyplayer2.SimpleBottomBar
 import loli.ball.easyplayer2.SimpleGestureController
+import loli.ball.easyplayer2.TimeSlider
+import loli.ball.easyplayer2.TimeText
 import loli.ball.easyplayer2.TopControl
 import loli.ball.easyplayer2.utils.rememberBatteryReceiver
-import okhttp3.OkHttpClient
-import okhttp3.Request
 
 /**
  * Created by heyanle on 2023/12/17.
@@ -307,6 +308,7 @@ fun VideoFloat(
 fun VideoControl(
     controlVM: ControlViewModel,
     cartoonPlayingVM: CartoonPlayingViewModel,
+    cartoonPlayVM: CartoonPlayViewModel,
     playingState: CartoonPlayingViewModel.PlayingState,
     sourcePlayState: CartoonPlayViewModel.CartoonPlayState?,
     detailState: DetailedViewModel.DetailState,
@@ -315,8 +317,7 @@ fun VideoControl(
 ) {
     val nav = LocalNavController.current
     val scope = rememberCoroutineScope()
-    val playState = sourcePlayState
-    if (playState == null) {
+    if (sourcePlayState == null) {
         Box(
             Modifier
                 .fillMaxSize()
@@ -384,8 +385,7 @@ fun VideoControl(
                 }
             )
 
-            // 底部工具栏
-            SimpleBottomBar(
+            EasyVideoBottomControl(
                 vm = controlVM,
                 modifier = Modifier.align(Alignment.BottomCenter),
                 paddingValues = if (controlVM.isFullScreen) PaddingValues(
@@ -393,32 +393,17 @@ fun VideoControl(
                     0.dp,
                     16.dp,
                     8.dp
-                ) else PaddingValues(8.dp, 0.dp)
-            ) {
-
-                if (it.isFullScreen) {
-                    Text(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(4.dp))
-                            .clickable {
-                                showEpisodeWin.value = true
-                            }
-                            .padding(8.dp),
-                        text = stringResource(id = R.string.episode),
-                        color = Color.White
-                    )
-                    Text(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(4.dp))
-                            .clickable {
-                                showSpeedWin.value = true
-                            }
-                            .padding(8.dp),
-                        text = stringResource(id = R.string.speed),
-                        color = Color.White
-                    )
+                ) else PaddingValues(8.dp, 0.dp),
+                onShowEpisodeWin = {
+                    showEpisodeWin.value = true
+                },
+                onSHowSpeedWin = {
+                    showSpeedWin.value = true
+                },
+                onNext = {
+                    cartoonPlayVM.tryNext()
                 }
-            }
+            )
 
             // 锁定按钮
             LockBtn(vm = controlVM)
@@ -483,8 +468,6 @@ fun FullScreenVideoTopBar(
             Icon(ic, "el", modifier = Modifier.rotate(90F), tint = Color.White)
             Text(text = "${br.electricity.value}%", color = Color.White)
             Spacer(modifier = Modifier.size(16.dp))
-
-
         }
     }
 }
@@ -538,6 +521,95 @@ fun NormalVideoTopBar(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun EasyVideoBottomControl(
+    vm: ControlViewModel,
+    modifier: Modifier = Modifier,
+    paddingValues: PaddingValues = PaddingValues(0.dp),
+    onShowEpisodeWin: () -> Unit,
+    onSHowSpeedWin: () -> Unit,
+    onNext: () -> Unit,
+) {
+    AnimatedVisibility(
+        modifier = modifier,
+        visible = vm.isShowOverlay(),
+        exit = fadeOut(),
+        enter = fadeIn(),
+    ) {
+        BottomControl(
+            paddingValues
+        ) {
+            PlayPauseBtn(isPlaying = vm.playWhenReady, onClick = {
+                vm.onPlayPause(it)
+            })
+
+            if (vm.isFullScreen) {
+                Icon(
+                    Icons.Filled.NavigateNext,
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .clickable {
+                            onNext()
+                        }
+                        .padding(4.dp),
+                    tint = Color.White,
+                    contentDescription = stringResource(id = R.string.try_play_next)
+                )
+            }
+
+            TimeText(time = vm.position, Color.White)
+
+            val position =
+                when (vm.controlState) {
+                    ControlViewModel.ControlState.Normal -> vm.position
+                    ControlViewModel.ControlState.HorizontalScroll -> vm.horizontalScrollPosition
+                    else -> 0
+                }
+
+            TimeSlider(
+                during = vm.during,
+                position = position,
+                onValueChange = {
+                    vm.onPositionChange(it)
+                },
+                onValueChangeFinish = {
+                    vm.onActionUP()
+                }
+            )
+
+            TimeText(time = vm.during, Color.White)
+
+            if (vm.isFullScreen) {
+                Text(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(4.dp))
+                        .clickable {
+                            onShowEpisodeWin()
+                        }
+                        .padding(8.dp),
+                    text = stringResource(id = R.string.episode),
+                    color = Color.White
+                )
+                Text(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(4.dp))
+                        .clickable {
+                            onSHowSpeedWin()
+                        }
+                        .padding(8.dp),
+                    text = stringResource(id = R.string.speed),
+                    color = Color.White
+                )
+            }
+
+            val ctx = LocalContext.current as Activity
+            FullScreenBtn(isFullScreen = vm.isFullScreen, onClick = {
+                vm.onFullScreen(it, ctx = ctx)
+            })
         }
     }
 }
