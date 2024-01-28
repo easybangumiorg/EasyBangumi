@@ -26,24 +26,24 @@ interface CartoonInfoDao {
     @Delete
     suspend fun delete(cartoonInfo: CartoonInfo)
 
-    @Query("SELECT * FROM CartoonInfo")
+    @Query("SELECT * FROM CartoonInfoV2")
     fun flowAll(): Flow<List<CartoonInfo>>
 
-    @Query("SELECT * FROM CartoonInfo WHERE id=(:id) AND source=(:source) AND url=(:detailUrl)")
-    suspend fun getByCartoonSummary(id: String, source: String, detailUrl: String): CartoonInfo?
+    @Query("SELECT * FROM CartoonInfoV2 WHERE id=(:id) AND source=(:source)")
+    suspend fun getByCartoonSummary(id: String, source: String): CartoonInfo?
 
-    @Query("SELECT * FROM CartoonInfo WHERE source=(:source)")
+    @Query("SELECT * FROM CartoonInfoV2 WHERE source=(:source)")
     suspend fun getAllBySource(source: String): List<CartoonInfo>
 
-    @Query("DELETE FROM cartoonInfo WHERE id=(:id) AND source=(:source) AND url=(:detailUrl)")
-    suspend fun deleteByCartoonSummary(id: String, source: String, detailUrl: String)
+    @Query("DELETE FROM CartoonInfoV2 WHERE id=(:id) AND source=(:source)")
+    suspend fun deleteByCartoonSummary(id: String, source: String)
 
-    @Query("DELETE FROM cartoonInfo WHERE 1=1")
+    @Query("DELETE FROM CartoonInfoV2 WHERE 1=1")
     suspend fun clearAll()
 
     @Transaction
     suspend fun modify(cartoonInfo: CartoonInfo) {
-        val old = getByCartoonSummary(cartoonInfo.id, cartoonInfo.source, cartoonInfo.url)
+        val old = getByCartoonSummary(cartoonInfo.id, cartoonInfo.source)
         if (old == null) {
             insert(cartoonInfo.copy(createTime = System.currentTimeMillis()))
         } else {
@@ -60,10 +60,10 @@ interface CartoonInfoDao {
 
 
     // history
-    @Query("SELECT * FROM cartooninfo WHERE lastHistoryTime>0 ORDER BY lastHistoryTime DESC")
+    @Query("SELECT * FROM CartoonInfoV2 WHERE lastHistoryTime>0 ORDER BY lastHistoryTime DESC")
     fun flowAllHistory(): Flow<List<CartoonInfo>>
 
-    @Query("SELECT * FROM cartooninfo WHERE lastHistoryTime>0 ORDER BY lastHistoryTime DESC")
+    @Query("SELECT * FROM CartoonInfoV2 WHERE lastHistoryTime>0 ORDER BY lastHistoryTime DESC")
     fun getAllHistory(): List<CartoonInfo>
 
 
@@ -91,7 +91,7 @@ interface CartoonInfoDao {
     }
 
     // star
-    @Query("SELECT * FROM cartooninfo WHERE starTime>0")
+    @Query("SELECT * FROM CartoonInfoV2 WHERE starTime>0")
     fun flowAllStar(): Flow<List<CartoonInfo>>
 
     @Transaction

@@ -10,11 +10,11 @@ import com.heyanle.easybangumi4.source_api.Source
 sealed class SourceInfo {
     abstract val source: Source
 
-    // 数据迁移中
-    class Migrating(
-        override val source: Source,
-        val componentBundle: ComponentBundle,
-    ): SourceInfo()
+//    // 数据迁移中
+//    class Migrating(
+//        override val source: Source,
+//        val componentBundle: ComponentBundle,
+//    ): SourceInfo()
 
     // 加载成功
     class Loaded(

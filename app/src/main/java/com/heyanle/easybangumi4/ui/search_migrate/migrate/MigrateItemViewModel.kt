@@ -13,6 +13,7 @@ import com.heyanle.easybangumi4.source_api.entity.CartoonCover
 import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
 import com.heyanle.easybangumi4.source_api.entity.Episode
 import com.heyanle.easybangumi4.source_api.entity.PlayLine
+import com.heyanle.easybangumi4.utils.toJson
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -21,6 +22,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
+import kotlin.math.min
 
 /**
  * Created by heyanle on 2023/12/23.
@@ -33,8 +35,11 @@ class MigrateItemViewModel(
 
 
     data class MigrateItemState(
+        val isMigrated: Boolean = false,
+        val isMigrating: Boolean = false,
         val isLoadingCover: Boolean = true,
         val isLoadingPlay: Boolean = true,
+        val cartoonInfo: CartoonInfo,
 
         // 目标的番剧数据
         val cartoonCover: CartoonCover? = null,
@@ -51,11 +56,12 @@ class MigrateItemViewModel(
         }
     }
 
-    private val _flow = MutableStateFlow<MigrateItemState>(MigrateItemState())
+    private val _flow = MutableStateFlow<MigrateItemState>(MigrateItemState(cartoonInfo = cartoonInfo))
     val flow = _flow.asStateFlow()
 
     private val sourceStateCase: SourceStateCase by Injekt.injectLazy()
     private val cartoonInfoDao: CartoonInfoDao by Injekt.injectLazy()
+    private val sourceCase: SourceStateCase by Injekt.injectLazy()
 
     private var initJob: Job? = null
     private var loadPlayJob: Job? = null
@@ -92,7 +98,9 @@ class MigrateItemViewModel(
                             component.search(currentKey, cartoonInfo.name)
                                 .complete {
                                     yield()
-                                    res += it.data.second
+                                    if(it.data.second.isNotEmpty()){
+                                        res += it.data.second.subList(0, min(1, it.data.second.size))
+                                    }
                                     currentKey = it.data.first
                                 }
                                 .error {
@@ -166,11 +174,17 @@ class MigrateItemViewModel(
                 }
                 return@launch
             }
+            _flow.update {
+                it.copy(
+                    cartoonCover = cartoonCover,
+                    isLoadingPlay = true,
+                    playLineList = emptyList(),
+                )
+            }
             detailed.getAll(
                 CartoonSummary(
                     cartoonCover.id,
                     cartoonCover.source,
-                    cartoonCover.url
                 )
             )
                 .complete { complete ->
@@ -232,6 +246,59 @@ class MigrateItemViewModel(
                 episode = epi
             )
         }
+    }
+
+    fun migrate(onSus: ()->Unit){
+        viewModelScope.launch {
+            val item = _flow.value
+            if(item.isMigrating || item.isLoadingCover || item.isLoadingPlay || item.isMigrated || item.cartoonCover == null){
+                return@launch
+            }
+            _flow.update {
+                it.copy(
+                    isMigrating = true
+                )
+            }
+
+            val car = item.cartoon ?: return@launch
+            val bundle = sourceCase.awaitBundle()
+            val sourceName = bundle.source(car.source)?.label ?: ""
+            val episodeList = item.playLineWrapper?.sortedEpisodeList
+            val targetCartoon = CartoonInfo.fromCartoon(
+                car,
+                sourceName,
+                item.playLineList
+            ).copy(
+                tags = cartoonInfo.tags,
+                upTime = cartoonInfo.upTime,
+
+                starTime = if (cartoonInfo.starTime == 0L) System.currentTimeMillis() else cartoonInfo.starTime,
+                lastHistoryTime = cartoonInfo.lastHistoryTime,
+                lastPlayLineEpisodeString = episodeList?.toJson() ?: "",
+                lastLineId = item.playLine?.id ?: "",
+                lastLinesIndex = item.playLineList.indexOf(item.playLine) ?: -1,
+                lastLineLabel = item.playLine?.label ?: "",
+
+                lastEpisodeLabel = item.playLine?.label ?: "",
+                lastEpisodeId = item.episode?.id ?: "",
+                lastEpisodeIndex = episodeList?.indexOf(item.episode) ?: -1,
+                lastEpisodeOrder = item.episode?.order ?: -1,
+
+                lastProcessTime = 0,
+            )
+
+            cartoonInfoDao.modify(cartoonInfo = targetCartoon)
+            cartoonInfoDao.deleteStar(cartoonInfo)
+
+            _flow.update {
+                it.copy(
+                    isMigrating = false,
+                    isMigrated = true,
+                )
+            }
+            onSus()
+        }
+
     }
 
 

@@ -35,6 +35,7 @@ import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.navigationDetailed
 import com.heyanle.easybangumi4.source.LocalSourceBundleController
+import com.heyanle.easybangumi4.source_api.entity.CartoonCover
 import com.heyanle.easybangumi4.source_api.entity.toIdentify
 import com.heyanle.easybangumi4.ui.common.CartoonCardWithCover
 import com.heyanle.easybangumi4.ui.common.PagingCommon
@@ -50,6 +51,7 @@ import com.heyanle.easybangumi4.ui.search_migrate.search.SearchViewModel
 fun ColumnScope.GatherSearch(
     searchViewModel: SearchViewModel
 ) {
+    val nav = LocalNavController.current
     val keyboard = LocalSoftwareKeyboardController.current
     val searchComponents = LocalSourceBundleController.current.searches()
     val vm =
@@ -68,23 +70,26 @@ fun ColumnScope.GatherSearch(
 
 
 
-    LazyColumn(modifier = Modifier
-        .fillMaxWidth()
-        .weight(1f)
-        .nestedScroll(object : NestedScrollConnection {
-            override fun onPostScroll(
-                consumed: Offset,
-                available: Offset,
-                source: NestedScrollSource
-            ): Offset {
-                keyboard?.hide()
-                return super.onPostScroll(consumed, available, source)
-            }
-        })
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxWidth()
+            .weight(1f)
+            .nestedScroll(object : NestedScrollConnection {
+                override fun onPostScroll(
+                    consumed: Offset,
+                    available: Offset,
+                    source: NestedScrollSource
+                ): Offset {
+                    keyboard?.hide()
+                    return super.onPostScroll(consumed, available, source)
+                }
+            })
     ) {
         itemList.value?.let {
             items(it) {
-                MigrateSourceItem(sourceItem = it, starVm = starVm)
+                MigrateSourceItem(sourceItem = it, starVm = starVm){
+                    nav.navigationDetailed(it)
+                }
             }
         }
 
@@ -95,9 +100,10 @@ fun ColumnScope.GatherSearch(
 fun MigrateSourceItem(
     sourceItem: GatherSearchViewModel.GatherSearchItem,
     starVm: CoverStarViewModel,
+    supportLongTouchStart: Boolean = true,
+    onClick: (CartoonCover)->Unit,
 ) {
     val page = sourceItem.flow.collectAsLazyPagingItems()
-    val nav = LocalNavController.current
     val haptic = LocalHapticFeedback.current
     val set = starVm.setFlow.collectAsState(initial = setOf<String>())
     Column(
@@ -108,7 +114,7 @@ fun MigrateSourceItem(
 
         ListItem(
             headlineContent = { Text(text = sourceItem.searchComponent.source.label) },
-            trailingContent = { Text(text = stringResource(id = R.string.long_press_to_star)) },
+            trailingContent = { if (supportLongTouchStart) Text(text = stringResource(id = R.string.long_press_to_star)) },
             colors = ListItemDefaults.colors(
                 containerColor = Color.Transparent
             ),
@@ -126,12 +132,14 @@ fun MigrateSourceItem(
                             star = set.value.contains(it.toIdentify()),
                             cartoonCover = it,
                             onClick = {
-                                nav.navigationDetailed(it)
+                               onClick(it)
                             },
-                            onLongPress = {
-                                starVm.star(it)
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            },
+                            onLongPress = if (supportLongTouchStart) {
+                                {
+                                    starVm.star(it)
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                }
+                            } else null,
                         )
                     }
 

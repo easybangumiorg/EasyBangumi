@@ -17,22 +17,22 @@ import java.net.URLEncoder
  * Created by heyanle on 2023/12/16.
  * https://github.com/heyanLE
  */
-@Entity(primaryKeys = ["id", "source", "url"])
+@Entity(tableName = "CartoonInfoV2", primaryKeys = ["id", "source"])
 data class CartoonInfo(
 
     // finder
     val id: String,              // 标识，由源自己支持，用于区分番剧
     val source: String,
-    val url: String,
 
     // cartoonCover
     val name: String,
     val coverUrl: String,
     val intro: String,
+    val url: String,
 
     // cartoon detailed
     val isDetailed: Boolean = false,
-    val genre: String = "",          // 标签，为 "xx, xx"，源 id
+    val genre: String = "",          // 标签，为 "xx, xx"，标签 id
     val description: String = "",
     val updateStrategy: Int = Cartoon.UPDATE_STRATEGY_ALWAYS,
     val isUpdate: Boolean = false,
@@ -201,7 +201,7 @@ data class CartoonInfo(
     }
 
     fun getSummary(): CartoonSummary {
-        return CartoonSummary(id, source, url)
+        return CartoonSummary(id, source)
     }
 
     fun toIdentify(): String {
@@ -213,22 +213,22 @@ data class CartoonInfo(
     }
 
     fun match(cartoon: Cartoon): Boolean {
-        return this.id == cartoon.id && this.source == cartoon.source && this.url == cartoon.url
+        return this.id == cartoon.id && this.source == cartoon.source
     }
 
     fun match(cartoon: CartoonCover): Boolean {
-        return this.id == cartoon.id && this.source == cartoon.source && this.url == cartoon.url
+        return this.id == cartoon.id && this.source == cartoon.source
     }
 
     fun match(cartoon: CartoonSummary): Boolean {
-        return this.id == cartoon.id && this.source == cartoon.source && this.url == cartoon.url
+        return this.id == cartoon.id && this.source == cartoon.source
     }
 
     fun isUp() = upTime != 0L
 
 
     fun toSummary(): CartoonSummary {
-        return CartoonSummary(id, source, url)
+        return CartoonSummary(id, source)
     }
 
     fun toCartoon(): Cartoon {
@@ -253,13 +253,13 @@ data class CartoonInfo(
         playLine: List<PlayLine>? = null,
     ): CartoonInfo {
         var isUpdate = cartoon.isUpdate
-        if(playLine != null){
+        if (playLine != null) {
             val old = this.playLine
-            if(old.size != playLine.size){
+            if (old.size != playLine.size) {
                 isUpdate = true
-            }else{
-                for (i in 0 until playLine.size.coerceAtMost(old.size)){
-                    if(playLine[i].episode.size != old[i].episode.size){
+            } else {
+                for (i in 0 until playLine.size.coerceAtMost(old.size)) {
+                    if (playLine[i].episode.size != old[i].episode.size) {
                         isUpdate = true
                         break
                     }
@@ -324,10 +324,10 @@ data class CartoonInfo(
 
         if (id != other.id) return false
         if (source != other.source) return false
-        if (url != other.url) return false
         if (name != other.name) return false
         if (coverUrl != other.coverUrl) return false
         if (intro != other.intro) return false
+        if (url != other.url) return false
         if (isDetailed != other.isDetailed) return false
         if (genre != other.genre) return false
         if (description != other.description) return false
@@ -361,10 +361,10 @@ data class CartoonInfo(
     override fun hashCode(): Int {
         var result = id.hashCode()
         result = 31 * result + source.hashCode()
-        result = 31 * result + url.hashCode()
         result = 31 * result + name.hashCode()
         result = 31 * result + coverUrl.hashCode()
         result = 31 * result + intro.hashCode()
+        result = 31 * result + url.hashCode()
         result = 31 * result + isDetailed.hashCode()
         result = 31 * result + genre.hashCode()
         result = 31 * result + description.hashCode()

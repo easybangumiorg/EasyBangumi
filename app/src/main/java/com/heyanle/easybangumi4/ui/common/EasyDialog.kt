@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
+import com.heyanle.easybangumi4.source_api.Source
 
 @Composable
 fun EasyDeleteDialog(
@@ -211,6 +212,87 @@ fun EasyMutiSelectionDialog(
                         }) {
                         Text(text = confirmText)
                     }
+                }
+
+            },
+        )
+    }
+
+}
+
+@Composable
+fun EasyMutiSelectionDialog(
+    show: Boolean,
+    items: List<Source>,
+    initSelection: List<Source>,
+    title: @Composable () -> Unit = {},
+    message: @Composable () -> Unit = {},
+    confirmText: String = stringResource(id = com.heyanle.easy_i18n.R.string.confirm),
+    onConfirm: (List<Source>) -> Unit,
+    onDismissRequest: () -> Unit,
+) {
+    val selectList = remember {
+        mutableStateListOf(*initSelection.toTypedArray())
+    }
+
+    if (show) {
+        AlertDialog(
+            title = title,
+            text = {
+                Column {
+                    message()
+                    items.forEach { key ->
+                        val select = selectList.contains(key)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    if (!select) {
+                                        selectList.add(key)
+                                    } else {
+                                        selectList.remove(key)
+                                    }
+                                }
+                                .padding(4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Checkbox(checked = select, onCheckedChange = {
+                                if (it) {
+                                    selectList.add(key)
+                                } else {
+                                    selectList.remove(key)
+                                }
+                            })
+                            Text(text = key.label)
+
+                        }
+                    }
+                }
+            },
+            onDismissRequest = onDismissRequest,
+            confirmButton = {
+                TextButton(
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Transparent,
+                        contentColor = MaterialTheme.colorScheme.onBackground
+                    ),
+                    onClick = {
+                        onDismissRequest()
+                    }
+                ) {
+                    Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.cancel))
+                }
+
+                TextButton(
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Transparent,
+                        contentColor = MaterialTheme.colorScheme.onBackground
+                    ),
+                    onClick = {
+                        onConfirm(selectList)
+                        onDismissRequest()
+                    }) {
+                    Text(text = confirmText)
                 }
 
             },

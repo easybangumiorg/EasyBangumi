@@ -51,12 +51,6 @@ fun SourceConfig(
     }) {
         val sourceInfo = it.sourceInfo(sourceKey)
         when (sourceInfo) {
-            is SourceInfo.Migrating -> {
-                ErrorPage(
-                    modifier = Modifier.fillMaxSize(),
-                    errorMsg = stringResource(id = R.string.migrating),
-                )
-            }
 
             is SourceInfo.Loaded -> {
                 it.preference(sourceKey)?.let { config ->

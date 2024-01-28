@@ -1,7 +1,7 @@
 package com.heyanle.easybangumi4.base
 
 import androidx.webkit.internal.ApiFeature.T
-import com.heyanle.easybangumi4.source_api.SourceResult
+import com.heyanle.easybangumi4.SourceResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 

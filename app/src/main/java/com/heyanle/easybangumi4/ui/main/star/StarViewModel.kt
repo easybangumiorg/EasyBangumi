@@ -83,6 +83,10 @@ class StarViewModel : ViewModel() {
         ) : DialogState()
 
         data object Proc : DialogState()
+
+        data class MigrateSource(
+            val selection: Set<CartoonInfo>,
+        ): DialogState()
     }
 
     private val cartoonStarController: CartoonStarController by Injekt.injectLazy()
@@ -232,6 +236,10 @@ class StarViewModel : ViewModel() {
             } else it.selection.plus(cartoon)
             it.copy(selection = selection)
         }
+        if(_stateFlow.value.selection.isEmpty()){
+            lastSelectCartoon = null
+            lastSelectTag = null
+        }
     }
 
     fun onSelectionLongPress(cartoonInfo: CartoonInfo) {
@@ -285,6 +293,12 @@ class StarViewModel : ViewModel() {
         }
     }
 
+    fun dialogMigrateSelect(){
+        _stateFlow.update {
+            it.copy(dialog = DialogState.MigrateSource(it.selection))
+        }
+    }
+
     fun dialogProc() {
         _stateFlow.update {
             it.copy(
@@ -294,23 +308,19 @@ class StarViewModel : ViewModel() {
     }
 
     fun onUpdateSelection() {
-//        val list = stateFlow.value.selection.toList() ?: emptyList()
-//        onSelectionExit()
-//        if (updateController.tryUpdate(list)) {
-//            stringRes(com.heyanle.easy_i18n.R.string.start_update_selection).moeSnackBar()
-//        } else {
-//            stringRes(com.heyanle.easy_i18n.R.string.doing_update_wait).moeSnackBar()
-//        }
-
+        val list = stateFlow.value.selection.toList() ?: emptyList()
+        onSelectionExit()
+        updateController.update(list)
+        stringRes(com.heyanle.easy_i18n.R.string.start_update_selection).moeSnackBar()
     }
 
-    fun onUpSelection(){
+    fun onUpSelection() {
         viewModelScope.launch {
             val old = _stateFlow.value
             var start = System.currentTimeMillis()
             val set = old.selection.map {
                 it.copy(
-                    upTime = start ++
+                    upTime = if (it.upTime == 0L) start++ else 0
                 )
             }
             cartoonInfoDao.modify(set)
@@ -336,6 +346,12 @@ class StarViewModel : ViewModel() {
         }
 
     }
+
+    fun onMigrate(selection: Set<CartoonInfo>, source: List<String>){
+
+    }
+
+
 
     fun getFilterState(): FilterState<CartoonInfo> {
         return cartoonStarController.filterState

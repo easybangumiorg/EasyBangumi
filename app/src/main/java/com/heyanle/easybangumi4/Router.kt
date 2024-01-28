@@ -34,6 +34,7 @@ import com.heyanle.easybangumi4.ui.extension_store.ExtensionStore
 import com.heyanle.easybangumi4.ui.local_play.LocalPlay
 import com.heyanle.easybangumi4.ui.main.Main
 import com.heyanle.easybangumi4.ui.main.history.History
+import com.heyanle.easybangumi4.ui.search_migrate.migrate.Migrate
 import com.heyanle.easybangumi4.ui.setting.Setting
 import com.heyanle.easybangumi4.ui.setting.SettingPage
 import com.heyanle.easybangumi4.ui.source_config.SourceConfig
@@ -102,13 +103,6 @@ fun NavHostController.navigationSearch(defSearchKey: String, defSourceKey: Strin
     val es = URLEncoder.encode(defSourceKey, "utf-8")
     navigate("${SEARCH}?defSearchKey=${ed}&defSourceKey=${es}")
 }
-
-fun NavHostController.navigationCartoonMigrate(defSearchKey: String, defSourceKey: List<String> = emptyList()) {
-    val ed = URLEncoder.encode(defSearchKey, "utf-8")
-    val es = URLEncoder.encode(defSourceKey.toJson(), "utf-8")
-    navigate("${CARTOON_MIGRATE}?defSearchKey=${ed}&defSourceKeys=${es}")
-}
-
 fun NavHostController.navigationSourceHome(key: String) {
     navigate("${SOURCE_HOME}?key=${key}")
 }
@@ -154,24 +148,21 @@ fun NavHostController.navigationDlna(
     episode: Int,
 ) {
     // easyTODO("详情页")
-    val url = URLEncoder.encode(cartoonCover.url, "utf-8")
     val id = URLEncoder.encode(cartoonCover.id, "utf-8")
     val ed = URLEncoder.encode(cartoonCover.source, "utf-8")
     // easyTODO("详情页")
-    navigate("${DLNA}?url=${url}&source=${ed}&id=${id}&lineIndex=${lineIndex}&episode=${episode}")
+    navigate("${DLNA}?source=${ed}&id=${id}&lineIndex=${lineIndex}&episode=${episode}")
 }
 
 fun NavHostController.navigationDetailed(
-    i: String, u: String, s: String,
+    i: String, s: String,
     e: CartoonPlayViewModel.EnterData,
 ) {
-    // easyTODO("详情页")
-    val url = URLEncoder.encode(u, "utf-8")
     val id = URLEncoder.encode(i, "utf-8")
     val ed = URLEncoder.encode(s, "utf-8")
     val enterData = URLEncoder.encode(e.toJson(), "utf-8")
     // easyTODO("详情页")
-    navigate("${DETAILED}?url=${url}&source=${ed}&id=${id}&enter_date=${enterData}")
+    navigate("${DETAILED}?source=${ed}&id=${id}&enter_date=${enterData}")
 }
 
 fun NavHostController.navigationLocalPlay(
@@ -195,6 +186,10 @@ fun NavHostController.navigationSetting(
 
 fun NavHostController.navigationCartoonTag() {
     navigate(TAG_MANAGE)
+}
+
+fun NavHostController.navigationMigrate(summaries: List<CartoonSummary>, sourceKeys: List<String>) {
+    navigate("${CARTOON_MIGRATE}?summaries=${URLEncoder.encode(summaries.toJson(), "utf-8")}&sourceKeys=${URLEncoder.encode(sourceKeys.toJson(), "utf-8")}")
 }
 
 // 缺省路由
@@ -226,9 +221,8 @@ fun Nav() {
             }
 
             composable(
-                route = "${DETAILED}?url={url}&source={source}&id={id}&enter_data={enter_data}",
+                route = "${DETAILED}?source={source}&id={id}&enter_data={enter_data}",
                 arguments = listOf(
-                    navArgument("url") { defaultValue = "" },
                     navArgument("source") { defaultValue = "" },
                     navArgument("id") { defaultValue = "" },
                     navArgument("enter_data") { defaultValue = "{}" },
@@ -236,10 +230,6 @@ fun Nav() {
             ) {
                 val id = it.arguments?.getString("id") ?: ""
                 val source = it.arguments?.getString("source") ?: ""
-                val url = it.arguments?.getString("url") ?: ""
-                LaunchedEffect(Unit) {
-                    "id:$id, source: $source, url: $url".loge()
-                }
 
                 var enterDataString = it.arguments?.getString("enter_data") ?: ""
                 enterDataString = URLDecoder.decode(enterDataString, "utf-8")
@@ -255,7 +245,6 @@ fun Nav() {
                 CartoonPlay(
                     id = URLDecoder.decode(id, "utf-8"),
                     source = URLDecoder.decode(source, "utf-8"),
-                    url = URLDecoder.decode(url, "utf-8"),
                     enterData
                 )
             }
@@ -351,20 +340,31 @@ fun Nav() {
             }
 
             composable(
-                "${CARTOON_MIGRATE}?defSearchKey={defSearchKey}&defSourceKeys={defSourceKey}",
+                "${CARTOON_MIGRATE}?summaries={summaries}&sourceKeys={sourceKeys}",
                 arguments = listOf(
-                    navArgument("defSearchKey") { defaultValue = "" },
-                    navArgument("defSourceKey") { defaultValue = "" },
+                    navArgument("summaries") { defaultValue = "" },
+                    navArgument("sourceKeys") { defaultValue = "" },
                 )
             ) {
-                val defSearchKey = it.arguments?.getString("defSearchKey") ?: ""
-                val defSourceKey = URLDecoder.decode(it.arguments?.getString("defSourceKey") ?: "", "utf-8")
-                val defSourcesKey = defSourceKey.jsonTo<List<String>>() ?: emptyList()
+                val summariesJson = it.arguments?.getString("summaries")?.let { URLDecoder.decode(it, "utf-8") }
+                val sourceKeysJson = it.arguments?.getString("sourceKeys")?.let { URLDecoder.decode(it, "utf-8") }
+                val summaries = summariesJson?.jsonTo<List<CartoonSummary>>() ?: emptyList()
+                val sourceKeys = sourceKeysJson?.jsonTo<List<String>>() ?: emptyList()
+                if(summaries.isEmpty() || sourceKeys.isEmpty()){
+                    LaunchedEffect(key1 = Unit){
+                        nav.popBackStack()
+                    }
+                }
+
                 NormalSystemBarColor()
                 Surface(
                     color = MaterialTheme.colorScheme.background,
                     contentColor = MaterialTheme.colorScheme.onBackground
                 ) {
+                    Migrate(
+                        summaries = summaries,
+                        sources = sourceKeys
+                    )
                     //CartoonMigrate(def = URLDecoder.decode(defSearchKey, "utf-8"), defSourceKey = defSourcesKey)
                 }
 
@@ -394,10 +394,6 @@ fun Nav() {
             ) {
                 val id = it.arguments?.getString("id") ?: ""
                 val source = it.arguments?.getString("source") ?: ""
-                val url = it.arguments?.getString("url") ?: ""
-                LaunchedEffect(Unit) {
-                    "id:$id, source: $source, url: $url".loge()
-                }
                 val lineIndex = it.arguments?.getInt("lineIndex") ?: -1
                 val episode = it.arguments?.getInt("episode") ?: -1
 
@@ -405,7 +401,6 @@ fun Nav() {
                 Dlna(
                     id = URLDecoder.decode(id, "utf-8"),
                     source = URLDecoder.decode(source, "utf-8"),
-                    url = URLDecoder.decode(url, "utf-8"),
                     DlnaViewModel.EnterData(lineIndex, episode)
                 )
             }

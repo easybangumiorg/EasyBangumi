@@ -101,6 +101,8 @@
     <string name="source_manage">番源管理</string>
     <string name="choose_source">选择番源</string>
 
+    <string name="choose_source_to_migrate">选择需要迁移到的番源</string>
+
     <string name="today">今天</string>
     <string name="yesterday">昨天</string>
     <string name="day_age">%1$s 天前</string>
@@ -148,6 +150,12 @@
 
     <string name="migrating">数据升级中</string>
 
+    <string name="make_sure_to_migrate">确认要迁移吗？</string>
+    <string name="migrate_sus">迁移成功</string>
+
+    <string name="migrate_cover_failed_click_to_search">自动搜索失败，点击手动搜索</string>
+
+    <string name="migrate_start">开始迁移</string>
     <string name="migrate_now">立刻迁移</string>
 
     <string name="cartoon_migrate">番剧迁移</string>
@@ -311,6 +319,10 @@
     <string name="try_play_next">尝试播放下一集！</string>
 
     <string name="play_list">播放列表</string>
+
+    <string name="play_process_if_migrate">迁移后的播放进度（可手动切换）</string>
+
+    <string name="play_line">播放线路</string>
 
     <string name="reverse">列表反转</string>
 
