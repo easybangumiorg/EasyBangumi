@@ -1,9 +1,9 @@
 package com.heyanle.easybangumi4.cartoon
 
-import com.heyanle.easybangumi4.SourceResult
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
 import com.heyanle.easybangumi4.case.SourceStateCase
+import com.heyanle.easybangumi4.source_api.SourceResult
 import com.heyanle.easybangumi4.source_api.entity.Cartoon
 import com.heyanle.easybangumi4.utils.CoroutineProvider
 import kotlinx.coroutines.CoroutineScope

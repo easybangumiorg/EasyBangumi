@@ -12,6 +12,7 @@ import com.heyanle.easybangumi4.source_api.utils.core.setDefaultSettings
 import com.heyanle.easybangumi4.utils.clearWeb
 import com.heyanle.easybangumi4.utils.evaluateJavascript
 import com.heyanle.easybangumi4.utils.getHtml
+import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.stop
 import com.heyanle.easybangumi4.utils.waitUntil
 import com.heyanle.easybangumi4.utils.waitUntilLoadFinish
@@ -74,7 +75,10 @@ object WebViewHelperImpl : WebViewHelper {
         }
         _globalWebView.resumeTimers()
         _globalWebView.loadUrl(url, header.orEmpty())
-        _globalWebView.waitUntil(Regex(callBackRegex), timeOut)
+        _globalWebView.waitUntil(Regex(callBackRegex), timeOut, true)
+            .apply {
+                ("waitUntil: "+this).logi("WebView.waitUntil")
+            }
         _globalWebView.evaluateJavascript(actionJs)
         _globalWebView.getHtml().also {
             _globalWebView.stop()
@@ -93,11 +97,15 @@ object WebViewHelperImpl : WebViewHelper {
         _globalWebView.settings.userAgentString = userAgentString
         _globalWebView.resumeTimers()
         _globalWebView.loadUrl(url, header.orEmpty())
-        _globalWebView.waitUntilLoadFinish(timeOut)
-        _globalWebView.evaluateJavascript(actionJs)
-        _globalWebView.waitUntil(Regex(regex), timeOut).also {
-            _globalWebView.stop()
+        val r = _globalWebView.waitUntil(Regex(regex), timeOut, false)
+        if(r.isNotEmpty() || actionJs == null){
+            return@withContext r
         }
+        _globalWebView.evaluateJavascript(actionJs)
+        "regex ${regex} ${Regex(regex)}".logi("WebView.waitUntil")
+        _globalWebView.waitUntil(Regex(regex), timeOut, true)
+    }.apply {
+        ("interceptResource: "+this).logi("WebView.waitUntil")
     }
 
     override suspend fun interceptBlob(
