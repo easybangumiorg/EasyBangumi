@@ -73,7 +73,7 @@ fun CartoonCardWithCover(
         ) {
             OkImage(
                 modifier = Modifier.fillMaxSize(),
-                image = cartoonCover.coverUrl?:"",
+                image = cartoonCover.coverUrl ?: "",
                 contentDescription = cartoonCover.title,
                 errorRes = R.drawable.placeholder,
             )
@@ -158,7 +158,7 @@ fun CartoonStarCardWithCover(
         ) {
             OkImage(
                 modifier = Modifier.fillMaxSize(),
-                image = cartoon.coverUrl?:"",
+                image = cartoon.coverUrl ?: "",
                 contentDescription = cartoon.name,
                 errorRes = R.drawable.placeholder,
             )
@@ -182,7 +182,7 @@ fun CartoonStarCardWithCover(
                     val index = last.first.sortedEpisodeList.indexOf(last.second)
                     Text(
                         fontSize = 13.sp,
-                        text = "${index+1}/${last.first.sortedEpisodeList.size}",
+                        text = "${index + 1}/${last.first.sortedEpisodeList.size}",
                         color = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier
                             .align(Alignment.TopEnd)
@@ -196,20 +196,28 @@ fun CartoonStarCardWithCover(
             }
 
 
-            if(showIsUpdate || showIsUp){
-                Row (
+            if (showIsUpdate || showIsUp) {
+                Row(
                     modifier = Modifier
                         .align(Alignment.TopStart)
                         .background(
                             MaterialTheme.colorScheme.primary,
                             RoundedCornerShape(0.dp, 0.dp, 4.dp, 0.dp)
                         )
-                        .padding(4.dp, 0.dp)
+                        .padding(4.dp, 0.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if(showIsUp && cartoon.upTime > 0L){
-                        Icon(Icons.Filled.PushPin, modifier = Modifier.size(13.dp).rotate(-45f),contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.push_pin) , tint = MaterialTheme.colorScheme.onPrimary)
+                    if (showIsUp && cartoon.upTime > 0L) {
+                        Icon(
+                            Icons.Filled.PushPin,
+                            modifier = Modifier
+                                .size(13.dp)
+                                .rotate(-45f),
+                            contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.push_pin),
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
                     }
-                    if(showIsUpdate && cartoon.isUpdate){
+                    if (showIsUpdate && cartoon.isUpdate) {
                         Text(
                             fontSize = 13.sp,
                             text = stringResource(id = com.heyanle.easy_i18n.R.string.need_update),
@@ -229,7 +237,7 @@ fun CartoonStarCardWithCover(
             maxLines = 2,
             textAlign = TextAlign.Start,
             overflow = TextOverflow.Ellipsis,
-            color = if(selected) MaterialTheme.colorScheme.onPrimary else Color.Unspecified
+            color = if (selected) MaterialTheme.colorScheme.onPrimary else Color.Unspecified
         )
         Spacer(modifier = Modifier.size(4.dp))
     }
@@ -284,7 +292,7 @@ fun CartoonCardWithoutCover(
                 textAlign = TextAlign.End
             )
         }
-        if(star){
+        if (star) {
             Text(
                 text = stringResource(id = com.heyanle.easy_i18n.R.string.stared_min),
                 color = MaterialTheme.colorScheme.secondary,

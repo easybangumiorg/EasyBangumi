@@ -6,7 +6,6 @@ import androidx.collection.arraySetOf
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.source.SourceException
 import com.heyanle.easybangumi4.source_api.IconSource
-import com.heyanle.easybangumi4.source_api.MigrateSource
 import com.heyanle.easybangumi4.source_api.Source
 import com.heyanle.easybangumi4.source_api.component.ComponentWrapper
 import com.heyanle.easybangumi4.source_api.component.detailed.DetailedComponent
@@ -46,7 +45,6 @@ class ComponentBundle(
 
     // Source 接口
     private val sourceClazz: Set<KClass<*>> = setOf(
-        MigrateSource::class,
         ExtensionSource::class,
         IconSource::class,
         ExtensionIconSource::class,
@@ -131,6 +129,7 @@ class ComponentBundle(
         if (!utilsClazz.contains(clazz) &&
             !componentClazz.contains(clazz) &&
             !registerClazz.contains(clazz) &&
+            !contextClazz.contains(clazz) &&
             clazz != ComponentWrapper::class
         ) {
             throw SourceException("尝试非法注入： ${clazz.simpleName}")

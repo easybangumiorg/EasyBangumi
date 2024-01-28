@@ -52,11 +52,10 @@ import loli.ball.easyplayer2.EasyPlayerScaffoldBase
 fun CartoonPlay(
     id: String,
     source: String,
-    url: String,
     enterData: CartoonPlayViewModel.EnterData? = null
 ) {
-    val summary = remember(key1 = id, key2 = source, key3 = url) {
-        CartoonSummary(id, source, url)
+    val summary = remember(key1 = id, key2 = source) {
+        CartoonSummary(id, source)
     }
     val nav = LocalNavController.current
 
@@ -278,7 +277,6 @@ fun CartoonPlay(
                             CartoonSummary(
                                 detailState.cartoonInfo.id,
                                 detailState.cartoonInfo.source,
-                                detailState.cartoonInfo.url
                             ),
                             detailState.cartoonInfo.playLineWrapper.indexOf(playState?.playLine) ?: -1,
                             playState?.playLine?.playLine?.episode?.indexOf(playState.episode) ?: -1

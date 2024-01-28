@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.ui.search_migrate.search
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -83,6 +85,7 @@ fun Search(
             text = searchVM.searchBarText.value,
             isGather = searchVM.isGather.value,
             focusRequester = focusRequester,
+            showAction = true,
             onBack = {
                 nav.popBackStack()
             },
@@ -195,6 +198,7 @@ fun SearchTopAppBar(
     text: String,
     isGather: Boolean, // 是否是聚合搜索模式
     focusRequester: FocusRequester,
+    showAction: Boolean = true,
     onBack: () -> Unit,
     onSearch: (String) -> Unit,
     onTextChange: (String) -> Unit,
@@ -220,12 +224,17 @@ fun SearchTopAppBar(
             LaunchedEffect(key1 = Unit) {
                 focusRequester.requestFocus()
             }
-            TextField(keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            TextField(
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(onSearch = {
                     onSearch(text)
                 }),
                 maxLines = 1,
-                modifier = Modifier.focusRequester(focusRequester),
+                modifier = Modifier
+                    .focusRequester(focusRequester)
+                    .horizontalScroll(
+                        rememberScrollState()
+                    ),
                 colors = TextFieldDefaults.textFieldColors(
                     containerColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
@@ -263,35 +272,41 @@ fun SearchTopAppBar(
                 )
             }
 
-            IconButton(onClick = {
-                showMenu = !showMenu
-            }) {
-                Icon(
-                    Icons.Filled.MoreVert,
-                    contentDescription = stringResource(id = R.string.more)
-                )
-            }
 
-            DropdownMenu(
-                expanded = showMenu,
-                onDismissRequest = { showMenu = false }) {
 
-                DropdownMenuItem(
-                    text = {
-                        Text(text = stringResource(id = R.string.gather_search))
-                    },
-                    onClick = {
-                        onIsGatherChange(!isGather)
-                    },
-                    leadingIcon = {
-                        if(isGather){
-                            Icon(Icons.Filled.Check, contentDescription = stringResource(id = R.string.gather_search))
-                        }else{
-                            Box(modifier = Modifier.size(24.dp))
+            if(showAction){
+                IconButton(onClick = {
+                    showMenu = !showMenu
+                }) {
+                    Icon(
+                        Icons.Filled.MoreVert,
+                        contentDescription = stringResource(id = R.string.more)
+                    )
+                }
+
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false }) {
+
+                    DropdownMenuItem(
+                        text = {
+                            Text(text = stringResource(id = R.string.gather_search))
+                        },
+                        onClick = {
+                            onIsGatherChange(!isGather)
+                        },
+                        leadingIcon = {
+                            if(isGather){
+                                Icon(Icons.Filled.Check, contentDescription = stringResource(id = R.string.gather_search))
+                            }else{
+                                Box(modifier = Modifier.size(24.dp))
+                            }
                         }
-                    }
-                )
+                    )
+                }
             }
+
+
         }
     )
 

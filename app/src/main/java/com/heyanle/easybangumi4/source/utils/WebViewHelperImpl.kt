@@ -33,6 +33,10 @@ object WebViewHelperImpl : WebViewHelper {
     var check: WeakReference<(WebView) -> Boolean>? = null
     var stop: WeakReference<(WebView) -> Unit>? = null
 
+    override fun getGlobalWebView(): WebView {
+        return _globalWebView
+    }
+
     override fun start(webView: WebView, check: (WebView) -> Boolean, stop: (WebView) -> Unit) {
         webViewRef = WeakReference(webView)
         WebViewHelperImpl.check = WeakReference(check)
@@ -63,17 +67,17 @@ object WebViewHelperImpl : WebViewHelper {
         actionJs: String?,
         timeOut: Long
     ): String = withContext(Dispatchers.Main) {
-        globalWebView.clearWeb()
-        globalWebView.settings.apply {
+        _globalWebView.clearWeb()
+        _globalWebView.settings.apply {
             setUserAgentString(userAgentString)
             setDefaultTextEncodingName(encoding)
         }
-        globalWebView.resumeTimers()
-        globalWebView.loadUrl(url, header.orEmpty())
-        globalWebView.waitUntil(Regex(callBackRegex), timeOut)
-        globalWebView.evaluateJavascript(actionJs)
-        globalWebView.getHtml().also {
-            globalWebView.stop()
+        _globalWebView.resumeTimers()
+        _globalWebView.loadUrl(url, header.orEmpty())
+        _globalWebView.waitUntil(Regex(callBackRegex), timeOut)
+        _globalWebView.evaluateJavascript(actionJs)
+        _globalWebView.getHtml().also {
+            _globalWebView.stop()
         }
     }
 
@@ -85,14 +89,14 @@ object WebViewHelperImpl : WebViewHelper {
         actionJs: String?,
         timeOut: Long
     ): String = withContext(Dispatchers.Main) {
-        globalWebView.clearWeb()
-        globalWebView.settings.userAgentString = userAgentString
-        globalWebView.resumeTimers()
-        globalWebView.loadUrl(url, header.orEmpty())
-        globalWebView.waitUntilLoadFinish(timeOut)
-        globalWebView.evaluateJavascript(actionJs)
-        globalWebView.waitUntil(Regex(regex), timeOut).also {
-            globalWebView.stop()
+        _globalWebView.clearWeb()
+        _globalWebView.settings.userAgentString = userAgentString
+        _globalWebView.resumeTimers()
+        _globalWebView.loadUrl(url, header.orEmpty())
+        _globalWebView.waitUntilLoadFinish(timeOut)
+        _globalWebView.evaluateJavascript(actionJs)
+        _globalWebView.waitUntil(Regex(regex), timeOut).also {
+            _globalWebView.stop()
         }
     }
 
@@ -105,35 +109,35 @@ object WebViewHelperImpl : WebViewHelper {
         timeOut: Long
     ): String = withContext(Dispatchers.Main) {
         val targetRegex = Regex(regex)
-        globalWebView.clearWeb()
-        globalWebView.settings.userAgentString = userAgentString
-        globalWebView.resumeTimers()
-        globalWebView.webViewClient = object : LightweightGettingWebViewClient(targetRegex, false) {
+        _globalWebView.clearWeb()
+        _globalWebView.settings.userAgentString = userAgentString
+        _globalWebView.resumeTimers()
+        _globalWebView.webViewClient = object : LightweightGettingWebViewClient(targetRegex, false) {
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
-                globalWebView.evaluateJavascript(blobHookJs)
+                _globalWebView.evaluateJavascript(blobHookJs)
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
-                globalWebView.evaluateJavascript(actionJs)
+                _globalWebView.evaluateJavascript(actionJs)
             }
         }
         suspendCoroutine { con ->
-            globalWebView.addJavascriptInterface(object : Any() {
+            _globalWebView.addJavascriptInterface(object : Any() {
                 @JavascriptInterface
                 fun handleWrapper(blobTextData: String) {
                     if (targetRegex.containsMatchIn(blobTextData)) {
-                        globalWebView.removeJavascriptInterface("blobHook")
+                        _globalWebView.removeJavascriptInterface("blobHook")
                         con.resume(blobTextData)
                     }
                 }
             }, "blobHook")
-            globalWebView.loadUrl(url, header.orEmpty())
+            _globalWebView.loadUrl(url, header.orEmpty())
             launch {
                 delay(timeOut)
                 con.resume("")
             }
         }.also {
-            globalWebView.stop()
+            _globalWebView.stop()
         }
     }
 
@@ -153,7 +157,7 @@ object WebViewHelperImpl : WebViewHelper {
     """
 
     val cookieManager = CookieManager.getInstance()
-    val globalWebView by lazy(LazyThreadSafetyMode.NONE) {
+    private val _globalWebView by lazy(LazyThreadSafetyMode.NONE) {
         WebView(APP).apply {
             setDefaultSettings()
             cookieManager.also {

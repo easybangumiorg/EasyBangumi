@@ -11,6 +11,7 @@ import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
 import com.heyanle.easybangumi4.cartoon.entity.SearchHistory
 import com.heyanle.easybangumi4.cartoon.old.entity.CartoonHistory
 import com.heyanle.easybangumi4.cartoon.old.entity.CartoonInfoOld
+import com.heyanle.easybangumi4.cartoon.old.entity.CartoonInfoV1
 import com.heyanle.easybangumi4.cartoon.old.entity.CartoonStar
 import com.heyanle.easybangumi4.cartoon.old.repository.db.AppDatabase
 import com.heyanle.easybangumi4.cartoon.old.repository.db.CacheDatabase
@@ -190,6 +191,14 @@ object Migrate {
                     migrateCartoonDatabase73(AppDatabase.build(context), CacheDatabase.build(context), cartoonDatabase)
                 }
 
+
+                // 78
+                if (lastVersionCode < 78) {
+                    migrateCartoonDatabase78(cartoonDatabase)
+                }
+
+                // 在这里添加新的迁移代码
+
                 androidPreferenceStore.getInt("last_version_code", 0).set(curVersionCode)
                 _isMigrating.update {
                     false
@@ -205,13 +214,93 @@ object Migrate {
     }
 
 
+    // 数据库变更 78 ==================================================
+
+    private suspend fun migrateCartoonDatabase78(
+        cartoonDatabase: CartoonDatabase,
+    ){
+        val newCartoonInfoDao = cartoonDatabase.cartoonInfo
+        val otherDao = cartoonDatabase.other
+        val cartoonInfoV1 = otherDao.getAllCartoonInfoV1()
+        val map = HashMap<String, CartoonInfoV1>()
+        cartoonInfoV1.forEach {
+            val key = "${it.id}-${URLEncoder.encode(it.source, "utf-8")}}"
+            val old = map[key]
+            if (old == null) {
+                map[key] = it
+            } else {
+                if (!old.isDetailed && it.isDetailed) {
+                    map[key] = it
+                } else if (it.isDetailed) {
+                    if (it.lastUpdateTime >= old.lastUpdateTime) {
+                        map[key] = it
+                    }
+                }
+            }
+        }
+        map.asIterable().forEach {
+            val no = newCartoonInfoDao.getByCartoonSummary(it.value.id, it.value.source)
+            if (no == null) {
+                newCartoonInfoDao.insert(it.value.toNewCartoon())
+            }
+        }
+    }
+
+    private fun CartoonInfoV1.toNewCartoon() = CartoonInfo(
+        id,
+        source,
+        name,
+        coverUrl,
+        intro,
+        url,
+        isDetailed,
+        genre,
+        description,
+        updateStrategy,
+        isUpdate,
+        status,
+        lastUpdateTime,
+        isShowLine,
+        sourceName,
+        reversal,
+        sortByKey,
+        isPlayLineLoad,
+        playLineString,
+        tags,
+        starTime,
+        upTime,
+        lastHistoryTime,
+        lastPlayLineEpisodeString,
+        lastLineId,
+        lastLinesIndex,
+        lastLineLabel,
+        lastEpisodeId,
+        lastEpisodeOrder,
+        lastEpisodeIndex,
+        lastEpisodeLabel,
+        lastTotalTile,
+        lastProcessTime,
+        createTime
+    )
+
+    // ↑ 数据库变更 78 ===================================================
+
+
     // 数据库变更 73 ===================================================
+
+    data class OldSummary73(
+        val id: String,              // 标识，由源自己支持，用于区分番剧
+        val source: String,
+        val url: String,
+    ){
+        fun toIdentify() = "${id}-${URLEncoder.encode(source, "utf-8")}-${URLEncoder.encode(url, "utf-8")}"
+    }
     private suspend fun migrateCartoonDatabase73(
         appDatabase: AppDatabase,
         cacheDatabase: CacheDatabase,
         cartoonDatabase: CartoonDatabase,
     ){
-        val needMigrateSummary = hashSetOf<CartoonSummary>()
+        val needMigrateSummary = hashSetOf<OldSummary73>()
 
         val starMap = hashMapOf<String, CartoonStar>()
         val historyMap = hashMapOf<String, CartoonHistory>()
@@ -219,16 +308,19 @@ object Migrate {
 
 
         appDatabase.cartoonStar.getAll().forEach {
-            needMigrateSummary.add(CartoonSummary(it.id, it.source, it.url))
-            starMap[it.toIdentify()] = it
+            val sum = OldSummary73(it.id, it.source, it.url)
+            needMigrateSummary.add(sum)
+            starMap[sum.toIdentify()] = it
         }
         appDatabase.cartoonHistory.getAll().forEach {
-            needMigrateSummary.add(CartoonSummary(it.id, it.source, it.url))
-            historyMap[it.toIdentify()] = it
+            val sum = OldSummary73(it.id, it.source, it.url)
+            needMigrateSummary.add(sum)
+            historyMap[sum.toIdentify()] = it
         }
         cacheDatabase.cartoonInfo.getAll().forEach {
-            needMigrateSummary.add(CartoonSummary(it.id, it.source, it.url))
-            infoMap[it.toIdentify()] = it
+            val sum = OldSummary73(it.id, it.source, it.url)
+            needMigrateSummary.add(sum)
+            infoMap[sum.toIdentify()] = it
         }
         cartoonDatabase.cartoonInfo.clearAll()
         needMigrateSummary.flatMap {
@@ -260,7 +352,7 @@ object Migrate {
     }
 
     private fun toCartoonInfo(
-        cartoonSummary: CartoonSummary,
+        cartoonSummary: OldSummary73,
         cartoonStar: CartoonStar?,
         cartoonHistory: CartoonHistory?,
         cartoonInfo: CartoonInfoOld?,
@@ -307,7 +399,7 @@ object Migrate {
             ).coerceAtMost(System.currentTimeMillis())
         )
     }
-    private fun CartoonSummary.toIdentify(): String {
+    private fun OldSummary73.toIdentify(): String {
         return "${id},${source},${URLEncoder.encode(url, "utf-8")}"
     }
 

@@ -2,12 +2,15 @@ package com.heyanle.easybangumi4.ui.search_migrate.migrate
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -18,17 +21,31 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Help
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.PushPin
+import androidx.compose.material.icons.filled.SyncAlt
+import androidx.compose.material.icons.filled.Tag
+import androidx.compose.material.icons.filled.Update
 import androidx.compose.material3.Badge
+import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -47,6 +64,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -59,9 +77,17 @@ import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.source.LocalSourceBundleController
 import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
 import com.heyanle.easybangumi4.ui.common.EasyDeleteDialog
+import com.heyanle.easybangumi4.ui.common.ErrorPage
 import com.heyanle.easybangumi4.ui.common.LoadingImage
+import com.heyanle.easybangumi4.ui.common.LoadingPage
+import com.heyanle.easybangumi4.ui.common.MoeDialog
+import com.heyanle.easybangumi4.ui.common.MoeDialogData
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.common.SelectionTopAppBar
+import com.heyanle.easybangumi4.ui.common.moeDialog
+import com.heyanle.easybangumi4.ui.common.moeSnackBar
+import com.heyanle.easybangumi4.ui.common.show
+import com.heyanle.easybangumi4.utils.stringRes
 
 /**
  * Created by heyanle on 2023/12/23.
@@ -80,88 +106,194 @@ fun Migrate(
     val behavior = TopAppBarDefaults.pinnedScrollBehavior()
     val nav = LocalNavController.current
 
-    Column {
-        if (sta.selection.isEmpty()) {
-            MigrateTopAppBar(
-                behavior,
-                sta.infoList.size,
-                onExit = {
-                    nav.popBackStack()
-                },
-                onHelp = {}
-            )
-        } else {
-            SelectionTopAppBar(
-                selectionItemsCount = sta.selection.size,
-                onExit = { vm.selectExit() },
-                onSelectAll = { vm.selectAll() },
-                onSelectInvert = {vm.selectInvert() },
-            )
+    val custom = vm.customSearchCartoonInfo
+    val cus = custom.value
+
+    val scrollState = rememberLazyListState()
+
+    var deleteCartoonInfo: List<CartoonInfo> by remember {
+        mutableStateOf(emptyList())
+    }
+
+    if (cus != null) {
+
+        val v = viewModel<MigrateItemViewModel>(
+            viewModelStoreOwner = vm.getOwner(cus),
+            factory = MigrateItemViewModelFactory(cus, sources)
+        )
+
+        MigrateGather(
+            cus,
+            sourceKeys = sources,
+            onBack = {
+                custom.value = null
+            },
+            onClick = {
+                v.changeCover(it)
+                custom.value = null
+            }
+        )
+    } else {
+        Column {
+            if (sta.selection.isEmpty()) {
+                MigrateTopAppBar(
+                    behavior,
+                    sta.infoList.size,
+                    onExit = {
+                        nav.popBackStack()
+                    },
+                    onHelp = {}
+                )
+            } else {
+                SelectionTopAppBar(
+                    selectionItemsCount = sta.selection.size,
+                    onExit = { vm.selectExit() },
+                    onSelectAll = { vm.selectAll() },
+                    onSelectInvert = { vm.selectInvert() },
+                )
+            }
+
+            MigrateContent(vm = vm, sta = sta, scrollState = scrollState,topAppBarScrollBehavior = behavior, onDelete = {
+                deleteCartoonInfo = it
+            })
+
+            if(!sta.isLoading && sta.selection.isNotEmpty()){
+                BottomAppBar(actions = {
+                    IconButton(onClick = {
+                        deleteCartoonInfo = sta.infoList
+                    }) {
+                        Icon(
+                            Icons.Filled.Delete, contentDescription = stringResource(id = R.string.delete)
+                        )
+                    }
+
+
+
+                }, floatingActionButton = {
+                    FloatingActionButton(
+                        onClick = {
+                            vm.migrate(sta.infoList)
+                        },
+                    ) {
+                        Icon(Icons.Filled.PlayArrow, contentDescription = stringResource(id = R.string.migrate_start))
+                    }
+                })
+            }
+
         }
 
-        MigrateContent(vm = vm, sta = sta)
+        if(!sta.isLoading){
+            if(sta.selection.isEmpty()){
+                Box(contentAlignment = Alignment.BottomEnd, modifier = Modifier.fillMaxSize()) {
 
+                    ExtendedFloatingActionButton(
+                        modifier = Modifier
+                            .padding(16.dp, 40.dp),
+                        text = {
+                            Text(text = stringResource(id = R.string.migrate_start))
+                        },
+                        icon = {
+                            Icon(
+                                Icons.Filled.PlayArrow,
+                                contentDescription = stringResource(id = R.string.migrate_start)
+                            )
+                        },
+                        onClick = {
+                            vm.migrate()
+                        }
+                    )
+                }
+            }
+        }
+
+
+    }
+
+
+    EasyDeleteDialog(show = deleteCartoonInfo.isNotEmpty(), onDelete = {
+        deleteCartoonInfo?.let {
+            vm.remove(it)
+        }
+        deleteCartoonInfo = emptyList()
+    }) {
+        deleteCartoonInfo = emptyList()
     }
 
 
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ColumnScope.MigrateContent(
     vm: MigrateViewModel,
-    sta: MigrateViewModel.MigrateState
+    sta: MigrateViewModel.MigrateState,
+    scrollState: LazyListState,
+    topAppBarScrollBehavior: TopAppBarScrollBehavior,
+    onDelete: (List<CartoonInfo>) -> Unit
 ) {
-    var deleteCartoonInfo: CartoonInfo? by remember {
-        mutableStateOf(null)
-    }
+
+
 
     BackHandler(
         enabled = sta.selection.isNotEmpty()
     ) {
         vm.selectExit()
     }
-    LazyColumn(
-        modifier = Modifier
-            .weight(1f)
-            .fillMaxWidth()
-    ) {
-        items(sta.infoList) {
-            val itemVM = viewModel<MigrateItemViewModel>(
-                viewModelStoreOwner = vm.getOwner(it),
-                factory = vm.getItemViewModelFactory(it)
-            )
-            MigrateItem(
-                cartoonInfo = it,
-                isSelect = sta.selection.contains(it),
-                itemVM = itemVM,
-                onChangeCover = {},
-                onClick = { info ->
-                    if (sta.selection.isNotEmpty()) {
-                        vm.selectChange(info)
+
+    if (sta.isLoading) {
+        LoadingPage(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        )
+    } else {
+        LazyColumn(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
+            state = scrollState,
+            contentPadding = PaddingValues(0.dp, 0.dp, 0.dp, 100.dp)
+        ) {
+            items(sta.infoList) {
+                val itemVM = viewModel<MigrateItemViewModel>(
+                    viewModelStoreOwner = vm.getOwner(it),
+                    factory = vm.getItemViewModelFactory(it)
+                )
+                MigrateItem(
+                    cartoonInfo = it,
+                    isSelect = sta.selection.contains(it),
+                    itemVM = itemVM,
+                    onChangeCover = {
+                        vm.customSearchCartoonInfo.value = it
+                    },
+                    onClick = { info ->
+                        if (sta.selection.isNotEmpty()) {
+                            vm.selectChange(info)
+                        }
+                    },
+                    onLongPress = { info ->
+                        vm.selectLongPress(info)
+                    },
+                    onDelete = { info ->
+                        onDelete(listOf(info))
+                    },
+                    onMigrateSus = {
+                        vm.remove(listOf(it.cartoonInfo))
+                        stringRes(R.string.migrate_sus).moeSnackBar()
                     }
-                },
-                onLongPress = { info ->
-                    vm.selectLongPress(info)
-                },
-                onMigrateNow = {
-
-                },
-                onDelete = { info ->
-                    deleteCartoonInfo = info
-                }
-            )
+                )
+            }
         }
+
+
+
+
+
     }
 
-    EasyDeleteDialog(show = deleteCartoonInfo != null, onDelete = {
-        deleteCartoonInfo?.let {
-            vm.remove(it)
-        }
-        deleteCartoonInfo = null
-    }) {
-        deleteCartoonInfo = null
-    }
+
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -173,8 +305,8 @@ fun MigrateItem(
     onChangeCover: (CartoonInfo) -> Unit,
     onClick: (CartoonInfo) -> Unit,
     onLongPress: (CartoonInfo) -> Unit,
-    onMigrateNow: (CartoonInfo) -> Unit,
     onDelete: (CartoonInfo) -> Unit,
+    onMigrateSus: (MigrateItemViewModel.MigrateItemState) -> Unit,
 ) {
     val state = itemVM.flow.collectAsState()
     val sta = state
@@ -184,6 +316,17 @@ fun MigrateItem(
     var showMenu by remember {
         mutableStateOf(false)
     }
+
+    var showPlayLineMenu by remember {
+        mutableStateOf(false)
+    }
+
+    var showEpisodeMenu by remember {
+        mutableStateOf(false)
+    }
+
+    val playLine = sta.value.playLine
+    val episode = sta.value.episode
 
     Row(
         modifier = Modifier
@@ -196,6 +339,13 @@ fun MigrateItem(
                     onLongPress(cartoonInfo)
                 }
             )
+            .run {
+                if (isSelect) {
+                    background(MaterialTheme.colorScheme.primary)
+                } else {
+                    this
+                }
+            }
             .padding(4.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
@@ -207,6 +357,7 @@ fun MigrateItem(
             }
         } else ""
         MigrateItemCover(
+            modifier = Modifier.weight(2f),
             name = cartoonInfo.name,
             cover = cartoonInfo.coverUrl,
             source = bundle.source(cartoonInfo.source)?.label ?: cartoonInfo.sourceName,
@@ -220,8 +371,41 @@ fun MigrateItem(
         )
         Spacer(modifier = Modifier.size(8.dp))
         val targetCover = sta.value.cartoonCover
-        if (sta.value.isLoadingCover || sta.value.isLoadingPlay || targetCover == null) {
-            LoadingImage()
+        if (sta.value.isLoadingCover || sta.value.isLoadingPlay) {
+            Box(modifier = Modifier.weight(2f)) {
+                LoadingImage(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .align(Alignment.Center)
+                )
+            }
+
+            Box(modifier = Modifier.size(24.dp))
+        } else if (sta.value.isMigrating) {
+            Column(modifier = Modifier.weight(2f), verticalArrangement = Arrangement.Center) {
+                LoadingImage(
+                    modifier = Modifier
+                        .size(36.dp)
+                )
+                Text(text = stringResource(id = R.string.migrating))
+            }
+
+            Box(modifier = Modifier.size(24.dp))
+        } else if (targetCover == null) {
+            Column(
+                modifier = Modifier
+                    .weight(2f)
+                    .clickable {
+                        onChangeCover(cartoonInfo)
+                    }, verticalArrangement = Arrangement.Center
+            ) {
+                OkImage(
+                    image = com.heyanle.easybangumi4.R.drawable.error_ikuyo,
+                    contentDescription = stringRes(R.string.cartoon_migrate)
+                )
+                Text(text = stringResource(id = R.string.migrate_cover_failed_click_to_search))
+            }
+
         } else {
             val targetProcess = sta.value.playLineWrapper?.let {
                 val epi = sta.value.episode ?: return@let null
@@ -229,83 +413,19 @@ fun MigrateItem(
                 "${index + 1}/${it.sortedEpisodeList.size}"
             } ?: ""
             MigrateItemCover(
+                modifier = Modifier.weight(2f),
                 name = targetCover.title,
                 cover = targetCover.coverUrl ?: "",
-                source = bundle.source(cartoonInfo.source)?.label ?: targetCover.source,
+                source = bundle.source(targetCover.source)?.label ?: targetCover.source,
                 process = targetProcess,
                 isSelect = isSelect,
             )
 
-            Column {
-                val playLine = sta.value.playLine
-                val episode = sta.value.episode
-                if (playLine != null && episode != null) {
-
-                    var showPlayLineMenu by remember {
-                        mutableStateOf(false)
-                    }
-
-                    TextButton(onClick = {
-                        showPlayLineMenu = true
-                    }) {
-                        Text(
-                            text = playLine.label,
-                            maxLines = 1,
-                            textAlign = TextAlign.Start,
-                            overflow = TextOverflow.Ellipsis,
-                            color = if (isSelect) MaterialTheme.colorScheme.onPrimary else Color.Unspecified
-                        )
-
-                        DropdownMenu(expanded = showPlayLineMenu, onDismissRequest = {
-                            showPlayLineMenu = false
-                        }) {
-                            sta.value.playLineList.forEach {
-                                DropdownMenuItem(text = {
-                                    Text(text = it.label)
-                                }, onClick = {
-                                    showPlayLineMenu = false
-                                    itemVM.changeEpisode(
-                                        sta.value.sortKey,
-                                        it,
-                                        it.episode.getOrNull(0)
-                                    )
-                                })
-                            }
-                        }
-                    }
-
-                    var showEpisodeMenu by remember {
-                        mutableStateOf(false)
-                    }
-                    TextButton(onClick = { showEpisodeMenu = true }) {
-                        Text(
-                            text = episode.label,
-                            maxLines = 1,
-                            textAlign = TextAlign.Start,
-                            overflow = TextOverflow.Ellipsis,
-                            color = if (isSelect) MaterialTheme.colorScheme.onPrimary else Color.Unspecified
-                        )
-                        DropdownMenu(expanded = showPlayLineMenu, onDismissRequest = {
-                            showPlayLineMenu = false
-                        }) {
-                            sta.value.playLineWrapper?.let { playLineWrapper ->
-                                playLineWrapper.sortedEpisodeList.forEach {
-                                    DropdownMenuItem(text = {
-                                        Text(text = it.label)
-                                    }, onClick = {
-                                        showEpisodeMenu = false
-                                        itemVM.changeEpisode(sta.value.sortKey, playLine, it)
-                                    })
-                                }
-                            }
-                        }
-                    }
+            IconButton(
+                onClick = {
+                    showMenu = !showMenu
                 }
-            }
-
-            IconButton(onClick = {
-                showMenu = !showMenu
-            }) {
+            ) {
                 Icon(Icons.Filled.MoreVert, contentDescription = stringResource(id = R.string.more))
                 DropdownMenu(
                     expanded = showMenu,
@@ -321,7 +441,19 @@ fun MigrateItem(
                     DropdownMenuItem(text = {
                         Text(text = stringResource(id = R.string.migrate_now))
                     }, onClick = {
-                        onMigrateNow(cartoonInfo)
+
+                        MoeDialogData(
+                            text = stringRes(R.string.make_sure_to_migrate),
+                            onConfirm = {
+                                itemVM.migrate {
+                                    onMigrateSus(sta.value)
+                                }
+                            },
+                            onDismiss = {
+
+                            }
+                        ).show()
+
                         showMenu = false
                     })
 
@@ -331,15 +463,96 @@ fun MigrateItem(
                         onDelete(cartoonInfo)
                         showMenu = false
                     })
+
+
+
+                    if (playLine != null && episode != null) {
+
+
+                        DropdownMenuItem(
+                            onClick = {
+                                showPlayLineMenu = true
+                            },
+                            text = {
+
+                                Text(
+                                    text = stringRes(R.string.play_line) + ": " + playLine.label,
+                                    maxLines = 1,
+                                    textAlign = TextAlign.Start,
+                                    overflow = TextOverflow.Ellipsis,
+                                    color = if (isSelect) MaterialTheme.colorScheme.onPrimary else Color.Unspecified
+                                )
+
+                            }
+                        )
+
+
+                        DropdownMenuItem(
+                            onClick = { showEpisodeMenu = true },
+                            text = {
+                                Text(
+                                    text = stringRes(R.string.episode) + ": " + episode.label,
+                                    maxLines = 1,
+                                    textAlign = TextAlign.Start,
+                                    overflow = TextOverflow.Ellipsis,
+                                    color = if (isSelect) MaterialTheme.colorScheme.onPrimary else Color.Unspecified
+                                )
+
+                            }
+                        )
+                    }
+
                 }
+
+                if (playLine != null && episode != null) {
+
+
+                    DropdownMenu(expanded = showPlayLineMenu, onDismissRequest = {
+                        showPlayLineMenu = false
+                    }) {
+                        sta.value.playLineList.forEach {
+                            DropdownMenuItem(text = {
+                                Text(text = it.label)
+                            }, onClick = {
+                                showPlayLineMenu = false
+                                showMenu = false
+                                itemVM.changeEpisode(
+                                    sta.value.sortKey,
+                                    it,
+                                    it.episode.getOrNull(0)
+                                )
+                            })
+                        }
+                    }
+
+                    DropdownMenu(expanded = showEpisodeMenu, onDismissRequest = {
+                        showEpisodeMenu = false
+                    }) {
+                        sta.value.playLineWrapper?.let { playLineWrapper ->
+                            playLineWrapper.sortedEpisodeList.forEach {
+                                DropdownMenuItem(text = {
+                                    Text(text = it.label)
+                                }, onClick = {
+                                    showEpisodeMenu = false
+                                    showMenu = false
+                                    itemVM.changeEpisode(sta.value.sortKey, playLine, it)
+                                })
+                            }
+                        }
+                    }
+                }
+
+
             }
         }
     }
+
 
 }
 
 @Composable
 fun MigrateItemCover(
+    modifier: Modifier,
     name: String,
     cover: String,
     source: String,
@@ -350,8 +563,10 @@ fun MigrateItemCover(
         modifier = Modifier
             .fillMaxHeight()
             .clip(RoundedCornerShape(4.dp))
-            .padding(4.dp),
+            .padding(4.dp)
+            .then(modifier),
         horizontalAlignment = Alignment.Start,
+        verticalArrangement = Arrangement.Center,
     ) {
         Box(
             modifier = Modifier

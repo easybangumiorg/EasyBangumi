@@ -155,67 +155,6 @@ data class CartoonStar(
 //        )
 //    }
 
-    fun toCartoon(): Cartoon? {
-        return if (isInitializer) CartoonImpl(
-            id = this.id,
-            source = this.source,
-            url = this.url,
-            title = this.title,
-            genre = this.genre ?: "",
-            coverUrl = this.coverUrl ?: "",
-            intro = this.intro ?: "",
-            description = this.description ?: "",
-            updateStrategy = this.updateStrategy,
-            status = this.status
-        ) else null
-    }
 
-    fun getPlayLine(): List<PlayLine> {
-        return kotlin.runCatching {
-            Gson().fromJson<List<PlayLine>>(
-                playLineString,
-                object : TypeToken<List<PlayLine>>() {}.type
-            )
-        }.getOrElse {
-            it.printStackTrace()
-            emptyList()
-        }
-    }
-
-    fun matches(query: String): Boolean {
-        var matched = false
-        for (match in query.split(',')) {
-            val regex = match.getMatchReg()
-            if (title.matches(regex)) {
-                matched = true
-                break
-            }
-        }
-        return matched
-
-    }
-
-
-    fun getSummary(): CartoonSummary {
-        return CartoonSummary(id, source, url)
-    }
-
-    fun toIdentify(): String {
-        return "${id},${source},${URLEncoder.encode(url, "utf-8")}"
-    }
-
-    fun match(identify: String): Boolean {
-        return this.toIdentify() == identify
-    }
-
-    fun match(cartoon: Cartoon): Boolean {
-        return this.id == cartoon.id && this.source == cartoon.source && this.url == cartoon.url
-    }
-
-    fun match(cartoon: CartoonCover): Boolean {
-        return this.id == cartoon.id && this.source == cartoon.source && this.url == cartoon.url
-    }
-
-    fun isUp() = upTime > 0L
 
 }

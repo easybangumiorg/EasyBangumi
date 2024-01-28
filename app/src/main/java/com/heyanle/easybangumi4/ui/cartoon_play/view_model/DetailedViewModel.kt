@@ -81,7 +81,6 @@ class DetailedViewModel(
             cartoonInfoCase.awaitCartoonInfoWithPlayLines(
                 cartoonSummary.id,
                 cartoonSummary.source,
-                cartoonSummary.url
             )
                 .onOK {
                     yield()
@@ -199,7 +198,6 @@ class DetailedViewModel(
             cartoonInfoDao.getByCartoonSummary(
                 cartoonSummary.id,
                 cartoonSummary.source,
-                cartoonSummary.url
             )
         if (n != null && n.isDetailed) {
             _stateFlow.update {

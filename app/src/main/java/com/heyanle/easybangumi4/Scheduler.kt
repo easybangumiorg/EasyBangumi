@@ -1,9 +1,13 @@
 package com.heyanle.easybangumi4
 
+import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.app.Activity
 import android.app.Application
 import android.util.Log
+import android.view.View
 import android.widget.Toast
+import androidx.core.animation.addListener
 import com.arialyy.aria.core.Aria
 import com.heyanle.easy_crasher.CrashHandler
 import com.heyanle.easybangumi4.cartoon.CartoonModule

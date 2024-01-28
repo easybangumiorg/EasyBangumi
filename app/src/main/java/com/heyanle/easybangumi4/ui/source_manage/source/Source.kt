@@ -166,9 +166,6 @@ fun SourceItem(
         },
         trailingContent = {
             when(sourceInfo){
-                is SourceInfo.Migrating -> {
-                    Text(text = stringResource(id = R.string.migrating))
-                }
                 is SourceInfo.Loaded -> {
                     Switch(checked = config.enable, onCheckedChange = {
                         onCheckedChange(configSource, it)
