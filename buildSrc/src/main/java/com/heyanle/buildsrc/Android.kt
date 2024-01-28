@@ -10,7 +10,7 @@ object Android {
     const val compileSdk = 34
 
     const val versionCode = 78
-    const val versionName = "5.0.5"
+    const val versionName = "5.0.6"
 
 
 }

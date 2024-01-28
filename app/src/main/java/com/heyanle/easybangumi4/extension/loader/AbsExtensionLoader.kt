@@ -138,11 +138,15 @@ abstract class AbsExtensionLoader(
                         publicPath = appInfo.publicSourceDir
                     )
                 }
-            }.map {
+            }.flatMap {
                 if (it is ExtensionSource) {
                     it.packageName = pkgInfo.packageName
+                    listOf(it)
+                }else if(pkgInfo.packageName == "org.easybangumi.extension"){
+                    listOf(it)
+                }else{
+                    emptyList()
                 }
-                it
             }
             appInfo.loadIcon(pkgManager)
             TimeLogUtils.i("ExtensionLoader ${pkgInfo.packageName} inner completely")
