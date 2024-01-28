@@ -34,6 +34,9 @@ jobs:
           alias: ${{ secrets.KEY_ALIAS }}
           keyStorePassword: ${{ secrets.KEY_STORE_PWD }}
           keyPassword: ${{ secrets.KEY_PWD }}
+        env:
+          # override default build-tools version (29.0.3) -- optional
+          BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOL_VERSION }}
       - name: rename-apk
         run: |
           mv app/build/outputs/apk/release/app-universal-release-unsigned-signed.apk easybangumi-universal-${{ github.ref_name }}.apk
