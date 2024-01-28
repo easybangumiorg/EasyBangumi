@@ -10,6 +10,7 @@ import com.heyanle.easybangumi4.source.SourceConfig
 import com.heyanle.easybangumi4.source.SourceController
 import com.heyanle.easybangumi4.source.SourcePreferences
 import com.heyanle.easybangumi4.utils.loge
+import com.heyanle.easybangumi4.utils.toJson
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -30,7 +31,7 @@ class SourceViewModel : ViewModel() {
         viewModelScope.launch {
             sourceController.configSource.collectLatest { libs ->
                 libs.loge("SourceViewModel")
-                configSourceList = libs
+                configSourceList = libs.sortedBy { it.config.order }
             }
 
         }
