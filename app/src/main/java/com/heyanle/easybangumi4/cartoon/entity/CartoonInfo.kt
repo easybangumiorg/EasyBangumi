@@ -205,7 +205,7 @@ data class CartoonInfo(
     }
 
     fun toIdentify(): String {
-        return "${id},${source},${URLEncoder.encode(url, "utf-8")}"
+        return "${id},${source}"
     }
 
     fun match(identify: String): Boolean {
