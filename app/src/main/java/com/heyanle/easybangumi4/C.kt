@@ -47,7 +47,7 @@ object C {
                 icon = R.drawable.telegram,
                 title = stringRes(com.heyanle.easy_i18n.R.string.telegram),
                 msg = stringRes(com.heyanle.easy_i18n.R.string.click_to_join),
-                url = "https://t.me/easybangumi"
+                url = "https://t.me/easy_bangumi"
             ),
             About.Url(
                 icon = R.drawable.github,
