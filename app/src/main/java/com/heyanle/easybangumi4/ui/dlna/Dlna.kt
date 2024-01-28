@@ -102,7 +102,6 @@ import java.util.Arrays
 fun Dlna(
     id: String,
     source: String,
-    url: String,
     enterData: DlnaViewModel.EnterData? = null
 ) {
 
@@ -118,7 +117,6 @@ fun Dlna(
                 DlnaPage(
                     id = id,
                     source = source,
-                    url = url,
                     playComponent = play,
                     detailComponent = detailed,
                     enterData = enterData,
@@ -134,7 +132,6 @@ fun Dlna(
 fun DlnaPage(
     id: String,
     source: String,
-    url: String,
     playComponent: PlayComponent,
     detailComponent: DetailedComponent,
     enterData: DlnaViewModel.EnterData? = null,
@@ -152,7 +149,7 @@ fun DlnaPage(
     val scope = rememberCoroutineScope()
 
     val vm = DlnaViewModelFactory.new(
-        cartoonSummary = CartoonSummary(id, source, url),
+        cartoonSummary = CartoonSummary(id, source),
         playComponent = playComponent,
         enterData = enterData,
     )

@@ -75,6 +75,8 @@ import com.heyanle.easybangumi4.cartoon.tag.isInner
 import com.heyanle.easybangumi4.cartoon.tag.tagLabel
 import com.heyanle.easybangumi4.navigationCartoonTag
 import com.heyanle.easybangumi4.navigationDetailed
+import com.heyanle.easybangumi4.navigationMigrate
+import com.heyanle.easybangumi4.source.LocalSourceBundleController
 import com.heyanle.easybangumi4.ui.common.CartoonStarCardWithCover
 import com.heyanle.easybangumi4.ui.common.EasyDeleteDialog
 import com.heyanle.easybangumi4.ui.common.EasyMutiSelectionDialog
@@ -114,6 +116,7 @@ fun Star() {
 //                            nav.navigationCartoonMigrate(it.title)
 //                        }
 //                    }
+                    starVM.dialogMigrateSelect()
                 },
                 onUp = {
                     starVM.onUpSelection()
@@ -321,6 +324,23 @@ fun Star() {
             }
         }
 
+        is StarViewModel.DialogState.MigrateSource -> {
+            val sources = LocalSourceBundleController.current.sources()
+            EasyMutiSelectionDialog(show = true,
+                title = {
+                    Text(text = stringResource(id = R.string.choose_source_to_migrate))
+                },
+                items = sources,
+                initSelection = emptyList(),
+                onConfirm = {
+                    nav.navigationMigrate(sta.selection.map { it.toSummary() }.toList(), it.map { it.key })
+                    starVM.onSelectionExit()
+                },
+                onDismissRequest = {
+                    starVM.dialogDismiss()
+                })
+        }
+
         else -> {}
     }
 }
@@ -454,8 +474,8 @@ fun StarSelectionBottomBar(
     onDelete: () -> Unit,
     onChangeTag: () -> Unit,
     onUpdate: () -> Unit,
-    onMigrate: ()->Unit,
-    onUp: ()->Unit,
+    onMigrate: () -> Unit,
+    onUp: () -> Unit,
 ) {
 
     BottomAppBar(actions = {
@@ -482,7 +502,10 @@ fun StarSelectionBottomBar(
         IconButton(onClick = {
             onUp()
         }) {
-            Icon(Icons.Filled.PushPin, contentDescription = stringResource(id = R.string.filter_with_is_up))
+            Icon(
+                Icons.Filled.PushPin,
+                contentDescription = stringResource(id = R.string.filter_with_is_up)
+            )
         }
 
     }, floatingActionButton = {

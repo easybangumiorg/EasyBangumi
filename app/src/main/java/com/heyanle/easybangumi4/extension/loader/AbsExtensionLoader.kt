@@ -28,8 +28,8 @@ abstract class AbsExtensionLoader(
         const val METADATA_README = "easybangumi.extension.readme"
 
         // 当前容器支持的 扩展库 版本区间
-        const val LIB_VERSION_MIN = 3
-        const val LIB_VERSION_MAX = 5
+        const val LIB_VERSION_MIN = 6
+        const val LIB_VERSION_MAX = 6
 
         const val PACKAGE_FLAGS =
             PackageManager.GET_CONFIGURATIONS or PackageManager.GET_SIGNATURES

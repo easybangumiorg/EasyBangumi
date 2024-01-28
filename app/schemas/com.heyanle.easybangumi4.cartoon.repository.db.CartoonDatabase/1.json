@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "cd1d9d844f63c61bfddda2b01366a0b4",
+    "identityHash": "471535ff614046a2245a291cf58f2708",
     "entities": [
       {
         "tableName": "CartoonInfo",
@@ -292,7 +292,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'cd1d9d844f63c61bfddda2b01366a0b4')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '471535ff614046a2245a291cf58f2708')"
     ]
   }
 }

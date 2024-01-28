@@ -6,9 +6,7 @@ import com.heyanle.easybangumi4.extension.Extension
 import com.heyanle.easybangumi4.case.ExtensionCase
 import com.heyanle.easybangumi4.source.bundle.ComponentBundle
 import com.heyanle.easybangumi4.source.bundle.SourceBundle
-import com.heyanle.easybangumi4.source_api.MigrateSource
 import com.heyanle.easybangumi4.source_api.Source
-import com.heyanle.easybangumi4.source_api.SourceResult
 import com.heyanle.easybangumi4.source_api.component.detailed.DetailedComponent
 import com.heyanle.easybangumi4.source_api.component.preference.PreferenceComponent
 import com.heyanle.easybangumi4.source_api.entity.Cartoon
@@ -89,17 +87,17 @@ class SourceController(
                 }
             }
         }
-        scope.launch {
-            _sourceInfo.filterIsInstance<SourceInfoState.Info>()
-                .map { it.info.filterIsInstance<SourceInfo.Migrating>() }
-                .collectLatest {
-                    migrateScope.launch {
-                        it.forEach {
-                            migrate(it)
-                        }
-                    }
-                }
-        }
+//        scope.launch {
+//            _sourceInfo.filterIsInstance<SourceInfoState.Info>()
+//                .map { it.info.filterIsInstance<SourceInfo.Migrating>() }
+//                .collectLatest {
+//                    migrateScope.launch {
+//                        it.forEach {
+//                            migrate(it)
+//                        }
+//                    }
+//                }
+//        }
         scope.launch {
             combine(
                 _sourceInfo.filterIsInstance<SourceInfoState.Info>().map { it.info },
@@ -128,11 +126,7 @@ class SourceController(
         return try {
             val bundle = ComponentBundle(source)
             bundle.init()
-            if (needMigrate(source, bundle)) {
-                SourceInfo.Migrating(source, bundle)
-            } else {
-                SourceInfo.Loaded(source, bundle)
-            }
+            SourceInfo.Loaded(source, bundle)
         } catch (e: SourceException) {
             SourceInfo.Error(source, e.msg, e)
         } catch (e: Exception) {
@@ -142,67 +136,6 @@ class SourceController(
     }
 
 
-    private fun needMigrate(source: Source, componentBundle: ComponentBundle): Boolean {
-        val old = sourcePreferences.getLastVersion(source)
-        if (source is MigrateSource && source.needMigrate(old.get())) {
-            return true
-        }
-        val preferences = componentBundle.get<PreferenceComponent>()
-        if (preferences != null && preferences.needMigrate(old.get())) {
-            return true
-        }
-        return false
-    }
-
-    private suspend fun migrate(sourceInfo: SourceInfo.Migrating) {
-        val old = sourcePreferences.getLastVersion(sourceInfo.source).get()
-        val preferences = sourceInfo.componentBundle.get<PreferenceComponent>()
-        val preferenceHelper = sourceInfo.componentBundle.get<PreferenceHelper>()
-        if (preferences != null && preferenceHelper != null) {
-            if (preferences.needMigrate(old)) {
-                preferences.onMigrate(preferenceHelper.map(), old).forEach {
-                    preferenceHelper.put(it.key, it.value)
-                }
-            }
-        }
-        val so = sourceInfo.source
-        if (so is MigrateSource) {
-            if (so.needMigrate(old)) {
-                val oldInfo = cartoonInfoDao.getAllBySource(so.key)
-
-                val detailed = sourceInfo.componentBundle.get<DetailedComponent>()
-
-                if (detailed != null) {
-                    oldInfo.forEach { info ->
-                        detailed.getAll(info.toSummary())
-                            .complete {
-                                val n = info.copyFromCartoon(
-                                    it.data.first,
-                                    detailed.source.label,
-                                    it.data.second
-                                )
-                                cartoonInfoDao.modify(n)
-                            }
-                    }
-                }
-            }
-        }
-        _sourceInfo.update { sourceInfos ->
-            if (sourceInfos is SourceInfoState.Info) {
-                SourceInfoState.Info(sourceInfos.info.map {
-                    if (it.source.key == sourceInfo.source.key && it is SourceInfo.Migrating) {
-                        SourceInfo.Loaded(it.source, it.componentBundle)
-                    } else {
-                        it
-                    }
-                })
-            } else {
-                sourceInfos
-            }
-
-        }
-
-    }
 
 
 }

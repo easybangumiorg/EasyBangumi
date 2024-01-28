@@ -27,16 +27,15 @@ class CartoonRepository(
     suspend fun awaitCartoonInfoWIthPlayLines(
         id: String,
         source: String,
-        url: String,
         time: Long = System.currentTimeMillis(),
     ): DataResult<CartoonInfo> {
         return withContext(Dispatchers.IO) {
-            val local = cartoonInfoDao.getByCartoonSummary(id, source, url)
+            val local = cartoonInfoDao.getByCartoonSummary(id, source)
             val oldUpdateTime = local?.lastUpdateTime ?: 0L
             if (local != null && local.isDetailed && local.isPlayLineLoad && time <= oldUpdateTime) {
                 return@withContext DataResult.ok(local)
             }
-            val netResult = cartoonNetworkDataSource.awaitCartoonWithPlayLines(id, source, url)
+            val netResult = cartoonNetworkDataSource.awaitCartoonWithPlayLines(id, source)
 
             // 异步缓存
             launch(Dispatchers.IO) {

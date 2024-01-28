@@ -1,5 +1,6 @@
 package com.heyanle.easybangumi4.ui.search_migrate.migrate
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -40,6 +41,8 @@ class MigrateViewModel(
 
     private val migrateDispatcher = CoroutineProvider.SINGLE
 
+    var customSearchCartoonInfo = mutableStateOf<CartoonInfo?>(null)
+
 
     data class MigrateState(
         val isLoading: Boolean = true,
@@ -56,7 +59,7 @@ class MigrateViewModel(
     init {
         viewModelScope.launch {
             val infoList = summaries.map {
-                cartoonInfoCase.awaitCartoonInfoWithPlayLines(it.id, it.source, it.url)
+                cartoonInfoCase.awaitCartoonInfoWithPlayLines(it.id, it.source)
             }.filterIsInstance<DataResult.Ok<CartoonInfo>>()
                 .map {
                     it.data
@@ -173,77 +176,32 @@ class MigrateViewModel(
         }
     }
 
-    fun remove(cartoonInfo: CartoonInfo) {
+    fun remove(cartoonInfo: List<CartoonInfo>) {
         _infoListFlow.update {
             it.copy(
-                infoList = it.infoList.filter { it != cartoonInfo }
+                infoList = it.infoList.filter { s -> cartoonInfo.find { it.toIdentify() == s.toIdentify() } == null }
             )
         }
     }
 
-    fun migrate(
-        migrate: List<Pair<CartoonInfo, MigrateItemViewModel.MigrateItemState>>,
-        onCompletely: () -> Unit = {}
-    ) {
+    fun migrate() {
+        _infoListFlow.value.infoList.forEach {
+            val provider = ViewModelProvider(getOwner(it), MigrateItemViewModelFactory(it, sources))
+            val itemVM = provider[MigrateItemViewModel::class.java]
+            itemVM.migrate {  remove(listOf(it)) }
+        }
+    }
 
-        viewModelScope.launch(migrateDispatcher) {
-            _infoListFlow.update {
-                it.copy(
-                    isMigrating = true
-                )
-            }
-
-            val bundle = sourceCase.awaitBundle()
-            val actions = arrayListOf<Pair<CartoonInfo, CartoonInfo>>()
-            for (pair in migrate) {
-                val car = pair.second.cartoon ?: continue
-                val sourceName = bundle.source(car.source)?.label ?: ""
-                val episodeList = pair.second.playLineWrapper?.sortedEpisodeList
-                val cartoonInfo = CartoonInfo.fromCartoon(
-                    car,
-                    sourceName,
-                    pair.second.playLineList
-                ).copy(
-                    tags = pair.first.tags,
-                    upTime = pair.first.upTime,
-
-                    starTime = if (pair.first.starTime == 0L) System.currentTimeMillis() else pair.first.starTime,
-                    lastHistoryTime = pair.first.lastHistoryTime,
-                    lastPlayLineEpisodeString = episodeList?.toJson() ?: "",
-                    lastLineId = pair.second.playLine?.id ?: "",
-                    lastLinesIndex = pair.second.playLineList.indexOf(pair.second.playLine) ?: -1,
-                    lastLineLabel = pair.second.playLine?.label ?: "",
-
-                    lastEpisodeLabel = pair.second.playLine?.label ?: "",
-                    lastEpisodeId = pair.second.episode?.id ?: "",
-                    lastEpisodeIndex = episodeList?.indexOf(pair.second.episode) ?: -1,
-                    lastEpisodeOrder = pair.second.episode?.order ?: -1,
-
-                    lastProcessTime = 0,
-                )
-                actions.add(pair.first to cartoonInfo)
-            }
-
-            actions.map {
-                async {
-                    cartoonInfoDao.modify(it.second)
-                    cartoonInfoDao.deleteStar(it.first)
-                }
-            }.forEach {
-                it.await()
-            }
-
-            _infoListFlow.update {
-                it.copy(
-                    isMigrating = false
-                )
-            }
-
-            viewModelScope.launch {
-                onCompletely()
+    fun migrate(list: List<CartoonInfo>) {
+        list.forEach {
+            val provider = ViewModelProvider(getOwner(it), MigrateItemViewModelFactory(it, sources))
+            val itemVM = provider[MigrateItemViewModel::class.java]
+            itemVM.migrate {
+                remove(listOf(it))
             }
         }
     }
+
 
 }
 

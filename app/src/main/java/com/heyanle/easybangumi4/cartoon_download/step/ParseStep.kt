@@ -53,7 +53,6 @@ class ParseStep(
                 CartoonSummary(
                     downloadItem.cartoonId,
                     downloadItem.cartoonSource,
-                    downloadItem.cartoonUrl
                 ), downloadItem.playLine,
                 downloadItem.episode
             )

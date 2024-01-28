@@ -46,7 +46,7 @@ class CoverStarViewModel : ViewModel() {
 
     fun star(cartoonCover: CartoonCover) {
         viewModelScope.launch {
-            val old = cartoonInfoDao.getByCartoonSummary(cartoonCover.id, cartoonCover.source, cartoonCover.url)
+            val old = cartoonInfoDao.getByCartoonSummary(cartoonCover.id, cartoonCover.source,)
             if(old == null){
                 cartoonInfoDao.insert(CartoonInfo.fromCartoonCover(cartoonCover).copy(starTime = System.currentTimeMillis()))
             }else{
