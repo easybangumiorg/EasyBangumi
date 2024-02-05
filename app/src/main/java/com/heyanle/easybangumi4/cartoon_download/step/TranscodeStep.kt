@@ -47,7 +47,8 @@ class TranscodeStep(
                             it?.moeSnackBar()
                             error(
                                 downloadItem,
-                                it?.message ?: stringRes(com.heyanle.easy_i18n.R.string.transcode_error)
+                                it?.message
+                                    ?: stringRes(com.heyanle.easy_i18n.R.string.transcode_error)
                             )
                         },
                         onCompletely = {
@@ -58,7 +59,7 @@ class TranscodeStep(
                     error(downloadItem, stringRes(com.heyanle.easy_i18n.R.string.transcode_error))
                     return@launch
                 }
-            }catch (e: Exception){
+            } catch (e: Exception) {
                 e.printStackTrace()
                 error(downloadItem, stringRes(R.string.transcode_error) + e.message)
             }
@@ -102,7 +103,7 @@ class TranscodeStep(
         val memoryInfo = EasyMemoryInfo(context)
         memoryInfo.update()
         // 内存不足直接跳过
-        if(memoryInfo.lowMemory){
+        if (memoryInfo.lowMemory) {
             realTarget.delete()
             localM3U8.renameTo(realTarget)
             return true
@@ -117,11 +118,12 @@ class TranscodeStep(
                         val ts = it.next()
                         val file = File(ts)
                         val targetFile = File("${ts}h")
-                        // 大于 500M 的就不走自行解密了，防止 OOM，直接丢 ffmpeg 转
-                        // 出现了90M 就 oom 的外网实例，这里改成如果大于当前可用内存 80% 以上就不解
+                        // 如果大于当前可用内存 80% 以上就不解了直接丢 ffmpeg 然后祈祷他没有改文件头
                         memoryInfo.update()
-                        if ( memoryInfo.availMem * 0.8 <= file.length()
-                            || (Runtime.getRuntime()?.freeMemory()?:Long.MAX_VALUE)*0.8 <= file.length() ) {
+                        if (memoryInfo.availMem * 0.8 <= file.length()
+                            || (Runtime.getRuntime()?.freeMemory()
+                                ?: Long.MAX_VALUE) * 0.8 <= file.length()
+                        ) {
                             realTarget.delete()
                             localM3U8.renameTo(realTarget)
                             return true
@@ -148,7 +150,7 @@ class TranscodeStep(
             realTarget.delete()
             localM3U8.renameTo(realTarget)
             return true
-        }catch (e: IOException) {
+        } catch (e: IOException) {
             e.printStackTrace()
             // 解密失败
             return false
