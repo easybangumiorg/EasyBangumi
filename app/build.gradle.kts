@@ -116,7 +116,7 @@ android {
 
 dependencies {
 
-    implementation(files("../libs/bcprov-jdk16-139.jar"))
+    //implementation(files("../libs/bcprov-jdk16-139.jar"))
     implementation(androidx.bundles.core)
     androidTestImplementation (androidx.bundles.test.core)
 
@@ -187,7 +187,7 @@ dependencies {
     implementation(libs.ktor.core)
     implementation(libs.ktor.android)
 
-    implementation(project(":easy-dlna"))
+    // implementation(project(":easy-dlna"))
     implementation(project(":easy-crasher"))
     implementation(project(":easy-i18n"))
     implementation(project(":injekt"))

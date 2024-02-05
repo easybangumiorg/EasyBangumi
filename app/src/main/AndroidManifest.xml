@@ -64,14 +64,14 @@
             android:name="com.heyanle.easy_crasher.CrashActivity"
             android:process="com.heyanle.easybangumi.crash" />
 
-        <service
-            android:name="com.zane.androidupnpdemo.service.ClingUpnpService"
-            android:exported="true"
-            android:enabled="true">
-            <intent-filter>
-                <action android:name="ITOP.MOBILE.SIMPLE.SERVICE.SENSORSERVICE" />
-            </intent-filter>
-        </service>
+<!--        <service-->
+<!--            android:name="com.zane.androidupnpdemo.service.ClingUpnpService"-->
+<!--            android:exported="true"-->
+<!--            android:enabled="true">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="ITOP.MOBILE.SIMPLE.SERVICE.SENSORSERVICE" />-->
+<!--            </intent-filter>-->
+<!--        </service>-->
 
 
         <service android:name=".cartoon_download.CartoonDownloadService"

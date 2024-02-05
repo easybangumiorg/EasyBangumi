@@ -1,7 +1,7 @@
 [versions]
 
 jsoup = "1.15.4"
-okhttp3 = "4.11.0"
+okhttp3 = "4.12.0"
 paging = "3.2.0"
 
 gson = "2.10"
@@ -40,8 +40,11 @@ jeff_m3u8 = "1.2.0"
 moshi = "1.14.0"
 
 koin = "3.5.0"
-agp = "8.2.0"
+agp = "8.2.2"
 kotlin = "1.9.21"
+
+cybergarage-upnp = "2.1.5"
+org-jetbrains-kotlin-jvm = "1.9.22"
 [libraries]
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 okhttp3 = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp3" }
@@ -90,7 +93,7 @@ material = { group = "com.google.android.material", name = "material", version.r
 
 ffmpeg-kit = { module = "com.arthenica:ffmpeg-kit-full", version.ref = "ffmpeg-kit" }
 
-ktor_core = {module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor_core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor_android = { module = "io.ktor:ktor-client-android", version.ref = "ktor" }
 
 jeff-m3u8 = { module = "com.github.JeffMony:JeffM3U8Lib", version.ref = "jeff_m3u8" }
@@ -98,9 +101,12 @@ jeff-m3u8 = { module = "com.github.JeffMony:JeffM3U8Lib", version.ref = "jeff_m3
 moshi = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshi" }
 
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
-koin-android = {module =  "io.insert-koin:koin-android", version.ref = "koin"}
-koin-compose = {module = "io.insert-koin:koin-compose", version.ref = "koin"}
+koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
+koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
 
+
+cybergarage-upnp-std = { group = "org.cybergarage.upnp", name = "std", version.ref = "cybergarage-upnp" }
+cybergarage-upnp-core = { group = "org.cybergarage.upnp", name = "core", version.ref = "cybergarage-upnp"  }
 [bundles]
 okhttp3 = ["okhttp3", "okhttp3_logging_interceptor"]
 cling = ["cling_core", "cling_support"]
@@ -108,3 +114,4 @@ appcenter = ["appcenter_analytics", "appcenter_crashes", "appcenter_distribute"]
 [plugins]
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+org-jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "org-jetbrains-kotlin-jvm" }

@@ -27,8 +27,6 @@ import com.heyanle.easybangumi4.ui.WebViewUser
 import com.heyanle.easybangumi4.ui.about.About
 import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlay
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
-import com.heyanle.easybangumi4.ui.dlna.Dlna
-import com.heyanle.easybangumi4.ui.dlna.DlnaViewModel
 import com.heyanle.easybangumi4.ui.download.Download
 import com.heyanle.easybangumi4.ui.extension_store.ExtensionStore
 import com.heyanle.easybangumi4.ui.local_play.LocalPlay
@@ -398,11 +396,11 @@ fun Nav() {
                 val episode = it.arguments?.getInt("episode") ?: -1
 
                 NormalSystemBarColor()
-                Dlna(
-                    id = URLDecoder.decode(id, "utf-8"),
-                    source = URLDecoder.decode(source, "utf-8"),
-                    DlnaViewModel.EnterData(lineIndex, episode)
-                )
+//                Dlna(
+//                    id = URLDecoder.decode(id, "utf-8"),
+//                    source = URLDecoder.decode(source, "utf-8"),
+//                    DlnaViewModel.EnterData(lineIndex, episode)
+//                )
             }
 
             composable(
