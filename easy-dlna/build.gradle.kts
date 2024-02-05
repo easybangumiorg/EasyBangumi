@@ -1,4 +1,4 @@
-
+import com.heyanle.buildsrc.Android
 
 plugins {
     alias(build.plugins.android.library)
@@ -6,12 +6,12 @@ plugins {
 }
 
 android {
-    namespace = "com.heyanle.easy_dlna"
-    compileSdk = com.heyanle.buildsrc.Android.compileSdk
+    namespace = "com.heyanle.easy_crasher"
+    compileSdk = Android.compileSdk
 
     defaultConfig {
-        minSdk = com.heyanle.buildsrc.Android.minSdk
-        targetSdk = com.heyanle.buildsrc.Android.targetSdk
+        minSdk = Android.minSdk
+        targetSdk = Android.compileSdk
 
         consumerProguardFiles("consumer-rules.pro")
     }
@@ -26,25 +26,16 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11"
     }
 }
 
 dependencies {
-    implementation(libs.bundles.cling)
-    //jetty()
-    //servlet()
-    implementation(files("libs/javax.servlet-3.0.0.v201103241009.jar"))
-    implementation(files("libs/jetty-client-8.1.9.v20130131.jar"))
-    implementation(files("libs/jetty-continuation-8.1.9.v20130131.jar"))
-    implementation(files("libs/jetty-http-8.1.9.v20130131.jar"))
-    implementation(files("libs/jetty-io-8.1.9.v20130131.jar"))
-    implementation(files("libs/jetty-security-8.1.9.v20130131.jar"))
-    implementation(files("libs/jetty-server-8.1.9.v20130131.jar"))
-    implementation(files("libs/jetty-servlet-8.1.9.v20130131.jar"))
-    implementation(files("libs/jetty-util-8.1.9.v20130131.jar"))
+    implementation(project(":lib_upnp"))
+
+
 }

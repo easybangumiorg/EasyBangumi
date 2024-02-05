@@ -1,10 +1,10 @@
 [versions]
-animation = "1.5.4"
-foundation = "1.5.4"
-material = "1.5.4"
+animation = "1.6.0"
+foundation = "1.6.0"
+material = "1.6.0"
 material3 = "1.1.2"
-runtime = "1.5.4"
-ui = "1.5.4"
+runtime = "1.6.0"
+ui = "1.6.0"
 [libraries]
 ui = {module = "androidx.compose.ui:ui", version.ref = "ui"}
 ui_graphics = {module = "androidx.compose.ui:ui-graphics", version.ref = "ui"}
