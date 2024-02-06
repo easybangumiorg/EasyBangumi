@@ -36,6 +36,7 @@ android {
 
 dependencies {
     implementation(project(":lib_upnp"))
+    implementation(libs.kotlin.coroutines.android)
 
 
 }

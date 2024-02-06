@@ -273,13 +273,22 @@ fun CartoonPlay(
                         }
                     },
                     onDlna = {
+                        val playLine = playState?.playLine
+                        val episode = playState?.episode
+                        val enterData = CartoonPlayViewModel.EnterData(
+                            playLineId = playLine?.playLine?.id?:"",
+                            playLineLabel = playLine?.playLine?.label ?: "",
+                            playLineIndex = detailState.cartoonInfo.playLineWrapper.indexOf(playState?.playLine) ?: -1,
+                            episodeId = episode?.id?:"",
+                            episodeIndex = playState?.playLine?.playLine?.episode?.indexOf(playState.episode) ?: -1,
+                            episodeLabel = episode?.label?:"",
+                            episodeOrder = episode?.order?:-1,
+                            adviceProgress = 0,
+                        )
                         nav.navigationDlna(
-                            CartoonSummary(
-                                detailState.cartoonInfo.id,
-                                detailState.cartoonInfo.source,
-                            ),
-                            detailState.cartoonInfo.playLineWrapper.indexOf(playState?.playLine) ?: -1,
-                            playState?.playLine?.playLine?.episode?.indexOf(playState.episode) ?: -1
+                            detailState.cartoonInfo.id,
+                            detailState.cartoonInfo.source,
+                            enterData
                         )
                     },
                     onDownload = { playLine, episodes ->

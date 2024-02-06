@@ -36,12 +36,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "EasyBangumi"
 include(":app")
-//include(":app-old")
 include(":easy-crasher")
-//include(":easy-dlna")
 include(":easy-i18n")
-//include(":extension:extension-core")
 include(":injekt")
-//include(":easy-extension")
-include(":easy-dlna")
 include(":lib_upnp")
