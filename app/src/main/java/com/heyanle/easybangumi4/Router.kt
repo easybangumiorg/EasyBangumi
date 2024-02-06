@@ -27,6 +27,7 @@ import com.heyanle.easybangumi4.ui.WebViewUser
 import com.heyanle.easybangumi4.ui.about.About
 import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlay
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
+import com.heyanle.easybangumi4.ui.dlna.Dlna
 import com.heyanle.easybangumi4.ui.download.Download
 import com.heyanle.easybangumi4.ui.extension_store.ExtensionStore
 import com.heyanle.easybangumi4.ui.local_play.LocalPlay
@@ -141,15 +142,14 @@ fun NavHostController.navigationDetailed(
 }
 
 fun NavHostController.navigationDlna(
-    cartoonCover: CartoonSummary,
-    lineIndex: Int,
-    episode: Int,
+    i: String, s: String,
+    e: CartoonPlayViewModel.EnterData,
 ) {
+    val id = URLEncoder.encode(i, "utf-8")
+    val ed = URLEncoder.encode(s, "utf-8")
+    val enterData = URLEncoder.encode(e.toJson(), "utf-8")
     // easyTODO("详情页")
-    val id = URLEncoder.encode(cartoonCover.id, "utf-8")
-    val ed = URLEncoder.encode(cartoonCover.source, "utf-8")
-    // easyTODO("详情页")
-    navigate("${DLNA}?source=${ed}&id=${id}&lineIndex=${lineIndex}&episode=${episode}")
+    navigate("${DLNA}?source=${ed}&id=${id}&enter_date=${enterData}")
 }
 
 fun NavHostController.navigationDetailed(
@@ -241,6 +241,35 @@ fun Nav() {
                     enterDataString.jsonTo<CartoonPlayViewModel.EnterData>()
                 }.getOrNull()
                 CartoonPlay(
+                    id = URLDecoder.decode(id, "utf-8"),
+                    source = URLDecoder.decode(source, "utf-8"),
+                    enterData
+                )
+            }
+
+            composable(
+                route = "${DLNA}?source={source}&id={id}&enter_data={enter_data}",
+                arguments = listOf(
+                    navArgument("source") { defaultValue = "" },
+                    navArgument("id") { defaultValue = "" },
+                    navArgument("enter_data") { defaultValue = "{}" },
+                )
+            ) {
+                val id = it.arguments?.getString("id") ?: ""
+                val source = it.arguments?.getString("source") ?: ""
+
+                var enterDataString = it.arguments?.getString("enter_data") ?: ""
+                enterDataString = URLDecoder.decode(enterDataString, "utf-8")
+                NormalSystemBarColor(
+                    getStatusBarDark = {
+                        false
+                    }
+                )
+
+                val enterData = kotlin.runCatching {
+                    enterDataString.jsonTo<CartoonPlayViewModel.EnterData>()
+                }.getOrNull()
+                Dlna(
                     id = URLDecoder.decode(id, "utf-8"),
                     source = URLDecoder.decode(source, "utf-8"),
                     enterData
@@ -374,34 +403,6 @@ fun Nav() {
                 About()
             }
 
-            composable(
-                "${DLNA}?url={url}&source={source}&id={id}&lineIndex={lineIndex}&episode={episode}",
-                arguments = listOf(
-                    navArgument("url") { defaultValue = "" },
-                    navArgument("source") { defaultValue = "" },
-                    navArgument("id") { defaultValue = "" },
-                    navArgument("lineIndex") {
-                        defaultValue = -1
-                        type = NavType.IntType
-                    },
-                    navArgument("episode") {
-                        defaultValue = -1
-                        type = NavType.IntType
-                    },
-                )
-            ) {
-                val id = it.arguments?.getString("id") ?: ""
-                val source = it.arguments?.getString("source") ?: ""
-                val lineIndex = it.arguments?.getInt("lineIndex") ?: -1
-                val episode = it.arguments?.getInt("episode") ?: -1
-
-                NormalSystemBarColor()
-//                Dlna(
-//                    id = URLDecoder.decode(id, "utf-8"),
-//                    source = URLDecoder.decode(source, "utf-8"),
-//                    DlnaViewModel.EnterData(lineIndex, episode)
-//                )
-            }
 
             composable(
                 "${SOURCE_CONFIG}?source_key={key}",
