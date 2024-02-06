@@ -149,7 +149,6 @@ dependencies {
     implementation(compose.bundles.material3)
 
     implementation(libs.bundles.okhttp3)
-    implementation(libs.bundles.cling)
     implementation(libs.bundles.appcenter)
 
     implementation(libs.jsoup)
@@ -171,7 +170,6 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.coil.gif)
     implementation(libs.commons.text)
-    implementation(libs.bundles.cling)
     implementation(libs.compose.reorderable)
 
     ksp(libs.aria.compiler)
@@ -191,6 +189,7 @@ dependencies {
     implementation(project(":easy-crasher"))
     implementation(project(":easy-i18n"))
     implementation(project(":injekt"))
+    implementation(project(":lib_upnp"))
     
 
     implementation(extension.extension.api)
