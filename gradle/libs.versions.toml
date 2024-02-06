@@ -11,7 +11,7 @@ okkv2 = "1.3.5"
 junit = "4.13.2"
 
 exoplayer = "2.19.0" # 使用 media 里的
-easyplayer2 = "1.2.10"
+easyplayer2 = "1.3.0"
 
 accompanist = "0.31.2-alpha"
 navigation_compose = "2.7.6"
