@@ -1,7 +1,7 @@
 package com.heyanle.easybangumi4.theme
 
+import android.app.Activity
 import android.os.Build
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -11,9 +11,10 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import androidx.core.view.WindowInsetsControllerCompat
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.injekt.core.Injekt
@@ -25,9 +26,9 @@ import com.heyanle.injekt.core.Injekt
 
 @Composable
 fun NormalSystemBarColor(
-    getStatusBarDark: (Boolean)->Boolean = {!it},
-    getNavigationBarDark: (Boolean)->Boolean = {!it},
-){
+    getStatusBarDark: (Boolean) -> Boolean = { !it },
+    getNavigationBarDark: (Boolean) -> Boolean = { !it },
+) {
     val themeController: EasyThemeController by Injekt.injectLazy()
     val themeState by themeController.themeFlow.collectAsState()
     val isDark = when (themeState.darkMode) {
@@ -36,17 +37,23 @@ fun NormalSystemBarColor(
         else -> isSystemInDarkTheme()
     }
 
-    val uiController = rememberSystemUiController()
     val view = LocalView.current
+    val activity = LocalContext.current as Activity
     if (!view.isInEditMode) {
-        SideEffect() {
-            uiController.setStatusBarColor(Color.Transparent, getStatusBarDark(isDark))
-            uiController.setNavigationBarColor(Color.Transparent, getNavigationBarDark(isDark))
+        SideEffect {
+            activity.window.navigationBarColor = Color.Transparent.toArgb()
+            activity.window.statusBarColor = Color.Transparent.toArgb()
+            WindowInsetsControllerCompat(
+                activity.window,
+                activity.window.decorView
+            ).let { controller ->
+                controller.isAppearanceLightStatusBars = !getStatusBarDark(isDark)
+                controller.isAppearanceLightNavigationBars = !getNavigationBarDark(isDark)
+            }
         }
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun EasyTheme(
     content: @Composable () -> Unit
@@ -65,7 +72,7 @@ fun EasyTheme(
     val colorScheme = when {
         isDynamic && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
-            if (isDark ) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
 
         else -> {
@@ -79,6 +86,5 @@ fun EasyTheme(
         typography = Typography,
         content = content
     )
-
 
 }

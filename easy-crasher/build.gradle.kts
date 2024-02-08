@@ -14,7 +14,7 @@ android {
 
     defaultConfig {
         minSdk = Android.minSdk
-        targetSdk = Android.compileSdk
+        lint.targetSdk = Android.compileSdk
 
         consumerProguardFiles("consumer-rules.pro")
     }

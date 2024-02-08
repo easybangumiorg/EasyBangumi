@@ -61,6 +61,7 @@ interface InjektFactory {
 
 }
 
+@Suppress("NOTHING_TO_INLINE")
 inline fun <R: Any> InjektFactory.get(forType: TypeReference<R>): R = getInstance(forType.type)
 inline fun <reified R: Any> InjektFactory.getOrElse(forType: TypeReference<R>, default: R): R = getInstanceOrElse(forType.type, default)
 inline fun <reified R: Any> InjektFactory.getOrElse(forType: TypeReference<R>, noinline default: ()->R): R = getInstanceOrElse(forType.type, default)
@@ -72,6 +73,7 @@ inline fun <reified R: Any> InjektFactory.getOrElse(default: R): R = getInstance
 inline fun <reified R: Any> InjektFactory.getOrElse(noinline default: ()->R): R = getInstanceOrElse(fullType<R>().type, default)
 inline fun <reified R: Any> InjektFactory.getOrNull(): R? = getInstanceOrNull(fullType<R>().type)
 
+@Suppress("NOTHING_TO_INLINE")
 inline fun <R: Any> InjektFactory.get(forType: TypeReference<R>, key: Any): R = getKeyedInstance(forType.type, key)
 inline fun <reified R: Any> InjektFactory.getOrElse(forType: TypeReference<R>, key: Any, default: R): R = getKeyedInstanceOrElse(forType.type, key, default)
 inline fun <reified R: Any> InjektFactory.getOrElse(forType: TypeReference<R>, key: Any, noinline default: ()->R): R = getKeyedInstanceOrElse(forType.type, key, default)
