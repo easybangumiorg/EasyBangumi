@@ -1,22 +1,14 @@
 package com.heyanle.easybangumi4.source
 
-import com.heyanle.easybangumi4.cartoon.old.entity.CartoonStar
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
-import com.heyanle.easybangumi4.extension.Extension
 import com.heyanle.easybangumi4.case.ExtensionCase
+import com.heyanle.easybangumi4.extension.Extension
 import com.heyanle.easybangumi4.source.bundle.ComponentBundle
 import com.heyanle.easybangumi4.source.bundle.SourceBundle
 import com.heyanle.easybangumi4.source_api.Source
-import com.heyanle.easybangumi4.source_api.component.detailed.DetailedComponent
-import com.heyanle.easybangumi4.source_api.component.preference.PreferenceComponent
-import com.heyanle.easybangumi4.source_api.entity.Cartoon
-import com.heyanle.easybangumi4.source_api.entity.PlayLine
-import com.heyanle.easybangumi4.source_api.entity.toIdentify
-import com.heyanle.easybangumi4.source_api.utils.api.PreferenceHelper
 import com.heyanle.easybangumi4.utils.CoroutineProvider
 import com.heyanle.easybangumi4.utils.TimeLogUtils
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,7 +46,6 @@ class SourceController(
     val sourceBundle = _sourceBundle.asStateFlow()
 
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     private val dispatcher = CoroutineProvider.SINGLE
     private val migrateScope = CoroutineScope(SupervisorJob() + dispatcher)
     private val scope = MainScope()

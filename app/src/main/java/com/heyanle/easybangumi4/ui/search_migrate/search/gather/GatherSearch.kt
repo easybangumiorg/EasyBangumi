@@ -17,7 +17,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -46,7 +45,6 @@ import com.heyanle.easybangumi4.ui.search_migrate.search.SearchViewModel
 /**
  * Created by heyanlin on 2023/12/18.
  */
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ColumnScope.GatherSearch(
     searchViewModel: SearchViewModel

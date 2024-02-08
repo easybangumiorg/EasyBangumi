@@ -35,7 +35,6 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Store
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -71,17 +70,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
-import com.heyanle.easybangumi4.APP
-import com.heyanle.easybangumi4.EXTENSION_STORE
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.extension.Extension
 import com.heyanle.easybangumi4.extension.store.ExtensionStoreInfo
-import com.heyanle.easybangumi4.ui.common.ExtensionContainer
 import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.common.moeDialog
-import com.heyanle.easybangumi4.utils.IntentHelper
 import com.heyanle.easybangumi4.utils.openUrl
 import com.heyanle.easybangumi4.utils.stringRes
 
@@ -188,7 +183,6 @@ fun ExtensionTopAppBar(behavior: TopAppBarScrollBehavior) {
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Extension() {
     val vm = viewModel<ExtensionViewModel>()
@@ -697,7 +691,6 @@ fun ExtensionInfoItem(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExtensionItem(
     extension: Extension,

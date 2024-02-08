@@ -6,10 +6,10 @@ import android.hardware.SensorManager
 import android.os.Parcel
 import android.os.Parcelable
 import android.view.OrientationEventListener
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridItemScope
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridScope
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -182,11 +182,10 @@ data class NestedScrollModifiers(
     val offset: Modifier
 )
 
-@OptIn(ExperimentalFoundationApi::class)
-public fun <T : Any> LazyStaggeredGridScope.items(
+fun <T : Any> LazyStaggeredGridScope.items(
     items: LazyPagingItems<T>,
     key: ((item: T) -> Any)? = null,
-    itemContent: @Composable LazyStaggeredGridScope.(value: T?) -> Unit
+    itemContent: @Composable LazyStaggeredGridItemScope.(value: T?) -> Unit
 ) {
     items(
         count = items.itemCount,
@@ -199,7 +198,7 @@ public fun <T : Any> LazyStaggeredGridScope.items(
             }
         }
     ) { index ->
-        this@items.itemContent(items[index])
+        itemContent(items[index])
     }
 }
 
@@ -238,7 +237,6 @@ private data class PagingPlaceholderKey(private val index: Int) : Parcelable {
 //    .build()
 
 
-
 @Composable
 fun OnOrientationEvent(
     rate: Int = SensorManager.SENSOR_DELAY_NORMAL,
@@ -246,7 +244,7 @@ fun OnOrientationEvent(
     onEvent: (listener: OrientationEventListener, orientation: Int) -> Unit
 ) {
     val ctx = LocalContext.current
-    val cdAction = remember (changeCD) {
+    val cdAction = remember(changeCD) {
         CDAction(changeCD)
     }
     val listener = remember(ctx) {

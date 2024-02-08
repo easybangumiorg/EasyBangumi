@@ -1,6 +1,6 @@
 package com.heyanle.easybangumi4.ui.tags
 
-import androidx.compose.foundation.ExperimentalFoundationApi
+//import com.heyanle.easybangumi4.utils.stringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -49,10 +49,9 @@ import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.cartoon.tag.isALL
 import com.heyanle.easybangumi4.cartoon.tag.isUpdate
-import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.easybangumi4.ui.common.EasyDeleteDialog
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
-//import com.heyanle.easybangumi4.utils.stringRes
+import com.heyanle.easybangumi4.utils.stringRes
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorder
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
@@ -62,7 +61,7 @@ import org.burnoutcrew.reorderable.reorderable
  * Created by HeYanLe on 2023/8/6 16:48.
  * https://github.com/heyanLE
  */
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CartoonTag() {
     val nav = LocalNavController.current

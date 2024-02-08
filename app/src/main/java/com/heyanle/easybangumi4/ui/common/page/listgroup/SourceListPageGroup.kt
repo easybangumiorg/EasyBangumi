@@ -1,6 +1,5 @@
 package com.heyanle.easybangumi4.ui.common.page.listgroup
 
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,7 +32,6 @@ import com.heyanle.easybangumi4.ui.common.page.list.SourceListPage
  * Created by HeYanLe on 2023/2/25 21:18.
  * https://github.com/heyanLE
  */
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun SourceListPageGroup(
     listPageGroup: SourcePage.Group
