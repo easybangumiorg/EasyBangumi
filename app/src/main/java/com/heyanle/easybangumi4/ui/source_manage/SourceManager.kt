@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.heyanle.easybangumi4.ui.source_manage
 
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -29,13 +31,12 @@ import kotlinx.coroutines.launch
  * https://github.com/heyanLE
  */
 
-sealed class ExplorePage @OptIn(ExperimentalMaterial3Api::class) constructor(
+sealed class ExplorePage constructor(
     val tabLabel: @Composable (() -> Unit),
     val topAppBar: @Composable ((TopAppBarScrollBehavior) -> Unit),
     val content: @Composable (() -> Unit),
 ) {
 
-    @OptIn(ExperimentalMaterial3Api::class)
     data object SourcePage : ExplorePage(
         tabLabel = {
             Text(stringResource(id = com.heyanle.easy_i18n.R.string.source))
@@ -48,7 +49,6 @@ sealed class ExplorePage @OptIn(ExperimentalMaterial3Api::class) constructor(
         },
     )
 
-    @OptIn(ExperimentalMaterial3Api::class)
     data object ExtensionPage : ExplorePage(
         tabLabel = {
             Text(stringResource(id = com.heyanle.easy_i18n.R.string.extension))
@@ -70,20 +70,21 @@ val ExplorePageItems = listOf(
 
 var explorePageIndex by okkv("explorePageInitPageIndex", 0)
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SourceManager(
     defIndex: Int = -1
 ) {
 
-    val pagerState = rememberPagerState(initialPage = if(defIndex ==  -1) explorePageIndex else defIndex, 0f) {
-        ExplorePageItems.size
-    }
+    val pagerState =
+        rememberPagerState(initialPage = if (defIndex == -1) explorePageIndex else defIndex, 0f) {
+            ExplorePageItems.size
+        }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(key1 = Unit) {
-        pagerState.scrollToPage(if(defIndex ==  -1) explorePageIndex else defIndex)
+        pagerState.scrollToPage(if (defIndex == -1) explorePageIndex else defIndex)
     }
 
     Column(

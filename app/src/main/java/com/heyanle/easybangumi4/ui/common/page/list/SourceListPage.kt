@@ -1,7 +1,5 @@
 package com.heyanle.easybangumi4.ui.common.page.list
 
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,16 +37,16 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.heyanle.easybangumi4.LocalNavController
+import com.heyanle.easybangumi4.navigationDetailed
+import com.heyanle.easybangumi4.source_api.component.page.SourcePage
+import com.heyanle.easybangumi4.source_api.entity.CartoonCover
+import com.heyanle.easybangumi4.source_api.entity.toIdentify
 import com.heyanle.easybangumi4.ui.common.CartoonCardWithCover
 import com.heyanle.easybangumi4.ui.common.CartoonCardWithoutCover
 import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.PagingCommon
 import com.heyanle.easybangumi4.ui.common.pagingCommon
 import com.heyanle.easybangumi4.ui.main.star.CoverStarViewModel
-import com.heyanle.easybangumi4.navigationDetailed
-import com.heyanle.easybangumi4.source_api.component.page.SourcePage
-import com.heyanle.easybangumi4.source_api.entity.CartoonCover
-import com.heyanle.easybangumi4.source_api.entity.toIdentify
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -58,10 +56,6 @@ import kotlinx.coroutines.launch
  * https://github.com/heyanLE
  */
 
-@OptIn(
-    ExperimentalAnimationApi::class,
-    ExperimentalFoundationApi::class
-)
 @Composable
 fun SourceListPage(
     modifier: Modifier = Modifier,
@@ -199,7 +193,7 @@ fun SourceListPageContentWithCover(
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun SourceListPageContentWithoutCover(
     modifier: Modifier = Modifier,

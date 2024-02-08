@@ -2,7 +2,6 @@ package com.heyanle.easybangumi4.ui.main.history
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -59,6 +58,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
+import com.heyanle.easybangumi4.navigationDetailed
+import com.heyanle.easybangumi4.source.LocalSourceBundleController
+import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.common.CartoonCard
 import com.heyanle.easybangumi4.ui.common.EasyClearDialog
 import com.heyanle.easybangumi4.ui.common.EasyDeleteDialog
@@ -66,9 +68,6 @@ import com.heyanle.easybangumi4.ui.common.EmptyPage
 import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.SelectionTopAppBar
-import com.heyanle.easybangumi4.navigationDetailed
-import com.heyanle.easybangumi4.source.LocalSourceBundleController
-import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
 import loli.ball.easyplayer2.utils.TimeUtils
 
 /**
@@ -76,7 +75,7 @@ import loli.ball.easyplayer2.utils.TimeUtils
  * https://github.com/heyanLE
  */
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun History(
     showBack: Boolean = false

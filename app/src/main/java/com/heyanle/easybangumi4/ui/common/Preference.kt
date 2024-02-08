@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
@@ -151,7 +150,6 @@ inline fun <reified T : Enum<T>> EmumPreferenceItem(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StringSelectPreferenceItem(
     modifier: Modifier = Modifier,
@@ -210,7 +208,6 @@ fun StringSelectPreferenceItem(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StringSelectPreferenceItem(
     modifier: Modifier = Modifier,
@@ -233,7 +230,6 @@ fun StringSelectPreferenceItem(
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StringEditPreferenceItem(
     modifier: Modifier = Modifier,
@@ -282,7 +278,6 @@ fun StringEditPreferenceItem(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LongEditPreferenceItem(
     modifier: Modifier = Modifier,
@@ -305,7 +300,6 @@ fun LongEditPreferenceItem(
 
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LongEditPreferenceItem(
     modifier: Modifier = Modifier,

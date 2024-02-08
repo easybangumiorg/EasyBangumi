@@ -58,9 +58,7 @@ import kotlinx.coroutines.launch
  * Created by HeYanLe on 2023/3/25 15:47.
  * https://github.com/heyanLE
  */
-@OptIn(
-    ExperimentalMaterial3Api::class
-)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Home() {
 

@@ -11,8 +11,6 @@ import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
 import com.heyanle.easybangumi4.utils.CoroutineProvider
 import com.heyanle.easybangumi4.utils.stringRes
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
@@ -31,7 +29,6 @@ class ParseStep(
     }
 
     // 同时只能有一个 parsing 任务
-    @OptIn(ExperimentalCoroutinesApi::class)
     private val dispatcher = CoroutineProvider.SINGLE
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
     private val mainScope = MainScope()

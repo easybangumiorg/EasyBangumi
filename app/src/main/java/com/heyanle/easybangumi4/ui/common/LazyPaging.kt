@@ -1,6 +1,5 @@
 package com.heyanle.easybangumi4.ui.common
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -68,7 +67,6 @@ fun <T : Any> LazyGridScope.pagingCommon(items: LazyPagingItems<T>, isShowLoadin
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 fun <T : Any> LazyStaggeredGridScope.pagingCommon(
     items: LazyPagingItems<T>,
     isShowLoading: Boolean = true

@@ -31,7 +31,6 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.NightsStay
 import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.ColorScheme
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -66,7 +65,6 @@ import kotlinx.coroutines.launch
  * Created by HeYanLe on 2023/3/22 17:04.
  * https://github.com/heyanLE
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ColumnScope.AppearanceSetting(
     nestedScrollConnection: NestedScrollConnection

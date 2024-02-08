@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
@@ -35,14 +34,12 @@ sealed class DownloadPage(
     val content: @Composable (() -> Unit),
 ) {
 
-    @OptIn(ExperimentalMaterial3Api::class)
     data object Downloading : DownloadPage(
         tabLabel = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.downloading)) },
         topAppBar = { DownloadingTopBar() },
         content = { Downloading() }
     )
 
-    @OptIn(ExperimentalMaterial3Api::class)
     data object Downloaded : DownloadPage(
         tabLabel = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.finished)) },
         topAppBar = { DownloadedTopBar() },

@@ -55,19 +55,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easybangumi4.LocalNavController
-import com.heyanle.easybangumi4.R
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.entity.PlayLineWrapper
-import com.heyanle.easybangumi4.dlna.EasyDlna
 import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
 import com.heyanle.easybangumi4.source_api.entity.Episode
-import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlay
 import com.heyanle.easybangumi4.ui.cartoon_play.cartoonEpisodeList
 import com.heyanle.easybangumi4.ui.cartoon_play.cartoonMessage
 import com.heyanle.easybangumi4.ui.cartoon_play.cartoonPlayLines
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModelFactory
-import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayingViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.DetailedViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.DetailedViewModelFactory
 import com.heyanle.easybangumi4.ui.common.Action
@@ -77,7 +73,6 @@ import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.ui.common.proc.SortState
 import com.heyanle.easybangumi4.utils.stringRes
-import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -87,7 +82,6 @@ import kotlinx.coroutines.launch
 /**
  * Created by heyanlin on 2024/2/6 15:29.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Dlna(
     id: String,
