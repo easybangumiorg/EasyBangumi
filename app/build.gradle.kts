@@ -42,7 +42,7 @@ android {
                 )
             }\""
         )
-        println("heyanlin ${System.getenv("APPCENTER_SECRET")}")
+        println("System.getenv.APPCENTER_SECRET = ${System.getenv("APPCENTER_SECRET")}")
 
         ksp {
             arg("room.generateKotlin", "true")
@@ -105,6 +105,7 @@ android {
     buildFeatures {
         compose = true
         viewBinding = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = build.versions.compose.compiler.get()
@@ -163,8 +164,8 @@ dependencies {
     testImplementation(libs.junit)
 
     implementation(libs.easyplayer2)
-    implementation(libs.accompanist.systemuicontroller)
-    implementation(libs.accompanist.swiperefresh)
+//    implementation(libs.accompanist.systemuicontroller)
+//    implementation(libs.accompanist.swiperefresh)
     implementation(libs.accompanist.permissions)
     implementation(libs.navigtion.compose)
     implementation(libs.coil.compose)
@@ -190,11 +191,6 @@ dependencies {
     implementation(project(":easy-i18n"))
     implementation(project(":injekt"))
     implementation(project(":lib_upnp"))
-    
 
     implementation(extension.extension.api)
-
-
-
-
 }

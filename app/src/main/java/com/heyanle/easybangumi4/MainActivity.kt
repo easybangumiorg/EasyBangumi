@@ -40,6 +40,7 @@ import com.heyanle.easybangumi4.ui.common.LoadingImage
 import com.heyanle.easybangumi4.ui.common.MoeDialog
 import com.heyanle.easybangumi4.ui.common.MoeSnackBar
 import com.heyanle.easybangumi4.ui.common.OkImage
+import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.AnnoHelper
 import com.heyanle.easybangumi4.utils.AppCenterManager
 import com.heyanle.easybangumi4.utils.MediaUtils
@@ -61,7 +62,7 @@ class MainActivity : ComponentActivity() {
 
     var first by okkv("first_visible", def = true)
 
-    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class, ExperimentalMaterial3Api::class)
+    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Scheduler.runOnMainActivityCreate(this, first)

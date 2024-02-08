@@ -1,3 +1,5 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package com.heyanle.injekt.core
 
 import com.heyanle.injekt.api.InjektScope
