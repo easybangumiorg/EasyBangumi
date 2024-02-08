@@ -16,7 +16,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.DOWNLOAD
 import com.heyanle.easybangumi4.LocalNavController
@@ -127,7 +126,6 @@ val speedConfig = linkedMapOf(
 )
 
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 @Composable
 fun CartoonPlay(

@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         minSdk = com.heyanle.buildsrc.Android.minSdk
-        targetSdk = com.heyanle.buildsrc.Android.targetSdk
+        lint.targetSdk = com.heyanle.buildsrc.Android.targetSdk
     }
 
     buildTypes {
