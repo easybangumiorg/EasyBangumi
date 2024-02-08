@@ -1,6 +1,5 @@
 package com.heyanle.easybangumi4
 
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -34,14 +33,13 @@ import com.heyanle.easybangumi4.ui.local_play.LocalPlay
 import com.heyanle.easybangumi4.ui.main.Main
 import com.heyanle.easybangumi4.ui.main.history.History
 import com.heyanle.easybangumi4.ui.search_migrate.migrate.Migrate
+import com.heyanle.easybangumi4.ui.search_migrate.search.Search
 import com.heyanle.easybangumi4.ui.setting.Setting
 import com.heyanle.easybangumi4.ui.setting.SettingPage
 import com.heyanle.easybangumi4.ui.source_config.SourceConfig
 import com.heyanle.easybangumi4.ui.source_manage.SourceManager
-import com.heyanle.easybangumi4.ui.search_migrate.search.Search
 import com.heyanle.easybangumi4.ui.tags.CartoonTag
 import com.heyanle.easybangumi4.utils.jsonTo
-import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.easybangumi4.utils.toJson
 import java.lang.ref.WeakReference
 import java.net.URLDecoder
@@ -193,7 +191,6 @@ fun NavHostController.navigationMigrate(summaries: List<CartoonSummary>, sourceK
 // 缺省路由
 const val DEFAULT = MAIN
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun Nav() {
 

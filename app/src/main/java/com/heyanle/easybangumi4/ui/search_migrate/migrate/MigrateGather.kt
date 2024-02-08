@@ -13,7 +13,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.geometry.Offset
@@ -23,7 +22,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
-import com.heyanle.easybangumi4.navigationDetailed
 import com.heyanle.easybangumi4.source.LocalSourceBundleController
 import com.heyanle.easybangumi4.source_api.entity.CartoonCover
 import com.heyanle.easybangumi4.ui.main.star.CoverStarViewModel
@@ -36,7 +34,6 @@ import com.heyanle.easybangumi4.ui.search_migrate.search.gather.MigrateSourceIte
  * Created by heyanle on 2024/1/28.
  * https://github.com/heyanLE
  */
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun MigrateGather(
     cartoonInfo: CartoonInfo,

@@ -4,7 +4,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -19,7 +18,6 @@ import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.MoreHoriz
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -29,9 +27,7 @@ import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
-import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -42,10 +38,9 @@ import com.heyanle.easybangumi4.ui.common.SourceContainer
 import com.heyanle.easybangumi4.ui.main.history.History
 import com.heyanle.easybangumi4.ui.main.home.Home
 import com.heyanle.easybangumi4.ui.main.more.More
-import com.heyanle.easybangumi4.ui.source_manage.SourceManager
 import com.heyanle.easybangumi4.ui.main.star.Star
+import com.heyanle.easybangumi4.ui.source_manage.SourceManager
 import com.heyanle.easybangumi4.utils.isCurPadeMode
-import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.okkv2.core.okkv
 import kotlinx.coroutines.launch
 
@@ -165,10 +160,7 @@ val MainPageItems = listOf(
 var homePageIndexOkkv by okkv("home_page_index", 0)
 
 
-@OptIn(
-    ExperimentalMaterial3Api::class,
-    ExperimentalFoundationApi::class, ExperimentalMaterial3WindowSizeClassApi::class
-)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Main() {
 
