@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.ui.common
 
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -14,8 +15,8 @@ import kotlinx.coroutines.launch
 val moeDialogQueue = mutableStateListOf<MoeDialogData>()
 
 data class MoeDialogData(
-    val text: String,
-    val title: String? = null,
+    val text: @Composable ((MoeDialogData) -> Unit)? = null,
+    val title: @Composable ((MoeDialogData) -> Unit)? = null,
     val modifier: Modifier = Modifier,
     val onDismiss: ((MoeDialogData) -> Unit)? = null,
     val onConfirm: ((MoeDialogData) -> Unit)? = null,
@@ -34,8 +35,12 @@ fun MoeDialog() {
                 modifier = it.modifier,
                 onDismissRequest = { it.dismiss() },
                 properties = it.properties,
-                title = {it.title?.let { Text(it) }},
-                text = { Text(text = it.text) },
+                title = {
+                    it.title?.invoke(it)
+                },
+                text = {
+                    it.text?.invoke(it)
+                },
                 confirmButton = {
                     if (it.onConfirm != null) {
                         TextButton(onClick = {
@@ -48,16 +53,17 @@ fun MoeDialog() {
                 },
                 dismissButton = {
                     it.onDismiss?.run {
-                    TextButton(onClick = {
-                        it.onDismiss.invoke(it)
-                        it.dismiss()
-                    }) {
-                        Text(text = it.dismissLabel)
+                        TextButton(onClick = {
+                            it.onDismiss.invoke(it)
+                            it.dismiss()
+                        }) {
+                            Text(text = it.dismissLabel)
+                        }
                     }
-                }}
+                }
             )
         } else {
-            AlertDialog(
+            BasicAlertDialog(
                 onDismissRequest = { it.dismiss() },
                 properties = it.properties,
                 modifier = it.modifier,
@@ -89,8 +95,8 @@ fun String.moeDialog(
     properties: DialogProperties = DialogProperties(),
     content: @Composable ((MoeDialogData) -> Unit)? = null,
 ) = MoeDialogData(
-    this,
-    title,
+    { Text(text = this) },
+    { title?.let { Text(text = it) } },
     modifier,
     onDismiss,
     onConfirm,

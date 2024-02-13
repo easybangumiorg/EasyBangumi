@@ -3,10 +3,13 @@ package com.heyanle.easybangumi4.ui.cartoon_play
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -14,6 +17,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
@@ -61,6 +66,8 @@ fun CartoonPlay(
     val detailedVM = viewModel<DetailedViewModel>(factory = DetailedViewModelFactory(summary))
     val playVM = viewModel<CartoonPlayViewModel>(factory = CartoonPlayViewModelFactory(enterData))
     val playingVM = viewModel<CartoonPlayingViewModel>()
+    val isPad = isCurPadeMode()
+    val controlVM = ControlViewModelFactory.viewModel(playingVM.exoPlayer, isPad)
 
     val detailedState = detailedVM.stateFlow.collectAsState()
     val playState = playVM.curringPlayState.collectAsState()
@@ -84,6 +91,8 @@ fun CartoonPlay(
     ) {
         DetailedContainer(sourceKey = source) { _, sou, det ->
             CartoonPlay(
+                isPad,
+                controlVM,
                 detailedVM,
                 playVM,
                 playingVM,
@@ -114,9 +123,81 @@ fun CartoonPlay(
         }
     }
 
+    if (playingVM.isCustomSpeedDialog.value) {
+        val focusRequest = remember {
+            FocusRequester()
+        }
+        val text = remember {
+            mutableStateOf(playingVM.customSpeed.value.let { if (it > 0) it else 1 }.toString())
+        }
+        DisposableEffect(key1 = Unit ){
+            runCatching {
+                focusRequest.requestFocus()
+            }.onFailure {
+                it.printStackTrace()
+            }
+           onDispose {
+               runCatching {
+                   focusRequest.freeFocus()
+               }.onFailure {
+                   it.printStackTrace()
+               }
+           }
+        }
+        AlertDialog(
+            onDismissRequest = {
+                playingVM.isCustomSpeedDialog.value = false
+            },
+            title = {
+                Text(text = stringRes(R.string.custom_speed))
+            },
+            text = {
+                OutlinedTextField(
+                    modifier = Modifier.focusRequester(focusRequest),
+                    value = text.value,
+                    onValueChange = {
+                        text.value = it
+                    })
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val tex = text.value
+                    val f = tex.toFloatOrNull() ?: -1f
+                    if (f <= 0) {
+                        playingVM.setCustomSpeed(-1f)
+                        if (playingVM.isCustomSpeed.value) {
+                            controlVM.setSpeed(1f)
+                            playingVM.isCustomSpeed.value = false
+                        }
+                        stringRes(R.string.please_input_right_speed).moeSnackBar()
+                    } else {
+                        playingVM.setCustomSpeed(f)
+                        if (playingVM.isCustomSpeed.value) {
+                            controlVM.setSpeed(f)
+                        }
+                    }
+                    playingVM.isCustomSpeedDialog.value = false
+                }) {
+                    Text(text = stringRes(R.string.confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    playingVM.isCustomSpeedDialog.value = false
+                }) {
+                    Text(text = stringRes(R.string.cancel))
+                }
+            }
+        )
+    }
+
+
 }
 
 val speedConfig = linkedMapOf(
+    "3.0X" to 3.0f,
+    "2.75X" to 2.75f,
+    "2.5X" to 2.5f,
     "2.0X" to 2f,
     "1.5X" to 1.5f,
     "1.25X" to 1.25f,
@@ -129,6 +210,9 @@ val speedConfig = linkedMapOf(
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 @Composable
 fun CartoonPlay(
+    isPad: Boolean,
+    controlVM: ControlViewModel,
+
     detailedVM: DetailedViewModel,
     playVM: CartoonPlayViewModel,
     playingVM: CartoonPlayingViewModel,
@@ -137,9 +221,6 @@ fun CartoonPlay(
     playState: CartoonPlayViewModel.CartoonPlayState?,
     playingState: CartoonPlayingViewModel.PlayingState,
 ) {
-    val isPad = isCurPadeMode()
-
-    val controlVM = ControlViewModelFactory.viewModel(playingVM.exoPlayer, isPad)
     val nav = LocalNavController.current
     val cartoonDownloadDispatcher: CartoonDownloadDispatcher by Injekt.injectLazy()
 
@@ -230,7 +311,9 @@ fun CartoonPlay(
             } else if (detailState.isError || detailState.cartoonInfo == null) {
                 ErrorPage(
                     modifier = Modifier.fillMaxSize(),
-                    errorMsg = detailState.errorMsg.ifEmpty { detailState.throwable?.message ?: "" },
+                    errorMsg = detailState.errorMsg.ifEmpty {
+                        detailState.throwable?.message ?: ""
+                    },
                     clickEnable = true,
                     onClick = {
                         detailedVM.load()
@@ -244,7 +327,7 @@ fun CartoonPlay(
                     selectLineIndex = playVM.selectedLineIndex,
                     playingPlayLine = playState?.playLine,
                     playingEpisode = playState?.episode,
-                    showPlayLine = if(detailState.cartoonInfo.playLine.size > 1) true else detailState.cartoonInfo.isShowLine,
+                    showPlayLine = if (detailState.cartoonInfo.playLine.size > 1) true else detailState.cartoonInfo.isShowLine,
                     listState = lazyGridState,
                     onLineSelect = {
                         playVM.selectedLineIndex = it
@@ -274,13 +357,16 @@ fun CartoonPlay(
                         val playLine = playState?.playLine
                         val episode = playState?.episode
                         val enterData = CartoonPlayViewModel.EnterData(
-                            playLineId = playLine?.playLine?.id?:"",
+                            playLineId = playLine?.playLine?.id ?: "",
                             playLineLabel = playLine?.playLine?.label ?: "",
-                            playLineIndex = detailState.cartoonInfo.playLineWrapper.indexOf(playState?.playLine) ?: -1,
-                            episodeId = episode?.id?:"",
-                            episodeIndex = playState?.playLine?.playLine?.episode?.indexOf(playState.episode) ?: -1,
-                            episodeLabel = episode?.label?:"",
-                            episodeOrder = episode?.order?:-1,
+                            playLineIndex = detailState.cartoonInfo.playLineWrapper.indexOf(
+                                playState?.playLine
+                            ) ?: -1,
+                            episodeId = episode?.id ?: "",
+                            episodeIndex = playState?.playLine?.playLine?.episode?.indexOf(playState.episode)
+                                ?: -1,
+                            episodeLabel = episode?.label ?: "",
+                            episodeOrder = episode?.order ?: -1,
                             adviceProgress = 0,
                         )
                         nav.navigationDlna(
@@ -296,9 +382,11 @@ fun CartoonPlay(
                                 nav.navigate(DOWNLOAD)
                             }
                         )
-                        cartoonDownloadDispatcher.newDownload(detailState.cartoonInfo, episodes.map {
-                            playLine.playLine to it
-                        })
+                        cartoonDownloadDispatcher.newDownload(
+                            detailState.cartoonInfo,
+                            episodes.map {
+                                playLine.playLine to it
+                            })
                     },
                     onSortChange = { sortKey, isReverse ->
                         detailedVM.setCartoonSort(sortKey, isReverse, detailState.cartoonInfo)
@@ -306,7 +394,6 @@ fun CartoonPlay(
                 )
             }
         }
-
     }
 }
 

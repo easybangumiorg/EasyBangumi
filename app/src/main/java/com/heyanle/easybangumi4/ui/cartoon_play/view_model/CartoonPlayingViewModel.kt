@@ -1,18 +1,32 @@
 package com.heyanle.easybangumi4.ui.cartoon_play.view_model
 
 import android.content.Intent
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import com.heyanle.easybangumi4.APP
+import com.heyanle.easybangumi4.R
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
 import com.heyanle.easybangumi4.case.SourceStateCase
 import com.heyanle.easybangumi4.exo.MediaSourceFactory
+import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.source_api.entity.Episode
 import com.heyanle.easybangumi4.source_api.entity.PlayLine
 import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
+import com.heyanle.easybangumi4.ui.common.MoeDialogData
+import com.heyanle.easybangumi4.ui.common.dialog
+import com.heyanle.easybangumi4.ui.common.show
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.Dispatchers
@@ -60,6 +74,37 @@ class CartoonPlayingViewModel(
     private val cartoonInfoDao: CartoonInfoDao by Injekt.injectLazy()
     private val mediaSourceFactory: MediaSourceFactory by Injekt.injectLazy()
     private val sourceStateCase: SourceStateCase by Injekt.injectLazy()
+    private val settingPreferences: SettingPreferences by Injekt.injectLazy()
+
+    private val customSpeedPref = settingPreferences.customSpeed
+    val customSpeed = customSpeedPref.stateIn(viewModelScope)
+    val isCustomSpeed = mutableStateOf(false)
+
+    val isCustomSpeedDialog = mutableStateOf(false)
+
+
+    fun setCustomSpeedDialog() {
+        isCustomSpeedDialog.value = true
+    }
+
+    fun setCustomSpeed(speed: Float) {
+        customSpeedPref.set(speed)
+        if (speed <= 0) {
+            isCustomSpeed.value = false
+        }
+    }
+
+    fun enableCustomSpeed() {
+        if (customSpeed.value <= 0) {
+            setCustomSpeedDialog()
+        } else {
+            isCustomSpeed.value = true
+        }
+    }
+
+    fun disableCustomSpeed() {
+        isCustomSpeed.value = false
+    }
 
     fun tryRefresh() {
         lastJob?.cancel()

@@ -396,4 +396,8 @@
     <string name="load_error">加载错误</string>
     <string name="share">分享</string>
     <string name="choose_target_app">选择分享应用</string>
+
+
+    <string name="custom_speed">自定义倍速</string>
+    <string name="please_input_right_speed">请输入正确数字！</string>
 </resources>

@@ -153,20 +153,25 @@ fun Migrate(
                 )
             }
 
-            MigrateContent(vm = vm, sta = sta, scrollState = scrollState,topAppBarScrollBehavior = behavior, onDelete = {
-                deleteCartoonInfo = it
-            })
+            MigrateContent(
+                vm = vm,
+                sta = sta,
+                scrollState = scrollState,
+                topAppBarScrollBehavior = behavior,
+                onDelete = {
+                    deleteCartoonInfo = it
+                })
 
-            if(!sta.isLoading && sta.selection.isNotEmpty()){
+            if (!sta.isLoading && sta.selection.isNotEmpty()) {
                 BottomAppBar(actions = {
                     IconButton(onClick = {
                         deleteCartoonInfo = sta.infoList
                     }) {
                         Icon(
-                            Icons.Filled.Delete, contentDescription = stringResource(id = R.string.delete)
+                            Icons.Filled.Delete,
+                            contentDescription = stringResource(id = R.string.delete)
                         )
                     }
-
 
 
                 }, floatingActionButton = {
@@ -175,15 +180,18 @@ fun Migrate(
                             vm.migrate(sta.infoList)
                         },
                     ) {
-                        Icon(Icons.Filled.PlayArrow, contentDescription = stringResource(id = R.string.migrate_start))
+                        Icon(
+                            Icons.Filled.PlayArrow,
+                            contentDescription = stringResource(id = R.string.migrate_start)
+                        )
                     }
                 })
             }
 
         }
 
-        if(!sta.isLoading){
-            if(sta.selection.isEmpty()){
+        if (!sta.isLoading) {
+            if (sta.selection.isEmpty()) {
                 Box(contentAlignment = Alignment.BottomEnd, modifier = Modifier.fillMaxSize()) {
 
                     ExtendedFloatingActionButton(
@@ -232,7 +240,6 @@ fun ColumnScope.MigrateContent(
     topAppBarScrollBehavior: TopAppBarScrollBehavior,
     onDelete: (List<CartoonInfo>) -> Unit
 ) {
-
 
 
     BackHandler(
@@ -286,9 +293,6 @@ fun ColumnScope.MigrateContent(
                 )
             }
         }
-
-
-
 
 
     }
@@ -443,7 +447,7 @@ fun MigrateItem(
                     }, onClick = {
 
                         MoeDialogData(
-                            text = stringRes(R.string.make_sure_to_migrate),
+                            text = { Text(stringRes(R.string.make_sure_to_migrate)) },
                             onConfirm = {
                                 itemVM.migrate {
                                     onMigrateSus(sta.value)

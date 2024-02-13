@@ -47,8 +47,8 @@ fun NormalSystemBarColor(
                 activity.window,
                 activity.window.decorView
             ).let { controller ->
-                controller.isAppearanceLightStatusBars = !getStatusBarDark(isDark)
-                controller.isAppearanceLightNavigationBars = !getNavigationBarDark(isDark)
+                controller.isAppearanceLightStatusBars = getStatusBarDark(isDark)
+                controller.isAppearanceLightNavigationBars = getNavigationBarDark(isDark)
             }
         }
     }
