@@ -26,6 +26,12 @@
 -keep class org.slf4j.impl.StaticMDCBinder  { *; }
 -dontwarn org.slf4j.impl.StaticLoggerBinder
 -dontwarn org.slf4j.impl.StaticMDCBinder
+
+# bugly
+
+-dontwarn com.tencent.bugly.**
+-keep public class com.tencent.bugly.**{*;}
+
 # 本体
 -keep class com.heyanle.**{*;}
 -keep interface com.heyanle.**{*;}

@@ -1,4 +1,3 @@
-
 import com.heyanle.buildsrc.Android
 import com.heyanle.buildsrc.RoomSchemaArgProvider
 import java.util.Properties
@@ -42,6 +41,15 @@ android {
                 )
             }\""
         )
+
+        manifestPlaceholders["bugly_appid"] =
+            publishingProps.getProperty("bugly_appid", System.getenv("BUGLY_APPID")?:"")
+        manifestPlaceholders["bugly_app_version"] = Android.versionName
+        manifestPlaceholders["bugly_app_channel"] = "github"
+
+        // bugly 调试模式
+        manifestPlaceholders["bugly_is_debug"] = false
+
         println("System.getenv.APPCENTER_SECRET = ${System.getenv("APPCENTER_SECRET")}")
 
         ksp {
@@ -121,7 +129,7 @@ dependencies {
 
     //implementation(files("../libs/bcprov-jdk16-139.jar"))
     implementation(androidx.bundles.core)
-    androidTestImplementation (androidx.bundles.test.core)
+    androidTestImplementation(androidx.bundles.test.core)
 
     implementation(androidx.bundles.room.impl)
     implementation(androidx.room.paging)
@@ -195,4 +203,6 @@ dependencies {
     implementation(project(":lib_upnp"))
 
     implementation(extension.extension.api)
+
+    implementation(libs.bugly)
 }
