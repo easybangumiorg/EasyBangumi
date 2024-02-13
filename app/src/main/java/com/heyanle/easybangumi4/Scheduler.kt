@@ -17,6 +17,7 @@ import com.heyanle.easybangumi4.exo.MediaModule
 import com.heyanle.easybangumi4.extension.ExtensionController
 import com.heyanle.easybangumi4.extension.ExtensionModule
 import com.heyanle.easybangumi4.case.CaseModule
+import com.heyanle.easybangumi4.dlna.DlnaModule
 import com.heyanle.easybangumi4.setting.SettingModule
 import com.heyanle.easybangumi4.source.SourceModule
 import com.heyanle.easybangumi4.ui.common.moeDialog
@@ -67,6 +68,7 @@ object Scheduler {
         ExtensionModule(application).registerWith(Injekt)
         SourceModule(application).registerWith(Injekt)
         CartoonDownloadModule(application).registerWith(Injekt)
+        DlnaModule(application).registerWith(Injekt)
 
 
         initOkkv(application)
