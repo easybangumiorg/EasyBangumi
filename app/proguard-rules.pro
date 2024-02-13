@@ -32,6 +32,10 @@
 -dontwarn com.tencent.bugly.**
 -keep public class com.tencent.bugly.**{*;}
 
+# cybergarage
+-keep class org.cybergarage.**{*;}
+-keep interface org.cybergarage.**{*;}
+
 # 本体
 -keep class com.heyanle.**{*;}
 -keep interface com.heyanle.**{*;}

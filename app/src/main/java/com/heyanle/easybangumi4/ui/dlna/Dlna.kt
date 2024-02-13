@@ -140,7 +140,14 @@ fun Dlna(
         contentColor = MaterialTheme.colorScheme.onBackground
     ) {
         DetailedContainer(sourceKey = source) { _, sou, det ->
-
+            DlnaPage(
+                detailedVM = detailedVM,
+                playVM = playVM,
+                dlnaVM = dlnaVM,
+                detailState = detailedState.value,
+                playState = playState.value,
+                playingState = playingState.value
+            )
         }
     }
 

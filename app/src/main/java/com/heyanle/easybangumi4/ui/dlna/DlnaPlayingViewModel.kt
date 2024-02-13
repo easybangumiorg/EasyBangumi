@@ -51,7 +51,7 @@ class DlnaPlayingViewModel : ViewModel() {
     private val easyDlna: EasyDlna by Injekt.injectLazy()
     private val sourceStateCase: SourceStateCase by Injekt.injectLazy()
 
-    val showDeviceDialog = mutableStateOf(false)
+    val showDeviceDialog = mutableStateOf(true)
     val deviceList = easyDlna.deviceList
 
     private val tempMap = HashMap<CartoonPlayViewModel.CartoonPlayState, PlayerInfo>()
