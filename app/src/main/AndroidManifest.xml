@@ -38,6 +38,24 @@
         android:theme="@style/Theme.EasyBangumi"
         tools:overrideLibrary="com.arthenica.ffmpegkit"
         tools:targetApi="31">
+
+        <!-- 配置APP ID -->
+        <meta-data
+            android:name="BUGLY_APPID"
+            android:value="${bugly_appid}" />
+        <!-- 配置APP版本号 -->
+        <meta-data
+            android:name="BUGLY_APP_VERSION"
+            android:value="${bugly_app_version}" />
+        <!-- 配置APP渠道号 -->
+        <meta-data
+            android:name="BUGLY_APP_CHANNEL"
+            android:value="${bugly_app_channel}" />
+        <!-- 配置Bugly调试模式（true或者false）-->
+        <meta-data
+            android:name="BUGLY_ENABLE_DEBUG"
+            android:value="${bugly_is_debug}" />
+
         <activity
             android:name="com.heyanle.easybangumi4.MainActivity"
             android:exported="true"

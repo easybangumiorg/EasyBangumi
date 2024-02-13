@@ -20,6 +20,7 @@ jobs:
           ./gradlew :app:assemble
         env:
           APPCENTER_SECRET: ${{ secrets.APPCENTER_SECRET }}
+          BUGLY_APPID: ${{ secrets.BUGLY_APPID }}
       - name: Setup build tool version variable
         shell: bash
         run: |

@@ -4,6 +4,7 @@ import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.app.Activity
 import android.app.Application
+import android.provider.Settings
 import android.util.Log
 import android.view.View
 import android.widget.Toast
@@ -20,6 +21,7 @@ import com.heyanle.easybangumi4.setting.SettingModule
 import com.heyanle.easybangumi4.source.SourceModule
 import com.heyanle.easybangumi4.ui.common.moeDialog
 import com.heyanle.easybangumi4.utils.AppCenterManager
+import com.heyanle.easybangumi4.utils.UUIDHelper
 import com.heyanle.easybangumi4.utils.exo_ssl.CropUtil
 import com.heyanle.easybangumi4.utils.exo_ssl.TrustAllHostnameVerifier
 import com.heyanle.extension_api.IconFactory
@@ -33,6 +35,7 @@ import com.microsoft.appcenter.crashes.Crashes
 import com.microsoft.appcenter.distribute.Distribute
 import com.microsoft.appcenter.distribute.DistributeListener
 import com.microsoft.appcenter.distribute.ReleaseDetails
+import com.tencent.bugly.crashreport.CrashReport
 import javax.net.ssl.HttpsURLConnection
 
 /**
@@ -65,8 +68,10 @@ object Scheduler {
         SourceModule(application).registerWith(Injekt)
         CartoonDownloadModule(application).registerWith(Injekt)
 
-        initAppCenter(application)
+
         initOkkv(application)
+        initAppCenter(application)
+        initBugly(application)
         initAria(application)
         initTrustAllHost()
     }
@@ -87,23 +92,31 @@ object Scheduler {
     /**
      * 全局异常捕获 + crash 界面
      */
-    private fun initCrasher(application: Application){
+    private fun initCrasher(application: Application) {
         Thread.setDefaultUncaughtExceptionHandler(CrashHandler(application))
     }
 
     /**
      * 允许 http 链接
      */
-    private fun initTrustAllHost(){
+    private fun initTrustAllHost() {
         HttpsURLConnection.setDefaultSSLSocketFactory(CropUtil.getUnsafeSslSocketFactory())
         HttpsURLConnection.setDefaultHostnameVerifier(TrustAllHostnameVerifier())
     }
 
+    private fun initBugly(application: Application) {
+        if (!BuildConfig.DEBUG) {
+            CrashReport.initCrashReport(application)
+            CrashReport.setDeviceModel(application, android.os.Build.MODEL)
+            CrashReport.setDeviceId(application, UUIDHelper.getUUID())
+
+        }
+    }
 
     /**
      * 初始化 App Center
      */
-    private fun initAppCenter(application: Application){
+    private fun initAppCenter(application: Application) {
         if (!BuildConfig.DEBUG) {
             kotlin.runCatching {
                 // https://appcenter.ms
@@ -123,7 +136,7 @@ object Scheduler {
                             releaseDetails: ReleaseDetails?
                         ): Boolean {
                             releaseDetails?.let {
-                                if(it.version != BuildConfig.VERSION_CODE){
+                                if (it.version != BuildConfig.VERSION_CODE) {
                                     AppCenterManager.releaseDetail.value = it
                                     AppCenterManager.showReleaseDialog.value = true
                                 }
@@ -145,7 +158,7 @@ object Scheduler {
     /**
      * 初始化 okkv
      */
-    private fun initOkkv(application: Application){
+    private fun initOkkv(application: Application) {
         Okkv.Builder(MMKVStore(application)).cache().build().init().default()
         // 如果不使用缓存，请手动指定 key
         Okkv.Builder(MMKVStore(application)).build().init().default("no_cache")
@@ -154,7 +167,7 @@ object Scheduler {
     /**
      * 初始化 aria
      */
-    private fun initAria(application: Application){
+    private fun initAria(application: Application) {
         Aria.init(application)
         Aria.get(application).downloadConfig.isConvertSpeed = true
     }
