@@ -231,6 +231,9 @@ class CartoonPlayingViewModel(
     @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
     private suspend fun innerPlay(playerInfo: PlayerInfo, adviceProcess: Long) {
         exoPlayer.pause()
+        if (lastJob?.isCancelled != false || lastJob?.isActive != true) {
+            return
+        }
         if (this.playingInfo != null) {
             if (
                 playingInfo?.uri == playerInfo.uri
@@ -294,6 +297,7 @@ class CartoonPlayingViewModel(
         if (_playingState.value.isPlaying && !exoPlayer.playWhenReady && exoPlayer.isMedia()) {
             trySaveHistory()
         }
+        lastJob?.cancel()
         exoPlayer.pause()
     }
 
