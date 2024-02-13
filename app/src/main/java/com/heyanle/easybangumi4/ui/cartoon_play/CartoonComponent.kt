@@ -376,7 +376,7 @@ fun CartoonTitleCard(
                                     .background(MaterialTheme.colorScheme.secondaryContainer)
                                     .clickable {
                                     }
-                                    .padding(8.dp, 4.dp),
+                                    .padding(8.dp, 0.dp),
                                 color = MaterialTheme.colorScheme.onSecondaryContainer,
                                 fontWeight = FontWeight.W900,
                                 text = it,

@@ -52,20 +52,6 @@ class SourceListGroupViewModel(
         }
     }
 
-    sealed class CurListPageState {
-        data object None: CurListPageState()
-
-        class Page(val pageListPage: SourcePage.SingleCartoonPage): CurListPageState()
-
-    }
-    var curListState by mutableStateOf<CurListPageState>(CurListPageState.None)
-
-    fun changeListPage(listPage: SourcePage.SingleCartoonPage){
-        curListState = CurListPageState.Page(listPage)
-        Log.d("SourceGroupViewModel", "changeListPage ${listPage.label}")
-    }
-
-
     private val viewModelOwnerStore = hashMapOf<SourcePage, ViewModelStore>()
 
     fun getViewModelStoreOwner(page: SourcePage) = object: ViewModelStoreOwner {

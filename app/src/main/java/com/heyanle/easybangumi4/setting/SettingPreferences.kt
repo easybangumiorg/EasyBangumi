@@ -40,9 +40,6 @@ class SettingPreferences(
     }
     val padMode = preferenceStore.getEnum<PadMode>("pad_mode", PadMode.AUTO)
 
-    // 是否在收藏里显示更新
-    val isShowUpdateInStar = preferenceStore.getBoolean("update_in_star", true)
-
     // 播放设置
     enum class PlayerOrientationMode {
         Auto, Enable, Disable
@@ -74,7 +71,6 @@ class SettingPreferences(
     // 缓存番剧数据过期时间（小时）
     var cartoonInfoCacheTimeHour = preferenceStore.getLong("cartoon_cache_time_hour", 12)
 
-
     // 下载番剧路径
     val downloadPathSelection = arrayListOf<Pair<String, String>>().apply {
         add(application.getFilePath("download") to stringRes(com.heyanle.easy_i18n.R.string.private_download_path))
@@ -100,5 +96,8 @@ class SettingPreferences(
             add(File(it, "EasyBangumi").absolutePath)
         }
     }
-    var downloadPath = preferenceStore.getString("cartoon_download_path", application.getFilePath("download") )
+    val downloadPath = preferenceStore.getString("cartoon_download_path", application.getFilePath("download") )
+
+    val customSpeed = preferenceStore.getFloat("custom_speed", -1f)
+
 }

@@ -1,5 +1,6 @@
 package com.heyanle.easybangumi4.ui.common.page.list
 
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -12,20 +13,16 @@ import com.heyanle.easybangumi4.source_api.entity.CartoonCover
 import com.heyanle.easybangumi4.ui.common.page.paging.ListPagePagingSource
 
 /**
- * Created by HeYanLe on 2023/2/25 20:45.
- * https://github.com/heyanLE
+ * Created by heyanlin on 2024/2/9 10:57.
  */
-class SourceListViewModel(
-    private val listPage: SourcePage.SingleCartoonPage
-) : ViewModel() {
+class SourceGroupListViewModel(
+    private val pageGroup: List<SourcePage.SingleCartoonPage>
+): ViewModel() {
 
-    val curPager = mutableStateOf(getPager().flow.cachedIn(viewModelScope))
+    val pageList = pageGroup.map { it to getPager(it).flow.cachedIn(viewModelScope) }
+    val selected = mutableIntStateOf(0)
 
-    fun refresh() {
-        curPager.value = getPager().flow.cachedIn(viewModelScope)
-    }
-
-    private fun getPager(): Pager<Int, CartoonCover> {
+    private fun getPager(listPage: SourcePage.SingleCartoonPage): Pager<Int, CartoonCover> {
         return Pager(
             PagingConfig(pageSize = 10),
             initialKey = listPage.firstKey()
@@ -36,15 +33,15 @@ class SourceListViewModel(
 
 }
 
-class SourceListViewModelFactory(
-    private val listPage: SourcePage.SingleCartoonPage
+class SourceGroupListViewModelFactory(
+    private val pageGroup: List<SourcePage.SingleCartoonPage>
 ) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
     @SuppressWarnings("unchecked")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(SourceListViewModel::class.java))
-            return SourceListViewModel(listPage) as T
+        if (modelClass.isAssignableFrom(SourceGroupListViewModel::class.java))
+            return SourceGroupListViewModel(pageGroup) as T
         throw RuntimeException("unknown class :" + modelClass.name)
     }
 }

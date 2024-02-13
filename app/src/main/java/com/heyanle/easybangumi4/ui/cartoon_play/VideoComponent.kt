@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -39,9 +40,11 @@ import androidx.compose.material.icons.filled.Battery5Bar
 import androidx.compose.material.icons.filled.Battery6Bar
 import androidx.compose.material.icons.filled.BatteryChargingFull
 import androidx.compose.material.icons.filled.BatteryFull
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.NavigateNext
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -50,6 +53,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -74,8 +78,10 @@ import com.heyanle.easybangumi4.ui.common.CombineClickIconButton
 import com.heyanle.easybangumi4.ui.common.ErrorPage
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.ToggleButton
+import com.heyanle.easybangumi4.ui.common.dialog
 import com.heyanle.easybangumi4.utils.bufferImageCache
 import com.heyanle.easybangumi4.utils.downloadImage
+import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.easybangumi4.utils.shareImageText
 import com.heyanle.easybangumi4.utils.shareText
 import kotlinx.coroutines.Dispatchers
@@ -91,6 +97,7 @@ import loli.ball.easyplayer2.SimpleGestureController
 import loli.ball.easyplayer2.TimeSlider
 import loli.ball.easyplayer2.TimeText
 import loli.ball.easyplayer2.TopControl
+import loli.ball.easyplayer2.ViewSeekBar
 import loli.ball.easyplayer2.utils.rememberBatteryReceiver
 
 /**
@@ -230,15 +237,56 @@ fun VideoFloat(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
+
+                Row(
+                    modifier = Modifier
+                        .defaultMinSize(180.dp, Dp.Unspecified)
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable {
+                            val custom = cartoonPlayingViewModel.customSpeed.value
+                            if (custom > 0) {
+                                cartoonPlayingViewModel.enableCustomSpeed()
+                                controlVM.setSpeed(custom)
+                            } else {
+                                cartoonPlayingViewModel.setCustomSpeedDialog()
+                            }
+                        }
+                        .padding(16.dp, 14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    val custom = cartoonPlayingViewModel.customSpeed.collectAsState()
+                    Text(
+                        text = if (custom.value > 0f) custom.value.toString() + "X" else stringResource(
+                            id = R.string.custom_speed
+                        ),
+                        color = if (cartoonPlayingViewModel.isCustomSpeed.value) MaterialTheme.colorScheme.primary else Color.White
+                    )
+                    if (custom.value > 0f) {
+                        IconButton(onClick = {
+                            cartoonPlayingViewModel.setCustomSpeedDialog()
+                        }) {
+                            Icon(
+                                Icons.Filled.Edit,
+                                contentDescription = stringResource(id = R.string.custom_speed)
+                            )
+                        }
+                    }
+                }
+
                 speedConfig.forEach { (name, speed) ->
-                    val checked = controlVM.curSpeed == speed
+                    val checked =
+                        !cartoonPlayingViewModel.isCustomSpeed.value && controlVM.curSpeed == speed
                     Text(
                         textAlign = TextAlign.Center,
                         text = name,
                         modifier = Modifier
                             .defaultMinSize(180.dp, Dp.Unspecified)
                             .clip(RoundedCornerShape(8.dp))
-                            .clickable { controlVM.setSpeed(speed) }
+                            .clickable {
+                                controlVM.setSpeed(speed)
+                                cartoonPlayingViewModel.disableCustomSpeed()
+                            }
                             .padding(16.dp, 14.dp),
                         color = if (checked) MaterialTheme.colorScheme.primary else Color.White
                     )
@@ -549,7 +597,7 @@ fun EasyVideoBottomControl(
 
             if (vm.isFullScreen) {
                 Icon(
-                    Icons.Filled.NavigateNext,
+                    Icons.Filled.SkipNext,
                     modifier = Modifier
                         .clip(CircleShape)
                         .clickable {
@@ -570,14 +618,15 @@ fun EasyVideoBottomControl(
                     else -> 0
                 }
 
-            TimeSlider(
-                during = vm.during,
-                position = position,
+            ViewSeekBar(
+                during = vm.during.toInt(),
+                position = position.toInt(),
+                secondary = vm.bufferPosition.toInt(),
                 onValueChange = {
-                    vm.onPositionChange(it)
+                    vm.onPositionChange(it.toFloat())
                 },
                 onValueChangeFinish = {
-                    vm.onActionUP()
+                    vm.onActionUPScope()
                 }
             )
 
