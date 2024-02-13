@@ -20,6 +20,7 @@ android {
     compileSdk = Android.compileSdk
 
     defaultConfig {
+
         applicationId = "com.heyanle.easybangumi4"
         minSdk = Android.minSdk
         targetSdk = Android.targetSdk
@@ -87,11 +88,11 @@ android {
     }
 
     buildTypes {
-//        debug {
-//            isMinifyEnabled = true
-//            isShrinkResources = false
-//            proguardFiles("proguard-rules.pro")
-//        }
+        debug {
+            isMinifyEnabled = true
+            isShrinkResources = false
+            proguardFiles("proguard-rules.pro")
+        }
         release {
             isMinifyEnabled = true
             isShrinkResources = false
