@@ -1,41 +1,43 @@
 package com.heyanle.easybangumi4.ui.common.page.list
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridScope
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
-import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.navigationDetailed
 import com.heyanle.easybangumi4.source_api.component.page.SourcePage
@@ -43,245 +45,239 @@ import com.heyanle.easybangumi4.source_api.entity.CartoonCover
 import com.heyanle.easybangumi4.source_api.entity.toIdentify
 import com.heyanle.easybangumi4.ui.common.CartoonCardWithCover
 import com.heyanle.easybangumi4.ui.common.CartoonCardWithoutCover
-import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.PagingCommon
 import com.heyanle.easybangumi4.ui.common.pagingCommon
 import com.heyanle.easybangumi4.ui.main.star.CoverStarViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 /**
- * Created by HeYanLe on 2023/2/25 20:44.
- * https://github.com/heyanLE
+ * Created by heyanlin on 2024/2/9 10:29.
  */
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun SourceListPage(
+    coverStarVm: CoverStarViewModel,
+    pageList: List<SourcePage.SingleCartoonPage>,
+    lazyGridState: LazyGridState,
+) {
+    val star = coverStarVm.setFlow.collectAsState(initial = setOf<String>())
+    val nav = LocalNavController.current
+    val haptic = LocalHapticFeedback.current
+    val vm =
+        viewModel<SourceGroupListViewModel>(factory = SourceGroupListViewModelFactory(pageList))
+    val paging = remember(vm.selected.intValue) {
+        val index = vm.selected.intValue
+        if (vm.pageList.isNotEmpty() && (index >= vm.pageList.size || index < 0)) {
+            vm.selected.intValue = 0
+            null
+        } else if (vm.pageList.isNotEmpty()) {
+            vm.pageList[vm.selected.intValue]
+        } else {
+            null
+        }
+    }
+    val pagingItems = paging?.second?.collectAsLazyPagingItems()
+    LazyVerticalGrid(
+        modifier = Modifier
+            .fillMaxSize(),
+        state = lazyGridState,
+        columns = GridCells.Adaptive(50.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
+    ) {
+        item(
+            span = {
+                GridItemSpan(maxLineSpan)
+            }
+        ) {
+            SourceListGroupTab(
+                list = pageList,
+                curPage = vm.selected.intValue,
+                onClick = {
+                    vm.selected.intValue = it
+                }
+            )
+        }
+        pagingItems?.let { pagingItems ->
+            when (paging.first) {
+                is SourcePage.SingleCartoonPage.WithCover -> {
+                    listPageWithCover(
+                        pagingItems,
+                        star.value,
+                        onClick = {
+                            nav.navigationDetailed(it)
+                        },
+                        onLongPress = {
+                            coverStarVm.star(it)
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        }
+                    )
+                }
+
+                is SourcePage.SingleCartoonPage.WithoutCover -> {
+                    listPageWithoutCover(
+                        pagingItems,
+                        star.value,
+                        onClick = {
+                            nav.navigationDetailed(it)
+                        },
+                        onLongPress = {
+                            coverStarVm.star(it)
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        }
+                    )
+                }
+            }
+            pagingCommon(pagingItems)
+        }
+
+    }
+
+
+}
 
 @Composable
 fun SourceListPage(
-    modifier: Modifier = Modifier,
-    listPage: SourcePage.SingleCartoonPage,
-    header: (@Composable () -> Unit)? = null
+    coverStarVm: CoverStarViewModel,
+    page: SourcePage.SingleCartoonPage,
+    lazyGridState: LazyGridState,
+    vm: SourceListViewModel
 ) {
-
-    val vm = viewModel<SourceListViewModel>(factory = SourceListViewModelFactory(listPage))
-    val coverStarVm = viewModel<CoverStarViewModel>()
-    val scope = rememberCoroutineScope()
-
-
-    val pi = vm.curPager.value.collectAsLazyPagingItems()
-
-    when (listPage) {
-        is SourcePage.SingleCartoonPage.WithCover -> {
-            SourceListPageContentWithCover(
-                vm = vm,
-                coverStarVm = coverStarVm,
-                pagingItems = pi,
-                scope = scope,
-                header = header
-            )
-        }
-
-        is SourcePage.SingleCartoonPage.WithoutCover -> {
-            SourceListPageContentWithoutCover(
-                vm = vm,
-                coverStarVm = coverStarVm,
-                pagingItems = pi,
-                scope = scope,
-                header = header
-            )
-        }
-    }
-
-
-}
-
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-fun SourceListPageContentWithCover(
-    modifier: Modifier = Modifier,
-    vm: SourceListViewModel,
-    coverStarVm: CoverStarViewModel,
-    pagingItems: LazyPagingItems<CartoonCover>,
-    scope: CoroutineScope,
-    header: (@Composable () -> Unit)? = null,
-    ) {
     val star = coverStarVm.setFlow.collectAsState(initial = setOf<String>())
     val nav = LocalNavController.current
-    var refreshing by remember { mutableStateOf(false) }
-    val state = rememberPullRefreshState(refreshing, onRefresh = {
-        scope.launch {
-            refreshing = true
-            vm.refresh()
-            delay(500)
-            refreshing = false
-        }
-    })
-
     val haptic = LocalHapticFeedback.current
-    val lazyGridState = rememberLazyGridState()
-    Box(
+    val pagingItems = vm.curPager.value.collectAsLazyPagingItems()
+    LazyVerticalGrid(
         modifier = Modifier
-            .fillMaxSize()
-            .pullRefresh(state)
-            .then(modifier)
+            .fillMaxSize(),
+        state = lazyGridState,
+        columns = GridCells.Adaptive(50.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
     ) {
-        pagingItems.let { items ->
+        when (page) {
+            is SourcePage.SingleCartoonPage.WithCover -> {
+                listPageWithCover(
+                    pagingItems,
+                    star.value,
+                    onClick = {
+                        nav.navigationDetailed(it)
+                    },
+                    onLongPress = {
+                        coverStarVm.star(it)
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    }
+                )
+            }
 
-            if (items.itemCount > 0) {
-                LazyVerticalGrid(
+            is SourcePage.SingleCartoonPage.WithoutCover -> {
+                listPageWithoutCover(
+                    pagingItems,
+                    star.value,
+                    onClick = {
+                        nav.navigationDetailed(it)
+                    },
+                    onLongPress = {
+                        coverStarVm.star(it)
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    }
+                )
+            }
+        }
+        pagingCommon(pagingItems)
+    }
+    PagingCommon(items = pagingItems)
+}
+
+@Composable
+fun SourceListGroupTab(
+    list: List<SourcePage.SingleCartoonPage>,
+    curPage: Int,
+    onClick: (Int) -> Unit,
+) {
+    val state = rememberLazyListState(initialFirstVisibleItemIndex = curPage)
+
+    LazyRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+        state = state
+    ) {
+        itemsIndexed(list) { index, item ->
+            val selected = index == curPage
+            Surface(
+                shape = CircleShape,
+                modifier =
+                Modifier
+                    .padding(2.dp, 8.dp),
+                color = if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
+            ) {
+                Text(
                     modifier = Modifier
-                        .fillMaxSize(),
-                    state = lazyGridState,
-                    columns = GridCells.Adaptive(100.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
-                ) {
-                    header?.let {
-                        item(
-                            span = {
-                                // LazyGridItemSpanScope:
-                                // maxLineSpan
-                                GridItemSpan(maxLineSpan)
-                            }
-                        ) {
-                            it()
+                        .clip(CircleShape)
+                        .clickable {
+                            onClick(index)
                         }
-                    }
-                    items(items.itemCount) { int ->
-
-                        items[int]?.let { cover ->
-                            CartoonCardWithCover(
-                                modifier = Modifier.fillMaxWidth(),
-                                star = star.value.contains(cover.toIdentify()) ,
-                                cartoonCover = cover,
-                                onClick = {
-                                    nav.navigationDetailed(it)
-                                },
-                                onLongPress = {
-                                    coverStarVm.star(it)
-                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                },
-                            )
-                        }
-
-                    }
-
-                    pagingCommon(items)
-                }
-            }
-            Column(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                if (items.itemCount <= 0) {
-                    Spacer(modifier = Modifier.size(4.dp))
-                    header?.invoke()
-                }
-                PagingCommon(items = items)
+                        .padding(8.dp, 0.dp),
+                    color = if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onBackground,
+                    fontWeight = FontWeight.W900,
+                    text = item.label,
+                    fontSize = 12.sp,
+                )
             }
         }
-
-        //MD3PullRefreshIndicator(refreshing, state, modifier)
-        PullRefreshIndicator(
-            refreshing,
-            state,
-            Modifier.align(Alignment.TopCenter),
-            backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
-            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-        )
-        FastScrollToTopFab(listState = lazyGridState, after = 20)
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-fun SourceListPageContentWithoutCover(
-    modifier: Modifier = Modifier,
-    vm: SourceListViewModel,
-    coverStarVm: CoverStarViewModel,
+fun LazyGridScope.listPageWithCover(
     pagingItems: LazyPagingItems<CartoonCover>,
-    scope: CoroutineScope,
-    header: (@Composable () -> Unit)? = null,
-
+    starSet: Set<String>,
+    onClick: (CartoonCover) -> Unit,
+    onLongPress: (CartoonCover) -> Unit,
+) {
+    items(
+        count = pagingItems.itemCount,
+//        key = {
+//            pagingItems.itemKey {
+//                it.toIdentify()
+//            }
+//        },
+        span = { GridItemSpan(2) },
     ) {
-    val nav = LocalNavController.current
-    var refreshing by remember { mutableStateOf(false) }
-    val state = rememberPullRefreshState(refreshing, onRefresh = {
-        scope.launch {
-            refreshing = true
-            vm.refresh()
-            delay(500)
-            refreshing = false
+        pagingItems[it]?.let { cover ->
+            CartoonCardWithCover(
+                modifier = Modifier.fillMaxWidth(),
+                star = starSet.contains(cover.toIdentify()),
+                cartoonCover = cover,
+                onClick = onClick,
+                onLongPress = onLongPress,
+            )
         }
-    })
+    }
+}
 
-    val lazyState = rememberLazyStaggeredGridState()
-
-    val haptic = LocalHapticFeedback.current
-
-    val star = coverStarVm.setFlow.collectAsState(initial = setOf<String>())
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .pullRefresh(state)
-            .then(modifier)
+fun LazyGridScope.listPageWithoutCover(
+    pagingItems: LazyPagingItems<CartoonCover>,
+    starSet: Set<String>,
+    onClick: (CartoonCover) -> Unit,
+    onLongPress: (CartoonCover) -> Unit,
+) {
+    items(
+        count = pagingItems.itemCount,
+//        key = {
+//            pagingItems.itemKey {
+//                it.toIdentify()
+//            }
+//        },
+        span = { GridItemSpan(3) },
     ) {
-
-        pagingItems.let { items ->
-            if (pagingItems.itemCount > 0) {
-                LazyVerticalStaggeredGrid(
-                    columns = StaggeredGridCells.Adaptive(150.dp),
-                    state = lazyState,
-                    verticalItemSpacing = 4.dp,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp),
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    header?.let {
-                        item(
-                            span = StaggeredGridItemSpan.FullLine
-                        ) {
-                            it()
-                        }
-                    }
-                    items(items.itemCount) { index ->
-                        items[index]?.let { cover ->
-                            CartoonCardWithoutCover(
-                                cartoonCover = cover,
-                                star =  star.value.contains(cover.toIdentify()),
-                                onClick = {
-                                    nav.navigationDetailed(it)
-                                },
-                                onLongPress = {
-                                    coverStarVm.star(it)
-                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                },
-                            )
-                        }
-
-                    }
-                    pagingCommon(items)
-                }
-            }
-            Column(
-                modifier = Modifier.fillMaxSize(),
-            ) {
-                if (items.itemCount <= 0) {
-                    Spacer(modifier = Modifier.size(4.dp))
-                    header?.invoke()
-                }
-                PagingCommon(items = items)
-            }
-
+        pagingItems[it]?.let { cover ->
+            CartoonCardWithoutCover(
+                cartoonCover = cover,
+                star = starSet.contains(cover.toIdentify()),
+                onClick = onClick,
+                onLongPress = onLongPress,
+            )
         }
-
-        PullRefreshIndicator(
-            refreshing,
-            state,
-            Modifier.align(Alignment.TopCenter),
-            backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
-            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-        )
-        FastScrollToTopFab(lazyState, after = 20)
     }
 }
