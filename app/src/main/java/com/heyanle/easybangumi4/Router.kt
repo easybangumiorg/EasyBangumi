@@ -257,11 +257,7 @@ fun Nav() {
 
                 var enterDataString = it.arguments?.getString("enter_data") ?: ""
                 enterDataString = URLDecoder.decode(enterDataString, "utf-8")
-                NormalSystemBarColor(
-                    getStatusBarDark = {
-                        false
-                    }
-                )
+                NormalSystemBarColor()
 
                 val enterData = kotlin.runCatching {
                     enterDataString.jsonTo<CartoonPlayViewModel.EnterData>()
