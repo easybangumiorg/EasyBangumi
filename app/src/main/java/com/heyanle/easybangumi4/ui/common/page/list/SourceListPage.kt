@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -14,9 +16,12 @@ import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridScope
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.MaterialTheme
@@ -59,6 +64,7 @@ fun SourceListPage(
     coverStarVm: CoverStarViewModel,
     pageList: List<SourcePage.SingleCartoonPage>,
     lazyGridState: LazyGridState,
+    lazyStaggeredGridState: LazyStaggeredGridState,
 ) {
     val star = coverStarVm.setFlow.collectAsState(initial = setOf<String>())
     val nav = LocalNavController.current
@@ -77,88 +83,33 @@ fun SourceListPage(
         }
     }
     val pagingItems = paging?.second?.collectAsLazyPagingItems()
-    LazyVerticalGrid(
-        modifier = Modifier
-            .fillMaxSize(),
-        state = lazyGridState,
-        columns = GridCells.Adaptive(50.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
-        contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
-    ) {
-        item(
-            span = {
-                GridItemSpan(maxLineSpan)
-            }
+    val lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = vm.selected.intValue)
+
+    if (paging?.first is SourcePage.SingleCartoonPage.WithCover) {
+        LazyVerticalGrid(
+            modifier = Modifier
+                .fillMaxSize(),
+            state = lazyGridState,
+            columns = GridCells.Adaptive(100.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
+            contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
         ) {
-            SourceListGroupTab(
-                list = pageList,
-                curPage = vm.selected.intValue,
-                onClick = {
-                    vm.selected.intValue = it
+            item(
+                span = {
+                    GridItemSpan(maxLineSpan)
                 }
-            )
-        }
-        pagingItems?.let { pagingItems ->
-            when (paging.first) {
-                is SourcePage.SingleCartoonPage.WithCover -> {
-                    listPageWithCover(
-                        pagingItems,
-                        star.value,
-                        onClick = {
-                            nav.navigationDetailed(it)
-                        },
-                        onLongPress = {
-                            coverStarVm.star(it)
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        }
-                    )
-                }
-
-                is SourcePage.SingleCartoonPage.WithoutCover -> {
-                    listPageWithoutCover(
-                        pagingItems,
-                        star.value,
-                        onClick = {
-                            nav.navigationDetailed(it)
-                        },
-                        onLongPress = {
-                            coverStarVm.star(it)
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        }
-                    )
-                }
+            ) {
+                SourceListGroupTab(
+                    list = pageList,
+                    curPage = vm.selected.intValue,
+                    lazyListState = lazyListState,
+                    onClick = {
+                        vm.selected.intValue = it
+                    }
+                )
             }
-            pagingCommon(pagingItems)
-        }
-
-    }
-
-
-}
-
-@Composable
-fun SourceListPage(
-    coverStarVm: CoverStarViewModel,
-    page: SourcePage.SingleCartoonPage,
-    lazyGridState: LazyGridState,
-    vm: SourceListViewModel
-) {
-    val star = coverStarVm.setFlow.collectAsState(initial = setOf<String>())
-    val nav = LocalNavController.current
-    val haptic = LocalHapticFeedback.current
-    val pagingItems = vm.curPager.value.collectAsLazyPagingItems()
-    LazyVerticalGrid(
-        modifier = Modifier
-            .fillMaxSize(),
-        state = lazyGridState,
-        columns = GridCells.Adaptive(50.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
-        contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
-    ) {
-        when (page) {
-            is SourcePage.SingleCartoonPage.WithCover -> {
+            pagingItems?.let { pagingItems ->
                 listPageWithCover(
                     pagingItems,
                     star.value,
@@ -170,9 +121,33 @@ fun SourceListPage(
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     }
                 )
+                pagingCommon(pagingItems)
             }
 
-            is SourcePage.SingleCartoonPage.WithoutCover -> {
+        }
+
+    } else {
+        LazyVerticalStaggeredGrid(
+            columns = StaggeredGridCells.Adaptive(150.dp),
+            state = lazyStaggeredGridState,
+            verticalItemSpacing = 4.dp,
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp),
+            modifier = Modifier.fillMaxSize()
+        ) {
+            item(
+                span = StaggeredGridItemSpan.FullLine
+            ) {
+                SourceListGroupTab(
+                    list = pageList,
+                    curPage = vm.selected.intValue,
+                    lazyListState = lazyListState,
+                    onClick = {
+                        vm.selected.intValue = it
+                    }
+                )
+            }
+            pagingItems?.let {
                 listPageWithoutCover(
                     pagingItems,
                     star.value,
@@ -184,10 +159,75 @@ fun SourceListPage(
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     }
                 )
+                pagingCommon(pagingItems)
             }
         }
-        pagingCommon(pagingItems)
     }
+
+
+}
+
+@Composable
+fun SourceListPage(
+    coverStarVm: CoverStarViewModel,
+    page: SourcePage.SingleCartoonPage,
+    lazyGridState: LazyGridState,
+    lazyStaggeredGridState: LazyStaggeredGridState,
+    vm: SourceListViewModel
+) {
+    val star = coverStarVm.setFlow.collectAsState(initial = setOf<String>())
+    val nav = LocalNavController.current
+    val haptic = LocalHapticFeedback.current
+    val pagingItems = vm.curPager.value.collectAsLazyPagingItems()
+
+    if (page is SourcePage.SingleCartoonPage.WithCover) {
+        LazyVerticalGrid(
+            modifier = Modifier
+                .fillMaxSize(),
+            state = lazyGridState,
+            columns = GridCells.Adaptive(100.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
+            contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
+        ) {
+            listPageWithCover(
+                pagingItems,
+                star.value,
+                onClick = {
+                    nav.navigationDetailed(it)
+                },
+                onLongPress = {
+                    coverStarVm.star(it)
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                }
+            )
+            pagingCommon(pagingItems)
+        }
+    } else {
+        LazyVerticalStaggeredGrid(
+            columns = StaggeredGridCells.Adaptive(150.dp),
+            state = lazyStaggeredGridState,
+            verticalItemSpacing = 4.dp,
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp),
+            modifier = Modifier.fillMaxSize()
+        ) {
+            listPageWithoutCover(
+                pagingItems,
+                star.value,
+                onClick = {
+                    nav.navigationDetailed(it)
+                },
+                onLongPress = {
+                    coverStarVm.star(it)
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                }
+            )
+            pagingCommon(pagingItems)
+        }
+    }
+
+
     PagingCommon(items = pagingItems)
 }
 
@@ -195,14 +235,15 @@ fun SourceListPage(
 fun SourceListGroupTab(
     list: List<SourcePage.SingleCartoonPage>,
     curPage: Int,
+    lazyListState: LazyListState,
     onClick: (Int) -> Unit,
 ) {
-    val state = rememberLazyListState(initialFirstVisibleItemIndex = curPage)
+    //val state = rememberLazyListState(initialFirstVisibleItemIndex = curPage)
 
     LazyRow(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Center,
-        state = state
+        state = lazyListState
     ) {
         itemsIndexed(list) { index, item ->
             val selected = index == curPage
@@ -238,12 +279,6 @@ fun LazyGridScope.listPageWithCover(
 ) {
     items(
         count = pagingItems.itemCount,
-//        key = {
-//            pagingItems.itemKey {
-//                it.toIdentify()
-//            }
-//        },
-        span = { GridItemSpan(2) },
     ) {
         pagingItems[it]?.let { cover ->
             CartoonCardWithCover(
@@ -257,7 +292,7 @@ fun LazyGridScope.listPageWithCover(
     }
 }
 
-fun LazyGridScope.listPageWithoutCover(
+fun LazyStaggeredGridScope.listPageWithoutCover(
     pagingItems: LazyPagingItems<CartoonCover>,
     starSet: Set<String>,
     onClick: (CartoonCover) -> Unit,
@@ -265,12 +300,6 @@ fun LazyGridScope.listPageWithoutCover(
 ) {
     items(
         count = pagingItems.itemCount,
-//        key = {
-//            pagingItems.itemKey {
-//                it.toIdentify()
-//            }
-//        },
-        span = { GridItemSpan(3) },
     ) {
         pagingItems[it]?.let { cover ->
             CartoonCardWithoutCover(
