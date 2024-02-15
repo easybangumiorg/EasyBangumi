@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
@@ -101,6 +102,7 @@ fun SourceListWithGroup(
     val scope = rememberCoroutineScope()
     var refreshing by remember { mutableStateOf(false) }
     val lazyGridState = rememberLazyGridState()
+    val lazyStaggeredGridState = rememberLazyStaggeredGridState()
     val state = rememberPullRefreshState(refreshing, onRefresh = {
         scope.launch {
             refreshing = true
@@ -115,7 +117,7 @@ fun SourceListWithGroup(
             .pullRefresh(state)
     ) {
         SourceListPage(
-            coverStarViewModel, groupState.list, lazyGridState
+            coverStarViewModel, groupState.list, lazyGridState, lazyStaggeredGridState
         )
         PullRefreshIndicator(
             refreshing,
@@ -128,38 +130,38 @@ fun SourceListWithGroup(
     }
 }
 
-@Composable
-fun SourceListGroupTab(
-    list: List<SourcePage.SingleCartoonPage>,
-    curPage: SourcePage.SingleCartoonPage,
-    onClick: (SourcePage.SingleCartoonPage)->Unit,
-){
-    LazyRow(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center
-    ){
-        items(list) {
-            val selected = it == curPage
-            Surface(
-                shape = CircleShape,
-                modifier =
-                Modifier
-                    .padding(2.dp, 8.dp),
-                color = if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
-            ) {
-                Text(
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .clickable {
-                            onClick(it)
-                        }
-                        .padding(8.dp, 4.dp),
-                    color = if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onBackground,
-                    fontWeight = FontWeight.W900,
-                    text = it.label,
-                    fontSize = 12.sp,
-                )
-            }
-        }
-    }
-}
+//@Composable
+//fun SourceListGroupTab(
+//    list: List<SourcePage.SingleCartoonPage>,
+//    curPage: SourcePage.SingleCartoonPage,
+//    onClick: (SourcePage.SingleCartoonPage)->Unit,
+//){
+//    LazyRow(
+//        modifier = Modifier.fillMaxWidth(),
+//        horizontalArrangement = Arrangement.Center
+//    ){
+//        items(list) {
+//            val selected = it == curPage
+//            Surface(
+//                shape = CircleShape,
+//                modifier =
+//                Modifier
+//                    .padding(2.dp, 8.dp),
+//                color = if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
+//            ) {
+//                Text(
+//                    modifier = Modifier
+//                        .clip(CircleShape)
+//                        .clickable {
+//                            onClick(it)
+//                        }
+//                        .padding(8.dp, 4.dp),
+//                    color = if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onBackground,
+//                    fontWeight = FontWeight.W900,
+//                    text = it.label,
+//                    fontSize = 12.sp,
+//                )
+//            }
+//        }
+//    }
+//}

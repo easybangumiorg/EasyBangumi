@@ -48,6 +48,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Airplay
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.More
@@ -55,16 +56,19 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -77,6 +81,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -105,21 +111,31 @@ import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.common.TabIndicator
+import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.ui.common.proc.SortDropDownMenu
 import com.heyanle.easybangumi4.ui.common.proc.SortState
 import com.heyanle.easybangumi4.utils.isCurPadeMode
 import com.heyanle.easybangumi4.utils.loge
+import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.injekt.api.get
 import com.heyanle.injekt.core.Injekt
 import loli.ball.easyplayer2.BackBtn
+import loli.ball.easyplayer2.BottomControl
 import loli.ball.easyplayer2.ControlViewModel
 import loli.ball.easyplayer2.ControlViewModelFactory
 import loli.ball.easyplayer2.EasyPlayerScaffoldBase
+import loli.ball.easyplayer2.FullScreenBtn
 import loli.ball.easyplayer2.LockBtn
+import loli.ball.easyplayer2.PlayPauseBtn
 import loli.ball.easyplayer2.ProgressBox
 import loli.ball.easyplayer2.SimpleBottomBar
+import loli.ball.easyplayer2.SimpleBottomBarWithSeekBar
 import loli.ball.easyplayer2.SimpleGestureController
+import loli.ball.easyplayer2.TimeSlider
+import loli.ball.easyplayer2.TimeText
 import loli.ball.easyplayer2.TopControl
+import loli.ball.easyplayer2.ViewSeekBar
+import loli.ball.easyplayer2.utils.loge
 
 /**
  * Created by heyanlin on 2023/9/25.
@@ -131,7 +147,7 @@ fun LocalPlay(
     val isPad = isCurPadeMode()
     val vm = viewModel<LocalPlayViewModel>(factory = LocalPlayViewModelFactory(uuid = uuid))
     val controlVM = ControlViewModelFactory.viewModel(Injekt.get<ExoPlayer>().let {
-        it.toString().loge("ExoPlayer-----")
+        // it.toString().loge("ExoPlayer-----")
         it
     }, isPad, LocalPlayViewModel.TAG)
     val nav = LocalNavController.current
@@ -148,13 +164,13 @@ fun LocalPlay(
         mutableStateOf(false)
     }
 
-    LaunchedEffect(key1 = state.curPlayingEpisode){
+    LaunchedEffect(key1 = state.curPlayingEpisode) {
         state.curPlayingEpisode?.let {
             vm.play(it)
         }
     }
 
-    DisposableEffect(key1 = Unit){
+    DisposableEffect(key1 = Unit) {
         onDispose {
             vm.clearPlay()
         }
@@ -196,11 +212,13 @@ fun LocalPlay(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .clickable(onClick = {
-                                showSpeedWin = false
-                            }, indication = null, interactionSource = remember {
-                                MutableInteractionSource()
-                            }),
+                            .clickable(
+                                onClick = { showSpeedWin = false },
+                                indication = null,
+                                interactionSource = remember {
+                                    MutableInteractionSource()
+                                }
+                            ),
                         contentAlignment = Alignment.CenterEnd,
                     ) {
                         Column(
@@ -212,23 +230,64 @@ fun LocalPlay(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center
                         ) {
-                            speedConfig.forEach {
 
-                                Text(textAlign = TextAlign.Center,
-                                    text = it.key,
+                            Row(
+                                modifier = Modifier
+                                    .defaultMinSize(180.dp, Dp.Unspecified)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .clickable {
+                                        val custom = vm.customSpeed.value
+                                        if (custom > 0) {
+                                            vm.enableCustomSpeed()
+                                            controlVM.setSpeed(custom)
+                                        } else {
+                                            vm.setCustomSpeedDialog()
+                                        }
+                                    }
+                                    .padding(16.dp, 14.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center,
+                            ) {
+                                val custom = vm.customSpeed.collectAsState()
+                                Text(
+                                    text = if (custom.value > 0f) custom.value.toString() + "X" else stringResource(
+                                        id = R.string.custom_speed
+                                    ),
+                                    color = if (vm.isCustomSpeed.value) MaterialTheme.colorScheme.primary else Color.White
+                                )
+                                if (custom.value > 0f) {
+                                    IconButton(onClick = {
+                                        vm.setCustomSpeedDialog()
+                                    }) {
+                                        Icon(
+                                            Icons.Filled.Edit,
+                                            contentDescription = stringResource(id = R.string.custom_speed)
+                                        )
+                                    }
+                                }
+                            }
+
+                            speedConfig.forEach { (name, speed) ->
+                                val checked =
+                                    !vm.isCustomSpeed.value && controlVM.curSpeed == speed
+                                Text(
+                                    textAlign = TextAlign.Center,
+                                    text = name,
                                     modifier = Modifier
                                         .defaultMinSize(180.dp, Dp.Unspecified)
                                         .clip(RoundedCornerShape(8.dp))
                                         .clickable {
-                                            controlVM.setSpeed(it.value)
+                                            controlVM.setSpeed(speed)
+                                            vm.disableCustomSpeed()
                                         }
-                                        .padding(16.dp, 8.dp),
-                                    color = if (controlVM.curSpeed == it.value) MaterialTheme.colorScheme.primary else Color.White)
+                                        .padding(16.dp, 14.dp),
+                                    color = if (checked) MaterialTheme.colorScheme.primary else Color.White
+                                )
                             }
                         }
                     }
-
                 }
+
                 state.curPlayingLine?.let { localPlayLine ->
                     // 选集
                     AnimatedVisibility(
@@ -331,7 +390,7 @@ fun LocalPlay(
 
 
                     // 底部工具栏
-                    SimpleBottomBar(
+                    SimpleBottomBarWithSeekBar(
                         vm = it,
                         modifier = Modifier.align(Alignment.BottomCenter),
                         paddingValues = if (controlVM.isFullScreen) PaddingValues(
@@ -427,6 +486,74 @@ fun LocalPlay(
 
         else -> {}
     }
+
+    if (vm.isCustomSpeedDialog.value) {
+        val focusRequest = remember {
+            FocusRequester()
+        }
+        val text = remember {
+            mutableStateOf(vm.customSpeed.value.let { if (it > 0) it else 1 }.toString())
+        }
+        DisposableEffect(key1 = Unit ){
+            runCatching {
+                focusRequest.requestFocus()
+            }.onFailure {
+                it.printStackTrace()
+            }
+            onDispose {
+                runCatching {
+                    focusRequest.freeFocus()
+                }.onFailure {
+                    it.printStackTrace()
+                }
+            }
+        }
+        AlertDialog(
+            onDismissRequest = {
+                vm.isCustomSpeedDialog.value = false
+            },
+            title = {
+                Text(text = stringRes(R.string.custom_speed))
+            },
+            text = {
+                OutlinedTextField(
+                    modifier = Modifier.focusRequester(focusRequest),
+                    value = text.value,
+                    onValueChange = {
+                        text.value = it
+                    })
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val tex = text.value
+                    val f = tex.toFloatOrNull() ?: -1f
+                    if (f <= 0) {
+                        vm.setCustomSpeed(-1f)
+                        if (vm.isCustomSpeed.value) {
+                            controlVM.setSpeed(1f)
+                            vm.isCustomSpeed.value = false
+                        }
+                        stringRes(R.string.please_input_right_speed).moeSnackBar()
+                    } else {
+                        vm.setCustomSpeed(f)
+                        if (vm.isCustomSpeed.value) {
+                            controlVM.setSpeed(f)
+                        }
+                    }
+                    vm.isCustomSpeedDialog.value = false
+                }) {
+                    Text(text = stringRes(R.string.confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    vm.isCustomSpeedDialog.value = false
+                }) {
+                    Text(text = stringRes(R.string.cancel))
+                }
+            }
+        )
+    }
 }
 
 @Composable
@@ -447,12 +574,18 @@ fun PlayContent(
                 LocalPlayUI(vm = vm, state)
                 FastScrollToTopFab(listState = lazyGridState)
 
-                if(state.deleteModePlayLine != null){
+                if (state.deleteModePlayLine != null) {
                     Box(contentAlignment = Alignment.BottomEnd, modifier = Modifier.fillMaxSize()) {
                         val up =
                             remember { derivedStateOf { lazyGridState.firstVisibleItemIndex > 10 } }
-                        val downPadding by animateDpAsState(if (up.value) 80.dp else 40.dp, label = "")
-                        ExtendedFloatingActionButton(modifier = Modifier.padding(16.dp, downPadding),
+                        val downPadding by animateDpAsState(
+                            if (up.value) 80.dp else 40.dp,
+                            label = ""
+                        )
+                        ExtendedFloatingActionButton(modifier = Modifier.padding(
+                            16.dp,
+                            downPadding
+                        ),
                             text = {
                                 Text(text = stringResource(id = R.string.delete_selection))
                             },
@@ -671,7 +804,7 @@ fun CartoonPlayDetailed(
                                     ),
                                     modifier = Modifier.weight(1f)
                                 )
-                            }else{
+                            } else {
                                 ScrollableTabRow(modifier = Modifier
                                     .weight(1f)
                                     .padding(0.dp, 8.dp),
