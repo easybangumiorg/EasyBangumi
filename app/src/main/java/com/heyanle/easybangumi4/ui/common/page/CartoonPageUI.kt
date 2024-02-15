@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
@@ -50,6 +51,7 @@ fun CartoonPageUI(
             val scope = rememberCoroutineScope()
             var refreshing by remember { mutableStateOf(false) }
             val lazyGridState = rememberLazyGridState()
+            val lazyStaggeredGridState = rememberLazyStaggeredGridState()
             val vm =
                 viewModel<SourceListViewModel>(factory = SourceListViewModelFactory(cartoonPage))
             val state = rememberPullRefreshState(refreshing, onRefresh = {
@@ -70,6 +72,7 @@ fun CartoonPageUI(
                     coverStarVm = coverStarViewModel,
                     page = cartoonPage,
                     lazyGridState = lazyGridState,
+                    lazyStaggeredGridState = lazyStaggeredGridState,
                     vm = vm
                 )
                 PullRefreshIndicator(

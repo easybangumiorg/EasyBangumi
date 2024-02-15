@@ -67,8 +67,39 @@ class LocalPlayViewModel(
 
 
     private val exoPlayer: EasyExoPlayer by Injekt.injectLazy()
-    private val settingPreferences: SettingPreferences by Injekt.injectLazy()
     private val localCartoonCase: LocalCartoonCase by Injekt.injectLazy()
+
+    private val settingPreferences: SettingPreferences by Injekt.injectLazy()
+
+    private val customSpeedPref = settingPreferences.customSpeed
+    val customSpeed = customSpeedPref.stateIn(viewModelScope)
+    val isCustomSpeed = mutableStateOf(false)
+
+    val isCustomSpeedDialog = mutableStateOf(false)
+
+
+    fun setCustomSpeedDialog() {
+        isCustomSpeedDialog.value = true
+    }
+
+    fun setCustomSpeed(speed: Float) {
+        customSpeedPref.set(speed)
+        if (speed <= 0) {
+            isCustomSpeed.value = false
+        }
+    }
+
+    fun enableCustomSpeed() {
+        if (customSpeed.value <= 0) {
+            setCustomSpeedDialog()
+        } else {
+            isCustomSpeed.value = true
+        }
+    }
+
+    fun disableCustomSpeed() {
+        isCustomSpeed.value = false
+    }
 
     @Volatile
     private var isPlay = false
