@@ -262,7 +262,7 @@ fun StoreInfoItem(
                         .background(MaterialTheme.colorScheme.secondaryContainer)
                         .clickable {
                         }
-                        .padding(8.dp, 4.dp),
+                        .padding(8.dp, 0.dp),
                     color = MaterialTheme.colorScheme.onSecondaryContainer,
                     fontWeight = FontWeight.W900,
                     text = extensionStoreInfo.remote.versionName,
@@ -306,7 +306,7 @@ fun StoreInfoItem(
                         .clickable {
                             extensionStoreInfo.remote.gitUrl.openUrl()
                         }
-                        .padding(8.dp, 4.dp)
+                        .padding(8.dp, 0.dp)
                         .size(16.dp),
                     image = com.heyanle.easybangumi4.R.drawable.github,
                     contentDescription = stringResource(id = R.string.github),
@@ -323,7 +323,7 @@ fun StoreInfoItem(
                         .clickable {
                             extensionStoreInfo.remote.releaseDesc.moeDialog()
                         }
-                        .padding(8.dp, 4.dp),
+                        .padding(8.dp, 0.dp),
                     color = MaterialTheme.colorScheme.onSecondaryContainer,
                     fontWeight = FontWeight.W900,
                     text = extensionStoreInfo.remote.releaseDesc,
@@ -361,7 +361,7 @@ fun StoreInfoItem(
                                 MaterialTheme.colorScheme.primary,
                                 RoundedCornerShape(4.dp)
                             )
-                            .padding(8.dp, 4.dp)
+                            .padding(8.dp, 0.dp)
                     )
                 }
                 ExtensionStoreInfo.STATE_ERROR -> {
