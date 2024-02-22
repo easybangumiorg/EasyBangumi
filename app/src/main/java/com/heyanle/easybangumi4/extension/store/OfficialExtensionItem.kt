@@ -36,7 +36,7 @@ data class ExtensionStoreRemoteInfoItem(
     val fileSize: Long = -1L,         // 文件大小
 ) {
 
-    fun getInstalledFileName() = "store-${pkg}.${ExtensionController.EXTENSION_SUFFIX}"
+    fun getInstalledFileName() = "store-${pkg}${ExtensionController.EXTENSION_SUFFIX}"
 
 
     @Json(ignore = true)

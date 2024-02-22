@@ -47,7 +47,8 @@ import kotlinx.coroutines.yield
 class CartoonPlayingViewModel(
 ) : ViewModel(), Player.Listener {
 
-    val exoPlayer = ExoPlayer.Builder(APP).build().apply {
+    private val exoPlayerBuilder: ExoPlayer.Builder by Injekt.injectLazy()
+    val exoPlayer = exoPlayerBuilder.build().apply {
         addListener(this@CartoonPlayingViewModel)
     }
 
@@ -81,6 +82,9 @@ class CartoonPlayingViewModel(
     val isCustomSpeed = mutableStateOf(false)
 
     val isCustomSpeedDialog = mutableStateOf(false)
+
+    val fastWeight = settingPreferences.fastWeight.stateIn(viewModelScope)
+    val fastSecond = settingPreferences.fastSecond.stateIn(viewModelScope)
 
 
     fun setCustomSpeedDialog() {

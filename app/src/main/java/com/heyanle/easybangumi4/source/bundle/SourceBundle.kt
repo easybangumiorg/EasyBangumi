@@ -44,7 +44,9 @@ class SourceBundle(
     //private val migrateMap = linkedMapOf<String, MiSou>()
 
     init {
-        list.sortedBy {
+        list.filter {
+            it.config.enable
+        }.sortedBy {
             it.config.order
         }.map {
             it.sourceInfo

@@ -39,9 +39,12 @@
 
     <string name="download_setting">下载设置</string>
     
-    <string name="use_external_player">使用外置播放器</string>
-    <string name="player_bottom_nav_padding">播放器底部间距</string>
+    <string name="use_external_player">默认使用外置播放器</string>
+    <string name="player_bottom_nav_padding">平板模式播放器底部抬高</string>
     <string name="player_orientation_mode">跟随传感器切换全屏</string>
+
+    <string name="double_tap_fast">双击快进快退</string>
+    <string name="fast_time">快进快退时间（秒）</string>
 
     <string name="channel_name">下载</string>
 

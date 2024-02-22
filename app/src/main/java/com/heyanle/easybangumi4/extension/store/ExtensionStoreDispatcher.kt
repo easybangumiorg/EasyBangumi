@@ -1,9 +1,11 @@
 package com.heyanle.easybangumi4.extension.store
 
 import com.heyanle.easybangumi4.bus.DownloadingBus
+import com.heyanle.easybangumi4.extension.ExtensionController
 import com.heyanle.easybangumi4.utils.CoroutineProvider
 import com.heyanle.easybangumi4.utils.OkhttpHelper
 import com.heyanle.easybangumi4.utils.jsonTo
+import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.easybangumi4.utils.toJson
 import kotlinx.coroutines.CoroutineScope
@@ -11,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -23,6 +26,7 @@ import kotlinx.coroutines.yield
 import okhttp3.Request
 import java.io.File
 import java.io.IOException
+import java.nio.file.Files
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -34,6 +38,7 @@ class ExtensionStoreDispatcher(
     private val storeFolder: String, // 拓展市场根路径
     private val extensionFolder: String, // 番源下载路径
     private val downloadingBus: DownloadingBus,
+    private val extensionController: ExtensionController,
 ) {
 
     // 单线程，保证各种数据处理是串行的
@@ -43,7 +48,6 @@ class ExtensionStoreDispatcher(
     private val dispatcher = Dispatchers.IO.limitedParallelism(3)
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
 
-    // 番剧下载 Info
     // 只要 job 是 active 状态就代表正在下载，不支持断点续传
     data class ExtensionDownloadInfo(
         val jobUUID: String,
@@ -166,7 +170,9 @@ class ExtensionStoreDispatcher(
             }
 
             // 复制
+
             try{
+                extensionController.stopWatch()
                 val source = File(downloadInfo.downloadPath, downloadInfo.fileName)
                 val targetTemp = File(downloadInfo.extensionPath, downloadInfo.fileName + ".temp")
                 val target = File(downloadInfo.extensionPath, downloadInfo.fileName)
@@ -176,10 +182,19 @@ class ExtensionStoreDispatcher(
                 }
                 targetTemp.delete()
                 target.delete()
-                source.copyTo(targetTemp)
-                targetTemp.renameTo(target)
+                source.copyTo(targetTemp, overwrite = true)
+                    .let {
+                        it.loge("ExtensionStoreDispatcher")
+                    }
+                //Files.move(targetTemp, target)
+//                delay(500)
+//                targetTemp.copyTo(target)
+                targetTemp.renameTo(target).loge("ExtensionStoreDispatcher")
+                extensionController.startWatch()
+                extensionController.scanFolder()
             }catch (e: IOException){
                 error(downloadInfo.remoteInfo.pkg, e.message ?: "", e)
+                extensionController.startWatch()
                 return@launch
             }
 
@@ -261,7 +276,9 @@ class ExtensionStoreDispatcher(
                                     }
                                 }
                             }
-                            tempFile.renameTo(file)
+                            tempFile.renameTo(file).let {
+                                it.loge("ExtensionStoreDispatcher")
+                            }
                         }
                         return@withContext true
                     }

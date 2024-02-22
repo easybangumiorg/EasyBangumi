@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Build
+import com.heyanle.easybangumi4.extension.ExtensionController
+import com.heyanle.easybangumi4.utils.logi
 import java.io.File
 
 /**
@@ -30,7 +32,8 @@ object ExtensionLoaderFactory {
             val files = file.listFiles() ?: emptyArray()
             files.flatMap {
                 // 只加载一级文件
-                if (it == null || it.absolutePath.isNullOrEmpty() || !it.exists() || it.isDirectory) {
+                it.name.logi("ExtensionLoaderFactory")
+                if (it == null || !it.name.endsWith(ExtensionController.EXTENSION_SUFFIX) || it.absolutePath.isNullOrEmpty() || !it.exists() || it.isDirectory) {
                     emptyList()
                 } else {
                     listOf(FileExtensionLoader(context, it.absolutePath))
