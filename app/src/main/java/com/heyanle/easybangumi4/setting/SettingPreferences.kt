@@ -100,4 +100,11 @@ class SettingPreferences(
 
     val customSpeed = preferenceStore.getFloat("custom_speed", -1f)
 
+    val fastWeightSelection = listOf(2, 3, 4, 5, 6)
+    // 双击快进区域占屏幕宽度的比例的倒数。只能是 2, 3, 4, 5, 6 与其相反数。负数代表关闭
+    val fastWeight = preferenceStore.getInt("fast_space_weight", 5)
+
+    // 双击快进快退的时间（秒）
+    val fastSecond = preferenceStore.getInt("fast_second", 15)
+
 }

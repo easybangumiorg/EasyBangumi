@@ -14,6 +14,9 @@ import kotlin.reflect.typeOf
 inline fun <reified T> String.jsonTo(): T? {
     val moshi: Moshi by Injekt.injectLazy()
     val adapter = moshi.adapter<T>(typeOf<T>().javaType)
+    if (isEmpty()) {
+        return null
+    }
     return runCatching {
         adapter.fromJson(this)
     }.getOrElse {

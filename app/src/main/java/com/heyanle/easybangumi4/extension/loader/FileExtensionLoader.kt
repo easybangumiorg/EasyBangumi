@@ -5,9 +5,11 @@ import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import androidx.core.content.PackageManagerCompat
 import com.heyanle.easybangumi4.extension.Extension
+import com.heyanle.easybangumi4.utils.loge
 import dalvik.system.DexClassLoader
 import dalvik.system.PathClassLoader
 import java.io.File
+import java.io.FileOutputStream
 
 /**
  * 从文件加载
@@ -20,8 +22,15 @@ class FileExtensionLoader(
 
     private val pkgInfo: PackageInfo? by lazy {
         val f = File(path)
-        // 安卓 14 适配，需要已读才能加载
         f.setReadOnly()
+//        val os = FileOutputStream(f)
+//        os.use {
+//            if(!f.setReadOnly()){
+//                "setReadOnly Failed 1".loge(TAG)
+//            }
+//        }
+        // 安卓 14 适配，需要已读才能加载
+        //f.setReadOnly()
         //PackageManagerCompat.getPermissionRevocationVerifierApp()
         packageManager.getPackageArchiveInfo(path, PackageManager.GET_META_DATA or PackageManager.GET_CONFIGURATIONS or PackageManager.GET_SIGNATURES)
     }

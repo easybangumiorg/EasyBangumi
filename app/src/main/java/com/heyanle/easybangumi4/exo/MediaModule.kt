@@ -24,6 +24,7 @@ import com.heyanle.injekt.api.addAlias
 import com.heyanle.injekt.api.addPerKeyFactory
 import com.heyanle.injekt.api.addSingletonFactory
 import com.heyanle.injekt.api.get
+import com.heyanle.injekt.api.getOrNull
 import java.io.File
 
 /**
@@ -47,17 +48,14 @@ class MediaModule(
             StandaloneDatabaseProvider(application)
         }
 
-        addSingletonFactory {
-            EasyExoPlayer(
-                ExoPlayer.Builder(application)
-                    //.setRenderersFactory(MixRenderersFactory(app))
-                    .build().also {
-                        it.loge("ExoPlayer-----")
-                    }
-            )
+        addScopedFactory {
+            ExoPlayer.Builder(application).apply {
+                getOrNull<SettingPreferences>()?.fastSecond?.get()?.let {
+                    setSeekBackIncrementMs(it*1000L)
+                    setSeekForwardIncrementMs(it*1000L)
+                }
+            }
         }
-        // 强制使用 EasyExoPlayer
-        addAlias<EasyExoPlayer, ExoPlayer>()
 
         addSingletonFactory<HttpDataSource.Factory> {
             DefaultHttpDataSource.Factory()

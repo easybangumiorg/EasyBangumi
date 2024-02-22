@@ -37,6 +37,8 @@ import com.microsoft.appcenter.distribute.Distribute
 import com.microsoft.appcenter.distribute.DistributeListener
 import com.microsoft.appcenter.distribute.ReleaseDetails
 import com.tencent.bugly.crashreport.CrashReport
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import javax.net.ssl.HttpsURLConnection
 
 /**

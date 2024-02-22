@@ -4,7 +4,11 @@ import android.app.ActivityManager
 import android.app.Application
 import android.content.Context
 import android.os.Build
+import android.os.Looper
 import android.os.Process
+import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
+import com.heyanle.easybangumi4.source_api.utils.core.WebViewUtil
+import com.heyanle.injekt.core.Injekt
 import kotlin.reflect.jvm.internal.impl.metadata.ProtoBuf
 
 /**
@@ -17,6 +21,32 @@ class App : Application() {
 
     init {
         Scheduler.runOnAppInit(this)
+    }
+
+    override fun getPackageName(): String {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            try {
+                // Override the value passed as X-Requested-With in WebView requests
+                val stackTrace = Looper.getMainLooper().thread.stackTrace
+                val chromiumElement = stackTrace.find {
+                    it.className.equals(
+                        "org.chromium.base.BuildInfo",
+                        ignoreCase = true,
+                    )
+                }
+                if (chromiumElement?.methodName.equals("getAll", ignoreCase = true)) {
+                    val settingPreferences: SettingMMKVPreferences by Injekt.injectLazy()
+                    if (settingPreferences.webViewCompatible.get()) {
+                        // 兼容模式不改写
+                        return super.getPackageName()
+                    }
+                    return WebViewUtil.SPOOF_PACKAGE_NAME
+                }
+            } catch (e: Exception) {
+            }
+        }
+        return super.getPackageName()
     }
 
 

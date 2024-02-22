@@ -39,7 +39,7 @@ class ExtensionModule(
         }
 
         addSingletonFactory {
-            ExtensionStoreDispatcher(storeCachePath, storePath, extensionPath, get())
+            ExtensionStoreDispatcher(storeCachePath, storePath, extensionPath, get(), get())
         }
 
         addSingletonFactory {

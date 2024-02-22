@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.exoplayer.ExoPlayer
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.cartoon.entity.PlayLineWrapper
@@ -66,7 +67,8 @@ class LocalPlayViewModel(
     val sortList = listOf(sortByDefault, sortByLabel)
 
 
-    private val exoPlayer: EasyExoPlayer by Injekt.injectLazy()
+    private val exoPlayerBuilder: ExoPlayer.Builder by Injekt.injectLazy()
+    private val exoPlayer = exoPlayerBuilder.build()
     private val localCartoonCase: LocalCartoonCase by Injekt.injectLazy()
 
     private val settingPreferences: SettingPreferences by Injekt.injectLazy()
@@ -390,7 +392,7 @@ class LocalPlayViewModel(
     fun clearPlay() {
         isPlay = false
         exoPlayer.removeListener(this)
-        exoPlayer.stop(TAG)
+        exoPlayer.stop()
 
     }
 
@@ -401,12 +403,9 @@ class LocalPlayViewModel(
             externalPlay(episode)
             return
         }
-        if (exoPlayer.scene != TAG) {
-            exoPlayer.clearMediaItems()
-        }
         exoPlayer.setMediaItem(MediaItem.fromUri(Uri.fromFile(File(episode.path))))
         playingTitle.value = episode.label
-        exoPlayer.prepare(TAG)
+        exoPlayer.prepare()
         exoPlayer.playWhenReady = true
         exoPlayer.removeListener(this)
         exoPlayer.addListener(this)
@@ -418,9 +417,7 @@ class LocalPlayViewModel(
         if(playbackState == Player.STATE_READY){
             isPlay = true
         }else if(playbackState == Player.STATE_ENDED) {
-            if(isPlay && exoPlayer.scene == TAG){
-                tryNext()
-            }
+            tryNext()
         }
     }
 }

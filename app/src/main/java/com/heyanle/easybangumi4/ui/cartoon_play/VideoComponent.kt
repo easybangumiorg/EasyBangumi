@@ -27,6 +27,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -41,6 +42,8 @@ import androidx.compose.material.icons.filled.Battery6Bar
 import androidx.compose.material.icons.filled.BatteryChargingFull
 import androidx.compose.material.icons.filled.BatteryFull
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.FastForward
+import androidx.compose.material.icons.filled.FastRewind
 import androidx.compose.material.icons.filled.NavigateNext
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.Share
@@ -54,8 +57,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -82,22 +87,33 @@ import com.heyanle.easybangumi4.ui.common.dialog
 import com.heyanle.easybangumi4.utils.bufferImageCache
 import com.heyanle.easybangumi4.utils.downloadImage
 import com.heyanle.easybangumi4.utils.loge
+import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.shareImageText
 import com.heyanle.easybangumi4.utils.shareText
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import loli.ball.easyplayer2.BackBtn
 import loli.ball.easyplayer2.BottomControl
+import loli.ball.easyplayer2.BrightVolumeUI
 import loli.ball.easyplayer2.ControlViewModel
+import loli.ball.easyplayer2.FastUI
 import loli.ball.easyplayer2.FullScreenBtn
+import loli.ball.easyplayer2.GestureController
+import loli.ball.easyplayer2.GestureControllerScope
+import loli.ball.easyplayer2.GestureControllerWithFast
 import loli.ball.easyplayer2.LockBtn
+import loli.ball.easyplayer2.LongTouchUI
 import loli.ball.easyplayer2.PlayPauseBtn
 import loli.ball.easyplayer2.ProgressBox
 import loli.ball.easyplayer2.SimpleGestureController
+import loli.ball.easyplayer2.SlideUI
 import loli.ball.easyplayer2.TimeSlider
 import loli.ball.easyplayer2.TimeText
 import loli.ball.easyplayer2.TopControl
 import loli.ball.easyplayer2.ViewSeekBar
+import loli.ball.easyplayer2.utils.loge
 import loli.ball.easyplayer2.utils.rememberBatteryReceiver
 
 /**
@@ -384,14 +400,36 @@ fun VideoControl(
     } else {
         Box(Modifier.fillMaxSize()) {
 
-            // 手势
-            SimpleGestureController(
-                vm = controlVM,
-                modifier = Modifier
+            val fastWeight by cartoonPlayingVM.fastWeight.collectAsState()
+            val fastSecond by cartoonPlayingVM.fastSecond.collectAsState()
+            if(fastWeight <= 0){
+                // 手势
+                SimpleGestureController(
+                    vm = controlVM,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(6.dp, 64.dp),
+                    longTouchText = stringResource(id = R.string.long_press_fast_forward)
+                )
+            }else{
+
+                GestureController(controlVM, Modifier
                     .fillMaxSize()
-                    .padding(6.dp, 64.dp),
-                longTouchText = stringResource(id = R.string.long_press_fast_forward)
-            )
+                    .padding(6.dp, 64.dp), 300000, supportFast = true, fastWeight = 1f/fastWeight) {
+                    BrightVolumeUI()
+                    SlideUI()
+                    LongTouchUI(stringResource(id = R.string.long_press_fast_forward))
+                }
+                FastUI(
+                    vm = controlVM,
+                    fastForwardText = "${fastSecond}s",
+                    fastRewindText = "${fastSecond}s",
+                    fastWeight = 1f / fastWeight,
+                    delayTime = 1000
+                )
+
+            }
+
 
 
             // 全屏顶部工具栏
@@ -617,6 +655,7 @@ fun EasyVideoBottomControl(
                     ControlViewModel.ControlState.HorizontalScroll -> vm.horizontalScrollPosition
                     else -> 0
                 }
+            vm.controlState.logi("ViewComponent")
 
             ViewSeekBar(
                 during = vm.during.toInt(),
@@ -626,6 +665,7 @@ fun EasyVideoBottomControl(
                     vm.onPositionChange(it.toFloat())
                 },
                 onValueChangeFinish = {
+                    "onValueChangeFinish".logi("ViewComponent")
                     vm.onActionUPScope()
                 }
             )
@@ -661,4 +701,127 @@ fun EasyVideoBottomControl(
             })
         }
     }
+}
+
+@Composable
+fun FastUI(
+    vm: ControlViewModel,
+    fastForwardText: String = "快进",
+    fastRewindText: String = "快退",
+    fastWeight: Float = 0.2f,
+    delayTime: Long = 2000
+) {
+    LaunchedEffect(key1 = Unit) {
+        launch {
+            snapshotFlow {
+                vm.isFastRewindWinShow
+            }.collectLatest {
+                if (it) {
+                    delay(delayTime)
+                    vm.isFastRewindWinShow = false
+                }
+            }
+        }
+        launch {
+            snapshotFlow {
+                vm.isFastForwardWinShow
+            }.collectLatest {
+                if (it) {
+                    delay(delayTime)
+                    vm.isFastForwardWinShow = false
+                }
+            }
+        }
+    }
+
+    Row(modifier = Modifier.fillMaxSize()){
+        AnimatedVisibility(
+            visible = vm.isFastRewindWinShow,
+            modifier = Modifier
+                .weight(maxOf(fastWeight, 0.2f))
+                .fillMaxHeight(),
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            Box(
+                Modifier
+                    .clip(
+                        RoundedCornerShape(
+                            0.dp,
+                            16.dp,
+                            16.dp,
+                            0.dp
+                        )
+                    )
+                    .background(Color.Black.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    Spacer(modifier = Modifier.size(8.dp))
+                    Icon(
+                        Icons.Filled.FastRewind,
+                        null,
+                        tint = Color.White,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.size(8.dp))
+                    Text(
+                        modifier = Modifier,
+                        textAlign = TextAlign.Center,
+                        text = fastRewindText,
+                        color = Color.White
+                    )
+
+
+                }
+            }
+        }
+        Spacer(modifier = Modifier.weight(1f - fastWeight))
+        AnimatedVisibility(
+            visible = vm.isFastForwardWinShow,
+            modifier = Modifier
+                .weight(maxOf(fastWeight, 0.2f))
+                .fillMaxHeight(),
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            Box(
+                Modifier
+                    .clip(
+                        RoundedCornerShape(
+                            16.dp,
+                            0.dp,
+                            0.dp,
+                            16.dp
+                        )
+                    )
+                    .background(Color.Black.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        modifier = Modifier,
+                        textAlign = TextAlign.Center,
+                        text = fastForwardText,
+                        color = Color.White
+                    )
+                    Spacer(modifier = Modifier.size(8.dp))
+                    Icon(
+                        Icons.Filled.FastForward,
+                        null,
+                        tint = Color.White,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.size(8.dp))
+                }
+            }
+        }
+    }
+
 }
