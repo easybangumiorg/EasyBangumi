@@ -140,7 +140,7 @@ object Scheduler {
                             releaseDetails: ReleaseDetails?
                         ): Boolean {
                             releaseDetails?.let {
-                                if (it.version != BuildConfig.VERSION_CODE) {
+                                if (it.version > BuildConfig.VERSION_CODE && it.shortVersion != BuildConfig.VERSION_NAME) {
                                     AppCenterManager.releaseDetail.value = it
                                     AppCenterManager.showReleaseDialog.value = true
                                 }
