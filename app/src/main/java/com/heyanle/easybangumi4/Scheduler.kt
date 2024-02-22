@@ -172,7 +172,11 @@ object Scheduler {
      * 初始化 aria
      */
     private fun initAria(application: Application) {
-        Aria.init(application)
-        Aria.get(application).downloadConfig.isConvertSpeed = true
+        runCatching {
+            Aria.init(application)
+            Aria.get(application).downloadConfig.isConvertSpeed = true
+        }.onFailure {
+            it.printStackTrace()
+        }
     }
 }

@@ -37,7 +37,10 @@ class CartoonDownloadService : Service() {
 
         fun tryStart() {
             "tryStart".logi(TAG)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+
+            }
+            else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 APP.startForegroundService(Intent(APP, CartoonDownloadService::class.java))
             } else {
                 APP.startService(Intent(APP, CartoonDownloadService::class.java))
@@ -56,33 +59,29 @@ class CartoonDownloadService : Service() {
         return null
     }
 
+
+
+    override fun onStart(intent: Intent?, startId: Int) {
+        super.onStart(intent, startId)
+        val notification = getNotification(cartoonDownloadController.downloadItem.value ?: emptyList())
+        startForeground(FOREGROUND_ID, notification)
+    }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         "onStartCommand".logi(TAG)
         val notification = getNotification(cartoonDownloadController.downloadItem.value ?: emptyList())
-        if (notification == null) {
-            stopSelf()
-            return super.onStartCommand(intent, flags, startId)
-        }
         startForeground(FOREGROUND_ID, notification)
         scope.launch {
             cartoonDownloadController.downloadItem.collectLatest {
                 val n = getNotification(it ?: emptyList())
-                if (n == null) {
-                    stopSelf()
-                    notificationManager.cancel(FOREGROUND_ID)
-                } else {
-                    notificationManager.notify(FOREGROUND_ID, n)
-                }
+                notificationManager.notify(FOREGROUND_ID, n)
             }
         }
         return START_STICKY
     }
 
-    private fun getNotification(downloadItem: List<DownloadItem>): Notification? {
+    private fun getNotification(downloadItem: List<DownloadItem>): Notification {
         val process = downloadItem.count { it.state == 0 || it.state == 1 || it.state == 2 }
-        if (process == 0) {
-            return null
-        }
         "getNotification ${process}".logi(TAG)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             notificationChannel = NotificationChannel(
@@ -105,13 +104,19 @@ class CartoonDownloadService : Service() {
         return NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
             .setSmallIcon(R.mipmap.app_logo)
             .setContentTitle(stringRes(com.heyanle.easy_i18n.R.string.downloading))
-            .setContentText(stringRes(com.heyanle.easy_i18n.R.string.x_downloading, process))
+            .apply {
+                if(process > 0){
+                    setContentText(stringRes(com.heyanle.easy_i18n.R.string.x_downloading, process))
+                }
+            }
             .setContentIntent(pendingIntent)
             .build()
     }
 
     override fun onCreate() {
         super.onCreate()
+        val notification = getNotification(cartoonDownloadController.downloadItem.value ?: emptyList())
+        startForeground(FOREGROUND_ID, notification)
     }
 
     override fun onDestroy() {

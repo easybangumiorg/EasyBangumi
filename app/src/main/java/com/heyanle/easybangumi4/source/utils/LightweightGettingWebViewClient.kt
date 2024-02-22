@@ -3,12 +3,12 @@ package com.heyanle.easybangumi4.source.utils
 import android.annotation.SuppressLint
 import android.net.http.SslError
 import android.webkit.SslErrorHandler
+import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
-import androidx.annotation.CallSuper
-import androidx.webkit.WebResourceErrorCompat
-import androidx.webkit.WebViewClientCompat
+import android.webkit.WebViewClient
+import androidx.annotation.CallSuper]
 import androidx.webkit.WebViewCompat
 import java.io.ByteArrayInputStream
 
@@ -30,7 +30,7 @@ abstract class LightweightGettingWebViewClient(
         ".mp3", ".m4a",
         ".gif", ",jpg", ".png", ".webp"
     )
-) : WebViewClientCompat() {
+) : WebViewClient() {
 
     private val blockWebResourceRequest =
         WebResourceResponse("text/html", "utf-8", ByteArrayInputStream("".toByteArray()))
@@ -45,12 +45,13 @@ abstract class LightweightGettingWebViewClient(
     }
 
     override fun onReceivedError(
-        view: WebView,
-        request: WebResourceRequest,
-        error: WebResourceErrorCompat
+        view: WebView?,
+        request: WebResourceRequest?,
+        error: WebResourceError?
     ) {
         super.onReceivedError(view, request, error)
     }
+
 
 
     override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
