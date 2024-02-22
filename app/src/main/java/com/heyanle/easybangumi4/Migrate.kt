@@ -217,23 +217,26 @@ object Migrate {
                     }
                     val extensionItemJson =
                         File(context.getFilePath("extension-store"), "official.json")
-                    val map = hashMapOf<String, OfficialExtensionItem>()
-                    extensionItemJson.readText().jsonTo<Map<String, OfficialExtensionItem>>()
-                        ?.asIterable()?.forEach {
-                        if (it.value.realFilePath.endsWith("..easybangumi.apk")) {
-                            map[it.key] = it.value.copy(
-                                realFilePath = it.value.realFilePath.replace(
-                                    "..easybangumi.apk",
-                                    ".easybangumi.apk"
-                                )
-                            )
-                        } else {
-                            map[it.key] = it.value
-                        }
+                    if(extensionItemJson.exists()){
+                        val map = hashMapOf<String, OfficialExtensionItem>()
+                        extensionItemJson.readText().jsonTo<Map<String, OfficialExtensionItem>>()
+                            ?.asIterable()?.forEach {
+                                if (it.value.realFilePath.endsWith("..easybangumi.apk")) {
+                                    map[it.key] = it.value.copy(
+                                        realFilePath = it.value.realFilePath.replace(
+                                            "..easybangumi.apk",
+                                            ".easybangumi.apk"
+                                        )
+                                    )
+                                } else {
+                                    map[it.key] = it.value
+                                }
+                            }
+                        extensionItemJson.delete()
+                        extensionItemJson.createNewFile()
+                        extensionItemJson.writeText(map.toJson<Map<String, OfficialExtensionItem>>())
                     }
-                    extensionItemJson.delete()
-                    extensionItemJson.createNewFile()
-                    extensionItemJson.writeText(map.toJson<Map<String, OfficialExtensionItem>>())
+
                 }
 
                 // 在这里添加新的迁移代码
