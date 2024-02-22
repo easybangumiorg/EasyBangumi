@@ -11,10 +11,10 @@ okkv2 = "1.3.5"
 junit = "4.13.2"
 
 exoplayer = "2.19.0" # 使用 media 里的
-easyplayer2 = "1.3.1"
+easyplayer2 = "1.3.4"
 
 accompanist = "0.34.0"
-navigation_compose = "2.7.6"
+navigation_compose = "2.7.7"
 coil = "2.5.0"
 appcenter = "5.0.4"
 commons_text = "1.10.0"

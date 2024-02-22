@@ -16,6 +16,7 @@ import com.heyanle.easybangumi4.cartoon.old.entity.CartoonStar
 import com.heyanle.easybangumi4.cartoon.old.repository.db.AppDatabase
 import com.heyanle.easybangumi4.cartoon.old.repository.db.CacheDatabase
 import com.heyanle.easybangumi4.cartoon.repository.db.CartoonDatabase
+import com.heyanle.easybangumi4.extension.store.OfficialExtensionItem
 import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.source.SourceConfig
@@ -24,6 +25,7 @@ import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
 import com.heyanle.easybangumi4.theme.EasyThemeMode
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.easybangumi4.utils.jsonTo
+import com.heyanle.easybangumi4.utils.toJson
 import com.heyanle.injekt.api.get
 import com.heyanle.injekt.core.Injekt
 import com.heyanle.okkv2.core.okkv
@@ -98,7 +100,7 @@ object Migrate {
             }
         }
 
-        private val MIGRATION_7_8 = object: Migration(7, 8) {
+        private val MIGRATION_7_8 = object : Migration(7, 8) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE CartoonStar ADD COLUMN upTime INTEGER NOT NULL DEFAULT 0")
                 db.execSQL("ALTER TABLE CartoonStar ADD COLUMN lastWatchTime INTEGER NOT NULL DEFAULT 0")
@@ -116,7 +118,7 @@ object Migrate {
         fun getDBMigration() = emptyList<Migration>()
     }
 
-    fun update(context: Context){
+    fun update(context: Context) {
         preferenceUpdate(
             context,
             Injekt.get(),
@@ -129,7 +131,6 @@ object Migrate {
         )
         controllerUpdate(context)
     }
-
 
 
     private fun preferenceUpdate(
@@ -176,7 +177,7 @@ object Migrate {
 
                     // 源配置变更
                     val configOkkv by okkv("source_config", "[]")
-                    val list: List<SourceConfig> = configOkkv.jsonTo()?: emptyList()
+                    val list: List<SourceConfig> = configOkkv.jsonTo() ?: emptyList()
                     val map = hashMapOf<String, SourceConfig>()
                     list.forEach {
                         map[it.key] = it
@@ -188,13 +189,51 @@ object Migrate {
                 if (lastVersionCode < 73) {
 
                     // 数据库变更
-                    migrateCartoonDatabase73(AppDatabase.build(context), CacheDatabase.build(context), cartoonDatabase)
+                    migrateCartoonDatabase73(
+                        AppDatabase.build(context),
+                        CacheDatabase.build(context),
+                        cartoonDatabase
+                    )
                 }
 
 
                 // 78
                 if (lastVersionCode < 78) {
                     migrateCartoonDatabase78(cartoonDatabase)
+                }
+
+                // 82
+                if (lastVersionCode < 82) {
+                    // 下载的 apk 之前后缀多打了一个 . ，简单修正一下
+                    File(context.getFilePath("extension")).listFiles()?.forEach {
+                        if (it != null && it.name.endsWith("..easybangumi.apk")) {
+                            it.renameTo(
+                                File(
+                                    context.getFilePath("extension"),
+                                    it.name.replace("..easybangumi.apk", ".easybangumi.apk")
+                                )
+                            )
+                        }
+                    }
+                    val extensionItemJson =
+                        File(context.getFilePath("extension-store"), "official.json")
+                    val map = hashMapOf<String, OfficialExtensionItem>()
+                    extensionItemJson.readText().jsonTo<Map<String, OfficialExtensionItem>>()
+                        ?.asIterable()?.forEach {
+                        if (it.value.realFilePath.endsWith("..easybangumi.apk")) {
+                            map[it.key] = it.value.copy(
+                                realFilePath = it.value.realFilePath.replace(
+                                    "..easybangumi.apk",
+                                    ".easybangumi.apk"
+                                )
+                            )
+                        } else {
+                            map[it.key] = it.value
+                        }
+                    }
+                    extensionItemJson.delete()
+                    extensionItemJson.createNewFile()
+                    extensionItemJson.writeText(map.toJson<Map<String, OfficialExtensionItem>>())
                 }
 
                 // 在这里添加新的迁移代码
@@ -218,7 +257,7 @@ object Migrate {
 
     private suspend fun migrateCartoonDatabase78(
         cartoonDatabase: CartoonDatabase,
-    ){
+    ) {
         val newCartoonInfoDao = cartoonDatabase.cartoonInfo
         val otherDao = cartoonDatabase.other
         val cartoonInfoV1 = otherDao.getAllCartoonInfoV1()
@@ -292,14 +331,16 @@ object Migrate {
         val id: String,              // 标识，由源自己支持，用于区分番剧
         val source: String,
         val url: String,
-    ){
-        fun toIdentify() = "${id}-${URLEncoder.encode(source, "utf-8")}-${URLEncoder.encode(url, "utf-8")}"
+    ) {
+        fun toIdentify() =
+            "${id}-${URLEncoder.encode(source, "utf-8")}-${URLEncoder.encode(url, "utf-8")}"
     }
+
     private suspend fun migrateCartoonDatabase73(
         appDatabase: AppDatabase,
         cacheDatabase: CacheDatabase,
         cartoonDatabase: CartoonDatabase,
-    ){
+    ) {
         val needMigrateSummary = hashSetOf<OldSummary73>()
 
         val starMap = hashMapOf<String, CartoonStar>()
@@ -362,35 +403,37 @@ object Migrate {
             source = cartoonSummary.source,
             url = cartoonSummary.url,
 
-            name = cartoonStar?.title?:cartoonHistory?.name?:cartoonInfo?.title?: return null,
-            coverUrl = cartoonStar?.coverUrl?:cartoonHistory?.cover?:cartoonInfo?.coverUrl?: return null,
-            intro = cartoonStar?.intro?:cartoonHistory?.intro?:cartoonInfo?.intro?: return null,
+            name = cartoonStar?.title ?: cartoonHistory?.name ?: cartoonInfo?.title ?: return null,
+            coverUrl = cartoonStar?.coverUrl ?: cartoonHistory?.cover ?: cartoonInfo?.coverUrl
+            ?: return null,
+            intro = cartoonStar?.intro ?: cartoonHistory?.intro ?: cartoonInfo?.intro
+            ?: return null,
 
             isDetailed = false, // 迁移就让他刷新一下数据吧
 
-            isShowLine = cartoonInfo?.isShowLine?:true,
-            sourceName = cartoonStar?.sourceName?:cartoonInfo?.sourceName?:return null,
-            reversal = cartoonStar?.reversal?:false,
+            isShowLine = cartoonInfo?.isShowLine ?: true,
+            sourceName = cartoonStar?.sourceName ?: cartoonInfo?.sourceName ?: return null,
+            reversal = cartoonStar?.reversal ?: false,
             sortByKey = cartoonStar?.sortByKey ?: "",
 
-            tags = cartoonStar?.tags?:cartoonInfo?.tags?:"",
-            starTime = cartoonStar?.createTime?:0L,
-            upTime = cartoonStar?.upTime?:0L,
+            tags = cartoonStar?.tags ?: cartoonInfo?.tags ?: "",
+            starTime = cartoonStar?.createTime ?: 0L,
+            upTime = cartoonStar?.upTime ?: 0L,
 
             isPlayLineLoad = false,
 
-            lastHistoryTime = cartoonHistory?.createTime?:0L,
+            lastHistoryTime = cartoonHistory?.createTime ?: 0L,
 
-            lastLineId = cartoonHistory?.lastLineId?:"",
-            lastLinesIndex = cartoonHistory?.lastLinesIndex?:0,
-            lastLineLabel = cartoonHistory?.lastLineTitle?:"",
+            lastLineId = cartoonHistory?.lastLineId ?: "",
+            lastLinesIndex = cartoonHistory?.lastLinesIndex ?: 0,
+            lastLineLabel = cartoonHistory?.lastLineTitle ?: "",
 
-            lastEpisodeId = cartoonHistory?.lastEpisodeId?:"",
-            lastEpisodeIndex = cartoonHistory?.lastEpisodeIndex?:0,
-            lastEpisodeLabel = cartoonHistory?.lastEpisodeTitle?:"",
-            lastEpisodeOrder = cartoonHistory?.lastEpisodeOrder?: 0,
+            lastEpisodeId = cartoonHistory?.lastEpisodeId ?: "",
+            lastEpisodeIndex = cartoonHistory?.lastEpisodeIndex ?: 0,
+            lastEpisodeLabel = cartoonHistory?.lastEpisodeTitle ?: "",
+            lastEpisodeOrder = cartoonHistory?.lastEpisodeOrder ?: 0,
 
-            lastProcessTime = cartoonHistory?.lastProcessTime?:0,
+            lastProcessTime = cartoonHistory?.lastProcessTime ?: 0,
 
             createTime = (cartoonHistory?.createTime ?: Long.MAX_VALUE).coerceAtMost(
                 (cartoonInfo?.createTime ?: Long.MAX_VALUE).coerceAtMost(
@@ -399,14 +442,11 @@ object Migrate {
             ).coerceAtMost(System.currentTimeMillis())
         )
     }
-    private fun OldSummary73.toIdentify(): String {
-        return "${id},${source},${URLEncoder.encode(url, "utf-8")}"
-    }
 
     // ↑ 数据库变更 73 ===================================================
     private fun controllerUpdate(
         context: Context,
-    ){
+    ) {
 
         val rootFolder = File(context.getFilePath("download"))
 

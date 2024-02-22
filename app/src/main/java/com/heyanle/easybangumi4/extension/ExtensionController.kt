@@ -126,6 +126,14 @@ class ExtensionController(
         }
     }
 
+    fun stopWatch() {
+        fileObserver.stopWatching()
+    }
+
+    fun startWatch() {
+        fileObserver.startWatching()
+    }
+
     private fun updateExtensions(extensions: Collection<Extension>, isApp: Boolean) {
         TimeLogUtils.i("updateExtension isApp: ${isApp}")
         extensions.forEach {
@@ -234,7 +242,7 @@ class ExtensionController(
     inner class ExtensionFolderObserverQ(private val extensionFolder: String) :
         FileObserver(
             File(extensionFolder),
-            MODIFY or CLOSE_WRITE or DELETE_SELF or MOVED_TO or MOVED_FROM or MOVE_SELF or DELETE
+            DELETE_SELF or DELETE
         ) {
 
         override fun onEvent(event: Int, path: String?) {
@@ -248,7 +256,7 @@ class ExtensionController(
     inner class ExtensionFolderObserver(private val extensionFolder: String) :
         FileObserver(
             extensionFolder,
-            MODIFY or CLOSE_WRITE or DELETE_SELF or MOVED_TO or MOVED_FROM or MOVE_SELF or DELETE
+            DELETE_SELF or DELETE
         ) {
         override fun onEvent(event: Int, path: String?) {
             "${event} ${path} onEvent".logi(TAG)

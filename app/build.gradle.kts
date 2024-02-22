@@ -109,7 +109,9 @@ android {
     }
     kotlinOptions {
         jvmTarget = "17"
-        freeCompilerArgs = freeCompilerArgs + "-Xjvm-default=all"
+        freeCompilerArgs += listOf(
+            "-Xjvm-default=all",
+        )
     }
     buildFeatures {
         compose = true

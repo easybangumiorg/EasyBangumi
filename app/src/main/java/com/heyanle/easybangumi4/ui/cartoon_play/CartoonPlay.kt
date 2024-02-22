@@ -155,8 +155,13 @@ fun CartoonPlay(
                 OutlinedTextField(
                     modifier = Modifier.focusRequester(focusRequest),
                     value = text.value,
-                    onValueChange = {
-                        text.value = it
+                    onValueChange = { s ->
+                        if (s.none {
+                                (it < '0' || it > '9')
+                            }) {
+
+                        }
+                        text.value = s
                     })
             },
             confirmButton = {

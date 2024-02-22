@@ -194,12 +194,6 @@ fun LocalPlay(
             isPadMode = isPad,
             contentWeight = 0.5f,
             videoFloat = { model ->
-                val ctx = LocalContext.current as Activity
-//                LaunchedEffect(key1 = controlVM.controlState) {
-//                    if (controlVM.controlState == ControlViewModel.ControlState.Ended) {
-//                        vm.tryNext()
-//                    }
-//                }
 
 
                 // 倍速窗口
@@ -336,23 +330,6 @@ fun LocalPlay(
 
                     }
                 }
-
-//            if (!model.isFullScreen) {
-//                FilledIconButton(
-//                    modifier = Modifier.padding(8.dp),
-//                    colors = IconButtonDefaults.iconButtonColors(
-//                        containerColor = Color.Black.copy(0.6f),
-//                        contentColor = Color.White
-//                    ),
-//                    onClick = {
-//                        nav.popBackStack()
-//                    }) {
-//                    Icon(
-//                        imageVector = Icons.Filled.KeyboardArrowLeft,
-//                        stringResource(id = com.heyanle.easy_i18n.R.string.back)
-//                    )
-//                }
-//            }
             },
             control = {
                 Box(Modifier.fillMaxSize()) {
