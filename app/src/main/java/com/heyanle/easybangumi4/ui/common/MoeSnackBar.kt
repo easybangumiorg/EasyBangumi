@@ -83,11 +83,6 @@ fun MoeSnackBar(modifier: Modifier = Modifier) {
             .verticalScroll(rememberScrollState())
     ) {
         val state = themeController.themeFlow.collectAsState().value
-        val isDark = when (state.darkMode) {
-            SettingPreferences.DarkMode.Dark -> true
-            SettingPreferences.DarkMode.Light -> false
-            else -> isSystemInDarkTheme()
-        }
         moeSnackBarQueue.forEach {
             LaunchedEffect(it) {
                 it.show.value = true
@@ -115,7 +110,6 @@ fun MoeSnackBar(modifier: Modifier = Modifier) {
                                         }) {
                                             Text(
                                                 it.confirmLabel,
-                                                color = MaterialTheme.colorScheme.primary
                                             )
                                         }
                                     }

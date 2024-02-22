@@ -91,11 +91,16 @@ fun ColumnScope.NormalSearch(
         selectedTabIndex = pagerState.currentPage,
         divider = {},
         indicator = {
-            TabIndicator(
-                currentTabPosition = it[0.coerceAtLeast(
-                    pagerState.currentPage
-                )]
+            val index = 0.coerceAtLeast(
+                pagerState.currentPage
             )
+            if (index >= 0 && index < it.size) {
+                TabIndicator(
+                    currentTabPosition = it[index]
+                )
+
+            }
+
         },
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -183,7 +188,7 @@ fun NormalSearchPage(
     val lazyListState = rememberLazyListState()
     val haptic = LocalHapticFeedback.current
 
-    if(page != null){
+    if (page != null) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -276,9 +281,11 @@ fun CartoonSearchItem(
                 source = null
             )
 
-            Spacer(modifier = Modifier
-                .fillMaxHeight()
-                .width(8.dp))
+            Spacer(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .width(8.dp)
+            )
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -297,7 +304,7 @@ fun CartoonSearchItem(
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis
                 )
-                if(isStar){
+                if (isStar) {
                     Spacer(modifier = Modifier.weight(1f))
                     Text(
                         fontSize = 13.sp,
@@ -326,7 +333,7 @@ fun CartoonSearchItem(
                 overflow = TextOverflow.Ellipsis,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            if(isStar){
+            if (isStar) {
                 Text(
                     fontSize = 13.sp,
                     text = stringResource(id = R.string.stared_min),

@@ -116,7 +116,11 @@ fun CartoonPlay(
                     detailedVM.dialogSetCartoonStar(starDialog.cartoon, it)
                 },
                 onManage = {
-                    nav.navigationCartoonTag()
+                    runCatching {
+                        nav.navigationCartoonTag()
+                    }.onFailure {
+                        it.printStackTrace()
+                    }
                 }) {
                 detailedVM.dialogExit()
             }
@@ -384,7 +388,11 @@ fun CartoonPlay(
                         stringRes(R.string.add_download_completely).moeSnackBar(
                             confirmLabel = stringRes(R.string.click_to_view),
                             onConfirm = {
-                                nav.navigate(DOWNLOAD)
+                                runCatching {
+                                    nav.navigate(DOWNLOAD)
+                                }.onFailure {
+                                    it.printStackTrace()
+                                }
                             }
                         )
                         cartoonDownloadDispatcher.newDownload(

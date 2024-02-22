@@ -131,11 +131,17 @@ class CartoonDownloadController(
 
     private fun save() {
         _downloadItem.value?.let {
-            rootFolder.mkdirs()
             downloadItemJsonTemp.delete()
+            if (!rootFolder.mkdirs()) {
+                return
+            }
             downloadItemJsonTemp.createNewFile()
+            if (!downloadItemJsonTemp.exists()) {
+                return
+            }
             downloadItemJsonTemp.writeText(it.toJson())
             downloadItemJson.delete()
+            rootFolder.mkdirs()
             downloadItemJsonTemp.renameTo(downloadItemJson)
         }
 
