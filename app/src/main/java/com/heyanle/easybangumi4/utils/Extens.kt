@@ -65,14 +65,19 @@ fun shareImageText(uri: Parcelable, text: String, ctx: Context = APP) {
 
 suspend fun downloadImage(url: String): Bitmap? =
     withContext(Dispatchers.IO) {
-        OkHttpClient().newCall(
-            Request.Builder()
-                .url(url)
-                .build()
-        ).execute().use {
-            it.body?.byteStream()?.let {
-                BitmapFactory.decodeStream(it)
+        runCatching {
+            OkHttpClient().newCall(
+                Request.Builder()
+                    .url(url)
+                    .build()
+            ).execute().use {
+                it.body?.byteStream()?.let {
+                    BitmapFactory.decodeStream(it)
+                }
             }
+        }.getOrElse {
+            it.printStackTrace()
+            null
         }
     }
 

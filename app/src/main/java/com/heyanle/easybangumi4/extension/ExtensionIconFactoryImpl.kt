@@ -29,7 +29,9 @@ class ExtensionIconFactoryImpl(
                 } ?: return null
         return source.getIconResourcesId()?.let { resId ->
             extension.resources?.let {
-                ResourcesCompat.getDrawable(it, resId, null)
+                runCatching {
+                    ResourcesCompat.getDrawable(it, resId, null)
+                }.getOrNull()
             }
         }?.apply {
             iconMap[source.key] = SoftReference(this)
