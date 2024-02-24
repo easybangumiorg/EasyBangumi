@@ -79,3 +79,4 @@ jobs:
           github_token: ${{ secrets.token }}
           branch: main
           directory: private
+          repository: 'easybangumiorg/EasyBangumiPrivate'
