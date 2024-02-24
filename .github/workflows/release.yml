@@ -58,12 +58,12 @@ jobs:
       - name: push_mapping
         run: |
           cd private
-          rm -r ${{ github.ref_name }} || ls
-          mv ../app/build/outputs/mapping/release ./${{ github.ref_name }}
+          rm -r ./mapping/${{ github.ref_name }} || ls
+          mv ../app/build/outputs/mapping/release ./mapping/${{ github.ref_name }}
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add .
-          git commit -m "[auto] extension parse"
+          git commit -m "[auto] mapping"
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:
