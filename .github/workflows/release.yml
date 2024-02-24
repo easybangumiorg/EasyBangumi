@@ -78,4 +78,4 @@ jobs:
           force: true
           github_token: ${{ secrets.token }}
           branch: main
-          directory: public
+          directory: private
