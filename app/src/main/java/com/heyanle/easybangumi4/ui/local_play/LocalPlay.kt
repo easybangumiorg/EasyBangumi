@@ -146,10 +146,7 @@ fun LocalPlay(
 ) {
     val isPad = isCurPadeMode()
     val vm = viewModel<LocalPlayViewModel>(factory = LocalPlayViewModelFactory(uuid = uuid))
-    val controlVM = ControlViewModelFactory.viewModel(Injekt.get<ExoPlayer>().let {
-        // it.toString().loge("ExoPlayer-----")
-        it
-    }, isPad, LocalPlayViewModel.TAG)
+    val controlVM = ControlViewModelFactory.viewModel(vm.exoPlayer, isPad, LocalPlayViewModel.TAG)
     val nav = LocalNavController.current
 
     val state by vm.flow.collectAsState()

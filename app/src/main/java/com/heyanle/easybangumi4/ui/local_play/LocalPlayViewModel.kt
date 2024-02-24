@@ -68,7 +68,7 @@ class LocalPlayViewModel(
 
 
     private val exoPlayerBuilder: ExoPlayer.Builder by Injekt.injectLazy()
-    private val exoPlayer = exoPlayerBuilder.build()
+    val exoPlayer = exoPlayerBuilder.build()
     private val localCartoonCase: LocalCartoonCase by Injekt.injectLazy()
 
     private val settingPreferences: SettingPreferences by Injekt.injectLazy()
