@@ -340,6 +340,10 @@ class LocalPlayViewModel(
             }
             val new = cur.curPlayingLine?.sortedEpisodeList?.getOrNull(old + 1) ?: return@launch
             stringRes(com.heyanle.easy_i18n.R.string.try_play_next).toast()
+
+            _flow.update {
+                cur.copy(curPlayingEpisode = new)
+            }
             play(new)
         }
     }
