@@ -1,5 +1,6 @@
 package com.heyanle.easybangumi4.ui.source_manage.extension
 
+import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -61,6 +62,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -190,6 +192,7 @@ fun Extension() {
     val listState = rememberLazyListState()
     val sta = state.value
     val haptic = LocalHapticFeedback.current
+    val ctx = LocalContext.current
     if (sta.isLoading) {
         LoadingPage(modifier = Modifier.fillMaxSize())
     } else {
@@ -230,7 +233,10 @@ fun Extension() {
                 items(sta.showList) {
                     ExtensionInfoItem(item = it,
                         onClick = {
-                            vm.onItemClick(it)
+                            (ctx as? Activity)?.let { act ->
+                                vm.onItemClick(it, act)
+                            }
+
                             when (it) {
                                 is ExtensionViewModel.ExtensionItem.ExtensionInfo -> {
 
@@ -396,7 +402,7 @@ fun StoreInfoItem(
         trailingContent = {
             when (extensionStoreInfo.state) {
                 ExtensionStoreInfo.STATE_INSTALLED -> {
-                    Text(text = stringResource(id = R.string.download_completely))
+                    Text(text = stringResource(id = R.string.click_install))
                 }
 
                 ExtensionStoreInfo.STATE_DOWNLOADING -> {
