@@ -179,6 +179,10 @@
 
     <string name="long_press_to_delete">文件方式加载的拓展可长按删除</string>
 
+    <string name="click_to_install">文件方式加载异常，请直接安装插件</string>
+
+    <string name="install_permissions_please">请授予安装权限后重试</string>
+
     <string name="add_group_get">点击复制群号进群获取！</string>
 
     <string name="try_qq_group">如果网站打不开或没有扩展可进群获取，群号在更多-关于界面</string>
@@ -351,6 +355,7 @@
 
     <string name="click_to_view">点击查看</string>
 
+    <string name="click_install">点击安装</string>
     <string name="download_completely">下载完成</string>
     <string name="finished">已完成</string>
 
