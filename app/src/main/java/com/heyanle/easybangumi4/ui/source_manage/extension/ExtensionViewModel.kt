@@ -1,5 +1,6 @@
 package com.heyanle.easybangumi4.ui.source_manage.extension
 
+import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.APP
@@ -200,9 +201,10 @@ class ExtensionViewModel : ViewModel() {
     }
 
 
-    fun refresh(){
+    fun refresh() {
         extensionStoreController.refresh()
     }
+
     fun onTabClick(index: Int) {
         _stateFlow.update {
             it.copy(
@@ -212,7 +214,8 @@ class ExtensionViewModel : ViewModel() {
     }
 
     fun onItemClick(
-        item: ExtensionItem
+        item: ExtensionItem,
+        activity: Activity
     ) {
         when (item) {
             is ExtensionItem.StoreExtensionInfo -> {
@@ -240,7 +243,13 @@ class ExtensionViewModel : ViewModel() {
             }
 
             is ExtensionItem.StoreInfo -> {
-                extensionStoreDispatcher.toggle(item.info.remote)
+                if (item.info.state == ExtensionStoreInfo.STATE_INSTALLED) {
+                    stringRes(com.heyanle.easy_i18n.R.string.click_to_install).moeSnackBar()
+                    IntentHelper.openAPK(item.info.local?.realFilePath?:"", activity)
+                } else {
+                    extensionStoreDispatcher.toggle(item.info.remote)
+                }
+
             }
         }
     }
@@ -259,6 +268,7 @@ class ExtensionViewModel : ViewModel() {
                     }
                 }
             }
+
             is ExtensionItem.StoreExtensionInfo -> {
                 val ext = item.extension
                 val info = item.info
@@ -278,6 +288,7 @@ class ExtensionViewModel : ViewModel() {
                     extensionStoreDispatcher.remove(item.info.remote.pkg)
                 }
             }
+
             is ExtensionItem.StoreInfo -> {
 
             }
