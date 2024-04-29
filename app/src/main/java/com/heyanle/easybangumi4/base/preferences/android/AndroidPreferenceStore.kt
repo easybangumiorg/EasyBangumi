@@ -7,6 +7,7 @@ import com.heyanle.easybangumi4.base.preferences.Preference
 import com.heyanle.easybangumi4.base.preferences.PreferenceStore
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.toSet
 
 class AndroidPreferenceStore(
     context: Context,
@@ -54,6 +55,10 @@ class AndroidPreferenceStore(
             serializer = serializer,
             deserializer = deserializer,
         )
+    }
+
+    override fun keySet(): Set<String> {
+        return sharedPreferences.all.keys
     }
 }
 

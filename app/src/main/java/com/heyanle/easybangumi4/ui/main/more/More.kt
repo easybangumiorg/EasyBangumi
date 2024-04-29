@@ -11,12 +11,15 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Backup
 import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Extension
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.HistoryToggleOff
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Public
+import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.outlined.Report
 import androidx.compose.material3.Divider
@@ -33,6 +36,7 @@ import com.heyanle.easybangumi4.DOWNLOAD
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.R
 import com.heyanle.easybangumi4.SOURCE_MANAGER
+import com.heyanle.easybangumi4.STORAGE
 import com.heyanle.easybangumi4.navigationCartoonTag
 import com.heyanle.easybangumi4.navigationSetting
 import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
@@ -87,7 +91,7 @@ fun More() {
             headlineContent = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.source_manage)) },
             leadingContent = {
                 Icon(
-                    Icons.Filled.History,
+                    Icons.Filled.Extension,
                     contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.source_manage)
                 )
             }
@@ -102,6 +106,19 @@ fun More() {
                 Icon(
                     Icons.Filled.Tag,
                     contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.tag_manage)
+                )
+            }
+        )
+
+        ListItem(
+            modifier = Modifier.clickable {
+                nav.navigate(STORAGE)
+            },
+            headlineContent = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.backup_and_store)) },
+            leadingContent = {
+                Icon(
+                    Icons.Filled.Storage,
+                    contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.backup_and_store)
                 )
             }
         )

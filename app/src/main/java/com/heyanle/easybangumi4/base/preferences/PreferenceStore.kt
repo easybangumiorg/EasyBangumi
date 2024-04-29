@@ -26,6 +26,8 @@ interface PreferenceStore {
         deserializer: (String) -> T,
     ): Preference<T>
 
+    fun keySet(): Set<String>
+
 }
 
 inline fun <reified T : Enum<T>> PreferenceStore.getEnum(
