@@ -28,8 +28,14 @@ interface CartoonTagDao {
     @Query("SELECT * FROM CartoonTag WHERE id=(:id)")
     suspend fun findById(id: Int): CartoonTag?
 
+    @Query("SELECT * FROM CartoonTag WHERE label=(:label)")
+    suspend fun findByLabel(label: String): List<CartoonTag>
+
     @Query("SELECT * FROM CartoonTag")
     fun flowAll(): Flow<List<CartoonTag>>
+
+    @Query("SELECT * FROM CartoonTag")
+    fun getAll(): List<CartoonTag>
 
     @Query("DELETE FROM CartoonTag WHERE 1=1")
     suspend fun clear()

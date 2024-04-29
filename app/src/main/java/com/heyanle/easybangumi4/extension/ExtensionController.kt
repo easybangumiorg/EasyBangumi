@@ -59,6 +59,10 @@ class ExtensionController(
     ) {
         val isLoading: Boolean
             get() = isAppExtensionLoading || isFileExtensionLoading
+
+        val listExtension: List<Extension> by lazy {
+            (fileExtension.values + appExtensions.values).toList()
+        }
     }
 
     private val dispatcher = Dispatchers.IO

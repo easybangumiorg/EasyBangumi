@@ -77,6 +77,7 @@ class ExtensionViewModel : ViewModel() {
         // 非拓展市场中的拓展
         // 1. 通过 App 方式加载的全部都属于这种类型
         // 2. 如果拓展市场加载失败，则全部拓展都直接走这种类型
+        // 3. 直接复制文件到拓展目录的拓展也属于这种类型
         data class ExtensionInfo(
             val extension: Extension,
         ) : ExtensionItem() {
@@ -263,7 +264,7 @@ class ExtensionViewModel : ViewModel() {
                 if (ext.loadType == Extension.TYPE_APP) {
                     IntentHelper.openAppDetailed(ext.pkgName, APP)
                 } else {
-                    item.extension.publicPath?.let {
+                    item.extension.sourcePath?.let {
                         File(it).delete()
                     }
                 }
@@ -277,7 +278,7 @@ class ExtensionViewModel : ViewModel() {
                     if (ext.loadType == Extension.TYPE_APP) {
                         IntentHelper.openAppDetailed(ext.pkgName, APP)
                     } else {
-                        item.extension.publicPath?.let {
+                        item.extension.sourcePath?.let {
                             File(it).delete()
                         }
                         item.info.local?.let {

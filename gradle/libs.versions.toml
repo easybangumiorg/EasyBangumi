@@ -22,10 +22,10 @@ cling = "2.1.2"
 
 compose_lazy_reorder = "0.9.6"
 
-kotlinx_coroutines = "1.7.3"
+kotlinx_coroutines = "1.8.0"
 
 aria = "3.8.16"
-core-ktx = "1.12.0"
+core-ktx = "1.13.0"
 androidx-test-ext-junit = "1.1.5"
 espresso-core = "3.5.1"
 appcompat = "1.6.1"
@@ -33,7 +33,7 @@ material = "1.11.0"
 
 ffmpeg-kit = "6.0"
 
-ktor = "2.3.3"
+ktor = "2.3.10"
 
 jeff_m3u8 = "1.2.0"
 
@@ -44,7 +44,9 @@ agp = "8.2.2"
 kotlin = "1.9.22"
 
 cybergarage-upnp = "2.1.5"
-org-jetbrains-kotlin-jvm = "1.9.22"
+org-jetbrains-kotlin-jvm = "1.9.23"
+
+zip4j = "2.11.5"
 
 bugly = "4.1.9.3"
 [libraries]
@@ -109,6 +111,8 @@ koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
 
 cybergarage-upnp-std = { group = "org.cybergarage.upnp", name = "std", version.ref = "cybergarage-upnp" }
 cybergarage-upnp-core = { group = "org.cybergarage.upnp", name = "core", version.ref = "cybergarage-upnp"  }
+
+zip4j = { module = "net.lingala.zip4j:zip4j", version.ref = "zip4j" }
 
 bugly = {module = "com.tencent.bugly:crashreport", version.ref = "bugly" }
 [bundles]
