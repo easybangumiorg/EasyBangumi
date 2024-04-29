@@ -38,6 +38,7 @@ import com.heyanle.easybangumi4.ui.setting.Setting
 import com.heyanle.easybangumi4.ui.setting.SettingPage
 import com.heyanle.easybangumi4.ui.source_config.SourceConfig
 import com.heyanle.easybangumi4.ui.source_manage.SourceManager
+import com.heyanle.easybangumi4.ui.storage.Storage
 import com.heyanle.easybangumi4.ui.tags.CartoonTag
 import com.heyanle.easybangumi4.utils.jsonTo
 import com.heyanle.easybangumi4.utils.toJson
@@ -87,6 +88,8 @@ const val DOWNLOAD = "download"
 const val TAG_MANAGE = "tag_manage"
 
 const val EXTENSION_STORE = "extension_store"
+
+const val STORAGE = "storage"
 
 fun NavHostController.navigationSearch(defSourceKey: String) {
     val ed = URLEncoder.encode(defSourceKey, "utf-8")
@@ -421,6 +424,11 @@ fun Nav() {
             composable(EXTENSION_STORE) {
                 NormalSystemBarColor()
                 ExtensionStore()
+            }
+
+            composable(STORAGE) {
+                NormalSystemBarColor()
+                Storage()
             }
         }
     }

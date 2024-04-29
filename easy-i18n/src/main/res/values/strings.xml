@@ -398,6 +398,24 @@
     <string name="name_word">名称</string>
     <string name="sort">排序</string>
 
+    <string name="backup_and_store">备份和恢复</string>
+    <string name="backup">备份</string>
+    <string name="restore">恢复</string>
+
+    <string name="start_backup">开始备份</string>
+    <string name="backup_doing">正在备份中……</string>
+
+    <string name="sure_to_backup">确定要开始备份吗？</string>
+
+    <string name="cartoon_data">番剧数据</string>
+    <string name="cartoon_data_desc">包含收藏番剧、历史记录和番剧标签</string>
+    <string name="preference_data">配置数据</string>
+    <string name="preference_desc">包含外观设置，播放设置以及下载设置</string>
+
+    <string name="extension_desc">拓展文件</string>
+
+
+
     <!--easy-extension-->
     <string name="app_too_old">纯纯看番版本过旧</string>
     <string name="extension_too_old">插件版本过旧</string>

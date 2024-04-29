@@ -18,8 +18,8 @@ sealed class Extension {
     abstract val readme: String?
     abstract val icon: Drawable?
     abstract val loadType: Int
-    abstract val sourcePath: String
-    abstract val publicPath: String // apk 位置
+    abstract val sourcePath: String // apk 位置
+    abstract val publicPath: String
 
     companion object {
         const val TYPE_APP = 0

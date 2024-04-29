@@ -93,4 +93,8 @@ class HeKVPreferenceStore(
             deserializer = deserializer
         )
     }
+
+    override fun keySet(): Set<String> {
+        return heKV.keys()
+    }
 }

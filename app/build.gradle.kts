@@ -205,6 +205,8 @@ dependencies {
     implementation(project(":injekt"))
     implementation(project(":lib_upnp"))
 
+    implementation(libs.zip4j)
+
     implementation(extension.extension.api)
 
     implementation(libs.bugly)

@@ -50,7 +50,18 @@ abstract class CartoonDatabase : RoomDatabase() {
         fun build(context: Context): CartoonDatabase {
             return Room.databaseBuilder(
                 context,
-                CartoonDatabase::class.java, "easy_bangumi_cartoon"
+                CartoonDatabase::class.java, "easy_bangumi_cartoon.db"
+            ).apply {
+                Migrate.CartoonDB.getDBMigration().forEach {
+                    addMigrations(it)
+                }
+            }.build()
+        }
+
+        fun build(context: Context, file: String): CartoonDatabase{
+            return Room.databaseBuilder(
+                context,
+                CartoonDatabase::class.java, file
             ).apply {
                 Migrate.CartoonDB.getDBMigration().forEach {
                     addMigrations(it)
