@@ -6,6 +6,8 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,6 +25,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
@@ -75,6 +78,7 @@ import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.extension.Extension
 import com.heyanle.easybangumi4.extension.store.ExtensionStoreInfo
+import com.heyanle.easybangumi4.ui.common.EasyDeleteDialog
 import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.OkImage
@@ -97,6 +101,17 @@ fun ExtensionTopAppBar(behavior: TopAppBarScrollBehavior) {
     val isSearch = sta.searchKey != null
     val focusRequester = remember {
         FocusRequester()
+    }
+    EasyDeleteDialog(
+        show = sta.readyToDeleteFile != null,
+        message = {
+            Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.delete_confirmation) + " " + sta.readyToDeleteFile?.name)
+        },
+        onDelete = {
+            sta.readyToDeleteFile?.delete()
+            vm.dismissDialog()
+        }) {
+        vm.dismissDialog()
     }
     BackHandler(isSearch) {
         vm.onSearchChange(null)
@@ -206,7 +221,9 @@ fun Extension() {
                 )
             }
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState(), enabled = true),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Spacer(modifier = Modifier.size(8.dp))
@@ -377,6 +394,10 @@ fun StoreInfoItem(
                     image = com.heyanle.easybangumi4.R.drawable.github,
                     contentDescription = stringResource(id = R.string.github),
                     crossFade = false,
+                    errorColor = null,
+                    errorRes = null,
+                    placeholderRes = null,
+                    placeholderColor = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
@@ -453,7 +474,12 @@ fun StoreInfoItem(
             OkImage(
                 modifier = Modifier.size(40.dp),
                 image = extensionStoreInfo.remote.iconUrl,
-                contentDescription = extensionStoreInfo.remote.label
+                contentDescription = extensionStoreInfo.remote.label,
+                crossFade = false,
+                errorColor = null,
+                errorRes = null,
+                placeholderRes = null,
+                placeholderColor = null,
             )
         }
     )
@@ -629,13 +655,23 @@ fun StoreExtensionInfoItem(
                 OkImage(
                     modifier = Modifier.size(40.dp),
                     image = extensionStoreInfo.remote.iconUrl,
-                    contentDescription = extensionStoreInfo.remote.label
+                    contentDescription = extensionStoreInfo.remote.label,
+                    crossFade = false,
+                    errorColor = null,
+                    errorRes = null,
+                    placeholderRes = null,
+                    placeholderColor = null,
                 )
             } else {
                 OkImage(
                     modifier = Modifier.size(40.dp),
                     image = item.extension.icon,
-                    contentDescription = extensionStoreInfo.remote.label
+                    contentDescription = extensionStoreInfo.remote.label,
+                    crossFade = false,
+                    errorColor = null,
+                    errorRes = null,
+                    placeholderRes = null,
+                    placeholderColor = null,
                 )
             }
 
@@ -672,14 +708,71 @@ fun ExtensionInfoItem(
             Text(text = extension.label)
         },
         supportingContent = {
-            Text(
-                text = extension.versionName,
-            )
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                item {
+                    // 版本
+                    Text(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.secondaryContainer)
+                            .clickable {
+                            }
+                            .padding(8.dp, 4.dp),
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        fontWeight = FontWeight.W900,
+                        text = extension.versionName,
+                        fontSize = 12.sp
+                    )
+                }
+                item {
+                    // 加载方式
+                    Text(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.secondaryContainer)
+                            .clickable {
+                            }
+                            .padding(8.dp, 4.dp),
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        fontWeight = FontWeight.W900,
+                        text = when(extension.loadType){
+                            Extension.TYPE_APP -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_installed)}
+                            Extension.TYPE_FILE -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_file)}
+                            else -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_installed)}
+                        },
+                        fontSize = 12.sp
+                    )
+                }
+//                item {
+//                    Text(
+//                        modifier = Modifier
+//                            .clip(CircleShape)
+//                            .background(MaterialTheme.colorScheme.secondaryContainer)
+//                            .clickable {
+//                            }
+//                            .padding(8.dp, 4.dp),
+//                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+//                        fontWeight = FontWeight.W900,
+//                        text = when(extension.loadType){
+//                            Extension.TYPE_APP -> {extension.pkgName}
+//                            Extension.TYPE_FILE -> {extension.fileName}
+//                            else -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_installed)}
+//                        },
+//                        fontSize = 12.sp
+//                    )
+//                }
+            }
         },
         trailingContent = {
             when (extension) {
                 is Extension.Installed -> {
-                    Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.detailed))
+                    if (extension.loadType == Extension.TYPE_APP) {
+                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.detailed))
+                    }else{
+                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.long_touch_to_delete))
+                    }
                 }
 
                 is Extension.InstallError -> {
@@ -691,7 +784,12 @@ fun ExtensionInfoItem(
             OkImage(
                 modifier = Modifier.size(40.dp),
                 image = extension.icon,
-                contentDescription = extension.label
+                contentDescription = extension.label,
+                crossFade = false,
+                errorColor = null,
+                errorRes = null,
+                placeholderRes = null,
+                placeholderColor = null,
             )
         }
     )
@@ -741,7 +839,12 @@ fun ExtensionItem(
             OkImage(
                 modifier = Modifier.size(40.dp),
                 image = extension.icon,
-                contentDescription = extension.label
+                contentDescription = extension.label,
+                crossFade = false,
+                errorColor = null,
+                errorRes = null,
+                placeholderRes = null,
+                placeholderColor = null,
             )
         }
     )

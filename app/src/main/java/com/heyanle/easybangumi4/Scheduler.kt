@@ -20,6 +20,8 @@ import com.heyanle.easybangumi4.case.CaseModule
 import com.heyanle.easybangumi4.dlna.DlnaModule
 import com.heyanle.easybangumi4.setting.SettingModule
 import com.heyanle.easybangumi4.source.SourceModule
+import com.heyanle.easybangumi4.storage.StorageController
+import com.heyanle.easybangumi4.storage.StorageModule
 import com.heyanle.easybangumi4.ui.common.moeDialog
 import com.heyanle.easybangumi4.utils.AppCenterManager
 import com.heyanle.easybangumi4.utils.UUIDHelper
@@ -70,6 +72,7 @@ object Scheduler {
         ExtensionModule(application).registerWith(Injekt)
         SourceModule(application).registerWith(Injekt)
         CartoonDownloadModule(application).registerWith(Injekt)
+        StorageModule(application).registerWith(Injekt)
         DlnaModule(application).registerWith(Injekt)
 
 

@@ -331,6 +331,7 @@
 
     <string name="play_line">播放线路</string>
 
+    <string name="long_touch_to_delete">长按删除</string>
     <string name="reverse">列表反转</string>
 
     <string name="select_to_download">选择要下载的番剧</string>
@@ -417,7 +418,9 @@
 
 
 
+    <string name="restore_error">恢复失败</string>
 
+    <string name="restore_completely">恢复完成，如果拓展加载失败可在番源 - 拓展页手动点击安装</string>
     <string name="backup_success">备份成功</string>
     <string name="cartoon_data">番剧数据</string>
     <string name="cartoon_data_desc">包含收藏番剧、历史记录和番剧标签</string>
@@ -425,6 +428,12 @@
     <string name="preference_desc">包含外观设置，播放设置以及下载设置</string>
 
     <string name="extension_desc">拓展文件</string>
+
+    <string name="share_file">分享文件</string>
+
+    <string name="load_type_installed">APK 安装</string>
+    <string name="load_type_file">文件加载</string>
+
 
 
 

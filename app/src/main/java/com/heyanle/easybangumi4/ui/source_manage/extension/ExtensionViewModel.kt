@@ -51,6 +51,7 @@ class ExtensionViewModel : ViewModel() {
         val searchKey: String? = null, // 为 null 则 top bar 里没有输入法
         val showList: List<ExtensionItem> = emptyList(), // 搜索后的数据
         val currentTab: Int = 0,
+        val readyToDeleteFile: File? = null,
     )
 
     sealed class ExtensionItem {
@@ -264,8 +265,12 @@ class ExtensionViewModel : ViewModel() {
                 if (ext.loadType == Extension.TYPE_APP) {
                     IntentHelper.openAppDetailed(ext.pkgName, APP)
                 } else {
-                    item.extension.sourcePath?.let {
-                        File(it).delete()
+                    item.extension.sourcePath?.let { path ->
+                        _stateFlow.update {
+                            it.copy(
+                                readyToDeleteFile = File(path)
+                            )
+                        }
                     }
                 }
             }
@@ -296,4 +301,11 @@ class ExtensionViewModel : ViewModel() {
         }
     }
 
+    fun dismissDialog(){
+        _stateFlow.update {
+            it.copy(
+                readyToDeleteFile = null
+            )
+        }
+    }
 }
