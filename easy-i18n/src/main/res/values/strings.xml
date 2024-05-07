@@ -406,9 +406,16 @@
     <string name="backup_doing">正在备份中……</string>
     <string name="restore_doing">正在恢复中……</string>
 
+    <string name="backup_error">备份错误</string>
+    <string name="backup_completely">备份成功！文件名：%1$s 可在恢复页面查看。</string>
+
     <string name="sure_to_backup">确定要开始备份吗？</string>
     <string name="sure_to_restore">确定要开始恢复吗？</string>
-    <string name="sure_to_deleted_restore">确定要开始删除备份吗？</string>
+    <string name="sure_to_deleted_restore">确定要删除备份吗？</string>
+
+    <string name="restore_export_completely">备份导出成功 %1$s</string>
+
+
 
 
     <string name="backup_success">备份成功</string>
