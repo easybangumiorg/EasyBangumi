@@ -96,6 +96,7 @@ fun Restore() {
                 TextButton(
                     onClick = {
                         vm.delete(sta.deleteDialogFile)
+                        vm.dismissDeleteDialog()
                     }
                 ) {
                     Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.confirm))

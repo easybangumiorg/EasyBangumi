@@ -4,6 +4,7 @@ import android.content.res.Resources
 import android.graphics.drawable.Drawable
 import com.heyanle.easybangumi4.source_api.Source
 import com.heyanle.easybangumi4.utils.getMatchReg
+import java.io.File
 
 /**
  * Created by heyanlin on 2023/10/24.
@@ -81,6 +82,10 @@ sealed class Extension {
             }
         }
         return matched
+    }
+
+    val fileName : String by lazy {
+        File(sourcePath).name
     }
 
 }
