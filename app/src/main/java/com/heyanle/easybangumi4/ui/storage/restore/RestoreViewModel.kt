@@ -9,6 +9,7 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.APP
+import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.easybangumi4.utils.logi
 import kotlinx.coroutines.Dispatchers
@@ -16,6 +17,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import net.lingala.zip4j.ZipFile
+import org.json.JSONObject
 import java.io.File
 
 /**
@@ -28,6 +31,7 @@ class RestoreViewModel : ViewModel() {
     }
 
     private val backupZipRoot = File(APP.getFilePath(), "backup")
+    private val cacheRoot = File(APP.getCachePath(), "restore")
 
     data class RestoreState(
         val backupFileList: List<File> = emptyList(),
@@ -82,7 +86,7 @@ class RestoreViewModel : ViewModel() {
                 } else {
                     val values = ContentValues().apply {
                         put(MediaStore.MediaColumns.DISPLAY_NAME, file.name)
-                        put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+                        put(MediaStore.MediaColumns.RELATIVE_PATH, "${Environment.DIRECTORY_DOWNLOADS}/EasyBangumi/backup")
                     }
                     APP.contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
                         ?.let { uri ->
@@ -133,7 +137,41 @@ class RestoreViewModel : ViewModel() {
         }
     }
 
-    fun restore(file: File) {}
+    fun restore(file: File) {
+        _state.update {
+            it.copy(restoreDialogFile = null, isRestoreDoing = true)
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            kotlin.runCatching {
+
+                // 1. 解压
+                val targetFolder = File(cacheRoot, file.nameWithoutExtension)
+                targetFolder.deleteRecursively()
+                targetFolder.mkdirs()
+                ZipFile(file).extractAll(targetFolder.absolutePath)
+
+                val manifestFile = File(targetFolder, "manifest.json")
+                if (!manifestFile.exists()) {
+                    throw Exception("manifest.json not found")
+                }
+
+                // 2. 读取manifest
+                val manifest = manifestFile.readText()
+                val jsonObject = JSONObject(manifest)
+
+                val packageName = jsonObject.optString("from")
+                val version = jsonObject.optString("version")
+                val time = jsonObject.optString("time")
+
+
+            }.onFailure {
+                it.printStackTrace()
+            }
+            _state.update {
+                it.copy(isRestoreDoing = false)
+            }
+        }
+    }
 
     // 观察文件夹
     @RequiresApi(Build.VERSION_CODES.Q)
