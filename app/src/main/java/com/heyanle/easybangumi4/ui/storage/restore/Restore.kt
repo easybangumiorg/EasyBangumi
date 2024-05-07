@@ -111,7 +111,8 @@ fun Restore() {
                 }
             },
         )
-    } else if (sta.isRestoreDoing) {
+    }
+    if (sta.isRestoreDoing) {
         LoadingPage(
             modifier = Modifier.fillMaxSize(),
             loadingMsg = stringResource(id = com.heyanle.easy_i18n.R.string.restore_doing)
