@@ -139,6 +139,8 @@ class RestoreViewModel : ViewModel() {
         }
     }
 
+    fun onAddRestoreFile(){}
+
     // 观察文件夹
     @RequiresApi(Build.VERSION_CODES.Q)
     inner class ExtensionFolderObserverQ(private val extensionFolder: String) :
