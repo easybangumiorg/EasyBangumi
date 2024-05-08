@@ -30,6 +30,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.ui.common.TabIndicator
@@ -41,6 +42,7 @@ import com.heyanle.easybangumi4.ui.download.downloading.Downloading
 import com.heyanle.easybangumi4.ui.download.downloading.DownloadingTopBar
 import com.heyanle.easybangumi4.ui.storage.backup.Backup
 import com.heyanle.easybangumi4.ui.storage.restore.Restore
+import com.heyanle.easybangumi4.ui.storage.restore.RestoreViewModel
 import kotlinx.coroutines.launch
 
 /**
@@ -54,12 +56,12 @@ sealed class StoragePage(
 
     data object Backup :
         StoragePage(tabLabel = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.backup)) },
-            topAppBar = { StorageTopAppBar() },
+            topAppBar = { BackupTopAppBar() },
             content = { Backup() })
 
     data object Restore :
         StoragePage(tabLabel = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.restore)) },
-            topAppBar = { StorageTopAppBar() },
+            topAppBar = { RestoreTopAppBar() },
             content = { Restore() })
 
 }
@@ -117,7 +119,7 @@ fun Storage() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StorageTopAppBar() {
+fun BackupTopAppBar() {
     val nav = LocalNavController.current
     TopAppBar(
         title = {
@@ -132,5 +134,35 @@ fun StorageTopAppBar() {
                 )
             }
         },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun RestoreTopAppBar(){
+    val restoreViewModel = viewModel<RestoreViewModel>()
+    val nav = LocalNavController.current
+    TopAppBar(
+        title = {
+            Text(text = stringResource(id = R.string.backup_and_store))
+        },
+        navigationIcon = {
+            IconButton(onClick = {
+                nav.popBackStack()
+            }) {
+                Icon(
+                    imageVector = Icons.Filled.ArrowBack, stringResource(id = R.string.back)
+                )
+            }
+        },
+        actions = {
+            IconButton(onClick = {
+                restoreViewModel.onAddRestoreFile()
+            }) {
+                Icon(
+                    imageVector = Icons.Filled.Add, stringResource(id = R.string.click_to_add)
+                )
+            }
+        }
     )
 }
