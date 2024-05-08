@@ -282,7 +282,7 @@ class StorageController(
     private suspend fun migrate(folder: File, version: Int): Boolean {
 
         // 在这里迁移
-        if (version < 85){
+        if (version < 86){
             return false
         }
 
