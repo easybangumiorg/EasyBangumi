@@ -117,12 +117,12 @@ class StorageController(
     private suspend fun backupCartoon(folder: File) {
         folder.deleteRecursively()
         folder.mkdirs()
-        val cartoonInfoDB = APP.getDatabasePath("easy_bangumi_cartoon.db") ?: return
-        val cartoonInfoDBShm = APP.getDatabasePath("easy_bangumi_cartoon.db-shm") ?: return
-        val cartoonInfoDBWal = APP.getDatabasePath("easy_bangumi_cartoon.db-wal") ?: return
-        val cacheTargetDB = File(folder, "easy_bangumi_cartoon.db")
-        val cacheTargetDBShm = File(folder, "easy_bangumi_cartoon.db-shm")
-        val cacheTargetDBWal = File(folder, "easy_bangumi_cartoon.db-wal")
+        val cartoonInfoDB = APP.getDatabasePath("easy_bangumi_cartoon") ?: return
+        val cartoonInfoDBShm = APP.getDatabasePath("easy_bangumi_cartoon-shm") ?: return
+        val cartoonInfoDBWal = APP.getDatabasePath("easy_bangumi_cartoon-wal") ?: return
+        val cacheTargetDB = File(folder, "easy_bangumi_cartoon")
+        val cacheTargetDBShm = File(folder, "easy_bangumi_cartoon-shm")
+        val cacheTargetDBWal = File(folder, "easy_bangumi_cartoon-wal")
 
         kotlin.runCatching {
             cacheTargetDB.delete()
@@ -286,11 +286,29 @@ class StorageController(
             return false
         }
 
+        if (version < 87) {
+            val cartoonInfoFolder = File(folder, "cartoon_info")
+            val dbFileO = File(cartoonInfoFolder, "easy_bangumi_cartoon.db")
+            val dbFileShmO = File(folder, "easy_bangumi_cartoon.db-shm")
+            val dbFileWalO = File(folder, "easy_bangumi_cartoon.db-wal")
+
+            val dbFile = File(cartoonInfoFolder, "easy_bangumi_cartoon")
+            val dbFileShm = File(folder, "easy_bangumi_cartoon-shm")
+            val dbFileWal = File(folder, "easy_bangumi_cartoon-wal")
+
+            dbFile.delete()
+            dbFileShm.delete()
+            dbFileWal.delete()
+            dbFileO.renameTo(dbFile)
+            dbFileShmO.renameTo(dbFileShm)
+            dbFileWalO.renameTo(dbFileWal)
+        }
+
         return true
     }
 
     private suspend fun restoreCartoon(folder: File): Boolean {
-        val targetDB = File(folder, "easy_bangumi_cartoon.db")
+        val targetDB = File(folder, "easy_bangumi_cartoon")
 
         if (targetDB.exists()) {
             return false
