@@ -289,12 +289,12 @@ class StorageController(
         if (version < 87) {
             val cartoonInfoFolder = File(folder, "cartoon_info")
             val dbFileO = File(cartoonInfoFolder, "easy_bangumi_cartoon.db")
-            val dbFileShmO = File(folder, "easy_bangumi_cartoon.db-shm")
+            val dbFileShmO = File(cartoonInfoFolder, "easy_bangumi_cartoon.db-shm")
             val dbFileWalO = File(folder, "easy_bangumi_cartoon.db-wal")
 
             val dbFile = File(cartoonInfoFolder, "easy_bangumi_cartoon")
-            val dbFileShm = File(folder, "easy_bangumi_cartoon-shm")
-            val dbFileWal = File(folder, "easy_bangumi_cartoon-wal")
+            val dbFileShm = File(cartoonInfoFolder, "easy_bangumi_cartoon-shm")
+            val dbFileWal = File(cartoonInfoFolder, "easy_bangumi_cartoon-wal")
 
             dbFile.delete()
             dbFileShm.delete()
