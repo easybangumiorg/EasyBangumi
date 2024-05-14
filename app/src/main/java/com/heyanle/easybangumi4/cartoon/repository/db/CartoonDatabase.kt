@@ -50,7 +50,7 @@ abstract class CartoonDatabase : RoomDatabase() {
         fun build(context: Context): CartoonDatabase {
             return Room.databaseBuilder(
                 context,
-                CartoonDatabase::class.java, "easy_bangumi_cartoon.db"
+                CartoonDatabase::class.java, "easy_bangumi_cartoon"
             ).apply {
                 Migrate.CartoonDB.getDBMigration().forEach {
                     addMigrations(it)
