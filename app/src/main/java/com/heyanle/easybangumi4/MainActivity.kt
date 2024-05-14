@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4
 
 import android.os.Bundle
+import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
@@ -48,6 +49,7 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(FrameLayout(this))
         Scheduler.runOnMainActivityCreate(this, first)
         MediaUtils.setIsDecorFitsSystemWindows(this, false)
         setContent {
