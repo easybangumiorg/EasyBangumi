@@ -255,6 +255,23 @@ object Migrate {
                     dbFileWalO.renameTo(dbFileWal)
                 }
 
+
+                if (lastVersionCode < 87) {
+                    val dbFileO = context.getDatabasePath("easy_bangumi_cartoon.db")
+                    val dbFileShmO = context.getDatabasePath("easy_bangumi_cartoon.db-shm")
+                    val dbFileWalO = context.getDatabasePath("easy_bangumi_cartoon.db-wal")
+                    val dbFile = context.getDatabasePath("easy_bangumi_cartoon")
+                    val dbFileShm = context.getDatabasePath("easy_bangumi_cartoon-shm")
+                    val dbFileWal = context.getDatabasePath("easy_bangumi_cartoon-wal")
+
+                    dbFile.delete()
+                    dbFileShm.delete()
+                    dbFileWal.delete()
+                    dbFileO.renameTo(dbFile)
+                    dbFileShmO.renameTo(dbFileShm)
+                    dbFileWalO.renameTo(dbFileWal)
+                }
+
                 // 在这里添加新的迁移代码
 
                 androidPreferenceStore.getInt("last_version_code", 0).set(curVersionCode)
