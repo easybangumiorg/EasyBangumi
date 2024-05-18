@@ -4,6 +4,7 @@ import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
+import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.CacheDataSink
@@ -12,6 +13,7 @@ import androidx.media3.exoplayer.dash.DashMediaSource
 import androidx.media3.exoplayer.hls.HlsMediaSource
 import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
+import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
 
 /**
@@ -29,9 +31,9 @@ class MediaSourceFactory(
     @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
     fun get(playerInfo: PlayerInfo): MediaSource {
 
-        val dataSourceFactory: DataSource.Factory = DefaultHttpDataSource.Factory()
+        val httpDataSourceFactory = DefaultHttpDataSource.Factory()
             .setDefaultRequestProperties(playerInfo.header ?: emptyMap())
-
+        val dataSourceFactory = DefaultDataSource.Factory(APP, httpDataSourceFactory)
         val streamDataSinkFactory = CacheDataSink.Factory().setCache(normalCache)
         val normalCacheDataSourceFactory = CacheDataSource.Factory()
             .setCache(normalCache)
