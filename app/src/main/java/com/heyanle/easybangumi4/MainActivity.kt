@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -45,6 +46,8 @@ val LocalWindowSizeController = staticCompositionLocalOf<WindowSizeClass> {
 class MainActivity : ComponentActivity() {
 
     var first by okkv("first_visible", def = true)
+    private val launcherBus = LauncherBus(this)
+
 
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -92,5 +95,11 @@ class MainActivity : ComponentActivity() {
 
         }
 
+    }
+
+
+    override fun onResume() {
+        super.onResume()
+        LauncherBus.onResume(launcherBus)
     }
 }

@@ -35,7 +35,7 @@ object IntentHelper {
             }
 
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !context.packageManager.canRequestPackageInstalls()) {
-                stringRes(com.heyanle.easy_i18n.R.string.install_permissions_please).moeSnackBar()
+                stringRes(com.heyanle.easy_i18n.R.string.install_permissions_please).toast()
                 ActivityCompat.requestPermissions(context, arrayOf(android.Manifest.permission.REQUEST_INSTALL_PACKAGES), 1)
                 return
             }
@@ -50,6 +50,9 @@ object IntentHelper {
                 intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive")
             }
             context.startActivity(intent)
+        }.onFailure {
+            it.printStackTrace()
+
         }
     }
 

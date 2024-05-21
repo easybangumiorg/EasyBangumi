@@ -28,6 +28,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -142,6 +143,9 @@ fun BackupTopAppBar() {
 fun RestoreTopAppBar(){
     val restoreViewModel = viewModel<RestoreViewModel>()
     val nav = LocalNavController.current
+    val ctx = LocalContext.current
+
+
     TopAppBar(
         title = {
             Text(text = stringResource(id = R.string.backup_and_store))
@@ -157,7 +161,7 @@ fun RestoreTopAppBar(){
         },
         actions = {
             IconButton(onClick = {
-                restoreViewModel.onAddRestoreFile()
+                restoreViewModel.onAddRestoreFile(ctx)
             }) {
                 Icon(
                     imageVector = Icons.Filled.Add, stringResource(id = R.string.click_to_add)

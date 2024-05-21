@@ -43,8 +43,11 @@ class BackupViewModel : ViewModel() {
         val cartoonCount: Int = -1,
         val needBackupPreferenceData: Boolean = false,
         val needBackupExtension: Boolean = false,
+        val needExtensionPackage: Set<Extension> = setOf(),
+
+        val needBackupSourcePref: Boolean = false,
+        val needSourceSet: Set<Extension> = setOf(),
         val extensionList: List<Extension> = emptyList(),
-        val needExtensionPackage: Set<Extension> = hashSetOf(),
         val showBackupDialog: Boolean = false,
         val isBackupDoing: Boolean = false,
     )
@@ -149,8 +152,7 @@ class BackupViewModel : ViewModel() {
                     StorageController.BackupParam(
                         needBackupCartoonData = cur.needBackupCartoonData,
                         needBackupPreferenceData = cur.needBackupPreferenceData,
-                        needBackupExtension = cur.needBackupExtension,
-                        needBackupExtensionList = cur.needExtensionPackage
+                        needBackupExtensionList = if (cur.needBackupExtension) cur.needExtensionPackage else emptySet(),
                     )
                 )
 
