@@ -17,6 +17,8 @@ import com.heyanle.easybangumi4.extension.ExtensionController
 import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.source.SourceController
+import com.heyanle.easybangumi4.source_api.Source
+import com.heyanle.easybangumi4.source_api.utils.api.PreferenceHelper
 import com.heyanle.easybangumi4.theme.EasyThemeMode
 import com.heyanle.easybangumi4.ui.common.moeDialog
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
@@ -24,6 +26,7 @@ import com.heyanle.easybangumi4.ui.storage.restore.Restore
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.easybangumi4.utils.stringRes
+import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.update
@@ -60,8 +63,10 @@ class StorageController(
     data class BackupParam(
         val needBackupCartoonData: Boolean = true,
         val needBackupPreferenceData: Boolean = false,
-        val needBackupExtension: Boolean = false,
+
         val needBackupExtensionList: Set<Extension> = setOf(),
+
+        val needBackupDataSource: Set<Source> = setOf(),
     )
 
     suspend fun backup(param: BackupParam) {
@@ -73,6 +78,7 @@ class StorageController(
             val name = "${df.format(date)}:${time}"
             val fileName = "${name}.easybangumi.backup.zip"
 
+            backupZipRoot.mkdirs()
 
             val cacheFolder = File(cacheRoot, name)
             cacheFolder.mkdirs()
@@ -88,11 +94,15 @@ class StorageController(
                             backupPreference(File(cacheFolder, "preference"))
                     },
                     async {
-                        if (param.needBackupExtension)
+                        if (param.needBackupExtensionList.isNotEmpty())
                             backupExtension(File(cacheFolder, "extension"), param)
                     },
                     async {
                         backupManifest(File(cacheFolder, "manifest.json"))
+                    },
+                    async {
+                        if (param.needBackupDataSource.isNotEmpty())
+                            backupSourceData(File(cacheFolder, "source_pref"), param)
                     }
                 ).forEach {
                     it.await()
@@ -115,31 +125,34 @@ class StorageController(
     }
 
     private suspend fun backupCartoon(folder: File) {
-        folder.deleteRecursively()
-        folder.mkdirs()
-        val cartoonInfoDB = APP.getDatabasePath("easy_bangumi_cartoon") ?: return
-        val cartoonInfoDBShm = APP.getDatabasePath("easy_bangumi_cartoon-shm") ?: return
-        val cartoonInfoDBWal = APP.getDatabasePath("easy_bangumi_cartoon-wal") ?: return
-        val cacheTargetDB = File(folder, "easy_bangumi_cartoon")
-        val cacheTargetDBShm = File(folder, "easy_bangumi_cartoon-shm")
-        val cacheTargetDBWal = File(folder, "easy_bangumi_cartoon-wal")
+        withContext(Dispatchers.IO){
+            folder.deleteRecursively()
+            folder.mkdirs()
+            val cartoonInfoDB = APP.getDatabasePath("easy_bangumi_cartoon") ?: return@withContext
+            val cartoonInfoDBShm = APP.getDatabasePath("easy_bangumi_cartoon-shm") ?: return@withContext
+            val cartoonInfoDBWal = APP.getDatabasePath("easy_bangumi_cartoon-wal") ?: return@withContext
+            val cacheTargetDB = File(folder, "easy_bangumi_cartoon")
+            val cacheTargetDBShm = File(folder, "easy_bangumi_cartoon-shm")
+            val cacheTargetDBWal = File(folder, "easy_bangumi_cartoon-wal")
 
-        kotlin.runCatching {
-            cacheTargetDB.delete()
-            cartoonInfoDB.copyTo(cacheTargetDB, true)
+            kotlin.runCatching {
+                cacheTargetDB.delete()
+                cartoonInfoDB.copyTo(cacheTargetDB, true)
+            }
+            kotlin.runCatching {
+                cacheTargetDBShm.delete()
+                cartoonInfoDBShm.copyTo(cacheTargetDBShm, true)
+            }
+            kotlin.runCatching {
+                cacheTargetDBWal.delete()
+                cartoonInfoDBWal.copyTo(cacheTargetDBWal, true)
+            }
         }
-        kotlin.runCatching {
-            cacheTargetDBShm.delete()
-            cartoonInfoDBShm.copyTo(cacheTargetDBShm, true)
-        }
-        kotlin.runCatching {
-            cacheTargetDBWal.delete()
-            cartoonInfoDBWal.copyTo(cacheTargetDBWal, true)
-        }
+
 
     }
 
-    private suspend fun backupPreference(folder: File) {
+    private suspend fun backupPreference(folder: File) = withContext(Dispatchers.IO) {
         val mmkvO = JSONObject()
         val spO = JSONObject()
         val hekvO = JSONObject()
@@ -190,7 +203,7 @@ class StorageController(
 
     }
 
-    private suspend fun backupExtension(folder: File, param: BackupParam) {
+    private suspend fun backupExtension(folder: File, param: BackupParam) = withContext(Dispatchers.IO) {
         folder.deleteRecursively()
         folder.mkdirs()
         var count = 0
@@ -205,7 +218,7 @@ class StorageController(
         }
     }
 
-    private suspend fun backupManifest(file: File) {
+    private suspend fun backupManifest(file: File) = withContext(Dispatchers.IO) {
         val manifestO = JSONObject()
         manifestO.put("from", "com.heyanle.easybangumi4")
         manifestO.put("version", BuildConfig.VERSION_CODE)
@@ -214,6 +227,30 @@ class StorageController(
         file.delete()
         file.createNewFile()
         file.writeText(manifestO.toString())
+    }
+
+    private suspend fun backupSourceData(folder: File, param: BackupParam){
+        folder.deleteRecursively()
+        folder.mkdirs()
+
+        for (source in param.needBackupDataSource) {
+            val preferenceHelper by Injekt.injectLazy<PreferenceHelper>(source.key)
+            val sourceData = preferenceHelper.map()
+
+            if (sourceData.isEmpty()){
+                continue
+            }
+
+            val sourceJson = File(folder, "${source.key}.json")
+            sourceJson.delete()
+            sourceJson.createNewFile()
+            val sourceJsonO = JSONObject()
+            sourceData.forEach {
+                sourceJsonO.put(it.key, it.value)
+            }
+
+            sourceJson.writeText(sourceJsonO.toString())
+        }
     }
 
     // 恢复 =========================================
@@ -263,6 +300,9 @@ class StorageController(
                     },
                     async {
                         restoreExtension(File(targetFolder, "extension"))
+                    },
+                    async {
+                        restoreSourceData(File(targetFolder, "source_pref"))
                     }
                 ).forEach {
                     it.await()
@@ -404,6 +444,22 @@ class StorageController(
             }
         }
         return true
+    }
+
+    private suspend fun restoreSourceData(folder: File){
+        if (!folder.exists()){
+            return
+        }
+        folder.listFiles()?.forEach {
+            if (it.isFile && it.canRead() && it.name.endsWith(".json")){
+                val sourceKey = it.nameWithoutExtension
+                val preferenceHelper by Injekt.injectLazy<PreferenceHelper>(sourceKey)
+                val sourceData = JSONObject(it.readText())
+                sourceData.keys().forEach {
+                    preferenceHelper.put(it, sourceData.optString(it))
+                }
+            }
+        }
     }
 
     // 导出 =========================================
