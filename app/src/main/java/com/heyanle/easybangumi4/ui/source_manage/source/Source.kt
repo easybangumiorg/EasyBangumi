@@ -3,12 +3,14 @@ package com.heyanle.easybangumi4.ui.source_manage.source
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -116,6 +118,7 @@ fun Source() {
                 ) {
                     SourceItem(
                         configSource,
+                        showConfig = bundle.preference(configSource.sourceInfo.source.key) != null,
                         onCheckedChange = { source: ConfigSource, b: Boolean ->
                             if (b) {
                                 vm.enable(source)
@@ -138,6 +141,7 @@ fun Source() {
 @Composable
 fun SourceItem(
     configSource: ConfigSource,
+    showConfig: Boolean,
     onCheckedChange: (ConfigSource, Boolean) -> Unit,
     onClick: (ConfigSource) -> Unit,
 ) {
@@ -164,9 +168,21 @@ fun SourceItem(
         trailingContent = {
             when(sourceInfo){
                 is SourceInfo.Loaded -> {
-                    Switch(checked = config.enable, onCheckedChange = {
-                        onCheckedChange(configSource, it)
-                    })
+                    Row {
+                        if (showConfig){
+                            IconButton(
+                                onClick = {
+                                    onClick(configSource)
+                                },
+                            ){
+                                Icon(Icons.Filled.Settings, contentDescription = sourceInfo.source.label)
+                            }
+                        }
+                        Switch(checked = config.enable, onCheckedChange = {
+                            onCheckedChange(configSource, it)
+                        })
+                    }
+
                 }
                 is SourceInfo.Error -> {
                     Text(text = sourceInfo.msg)

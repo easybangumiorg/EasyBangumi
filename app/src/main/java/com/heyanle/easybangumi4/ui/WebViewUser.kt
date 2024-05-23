@@ -2,6 +2,7 @@ package com.heyanle.easybangumi4.ui
 
 import android.webkit.WebView
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -82,7 +83,7 @@ fun WebViewUser(
             Box(
                 modifier = Modifier.padding(it)
             ) {
-                AndroidView(factory = {
+                AndroidView(modifier = Modifier.fillMaxSize(),factory = {
                     webView
                 })
             }

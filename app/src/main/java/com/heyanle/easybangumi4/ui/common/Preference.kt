@@ -236,6 +236,7 @@ fun StringEditPreferenceItem(
     title: @Composable (() -> Unit),
     icon: @Composable (() -> Unit)? = null,
     value: String,
+    defValue: String? = null,
     onEdit: (String) -> Unit = {},
 ) {
     var showDialog by remember {
@@ -262,12 +263,22 @@ fun StringEditPreferenceItem(
         AlertDialog(
             onDismissRequest = { showDialog = false },
             confirmButton = {
-                TextButton(onClick = {
-                    showDialog = false
-                    onEdit(tv)
-                }) {
-                    Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.confirm))
+                Row {
+                    if (defValue != null){
+                        TextButton(onClick = {
+                            tv = defValue
+                        }) {
+                            Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.default_value))
+                        }
+                    }
+                    TextButton(onClick = {
+                        showDialog = false
+                        onEdit(tv)
+                    }) {
+                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.confirm))
+                    }
                 }
+
             },
             title = title,
             text = {

@@ -23,6 +23,8 @@
 
     <string name="download_create_failed">下载任务创建失败</string>
 
+    <string name="default_value">默认值</string>
+
     <string name="cancel">取消</string>
     <string name="confirm">确定</string>
 
@@ -98,6 +100,8 @@
     <string name="source_store">拓展市场</string>
 
     <string name="need_vpn">可能需要科学上网</string>
+
+    <string name="source_config_need_reboot">可能需要重启生效</string>
 
     <string name="source_config">番源配置</string>
 
