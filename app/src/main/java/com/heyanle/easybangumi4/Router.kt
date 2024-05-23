@@ -408,7 +408,12 @@ fun Nav() {
             ) {
                 val source = it.arguments?.getString("key") ?: ""
                 NormalSystemBarColor()
-                SourceConfig(sourceKey = URLDecoder.decode(source, "utf-8"))
+                Surface(
+                    color = MaterialTheme.colorScheme.background,
+                    contentColor = MaterialTheme.colorScheme.onBackground
+                ) {
+                    SourceConfig(sourceKey = URLDecoder.decode(source, "utf-8"))
+                }
             }
 
             composable(TAG_MANAGE) {
