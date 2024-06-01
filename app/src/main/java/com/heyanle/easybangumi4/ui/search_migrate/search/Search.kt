@@ -106,7 +106,7 @@ fun Search(
 //                } else {
 //                    //Log.d("tag_so", " cannot read so libs " + f1.exists())
 //                }
-               BydsSource.generateToken().logi("Search")
+               // BydsSource.generateToken().logi("Search")
                 searchVM.search(it)
             },
             onTextChange = {
