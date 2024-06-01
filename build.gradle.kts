@@ -12,10 +12,10 @@ tasks.create<Delete>("clean") {
     }
 }
 
-//subprojects {
-//    // 定义检查依赖变化的时间间隔,!!配置为0实时刷新
-//    configurations.all {
-//        // check for updates every build
-//        resolutionStrategy.cacheChangingModulesFor(0, java.util.concurrent.TimeUnit.SECONDS)
-//    }
-//}
+subprojects {
+    // 定义检查依赖变化的时间间隔,!!配置为0实时刷新
+    configurations.all {
+        // check for updates every build
+        resolutionStrategy.cacheChangingModulesFor(0, java.util.concurrent.TimeUnit.SECONDS)
+    }
+}

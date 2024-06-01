@@ -7,6 +7,7 @@ import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.source.SourceException
 import com.heyanle.easybangumi4.source_api.IconSource
 import com.heyanle.easybangumi4.source_api.Source
+import com.heyanle.easybangumi4.source_api.component.Component
 import com.heyanle.easybangumi4.source_api.component.ComponentWrapper
 import com.heyanle.easybangumi4.source_api.component.detailed.DetailedComponent
 import com.heyanle.easybangumi4.source_api.component.page.PageComponent
@@ -24,6 +25,7 @@ import com.heyanle.extension_api.ExtensionIconSource
 import com.heyanle.extension_api.ExtensionSource
 import com.heyanle.injekt.api.get
 import com.heyanle.injekt.core.Injekt
+import java.lang.reflect.Proxy
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
@@ -76,6 +78,8 @@ class ComponentBundle(
     private val registerClazz: Set<KClass<*>> = source.register().toSet()
 
     private val bundle: HashMap<KClass<*>, Any> = hashMapOf()
+
+    private val componentProxy:  HashMap<KClass<*>, Any> = hashMapOf()
 
     private val init = AtomicBoolean(false)
 
@@ -165,7 +169,7 @@ class ComponentBundle(
             targetParams.add(instance)
         }
         road.remove(clazz)
-        val instance = kotlin.runCatching {
+        var instance = kotlin.runCatching {
             con.call(*(targetParams.toArray()))
         }.getOrElse {
             it.printStackTrace()
@@ -177,6 +181,7 @@ class ComponentBundle(
                 throw SourceException("${clazz.simpleName} 实现了 utils 中的接口")
             }
         }
+
         bundle[clazz] = instance
         componentClazz.forEach {
             if (it.isInstance(instance)) {
@@ -188,6 +193,7 @@ class ComponentBundle(
         if (instance is ComponentWrapper) {
             instance.innerSource = source
         }
+
         return instance
     }
 
@@ -197,6 +203,24 @@ class ComponentBundle(
 
     inline fun <reified T> get(): T? {
         return get(T::class) as? T
+    }
+
+    fun getComponentProxy(clazz: KClass<*>): Any? {
+        val o = componentProxy[clazz]
+        if (o == null){
+            val instance = get(clazz) ?: return null
+            if (!clazz.isInstance(instance) || instance !is Component){
+                return null
+            }
+            val proxy = Proxy.newProxyInstance(instance.javaClass.classLoader, instance.javaClass.interfaces, ComponentProxy(instance))
+            componentProxy[clazz] = proxy
+            return proxy
+        }
+        return o
+    }
+    inline fun <reified T: Component> getComponentProxy(): T? {
+        val obj = getComponentProxy(T::class)
+        return obj as? T
     }
 
     fun release() {

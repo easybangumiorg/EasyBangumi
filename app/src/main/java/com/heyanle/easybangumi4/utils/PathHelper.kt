@@ -1,6 +1,8 @@
 package com.heyanle.easybangumi4.utils
 
 import android.content.Context
+import android.content.Context.MODE_PRIVATE
+import android.content.Context.MODE_WORLD_WRITEABLE
 import java.io.File
 
 /**
@@ -10,6 +12,16 @@ import java.io.File
 fun Context.getFilePath(): String {
     return getExternalFilesDir(null)?.absolutePath ?: cacheDir.absolutePath
 }
+
+fun Context.getInnerFilePath(): String {
+    return File(getDir("files", MODE_PRIVATE)?.absolutePath ?: cacheDir.absolutePath).absolutePath
+}
+
+
+fun Context.getInnerFilePath(type: String): String {
+    return File(getDir("files", MODE_PRIVATE)?.absolutePath ?: cacheDir.absolutePath, type).absolutePath
+}
+
 
 fun Context.getFilePath(type: String): String {
     return getExternalFilesDir(type)?.absolutePath ?: File(cacheDir, type).absolutePath

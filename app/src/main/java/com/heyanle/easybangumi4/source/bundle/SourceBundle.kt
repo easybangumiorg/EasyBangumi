@@ -76,12 +76,12 @@ class SourceBundle(
             }
 
 
-            val pageComponent = sourceInfo.componentBundle.get<PageComponent>()
-            val detailedComponent = sourceInfo.componentBundle.get<DetailedComponent>()
-            val playComponent = sourceInfo.componentBundle.get<PlayComponent>()
-            val preferenceComponent = sourceInfo.componentBundle.get<PreferenceComponent>()
-            val searchComponent = sourceInfo.componentBundle.get<SearchComponent>()
-            val updateComponent = sourceInfo.componentBundle.get<UpdateComponent>()
+            val pageComponent = sourceInfo.componentBundle.getComponentProxy<PageComponent>()
+            val detailedComponent = sourceInfo.componentBundle.getComponentProxy<DetailedComponent>()
+            val playComponent = sourceInfo.componentBundle.getComponentProxy<PlayComponent>()
+            val preferenceComponent = sourceInfo.componentBundle.getComponentProxy<PreferenceComponent>()
+            val searchComponent = sourceInfo.componentBundle.getComponentProxy<SearchComponent>()
+            val updateComponent = sourceInfo.componentBundle.getComponentProxy<UpdateComponent>()
 
             if (pageComponent != null) {
                 pageMap[source.key] = pageComponent

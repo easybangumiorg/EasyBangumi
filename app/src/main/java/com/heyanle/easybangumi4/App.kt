@@ -6,7 +6,9 @@ import android.content.Context
 import android.os.Build
 import android.os.Looper
 import android.os.Process
+import com.heyanle.easybangumi4.crash.SourceCrashController
 import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
+import com.heyanle.easybangumi4.source.SourceController
 import com.heyanle.easybangumi4.source_api.utils.core.WebViewUtil
 import com.heyanle.injekt.core.Injekt
 import kotlin.reflect.jvm.internal.impl.metadata.ProtoBuf

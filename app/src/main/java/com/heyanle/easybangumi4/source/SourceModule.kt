@@ -33,7 +33,11 @@ class SourceModule(
 
     override fun InjektScope.registerInjectables() {
         addSingletonFactory {
-            SourceController(get(), get(), get())
+            SourceController(get(), get(), get(), get())
+        }
+
+        addSingletonFactory {
+            NativeLoadController()
         }
 
         // StringHelper

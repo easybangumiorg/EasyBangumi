@@ -49,6 +49,8 @@ org-jetbrains-kotlin-jvm = "1.9.23"
 zip4j = "2.11.5"
 
 bugly = "4.1.9.3"
+
+xcrash = "3.0.0"
 [libraries]
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 okhttp3 = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp3" }
@@ -115,6 +117,8 @@ cybergarage-upnp-core = { group = "org.cybergarage.upnp", name = "core", version
 zip4j = { module = "net.lingala.zip4j:zip4j", version.ref = "zip4j" }
 
 bugly = {module = "com.tencent.bugly:crashreport", version.ref = "bugly" }
+
+xcrash = {module = "com.iqiyi.xcrash:xcrash-android-lib", version.ref = "xcrash"}
 [bundles]
 okhttp3 = ["okhttp3", "okhttp3_logging_interceptor"]
 cling = ["cling_core", "cling_support"]
