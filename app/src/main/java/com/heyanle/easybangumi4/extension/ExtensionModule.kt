@@ -6,6 +6,7 @@ import com.heyanle.easybangumi4.extension.store.ExtensionStoreDispatcher
 import com.heyanle.easybangumi4.extension.store.ExtensionStoreInfoRepository
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.getFilePath
+import com.heyanle.easybangumi4.utils.getInnerFilePath
 import com.heyanle.extension_api.IconFactory
 import com.heyanle.injekt.api.InjektModule
 import com.heyanle.injekt.api.InjektScope
@@ -20,7 +21,7 @@ class ExtensionModule(
     private val application: Application
 ) : InjektModule {
 
-    private val extensionPath = application.getFilePath("extension")
+    private val extensionPath = application.getInnerFilePath("extension")
     private val extensionCachePath = application.getCachePath("extension")
     private val storePath = application.getFilePath("extension-store")
     private val storeCachePath = application.getCachePath("extension-store")

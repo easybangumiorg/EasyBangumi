@@ -1,5 +1,6 @@
 package com.heyanle.easybangumi4.source
 
+import com.heyanle.easybangumi4.extension.Extension
 import com.heyanle.easybangumi4.source.bundle.ComponentBundle
 import com.heyanle.easybangumi4.source_api.Source
 
@@ -9,6 +10,7 @@ import com.heyanle.easybangumi4.source_api.Source
 
 sealed class SourceInfo {
     abstract val source: Source
+    abstract val extension: Extension.Installed
 
 //    // 数据迁移中
 //    class Migrating(
@@ -19,12 +21,14 @@ sealed class SourceInfo {
     // 加载成功
     class Loaded(
         override val source: Source,
+        override val extension: Extension.Installed,
         val componentBundle: ComponentBundle,
     ): SourceInfo()
 
     // 加载失败
     class Error(
         override val source: Source,
+        override val extension: Extension.Installed,
         val msg: String,
         val exception: Exception? = null,
     ): SourceInfo()

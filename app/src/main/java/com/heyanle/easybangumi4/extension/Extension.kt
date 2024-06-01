@@ -21,6 +21,7 @@ sealed class Extension {
     abstract val loadType: Int
     abstract val sourcePath: String // apk 位置
     abstract val publicPath: String
+    abstract val folderPath: String // 解压路径
 
     companion object {
         const val TYPE_APP = 0
@@ -39,6 +40,7 @@ sealed class Extension {
         override val loadType: Int,
         override val sourcePath: String,
         override val publicPath: String,
+        override val folderPath: String,
         val sources: List<Source>,
         val resources: Resources?,
 
@@ -56,7 +58,8 @@ sealed class Extension {
         override val loadType: Int,
         override val sourcePath: String,
         override val publicPath: String,
-        val exception: Exception?,
+        override val folderPath: String,
+        val exception: Throwable?,
         val errMsg: String,
     ): Extension()
 

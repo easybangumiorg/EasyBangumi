@@ -17,6 +17,8 @@ import com.heyanle.easybangumi4.exo.MediaModule
 import com.heyanle.easybangumi4.extension.ExtensionController
 import com.heyanle.easybangumi4.extension.ExtensionModule
 import com.heyanle.easybangumi4.case.CaseModule
+import com.heyanle.easybangumi4.crash.NativeHandler
+import com.heyanle.easybangumi4.crash.SourceCrashController
 import com.heyanle.easybangumi4.dlna.DlnaModule
 import com.heyanle.easybangumi4.setting.SettingModule
 import com.heyanle.easybangumi4.source.SourceModule
@@ -38,6 +40,8 @@ import com.microsoft.appcenter.crashes.Crashes
 import com.microsoft.appcenter.distribute.Distribute
 import com.microsoft.appcenter.distribute.DistributeListener
 import com.microsoft.appcenter.distribute.ReleaseDetails
+import com.pika.lib_signal.SignalConst
+import com.pika.lib_signal.SignalController
 import com.tencent.bugly.crashreport.CrashReport
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
@@ -61,6 +65,7 @@ object Scheduler {
      * application#onCreate
      */
     fun runOnAppCreate(application: Application) {
+        SourceCrashController.init(application)
         initCrasher(application)
 
         // 注册各种 Controller
@@ -101,6 +106,10 @@ object Scheduler {
      */
     private fun initCrasher(application: Application) {
         Thread.setDefaultUncaughtExceptionHandler(CrashHandler(application))
+        SignalController.initSignal(intArrayOf(
+            SignalConst.SIGQUIT,
+            SignalConst.SIGABRT,
+            SignalConst.SIGSEGV),application, NativeHandler())
     }
 
     /**

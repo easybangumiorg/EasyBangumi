@@ -8,10 +8,20 @@ import androidx.core.content.pm.PackageInfoCompat
 import com.heyanle.easybangumi4.extension.Extension
 import com.heyanle.easybangumi4.source_api.Source
 import com.heyanle.easybangumi4.source_api.SourceFactory
+import com.heyanle.easybangumi4.utils.FileUtils
 import com.heyanle.easybangumi4.utils.TimeLogUtils
+import com.heyanle.easybangumi4.utils.ZipUtils
+import com.heyanle.easybangumi4.utils.getCachePath
+import com.heyanle.easybangumi4.utils.getFilePath
+import com.heyanle.easybangumi4.utils.getInnerFilePath
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.easybangumi4.utils.logi
+import com.heyanle.easybangumi4.utils.toJson
 import com.heyanle.extension_api.ExtensionSource
+import net.lingala.zip4j.ZipFile
+import org.json.JSONArray
+import org.json.JSONObject
+import java.io.File
 
 /**
  * Created by heyanlin on 2023/10/25.
@@ -29,12 +39,14 @@ abstract class AbsExtensionLoader(
 
         // 当前容器支持的 扩展库 版本区间
         const val LIB_VERSION_MIN = 6
-        const val LIB_VERSION_MAX = 7
+        const val LIB_VERSION_MAX = 8
 
         const val PACKAGE_FLAGS =
             PackageManager.GET_CONFIGURATIONS or PackageManager.GET_SIGNATURES
     }
 
+    protected val extensionFolderCache = context.getCachePath("extension_folder")
+    protected val extensionFolderRoot = context.getInnerFilePath("extension_folder")
     protected val packageManager: PackageManager = context.packageManager
     protected fun innerLoad(
         pkgManager: PackageManager,
@@ -49,6 +61,9 @@ abstract class AbsExtensionLoader(
         TimeLogUtils.i("ExtensionLoader ${pkgInfo.packageName} inner start")
         appInfo.publicSourceDir.logi(TAG)
         try {
+
+            val apkFile = File(appInfo.sourceDir)
+            val apkFolder = File(extensionFolderRoot, pkgInfo.packageName)
             val extName =
                 appInfo.loadLabel(pkgManager).toString().substringAfter("EasyBangumi: ")
             val versionName = pkgInfo.versionName ?: ""
@@ -75,7 +90,8 @@ abstract class AbsExtensionLoader(
                     exception = null,
                     loadType = loadType,
                     sourcePath = appInfo.sourceDir,
-                    publicPath = appInfo.publicSourceDir
+                    publicPath = appInfo.publicSourceDir,
+                    folderPath = apkFolder.absolutePath,
                 )
             }
             if (libVersion > LIB_VERSION_MAX) {
@@ -97,9 +113,13 @@ abstract class AbsExtensionLoader(
                     exception = null,
                     loadType = loadType,
                     sourcePath = appInfo.sourceDir,
-                    publicPath = appInfo.publicSourceDir
+                    publicPath = appInfo.publicSourceDir,
+                    folderPath = apkFolder.absolutePath,
                 )
             }
+
+
+
             val sources = (appInfo.metaData.getString(METADATA_SOURCE_CLASS) ?: "").split(";").map {
                 val sourceClass = it.trim()
                 if (sourceClass.startsWith(".")) {
@@ -135,7 +155,8 @@ abstract class AbsExtensionLoader(
                         exception = e,
                         loadType = loadType,
                         sourcePath = appInfo.sourceDir,
-                        publicPath = appInfo.publicSourceDir
+                        publicPath = appInfo.publicSourceDir,
+                        folderPath = apkFolder.absolutePath,
                     )
                 }
             }.flatMap {
@@ -149,6 +170,115 @@ abstract class AbsExtensionLoader(
                 }
             }
             appInfo.loadIcon(pkgManager)
+
+            // 解压 apk
+
+            try {
+
+                val apkSoFolderIndex = File(apkFolder, "index.json")
+                var needUnzip = false
+                if (!apkSoFolderIndex.exists()) {
+                    needUnzip = true
+                } else {
+                    val jsonText = apkSoFolderIndex.readText()
+                    val jsonObject = JSONObject(jsonText)
+
+                    val path = jsonObject.optString("apk_path")
+                    if (File(path).absolutePath != apkFile.absolutePath) {
+                        needUnzip = true
+                    } else {
+                        val size = jsonObject.optLong("apk_size")
+                        if (size != apkFile.length()) {
+                            needUnzip = true
+                        } else {
+                            val soArray = jsonObject.optJSONArray("file_list")
+                            if (soArray == null) {
+                                needUnzip = true
+                            } else {
+                                for (i in 0 until soArray.length()) {
+                                    val fileObject = soArray.getJSONObject(i)
+                                    val absPath = fileObject.optString("path")
+                                    val fileSize = fileObject.optLong("size")
+
+                                    val f = File(apkFolder, absPath)
+                                    if (!f.exists() || f.length() != fileSize) {
+                                        needUnzip = true
+                                        break
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (needUnzip) {
+                    apkFolder.deleteRecursively()
+                    apkFolder.mkdirs()
+
+                    val cacheRoot = File(extensionFolderCache, pkgInfo.packageName)
+                    cacheRoot.deleteRecursively()
+                    cacheRoot.mkdirs()
+
+                    // 解压
+                    ZipFile(apkFile).extractAll(cacheRoot.absolutePath)
+
+                    // 需要复制的
+                    val sourceLib = File(cacheRoot, "lib")
+                    val sourceAssets = File(cacheRoot, "assets")
+
+                    val targetLib = File(apkFolder, "lib")
+                    val targetAssets = File(apkFolder, "assets")
+
+                    if(sourceLib.exists())
+                        sourceLib.copyRecursively(targetLib, true)
+                    if (sourceAssets.exists())
+                        sourceAssets.copyRecursively(targetAssets, true)
+
+                    // 生成 Index
+
+                    val jsonObject = JSONObject()
+                    jsonObject.put("apk_path", apkFile.absolutePath)
+                    jsonObject.put("apk_size", apkFile.length())
+
+                    val pathArray = JSONArray()
+
+                    val pathArrayList = arrayListOf<Pair<String, Long>>()
+                    FileUtils.traverseFolder(apkFolder, pathArrayList)
+
+                    pathArrayList.forEach {
+                        val o = JSONObject()
+                        o.put("path", it.first).put("size", it.second)
+                        pathArray.put(o)
+                    }
+
+                    jsonObject.put("file_list", pathArray)
+
+                    apkSoFolderIndex.delete()
+                    apkSoFolderIndex.createNewFile()
+                    apkSoFolderIndex.writeText(jsonObject.toString())
+                }
+            }catch (e: Throwable){
+                e.printStackTrace()
+                return Extension.InstallError(
+                    key = key,
+                    label = extName,
+                    pkgName = pkgInfo.packageName,
+                    versionName = versionName,
+                    versionCode = versionCode,
+                    libVersion = libVersion,
+                    readme = readme,
+                    icon = kotlin.runCatching { pkgManager.getApplicationIcon(pkgInfo.packageName) }
+                        .getOrNull(),
+                    errMsg = context.getString(com.heyanle.easy_i18n.R.string.load_error) + "${e.message}",
+                    exception = e,
+                    loadType = loadType,
+                    sourcePath = appInfo.sourceDir,
+                    publicPath = appInfo.publicSourceDir,
+                    folderPath = apkFolder.absolutePath,
+                )
+            }
+
+
             TimeLogUtils.i("ExtensionLoader ${pkgInfo.packageName} inner completely")
             return Extension.Installed(
                 key = key,
@@ -164,7 +294,8 @@ abstract class AbsExtensionLoader(
                 resources = pkgManager.getResourcesForApplication(appInfo),
                 loadType = loadType,
                 sourcePath = appInfo.sourceDir,
-                publicPath = appInfo.publicSourceDir
+                publicPath = appInfo.publicSourceDir,
+                folderPath = apkFolder.absolutePath,
             )
         } catch (e: Exception) {
             e.printStackTrace()

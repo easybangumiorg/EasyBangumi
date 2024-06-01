@@ -24,6 +24,7 @@ import com.heyanle.easybangumi4.source.SourcePreferences
 import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
 import com.heyanle.easybangumi4.theme.EasyThemeMode
 import com.heyanle.easybangumi4.utils.getFilePath
+import com.heyanle.easybangumi4.utils.getInnerFilePath
 import com.heyanle.easybangumi4.utils.jsonTo
 import com.heyanle.easybangumi4.utils.toJson
 import com.heyanle.injekt.api.get
@@ -270,6 +271,20 @@ object Migrate {
                     dbFileO.renameTo(dbFile)
                     dbFileShmO.renameTo(dbFileShm)
                     dbFileWalO.renameTo(dbFileWal)
+                }
+
+                if (lastVersionCode < 89) {
+                    val oldExtensionFolder = File(context.getFilePath("extension"))
+                    val newExtensionFolder = File(context.getInnerFilePath("extension"))
+                    newExtensionFolder.mkdirs()
+                    oldExtensionFolder.listFiles()?.forEach {
+                        if (it != null && it.isFile){
+                            val target = File(newExtensionFolder, it.name)
+                            target.delete()
+                            it.copyTo(target)
+                        }
+                    }
+                    oldExtensionFolder.deleteRecursively()
                 }
 
                 // 在这里添加新的迁移代码
