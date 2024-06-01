@@ -59,8 +59,6 @@ import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.ui.common.EmptyPage
 import com.heyanle.easybangumi4.ui.search_migrate.search.gather.GatherSearch
 import com.heyanle.easybangumi4.ui.search_migrate.search.normal.NormalSearch
-import com.heyanle.easybangumi4.utils.logi
-import com.heyanle.easybangumiextensionrs.bdys.BydsSource
 import java.io.File
 
 
