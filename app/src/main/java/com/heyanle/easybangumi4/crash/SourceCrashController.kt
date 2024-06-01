@@ -54,21 +54,21 @@ object SourceCrashController {
 
 
     fun appendComponentAction(key: String, action: String){
-        scope.launch {
-            try {
-                if (!actionListFile.exists()){
-                    folder.mkdirs()
-                    actionListFile.createNewFile()
-                }
-
-                val actionString = "open;${key};${action};"
-                actionList.add("${key};${action}")
-                actionListFile.appendText(actionString + "\n")
-            }catch (e: Throwable){
-                e.printStackTrace()
-            }
-
-        }
+//        scope.launch {
+//            try {
+//                if (!actionListFile.exists()){
+//                    folder.mkdirs()
+//                    actionListFile.createNewFile()
+//                }
+//
+//                val actionString = "open;${key};${action};"
+//                actionList.add("${key};${action}")
+//                actionListFile.appendText(actionString + "\n")
+//            }catch (e: Throwable){
+//                e.printStackTrace()
+//            }
+//
+//        }
     }
 
     fun appendComponentAction(component: Component, method: Method){
@@ -76,20 +76,20 @@ object SourceCrashController {
     }
 
     fun closeComponentAction(key: String, action: String){
-        scope.launch {
-            try {
-                if (!actionListFile.exists()) {
-                    folder.mkdirs()
-                    actionListFile.createNewFile()
-                }
-                val actionString =
-                    "close;${key};${action};"
-                actionList.remove("${key};${action};")
-                actionListFile.appendText(actionString + "\n")
-            }catch (e: Throwable){
-                e.printStackTrace()
-            }
-        }
+//        scope.launch {
+//            try {
+//                if (!actionListFile.exists()) {
+//                    folder.mkdirs()
+//                    actionListFile.createNewFile()
+//                }
+//                val actionString =
+//                    "close;${key};${action};"
+//                actionList.remove("${key};${action};")
+//                actionListFile.appendText(actionString + "\n")
+//            }catch (e: Throwable){
+//                e.printStackTrace()
+//            }
+//        }
     }
 
     fun closeComponentAction(component: Component, method: Method){
@@ -116,7 +116,7 @@ object SourceCrashController {
                 }
                 sb.append(it).append("\n")
             }
-            jumpToCrashPage("源操作记录（已关闭相关源）：\n${sb.toString()}\n${stringWriter.toString()}")
+            jumpToCrashPage("${stringWriter.toString()}")
         }
     }
 

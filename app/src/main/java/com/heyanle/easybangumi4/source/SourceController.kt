@@ -139,6 +139,7 @@ class SourceController(
 
 //            // 加载 So 咯
             if (source is NativeSupportedSource){
+                return SourceInfo.Error(source, extension, "暂时不支持动态链接 so 库")
                 val soList = source.dependSoName()
 //                if (soList.any { !it.startsWith("lib_" + extension.pkgName) }){
 //                    return SourceInfo.Error(source, extension, "加载错误, so 文件必须以lib_[包名] 开头", )
