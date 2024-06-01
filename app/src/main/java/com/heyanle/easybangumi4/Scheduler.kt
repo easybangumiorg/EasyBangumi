@@ -17,7 +17,6 @@ import com.heyanle.easybangumi4.exo.MediaModule
 import com.heyanle.easybangumi4.extension.ExtensionController
 import com.heyanle.easybangumi4.extension.ExtensionModule
 import com.heyanle.easybangumi4.case.CaseModule
-import com.heyanle.easybangumi4.crash.NativeHandler
 import com.heyanle.easybangumi4.crash.SourceCrashController
 import com.heyanle.easybangumi4.dlna.DlnaModule
 import com.heyanle.easybangumi4.setting.SettingModule
@@ -106,10 +105,10 @@ object Scheduler {
      */
     private fun initCrasher(application: Application) {
         Thread.setDefaultUncaughtExceptionHandler(CrashHandler(application))
-        SignalController.initSignal(intArrayOf(
-            SignalConst.SIGQUIT,
-            SignalConst.SIGABRT,
-            SignalConst.SIGSEGV),application, NativeHandler())
+//        SignalController.initSignal(intArrayOf(
+//            SignalConst.SIGQUIT,
+//            SignalConst.SIGABRT,
+//            SignalConst.SIGSEGV),application, NativeHandler())
     }
 
     /**

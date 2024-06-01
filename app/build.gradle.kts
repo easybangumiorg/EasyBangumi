@@ -204,7 +204,7 @@ dependencies {
     implementation(project(":easy-i18n"))
     implementation(project(":injekt"))
     implementation(project(":lib_upnp"))
-    implementation(project(":lib_signal"))
+    //implementation(project(":lib_signal"))
 
     implementation(libs.zip4j)
 
