@@ -56,11 +56,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
-import com.heyanle.easybangumi4.bdys.BydsSource
 import com.heyanle.easybangumi4.ui.common.EmptyPage
 import com.heyanle.easybangumi4.ui.search_migrate.search.gather.GatherSearch
 import com.heyanle.easybangumi4.ui.search_migrate.search.normal.NormalSearch
 import com.heyanle.easybangumi4.utils.logi
+import com.heyanle.easybangumiextensionrs.bdys.BydsSource
 import java.io.File
 
 
@@ -106,7 +106,7 @@ fun Search(
 //                } else {
 //                    //Log.d("tag_so", " cannot read so libs " + f1.exists())
 //                }
-//               BydsSource().generateToken().logi("Search")
+               BydsSource.generateToken().logi("Search")
                 searchVM.search(it)
             },
             onTextChange = {
