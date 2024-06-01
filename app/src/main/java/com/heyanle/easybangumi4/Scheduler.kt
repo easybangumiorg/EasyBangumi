@@ -39,11 +39,7 @@ import com.microsoft.appcenter.crashes.Crashes
 import com.microsoft.appcenter.distribute.Distribute
 import com.microsoft.appcenter.distribute.DistributeListener
 import com.microsoft.appcenter.distribute.ReleaseDetails
-import com.pika.lib_signal.SignalConst
-import com.pika.lib_signal.SignalController
 import com.tencent.bugly.crashreport.CrashReport
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.launch
 import javax.net.ssl.HttpsURLConnection
 
 /**
