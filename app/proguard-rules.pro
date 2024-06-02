@@ -22,6 +22,9 @@
 
 # Please add these rules to your existing keep rules in order to suppress warnings.
 # This is generated automatically by the Android Gradle plugin.
+-keep class com.pika.lib_signal.** {*;}
+-keep interface com.pika.lib_signal.** {*;}
+
 -keep class org.slf4j.impl.StaticLoggerBinder { *; }
 -keep class org.slf4j.impl.StaticMDCBinder  { *; }
 -dontwarn org.slf4j.impl.StaticLoggerBinder

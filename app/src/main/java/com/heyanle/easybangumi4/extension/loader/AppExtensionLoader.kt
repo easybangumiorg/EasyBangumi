@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Build
-import com.heyanle.easybangumi4.extension.Extension
+import com.heyanle.easybangumi4.extension.ExtensionInfo
 import com.heyanle.easybangumi4.utils.TimeLogUtils
 import dalvik.system.PathClassLoader
 
@@ -35,13 +35,13 @@ class AppExtensionLoader(
         null
     }
 
-    override fun load(): Extension? {
+    override fun load(): ExtensionInfo? {
         pkgInfo ?: return null
         val appInfo = packageManager.getApplicationInfo(pkgName, PackageManager.GET_META_DATA) ?: return null
         TimeLogUtils.i("classLoader start ${pkgName}")
         val classLoader = PathClassLoader(appInfo.sourceDir, null, context.classLoader)
         TimeLogUtils.i("classLoader end ${pkgName}")
-        return innerLoad(packageManager, pkgInfo, appInfo, classLoader, Extension.TYPE_APP)
+        return innerLoad(packageManager, pkgInfo, appInfo, classLoader, ExtensionInfo.TYPE_APP)
     }
 
     override fun canLoad(): Boolean {

@@ -5,18 +5,20 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import androidx.core.content.pm.PackageInfoCompat
-import com.heyanle.easybangumi4.extension.Extension
+import com.heyanle.easybangumi4.APP
+import com.heyanle.easybangumi4.crash.SourceCrashController
+import com.heyanle.easybangumi4.extension.ExtensionInfo
 import com.heyanle.easybangumi4.source_api.Source
 import com.heyanle.easybangumi4.source_api.SourceFactory
 import com.heyanle.easybangumi4.utils.FileUtils
 import com.heyanle.easybangumi4.utils.TimeLogUtils
-import com.heyanle.easybangumi4.utils.ZipUtils
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.easybangumi4.utils.getInnerFilePath
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.easybangumi4.utils.logi
-import com.heyanle.easybangumi4.utils.toJson
+import com.heyanle.extension_api.Extension
+import com.heyanle.extension_api.ExtensionBundle
 import com.heyanle.extension_api.ExtensionSource
 import net.lingala.zip4j.ZipFile
 import org.json.JSONArray
@@ -39,14 +41,14 @@ abstract class AbsExtensionLoader(
 
         // 当前容器支持的 扩展库 版本区间
         const val LIB_VERSION_MIN = 6
-        const val LIB_VERSION_MAX = 8
+        const val LIB_VERSION_MAX = 9
 
         const val PACKAGE_FLAGS =
             PackageManager.GET_CONFIGURATIONS or PackageManager.GET_SIGNATURES
     }
 
     protected val extensionFolderCache = context.getCachePath("extension_folder")
-    protected val extensionFolderRoot = context.getInnerFilePath("extension_folder")
+    protected val extensionFolderRoot = context.getFilePath("extension_folder")
     protected val packageManager: PackageManager = context.packageManager
     protected fun innerLoad(
         pkgManager: PackageManager,
@@ -54,10 +56,12 @@ abstract class AbsExtensionLoader(
         appInfo: ApplicationInfo,
         classLoader: ClassLoader, // 最终的 pathClassLoader，已经指定了文件路径
         loadType: Int,
-    ): Extension? {
+    ): ExtensionInfo? {
         if (!isPackageAnExtension(pkgInfo)) {
             return null
         }
+
+
         TimeLogUtils.i("ExtensionLoader ${pkgInfo.packageName} inner start")
         appInfo.publicSourceDir.logi(TAG)
         try {
@@ -76,7 +80,7 @@ abstract class AbsExtensionLoader(
                 "Lib version is ${libVersion}, while only versions " + "${LIB_VERSION_MIN} to ${LIB_VERSION_MAX} are allowed".loge(
                     TAG
                 )
-                return Extension.InstallError(
+                return ExtensionInfo.InstallError(
                     key = key,
                     label = extName,
                     pkgName = pkgInfo.packageName,
@@ -98,7 +102,7 @@ abstract class AbsExtensionLoader(
                 "Lib version is ${libVersion}, while only versions " + "${LIB_VERSION_MIN} to ${LIB_VERSION_MAX} are allowed".loge(
                     "ExtensionLoader"
                 )
-                return Extension.InstallError(
+                return ExtensionInfo.InstallError(
                     key = key,
                     label = extName,
                     pkgName = pkgInfo.packageName,
@@ -119,6 +123,27 @@ abstract class AbsExtensionLoader(
             }
 
 
+            var extension: Extension? = null
+
+            if (SourceCrashController.needBlock){
+                return ExtensionInfo.InstallError(
+                    key = key,
+                    label = extName,
+                    pkgName = pkgInfo.packageName,
+                    versionName = versionName,
+                    versionCode = versionCode,
+                    libVersion = libVersion,
+                    readme = readme,
+                    icon = kotlin.runCatching { pkgManager.getApplicationIcon(pkgInfo.packageName) }
+                        .getOrNull(),
+                    errMsg = "安全模式加载阻断",
+                    exception = null,
+                    loadType = loadType,
+                    sourcePath = appInfo.sourceDir,
+                    publicPath = appInfo.publicSourceDir,
+                    folderPath = apkFolder.absolutePath,
+                )
+            }
 
             val sources = (appInfo.metaData.getString(METADATA_SOURCE_CLASS) ?: "").split(";").map {
                 val sourceClass = it.trim()
@@ -135,13 +160,21 @@ abstract class AbsExtensionLoader(
                     val obj = con.newInstance()
                     when (obj) {
                         is Source -> listOf(obj)
+                        is Extension -> {
+                            if (extension == null){
+                                extension = obj
+                            }else{
+                                throw Exception("Only support one Extension")
+                            }
+                            obj.create()
+                        }
                         is SourceFactory -> obj.create()
                         else -> throw Exception("Unknown source class type! ${obj.javaClass}")
                     }
                 } catch (e: Exception) {
                     "Extension load error: $extName".loge("ExtensionLoader")
                     e.printStackTrace()
-                    return Extension.InstallError(
+                    return ExtensionInfo.InstallError(
                         key = key,
                         label = extName,
                         pkgName = pkgInfo.packageName,
@@ -259,7 +292,7 @@ abstract class AbsExtensionLoader(
                 }
             }catch (e: Throwable){
                 e.printStackTrace()
-                return Extension.InstallError(
+                return ExtensionInfo.InstallError(
                     key = key,
                     label = extName,
                     pkgName = pkgInfo.packageName,
@@ -280,7 +313,11 @@ abstract class AbsExtensionLoader(
 
 
             TimeLogUtils.i("ExtensionLoader ${pkgInfo.packageName} inner completely")
-            return Extension.Installed(
+            if (extension != null){
+                extension?.bundle = ExtensionBundle(pkgInfo.packageName, File(apkFolder, "lib").absolutePath, File(apkFolder, "assets").absolutePath)
+                extension?.onInit(APP)
+            }
+            return ExtensionInfo.Installed(
                 key = key,
                 label = extName,
                 pkgName = pkgInfo.packageName,
@@ -296,6 +333,8 @@ abstract class AbsExtensionLoader(
                 sourcePath = appInfo.sourceDir,
                 publicPath = appInfo.publicSourceDir,
                 folderPath = apkFolder.absolutePath,
+                extension = extension,
+                clazzLoader = classLoader
             )
         } catch (e: Exception) {
             e.printStackTrace()

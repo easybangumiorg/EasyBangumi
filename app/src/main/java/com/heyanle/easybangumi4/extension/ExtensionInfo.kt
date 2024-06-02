@@ -4,12 +4,13 @@ import android.content.res.Resources
 import android.graphics.drawable.Drawable
 import com.heyanle.easybangumi4.source_api.Source
 import com.heyanle.easybangumi4.utils.getMatchReg
+import com.heyanle.extension_api.Extension
 import java.io.File
 
 /**
  * Created by heyanlin on 2023/10/24.
  */
-sealed class Extension {
+sealed class ExtensionInfo {
     abstract val key: String
     abstract val label: String
     abstract val pkgName: String
@@ -41,10 +42,12 @@ sealed class Extension {
         override val sourcePath: String,
         override val publicPath: String,
         override val folderPath: String,
+        val extension: Extension?,
+        val clazzLoader: ClassLoader,
         val sources: List<Source>,
         val resources: Resources?,
 
-    ): Extension()
+    ): ExtensionInfo()
 
     data class InstallError(
         override val key: String,
@@ -61,7 +64,7 @@ sealed class Extension {
         override val folderPath: String,
         val exception: Throwable?,
         val errMsg: String,
-    ): Extension()
+    ): ExtensionInfo()
 
     fun match(key: String): Boolean {
         var matched = false

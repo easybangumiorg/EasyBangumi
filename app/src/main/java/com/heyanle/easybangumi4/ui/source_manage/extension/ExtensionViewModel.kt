@@ -4,14 +4,11 @@ import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.APP
-import com.heyanle.easybangumi4.R
-import com.heyanle.easybangumi4.extension.Extension
+import com.heyanle.easybangumi4.extension.ExtensionInfo
 import com.heyanle.easybangumi4.extension.ExtensionController
 import com.heyanle.easybangumi4.extension.store.ExtensionStoreController
 import com.heyanle.easybangumi4.extension.store.ExtensionStoreDispatcher
 import com.heyanle.easybangumi4.extension.store.ExtensionStoreInfo
-import com.heyanle.easybangumi4.extension.store.ExtensionStoreInfo.Companion.STATE_ERROR
-import com.heyanle.easybangumi4.ui.common.MoeDialogData
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.IntentHelper
 import com.heyanle.easybangumi4.utils.logi
@@ -68,10 +65,10 @@ class ExtensionViewModel : ViewModel() {
         // 已经安装的拓展市场中的拓展
         data class StoreExtensionInfo(
             val info: ExtensionStoreInfo,
-            val extension: Extension,
+            val extensionInfo: com.heyanle.easybangumi4.extension.ExtensionInfo,
         ) : ExtensionItem() {
             override fun match(searchKey: String): Boolean {
-                return info.match(searchKey) || extension.match(searchKey)
+                return info.match(searchKey) || extensionInfo.match(searchKey)
             }
         }
 
@@ -80,10 +77,10 @@ class ExtensionViewModel : ViewModel() {
         // 2. 如果拓展市场加载失败，则全部拓展都直接走这种类型
         // 3. 直接复制文件到拓展目录的拓展也属于这种类型
         data class ExtensionInfo(
-            val extension: Extension,
+            val extensionInfo: com.heyanle.easybangumi4.extension.ExtensionInfo,
         ) : ExtensionItem() {
             override fun match(searchKey: String): Boolean {
-                return extension.match(searchKey)
+                return extensionInfo.match(searchKey)
             }
         }
 
@@ -120,7 +117,7 @@ class ExtensionViewModel : ViewModel() {
                         }
 
                     }
-                    (extensions.appExtensions.values + extensions.fileExtension.values).forEach {
+                    (extensions.appExtensions.values + extensions.fileExtensionInfo.values).forEach {
                         val storeInfo = storeMap[it.publicPath]
                         if (storeInfo == null) {
                             res.add(ExtensionItem.ExtensionInfo(it))
@@ -221,11 +218,11 @@ class ExtensionViewModel : ViewModel() {
     ) {
         when (item) {
             is ExtensionItem.StoreExtensionInfo -> {
-                val ext = item.extension
+                val ext = item.extensionInfo
                 val info = item.info
 
                 if (info.state == ExtensionStoreInfo.STATE_INSTALLED) {
-                    if (ext.loadType == Extension.TYPE_APP) {
+                    if (ext.loadType == ExtensionInfo.TYPE_APP) {
                         IntentHelper.openAppDetailed(ext.pkgName, APP)
                     } else {
                         stringRes(com.heyanle.easy_i18n.R.string.long_press_to_delete).moeSnackBar()
@@ -236,8 +233,8 @@ class ExtensionViewModel : ViewModel() {
             }
 
             is ExtensionItem.ExtensionInfo -> {
-                val ext = item.extension
-                if (ext.loadType == Extension.TYPE_APP) {
+                val ext = item.extensionInfo
+                if (ext.loadType == ExtensionInfo.TYPE_APP) {
                     IntentHelper.openAppDetailed(ext.pkgName, APP)
                 } else {
                     stringRes(com.heyanle.easy_i18n.R.string.long_press_to_delete).moeSnackBar()
@@ -261,11 +258,11 @@ class ExtensionViewModel : ViewModel() {
     ) {
         when (item) {
             is ExtensionItem.ExtensionInfo -> {
-                val ext = item.extension
-                if (ext.loadType == Extension.TYPE_APP) {
+                val ext = item.extensionInfo
+                if (ext.loadType == ExtensionInfo.TYPE_APP) {
                     IntentHelper.openAppDetailed(ext.pkgName, APP)
                 } else {
-                    item.extension.sourcePath?.let { path ->
+                    item.extensionInfo.sourcePath?.let { path ->
                         _stateFlow.update {
                             it.copy(
                                 readyToDeleteFile = File(path)
@@ -276,14 +273,14 @@ class ExtensionViewModel : ViewModel() {
             }
 
             is ExtensionItem.StoreExtensionInfo -> {
-                val ext = item.extension
+                val ext = item.extensionInfo
                 val info = item.info
 
                 if (info.state == ExtensionStoreInfo.STATE_INSTALLED) {
-                    if (ext.loadType == Extension.TYPE_APP) {
+                    if (ext.loadType == ExtensionInfo.TYPE_APP) {
                         IntentHelper.openAppDetailed(ext.pkgName, APP)
                     } else {
-                        item.extension.sourcePath?.let {
+                        item.extensionInfo.sourcePath?.let {
                             File(it).delete()
                         }
                         item.info.local?.let {

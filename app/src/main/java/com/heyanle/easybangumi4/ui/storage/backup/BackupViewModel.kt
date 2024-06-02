@@ -3,20 +3,14 @@ package com.heyanle.easybangumi4.ui.storage.backup
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.APP
-import com.heyanle.easybangumi4.BuildConfig
-import com.heyanle.easybangumi4.base.hekv.HeKV
 import com.heyanle.easybangumi4.cartoon.repository.db.CartoonDatabase
-import com.heyanle.easybangumi4.extension.Extension
+import com.heyanle.easybangumi4.extension.ExtensionInfo
 import com.heyanle.easybangumi4.extension.ExtensionController
-import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
-import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.storage.StorageController
 import com.heyanle.easybangumi4.ui.common.moeDialog
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.injekt.core.Injekt
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -24,9 +18,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import net.lingala.zip4j.ZipFile
-import net.lingala.zip4j.model.ZipParameters
-import org.json.JSONObject
 import java.io.File
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -43,11 +34,11 @@ class BackupViewModel : ViewModel() {
         val cartoonCount: Int = -1,
         val needBackupPreferenceData: Boolean = false,
         val needBackupExtension: Boolean = false,
-        val needExtensionPackage: Set<Extension> = setOf(),
+        val needExtensionPackageInfo: Set<ExtensionInfo> = setOf(),
 
         val needBackupSourcePref: Boolean = false,
-        val needSourceSet: Set<Extension> = setOf(),
-        val extensionList: List<Extension> = emptyList(),
+        val needSourceSet: Set<ExtensionInfo> = setOf(),
+        val extensionInfoList: List<ExtensionInfo> = emptyList(),
         val showBackupDialog: Boolean = false,
         val isBackupDoing: Boolean = false,
     )
@@ -75,7 +66,7 @@ class BackupViewModel : ViewModel() {
             }.collectLatest { pair ->
                 _state.update {
                     it.copy(
-                        extensionList = pair.first.listExtension,
+                        extensionInfoList = pair.first.listExtensionInfo,
                         cartoonCount = pair.second
                     )
                 }
@@ -101,14 +92,14 @@ class BackupViewModel : ViewModel() {
         }
     }
 
-    fun toggleExtensionPackage(extension: Extension) {
+    fun toggleExtensionPackage(extensionInfo: ExtensionInfo) {
         _state.update {
-            val set = if (it.needExtensionPackage.contains(extension)) {
-                it.needExtensionPackage - extension
+            val set = if (it.needExtensionPackageInfo.contains(extensionInfo)) {
+                it.needExtensionPackageInfo - extensionInfo
             } else {
-                it.needExtensionPackage + extension
+                it.needExtensionPackageInfo + extensionInfo
             }
-            it.copy(needExtensionPackage = set)
+            it.copy(needExtensionPackageInfo = set)
 
         }
     }
@@ -152,7 +143,7 @@ class BackupViewModel : ViewModel() {
                     StorageController.BackupParam(
                         needBackupCartoonData = cur.needBackupCartoonData,
                         needBackupPreferenceData = cur.needBackupPreferenceData,
-                        needBackupExtensionList = if (cur.needBackupExtension) cur.needExtensionPackage else emptySet(),
+                        needBackupExtensionListInfo = if (cur.needBackupExtension) cur.needExtensionPackageInfo else emptySet(),
                     )
                 )
 

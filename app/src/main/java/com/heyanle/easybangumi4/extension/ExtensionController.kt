@@ -8,12 +8,13 @@ import android.net.Uri
 import android.os.Build
 import android.os.FileObserver
 import androidx.annotation.RequiresApi
+import com.heyanle.easybangumi4.crash.SourceCrashController
 import com.heyanle.easybangumi4.extension.loader.AppExtensionLoader
 import com.heyanle.easybangumi4.extension.loader.ExtensionLoaderFactory
 import com.heyanle.easybangumi4.extension.loader.FileExtensionLoader
-import com.heyanle.easybangumi4.source_api.utils.core.network.DELETE
 import com.heyanle.easybangumi4.utils.TimeLogUtils
 import com.heyanle.easybangumi4.utils.logi
+import com.heyanle.extension_api.Extension
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -54,14 +55,14 @@ class ExtensionController(
     data class ExtensionLoaderState(
         val isFileExtensionLoading: Boolean = true,
         val isAppExtensionLoading: Boolean = true,
-        val fileExtension: Map<String, Extension> = emptyMap(),
-        val appExtensions: Map<String, Extension> = emptyMap(),
+        val fileExtensionInfo: Map<String, ExtensionInfo> = emptyMap(),
+        val appExtensions: Map<String, ExtensionInfo> = emptyMap(),
     ) {
         val isLoading: Boolean
             get() = isAppExtensionLoading || isFileExtensionLoading
 
-        val listExtension: List<Extension> by lazy {
-            (fileExtension.values + appExtensions.values).toList()
+        val listExtensionInfo: List<ExtensionInfo> by lazy {
+            (fileExtensionInfo.values + appExtensions.values).toList()
         }
     }
 
@@ -89,8 +90,11 @@ class ExtensionController(
         _state.update {
             ExtensionLoaderState(true, true)
         }
+        SourceCrashController.onExtensionStart()
         scanFolder()
         scanApp()
+        SourceCrashController.onExtensionEnd()
+
     }
 
     fun scanFolder() {
@@ -99,13 +103,14 @@ class ExtensionController(
             TimeLogUtils.i("scanFolder star")
             // 先关闭监听
             fileObserver.stopWatching()
-            val extensions = ExtensionLoaderFactory.getFileExtensionLoaders(
+
+            val extensionInfos = ExtensionLoaderFactory.getFileExtensionLoaders(
                 context,
                 extensionFolder
             ).map {
                 it.load()
-            }.filterIsInstance<Extension>()
-            updateExtensions(extensions, false)
+            }.filterIsInstance<ExtensionInfo>()
+            updateExtensions(extensionInfos, false)
             fileObserver.startWatching()
         }
     }
@@ -115,17 +120,17 @@ class ExtensionController(
         lastScanAppJob = scope.launch {
             extensionReceiver.safeUnregister()
             TimeLogUtils.i("scanApp star")
-            val extensions = ExtensionLoaderFactory.getAppExtensionLoaders(
+            val extensionInfos = ExtensionLoaderFactory.getAppExtensionLoaders(
                 context,
             ).filter {
                 it.canLoad()
             }.map {
                 it.load()
-            }.filterIsInstance<Extension>()
-            extensions.forEach {
+            }.filterIsInstance<ExtensionInfo>()
+            extensionInfos.forEach {
                 it.logi(TAG)
             }
-            updateExtensions(extensions, true)
+            updateExtensions(extensionInfos, true)
             extensionReceiver.register()
         }
     }
@@ -138,19 +143,27 @@ class ExtensionController(
         fileObserver.startWatching()
     }
 
-    private fun updateExtensions(extensions: Collection<Extension>, isApp: Boolean) {
+    private fun updateExtensions(extensionInfos: Collection<ExtensionInfo>, isApp: Boolean) {
         TimeLogUtils.i("updateExtension isApp: ${isApp}")
-        extensions.forEach {
+        extensionInfos.forEach {
             it.logi(TAG)
         }
         _state.update { state ->
-            val map = hashMapOf<String, Extension>()
+            val map = hashMapOf<String, ExtensionInfo>()
 
-            extensions.forEach {
+            extensionInfos.forEach {
                 val old = map[it.key]
                 var new = it
                 if (old != null && new.versionCode < old.versionCode) {
                     new = old
+                }
+                if (old is ExtensionInfo.Installed){
+                    try {
+                        old.extension?.onDestroy()
+                    }catch (e: Exception){
+                        e.printStackTrace()
+                    }
+
                 }
                 map[it.key] = new
             }
@@ -158,7 +171,7 @@ class ExtensionController(
                 isFileExtensionLoading = if (isApp) state.isFileExtensionLoading else false,
                 isAppExtensionLoading = if (isApp) false else state.isAppExtensionLoading,
                 appExtensions = if (isApp) map else state.appExtensions,
-                fileExtension = if (isApp) state.fileExtension else map,
+                fileExtensionInfo = if (isApp) state.fileExtensionInfo else map,
             )
         }
     }
@@ -224,7 +237,7 @@ class ExtensionController(
     /**
      * 如果是文件加载就删除文件，如果是 app 加载就跳转到卸载按钮
      */
-    fun removeExtension(extension: Extension) {
+    fun removeExtension(extensionInfo: ExtensionInfo) {
 
     }
 

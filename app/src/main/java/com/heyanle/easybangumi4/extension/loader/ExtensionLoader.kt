@@ -1,7 +1,6 @@
 package com.heyanle.easybangumi4.extension.loader
 
-import android.content.pm.PackageManager
-import com.heyanle.easybangumi4.extension.Extension
+import com.heyanle.easybangumi4.extension.ExtensionInfo
 
 /**
 import com.heyanle.easy_extension.Extension
@@ -17,7 +16,7 @@ interface ExtensionLoader {
     /**
      * 加载拓展
      */
-    fun load(): Extension?
+    fun load(): ExtensionInfo?
 
     fun canLoad(): Boolean
 

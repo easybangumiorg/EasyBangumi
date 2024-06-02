@@ -19,14 +19,13 @@ class ComponentProxy(
 
     override fun invoke(proxy: Any?, method: Method?, args: Array<out Any>?): Any? {
         method ?: return null
-        SourceCrashController.appendComponentAction(component, method)
+        SourceCrashController.onComponentStart()
         val result = try {
             method.invoke(component, *args.orEmpty())
         }catch (e: Throwable){
-            SourceCrashController.onJavaCrash(e)
             throw e
         }
-        SourceCrashController.closeComponentAction(component, method)
+        SourceCrashController.onComponentEnd()
         return result
     }
 }

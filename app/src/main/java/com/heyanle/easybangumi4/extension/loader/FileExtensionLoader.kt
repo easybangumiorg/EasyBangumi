@@ -3,13 +3,9 @@ package com.heyanle.easybangumi4.extension.loader
 import android.content.Context
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
-import androidx.core.content.PackageManagerCompat
-import com.heyanle.easybangumi4.extension.Extension
-import com.heyanle.easybangumi4.utils.loge
-import dalvik.system.DexClassLoader
+import com.heyanle.easybangumi4.extension.ExtensionInfo
 import dalvik.system.PathClassLoader
 import java.io.File
-import java.io.FileOutputStream
 
 /**
  * 从文件加载
@@ -38,7 +34,7 @@ class FileExtensionLoader(
     override val key: String
         get() = "file:${path}"
 
-    override fun load(): Extension? {
+    override fun load(): ExtensionInfo? {
         val file = File(path)
         if (!file.exists() || !file.canRead()) {
             return null
@@ -59,7 +55,7 @@ class FileExtensionLoader(
             it.printStackTrace()
             return null
         }
-        return innerLoad(packageManager, pkgInfo, appInfo, classLoader, Extension.TYPE_FILE)
+        return innerLoad(packageManager, pkgInfo, appInfo, classLoader, ExtensionInfo.TYPE_FILE)
     }
 
     override fun canLoad(): Boolean {
