@@ -21,6 +21,7 @@ import com.heyanle.easybangumi4.crash.SourceCrashController
 import com.heyanle.easybangumi4.dlna.DlnaModule
 import com.heyanle.easybangumi4.setting.SettingModule
 import com.heyanle.easybangumi4.source.SourceModule
+import com.heyanle.easybangumi4.source.utils.NativeHelperImpl
 import com.heyanle.easybangumi4.storage.StorageController
 import com.heyanle.easybangumi4.storage.StorageModule
 import com.heyanle.easybangumi4.ui.common.moeDialog
@@ -30,6 +31,8 @@ import com.heyanle.easybangumi4.utils.exo_ssl.CropUtil
 import com.heyanle.easybangumi4.utils.exo_ssl.TrustAllHostnameVerifier
 import com.heyanle.extension_api.IconFactory
 import com.heyanle.extension_api.iconFactory
+import com.heyanle.injekt.api.addSingletonFactory
+import com.heyanle.injekt.api.get
 import com.heyanle.injekt.core.Injekt
 import com.heyanle.okkv2.MMKVStore
 import com.heyanle.okkv2.core.Okkv
@@ -75,6 +78,8 @@ object Scheduler {
         StorageModule(application).registerWith(Injekt)
         DlnaModule(application).registerWith(Injekt)
 
+        Injekt.get<NativeHelperImpl>()
+
 
         initOkkv(application)
         initAppCenter(application)
@@ -101,10 +106,16 @@ object Scheduler {
      */
     private fun initCrasher(application: Application) {
         Thread.setDefaultUncaughtExceptionHandler(CrashHandler(application))
-//        SignalController.initSignal(intArrayOf(
-//            SignalConst.SIGQUIT,
-//            SignalConst.SIGABRT,
-//            SignalConst.SIGSEGV),application, NativeHandler())
+//        try {
+//            SignalController.initSignal(intArrayOf(
+//                SignalConst.SIGQUIT,
+//                SignalConst.SIGABRT,
+//                SignalConst.SIGSEGV),application, NativeHandler()
+//            )
+//        }catch (e: Exception){
+//            e.printStackTrace()
+//        }
+
     }
 
     /**

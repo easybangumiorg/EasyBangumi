@@ -6,8 +6,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -76,7 +74,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
-import com.heyanle.easybangumi4.extension.Extension
+import com.heyanle.easybangumi4.extension.ExtensionInfo
 import com.heyanle.easybangumi4.extension.store.ExtensionStoreInfo
 import com.heyanle.easybangumi4.ui.common.EasyDeleteDialog
 import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
@@ -601,10 +599,10 @@ fun StoreExtensionInfoItem(
         trailingContent = {
             when (extensionStoreInfo.state) {
                 ExtensionStoreInfo.STATE_INSTALLED -> {
-                    if (item.extension is Extension.Installed) {
+                    if (item.extensionInfo is ExtensionInfo.Installed) {
                         Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.detailed))
-                    } else if (item.extension is Extension.InstallError) {
-                        Text(text = item.extension.errMsg)
+                    } else if (item.extensionInfo is ExtensionInfo.InstallError) {
+                        Text(text = item.extensionInfo.errMsg)
                     }
                 }
 
@@ -651,7 +649,7 @@ fun StoreExtensionInfoItem(
             }
         },
         leadingContent = {
-            if (item.extension.icon == null) {
+            if (item.extensionInfo.icon == null) {
                 OkImage(
                     modifier = Modifier.size(40.dp),
                     image = extensionStoreInfo.remote.iconUrl,
@@ -665,7 +663,7 @@ fun StoreExtensionInfoItem(
             } else {
                 OkImage(
                     modifier = Modifier.size(40.dp),
-                    image = item.extension.icon,
+                    image = item.extensionInfo.icon,
                     contentDescription = extensionStoreInfo.remote.label,
                     crossFade = false,
                     errorColor = null,
@@ -686,7 +684,7 @@ fun ExtensionInfoItem(
     onClick: (ExtensionViewModel.ExtensionItem) -> Unit,
     onLongPress: ((ExtensionViewModel.ExtensionItem) -> Unit)?,
 ) {
-    val extension = item.extension
+    val extension = item.extensionInfo
     ListItem(
         modifier = Modifier.let {
             if (onLongPress == null) {
@@ -738,8 +736,8 @@ fun ExtensionInfoItem(
                         color = MaterialTheme.colorScheme.onSecondaryContainer,
                         fontWeight = FontWeight.W900,
                         text = when(extension.loadType){
-                            Extension.TYPE_APP -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_installed)}
-                            Extension.TYPE_FILE -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_file)}
+                            ExtensionInfo.TYPE_APP -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_installed)}
+                            ExtensionInfo.TYPE_FILE -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_file)}
                             else -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_installed)}
                         },
                         fontSize = 12.sp
@@ -767,15 +765,15 @@ fun ExtensionInfoItem(
         },
         trailingContent = {
             when (extension) {
-                is Extension.Installed -> {
-                    if (extension.loadType == Extension.TYPE_APP) {
+                is ExtensionInfo.Installed -> {
+                    if (extension.loadType == ExtensionInfo.TYPE_APP) {
                         Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.detailed))
                     }else{
                         Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.long_touch_to_delete))
                     }
                 }
 
-                is Extension.InstallError -> {
+                is ExtensionInfo.InstallError -> {
                     Text(text = extension.errMsg)
                 }
             }
@@ -797,40 +795,40 @@ fun ExtensionInfoItem(
 
 @Composable
 fun ExtensionItem(
-    extension: Extension,
-    onClick: (Extension) -> Unit,
-    onAction: (Extension) -> Unit,
+    extensionInfo: ExtensionInfo,
+    onClick: (ExtensionInfo) -> Unit,
+    onAction: (ExtensionInfo) -> Unit,
 ) {
 
     ListItem(
         modifier = Modifier.clickable {
-            onClick(extension)
+            onClick(extensionInfo)
         },
         headlineContent = {
-            Text(text = extension.label)
+            Text(text = extensionInfo.label)
         },
         supportingContent = {
             Text(
-                text = extension.versionName,
+                text = extensionInfo.versionName,
             )
         },
         trailingContent = {
-            when (extension) {
-                is Extension.Installed -> {
+            when (extensionInfo) {
+                is ExtensionInfo.Installed -> {
                     TextButton(onClick = {
-                        onAction(extension)
+                        onAction(extensionInfo)
                     }) {
                         Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.detailed))
                     }
                 }
 
-                is Extension.InstallError -> {
+                is ExtensionInfo.InstallError -> {
                     TextButton(
                         enabled = false,
                         onClick = {
 
                         }) {
-                        Text(text = extension.errMsg)
+                        Text(text = extensionInfo.errMsg)
                     }
                 }
             }
@@ -838,8 +836,8 @@ fun ExtensionItem(
         leadingContent = {
             OkImage(
                 modifier = Modifier.size(40.dp),
-                image = extension.icon,
-                contentDescription = extension.label,
+                image = extensionInfo.icon,
+                contentDescription = extensionInfo.label,
                 crossFade = false,
                 errorColor = null,
                 errorRes = null,

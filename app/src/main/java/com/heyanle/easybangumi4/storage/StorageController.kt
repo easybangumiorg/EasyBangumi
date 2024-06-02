@@ -6,13 +6,11 @@ import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import androidx.core.content.FileProvider
-import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.BuildConfig
-import com.heyanle.easybangumi4.R
 import com.heyanle.easybangumi4.base.hekv.HeKV
 import com.heyanle.easybangumi4.cartoon.repository.db.CartoonDatabase
-import com.heyanle.easybangumi4.extension.Extension
+import com.heyanle.easybangumi4.extension.ExtensionInfo
 import com.heyanle.easybangumi4.extension.ExtensionController
 import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
 import com.heyanle.easybangumi4.setting.SettingPreferences
@@ -22,20 +20,16 @@ import com.heyanle.easybangumi4.source_api.utils.api.PreferenceHelper
 import com.heyanle.easybangumi4.theme.EasyThemeMode
 import com.heyanle.easybangumi4.ui.common.moeDialog
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
-import com.heyanle.easybangumi4.ui.storage.restore.Restore
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.lingala.zip4j.ZipFile
 import net.lingala.zip4j.model.ZipParameters
 import org.json.JSONObject
-import org.koin.dsl.koinApplication
 import java.io.File
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -64,7 +58,7 @@ class StorageController(
         val needBackupCartoonData: Boolean = true,
         val needBackupPreferenceData: Boolean = false,
 
-        val needBackupExtensionList: Set<Extension> = setOf(),
+        val needBackupExtensionListInfo: Set<ExtensionInfo> = setOf(),
 
         val needBackupDataSource: Set<Source> = setOf(),
     )
@@ -94,7 +88,7 @@ class StorageController(
                             backupPreference(File(cacheFolder, "preference"))
                     },
                     async {
-                        if (param.needBackupExtensionList.isNotEmpty())
+                        if (param.needBackupExtensionListInfo.isNotEmpty())
                             backupExtension(File(cacheFolder, "extension"), param)
                     },
                     async {
@@ -207,7 +201,7 @@ class StorageController(
         folder.deleteRecursively()
         folder.mkdirs()
         var count = 0
-        param.needBackupExtensionList.forEach {
+        param.needBackupExtensionListInfo.forEach {
             val source = File(it.sourcePath)
             if (source.exists() && source.isFile && source.canRead()) {
                 val targetName =

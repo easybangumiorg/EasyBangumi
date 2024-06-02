@@ -4,16 +4,14 @@ import android.os.Build
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
 import com.heyanle.easybangumi4.case.ExtensionCase
 import com.heyanle.easybangumi4.crash.SourceCrashController
-import com.heyanle.easybangumi4.extension.Extension
+import com.heyanle.easybangumi4.extension.ExtensionInfo
 import com.heyanle.easybangumi4.source.bundle.ComponentBundle
 import com.heyanle.easybangumi4.source.bundle.SourceBundle
 import com.heyanle.easybangumi4.source_api.Source
-import com.heyanle.easybangumi4.utils.CoroutineProvider
 import com.heyanle.easybangumi4.utils.TimeLogUtils
 import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.extension_api.NativeSupportedSource
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,7 +33,6 @@ class SourceController(
     private val extensionCase: ExtensionCase,
     private val sourcePreferences: SourcePreferences,
     private val cartoonInfoDao: CartoonInfoDao,
-    private val nativeLoadController: NativeLoadController,
 ) {
 
     companion object {
@@ -73,9 +70,9 @@ class SourceController(
                     }
                 }else{
                     TimeLogUtils.i("loadSource start")
-                    val it = sta.appExtensions.values + sta.fileExtension.values
-                    val map = hashMapOf<String, Pair<Extension.Installed, Source>>()
-                    it.filterIsInstance<Extension.Installed>().flatMap { exten ->
+                    val it = sta.appExtensions.values + sta.fileExtensionInfo.values
+                    val map = hashMapOf<String, Pair<ExtensionInfo.Installed, Source>>()
+                    it.filterIsInstance<ExtensionInfo.Installed>().flatMap { exten ->
                         exten.sources.map {
                             exten to it
                         }
@@ -86,9 +83,7 @@ class SourceController(
                         }
                     }
                     val n = map.values.map {
-                        SourceCrashController.appendComponentAction(it.second.key, "load")
                         val res = loadSource(it.second, it.first)
-                        SourceCrashController.closeComponentAction(it.second.key, "load")
                         res
                     }
                     _sourceInfo.update {
@@ -131,7 +126,7 @@ class SourceController(
 
     }
 
-    private suspend fun loadSource(source: Source, extension: Extension.Installed): SourceInfo {
+    private suspend fun loadSource(source: Source, extensionInfo: ExtensionInfo.Installed): SourceInfo {
         TimeLogUtils.i("loadSource ${source.key} start")
         return try {
             val bundle = ComponentBundle(source)
@@ -139,47 +134,15 @@ class SourceController(
 
 //            // 加载 So 咯
             if (source is NativeSupportedSource){
-                return SourceInfo.Error(source, extension, "暂时不支持动态链接 so 库")
-                val soList = source.dependSoName()
-//                if (soList.any { !it.startsWith("lib_" + extension.pkgName) }){
-//                    return SourceInfo.Error(source, extension, "加载错误, so 文件必须以lib_[包名] 开头", )
-//                }
-                val soRoot = File(extension.folderPath, "lib")
-                soList.forEach {  soName ->
-                    var isLoad = false
-                    for (supportedAbi in Build.SUPPORTED_ABIS) {
-                        if (supportedAbi == null){
-                            continue
-                        }
-                        val abiRoot = File(soRoot, supportedAbi)
-                        val soFile = File(abiRoot, soName)
-                        soFile.absolutePath.logi(TAG)
-                        if (!soFile.exists()){
-                            continue
-                        }
-
-                        val res = nativeLoadController.load(soFile.absolutePath)
-                        if (res == 0){
-                            isLoad = true
-                            break
-                        }else if (res == -2){
-                            return SourceInfo.Error(source, extension, "加载错误-动态库连接重复加载，可能需要重启")
-                        }
-
-                    }
-                    if (!isLoad){
-                        return SourceInfo.Error(source, extension, "加载错误-动态库连接失败")
-                    }
-                }
-
+                return SourceInfo.Error(source, extensionInfo, "NativeSupportedSource 已过时，请在 onInit 中加载 so")
             }
 
-            SourceInfo.Loaded(source, extension, bundle)
+            SourceInfo.Loaded(source, extensionInfo, bundle)
         } catch (e: SourceException) {
-            SourceInfo.Error(source, extension, e.msg, e)
+            SourceInfo.Error(source, extensionInfo, e.msg, e)
         } catch (e: Exception) {
             e.printStackTrace()
-            SourceInfo.Error(source, extension, "加载错误：${e.message}", e)
+            SourceInfo.Error(source, extensionInfo, "加载错误：${e.message}", e)
         }
     }
 

@@ -4,6 +4,7 @@ import android.app.Application
 import com.heyanle.easybangumi4.BuildConfig
 import com.heyanle.easybangumi4.base.hekv.HeKV
 import com.heyanle.easybangumi4.source.utils.CaptchaHelperImpl
+import com.heyanle.easybangumi4.source.utils.NativeHelperImpl
 import com.heyanle.easybangumi4.source.utils.PreferenceHelperImpl
 import com.heyanle.easybangumi4.source.utils.StringHelperImpl
 import com.heyanle.easybangumi4.source.utils.WebViewHelperImpl
@@ -32,13 +33,15 @@ class SourceModule(
 ) : InjektModule {
 
     override fun InjektScope.registerInjectables() {
+
         addSingletonFactory {
-            SourceController(get(), get(), get(), get())
+            NativeHelperImpl(application)
         }
 
         addSingletonFactory {
-            NativeLoadController()
+            SourceController(get(), get(), get())
         }
+
 
         // StringHelper
         addScopedPerKeyFactory<StringHelper, String> {

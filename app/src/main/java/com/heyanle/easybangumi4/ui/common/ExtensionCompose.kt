@@ -8,7 +8,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.heyanle.easybangumi4.extension.Extension
+import com.heyanle.easybangumi4.extension.ExtensionInfo
 import com.heyanle.easybangumi4.case.ExtensionCase
 import com.heyanle.injekt.core.Injekt
 
@@ -21,7 +21,7 @@ import com.heyanle.injekt.core.Injekt
 fun ExtensionContainer(
     modifier: Modifier = Modifier,
     loadingContainerColor: Color = Color.Transparent,
-    content: @Composable (List<Extension>) -> Unit,
+    content: @Composable (List<ExtensionInfo>) -> Unit,
 ) {
 
     val extension: ExtensionCase by Injekt.injectLazy()
@@ -38,7 +38,7 @@ fun ExtensionContainer(
                     .background(loadingContainerColor)
             )
         } else {
-            content((state.appExtensions + state.fileExtension).values.toList())
+            content((state.appExtensions + state.fileExtensionInfo).values.toList())
         }
 
     }

@@ -22,13 +22,13 @@ class ExtensionIconFactoryImpl(
             return old
         }
         val state = extensionCase.flowExtensionState().value
-        val extension =
-            (state.appExtensions.values + state.fileExtension.values).filterIsInstance<Extension.Installed>()
+        val extensionInfo =
+            (state.appExtensions.values + state.fileExtensionInfo.values).filterIsInstance<ExtensionInfo.Installed>()
                 .find {
                     it.sources.find { it.key == source.key } != null
                 } ?: return null
         return source.getIconResourcesId()?.let { resId ->
-            extension.resources?.let {
+            extensionInfo.resources?.let {
                 runCatching {
                     ResourcesCompat.getDrawable(it, resId, null)
                 }.getOrNull()

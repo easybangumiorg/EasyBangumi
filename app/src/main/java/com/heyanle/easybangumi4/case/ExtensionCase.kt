@@ -1,6 +1,6 @@
 package com.heyanle.easybangumi4.case
 
-import com.heyanle.easybangumi4.extension.Extension
+import com.heyanle.easybangumi4.extension.ExtensionInfo
 import com.heyanle.easybangumi4.extension.ExtensionController
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,17 +19,17 @@ class ExtensionCase(
         return extensionController.state
     }
 
-    fun flowExtension(): Flow<Collection<Extension>> {
+    fun flowExtension(): Flow<Collection<ExtensionInfo>> {
         return extensionController.state
             .filter {
                 !it.isLoading
             }
             .map {
-                it.appExtensions.values + it.fileExtension.values
+                it.appExtensions.values + it.fileExtensionInfo.values
             }
     }
 
-    suspend fun awaitExtension(): Collection<Extension> {
+    suspend fun awaitExtension(): Collection<ExtensionInfo> {
         return flowExtension().first()
     }
 }

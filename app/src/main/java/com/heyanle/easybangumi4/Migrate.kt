@@ -287,6 +287,12 @@ object Migrate {
                     oldExtensionFolder.deleteRecursively()
                 }
 
+                if (lastVersionCode < 90) {
+                    val extensionFolderOld = File(context.getFilePath("extension_folder"))
+                    extensionFolderOld.deleteRecursively()
+
+                }
+
                 // 在这里添加新的迁移代码
 
                 androidPreferenceStore.getInt("last_version_code", 0).set(curVersionCode)
