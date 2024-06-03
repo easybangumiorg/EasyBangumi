@@ -29,7 +29,7 @@ class ParseStep(
     }
 
     // 同时只能有一个 parsing 任务
-    private val dispatcher = CoroutineProvider.SINGLE
+    private val dispatcher = CoroutineProvider.CUSTOM_SINGLE
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
     private val mainScope = MainScope()
 

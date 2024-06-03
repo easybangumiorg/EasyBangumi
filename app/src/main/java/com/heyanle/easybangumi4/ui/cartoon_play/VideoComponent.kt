@@ -41,6 +41,7 @@ import androidx.compose.material.icons.filled.Battery5Bar
 import androidx.compose.material.icons.filled.Battery6Bar
 import androidx.compose.material.icons.filled.BatteryChargingFull
 import androidx.compose.material.icons.filled.BatteryFull
+import androidx.compose.material.icons.filled.CastConnected
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FastForward
 import androidx.compose.material.icons.filled.FastRewind
@@ -76,6 +77,7 @@ import androidx.core.content.FileProvider
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.LocalNavController
+import com.heyanle.easybangumi4.navigationDlna
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayingViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.DetailedViewModel
@@ -448,8 +450,30 @@ fun VideoControl(
                 onSpeed = {
                     showSpeedWin.value = true
                 },
-                onPlayExt = {
-                    cartoonPlayingVM.playCurrentExternal()
+                onDlna = {
+                    // cartoonPlayingVM.playCurrentExternal()
+                    sourcePlayState?.let { playState ->
+                        val playLine = playState?.playLine
+                        val episode = playState?.episode
+                        val enterData = CartoonPlayViewModel.EnterData(
+                            playLineId = playLine?.playLine?.id ?: "",
+                            playLineLabel = playLine?.playLine?.label ?: "",
+                            playLineIndex = detailState.cartoonInfo?.playLineWrapper?.indexOf(
+                                playState?.playLine
+                            ) ?: -1,
+                            episodeId = episode?.id ?: "",
+                            episodeIndex = playState?.playLine?.playLine?.episode?.indexOf(playState.episode)
+                                ?: -1,
+                            episodeLabel = episode?.label ?: "",
+                            episodeOrder = episode?.order ?: -1,
+                            adviceProgress = 0,
+                        )
+                        nav.navigationDlna(
+                            detailState.cartoonInfo?.id?:"",
+                            detailState.cartoonInfo?.source?:"",
+                            enterData
+                        )
+                    }
                     // cartoonPlayingController.playCurrentExternal()
                 },
                 onShare = { withCover ->
@@ -565,7 +589,7 @@ fun NormalVideoTopBar(
     showTools: Boolean,
     onBack: () -> Unit,
     onSpeed: () -> Unit,
-    onPlayExt: () -> Unit,
+    onDlna: () -> Unit,
     onShare: (withCover: Boolean) -> Unit
 ) {
     AnimatedVisibility(
@@ -588,9 +612,9 @@ fun NormalVideoTopBar(
                     )
                 }
 
-                IconButton(onClick = onPlayExt) {
+                IconButton(onClick = onDlna) {
                     Icon(
-                        Icons.Filled.Airplay,
+                        Icons.Filled.CastConnected,
                         tint = Color.White,
                         contentDescription = null
                     )

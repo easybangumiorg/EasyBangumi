@@ -10,6 +10,7 @@ import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
 import com.heyanle.easybangumi4.cartoon.tag.CartoonTagsController
 import com.heyanle.easybangumi4.cartoon.tag.isInner
 import com.heyanle.easybangumi4.case.CartoonInfoCase
+import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
 import com.heyanle.easybangumi4.source_api.entity.Episode
 import com.heyanle.easybangumi4.ui.common.proc.SortState
@@ -37,6 +38,7 @@ class DetailedViewModel(
     private val cartoonInfoCase: CartoonInfoCase by Injekt.injectLazy()
     private val cartoonInfoDao: CartoonInfoDao by Injekt.injectLazy()
     private val cartoonTagsController: CartoonTagsController by Injekt.injectLazy()
+    private val settingPreferences: SettingPreferences by Injekt.injectLazy()
 
 
     private val _stateFlow = MutableStateFlow<DetailState>(DetailState())
@@ -51,6 +53,13 @@ class DetailedViewModel(
         stateFlow.map { it.cartoonInfo }.filterIsInstance<CartoonInfo>().map { it.reversal }
             .stateIn(viewModelScope, SharingStarted.Lazily, false)
     )
+
+    val gridCount = settingPreferences.detailedScreenEpisodeGridCount.stateIn(viewModelScope)
+
+    fun setGridCount(count: Int){
+        settingPreferences.detailedScreenEpisodeGridCount.set(count)
+    }
+
 
 
     data class DetailState(

@@ -54,7 +54,7 @@ class NativeHelperImpl(
                 newFile.delete()
                 soFile.copyTo(newFile)
                 newFile.deleteOnExit()
-
+                //extension.load(newFile.absolutePath)
                 NativeLoadService(extension.javaClass.classLoader ?: return false).load(newFile.absolutePath)
                 loadedSoPath.add(soFile.absolutePath)
                 return true

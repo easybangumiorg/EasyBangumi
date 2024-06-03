@@ -242,7 +242,7 @@ class TranscodeStep(
                     mainScope.launch {
                         info.status.value = stringRes(R.string.transcoding)
                         info.process.value = progress
-                        info.subStatus.value = "${(progress * 100).toInt()}%"
+                        info.subStatus.value = "${(progress).toInt()}%"
                     }
                 }
 

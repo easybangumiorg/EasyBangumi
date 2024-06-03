@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.HistoryToggleOff
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Public
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.outlined.Report
@@ -138,65 +139,23 @@ fun More() {
 
         Divider()
 
-        ListItem(
-            modifier = Modifier.clickable {
-                nav.navigationSetting(SettingPage.Appearance)
-            },
-            headlineContent = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.appearance_setting)) },
-            leadingContent = {
-                Icon(
-                    Icons.Filled.ColorLens,
-                    contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.appearance_setting)
-                )
-            }
-        )
-
-        ListItem(
-            modifier = Modifier.clickable {
-                nav.navigationSetting(SettingPage.Player)
-            },
-            headlineContent = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.player_setting)) },
-            leadingContent = {
-                Icon(
-                    Icons.Filled.PlayCircle,
-                    contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.player_setting)
-                )
-            }
-        )
-
-        ListItem(
-            modifier = Modifier.clickable {
-                nav.navigationSetting(SettingPage.Download)
-            },
-            headlineContent = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.download_setting)) },
-            leadingContent = {
-                Icon(
-                    Icons.Filled.Download,
-                    contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.download_setting)
-                )
-            }
-        )
-
 
 
         //Divider()
 
-        BooleanPreferenceItem(
-            title = {
-                Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.web_view_compatible))
+
+        ListItem(
+            modifier = Modifier.clickable {
+                nav.navigationSetting(SettingPage.First)
             },
-            subtitle = {
-                Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.web_view_compatible_msg))
-            },
-            icon = {
+            headlineContent = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.setting)) },
+            leadingContent = {
                 Icon(
-                    Icons.Filled.Public,
-                    contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.web_view_compatible)
+                    Icons.Filled.Settings,
+                    contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.setting)
                 )
-            },
-            preference = settingMMKVPreferences.webViewCompatible
+            }
         )
-        Divider()
         ListItem(
             modifier = Modifier.clickable {
                 nav.navigate(ABOUT)
