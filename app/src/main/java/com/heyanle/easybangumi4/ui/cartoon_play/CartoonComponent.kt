@@ -7,6 +7,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -31,13 +32,18 @@ import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.CastConnected
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.ScreenShare
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.filled.Sort
@@ -45,14 +51,23 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarOutline
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -80,9 +95,15 @@ import com.heyanle.easybangumi4.ui.common.ActionRow
 import com.heyanle.easybangumi4.ui.common.EmptyPage
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.common.TabIndicator
+import com.heyanle.easybangumi4.ui.common.TabPage
+import com.heyanle.easybangumi4.ui.common.proc.FilterColumn
+import com.heyanle.easybangumi4.ui.common.proc.SortColumn
 import com.heyanle.easybangumi4.ui.common.proc.SortDropDownMenu
+import com.heyanle.easybangumi4.ui.common.proc.SortDropDownMenuItem
 import com.heyanle.easybangumi4.ui.common.proc.SortState
+import com.heyanle.easybangumi4.ui.main.home.HomeBottomSheet
 import com.heyanle.injekt.core.Injekt
+import kotlin.math.max
 
 /**
  * Created by heyanle on 2023/12/17.
@@ -92,6 +113,8 @@ import com.heyanle.injekt.core.Injekt
 @Composable
 fun CartoonPlayDetailed(
     cartoon: CartoonInfo,
+
+
 
     playLines: List<PlayLineWrapper>,
     selectLineIndex: Int,
@@ -109,11 +132,14 @@ fun CartoonPlayDetailed(
     isStar: Boolean,
     onStar: (Boolean) -> Unit,
 
+    gridCount: Int,
+    onGridChange: (Int) -> Unit,
+
     sortState: SortState<Episode>,
 
     onSearch: () -> Unit,
     onWeb: () -> Unit,
-    onDlna: () -> Unit,
+    onExtPlayer: () -> Unit,
     onDownload: (PlayLineWrapper, List<Episode>) -> Unit,
     onSortChange: (String, Boolean) -> Unit,
 ) {
@@ -134,7 +160,7 @@ fun CartoonPlayDetailed(
 
     LazyVerticalGrid(
         modifier = Modifier.fillMaxSize(),
-        columns = GridCells.Adaptive(128.dp),
+        columns = GridCells.Fixed(gridCount),
         state = listState,
         contentPadding = PaddingValues(0.dp, 0.dp, 0.dp, 96.dp)
     ) {
@@ -156,7 +182,7 @@ fun CartoonPlayDetailed(
                     onStar = onStar,
                     onSearch = onSearch,
                     onWeb = onWeb,
-                    onDlna = onDlna,
+                    onExtPlayer = onExtPlayer,
                     onDownload = {
                         if (currentDownloadPlayLine.value == null && selectLineIndex in playLines.indices) {
                             currentDownloadPlayLine.value = playLines[selectLineIndex]
@@ -184,6 +210,8 @@ fun CartoonPlayDetailed(
             currentDownloadSelect = currentDownloadSelect,
             onLineSelect = onLineSelect,
             onSortChange = onSortChange,
+            gridCount = gridCount,
+            onGridChange = onGridChange
         )
 
         // 集数
@@ -399,7 +427,7 @@ fun CartoonActions(
     onStar: (Boolean) -> Unit,
     onSearch: () -> Unit,
     onWeb: () -> Unit,
-    onDlna: () -> Unit,
+    onExtPlayer: () -> Unit,
     onDownload: () -> Unit,
 ) {
     ActionRow(
@@ -483,21 +511,21 @@ fun CartoonActions(
             onClick = onDownload
         )
 
-        // 投屏
+        // 外部播放
         Action(
             icon = {
                 Icon(
-                    Icons.Filled.CastConnected,
-                    stringResource(id = com.heyanle.easy_i18n.R.string.screen_cast)
+                    Icons.Filled.ScreenShare,
+                    stringResource(id = com.heyanle.easy_i18n.R.string.ext_player)
                 )
             },
             msg = {
                 Text(
-                    text = stringResource(id = com.heyanle.easy_i18n.R.string.screen_cast),
+                    text = stringResource(id = com.heyanle.easy_i18n.R.string.ext_player),
                     fontSize = 12.sp
                 )
             },
-            onClick = onDlna
+            onClick = onExtPlayer
         )
     }
 
@@ -510,6 +538,8 @@ fun LazyGridScope.cartoonPlayLines(
     showPlayLine: Boolean,
     selectLineIndex: Int,
     sortState: SortState<Episode>,
+    gridCount: Int,
+    onGridChange: (Int) -> Unit,
     playingPlayLine: PlayLineWrapper?,
     currentDownloadSelect: MutableState<Set<Int>>,
     onLineSelect: (Int) -> Unit,
@@ -622,8 +652,19 @@ fun LazyGridScope.cartoonPlayLines(
                         )
                     }
                 }
+                if (isSortShow){
+                    PlayDetailedBottomSheet(
+                        sortState = sortState,
+                        onGridChange = onGridChange,
+                        gridCount = gridCount,
+                        onSortChange = onSortChange,
+                        onDismissRequest = {
+                            isSortShow = false
+                        }
+                    )
+                }
                 IconButton(onClick = {
-                    // TODO
+
                     isSortShow = true
 
                 }) {
@@ -633,24 +674,6 @@ fun LazyGridScope.cartoonPlayLines(
                         stringResource(id = com.heyanle.easy_i18n.R.string.sort),
                         tint = if (curKey.value != PlayLineWrapper.SORT_DEFAULT_KEY) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
                     )
-
-                    SortDropDownMenu(isShow = isSortShow, sortState = sortState, onClick = { sort, state ->
-                        when (state) {
-                            SortState.STATUS_OFF -> {
-                                onSortChange(sort.id, false)
-                            }
-
-                            SortState.STATUS_ON -> {
-                                onSortChange(sort.id, true)
-                            }
-
-                            else -> {
-                                onSortChange(sort.id, false)
-                            }
-                        }
-                    }) {
-                        isSortShow = false
-                    }
                 }
             }
 
@@ -711,16 +734,9 @@ fun LazyGridScope.cartoonEpisodeList(
                             }
                         }
                         .padding(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        color = if (select && currentDownloadPlayLine.value == null) MaterialTheme.colorScheme.onSecondary else Color.Unspecified,
-                        text = item.label,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    Spacer(Modifier.weight(1f))
                     if (currentDownloadPlayLine.value != null) {
-                        Spacer(Modifier.size(4.dp))
                         Checkbox(
                             checked = currentDownloadSelect.value.contains(index),
                             onCheckedChange = {
@@ -735,8 +751,114 @@ fun LazyGridScope.cartoonEpisodeList(
                             }
                         )
                     }
+                    Text(
+                        color = if (select && currentDownloadPlayLine.value == null) MaterialTheme.colorScheme.onSecondary else Color.Unspecified,
+                        text = item.label,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+
                 }
             }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@Composable
+fun PlayDetailedBottomSheet(
+    sortState: SortState<Episode>,
+    gridCount: Int,
+    onGridChange: (Int) -> Unit,
+    onSortChange: (String, Boolean) -> Unit,
+    onDismissRequest: ()->Unit,
+){
+    var currentSelect by remember {
+        mutableStateOf(0)
+    }
+    ModalBottomSheet(
+        scrimColor = Color.Black.copy(alpha = 0.32f),
+        onDismissRequest = onDismissRequest,
+        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+        containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
+        contentColor = MaterialTheme.colorScheme.onSurface,
+        content = {
+            CompositionLocalProvider(
+                LocalContentColor provides MaterialTheme.colorScheme.onSurface
+            ) {
+                TabPage(
+                    pagerModifier = Modifier,
+                    containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                    tabSize = 2,
+                    beyondBoundsPageCount = 2,
+                    onTabSelect = {
+                        currentSelect = it
+                    },
+                    tabs = { index, select ->
+                        Text(
+                            text = if (index == 0) stringResource(id = com.heyanle.easy_i18n.R.string.sort) else stringResource(
+                                id = com.heyanle.easy_i18n.R.string.show
+                            )
+                        )
+                    }) {
+                    if (it == 0) {
+
+                        SortColumn(
+                            modifier = Modifier,
+                            sortState = sortState, onClick = { item, state ->
+                                when (state) {
+                                    SortState.STATUS_OFF -> {
+                                        onSortChange(item.id, false)
+                                    }
+
+                                    SortState.STATUS_ON -> {
+                                        onSortChange(item.id, true)
+                                    }
+
+                                    else -> {
+                                        onSortChange(item.id, false)
+                                    }
+                                }
+                            })
+                    } else if (it == 1) {
+                        Column(
+                            modifier = Modifier.verticalScroll(rememberScrollState())
+                        ) {
+                            ListItem(
+                                colors = ListItemDefaults.colors(
+                                    containerColor = Color.Transparent
+                                ),
+                                modifier = Modifier,
+                                headlineContent = {
+                                    Row {
+                                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.grid_count))
+                                        Spacer(modifier = Modifier.weight(1f))
+                                        Text(text = gridCount.toString())
+                                    }
+
+                                },
+
+                                supportingContent = {
+                                    Slider(
+                                        value = max(
+                                            gridCount,
+                                            1
+                                        ).toFloat(),
+                                        onValueChange = {
+                                            onGridChange(it.toInt())
+                                        },
+                                        steps = 3,
+                                        valueRange = 1F..5F
+                                    )
+                                }
+                            )
+                        }
+
+                    }
+                }
+
+            }
+
+        })
 }

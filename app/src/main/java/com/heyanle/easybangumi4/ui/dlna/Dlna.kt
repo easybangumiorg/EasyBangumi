@@ -230,6 +230,7 @@ fun DlnaPage(
 ) {
 
     val nav = LocalNavController.current
+    val gridCount = detailedVM.gridCount.collectAsState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     Column {
@@ -306,6 +307,10 @@ fun DlnaPage(
                     detailedVM.setCartoonSort(sortKey, isReverse, detailState.cartoonInfo)
                 },
                 dlnaPlayingState = playingState,
+                gridCount = gridCount.value,
+                onGridChange = {
+                    detailedVM.setGridCount(it)
+                },
                 onDlnaRetry = {
                     playState?.let {
                         dlnaVM.changePlay(it)
@@ -354,6 +359,8 @@ fun DlnaPlayDetailed(
     onSortChange: (String, Boolean) -> Unit,
 
     dlnaPlayingState: DlnaPlayingViewModel.DlnaPlayingState,
+    gridCount: Int,
+    onGridChange: (Int) -> Unit,
     onDlnaRetry: () -> Unit,
     onPlay: () -> Unit,
     onPause: () -> Unit,
@@ -364,7 +371,7 @@ fun DlnaPlayDetailed(
         modifier = Modifier
             .fillMaxSize()
             .nestedScroll(scrollBehavior.nestedScrollConnection),
-        columns = GridCells.Adaptive(128.dp),
+        columns = GridCells.Fixed(gridCount),
         state = listState,
         contentPadding = PaddingValues(0.dp, 0.dp, 0.dp, 96.dp)
     ) {
@@ -388,6 +395,8 @@ fun DlnaPlayDetailed(
             currentDownloadSelect = mutableStateOf(emptySet()),
             onLineSelect = onLineSelect,
             onSortChange = onSortChange,
+            gridCount = gridCount,
+            onGridChange = onGridChange
         )
 
         // 集数

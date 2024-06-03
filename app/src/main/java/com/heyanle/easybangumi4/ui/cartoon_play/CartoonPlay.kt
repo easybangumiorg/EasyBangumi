@@ -3,14 +3,19 @@ package com.heyanle.easybangumi4.ui.cartoon_play
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -19,7 +24,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.DOWNLOAD
@@ -40,6 +47,7 @@ import com.heyanle.easybangumi4.ui.common.EasyMutiSelectionDialog
 import com.heyanle.easybangumi4.ui.common.ErrorPage
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
+import com.heyanle.easybangumi4.ui.main.home.HomeBottomSheet
 import com.heyanle.easybangumi4.utils.isCurPadeMode
 import com.heyanle.easybangumi4.utils.openUrl
 import com.heyanle.easybangumi4.utils.stringRes
@@ -250,6 +258,7 @@ fun CartoonPlay(
         }
     }
 
+    val gridCount = detailedVM.gridCount.collectAsState()
     val settingPreferences: SettingPreferences by Injekt.injectLazy()
     val orMode = settingPreferences.playerOrientationMode.flow()
         .collectAsState(initial = SettingPreferences.PlayerOrientationMode.Auto)
@@ -332,6 +341,10 @@ fun CartoonPlay(
             } else {
                 CartoonPlayDetailed(
                     cartoon = detailState.cartoonInfo,
+                    gridCount = gridCount.value ,
+                    onGridChange = {
+                        detailedVM.setGridCount(it)
+                    },
                     playLines = detailState.cartoonInfo.playLineWrapper,
                     selectLineIndex = playVM.selectedLineIndex,
                     playingPlayLine = playState?.playLine,
@@ -362,27 +375,8 @@ fun CartoonPlay(
                             it.printStackTrace()
                         }
                     },
-                    onDlna = {
-                        val playLine = playState?.playLine
-                        val episode = playState?.episode
-                        val enterData = CartoonPlayViewModel.EnterData(
-                            playLineId = playLine?.playLine?.id ?: "",
-                            playLineLabel = playLine?.playLine?.label ?: "",
-                            playLineIndex = detailState.cartoonInfo.playLineWrapper.indexOf(
-                                playState?.playLine
-                            ) ?: -1,
-                            episodeId = episode?.id ?: "",
-                            episodeIndex = playState?.playLine?.playLine?.episode?.indexOf(playState.episode)
-                                ?: -1,
-                            episodeLabel = episode?.label ?: "",
-                            episodeOrder = episode?.order ?: -1,
-                            adviceProgress = 0,
-                        )
-                        nav.navigationDlna(
-                            detailState.cartoonInfo.id,
-                            detailState.cartoonInfo.source,
-                            enterData
-                        )
+                    onExtPlayer = {
+                        playingVM.playCurrentExternal()
                     },
                     onDownload = { playLine, episodes ->
                         stringRes(R.string.add_download_completely).moeSnackBar(
@@ -409,7 +403,6 @@ fun CartoonPlay(
         }
     }
 }
-
 
 
 

@@ -107,4 +107,8 @@ class SettingPreferences(
     // 双击快进快退的时间（秒）
     val fastSecond = preferenceStore.getInt("fast_second", 15)
 
+
+    // 详情页集列数
+    val detailedScreenEpisodeGridCount = preferenceStore.getInt("detailed_screen_episode_grid_count", 2)
+
 }

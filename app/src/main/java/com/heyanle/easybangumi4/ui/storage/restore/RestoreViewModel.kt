@@ -186,7 +186,7 @@ class RestoreViewModel : ViewModel() {
                         tempFile.delete()
                         tempFile.createNewFile()
                         context.contentResolver.openInputStream(uri)?.use { input ->
-                            file.outputStream().use { output ->
+                            tempFile.outputStream().use { output ->
                                 input.copyTo(output)
                             }
                         }

@@ -40,6 +40,7 @@
     <string name="player_setting">播放设置</string>
 
     <string name="download_setting">下载设置</string>
+    <string name="extension_setting">番源设置</string>
     
     <string name="use_external_player">默认使用外置播放器</string>
     <string name="player_bottom_nav_padding">平板模式播放器底部抬高</string>
@@ -141,6 +142,7 @@
     <string name="research">重新搜索</string>
 
     <string name="screen_cast">投屏</string>
+    <string name="ext_player">外部播放</string>
 
     <string name="net_error">网络错误</string>
     <string name="click_to_refresh">点击刷新</string>
@@ -402,6 +404,8 @@
 
     <string name="name_word">名称</string>
     <string name="sort">排序</string>
+
+    <string name="grid_count">展示列数</string>
 
     <string name="backup_and_store">备份和恢复</string>
     <string name="backup">备份</string>
