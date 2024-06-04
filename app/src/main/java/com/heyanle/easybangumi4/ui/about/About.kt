@@ -36,7 +36,6 @@ import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.ui.main.more.EasyBangumiCard
 import com.heyanle.easybangumi4.utils.openUrl
-import com.microsoft.appcenter.distribute.Distribute
 
 /**
  * Created by HeYanLe on 2023/4/1 23:06.
@@ -100,23 +99,23 @@ fun About() {
 
                 )
 
-                ListItem(
-                    colors = ListItemDefaults.colors(
-                        containerColor = Color.Transparent
-                    ),
-                    modifier = Modifier.clickable {
-                        Distribute.checkForUpdate()
-                    },
-                    headlineContent = {
-                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.check_update))
-                    },
-                    leadingContent = {
-                        Icon(
-                            Icons.Filled.Upload,
-                            contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.check_update)
-                        )
-                    },
-                )
+//                ListItem(
+//                    colors = ListItemDefaults.colors(
+//                        containerColor = Color.Transparent
+//                    ),
+//                    modifier = Modifier.clickable {
+//                        Distribute.checkForUpdate()
+//                    },
+//                    headlineContent = {
+//                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.check_update))
+//                    },
+//                    leadingContent = {
+//                        Icon(
+//                            Icons.Filled.Upload,
+//                            contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.check_update)
+//                        )
+//                    },
+//                )
 
                 Divider()
 
