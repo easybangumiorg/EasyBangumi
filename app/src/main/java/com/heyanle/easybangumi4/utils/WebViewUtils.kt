@@ -30,7 +30,7 @@ fun WebView.stop() {
 
 suspend fun WebView.getHtml(): String {
     val raw = evaluateJavascriptSync("(function() { return document.documentElement.outerHTML })()")
-    return withContext(Dispatchers.Default) { StringEscapeUtils.unescapeEcmaScript(raw) }
+    return withContext(Dispatchers.IO) { StringEscapeUtils.unescapeEcmaScript(raw) }
 }
 
 suspend fun WebView.evaluateJavascriptSync(code: String? = null): String {
@@ -45,23 +45,16 @@ suspend fun WebView.evaluateJavascriptSync(code: String? = null): String {
 fun WebView.evaluateJavascript(code: String? = null) {
     if (code.isNullOrEmpty()) return
     evaluateJavascript(code, null)
-//    loadUrl("javascript:(function(){$code})()") // 超级慢
 }
 
 suspend fun WebView.waitUntilLoadFinish(timeoutMs: Long = 8000L) {
     waitUntil(null, timeoutMs)
 }
 
-suspend fun WebView.waitUntil(regex: Regex? = null, timeoutMs: Long = 8000L, stopLoading: Boolean = false): String {
+suspend fun WebView.waitUntil(regex: Regex? = null, timeoutMs: Long = 8000L, stopLoading: Boolean = false, ignoreTimeoutExt: Boolean = true): String {
     return try {
         withTimeout(timeoutMs) {
             suspendCoroutine<String> { con ->
-//            launch(Dispatchers.IO) {
-//                delay(timeoutMs)
-//                runCatching {
-//                    con.resume("")
-//                }
-//            }
                 launch(Dispatchers.Main) {
                     webViewClient = object : LightweightGettingWebViewClient(regex) {
                         override fun onPageFinished(view: WebView?, url: String?) {
@@ -91,6 +84,9 @@ suspend fun WebView.waitUntil(regex: Regex? = null, timeoutMs: Long = 8000L, sto
         }
     } catch (ex: TimeoutCancellationException) {
         ex.printStackTrace()
-        return ""
+        if (ignoreTimeoutExt){
+            return ""
+        }
+        throw ex
     }
 }

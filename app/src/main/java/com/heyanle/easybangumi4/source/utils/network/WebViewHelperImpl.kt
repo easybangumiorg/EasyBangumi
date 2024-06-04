@@ -1,21 +1,21 @@
-package com.heyanle.easybangumi4.source.utils
+package com.heyanle.easybangumi4.source.utils.network
 
 import android.graphics.Bitmap
 import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
+import android.webkit.WebSettings
 import android.webkit.WebView
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.WEB_VIEW_USER
 import com.heyanle.easybangumi4.navControllerRef
+import com.heyanle.easybangumi4.source.utils.LightweightGettingWebViewClient
 import com.heyanle.easybangumi4.source_api.utils.api.WebViewHelper
-import com.heyanle.easybangumi4.source_api.utils.core.setDefaultSettings
 import com.heyanle.easybangumi4.utils.clearWeb
 import com.heyanle.easybangumi4.utils.evaluateJavascript
 import com.heyanle.easybangumi4.utils.getHtml
 import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.stop
 import com.heyanle.easybangumi4.utils.waitUntil
-import com.heyanle.easybangumi4.utils.waitUntilLoadFinish
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -167,7 +167,20 @@ object WebViewHelperImpl : WebViewHelper {
     val cookieManager = CookieManager.getInstance()
     private val _globalWebView by lazy(LazyThreadSafetyMode.NONE) {
         WebView(APP).apply {
-            setDefaultSettings()
+            // setDefaultSettings()
+            with(settings){
+                javaScriptEnabled = true
+                domStorageEnabled = true
+                databaseEnabled = true
+                useWideViewPort = true
+                loadWithOverviewMode = true
+                cacheMode = WebSettings.LOAD_DEFAULT
+
+                // Allow zooming
+                setSupportZoom(true)
+                builtInZoomControls = true
+                displayZoomControls = false
+            }
             cookieManager.also {
                 it.setAcceptCookie(true)
                 it.acceptCookie()

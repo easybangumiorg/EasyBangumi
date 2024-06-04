@@ -11,6 +11,9 @@ import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
 import com.heyanle.easybangumi4.source.SourceController
 import com.heyanle.easybangumi4.source_api.utils.core.WebViewUtil
 import com.heyanle.injekt.core.Injekt
+import org.mozilla.geckoview.GeckoRuntime
+import org.mozilla.geckoview.GeckoSession
+import org.mozilla.geckoview.GeckoView
 import kotlin.reflect.jvm.internal.impl.metadata.ProtoBuf
 
 /**
@@ -23,6 +26,15 @@ class App : Application() {
 
     init {
         Scheduler.runOnAppInit(this)
+
+        val view = GeckoView(this)
+
+        val session = GeckoSession()
+        session.contentBlockingDelegate
+
+        val runtime = GeckoRuntime.create(this)
+
+        runtime.serviceWorkerDelegate
     }
 
     override fun getPackageName(): String {

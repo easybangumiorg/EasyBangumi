@@ -32,16 +32,16 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
-        buildConfigField(
-            "String",
-            "APP_CENTER_SECRET",
-            "\"${
-                publishingProps.getProperty(
-                    "appcenter.secret",
-                    System.getenv("APPCENTER_SECRET")
-                )
-            }\""
-        )
+//        buildConfigField(
+//            "String",
+//            "APP_CENTER_SECRET",
+//            "\"${
+//                publishingProps.getProperty(
+//                    "appcenter.secret",
+//                    System.getenv("APPCENTER_SECRET")
+//                )
+//            }\""
+//        )
 
         manifestPlaceholders["bugly_appid"] =
             publishingProps.getProperty("bugly_appid", System.getenv("BUGLY_APPID")?:"")
@@ -129,8 +129,6 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 }
 
 dependencies {
-
-    //implementation(files("../libs/bcprov-jdk16-139.jar"))
     implementation(androidx.bundles.core)
     androidTestImplementation(androidx.bundles.test.core)
 
@@ -163,7 +161,7 @@ dependencies {
     implementation(compose.bundles.material3)
 
     implementation(libs.bundles.okhttp3)
-    implementation(libs.bundles.appcenter)
+    //implementation(libs.bundles.appcenter)
 
     implementation(libs.jsoup)
     implementation(libs.gson)
@@ -211,5 +209,7 @@ dependencies {
     implementation(extension.extension.api)
 
     implementation(libs.bugly)
+
+    // fimplementation(gecko.gecko)
 
 }
