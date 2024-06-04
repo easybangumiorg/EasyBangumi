@@ -1,14 +1,8 @@
 package com.heyanle.easybangumi4.source.utils.network.interceptor
 
 import android.content.Context
-import android.os.Build
-import android.util.Log
-import android.webkit.WebSettings
 import android.webkit.WebView
 import com.heyanle.easybangumi4.source_api.utils.api.NetworkHelper
-import com.heyanle.easybangumi4.source_api.utils.core.DeviceUtil
-import com.heyanle.easybangumi4.source_api.utils.core.WebViewUtil
-import com.heyanle.easybangumi4.source_api.utils.core.setDefaultSettings
 import okhttp3.Headers
 import okhttp3.Interceptor
 import okhttp3.Request
@@ -37,10 +31,10 @@ abstract class WebViewInterceptor(
             return response
         }
 
-        if (!WebViewUtil.supportsWebView(context)) {
-            Log.d("WebViewInterceptor", "no WebView support ${this::class.java.simpleName}")
-            return response
-        }
+//        if (!WebViewUtil.supportsWebView(context)) {
+//            Log.d("WebViewInterceptor", "no WebView support ${this::class.java.simpleName}")
+//            return response
+//        }
 
         return intercept(chain, request, response)
     }
@@ -61,7 +55,7 @@ abstract class WebViewInterceptor(
 
     fun createWebView(request: Request): WebView {
         return WebView(context).apply {
-            setDefaultSettings()
+            // setDefaultSettings()
             // Avoid sending empty User-Agent, Chromium WebView will reset to default if empty
             settings.userAgentString = request.header("User-Agent") ?: networkHelper.defaultLinuxUA
         }
