@@ -19,6 +19,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.heyanle.easybangumi4.source.utils.network.WebViewHelperImpl
+import com.heyanle.easybangumi4.source.utils.network.WebViewHelperV2Impl
 import com.heyanle.easybangumi4.source_api.entity.CartoonCover
 import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
 import com.heyanle.easybangumi4.theme.NormalSystemBarColor
@@ -300,9 +301,9 @@ fun Nav() {
 
             composable(WEB_VIEW_USER) {
                 runCatching {
-                    val wb = WebViewHelperImpl.webViewRef?.get() ?: throw NullPointerException()
-                    val onCheck = WebViewHelperImpl.check?.get() ?: throw NullPointerException()
-                    val onStop = WebViewHelperImpl.stop?.get() ?: throw NullPointerException()
+                    val wb = WebViewHelperV2Impl.webViewRef?.get() ?: throw NullPointerException()
+                    val onCheck = WebViewHelperV2Impl.check?.get() ?: throw NullPointerException()
+                    val onStop = WebViewHelperV2Impl.stop?.get() ?: throw NullPointerException()
                     WebViewUser(webView = wb, onCheck = onCheck, onStop = onStop)
                 }.onFailure {
                     nav.popBackStack()

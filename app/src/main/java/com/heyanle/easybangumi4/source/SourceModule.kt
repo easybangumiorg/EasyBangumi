@@ -53,7 +53,7 @@ class SourceModule(
         }
 
         // NetworkHelper
-        addSingletonFactory<NetworkHelper> {
+        addSingletonFactory<NetworkHelperImpl> {
             NetworkHelperImpl(
                 application
             )
@@ -80,11 +80,11 @@ class SourceModule(
         }
 
         // WebViewHelperV2
-        addSingletonFactory {
+        addSingletonFactory<WebViewHelperV2Impl> {
             WebViewHelperV2Impl()
         }
         addScopedPerKeyFactory<WebViewHelperV2, String> {
-            get()
+            get<WebViewHelperV2Impl>()
         }
 
     }
