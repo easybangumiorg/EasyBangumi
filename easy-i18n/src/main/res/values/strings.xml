@@ -455,6 +455,9 @@
     <string name="share">分享</string>
     <string name="choose_target_app">选择分享应用</string>
 
+    <string name="need_cloudflare_please_wait">当前正在进行 CloudFlare 检测，请耐心等待</string>
+    <string name="please_cloudflare">请进行人机效验，看到页面后返回</string>
+    <string name="cloudflare_completely">CloudFlare 检测成功</string>
 
     <string name="custom_speed">自定义倍速</string>
     <string name="please_input_right_speed">请输入正确数字！</string>

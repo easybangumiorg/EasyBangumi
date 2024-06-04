@@ -7,7 +7,7 @@ import com.heyanle.easybangumi4.source.utils.CaptchaHelperImpl
 import com.heyanle.easybangumi4.source.utils.NativeHelperImpl
 import com.heyanle.easybangumi4.source.utils.PreferenceHelperImpl
 import com.heyanle.easybangumi4.source.utils.StringHelperImpl
-import com.heyanle.easybangumi4.source.utils.WebViewHelperImpl
+import com.heyanle.easybangumi4.source.utils.network.WebViewHelperImpl
 import com.heyanle.easybangumi4.source_api.utils.api.CaptchaHelper
 import com.heyanle.easybangumi4.source_api.utils.api.NetworkHelper
 import com.heyanle.easybangumi4.source_api.utils.api.OkhttpHelper

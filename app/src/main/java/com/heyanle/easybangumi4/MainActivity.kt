@@ -31,7 +31,6 @@ import com.heyanle.easybangumi4.ui.common.MoeDialog
 import com.heyanle.easybangumi4.ui.common.MoeSnackBar
 import com.heyanle.easybangumi4.utils.AnnoHelper
 import com.heyanle.easybangumi4.utils.MediaUtils
-import com.heyanle.easybangumi4.utils.ReleaseDialog
 import com.heyanle.okkv2.core.okkv
 
 /**
@@ -86,7 +85,7 @@ class MainActivity : ComponentActivity() {
                         }
                         MoeSnackBar(Modifier.statusBarsPadding())
                         MoeDialog()
-                        ReleaseDialog()
+                        // ReleaseDialog()
                         AnnoHelper.ComposeDialog()
                     }
 

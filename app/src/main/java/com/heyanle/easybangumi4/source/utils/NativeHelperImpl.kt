@@ -21,7 +21,6 @@ class NativeHelperImpl(
 ): NativeHelper {
 
     private val nativeFolder = File(context.getInnerFilePath("native"))
-
     private val loadedSoPath: HashSet<String> = hashSetOf()
 
 

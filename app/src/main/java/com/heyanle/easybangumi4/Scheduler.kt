@@ -1,14 +1,8 @@
 package com.heyanle.easybangumi4
 
-import android.animation.ObjectAnimator
-import android.animation.ValueAnimator
 import android.app.Activity
 import android.app.Application
-import android.provider.Settings
 import android.util.Log
-import android.view.View
-import android.widget.Toast
-import androidx.core.animation.addListener
 import com.arialyy.aria.core.Aria
 import com.heyanle.easy_crasher.CrashHandler
 import com.heyanle.easybangumi4.cartoon.CartoonModule
@@ -22,26 +16,17 @@ import com.heyanle.easybangumi4.dlna.DlnaModule
 import com.heyanle.easybangumi4.setting.SettingModule
 import com.heyanle.easybangumi4.source.SourceModule
 import com.heyanle.easybangumi4.source.utils.NativeHelperImpl
-import com.heyanle.easybangumi4.storage.StorageController
 import com.heyanle.easybangumi4.storage.StorageModule
-import com.heyanle.easybangumi4.ui.common.moeDialog
 import com.heyanle.easybangumi4.utils.AppCenterManager
 import com.heyanle.easybangumi4.utils.UUIDHelper
 import com.heyanle.easybangumi4.utils.exo_ssl.CropUtil
 import com.heyanle.easybangumi4.utils.exo_ssl.TrustAllHostnameVerifier
 import com.heyanle.extension_api.IconFactory
 import com.heyanle.extension_api.iconFactory
-import com.heyanle.injekt.api.addSingletonFactory
 import com.heyanle.injekt.api.get
 import com.heyanle.injekt.core.Injekt
 import com.heyanle.okkv2.MMKVStore
 import com.heyanle.okkv2.core.Okkv
-import com.microsoft.appcenter.AppCenter
-import com.microsoft.appcenter.analytics.Analytics
-import com.microsoft.appcenter.crashes.Crashes
-import com.microsoft.appcenter.distribute.Distribute
-import com.microsoft.appcenter.distribute.DistributeListener
-import com.microsoft.appcenter.distribute.ReleaseDetails
 import com.tencent.bugly.crashreport.CrashReport
 import javax.net.ssl.HttpsURLConnection
 
@@ -77,12 +62,8 @@ object Scheduler {
         CartoonDownloadModule(application).registerWith(Injekt)
         StorageModule(application).registerWith(Injekt)
         DlnaModule(application).registerWith(Injekt)
-
         Injekt.get<NativeHelperImpl>()
-
-
         initOkkv(application)
-        initAppCenter(application)
         initBugly(application)
         initAria(application)
         initTrustAllHost()
@@ -132,48 +113,6 @@ object Scheduler {
             CrashReport.setDeviceModel(application, android.os.Build.MODEL)
             CrashReport.setDeviceId(application, UUIDHelper.getUUID())
 
-        }
-    }
-
-    /**
-     * 初始化 App Center
-     */
-    private fun initAppCenter(application: Application) {
-        if (!BuildConfig.DEBUG) {
-            kotlin.runCatching {
-                // https://appcenter.ms
-                val sc = BuildConfig.APP_CENTER_SECRET
-                Log.i("BangumiApp", "app center secret -> $sc")
-                if (sc.isNotEmpty()) {
-                    AppCenter.start(
-                        application, sc,
-                        Analytics::class.java, Crashes::class.java, Distribute::class.java
-                    )
-                    // 禁用自动更新 使用手动更新
-                    Distribute.disableAutomaticCheckForUpdate()
-
-                    Distribute.setListener(object : DistributeListener {
-                        override fun onReleaseAvailable(
-                            activity: Activity?,
-                            releaseDetails: ReleaseDetails?
-                        ): Boolean {
-                            releaseDetails?.let {
-                                if (it.version > BuildConfig.VERSION_CODE && it.shortVersion != BuildConfig.VERSION_NAME) {
-                                    AppCenterManager.releaseDetail.value = it
-                                    AppCenterManager.showReleaseDialog.value = true
-                                }
-                            }
-                            return true
-                        }
-
-                        override fun onNoReleaseAvailable(activity: Activity?) {
-
-                        }
-                    })
-                }
-            }.onFailure {
-                it.printStackTrace()
-            }
         }
     }
 
