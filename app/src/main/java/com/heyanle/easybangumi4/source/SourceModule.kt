@@ -7,18 +7,18 @@ import com.heyanle.easybangumi4.source.utils.CaptchaHelperImpl
 import com.heyanle.easybangumi4.source.utils.NativeHelperImpl
 import com.heyanle.easybangumi4.source.utils.PreferenceHelperImpl
 import com.heyanle.easybangumi4.source.utils.StringHelperImpl
+import com.heyanle.easybangumi4.source.utils.network.NetworkHelperImpl
+import com.heyanle.easybangumi4.source.utils.network.OkhttpHelperImpl
 import com.heyanle.easybangumi4.source.utils.network.WebViewHelperImpl
+import com.heyanle.easybangumi4.source.utils.network.WebViewHelperV2Impl
 import com.heyanle.easybangumi4.source_api.utils.api.CaptchaHelper
 import com.heyanle.easybangumi4.source_api.utils.api.NetworkHelper
 import com.heyanle.easybangumi4.source_api.utils.api.OkhttpHelper
 import com.heyanle.easybangumi4.source_api.utils.api.PreferenceHelper
 import com.heyanle.easybangumi4.source_api.utils.api.StringHelper
 import com.heyanle.easybangumi4.source_api.utils.api.WebViewHelper
-import com.heyanle.easybangumi4.source_api.utils.core.network.NetworkHelperImpl
-import com.heyanle.easybangumi4.source_api.utils.core.network.OkhttpHelperImpl
-import com.heyanle.easybangumi4.ui.common.moeSnackBar
+import com.heyanle.easybangumi4.source_api.utils.api.WebViewHelperV2
 import com.heyanle.easybangumi4.utils.getFilePath
-import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.injekt.api.InjektModule
 import com.heyanle.injekt.api.InjektScope
 import com.heyanle.injekt.api.addAlias
@@ -53,12 +53,10 @@ class SourceModule(
         }
 
         // NetworkHelper
-        addSingletonFactory<NetworkHelperImpl> {
+        addSingletonFactory<NetworkHelper> {
             NetworkHelperImpl(
                 application
-            ) {
-                stringRes(com.heyanle.easy_i18n.R.string.web_view_init_error_msg).moeSnackBar()
-            }
+            )
         }
         addScopedPerKeyFactory<NetworkHelper, String> {
             get<NetworkHelperImpl>()
@@ -66,7 +64,7 @@ class SourceModule(
 
         // OkHttpHelper
         addScopedPerKeyFactory<OkhttpHelperImpl, String> {
-            OkhttpHelperImpl(application, get(it), get(it), get(it), BuildConfig.DEBUG)
+            OkhttpHelperImpl(application, get(it), get(it))
         }
         addAlias<OkhttpHelperImpl, OkhttpHelper>()
 
@@ -78,7 +76,15 @@ class SourceModule(
 
         // WebViewHelper
         addScopedPerKeyFactory<WebViewHelper, String> {
-            WebViewHelperImpl
+            WebViewHelperImpl(get(it))
+        }
+
+        // WebViewHelperV2
+        addSingletonFactory {
+            WebViewHelperV2Impl()
+        }
+        addScopedPerKeyFactory<WebViewHelperV2, String> {
+            get()
         }
 
     }

@@ -21,6 +21,7 @@ import com.heyanle.easybangumi4.source_api.utils.api.OkhttpHelper
 import com.heyanle.easybangumi4.source_api.utils.api.PreferenceHelper
 import com.heyanle.easybangumi4.source_api.utils.api.StringHelper
 import com.heyanle.easybangumi4.source_api.utils.api.WebViewHelper
+import com.heyanle.easybangumi4.source_api.utils.api.WebViewHelperV2
 import com.heyanle.extension_api.ExtensionIconSource
 import com.heyanle.extension_api.ExtensionSource
 import com.heyanle.injekt.api.get
@@ -92,6 +93,7 @@ class ComponentBundle(
         put(PreferenceHelper::class, Injekt.get(source.key))
         put(WebViewHelper::class, Injekt.get(source.key))
         put(CaptchaHelper::class, Injekt.get(source.key))
+        put(WebViewHelperV2::class, Injekt.get(source.key))
 
         put(Context::class, APP)
         put(Application::class, APP)
@@ -169,7 +171,7 @@ class ComponentBundle(
             targetParams.add(instance)
         }
         road.remove(clazz)
-        var instance = kotlin.runCatching {
+        val instance = kotlin.runCatching {
             con.call(*(targetParams.toArray()))
         }.getOrElse {
             it.printStackTrace()
