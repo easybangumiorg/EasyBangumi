@@ -104,8 +104,15 @@ class SettingPreferences(
     // 双击快进区域占屏幕宽度的比例的倒数。只能是 2, 3, 4, 5, 6 与其相反数。负数代表关闭
     val fastWeight = preferenceStore.getInt("fast_space_weight", 5)
 
+    val fastWeightTopDenominator = 6
+    val fastWeightTopMoleculeSelection = listOf(1, 2, 3, 4, 5, )
+    // 双击快进顶部区域占屏幕高度的比例分子，分母是 6，这里只能是 1 2 3 4 5。负数代表关闭
+    val fastWeightTopMolecule = preferenceStore.getInt("fast_space_weight_top", -3)
+
     // 双击快进快退的时间（秒）
     val fastSecond = preferenceStore.getInt("fast_second", 15)
+    // 顶部双击快进快退的时间（秒）
+    val fastTopSecond = preferenceStore.getInt("fast_second_top", 30)
 
 
     // 详情页集列数
