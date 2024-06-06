@@ -81,11 +81,22 @@ class CartoonPlayingViewModel(
     val customSpeed = customSpeedPref.stateIn(viewModelScope)
     val isCustomSpeed = mutableStateOf(false)
 
+    private val videoScaleTypePref = settingPreferences.videoScaleType
+    val videoScaleType = videoScaleTypePref.stateIn(viewModelScope)
+
     val isCustomSpeedDialog = mutableStateOf(false)
 
     val fastWeight = settingPreferences.fastWeight.stateIn(viewModelScope)
     val fastSecond = settingPreferences.fastSecond.stateIn(viewModelScope)
 
+    val fastTopSecond = settingPreferences.fastTopSecond.stateIn(viewModelScope)
+
+    val fastTopWeightMolecule = settingPreferences.fastWeightTopMolecule.stateIn(viewModelScope)
+    val fastWeightTopDenominator = settingPreferences.fastWeightTopDenominator
+
+    val playerSeekFullWidthTimeMS = settingPreferences.playerSeekFullWidthTimeMS.stateIn(viewModelScope)
+
+    val defaultSpeed = settingPreferences.defaultSpeed.stateIn(viewModelScope)
 
     fun setCustomSpeedDialog() {
         isCustomSpeedDialog.value = true
@@ -108,6 +119,10 @@ class CartoonPlayingViewModel(
 
     fun disableCustomSpeed() {
         isCustomSpeed.value = false
+    }
+
+    fun setVideoScaleType(scaleType: Int) {
+        videoScaleTypePref.set(scaleType)
     }
 
     fun tryRefresh() {

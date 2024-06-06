@@ -58,8 +58,10 @@ import androidx.compose.ui.unit.dp
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.setting.SettingPreferences
+import com.heyanle.easybangumi4.ui.cartoon_play.speedConfig
 import com.heyanle.easybangumi4.ui.common.BooleanPreferenceItem
 import com.heyanle.easybangumi4.ui.common.EmumPreferenceItem
+import com.heyanle.easybangumi4.ui.common.LongEditPreferenceItem
 import com.heyanle.easybangumi4.ui.common.StringSelectPreferenceItem
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.stringRes
@@ -113,7 +115,6 @@ fun ColumnScope.PlayerSetting(
             }
         )
 
-
         val sizePre by settingPreferences.cacheSize.flow()
             .collectAsState(settingPreferences.cacheSize.get())
         val size = settingPreferences.cacheSizeSelection
@@ -126,229 +127,216 @@ fun ColumnScope.PlayerSetting(
             stringRes(com.heyanle.easy_i18n.R.string.should_reboot).moeSnackBar()
         }
 
-        val fastWeight by settingPreferences.fastWeight.flow()
-            .map {
-                if (settingPreferences.fastWeightSelection.indexOf(Math.abs(it)) >= 0) it else settingPreferences.fastWeightSelection.first()
-                    .apply { settingPreferences.fastWeight.set(this) }
-            }
-            .collectAsState(initial = settingPreferences.fastWeight.get())
-        val fastWeightTop by settingPreferences.fastWeightTopMolecule.flow()
-            .map {
-                if (settingPreferences.fastWeightTopMoleculeSelection.indexOf(Math.abs(it)) >= 0) it else settingPreferences.fastWeightTopMoleculeSelection.first()
-                    .apply { settingPreferences.fastWeightTopMolecule.set(this) }
-            }
-            .collectAsState(initial = settingPreferences.fastWeightTopMolecule.get())
+        LongEditPreferenceItem(
+            title = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.player_seek_full_width_time_ms)) },
+            preference = settingPreferences.playerSeekFullWidthTimeMS
+        )
 
-        val fastSecond by settingPreferences.fastSecond.flow()
-            .collectAsState(initial = settingPreferences.fastSecond.get())
-        val fastTopSecond by settingPreferences.fastTopSecond.flow()
-            .collectAsState(initial = settingPreferences.fastTopSecond.get())
 
-        Row(
-            modifier = Modifier
-                .clickable {
-                    if (fastWeight == 0) {
-                        settingPreferences.fastWeight.set(5)
-                    } else {
-                        settingPreferences.fastWeight.set(-fastWeight)
-                    }
+        val customSpeed = settingPreferences.customSpeed.flow().collectAsState(settingPreferences.customSpeed.get())
+
+        val speedStringList = speedConfig.keys.toList() + "自定义 (${customSpeed}X)"
+        val speedList = speedConfig.values.toList() + -1f
+
+        val defaultSpeed = settingPreferences.defaultSpeed.flow()
+            .map {
+                if (speedList.indexOf(it) >= 0){
+                    it
+                }else{
+                    settingPreferences.defaultSpeed.set(1f)
+                    1f
                 }
-                .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            }.collectAsState(settingPreferences.defaultSpeed.get())
+
+        StringSelectPreferenceItem(
+            title = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.default_speed)) },
+            textList = speedStringList,
+            select = speedList.indexOf(defaultSpeed.value).coerceAtLeast(0)
         ) {
-            Text(
-                modifier = Modifier,
-                text = stringResource(id = R.string.double_tap_fast),
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            Switch(checked = fastWeight > 0, onCheckedChange = {
+            val speed = speedList.getOrNull(it) ?: 1f
+            settingPreferences.defaultSpeed.set(speed)
+        }
+
+
+        DoubleTapFastSetting(settingPreferences)
+
+
+
+
+    }
+}
+
+@Composable
+fun ColumnScope.DoubleTapFastSetting(
+    settingPreferences: SettingPreferences
+){
+
+
+    val fastWeight by settingPreferences.fastWeight.flow()
+        .map {
+            if (settingPreferences.fastWeightSelection.indexOf(Math.abs(it)) >= 0) it else settingPreferences.fastWeightSelection.first()
+                .apply { settingPreferences.fastWeight.set(this) }
+        }
+        .collectAsState(initial = settingPreferences.fastWeight.get())
+    val fastWeightTop by settingPreferences.fastWeightTopMolecule.flow()
+        .map {
+            if (settingPreferences.fastWeightTopMoleculeSelection.indexOf(Math.abs(it)) >= 0) it else settingPreferences.fastWeightTopMoleculeSelection.first()
+                .apply { settingPreferences.fastWeightTopMolecule.set(this) }
+        }
+        .collectAsState(initial = settingPreferences.fastWeightTopMolecule.get())
+
+    val fastSecond by settingPreferences.fastSecond.flow()
+        .collectAsState(initial = settingPreferences.fastSecond.get())
+    val fastTopSecond by settingPreferences.fastTopSecond.flow()
+        .collectAsState(initial = settingPreferences.fastTopSecond.get())
+
+    Row(
+        modifier = Modifier
+            .clickable {
                 if (fastWeight == 0) {
                     settingPreferences.fastWeight.set(5)
                 } else {
                     settingPreferences.fastWeight.set(-fastWeight)
                 }
-            })
-        }
+            }
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            modifier = Modifier,
+            text = stringResource(id = R.string.double_tap_fast),
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        Switch(checked = fastWeight > 0, onCheckedChange = {
+            if (fastWeight == 0) {
+                settingPreferences.fastWeight.set(5)
+            } else {
+                settingPreferences.fastWeight.set(-fastWeight)
+            }
+        })
+    }
 
 
-        var isFastTimeTopDialog by remember {
-            mutableStateOf(false)
-        }
+    var isFastTimeTopDialog by remember {
+        mutableStateOf(false)
+    }
 
-        var isFastTimeDialog by remember {
-            mutableStateOf(false)
-        }
+    var isFastTimeDialog by remember {
+        mutableStateOf(false)
+    }
 
-        if (fastWeight > 0) {
-            Column {
-                Row(
-                    modifier = Modifier
-                        .clickable {
-                            if (fastWeightTop == 0) {
-                                settingPreferences.fastWeightTopMolecule.set(settingPreferences.fastWeightTopDenominator / 2)
-                            } else {
-                                settingPreferences.fastWeightTopMolecule.set(-fastWeightTop)
-                            }
-                        }
-                        .padding(horizontal = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        modifier = Modifier,
-                        text = stringResource(id = R.string.double_tap_fast_top),
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                    Switch(checked = fastWeightTop > 0, onCheckedChange = {
+    if (fastWeight > 0) {
+        Column {
+            Row(
+                modifier = Modifier
+                    .clickable {
                         if (fastWeightTop == 0) {
                             settingPreferences.fastWeightTopMolecule.set(settingPreferences.fastWeightTopDenominator / 2)
                         } else {
                             settingPreferences.fastWeightTopMolecule.set(-fastWeightTop)
                         }
-                    })
-                }
+                    }
+                    .padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    modifier = Modifier,
+                    text = stringResource(id = R.string.double_tap_fast_top),
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Switch(checked = fastWeightTop > 0, onCheckedChange = {
+                    if (fastWeightTop == 0) {
+                        settingPreferences.fastWeightTopMolecule.set(settingPreferences.fastWeightTopDenominator / 2)
+                    } else {
+                        settingPreferences.fastWeightTopMolecule.set(-fastWeightTop)
+                    }
+                })
+            }
 
-                Spacer(modifier = Modifier.size(12.dp))
+            Spacer(modifier = Modifier.size(12.dp))
+            Slider(
+                value = max(
+                    settingPreferences.fastWeightSelection.indexOf(fastWeight).toFloat(),
+                    0F
+                ),
+                onValueChange = {
+                    val index = it.toInt()
+                    val r = settingPreferences.fastWeightSelection.getOrNull(index)
+                    r?.let {
+                        settingPreferences.fastWeight.set(it)
+                    }
+                },
+                steps = settingPreferences.fastWeightSelection.size - 2,
+                valueRange = 0F..settingPreferences.fastWeightSelection.size.toFloat() - 1
+            )
+
+            if (fastWeightTop > 0f) {
                 Slider(
                     value = max(
-                        settingPreferences.fastWeightSelection.indexOf(fastWeight).toFloat(),
+                        settingPreferences.fastWeightTopMoleculeSelection.indexOf(
+                            fastWeightTop
+                        )
+                            .toFloat(),
                         0F
                     ),
                     onValueChange = {
                         val index = it.toInt()
-                        val r = settingPreferences.fastWeightSelection.getOrNull(index)
+                        val r =
+                            settingPreferences.fastWeightTopMoleculeSelection.getOrNull(
+                                index
+                            )
                         r?.let {
-                            settingPreferences.fastWeight.set(it)
+                            settingPreferences.fastWeightTopMolecule.set(it)
                         }
                     },
-                    steps = settingPreferences.fastWeightSelection.size - 2,
-                    valueRange = 0F..settingPreferences.fastWeightSelection.size.toFloat() - 1
+                    steps = settingPreferences.fastWeightTopMoleculeSelection.size - 2,
+                    valueRange = 0F..settingPreferences.fastWeightTopMoleculeSelection.size.toFloat() - 1
                 )
+            }
 
-                if (fastWeightTop > 0f) {
-                    Slider(
-                        value = max(
-                            settingPreferences.fastWeightTopMoleculeSelection.indexOf(
-                                fastWeightTop
-                            )
-                                .toFloat(),
-                            0F
-                        ),
-                        onValueChange = {
-                            val index = it.toInt()
-                            val r =
-                                settingPreferences.fastWeightTopMoleculeSelection.getOrNull(
-                                    index
-                                )
-                            r?.let {
-                                settingPreferences.fastWeightTopMolecule.set(it)
-                            }
-                        },
-                        steps = settingPreferences.fastWeightTopMoleculeSelection.size - 2,
-                        valueRange = 0F..settingPreferences.fastWeightTopMoleculeSelection.size.toFloat() - 1
-                    )
-                }
+            Spacer(modifier = Modifier.size(12.dp))
 
-                Spacer(modifier = Modifier.size(12.dp))
+            Box(
+                modifier = Modifier
+                    .padding(16.dp, 0.dp)
+                    .clip(RoundedCornerShape(13.dp))
+                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
+                    .fillMaxWidth()
+                    .aspectRatio(16f / 9f)
 
-                Box(
-                    modifier = Modifier
-                        .padding(16.dp, 0.dp)
-                        .clip(RoundedCornerShape(13.dp))
-                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
-                        .fillMaxWidth()
-                        .aspectRatio(16f / 9f)
+            ) {
 
-                ) {
-
-                    if (fastWeightTop > 0) {
-                        Column(
-                            modifier = Modifier
-                                .align(Alignment.CenterStart)
-                                .fillMaxHeight()
-                                .fillMaxWidth(1f / fastWeight)
-                                .background(MaterialTheme.colorScheme.primary)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .weight(fastWeightTop.toFloat() / settingPreferences.fastWeightTopDenominator.toFloat())
-                                    .fillMaxWidth()
-                            ) {
-                                Icon(
-                                    Icons.Filled.FastRewind,
-                                    modifier = Modifier.align(Alignment.Center),
-                                    contentDescription = stringResource(id = R.string.long_press_fast_forward),
-                                    tint = MaterialTheme.colorScheme.onPrimary
-                                )
-                            }
-                            Box(
-                                modifier = Modifier
-                                    .height(1.dp)
-                                    .fillMaxWidth()
-                                    .background(MaterialTheme.colorScheme.onPrimary)
-                            )
-
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f - (fastWeightTop.toFloat() / settingPreferences.fastWeightTopDenominator.toFloat()))
-                                    .fillMaxWidth()
-                            ) {
-                                Icon(
-                                    Icons.Filled.FastRewind,
-                                    modifier = Modifier.align(Alignment.Center),
-                                    contentDescription = stringResource(id = R.string.long_press_fast_forward),
-                                    tint = MaterialTheme.colorScheme.onPrimary
-                                )
-                            }
-
-                        }
-
-
-                        Column(
-                            modifier = Modifier
-                                .align(Alignment.CenterEnd)
-                                .fillMaxHeight()
-                                .fillMaxWidth(1f / fastWeight)
-                                .background(MaterialTheme.colorScheme.primary)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .weight(fastWeightTop.toFloat() / settingPreferences.fastWeightTopDenominator)
-                                    .fillMaxWidth()
-                            ) {
-                                Icon(
-                                    Icons.Filled.FastForward,
-                                    modifier = Modifier.align(Alignment.Center),
-                                    contentDescription = stringResource(id = R.string.long_press_fast_forward),
-                                    tint = MaterialTheme.colorScheme.onPrimary
-                                )
-                            }
-                            Box(
-                                modifier = Modifier
-                                    .height(1.dp)
-                                    .fillMaxWidth()
-                                    .background(MaterialTheme.colorScheme.onPrimary)
-                            )
-
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f - (fastWeightTop.toFloat() / settingPreferences.fastWeightTopDenominator))
-                                    .fillMaxWidth()
-                            ) {
-                                Icon(
-                                    Icons.Filled.FastForward,
-                                    modifier = Modifier.align(Alignment.Center),
-                                    contentDescription = stringResource(id = R.string.long_press_fast_forward),
-                                    tint = MaterialTheme.colorScheme.onPrimary
-                                )
-                            }
-                        }
-                    } else {
+                if (fastWeightTop > 0) {
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.CenterStart)
+                            .fillMaxHeight()
+                            .fillMaxWidth(1f / fastWeight)
+                            .background(MaterialTheme.colorScheme.primary)
+                    ) {
                         Box(
                             modifier = Modifier
-                                .align(Alignment.CenterStart)
-                                .fillMaxHeight()
-                                .fillMaxWidth(1f / fastWeight)
-                                .background(MaterialTheme.colorScheme.primary)
+                                .weight(fastWeightTop.toFloat() / settingPreferences.fastWeightTopDenominator.toFloat())
+                                .fillMaxWidth()
+                        ) {
+                            Icon(
+                                Icons.Filled.FastRewind,
+                                modifier = Modifier.align(Alignment.Center),
+                                contentDescription = stringResource(id = R.string.long_press_fast_forward),
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
+                        Box(
+                            modifier = Modifier
+                                .height(1.dp)
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.onPrimary)
+                        )
+
+                        Box(
+                            modifier = Modifier
+                                .weight(1f - (fastWeightTop.toFloat() / settingPreferences.fastWeightTopDenominator.toFloat()))
+                                .fillMaxWidth()
                         ) {
                             Icon(
                                 Icons.Filled.FastRewind,
@@ -358,14 +346,39 @@ fun ColumnScope.PlayerSetting(
                             )
                         }
 
+                    }
 
+
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .fillMaxHeight()
+                            .fillMaxWidth(1f / fastWeight)
+                            .background(MaterialTheme.colorScheme.primary)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .weight(fastWeightTop.toFloat() / settingPreferences.fastWeightTopDenominator)
+                                .fillMaxWidth()
+                        ) {
+                            Icon(
+                                Icons.Filled.FastForward,
+                                modifier = Modifier.align(Alignment.Center),
+                                contentDescription = stringResource(id = R.string.long_press_fast_forward),
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
+                        Box(
+                            modifier = Modifier
+                                .height(1.dp)
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.onPrimary)
+                        )
 
                         Box(
                             modifier = Modifier
-                                .align(Alignment.CenterEnd)
-                                .fillMaxHeight()
-                                .fillMaxWidth(1f / fastWeight)
-                                .background(MaterialTheme.colorScheme.primary)
+                                .weight(1f - (fastWeightTop.toFloat() / settingPreferences.fastWeightTopDenominator))
+                                .fillMaxWidth()
                         ) {
                             Icon(
                                 Icons.Filled.FastForward,
@@ -375,96 +388,127 @@ fun ColumnScope.PlayerSetting(
                             )
                         }
                     }
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.CenterStart)
+                            .fillMaxHeight()
+                            .fillMaxWidth(1f / fastWeight)
+                            .background(MaterialTheme.colorScheme.primary)
+                    ) {
+                        Icon(
+                            Icons.Filled.FastRewind,
+                            modifier = Modifier.align(Alignment.Center),
+                            contentDescription = stringResource(id = R.string.long_press_fast_forward),
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
 
 
 
-
-
-                    if (fastWeight == 2) {
-                        Box(
-                            modifier = Modifier
-                                .width(1.dp)
-                                .fillMaxHeight()
-                                .align(Alignment.Center)
-                                .background(MaterialTheme.colorScheme.onPrimary)
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .fillMaxHeight()
+                            .fillMaxWidth(1f / fastWeight)
+                            .background(MaterialTheme.colorScheme.primary)
+                    ) {
+                        Icon(
+                            Icons.Filled.FastForward,
+                            modifier = Modifier.align(Alignment.Center),
+                            contentDescription = stringResource(id = R.string.long_press_fast_forward),
+                            tint = MaterialTheme.colorScheme.onPrimary
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.size(12.dp))
 
 
-                if (fastWeightTop > 0) {
-                    ListItem(
-                        modifier = Modifier.clickable {
-                            isFastTimeTopDialog = true
-                        },
-                        headlineContent = {
-                            Text(text = stringResource(id = R.string.fast_time_top))
-                        },
-                        supportingContent = {
-                            Text(text = "${fastTopSecond}s")
-                        }
+
+
+                if (fastWeight == 2) {
+                    Box(
+                        modifier = Modifier
+                            .width(1.dp)
+                            .fillMaxHeight()
+                            .align(Alignment.Center)
+                            .background(MaterialTheme.colorScheme.onPrimary)
                     )
-
-                    Spacer(modifier = Modifier.size(12.dp))
                 }
+            }
 
+            Spacer(modifier = Modifier.size(12.dp))
+
+
+            if (fastWeightTop > 0) {
                 ListItem(
                     modifier = Modifier.clickable {
-                        isFastTimeDialog = true
+                        isFastTimeTopDialog = true
                     },
                     headlineContent = {
-                        if (fastWeightTop > 0f) {
-                            Text(text = stringResource(id = R.string.fast_time_bottom))
-                        } else {
-                            Text(text = stringResource(id = R.string.fast_time))
-                        }
-
+                        Text(text = stringResource(id = R.string.fast_time_top))
                     },
                     supportingContent = {
-                        Text(text = "${fastSecond}s")
+                        Text(text = "${fastTopSecond}s")
                     }
                 )
 
-
+                Spacer(modifier = Modifier.size(12.dp))
             }
-        }
 
-
-
-        if (isFastTimeTopDialog) {
-            EasyNumDialog(
-                defaultNum = fastTopSecond,
-                onDismissRequest = { isFastTimeTopDialog = false },
-                title = {
-                    Text(text = stringRes(R.string.fast_time_top))
-
+            ListItem(
+                modifier = Modifier.clickable {
+                    isFastTimeDialog = true
                 },
-                onConfirm = {
-                    settingPreferences.fastTopSecond.set(it)
-                }
-            )
-        }
-        if (isFastTimeDialog) {
-            EasyNumDialog(
-                defaultNum = fastSecond,
-                onDismissRequest = { isFastTimeDialog = false },
-                title = {
-                    if (fastWeightTop > 0) {
-                        Text(text = stringRes(R.string.fast_time_bottom))
+                headlineContent = {
+                    if (fastWeightTop > 0f) {
+                        Text(text = stringResource(id = R.string.fast_time_bottom))
                     } else {
-                        Text(text = stringRes(R.string.fast_time))
+                        Text(text = stringResource(id = R.string.fast_time))
                     }
+
                 },
-                onConfirm = {
-                    settingPreferences.fastSecond.set(it)
+                supportingContent = {
+                    Text(text = "${fastSecond}s")
                 }
             )
+
+
         }
     }
-}
 
+
+
+    if (isFastTimeTopDialog) {
+        EasyNumDialog(
+            defaultNum = fastTopSecond,
+            onDismissRequest = { isFastTimeTopDialog = false },
+            title = {
+                Text(text = stringRes(R.string.fast_time_top))
+
+            },
+            onConfirm = {
+                settingPreferences.fastTopSecond.set(it)
+            }
+        )
+    }
+    if (isFastTimeDialog) {
+        EasyNumDialog(
+            defaultNum = fastSecond,
+            onDismissRequest = { isFastTimeDialog = false },
+            title = {
+                if (fastWeightTop > 0) {
+                    Text(text = stringRes(R.string.fast_time_bottom))
+                } else {
+                    Text(text = stringRes(R.string.fast_time))
+                }
+            },
+            onConfirm = {
+                settingPreferences.fastSecond.set(it)
+            }
+        )
+    }
+}
 
 @Composable
 fun EasyNumDialog(
