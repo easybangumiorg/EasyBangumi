@@ -465,4 +465,16 @@
 
     <string name="custom_speed">自定义倍速</string>
     <string name="please_input_right_speed">请输入正确数字！</string>
+
+    <string name="default_speed">默认倍速</string>
+    <string name="player_seek_full_width_time_ms">横向滑动整个手机屏幕视频播放前进的时间（毫秒）</string>
+
+    <string name="video_scale_type_default">默认</string>
+    <string name="video_scale_type_16_9">16:9</string>
+    <string name="video_scale_type_4_3">4:3</string>
+    <string name="video_scale_type_match_parent">充满屏幕（缩放）</string>
+    <string name="video_scale_type_original">原始尺寸</string>
+    <string name="video_scale_type_center_crop">平铺（裁剪）</string>
+    <string name="video_scale_type_adapt">自动模式</string>
+
 </resources>
