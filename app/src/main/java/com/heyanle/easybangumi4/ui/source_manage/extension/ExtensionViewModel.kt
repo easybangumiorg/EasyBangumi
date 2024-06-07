@@ -47,7 +47,6 @@ class ExtensionViewModel : ViewModel() {
         val list: List<ExtensionItem> = emptyList(),
         val searchKey: String? = null, // 为 null 则 top bar 里没有输入法
         val showList: List<ExtensionItem> = emptyList(), // 搜索后的数据
-        val currentTab: Int = 0,
         val readyToDeleteFile: File? = null,
     )
 
@@ -148,10 +147,9 @@ class ExtensionViewModel : ViewModel() {
         viewModelScope.launch {
             combine(
                 _stateFlow.map { it.searchKey }.distinctUntilChanged().stateIn(viewModelScope),
-                _stateFlow.map { it.currentTab }.distinctUntilChanged().stateIn(viewModelScope),
                 _stateFlow.map { if (it.isLoading) null else it.list }.distinctUntilChanged()
                     .stateIn(viewModelScope),
-            ) { search, tab, list ->
+            ) { search, list ->
                 "feedback Flow".logi(TAG)
                 if (list == null) {
                     return@combine
@@ -161,28 +159,10 @@ class ExtensionViewModel : ViewModel() {
                     } else {
                         list.filter { it.match(search) }
                     }
-                    val showList = when (tab) {
-                        0 -> searchList
-                        1 -> searchList.filter {
-                            it is ExtensionItem.StoreExtensionInfo && it.info.state == ExtensionStoreInfo.STATE_NEED_UPDATE
-                        }
-
-                        2 -> searchList.filter {
-                            (it is ExtensionItem.StoreExtensionInfo &&
-                                    (it.info.state == ExtensionStoreInfo.STATE_INSTALLED || it.info.state == ExtensionStoreInfo.STATE_NEED_UPDATE))
-                                    || (it is ExtensionItem.ExtensionInfo)
-                        }
-
-                        3 -> searchList.filter {
-                            it is ExtensionItem.StoreInfo && (it.info.state == ExtensionStoreInfo.STATE_ERROR || it.info.state == ExtensionStoreInfo.STATE_DOWNLOADING)
-                        }
-
-                        else -> emptyList()
-                    }
 
                     _stateFlow.update {
                         it.copy(
-                            showList = showList
+                            showList = searchList
                         )
                     }
                 }
@@ -204,13 +184,6 @@ class ExtensionViewModel : ViewModel() {
         extensionStoreController.refresh()
     }
 
-    fun onTabClick(index: Int) {
-        _stateFlow.update {
-            it.copy(
-                currentTab = index
-            )
-        }
-    }
 
     fun onItemClick(
         item: ExtensionItem,

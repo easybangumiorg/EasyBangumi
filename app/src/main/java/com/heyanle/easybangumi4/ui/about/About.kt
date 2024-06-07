@@ -99,24 +99,6 @@ fun About() {
 
                 )
 
-//                ListItem(
-//                    colors = ListItemDefaults.colors(
-//                        containerColor = Color.Transparent
-//                    ),
-//                    modifier = Modifier.clickable {
-//                        Distribute.checkForUpdate()
-//                    },
-//                    headlineContent = {
-//                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.check_update))
-//                    },
-//                    leadingContent = {
-//                        Icon(
-//                            Icons.Filled.Upload,
-//                            contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.check_update)
-//                        )
-//                    },
-//                )
-
                 Divider()
 
                 val manager: ClipboardManager = LocalClipboardManager.current
@@ -184,9 +166,7 @@ fun About() {
                         }
                     }
                 }
-
             }
         }
     }
-
 }

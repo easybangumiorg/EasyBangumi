@@ -82,37 +82,6 @@ fun SourceContainerBase(
                         errorMsg = stringResource(id = R.string.no_source),
                         clickEnable = false,
                         other = {
-                            Column {
-
-                                TextButton(onClick = {
-                                    nav.navigationSourceManager(1)
-                                }) {
-                                    Text(text = stringResource(id = R.string.store_get))
-                                }
-
-
-//                                TextButton(onClick = {
-//                                    stringRes(R.string.try_qq_group).toast()
-//                                    kotlin.runCatching {
-//                                        C.extensionUrl.openUrl()
-//                                    }.onFailure {
-//                                        it.printStackTrace()
-//                                    }
-//                                }) {
-//                                    Text(text = stringResource(id = R.string.website_get))
-//                                }
-
-
-                                TextButton(onClick = {
-                                    stringRes(R.string.add_group_get).moeSnackBar()
-                                    nav.navigate(ABOUT)
-
-                                }) {
-                                    Text(text = stringResource(id = R.string.group_get))
-                                }
-                            }
-
-
                         }
                     )
                 } else {

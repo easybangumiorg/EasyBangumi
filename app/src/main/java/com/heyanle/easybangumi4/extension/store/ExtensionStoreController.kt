@@ -150,8 +150,8 @@ class ExtensionStoreController(
             extensionStoreInfoRepository.getInfoList()
                 .onError { err ->
                     yield()
-                    err.errorMsg.moeSnackBar()
-                    stringRes(com.heyanle.easy_i18n.R.string.store_err_need_vpn).moeSnackBar()
+                    // err.errorMsg.moeSnackBar()
+                    //stringRes(com.heyanle.easy_i18n.R.string.store_err_need_vpn).moeSnackBar()
                     _remoteStateFlow.update {
                         RemoteExtensionStoreState.Error(
                             err.errorMsg,
