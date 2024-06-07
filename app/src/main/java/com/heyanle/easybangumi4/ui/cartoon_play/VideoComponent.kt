@@ -1,5 +1,6 @@
 package com.heyanle.easybangumi4.ui.cartoon_play
 
+import android.adservices.topics.Topic
 import android.app.Activity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -74,10 +75,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
+import androidx.lifecycle.viewModelScope
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.navigationDlna
+import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayingViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.DetailedViewModel
@@ -92,6 +95,7 @@ import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.shareImageText
 import com.heyanle.easybangumi4.utils.shareText
+import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -132,16 +136,45 @@ fun VideoFloat(
     showSpeedWin: MutableState<Boolean>,
     showEpisodeWin: MutableState<Boolean>,
 ) {
+    val nav = LocalNavController.current
     val ctx = LocalContext.current as Activity
+    val scaleType by cartoonPlayingViewModel.videoScaleType.collectAsState()
 
-    LaunchedEffect(key1 = playingState) {
-        if (playingState.isError) {
-            controlVM.onFullScreen(false, false, ctx)
+    LaunchedEffect(Unit) {
+        launch {
+            snapshotFlow {
+                playingState
+            }.collectLatest {
+                if (it.isError) {
+                    controlVM.onFullScreen(fullScreen = false, reverse = false, ctx)
+                }
+            }
         }
-    }
-    LaunchedEffect(key1 = controlVM.controlState) {
-        if (controlVM.controlState == ControlViewModel.ControlState.Ended) {
-            cartoonPlayViewModel.tryNext()
+
+        launch {
+            snapshotFlow {
+                controlVM.controlState
+            }.collectLatest {
+                if (it == ControlViewModel.ControlState.Ended) {
+                    cartoonPlayViewModel.tryNext()
+                }
+            }
+        }
+
+        launch {
+            snapshotFlow {
+                scaleType
+            }.collectLatest {
+                controlVM.surfaceView.setScaleType(scaleType)
+            }
+        }
+
+        val defaultSpeed = cartoonPlayingViewModel.defaultSpeed.value
+        val customSpeed = cartoonPlayingViewModel.customSpeed.value
+        if (defaultSpeed == -1f){
+            controlVM.setSpeed(if (customSpeed > 0) customSpeed else 1f)
+        }else{
+            controlVM.setSpeed(if (defaultSpeed > 0) defaultSpeed else 1f)
         }
     }
 
@@ -165,7 +198,10 @@ fun VideoFloat(
             IconButton(
                 modifier = Modifier.align(Alignment.TopStart),
                 onClick = {
-                    controlVM.onFullScreen(false, false, ctx)
+                    if (controlVM.isFullScreen)
+                        controlVM.onFullScreen(fullScreen = false, reverse = false, ctx)
+                    else
+                        nav.popBackStack()
                 }) {
                 Icon(
                     Icons.Filled.ArrowBack,
@@ -175,20 +211,37 @@ fun VideoFloat(
             }
         }
     } else if (playingState.isError) {
-        ErrorPage(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black),
-            errorMsg = playingState.errorMsg,
-            errorMsgColor = Color.White.copy(0.6f),
-            clickEnable = true,
-            other = {
-                Text(text = stringResource(id = R.string.click_to_retry))
-            },
-            onClick = {
-                cartoonPlayingViewModel.tryRefresh()
+        Box {
+            ErrorPage(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black),
+                errorMsg = playingState.errorMsg,
+                errorMsgColor = Color.White.copy(0.6f),
+                clickEnable = true,
+                other = {
+                    Text(text = stringResource(id = R.string.click_to_retry))
+                },
+                onClick = {
+                    cartoonPlayingViewModel.tryRefresh()
+                }
+            )
+            IconButton(
+                modifier = Modifier.align(Alignment.TopStart),
+                onClick = {
+                    if (controlVM.isFullScreen)
+                        controlVM.onFullScreen(fullScreen = false, reverse = false, ctx)
+                    else
+                        nav.popBackStack()
+                }) {
+                Icon(
+                    Icons.Filled.ArrowBack,
+                    contentDescription = stringResource(id = R.string.back),
+                    tint = Color.White
+                )
             }
-        )
+        }
+
     } else if (playingState.isPlaying) {
         if (controlVM.controlState == ControlViewModel.ControlState.Ended) {
             Box(
@@ -404,6 +457,11 @@ fun VideoControl(
 
             val fastWeight by cartoonPlayingVM.fastWeight.collectAsState()
             val fastSecond by cartoonPlayingVM.fastSecond.collectAsState()
+            val fastTopSecond by cartoonPlayingVM.fastTopSecond.collectAsState()
+            val fastWeightTopDenominator = cartoonPlayingVM.fastWeightTopDenominator
+            val fastTopWeightMolecule by cartoonPlayingVM.fastTopWeightMolecule.collectAsState()
+            val playerSeekFullWidthTime by cartoonPlayingVM.playerSeekFullWidthTimeMS.collectAsState()
+
             if(fastWeight <= 0){
                 // 手势
                 SimpleGestureController(
@@ -411,24 +469,38 @@ fun VideoControl(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(6.dp, 64.dp),
-                    longTouchText = stringResource(id = R.string.long_press_fast_forward)
+                    longTouchText = stringResource(id = R.string.long_press_fast_forward),
+                    slideFullTime = playerSeekFullWidthTime,
                 )
             }else{
 
-                GestureController(controlVM, Modifier
+                GestureController(
+                    controlVM, Modifier
                     .fillMaxSize()
-                    .padding(6.dp, 64.dp), 300000, supportFast = true, fastWeight = 1f/fastWeight) {
+                    .padding(6.dp, 64.dp),
+                    playerSeekFullWidthTime,
+                    supportFast = true,
+                    horizontalDoubleTapWeight = 1f/fastWeight,
+                    verticalDoubleTapWeight = fastTopWeightMolecule.toFloat() / fastWeightTopDenominator.toFloat(),
+                    topFastTime = fastTopSecond * 1000L,
+                ) {
                     BrightVolumeUI()
                     SlideUI()
                     LongTouchUI(stringResource(id = R.string.long_press_fast_forward))
                 }
+
+
                 FastUI(
                     vm = controlVM,
                     fastForwardText = "${fastSecond}s",
                     fastRewindText = "${fastSecond}s",
-                    fastWeight = 1f / fastWeight,
+                    fastForwardTopText = "${fastTopSecond}s",
+                    fastRewindTopText = "${fastTopSecond}s",
+                    horizontalDoubleTapWeight = 1f / fastWeight,
+                    verticalDoubleTapWeight = fastTopWeightMolecule / fastWeightTopDenominator.toFloat(),
                     delayTime = 1000
                 )
+
 
             }
 
@@ -848,4 +920,192 @@ fun FastUI(
         }
     }
 
+}
+
+
+
+@Composable
+fun FastUI(
+    vm: ControlViewModel,
+    fastForwardText: String = "快进",
+    fastRewindText: String = "快退",
+
+    fastForwardTopText: String = "快进",
+    fastRewindTopText: String = "快退",
+
+    horizontalDoubleTapWeight: Float = 0.2f,
+    verticalDoubleTapWeight: Float = 0.5f,
+    delayTime: Long = 2000,
+) {
+    val realHorizontalWeight = horizontalDoubleTapWeight.coerceAtLeast(0.2f)
+    LaunchedEffect(key1 = Unit) {
+        launch {
+            snapshotFlow {
+                vm.isFastForwardTopShow || vm.isFastForwardWinShow || vm.isFastRewindWinShow || vm.isFastRewindTopShow
+            }.collectLatest {
+                if (it) {
+                    delay(delayTime)
+                    vm.isFastRewindWinShow = false
+                    vm.isFastForwardWinShow = false
+
+                    vm.isFastRewindTopShow = false
+                    vm.isFastForwardTopShow = false
+                }
+            }
+        }
+    }
+
+    AnimatedVisibility(
+        visible = vm.isFastForwardTopShow || vm.isFastForwardWinShow || vm.isFastRewindWinShow || vm.isFastRewindTopShow,
+        enter = fadeIn(),
+        exit = fadeOut()
+    ) {
+        Row {
+            Column {
+                Box(modifier = Modifier.weight(verticalDoubleTapWeight).fillMaxWidth()){
+                    Box(
+                        Modifier
+                            .clip(
+                                RoundedCornerShape(
+                                    CornerSize(0),
+                                    CornerSize(100),
+                                    CornerSize(100),
+                                    CornerSize(0)
+                                )
+                            )
+                            .background(Color.Black.copy(alpha = 0.5f)),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                Icons.Filled.FastRewind,
+                                null,
+                                tint = Color.White,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.size(8.dp))
+                            Text(
+                                modifier = Modifier,
+                                textAlign = TextAlign.Center,
+                                text = fastRewindTopText,
+                                color = Color.White
+                            )
+
+
+                        }
+                    }
+                }
+                Box(modifier = Modifier.weight(1 - verticalDoubleTapWeight).fillMaxWidth()){
+                    Box(
+                        Modifier
+                            .clip(
+                                RoundedCornerShape(
+                                    CornerSize(0),
+                                    CornerSize(100),
+                                    CornerSize(100),
+                                    CornerSize(0)
+                                )
+                            )
+                            .background(Color.Black.copy(alpha = 0.5f)),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                Icons.Filled.FastRewind,
+                                null,
+                                tint = Color.White,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.size(8.dp))
+                            Text(
+                                modifier = Modifier,
+                                textAlign = TextAlign.Center,
+                                text = fastRewindText,
+                                color = Color.White
+                            )
+
+
+                        }
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.weight(1f - 2*realHorizontalWeight))
+            Column {
+                Box(modifier = Modifier.weight(verticalDoubleTapWeight).fillMaxWidth()){
+                    Box(
+                        Modifier
+                            .clip(
+                                RoundedCornerShape(
+                                    CornerSize(100),
+                                    CornerSize(0),
+                                    CornerSize(0),
+                                    CornerSize(100)
+                                )
+                            )
+                            .background(Color.Black.copy(alpha = 0.5f)),
+                        contentAlignment = Alignment.CenterEnd
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                modifier = Modifier,
+                                textAlign = TextAlign.Center,
+                                text = fastForwardTopText,
+                                color = Color.White
+                            )
+                            Spacer(modifier = Modifier.size(8.dp))
+                            Icon(
+                                Icons.Filled.FastForward,
+                                null,
+                                tint = Color.White,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                }
+                Box(modifier = Modifier.weight(1 - verticalDoubleTapWeight).fillMaxWidth()){
+                    Box(
+                        Modifier
+                            .clip(
+                                RoundedCornerShape(
+                                    CornerSize(100),
+                                    CornerSize(0),
+                                    CornerSize(0),
+                                    CornerSize(100)
+                                )
+                            )
+                            .background(Color.Black.copy(alpha = 0.5f)),
+                        contentAlignment = Alignment.CenterEnd
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                modifier = Modifier,
+                                textAlign = TextAlign.Center,
+                                text = fastForwardText,
+                                color = Color.White
+                            )
+                            Spacer(modifier = Modifier.size(8.dp))
+                            Icon(
+                                Icons.Filled.FastForward,
+                                null,
+                                tint = Color.White,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

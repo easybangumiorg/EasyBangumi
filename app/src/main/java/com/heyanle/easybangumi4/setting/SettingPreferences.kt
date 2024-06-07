@@ -8,6 +8,7 @@ import com.heyanle.easybangumi4.theme.EasyThemeMode
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.easybangumi4.utils.mb
 import com.heyanle.easybangumi4.utils.stringRes
+import loli.ball.easyplayer2.utils.MeasureHelper
 import java.io.File
 
 /**
@@ -118,4 +119,21 @@ class SettingPreferences(
     // 详情页集列数
     val detailedScreenEpisodeGridCount = preferenceStore.getInt("detailed_screen_episode_grid_count", 2)
 
+
+    val scaleTypeSelection = listOf(
+        MeasureHelper.SCREEN_SCALE_DEFAULT to com.heyanle.easy_i18n.R.string.video_scale_type_default,
+        MeasureHelper.SCREEN_SCALE_16_9 to com.heyanle.easy_i18n.R.string.video_scale_type_16_9,
+        MeasureHelper.SCREEN_SCALE_4_3 to com.heyanle.easy_i18n.R.string.video_scale_type_4_3,
+        MeasureHelper.SCREEN_SCALE_MATCH_PARENT to com.heyanle.easy_i18n.R.string.video_scale_type_match_parent,
+        MeasureHelper.SCREEN_SCALE_ORIGINAL to com.heyanle.easy_i18n.R.string.video_scale_type_original,
+        MeasureHelper.SCREEN_SCALE_CENTER_CROP to com.heyanle.easy_i18n.R.string.video_scale_type_center_crop,
+        MeasureHelper.SCREEN_SCALE_ADAPT to com.heyanle.easy_i18n.R.string.video_scale_type_adapt,)
+    // 视频填充模式
+    val videoScaleType = preferenceStore.getInt("video_scale_type", 0)
+
+    // 默认倍速（-1 表示默认为当前自定义）
+    val defaultSpeed = preferenceStore.getFloat("default_speed", 1f)
+
+    // 播放器拖动屏幕拉进度条的幅度（当前视频总宽度占的视频时间）
+    val playerSeekFullWidthTimeMS = preferenceStore.getLong("player_seek_full_width_time_ms", 300000)
 }
