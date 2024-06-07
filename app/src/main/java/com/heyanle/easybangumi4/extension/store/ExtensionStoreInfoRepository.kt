@@ -14,7 +14,7 @@ import okhttp3.Request
 class ExtensionStoreInfoRepository {
 
     companion object {
-        private const val EXTENSION_STORE_INFO_ROOT_URL = "https://raw.githubusercontent.com/easybangumiorg/EasyBangumi-sources/public/repository/extension"
+        private const val EXTENSION_STORE_INFO_ROOT_URL = ""
         private const val EXTENSION_STORE_INFO_URL = "${EXTENSION_STORE_INFO_ROOT_URL}/extension.json"
         const val EXTENSION_STORE_ICON_ROOT_URL = "${EXTENSION_STORE_INFO_ROOT_URL}/icon"
         private const val EXTENSION_STORE_VERSION = 1
@@ -29,7 +29,7 @@ class ExtensionStoreInfoRepository {
                     Request.Builder().url(EXTENSION_STORE_INFO_URL).get().build()
                 ).execute()
             }.getOrElse {
-                it.printStackTrace()
+                // it.printStackTrace()
 
                 return@withContext  DataResult.error<ExtensionStoreRemoteInfo>(it.message?:"", it)
             }

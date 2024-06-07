@@ -176,13 +176,13 @@ fun ExtensionTopAppBar(behavior: TopAppBarScrollBehavior) {
                     )
                 }
 
-                IconButton(onClick = {
-                    vm.refresh()
-                }) {
-                    Icon(
-                        imageVector = Icons.Filled.Refresh, stringResource(id = R.string.refresh)
-                    )
-                }
+//                IconButton(onClick = {
+//                    vm.refresh()
+//                }) {
+//                    Icon(
+//                        imageVector = Icons.Filled.Refresh, stringResource(id = R.string.refresh)
+//                    )
+//                }
             } else {
                 IconButton(onClick = {
                     vm.onSearchChange(null)
@@ -210,33 +210,7 @@ fun Extension() {
         LoadingPage(modifier = Modifier.fillMaxSize())
     } else {
         Column {
-            val list = remember {
-                listOf(
-                    stringRes(R.string.all_word),
-                    stringRes(R.string.filter_with_is_update),
-                    stringRes(R.string.download_completely),
-                    stringRes(R.string.downloading)
-                )
-            }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState(), enabled = true),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Spacer(modifier = Modifier.size(8.dp))
-                repeat(4) {
-                    FilterChip(
-                        selected = it == sta.currentTab,
-                        onClick = {
-                            vm.onTabClick(it)
-                        },
-                        label = { Text(text = list.getOrNull(it) ?: "") },
-                        colors = FilterChipDefaults.filterChipColors(),
-                    )
-                }
-                Spacer(modifier = Modifier.size(8.dp))
-            }
+
 
             LazyColumn(
                 modifier = Modifier

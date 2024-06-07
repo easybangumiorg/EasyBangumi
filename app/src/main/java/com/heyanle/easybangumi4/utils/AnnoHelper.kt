@@ -59,48 +59,48 @@ object AnnoHelper {
 
     var lastCheckTime by okkv("anno_last_check_time", 0L)
 
-    const val baseUrl =
-        "https://raw.githubusercontent.com/easybangumiorg/EasyBangumi-sources/main/announcement/"
+    const val baseUrl = ""
+        //"https://raw.githubusercontent.com/easybangumiorg/EasyBangumi-sources/main/announcement/"
     const val lastUrl = "${baseUrl}LATEST.json"
 
     private val scope = MainScope()
 
     fun init() {
-        scope.launch(Dispatchers.IO) {
-            kotlin.runCatching {
-                val now = System.currentTimeMillis()
-                if (now - lastCheckTime >= checkCD || BuildConfig.DEBUG) {
-                    lastCheckTime = now
-
-                    OkhttpHelper.client.newCall(
-                        Request.Builder().url(lastUrl).get().build()
-                    ).execute().body?.string()
-                        ?.let { json ->
-
-                            val list = Gson().fromJson<List<AnnoItem>>(
-                                json,
-                                object : TypeToken<List<AnnoItem>>() {}.type
-                            )
-
-                            val anno =
-                                checkAnno(
-                                    list
-                                )
-                            val d = showedAnnoList.toMutableSet()
-                            d.addAll(anno)
-                            showedAnnoList = d
-                            withContext(Dispatchers.Main) {
-                                annoList.clear()
-                                annoList.addAll(anno)
-                            }
-                        }
-
-                }
-            }.onFailure {
-                it.printStackTrace()
-            }
-
-        }
+//        scope.launch(Dispatchers.IO) {
+//            kotlin.runCatching {
+//                val now = System.currentTimeMillis()
+//                if (now - lastCheckTime >= checkCD || BuildConfig.DEBUG) {
+//                    lastCheckTime = now
+//
+//                    OkhttpHelper.client.newCall(
+//                        Request.Builder().url(lastUrl).get().build()
+//                    ).execute().body?.string()
+//                        ?.let { json ->
+//
+//                            val list = Gson().fromJson<List<AnnoItem>>(
+//                                json,
+//                                object : TypeToken<List<AnnoItem>>() {}.type
+//                            )
+//
+//                            val anno =
+//                                checkAnno(
+//                                    list
+//                                )
+//                            val d = showedAnnoList.toMutableSet()
+//                            d.addAll(anno)
+//                            showedAnnoList = d
+//                            withContext(Dispatchers.Main) {
+//                                annoList.clear()
+//                                annoList.addAll(anno)
+//                            }
+//                        }
+//
+//                }
+//            }.onFailure {
+//                it.printStackTrace()
+//            }
+//
+//        }
     }
 
     private fun checkAnno(list: List<AnnoItem>): List<AnnoItem> {
