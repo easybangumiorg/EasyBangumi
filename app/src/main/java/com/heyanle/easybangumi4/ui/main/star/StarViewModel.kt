@@ -5,12 +5,11 @@ import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
-import com.heyanle.easybangumi4.cartoon.star.CartoonStarController
 import com.heyanle.easybangumi4.cartoon.tag.CartoonTagsController
 import com.heyanle.easybangumi4.cartoon.tag.isALL
-import com.heyanle.easybangumi4.cartoon.tag.isUpdate
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.cartoon.CartoonUpdateController
+import com.heyanle.easybangumi4.cartoon.star.CartoonStarController
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.ui.common.proc.FilterState
 import com.heyanle.easybangumi4.ui.common.proc.FilterWith
@@ -86,7 +85,7 @@ class StarViewModel : ViewModel() {
 
         data class MigrateSource(
             val selection: Set<CartoonInfo>,
-        ): DialogState()
+        ) : DialogState()
     }
 
     private val cartoonStarController: CartoonStarController by Injekt.injectLazy()
@@ -99,10 +98,17 @@ class StarViewModel : ViewModel() {
     private val _stateFlow = MutableStateFlow(State(data = emptyMap()))
     val stateFlow = _stateFlow.asStateFlow()
 
-    val isFilter = cartoonStarController.filterState.statusMap.map {
-        for (entry in it) {
+    val tagSortFilterState = cartoonStarController.tagSortFilterStateItem
+
+    val isFilter = combine(
+        cartoonStarController.tagSortFilterStateItem,
+        stateFlow
+    ) { sortFilterItem, state ->
+        val currentTag = state.curTab ?: return@combine false
+        val stat = sortFilterItem[currentTag.id] ?: return@combine false
+        for (entry in stat.filterState) {
             if (entry.value == FilterState.STATUS_ON || entry.value == FilterState.STATUS_EXCLUDE) {
-                return@map true
+                return@combine true
             }
         }
         false
@@ -118,9 +124,13 @@ class StarViewModel : ViewModel() {
             combine(
                 cartoonTagsController.tagsList.map { it.sortedBy { it.order } }
                     .distinctUntilChanged().stateIn(viewModelScope),
-                cartoonStarController.flowCartoon().distinctUntilChanged().stateIn(viewModelScope),
+                cartoonStarController.flowCartoonTag.distinctUntilChanged().stateIn(viewModelScope),
+                // cartoonStarControllerOld.flowCartoon().distinctUntilChanged().stateIn(viewModelScope),
                 stateFlow.map { it.searchQuery }.distinctUntilChanged(),
-            ) { tagList, starList, searchKey ->
+            ) { tagList, starMap, searchKey ->
+                val allTag = tagList.find { it.id == CartoonTagsController.ALL_TAG_ID }
+                val allList = starMap[allTag] ?: emptyList()
+
                 val tagsMap = HashMap<Int, CartoonTag>()
                 tagList.forEach {
                     tagsMap[it.id] = it
@@ -130,20 +140,22 @@ class StarViewModel : ViewModel() {
                     _stateFlow.update {
                         it.copy(
                             tabs = tagList,
-                            curTab = it.curTab?.id?.let { tagsMap[it] },
-                            starCount = starList.size,
+                            curTab = it.curTab?.id?.let { tagsMap[it] }
+                                ?: tagsMap[CartoonTagsController.ALL_TAG_ID],
+                            starCount = allList.size,
                             isLoading = false,
-                            data = starList.toMap(tagsMap)
+                            data = starMap
                         )
                     }
                 } else {
                     _stateFlow.update {
                         it.copy(
                             tabs = tagList,
-                            curTab = it.curTab?.id?.let { tagsMap[it] },
-                            starCount = starList.size,
+                            curTab = it.curTab?.id?.let { tagsMap[it] }
+                                ?: tagsMap[CartoonTagsController.ALL_TAG_ID],
+                            starCount = allList.size,
                             isLoading = false,
-                            data = starList.filter { it.matches(searchKey) }.toMap(tagsMap)
+                            data = starMap
                         )
                     }
                 }
@@ -236,7 +248,7 @@ class StarViewModel : ViewModel() {
             } else it.selection.plus(cartoon)
             it.copy(selection = selection)
         }
-        if(_stateFlow.value.selection.isEmpty()){
+        if (_stateFlow.value.selection.isEmpty()) {
             lastSelectCartoon = null
             lastSelectTag = null
         }
@@ -293,7 +305,7 @@ class StarViewModel : ViewModel() {
         }
     }
 
-    fun dialogMigrateSelect(){
+    fun dialogMigrateSelect() {
         _stateFlow.update {
             it.copy(dialog = DialogState.MigrateSource(it.selection))
         }
@@ -331,7 +343,7 @@ class StarViewModel : ViewModel() {
 
     }
 
-    fun onUpdateAll() {
+    fun onUpdate() {
         viewModelScope.launch {
             //val list = if (stateFlow.value.curTab == UPDATE_TAG) cartoonStarDao.getAll() else stateFlow.value.data[stateFlow.value.curTab]?: emptyList()
             if (stateFlow.value.curTab?.isALL() == true) {
@@ -347,26 +359,88 @@ class StarViewModel : ViewModel() {
 
     }
 
-    fun onMigrate(selection: Set<CartoonInfo>, source: List<String>){
+    fun onMigrate(selection: Set<CartoonInfo>, source: List<String>) {
 
     }
 
+    fun onFilterChange(
+        cartoonTagSortFilterStateItem: CartoonStarController.TagSortFilterStateItem,
+        tag: Int,
+        filterWith: FilterWith<CartoonInfo>,
+        state: Int
+    ) {
+        var realItem = cartoonTagSortFilterStateItem
+        realItem = if (realItem.isCustomSetting) {
+            realItem.copy(tagId = tag)
+        } else {
+            realItem.copy(tagId = CartoonStarController.DEFAULT_STATE_ID)
+        }
 
+        val current = realItem.filterState.toMutableMap()
+        when (state) {
+            FilterState.STATUS_OFF -> {
+                current[filterWith.id] = FilterState.STATUS_ON
+            }
 
-    fun getFilterState(): FilterState<CartoonInfo> {
-        return cartoonStarController.filterState
+            FilterState.STATUS_ON -> {
+                current[filterWith.id] = FilterState.STATUS_EXCLUDE
+            }
+
+            else -> {
+                current[filterWith.id] = FilterState.STATUS_OFF
+            }
+        }
+        realItem = realItem.copy(filterState = current)
+        cartoonStarController.changeState(tag, realItem)
     }
 
-    fun getSortState(): SortState<CartoonInfo> {
-        return cartoonStarController.sortState
+    fun onSortChange(
+        cartoonTagSortFilterStateItem: CartoonStarController.TagSortFilterStateItem,
+        tag: Int,
+        sortBy: SortBy<CartoonInfo>,
+        state: Int
+    ) {
+        var realItem = cartoonTagSortFilterStateItem
+        realItem = if (realItem.isCustomSetting) {
+            realItem.copy(tagId = tag)
+        } else {
+            realItem.copy(tagId = CartoonStarController.DEFAULT_STATE_ID)
+        }
+
+        when (state) {
+            SortState.STATUS_OFF -> {
+                realItem = realItem.copy(
+                    sortId = sortBy.id,
+                    isReverse = false
+                )
+            }
+
+            SortState.STATUS_ON -> {
+                realItem = realItem.copy(
+                    sortId = sortBy.id,
+                    isReverse = true
+                )
+            }
+
+            else -> {
+                realItem = realItem.copy(
+                    sortId = sortBy.id,
+                    isReverse = false
+                )
+            }
+        }
+        cartoonStarController.changeState(tag, realItem)
     }
 
-    fun onFilterChange(filterWith: FilterWith<CartoonInfo>, state: Int) {
-        cartoonStarController.onFilterChange(filterWith, state)
-    }
 
-    fun onSortChange(sortBy: SortBy<CartoonInfo>, state: Int) {
-        cartoonStarController.onSortChange(sortBy, state)
+    fun onCustomChange(
+        cartoonTagSortFilterStateItem: CartoonStarController.TagSortFilterStateItem,
+        tag: Int
+    ) {
+        cartoonStarController.changeState(
+            tag,
+            cartoonTagSortFilterStateItem.copy(tagId = tag, isCustomSetting = !cartoonTagSortFilterStateItem.isCustomSetting)
+        )
     }
 
     fun dialogDismiss() {

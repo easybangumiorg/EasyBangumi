@@ -280,6 +280,10 @@ fun CartoonPlay(
         mutableStateOf(false)
     }
 
+    val showScaleTypeWin = remember {
+        mutableStateOf(false)
+    }
+
     EasyPlayerScaffoldBase(
         modifier = Modifier
             .fillMaxSize()
@@ -300,7 +304,8 @@ fun CartoonPlay(
                     playState = playState,
                     controlVM = controlVM,
                     showSpeedWin = showSpeedWin,
-                    showEpisodeWin = showEpisodeWin
+                    showEpisodeWin = showEpisodeWin,
+                    showScaleTypeWin = showScaleTypeWin
                 )
             }
         },
@@ -314,6 +319,7 @@ fun CartoonPlay(
                 sourcePlayState = playState,
                 showSpeedWin = showSpeedWin,
                 showEpisodeWin = showEpisodeWin,
+                showVideoScaleTypeWin = showScaleTypeWin
             )
         }) {
 
@@ -339,6 +345,7 @@ fun CartoonPlay(
                     other = { Text(text = stringResource(id = R.string.click_to_retry)) }
                 )
             } else {
+                val sortState = detailedVM.sortStateFlow.collectAsState()
                 CartoonPlayDetailed(
                     cartoon = detailState.cartoonInfo,
                     gridCount = gridCount.value ,
@@ -361,7 +368,7 @@ fun CartoonPlay(
                     onStar = {
                         detailedVM.setCartoonStar(it, detailState.cartoonInfo)
                     },
-                    sortState = detailedVM.sortState,
+                    sortState = sortState.value,
                     onSearch = {
                         nav.navigationSearch(
                             detailState.cartoonInfo.name,

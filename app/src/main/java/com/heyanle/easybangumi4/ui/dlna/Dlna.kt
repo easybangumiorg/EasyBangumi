@@ -287,6 +287,7 @@ fun DlnaPage(
                 other = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.click_to_retry)) }
             )
         } else {
+            val sortState = detailedVM.sortStateFlow.collectAsState()
             DlnaPlayDetailed(
                 cartoon = detailState.cartoonInfo,
                 playLines = detailState.cartoonInfo.playLineWrapper,
@@ -302,7 +303,7 @@ fun DlnaPage(
                 onEpisodeClick = { line, epi ->
                     playVM.changePlay(detailState.cartoonInfo, line, epi)
                 },
-                sortState = detailedVM.sortState,
+                sortState = sortState.value,
                 onSortChange = { sortKey, isReverse ->
                     detailedVM.setCartoonSort(sortKey, isReverse, detailState.cartoonInfo)
                 },

@@ -44,8 +44,12 @@ class CartoonModule(
             CartoonRepository(get(), get(), get(), get())
         }
 
+//        addSingletonFactory {
+//            CartoonStarControllerOld(get(), get())
+//        }
+
         addSingletonFactory {
-            CartoonStarController(get(), get())
+            CartoonStarController(get(), get(), get())
         }
 
         addSingletonFactory {

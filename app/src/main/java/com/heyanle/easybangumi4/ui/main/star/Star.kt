@@ -3,7 +3,9 @@ package com.heyanle.easybangumi4.ui.main.star
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -17,8 +19,11 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material3.ListItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FilterAlt
@@ -27,6 +32,9 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SyncAlt
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.filled.Update
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BottomAppBar
@@ -35,9 +43,11 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -55,7 +65,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -69,8 +81,12 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
+import com.heyanle.easybangumi4.BuildConfig
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
+import com.heyanle.easybangumi4.cartoon.star.CartoonInfoSortFilterConst
+import com.heyanle.easybangumi4.cartoon.star.CartoonStarController
+import com.heyanle.easybangumi4.cartoon.tag.CartoonTagsController
 import com.heyanle.easybangumi4.cartoon.tag.isInner
 import com.heyanle.easybangumi4.cartoon.tag.tagLabel
 import com.heyanle.easybangumi4.navigationCartoonTag
@@ -85,8 +101,13 @@ import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.SelectionTopAppBar
 import com.heyanle.easybangumi4.ui.common.TabPage
 import com.heyanle.easybangumi4.ui.common.proc.FilterColumn
+import com.heyanle.easybangumi4.ui.common.proc.FilterState
 import com.heyanle.easybangumi4.ui.common.proc.SortColumn
+import com.heyanle.easybangumi4.ui.common.proc.SortState
 import com.heyanle.easybangumi4.ui.main.MainViewModel
+import com.heyanle.easybangumi4.utils.logi
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
  * Created by HeYanLe on 2023/7/29 23:21.
@@ -127,7 +148,7 @@ fun Star() {
     }
 
 
-    //val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     val state by starVM.stateFlow.collectAsState()
 
@@ -192,7 +213,7 @@ fun Star() {
                         starVM.onSearch("")
                     },
                     onUpdate = {
-                        starVM.onUpdateAll()
+                        starVM.onUpdate()
                     },
                     onSearch = {
                         starVM.onSearch(it)
@@ -208,34 +229,11 @@ fun Star() {
             }
         }
 
-
-        TabPage(initialPage = state.tabs.indexOf(state.curTab).coerceAtLeast(0),
-            tabSize = state.tabs.size,
-            onTabSelect = {
-                runCatching {
-                    starVM.changeTab(state.tabs[it])
-                }.onFailure {
-                    it.printStackTrace()
-                }
-            },
-            tabs = { i, _ ->
-                Row {
-                    val tab = state.tabs[i]
-                    val starNum = state.data[state.tabs[i]]?.size ?: 0
-                    Text(text = tab.tagLabel())
-                    Badge(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    ) {
-                        Text(text = if (starNum <= 999) "$starNum" else "999+")
-                    }
-                }
-
-            }) {
-            val tab = state.tabs[it]
+        if (state.tabs.size == 1){
+            val tab = state.tabs.firstOrNull()
             val list = state.data[tab] ?: emptyList()
             StarList(
-                //nestedScrollConnection = scrollBehavior.nestedScrollConnection,
+                nestedScrollConnection = scrollBehavior.nestedScrollConnection,
                 starCartoon = list, selectionSet = state.selection, onStarClick = {
                     if (state.selection.isEmpty()) {
                         nav.navigationDetailed(it.id, it.url, it.source)
@@ -244,8 +242,53 @@ fun Star() {
                     }
                 }, onStarLongPress = {
                     starVM.onSelectionLongPress(it)
+                }, onRefresh = {
+                    starVM.onUpdate()
                 })
+        }else{
+            TabPage(initialPage = state.tabs.indexOf(state.curTab).coerceAtLeast(0),
+                tabSize = state.tabs.size,
+                onTabSelect = {
+                    runCatching {
+                        starVM.changeTab(state.tabs[it])
+                    }.onFailure {
+                        it.printStackTrace()
+                    }
+                },
+                tabs = { i, _ ->
+                    Row {
+                        val tab = state.tabs[i]
+                        val starNum = state.data[state.tabs[i]]?.size ?: 0
+                        Text(text = tab.tagLabel())
+                        Badge(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        ) {
+                            Text(text = if (starNum <= 999) "$starNum" else "999+")
+                        }
+                    }
+
+                }) {
+                val tab = state.tabs[it]
+                val list = state.data[tab] ?: emptyList()
+                StarList(
+                    //nestedScrollConnection = scrollBehavior.nestedScrollConnection,
+                    starCartoon = list, selectionSet = state.selection, onStarClick = {
+                        if (state.selection.isEmpty()) {
+                            nav.navigationDetailed(it.id, it.url, it.source)
+                        } else {
+                            starVM.onSelectionChange(it)
+                        }
+                    }, onStarLongPress = {
+                        starVM.onSelectionLongPress(it)
+                    }, onRefresh = {
+                        starVM.onUpdate()
+                    })
+            }
         }
+
+
+
     }
 
     when (val sta = state.dialog) {
@@ -313,7 +356,7 @@ fun Star() {
         }
 
         is StarViewModel.DialogState.Proc -> {
-            CartoonStarProcBottomSheet(vm = starVM)
+            CartoonStarProcBottomSheet(vm = starVM, state)
         }
 
         is StarViewModel.DialogState.Delete -> {
@@ -348,125 +391,178 @@ fun Star() {
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun CartoonStarProcBottomSheet(
-    vm: StarViewModel
+    vm: StarViewModel,
+    state: StarViewModel.State,
 ) {
     var currentSelect by remember {
         mutableStateOf(0)
     }
-    ModalBottomSheet(
-        modifier = Modifier,
-        sheetState = rememberModalBottomSheetState(true),
-        scrimColor = Color.Black.copy(alpha = 0.32f),
-        onDismissRequest = {
-            vm.dialogDismiss()
-        },
-        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-        containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
-            3.dp
-        ),
-        content = {
-            CompositionLocalProvider(
-                LocalContentColor provides MaterialTheme.colorScheme.onSurface
-            ) {
-                TabPage(
-                    pagerModifier = Modifier,
-                    containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
-                    contentColor = MaterialTheme.colorScheme.onSurface,
-                    tabSize = 2,
-                    beyondBoundsPageCount = 2,
-                    onTabSelect = {
-                        currentSelect = it
-                    },
-                    tabs = { index, select ->
-                        Text(
-                            text = if (index == 0) stringResource(id = R.string.filter) else stringResource(
-                                id = R.string.sort
-                            )
-                        )
-                    }) {
-                    if (it == 0) {
+    val tagSortFilterStateItem by vm.tagSortFilterState.collectAsState()
+    val item = tagSortFilterStateItem[state.curTab?.id ?: CartoonStarController.DEFAULT_STATE_ID] ?: tagSortFilterStateItem[CartoonStarController.DEFAULT_STATE_ID]
+    val isCustom = tagSortFilterStateItem[state.curTab?.id]?.isCustomSetting ?: false
+    tagSortFilterStateItem.toString().logi("Star")
+    item.logi("Star")
+    if (item != null){
+        ModalBottomSheet(
+            modifier = Modifier,
+            sheetState = rememberModalBottomSheetState(true),
+            scrimColor = Color.Black.copy(alpha = 0.32f),
+            onDismissRequest = {
+                vm.dialogDismiss()
+            },
+            shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
+                3.dp
+            ),
+            content = {
+                CompositionLocalProvider(
+                    LocalContentColor provides MaterialTheme.colorScheme.onSurface
+                ) {
+                    ListItem(
+                        modifier = Modifier.clickable {
+                            vm.onCustomChange(item, state.curTab?.id ?: CartoonStarController.DEFAULT_STATE_ID)
+                        },
+                        headlineContent = {
+                            Text(text = stringResource(id = R.string.tag_custom))
+                        },
+                        trailingContent = {
+                            Switch(checked = isCustom?: false, onCheckedChange = {
+                                vm.onCustomChange(item, state.curTab?.id ?: CartoonStarController.DEFAULT_STATE_ID)
+                            })
+                        }
 
-                        FilterColumn(
-                            modifier = Modifier,
-                            filterState = vm.getFilterState(),
-                            onFilterClick = { filter, state ->
-                                vm.onFilterChange(filter, state)
-                            })
-                    } else if (it == 1) {
-                        SortColumn(
-                            modifier = Modifier,
-                            sortState = vm.getSortState(), onClick = { item, state ->
-                                vm.onSortChange(item, state)
-                            })
+                    )
+                    TabPage(
+                        pagerModifier = Modifier,
+                        containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
+                        contentColor = MaterialTheme.colorScheme.onSurface,
+                        tabSize = 2,
+                        beyondBoundsPageCount = 2,
+                        onTabSelect = {
+                            currentSelect = it
+                        },
+                        tabs = { index, select ->
+                            Text(
+                                text = if (index == 0) stringResource(id = R.string.filter) else stringResource(
+                                    id = R.string.sort
+                                )
+                            )
+                        }) {
+                        if (it == 0) {
+
+                            FilterColumn(
+                                modifier = Modifier,
+                                filterState = FilterState(CartoonInfoSortFilterConst.filterWithList, item.filterState),
+                                onFilterClick = { filter, sta ->
+                                    vm.onFilterChange(item, state.curTab?.id ?: CartoonStarController.DEFAULT_STATE_ID, filter, sta)
+                                })
+                        } else if (it == 1) {
+                            SortColumn(
+                                modifier = Modifier,
+                                sortState = SortState(CartoonInfoSortFilterConst.sortByList, item.sortId, item.isReverse), onClick = { i, sta ->
+                                    vm.onSortChange(item, state.curTab?.id ?: CartoonStarController.DEFAULT_STATE_ID, i, sta)
+                                })
+                        }
                     }
                 }
-            }
-        })
+            })
+    }
+
 
 }
 
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun StarList(
     nestedScrollConnection: NestedScrollConnection? = null,
     starCartoon: List<CartoonInfo>,
     selectionSet: Set<CartoonInfo>,
     isHapticFeedback: Boolean = true,
+    onRefresh: ()->Unit,
     onStarClick: (CartoonInfo) -> Unit,
     onStarLongPress: (CartoonInfo) -> Unit,
 
     ) {
     val lazyGridState = rememberLazyGridState()
     val haptic = LocalHapticFeedback.current
+    val scope = rememberCoroutineScope()
+    val refreshing = remember {
+        mutableStateOf(false)
+    }
+    val state = rememberPullRefreshState(refreshing.value, onRefresh = {
+        scope.launch {
+            refreshing.value = true
+            onRefresh()
+            delay(500)
+            refreshing.value = false
+        }
 
-    LazyVerticalGrid(
+    })
+
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .run {
-                if (nestedScrollConnection != null) {
-                    nestedScroll(nestedScrollConnection)
-                } else {
-                    this
-                }
-            },
-        state = lazyGridState,
-        columns = GridCells.Adaptive(100.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
+            .pullRefresh(state)
     ) {
-        if (starCartoon.isEmpty()) {
-            item(span = {
-                // LazyGridItemSpanScope:
-                // maxLineSpan
-                GridItemSpan(maxLineSpan)
-            }) {
-                EmptyPage(
-                    modifier = Modifier.height(256.dp)
+        LazyVerticalGrid(
+            modifier = Modifier
+                .fillMaxSize()
+                .run {
+                    if (nestedScrollConnection != null) {
+                        nestedScroll(nestedScrollConnection)
+                    } else {
+                        this
+                    }
+                },
+            state = lazyGridState,
+            columns = GridCells.Adaptive(100.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
+        ) {
+            if (starCartoon.isEmpty()) {
+                item(span = {
+                    // LazyGridItemSpanScope:
+                    // maxLineSpan
+                    GridItemSpan(maxLineSpan)
+                }) {
+                    EmptyPage(
+                        modifier = Modifier.height(256.dp)
+                    )
+                }
+            }
+            items(starCartoon) { star ->
+                CartoonStarCardWithCover(
+                    selected = selectionSet.contains(star),
+                    cartoon = star,
+                    showSourceLabel = true,
+                    showWatchProcess = true,
+                    showIsUp = true,
+                    showIsUpdate = true,
+                    onClick = {
+                        onStarClick(it)
+                    },
+                    onLongPress = {
+                        if (isHapticFeedback) {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        }
+                        onStarLongPress(it)
+                    },
                 )
             }
         }
-        items(starCartoon) { star ->
-            CartoonStarCardWithCover(
-                selected = selectionSet.contains(star),
-                cartoon = star,
-                showSourceLabel = true,
-                showWatchProcess = true,
-                showIsUp = true,
-                showIsUpdate = true,
-                onClick = {
-                    onStarClick(it)
-                },
-                onLongPress = {
-                    if (isHapticFeedback) {
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    }
-                    onStarLongPress(it)
-                },
-            )
-        }
+        PullRefreshIndicator(
+            refreshing.value,
+            state,
+            Modifier.align(Alignment.TopCenter),
+            backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
+            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        )
+        FastScrollToTopFab(listState = lazyGridState)
     }
-    FastScrollToTopFab(listState = lazyGridState)
+
+
 }
 
 @Composable

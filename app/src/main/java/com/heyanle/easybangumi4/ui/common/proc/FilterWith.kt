@@ -15,7 +15,7 @@ class FilterWith<T>(
 
 class FilterState<T> (
     val list: List<FilterWith<T>>,
-    val statusMap: Flow<Map<String, Int>>,
+    val statusMap: Map<String, Int>,
 ){
 
     companion object {
