@@ -78,6 +78,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -101,6 +102,7 @@ import com.heyanle.easybangumi4.cartoon_download.entity.LocalCartoon
 import com.heyanle.easybangumi4.cartoon_download.entity.LocalEpisode
 import com.heyanle.easybangumi4.navigationDetailed
 import com.heyanle.easybangumi4.navigationSearch
+import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.ui.cartoon_play.FullScreenVideoTopBar
 import com.heyanle.easybangumi4.ui.cartoon_play.speedConfig
 import com.heyanle.easybangumi4.ui.common.Action
@@ -111,6 +113,7 @@ import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.common.TabIndicator
+import com.heyanle.easybangumi4.ui.common.ToggleButton
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.ui.common.proc.SortDropDownMenu
 import com.heyanle.easybangumi4.ui.common.proc.SortState
@@ -119,6 +122,8 @@ import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.injekt.api.get
 import com.heyanle.injekt.core.Injekt
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import loli.ball.easyplayer2.BackBtn
 import loli.ball.easyplayer2.BottomControl
 import loli.ball.easyplayer2.ControlViewModel
@@ -148,6 +153,8 @@ fun LocalPlay(
     val vm = viewModel<LocalPlayViewModel>(factory = LocalPlayViewModelFactory(uuid = uuid))
     val controlVM = ControlViewModelFactory.viewModel(vm.exoPlayer, isPad, LocalPlayViewModel.TAG)
     val nav = LocalNavController.current
+    val settingPreferences: SettingPreferences by Injekt.injectLazy()
+    val currentScaleType = settingPreferences.videoScaleType.flow().collectAsState(initial = settingPreferences.videoScaleType.get())
 
     val state by vm.flow.collectAsState()
 
@@ -159,6 +166,27 @@ fun LocalPlay(
 
     var showSpeedWin by remember {
         mutableStateOf(false)
+    }
+
+    var showVideoTypeWin by remember {
+        mutableStateOf(false)
+    }
+
+    LaunchedEffect(key1 = Unit) {
+        launch {
+            snapshotFlow {
+                currentScaleType.value
+            }.collectLatest {
+                controlVM.surfaceView.setScaleType(it)
+            }
+        }
+
+        val defaultSpeed = settingPreferences.defaultSpeed.get()
+        if (defaultSpeed == -1f){
+            controlVM.setSpeed(if (vm.customSpeed.value > 0) vm.customSpeed.value else 1f)
+        }else{
+            controlVM.setSpeed(if (defaultSpeed > 0) defaultSpeed else 1f)
+        }
     }
 
     LaunchedEffect(key1 = state.curPlayingEpisode) {
@@ -215,69 +243,72 @@ fun LocalPlay(
                         Column(
                             modifier = Modifier
                                 .defaultMinSize(180.dp, Dp.Unspecified)
+                                .fillMaxWidth(0.25f)
                                 .fillMaxHeight()
                                 .background(Color.Black.copy(0.6f))
-                                .verticalScroll(rememberScrollState()),
+                                .padding(4.dp, 0.dp)
+                                .verticalScroll(rememberScrollState())
+                                .align(Alignment.CenterEnd),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center
                         ) {
 
-                            Row(
-                                modifier = Modifier
-                                    .defaultMinSize(180.dp, Dp.Unspecified)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .clickable {
-                                        val custom = vm.customSpeed.value
-                                        if (custom > 0) {
-                                            vm.enableCustomSpeed()
-                                            controlVM.setSpeed(custom)
-                                        } else {
-                                            vm.setCustomSpeedDialog()
-                                        }
-                                    }
-                                    .padding(16.dp, 14.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center,
-                            ) {
-                                val custom = vm.customSpeed.collectAsState()
-                                Text(
-                                    text = if (custom.value > 0f) custom.value.toString() + "X" else stringResource(
-                                        id = R.string.custom_speed
-                                    ),
-                                    color = if (vm.isCustomSpeed.value) MaterialTheme.colorScheme.primary else Color.White
-                                )
-                                if (custom.value > 0f) {
-                                    IconButton(onClick = {
+                            ToggleButton(
+                                checked = vm.isCustomSpeed.value,
+                                onClick = {
+                                    val custom = vm.customSpeed.value
+                                    if (custom > 0) {
+                                        vm.enableCustomSpeed()
+                                        controlVM.setSpeed(custom)
+                                    } else {
                                         vm.setCustomSpeedDialog()
-                                    }) {
+                                    }
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 8.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    val custom = vm.customSpeed.collectAsState()
+                                    Text(
+                                        text = if (custom.value > 0f) custom.value.toString() + "X" else stringResource(
+                                            id = R.string.custom_speed
+                                        ),
+                                        color = if (vm.isCustomSpeed.value) MaterialTheme.colorScheme.primary else Color.White
+                                    )
+                                    if (custom.value > 0f) {
                                         Icon(
                                             Icons.Filled.Edit,
+                                            modifier = Modifier.clickable {
+                                                vm.setCustomSpeedDialog()
+                                            },
                                             contentDescription = stringResource(id = R.string.custom_speed)
                                         )
                                     }
                                 }
                             }
-
                             speedConfig.forEach { (name, speed) ->
                                 val checked =
                                     !vm.isCustomSpeed.value && controlVM.curSpeed == speed
-                                Text(
-                                    textAlign = TextAlign.Center,
-                                    text = name,
+                                ToggleButton(
+                                    checked = checked,
+                                    onClick = {
+                                        controlVM.setSpeed(speed)
+                                        vm.disableCustomSpeed()
+                                    },
                                     modifier = Modifier
-                                        .defaultMinSize(180.dp, Dp.Unspecified)
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .clickable {
-                                            controlVM.setSpeed(speed)
-                                            vm.disableCustomSpeed()
-                                        }
-                                        .padding(16.dp, 14.dp),
-                                    color = if (checked) MaterialTheme.colorScheme.primary else Color.White
-                                )
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 8.dp)
+                                ) {
+                                    Text(name)
+                                }
                             }
                         }
                     }
                 }
+
 
                 state.curPlayingLine?.let { localPlayLine ->
                     // 选集
@@ -327,6 +358,55 @@ fun LocalPlay(
 
                     }
                 }
+
+                // 填充模式
+                AnimatedVisibility(
+                    showVideoTypeWin && controlVM.isFullScreen,
+                    enter = slideInHorizontally(tween()) { it },
+                    exit = slideOutHorizontally(tween()) { it },
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clickable(
+                                onClick = { showVideoTypeWin = false },
+                                indication = null,
+                                interactionSource = remember {
+                                    MutableInteractionSource()
+                                }
+                            ),
+                        contentAlignment = Alignment.CenterEnd,
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .defaultMinSize(180.dp, Dp.Unspecified)
+                                .fillMaxWidth(0.25f)
+                                .fillMaxHeight()
+                                .background(Color.Black.copy(0.6f))
+                                .padding(4.dp, 0.dp)
+                                .verticalScroll(rememberScrollState())
+                                .align(Alignment.CenterEnd),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+
+                            settingPreferences.scaleTypeSelection.forEach {
+                                val checked = currentScaleType.value == it.first
+                                ToggleButton(
+                                    checked = checked,
+                                    onClick = {
+                                        settingPreferences.videoScaleType.set(it.first)
+                                    },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 8.dp)
+                                ) {
+                                    Text(stringResource(id = it.second))
+                                }
+                            }
+                        }
+                    }
+                }
             },
             control = {
                 Box(Modifier.fillMaxSize()) {
@@ -347,7 +427,9 @@ fun LocalPlay(
                     // 全屏顶部工具栏
                     FullScreenVideoTopBar(
                         vm = it, modifier = Modifier.align(Alignment.TopCenter)
-                    )
+                    ){
+                        showVideoTypeWin = true
+                    }
 
 
                     LocalVideoTopBar(vm = it,
@@ -592,6 +674,7 @@ fun LocalPlayUI(
             modifier = Modifier.fillMaxSize()
         )
     } else {
+        val sortState = vm.sortStateFlow.collectAsState()
         CartoonPlayDetailed(modifier = Modifier.fillMaxSize(),
             state = state,
             cartoon = cartoon,
@@ -604,7 +687,7 @@ fun LocalPlayUI(
             onEpisodeDeleteChange = { item, select ->
                 vm.onDeleteClick(item)
             },
-            sortState = vm.sortState,
+            sortState = sortState.value,
             onSortChange = { key, isReverse ->
                 vm.onSortChange(key, isReverse)
             },
@@ -849,11 +932,11 @@ fun CartoonPlayDetailed(
                             isSortShow = true
 
                         }) {
-                            val curKey = sortState.current.collectAsState()
+                            val curKey = sortState.current
                             Icon(
                                 Icons.Filled.Sort,
                                 stringResource(id = R.string.sort),
-                                tint = if (curKey.value != PlayLineWrapper.SORT_DEFAULT_KEY) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
+                                tint = if (curKey != PlayLineWrapper.SORT_DEFAULT_KEY) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
                             )
 
                             SortDropDownMenu(isShow = isSortShow,

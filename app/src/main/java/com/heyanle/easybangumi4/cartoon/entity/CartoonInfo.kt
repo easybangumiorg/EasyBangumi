@@ -122,6 +122,14 @@ data class CartoonInfo(
             genre.split(",").map { it.trim() }.filterNot { it.isBlank() }.distinct()
         }
     }
+
+    val tagsIdList: List<Int> by lazy {
+        if (tags.isEmpty()) {
+            emptyList<Int>()
+        } else {
+            tags.split(",").map { it.trim() }.map { it.toIntOrNull() }.filterIsInstance<Int>().distinct()
+        }
+    }
     val playLine: List<PlayLine> by lazy {
         if (playLineString.isEmpty()) {
             emptyList()

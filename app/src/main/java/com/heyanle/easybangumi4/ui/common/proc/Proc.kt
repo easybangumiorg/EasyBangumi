@@ -49,7 +49,7 @@ fun <T> FilterColumn(
     onFilterClick: (FilterWith<T>, Int) -> Unit,
 ) {
 
-    val statusMap by filterState.statusMap.collectAsState(emptyMap())
+    val statusMap = filterState.statusMap
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.Top
@@ -110,13 +110,13 @@ fun <T> SortDropDownMenu(
     onClick: (SortBy<T>, Int) -> Unit,
     onDismissRequest: () -> Unit,
 ) {
-    val current = sortState.current.collectAsState()
-    val isReverse = sortState.isReverse.collectAsState()
+    val current = sortState.current
+    val isReverse = sortState.isReverse
     DropdownMenu(modifier = modifier, expanded = isShow, onDismissRequest = onDismissRequest) {
         sortState.sortList.forEach {
-            val status = if (current.value != it.id) {
+            val status = if (current != it.id) {
                 SortState.STATUS_OFF
-            } else if (isReverse.value) {
+            } else if (isReverse) {
                 SortState.STATUS_REVERSE
             } else {
                 SortState.STATUS_ON
@@ -135,19 +135,19 @@ fun <T> SortColumn(
     sortState: SortState<T>,
     onClick: (SortBy<T>, Int) -> Unit
 ) {
-    val current = sortState.current.collectAsState()
-    val isReverse = sortState.isReverse.collectAsState()
+    val current = sortState.current
+    val isReverse = sortState.isReverse
     LaunchedEffect(key1 = current) {
-        current.value.logi("Proc")
+        current.logi("Proc")
     }
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.Top
     ) {
         sortState.sortList.forEach {
-            val status = if (current.value != it.id) {
+            val status = if (current != it.id) {
                 SortState.STATUS_OFF
-            } else if (isReverse.value) {
+            } else if (isReverse) {
                 SortState.STATUS_REVERSE
             } else {
                 SortState.STATUS_ON

@@ -20,8 +20,8 @@ class SortBy<T>(
 
 data class SortState<T>(
     val sortList: List<SortBy<T>>,
-    val current: StateFlow<String>,
-    val isReverse: StateFlow<Boolean>,
+    val current: String,
+    val isReverse: Boolean,
 ){
     companion object {
         const val STATUS_OFF = 0

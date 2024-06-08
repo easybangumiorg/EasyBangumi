@@ -668,11 +668,11 @@ fun LazyGridScope.cartoonPlayLines(
                     isSortShow = true
 
                 }) {
-                    val curKey = sortState.current.collectAsState()
+                    val curKey = sortState.current
                     Icon(
                         Icons.Filled.Sort,
                         stringResource(id = com.heyanle.easy_i18n.R.string.sort),
-                        tint = if (curKey.value != PlayLineWrapper.SORT_DEFAULT_KEY) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
+                        tint = if (curKey != PlayLineWrapper.SORT_DEFAULT_KEY) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
                     )
                 }
             }

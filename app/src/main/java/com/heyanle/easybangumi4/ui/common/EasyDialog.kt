@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
@@ -241,30 +243,33 @@ fun EasyMutiSelectionDialog(
             text = {
                 Column {
                     message()
-                    items.forEach { key ->
-                        val select = selectList.contains(key)
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    if (!select) {
+
+                    LazyColumn {
+                        items(items){ key ->
+                            val select = selectList.contains(key)
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        if (!select) {
+                                            selectList.add(key)
+                                        } else {
+                                            selectList.remove(key)
+                                        }
+                                    }
+                                    .padding(4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Checkbox(checked = select, onCheckedChange = {
+                                    if (it) {
                                         selectList.add(key)
                                     } else {
                                         selectList.remove(key)
                                     }
-                                }
-                                .padding(4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Checkbox(checked = select, onCheckedChange = {
-                                if (it) {
-                                    selectList.add(key)
-                                } else {
-                                    selectList.remove(key)
-                                }
-                            })
-                            Text(text = key.label)
+                                })
+                                Text(text = key.label)
 
+                            }
                         }
                     }
                 }

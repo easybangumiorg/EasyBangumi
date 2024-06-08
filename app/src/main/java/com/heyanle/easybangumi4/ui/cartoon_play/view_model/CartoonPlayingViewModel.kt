@@ -81,6 +81,8 @@ class CartoonPlayingViewModel(
     val customSpeed = customSpeedPref.stateIn(viewModelScope)
     val isCustomSpeed = mutableStateOf(false)
 
+
+    val videoScaleTypeSelection = settingPreferences.scaleTypeSelection
     private val videoScaleTypePref = settingPreferences.videoScaleType
     val videoScaleType = videoScaleTypePref.stateIn(viewModelScope)
 

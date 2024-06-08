@@ -2,6 +2,7 @@ package com.heyanle.easybangumi4.ui.cartoon_play
 
 import android.adservices.topics.Topic
 import android.app.Activity
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -43,10 +44,15 @@ import androidx.compose.material.icons.filled.Battery6Bar
 import androidx.compose.material.icons.filled.BatteryChargingFull
 import androidx.compose.material.icons.filled.BatteryFull
 import androidx.compose.material.icons.filled.CastConnected
+import androidx.compose.material.icons.filled.CloseFullscreen
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FastForward
 import androidx.compose.material.icons.filled.FastRewind
+import androidx.compose.material.icons.filled.Fullscreen
+import androidx.compose.material.icons.filled.FullscreenExit
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.NavigateNext
+import androidx.compose.material.icons.filled.OpenInFull
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.SkipNext
@@ -135,6 +141,7 @@ fun VideoFloat(
     controlVM: ControlViewModel,
     showSpeedWin: MutableState<Boolean>,
     showEpisodeWin: MutableState<Boolean>,
+    showScaleTypeWin: MutableState<Boolean>,
 ) {
     val nav = LocalNavController.current
     val ctx = LocalContext.current as Activity
@@ -165,7 +172,9 @@ fun VideoFloat(
             snapshotFlow {
                 scaleType
             }.collectLatest {
-                controlVM.surfaceView.setScaleType(scaleType)
+                it.logi("VideoComponent")
+                controlVM.surfaceView.setScaleType(it)
+                controlVM.surfaceView.requestLayout()
             }
         }
 
@@ -176,6 +185,14 @@ fun VideoFloat(
         }else{
             controlVM.setSpeed(if (defaultSpeed > 0) defaultSpeed else 1f)
         }
+    }
+
+    BackHandler(
+        showSpeedWin.value || showEpisodeWin.value || showScaleTypeWin.value
+    ) {
+        showSpeedWin.value = false
+        showEpisodeWin.value = false
+        showScaleTypeWin.value = false
     }
 
     if (playingState.isLoading) {
@@ -302,65 +319,69 @@ fun VideoFloat(
             Column(
                 modifier = Modifier
                     .defaultMinSize(180.dp, Dp.Unspecified)
+                    .fillMaxWidth(0.25f)
                     .fillMaxHeight()
                     .background(Color.Black.copy(0.6f))
-                    .verticalScroll(rememberScrollState()),
+                    .padding(4.dp, 0.dp)
+                    .verticalScroll(rememberScrollState())
+                    .align(Alignment.CenterEnd),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
 
-                Row(
-                    modifier = Modifier
-                        .defaultMinSize(180.dp, Dp.Unspecified)
-                        .clip(RoundedCornerShape(8.dp))
-                        .clickable {
-                            val custom = cartoonPlayingViewModel.customSpeed.value
-                            if (custom > 0) {
-                                cartoonPlayingViewModel.enableCustomSpeed()
-                                controlVM.setSpeed(custom)
-                            } else {
-                                cartoonPlayingViewModel.setCustomSpeedDialog()
-                            }
-                        }
-                        .padding(16.dp, 14.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
-                ) {
-                    val custom = cartoonPlayingViewModel.customSpeed.collectAsState()
-                    Text(
-                        text = if (custom.value > 0f) custom.value.toString() + "X" else stringResource(
-                            id = R.string.custom_speed
-                        ),
-                        color = if (cartoonPlayingViewModel.isCustomSpeed.value) MaterialTheme.colorScheme.primary else Color.White
-                    )
-                    if (custom.value > 0f) {
-                        IconButton(onClick = {
+                ToggleButton(
+                    checked = cartoonPlayingViewModel.isCustomSpeed.value,
+                    onClick = {
+                        val custom = cartoonPlayingViewModel.customSpeed.value
+                        if (custom > 0) {
+                            cartoonPlayingViewModel.enableCustomSpeed()
+                            controlVM.setSpeed(custom)
+                        } else {
                             cartoonPlayingViewModel.setCustomSpeedDialog()
-                        }) {
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        val custom = cartoonPlayingViewModel.customSpeed.collectAsState()
+                        Text(
+                            text = if (custom.value > 0f) custom.value.toString() + "X" else stringResource(
+                                id = R.string.custom_speed
+                            ),
+                            color = if (cartoonPlayingViewModel.isCustomSpeed.value) MaterialTheme.colorScheme.primary else Color.White
+                        )
+                        if (custom.value > 0f) {
                             Icon(
                                 Icons.Filled.Edit,
+                                modifier = Modifier.clickable {
+                                    cartoonPlayingViewModel.setCustomSpeedDialog()
+                                },
                                 contentDescription = stringResource(id = R.string.custom_speed)
                             )
                         }
                     }
                 }
 
+
                 speedConfig.forEach { (name, speed) ->
                     val checked =
                         !cartoonPlayingViewModel.isCustomSpeed.value && controlVM.curSpeed == speed
-                    Text(
-                        textAlign = TextAlign.Center,
-                        text = name,
+                    ToggleButton(
+                        checked = checked,
+                        onClick = {
+                            controlVM.setSpeed(speed)
+                            cartoonPlayingViewModel.disableCustomSpeed()
+                        },
                         modifier = Modifier
-                            .defaultMinSize(180.dp, Dp.Unspecified)
-                            .clip(RoundedCornerShape(8.dp))
-                            .clickable {
-                                controlVM.setSpeed(speed)
-                                cartoonPlayingViewModel.disableCustomSpeed()
-                            }
-                            .padding(16.dp, 14.dp),
-                        color = if (checked) MaterialTheme.colorScheme.primary else Color.White
-                    )
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp)
+                    ) {
+                        Text(name)
+                    }
                 }
             }
         }
@@ -421,6 +442,55 @@ fun VideoFloat(
             }
         }
     }
+
+    // 填充模式
+    AnimatedVisibility(
+        showScaleTypeWin.value && controlVM.isFullScreen,
+        enter = slideInHorizontally(tween()) { it },
+        exit = slideOutHorizontally(tween()) { it },
+        ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable(
+                    onClick = { showScaleTypeWin.value = false },
+                    indication = null,
+                    interactionSource = remember {
+                        MutableInteractionSource()
+                    }
+                ),
+            contentAlignment = Alignment.CenterEnd,
+        ) {
+            Column(
+                modifier = Modifier
+                    .defaultMinSize(180.dp, Dp.Unspecified)
+                    .fillMaxWidth(0.25f)
+                    .fillMaxHeight()
+                    .background(Color.Black.copy(0.6f))
+                    .padding(4.dp, 0.dp)
+                    .verticalScroll(rememberScrollState())
+                    .align(Alignment.CenterEnd),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+
+                cartoonPlayingViewModel.videoScaleTypeSelection.forEach {
+                    val checked = scaleType == it.first
+                    ToggleButton(
+                        checked = checked,
+                        onClick = {
+                            cartoonPlayingViewModel.setVideoScaleType(it.first)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp)
+                    ) {
+                        Text(stringResource(id = it.second))
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -433,6 +503,7 @@ fun VideoControl(
     detailState: DetailedViewModel.DetailState,
     showSpeedWin: MutableState<Boolean>,
     showEpisodeWin: MutableState<Boolean>,
+    showVideoScaleTypeWin: MutableState<Boolean>,
 ) {
     val nav = LocalNavController.current
     val scope = rememberCoroutineScope()
@@ -475,9 +546,10 @@ fun VideoControl(
             }else{
 
                 GestureController(
-                    controlVM, Modifier
-                    .fillMaxSize()
-                    .padding(6.dp, 64.dp),
+                    controlVM,
+                    Modifier
+                        .fillMaxSize()
+                        .padding(6.dp, 64.dp),
                     playerSeekFullWidthTime,
                     supportFast = true,
                     horizontalDoubleTapWeight = 1f/fastWeight,
@@ -498,7 +570,7 @@ fun VideoControl(
                     fastRewindTopText = "${fastTopSecond}s",
                     horizontalDoubleTapWeight = 1f / fastWeight,
                     verticalDoubleTapWeight = fastTopWeightMolecule / fastWeightTopDenominator.toFloat(),
-                    delayTime = 1000
+                    delayTime = 500
                 )
 
 
@@ -511,7 +583,9 @@ fun VideoControl(
                 vm = controlVM,
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-            )
+            ){
+                showVideoScaleTypeWin.value = true
+            }
 
 
             NormalVideoTopBar(controlVM,
@@ -603,6 +677,7 @@ fun FullScreenVideoTopBar(
     vm: ControlViewModel,
     modifier: Modifier = Modifier,
     isShowOnNormalScreen: Boolean = false,
+    onMoreClick: ()->Unit,
 ) {
     AnimatedVisibility(
         modifier = modifier,
@@ -649,6 +724,17 @@ fun FullScreenVideoTopBar(
             }
             Icon(ic, "el", modifier = Modifier.rotate(90F), tint = Color.White)
             Text(text = "${br.electricity.value}%", color = Color.White)
+            Spacer(modifier = Modifier.size(16.dp))
+
+            IconButton(onClick = {
+                onMoreClick()
+            }) {
+                Icon(
+                    Icons.Filled.MoreVert,
+                    tint = Color.White,
+                    contentDescription = null
+                )
+            }
             Spacer(modifier = Modifier.size(16.dp))
         }
     }
@@ -792,9 +878,18 @@ fun EasyVideoBottomControl(
             }
 
             val ctx = LocalContext.current as Activity
-            FullScreenBtn(isFullScreen = vm.isFullScreen, onClick = {
-                vm.onFullScreen(it, ctx = ctx)
-            })
+            Icon(
+                if (vm.isFullScreen) Icons.Filled.CloseFullscreen
+                else Icons.Filled.OpenInFull,
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .clickable {
+                        vm.onFullScreen(!vm.isFullScreen, ctx = ctx)
+                    }
+                    .padding(4.dp),
+                tint = Color.White,
+                contentDescription = null
+            )
         }
     }
 }
@@ -935,7 +1030,7 @@ fun FastUI(
 
     horizontalDoubleTapWeight: Float = 0.2f,
     verticalDoubleTapWeight: Float = 0.5f,
-    delayTime: Long = 2000,
+    delayTime: Long = 200,
 ) {
     val realHorizontalWeight = horizontalDoubleTapWeight.coerceAtLeast(0.2f)
     LaunchedEffect(key1 = Unit) {
@@ -956,152 +1051,200 @@ fun FastUI(
     }
 
     AnimatedVisibility(
+        modifier = Modifier.fillMaxSize(),
         visible = vm.isFastForwardTopShow || vm.isFastForwardWinShow || vm.isFastRewindWinShow || vm.isFastRewindTopShow,
         enter = fadeIn(),
         exit = fadeOut()
     ) {
-        Row {
-            Column {
-                Box(modifier = Modifier.weight(verticalDoubleTapWeight).fillMaxWidth()){
+        Row(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .weight(realHorizontalWeight)
+            ) {
+                if(vm.isFastRewindTopShow) {
                     Box(
-                        Modifier
-                            .clip(
-                                RoundedCornerShape(
-                                    CornerSize(0),
-                                    CornerSize(100),
-                                    CornerSize(100),
-                                    CornerSize(0)
-                                )
-                            )
-                            .background(Color.Black.copy(alpha = 0.5f)),
-                        contentAlignment = Alignment.CenterStart
+                        modifier = Modifier
+                            .fillMaxHeight(verticalDoubleTapWeight)
+                            .fillMaxWidth()
+                            .align(Alignment.TopStart)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
+                        Box(
+                            Modifier
+                                .fillMaxSize()
+                                .clip(
+                                    RoundedCornerShape(
+                                        CornerSize(0),
+                                        CornerSize(16.dp),
+                                        CornerSize(16.dp),
+                                        CornerSize(0)
+                                    )
+                                )
+                                .background(Color.Black.copy(alpha = 0.5f)),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                Icons.Filled.FastRewind,
-                                null,
-                                tint = Color.White,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.size(8.dp))
-                            Text(
-                                modifier = Modifier,
-                                textAlign = TextAlign.Center,
-                                text = fastRewindTopText,
-                                color = Color.White
-                            )
+                            Row(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    Icons.Filled.FastRewind,
+                                    null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.size(8.dp))
+                                Text(
+                                    modifier = Modifier,
+                                    textAlign = TextAlign.Center,
+                                    text = fastRewindTopText,
+                                    color = Color.White
+                                )
 
 
+                            }
                         }
                     }
                 }
-                Box(modifier = Modifier.weight(1 - verticalDoubleTapWeight).fillMaxWidth()){
+
+                if(vm.isFastRewindWinShow) {
                     Box(
-                        Modifier
-                            .clip(
-                                RoundedCornerShape(
-                                    CornerSize(0),
-                                    CornerSize(100),
-                                    CornerSize(100),
-                                    CornerSize(0)
-                                )
-                            )
-                            .background(Color.Black.copy(alpha = 0.5f)),
-                        contentAlignment = Alignment.CenterStart
+                        modifier = Modifier
+                            .fillMaxHeight(1 - verticalDoubleTapWeight)
+                            .fillMaxWidth()
+                            .align(Alignment.BottomStart)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
+                        Box(
+                            Modifier
+                                .fillMaxSize()
+                                .clip(
+                                    RoundedCornerShape(
+                                        CornerSize(0),
+                                        CornerSize(16.dp),
+                                        CornerSize(16.dp),
+                                        CornerSize(0)
+                                    )
+                                )
+                                .background(Color.Black.copy(alpha = 0.5f)),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                Icons.Filled.FastRewind,
-                                null,
-                                tint = Color.White,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.size(8.dp))
-                            Text(
-                                modifier = Modifier,
-                                textAlign = TextAlign.Center,
-                                text = fastRewindText,
-                                color = Color.White
-                            )
+                            Row(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    Icons.Filled.FastRewind,
+                                    null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.size(8.dp))
+                                Text(
+                                    modifier = Modifier,
+                                    textAlign = TextAlign.Center,
+                                    text = fastRewindText,
+                                    color = Color.White
+                                )
 
 
+                            }
                         }
                     }
                 }
             }
             Spacer(modifier = Modifier.weight(1f - 2*realHorizontalWeight))
-            Column {
-                Box(modifier = Modifier.weight(verticalDoubleTapWeight).fillMaxWidth()){
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .weight(realHorizontalWeight)
+            ) {
+                if(vm.isFastForwardTopShow) {
                     Box(
-                        Modifier
-                            .clip(
-                                RoundedCornerShape(
-                                    CornerSize(100),
-                                    CornerSize(0),
-                                    CornerSize(0),
-                                    CornerSize(100)
-                                )
-                            )
-                            .background(Color.Black.copy(alpha = 0.5f)),
-                        contentAlignment = Alignment.CenterEnd
+                        modifier = Modifier
+                            .fillMaxHeight(verticalDoubleTapWeight)
+                            .fillMaxWidth()
+                            .align(Alignment.TopEnd)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
+                        Box(
+                            Modifier
+                                .fillMaxSize()
+                                .clip(
+                                    RoundedCornerShape(
+                                        CornerSize(16.dp),
+                                        CornerSize(0),
+                                        CornerSize(0),
+                                        CornerSize(16.dp)
+                                    )
+                                )
+                                .background(Color.Black.copy(alpha = 0.5f)),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                modifier = Modifier,
-                                textAlign = TextAlign.Center,
-                                text = fastForwardTopText,
-                                color = Color.White
-                            )
-                            Spacer(modifier = Modifier.size(8.dp))
-                            Icon(
-                                Icons.Filled.FastForward,
-                                null,
-                                tint = Color.White,
-                                modifier = Modifier.size(16.dp)
-                            )
+                            Row(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    modifier = Modifier,
+                                    textAlign = TextAlign.Center,
+                                    text = fastForwardTopText,
+                                    color = Color.White
+                                )
+                                Spacer(modifier = Modifier.size(8.dp))
+                                Icon(
+                                    Icons.Filled.FastForward,
+                                    null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
                         }
                     }
                 }
-                Box(modifier = Modifier.weight(1 - verticalDoubleTapWeight).fillMaxWidth()){
+                if(vm.isFastForwardWinShow) {
                     Box(
-                        Modifier
-                            .clip(
-                                RoundedCornerShape(
-                                    CornerSize(100),
-                                    CornerSize(0),
-                                    CornerSize(0),
-                                    CornerSize(100)
-                                )
-                            )
-                            .background(Color.Black.copy(alpha = 0.5f)),
-                        contentAlignment = Alignment.CenterEnd
+                        modifier = Modifier
+                            .fillMaxHeight(1 - verticalDoubleTapWeight)
+                            .fillMaxWidth()
+                            .align(Alignment.BottomEnd)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
+                        Box(
+                            Modifier
+                                .fillMaxSize()
+                                .clip(
+                                    RoundedCornerShape(
+                                        CornerSize(16.dp),
+                                        CornerSize(0),
+                                        CornerSize(0),
+                                        CornerSize(16.dp)
+                                    )
+                                )
+                                .background(Color.Black.copy(alpha = 0.5f)),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                modifier = Modifier,
-                                textAlign = TextAlign.Center,
-                                text = fastForwardText,
-                                color = Color.White
-                            )
-                            Spacer(modifier = Modifier.size(8.dp))
-                            Icon(
-                                Icons.Filled.FastForward,
-                                null,
-                                tint = Color.White,
-                                modifier = Modifier.size(16.dp)
-                            )
+                            Row(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    modifier = Modifier,
+                                    textAlign = TextAlign.Center,
+                                    text = fastForwardText,
+                                    color = Color.White
+                                )
+                                Spacer(modifier = Modifier.size(8.dp))
+                                Icon(
+                                    Icons.Filled.FastForward,
+                                    null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
                         }
                     }
                 }

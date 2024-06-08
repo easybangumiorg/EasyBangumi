@@ -19,6 +19,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -46,13 +47,19 @@ class DetailedViewModel(
 
     private var job: Job? = null
 
-    val sortState = SortState<Episode>(
-        PlayLineWrapper.sortList,
+    val sortStateFlow = combine(
         stateFlow.map { it.cartoonInfo }.filterIsInstance<CartoonInfo>().map { it.sortByKey.ifEmpty { PlayLineWrapper.SORT_DEFAULT_KEY } }
             .stateIn(viewModelScope, SharingStarted.Lazily, PlayLineWrapper.SORT_DEFAULT_KEY),
         stateFlow.map { it.cartoonInfo }.filterIsInstance<CartoonInfo>().map { it.reversal }
             .stateIn(viewModelScope, SharingStarted.Lazily, false)
-    )
+    ){sortId, isReversal ->
+        SortState<Episode>(
+            PlayLineWrapper.sortList,
+            sortId,
+            isReversal
+        )
+    }.stateIn(viewModelScope, SharingStarted.Lazily, SortState(PlayLineWrapper.sortList,
+        PlayLineWrapper.SORT_DEFAULT_KEY, false))
 
     val gridCount = settingPreferences.detailedScreenEpisodeGridCount.stateIn(viewModelScope)
 
