@@ -33,8 +33,16 @@
 - [ ] pc 版
 - [ ] 保存数据云同步
 - [ ] 添加弹幕功能
+- [ ] 视频录制 Gif
 - [ ] 基于 Bangumi 的刮削功能
 - [ ] 基于 Bangumi 的数据同步功能
+
+# 支持我们
+
+开发不易，扫码给开发者加个鸡腿吧！
+
+<img src="./thanks_wx.png" />
+<img src="./thanks_zfb.jpg" />
 
 # 反馈
 
