@@ -1,5 +1,8 @@
+import com.android.build.api.dsl.VariantDimension
 import com.heyanle.buildsrc.Android
+import com.heyanle.buildsrc.Base64Util
 import com.heyanle.buildsrc.RoomSchemaArgProvider
+import org.jetbrains.kotlin.gradle.utils.`is`
 import java.util.Properties
 
 plugins {
@@ -92,12 +95,15 @@ android {
             isMinifyEnabled = true
             isShrinkResources = false
             proguardFiles("proguard-rules.pro")
+
+            buildConfig()
         }
         release {
             isMinifyEnabled = true
             isShrinkResources = false
             proguardFiles("proguard-rules.pro")
 
+            buildConfig()
         }
     }
     compileOptions {
@@ -121,6 +127,42 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = build.versions.compose.compiler.get()
     }
+
+}
+
+fun VariantDimension.buildConfig(){
+
+//    // thanks
+//    val donatezfb = project.rootProject.file("thanks_zfb.jpg")
+//    val donatewx = project.rootProject.file("thanks_wx.png")
+//
+//    val zfbBase = com.heyanle.buildsrc.Base64Util.encodeImgageToBase64(donatezfb) ?: ""
+//    val wxBase = com.heyanle.buildsrc.Base64Util.encodeImgageToBase64(donatewx) ?: ""
+//
+//    buildConfigField("String", "donateZfbBase64", "\"${zfbBase}\"")
+//    buildConfigField("String", "wxBase", "\"${wxBase}\"")
+//
+//    val update = try {
+//        // update log
+//        val readMeFile = project.rootProject.file("README.md")
+//        val stringBuilder = StringBuilder()
+//        var isInUpdate = false
+//        for (readLine in readMeFile.readLines()) {
+//            if (readLine.startsWith("# 更新列表 ")){
+//                isInUpdate = !isInUpdate
+//                continue
+//            }
+//            if (isInUpdate){
+//                stringBuilder.append(readLine.trim()).append("\\n")
+//            }
+//
+//        }
+//        stringBuilder.toString()
+//    }catch (e: Throwable){
+//        e.printStackTrace()
+//        ""
+//    }
+//    buildConfigField("String", "updateLog", "\"${update}\"")
 
 }
 
