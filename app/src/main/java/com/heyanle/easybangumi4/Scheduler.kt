@@ -1,8 +1,6 @@
 package com.heyanle.easybangumi4
 
-import android.app.Activity
 import android.app.Application
-import android.util.Log
 import com.arialyy.aria.core.Aria
 import com.heyanle.easy_crasher.CrashHandler
 import com.heyanle.easybangumi4.cartoon.CartoonModule
@@ -17,9 +15,12 @@ import com.heyanle.easybangumi4.setting.SettingModule
 import com.heyanle.easybangumi4.source.SourceModule
 import com.heyanle.easybangumi4.source.utils.NativeHelperImpl
 import com.heyanle.easybangumi4.storage.StorageModule
+import com.heyanle.easybangumi4.ui.common.dismiss
+import com.heyanle.easybangumi4.ui.common.moeDialog
 import com.heyanle.easybangumi4.utils.UUIDHelper
 import com.heyanle.easybangumi4.utils.exo_ssl.CropUtil
 import com.heyanle.easybangumi4.utils.exo_ssl.TrustAllHostnameVerifier
+import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.extension_api.IconFactory
 import com.heyanle.extension_api.iconFactory
 import com.heyanle.injekt.api.get
@@ -80,13 +81,28 @@ object Scheduler {
         val extensionIconFactory: IconFactory by Injekt.injectLazy()
         iconFactory = extensionIconFactory
         extensionController.init()
+        if (isFirst){
+            // 启动须知
+            AnnoConst.FIRST_ANNO.moeDialog(
+                stringRes(com.heyanle.easy_i18n.R.string.first_anno),
+                dismissLabel = stringRes(com.heyanle.easy_i18n.R.string.cancel),
+                onDismiss = {
+                    it.dismiss()
+                }
+            )
+        }
     }
 
     fun runOnComposeLaunch(activity: MainActivity){
         if (first != BuildConfig.VERSION_CODE){
             // 更新日志
-
-            // 启动须知
+            AnnoConst.UPDATE_LOG.moeDialog(
+                stringRes(com.heyanle.easy_i18n.R.string.version) + ": " + BuildConfig.VERSION_NAME,
+                dismissLabel = stringRes(com.heyanle.easy_i18n.R.string.cancel,),
+                onDismiss = {
+                    it.dismiss()
+                }
+            )
         }
         first = BuildConfig.VERSION_CODE
     }

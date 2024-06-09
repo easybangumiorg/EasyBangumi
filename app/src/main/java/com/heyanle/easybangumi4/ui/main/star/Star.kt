@@ -416,26 +416,28 @@ fun CartoonStarProcBottomSheet(
                 CompositionLocalProvider(
                     LocalContentColor provides MaterialTheme.colorScheme.onSurface
                 ) {
-                    ListItem(
-                        colors = ListItemDefaults.colors(
-                            containerColor = Color.Transparent
-                        ),
-                        modifier = Modifier.clickable {
-                            vm.onCustomChange(currentTab)
-                        },
-                        headlineContent = {
-                            Text(text = stringResource(id = R.string.tag_custom))
-                        },
-                        trailingContent = {
-                            Switch(
-                                checked = currentTab.tagSortFilterState.isCustomSetting,
-                                onCheckedChange = {
-                                    vm.onCustomChange(currentTab)
-                                }
-                            )
-                        }
+                    if (state.tabs.size > 1) {
+                        ListItem(
+                            colors = ListItemDefaults.colors(
+                                containerColor = Color.Transparent
+                            ),
+                            modifier = Modifier.clickable {
+                                vm.onCustomChange(currentTab)
+                            },
+                            headlineContent = {
+                                Text(text = stringResource(id = R.string.tag_custom))
+                            },
+                            trailingContent = {
+                                Switch(
+                                    checked = currentTab.tagSortFilterState.isCustomSetting,
+                                    onCheckedChange = {
+                                        vm.onCustomChange(currentTab)
+                                    }
+                                )
+                            }
 
-                    )
+                        )
+                    }
                     TabPage(
                         pagerModifier = Modifier,
                         containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),

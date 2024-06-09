@@ -261,6 +261,9 @@
 
     <string name="version">当前版本</string>
 
+    <string name="update_list">更新日志</string>
+    <string name="first_anno">用户须知</string>
+
     <string name="open_source_url">网站</string>
 
     <string name="speed">倍速</string>
