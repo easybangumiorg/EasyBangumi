@@ -26,6 +26,7 @@ import com.heyanle.injekt.api.get
 import com.heyanle.injekt.core.Injekt
 import com.heyanle.okkv2.MMKVStore
 import com.heyanle.okkv2.core.Okkv
+import com.heyanle.okkv2.core.okkv
 import com.tencent.bugly.crashreport.CrashReport
 import javax.net.ssl.HttpsURLConnection
 
@@ -68,6 +69,7 @@ object Scheduler {
         initTrustAllHost()
     }
 
+    var first by okkv("first_visible_version_code", def = 0)
 
     /**
      * MainActivity#onCreate
@@ -80,22 +82,20 @@ object Scheduler {
         extensionController.init()
     }
 
+    fun runOnComposeLaunch(activity: MainActivity){
+        if (first != BuildConfig.VERSION_CODE){
+            // 更新日志
+
+            // 启动须知
+        }
+        first = BuildConfig.VERSION_CODE
+    }
 
     /**
      * 全局异常捕获 + crash 界面
      */
     private fun initCrasher(application: Application) {
         Thread.setDefaultUncaughtExceptionHandler(CrashHandler(application))
-//        try {
-//            SignalController.initSignal(intArrayOf(
-//                SignalConst.SIGQUIT,
-//                SignalConst.SIGABRT,
-//                SignalConst.SIGSEGV),application, NativeHandler()
-//            )
-//        }catch (e: Exception){
-//            e.printStackTrace()
-//        }
-
     }
 
     /**

@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -29,7 +28,6 @@ import com.heyanle.easybangumi4.theme.EasyTheme
 import com.heyanle.easybangumi4.ui.common.LoadingImage
 import com.heyanle.easybangumi4.ui.common.MoeDialog
 import com.heyanle.easybangumi4.ui.common.MoeSnackBar
-import com.heyanle.easybangumi4.utils.AnnoHelper
 import com.heyanle.easybangumi4.utils.MediaUtils
 import com.heyanle.okkv2.core.okkv
 
@@ -46,6 +44,10 @@ class MainActivity : ComponentActivity() {
 
     var first by okkv("first_visible", def = true)
     private val launcherBus = LauncherBus(this)
+
+    val d = """
+        
+    """.trimIndent()
 
 
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
@@ -85,8 +87,6 @@ class MainActivity : ComponentActivity() {
                         }
                         MoeSnackBar(Modifier.statusBarsPadding())
                         MoeDialog()
-                        // ReleaseDialog()
-                        AnnoHelper.ComposeDialog()
                     }
 
                 }
