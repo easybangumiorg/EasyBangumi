@@ -96,6 +96,7 @@ import com.heyanle.easybangumi4.source.LocalSourceBundleController
 import com.heyanle.easybangumi4.ui.common.CartoonStarCardWithCover
 import com.heyanle.easybangumi4.ui.common.EasyDeleteDialog
 import com.heyanle.easybangumi4.ui.common.EasyMutiSelectionDialog
+import com.heyanle.easybangumi4.ui.common.EasyMutiSelectionDialogStar
 import com.heyanle.easybangumi4.ui.common.EmptyPage
 import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.SelectionTopAppBar
@@ -229,7 +230,7 @@ fun Star() {
             }
         }
 
-        if (state.tabs.size == 1){
+        if (state.tabs.size == 1) {
             val tab = state.tabs.firstOrNull()
             val list = state.data[tab] ?: emptyList()
             StarList(
@@ -245,7 +246,7 @@ fun Star() {
                 }, onRefresh = {
                     starVM.onUpdate()
                 })
-        }else{
+        } else {
             TabPage(initialPage = state.tabs.indexOf(state.curTab).coerceAtLeast(0),
                 tabSize = state.tabs.size,
                 onTabSelect = {
@@ -259,7 +260,7 @@ fun Star() {
                     Row {
                         val tab = state.tabs[i]
                         val starNum = state.data[state.tabs[i]]?.size ?: 0
-                        Text(text = tab.tagLabel())
+                        Text(text = tab.cartoonTag.tagLabel())
                         Badge(
                             containerColor = MaterialTheme.colorScheme.primaryContainer,
                             contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -288,13 +289,12 @@ fun Star() {
         }
 
 
-
     }
 
     when (val sta = state.dialog) {
         is StarViewModel.DialogState.ChangeTag -> {
             val tags =
-                state.tabs.filter { !it.isInner() }
+                state.tabs.filter { !it.cartoonTag.isInner() }
             if (tags.isEmpty()) {
                 AlertDialog(
                     title = {
@@ -335,7 +335,7 @@ fun Star() {
                     }
                 )
             } else {
-                EasyMutiSelectionDialog(show = true,
+                EasyMutiSelectionDialogStar(show = true,
                     title = {
                         Text(text = stringResource(id = R.string.change_tag))
                     },
@@ -376,7 +376,9 @@ fun Star() {
                 items = sources,
                 initSelection = emptyList(),
                 onConfirm = {
-                    nav.navigationMigrate(sta.selection.map { it.toSummary() }.toList(), it.map { it.key })
+                    nav.navigationMigrate(
+                        sta.selection.map { it.toSummary() }.toList(),
+                        it.map { it.key })
                     starVM.onSelectionExit()
                 },
                 onDismissRequest = {
@@ -397,12 +399,8 @@ fun CartoonStarProcBottomSheet(
     var currentSelect by remember {
         mutableStateOf(0)
     }
-    val tagSortFilterStateItem by vm.tagSortFilterState.collectAsState()
-    val item = tagSortFilterStateItem[state.curTab?.id ?: CartoonStarController.DEFAULT_STATE_ID] ?: tagSortFilterStateItem[CartoonStarController.DEFAULT_STATE_ID]
-    val isCustom = tagSortFilterStateItem[state.curTab?.id]?.isCustomSetting ?: false
-    tagSortFilterStateItem.toString().logi("Star")
-    item.logi("Star")
-    if (item != null){
+    val currentTab = state.curTab
+    if (currentTab != null) {
         ModalBottomSheet(
             modifier = Modifier,
             sheetState = rememberModalBottomSheetState(true),
@@ -419,16 +417,22 @@ fun CartoonStarProcBottomSheet(
                     LocalContentColor provides MaterialTheme.colorScheme.onSurface
                 ) {
                     ListItem(
+                        colors = ListItemDefaults.colors(
+                            containerColor = Color.Transparent
+                        ),
                         modifier = Modifier.clickable {
-                            vm.onCustomChange(item, state.curTab?.id ?: CartoonStarController.DEFAULT_STATE_ID)
+                            vm.onCustomChange(currentTab)
                         },
                         headlineContent = {
                             Text(text = stringResource(id = R.string.tag_custom))
                         },
                         trailingContent = {
-                            Switch(checked = isCustom?: false, onCheckedChange = {
-                                vm.onCustomChange(item, state.curTab?.id ?: CartoonStarController.DEFAULT_STATE_ID)
-                            })
+                            Switch(
+                                checked = currentTab.tagSortFilterState.isCustomSetting,
+                                onCheckedChange = {
+                                    vm.onCustomChange(currentTab)
+                                }
+                            )
                         }
 
                     )
@@ -447,25 +451,35 @@ fun CartoonStarProcBottomSheet(
                                     id = R.string.sort
                                 )
                             )
-                        }) {
+                        }
+                    ) {
                         if (it == 0) {
-
                             FilterColumn(
                                 modifier = Modifier,
-                                filterState = FilterState(CartoonInfoSortFilterConst.filterWithList, item.filterState),
+                                filterState = FilterState(
+                                    CartoonInfoSortFilterConst.filterWithList,
+                                    currentTab.tagSortFilterState.filterState
+                                ),
                                 onFilterClick = { filter, sta ->
-                                    vm.onFilterChange(item, state.curTab?.id ?: CartoonStarController.DEFAULT_STATE_ID, filter, sta)
-                                })
+                                    vm.onFilterChange(currentTab, filter, sta)
+                                }
+                            )
                         } else if (it == 1) {
                             SortColumn(
                                 modifier = Modifier,
-                                sortState = SortState(CartoonInfoSortFilterConst.sortByList, item.sortId, item.isReverse), onClick = { i, sta ->
-                                    vm.onSortChange(item, state.curTab?.id ?: CartoonStarController.DEFAULT_STATE_ID, i, sta)
-                                })
+                                sortState = SortState(
+                                    CartoonInfoSortFilterConst.sortByList,
+                                    currentTab.tagSortFilterState.sortId,
+                                    currentTab.tagSortFilterState.isReverse
+                                ), onClick = { i, sta ->
+                                    vm.onSortChange(currentTab, i, sta)
+                                }
+                            )
                         }
                     }
                 }
-            })
+            }
+        )
     }
 
 
@@ -479,7 +493,7 @@ fun StarList(
     starCartoon: List<CartoonInfo>,
     selectionSet: Set<CartoonInfo>,
     isHapticFeedback: Boolean = true,
-    onRefresh: ()->Unit,
+    onRefresh: () -> Unit,
     onStarClick: (CartoonInfo) -> Unit,
     onStarLongPress: (CartoonInfo) -> Unit,
 
