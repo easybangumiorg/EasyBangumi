@@ -46,16 +46,12 @@ class MainActivity : ComponentActivity() {
     var first by okkv("first_visible", def = true)
     private val launcherBus = LauncherBus(this)
 
-    val d = """
-        
-    """.trimIndent()
-
-
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(FrameLayout(this))
         Scheduler.runOnMainActivityCreate(this, first)
+        first = false
         MediaUtils.setIsDecorFitsSystemWindows(this, false)
         setContent {
             val isMigrating by Migrate.isMigrating.collectAsState()
