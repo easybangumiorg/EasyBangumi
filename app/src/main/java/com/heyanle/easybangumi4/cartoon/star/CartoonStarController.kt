@@ -4,6 +4,7 @@ import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.base.preferences.android.AndroidPreferenceStore
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
+import com.heyanle.easybangumi4.cartoon.entity.CartoonTagWrapper
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonTagDao
 import com.heyanle.easybangumi4.cartoon.tag.CartoonTagsController
@@ -34,27 +35,6 @@ class CartoonStarController(
         const val DEFAULT_STATE_ID = -3
     }
 
-    data class TagSortFilterStateItem(
-        val tagId: Int,
-
-        // 如果为 false 就走缺省配置
-        val isCustomSetting: Boolean,
-
-        val sortId: String,
-        val isReverse: Boolean,
-
-        val filterState: Map<String, Int>,
-    ) {
-        companion object {
-            val default = TagSortFilterStateItem(
-                tagId = DEFAULT_STATE_ID,
-                isCustomSetting = false,
-                sortId = CartoonInfoSortFilterConst.sortByStarTime.id,
-                isReverse = false,
-                filterState = emptyMap()
-            )
-        }
-    }
 
     private val scope = MainScope()
 
@@ -62,27 +42,27 @@ class CartoonStarController(
         sharePreferenceStore.getString("cartoon_tag_sort_filter_state_map", "{}")
 
     val tagSortFilterStateItem = tagSortFilterStateItemShare.flow().map {
-        it.jsonTo<Map<Int, TagSortFilterStateItem>>() ?: emptyMap()
+        it.jsonTo<Map<Int, CartoonTagWrapper.TagSortFilterStateItem>>() ?: emptyMap()
     }.map {
         if (it.isEmpty()) {
-            it + (DEFAULT_STATE_ID to TagSortFilterStateItem.default)
+            it + (DEFAULT_STATE_ID to CartoonTagWrapper.TagSortFilterStateItem.default)
         } else {
             it
         }
     }.stateIn(
         scope,
         SharingStarted.Lazily,
-        tagSortFilterStateItemShare.get().jsonTo<Map<Int, TagSortFilterStateItem>>() ?: mapOf((DEFAULT_STATE_ID to TagSortFilterStateItem.default))
+        tagSortFilterStateItemShare.get().jsonTo<Map<Int, CartoonTagWrapper.TagSortFilterStateItem>>() ?: mapOf((DEFAULT_STATE_ID to CartoonTagWrapper.TagSortFilterStateItem.default))
     )
 
 
-    val flowCartoonTag: Flow<Map<CartoonTag, List<CartoonInfo>>> = combine(
+    val flowCartoonTag: Flow<Map<CartoonTagWrapper, List<CartoonInfo>>> = combine(
         tagSortFilterStateItem,
         cartoonTagsController.tagsList.distinctUntilChanged(),
         cartoonInfoDao.flowAllStar().distinctUntilChanged(),
     ) { tagSortFilterState, tagList, cartoonInfoList ->
         val defaultSortFiler =
-            tagSortFilterState[DEFAULT_STATE_ID] ?: TagSortFilterStateItem.default
+            tagSortFilterState[DEFAULT_STATE_ID] ?: CartoonTagWrapper.TagSortFilterStateItem.default
 
         val tagMap = HashMap<Int, CartoonTag>()
         tagList.forEach {
@@ -98,7 +78,7 @@ class CartoonStarController(
             CartoonTagsController.ALL_TAG_ID, stringRes(
                 R.string.all_word), -1)
         val temp = HashMap<CartoonTag, ArrayList<CartoonInfo>>()
-        val res = HashMap<CartoonTag, List<CartoonInfo>>()
+        val res = HashMap<CartoonTagWrapper, List<CartoonInfo>>()
 
         val allList = temp[allTag]?: arrayListOf()
         allList.addAll(cartoonInfoList)
@@ -123,10 +103,11 @@ class CartoonStarController(
             var cartoonList: List<CartoonInfo> = cartoonItem.value
 
 
-            var state = tagSortFilterState[tag.id] ?: defaultSortFiler
-            if (!state.isCustomSetting) {
-                state = defaultSortFiler
+            var state = tagSortFilterState[tag.id]
+            if (state == null || !state.isCustomSetting){
+                state = defaultSortFiler.copy(tagId = tag.id, isCustomSetting = false)
             }
+            state = state.copy(tagId = tag.id)
 
             val currentSort = CartoonInfoSortFilterConst.sortByList.firstOrNull() {
                 it.id == state.sortId
@@ -168,20 +149,21 @@ class CartoonStarController(
                 if (isSortReverse) -res else res
             }
 
-            res[tag] = upList + normalList
+            res[CartoonTagWrapper(tag, state)] = upList + normalList
         }
         res
     }
 
 
 
-    fun changeState(tagId: Int, item: TagSortFilterStateItem) {
+    fun changeState(tagId: Int, item: CartoonTagWrapper.TagSortFilterStateItem) {
         val current = tagSortFilterStateItem.value.toMutableMap()
         if (item.isCustomSetting) {
-            current[tagId] = item
+            current[tagId] = item.copy(tagId = tagId)
             tagSortFilterStateItemShare.set(current.toJson())
         }else{
             current[DEFAULT_STATE_ID] = item
+            current[tagId] = item
             tagSortFilterStateItemShare.set(current.toJson())
         }
     }
