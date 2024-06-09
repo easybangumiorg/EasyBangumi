@@ -16,6 +16,7 @@ import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSiz
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -59,6 +60,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             val isMigrating by Migrate.isMigrating.collectAsState()
             val windowClazz = calculateWindowSizeClass(this)
+            LaunchedEffect(key1 = Unit){
+                Scheduler.runOnComposeLaunch(this@MainActivity)
+            }
             CompositionLocalProvider(LocalWindowSizeController provides windowClazz) {
                 EasyTheme {
                     if(isMigrating){
