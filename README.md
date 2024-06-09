@@ -15,11 +15,6 @@
 2. 纯纯看番打包后不提供任何视频内容，需要用户自己手动添加。用户自行导入的内容和本软件无关。
 3. 纯纯看番源码完全免费，在 Github 开源。用户可自行下载打包。如果你是收费购买的本软件，则本方概不负责。
 
-# 须知
-
-# 下载
-
-下载地址：[https://install.appcenter.ms/users/heyanle/apps/easybangumi/distribution_groups/easybangumi](https://install.appcenter.ms/users/heyanle/apps/easybangumi/distribution_groups/easybangumi)
 
 # 开发计划
 
