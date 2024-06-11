@@ -1,8 +1,6 @@
 import com.android.build.api.dsl.VariantDimension
 import com.heyanle.buildsrc.Android
-import com.heyanle.buildsrc.Base64Util
 import com.heyanle.buildsrc.RoomSchemaArgProvider
-import org.jetbrains.kotlin.gradle.utils.`is`
 import java.util.Properties
 
 plugins {
@@ -35,16 +33,6 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
-//        buildConfigField(
-//            "String",
-//            "APP_CENTER_SECRET",
-//            "\"${
-//                publishingProps.getProperty(
-//                    "appcenter.secret",
-//                    System.getenv("APPCENTER_SECRET")
-//                )
-//            }\""
-//        )
 
         manifestPlaceholders["bugly_appid"] =
             publishingProps.getProperty("bugly_appid", System.getenv("BUGLY_APPID")?:"")
@@ -53,8 +41,6 @@ android {
 
         // bugly 调试模式
         manifestPlaceholders["bugly_is_debug"] = false
-
-        println("System.getenv.APPCENTER_SECRET = ${System.getenv("APPCENTER_SECRET")}")
 
         ksp {
             arg("room.generateKotlin", "true")
@@ -65,17 +51,10 @@ android {
 
     splits {
 
-        // Configures multiple APKs based on ABI.
         abi {
-            // Enables building multiple APKs per ABI.
             isEnable = true
-            // By default all ABIs are included, so use reset() and include to specify that we only
-            // want APKs for x86 and x86_64.
-            // Resets the list of ABIs that Gradle should create APKs for to none.
             reset()
-            // Specifies a list of ABIs that Gradle should create APKs for.
             include("arm64-v8a", "armeabi-v7a")
-            // Specifies that we do not want to also generate a universal APK that includes all ABIs.
             isUniversalApk = true
         }
     }
@@ -216,7 +195,6 @@ dependencies {
 
     testImplementation(libs.junit)
 
-    implementation(libs.easyplayer2)
 //    implementation(libs.accompanist.systemuicontroller)
 //    implementation(libs.accompanist.swiperefresh)
     implementation(libs.accompanist.permissions)
@@ -253,5 +231,13 @@ dependencies {
     implementation(libs.bugly)
 
     // fimplementation(gecko.gecko)
+
+    val release = (System.getenv("RELEASE") ?: "") == "true"
+    if (release) {
+        implementation(libs.easyplayer2)
+    } else {
+        implementation(project(":EasyPlayer2:easyplayer2"))
+    }
+
 
 }
