@@ -2,6 +2,7 @@ package com.heyanle.easybangumi4.exo
 
 import android.app.Application
 import android.net.Uri
+import android.view.PixelCopy
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DataSpec

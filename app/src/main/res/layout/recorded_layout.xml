@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@android:color/black">
+
+    <loli.ball.easyplayer2.texture.EasyTextureView
+        android:id="@+id/easy_texture"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+
+    <com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded.RectSelectionView
+        android:id="@+id/rect_selection_view"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintStart_toStartOf="@id/easy_texture"
+        app:layout_constraintEnd_toEndOf="@id/easy_texture"
+        app:layout_constraintBottom_toBottomOf="@id/easy_texture"
+        app:layout_constraintTop_toTopOf="@id/easy_texture"/>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

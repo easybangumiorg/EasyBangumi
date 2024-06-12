@@ -482,4 +482,14 @@
 
     <string name="tag_custom">为该标签独立控制</string>
 
+    <string name="record_gif">录制 Gif</string>
+    <string name="record_video">录制视频</string>
+    <string name="record_start">开始录制</string>
+    <string name="record_stop">停止录制</string>
+    <string name="record_error">录制失败</string>
+    <string name="record_success">录制成功</string>
+
+    <string name="recording">录制中</string>
+    <string name="saving">保存中</string>
+
 </resources>

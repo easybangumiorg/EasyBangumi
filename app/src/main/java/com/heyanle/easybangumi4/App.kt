@@ -3,6 +3,7 @@ package com.heyanle.easybangumi4
 import android.app.ActivityManager
 import android.app.Application
 import android.content.Context
+import android.media.MediaExtractor
 import android.os.Build
 import android.os.Looper
 import android.os.Process

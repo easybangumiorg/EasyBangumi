@@ -23,8 +23,10 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
@@ -50,6 +52,8 @@ import androidx.compose.material.icons.filled.FastForward
 import androidx.compose.material.icons.filled.FastRewind
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.FullscreenExit
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.NavigateNext
 import androidx.compose.material.icons.filled.OpenInFull
@@ -57,6 +61,7 @@ import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -587,6 +592,15 @@ fun VideoControl(
                 showVideoScaleTypeWin.value = true
             }
 
+            FullScreenRightToolBar(
+                vm = controlVM,
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .defaultMinSize(64.dp, Dp.Unspecified)
+                    .align(Alignment.CenterEnd)
+            ) {
+                cartoonPlayingVM.showRecording.value = true
+            }
 
             NormalVideoTopBar(controlVM,
                 showTools = playingState.isPlaying,
@@ -669,6 +683,49 @@ fun VideoControl(
         }
     }
 
+
+}
+
+@Composable
+fun FullScreenRightToolBar(
+    vm: ControlViewModel,
+    modifier: Modifier = Modifier,
+    isShowOnNormalScreen: Boolean = false,
+    onShowRecorded: ()->Unit,
+) {
+
+    (vm.isShowOverlay() && (vm.isFullScreen || isShowOnNormalScreen)).logi("VideoComponent")
+    Box(
+        modifier = modifier
+    ) {
+        AnimatedVisibility(
+            visible = vm.isShowOverlay() && (vm.isFullScreen || isShowOnNormalScreen),
+            exit = fadeOut(),
+            enter = fadeIn(),
+        ) {
+            Column(
+                modifier = Modifier
+            ) {
+                Spacer(Modifier.height(64.dp))
+                Box(modifier = Modifier
+                    .padding(4.dp)
+                    .clip(CircleShape)
+                    .background(Color.Black.copy(alpha = 0.6f))
+                    .clickable {
+                        onShowRecorded()
+                    }
+                    .padding(8.dp)
+                ) {
+                    Icon(
+                        Icons.Filled.Videocam,
+                        tint = Color.White,
+                        modifier = Modifier.size(18.dp),
+                        contentDescription = null
+                    )
+                }
+            }
+        }
+    }
 
 }
 

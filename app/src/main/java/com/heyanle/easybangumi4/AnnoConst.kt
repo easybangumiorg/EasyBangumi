@@ -327,9 +327,7 @@ object AnnoConst {
     """.trimIndent()
 
 
-    val FIRST_ANNO = """
-        1. 纯纯看番是为了学习 Jitpack compose 和音视频相关技术进行开发的一个项目，官方不提供打包和下载，其源代码仅供交流学习。因其他人私自打包发行后造成的一切后果本方概不负责。
-        2. 纯纯看番打包后不提供任何视频内容，需要用户自己手动添加。用户自行导入的内容和本软件无关。
-        3. 纯纯看番源码完全免费，在 Github 开源。用户可自行下载打包。如果你是收费购买的本软件，则本方概不负责。
+    val FIRST_ANNO_BASE64 = """
+        ICAgICAgICAxLiDnuq/nuq/nnIvnlarmmK/kuLrkuoblrabkuaAgSml0cGFjayBjb21wb3NlIOWSjOmfs+inhumikeebuOWFs+aKgOacr+i/m+ihjOW8gOWPkeeahOS4gOS4qumhueebru+8jOWumOaWueS4jeaPkOS+m+aJk+WMheWSjOS4i+i9ve+8jOWFtua6kOS7o+eggeS7heS+m+S6pOa1geWtpuS5oOOAguWboOWFtuS7luS6uuengeiHquaJk+WMheWPkeihjOWQjumAoOaIkOeahOS4gOWIh+WQjuaenOacrOaWueamguS4jei0n+i0o+OAggogICAgICAgIDIuIOe6r+e6r+eci+eVquaJk+WMheWQjuS4jeaPkOS+m+S7u+S9leinhumikeWGheWuue+8jOmcgOimgeeUqOaIt+iHquW3seaJi+WKqOa3u+WKoOOAgueUqOaIt+iHquihjOWvvOWFpeeahOWGheWuueWSjOacrOi9r+S7tuaXoOWFs+OAggogICAgICAgIDMuIOe6r+e6r+eci+eVqua6kOeggeWujOWFqOWFjei0ue+8jOWcqCBHaXRodWIg5byA5rqQ44CC55So5oi35Y+v6Ieq6KGM5LiL6L295omT5YyF44CC5aaC5p6c5L2g5piv5pS26LS56LSt5Lmw55qE5pys6L2v5Lu277yM5YiZ5pys5pa55qaC5LiN6LSf6LSj44CC
     """.trimIndent()
 }
