@@ -104,7 +104,7 @@ fun CartoonCardWithCover(
         Text(
             style = MaterialTheme.typography.bodySmall,
             text = cartoonCover.title,
-            maxLines = 2,
+            maxLines = 4,
             textAlign = TextAlign.Start,
             overflow = TextOverflow.Ellipsis,
         )

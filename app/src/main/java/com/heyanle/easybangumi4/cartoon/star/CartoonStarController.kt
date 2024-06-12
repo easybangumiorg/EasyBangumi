@@ -80,6 +80,13 @@ class CartoonStarController(
         val temp = HashMap<CartoonTag, ArrayList<CartoonInfo>>()
         val res = HashMap<CartoonTagWrapper, List<CartoonInfo>>()
 
+
+
+        for (entry in tagMap.entries) {
+            // 空列表也加上
+            temp[entry.value] = arrayListOf()
+        }
+
         val allList = temp[allTag]?: arrayListOf()
         allList.addAll(cartoonInfoList)
         temp[allTag] = allList

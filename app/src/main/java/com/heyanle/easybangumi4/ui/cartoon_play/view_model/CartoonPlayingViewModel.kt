@@ -27,6 +27,7 @@ import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
 import com.heyanle.easybangumi4.ui.common.MoeDialogData
 import com.heyanle.easybangumi4.ui.common.dialog
 import com.heyanle.easybangumi4.ui.common.show
+import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.Dispatchers
@@ -230,6 +231,7 @@ class CartoonPlayingViewModel(
         )
             .complete {
                 yield()
+                it.data.uri.logi("CartoonPlayingViewModel")
                 playingPlayLine = cartoonPlayingState.playLine.playLine
                 playingEpisode = cartoonPlayingState.episode
                 innerPlay(it.data, adviceProcess)

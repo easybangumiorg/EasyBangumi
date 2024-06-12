@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.outlined.Report
+import androidx.compose.material.icons.outlined.RunCircle
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
@@ -33,17 +34,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.heyanle.easybangumi4.ABOUT
+import com.heyanle.easybangumi4.BuildConfig
 import com.heyanle.easybangumi4.DOWNLOAD
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.R
 import com.heyanle.easybangumi4.SOURCE_MANAGER
 import com.heyanle.easybangumi4.STORAGE
+import com.heyanle.easybangumi4.TestMain
 import com.heyanle.easybangumi4.navigationCartoonTag
 import com.heyanle.easybangumi4.navigationSetting
 import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
 import com.heyanle.easybangumi4.setting.SettingPreferences
+import com.heyanle.easybangumi4.source.utils.network.WebViewHelperV2Impl
 import com.heyanle.easybangumi4.ui.common.BooleanPreferenceItem
 import com.heyanle.easybangumi4.ui.common.OkImage
+import com.heyanle.easybangumi4.ui.main.Main
 import com.heyanle.easybangumi4.ui.setting.SettingPage
 import com.heyanle.injekt.core.Injekt
 
@@ -169,6 +174,20 @@ fun More() {
             }
         )
 
+        if(BuildConfig.DEBUG){
+            ListItem(
+                modifier = Modifier.clickable {
+                                              TestMain.main()
+                },
+                headlineContent = { Text(text = "测试按钮") },
+                leadingContent = {
+                    Icon(
+                        Icons.Outlined.RunCircle,
+                        contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.about)
+                    )
+                }
+            )
+        }
     }
 
 }

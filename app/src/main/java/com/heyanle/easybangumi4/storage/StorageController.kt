@@ -344,7 +344,7 @@ class StorageController(
     private suspend fun restoreCartoon(folder: File): Boolean {
         val targetDB = File(folder, "easy_bangumi_cartoon")
 
-        if (targetDB.exists()) {
+        if (!targetDB.exists()) {
             return false
         }
 
@@ -353,8 +353,8 @@ class StorageController(
         val cartoonInfo = database.cartoonInfoDao()
         val cartoonTagDao = database.cartoonTagDao()
 
-        val currentCartoonDao = cartoonDatabase.cartoonInfoDao()
-        val currentCartoonTagDao = cartoonDatabase.cartoonTagDao()
+        val currentCartoonDao = cartoonDatabase.cartoonInfo
+        val currentCartoonTagDao = cartoonDatabase.cartoonTag
 
         val tagIdMap = hashMapOf<Int, Int>()
         cartoonTagDao.getAll().forEach {
