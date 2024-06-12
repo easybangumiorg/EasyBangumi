@@ -1,5 +1,6 @@
 package com.heyanle.easybangumi4.ui.cartoon_play
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -21,6 +22,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -37,6 +39,7 @@ import com.heyanle.easybangumi4.navigationDlna
 import com.heyanle.easybangumi4.navigationSearch
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
+import com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded.CartoonRecorded
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModelFactory
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayingViewModel
@@ -52,6 +55,8 @@ import com.heyanle.easybangumi4.utils.isCurPadeMode
 import com.heyanle.easybangumi4.utils.openUrl
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.injekt.core.Injekt
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import loli.ball.easyplayer2.ControlViewModel
 import loli.ball.easyplayer2.ControlViewModelFactory
 import loli.ball.easyplayer2.EasyPlayerScaffoldBase
@@ -75,7 +80,7 @@ fun CartoonPlay(
     val playVM = viewModel<CartoonPlayViewModel>(factory = CartoonPlayViewModelFactory(enterData))
     val playingVM = viewModel<CartoonPlayingViewModel>()
     val isPad = isCurPadeMode()
-    val controlVM = ControlViewModelFactory.viewModel(playingVM.exoPlayer, isPad)
+    val controlVM = ControlViewModelFactory.viewModel(playingVM.exoPlayer, isPad, surfaceMode = true)
 
     val detailedState = detailedVM.stateFlow.collectAsState()
     val playState = playVM.curringPlayState.collectAsState()
@@ -84,6 +89,29 @@ fun CartoonPlay(
     LaunchedEffect(key1 = detailedState.value) {
         detailedState.value.cartoonInfo?.let {
             playVM.onCartoonInfoChange(it)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        launch {
+            snapshotFlow {
+                playingVM.showRecording.value
+            }.collectLatest {
+                if (!it) {
+                    try {
+                        controlVM.bind()
+                    } catch (e: Throwable) {
+                        e.printStackTrace()
+                    }
+
+                } else {
+                    try {
+                        controlVM.unbind()
+                    } catch (e: Throwable) {
+                        e.printStackTrace()
+                    }
+                }
+            }
         }
     }
 
@@ -142,19 +170,19 @@ fun CartoonPlay(
         val text = remember {
             mutableStateOf(playingVM.customSpeed.value.let { if (it > 0) it else 1 }.toString())
         }
-        DisposableEffect(key1 = Unit ){
+        DisposableEffect(key1 = Unit) {
             runCatching {
                 focusRequest.requestFocus()
             }.onFailure {
                 it.printStackTrace()
             }
-           onDispose {
-               runCatching {
-                   focusRequest.freeFocus()
-               }.onFailure {
-                   it.printStackTrace()
-               }
-           }
+            onDispose {
+                runCatching {
+                    focusRequest.freeFocus()
+                }.onFailure {
+                    it.printStackTrace()
+                }
+            }
         }
         AlertDialog(
             onDismissRequest = {
@@ -206,6 +234,23 @@ fun CartoonPlay(
                 }
             }
         )
+    }
+
+    if (playingVM.showRecording.value) {
+        CartoonRecorded(
+            playingVM.exoPlayer,
+            controlVM,
+            controlVM.position,
+            playingVM.showRecording.value,
+        ) {
+            playingVM.showRecording.value = false
+        }
+
+        BackHandler(
+            playingVM.showRecording.value
+        ) {
+            playingVM.showRecording.value = false
+        }
     }
 
 
@@ -348,7 +393,7 @@ fun CartoonPlay(
                 val sortState = detailedVM.sortStateFlow.collectAsState()
                 CartoonPlayDetailed(
                     cartoon = detailState.cartoonInfo,
-                    gridCount = gridCount.value ,
+                    gridCount = gridCount.value,
                     onGridChange = {
                         detailedVM.setGridCount(it)
                     },

@@ -100,6 +100,8 @@ class CartoonPlayingViewModel(
 
     val defaultSpeed = settingPreferences.defaultSpeed.stateIn(viewModelScope)
 
+    val showRecording = mutableStateOf(false)
+
     fun setCustomSpeedDialog() {
         isCustomSpeedDialog.value = true
     }
