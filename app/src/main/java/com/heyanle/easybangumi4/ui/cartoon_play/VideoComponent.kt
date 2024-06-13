@@ -178,8 +178,8 @@ fun VideoFloat(
                 scaleType
             }.collectLatest {
                 it.logi("VideoComponent")
-                controlVM.surfaceView.setScaleType(it)
-                controlVM.surfaceView.requestLayout()
+                controlVM.render.setScaleType(it)
+                controlVM.render.getViewOrNull()?.requestLayout()
             }
         }
 

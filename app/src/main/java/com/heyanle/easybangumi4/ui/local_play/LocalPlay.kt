@@ -177,7 +177,7 @@ fun LocalPlay(
             snapshotFlow {
                 currentScaleType.value
             }.collectLatest {
-                controlVM.surfaceView.setScaleType(it)
+                controlVM.render.setScaleType(it)
             }
         }
 

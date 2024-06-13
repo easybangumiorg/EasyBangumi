@@ -164,7 +164,6 @@ private fun BoxScope.CartoonRecordedContent(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
-                    .background(Color.Red)
             ) {
                 AndroidView(
                     factory = {

@@ -47,16 +47,15 @@ class RectSelectionView : View {
             strokeWidth = INLINE_RECT_WIDTH
         }
     private var focus: Int = 0
-    private val clearMode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
 
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        canvas.drawRoundRect(0F, 0F, width.toFloat(), height.toFloat(), 0F, 0F, blackMaskPaint)
-        blackMaskPaint.setXfermode(clearMode)
-        canvas.drawRoundRect(rectF, 0F, 0F, blackMaskPaint)
-        blackMaskPaint.setXfermode(null)
+        canvas.drawRect(0f, 0f, rectF.right, rectF.top, blackMaskPaint)
+        canvas.drawRect(rectF.right, 0f, width.toFloat(), rectF.bottom, blackMaskPaint)
+        canvas.drawRect(0f, rectF.top, rectF.left, height.toFloat(), blackMaskPaint)
+        canvas.drawRect(rectF.left, rectF.bottom, width.toFloat(), height.toFloat(), blackMaskPaint)
 
         canvas.drawRect(rectF, inlineRectPaint)
 

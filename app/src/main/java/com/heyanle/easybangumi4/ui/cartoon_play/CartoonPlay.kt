@@ -60,6 +60,8 @@ import kotlinx.coroutines.launch
 import loli.ball.easyplayer2.ControlViewModel
 import loli.ball.easyplayer2.ControlViewModelFactory
 import loli.ball.easyplayer2.EasyPlayerScaffoldBase
+import loli.ball.easyplayer2.surface.SurfacePlayerRender
+import loli.ball.easyplayer2.texture.TexturePlayerRender
 
 /**
  * Created by heyanle on 2023/12/17.
@@ -80,7 +82,7 @@ fun CartoonPlay(
     val playVM = viewModel<CartoonPlayViewModel>(factory = CartoonPlayViewModelFactory(enterData))
     val playingVM = viewModel<CartoonPlayingViewModel>()
     val isPad = isCurPadeMode()
-    val controlVM = ControlViewModelFactory.viewModel(playingVM.exoPlayer, isPad, surfaceMode = true)
+    val controlVM = ControlViewModelFactory.viewModel(playingVM.exoPlayer, isPad, render = SurfacePlayerRender())
 
     val detailedState = detailedVM.stateFlow.collectAsState()
     val playState = playVM.curringPlayState.collectAsState()

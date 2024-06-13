@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import loli.ball.easyplayer2.surface.EasySurfaceView
 import loli.ball.easyplayer2.texture.EasyTextureView
+import loli.ball.easyplayer2.utils.MeasureHelper
 
 /**
  * Created by heyanlin on 2024/6/11.
@@ -45,7 +46,10 @@ class CartoonRecordedViewModel(
 
 
     @SuppressLint("StaticFieldLeak")
-    val textureView: EasyTextureView = layout.findViewById(R.id.easy_texture)
+    val textureView: EasyTextureView = layout.findViewById<EasyTextureView?>(R.id.easy_texture)
+        .apply {
+            setScaleType(MeasureHelper.SCREEN_SCALE_ADAPT)
+        }
 
     @SuppressLint("StaticFieldLeak")
     val rectSelectionView: RectSelectionView = layout.findViewById(R.id.rect_selection_view)
