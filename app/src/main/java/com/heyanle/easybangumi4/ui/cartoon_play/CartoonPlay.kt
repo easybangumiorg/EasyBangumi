@@ -52,16 +52,17 @@ import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.ui.main.home.HomeBottomSheet
 import com.heyanle.easybangumi4.utils.isCurPadeMode
+import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.openUrl
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.injekt.core.Injekt
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import loli.ball.easyplayer2.ControlViewModel
 import loli.ball.easyplayer2.ControlViewModelFactory
 import loli.ball.easyplayer2.EasyPlayerScaffoldBase
 import loli.ball.easyplayer2.surface.SurfacePlayerRender
-import loli.ball.easyplayer2.texture.TexturePlayerRender
 
 /**
  * Created by heyanle on 2023/12/17.
@@ -82,7 +83,7 @@ fun CartoonPlay(
     val playVM = viewModel<CartoonPlayViewModel>(factory = CartoonPlayViewModelFactory(enterData))
     val playingVM = viewModel<CartoonPlayingViewModel>()
     val isPad = isCurPadeMode()
-    val controlVM = ControlViewModelFactory.viewModel(playingVM.exoPlayer, isPad, render = SurfacePlayerRender())
+    val controlVM = ControlViewModelFactory.viewModel(playingVM.exoPlayer, isPad, render = playingVM.easyTextRenderer)
 
     val detailedState = detailedVM.stateFlow.collectAsState()
     val playState = playVM.curringPlayState.collectAsState()
@@ -98,9 +99,10 @@ fun CartoonPlay(
         launch {
             snapshotFlow {
                 playingVM.showRecording.value
-            }.collectLatest {
-                if (!it) {
+            }.collect() {
+                if (it == null) {
                     try {
+                        "bind".logi("CartoonPlay")
                         controlVM.bind()
                     } catch (e: Throwable) {
                         e.printStackTrace()
@@ -108,6 +110,7 @@ fun CartoonPlay(
 
                 } else {
                     try {
+                        "unbind".logi("CartoonPlay")
                         controlVM.unbind()
                     } catch (e: Throwable) {
                         e.printStackTrace()
@@ -238,20 +241,21 @@ fun CartoonPlay(
         )
     }
 
-    if (playingVM.showRecording.value) {
-        CartoonRecorded(
-            playingVM.exoPlayer,
-            controlVM,
-            controlVM.position,
-            playingVM.showRecording.value,
-        ) {
-            playingVM.showRecording.value = false
-        }
+    val recordState = playingVM.showRecording.value
 
-        BackHandler(
-            playingVM.showRecording.value
+    if (recordState != null){
+        CartoonRecorded(
+            controlViewModel = controlVM,
+            cartoonRecordedState = recordState,
+            show = true,
+
         ) {
-            playingVM.showRecording.value = false
+            playingVM.showRecording.value = null
+        }
+        BackHandler(
+            playingVM.showRecording.value != null
+        ) {
+            playingVM.showRecording.value = null
         }
     }
 

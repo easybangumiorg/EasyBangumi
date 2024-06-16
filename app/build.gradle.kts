@@ -222,6 +222,7 @@ dependencies {
     implementation(project(":easy-i18n"))
     implementation(project(":injekt"))
     implementation(project(":lib_upnp"))
+    implementation(project(":gpu_image"))
     //implementation(project(":lib_signal"))
 
     implementation(libs.zip4j)

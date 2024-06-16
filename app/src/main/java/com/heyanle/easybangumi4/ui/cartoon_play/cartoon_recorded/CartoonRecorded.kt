@@ -38,6 +38,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,7 +49,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.MediaSource
 import com.heyanle.easybangumi4.R
+import com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded.clip_video.ClipVideoSeek
+import com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded.clip_video.ClipVideoState
 import com.heyanle.easybangumi4.utils.logi
 import loli.ball.easyplayer2.ControlViewModel
 import loli.ball.easyplayer2.PlayPauseBtn
@@ -60,9 +64,8 @@ import loli.ball.easyplayer2.texture.EasyTextureView
  */
 @Composable
 fun CartoonRecorded(
-    exoPlayer: ExoPlayer,
     controlViewModel: ControlViewModel,
-    currentPosition: Long,
+    cartoonRecordedState: CartoonRecordedState,
     show: Boolean,
     onDismissRequire: () -> Unit
 ) {
@@ -70,16 +73,12 @@ fun CartoonRecorded(
     if (show) {
         Surface(
             modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background,
-            contentColor = MaterialTheme.colorScheme.onBackground
+            color = Color.Black,
+            contentColor = Color.White
         ) {
             Box(Modifier.fillMaxSize()) {
                 CartoonRecordedContent(
-                    exoPlayer,
-                    controlViewModel,
-                    currentPosition,
-                    onDismissRequire
-                )
+                    cartoonRecordedState, cartoonRecordedState.clipVideoState, controlViewModel, onDismissRequire)
             }
         }
     }
@@ -89,26 +88,24 @@ fun CartoonRecorded(
 
 @Composable
 private fun BoxScope.CartoonRecordedContent(
-    exoPlayer: ExoPlayer,
+    cartoonRecordedState: CartoonRecordedState,
+    clipVideoState: ClipVideoState,
     controlViewModel: ControlViewModel,
-    currentPosition: Long,
     onDismissRequire: () -> Unit
 ) {
-
-    val vm =
-        viewModel<CartoonRecordedViewModel>(factory = CartoonRecordedViewModelFactory(exoPlayer))
-    val state = vm.stateFlow.collectAsState()
+   
+    val state = cartoonRecordedState.stateFlow.collectAsState()
     val sta = state
 
     LaunchedEffect(Unit) {
-        vm.onLaunch()
+        cartoonRecordedState.onLaunch()
     }
 
     DisposableEffect(Unit) {
         // exoPlayer.clearVideoSurface()
         onDispose {
-            exoPlayer.seekTo(currentPosition)
-            vm.onDispose()
+            cartoonRecordedState.exoPlayer.seekTo(cartoonRecordedState.currentPosition)
+            cartoonRecordedState.onDispose()
         }
     }
     Row(
@@ -139,7 +136,7 @@ private fun BoxScope.CartoonRecordedContent(
                     stringResource(com.heyanle.easy_i18n.R.string.record_gif),
                     sta.value.configuration.type == 1
                 ) {
-                    vm.changeGif()
+                    cartoonRecordedState.changeGif()
                 }
 
                 RecordedAction(
@@ -147,7 +144,7 @@ private fun BoxScope.CartoonRecordedContent(
                     stringResource(com.heyanle.easy_i18n.R.string.record_video),
                     sta.value.configuration.type == 2
                 ) {
-                    vm.changeMp4()
+                    cartoonRecordedState.changeMp4()
                 }
             }
 
@@ -167,7 +164,7 @@ private fun BoxScope.CartoonRecordedContent(
             ) {
                 AndroidView(
                     factory = {
-                        vm.layout.apply {
+                        cartoonRecordedState.layout.apply {
                             (parent as? ViewGroup)?.removeView(this)
                             layoutParams = ViewGroup.LayoutParams(
                                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -187,24 +184,16 @@ private fun BoxScope.CartoonRecordedContent(
             }
 
             Row(
-                modifier = Modifier.fillMaxWidth().height(40.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(40.dp)
             ) {
                 PlayPauseBtn(controlViewModel.playWhenReady) {
                     controlViewModel.onPlayPause(it)
                 }
-                ViewSeekBar(
-                    during = controlViewModel.during.toInt(),
-                    position = controlViewModel.position.toInt(),
-                    secondary = controlViewModel.bufferPosition.toInt(),
-                    onValueChange = {
-                        controlViewModel.onPositionChange(it.toFloat())
-                    },
-                    onValueChangeFinish = {
-                        "onValueChangeFinish".logi("ViewComponent")
-                        controlViewModel.onActionUPScope()
-                    }
-                )
             }
+            
+            ClipVideoSeek(state = clipVideoState)
 
 
         }
@@ -218,7 +207,7 @@ private fun BoxScope.CartoonRecordedContent(
                 stringResource(com.heyanle.easy_i18n.R.string.record_start),
                 sta.value.state == 1
             ) {
-                vm.changeGif()
+                cartoonRecordedState.changeGif()
             }
 
             RecordedAction(
@@ -226,7 +215,7 @@ private fun BoxScope.CartoonRecordedContent(
                 stringResource(com.heyanle.easy_i18n.R.string.record_stop),
                 false
             ) {
-                vm.changeGif()
+                cartoonRecordedState.changeGif()
             }
         }
     }

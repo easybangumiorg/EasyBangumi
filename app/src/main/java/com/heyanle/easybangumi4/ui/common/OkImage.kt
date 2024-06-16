@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.toArgb
@@ -41,6 +42,7 @@ fun OkImage(
     placeholderColor: Color? = MaterialTheme.colorScheme.secondaryContainer,
     placeholderRes: Int? = null,
     tint: Color? = null,
+    alpha: Float = 1f,
 ) {
     var need = true
     if (image == null || image == "" || (image is Int && image <= 0)) {
@@ -50,19 +52,21 @@ fun OkImage(
                 modifier = modifier,
                 contentScale = contentScale,
                 painter = painterResource(id = errorRes),
-                contentDescription = contentDescription
+                contentDescription = contentDescription,
+                alpha = alpha
             )
         } else if (errorColor != null) {
-            Box(modifier = modifier.background(errorColor))
+            Box(modifier = modifier.background(errorColor).alpha(alpha))
         } else if (placeholderRes != null) {
             Image(
                 modifier = modifier,
                 contentScale = contentScale,
                 painter = painterResource(id = placeholderRes),
-                contentDescription = contentDescription
+                contentDescription = contentDescription,
+                alpha = alpha
             )
         } else if (placeholderColor != null) {
-            Box(modifier = modifier.background(placeholderColor))
+            Box(modifier = modifier.background(placeholderColor).alpha(alpha))
         } else {
             need = true
         }
@@ -75,7 +79,8 @@ fun OkImage(
                     modifier = modifier,
                     contentScale = contentScale,
                     contentDescription = contentDescription,
-                    colorFilter = if (tint == null) null else ColorFilter.tint(tint)
+                    colorFilter = if (tint == null) null else ColorFilter.tint(tint),
+                    alpha = alpha
                 )
             }
 
@@ -85,7 +90,8 @@ fun OkImage(
                     modifier = modifier,
                     contentScale = contentScale,
                     contentDescription = contentDescription,
-                    colorFilter = if (tint == null) null else ColorFilter.tint(tint)
+                    colorFilter = if (tint == null) null else ColorFilter.tint(tint),
+                    alpha = alpha
                 )
             }
 
@@ -127,7 +133,8 @@ fun OkImage(
                         .build(),
                     contentDescription = contentDescription,
                     contentScale = contentScale,
-                    modifier = Modifier.then(modifier)
+                    modifier = Modifier.then(modifier),
+                    alpha = alpha
                 )
             }
         }

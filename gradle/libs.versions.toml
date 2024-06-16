@@ -127,3 +127,4 @@ appcenter = ["appcenter_analytics", "appcenter_crashes", "appcenter_distribute"]
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 org-jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "org-jetbrains-kotlin-jvm" }
+androidApplication = { id = "com.android.application", version.ref = "agp" }

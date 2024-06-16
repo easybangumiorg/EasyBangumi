@@ -7,23 +7,32 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.media3.common.Player
 import androidx.media3.common.VideoSize
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.MediaSource
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.R
-import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
-import com.heyanle.easybangumi4.ui.cartoon_play.view_model.DetailedViewModel
+import com.heyanle.easybangumi4.exo.thumbnail.ThumbnailBuffer
+import com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded.clip_video.ClipVideoState
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import loli.ball.easyplayer2.surface.EasySurfaceView
 import loli.ball.easyplayer2.texture.EasyTextureView
 import loli.ball.easyplayer2.utils.MeasureHelper
 
 /**
  * Created by heyanlin on 2024/6/11.
  */
-class CartoonRecordedViewModel(
-    private val exoPlayer: ExoPlayer,
-) : ViewModel(),  Player.Listener {
+class CartoonRecordedState(
+    val ctx: Context,
+    val exoPlayer: ExoPlayer,
+    val mediaSource: MediaSource,
+    val scope: CoroutineScope,
+    val thumbnailBuffer: ThumbnailBuffer,
+    val start: Long,
+    val end: Long,
+    val currentPosition: Long,
+):  Player.Listener {
 
     data class Configuration(
         val fps: Int = 15,
@@ -37,6 +46,12 @@ class CartoonRecordedViewModel(
         val state: Int = 0,
         val configuration: Configuration = Configuration(),
     )
+
+    @UnstableApi
+    val clipVideoState = ClipVideoState(
+        ctx, mediaSource, scope, thumbnailBuffer, start, end, currentPosition
+    )
+
 
     private val _stateFlow = MutableStateFlow(RecordedState())
     val stateFlow = _stateFlow.asStateFlow()
@@ -84,17 +99,4 @@ class CartoonRecordedViewModel(
 
 
 
-}
-
-class CartoonRecordedViewModelFactory(
-    private val exoPlayer: ExoPlayer,
-) : ViewModelProvider.Factory {
-
-    @Suppress("UNCHECKED_CAST")
-    @SuppressWarnings("unchecked")
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(CartoonRecordedViewModel::class.java))
-            return CartoonRecordedViewModel(exoPlayer) as T
-        throw RuntimeException("unknown class :" + modelClass.name)
-    }
 }

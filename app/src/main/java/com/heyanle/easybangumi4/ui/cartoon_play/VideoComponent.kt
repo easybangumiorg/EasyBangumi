@@ -599,7 +599,7 @@ fun VideoControl(
                     .defaultMinSize(64.dp, Dp.Unspecified)
                     .align(Alignment.CenterEnd)
             ) {
-                cartoonPlayingVM.showRecording.value = true
+                cartoonPlayingVM.showRecord()
             }
 
             NormalVideoTopBar(controlVM,
