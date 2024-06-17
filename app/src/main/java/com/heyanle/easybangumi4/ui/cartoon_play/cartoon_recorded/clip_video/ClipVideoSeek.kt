@@ -69,8 +69,11 @@ import kotlin.math.abs
 @OptIn(UnstableApi::class)
 @Composable
 fun ClipVideoSeek(
-    state: ClipVideoState
+    state: ClipVideoState,
+    onCurrentPositionChange: (Long) -> Unit,
+    onFocusChange: (Int) -> Unit,
 ) {
+
 
     LaunchedEffect(key1 = Unit) {
         state.onLaunch()
@@ -108,8 +111,7 @@ fun ClipVideoSeek(
 
     Box(modifier = Modifier
         .fillMaxWidth()
-        .height(80.dp)
-        .background(Color.Black)
+        .height(60.dp)
         .onSizeChanged {
             state.onViseChange(it.width, it.height)
         }
@@ -122,30 +124,35 @@ fun ClipVideoSeek(
                         ((state.currentPosition - state.start) * (state.width - 2 * state.horizontalPadding) / (state.end - state.start)) + state.horizontalPadding
                     if (abs(currentPx - it.x) < diff) {
                         state.focusMode = 3
+                        onFocusChange(3)
                         return@detectHorizontalDragGestures
                     }
 
                     // start
                     val startPx =
                         ((state.selectionStart - state.start) * (state.width - 2 * state.horizontalPadding) / (state.end - state.start)) + state.horizontalPadding
-                    if (abs(startPx - state.horizontalPadding/2f - it.x) < diff) {
+                    if (abs(startPx - state.horizontalPadding / 2f - it.x) < diff) {
                         state.focusMode = 1
+                        onFocusChange(1)
                         return@detectHorizontalDragGestures
                     }
 
                     // end
                     val endPx =
-                        ((state.selectionEnd + state.horizontalPadding/2f - state.start) * (state.width - 2 * state.horizontalPadding) / (state.end - state.start)) + state.horizontalPadding
+                        ((state.selectionEnd + state.horizontalPadding / 2f - state.start) * (state.width - 2 * state.horizontalPadding) / (state.end - state.start)) + state.horizontalPadding
                     if (abs(endPx - it.x) < diff) {
                         state.focusMode = 2
+                        onFocusChange(2)
                         return@detectHorizontalDragGestures
                     }
                 },
                 onDragEnd = {
                     state.focusMode = 0
+                    onFocusChange(0)
                 },
                 onDragCancel = {
                     state.focusMode = 0
+                    onFocusChange(0)
                 },
                 onHorizontalDrag = { c: PointerInputChange, dragAmount: Float ->
                     val currPx = c.position.x
@@ -167,6 +174,7 @@ fun ClipVideoSeek(
 
                         3 -> {
                             state.currentPosition = curPosition
+                            onCurrentPositionChange (curPosition)
                             state.check()
                         }
                     }
@@ -270,7 +278,6 @@ fun ClipVideoSeek(
             }
 
 
-
         }
     }
 
@@ -305,7 +312,7 @@ private fun DrawScope.drawBorder(
         startAngle = 180f,
         sweepAngle = 90f,
         useCenter = true,
-        topLeft = Offset(startPx - horizontalWidth , 0f),
+        topLeft = Offset(startPx - horizontalWidth, 0f),
         size = Size(verticalWidth * 2, verticalWidth * 2),
     )
 
@@ -325,12 +332,15 @@ private fun DrawScope.drawBorder(
         startAngle = 0f,
         sweepAngle = 90f,
         useCenter = true,
-        topLeft = Offset(endPx + horizontalWidth - 2 * verticalWidth, size.height - 2 * verticalWidth),
+        topLeft = Offset(
+            endPx + horizontalWidth - 2 * verticalWidth,
+            size.height - 2 * verticalWidth
+        ),
         size = Size(verticalWidth * 2, verticalWidth * 2),
     )
 
     // 左下
-    drawArc (
+    drawArc(
         color = color,
         startAngle = 90f,
         sweepAngle = 90f,

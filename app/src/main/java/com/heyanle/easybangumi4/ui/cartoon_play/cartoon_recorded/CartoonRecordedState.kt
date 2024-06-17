@@ -2,7 +2,10 @@ package com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.SurfaceTexture
 import android.view.LayoutInflater
+import android.view.TextureView
+import androidx.annotation.OptIn
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.media3.common.Player
@@ -32,7 +35,7 @@ class CartoonRecordedState(
     val start: Long,
     val end: Long,
     val currentPosition: Long,
-):  Player.Listener {
+):  Player.Listener, TextureView.SurfaceTextureListener {
 
     data class Configuration(
         val fps: Int = 15,
@@ -64,6 +67,7 @@ class CartoonRecordedState(
     val textureView: EasyTextureView = layout.findViewById<EasyTextureView?>(R.id.easy_texture)
         .apply {
             setScaleType(MeasureHelper.SCREEN_SCALE_ADAPT)
+            setExtSurfaceTextureListener(this@CartoonRecordedState)
         }
 
     @SuppressLint("StaticFieldLeak")
@@ -97,6 +101,29 @@ class CartoonRecordedState(
         textureView.setVideoSize(videoSize.width, videoSize.height)
     }
 
+    override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
 
+    }
 
+    override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {
+
+    }
+
+    override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean {
+        return false
+    }
+
+    @OptIn(UnstableApi::class)
+    override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {
+        if (exoPlayer.isPlaying && exoPlayer.playWhenReady){
+            val cur = exoPlayer.currentPosition
+            if (cur !in clipVideoState.selectionStart..clipVideoState.selectionEnd){
+                exoPlayer.seekTo(clipVideoState.selectionStart)
+                clipVideoState.currentPosition = clipVideoState.selectionStart
+            }else{
+                clipVideoState.currentPosition = exoPlayer.currentPosition
+            }
+            clipVideoState.check()
+        }
+    }
 }

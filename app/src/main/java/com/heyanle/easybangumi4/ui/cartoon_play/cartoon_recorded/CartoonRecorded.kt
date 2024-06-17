@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.annotation.OptIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,7 +22,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Gif
@@ -34,26 +34,33 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.MediaSource
 import com.heyanle.easybangumi4.R
 import com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded.clip_video.ClipVideoSeek
 import com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded.clip_video.ClipVideoState
 import com.heyanle.easybangumi4.utils.logi
+import kotlinx.coroutines.launch
 import loli.ball.easyplayer2.ControlViewModel
 import loli.ball.easyplayer2.PlayPauseBtn
 import loli.ball.easyplayer2.ViewSeekBar
@@ -73,8 +80,8 @@ fun CartoonRecorded(
     if (show) {
         Surface(
             modifier = Modifier.fillMaxSize(),
-            color = Color.Black,
-            contentColor = Color.White
+            color = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.onBackground
         ) {
             Box(Modifier.fillMaxSize()) {
                 CartoonRecordedContent(
@@ -86,6 +93,7 @@ fun CartoonRecorded(
 
 }
 
+@OptIn(UnstableApi::class)
 @Composable
 private fun BoxScope.CartoonRecordedContent(
     cartoonRecordedState: CartoonRecordedState,
@@ -99,7 +107,16 @@ private fun BoxScope.CartoonRecordedContent(
 
     LaunchedEffect(Unit) {
         cartoonRecordedState.onLaunch()
+        launch {
+            snapshotFlow {
+                cartoonRecordedState.currentPosition
+            }.collect {
+                cartoonRecordedState.exoPlayer.seekTo(it)
+            }
+        }
     }
+
+
 
     DisposableEffect(Unit) {
         // exoPlayer.clearVideoSurface()
@@ -108,12 +125,13 @@ private fun BoxScope.CartoonRecordedContent(
             cartoonRecordedState.onDispose()
         }
     }
-    Row(
-        modifier = Modifier.fillMaxSize()
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // 左工具栏
-        Column(
-            modifier = Modifier.fillMaxHeight()
+        Row(
+            modifier = Modifier.fillMaxWidth().height(40.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             IconButton(
                 onClick = {
@@ -127,99 +145,103 @@ private fun BoxScope.CartoonRecordedContent(
                 )
             }
 
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-
-                RecordedAction(
-                    Icons.Default.GifBox,
-                    stringResource(com.heyanle.easy_i18n.R.string.record_gif),
-                    sta.value.configuration.type == 1
+            Row {
+                Surface(
+                    shape = CircleShape,
+                    modifier =
+                    Modifier
+                        .padding(2.dp, 8.dp),
+                    color = if (sta.value.configuration.type == 2) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
                 ) {
-                    cartoonRecordedState.changeGif()
+                    Text(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .clickable {
+                                cartoonRecordedState.changeMp4()
+                            }
+                            .padding(8.dp, 0.dp),
+                        color = if (sta.value.configuration.type == 2) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onBackground,
+                        fontWeight = FontWeight.W900,
+                        text = stringResource(com.heyanle.easy_i18n.R.string.record_video),
+                        fontSize = 12.sp,
+                    )
                 }
 
-                RecordedAction(
-                    Icons.Default.VideoFile,
-                    stringResource(com.heyanle.easy_i18n.R.string.record_video),
-                    sta.value.configuration.type == 2
+                Spacer(Modifier.size(8.dp))
+
+                Surface(
+                    shape = CircleShape,
+                    modifier =
+                    Modifier
+                        .padding(2.dp, 8.dp),
+                    color = if (sta.value.configuration.type == 1) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
                 ) {
-                    cartoonRecordedState.changeMp4()
-                }
-            }
-
-        }
-
-        // 播放器区域
-
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight()
-        ) {
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-            ) {
-                AndroidView(
-                    factory = {
-                        cartoonRecordedState.layout.apply {
-                            (parent as? ViewGroup)?.removeView(this)
-                            layoutParams = ViewGroup.LayoutParams(
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.MATCH_PARENT
-                            )
-                        }
-                    },
-                    modifier = Modifier.fillMaxSize()//.background(Color.Black)
-                )
-
-
-                if (controlViewModel.isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.Center)
+                    Text(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .clickable {
+                                cartoonRecordedState.changeGif()
+                            }
+                            .padding(8.dp, 0.dp),
+                        color = if (sta.value.configuration.type == 1) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onBackground,
+                        fontWeight = FontWeight.W900,
+                        text = stringResource(com.heyanle.easy_i18n.R.string.record_gif),
+                        fontSize = 12.sp,
                     )
                 }
             }
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(40.dp)
-            ) {
-                PlayPauseBtn(controlViewModel.playWhenReady) {
-                    controlViewModel.onPlayPause(it)
+
+            TextButton(
+                onClick = {
+
                 }
+            ) {
+                Text("保存")
             }
-            
-            ClipVideoSeek(state = clipVideoState)
 
 
         }
 
-        // 右工具栏
-        Column(
-            modifier = Modifier.fillMaxHeight()
-        ) {
-            RecordedAction(
-                Icons.Default.PlayCircle,
-                stringResource(com.heyanle.easy_i18n.R.string.record_start),
-                sta.value.state == 1
-            ) {
-                cartoonRecordedState.changeGif()
-            }
+        Box(Modifier.weight(1f).fillMaxWidth()){
+            AndroidView(
+                factory = {
+                    cartoonRecordedState.layout.apply {
+                        (parent as? ViewGroup)?.removeView(this)
+                        layoutParams = ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+                        )
+                    }
+                },
+                modifier = Modifier.fillMaxSize()//.background(Color.Black)
+            )
 
-            RecordedAction(
-                Icons.Default.StopCircle,
-                stringResource(com.heyanle.easy_i18n.R.string.record_stop),
-                false
-            ) {
-                cartoonRecordedState.changeGif()
+
+            if (controlViewModel.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center)
+                )
             }
         }
+
+        Box(modifier = Modifier.padding(8.dp, 8.dp)){
+            ClipVideoSeek(
+                state = clipVideoState,
+                onFocusChange = {
+                    if (it != 0){
+                        controlViewModel.onPlayPause(false)
+                    }
+                },
+                onCurrentPositionChange = {
+                    controlViewModel.exoPlayer.seekTo(it)
+                }
+            )
+        }
+
+
+
     }
-
 
 }
 

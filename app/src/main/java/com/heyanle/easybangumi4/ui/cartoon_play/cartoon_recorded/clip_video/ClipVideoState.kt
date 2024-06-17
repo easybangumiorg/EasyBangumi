@@ -9,6 +9,8 @@ import androidx.lifecycle.ViewModel
 import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.source.MediaSource
+import androidx.media3.transformer.EditedMediaItem
+import androidx.media3.transformer.Transformer
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.exo.thumbnail.OutputThumbnailHelper
 import com.heyanle.easybangumi4.exo.thumbnail.ThumbnailBuffer
