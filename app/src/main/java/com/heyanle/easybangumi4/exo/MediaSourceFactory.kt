@@ -14,6 +14,7 @@ import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.exoplayer.dash.DashMediaSource
 import androidx.media3.exoplayer.hls.HlsMediaSource
 import androidx.media3.exoplayer.source.MediaSource
+import androidx.media3.exoplayer.source.MediaSourceFactory
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.transformer.Composition
 import androidx.media3.transformer.DefaultAssetLoaderFactory
@@ -51,12 +52,14 @@ class MediaSourceFactory(
     private val normalCache: Cache,
 ) {
 
+    fun getMediaItem(playerInfo: PlayerInfo): MediaItem {
+        return MediaItem.fromUri(playerInfo.uri)
+    }
+
     /**
      * Http <- 缓存区
      */
-    @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-    fun get(playerInfo: PlayerInfo): MediaSource {
-
+    fun getMediaSourceFactory(playerInfo: PlayerInfo): MediaSource.Factory {
         val httpDataSourceFactory = DefaultHttpDataSource.Factory()
             .setDefaultRequestProperties(playerInfo.header ?: emptyMap())
         val dataSourceFactory = DefaultDataSource.Factory(APP, httpDataSourceFactory)
@@ -67,43 +70,17 @@ class MediaSourceFactory(
             .setCacheWriteDataSinkFactory(streamDataSinkFactory)
             .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
 
-//        val d = MediaItem.Builder().setMimeType(MimeTypes.APPLICATION_M3U8).setUri(playerInfo.uri).build()
-//        EditedMediaItem.Builder(d)
-//            .build()
-//        val transformer = Transformer.Builder(APP)
-//            .setAssetLoaderFactory(ExoPlayerAssetLoader.Factory(
-//                APP, DefaultDecoderFactory(APP),   Clock.DEFAULT,  HlsMediaSource.Factory(normalCacheDataSourceFactory)
-//            ))
-//            .setVideoMimeType(MimeTypes. VIDEO_H264)
-//            .setMuxerFactory(InAppMuxer.Factory.Builder().setOutputFragmentedMp4(false).setFragmentDurationMs(C.TIME_UNSET).build())
-//            .build()
-//        transformer.start(d, File(APP.getFilePath("test"), "test.mp4").absolutePath)
-//        val progressHolder = ProgressHolder()
-////        MainScope().launch {
-////            while (isActive) {
-////                delay(1000)
-////                val d = transformer.getProgress(progressHolder)
-////                d.logi("progress")
-////
-////            }
-////        }
-
-
-        val media = when (playerInfo.decodeType) {
+        return when (playerInfo.decodeType) {
             C.CONTENT_TYPE_DASH -> DashMediaSource.Factory(normalCacheDataSourceFactory)
-                .createMediaSource(MediaItem.fromUri(playerInfo.uri))
-
             C.CONTENT_TYPE_HLS -> HlsMediaSource.Factory(normalCacheDataSourceFactory)
-                .createMediaSource(
-                    MediaItem.fromUri(playerInfo.uri)
-                )
-
             else -> ProgressiveMediaSource.Factory(normalCacheDataSourceFactory)
-                .createMediaSource(
-                    MediaItem.fromUri(playerInfo.uri)
-                )
         }
-        return media
+    }
+
+
+    @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
+    fun get(playerInfo: PlayerInfo): MediaSource {
+        return getMediaSourceFactory(playerInfo).createMediaSource(getMediaItem(playerInfo))
     }
 
 }

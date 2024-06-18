@@ -13,6 +13,7 @@ import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.APP
+import com.heyanle.easybangumi4.BuildConfig
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.entity.PlayLineWrapper
 import com.heyanle.easybangumi4.cartoon_download.entity.LocalCartoon
@@ -374,7 +375,7 @@ class LocalPlayViewModel(
             val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 FileProvider.getUriForFile(
                     APP,
-                    "com.heyanle.easybangumi4.fileProvider",
+                    "${BuildConfig.APPLICATION_ID}.fileProvider",
                     File(episode.path)
                 )
             } else {

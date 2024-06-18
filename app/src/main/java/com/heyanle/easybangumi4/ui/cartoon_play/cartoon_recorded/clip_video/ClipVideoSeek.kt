@@ -61,6 +61,9 @@ import kotlinx.coroutines.launch
 import loli.ball.easyplayer2.utils.loge
 import loli.ball.easyplayer2.utils.pointerInput
 import kotlin.math.abs
+import kotlin.math.ceil
+import kotlin.math.nextUp
+import kotlin.math.roundToInt
 
 /**
  * Created by heyanle on 2024/6/16.
@@ -84,10 +87,16 @@ fun ClipVideoSeek(
                 if (!state.check()) {
                     return@collectLatest
                 }
+                val pngWidth = state.width * state.height / state.videoSize.height.toFloat()
+                val pngCount = ceil((state.width - 2 * state.horizontalPadding).toDouble() / pngWidth).toInt()
+                repeat(pngCount){
+
+                }
+
                 val duringPx =
                     (it.first.third.width * it.first.second / it.first.third.height.toFloat())
                 val positionPx =
-                    (duringPx * (it.second.second - it.second.first) / it.first.first).toLong()
+                    (duringPx * (it.second.second - it.second.first) / (it.first.first)).toLong()
                 val arrayList = arrayListOf<Long>()
 
                 var current = it.second.first

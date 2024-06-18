@@ -99,7 +99,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="com.heyanle.easybangumi4.fileProvider"
+            android:authorities="${package_name}.fileProvider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

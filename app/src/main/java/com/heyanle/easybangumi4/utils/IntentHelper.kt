@@ -9,6 +9,7 @@ import android.provider.Settings
 import androidx.annotation.StringRes
 import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
+import com.heyanle.easybangumi4.BuildConfig
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import java.io.File
 import com.heyanle.easybangumi4.R
@@ -43,7 +44,7 @@ object IntentHelper {
             val intent = Intent(Intent.ACTION_VIEW)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                val apkUri = FileProvider.getUriForFile(context, "com.heyanle.easybangumi4.fileProvider", file)
+                val apkUri = FileProvider.getUriForFile(context, "${BuildConfig.APPLICATION_ID}.fileProvider", file)
                 intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 intent.setDataAndType(apkUri, "application/vnd.android.package-archive")
             } else {

@@ -20,6 +20,7 @@ import com.heyanle.easybangumi4.utils.logi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.io.File
+import java.util.Locale
 import java.util.TreeMap
 
 /**
@@ -64,7 +65,20 @@ class ClipVideoState(
     var bmpTreeMap by mutableStateOf(TreeMap<Long, File>())
 
     // 0: normal, 1: select start, 2: select end, 3: select position
-    var focusMode = 0
+    var focusMode by mutableStateOf(0)
+
+    // 待定系数法，这里使用一次函数将视频轴 [start, end] 部分与 View 的可滑动部分 [horizontalPadding, width - horizontalPadding] 对应
+    // horizontalPadding = start * k + b
+    // width - horizontalPadding = end * k + b
+    // k = (width - horizontalPadding) / (end - start)
+    // b = horizontalPadding - start * k
+    val position2PXWithoutPadding: Pair<Float, Float> get(){
+        val k = (width - horizontalPadding) / (end - start).toFloat()
+        val b = horizontalPadding - start * k
+        return k to b
+    }
+
+
 
     init {
         thumbnailBuffer.onTreeMapChange = {
@@ -142,5 +156,19 @@ class ClipVideoState(
 
 
 
+    fun getShowTime(): String {
+        val showTimePosition = when(focusMode){
+            1 -> selectionStart
+            2 -> selectionEnd
+            else -> currentPosition
+        }
+        val showTimeSec = showTimePosition/1000
+        return if (showTimeSec > 3600){
+            "%02d:%02d:%02d".format(Locale.getDefault(), showTimeSec/3600, showTimeSec%3600/60, showTimeSec%60)
+        }else{
+            "%02d:%02d".format(Locale.getDefault(), showTimeSec/60, showTimeSec%60)
+        }
+
+    }
 
 }

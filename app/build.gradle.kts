@@ -16,13 +16,16 @@ runCatching {
     // it.printStackTrace()
 }
 
+val release = (System.getenv("RELEASE") ?: "") == "true"
+val packageName = if (release) "com.heyanle.easybangumi4" else "com.heyanle.easybangumi4.debug"
+
 android {
-    namespace = "com.heyanle.easybangumi4"
+    namespace =  "com.heyanle.easybangumi4"
     compileSdk = Android.compileSdk
 
     defaultConfig {
 
-        applicationId = "com.heyanle.easybangumi4"
+        applicationId = packageName
         minSdk = Android.minSdk
         targetSdk = Android.targetSdk
         versionCode = Android.versionCode
@@ -38,6 +41,7 @@ android {
             publishingProps.getProperty("bugly_appid", System.getenv("BUGLY_APPID")?:"")
         manifestPlaceholders["bugly_app_version"] = Android.versionName
         manifestPlaceholders["bugly_app_channel"] = "github"
+        manifestPlaceholders["package_name"] = packageName
 
         // bugly 调试模式
         manifestPlaceholders["bugly_is_debug"] = false
@@ -233,7 +237,7 @@ dependencies {
 
     // fimplementation(gecko.gecko)
 
-    val release = (System.getenv("RELEASE") ?: "") == "true"
+
     if (release) {
         implementation(libs.easyplayer2)
     } else {

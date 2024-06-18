@@ -26,6 +26,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Gif
 import androidx.compose.material.icons.filled.GifBox
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.StopCircle
 import androidx.compose.material.icons.filled.VideoFile
@@ -223,6 +225,29 @@ private fun BoxScope.CartoonRecordedContent(
                     modifier = Modifier.align(Alignment.Center)
                 )
             }
+        }
+
+        Row {
+            Icon(
+                if (controlViewModel.playWhenReady) Icons.Filled.Pause
+                else Icons.Filled.PlayArrow,
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .clickable {
+                        controlViewModel.onPlayPause(!controlViewModel.playWhenReady)
+                    }
+                    .padding(4.dp),
+                tint = MaterialTheme.colorScheme.onBackground,
+                contentDescription = null
+            )
+
+           Text(
+               clipVideoState.getShowTime(),
+               color = MaterialTheme.colorScheme.onBackground
+           )
+
+
+
         }
 
         Box(modifier = Modifier.padding(8.dp, 8.dp)){
