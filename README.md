@@ -59,4 +59,4 @@
 
 <img src="./screenshots/7.jpg"/>
 
-# <a href="./app/src/main/assets/need_known.txt">更新日志</a>
+# <a href="./app/src/main/assets/update_log.txt">更新日志</a>
