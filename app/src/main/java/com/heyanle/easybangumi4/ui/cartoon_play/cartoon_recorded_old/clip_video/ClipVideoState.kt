@@ -1,16 +1,15 @@
-package com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded.clip_video
+package com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded_old.clip_video
 
 import android.content.Context
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
 import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.source.MediaSource
-import androidx.media3.transformer.EditedMediaItem
-import androidx.media3.transformer.Transformer
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.exo.thumbnail.OutputThumbnailHelper
 import com.heyanle.easybangumi4.exo.thumbnail.ThumbnailBuffer
@@ -68,14 +67,29 @@ class ClipVideoState(
     var focusMode by mutableStateOf(0)
 
     // 待定系数法，这里使用一次函数将视频轴 [start, end] 部分与 View 的可滑动部分 [horizontalPadding, width - horizontalPadding] 对应
+    // 这里分别计算，以减少误差
+
     // horizontalPadding = start * k + b
     // width - horizontalPadding = end * k + b
-    // k = (width - horizontalPadding) / (end - start)
-    // b = horizontalPadding - start * k
-    val position2PXWithoutPadding: Pair<Float, Float> get(){
-        val k = (width - horizontalPadding) / (end - start).toFloat()
-        val b = horizontalPadding - start * k
-        return k to b
+
+    @Composable
+    fun getPos2PxParam(): Pair<Float, Float>{
+        return remember(width, end, start, horizontalPadding) {
+            val k = (width - horizontalPadding) / (end - start).toFloat()
+            val b = horizontalPadding - start * k
+            k to b
+        }
+    }
+
+    // start = horizontalPadding * k + b
+    // end = (width - horizontalPadding) * k + b
+    @Composable
+    fun getPx2PosParam(): Pair<Float, Float> {
+        return remember(width, end, start, horizontalPadding) {
+            val k = (end - start) / (width - 2 * horizontalPadding).toFloat()
+            val b = start - horizontalPadding * k
+            k to b
+        }
     }
 
 

@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded
+package com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded_old
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -6,8 +6,6 @@ import android.graphics.SurfaceTexture
 import android.view.LayoutInflater
 import android.view.TextureView
 import androidx.annotation.OptIn
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.media3.common.Player
 import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
@@ -16,7 +14,7 @@ import androidx.media3.exoplayer.source.MediaSource
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.R
 import com.heyanle.easybangumi4.exo.thumbnail.ThumbnailBuffer
-import com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded.clip_video.ClipVideoState
+import com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded_old.clip_video.ClipVideoState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

@@ -1,19 +1,14 @@
-package com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded
+package com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded_old
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
-import android.graphics.Point
-import android.graphics.PointF
-import android.graphics.PorterDuff
-import android.graphics.PorterDuffXfermode
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import kotlin.math.abs
-import kotlin.math.sqrt
 
 /**
  * Created by heyanlin on 2024/6/11.

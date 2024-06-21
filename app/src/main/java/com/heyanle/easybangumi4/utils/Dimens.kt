@@ -28,3 +28,7 @@ fun Int.dip2px(): Int {
 fun Float.px2dip(): Float {
     return px2dip(APP, this)
 }
+
+fun Int.px2dip(): Float {
+    return px2dip(APP, this.toFloat())
+}

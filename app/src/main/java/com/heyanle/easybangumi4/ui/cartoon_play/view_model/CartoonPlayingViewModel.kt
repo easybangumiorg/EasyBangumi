@@ -21,7 +21,7 @@ import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.source_api.entity.Episode
 import com.heyanle.easybangumi4.source_api.entity.PlayLine
 import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
-import com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded.CartoonRecordedState
+import com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded_old.CartoonRecordedState
 import com.heyanle.easybangumi4.utils.CoroutineProvider
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.logi
