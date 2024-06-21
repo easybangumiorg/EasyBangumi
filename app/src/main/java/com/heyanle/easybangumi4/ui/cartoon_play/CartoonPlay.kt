@@ -30,7 +30,7 @@ import com.heyanle.easybangumi4.navigationCartoonTag
 import com.heyanle.easybangumi4.navigationSearch
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
-import com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded_old.CartoonRecorded
+import com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded.CartoonRecorded
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModelFactory
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayingViewModel
@@ -231,11 +231,11 @@ fun CartoonPlay(
     val recordState = playingVM.showRecording.value
 
     if (recordState != null){
+
         CartoonRecorded(
             controlViewModel = controlVM,
-            cartoonRecordedState = recordState,
+            cartoonRecordedModel = recordState,
             show = true,
-
         ) {
             playingVM.showRecording.value = null
         }

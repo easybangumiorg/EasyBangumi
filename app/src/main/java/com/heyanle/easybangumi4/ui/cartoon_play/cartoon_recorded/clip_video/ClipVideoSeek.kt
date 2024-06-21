@@ -2,19 +2,32 @@ package com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded.clip_video
 
 import androidx.annotation.OptIn
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -25,11 +38,14 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.times
 import androidx.media3.common.util.UnstableApi
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.utils.dip2px
+import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.px2dip
 import loli.ball.easyplayer2.utils.pointerInput
+import java.util.Locale
 import kotlin.math.abs
 
 /**
@@ -38,141 +54,183 @@ import kotlin.math.abs
 @OptIn(UnstableApi::class)
 @Composable
 fun ClipVideoSeek(
+    playWhenReady: Boolean,
     clipVideoModel: ClipVideoModel,
+    onPlayWhenReadyChange: (Boolean) -> Unit,
 ) {
 
-    val widgetState by clipVideoModel.widgetState.collectAsState()
-    val clipVideoState by clipVideoModel.clipVideoState.collectAsState()
-    val runtimeState by clipVideoModel.runtimeState.collectAsState()
-
-    val clip = clipVideoState
-    val runtime = runtimeState
-
-
-    val pos2PxParam = runtimeState.pos2Px
-    val px2PosParam = runtimeState.px2Pos
 
     val colorScheme = MaterialTheme.colorScheme
 
-    Row(modifier = Modifier
-        .fillMaxWidth()
-        .height(60.dp)
-        .onSizeChanged {
-            clipVideoModel.onSizeChange(it.width, it.height)
+
+
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                if (playWhenReady) Icons.Filled.Pause
+                else Icons.Filled.PlayArrow,
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .clickable {
+                        onPlayWhenReadyChange(!playWhenReady)
+                    }
+                    .padding(4.dp),
+                tint = MaterialTheme.colorScheme.onBackground,
+                contentDescription = null
+            )
+
+            Text(
+                clipVideoModel.getShowTime(),
+                color = MaterialTheme.colorScheme.onBackground
+            )
+
+
         }
-        .pointerInput(Unit) {
-            detectHorizontalDragGestures(
-                onDragStart = {
-                    val diff = 200
 
-                    val currentPx =
-                        clipVideoState.selectionCurrent * pos2PxParam.first + pos2PxParam.second
-                    if (abs(currentPx - it.x) < diff) {
-                        clipVideoModel.onFocusChange(1)
-                        return@detectHorizontalDragGestures
-                    }
 
-                    val startPx =
-                        clipVideoState.selectionStart * pos2PxParam.first + pos2PxParam.second
-                    if (abs(startPx - it.x) < diff) {
-                        clipVideoModel.onFocusChange(2)
-                        return@detectHorizontalDragGestures
-                    }
-
-                    val endPx = clipVideoState.selectionEnd * pos2PxParam.first + pos2PxParam.second
-                    if (abs(endPx - it.x) < diff) {
-                        clipVideoModel.onFocusChange(3)
-                        return@detectHorizontalDragGestures
-                    }
-                },
-                onHorizontalDrag = { c: PointerInputChange, _: Float ->
-                    val x = c.position.x
-                    val pos = x * px2PosParam.first + px2PosParam.second
-                    clipVideoModel.onSelectionChange(pos, runtimeState.focusMode)
-                },
-                onDragEnd = {
-                    clipVideoModel.onFocusChange(0)
-                },
-                onDragCancel = {
-                    clipVideoModel.onFocusChange(0)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(ClipVideoModel.seekBarHeightDp.dp)
+                .onSizeChanged {
+                    clipVideoModel.onSeekBarSizeChange(it.width, it.height)
                 }
-            )
-        }.drawWithContent {
-            drawContent()
+
+        ) {
 
 
-            drawBorder(
-                color = colorScheme.primaryContainer,
-                horizontalWidth = clipVideoModel.horizontalPaddingPx.toFloat(),
-                verticalWidth = clipVideoModel.verticalPaddingPx.toFloat(),
+            if (clipVideoModel.check()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(
+                            ClipVideoModel.horizontalPaddingDp.dp,
+                            ClipVideoModel.verticalPaddingDp.dp
+                        )
 
-                startPosition = clipVideoModel.start,
-                endPosition = clipVideoModel.end,
-
-                maxPosition = clipVideoModel.end,
-                minPosition = clipVideoModel.start,
-            )
-
-            drawBorder(
-                color = colorScheme.primary,
-                horizontalWidth = clipVideoModel.horizontalPaddingPx.toFloat(),
-                verticalWidth = clipVideoModel.verticalPaddingPx.toFloat(),
-
-                startPosition = clip.selectionStart,
-                endPosition = clip.selectionEnd,
-
-                maxPosition = clipVideoModel.end,
-                minPosition = clipVideoModel.start,
-
-                handlerColor = colorScheme.onPrimary
-            )
-
-            val currentPx =
-                clipVideoState.selectionCurrent * pos2PxParam.first + pos2PxParam.second
-            if (runtimeState.focusMode == 0) {
-                drawLine(
-                    Color.White,
-                    start = Offset(currentPx, 4.dp.toPx()),
-                    end = Offset(currentPx, size.height - 4.dp.toPx()),
-                    strokeWidth = 2.dp.toPx()
-                )
-            } else if (runtimeState.focusMode == 3) {
-                drawLine(
-                    Color.White,
-                    start = Offset(currentPx, 0f),
-                    end = Offset(currentPx, size.height),
-                    strokeWidth = 2.dp.toPx()
-                )
-            }
-
-        }
-    ) {
-
-        if (clip.check()){
-            for (p in runtimeState.jpgPositionList) {
-                val entity = runtime.bmpTreeMap.lowerEntry(p) ?: runtime.bmpTreeMap.higherEntry(p)
-                BlackMask(
-                    enable = abs(entity.key - p) >= 5000,
-                    alpha = 0.8f
                 ) {
+                    for (p in clipVideoModel.jpgPositionList) {
+                        val entity = clipVideoModel.bmpTreeMap.lowerEntry(p)
+                            ?: clipVideoModel.bmpTreeMap.higherEntry(p)
+                        BlackMask(
+                            enable = abs((entity?.key ?: Long.MAX_VALUE) - p) >= 5000,
+                            alpha = 0.8f
+                        ) {
 //
-                    OkImage(
-                        image = entity.value,
-                        contentDescription = "",
-                        contentScale = ContentScale.Crop,
-                        errorColor = null,
-                        errorRes = null,
-                        placeholderColor = Color.Black.copy(alpha = 0.8f),
-                        isGif = false,
-                        crossFade = false,
-                        placeholderRes = null,
-                        //alpha = if (abs(entity.key - it) < 5000) 1f else 0.8f,
-                        modifier = Modifier
-                            .height(widgetState.clipSeekBoxHeight.px2dip().dp)
-                            .width(widgetState.clipSeekBoxHeight.px2dip().dp)
+                            OkImage(
+                                image = entity?.value,
+                                contentDescription = "",
+                                contentScale = ContentScale.Crop,
+                                errorColor = null,
+                                errorRes = null,
+                                placeholderColor = null,
+                                isGif = false,
+                                crossFade = false,
+                                placeholderRes = null,
+                                //alpha = if (abs(entity.key - it) < 5000) 1f else 0.8f,
+                                modifier = Modifier
+                                    .height(ClipVideoModel.seekBarHeightDp.dp - 2 * ClipVideoModel.verticalPaddingDp.dp)
+                                    .width(ClipVideoModel.seekBarHeightDp.dp - 2 * ClipVideoModel.verticalPaddingDp.dp)
+                            )
+                        }
+                    }
+                }
+
+            }
+            Box(modifier = Modifier
+                .fillMaxSize()
+                .pointerInput(Unit) {
+                    detectHorizontalDragGestures(
+                        onDragStart = {
+                            val diff = 100
+
+                            val startPx =
+                                clipVideoModel.selectionStart * clipVideoModel.pos2Px.first + clipVideoModel.pos2Px.second
+                            if (abs(startPx - (it.x)) < diff) {
+                                clipVideoModel.onFocusChange(1)
+                                return@detectHorizontalDragGestures
+                            }
+
+                            val endPx =
+                                clipVideoModel.selectionEnd * clipVideoModel.pos2Px.first + clipVideoModel.pos2Px.second
+                            if (abs(endPx - (it.x)) < diff) {
+                                clipVideoModel.onFocusChange(2)
+                                return@detectHorizontalDragGestures
+                            }
+
+                            val pointPos = clipVideoModel.px2Pos.first * it.x + clipVideoModel.px2Pos.second
+                            if (pointPos >= clipVideoModel.selectionStart && pointPos <= clipVideoModel.selectionEnd) {
+                                clipVideoModel.onFocusChange(3)
+                                return@detectHorizontalDragGestures
+                            }
+                        },
+                        onHorizontalDrag = { c: PointerInputChange, _: Float ->
+                            val x = c.position.x
+                            val pos = x * clipVideoModel.px2Pos.first + clipVideoModel.px2Pos.second
+                            //"$x $pos".logi("ClipVideoSeek")
+                            clipVideoModel.onSelectionChange(pos, clipVideoModel.focusMode)
+                        },
+                        onDragEnd = {
+                            clipVideoModel.onFocusChange(0)
+                        },
+                        onDragCancel = {
+                            clipVideoModel.onFocusChange(0)
+                        }
                     )
                 }
-            }
+                .drawWithContent {
+                    drawContent()
+
+
+                    drawBorder(
+                        color = colorScheme.primaryContainer,
+                        horizontalWidth = clipVideoModel.horizontalPaddingPx.toFloat(),
+                        verticalWidth = clipVideoModel.verticalPaddingPx.toFloat(),
+
+                        startPosition = clipVideoModel.start,
+                        endPosition = clipVideoModel.end,
+
+                        maxPosition = clipVideoModel.end,
+                        minPosition = clipVideoModel.start,
+                    )
+
+                    drawBorder(
+                        color = colorScheme.primary,
+                        horizontalWidth = clipVideoModel.horizontalPaddingPx.toFloat(),
+                        verticalWidth = clipVideoModel.verticalPaddingPx.toFloat(),
+
+                        startPosition = clipVideoModel.selectionStart,
+                        endPosition = clipVideoModel.selectionEnd,
+
+                        maxPosition = clipVideoModel.end,
+                        minPosition = clipVideoModel.start,
+
+                        handlerColor = colorScheme.onPrimary
+                    )
+
+                    val currentPx =
+                        clipVideoModel.selectionCurrent * clipVideoModel.pos2Px.first + clipVideoModel.pos2Px.second
+                    if (clipVideoModel.focusMode == 0) {
+                        drawLine(
+                            Color.White,
+                            start = Offset(currentPx, 4.dp.toPx()),
+                            end = Offset(currentPx, size.height - 4.dp.toPx()),
+                            strokeWidth = 2.dp.toPx()
+                        )
+                    } else if (clipVideoModel.focusMode == 3) {
+                        drawLine(
+                            Color.White,
+                            start = Offset(currentPx, 0f),
+                            end = Offset(currentPx, size.height),
+                            strokeWidth = 2.dp.toPx()
+                        )
+                    }
+
+                })
         }
     }
 

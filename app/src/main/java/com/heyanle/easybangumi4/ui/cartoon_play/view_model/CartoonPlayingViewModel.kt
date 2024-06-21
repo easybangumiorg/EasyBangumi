@@ -21,7 +21,7 @@ import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.source_api.entity.Episode
 import com.heyanle.easybangumi4.source_api.entity.PlayLine
 import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
-import com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded_old.CartoonRecordedState
+import com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded.CartoonRecordedModel
 import com.heyanle.easybangumi4.utils.CoroutineProvider
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.logi
@@ -125,7 +125,7 @@ class CartoonPlayingViewModel(
     val defaultSpeed = settingPreferences.defaultSpeed.stateIn(viewModelScope)
 
     // 剪辑模式
-    val showRecording = mutableStateOf<CartoonRecordedState?>(null)
+    val showRecording = mutableStateOf<CartoonRecordedModel?>(null)
 
     // 缩略图缓存
     var thumbnailBuffer: ThumbnailBuffer? = null
@@ -138,10 +138,11 @@ class CartoonPlayingViewModel(
             stringRes(com.heyanle.easy_i18n.R.string.waiting_parsing)
             return
         }
-        showRecording.value = CartoonRecordedState(
+        showRecording.value = CartoonRecordedModel(
             APP,
             exoPlayer,
-            mediaSourceFactory.get(playerInfo),
+            mediaSourceFactory.getMediaItem(playerInfo),
+            mediaSourceFactory.getMediaSourceFactory(playerInfo),
             scope,
             thumbnailBuffer ?: ThumbnailBuffer(thumbnailFolder),
             Math.max(0, exoPlayer.currentPosition - 30000),
@@ -430,7 +431,7 @@ class CartoonPlayingViewModel(
             //"onSurfaceTextureUpdated 2".logi(TAG)
             val currentPosition = exoPlayer.currentPosition
             // 如果该进度前后五秒都没有缩略图就保存一张
-            val currentFile = thumbnailBuffer?.getThumbnail(currentPosition, 5000)
+            val currentFile = thumbnailBuffer?.getThumbnail(currentPosition, 2000)
             if (currentFile == null){
                 //"onSurfaceTextureUpdated 3".logi(TAG)
                 // 保存缩略图

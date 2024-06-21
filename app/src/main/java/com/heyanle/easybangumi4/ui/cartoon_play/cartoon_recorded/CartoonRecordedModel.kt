@@ -6,6 +6,7 @@ import android.graphics.SurfaceTexture
 import android.view.TextureView
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.media3.common.MediaItem
@@ -20,6 +21,7 @@ import com.heyanle.easybangumi4.exo.thumbnail.ThumbnailBuffer
 import com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded.clip_video.ClipVideoModel
 import com.heyanle.easybangumi4.utils.dip2px
 import com.heyanle.easybangumi4.utils.getCachePath
+import com.heyanle.easybangumi4.utils.logi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,6 +31,7 @@ import kotlinx.coroutines.launch
 import loli.ball.easyplayer2.texture.EasyTextureView
 import loli.ball.easyplayer2.utils.MeasureHelper
 import java.io.File
+import kotlin.math.abs
 
 /**
  * Created by heyanlin on 2024/6/21.
@@ -48,66 +51,56 @@ class CartoonRecordedModel(
     val end: Long,
 
     val currentPosition: Long,
-): Player.Listener, TextureView.SurfaceTextureListener {
-
-    companion object {
-        const val horizontalPaddingDp = 18
-        const val verticalPaddingDp = 6
-    }
-
-    val horizontalPaddingPx = dip2px(ctx, horizontalPaddingDp.toFloat())
-    val verticalPaddingPx = dip2px(ctx, verticalPaddingDp.toFloat())
+) : Player.Listener, TextureView.SurfaceTextureListener {
 
     // State =========================
 
-    // 录制配置
-    sealed class ConfigType {
-        data class Gif(
-            val fps: Int = 15,
-            // 是否是压制模式，适配 QQ 微信
-            val suppress: Boolean = true,
-        ) : ConfigType()
+    // 1 -> gif 2 -> mp4
+    var recordType by mutableIntStateOf(1)
 
-        data class Mp4(
-            val fps: Int = 30,
-        ) : ConfigType()
-    }
-    data class Configuration(
-        val gifType : ConfigType = ConfigType.Gif(),
-        val mp4Type : ConfigType = ConfigType.Mp4(),
+    val isGif: Boolean get() = recordType == 1
+    val isMp4: Boolean get() = recordType == 2
 
-        // 1 -> gif 2 -> mp4
-        val currentType: Int = 1,
-    ){
-        val currentConfig: ConfigType
-            get() = when(currentType){
-                1 -> gifType
-                2 -> mp4Type
-                else -> gifType
-            }
-    }
+    var touchDownX = 0F
+    var touchDownY = 0f
 
+    var touchDownLeft = 0f
+    var touchDownTop = 0f
+    var touchDownRight = 0f
+    var touchDownBottom = 0f
 
-    data class CropState(
-        val clipLeft: Int = 0,
-        val clipTop: Int = 0,
-        val clipRight: Int = 0,
-        val clipBottom: Int = 0,
+    var clipLeft: Float by mutableFloatStateOf(0F)
+    var clipTop: Float by mutableFloatStateOf(0f)
+    var clipRight: Float by mutableFloatStateOf(0f)
+    var clipBottom: Float by mutableFloatStateOf(0F)
 
-        val videoSize: VideoSize = VideoSize(0, 0),
-    )
+    val clipWidth: Float get() = clipRight - clipLeft
+    val clipHeight: Float get() = clipBottom - clipTop
 
+    val measureHelper = MeasureHelper()
 
+    var videoSize: VideoSize by mutableStateOf(VideoSize(0,0))
+    var renderContainerWidth by mutableIntStateOf(0)
+    var renderContainerHeight by mutableIntStateOf(0)
 
-    private val _configuration = MutableStateFlow<Configuration>(Configuration())
-    val configuration = _configuration.asStateFlow()
+    var renderWidth by mutableStateOf(0)
+    var renderHeight by mutableStateOf(0)
 
-    private val _cropState = MutableStateFlow(CropState())
-    val cropState = _cropState.asStateFlow()
+    // 0 -> idle 1 -> moving 2 -> scaling
+    var focusMode by mutableIntStateOf(0)
+
 
 
     val clipVideoModel = ClipVideoModel(
-        ctx, exoPlayer, mediaItem, mediaSourceFactory, scope, thumbnailBuffer, start, end, currentPosition
+        ctx,
+        exoPlayer,
+        mediaItem,
+        mediaSourceFactory,
+        scope,
+        thumbnailBuffer,
+        start,
+        end,
+        currentPosition
     )
 
 
@@ -125,54 +118,88 @@ class CartoonRecordedModel(
         exoPlayer.addListener(this)
 
         scope.launch {
-            _cropState.collectLatest {
 
-            }
         }
     }
 
     // 业务接口
-    fun changeConfigType(type: Int){
-        _configuration.update {
-            it.copy(
-                currentType = type
-            )
-        }
-    }
-    fun changeGifConfig(fps: Int, suppress: Boolean){
-        _configuration.update {
-            it.copy(
-                gifType = ConfigType.Gif(fps, suppress)
-            )
-        }
-    }
-    fun changeMp4Config(fps: Int){
-        _configuration.update {
-            it.copy(
-                mp4Type = ConfigType.Mp4(fps)
-            )
-        }
+    fun changeConfigType(type: Int) {
+        recordType = type
     }
 
 
     // Compose Listener
 
-    fun onLaunch(){
+    fun onLaunch() {
         textureView.attachPlayer(exoPlayer)
     }
 
-    fun onDispose(){
+    fun onDispose() {
         exoPlayer.removeListener(this)
         textureView.detachPlayer(exoPlayer)
     }
 
+    fun onRenderSizeContainerChange(
+        width: Int,
+        height: Int
+    ){
+        renderContainerWidth = width
+        renderContainerHeight = height
+    }
+
+
+
 
     // 右下角点触摸事件消费
-    // 这里要添加一些固定比例的吸附点
-    fun onRightBottomChange(
-        x: Int,
-        y: Int,
-    ){}
+
+    fun onDragStart(
+        x: Float, y: Float
+    ) {
+        val diff = 100F
+        val point = clipRight to clipBottom
+        val dxy = x - point.first to y - point.second
+        if (abs(dxy.first) < diff && abs(dxy.second) < diff) {
+            focusMode = 2
+
+        } else if (
+            x > clipLeft - 10 && x < clipRight + 10 &&
+            y > clipTop - 10 && y < clipBottom + 10
+        ) {
+            focusMode = 1
+
+        }
+        touchDownX = x
+        touchDownY = y
+
+        touchDownBottom = clipBottom
+        touchDownLeft = clipLeft
+        touchDownRight = clipRight
+        touchDownTop = clipTop
+    }
+
+    fun onDrag(
+        x: Float,
+        y: Float,
+    ) {
+        when(focusMode){
+            1 -> {
+                val dx = x - touchDownX
+                val dy = y - touchDownY
+                clipLeft = touchDownLeft + dx
+                clipTop = touchDownTop + dy
+                clipRight = touchDownRight + dx
+                clipBottom = touchDownBottom + dy
+            }
+            2 -> {
+                clipRight = x
+                clipBottom = y
+            }
+        }
+    }
+
+    fun onDragEnd() {
+        focusMode = 0
+    }
 
 
     // Player Listener
@@ -180,12 +207,9 @@ class CartoonRecordedModel(
     override fun onVideoSizeChanged(videoSize: VideoSize) {
         super.onVideoSizeChanged(videoSize)
         if (videoSize.width > 0 && videoSize.height > 0) {
-            _cropState.update {
-                it.copy(
-                    videoSize = videoSize
-                )
-            }
+            this.videoSize = videoSize
         }
+        textureView.setVideoSize(videoSize.width, videoSize.height)
     }
 
     // TextureView Listener
@@ -198,6 +222,6 @@ class CartoonRecordedModel(
     }
 
     override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {
-       clipVideoModel.checkPosition()
+        clipVideoModel.checkPosition()
     }
 }
