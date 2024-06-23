@@ -491,6 +491,16 @@
     <string name="record_error">录制失败</string>
     <string name="record_success">录制成功</string>
 
+    <string name="fps">帧率</string>
+    <string name="quality">压缩率</string>
+    <string name="quality_error">压缩率输入错误 [1,100]</string>
+
+
+    <string name="save_gif">保存 gif</string>
+    <string name="save_video">保存视频</string>
+    <string name="save">保存</string>
+    <string name="save_start">开始保存</string>
+
     <string name="recording">录制中</string>
     <string name="saving">保存中</string>
 

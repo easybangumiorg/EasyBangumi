@@ -11,8 +11,10 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.MediaSource
 import com.heyanle.easybangumi4.APP
+import com.heyanle.easybangumi4.exo.CartoonMediaSourceFactory
 import com.heyanle.easybangumi4.exo.thumbnail.OutputThumbnailHelper
 import com.heyanle.easybangumi4.exo.thumbnail.ThumbnailBuffer
+import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
 import com.heyanle.easybangumi4.utils.dip2px
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.logi
@@ -33,9 +35,8 @@ import java.util.TreeMap
 class ClipVideoModel(
     val ctx: Context,
     val exoPlayer: ExoPlayer,
-    val mediaItem: MediaItem,
-    val mediaSourceFactory: MediaSource.Factory,
-
+    val playerInfo: PlayerInfo,
+    val cartoonMediaSourceFactory: CartoonMediaSourceFactory,
     val scope: CoroutineScope,
 
     val thumbnailBuffer: ThumbnailBuffer,
@@ -49,7 +50,7 @@ class ClipVideoModel(
     companion object {
         const val horizontalPaddingDp = 18
         const val verticalPaddingDp = 6
-        const val seekBarHeightDp = 80
+        const val seekBarHeightDp = 60
     }
 
     val horizontalPaddingPx = dip2px(ctx, horizontalPaddingDp.toFloat())
@@ -90,7 +91,7 @@ class ClipVideoModel(
     // 加载缩略图
     val outputThumbnailHelper = OutputThumbnailHelper(
         ctx,
-        mediaSourceFactory.createMediaSource(mediaItem),
+        cartoonMediaSourceFactory.get(playerInfo),
         File(APP.getCachePath("thumbnail")),
         thumbnailBuffer,
         start,
@@ -196,11 +197,11 @@ class ClipVideoModel(
     }
 
     fun getShowTime(): String {
-        val showTimePosition = when(focusMode){
-            1 -> selectionStart
-            2 -> selectionEnd
-            else -> currentPosition
-        }
+        return "${getShowTime(selectionCurrent)} [${getShowTime(selectionStart)}-${getShowTime(selectionEnd)}]"
+
+    }
+
+    fun getShowTime(showTimePosition: Long): String {
         val showTimeSec = showTimePosition/1000
         return if (showTimeSec > 3600){
             "%02d:%02d:%02d".format(Locale.getDefault(), showTimeSec/3600, showTimeSec%3600/60, showTimeSec%60)

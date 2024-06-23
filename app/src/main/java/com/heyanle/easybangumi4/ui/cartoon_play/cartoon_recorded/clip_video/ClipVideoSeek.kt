@@ -28,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -54,6 +55,7 @@ import kotlin.math.abs
 @OptIn(UnstableApi::class)
 @Composable
 fun ClipVideoSeek(
+    modifier: Modifier = Modifier,
     playWhenReady: Boolean,
     clipVideoModel: ClipVideoModel,
     onPlayWhenReadyChange: (Boolean) -> Unit,
@@ -64,7 +66,9 @@ fun ClipVideoSeek(
 
 
 
-    Column {
+    Column(
+        modifier = modifier
+    ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -79,13 +83,13 @@ fun ClipVideoSeek(
                         onPlayWhenReadyChange(!playWhenReady)
                     }
                     .padding(4.dp),
-                tint = MaterialTheme.colorScheme.onBackground,
+                //tint = MaterialTheme.colorScheme.onBackground,
                 contentDescription = null
             )
 
             Text(
                 clipVideoModel.getShowTime(),
-                color = MaterialTheme.colorScheme.onBackground
+                //color = MaterialTheme.colorScheme.onBackground
             )
 
 
@@ -120,7 +124,6 @@ fun ClipVideoSeek(
                             enable = abs((entity?.key ?: Long.MAX_VALUE) - p) >= 5000,
                             alpha = 0.8f
                         ) {
-//
                             OkImage(
                                 image = entity?.value,
                                 contentDescription = "",
@@ -150,14 +153,14 @@ fun ClipVideoSeek(
 
                             val startPx =
                                 clipVideoModel.selectionStart * clipVideoModel.pos2Px.first + clipVideoModel.pos2Px.second
-                            if (abs(startPx - (it.x)) < diff) {
+                            if (abs(startPx - (it.x)) < diff || abs(startPx - clipVideoModel.horizontalPaddingPx - (it.x)) < diff  ) {
                                 clipVideoModel.onFocusChange(1)
                                 return@detectHorizontalDragGestures
                             }
 
                             val endPx =
                                 clipVideoModel.selectionEnd * clipVideoModel.pos2Px.first + clipVideoModel.pos2Px.second
-                            if (abs(endPx - (it.x)) < diff) {
+                            if (abs(endPx - (it.x)) < diff || abs(endPx - (it.x) + clipVideoModel.horizontalPaddingPx) < diff ) {
                                 clipVideoModel.onFocusChange(2)
                                 return@detectHorizontalDragGestures
                             }
@@ -182,54 +185,55 @@ fun ClipVideoSeek(
                         }
                     )
                 }
-                .drawWithContent {
-                    drawContent()
+                .drawWithCache {
+                    onDrawWithContent {
+                        drawContent()
 
 
-                    drawBorder(
-                        color = colorScheme.primaryContainer,
-                        horizontalWidth = clipVideoModel.horizontalPaddingPx.toFloat(),
-                        verticalWidth = clipVideoModel.verticalPaddingPx.toFloat(),
+                        drawBorder(
+                            color = colorScheme.primaryContainer,
+                            horizontalWidth = clipVideoModel.horizontalPaddingPx.toFloat(),
+                            verticalWidth = clipVideoModel.verticalPaddingPx.toFloat(),
 
-                        startPosition = clipVideoModel.start,
-                        endPosition = clipVideoModel.end,
+                            startPosition = clipVideoModel.start,
+                            endPosition = clipVideoModel.end,
 
-                        maxPosition = clipVideoModel.end,
-                        minPosition = clipVideoModel.start,
-                    )
-
-                    drawBorder(
-                        color = colorScheme.primary,
-                        horizontalWidth = clipVideoModel.horizontalPaddingPx.toFloat(),
-                        verticalWidth = clipVideoModel.verticalPaddingPx.toFloat(),
-
-                        startPosition = clipVideoModel.selectionStart,
-                        endPosition = clipVideoModel.selectionEnd,
-
-                        maxPosition = clipVideoModel.end,
-                        minPosition = clipVideoModel.start,
-
-                        handlerColor = colorScheme.onPrimary
-                    )
-
-                    val currentPx =
-                        clipVideoModel.selectionCurrent * clipVideoModel.pos2Px.first + clipVideoModel.pos2Px.second
-                    if (clipVideoModel.focusMode == 0) {
-                        drawLine(
-                            Color.White,
-                            start = Offset(currentPx, 4.dp.toPx()),
-                            end = Offset(currentPx, size.height - 4.dp.toPx()),
-                            strokeWidth = 2.dp.toPx()
+                            maxPosition = clipVideoModel.end,
+                            minPosition = clipVideoModel.start,
                         )
-                    } else if (clipVideoModel.focusMode == 3) {
-                        drawLine(
-                            Color.White,
-                            start = Offset(currentPx, 0f),
-                            end = Offset(currentPx, size.height),
-                            strokeWidth = 2.dp.toPx()
+
+                        drawBorder(
+                            color = colorScheme.primary,
+                            horizontalWidth = clipVideoModel.horizontalPaddingPx.toFloat(),
+                            verticalWidth = clipVideoModel.verticalPaddingPx.toFloat(),
+
+                            startPosition = clipVideoModel.selectionStart,
+                            endPosition = clipVideoModel.selectionEnd,
+
+                            maxPosition = clipVideoModel.end,
+                            minPosition = clipVideoModel.start,
+
+                            handlerColor = colorScheme.onPrimary
                         )
+
+                        val currentPx =
+                            clipVideoModel.selectionCurrent * clipVideoModel.pos2Px.first + clipVideoModel.pos2Px.second
+                        if (clipVideoModel.focusMode == 0) {
+                            drawLine(
+                                Color.White,
+                                start = Offset(currentPx, 4.dp.toPx()),
+                                end = Offset(currentPx, size.height - 4.dp.toPx()),
+                                strokeWidth = 2.dp.toPx()
+                            )
+                        } else if (clipVideoModel.focusMode == 3) {
+                            drawLine(
+                                Color.White,
+                                start = Offset(currentPx, 0f),
+                                end = Offset(currentPx, size.height),
+                                strokeWidth = 2.dp.toPx()
+                            )
+                        }
                     }
-
                 })
         }
     }

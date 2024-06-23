@@ -15,7 +15,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
 import com.heyanle.easybangumi4.case.SourceStateCase
-import com.heyanle.easybangumi4.exo.MediaSourceFactory
+import com.heyanle.easybangumi4.exo.CartoonMediaSourceFactory
 import com.heyanle.easybangumi4.exo.thumbnail.ThumbnailBuffer
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.source_api.entity.Episode
@@ -96,7 +96,7 @@ class CartoonPlayingViewModel(
 
     // 其他模块注入 =================================================
     private val cartoonInfoDao: CartoonInfoDao by Injekt.injectLazy()
-    private val mediaSourceFactory: MediaSourceFactory by Injekt.injectLazy()
+    private val cartoonMediaSourceFactory: CartoonMediaSourceFactory by Injekt.injectLazy()
     private val sourceStateCase: SourceStateCase by Injekt.injectLazy()
     private val settingPreferences: SettingPreferences by Injekt.injectLazy()
 
@@ -141,8 +141,8 @@ class CartoonPlayingViewModel(
         showRecording.value = CartoonRecordedModel(
             APP,
             exoPlayer,
-            mediaSourceFactory.getMediaItem(playerInfo),
-            mediaSourceFactory.getMediaSourceFactory(playerInfo),
+            playerInfo,
+            cartoonMediaSourceFactory,
             scope,
             thumbnailBuffer ?: ThumbnailBuffer(thumbnailFolder),
             Math.max(0, exoPlayer.currentPosition - 30000),
@@ -336,7 +336,7 @@ class CartoonPlayingViewModel(
         thumbnailFolder.deleteRecursively()
         thumbnailBuffer = ThumbnailBuffer(thumbnailFolder)
         playingInfo = playerInfo
-        val media = mediaSourceFactory.get(playerInfo)
+        val media = cartoonMediaSourceFactory.get(playerInfo)
         exoPlayer.setMediaSource(media, adviceProcess)
         exoPlayer.prepare()
         exoPlayer.playWhenReady = true

@@ -185,6 +185,8 @@ dependencies {
     implementation(compose.bundles.material)
     implementation(compose.bundles.material3)
 
+    implementation(compose.constraintlayout)
+
     implementation(libs.bundles.okhttp3)
     //implementation(libs.bundles.appcenter)
 
