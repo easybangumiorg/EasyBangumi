@@ -31,7 +31,7 @@ open class BitmapView : Input {
         private set
 
     interface BitmapViewCallback {
-        fun onViewSwapToScreen(bitmap: Bitmap?)
+        fun onViewSwapToScreen(bitmap: Bitmap?, time: Long?)
     }
 
     override fun setInputSize(inputSize: Size?, textureIndex: Int) = Unit
@@ -76,7 +76,7 @@ open class BitmapView : Input {
     }
 
     public open fun dispatchCallback(time: Long, bitmap: Bitmap?) {
-        callback?.onViewSwapToScreen(bitmap)
+        callback?.onViewSwapToScreen(bitmap, time)
     }
     open fun release() {
         if (inputFramebuffer?.onlyTexture == true) {

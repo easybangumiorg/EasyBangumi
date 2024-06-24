@@ -31,6 +31,7 @@ import com.heyanle.easybangumi4.exo.CartoonMediaSourceFactory
 import com.heyanle.easybangumi4.source_api.entity.Cartoon
 import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
 import com.heyanle.easybangumi4.utils.CoroutineProvider
+import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.easybangumi4.utils.logi
 import kotlinx.coroutines.CoroutineScope
@@ -41,7 +42,8 @@ import java.io.File
  * Created by heyanle on 2024/6/23.
  * https://github.com/heyanLE
  */
-class CartoonRecordedTaskModel(
+@OptIn(UnstableApi::class)
+class CartoonRecordedTaskModel (
     val ctx: Context,
     val playerInfo: PlayerInfo,
     val cartoonMediaSourceFactory: CartoonMediaSourceFactory,
@@ -53,6 +55,7 @@ class CartoonRecordedTaskModel(
     val onDismissRequest: () -> Unit,
 ): Transformer.Listener {
 
+    private val outputCacheFolder = File(ctx.getCachePath("recorded"))
     private val outputInnerFolder = File(ctx.getFilePath("recorded"))
 
     private val singleDispatcher = CoroutineProvider.CUSTOM_SINGLE
@@ -107,7 +110,7 @@ class CartoonRecordedTaskModel(
         val transformer = Transformer.Builder(ctx)
             .setVideoMimeType(MimeTypes.VIDEO_H264)
             .setAssetLoaderFactory(ExoPlayerAssetLoader.Factory(
-                ctx, DefaultDecoderFactory(ctx), false, Clock.DEFAULT, cartoonMediaSourceFactory.getClipMediaSourceFactory(playerInfo, inputMediaItem.clippingConfiguration)
+                ctx, DefaultDecoderFactory(ctx),  Clock.DEFAULT, cartoonMediaSourceFactory.getClipMediaSourceFactory(playerInfo, inputMediaItem.clippingConfiguration)
             ))
             // .setMuxerFactory(InAppMuxer.Factory.Builder().build())
             .addListener(this)
