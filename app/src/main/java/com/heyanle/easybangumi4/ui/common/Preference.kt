@@ -157,7 +157,7 @@ fun StringSelectPreferenceItem(
     icon: @Composable (() -> Unit)? = null,
     textList: List<String>,
     select: Int,
-    subTitle: (Int) -> String = {textList[it]},
+    subTitle: (Int) -> String = { textList[it] },
     onChange: (Int) -> Unit = {},
 ) {
     var showDialog by remember {
@@ -264,7 +264,7 @@ fun StringEditPreferenceItem(
             onDismissRequest = { showDialog = false },
             confirmButton = {
                 Row {
-                    if (defValue != null){
+                    if (defValue != null) {
                         TextButton(onClick = {
                             tv = defValue
                         }) {
@@ -337,7 +337,7 @@ fun LongEditPreferenceItem(
     if (showDialog) {
 
         var tv by remember {
-            mutableLongStateOf(value)
+            mutableStateOf(value.toString())
         }
 
         AlertDialog(
@@ -345,7 +345,7 @@ fun LongEditPreferenceItem(
             confirmButton = {
                 TextButton(onClick = {
                     showDialog = false
-                    onEdit(tv)
+                    onEdit(tv.toLongOrNull()?:0L)
                 }) {
                     Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.confirm))
                 }
@@ -354,7 +354,14 @@ fun LongEditPreferenceItem(
             text = {
                 OutlinedTextField(
                     value = tv.toString(),
-                    onValueChange = { tv = it.toLongOrNull() ?: 0L })
+                    onValueChange = {
+                        if (it.isEmpty()) {
+                            tv = ""
+                        } else {
+                            tv = it.toLongOrNull()?.toString() ?: "0"
+                        }
+
+                    })
             }
         )
     }

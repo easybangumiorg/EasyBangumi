@@ -153,19 +153,20 @@ fun ClipVideoSeek(
 
                             val startPx =
                                 clipVideoModel.selectionStart * clipVideoModel.pos2Px.first + clipVideoModel.pos2Px.second
-                            if (abs(startPx - (it.x)) < diff || abs(startPx - clipVideoModel.horizontalPaddingPx - (it.x)) < diff  ) {
+                            if (it.x in startPx - clipVideoModel.horizontalPaddingPx - diff..startPx) {
                                 clipVideoModel.onFocusChange(1)
                                 return@detectHorizontalDragGestures
                             }
 
                             val endPx =
                                 clipVideoModel.selectionEnd * clipVideoModel.pos2Px.first + clipVideoModel.pos2Px.second
-                            if (abs(endPx - (it.x)) < diff || abs(endPx - (it.x) + clipVideoModel.horizontalPaddingPx) < diff ) {
+                            if (it.x in endPx..endPx + clipVideoModel.horizontalPaddingPx + diff) {
                                 clipVideoModel.onFocusChange(2)
                                 return@detectHorizontalDragGestures
                             }
 
-                            val pointPos = clipVideoModel.px2Pos.first * it.x + clipVideoModel.px2Pos.second
+                            val pointPos =
+                                clipVideoModel.px2Pos.first * it.x + clipVideoModel.px2Pos.second
                             if (pointPos >= clipVideoModel.selectionStart && pointPos <= clipVideoModel.selectionEnd) {
                                 clipVideoModel.onFocusChange(3)
                                 return@detectHorizontalDragGestures

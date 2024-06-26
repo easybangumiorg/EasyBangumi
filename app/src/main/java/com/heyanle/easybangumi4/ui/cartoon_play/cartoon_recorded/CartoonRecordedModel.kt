@@ -310,6 +310,7 @@ class CartoonRecordedModel(
     }
 
     fun onSave() {
+        clipVideoModel.outputThumbnailHelper.release()
         exoPlayer.playWhenReady = false
         val render = renderState.value.renderRect.copy()
         val crop = cropRect.copy()
@@ -354,6 +355,8 @@ class CartoonRecordedModel(
             clipVideoModel.selectionStart,
             clipVideoModel.selectionEnd,
             cropEffect,
+            (lastVideoSize.width*cropNDC.width/2).toInt(),
+            (lastVideoSize.height*cropNDC.height/2).toInt(),
             recordType
         ) {
             cartoonRecordedTaskModel.value = null
@@ -364,9 +367,12 @@ class CartoonRecordedModel(
 
     // Player Listener
 
+    private var lastVideoSize: VideoSize = VideoSize(0, 0)
+
     override fun onVideoSizeChanged(videoSize: VideoSize) {
         super.onVideoSizeChanged(videoSize)
         textureView.setVideoSize(videoSize.width, videoSize.height)
+        lastVideoSize = videoSize
     }
 
     // TextureView Listener

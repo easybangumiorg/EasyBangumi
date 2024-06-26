@@ -110,6 +110,7 @@ class OutputThumbnailHelper(
                 file.outputStream().use {
                     bmp.compress(Bitmap.CompressFormat.JPEG, 10, it)
                 }
+                bmp.recycle()
                 thumbnailBuffer.addThumbnail(currentPosition, file)
             }
         }

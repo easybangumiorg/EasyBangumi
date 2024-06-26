@@ -17,8 +17,11 @@ import androidx.media3.transformer.Effects
 import androidx.media3.transformer.ExoPlayerAssetLoader
 import androidx.media3.transformer.ExportException
 import androidx.media3.transformer.ExportResult
+import androidx.media3.transformer.InAppMuxer
+import androidx.media3.transformer.TransformationRequest
 import androidx.media3.transformer.Transformer
 import com.heyanle.easybangumi4.exo.ClippingConfigMediaSourceFactory
+import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.safeResume
 import com.heyanle.easybangumi4.utils.stringRes
 import kotlinx.coroutines.flow.update
@@ -76,7 +79,7 @@ class Mp4RecordedTask(
                     // 变速
                     SpeedChangeEffect(speed),
                     // 码率（抽帧）
-                    FrameDropEffect.createDefaultFrameDropEffect(fps.toFloat()),
+                    FrameDropEffect.createDefaultFrameDropEffect(5f), //fps.toFloat()),
                     // 裁剪
                     crop,
                     // 压制
@@ -86,12 +89,12 @@ class Mp4RecordedTask(
 
             ).build()
     private val transformer = Transformer.Builder(ctx)
-        .setVideoMimeType(MimeTypes.VIDEO_H264)
+        .setVideoMimeType(MimeTypes.VIDEO_H265)
         .setAssetLoaderFactory(
             ExoPlayerAssetLoader.Factory(
             ctx, DefaultDecoderFactory.Builder(ctx).build(),  Clock.DEFAULT, mediaSourceFactory)
         )
-        // .setMuxerFactory(InAppMuxer.Factory.Builder().build())
+        .setMuxerFactory(InAppMuxer.Factory.Builder().build())
         .addListener(this)
         .build()
 
@@ -114,6 +117,19 @@ class Mp4RecordedTask(
         transformCon?.safeResume(exportResult to exportException)
     }
 
+    override fun onFallbackApplied(
+        composition: Composition,
+        originalTransformationRequest: TransformationRequest,
+        fallbackTransformationRequest: TransformationRequest
+    ) {
+        super.onFallbackApplied(
+            composition,
+            originalTransformationRequest,
+            fallbackTransformationRequest
+        )
+        "onFallbackApplied".logi("Mp4RecordedTask")
+    }
+
     // 外部接口 ===========================
     override fun start() {
         if (state.value.status != 0){
@@ -124,14 +140,8 @@ class Mp4RecordedTask(
             try {
                 innerTransform()
             }catch (e: Exception){
-                _state.update {
-                    it.copy(
-                        status = 3,
-                        statusLabel = stringRes(com.heyanle.easy_i18n.R.string.transcode_error),
-                        errorException = e,
-                        error = e.message?:""
-                    )
-                }
+                e.printStackTrace()
+                dispatchError(e, e.message)
             }
         }
     }
@@ -142,20 +152,25 @@ class Mp4RecordedTask(
 
     // 开始处理 ！
     private suspend fun innerTransform(){
-        // 虽然 Transformer 支持进度但是这里需要开多一个线程去轮询，所以暂时处理进度
+        // 虽然 Transformer 支持进度但是这里需要开多一个线程去轮询，所以暂时不处理进度
+        val outputFile = File(outputFolder, outputName)
         dispatchProcess(-1)
         val res = suspendCoroutine<Pair<ExportResult, ExportException?>> {
             transformCon = it
             outputFolder.mkdirs()
-            val outputFile = File(outputFolder, outputName)
+
             outputFile.delete()
-            transformer.start(editedMediaItem, outputFile.absolutePath)
+            outputFile.createNewFile()
+            mainScope.launch {
+                transformer.start(editedMediaItem, outputFile.absolutePath)
+            }
+
         }
         val error = res.second
         if (error != null){
             dispatchError(error, error.message)
         }else{
-            dispatchCompletely()
+            dispatchCompletely(outputFile)
         }
     }
 

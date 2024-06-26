@@ -50,7 +50,7 @@ class CartoonMediaSourceFactory(
         }
     }
 
-    fun getClipMediaSourceFactory(playerInfo: PlayerInfo, clippingConfiguration: ClippingConfiguration): MediaSource.Factory {
+    fun getClipMediaSourceFactory(playerInfo: PlayerInfo, clippingConfiguration: ClippingConfiguration): ClippingConfigMediaSourceFactory {
         return ClippingConfigMediaSourceFactory(getMediaSourceFactory(playerInfo), clippingConfiguration)
     }
 

@@ -27,6 +27,7 @@ class ExoplayerPipeline : Output() {
 
         // 创建 surface
         surfaceTexture = SurfaceTexture(glOesTexture.getOesTexture())
+
         outputSurface = Surface(surfaceTexture)
         surfaceTexture?.setOnFrameAvailableListener {
             glOesTexture.onFrameAvailable(surfaceTexture, it.timestamp)
@@ -34,11 +35,14 @@ class ExoplayerPipeline : Output() {
     }
 
     fun setFormat(videoWidth: Int, videoHeight: Int, videoRotation: Int) {
+
         // 设置宽高方向
         glOesTexture.setOesRotation(videoRotation)
         if (videoRotation == 270 || videoRotation == 90) {
+            surfaceTexture?.setDefaultBufferSize(videoHeight, videoWidth)
             glOesTexture.setOesSize(videoHeight, videoWidth)
         } else {
+            surfaceTexture?.setDefaultBufferSize(videoWidth, videoHeight)
             glOesTexture.setOesSize(videoWidth, videoHeight)
         }
     }

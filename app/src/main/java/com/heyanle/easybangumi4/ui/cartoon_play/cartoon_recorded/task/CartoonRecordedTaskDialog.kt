@@ -3,11 +3,17 @@ package com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded.task
 import android.os.Build
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.heyanle.easybangumi4.R
 import com.heyanle.easybangumi4.ui.common.LoadingImage
@@ -25,7 +31,14 @@ fun CartoonRecordedTaskDialog(
     cartoonRecordedTaskModel: CartoonRecordedTaskModel
 ) {
 
-    if (!cartoonRecordedTaskModel.isDoing.value) {
+    DisposableEffect(Unit) {
+        onDispose {
+            cartoonRecordedTaskModel.stop()
+            cartoonRecordedTaskModel.onDismissRequest()
+        }
+    }
+
+    if (cartoonRecordedTaskModel.process == -2) {
         AlertDialog(
             onDismissRequest = {
                 cartoonRecordedTaskModel.onDismissRequest()
@@ -75,9 +88,12 @@ fun CartoonRecordedTaskDialog(
                 //cartoonRecordedTaskModel.onDismissRequest()
             },
             text = {
-                Row {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     LoadingImage()
-                    Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.saving))
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.saving) + " ${if (cartoonRecordedTaskModel.process != -1) "${cartoonRecordedTaskModel.process}%" else ""}")
                 }
             },
             confirmButton = {}

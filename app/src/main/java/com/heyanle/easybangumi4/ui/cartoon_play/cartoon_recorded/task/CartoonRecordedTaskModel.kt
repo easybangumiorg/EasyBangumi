@@ -1,41 +1,34 @@
 package com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded.task
 
+import android.content.ContentValues
 import android.content.Context
-import android.widget.AutoCompleteTextView.OnDismissListener
+import android.os.Build
+import android.os.Environment
+import android.provider.MediaStore
 import androidx.annotation.OptIn
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.geometry.Rect
-import androidx.media3.common.C
-import androidx.media3.common.Effect
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.unit.IntSize
 import androidx.media3.common.MediaItem
-import androidx.media3.common.MimeTypes
-import androidx.media3.common.util.Clock
+import androidx.media3.common.util.Size
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.effect.Crop
-import androidx.media3.effect.FrameDropEffect
-import androidx.media3.effect.ScaleAndRotateTransformation
-import androidx.media3.exoplayer.source.MediaSource
-import androidx.media3.transformer.Codec.DecoderFactory
-import androidx.media3.transformer.Composition
-import androidx.media3.transformer.DefaultDecoderFactory
-import androidx.media3.transformer.EditedMediaItem
-import androidx.media3.transformer.Effects
-import androidx.media3.transformer.ExoPlayerAssetLoader
-import androidx.media3.transformer.ExportException
-import androidx.media3.transformer.ExportResult
-import androidx.media3.transformer.InAppMuxer
-import androidx.media3.transformer.TransformationRequest
-import androidx.media3.transformer.Transformer
+import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.exo.CartoonMediaSourceFactory
-import com.heyanle.easybangumi4.source_api.entity.Cartoon
+import com.heyanle.easybangumi4.exo.recorded.task.AbsRecordedTask
+import com.heyanle.easybangumi4.exo.recorded.task.GifRecordedTask
+import com.heyanle.easybangumi4.exo.recorded.task.Mp4RecordedTask
+import com.heyanle.easybangumi4.exo.recorded.task.RecordedTask
 import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
-import com.heyanle.easybangumi4.utils.CoroutineProvider
+import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.easybangumi4.utils.logi
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import java.io.File
 
 /**
@@ -43,116 +36,140 @@ import java.io.File
  * https://github.com/heyanLE
  */
 @OptIn(UnstableApi::class)
-class CartoonRecordedTaskModel (
+class CartoonRecordedTaskModel(
     val ctx: Context,
     val playerInfo: PlayerInfo,
     val cartoonMediaSourceFactory: CartoonMediaSourceFactory,
     val start: Long,
     val end: Long,
     val crop: Crop,
+    val targetWidth: Int,
+    val targetHeight: Int,
     // 1 -> gif 2 -> mp4
     val type: Int,
+    val speed: Float = 1f,
     val onDismissRequest: () -> Unit,
-): Transformer.Listener {
+) : AbsRecordedTask.Listener {
+    val scope = MainScope()
+    private val outputCacheFolder = File(ctx.getCachePath("Recorded"))
+        .apply {
+            mkdirs()
+        }
 
-    private val outputCacheFolder = File(ctx.getCachePath("recorded"))
-    private val outputInnerFolder = File(ctx.getFilePath("recorded"))
 
-    private val singleDispatcher = CoroutineProvider.CUSTOM_SINGLE
-    private val singleScope = CoroutineScope(SupervisorJob() + singleDispatcher)
-    private val scope = CoroutineScope(SupervisorJob() + CoroutineProvider.SINGLE)
+    var task: RecordedTask? = null
+
+    var process by mutableIntStateOf(-2)
+    var status by mutableStateOf<String?>(null)
 
     var fps = mutableIntStateOf(if (type == 1) 15 else 30)
     var quality = mutableIntStateOf(if (type == 1) 30 else 100)
 
-    var isDoing = mutableStateOf(false)
-    var status = mutableStateOf("")
 
-    fun start(){
-        if(type == 2){
-            isDoing.value = true
-            exportMp4(fps.value, quality.value)
+    fun start() {
+        if (task != null) {
+            return
+        }
+        val clippingConfiguration = MediaItem.ClippingConfiguration.Builder()
+            .setStartPositionMs(start)
+            .setEndPositionMs(end)
+            .setStartsAtKeyFrame(false)
+            .build()
+        process = 0
+        if (type == 2) {
+            task = Mp4RecordedTask(
+                ctx,
+                cartoonMediaSourceFactory.getMediaItem(playerInfo),
+                cartoonMediaSourceFactory.getClipMediaSourceFactory(
+                    playerInfo,
+                    clippingConfiguration
+                ),
+                outputCacheFolder,
+                "recorded_${System.currentTimeMillis()}.mp4",
+                start,
+                end,
+                crop,
+                fps.value,
+                quality.value,
+                speed,
+            ).apply {
+                listener = this@CartoonRecordedTaskModel
+                start()
+            }
+        } else {
+            task = GifRecordedTask(
+                ctx,
+                cartoonMediaSourceFactory.getMediaItem(playerInfo),
+                cartoonMediaSourceFactory.getClipMediaSourceFactory(
+                    playerInfo,
+                    clippingConfiguration
+                ),
+                outputCacheFolder,
+                "recorded_${System.currentTimeMillis()}.gif",
+                start,
+                end,
+                (targetWidth*quality.value/100).toInt(),
+                (targetHeight*quality.value/100),
+                crop,
+                fps.value,
+                quality.value,
+                speed,
+            ).apply {
+                listener = this@CartoonRecordedTaskModel
+                start()
+            }
         }
     }
 
-    @OptIn(UnstableApi::class)
-    private fun exportMp4(
-        fps: Int,
-        quality: Int,
-    ){
-        "$start $end".logi("CartoonRecordedTaskModel")
-        val inputMediaItem = cartoonMediaSourceFactory.getMediaItem(playerInfo).buildUpon()
-            .setClippingConfiguration(
-                MediaItem.ClippingConfiguration.Builder()
-                    // 剪辑
-                    .setStartPositionMs(start)
-                    .setEndPositionMs(end)
-                    .setStartsAtKeyFrame(false)
-                    .build())
-            .build()
-        val editedMediaItem =
-            EditedMediaItem.Builder(inputMediaItem)
-                .setRemoveAudio(false)
-                .setEffects(
-                    Effects(
-                        listOf(),
-                        listOf(
-                            // 码率，先丢帧能减轻后续处理的压力
-                            FrameDropEffect.createDefaultFrameDropEffect(fps.toFloat()),
-                            // 裁剪
-                            crop,
-                            // 压制
-                            ScaleAndRotateTransformation.Builder().setScale(quality/100f, quality/100f).build()
-                        )
-                    ),
-
-                ).build()
-        val transformer = Transformer.Builder(ctx)
-            .setVideoMimeType(MimeTypes.VIDEO_H264)
-            .setAssetLoaderFactory(ExoPlayerAssetLoader.Factory(
-                ctx, DefaultDecoderFactory(ctx),  Clock.DEFAULT, cartoonMediaSourceFactory.getClipMediaSourceFactory(playerInfo, inputMediaItem.clippingConfiguration)
-            ))
-            // .setMuxerFactory(InAppMuxer.Factory.Builder().build())
-            .addListener(this)
-            .build()
-        val file = File(outputInnerFolder, "output.mp4")
-        file.delete()
-        transformer.start(editedMediaItem, file.absolutePath)
-
+    override fun onProcess(process: Int, label: String?) {
+        this.process = process
+        this.status = label
     }
 
-    @UnstableApi
-    override fun onCompleted(composition: Composition, exportResult: ExportResult) {
-        super.onCompleted(composition, exportResult)
+    override fun onError(e: Exception, errorMsg: String?) {
+        errorMsg ?: e.message?.let {
+            logi(it)
+            it.moeSnackBar()
+        }
         onDismissRequest()
     }
 
-    @UnstableApi
-    override fun onError(
-        composition: Composition,
-        exportResult: ExportResult,
-        exportException: ExportException
-    ) {
-        super.onError(composition, exportResult, exportException)
-        exportException.printStackTrace()
+    override fun onCompletely(file: File) {
         onDismissRequest()
+        if (!file.exists()){
+            return
+        }
+        scope.launch(Dispatchers.IO) {
+            kotlin.runCatching {
+                val picturesFile =
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+                        ?: Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                        ?: File(ctx.getFilePath())
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                    val targetRoot = File(picturesFile, "EasyBangumi/recorded")
+                    val target = File(targetRoot, file.name)
+                    file.copyTo(target, true)
+                } else {
+                    val values = ContentValues().apply {
+                        put(MediaStore.MediaColumns.DISPLAY_NAME, file.name)
+                        put(MediaStore.MediaColumns.RELATIVE_PATH, "${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+                            ?: Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)}/EasyBangumi/backup")
+                    }
+                    APP.contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
+                        ?.let { uri ->
+                            APP.contentResolver.openOutputStream(uri)
+                        }?.use {
+                            file.inputStream().copyTo(it)
+                        }
+                }
+            }.onFailure {
+                it.printStackTrace()
+            }
+        }
+
     }
 
-    @UnstableApi
-    override fun onFallbackApplied(
-        composition: Composition,
-        originalTransformationRequest: TransformationRequest,
-        fallbackTransformationRequest: TransformationRequest
-    ) {
-        super.onFallbackApplied(
-            composition,
-            originalTransformationRequest,
-            fallbackTransformationRequest
-        )
-        onDismissRequest()
+    fun stop() {
+        task?.stop()
     }
-
-
-
-
 }

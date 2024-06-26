@@ -1,4 +1,4 @@
-package com.heyanle.gpu_image
+package com.example.lib_media3
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -19,6 +19,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("com.heyanle.gpu_image", appContext.packageName)
+        assertEquals("com.example.lib_media3.test", appContext.packageName)
     }
 }
