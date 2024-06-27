@@ -108,8 +108,6 @@ class CartoonRecordedTaskModel(
                 "recorded_${System.currentTimeMillis()}.gif",
                 start,
                 end,
-                (targetWidth*quality.value/100).toInt(),
-                (targetHeight*quality.value/100),
                 crop,
                 fps.value,
                 quality.value,

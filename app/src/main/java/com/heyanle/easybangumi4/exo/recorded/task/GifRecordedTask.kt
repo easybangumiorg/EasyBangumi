@@ -6,18 +6,34 @@ import android.graphics.BitmapFactory
 import androidx.annotation.OptIn
 import androidx.compose.ui.unit.IntSize
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.VideoSize
+import androidx.media3.common.util.Clock
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.Size
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.effect.Crop
 import androidx.media3.effect.FrameDropEffect
 import androidx.media3.effect.ScaleAndRotateTransformation
+import androidx.media3.effect.SpeedChangeEffect
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.transformer.Composition
+import androidx.media3.transformer.DefaultDecoderFactory
+import androidx.media3.transformer.EditedMediaItem
+import androidx.media3.transformer.Effects
+import androidx.media3.transformer.ExoPlayerAssetLoader
+import androidx.media3.transformer.ExportException
+import androidx.media3.transformer.ExportResult
+import androidx.media3.transformer.InAppMuxer
+import androidx.media3.transformer.TransformationRequest
+import androidx.media3.transformer.Transformer
 import com.alien.gpuimage.outputs.BitmapView
 import com.alien.gpuimage.sources.ExoplayerPipeline
+import com.heyanle.easy_transformer.gif.FramePixelCodec
+import com.heyanle.easy_transformer.gif.GifMuxer
+import com.heyanle.easy_transformer.gif.GifTransformer
 import com.heyanle.easybangumi4.exo.ClippingConfigMediaSourceFactory
 import com.heyanle.easybangumi4.utils.AnimatedGifEncoder
 import com.heyanle.easybangumi4.utils.CoroutineProvider
@@ -52,216 +68,130 @@ class GifRecordedTask(
     private val startPosition: Long,
     private val endPosition: Long,
 
-    private val targetWidth: Int,
-    private val targetHeight: Int,
-
     //NDC 坐标
     private val crop: Crop,
     private val fps: Int,
     private val quality: Int,
     private val speed: Float,
-) : AbsRecordedTask(), Player.Listener, BitmapView.BitmapViewCallback {
+) : AbsRecordedTask(), Transformer.Listener {
 
-    private val cacheFolder = File(outputFolder, "${outputName}-temp")
-        .apply {
-            mkdirs()
-            deleteOnExit()
-        }
-
-    // exoPlayer（变速等需求直接在 ExoPlayer 里实现） -> exoplayerPipeline（ OES 纹理转普通纹理 ） -> bitmapView -> jpg 文件
-    private val bitmapView = BitmapView().apply {
-        callback = this@GifRecordedTask
-    }
-    private val exoplayerPipeline: ExoplayerPipeline = ExoplayerPipeline().apply {
-        setFormat(
-            targetWidth,
-            targetHeight,
-            0
+    // transformer 转码 ===========================
+    private val inputMediaItem = mediaItem.buildUpon().apply {
+        setClippingConfiguration(
+            MediaItem.ClippingConfiguration.Builder()
+                // 剪辑
+                .setStartPositionMs(startPosition)
+                .setEndPositionMs(endPosition)
+                .setStartsAtKeyFrame(false)
+                .build()
         )
+    }.build()
+    private val editedMediaItem = EditedMediaItem.Builder(inputMediaItem)
+        .setRemoveAudio(true)
+        .setEffects(
+            Effects(
+                listOf(),
+                listOf(
+                    // 变速
+                    SpeedChangeEffect(speed),
+                    // 码率（抽帧）
+                    FrameDropEffect.createDefaultFrameDropEffect(fps.toFloat()), //fps.toFloat()),
+                    // 裁剪
+                    crop,
+                    // 压制
+                    ScaleAndRotateTransformation.Builder().setScale(quality/100f, quality/100f).build()
+                )
+            ),
 
-        addTarget(bitmapView)
-
-    }
-    private val exoPlayer: ExoPlayer = ExoPlayer.Builder(ctx).build().apply {
-        addListener(this@GifRecordedTask)
-
-        setVideoSurface(exoplayerPipeline.getSurface())
-        setVideoEffects(
-            listOf(
-                // 码率（抽帧）
-                FrameDropEffect.createDefaultFrameDropEffect(fps.toFloat()),
-                // 裁剪
-                crop,
-                // 压制
-                ScaleAndRotateTransformation.Builder().setScale(quality/100f, quality/100f).build()
-            )
+            ).build()
+    private val transformer = Transformer.Builder(ctx)
+        .setAssetLoaderFactory(
+            ExoPlayerAssetLoader.Factory(
+                ctx, DefaultDecoderFactory.Builder(ctx).build(),  Clock.DEFAULT, mediaSourceFactory)
         )
-        // 这里变速直接修改 exoPlayer
-        setPlaybackSpeed(speed)
+        .setEncoderFactory(FramePixelCodec.Factory())
+        .setMuxerFactory(
+            GifMuxer.Factory()
+        )
+        .setVideoMimeType(MimeTypes.VIDEO_H264)
+        .setRemoveAudio(true)
+        .addListener(this)
+        .build()
 
-        // 剪辑在 ClippingConfigMediaSourceFactory 中实现
-        setMediaSource(mediaSourceFactory.createMediaSource(mediaItem))
+    // 转码挂起点
+    private var transformCon: Continuation<Pair<ExportResult, ExportException?>>? = null
 
-        playWhenReady = true
-        volume = 0f
+    // 转码状态回调 ===========================
+
+    override fun onCompleted(composition: Composition, exportResult: ExportResult) {
+        super.onCompleted(composition, exportResult)
+        transformCon?.safeResume(exportResult to null)
     }
 
-
-    private val singleDispatcher = CoroutineProvider.CUSTOM_SINGLE
-    private val priorityQueue = PriorityQueue<Pair<Long, File>>(
-        compareBy { it.first }
-    )
-
-    @Volatile
-    private var lastFrameTime = 0L
-    private var checkJob: Job? = null
-
-    // 挂起点
-    private var exoPlayCon: Continuation<Exception?>? = null
-
-    private val startTime = AtomicLong(-1L)
-
-
-    override fun onViewSwapToScreen(bitmap: Bitmap?, time: Long?) {
-        "${bitmap} ${time}".logi("GifRecordedTask")
-        // 缓存帧图
-        bitmap ?: return
-        time ?: return
-        // 这里 time 只有相对信息，没有绝对信息，这里需要计算
-        startTime.compareAndSet(0, time)
-        lastFrameTime = time
-        scope.launch(singleDispatcher) {
-            try {
-                val current = time - startTime.get() + startPosition
-                val cop = bitmap.copy(bitmap.config, false)
-                cacheFolder.mkdirs()
-                val file = File(cacheFolder, "${current}.jpg")
-                file.delete()
-                file.createNewFile()
-                // file.deleteOnExit()
-                cop.compress(Bitmap.CompressFormat.JPEG, 100, file.outputStream())
-                cop.recycle()
-                file.absolutePath.logi("GifRecordedTask")
-                priorityQueue.add(current to file)
-                dispatchProcess((((current - startPosition)/(endPosition - startPosition)) * 50).toInt())
-                if (current > endPosition){
-                    mainScope.launch {
-                        exoPlayCon?.safeResume(null)
-                        exoPlayer.stop()
-                    }
-
-                }
-            }catch (e: Exception){
-                e.printStackTrace()
-            }
-
-        }
+    override fun onError(
+        composition: Composition,
+        exportResult: ExportResult,
+        exportException: ExportException
+    ) {
+        super.onError(composition, exportResult, exportException)
+        transformCon?.safeResume(exportResult to exportException)
     }
 
-
-    override fun onPlaybackStateChanged(playbackState: Int) {
-        super.onPlaybackStateChanged(playbackState)
-        if (playbackState == Player.STATE_ENDED){
-           exoPlayCon?.safeResume(null)
-        }
+    override fun onFallbackApplied(
+        composition: Composition,
+        originalTransformationRequest: TransformationRequest,
+        fallbackTransformationRequest: TransformationRequest
+    ) {
+        super.onFallbackApplied(
+            composition,
+            originalTransformationRequest,
+            fallbackTransformationRequest
+        )
+        "onFallbackApplied".logi("Mp4RecordedTask")
     }
 
-    override fun onPlayerError(error: PlaybackException) {
-        super.onPlayerError(error)
-        exoPlayCon?.safeResume(error)
-    }
-
-    override fun onVideoSizeChanged(videoSize: VideoSize) {
-        super.onVideoSizeChanged(videoSize)
-        "${videoSize.width} ${videoSize.height}".logi("GifRecordedTask")
-        // exoplayerPipeline.setFormat(videoSize.width, videoSize.height, 0)
-    }
-
-
-
-
+    // 外部接口 ===========================
     override fun start() {
-        if (state.value.status != 0 || startTime.get() != -1L){
+        if (state.value.status != 0){
             return
         }
+
         scope.launch {
-            priorityQueue.clear()
-            // 取帧图
-            val getFrame = suspendCoroutine<Exception?> {
-                mainScope.launch {
-                    exoPlayer.prepare()
-                    exoPlayer.play()
-                    dispatchProcess(0)
-                    startTime.set(0)
-                    exoPlayCon = it
-
-                    // 加一个检查 job
-                    checkJob?.cancel()
-                    checkJob = scope.launch {
-                        var lastFrameTemp = lastFrameTime
-                        while (isActive){
-                            delay(2000)
-                            if (lastFrameTime == lastFrameTemp){
-                                exoPlayCon?.safeResume(CancellationException())
-                                mainScope.launch {
-                                    exoPlayer.stop()
-                                }
-                            }
-                            lastFrameTemp = lastFrameTime
-
-                        }
-                    }
-                }
-
+            try {
+                innerTransform()
+            }catch (e: Exception){
+                e.printStackTrace()
+                dispatchError(e, e.message)
             }
-
-
-            checkJob?.cancel()
-            if (getFrame != null){
-                dispatchError(getFrame, getFrame.message)
-                return@launch
-            }
-            mainScope.launch {
-                exoPlayer.stop()
-            }
-
-            dispatchProcess(50)
-            // 打包 gif
-
-            outputFolder.mkdirs()
-            val target = File(outputFolder, outputName)
-
-            ByteArrayOutputStream().use {  baos ->
-                val gif = AnimatedGifEncoder()
-                gif.start(baos)
-                gif.setDelay(1000/fps)
-                gif.setRepeat(0)
-                for (pair in priorityQueue) {
-                    if (!pair.second.exists()){
-                        continue
-                    }
-                    val bitmap = BitmapFactory.decodeFile(pair.second.absolutePath)
-                    gif.addFrame(bitmap)
-                    bitmap.recycle()
-                }
-                dispatchProcess(75)
-                target.createNewFile()
-
-                target.outputStream().use {
-                    baos.writeTo(it)
-                    baos.flush()
-                }
-                dispatchCompletely(target)
-            }
-
         }
     }
 
     override fun stop() {
-        checkJob?.cancel()
-        exoPlayer.stop()
-        exoPlayCon?.safeResume(CancellationException())
+        transformer.cancel()
+    }
 
+    // 开始处理 ！
+    private suspend fun innerTransform(){
+        // 虽然 Transformer 支持进度但是这里需要开多一个线程去轮询，所以暂时不处理进度
+        val outputFile = File(outputFolder, outputName)
+        dispatchProcess(-1)
+        val res = suspendCoroutine<Pair<ExportResult, ExportException?>> {
+            transformCon = it
+            outputFolder.mkdirs()
+
+            outputFile.delete()
+            outputFile.createNewFile()
+            mainScope.launch {
+                transformer.start(editedMediaItem, outputFile.absolutePath)
+            }
+
+        }
+        val error = res.second
+        if (error != null){
+            dispatchError(error, error.message)
+        }else{
+            dispatchCompletely(outputFile)
+        }
     }
 
 }

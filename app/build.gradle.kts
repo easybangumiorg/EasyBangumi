@@ -246,5 +246,7 @@ dependencies {
         implementation(project(":EasyPlayer2:easyplayer2"))
     }
 
+    implementation(project(":EasyMediaTransformer:easy_transformer"))
+
 
 }
