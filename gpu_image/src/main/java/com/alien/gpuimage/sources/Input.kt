@@ -4,51 +4,51 @@ import android.graphics.Bitmap
 import com.alien.gpuimage.Framebuffer
 import com.alien.gpuimage.GLContext
 import com.alien.gpuimage.TextureAttributes
-import com.alien.gpuimage.outputs.Input
+import com.alien.gpuimage.outputs.Output
 import com.alien.gpuimage.utils.Logger
 
 /**
  * 输出
  */
-abstract class Output {
+abstract class Input {
 
     companion object {
         private const val TAG = "Output"
     }
 
-    protected val targets: MutableList<Input> = mutableListOf()
+    protected val targets: MutableList<Output> = mutableListOf()
     protected val targetTextureIndices: MutableList<Int> = mutableListOf()
     var outputFramebuffer: Framebuffer? = null
     protected var outputTextureOptions: TextureAttributes = TextureAttributes()
 
     abstract fun release()
 
-    private fun setInputFramebufferForTarget(input: Input?, inputTextureIndex: Int) {
+    private fun setInputFramebufferForTarget(output: Output?, inputTextureIndex: Int) {
         if (outputFramebuffer != null) {
-            input?.setInputFramebuffer(outputFramebuffer, inputTextureIndex)
+            output?.setInputFramebuffer(outputFramebuffer, inputTextureIndex)
         }
     }
 
-    open fun addTarget(input: Input?) {
-        val index = input?.nextAvailableTextureIndex() ?: 0
-        addTarget(input, index)
+    open fun addTarget(output: Output?) {
+        val index = output?.nextAvailableTextureIndex() ?: 0
+        addTarget(output, index)
     }
 
-    open fun addTarget(input: Input?, textureLocation: Int) {
-        if (targets.contains(input)) {
+    open fun addTarget(output: Output?, textureLocation: Int) {
+        if (targets.contains(output)) {
             Logger.e(TAG, "add repeatedly targets.")
             return
         }
 
-        input?.let {
+        output?.let {
             setInputFramebufferForTarget(it, textureLocation)
-            targets.add(input)
+            targets.add(output)
             targetTextureIndices.add(textureLocation)
         }
     }
 
-    fun removeTarget(input: Input?) {
-        val indexOf = targets.indexOf(input)
+    fun removeTarget(output: Output?) {
+        val indexOf = targets.indexOf(output)
         if (indexOf >= 0) {
             targets.removeAt(indexOf)
             targetTextureIndices.removeAt(indexOf)

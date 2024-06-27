@@ -4,14 +4,14 @@ import android.graphics.SurfaceTexture
 import android.opengl.GLES11Ext
 import android.opengl.GLES20
 import com.alien.gpuimage.*
-import com.alien.gpuimage.sources.Output
+import com.alien.gpuimage.sources.Input
 import com.alien.gpuimage.utils.Logger
 import java.nio.FloatBuffer
 
 /**
  * 把 Oes 纹理转 普通纹理，用在相机输出，MediaCodec输出，exoplayer输出
  */
-class GLOesTexture : Output() {
+class GLOesTexture : Input() {
 
     companion object {
         private const val TAG = "GLOesTexture"
@@ -118,10 +118,6 @@ class GLOesTexture : Output() {
         }
     }
 
-    fun setOutputRotation(rotationMode: RotationMode) {
-        this.outputRotation = rotationMode
-    }
-
     fun setOesSize(width: Int, height: Int) {
         oesSize.width = width
         oesSize.height = height
@@ -136,7 +132,7 @@ class GLOesTexture : Output() {
             surfaceTexture?.updateTexImage()
             renderToTexture(
                 DataBuffer.IMAGE_VERTICES,
-                DataBuffer.textureCoordinatesForRotation(videoRotation, false)
+                DataBuffer.textureCoordinatesForRotation(false)
             )
             informTargetsAboutNewFrameAtTime(presentationTimeUs)
         })
@@ -148,7 +144,7 @@ class GLOesTexture : Output() {
 
         outputFramebuffer =
             GLContext.sharedFramebufferCache()
-                ?.fetchFramebuffer(oesSize, false, outputTextureOptions)
+                ?.fetchFramebuffer(oesSize, outputTextureOptions)
         outputFramebuffer?.activate()
 
         GLES20.glClearColor(0f, 0f, 0f, 1f)

@@ -72,14 +72,6 @@ class GLContext(createContext: Boolean = false) {
 
             return adjustedSize
         }
-
-        fun print() {
-            sharedProcessingContext()?.printUseMemory()
-        }
-
-        fun gc() {
-            sharedProcessingContext()?.gc()
-        }
     }
 
     var eglCore: EglCore? = null

@@ -3,13 +3,13 @@ package com.alien.gpuimage.sources
 import android.graphics.SurfaceTexture
 import android.view.Surface
 import com.alien.gpuimage.GLContext
-import com.alien.gpuimage.outputs.Input
+import com.alien.gpuimage.outputs.Output
 import com.alien.gpuimage.sources.widget.GLOesTexture
 
 /**
  * 用来 Exoplayer 上效果
  */
-class ExoplayerPipeline : Output() {
+class ExoplayerPipeline : Input() {
 
     private val glOesTexture: GLOesTexture = GLOesTexture()
     private var surfaceTexture: SurfaceTexture? = null
@@ -51,12 +51,12 @@ class ExoplayerPipeline : Output() {
         return outputSurface
     }
 
-    override fun addTarget(input: Input?) {
-        glOesTexture.addTarget(input)
+    override fun addTarget(output: Output?) {
+        glOesTexture.addTarget(output)
     }
 
-    override fun addTarget(input: Input?, textureLocation: Int) {
-        glOesTexture.addTarget(input, textureLocation)
+    override fun addTarget(output: Output?, textureLocation: Int) {
+        glOesTexture.addTarget(output, textureLocation)
     }
 
     override fun release() {

@@ -2,7 +2,6 @@ package com.alien.gpuimage.outputs
 
 import android.graphics.Bitmap
 import android.opengl.GLES20
-import android.opengl.GLUtils
 import com.alien.gpuimage.DataBuffer
 import com.alien.gpuimage.Framebuffer
 import com.alien.gpuimage.RotationMode
@@ -15,7 +14,7 @@ import java.nio.ByteOrder
 /**
  * ImageView 显示
  */
-open class BitmapView : Input {
+open class BitmapOut : Output {
 
     companion object {
         private const val TAG = "BitmapView"

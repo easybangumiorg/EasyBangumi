@@ -29,8 +29,6 @@ import androidx.media3.transformer.ExportResult
 import androidx.media3.transformer.InAppMuxer
 import androidx.media3.transformer.TransformationRequest
 import androidx.media3.transformer.Transformer
-import com.alien.gpuimage.outputs.BitmapView
-import com.alien.gpuimage.sources.ExoplayerPipeline
 import com.heyanle.easy_transformer.gif.FramePixelCodec
 import com.heyanle.easy_transformer.gif.GifMuxer
 import com.heyanle.easy_transformer.gif.GifTransformer

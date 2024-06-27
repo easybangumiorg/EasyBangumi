@@ -66,31 +66,12 @@ object DataBuffer {
         createFloatBuffer(floatArrayOf(1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f))
 
     fun textureCoordinatesForRotation(
-        rotationMode: RotationMode,
         isDisplayCoordinate: Boolean
     ): FloatBuffer {
         if (isDisplayCoordinate) {
-            return when (rotationMode) {
-                RotationMode.NoRotation -> displayNoRotationTextureCoordinates
-                RotationMode.RotateLeft -> displayRotateLeftTextureCoordinates
-                RotationMode.RotateRight -> displayRotateRightTextureCoordinates
-                RotationMode.FlipVertical -> displayVerticalFlipTextureCoordinates
-                RotationMode.FlipHorizontal -> displayHorizontalFlipTextureCoordinates
-                RotationMode.RotateRightFlipVertical -> displayRotateRightVerticalFlipTextureCoordinates
-                RotationMode.RotateRightFlipHorizontal -> displayRotateRightHorizontalFlipTextureCoordinates
-                RotationMode.Rotate180 -> displayRotate180TextureCoordinates
-            }
+            return  displayNoRotationTextureCoordinates
         } else {
-            return when (rotationMode) {
-                RotationMode.NoRotation -> noRotationTextureCoordinates
-                RotationMode.RotateLeft -> rotateLeftTextureCoordinates
-                RotationMode.RotateRight -> rotateRightTextureCoordinates
-                RotationMode.FlipVertical -> verticalFlipTextureCoordinates
-                RotationMode.FlipHorizontal -> horizontalFlipTextureCoordinates
-                RotationMode.RotateRightFlipVertical -> rotateRightVerticalFlipTextureCoordinates
-                RotationMode.RotateRightFlipHorizontal -> rotateRightHorizontalFlipTextureCoordinates
-                RotationMode.Rotate180 -> rotate180TextureCoordinates
-            }
+            return noRotationTextureCoordinates
         }
     }
 

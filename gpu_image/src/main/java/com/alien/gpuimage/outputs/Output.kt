@@ -8,7 +8,7 @@ import com.alien.gpuimage.Size
 /**
  * 输入接口
  */
-interface Input {
+interface Output {
 
     fun setInputSize(inputSize: Size?, textureIndex: Int)
 

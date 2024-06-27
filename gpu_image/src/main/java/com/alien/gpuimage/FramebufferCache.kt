@@ -10,33 +10,27 @@ class FramebufferCache {
 
     private val frameBuffers: MutableMap<String, Framebuffer> = mutableMapOf()
     private val framebufferTypeCounts: MutableMap<String, Int> = mutableMapOf()
-
-    fun fetchFramebuffer(size: Size?, onlyTexture: Boolean): Framebuffer? {
-        if (size == null || size.width <= 0 || size.height <= 0) return null
-        return fetchFramebuffer(size.width, size.height, onlyTexture, TextureAttributes())
-    }
+    
 
     fun fetchFramebuffer(
         size: Size?,
-        onlyTexture: Boolean,
         textureAttributes: TextureAttributes
     ): Framebuffer? {
         if (size == null || size.width <= 0 || size.height <= 0) return null
-        return fetchFramebuffer(size.width, size.height, onlyTexture, textureAttributes)
+        return fetchFramebuffer(size.width, size.height, textureAttributes)
     }
 
     private fun fetchFramebuffer(
         width: Int,
         height: Int,
-        onlyTexture: Boolean,
         textureAttributes: TextureAttributes
     ): Framebuffer {
         var framebufferFromCache: Framebuffer? = null
-        val lookupHash = getHash(width, height, onlyTexture, textureAttributes)
+        val lookupHash = getHash(width, height, textureAttributes)
         val numberOfMatchingFrameBuffers = framebufferTypeCounts[lookupHash] ?: 0
 
         if (numberOfMatchingFrameBuffers < 1) {
-            framebufferFromCache = Framebuffer(width, height, textureAttributes, onlyTexture)
+            framebufferFromCache = Framebuffer(width, height, textureAttributes)
             Logger.d(TAG, "获取 new Framebuffer:$framebufferFromCache")
         } else {
             var curFramebufferId = numberOfMatchingFrameBuffers - 1
@@ -54,7 +48,7 @@ class FramebufferCache {
             framebufferTypeCounts[lookupHash] = curFramebufferId
 
             if (framebufferFromCache == null) {
-                framebufferFromCache = Framebuffer(width, height, textureAttributes, onlyTexture)
+                framebufferFromCache = Framebuffer(width, height, textureAttributes)
             }
             Logger.d(TAG, "获取 Framebuffer:$framebufferFromCache size:${frameBuffers.size}")
         }
@@ -70,7 +64,7 @@ class FramebufferCache {
         val width = framebuffer.width
         val height = framebuffer.height
         val textureAttributes = framebuffer.textureAttributes
-        val lookupHash = getHash(width, height, framebuffer.onlyTexture, textureAttributes)
+        val lookupHash = getHash(width, height, textureAttributes)
         val numberOfMatchingFrameBuffers = framebufferTypeCounts[lookupHash] ?: 0
 
         val framebufferHash = String.format("%s-%d", lookupHash, numberOfMatchingFrameBuffers)
@@ -87,36 +81,20 @@ class FramebufferCache {
     private fun getHash(
         width: Int,
         height: Int,
-        onlyTexture: Boolean,
         textureAttributes: TextureAttributes
     ): String {
-        if (onlyTexture) {
-            return String.format(
-                "%dx%d-%d:%d:%d:%d:%d:%d:%d-NOFB",
-                width,
-                height,
-                textureAttributes.minFilter,
-                textureAttributes.magFilter,
-                textureAttributes.wrapS,
-                textureAttributes.wrapT,
-                textureAttributes.internalFormat,
-                textureAttributes.format,
-                textureAttributes.type
-            )
-        } else {
-            return String.format(
-                "%dx%d-%d:%d:%d:%d:%d:%d:%d",
-                width,
-                height,
-                textureAttributes.minFilter,
-                textureAttributes.magFilter,
-                textureAttributes.wrapS,
-                textureAttributes.wrapT,
-                textureAttributes.internalFormat,
-                textureAttributes.format,
-                textureAttributes.type
-            )
-        }
+        return String.format(
+            "%dx%d-%d:%d:%d:%d:%d:%d:%d",
+            width,
+            height,
+            textureAttributes.minFilter,
+            textureAttributes.magFilter,
+            textureAttributes.wrapS,
+            textureAttributes.wrapT,
+            textureAttributes.internalFormat,
+            textureAttributes.format,
+            textureAttributes.type
+        )
     }
 
     fun release() {

@@ -8,7 +8,7 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 
-class Framebuffer {
+class Framebuffer(width: Int, height: Int, textureAttributes: TextureAttributes) {
 
     companion object {
         private const val TAG = "Framebuffer"
@@ -18,13 +18,11 @@ class Framebuffer {
         var createList = mutableListOf<Int>()
     }
 
-    var width: Int
+    var width: Int = width
         private set
-    var height: Int
+    var height: Int = height
         private set
-    var textureAttributes: TextureAttributes
-        private set
-    var onlyTexture: Boolean
+    var textureAttributes: TextureAttributes = textureAttributes
         private set
 
     var textureId: Int = -1
@@ -35,47 +33,12 @@ class Framebuffer {
     private var framebufferReferenceCount: Int = 0
     private var referenceCountingDisabled: Boolean = false
 
-    constructor(
-        width: Int, height: Int,
-        textureAttributes: TextureAttributes,
-        onlyTexture: Boolean = false
-    ) {
-        this.width = width
-        this.height = height
-        this.textureAttributes = textureAttributes
-        this.onlyTexture = onlyTexture
+    init {
         this.framebufferReferenceCount = 0
         this.referenceCountingDisabled = false
-
-        if (this.onlyTexture) {
-            generateTexture()
-            this.framebufferId = 0
-        } else {
-            generateFramebuffer()
-        }
-
+        generateFramebuffer()
         createAllCount++
         createList.add(textureId)
-    }
-
-    constructor(width: Int, height: Int, inputTexture: Int) {
-        val defaultTextureOptions = TextureAttributes()
-        defaultTextureOptions.minFilter = GLES20.GL_LINEAR
-        defaultTextureOptions.magFilter = GLES20.GL_LINEAR
-        defaultTextureOptions.wrapS = GLES20.GL_CLAMP_TO_EDGE
-        defaultTextureOptions.wrapT = GLES20.GL_CLAMP_TO_EDGE
-        defaultTextureOptions.internalFormat = GLES20.GL_RGBA
-        defaultTextureOptions.format = GL_BGRA
-        defaultTextureOptions.type = GLES20.GL_UNSIGNED_BYTE
-
-        this.textureAttributes = defaultTextureOptions
-        this.width = width
-        this.height = height
-        this.onlyTexture = true
-        this.framebufferReferenceCount = 0
-        this.referenceCountingDisabled = true
-
-        this.textureId = inputTexture
     }
 
     private fun generateFramebuffer() {
@@ -191,14 +154,6 @@ class Framebuffer {
         framebufferReferenceCount = 0
     }
 
-    fun disableReferenceCounting() {
-        referenceCountingDisabled = true
-    }
-
-    fun enableReferenceCounting() {
-        referenceCountingDisabled = false
-    }
-
     fun destroy() {
         Logger.d(TAG, "destroy framebufferId:$framebufferId textureId:$textureId")
         if (framebufferId > 0 || textureId > 0) {
@@ -216,27 +171,7 @@ class Framebuffer {
             textureId = -1
         }
     }
-
-    fun newImageFromFramebufferContents(): Bitmap? {
-        check(textureAttributes.internalFormat == GLES20.GL_RGBA) {
-            "For conversion to a Bitmap the output texture format for this filter must be GL_RGBA."
-        }
-        check(textureAttributes.type == GLES20.GL_UNSIGNED_BYTE) {
-            "For conversion to a Bitmap the type of the output texture of this filter must be GL_UNSIGNED_BYTE."
-        }
-
-        val byteBuffer = ByteBuffer.allocateDirect(width * height * 4)
-        byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
-        byteBuffer.rewind()
-        byteBuffer.position(0)
-
-        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, framebufferId)
-        GLES20.glReadPixels(0, 0, width, height, 6408, 5121, byteBuffer)
-        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        bitmap?.copyPixelsFromBuffer(byteBuffer)
-
-        return bitmap
-    }
+    
 
     override fun toString(): String {
         return "textureId:$textureId framebufferId:$framebufferId width:$width height:$height referenceCount:$framebufferReferenceCount referenceDisabled:$referenceCountingDisabled"
