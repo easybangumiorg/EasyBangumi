@@ -2,6 +2,7 @@ package com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded.task
 
 import android.content.ContentValues
 import android.content.Context
+import android.graphics.RectF
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
@@ -42,9 +43,7 @@ class CartoonRecordedTaskModel(
     val cartoonMediaSourceFactory: CartoonMediaSourceFactory,
     val start: Long,
     val end: Long,
-    val crop: Crop,
-    val targetWidth: Int,
-    val targetHeight: Int,
+    val cropRect: RectF,
     // 1 -> gif 2 -> mp4
     val type: Int,
     val speed: Float = 1f,
@@ -88,7 +87,13 @@ class CartoonRecordedTaskModel(
                 "recorded_${System.currentTimeMillis()}.mp4",
                 start,
                 end,
-                crop,
+                Crop(
+                    cropRect.left - 0.5f,
+                    cropRect.right - 0.5f,
+
+                    0.5f - cropRect.bottom,
+                    0.5f - cropRect.top,
+                ),
                 fps.value,
                 quality.value,
                 speed,
@@ -100,18 +105,14 @@ class CartoonRecordedTaskModel(
             task = GifRecordedTask(
                 ctx,
                 cartoonMediaSourceFactory.getMediaItem(playerInfo),
-                cartoonMediaSourceFactory.getClipMediaSourceFactory(
-                    playerInfo,
-                    clippingConfiguration
-                ),
+                cartoonMediaSourceFactory.getMediaSourceFactory(playerInfo),
                 outputCacheFolder,
                 "recorded_${System.currentTimeMillis()}.gif",
                 start,
                 end,
-                crop,
+                cropRect,
                 fps.value,
                 quality.value,
-                speed,
             ).apply {
                 listener = this@CartoonRecordedTaskModel
                 start()

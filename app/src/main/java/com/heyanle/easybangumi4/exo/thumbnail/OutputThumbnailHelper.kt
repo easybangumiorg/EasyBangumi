@@ -8,22 +8,15 @@ import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.MediaSource
-import com.alien.gpuimage.Framebuffer
-import com.alien.gpuimage.outputs.BitmapView
-import com.alien.gpuimage.sources.ExoplayerPipeline
+import com.alien.gpuimage.outputs.BitmapOut
+import com.alien.gpuimage.sources.OesTexturePipeline
 import com.heyanle.easybangumi4.utils.CoroutineProvider
 import com.heyanle.easybangumi4.utils.logi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
-import java.util.TreeMap
-import java.util.concurrent.CountDownLatch
-import javax.xml.transform.Transformer
-import kotlin.math.abs
 
 /**
  * Created by heyanle on 2024/6/16.
@@ -37,7 +30,7 @@ class OutputThumbnailHelper(
     private val start: Long,
     private val end: Long,
     private val interval: Long,
-) : BitmapView(), Player.Listener {
+) : BitmapOut(), Player.Listener {
 
     private val dispatcher = CoroutineProvider.CUSTOM_SINGLE
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
@@ -48,8 +41,8 @@ class OutputThumbnailHelper(
     private val exoPlayer: ExoPlayer by lazy {
         ExoPlayer.Builder(context).build()
     }
-    private val exoplayerPipeline: ExoplayerPipeline by lazy {
-        ExoplayerPipeline()
+    private val exoplayerPipeline: OesTexturePipeline by lazy {
+        OesTexturePipeline()
     }
 
     @Volatile

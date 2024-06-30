@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded
 
 import android.content.Context
+import android.graphics.RectF
 import android.graphics.SurfaceTexture
 import android.view.TextureView
 import androidx.compose.runtime.getValue
@@ -315,48 +316,39 @@ class CartoonRecordedModel(
         val render = renderState.value.renderRect.copy()
         val crop = cropRect.copy()
 
-        // 将 render 变换到 X [-1, 1] Y [-1, 1] 的矩形中，然后对 crop 进行同样的变换生成 CropEffect
-        // NDC 坐标系 需要将 y 轴反转
+        // 将 render 变换到 X [0, 1] Y [0, 1] 的矩形中，然后对 crop 进行同样的变换生成 CropEffect
 
-        val cropNDC = crop.let {
+        val cropReft = crop.let {
             // render 回到原点
             val ori = it.translate(-render.center)
 
             // render 缩放到 X [-1, 1] Y [-1, 1]
             val tran = ori.copy(
-                left = ori.left * 2 / render.width,
-                right = ori.right * 2 / render.width,
-                bottom = ori.bottom * 2 / render.height,
-                top = ori.top * 2 / render.height
+                left = ori.left * 1 / render.width,
+                right = ori.right * 1 / render.width,
+                bottom = ori.bottom * 1 / render.height,
+                top = ori.top * 1 / render.height
             )
 
-            tran
-        }
-        "${ cropNDC.left},${ cropNDC.right},${ - cropNDC.bottom},${ - cropNDC.top}".logi("CartoonRecordedTaskModel")
+            val res = tran.translate(Offset(0.5f, 0.5f))
 
-        // 反转 y 轴
-        val cropEffect = runCatching {
-            Crop(
-                cropNDC.left,
-                cropNDC.right,
-                - cropNDC.bottom,
-                - cropNDC.top
-            )
-        }.getOrElse {
-            it.printStackTrace()
-            null
+            res
         }
+        "${ cropReft.left},${ cropReft.right},${cropReft.bottom},${cropReft.top}".logi("CartoonRecordedTaskModel")
 
-        cropEffect ?: return
         cartoonRecordedTaskModel.value = CartoonRecordedTaskModel(
             ctx,
             playerInfo,
             cartoonMediaSourceFactory,
             clipVideoModel.selectionStart,
             clipVideoModel.selectionEnd,
-            cropEffect,
-            (lastVideoSize.width*cropNDC.width/2).toInt(),
-            (lastVideoSize.height*cropNDC.height/2).toInt(),
+            RectF(
+                cropReft.left,
+                cropReft.top,
+                cropReft.right,
+                cropReft.bottom,
+
+            ),
             recordType
         ) {
             cartoonRecordedTaskModel.value = null

@@ -6,6 +6,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -18,7 +19,9 @@ abstract class AbsRecordedTask : RecordedTask {
 
     // 协程 ===========================
     protected val dispatcher = Dispatchers.IO
+    protected val singleDispatcher = CoroutineProvider.CUSTOM_SINGLE
     protected val scope = CoroutineScope(SupervisorJob() + dispatcher)
+    protected val singleScope = CoroutineScope(SupervisorJob() + singleDispatcher)
     protected val mainScope = MainScope()
 
     // 状态管理 ===========================
@@ -63,5 +66,17 @@ abstract class AbsRecordedTask : RecordedTask {
         listener?.onCompletely(
             file
         )
+    }
+
+    fun release() {
+        runCatching {
+            mainScope.cancel()
+        }
+        runCatching {
+            scope.cancel()
+        }
+        runCatching {
+            singleScope.cancel()
+        }
     }
 }
