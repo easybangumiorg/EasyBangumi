@@ -1,3 +1,4 @@
+@file:Suppress("UnstableApiUsage")
 import com.android.build.api.dsl.VariantDimension
 import com.heyanle.buildsrc.Android
 import com.heyanle.buildsrc.RoomSchemaArgProvider

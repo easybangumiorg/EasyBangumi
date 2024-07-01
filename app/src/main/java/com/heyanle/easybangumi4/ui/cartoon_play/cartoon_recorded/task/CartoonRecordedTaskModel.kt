@@ -141,8 +141,7 @@ class CartoonRecordedTaskModel(
         scope.launch(Dispatchers.IO) {
             kotlin.runCatching {
                 val picturesFile =
-                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-                        ?: Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
                         ?: File(ctx.getFilePath())
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
                     val targetRoot = File(picturesFile, "EasyBangumi/recorded")
@@ -151,8 +150,7 @@ class CartoonRecordedTaskModel(
                 } else {
                     val values = ContentValues().apply {
                         put(MediaStore.MediaColumns.DISPLAY_NAME, file.name)
-                        put(MediaStore.MediaColumns.RELATIVE_PATH, "${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-                            ?: Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)}/EasyBangumi/backup")
+                        put(MediaStore.MediaColumns.RELATIVE_PATH, "${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)}/EasyBangumi/recorded")
                     }
                     APP.contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
                         ?.let { uri ->

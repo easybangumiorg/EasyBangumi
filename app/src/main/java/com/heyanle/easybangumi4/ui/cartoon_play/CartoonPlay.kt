@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.ui.cartoon_play
 
 import androidx.activity.compose.BackHandler
+import androidx.annotation.OptIn
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -22,6 +23,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.media3.common.util.UnstableApi
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.DOWNLOAD
 import com.heyanle.easybangumi4.LocalNavController
@@ -50,11 +52,13 @@ import kotlinx.coroutines.launch
 import loli.ball.easyplayer2.ControlViewModel
 import loli.ball.easyplayer2.ControlViewModelFactory
 import loli.ball.easyplayer2.EasyPlayerScaffoldBase
+import loli.ball.easyplayer2.EasyPlayerStateSync
 
 /**
  * Created by heyanle on 2023/12/17.
  * https://github.com/heyanLE
  */
+@OptIn(UnstableApi::class)
 @Composable
 fun CartoonPlay(
     id: String,
@@ -75,6 +79,9 @@ fun CartoonPlay(
     val detailedState = detailedVM.stateFlow.collectAsState()
     val playState = playVM.curringPlayState.collectAsState()
     val playingState = playingVM.playingState.collectAsState()
+
+    // 将同步范围拓展到整个界面，包括 recorded dialog
+    EasyPlayerStateSync(controlVM)
 
     LaunchedEffect(key1 = detailedState.value) {
         detailedState.value.cartoonInfo?.let {
@@ -330,6 +337,7 @@ fun CartoonPlay(
                     it.navigationBarsPadding()
                 } else it
             },
+        needSync = false,
         vm = controlVM,
         isPadMode = isPad,
         contentWeight = 0.5f,

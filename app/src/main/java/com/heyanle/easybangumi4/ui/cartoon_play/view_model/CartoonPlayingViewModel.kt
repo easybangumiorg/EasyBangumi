@@ -45,6 +45,7 @@ import java.io.File
  * Created by heyanle on 2023/12/17.
  * https://github.com/heyanLE
  */
+@UnstableApi
 class CartoonPlayingViewModel(
 ) : ViewModel(), Player.Listener, TextureView.SurfaceTextureListener {
 

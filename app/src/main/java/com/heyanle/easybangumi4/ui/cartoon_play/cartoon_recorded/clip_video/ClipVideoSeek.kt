@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import androidx.media3.common.util.UnstableApi
 import com.heyanle.easybangumi4.ui.common.OkImage
+import com.heyanle.easybangumi4.ui.common.detectHorizontalDragGesturesWithDown
 import com.heyanle.easybangumi4.utils.dip2px
 import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.px2dip
@@ -147,29 +148,34 @@ fun ClipVideoSeek(
             Box(modifier = Modifier
                 .fillMaxSize()
                 .pointerInput(Unit) {
-                    detectHorizontalDragGestures(
+                    var down: Offset? = null
+                    detectHorizontalDragGesturesWithDown(
+                        onDown = {
+                            down = it
+                        },
                         onDragStart = {
                             val diff = 100
+                            val curPosition = down ?: it
 
                             val startPx =
                                 clipVideoModel.selectionStart * clipVideoModel.pos2Px.first + clipVideoModel.pos2Px.second
-                            if (it.x in startPx - clipVideoModel.horizontalPaddingPx - diff..startPx) {
+                            if (curPosition.x in startPx - clipVideoModel.horizontalPaddingPx - diff..startPx) {
                                 clipVideoModel.onFocusChange(1)
-                                return@detectHorizontalDragGestures
+                                return@detectHorizontalDragGesturesWithDown
                             }
 
                             val endPx =
                                 clipVideoModel.selectionEnd * clipVideoModel.pos2Px.first + clipVideoModel.pos2Px.second
-                            if (it.x in endPx..endPx + clipVideoModel.horizontalPaddingPx + diff) {
+                            if (curPosition.x in endPx..endPx + clipVideoModel.horizontalPaddingPx + diff) {
                                 clipVideoModel.onFocusChange(2)
-                                return@detectHorizontalDragGestures
+                                return@detectHorizontalDragGesturesWithDown
                             }
 
                             val pointPos =
-                                clipVideoModel.px2Pos.first * it.x + clipVideoModel.px2Pos.second
+                                clipVideoModel.px2Pos.first * curPosition.x + clipVideoModel.px2Pos.second
                             if (pointPos >= clipVideoModel.selectionStart && pointPos <= clipVideoModel.selectionEnd) {
                                 clipVideoModel.onFocusChange(3)
-                                return@detectHorizontalDragGestures
+                                return@detectHorizontalDragGesturesWithDown
                             }
                         },
                         onHorizontalDrag = { c: PointerInputChange, _: Float ->
@@ -180,9 +186,11 @@ fun ClipVideoSeek(
                         },
                         onDragEnd = {
                             clipVideoModel.onFocusChange(0)
+                            down = null
                         },
                         onDragCancel = {
                             clipVideoModel.onFocusChange(0)
+                            down = null
                         }
                     )
                 }
