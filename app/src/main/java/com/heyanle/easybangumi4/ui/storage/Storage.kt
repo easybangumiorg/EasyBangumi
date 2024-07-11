@@ -35,12 +35,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.ui.common.TabIndicator
-import com.heyanle.easybangumi4.ui.download.DownloadPage
-import com.heyanle.easybangumi4.ui.download.DownloadPageItems
-import com.heyanle.easybangumi4.ui.download.downloaded.Downloaded
-import com.heyanle.easybangumi4.ui.download.downloaded.DownloadedTopBar
-import com.heyanle.easybangumi4.ui.download.downloading.Downloading
-import com.heyanle.easybangumi4.ui.download.downloading.DownloadingTopBar
 import com.heyanle.easybangumi4.ui.storage.backup.Backup
 import com.heyanle.easybangumi4.ui.storage.restore.Restore
 import com.heyanle.easybangumi4.ui.storage.restore.RestoreViewModel

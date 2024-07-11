@@ -1,240 +1,72 @@
 package com.heyanle.easybangumi4.cartoon_download
 
-import android.app.Application
-import android.util.Log
-import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
-import com.heyanle.easybangumi4.cartoon_download.entity.DownloadBundle
-import com.heyanle.easybangumi4.cartoon_download.entity.DownloadItem
-import com.heyanle.easybangumi4.cartoon_download.step.AriaStep
-import com.heyanle.easybangumi4.cartoon_download.step.BaseStep
-import com.heyanle.easybangumi4.cartoon_download.step.CopyStep
-import com.heyanle.easybangumi4.cartoon_download.step.ParseStep
-import com.heyanle.easybangumi4.setting.SettingPreferences
-import com.heyanle.easybangumi4.source_api.entity.Episode
-import com.heyanle.easybangumi4.source_api.entity.PlayLine
-import com.heyanle.easybangumi4.utils.CoroutineProvider
-import com.heyanle.easybangumi4.utils.getCachePath
-import com.heyanle.easybangumi4.utils.logi
-import com.heyanle.injekt.api.get
-import com.heyanle.injekt.core.Injekt
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.first
+import com.heyanle.easybangumi4.cartoon_download.entity.CartoonDownloadReq
+import com.heyanle.easybangumi4.cartoon_download.entity.CartoonDownloadRuntime
+import com.heyanle.easybangumi4.cartoon_local.CartoonLocalController
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
-import java.io.File
-import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.Executors
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
 
 /**
- * Created by heyanlin on 2023/10/2.
+ * Created by heyanle on 2024/7/7.
+ * https://github.com/heyanLE
  */
 class CartoonDownloadDispatcher(
-    private val application: Application,
-    private val cartoonDownloadController: CartoonDownloadController,
-    private val settingPreferences: SettingPreferences,
+    private val cartoonDownloadPreference: CartoonDownloadPreference,
+    private val cartoonDownloadRuntimeFactory: CartoonDownloadRuntimeFactory,
+    private val cartoonLocalController: CartoonLocalController,
 ) {
 
-    companion object {
-        const val TAG = "DownloadController"
-        private const val reservedChars = "|\\?*<\":>+[]/'!"
-    }
+    // 调度统一给主线程调度
+    private val scope = MainScope()
+    private val executor = ThreadPoolExecutor(
+        0,
+        cartoonDownloadPreference.downloadMaxCountPref.get(),
+        4,
+        TimeUnit.SECONDS,
+        LinkedBlockingQueue<Runnable>(),
+        Executors.defaultThreadFactory()
+    )
 
-    private val cacheRoot = application.getCachePath("download")
-    private val dispatcher = CoroutineProvider.SINGLE
-    private val scope = CoroutineScope(SupervisorJob() + dispatcher)
-    private val atomLong = AtomicLong(0)
+    private val runtimeMap = HashMap<CartoonDownloadReq, CartoonDownloadRuntime>()
 
-    init {
+
+
+    fun addTask(
+        item: CartoonDownloadReq
+    ) {
         scope.launch {
-            // 先清理垃圾
-            removeDirty()
-
-            cartoonDownloadController.downloadItem.filter { it != null }
-                .filterIsInstance<List<DownloadItem>>().collect {
-                Log.i(TAG, "refresh ${it.size}")
-                if(it.count {
-                    it.state == 0 || it.state == 1 || it.state == 2
-                    } > 0){
-                    CartoonDownloadService.tryStart()
-                }
-                it.find { it.needDispatcher() }?.let {
-                    dispatch(it)
-                }
+            runtimeMap[item]?.run {
+                state = 5
+                dispatchStateToBus()
+                executor.remove(runnable)
             }
-        }
-    }
-
-    fun removeDownload(downloadItem: DownloadItem) {
-        val name = downloadItem.stepsChain.getOrElse(downloadItem.currentSteps){""}
-        if(name.isNotEmpty()){
-            getStep(name).onRemove(downloadItem)
-        }
-    }
-
-    fun toggle(downloadItem: DownloadItem): Boolean {
-        if(downloadItem.state == -1){
-            // 错误的任务点击重下
-            val uuid = "${System.nanoTime()}-${atomLong.getAndIncrement()}"
-            var fileName =
-                "${downloadItem.cartoonTitle}-${downloadItem.playLine.label}-${downloadItem.episode.label}-${uuid}"
-            fileName = fileName.flatMap {
-                if (reservedChars.contains(it) || it == '\n' || it == ' ' || it == '\t' || it == '\r') {
-                    emptyList()
-                } else {
-                    listOf(it)
-                }
-            }.joinToString("")
-            val realTarget = settingPreferences.downloadPath.get()
-            val downloadRoot = File(cacheRoot, uuid)
-            downloadRoot.mkdirs()
-            val new = downloadItem.copy(
-                uuid = uuid,
-                folder = realTarget,
-                fileNameWithoutSuffix = fileName,
-                state = 0,
-                currentSteps = 0,
-                bundle = DownloadBundle(
-                    downloadFolder = downloadRoot.absolutePath,
-                    filePathBeforeCopy = File(downloadRoot, "$fileName.mp4").absolutePath,
-                    needRefreshMedia = settingPreferences.needRefreshMedia.contains(realTarget)
-                )
-            )
-            newDownload(listOf(new))
-            return true
-        }
-        val name = downloadItem.stepsChain.getOrNull(downloadItem.currentSteps)
-        if (name != null) {
-            val step = getStep(name = name)
-            return step.onClick(downloadItem)
-        }
-        return false
-    }
-
-    fun newDownload(cartoonInfo: CartoonInfo, download: List<Pair<PlayLine, Episode>>) {
-        scope.launch {
-            "newDownload ${cartoonInfo.name} ${download.size}".logi(TAG)
-            val new = download.map {
-                val uuid = "${System.nanoTime()}-${atomLong.getAndIncrement()}"
-                var fileName =
-                    "${cartoonInfo.name}-${it.first.label}-${it.second.label}-${uuid}"
-                fileName = fileName.flatMap {
-                    if (reservedChars.contains(it) || it == '\n' || it == ' ' || it == '\t' || it == '\r') {
-                        emptyList()
-                    } else {
-                        listOf(it)
-                    }
-                }.joinToString("")
-                val realTarget = settingPreferences.downloadPath.get()
-                val downloadRoot = File(cacheRoot, uuid)
-                downloadRoot.mkdirs()
-
-
-                DownloadItem(
-                    uuid = uuid,
-                    cartoonId = cartoonInfo.id,
-                    cartoonUrl = cartoonInfo.url,
-                    cartoonSource = cartoonInfo.source,
-                    cartoonTitle = cartoonInfo.name,
-                    cartoonCover = cartoonInfo.coverUrl,
-                    cartoonDescription = cartoonInfo.description,
-                    cartoonGenre = cartoonInfo.genre,
-                    playLine = it.first,
-                    episode = it.second,
-                    state = 0,
-                    currentSteps = 0,
-                    stepsChain =  listOf(ParseStep.NAME, AriaStep.NAME, CopyStep.NAME) ,
-                    folder = realTarget,
-                    fileNameWithoutSuffix = fileName,
-                    sourceLabel = cartoonInfo.sourceName,
-                    bundle = DownloadBundle(
-                        downloadFolder = downloadRoot.absolutePath,
-                        filePathBeforeCopy = File(downloadRoot, "$fileName.mp4").absolutePath,
-                        needRefreshMedia = settingPreferences.needRefreshMedia.contains(realTarget)
-                    )
-                )
-            }
-            newDownload(new)
-        }
-    }
-
-    private fun newDownload(downloadItems: List<DownloadItem>){
-        cartoonDownloadController.update {
-            (it ?: emptyList()) + downloadItems
-        }
-    }
-
-    private fun dispatch(downloadItem: DownloadItem) {
-        "dispatch ${downloadItem}".logi(TAG)
-        if (!downloadItem.needDispatcher()) {
-            return
-        }
-        if(downloadItem.state == -1 || downloadItem.isRemoved){
-            if(downloadItem.bundle.downloadFolder.isNotEmpty()){
-                File(downloadItem.bundle.downloadFolder).delete()
-            }
-            if(downloadItem.isRemoved){
-                cartoonDownloadController.update {
-                    it?.minus(downloadItem)?: emptyList()
-                }
-            }
-            return
-        }
-        val nextIndex =
-            if (downloadItem.state == 2) downloadItem.currentSteps + 1 else downloadItem.currentSteps
-        if (nextIndex >= downloadItem.stepsChain.size) {
-            cartoonDownloadController.downloadItemCompletely(downloadItem = downloadItem)
-            return
-        }
-        val name = downloadItem.stepsChain.getOrNull(nextIndex)
-        if (name == null) {
-            cartoonDownloadController.updateDownloadItem(downloadItem.uuid) {
-                it.copy(
-                    state = -1
-                )
-            }
-            return
-        }
-        val step = getStep(name)
-        cartoonDownloadController.updateDownloadItem(downloadItem.uuid) {
-            it.copy(
-                state = 1,
-                currentSteps = nextIndex
+            val runtime = cartoonDownloadRuntimeFactory.newRuntime(item)
+            runtime.dispatchStateToBus()
+            runtimeMap[item] = runtime
+            executor.execute(runtime.runnable)
+            cartoonLocalController.putLocalEpisode(
+                item.toLocalItemId, setOf(item.toEpisode)
             )
         }
-        try {
-            step.invoke(downloadItem)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            cartoonDownloadController.updateDownloadItem(downloadItem.uuid) {
-                it.copy(
-                    state = -1,
-                    errorMsg = e.message ?: ""
-                )
-            }
-        }
+    }
+
+
+
+    fun removeTask(
+        item: CartoonDownloadReq
+    ){
         scope.launch {
-            // 每次调度后清理垃圾
-            removeDirty()
+            runtimeMap[item]?.run {
+                state = 5
+                dispatchStateToBus()
+                executor.remove(runnable)
+            }
+            runtimeMap.remove(item)
         }
     }
-
-    private suspend fun removeDirty(){
-        val ignoreUUID = hashSetOf<String>()
-        cartoonDownloadController.downloadItem.filter { it != null }
-            .filterIsInstance<List<DownloadItem>>().first().forEach {
-            if(it.state != -1 && it.state != 3 && !it.isRemoved){
-                ignoreUUID.add(it.uuid)
-            }
-        }
-        File(cacheRoot).listFiles()?.forEach {
-            if(it != null && it.exists() && !ignoreUUID.contains(it.name)){
-                it.deleteRecursively()
-            }
-        }
-    }
-
-    private fun getStep(name: String) = Injekt.get<BaseStep>(name)
-
 
 }

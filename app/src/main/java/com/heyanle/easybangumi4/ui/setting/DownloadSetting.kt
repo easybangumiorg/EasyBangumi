@@ -22,7 +22,7 @@ import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.ui.common.StringSelectPreferenceItem
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.stringRes
-import com.heyanle.injekt.core.Injekt
+import com.heyanle.inject.core.Inject
 
 /**
  * Created by heyanlin on 2023/10/2.
@@ -32,7 +32,7 @@ import com.heyanle.injekt.core.Injekt
 fun ColumnScope.DownloadSetting(
     nestedScrollConnection: NestedScrollConnection
 ) {
-    val settingPreferences: SettingPreferences by Injekt.injectLazy()
+    val settingPreferences: SettingPreferences by Inject.injectLazy()
     Column(
         modifier = Modifier
             .weight(1f)

@@ -6,7 +6,6 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,7 +18,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDefaults
 import androidx.compose.material3.SwipeToDismissBox
@@ -36,10 +34,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.theme.EasyThemeController
 import com.heyanle.easybangumi4.utils.stringRes
-import com.heyanle.injekt.core.Injekt
+import com.heyanle.inject.core.Inject
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -74,7 +71,7 @@ data class MoeSnackBarData constructor(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MoeSnackBar(modifier: Modifier = Modifier) {
-    val themeController: EasyThemeController by Injekt.injectLazy()
+    val themeController: EasyThemeController by Inject.injectLazy()
     Column(
         Modifier
             .fillMaxSize()

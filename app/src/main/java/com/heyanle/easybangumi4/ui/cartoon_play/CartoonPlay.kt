@@ -1,42 +1,43 @@
 package com.heyanle.easybangumi4.ui.cartoon_play
 
+import androidx.activity.compose.BackHandler
+import androidx.annotation.OptIn
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.media3.common.util.UnstableApi
 import com.heyanle.easy_i18n.R
-import com.heyanle.easybangumi4.DOWNLOAD
 import com.heyanle.easybangumi4.LocalNavController
+import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
+import com.heyanle.easybangumi4.cartoon.entity.PlayLineWrapper
 import com.heyanle.easybangumi4.cartoon_download.CartoonDownloadDispatcher
 import com.heyanle.easybangumi4.navigationCartoonTag
-import com.heyanle.easybangumi4.navigationDlna
 import com.heyanle.easybangumi4.navigationSearch
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
+import com.heyanle.easybangumi4.source_api.entity.Episode
+import com.heyanle.easybangumi4.source_api.entity.PlayLine
+import com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded.CartoonRecorded
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModelFactory
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayingViewModel
@@ -47,19 +48,22 @@ import com.heyanle.easybangumi4.ui.common.EasyMutiSelectionDialog
 import com.heyanle.easybangumi4.ui.common.ErrorPage
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
-import com.heyanle.easybangumi4.ui.main.home.HomeBottomSheet
 import com.heyanle.easybangumi4.utils.isCurPadeMode
+import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.openUrl
 import com.heyanle.easybangumi4.utils.stringRes
-import com.heyanle.injekt.core.Injekt
+import com.heyanle.inject.core.Inject
+import kotlinx.coroutines.launch
 import loli.ball.easyplayer2.ControlViewModel
 import loli.ball.easyplayer2.ControlViewModelFactory
 import loli.ball.easyplayer2.EasyPlayerScaffoldBase
+import loli.ball.easyplayer2.EasyPlayerStateSync
 
 /**
  * Created by heyanle on 2023/12/17.
  * https://github.com/heyanLE
  */
+@OptIn(UnstableApi::class)
 @Composable
 fun CartoonPlay(
     id: String,
@@ -75,15 +79,47 @@ fun CartoonPlay(
     val playVM = viewModel<CartoonPlayViewModel>(factory = CartoonPlayViewModelFactory(enterData))
     val playingVM = viewModel<CartoonPlayingViewModel>()
     val isPad = isCurPadeMode()
-    val controlVM = ControlViewModelFactory.viewModel(playingVM.exoPlayer, isPad)
+    val controlVM = ControlViewModelFactory.viewModel(playingVM.exoPlayer, isPad, render = playingVM.easyTextRenderer)
 
     val detailedState = detailedVM.stateFlow.collectAsState()
     val playState = playVM.curringPlayState.collectAsState()
     val playingState = playingVM.playingState.collectAsState()
 
+    var downloadModel by remember {
+        mutableStateOf<Triple<CartoonInfo, PlayLineWrapper, List<Episode>>?>(null)
+    }
+
+    // 将同步范围拓展到整个界面，包括 recorded dialog
+    EasyPlayerStateSync(controlVM)
+
     LaunchedEffect(key1 = detailedState.value) {
         detailedState.value.cartoonInfo?.let {
             playVM.onCartoonInfoChange(it)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        launch {
+            snapshotFlow {
+                playingVM.showRecording.value
+            }.collect() {
+                if (it == null) {
+                    try {
+                        "bind".logi("CartoonPlay")
+                        controlVM.bind()
+                    } catch (e: Throwable) {
+                        e.printStackTrace()
+                    }
+
+                } else {
+                    try {
+                        "unbind".logi("CartoonPlay")
+                        controlVM.unbind()
+                    } catch (e: Throwable) {
+                        e.printStackTrace()
+                    }
+                }
+            }
         }
     }
 
@@ -106,8 +142,24 @@ fun CartoonPlay(
                 playingVM,
                 detailedState.value,
                 playState.value,
-                playingState.value
+                playingState.value,
+                onDownload = {
+                    downloadModel = it
+                }
             )
+
+            downloadModel?.let {
+                CartoonDownloadDialog(
+                    it.first,
+                    it.second,
+                    it.third,
+                    onDismissRequest = {
+                        downloadModel = null
+                    }
+                )
+            }
+
+
         }
 
         val starDialog = detailedState.value.starDialogState
@@ -135,6 +187,8 @@ fun CartoonPlay(
         }
     }
 
+
+
     if (playingVM.isCustomSpeedDialog.value) {
         val focusRequest = remember {
             FocusRequester()
@@ -142,19 +196,19 @@ fun CartoonPlay(
         val text = remember {
             mutableStateOf(playingVM.customSpeed.value.let { if (it > 0) it else 1 }.toString())
         }
-        DisposableEffect(key1 = Unit ){
+        DisposableEffect(key1 = Unit) {
             runCatching {
                 focusRequest.requestFocus()
             }.onFailure {
                 it.printStackTrace()
             }
-           onDispose {
-               runCatching {
-                   focusRequest.freeFocus()
-               }.onFailure {
-                   it.printStackTrace()
-               }
-           }
+            onDispose {
+                runCatching {
+                    focusRequest.freeFocus()
+                }.onFailure {
+                    it.printStackTrace()
+                }
+            }
         }
         AlertDialog(
             onDismissRequest = {
@@ -208,6 +262,24 @@ fun CartoonPlay(
         )
     }
 
+    val recordState = playingVM.showRecording.value
+
+    if (recordState != null){
+
+        CartoonRecorded(
+            controlViewModel = controlVM,
+            cartoonRecordedModel = recordState,
+            show = true,
+        ) {
+            playingVM.showRecording.value = null
+        }
+        BackHandler(
+            playingVM.showRecording.value != null
+        ) {
+            playingVM.showRecording.value = null
+        }
+    }
+
 
 }
 
@@ -237,9 +309,11 @@ fun CartoonPlay(
     detailState: DetailedViewModel.DetailState,
     playState: CartoonPlayViewModel.CartoonPlayState?,
     playingState: CartoonPlayingViewModel.PlayingState,
+
+    onDownload: (Triple<CartoonInfo, PlayLineWrapper, List<Episode>>) -> Unit,
 ) {
     val nav = LocalNavController.current
-    val cartoonDownloadDispatcher: CartoonDownloadDispatcher by Injekt.injectLazy()
+    val cartoonDownloadDispatcher: CartoonDownloadDispatcher by Inject.injectLazy()
 
 
     DisposableEffect(key1 = Unit) {
@@ -259,7 +333,7 @@ fun CartoonPlay(
     }
 
     val gridCount = detailedVM.gridCount.collectAsState()
-    val settingPreferences: SettingPreferences by Injekt.injectLazy()
+    val settingPreferences: SettingPreferences by Inject.injectLazy()
     val orMode = settingPreferences.playerOrientationMode.flow()
         .collectAsState(initial = SettingPreferences.PlayerOrientationMode.Auto)
     LaunchedEffect(key1 = orMode) {
@@ -292,6 +366,7 @@ fun CartoonPlay(
                     it.navigationBarsPadding()
                 } else it
             },
+        needSync = false,
         vm = controlVM,
         isPadMode = isPad,
         contentWeight = 0.5f,
@@ -348,7 +423,7 @@ fun CartoonPlay(
                 val sortState = detailedVM.sortStateFlow.collectAsState()
                 CartoonPlayDetailed(
                     cartoon = detailState.cartoonInfo,
-                    gridCount = gridCount.value ,
+                    gridCount = gridCount.value,
                     onGridChange = {
                         detailedVM.setGridCount(it)
                     },
@@ -386,21 +461,14 @@ fun CartoonPlay(
                         playingVM.playCurrentExternal()
                     },
                     onDownload = { playLine, episodes ->
-                        stringRes(R.string.add_download_completely).moeSnackBar(
-                            confirmLabel = stringRes(R.string.click_to_view),
-                            onConfirm = {
-                                runCatching {
-                                    nav.navigate(DOWNLOAD)
-                                }.onFailure {
-                                    it.printStackTrace()
-                                }
-                            }
+
+                        onDownload(
+                            Triple(
+                                detailState.cartoonInfo,
+                                playLine,
+                                episodes
+                            )
                         )
-                        cartoonDownloadDispatcher.newDownload(
-                            detailState.cartoonInfo,
-                            episodes.map {
-                                playLine.playLine to it
-                            })
                     },
                     onSortChange = { sortKey, isReverse ->
                         detailedVM.setCartoonSort(sortKey, isReverse, detailState.cartoonInfo)

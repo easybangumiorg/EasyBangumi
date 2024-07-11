@@ -8,20 +8,20 @@ import com.heyanle.easybangumi4.base.preferences.hekv.HeKVPreferenceStore
 import com.heyanle.easybangumi4.base.preferences.mmkv.MMKVPreferenceStore
 import com.heyanle.easybangumi4.source.SourcePreferences
 import com.heyanle.easybangumi4.utils.getFilePath
-import com.heyanle.injekt.api.InjektModule
-import com.heyanle.injekt.api.InjektScope
-import com.heyanle.injekt.api.addAlias
-import com.heyanle.injekt.api.addSingletonFactory
-import com.heyanle.injekt.api.get
+import com.heyanle.inject.api.InjectModule
+import com.heyanle.inject.api.InjectScope
+import com.heyanle.inject.api.addAlias
+import com.heyanle.inject.api.addSingletonFactory
+import com.heyanle.inject.api.get
 
 /**
  * Created by heyanlin on 2023/10/30.
  */
 class SettingModule(
     private val application: Application
-) : InjektModule {
+) : InjectModule {
 
-    override fun InjektScope.registerInjectables() {
+    override fun InjectScope.registerInjectables() {
         addSingletonFactory {
             AndroidPreferenceStore(application)
         }

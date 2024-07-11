@@ -9,18 +9,14 @@ import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
 import com.heyanle.easybangumi4.case.CartoonInfoCase
 import com.heyanle.easybangumi4.case.SourceStateCase
-import com.heyanle.easybangumi4.source_api.entity.Cartoon
 import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
 import com.heyanle.easybangumi4.utils.CoroutineProvider
 import com.heyanle.easybangumi4.utils.ViewModelOwnerMap
-import com.heyanle.easybangumi4.utils.toJson
-import com.heyanle.injekt.core.Injekt
-import kotlinx.coroutines.async
+import com.heyanle.inject.core.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import loli.ball.easyplayer2.utils.systemVolume
 
 /**
  * Created by heyanle on 2023/12/23.
@@ -35,9 +31,9 @@ class MigrateViewModel(
     private val ownerMap = ViewModelOwnerMap<CartoonInfo>()
 
 
-    private val cartoonInfoDao: CartoonInfoDao by Injekt.injectLazy()
-    private val cartoonInfoCase: CartoonInfoCase by Injekt.injectLazy()
-    private val sourceCase: SourceStateCase by Injekt.injectLazy()
+    private val cartoonInfoDao: CartoonInfoDao by Inject.injectLazy()
+    private val cartoonInfoCase: CartoonInfoCase by Inject.injectLazy()
+    private val sourceCase: SourceStateCase by Inject.injectLazy()
 
     private val migrateDispatcher = CoroutineProvider.SINGLE
 

@@ -1,7 +1,6 @@
 package com.heyanle.easybangumi4.source
 
 import android.app.Application
-import com.heyanle.easybangumi4.BuildConfig
 import com.heyanle.easybangumi4.base.hekv.HeKV
 import com.heyanle.easybangumi4.source.utils.CaptchaHelperImpl
 import com.heyanle.easybangumi4.source.utils.NativeHelperImpl
@@ -19,20 +18,20 @@ import com.heyanle.easybangumi4.source_api.utils.api.StringHelper
 import com.heyanle.easybangumi4.source_api.utils.api.WebViewHelper
 import com.heyanle.easybangumi4.source_api.utils.api.WebViewHelperV2
 import com.heyanle.easybangumi4.utils.getFilePath
-import com.heyanle.injekt.api.InjektModule
-import com.heyanle.injekt.api.InjektScope
-import com.heyanle.injekt.api.addAlias
-import com.heyanle.injekt.api.addSingletonFactory
-import com.heyanle.injekt.api.get
+import com.heyanle.inject.api.InjectModule
+import com.heyanle.inject.api.InjectScope
+import com.heyanle.inject.api.addAlias
+import com.heyanle.inject.api.addSingletonFactory
+import com.heyanle.inject.api.get
 
 /**
  * Created by heyanlin on 2023/11/1.
  */
 class SourceModule(
     private val application: Application
-) : InjektModule {
+) : InjectModule {
 
-    override fun InjektScope.registerInjectables() {
+    override fun InjectScope.registerInjectables() {
 
         addSingletonFactory {
             NativeHelperImpl(application)

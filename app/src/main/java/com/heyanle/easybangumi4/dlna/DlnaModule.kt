@@ -1,10 +1,10 @@
 package com.heyanle.easybangumi4.dlna
 
 import android.app.Application
-import com.heyanle.injekt.api.InjektModule
-import com.heyanle.injekt.api.InjektScope
-import com.heyanle.injekt.api.addSingletonFactory
-import com.heyanle.injekt.api.get
+import com.heyanle.inject.api.InjectModule
+import com.heyanle.inject.api.InjectScope
+import com.heyanle.inject.api.addSingletonFactory
+import com.heyanle.inject.api.get
 import org.cybergarage.upnp.ControlPoint
 
 /**
@@ -12,9 +12,9 @@ import org.cybergarage.upnp.ControlPoint
  */
 class DlnaModule(
     private val application: Application
-) : InjektModule {
+) : InjectModule {
 
-    override fun InjektScope.registerInjectables() {
+    override fun InjectScope.registerInjectables() {
         addSingletonFactory {
             ControlPoint()
         }

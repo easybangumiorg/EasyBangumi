@@ -1,6 +1,5 @@
 package com.heyanle.easybangumi4.utils
 
-import com.jeffmony.m3u8library.utils.LogUtils
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream

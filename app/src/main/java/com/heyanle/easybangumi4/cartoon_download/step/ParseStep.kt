@@ -1,100 +1,86 @@
 package com.heyanle.easybangumi4.cartoon_download.step
 
-
-import com.heyanle.easy_i18n.R
-import com.heyanle.easybangumi4.cartoon_download.CartoonDownloadBus
-import com.heyanle.easybangumi4.cartoon_download.CartoonDownloadController
-import com.heyanle.easybangumi4.cartoon_download.entity.DownloadItem
+import com.heyanle.easybangumi4.R
+import com.heyanle.easybangumi4.cartoon_download.CartoonDownloadRuntimeFactory
+import com.heyanle.easybangumi4.cartoon_download.entity.CartoonDownloadRuntime
 import com.heyanle.easybangumi4.case.SourceStateCase
-import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
+import com.heyanle.easybangumi4.source.bundle.SourceBundle
+import com.heyanle.easybangumi4.source_api.SourceResult
 import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
 import com.heyanle.easybangumi4.utils.CoroutineProvider
 import com.heyanle.easybangumi4.utils.stringRes
+import com.heyanle.inject.api.get
+import com.heyanle.inject.core.Inject
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 /**
- * Created by heyanlin on 2023/10/2.
+ * Created by heyanle on 2024/7/7.
+ * https://github.com/heyanLE
  */
-class ParseStep(
-    private val sourceStateCase: SourceStateCase,
-    private val cartoonDownloadController: CartoonDownloadController,
-    private val cartoonDownloadBus: CartoonDownloadBus,
-) : BaseStep {
+object ParseStep: BaseStep {
 
-    companion object {
-        const val NAME = "parse"
-    }
+    const val NAME = "parse"
 
-    // 同时只能有一个 parsing 任务
-    private val dispatcher = CoroutineProvider.CUSTOM_SINGLE
-    private val scope = CoroutineScope(SupervisorJob() + dispatcher)
-    private val mainScope = MainScope()
+    private val singleDispatcher = CoroutineProvider.SINGLE
+    private val scope = CoroutineScope(SupervisorJob() + singleDispatcher)
 
-    override fun invoke(downloadItem: DownloadItem) {
-        mainScope.launch {
-            val info = cartoonDownloadBus.getInfo(downloadItem.uuid)
-            info.process.value = -1f
-            info.status.value = stringRes(R.string.parsing)
-            info.subStatus.value = ""
-        }
+
+
+    override fun invoke() {
+        val runtime = CartoonDownloadRuntimeFactory.runtimeLocal.get()
+            ?: throw IllegalStateException("runtime is null")
+        runtime.state = 1
+        runtime.getDownloadInfo().process.value = -1f
+        runtime.getDownloadInfo().status.value = stringRes(com.heyanle.easy_i18n.R.string.waiting)
+        runtime.getDownloadInfo().subStatus.value = ""
+
+        val sourceStateCase: SourceStateCase = Inject.get()
+        val bundle = sourceStateCase.stateFlowBundle().value ?: throw IllegalStateException("bundle is null")
+        val source = runtime.req.fromCartoonInfo.source
+        val playComponent = bundle.play(source) ?: throw IllegalStateException("playComponent is null")
+
+
+        val countDownLatch = CountDownLatch(1)
         scope.launch {
-            val play = sourceStateCase.awaitBundle().play(downloadItem.cartoonSource)
-            if (play == null) {
-                error(downloadItem.uuid, stringRes(R.string.source_not_found))
+            if (runtime.needCancel()) {
+                countDownLatch.countDown()
                 return@launch
             }
-            play.getPlayInfo(
-                CartoonSummary(
-                    downloadItem.cartoonId,
-                    downloadItem.cartoonSource,
-                ), downloadItem.playLine,
-                downloadItem.episode
+            runtime.parseResult = playComponent.getPlayInfo(
+                runtime.req.fromCartoonInfo.toSummary(),
+                runtime.req.fromPlayLine,
+                runtime.req.fromEpisode,
             )
-                .complete {
-                    completely(downloadItem, it.data)
-                }
-                .error {
-                    error(downloadItem.uuid, it.throwable.message?:"")
-                }
-
+            countDownLatch.countDown()
         }
+        runtime.countDownLatch = countDownLatch
+        countDownLatch.await(10, TimeUnit.SECONDS)
+        if (runtime.needCancel()) {
+            return
+        }
+        val result = runtime.parseResult
+        if(result == null){
+            runtime.error(IllegalStateException("parse timeout"), "parse timeout")
+            return
+        }
+        result?.error {
+            runtime.error(it.throwable, it.throwable.message ?: stringRes(com.heyanle.easy_i18n.R.string.source_error))
+            return
+        }?.complete {
+            runtime.playerInfo = it.data
+            runtime.stepCompletely()
+        }
+
+
+
     }
 
-    override fun onRemove(downloadItem: DownloadItem) {
-        cartoonDownloadController.updateDownloadItem(downloadItem.uuid){
-            it.copy(isRemoved = true)
-        }
-    }
-
-    private fun error(uuid: String, error: String) {
-        cartoonDownloadController.updateDownloadItem(uuid) {
-            it.copy(
-                state = -1,
-                errorMsg = error,
-            )
-        }
-    }
-
-    private fun completely(downloadItem: DownloadItem, playerInfo: PlayerInfo) {
-        cartoonDownloadController.updateDownloadItem(downloadItem.uuid) {
-            it.copy(
-                state = 2,
-                stepsChain = it.stepsChain.flatMap {
-                    if(playerInfo.decodeType == PlayerInfo.DECODE_TYPE_HLS && it == AriaStep.NAME){
-                        listOf(AriaStep.NAME, TranscodeStep.NAME)
-                    }else{
-                        listOf(it)
-                    }
-                },
-                bundle = it.bundle.apply {
-                    this.playerInfo = playerInfo
-                    this.downloadFileName =
-                        if (playerInfo.decodeType == PlayerInfo.DECODE_TYPE_HLS) it.fileNameWithoutSuffix + ".aria.m3u8" else it.fileNameWithoutSuffix + ".mp4"
-                }
-            )
-        }
+    override fun cancel(runtime: CartoonDownloadRuntime) {
+        runtime.countDownLatch?.countDown()
     }
 }

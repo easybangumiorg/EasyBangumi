@@ -6,10 +6,10 @@ import com.heyanle.easybangumi4.cartoon.repository.CartoonRepository
 import com.heyanle.easybangumi4.cartoon.repository.db.CartoonDatabase
 import com.heyanle.easybangumi4.cartoon.star.CartoonStarController
 import com.heyanle.easybangumi4.cartoon.tag.CartoonTagsController
-import com.heyanle.injekt.api.InjektModule
-import com.heyanle.injekt.api.InjektScope
-import com.heyanle.injekt.api.addSingletonFactory
-import com.heyanle.injekt.api.get
+import com.heyanle.inject.api.InjectModule
+import com.heyanle.inject.api.InjectScope
+import com.heyanle.inject.api.addSingletonFactory
+import com.heyanle.inject.api.get
 
 /**
  * Created by heyanle on 2023/12/16.
@@ -17,9 +17,9 @@ import com.heyanle.injekt.api.get
  */
 class CartoonModule(
     private val application: Application
-) : InjektModule {
+) : InjectModule {
 
-    override fun InjektScope.registerInjectables() {
+    override fun InjectScope.registerInjectables() {
         addSingletonFactory {
             CartoonDatabase.build(application)
         }

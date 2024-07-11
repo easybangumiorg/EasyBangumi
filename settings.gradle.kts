@@ -9,7 +9,8 @@ dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         mavenLocal()
-        maven { url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/") }
+        maven { url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+        }
         mavenCentral()
         google()
         maven {
@@ -40,4 +41,7 @@ include(":easy-crasher")
 include(":easy-i18n")
 include(":injekt")
 include(":lib_upnp")
+include(":EasyPlayer2:easyplayer2")
+include(":EasyMediaTransformer:easy_transformer")
 // include(":lib_signal")
+//include(":gpu_image")

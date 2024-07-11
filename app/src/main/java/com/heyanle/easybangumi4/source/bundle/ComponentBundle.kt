@@ -2,7 +2,6 @@ package com.heyanle.easybangumi4.source.bundle
 
 import android.app.Application
 import android.content.Context
-import androidx.collection.arraySetOf
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.source.SourceException
 import com.heyanle.easybangumi4.source_api.IconSource
@@ -24,8 +23,8 @@ import com.heyanle.easybangumi4.source_api.utils.api.WebViewHelper
 import com.heyanle.easybangumi4.source_api.utils.api.WebViewHelperV2
 import com.heyanle.extension_api.ExtensionIconSource
 import com.heyanle.extension_api.ExtensionSource
-import com.heyanle.injekt.api.get
-import com.heyanle.injekt.core.Injekt
+import com.heyanle.inject.api.get
+import com.heyanle.inject.core.Inject
 import java.lang.reflect.Proxy
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.reflect.KClass
@@ -87,13 +86,13 @@ class ComponentBundle(
 
     // 工具注入
     init {
-        put(StringHelper::class, Injekt.get(source.key))
-        put(NetworkHelper::class, Injekt.get(source.key))
-        put(OkhttpHelper::class, Injekt.get(source.key))
-        put(PreferenceHelper::class, Injekt.get(source.key))
-        put(WebViewHelper::class, Injekt.get(source.key))
-        put(CaptchaHelper::class, Injekt.get(source.key))
-        put(WebViewHelperV2::class, Injekt.get(source.key))
+        put(StringHelper::class, Inject.get(source.key))
+        put(NetworkHelper::class, Inject.get(source.key))
+        put(OkhttpHelper::class, Inject.get(source.key))
+        put(PreferenceHelper::class, Inject.get(source.key))
+        put(WebViewHelper::class, Inject.get(source.key))
+        put(CaptchaHelper::class, Inject.get(source.key))
+        put(WebViewHelperV2::class, Inject.get(source.key))
 
         put(Context::class, APP)
         put(Application::class, APP)

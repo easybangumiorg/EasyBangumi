@@ -27,4 +27,8 @@ class SourceStateCase(
         return sourceController.sourceInfo
     }
 
+    fun stateFlowBundle(): StateFlow<SourceBundle?> {
+        return sourceController.sourceBundle
+    }
+
 }

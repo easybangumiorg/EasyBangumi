@@ -23,7 +23,7 @@ import java.io.ByteArrayInputStream
 
 abstract class LightweightGettingWebViewClient(
     private val targetRegex: Regex?,
-    private val blockReqForward: Boolean = true,
+    private val blockReqForward: Boolean = false,
     private val blockRes: Array<String> = arrayOf(
         ".css",
         ".mp4", ".ts",
@@ -70,14 +70,17 @@ abstract class LightweightGettingWebViewClient(
         view: WebView,
         request: WebResourceRequest?
     ) = run {
+        if (!blockReqForward){
+            return@run super.shouldInterceptRequest(view, request)
+        }
         val url = request?.url?.toString()
             ?: return@run super.shouldInterceptRequest(view, request)
         //阻止无关资源加载，加快获取速度
         if (targetRegex?.matches(url) != true && blockRes.any { url.contains(it) }) {
-            //Log.d("禁止加载", url)
-            //转发回onLoadResource
-            if (blockReqForward)
-                view.post { WebViewCompat.getWebViewClient(view).onLoadResource(view, url) }
+//            //Log.d("禁止加载", url)
+//            //转发回onLoadResource
+//            if (blockReqForward)
+//                view.post { WebViewCompat.getWebViewClient(view).onLoadResource(view, url) }
             blockWebResourceRequest
         } else super.shouldInterceptRequest(view, request)
     }

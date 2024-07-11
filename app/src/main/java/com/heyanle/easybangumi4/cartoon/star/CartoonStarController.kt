@@ -6,10 +6,8 @@ import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
 import com.heyanle.easybangumi4.cartoon.entity.CartoonTagWrapper
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
-import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonTagDao
 import com.heyanle.easybangumi4.cartoon.tag.CartoonTagsController
 import com.heyanle.easybangumi4.ui.common.proc.FilterState
-import com.heyanle.easybangumi4.ui.common.proc.SortState
 import com.heyanle.easybangumi4.utils.jsonTo
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.easybangumi4.utils.toJson
@@ -79,6 +77,13 @@ class CartoonStarController(
                 R.string.all_word), -1)
         val temp = HashMap<CartoonTag, ArrayList<CartoonInfo>>()
         val res = HashMap<CartoonTagWrapper, List<CartoonInfo>>()
+
+
+
+        for (entry in tagMap.entries) {
+            // 空列表也加上
+            temp[entry.value] = arrayListOf()
+        }
 
         val allList = temp[allTag]?: arrayListOf()
         allList.addAll(cartoonInfoList)

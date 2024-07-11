@@ -6,10 +6,8 @@ import android.content.Context
 import android.os.Build
 import android.os.Looper
 import android.os.Process
-import com.heyanle.easybangumi4.crash.SourceCrashController
 import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
-import com.heyanle.easybangumi4.source.SourceController
-import com.heyanle.injekt.core.Injekt
+import com.heyanle.inject.core.Inject
 
 /**
  * Created by HeYanLe on 2023/2/18 22:47.
@@ -40,7 +38,7 @@ class App : Application() {
                     )
                 }
                 if (chromiumElement?.methodName.equals("getAll", ignoreCase = true)) {
-                    val settingPreferences: SettingMMKVPreferences by Injekt.injectLazy()
+                    val settingPreferences: SettingMMKVPreferences by Inject.injectLazy()
                     if (settingPreferences.webViewCompatible.get()) {
                         // 兼容模式不改写
                         return super.getPackageName()

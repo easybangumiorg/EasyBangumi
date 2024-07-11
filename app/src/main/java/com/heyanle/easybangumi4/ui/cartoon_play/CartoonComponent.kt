@@ -37,9 +37,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDownward
-import androidx.compose.material.icons.filled.ArrowUpward
-import androidx.compose.material.icons.filled.CastConnected
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -51,7 +48,6 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarOutline
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -69,7 +65,6 @@ import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -96,13 +91,9 @@ import com.heyanle.easybangumi4.ui.common.EmptyPage
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.common.TabIndicator
 import com.heyanle.easybangumi4.ui.common.TabPage
-import com.heyanle.easybangumi4.ui.common.proc.FilterColumn
 import com.heyanle.easybangumi4.ui.common.proc.SortColumn
-import com.heyanle.easybangumi4.ui.common.proc.SortDropDownMenu
-import com.heyanle.easybangumi4.ui.common.proc.SortDropDownMenuItem
 import com.heyanle.easybangumi4.ui.common.proc.SortState
-import com.heyanle.easybangumi4.ui.main.home.HomeBottomSheet
-import com.heyanle.injekt.core.Injekt
+import com.heyanle.inject.core.Inject
 import kotlin.math.max
 
 /**
@@ -190,8 +181,8 @@ fun CartoonPlayDetailed(
                         } else {
                             currentDownloadPlayLine.value = null
                         }
-                        val cartoonDownloadController: CartoonDownloadController by Injekt.injectLazy()
-                        cartoonDownloadController.tryShowFirstDownloadDialog()
+                        val cartoonDownloadController: CartoonDownloadController by Inject.injectLazy()
+                        //cartoonDownloadController.tryShowFirstDownloadDialog()
                     },
                 )
                 Spacer(modifier = Modifier.size(8.dp))

@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.case.SourceStateCase
 import com.heyanle.easybangumi4.source_api.component.page.PageComponent
 import com.heyanle.easybangumi4.source_api.component.page.SourcePage
-import com.heyanle.injekt.core.Injekt
+import com.heyanle.inject.core.Inject
 import com.heyanle.okkv2.core.okkv
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,7 +29,7 @@ class HomeViewModel : ViewModel() {
     private val _stateFlow = MutableStateFlow(HomeState(selectionKey = selectionKeyOkkv))
     val stateFlow = _stateFlow.asStateFlow()
 
-    private val sourceStateCase: SourceStateCase by Injekt.injectLazy()
+    private val sourceStateCase: SourceStateCase by Inject.injectLazy()
 
     data class HomeState(
         val isLoading: Boolean = true,

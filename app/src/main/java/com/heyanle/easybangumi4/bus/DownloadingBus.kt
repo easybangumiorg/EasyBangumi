@@ -3,8 +3,6 @@ package com.heyanle.easybangumi4.bus
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
-import com.heyanle.easybangumi4.cartoon_download.CartoonDownloadBus
-import com.heyanle.easybangumi4.extension.store.ExtensionStoreDispatcher
 import java.util.concurrent.ConcurrentHashMap
 
 /**

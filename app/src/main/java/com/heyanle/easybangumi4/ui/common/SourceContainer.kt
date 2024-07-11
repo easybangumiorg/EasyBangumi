@@ -2,10 +2,7 @@ package com.heyanle.easybangumi4.ui.common
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -14,11 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.heyanle.easy_i18n.R
-import com.heyanle.easybangumi4.ABOUT
-import com.heyanle.easybangumi4.C
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.case.SourceStateCase
-import com.heyanle.easybangumi4.navigationSourceManager
 import com.heyanle.easybangumi4.source.LocalSourceBundleController
 import com.heyanle.easybangumi4.source.SourceController
 import com.heyanle.easybangumi4.source.bundle.SourceBundle
@@ -26,10 +20,7 @@ import com.heyanle.easybangumi4.source_api.Source
 import com.heyanle.easybangumi4.source_api.component.detailed.DetailedComponent
 import com.heyanle.easybangumi4.source_api.component.page.SourcePage
 import com.heyanle.easybangumi4.utils.logi
-import com.heyanle.easybangumi4.utils.openUrl
-import com.heyanle.easybangumi4.utils.stringRes
-import com.heyanle.easybangumi4.utils.toast
-import com.heyanle.injekt.core.Injekt
+import com.heyanle.inject.core.Inject
 
 /**
  * Created by HeYanLe on 2023/2/22 23:53.
@@ -54,7 +45,7 @@ fun SourceContainerBase(
     val animSources = LocalSourceBundleController.current
     val anim = animSources
 
-    val sourceStateCase: SourceStateCase by Injekt.injectLazy()
+    val sourceStateCase: SourceStateCase by Inject.injectLazy()
     val state by sourceStateCase.flowState().collectAsState()
     LaunchedEffect(state){
         state.logi("SourceController")

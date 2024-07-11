@@ -58,7 +58,7 @@ import com.heyanle.easybangumi4.theme.EasyThemeMode
 import com.heyanle.easybangumi4.ui.common.EmumPreferenceItem
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.stringRes
-import com.heyanle.injekt.core.Injekt
+import com.heyanle.inject.core.Inject
 import kotlinx.coroutines.launch
 
 /**
@@ -67,19 +67,23 @@ import kotlinx.coroutines.launch
  */
 @Composable
 fun ColumnScope.AppearanceSetting(
-    nestedScrollConnection: NestedScrollConnection
+    nestedScrollConnection: NestedScrollConnection? = null
 ) {
-
-    val nav = LocalNavController.current
 
     val scope = rememberCoroutineScope()
 
-    val settingPreferences: SettingPreferences by Injekt.injectLazy()
+    val settingPreferences: SettingPreferences by Inject.injectLazy()
 
     Column(
         modifier = Modifier
             .weight(1f)
-            .nestedScroll(nestedScrollConnection)
+            .run {
+                if (nestedScrollConnection != null) {
+                    this.nestedScroll(nestedScrollConnection)
+                } else {
+                    this
+                }
+            }
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -131,7 +135,7 @@ fun ColumnScope.AppearanceSetting(
 
 @Composable
 fun DarkModeItem() {
-    val themeController: EasyThemeController by Injekt.injectLazy()
+    val themeController: EasyThemeController by Inject.injectLazy()
     val themeState = themeController.themeFlow.collectAsState()
     val theme = themeState.value
     val list = listOf(
@@ -185,7 +189,7 @@ fun DarkModeItem() {
 
 @Composable
 fun ThemeModeItem() {
-    val themeController: EasyThemeController by Injekt.injectLazy()
+    val themeController: EasyThemeController by Inject.injectLazy()
     val themeState = themeController.themeFlow.collectAsState()
     val theme =themeState.value
     val isDark = when (theme.darkMode) {

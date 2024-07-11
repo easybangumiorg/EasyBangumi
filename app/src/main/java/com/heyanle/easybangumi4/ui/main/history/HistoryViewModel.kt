@@ -4,11 +4,9 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
-import com.heyanle.easybangumi4.cartoon.old.repository.db.dao.CartoonHistoryDao
-import com.heyanle.easybangumi4.cartoon.old.entity.CartoonHistory
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
 import com.heyanle.easybangumi4.setting.SettingPreferences
-import com.heyanle.injekt.core.Injekt
+import com.heyanle.inject.core.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -47,8 +45,8 @@ class HistoryViewModel : ViewModel() {
         object Clear : Dialog()
     }
 
-    private val settingPreferences: SettingPreferences by Injekt.injectLazy()
-    private val cartoonInfoDao: CartoonInfoDao by Injekt.injectLazy()
+    private val settingPreferences: SettingPreferences by Inject.injectLazy()
+    private val cartoonInfoDao: CartoonInfoDao by Inject.injectLazy()
 
 
     private val _stateFlow = MutableStateFlow(HistoryState())

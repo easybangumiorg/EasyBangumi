@@ -23,7 +23,7 @@ import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.easybangumi4.utils.stringRes
-import com.heyanle.injekt.core.Injekt
+import com.heyanle.inject.core.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
@@ -228,7 +228,7 @@ class StorageController(
         folder.mkdirs()
 
         for (source in param.needBackupDataSource) {
-            val preferenceHelper by Injekt.injectLazy<PreferenceHelper>(source.key)
+            val preferenceHelper by Inject.injectLazy<PreferenceHelper>(source.key)
             val sourceData = preferenceHelper.map()
 
             if (sourceData.isEmpty()){
@@ -344,7 +344,7 @@ class StorageController(
     private suspend fun restoreCartoon(folder: File): Boolean {
         val targetDB = File(folder, "easy_bangumi_cartoon")
 
-        if (targetDB.exists()) {
+        if (!targetDB.exists()) {
             return false
         }
 
@@ -353,8 +353,8 @@ class StorageController(
         val cartoonInfo = database.cartoonInfoDao()
         val cartoonTagDao = database.cartoonTagDao()
 
-        val currentCartoonDao = cartoonDatabase.cartoonInfoDao()
-        val currentCartoonTagDao = cartoonDatabase.cartoonTagDao()
+        val currentCartoonDao = cartoonDatabase.cartoonInfo
+        val currentCartoonTagDao = cartoonDatabase.cartoonTag
 
         val tagIdMap = hashMapOf<Int, Int>()
         cartoonTagDao.getAll().forEach {
@@ -447,7 +447,7 @@ class StorageController(
         folder.listFiles()?.forEach {
             if (it.isFile && it.canRead() && it.name.endsWith(".json")){
                 val sourceKey = it.nameWithoutExtension
-                val preferenceHelper by Injekt.injectLazy<PreferenceHelper>(sourceKey)
+                val preferenceHelper by Inject.injectLazy<PreferenceHelper>(sourceKey)
                 val sourceData = JSONObject(it.readText())
                 sourceData.keys().forEach {
                     preferenceHelper.put(it, sourceData.optString(it))

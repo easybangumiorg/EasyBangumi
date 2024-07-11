@@ -21,14 +21,13 @@ import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.source.SourceConfig
 import com.heyanle.easybangumi4.source.SourcePreferences
-import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
 import com.heyanle.easybangumi4.theme.EasyThemeMode
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.easybangumi4.utils.getInnerFilePath
 import com.heyanle.easybangumi4.utils.jsonTo
 import com.heyanle.easybangumi4.utils.toJson
-import com.heyanle.injekt.api.get
-import com.heyanle.injekt.core.Injekt
+import com.heyanle.inject.api.get
+import com.heyanle.inject.core.Inject
 import com.heyanle.okkv2.core.okkv
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
@@ -37,7 +36,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
-import java.lang.Math.*
 import java.net.URLEncoder
 
 /**
@@ -122,13 +120,13 @@ object Migrate {
     fun update(context: Context) {
         preferenceUpdate(
             context,
-            Injekt.get(),
-            Injekt.get(),
-            Injekt.get(),
-            Injekt.get(),
-            Injekt.get(),
-            Injekt.get(),
-            Injekt.get(),
+            Inject.get(),
+            Inject.get(),
+            Inject.get(),
+            Inject.get(),
+            Inject.get(),
+            Inject.get(),
+            Inject.get(),
         )
         controllerUpdate(context)
     }

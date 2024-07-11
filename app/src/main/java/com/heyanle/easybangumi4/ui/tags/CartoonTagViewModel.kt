@@ -9,7 +9,7 @@ import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
 import com.heyanle.easybangumi4.cartoon.tag.CartoonTagsController
 import com.heyanle.easybangumi4.cartoon.tag.isALL
 import com.heyanle.easybangumi4.cartoon.tag.isUpdate
-import com.heyanle.injekt.core.Injekt
+import com.heyanle.inject.core.Inject
 import kotlinx.coroutines.launch
 
 /**
@@ -24,7 +24,7 @@ class CartoonTagViewModel : ViewModel() {
         private set
 
     //private val cartoonTagDao: CartoonTagDao by Injekt.injectLazy()
-    private val cartoonTagsController: CartoonTagsController by Injekt.injectLazy()
+    private val cartoonTagsController: CartoonTagsController by Inject.injectLazy()
 
     sealed class Dialog {
 

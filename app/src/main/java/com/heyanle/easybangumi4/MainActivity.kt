@@ -1,6 +1,8 @@
 package com.heyanle.easybangumi4
 
+import android.content.Intent
 import android.os.Bundle
+import android.view.KeyEvent
 import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -25,12 +27,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import com.heyanle.easybangumi4.source.SourcesHost
+import com.heyanle.easybangumi4.splash.SplashActivity
 import com.heyanle.easybangumi4.theme.EasyTheme
 import com.heyanle.easybangumi4.ui.common.LoadingImage
 import com.heyanle.easybangumi4.ui.common.MoeDialog
 import com.heyanle.easybangumi4.ui.common.MoeSnackBar
 import com.heyanle.easybangumi4.utils.MediaUtils
 import com.heyanle.okkv2.core.okkv
+
 
 /**
  * Created by HeYanLe on 2023/10/29 21:20.
@@ -50,6 +54,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(FrameLayout(this))
+        SplashActivity.lastSplashActivity?.get()?.finish()
         Scheduler.runOnMainActivityCreate(this, first)
         first = false
         MediaUtils.setIsDecorFitsSystemWindows(this, false)

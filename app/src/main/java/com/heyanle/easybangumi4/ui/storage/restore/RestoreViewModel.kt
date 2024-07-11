@@ -1,18 +1,13 @@
 package com.heyanle.easybangumi4.ui.storage.restore
 
-import android.content.ContentValues
 import android.content.Context
 import android.os.Build
-import android.os.Environment
 import android.os.FileObserver
-import android.provider.MediaStore
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.arialyy.aria.util.CommonUtil
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.LauncherBus
-import com.heyanle.easybangumi4.R
 import com.heyanle.easybangumi4.storage.StorageController
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.UriHelper
@@ -20,17 +15,13 @@ import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.stringRes
-import com.heyanle.injekt.core.Injekt
-import io.ktor.util.valuesOf
+import com.heyanle.inject.core.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import net.lingala.zip4j.ZipFile
-import org.json.JSONObject
 import java.io.File
-import java.util.UUID
 
 /**
  * Created by heyanlin on 2024/4/30.
@@ -44,7 +35,7 @@ class RestoreViewModel : ViewModel() {
     private val backupZipRoot = File(APP.getFilePath(), "backup")
     private val cacheRoot = File(APP.getCachePath(), "restore")
 
-    private val storageController: StorageController by Injekt.injectLazy()
+    private val storageController: StorageController by Inject.injectLazy()
 
     data class RestoreState(
         val backupFileList: List<File> = emptyList(),

@@ -1,6 +1,5 @@
 package com.heyanle.easybangumi4.ui.cartoon_play
 
-import android.adservices.topics.Topic
 import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
@@ -14,7 +13,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -23,6 +21,7 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -33,7 +32,6 @@ import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Airplay
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Battery0Bar
 import androidx.compose.material.icons.filled.Battery2Bar
@@ -48,15 +46,13 @@ import androidx.compose.material.icons.filled.CloseFullscreen
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FastForward
 import androidx.compose.material.icons.filled.FastRewind
-import androidx.compose.material.icons.filled.Fullscreen
-import androidx.compose.material.icons.filled.FullscreenExit
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.NavigateNext
 import androidx.compose.material.icons.filled.OpenInFull
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -81,12 +77,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
-import androidx.lifecycle.viewModelScope
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.navigationDlna
-import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayingViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.DetailedViewModel
@@ -94,14 +88,11 @@ import com.heyanle.easybangumi4.ui.common.CombineClickIconButton
 import com.heyanle.easybangumi4.ui.common.ErrorPage
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.ToggleButton
-import com.heyanle.easybangumi4.ui.common.dialog
 import com.heyanle.easybangumi4.utils.bufferImageCache
 import com.heyanle.easybangumi4.utils.downloadImage
-import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.shareImageText
 import com.heyanle.easybangumi4.utils.shareText
-import com.heyanle.injekt.core.Injekt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -110,22 +101,16 @@ import loli.ball.easyplayer2.BackBtn
 import loli.ball.easyplayer2.BottomControl
 import loli.ball.easyplayer2.BrightVolumeUI
 import loli.ball.easyplayer2.ControlViewModel
-import loli.ball.easyplayer2.FastUI
-import loli.ball.easyplayer2.FullScreenBtn
 import loli.ball.easyplayer2.GestureController
-import loli.ball.easyplayer2.GestureControllerScope
-import loli.ball.easyplayer2.GestureControllerWithFast
 import loli.ball.easyplayer2.LockBtn
 import loli.ball.easyplayer2.LongTouchUI
 import loli.ball.easyplayer2.PlayPauseBtn
 import loli.ball.easyplayer2.ProgressBox
 import loli.ball.easyplayer2.SimpleGestureController
 import loli.ball.easyplayer2.SlideUI
-import loli.ball.easyplayer2.TimeSlider
 import loli.ball.easyplayer2.TimeText
 import loli.ball.easyplayer2.TopControl
 import loli.ball.easyplayer2.ViewSeekBar
-import loli.ball.easyplayer2.utils.loge
 import loli.ball.easyplayer2.utils.rememberBatteryReceiver
 
 /**
@@ -173,8 +158,8 @@ fun VideoFloat(
                 scaleType
             }.collectLatest {
                 it.logi("VideoComponent")
-                controlVM.surfaceView.setScaleType(it)
-                controlVM.surfaceView.requestLayout()
+                controlVM.render.setScaleType(it)
+                controlVM.render.getViewOrNull()?.requestLayout()
             }
         }
 
@@ -587,6 +572,15 @@ fun VideoControl(
                 showVideoScaleTypeWin.value = true
             }
 
+            FullScreenRightToolBar(
+                vm = controlVM,
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .defaultMinSize(64.dp, Dp.Unspecified)
+                    .align(Alignment.CenterEnd)
+            ) {
+                cartoonPlayingVM.showRecord()
+            }
 
             NormalVideoTopBar(controlVM,
                 showTools = playingState.isPlaying,
@@ -669,6 +663,49 @@ fun VideoControl(
         }
     }
 
+
+}
+
+@Composable
+fun FullScreenRightToolBar(
+    vm: ControlViewModel,
+    modifier: Modifier = Modifier,
+    isShowOnNormalScreen: Boolean = false,
+    onShowRecorded: ()->Unit,
+) {
+
+    (vm.isShowOverlay() && (vm.isFullScreen || isShowOnNormalScreen)).logi("VideoComponent")
+    Box(
+        modifier = modifier
+    ) {
+        AnimatedVisibility(
+            visible = vm.isShowOverlay() && (vm.isFullScreen || isShowOnNormalScreen),
+            exit = fadeOut(),
+            enter = fadeIn(),
+        ) {
+            Column(
+                modifier = Modifier
+            ) {
+                Spacer(Modifier.height(64.dp))
+                Box(modifier = Modifier
+                    .padding(4.dp)
+                    .clip(CircleShape)
+                    .background(Color.Black.copy(alpha = 0.6f))
+                    .clickable {
+                        onShowRecorded()
+                    }
+                    .padding(8.dp)
+                ) {
+                    Icon(
+                        Icons.Filled.Videocam,
+                        tint = Color.White,
+                        modifier = Modifier.size(18.dp),
+                        contentDescription = null
+                    )
+                }
+            }
+        }
+    }
 
 }
 

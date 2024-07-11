@@ -1,5 +1,7 @@
 package com.heyanle.easybangumi4.ui.main
 
+import android.content.Intent
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -30,6 +32,7 @@ import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -87,21 +90,6 @@ sealed class MainPage constructor(
             }
         },
     )
-
-//    object UpdatePage : MainPage(
-//        route = "update",
-//        tabLabel = { Text(text = stringResource(id = R.string.update)) },
-//        icon = {
-//            Icon(
-//                if (it) Icons.Filled.Report else Icons.Outlined.Report,
-//                contentDescription = stringResource(id = R.string.update)
-//            )
-//        },
-//        content = {
-//            Update()
-//            //Text(text = stringResource(id = R.string.update))
-//        }
-//    )
 
     object HistoryPage : MainPage(
         route = "history",
@@ -167,8 +155,14 @@ fun Main() {
     val pagerState =
         rememberPagerState(initialPage = if (homePageIndexOkkv >= 0 && homePageIndexOkkv < MainPageItems.size) homePageIndexOkkv else 0,0F) { MainPageItems.size }
 
-    
+    val ctx = LocalContext.current
 
+    BackHandler {
+        val intent = Intent(Intent.ACTION_MAIN)
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        intent.addCategory(Intent.CATEGORY_HOME)
+        ctx.startActivity(intent)
+    }
 
     val scope = rememberCoroutineScope()
 

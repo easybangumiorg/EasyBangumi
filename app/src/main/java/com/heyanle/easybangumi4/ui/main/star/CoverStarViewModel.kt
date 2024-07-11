@@ -1,27 +1,13 @@
 package com.heyanle.easybangumi4.ui.main.star
 
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
-import com.heyanle.easybangumi4.case.CartoonInfoCase
 import com.heyanle.easybangumi4.source_api.entity.CartoonCover
-import com.heyanle.easybangumi4.source_api.entity.toIdentify
-import com.heyanle.easybangumi4.ui.common.moeSnackBar
-import com.heyanle.easybangumi4.utils.stringRes
-import com.heyanle.injekt.core.Injekt
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.first
+import com.heyanle.inject.core.Inject
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.yield
 
 /**
  * CartoonCover 的 star 逻辑抽取
@@ -30,7 +16,7 @@ import kotlinx.coroutines.yield
  */
 class CoverStarViewModel : ViewModel() {
 
-    private val cartoonInfoDao: CartoonInfoDao by Injekt.injectLazy()
+    private val cartoonInfoDao: CartoonInfoDao by Inject.injectLazy()
     val starFlow = cartoonInfoDao.flowAllStar()
     val setFlow = starFlow.map {
         val set = mutableSetOf<String>()

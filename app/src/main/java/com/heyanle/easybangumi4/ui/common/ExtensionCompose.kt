@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.heyanle.easybangumi4.extension.ExtensionInfo
 import com.heyanle.easybangumi4.case.ExtensionCase
-import com.heyanle.injekt.core.Injekt
+import com.heyanle.inject.core.Inject
 
 /**
  * Created by HeYanLe on 2023/2/22 19:29.
@@ -24,7 +24,7 @@ fun ExtensionContainer(
     content: @Composable (List<ExtensionInfo>) -> Unit,
 ) {
 
-    val extension: ExtensionCase by Injekt.injectLazy()
+    val extension: ExtensionCase by Inject.injectLazy()
     val state by extension.flowExtensionState().collectAsState()
     Box(
         modifier = Modifier

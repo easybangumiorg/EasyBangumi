@@ -6,6 +6,8 @@ import android.webkit.JavascriptInterface
 import android.webkit.WebSettings
 import android.webkit.WebView
 import com.heyanle.easybangumi4.APP
+import com.heyanle.easybangumi4.WEB_VIEW_USER
+import com.heyanle.easybangumi4.navControllerRef
 import com.heyanle.easybangumi4.source.utils.LightweightGettingWebViewClient
 import com.heyanle.easybangumi4.source_api.utils.api.WebViewHelperV2
 import com.heyanle.easybangumi4.utils.clearWeb
@@ -13,6 +15,7 @@ import com.heyanle.easybangumi4.utils.evaluateJavascript
 import com.heyanle.easybangumi4.utils.getHtml
 import com.heyanle.easybangumi4.utils.stop
 import com.heyanle.easybangumi4.utils.waitUntil
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.launch
@@ -73,6 +76,7 @@ class WebViewHelperV2Impl: WebViewHelperV2 {
                 }
             }
         }
+        val globalWebView: WebView get() = _globalWebView
     }
 
     override fun getGlobalWebView(): WebView {
@@ -83,6 +87,7 @@ class WebViewHelperV2Impl: WebViewHelperV2 {
         webViewRef = WeakReference(_globalWebView)
         check = WeakReference(onCheck)
         stop = WeakReference(onStop)
+        navControllerRef?.get()?.navigate(WEB_VIEW_USER)
     }
 
     override fun openWebPage(
@@ -93,6 +98,7 @@ class WebViewHelperV2Impl: WebViewHelperV2 {
         webViewRef = WeakReference(webView)
         check = WeakReference(onCheck)
         stop = WeakReference(onStop)
+        navControllerRef?.get()?.navigate(WEB_VIEW_USER)
     }
 
     override suspend fun renderedHtml(strategy: WebViewHelperV2.RenderedStrategy): WebViewHelperV2.RenderedResult {
@@ -109,7 +115,7 @@ class WebViewHelperV2Impl: WebViewHelperV2 {
                 // 拦截普通资源模式
                 _globalWebView.loadUrl(strategy.url, strategy.header.orEmpty())
                 var r = _globalWebView.waitUntil(
-                    Regex(strategy.callBackRegex),
+                    if (strategy.callBackRegex.isEmpty()) null else Regex(strategy.callBackRegex),
                     strategy.timeOut,
                     true,
                     ignoreTimeoutExt = true
@@ -129,12 +135,12 @@ class WebViewHelperV2Impl: WebViewHelperV2 {
                 _globalWebView.evaluateJavascript(strategy.actionJs)
                 r = try {
                     _globalWebView.waitUntil(
-                        Regex(strategy.callBackRegex),
+                        if (strategy.callBackRegex.isEmpty()) null else Regex(strategy.callBackRegex),
                         strategy.timeOut,
                         true,
                         ignoreTimeoutExt = false
                     )
-                } catch (e: TimeoutCancellationException) {
+                } catch (e: CancellationException) {
                     return@withContext WebViewHelperV2.RenderedResult(
                         strategy,
                         strategy.url,

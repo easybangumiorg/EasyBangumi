@@ -181,6 +181,8 @@
     <string name="no_source">没有番剧源</string>
     <string name="click_to_get">点击获取</string>
 
+    <string name="waiting_parsing">请等待视频开始播放后在操作</string>
+
 
     <string name="store_err_need_vpn">插件市场加载失败，请尝试科学上网或者进群获取</string>
     <string name="store_get">插件市场（需科学上网）</string>
@@ -315,6 +317,7 @@
 
     <string name="video">视频</string>
     <string name="detailed">详情</string>
+    <string name="app_detailed">应用详情</string>
 
     <string name="all_word">全部</string>
 
@@ -481,5 +484,52 @@
     <string name="video_scale_type_adapt">自动模式</string>
 
     <string name="tag_custom">为该标签独立控制</string>
+
+    <string name="record_gif">录制 Gif</string>
+    <string name="record_video">录制视频</string>
+    <string name="record_start">开始录制</string>
+    <string name="record_stop">停止录制</string>
+    <string name="record_error">录制失败</string>
+    <string name="record_success">录制成功</string>
+
+    <string name="fps">帧率</string>
+    <string name="quality">压缩率</string>
+    <string name="quality_error">压缩率输入错误 [1,100]</string>
+
+
+    <string name="save_gif">保存 gif</string>
+    <string name="save_video">保存视频</string>
+    <string name="save">保存</string>
+    <string name="save_start">开始保存</string>
+
+    <string name="recording">录制中</string>
+    <string name="saving">保存中</string>
+    
+    <string name="welcome">欢迎！</string>
+    <string name="setting_first">请先进行一些设置，或者稍后再到设置中调整</string>
+
+    <string name="choose_folder_to_bangumi">选择一个文件夹供纯纯看番存放下载番剧、备份文件等</string>
+    <string name="choose_folder_to_bangumi_msg">推荐使用一个专门的文件夹</string>
+
+    <string name="current_choose_folder">已选文件夹：%1$s</string>
+    <string name="folder_use_private_msg">卸载纯纯看番后将会删除，同时其他 APP 无法访问。</string>
+
+
+    <string name="private_folder">私有目录</string>
+    <string name="choose_folder">选择目录</string>
+
+
+    <string name="choose_folder_failed">文件夹选择失败，选择私有目录</string>
+
+    <string name="get_app_list_permission">获取应用列表权限</string>
+    <string name="get_app_list_permission_msg">用于加载番源。</string>
+    <string name="get_app_list_permission_toast">请手动授予获取应用列表权限</string>
+
+    <string name="next">下一步</string>
+
+    <string name="local_source">本地番源</string>
+    <string name="local_source_desc">管理下载到本地的番剧</string>
+
+    <string name="local_folder_error">本地目录打开失败，请重新设定目录路径或改为使用私有目录</string>
 
 </resources>

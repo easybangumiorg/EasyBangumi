@@ -1,13 +1,5 @@
 package com.heyanle.easybangumi4.ui.setting
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -65,7 +57,7 @@ import com.heyanle.easybangumi4.ui.common.LongEditPreferenceItem
 import com.heyanle.easybangumi4.ui.common.StringSelectPreferenceItem
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.stringRes
-import com.heyanle.injekt.core.Injekt
+import com.heyanle.inject.core.Inject
 import kotlinx.coroutines.flow.map
 import kotlin.math.max
 
@@ -82,7 +74,7 @@ fun ColumnScope.PlayerSetting(
 
     val scope = rememberCoroutineScope()
 
-    val settingPreferences: SettingPreferences by Injekt.injectLazy()
+    val settingPreferences: SettingPreferences by Inject.injectLazy()
 
     Column(
         modifier = Modifier

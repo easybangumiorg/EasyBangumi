@@ -14,7 +14,7 @@ import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
 import com.heyanle.easybangumi4.source_api.entity.Episode
 import com.heyanle.easybangumi4.ui.common.proc.SortState
-import com.heyanle.injekt.core.Injekt
+import com.heyanle.inject.core.Inject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -36,10 +36,10 @@ class DetailedViewModel(
     private val cartoonSummary: CartoonSummary,
 ) : ViewModel() {
 
-    private val cartoonInfoCase: CartoonInfoCase by Injekt.injectLazy()
-    private val cartoonInfoDao: CartoonInfoDao by Injekt.injectLazy()
-    private val cartoonTagsController: CartoonTagsController by Injekt.injectLazy()
-    private val settingPreferences: SettingPreferences by Injekt.injectLazy()
+    private val cartoonInfoCase: CartoonInfoCase by Inject.injectLazy()
+    private val cartoonInfoDao: CartoonInfoDao by Inject.injectLazy()
+    private val cartoonTagsController: CartoonTagsController by Inject.injectLazy()
+    private val settingPreferences: SettingPreferences by Inject.injectLazy()
 
 
     private val _stateFlow = MutableStateFlow<DetailState>(DetailState())
@@ -137,7 +137,7 @@ class DetailedViewModel(
                 if (tl.find { !it.isInner() } != null) {
                     _stateFlow.update {
                         it.copy(
-                            starDialogState = StarDialogState(cartoon, tl.sortedBy { it.order })
+                            starDialogState = StarDialogState(cartoon, tl.filter { !it.isInner() }.sortedBy { it.order })
                         )
                     }
                 } else {

@@ -10,7 +10,7 @@ import com.heyanle.easybangumi4.storage.StorageController
 import com.heyanle.easybangumi4.ui.common.moeDialog
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.getFilePath
-import com.heyanle.injekt.core.Injekt
+import com.heyanle.inject.core.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -49,11 +49,11 @@ class BackupViewModel : ViewModel() {
     private val _state = MutableStateFlow(State())
     val state = _state.asStateFlow()
 
-    private val extensionController: ExtensionController by Injekt.injectLazy()
+    private val extensionController: ExtensionController by Inject.injectLazy()
 
-    private val cartoonDatabase: CartoonDatabase by Injekt.injectLazy()
+    private val cartoonDatabase: CartoonDatabase by Inject.injectLazy()
 
-    private val storageController: StorageController by Injekt.injectLazy()
+    private val storageController: StorageController by Inject.injectLazy()
 
     init {
         cartoonDatabase.cartoonInfo.flowAll().map { it.size }

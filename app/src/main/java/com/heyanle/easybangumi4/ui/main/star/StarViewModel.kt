@@ -3,7 +3,6 @@ package com.heyanle.easybangumi4.ui.main.star
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
-import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
 import com.heyanle.easybangumi4.cartoon.tag.CartoonTagsController
 import com.heyanle.easybangumi4.cartoon.tag.isALL
@@ -18,7 +17,7 @@ import com.heyanle.easybangumi4.ui.common.proc.SortBy
 import com.heyanle.easybangumi4.ui.common.proc.SortState
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.easybangumi4.utils.stringRes
-import com.heyanle.injekt.core.Injekt
+import com.heyanle.inject.core.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
@@ -89,12 +88,12 @@ class StarViewModel : ViewModel() {
         ) : DialogState()
     }
 
-    private val cartoonStarController: CartoonStarController by Injekt.injectLazy()
-    private val cartoonInfoDao: CartoonInfoDao by Injekt.injectLazy()
-    private val settingPreferences: SettingPreferences by Injekt.injectLazy()
-    private val cartoonTagsController: CartoonTagsController by Injekt.injectLazy()
+    private val cartoonStarController: CartoonStarController by Inject.injectLazy()
+    private val cartoonInfoDao: CartoonInfoDao by Inject.injectLazy()
+    private val settingPreferences: SettingPreferences by Inject.injectLazy()
+    private val cartoonTagsController: CartoonTagsController by Inject.injectLazy()
 
-    private val updateController: CartoonUpdateController by Injekt.injectLazy()
+    private val updateController: CartoonUpdateController by Inject.injectLazy()
 
     private val _stateFlow = MutableStateFlow(State(data = emptyMap()))
     val stateFlow = _stateFlow.asStateFlow()

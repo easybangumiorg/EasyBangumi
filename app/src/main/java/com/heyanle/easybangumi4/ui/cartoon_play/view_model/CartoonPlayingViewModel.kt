@@ -1,14 +1,11 @@
 package com.heyanle.easybangumi4.ui.cartoon_play.view_model
 
 import android.content.Intent
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.runtime.mutableStateListOf
+import android.graphics.Bitmap
+import android.graphics.SurfaceTexture
+import android.view.TextureView
+import androidx.annotation.OptIn
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -16,22 +13,24 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import com.heyanle.easybangumi4.APP
-import com.heyanle.easybangumi4.R
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
 import com.heyanle.easybangumi4.case.SourceStateCase
-import com.heyanle.easybangumi4.exo.MediaSourceFactory
+import com.heyanle.easybangumi4.exo.CartoonMediaSourceFactory
+import com.heyanle.easybangumi4.exo.thumbnail.ThumbnailBuffer
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.source_api.entity.Episode
 import com.heyanle.easybangumi4.source_api.entity.PlayLine
 import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
-import com.heyanle.easybangumi4.ui.common.MoeDialogData
-import com.heyanle.easybangumi4.ui.common.dialog
-import com.heyanle.easybangumi4.ui.common.show
+import com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded.CartoonRecordedModel
+import com.heyanle.easybangumi4.utils.CoroutineProvider
+import com.heyanle.easybangumi4.utils.getCachePath
+import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.stringRes
-import com.heyanle.injekt.core.Injekt
-import kotlinx.coroutines.Dispatchers
+import com.heyanle.inject.core.Inject
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -39,24 +38,40 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
+import loli.ball.easyplayer2.texture.TexturePlayerRender
+import java.io.File
 
 /**
  * Created by heyanle on 2023/12/17.
  * https://github.com/heyanLE
  */
+@UnstableApi
 class CartoonPlayingViewModel(
-) : ViewModel(), Player.Listener {
+) : ViewModel(), Player.Listener, TextureView.SurfaceTextureListener {
 
-    private val exoPlayerBuilder: ExoPlayer.Builder by Injekt.injectLazy()
+    companion object {
+        const val TAG = "CartoonPlayingViewModel"
+    }
+
+    // 播放器状态 =================================================
+    private val exoPlayerBuilder: ExoPlayer.Builder by Inject.injectLazy()
     val exoPlayer = exoPlayerBuilder.build().apply {
         addListener(this@CartoonPlayingViewModel)
     }
 
+    // 渲染器 =================================================
+    val easyTextRenderer: TexturePlayerRender = TexturePlayerRender()
+        .apply {
+            setExtSurfaceTextureListener(this@CartoonPlayingViewModel)
+        }
+
+    // 当前播放番剧缓存 =================================================
     private var cartoonPlayingState: CartoonPlayViewModel.CartoonPlayState? = null
     private var playingPlayLine: PlayLine? = null
     private var playingEpisode: Episode? = null
     private var playingInfo: PlayerInfo? = null
 
+    // 播放状态 =================================================
     data class PlayingState(
         val isLoading: Boolean = true,
         val isPlaying: Boolean = false,
@@ -68,15 +83,25 @@ class CartoonPlayingViewModel(
     private val _playingState = MutableStateFlow<PlayingState>(PlayingState())
     val playingState = _playingState.asStateFlow()
 
-
+    // 协程
+    private val dispatcher = CoroutineProvider.CUSTOM_SINGLE
+    private val singleScope = CoroutineScope(SupervisorJob() + dispatcher)
     private val scope = MainScope()
+
+    // 任务管理 =================================================
+    // 加载任务
     private var lastJob: Job? = null
 
-    private val cartoonInfoDao: CartoonInfoDao by Injekt.injectLazy()
-    private val mediaSourceFactory: MediaSourceFactory by Injekt.injectLazy()
-    private val sourceStateCase: SourceStateCase by Injekt.injectLazy()
-    private val settingPreferences: SettingPreferences by Injekt.injectLazy()
+    // 获取缩略图任务
+    private var thumbnailJob: Job? = null
 
+    // 其他模块注入 =================================================
+    private val cartoonInfoDao: CartoonInfoDao by Inject.injectLazy()
+    private val cartoonMediaSourceFactory: CartoonMediaSourceFactory by Inject.injectLazy()
+    private val sourceStateCase: SourceStateCase by Inject.injectLazy()
+    private val settingPreferences: SettingPreferences by Inject.injectLazy()
+
+    // 各种配置（找机会拆单独一个 ViewModel 和播放无关 =================================================
     private val customSpeedPref = settingPreferences.customSpeed
     val customSpeed = customSpeedPref.stateIn(viewModelScope)
     val isCustomSpeed = mutableStateOf(false)
@@ -99,6 +124,33 @@ class CartoonPlayingViewModel(
     val playerSeekFullWidthTimeMS = settingPreferences.playerSeekFullWidthTimeMS.stateIn(viewModelScope)
 
     val defaultSpeed = settingPreferences.defaultSpeed.stateIn(viewModelScope)
+
+    // 剪辑模式
+    val showRecording = mutableStateOf<CartoonRecordedModel?>(null)
+
+    // 缩略图缓存
+    var thumbnailBuffer: ThumbnailBuffer? = null
+    val thumbnailFolder: File = File(APP.getCachePath("thumbnail"))
+
+    @OptIn(UnstableApi::class)
+    fun showRecord(){
+        val playerInfo = playingInfo
+        if (playerInfo == null){
+            stringRes(com.heyanle.easy_i18n.R.string.waiting_parsing)
+            return
+        }
+        showRecording.value = CartoonRecordedModel(
+            APP,
+            exoPlayer,
+            playerInfo,
+            cartoonMediaSourceFactory,
+            scope,
+            thumbnailBuffer ?: ThumbnailBuffer(thumbnailFolder),
+            Math.max(0, exoPlayer.currentPosition - 30000),
+            Math.min(exoPlayer.currentPosition + 30000, exoPlayer.duration),
+            exoPlayer.currentPosition
+        )
+    }
 
     fun setCustomSpeedDialog() {
         isCustomSpeedDialog.value = true
@@ -126,6 +178,8 @@ class CartoonPlayingViewModel(
     fun setVideoScaleType(scaleType: Int) {
         videoScaleTypePref.set(scaleType)
     }
+
+    // 刷新 & 播放 ===================================
 
     fun tryRefresh() {
         lastJob?.cancel()
@@ -230,6 +284,7 @@ class CartoonPlayingViewModel(
         )
             .complete {
                 yield()
+                it.data.uri.logi("CartoonPlayingViewModel")
                 playingPlayLine = cartoonPlayingState.playLine.playLine
                 playingEpisode = cartoonPlayingState.episode
                 innerPlay(it.data, adviceProcess)
@@ -248,6 +303,8 @@ class CartoonPlayingViewModel(
 
 
     }
+
+
 
     @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
     private suspend fun innerPlay(playerInfo: PlayerInfo, adviceProcess: Long) {
@@ -276,9 +333,11 @@ class CartoonPlayingViewModel(
                 return
             }
         }
-
+        thumbnailBuffer?.clear()
+        thumbnailFolder.deleteRecursively()
+        thumbnailBuffer = ThumbnailBuffer(thumbnailFolder)
         playingInfo = playerInfo
-        val media = mediaSourceFactory.get(playerInfo)
+        val media = cartoonMediaSourceFactory.get(playerInfo)
         exoPlayer.setMediaSource(media, adviceProcess)
         exoPlayer.prepare()
         exoPlayer.playWhenReady = true
@@ -290,6 +349,7 @@ class CartoonPlayingViewModel(
             )
         }
     }
+
 
     fun trySaveHistory(ps: Long = -1) {
         val line = playingPlayLine ?: return
@@ -314,6 +374,7 @@ class CartoonPlayingViewModel(
         }
     }
 
+    // onDispose
     fun onExit() {
         if (_playingState.value.isPlaying && !exoPlayer.playWhenReady && exoPlayer.isMedia()) {
             trySaveHistory()
@@ -321,6 +382,8 @@ class CartoonPlayingViewModel(
         lastJob?.cancel()
         exoPlayer.pause()
     }
+
+    // exoPlayer 回调 ==================================================
 
     override fun onPlaybackStateChanged(playbackState: Int) {
         super.onPlaybackStateChanged(playbackState)
@@ -337,6 +400,8 @@ class CartoonPlayingViewModel(
         }
     }
 
+    // ViewModel clear
+
     override fun onCleared() {
         super.onCleared()
         lastJob?.cancel()
@@ -344,6 +409,53 @@ class CartoonPlayingViewModel(
         exoPlayer.release()
     }
 
+    // surfaceTexture 回调 ==============================================
+
+    override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
+
+    }
+
+    override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {
+
+    }
+
+    override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean {
+        return false
+    }
+
+    override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {
+        //"onSurfaceTextureUpdated 1".logi(TAG)
+        if (thumbnailBuffer == null) {
+            return
+        }
+        scope.launch {
+            //"onSurfaceTextureUpdated 2".logi(TAG)
+            val currentPosition = exoPlayer.currentPosition
+            // 如果该进度前后五秒都没有缩略图就保存一张
+            val currentFile = thumbnailBuffer?.getThumbnail(currentPosition, 2000)
+            if (currentFile == null){
+                //"onSurfaceTextureUpdated 3".logi(TAG)
+                // 保存缩略图
+                thumbnailJob?.cancel()
+                thumbnailJob = singleScope.launch {
+                    val textureView = easyTextRenderer.getTextureViewOrNull() ?: return@launch
+                    val bmp = textureView.bitmap ?: return@launch
+                    thumbnailFolder.mkdirs()
+                    val file = File(thumbnailFolder, "${currentPosition}.jpg")
+                    file.delete()
+                    file.createNewFile()
+                    file.deleteOnExit()
+                    file.outputStream().use {
+                        bmp.compress(Bitmap.CompressFormat.JPEG, 10, it)
+                    }
+                    //"onSurfaceTextureUpdated 4".logi(TAG)
+                    yield()
+                    thumbnailBuffer?.addThumbnail(currentPosition, file)
+                }
+
+            }
+        }
+    }
 
     private fun ExoPlayer.isMedia(): Boolean {
         return playbackState == Player.STATE_BUFFERING || playbackState == Player.STATE_READY

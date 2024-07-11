@@ -13,7 +13,7 @@ import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.IntentHelper
 import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.stringRes
-import com.heyanle.injekt.core.Injekt
+import com.heyanle.inject.core.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
@@ -35,9 +35,9 @@ class ExtensionViewModel : ViewModel() {
         const val TAG = "ExtensionViewModel"
     }
 
-    private val extensionController: ExtensionController by Injekt.injectLazy()
-    private val extensionStoreController: ExtensionStoreController by Injekt.injectLazy()
-    private val extensionStoreDispatcher: ExtensionStoreDispatcher by Injekt.injectLazy()
+    private val extensionController: ExtensionController by Inject.injectLazy()
+    private val extensionStoreController: ExtensionStoreController by Inject.injectLazy()
+    private val extensionStoreDispatcher: ExtensionStoreDispatcher by Inject.injectLazy()
 
     private val _stateFlow = MutableStateFlow(ExtensionState(true))
     val stateFlow = _stateFlow.asStateFlow()

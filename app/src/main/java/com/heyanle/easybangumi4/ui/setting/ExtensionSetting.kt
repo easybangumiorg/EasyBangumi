@@ -21,7 +21,7 @@ import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.ui.common.BooleanPreferenceItem
-import com.heyanle.injekt.core.Injekt
+import com.heyanle.inject.core.Inject
 
 /**
  * Created by heyanle on 2024/6/3.
@@ -36,8 +36,8 @@ fun ColumnScope.ExtensionSetting(
 
     val scope = rememberCoroutineScope()
 
-    val settingMMKVPreferences: SettingMMKVPreferences by Injekt.injectLazy()
-    val settingPreferences: SettingPreferences by Injekt.injectLazy()
+    val settingMMKVPreferences: SettingMMKVPreferences by Inject.injectLazy()
+    val settingPreferences: SettingPreferences by Inject.injectLazy()
 
     Column(
         modifier = Modifier

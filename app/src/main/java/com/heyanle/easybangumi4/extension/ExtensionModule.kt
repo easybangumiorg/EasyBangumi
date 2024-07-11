@@ -8,24 +8,24 @@ import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.easybangumi4.utils.getInnerFilePath
 import com.heyanle.extension_api.IconFactory
-import com.heyanle.injekt.api.InjektModule
-import com.heyanle.injekt.api.InjektScope
-import com.heyanle.injekt.api.addAlias
-import com.heyanle.injekt.api.addSingletonFactory
-import com.heyanle.injekt.api.get
+import com.heyanle.inject.api.InjectModule
+import com.heyanle.inject.api.InjectScope
+import com.heyanle.inject.api.addAlias
+import com.heyanle.inject.api.addSingletonFactory
+import com.heyanle.inject.api.get
 
 /**
  * Created by heyanlin on 2023/11/1.
  */
 class ExtensionModule(
     private val application: Application
-) : InjektModule {
+) : InjectModule {
 
     private val extensionPath = application.getInnerFilePath("extension")
     private val extensionCachePath = application.getCachePath("extension")
     private val storePath = application.getFilePath("extension-store")
     private val storeCachePath = application.getCachePath("extension-store")
-    override fun InjektScope.registerInjectables() {
+    override fun InjectScope.registerInjectables() {
         addSingletonFactory {
             ExtensionController(application, extensionPath, extensionCachePath)
         }

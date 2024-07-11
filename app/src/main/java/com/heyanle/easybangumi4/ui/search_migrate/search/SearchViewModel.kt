@@ -8,7 +8,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.SearchHistoryDao
 import com.heyanle.easybangumi4.utils.ViewModelOwnerMap
-import com.heyanle.injekt.core.Injekt
+import com.heyanle.inject.core.Inject
 import com.heyanle.okkv2.core.okkv
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,7 +30,7 @@ class SearchViewModel(
     private val _searchFlow = MutableStateFlow(defSearchWord)
     val searchFlow = _searchFlow.asStateFlow()
 
-    private val searchHistoryDao: SearchHistoryDao by Injekt.injectLazy()
+    private val searchHistoryDao: SearchHistoryDao by Inject.injectLazy()
 
     // 搜索历史
     val searchHistory = searchHistoryDao.flowTopContent().distinctUntilChanged()

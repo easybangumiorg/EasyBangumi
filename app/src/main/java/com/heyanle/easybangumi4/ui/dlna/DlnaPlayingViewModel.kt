@@ -4,18 +4,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heyanle.easy_i18n.R
-import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
 import com.heyanle.easybangumi4.case.SourceStateCase
 import com.heyanle.easybangumi4.dlna.EasyDlna
-import com.heyanle.easybangumi4.source_api.entity.Episode
-import com.heyanle.easybangumi4.source_api.entity.PlayLine
 import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
-import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayingViewModel
 import com.heyanle.easybangumi4.utils.stringRes
-import com.heyanle.injekt.core.Injekt
+import com.heyanle.inject.core.Inject
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -48,8 +43,8 @@ class DlnaPlayingViewModel : ViewModel() {
     private val searchJob: Job? = null
     private var lastJob: Job? = null
 
-    private val easyDlna: EasyDlna by Injekt.injectLazy()
-    private val sourceStateCase: SourceStateCase by Injekt.injectLazy()
+    private val easyDlna: EasyDlna by Inject.injectLazy()
+    private val sourceStateCase: SourceStateCase by Inject.injectLazy()
 
     val showDeviceDialog = mutableStateOf(true)
     val deviceList = easyDlna.deviceList

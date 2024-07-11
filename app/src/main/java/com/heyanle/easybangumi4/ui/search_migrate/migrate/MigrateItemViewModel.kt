@@ -14,7 +14,7 @@ import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
 import com.heyanle.easybangumi4.source_api.entity.Episode
 import com.heyanle.easybangumi4.source_api.entity.PlayLine
 import com.heyanle.easybangumi4.utils.toJson
-import com.heyanle.injekt.core.Injekt
+import com.heyanle.inject.core.Inject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -59,9 +59,9 @@ class MigrateItemViewModel(
     private val _flow = MutableStateFlow<MigrateItemState>(MigrateItemState(cartoonInfo = cartoonInfo))
     val flow = _flow.asStateFlow()
 
-    private val sourceStateCase: SourceStateCase by Injekt.injectLazy()
-    private val cartoonInfoDao: CartoonInfoDao by Injekt.injectLazy()
-    private val sourceCase: SourceStateCase by Injekt.injectLazy()
+    private val sourceStateCase: SourceStateCase by Inject.injectLazy()
+    private val cartoonInfoDao: CartoonInfoDao by Inject.injectLazy()
+    private val sourceCase: SourceStateCase by Inject.injectLazy()
 
     private var initJob: Job? = null
     private var loadPlayJob: Job? = null

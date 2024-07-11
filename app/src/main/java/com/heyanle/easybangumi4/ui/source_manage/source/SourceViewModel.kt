@@ -10,8 +10,7 @@ import com.heyanle.easybangumi4.source.SourceConfig
 import com.heyanle.easybangumi4.source.SourceController
 import com.heyanle.easybangumi4.source.SourcePreferences
 import com.heyanle.easybangumi4.utils.loge
-import com.heyanle.easybangumi4.utils.toJson
-import com.heyanle.injekt.core.Injekt
+import com.heyanle.inject.core.Inject
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -24,8 +23,8 @@ class SourceViewModel : ViewModel() {
     var configSourceList by mutableStateOf<List<ConfigSource>>(emptyList())
         private set
 
-    private val sourceController: SourceController by Injekt.injectLazy()
-    private val sourcePreferences: SourcePreferences by Injekt.injectLazy()
+    private val sourceController: SourceController by Inject.injectLazy()
+    private val sourcePreferences: SourcePreferences by Inject.injectLazy()
 
     init {
         viewModelScope.launch {
