@@ -1,25 +1,19 @@
 package com.heyanle.easybangumi4.splash.step
 
-import android.content.UriPermission
 import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults.filledTonalButtonColors
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,14 +22,9 @@ import androidx.compose.ui.unit.dp
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.LauncherBus
-import com.heyanle.easybangumi4.cartoon_local.CartoonLocalController
-import com.heyanle.easybangumi4.cartoon_local.LocalCartoonPreference
+import com.heyanle.easybangumi4.cartoon.local.LocalCartoonPreference
 import com.heyanle.easybangumi4.splash.SplashGuildController
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
-import com.heyanle.easybangumi4.ui.setting.DarkModeItem
-import com.heyanle.easybangumi4.ui.setting.ThemeModeItem
-import com.heyanle.easybangumi4.utils.ContentUriUtils
-import com.heyanle.easybangumi4.utils.FileUtils
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.inject.core.Inject
 import com.hippo.unifile.UniFile
@@ -47,7 +36,7 @@ import com.hippo.unifile.UniFile
 class LocalStep: BaseStep {
 
     private val splashGuildController: SplashGuildController by Inject.injectLazy()
-    private val localController: LocalCartoonPreference  by Inject.injectLazy()
+    private val localController: LocalCartoonPreference by Inject.injectLazy()
 
     override val name: String
         get() = "Local"

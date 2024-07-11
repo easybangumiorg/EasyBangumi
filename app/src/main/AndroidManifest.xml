@@ -102,10 +102,6 @@
 <!--        </service>-->
 
 
-        <service android:name=".cartoon_download.CartoonDownloadService"
-            android:foregroundServiceType="dataSync"
-            android:enabled="true"/>
-
 
         <provider
             android:name="androidx.core.content.FileProvider"

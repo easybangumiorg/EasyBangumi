@@ -158,7 +158,9 @@ class StarViewModel : ViewModel() {
                                 ?: tagsMap[CartoonTagsController.ALL_TAG_ID],
                             starCount = allEntity?.value?.size?:0,
                             isLoading = false,
-                            data = starMap
+                            data = starMap.map {
+                                it.key to it.value.filter { it.matches(searchKey) }
+                            }.toMap()
                         )
                     }
                 }

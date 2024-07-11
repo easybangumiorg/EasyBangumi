@@ -69,61 +69,61 @@ fun CartoonDownloadDialog(
         )
     }
 
-    val state = model.state.collectAsState()
-    val sta = state.value
-    val canReq = model.canReq.collectAsState()
-    val cr = canReq.value
-
-    Column(
-        modifier = Modifier
-            .padding(16.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.background)
-    ) {
-        IconButton(onClick = {
-            onDismissRequest()
-        }) {
-            Icon(Icons.Filled.ArrowBack, contentDescription = "back")
-        }
-
-
-        if (sta.loading) {
-            LoadingPage(
-                modifier = Modifier.fillMaxSize()
-            )
-        } else if (sta.cartoonLocalItem == null) {
-            Column(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                OutlinedTextField(value = sta.keyword, onValueChange = {
-                    model.changeKeyword(it)
-                })
-                LazyVerticalGrid(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
-                    columns = GridCells.Adaptive(100.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
-                    contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
-                ) {
-                    items(sta.allLocalItem) { local ->
-                        CartoonCardWithCover(cartoonCover = local.cartoonCover, onClick = {
-                            model.setLocalItem(local)
-                        })
-                    }
-
-
-                }
-
-                TextButton(onClick = {
-                    model.createNewLocal(cartoonInfo.name)
-                }) {
-                    Text(text = "dd")
-                }
-            }
-        } else {
-
-        }
-    }
+//    val state = model.state.collectAsState()
+//    val sta = state.value
+//    val canReq = model.canReq.collectAsState()
+//    val cr = canReq.value
+//
+//    Column(
+//        modifier = Modifier
+//            .padding(16.dp)
+//            .clip(RoundedCornerShape(16.dp))
+//            .background(MaterialTheme.colorScheme.background)
+//    ) {
+//        IconButton(onClick = {
+//            onDismissRequest()
+//        }) {
+//            Icon(Icons.Filled.ArrowBack, contentDescription = "back")
+//        }
+//
+//
+//        if (sta.loading) {
+//            LoadingPage(
+//                modifier = Modifier.fillMaxSize()
+//            )
+//        } else if (sta.cartoonLocalItem == null) {
+//            Column(
+//                modifier = Modifier.fillMaxSize()
+//            ) {
+//                OutlinedTextField(value = sta.keyword, onValueChange = {
+//                    model.changeKeyword(it)
+//                })
+//                LazyVerticalGrid(
+//                    modifier = Modifier
+//                        .weight(1f)
+//                        .fillMaxWidth(),
+//                    columns = GridCells.Adaptive(100.dp),
+//                    verticalArrangement = Arrangement.spacedBy(4.dp),
+//                    horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
+//                    contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
+//                ) {
+//                    items(sta.allLocalItem) { local ->
+//                        CartoonCardWithCover(cartoonCover = local.cartoonCover, onClick = {
+//                            model.setLocalItem(local)
+//                        })
+//                    }
+//
+//
+//                }
+//
+//                TextButton(onClick = {
+//                    model.createNewLocal(cartoonInfo.name)
+//                }) {
+//                    Text(text = "dd")
+//                }
+//            }
+//        } else {
+//
+//        }
+//    }
 }

@@ -1,7 +1,7 @@
 package com.heyanle.easybangumi4.case
 
-import com.heyanle.easybangumi4.cartoon_download.CartoonDownloadController
-import com.heyanle.easybangumi4.cartoon_download.CartoonDownloadDispatcher
+import com.heyanle.easybangumi4.cartoon.download.req.CartoonDownloadReqController
+import com.heyanle.easybangumi4.cartoon.download.runtime.CartoonDownloadDispatcher
 import com.heyanle.easybangumi4.cartoon_download.entity.DownloadItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.first
  * Created by heyanlin on 2023/10/2.
  */
 class CartoonDownloadCase(
-    private val cartoonDownloadController: CartoonDownloadController,
+    private val cartoonDownloadReqController: CartoonDownloadReqController,
     private val cartoonDownloadDispatcher: CartoonDownloadDispatcher,
 ) {
     suspend fun awaitDownloadItem(): List<DownloadItem> {
@@ -21,7 +21,7 @@ class CartoonDownloadCase(
     }
 
     fun flowDownloadItem(): Flow<List<DownloadItem>> {
-        return cartoonDownloadController.downloadItem.filter { it != null }
+        return cartoonDownloadReqController.downloadItem.filter { it != null }
             .filterIsInstance<List<DownloadItem>>()
     }
 

@@ -4,7 +4,6 @@ import android.app.Application
 import android.util.Base64
 import com.heyanle.easy_crasher.CrashHandler
 import com.heyanle.easybangumi4.cartoon.CartoonModule
-import com.heyanle.easybangumi4.cartoon_download.CartoonDownloadModule
 import com.heyanle.easybangumi4.exo.MediaModule
 import com.heyanle.easybangumi4.extension.ExtensionController
 import com.heyanle.easybangumi4.extension.ExtensionModule
@@ -64,7 +63,6 @@ object Scheduler {
         CaseModule(application).registerWith(Inject)
         ExtensionModule(application).registerWith(Inject)
         SourceModule(application).registerWith(Inject)
-        CartoonDownloadModule(application).registerWith(Inject)
         StorageModule(application).registerWith(Inject)
         DlnaModule(application).registerWith(Inject)
         Inject.get<NativeHelperImpl>()
