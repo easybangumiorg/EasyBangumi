@@ -51,6 +51,8 @@ zip4j = "2.11.5"
 bugly = "4.1.9.3"
 
 xcrash = "3.0.0"
+
+uni_file = "1.0.0"
 [libraries]
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 okhttp3 = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp3" }
@@ -119,6 +121,8 @@ zip4j = { module = "net.lingala.zip4j:zip4j", version.ref = "zip4j" }
 bugly = {module = "com.tencent.bugly:crashreport", version.ref = "bugly" }
 
 xcrash = {module = "com.iqiyi.xcrash:xcrash-android-lib", version.ref = "xcrash"}
+
+uni_file = {module = "com.github.easybangumiorg:UniFile", version.ref = "uni_file"}
 [bundles]
 okhttp3 = ["okhttp3", "okhttp3_logging_interceptor"]
 cling = ["cling_core", "cling_support"]
@@ -127,3 +131,4 @@ appcenter = ["appcenter_analytics", "appcenter_crashes", "appcenter_distribute"]
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 org-jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "org-jetbrains-kotlin-jvm" }
+androidApplication = { id = "com.android.application", version.ref = "agp" }
