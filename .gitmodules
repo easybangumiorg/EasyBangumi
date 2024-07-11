@@ -1,0 +1,6 @@
+[submodule "EasyPlayer2"]
+	path = EasyPlayer2
+	url = git@github.com:easybangumiorg/EasyPlayer2.git
+[submodule "EasyMediaTransformer"]
+	path = EasyMediaTransformer
+	url = git@github.com:easybangumiorg/EasyMediaTransformer.git
