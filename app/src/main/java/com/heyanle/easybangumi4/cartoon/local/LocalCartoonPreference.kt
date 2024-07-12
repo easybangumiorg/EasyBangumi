@@ -43,7 +43,9 @@ class LocalCartoonPreference (
         if (usePrivate) {
             privateFolder.toUri()
         } else {
-            UniFile.fromUri(APP, uri.toUri())?.createDirectory("local_bangumi")?.uri ?: privateFolder.toUri()
+            UniFile.fromUri(APP, uri.toUri())?.createDirectory("local_bangumi")?.apply {
+                createFile(".nomedia")
+            }?.uri ?: privateFolder.toUri()
         }
     }.stateIn(
         scope, SharingStarted.Lazily, if (localUsePrivate.value) {

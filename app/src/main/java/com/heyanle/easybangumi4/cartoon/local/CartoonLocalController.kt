@@ -115,22 +115,36 @@ class CartoonLocalController(
 
     }
 
-    fun newLocal(cartoonLocalMsg: CartoonLocalMsg) {
+    fun newLocal(cartoonLocalMsg: CartoonLocalMsg, callback: (Boolean) -> Unit = {}){
         scope.launch(Dispatchers.IO) {
             lastLoadJob?.join()
             if (flowState.value.localCartoonItem.any { it.key == cartoonLocalMsg.itemId }) {
+                callback(false)
                 return@launch
             }
             val rootFolder = localCartoonPreference.realLocalUri.value.let {
                 UniFile.fromUri(APP, it)
-            } ?: return@launch
-            val realFolder = LocalItemFactory.newItemFolder(cartoonLocalMsg, rootFolder) ?: return@launch
-            val item = LocalItemFactory.getItemFromFolder(realFolder) ?: return@launch
+            }
+            if (rootFolder == null) {
+                callback(false)
+                return@launch
+            }
+            val realFolder = LocalItemFactory.newItemFolder(cartoonLocalMsg, rootFolder)
+            if (realFolder == null) {
+                callback(false)
+                return@launch
+            }
+            val item = LocalItemFactory.getItemFromFolder(realFolder)
+            if (item == null) {
+                callback(false)
+                return@launch
+            }
             _flowState.update {
                 it.copy(
                     localCartoonItem = it.localCartoonItem + (item.itemId to item)
                 )
             }
+            callback(true)
 
         }
     }

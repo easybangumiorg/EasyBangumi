@@ -2,7 +2,6 @@ package com.heyanle.easybangumi4.cartoon.entity
 
 import androidx.room.Entity
 import androidx.room.Ignore
-import com.heyanle.easybangumi4.cartoon_local.entity.CartoonLocalItem
 import com.heyanle.easybangumi4.source_api.component.detailed.DetailedComponent
 import com.heyanle.easybangumi4.source_api.entity.Cartoon
 import com.heyanle.easybangumi4.source_api.entity.CartoonCover
@@ -13,7 +12,6 @@ import com.heyanle.easybangumi4.source_api.entity.PlayLine
 import com.heyanle.easybangumi4.utils.getMatchReg
 import com.heyanle.easybangumi4.utils.jsonTo
 import com.heyanle.easybangumi4.utils.toJson
-import java.net.URLEncoder
 
 /**
  * Created by heyanle on 2023/12/16.

@@ -143,6 +143,7 @@ fun CartoonPlay(
                 playState.value,
                 playingState.value,
                 onDownload = {
+                    controlVM.onPlayPause(false)
                     downloadModel = it
                 }
             )

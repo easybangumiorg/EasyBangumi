@@ -532,4 +532,12 @@
 
     <string name="local_folder_error">本地目录打开失败，请重新设定目录路径或改为使用私有目录</string>
 
+    <string name="download_to">下载到</string>
+    <string name="edit_episode_msg">编辑选集信息</string>
+
+    <string name="new_local_cartoon">新建本地剧集</string>
+    <string name="local_cartoon_creating">正在新建本地剧集……</string>
+
+    <string name="create_local_cartoon_from_current">是否以当前番剧信息新建本地剧集？</string>
+
 </resources>

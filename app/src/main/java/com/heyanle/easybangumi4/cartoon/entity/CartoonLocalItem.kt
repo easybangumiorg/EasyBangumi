@@ -25,13 +25,23 @@ data class CartoonLocalMsg (
     companion object {
         const val TAG = "CartoonLocalMsg"
 
-        fun formCartoonInfo(cartoonInfo: CartoonLocalItem): CartoonLocalMsg {
+        fun fromCartoonLocalItem(cartoonInfo: CartoonLocalItem): CartoonLocalMsg {
             return CartoonLocalMsg(
                 itemId = cartoonInfo.itemId,
                 title = cartoonInfo.title,
                 desc = cartoonInfo.desc,
                 cover = cartoonInfo.cover,
                 genres = cartoonInfo.genre
+            )
+        }
+
+        fun fromCartoonInfo(cartoonInfo: CartoonInfo): CartoonLocalMsg {
+            return CartoonLocalMsg(
+                itemId = cartoonInfo.id,
+                title = cartoonInfo.name,
+                desc = cartoonInfo.intro,
+                cover = cartoonInfo.coverUrl,
+                genres = cartoonInfo.genres
             )
         }
     }

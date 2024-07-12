@@ -95,7 +95,7 @@ class CartoonModule(
         }
 
         addSingletonFactory {
-            CartoonDownloadReqController(get())
+            CartoonDownloadReqController(application)
         }
 
         // local
