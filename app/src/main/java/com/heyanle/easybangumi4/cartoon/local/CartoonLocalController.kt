@@ -2,6 +2,8 @@ package com.heyanle.easybangumi4.cartoon.local
 
 import android.net.Uri
 import com.heyanle.easybangumi4.APP
+import com.heyanle.easybangumi4.cartoon.entity.CartoonLocalItem
+import com.heyanle.easybangumi4.cartoon.entity.CartoonLocalMsg
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.CoroutineProvider
 import com.heyanle.easybangumi4.utils.stringRes

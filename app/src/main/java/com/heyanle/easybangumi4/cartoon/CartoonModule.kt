@@ -107,5 +107,10 @@ class CartoonModule(
         addSingletonFactory {
             LocalCartoonPreference(get())
         }
+
+
+        addSingletonFactory {
+            CartoonLocalDownloadController(get(), get(), get())
+        }
     }
 }

@@ -6,7 +6,9 @@ import androidx.core.graphics.drawable.toBitmap
 import coil.Coil
 import coil.request.ImageRequest
 import com.heyanle.easybangumi4.APP
-import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
+import com.heyanle.easybangumi4.cartoon.entity.CartoonLocalEpisode
+import com.heyanle.easybangumi4.cartoon.entity.CartoonLocalItem
+import com.heyanle.easybangumi4.cartoon.entity.CartoonLocalMsg
 import com.heyanle.easybangumi4.utils.deleteRecursively
 import com.hippo.unifile.UniFile
 import org.jsoup.Jsoup

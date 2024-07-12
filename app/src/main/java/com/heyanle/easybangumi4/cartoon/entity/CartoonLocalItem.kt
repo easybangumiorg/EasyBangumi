@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.cartoon.local
+package com.heyanle.easybangumi4.cartoon.entity
 
 import androidx.core.net.toUri
 import com.heyanle.easybangumi4.APP
