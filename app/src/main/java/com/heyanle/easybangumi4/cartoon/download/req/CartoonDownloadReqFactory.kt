@@ -5,7 +5,7 @@ import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.download.step.CopyAndNfoStep
 import com.heyanle.easybangumi4.cartoon.download.step.ParseStep
 import com.heyanle.easybangumi4.cartoon.download.step.TransformerStep
-import com.heyanle.easybangumi4.cartoon.entity.CartoonLocalItem
+import com.heyanle.easybangumi4.cartoon.entity.CartoonLocalInfo
 import com.heyanle.easybangumi4.source_api.entity.Episode
 import com.heyanle.easybangumi4.source_api.entity.PlayLine
 
@@ -19,11 +19,14 @@ object CartoonDownloadReqFactory {
         cartoonInfo: CartoonInfo,
         playLine: PlayLine,
         list: List<Episode>,
-        targetLocalItem: CartoonLocalItem,
+        targetLocalInfo: CartoonLocalInfo,
     ): List<CartoonDownloadReq> {
         val episodeList = list.sortedBy { it.order }
         val orderSet = mutableSetOf<Int>()
-        targetLocalItem.episodes.forEach {
+        targetLocalInfo.downloadInfoList.forEach {
+            orderSet.add(it.req.toEpisode)
+        }
+        targetLocalInfo.cartoonLocalItem.episodes.forEach {
             orderSet.add(it.episode)
         }
         val reqList = mutableListOf<CartoonDownloadReq>()
@@ -40,7 +43,8 @@ object CartoonDownloadReqFactory {
                     fromCartoonInfo = cartoonInfo,
                     fromPlayLine = playLine,
                     fromEpisode = episode,
-                    toLocalItemId = targetLocalItem.itemId,
+                    toLocalItemId = targetLocalInfo.cartoonLocalItem.itemId,
+                    localItem = targetLocalInfo.cartoonLocalItem,
                     toEpisodeTitle = episode.label,
                     toEpisode = targetEpisode,
                     stepChain = listOf(

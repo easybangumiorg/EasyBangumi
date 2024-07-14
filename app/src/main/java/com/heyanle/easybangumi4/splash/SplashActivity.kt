@@ -30,6 +30,8 @@ import com.heyanle.easybangumi4.theme.EasyTheme
 import com.heyanle.easybangumi4.theme.NormalSystemBarColor
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.utils.MediaUtils
+import com.heyanle.inject.api.get
+import com.heyanle.inject.core.Inject
 import com.heyanle.okkv2.core.okkv
 import java.lang.ref.WeakReference
 
@@ -50,7 +52,7 @@ class SplashActivity : ComponentActivity() {
         var lastSplashActivity: WeakReference<SplashActivity>? = null
 
     }
-
+    val splashGuildController = Inject.get<SplashGuildController>()
     var first by okkv("first_visible_splash", def = true)
     private val launcherBus = LauncherBus(this)
     override fun onResume() {
@@ -69,10 +71,16 @@ class SplashActivity : ComponentActivity() {
         if (splashCompletely) {
             jumpToMain()
         } else {
-            setContentView(FrameLayout(this))
+
+
             MediaUtils.setIsDecorFitsSystemWindows(this, false)
             Scheduler.runOnSplashActivityCreate(this, first)
             first = false
+            if (splashGuildController.realStep.isEmpty()) {
+                jumpToMain()
+                return
+            }
+            setContentView(FrameLayout(this))
             setContent {
                 val isMigrating by Migrate.isMigrating.collectAsState()
                 val windowClazz = calculateWindowSizeClass(this)
@@ -112,6 +120,10 @@ class SplashActivity : ComponentActivity() {
     }
 
     fun jumpToMain(){
+
+        val con: SplashGuildController by Inject.injectLazy()
+        con.end()
+
         splashCompletely = true
         val intent = Intent(this, MainActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP

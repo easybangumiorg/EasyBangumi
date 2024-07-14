@@ -13,15 +13,19 @@ import androidx.media3.transformer.ExportResult
 import androidx.media3.transformer.InAppMuxer
 import androidx.media3.transformer.ProgressHolder
 import androidx.media3.transformer.Transformer
+import androidx.media3.transformer.Transformer.PROGRESS_STATE_AVAILABLE
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.cartoon.download.runtime.CartoonDownloadRuntimeFactory
 import com.heyanle.easybangumi4.cartoon.download.runtime.CartoonDownloadRuntime
 import com.heyanle.easybangumi4.exo.CartoonMediaSourceFactory
 import com.heyanle.easybangumi4.utils.getCachePath
+import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.inject.api.get
 import com.heyanle.inject.core.Inject
 import com.hippo.unifile.UniFile
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import java.io.File
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -32,6 +36,8 @@ import java.util.concurrent.TimeUnit
  * https://github.com/heyanLE
  */
 object TransformerStep : BaseStep {
+
+    private val scope = MainScope()
 
     const val NAME = "transformer"
 
@@ -49,7 +55,7 @@ object TransformerStep : BaseStep {
         val playerInfo = runtime.playerInfo ?: throw IllegalStateException("playerInfo is null")
         val mediaSourceFactory: CartoonMediaSourceFactory = Inject.get()
         val transformer = Transformer.Builder(APP)
-            .setVideoMimeType(MimeTypes.VIDEO_H265)
+            .setVideoMimeType(MimeTypes.VIDEO_H264)
             .setAssetLoaderFactory(
                 ExoPlayerAssetLoader.Factory(
                     APP,
@@ -59,6 +65,7 @@ object TransformerStep : BaseStep {
                 )
             )
             .setMuxerFactory(InAppMuxer.Factory.Builder().build())
+            .setMaxDelayBetweenMuxerSamplesMs(500000)
             .addListener(object: Transformer.Listener {
                 override fun onCompleted(composition: Composition, exportResult: ExportResult) {
                     super.onCompleted(composition, exportResult)
@@ -75,6 +82,8 @@ object TransformerStep : BaseStep {
                     super.onError(composition, exportResult, exportException)
                     runtime.exportResult = exportResult
                     runtime.exportException = exportException
+                    runtime.state = 3
+                    exportException.printStackTrace()
                     countDownLatch.countDown()
                 }
             })
@@ -85,32 +94,50 @@ object TransformerStep : BaseStep {
         folder.mkdirs()
         val t = File(folder, "${runtime.req.uuid}.mp4")
         t.delete()
-        val target = UniFile.fromFile(t)?: throw IllegalStateException("cache file uri is null")
-        transformer.start(
-            mediaSourceFactory.getMediaItem(playerInfo),
-            target.uri.toString()
-        )
+        t.createNewFile()
+        t.deleteOnExit()
+
         runtime.cacheFolderUri = folder.toUri().toString()
         runtime.cacheDisplayName = t.name
 
         val holder: ProgressHolder = ProgressHolder()
-
+        scope.launch {
+            transformer.start(
+                mediaSourceFactory.getMediaItem(playerInfo),
+                t.absolutePath,
+            )
+        }
 
         while (countDownLatch.count > 0){
+
             if (runtime.needCancel()) {
-                transformer.cancel()
+                scope.launch {
+                    transformer.cancel()
+                }
+                runtime.error(runtime.exportException, runtime.exportException?.message)
                 return
             }
-            runtime.transformerProgress = transformer.getProgress(holder)
-            runtime.dispatchToBus(
-                runtime.transformerProgress.toFloat() / 100f,
-                stringRes(com.heyanle.easy_i18n.R.string.downloading)
-            )
+            scope.launch {
+                val proState = transformer.getProgress(holder)
+                if (proState == PROGRESS_STATE_AVAILABLE) {
+                    runtime.transformerProgress = holder.progress
+                } else {
+                    runtime.transformerProgress = -1
+                }
+                runtime.transformerProgress.logi("TransformerStep")
+                runtime.dispatchToBus(
+                    runtime.transformerProgress.toFloat() / 100f,
+                    stringRes(com.heyanle.easy_i18n.R.string.downloading)
+                )
+            }
             // 每秒刷新一次进度
             countDownLatch.await(1, TimeUnit.SECONDS)
         }
         if (runtime.needCancel()) {
-            transformer.cancel()
+            scope.launch {
+                transformer.cancel()
+            }
+            runtime.error(runtime.exportException, runtime.exportException?.message)
             return
         }
         runtime.stepCompletely()
@@ -118,7 +145,10 @@ object TransformerStep : BaseStep {
 
     @OptIn(UnstableApi::class)
     override fun cancel(runtime: CartoonDownloadRuntime) {
-        runtime.transformer?.cancel()
-        runtime.countDownLatch?.countDown()
+        scope.launch {
+            runtime.transformer?.cancel()
+            runtime.countDownLatch?.countDown()
+        }
+
     }
 }

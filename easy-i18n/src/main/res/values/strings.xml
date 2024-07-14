@@ -551,4 +551,6 @@
 
     <string name="label_empty">标题不能为空</string>
 
+    <string name="download_stop_click_to_restart">点击重新下载</string>
+
 </resources>

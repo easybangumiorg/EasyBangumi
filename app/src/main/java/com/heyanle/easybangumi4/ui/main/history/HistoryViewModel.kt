@@ -104,6 +104,9 @@ class HistoryViewModel : ViewModel() {
             val selection = if (it.selection.contains(cartoonHistory)) {
                 it.selection.minus(cartoonHistory)
             } else it.selection.plus(cartoonHistory)
+            if (selection.isEmpty()) {
+                lastSelectHistory = null
+            }
             it.copy(selection = selection)
         }
     }

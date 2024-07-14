@@ -30,6 +30,13 @@ class SplashGuildController(
         }
     }
 
+    fun end() {
+        stepList.forEach {
+            val version = okkv("splash_step_${it.name}_version", it.version)
+            version.set(it.version)
+        }
+    }
+
 
 
 

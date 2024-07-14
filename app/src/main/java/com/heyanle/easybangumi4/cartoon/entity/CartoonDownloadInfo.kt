@@ -19,6 +19,7 @@ data class CartoonDownloadReq(
 
     // 下载任务目标本地番剧信息
     val toLocalItemId: String,
+    val localItem: CartoonLocalItem,
 
     val toEpisodeTitle: String,
     val toEpisode: Int,

@@ -64,5 +64,26 @@ class CartoonDownloadReqController(
         }
     }
 
+    fun newDownloadItem(item: CartoonDownloadReq) {
+        _downloadItem.update {
+            val list = it?.toMutableList() ?: mutableListOf()
+            list.add(item)
+            list
+        }
+    }
+
+    fun removeDownloadItem(uuid: String) {
+        _downloadItem.update {
+            it?.map {
+                if(it.uuid == uuid){
+                    null
+                }else{
+                    it
+                }
+            }?.filterNotNull() ?: emptyList()
+
+        }
+    }
+
 
 }

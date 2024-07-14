@@ -68,7 +68,7 @@ object CopyAndNfoStep: BaseStep {
         }
 
         runtime.stepCompletely()
-
+        cacheTarget.delete()
 
 
     }

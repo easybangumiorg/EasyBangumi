@@ -4,6 +4,7 @@ import com.heyanle.easybangumi4.cartoon.download.runtime.CartoonDownloadRuntimeF
 import com.heyanle.easybangumi4.cartoon.download.runtime.CartoonDownloadRuntime
 import com.heyanle.easybangumi4.case.SourceStateCase
 import com.heyanle.easybangumi4.utils.CoroutineProvider
+import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.inject.api.get
 import com.heyanle.inject.core.Inject
@@ -29,6 +30,8 @@ object ParseStep: BaseStep {
     override fun invoke() {
         val runtime = CartoonDownloadRuntimeFactory.runtimeLocal.get()
             ?: throw IllegalStateException("runtime is null")
+
+        "${runtime.req.toEpisodeTitle} invoke".logi("ParseStep")
         runtime.state = 1
         runtime.getDownloadInfo().process.value = -1f
         runtime.getDownloadInfo().status.value = stringRes(com.heyanle.easy_i18n.R.string.waiting)
@@ -43,7 +46,7 @@ object ParseStep: BaseStep {
         val countDownLatch = CountDownLatch(1)
         scope.launch {
             if (runtime.needCancel()) {
-                countDownLatch.countDown()
+                runtime.countDownLatch?.countDown()
                 return@launch
             }
             runtime.parseResult = playComponent.getPlayInfo(
@@ -51,10 +54,10 @@ object ParseStep: BaseStep {
                 runtime.req.fromPlayLine,
                 runtime.req.fromEpisode,
             )
-            countDownLatch.countDown()
+            runtime.countDownLatch?.countDown()
         }
         runtime.countDownLatch = countDownLatch
-        countDownLatch.await(10, TimeUnit.SECONDS)
+        countDownLatch.await(20, TimeUnit.SECONDS)
         if (runtime.needCancel()) {
             return
         }

@@ -1,6 +1,8 @@
 package com.heyanle.easybangumi4.ui.cartoon_play.view_model
 
+import androidx.collection.arraySetOf
 import com.heyanle.easybangumi4.cartoon.CartoonLocalDownloadController
+import com.heyanle.easybangumi4.cartoon.download.req.CartoonDownloadReqController
 import com.heyanle.easybangumi4.cartoon.download.req.CartoonDownloadReqFactory
 import com.heyanle.easybangumi4.cartoon.download.runtime.CartoonDownloadDispatcher
 import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadReq
@@ -36,6 +38,8 @@ class CartoonDownloadReqModel(
     private val cartoonDownloadDispatcher: CartoonDownloadDispatcher by Inject.injectLazy()
     private val cartoonLocalDownloadController: CartoonLocalDownloadController by Inject.injectLazy()
 
+    private val cartoonDownloadReqController: CartoonDownloadReqController by Inject.injectLazy()
+
     data class State(
         val localState: CartoonLocalDownloadController.CartoonLocalInfoState = CartoonLocalDownloadController.CartoonLocalInfoState(),
 
@@ -50,8 +54,8 @@ class CartoonDownloadReqModel(
 
         val enableEpisode: List<Int> by lazy {
             val res = arrayListOf<Int>()
-            for(i in 0..99){
-                if (targetLocalInfo?.cartoonLocalItem?.episodes?.any { it.episode == i} != true){
+            for (i in 0..99) {
+                if (targetLocalInfo?.cartoonLocalItem?.episodes?.any { it.episode == i } != true) {
                     res.add(i)
                 }
             }
@@ -59,20 +63,24 @@ class CartoonDownloadReqModel(
         }
 
         val repeatEpisode: Set<Int> by lazy {
-            targetLocalInfo?.cartoonLocalItem?.episodes?.map { it.episode }?.toSet() ?: emptySet()
+            (targetLocalInfo?.cartoonLocalItem?.episodes?.map { it.episode }?.toSet()
+                ?: emptySet()) + (targetLocalInfo?.downloadInfoList?.map { it.req.toEpisode }
+                ?.toSet() ?: emptySet())
         }
 
         val episodeList: List<Int> by lazy {
-            val el = arrayListOf<Int>()
-            localState.localCartoonInfo.forEach {
-                it.downloadInfoList.forEach {
-                    el.add(it.req.toEpisode)
-                }
+            val el = arraySetOf<Int>()
+            targetLocalInfo?.downloadInfoList?.forEach {
+                el.add(it.req.toEpisode)
             }
+            targetLocalInfo?.cartoonLocalItem?.episodes?.forEach {
+                el.add(it.episode)
+            }
+            var res = el.toMutableList()
             reqList.forEach {
-                el.add(it.toEpisode)
+                res.add(it.toEpisode)
             }
-            el
+            res
         }
 
         val isRepeat: Boolean by lazy {
@@ -131,9 +139,10 @@ class CartoonDownloadReqModel(
     }
 
 
-    fun retry(){
+    fun retry() {
         cartoonLocalController.refresh()
     }
+
     fun changeKeyword(keyword: String?) {
         _state.update {
             it.copy(
@@ -151,14 +160,14 @@ class CartoonDownloadReqModel(
                         cartoonInfo,
                         playerLineWrapper.playLine,
                         episodes,
-                        it.cartoonLocalItem
+                        it
                     )
                 } ?: emptyList()
             )
         }
     }
 
-    fun showNewLocalDialog(){
+    fun showNewLocalDialog() {
         _state.update {
             it.copy(
                 dialog = Dialog.NewLocalReq(CartoonLocalMsg.fromCartoonInfo(cartoonInfo))
@@ -167,7 +176,7 @@ class CartoonDownloadReqModel(
     }
 
 
-    fun showChangeEpisode(uuid: String, title: String, episode: Int){
+    fun showChangeEpisode(uuid: String, title: String, episode: Int) {
         _state.update {
             it.copy(
                 dialog = Dialog.ChangeEpisode(uuid, title, episode)
@@ -175,28 +184,28 @@ class CartoonDownloadReqModel(
         }
     }
 
-    fun changeReq(uuid: String, title: String, episode: Int){
+    fun changeReq(uuid: String, title: String, episode: Int) {
         _state.update { sta ->
             val old = sta.reqList.firstOrNull() { it.uuid == uuid }
-            if (old == null){
+            if (old == null) {
                 sta
             } else {
-               var current = episode + 1
+                var current = episode
                 sta.copy(
                     reqList = sta.reqList.map {
-                        if(it.uuid == uuid){
+                        if (it.uuid == uuid) {
                             it.copy(
                                 toEpisodeTitle = title,
                                 toEpisode = episode
                             )
-                        } else if (it.toEpisode < episode){
+                        } else if (it.toEpisode < episode) {
                             it
                         } else {
+                            current++
                             current = maxOf(it.toEpisode, current)
-                            while(sta.repeatEpisode.contains(current)){
-                                current ++
+                            while (sta.repeatEpisode.contains(current)) {
+                                current++
                             }
-                            current ++
                             it.copy(
                                 toEpisode = current,
                             )
@@ -208,17 +217,17 @@ class CartoonDownloadReqModel(
         }
     }
 
-    fun pushReq(state: State){
+    fun pushReq(state: State) {
         scope.launch {
-
             state.reqList?.forEach {
+                cartoonDownloadReqController.newDownloadItem(it)
                 cartoonDownloadDispatcher.addTask(it)
             }
         }
     }
 
 
-    fun addLocalCartoon(localMsg: CartoonLocalMsg){
+    fun addLocalCartoon(localMsg: CartoonLocalMsg) {
         scope.launch {
             _state.update {
                 it.copy(
@@ -235,7 +244,7 @@ class CartoonDownloadReqModel(
         }
     }
 
-    fun dismissDialog(){
+    fun dismissDialog() {
         _state.update {
             it.copy(
                 dialog = null

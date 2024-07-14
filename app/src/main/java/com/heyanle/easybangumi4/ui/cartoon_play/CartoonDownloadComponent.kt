@@ -70,6 +70,7 @@ import com.heyanle.easybangumi4.ui.common.ErrorPage
 import com.heyanle.easybangumi4.ui.common.LoadingImage
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.utils.stringRes
+import com.heyanle.easybangumi4.utils.toast
 
 /**
  * Created by heyanle on 2024/7/8.
@@ -455,15 +456,15 @@ fun CartoonDownloadDialog(
                         onClick = {
                             val i = textEpisode.value.toIntOrNull()
                             if (i == null){
-                                stringRes(R.string.please_input_right_speed)
+                                stringRes(R.string.please_input_right_speed).toast()
                                 return@TextButton
                             }
                             if (sta.repeatEpisode.contains(i)) {
-                                stringRes(R.string.episode_repeat)
+                                stringRes(R.string.episode_repeat).toast()
                                 return@TextButton
                             }
                             if (textLabel.value.isEmpty()) {
-                                stringRes(R.string.label_empty)
+                                stringRes(R.string.label_empty).toast()
                                 return@TextButton
                             }
                             model.dismissDialog()
