@@ -6,10 +6,15 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
-import com.heyanle.easybangumi4.cartoon.tag.CartoonTagsController
-import com.heyanle.easybangumi4.cartoon.tag.isALL
-import com.heyanle.easybangumi4.cartoon.tag.isUpdate
+import com.heyanle.easybangumi4.cartoon.old.entity.CartoonTagOld
+import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
+import com.heyanle.easybangumi4.cartoon.star.CartoonStarController
+import com.heyanle.easybangumi4.cartoon.star.CartoonTagsController
+import com.heyanle.easybangumi4.cartoon.star.isALL
+import com.heyanle.easybangumi4.cartoon.star.isUpdate
 import com.heyanle.inject.core.Inject
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 /**
@@ -23,8 +28,8 @@ class CartoonTagViewModel : ViewModel() {
     var tags by mutableStateOf<List<CartoonTag>>(emptyList())
         private set
 
-    //private val cartoonTagDao: CartoonTagDao by Injekt.injectLazy()
-    private val cartoonTagsController: CartoonTagsController by Inject.injectLazy()
+    private val cartoonInfoDao: CartoonInfoDao by Inject.injectLazy()
+    private val cartoonStarController: CartoonStarController by Inject.injectLazy()
 
     sealed class Dialog {
 
@@ -45,7 +50,7 @@ class CartoonTagViewModel : ViewModel() {
 
     init {
         viewModelScope.launch {
-            cartoonTagsController.tagsList.collect {
+            cartoonStarController.cartoonTagFlow.map { it.tagList }.collectLatest {
                 tags = it.sortedBy { it.order }
             }
         }
@@ -62,7 +67,7 @@ class CartoonTagViewModel : ViewModel() {
             val ts = tags.mapIndexed { index, cartoonTag ->
                 cartoonTag.copy(order = index)
             }
-            cartoonTagsController.refresh(ts)
+            cartoonStarController.modifier(ts)
             //cartoonTagDao.updateAll(ts)
         }
     }
@@ -72,7 +77,7 @@ class CartoonTagViewModel : ViewModel() {
     }
 
     fun dialogRename(cartoonTag: CartoonTag) {
-        if(!cartoonTag.isUpdate() && !cartoonTag.isALL()){
+        if (!cartoonTag.isInner) {
             dialog = Dialog.Rename(cartoonTag)
         }
     }
@@ -87,31 +92,54 @@ class CartoonTagViewModel : ViewModel() {
     }
 
     fun onDelete(cartoonTag: CartoonTag) {
+        if (cartoonTag.isInner) {
+            return
+        }
         viewModelScope.launch {
-            cartoonTagsController.remove(cartoonTag)
+            cartoonStarController.remove(cartoonTag)
 
         }
     }
 
-    fun onRename(cartoonTag: CartoonTag, label: String) {
+
+    fun onSetShow(cartoonTag: CartoonTag, show: Boolean) {
+        if (!show && !tags.any {
+                it.label != cartoonTag.label && it.show
+            }) {
+            return
+        }
         viewModelScope.launch {
-            cartoonTagsController.refresh(
-                listOf(
-                    cartoonTag.copy(
-                        label = label
-                    )
+            cartoonStarController.modifier(
+                cartoonTag.copy(
+                    show = show
                 )
             )
+        }
+    }
+
+    fun onRename(cartoonTag: CartoonTag, label: String) {
+        if (cartoonTag.isInner) {
+            return
+        }
+        if (tags.any {
+                it != cartoonTag && it.label == label
+            }) {
+            return
+        }
+        viewModelScope.launch {
+            cartoonStarController.modifier(
+                cartoonTag.copy(
+                    label = label
+                )
+            )
+            cartoonInfoDao.renameTag(cartoonTag.label, label)
+
         }
     }
 
     fun onCreate(label: String) {
         viewModelScope.launch {
-            cartoonTagsController.refresh(
-                listOf(
-                    CartoonTag(0, label, tags.size + 1)
-                )
-            )
+            cartoonStarController.insert(label)
         }
     }
 

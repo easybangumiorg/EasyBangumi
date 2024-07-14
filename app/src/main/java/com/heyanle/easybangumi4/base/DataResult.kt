@@ -11,18 +11,16 @@ import kotlinx.coroutines.flow.map
  */
 sealed class DataResult<T> {
 
-    class Ok<T>(
+    class Loading<T> : DataResult<T>()
+
+    data class Ok<T>(
         val data: T
     ) : DataResult<T>()
 
-    class Error<T>(
+    data class Error<T>(
         val errorMsg: String,
         val throwable: Throwable?,
     ) : DataResult<T>()
-
-    fun a(list: Flow<Int>) {
-        list.map { }
-    }
 
     companion object {
         fun <T> ok(data: T) = DataResult.Ok(data)
@@ -32,6 +30,13 @@ sealed class DataResult<T> {
 
         fun <T> error(errorMsg: String, throwable: Throwable? = null) =
             DataResult.Error<T>(errorMsg, throwable)
+    }
+
+    fun okOrNull () : T? {
+        return when (this) {
+            is Ok -> data
+            else -> null
+        }
     }
 
     inline fun onOK(block: (T) -> Unit): DataResult<T> {
@@ -57,6 +62,10 @@ sealed class DataResult<T> {
             is DataResult.Error -> {
                 null
             }
+
+            else -> {
+                null
+            }
         }
     }
 
@@ -68,6 +77,10 @@ sealed class DataResult<T> {
 
             is DataResult.Error -> {
                 block(this)
+            }
+
+            else -> {
+                null
             }
         }
     }
@@ -93,5 +106,8 @@ public inline fun <T, R> DataResult<T>.map(transform: (value: T) -> R): DataResu
 
         is DataResult.Error -> {
             DataResult.error<R>(errorMsg = errorMsg, throwable)
+        }
+        is DataResult.Loading -> {
+            DataResult.Loading()
         }
     }

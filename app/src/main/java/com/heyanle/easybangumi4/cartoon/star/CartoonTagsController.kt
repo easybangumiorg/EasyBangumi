@@ -1,11 +1,10 @@
-package com.heyanle.easybangumi4.cartoon.tag
+package com.heyanle.easybangumi4.cartoon.star
 
 import com.heyanle.easy_i18n.R
-import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
+import com.heyanle.easybangumi4.cartoon.old.entity.CartoonTagOld
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonTagDao
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.utils.stringRes
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
@@ -33,24 +32,24 @@ class CartoonTagsController(
                 }
             }
             if (!findAll) {
-                res.add(CartoonTag(ALL_TAG_ID, stringRes(R.string.all_word), -1))
+                res.add(CartoonTagOld(ALL_TAG_ID, stringRes(R.string.all_word), -1))
             }
             res
         }
 
 
-    suspend fun refresh(tags: List<CartoonTag>) {
+    suspend fun refresh(tags: List<CartoonTagOld>) {
         cartoonTagDao.updateAll(tags)
     }
 
-    suspend fun remove(cartoonTag: CartoonTag){
+    suspend fun remove(cartoonTag: CartoonTagOld){
         cartoonTagDao.delete(cartoonTag)
     }
 
 
 }
 
-fun CartoonTag.tagLabel(): String {
+fun CartoonTagOld.tagLabel(): String {
     return when (id) {
         CartoonTagsController.ALL_TAG_ID -> stringRes(R.string.all_word)
         CartoonTagsController.UPDATE_TAG_ID -> stringRes(R.string.update)
@@ -58,14 +57,14 @@ fun CartoonTag.tagLabel(): String {
     }
 }
 
-fun CartoonTag.isUpdate(): Boolean{
+fun CartoonTagOld.isUpdate(): Boolean{
     return false
 }
 
-fun CartoonTag.isALL(): Boolean{
+fun CartoonTagOld.isALL(): Boolean{
     return id == CartoonTagsController.ALL_TAG_ID
 }
 
-fun CartoonTag.isInner(): Boolean {
+fun CartoonTagOld.isInner(): Boolean {
     return isALL()
 }

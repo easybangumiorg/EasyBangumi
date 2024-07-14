@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.ui.cartoon_play
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,8 +17,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -28,9 +31,12 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Help
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -40,6 +46,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,6 +56,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -61,12 +69,13 @@ import com.heyanle.easybangumi4.ui.common.CartoonCardWithCover
 import com.heyanle.easybangumi4.ui.common.ErrorPage
 import com.heyanle.easybangumi4.ui.common.LoadingImage
 import com.heyanle.easybangumi4.ui.common.LoadingPage
+import com.heyanle.easybangumi4.utils.stringRes
 
 /**
  * Created by heyanle on 2024/7/8.
  * https://github.com/heyanLE
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun CartoonDownloadDialog(
     cartoonInfo: CartoonInfo,
@@ -209,7 +218,7 @@ fun CartoonDownloadDialog(
                     model.retry()
                 }
             )
-        } else if (sta.targetLocalInfo == null) {
+        } else if (sta.targetLocalInfo == null || sta.reqList.isEmpty()) {
             LazyVerticalGrid(
                 modifier = Modifier
                     .fillMaxSize(),
@@ -266,6 +275,82 @@ fun CartoonDownloadDialog(
 
                 }
             }
+        } else {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                if (sta.isRepeat) {
+                    Text(
+                        text = stringResource(id = R.string.episode_repeat),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                } else {
+                    FilledTonalButton(
+                        modifier = Modifier
+                            .padding(16.dp, 0.dp),
+                        colors = ButtonDefaults.filledTonalButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        ),
+                        onClick = {
+                            onDismissRequest()
+                            model.pushReq(sta)
+                        }) {
+                        Text(stringResource(id = R.string.next))
+
+                    }
+                }
+            }
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
+            ) {
+                items(
+                    sta.reqList
+                ) { req ->
+                    val repeat = sta.episodeList.count { it == req.toEpisode } > 1
+                    ListItem(
+                        modifier = Modifier.clickable {
+                            model.showChangeEpisode(req.uuid, req.toEpisodeTitle, req.toEpisode)
+
+                        },
+                        leadingContent = {
+                            Box(
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(
+                                        if (repeat) MaterialTheme.colorScheme.error else
+                                            MaterialTheme.colorScheme.surfaceVariant
+                                    )
+                                    .clickable {
+                                        model.showChangeEpisode(
+                                            req.uuid,
+                                            req.toEpisodeTitle,
+                                            req.toEpisode
+                                        )
+                                    },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = req.toEpisode.toString(),
+                                    color = if (repeat) MaterialTheme.colorScheme.onError else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    style = MaterialTheme.typography.titleLarge
+                                )
+                            }
+                        },
+                        headlineContent = {
+                            Text(text = req.toEpisodeTitle)
+                        }
+                    )
+                }
+            }
+
+
         }
     }
 
@@ -309,6 +394,94 @@ fun CartoonDownloadDialog(
                     }
                 },
                 confirmButton = {}
+            )
+        }
+
+        is CartoonDownloadReqModel.Dialog.ChangeEpisode -> {
+
+            val textEpisode = remember {
+                mutableStateOf(dialog.episode.toString())
+            }
+            val textLabel = remember {
+                mutableStateOf(dialog.title.toString())
+            }
+            val fq = remember { FocusRequester() }
+            LaunchedEffect(key1 = Unit){
+                try {
+                    fq.requestFocus()
+                }catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+            AlertDialog(
+                onDismissRequest = { model.dismissDialog() },
+                title = {
+                    Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.edit_episode_msg))
+                },
+                text = {
+
+                    Column {
+                        TextField(
+                            modifier = Modifier.focusRequester(fq),
+                            value = textEpisode.value,
+                            onValueChange = {
+                                textEpisode.value = it
+                            },
+                            label = {
+                                Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.episode))
+                            },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+
+                        )
+                        TextField(
+                            value = textLabel.value,
+                            onValueChange = {
+                                textLabel.value = it
+                            },
+                            label = {
+                                Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.episode_label))
+                            },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+
+                        )
+
+                    }
+
+
+
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            val i = textEpisode.value.toIntOrNull()
+                            if (i == null){
+                                stringRes(R.string.please_input_right_speed)
+                                return@TextButton
+                            }
+                            if (sta.repeatEpisode.contains(i)) {
+                                stringRes(R.string.episode_repeat)
+                                return@TextButton
+                            }
+                            if (textLabel.value.isEmpty()) {
+                                stringRes(R.string.label_empty)
+                                return@TextButton
+                            }
+                            model.dismissDialog()
+                            model.changeReq(
+                                dialog.uuid,
+                                textLabel.value,
+                                i
+                            )
+                        }
+                    ) {
+                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.confirm))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { model.dismissDialog() }) {
+                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.cancel))
+                    }
+                }
             )
         }
 

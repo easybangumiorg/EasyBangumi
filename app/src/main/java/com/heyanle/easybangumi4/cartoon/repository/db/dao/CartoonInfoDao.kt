@@ -8,6 +8,7 @@ import androidx.room.Transaction
 import androidx.room.Update
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 
 /**
  * Created by heyanle on 2023/12/16.
@@ -96,6 +97,12 @@ interface CartoonInfoDao {
     // star
     @Query("SELECT * FROM CartoonInfoV2 WHERE starTime>0")
     fun flowAllStar(): Flow<List<CartoonInfo>>
+
+    suspend fun renameTag(oldTag: String, newTag: String) {
+        modify(flowAllStar().first().map {
+            it.renameTag(oldTag, newTag)
+        })
+    }
 
     @Transaction
     suspend fun deleteStar(cartoonInfo: CartoonInfo){

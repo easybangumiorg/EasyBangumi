@@ -7,8 +7,7 @@ import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
 import com.heyanle.easybangumi4.cartoon.entity.PlayLineWrapper
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
-import com.heyanle.easybangumi4.cartoon.tag.CartoonTagsController
-import com.heyanle.easybangumi4.cartoon.tag.isInner
+import com.heyanle.easybangumi4.cartoon.star.CartoonStarController
 import com.heyanle.easybangumi4.case.CartoonInfoCase
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
@@ -38,7 +37,7 @@ class DetailedViewModel(
 
     private val cartoonInfoCase: CartoonInfoCase by Inject.injectLazy()
     private val cartoonInfoDao: CartoonInfoDao by Inject.injectLazy()
-    private val cartoonTagsController: CartoonTagsController by Inject.injectLazy()
+    private val cartoonStarController: CartoonStarController by Inject.injectLazy()
     private val settingPreferences: SettingPreferences by Inject.injectLazy()
 
 
@@ -133,11 +132,11 @@ class DetailedViewModel(
         }
         viewModelScope.launch {
             if (star) {
-                val tl = cartoonTagsController.tagsList.first()
-                if (tl.find { !it.isInner() } != null) {
+                val tl = cartoonStarController.cartoonTagFlow.first().tagList
+                if (tl.find { !it.isInner && !it.isDefault } != null) {
                     _stateFlow.update {
                         it.copy(
-                            starDialogState = StarDialogState(cartoon, tl.filter { !it.isInner() }.sortedBy { it.order })
+                            starDialogState = StarDialogState(cartoon, tl.filter { !it.isInner || it.isDefault  }.sortedBy { it.order })
                         )
                     }
                 } else {
@@ -173,7 +172,7 @@ class DetailedViewModel(
         viewModelScope.launch {
             val cartoonInfo = cartoon.copy(
                 starTime = System.currentTimeMillis(),
-                tags = tag.joinToString(", ") { it.id.toString() },
+                tags = tag.joinToString(", ") { it.label.toString() },
                 isUpdate = false,
             )
             cartoonInfoDao.modify(cartoonInfo)

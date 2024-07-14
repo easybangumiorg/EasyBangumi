@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,6 +19,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DragHandle
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -26,6 +28,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -41,14 +44,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
-import com.heyanle.easybangumi4.cartoon.tag.isALL
-import com.heyanle.easybangumi4.cartoon.tag.isUpdate
+import com.heyanle.easybangumi4.cartoon.star.isALL
+import com.heyanle.easybangumi4.cartoon.star.isUpdate
 import com.heyanle.easybangumi4.ui.common.EasyDeleteDialog
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.stringRes
@@ -115,10 +119,10 @@ fun CartoonTag() {
                     .reorderable(state)
                     .nestedScroll(behavior.nestedScrollConnection)
             ) {
-                items(vm.tags, key = { it.id }) { tag ->
+                items(vm.tags, key = { it.label }) { tag ->
                     ReorderableItem(
                         reorderableState = state,
-                        key = tag.id,
+                        key = tag.label,
                         modifier = Modifier
                             .fillMaxWidth()
                     ) {
@@ -157,15 +161,32 @@ fun CartoonTag() {
                                     contentDescription = stringResource(
                                         id = R.string.tag_manage
                                     ),
-                                    tint = if(it) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSecondary
+                                    tint = if (it) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSecondary
                                 )
                             }
                             Text(
-                                text = tag.label,
-                                color = if(it) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSecondary
+                                text = tag.display,
+                                color = if (it) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSecondary
                             )
+                            
+                            if (!tag.isInner) {
+                                Spacer(modifier = Modifier.size(8.dp))
+                                Icon(
+                                    Icons.Filled.Edit,
+                                    modifier = Modifier.size(16.dp),
+                                    tint = if (it) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSecondary,
+                                    contentDescription = stringResource(id = R.string.edit)
+                                )
+                            }
                             Spacer(modifier = Modifier.weight(1f))
-                            if(!tag.isUpdate() && !tag.isALL()){
+
+                            Switch(checked = tag.show, onCheckedChange = {
+                                vm.onSetShow(tag, it)
+                            })
+                           
+
+
+                            if (!tag.isInner) {
                                 IconButton(onClick = {
                                     vm.dialogDelete(tag)
                                 }) {
@@ -174,7 +195,18 @@ fun CartoonTag() {
                                         contentDescription = stringResource(
                                             id = R.string.delete_tag
                                         ),
-                                        tint = if(it) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSecondary
+                                        tint = if (it) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSecondary
+                                    )
+                                }
+                            } else {
+                                IconButton(onClick = {
+                                }) {
+                                    Icon(
+                                        Icons.Filled.Close,
+                                        tint = Color.Transparent,
+                                        contentDescription = stringResource(
+                                            id = R.string.delete_tag
+                                        ),
                                     )
                                 }
                             }

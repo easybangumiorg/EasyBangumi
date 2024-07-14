@@ -2,6 +2,7 @@ package com.heyanle.easybangumi4.setting
 
 import android.app.Application
 import com.heyanle.easybangumi4.base.hekv.HeKV
+import com.heyanle.easybangumi4.base.json.JsonFileProvider
 import com.heyanle.easybangumi4.base.preferences.PreferenceStore
 import com.heyanle.easybangumi4.base.preferences.android.AndroidPreferenceStore
 import com.heyanle.easybangumi4.base.preferences.hekv.HeKVPreferenceStore
@@ -39,10 +40,14 @@ class SettingModule(
         addAlias<AndroidPreferenceStore, PreferenceStore>()
 
         addSingletonFactory {
+            JsonFileProvider()
+        }
+
+        addSingletonFactory {
             SettingPreferences(application, get<AndroidPreferenceStore>())
         }
         addSingletonFactory {
-            SourcePreferences(get<HeKVPreferenceStore>())
+            SourcePreferences(get<HeKVPreferenceStore>(), get())
         }
         addSingletonFactory {
             SettingMMKVPreferences(get<MMKVPreferenceStore>())

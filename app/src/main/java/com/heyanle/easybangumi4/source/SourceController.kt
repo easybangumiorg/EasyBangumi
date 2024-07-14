@@ -1,15 +1,12 @@
 package com.heyanle.easybangumi4.source
 
-import android.os.Build
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
 import com.heyanle.easybangumi4.case.ExtensionCase
-import com.heyanle.easybangumi4.crash.SourceCrashController
 import com.heyanle.easybangumi4.extension.ExtensionInfo
 import com.heyanle.easybangumi4.source.bundle.ComponentBundle
 import com.heyanle.easybangumi4.source.bundle.SourceBundle
 import com.heyanle.easybangumi4.source_api.Source
 import com.heyanle.easybangumi4.utils.TimeLogUtils
-import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.extension_api.NativeSupportedSource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -20,9 +17,9 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.io.File
 import java.util.concurrent.Executors
 
 /**
@@ -106,7 +103,7 @@ class SourceController(
         scope.launch {
             combine(
                 _sourceInfo.filterIsInstance<SourceInfoState.Info>().map { it.info },
-                sourcePreferences.configs.stateIn(scope)
+                sourcePreferences.configs.requestFlow.stateIn(scope)
             ) { sourceInfo, config ->
                 val d = sourceInfo.map {
                     val con =

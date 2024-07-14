@@ -7,9 +7,9 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.heyanle.easybangumi4.Migrate
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
-import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
 import com.heyanle.easybangumi4.cartoon.entity.SearchHistory
 import com.heyanle.easybangumi4.cartoon.old.entity.CartoonInfoV1
+import com.heyanle.easybangumi4.cartoon.old.entity.CartoonTagOld
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonTagDao
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.OtherDao
@@ -22,9 +22,12 @@ import com.heyanle.easybangumi4.cartoon.repository.db.dao.SearchHistoryDao
 @Database(
     entities = [
         CartoonInfo::class,
-        CartoonInfoV1::class,
-        CartoonTag::class,
         SearchHistory::class,
+
+        // for migrate
+        CartoonInfoV1::class,
+        // for migrate
+        CartoonTagOld::class,
     ],
     autoMigrations = [AutoMigration(1, 2)],
     version = 2,

@@ -20,6 +20,7 @@ import java.io.StringWriter
 import java.lang.reflect.Method
 import java.util.concurrent.Executors
 import android.os.Process
+import com.heyanle.easybangumi4.base.json.JsonFileProvider
 import com.heyanle.easybangumi4.source.SourceConfig
 import com.heyanle.easybangumi4.ui.common.moeDialog
 import com.heyanle.easybangumi4.utils.loge
@@ -48,11 +49,11 @@ object SourceCrashController {
     private lateinit var sourcePreferences: SourcePreferences
 
 
-    fun init(application: Application){
+    fun init(application: Application, sourcePreferences: SourcePreferences){
         this.application = application
         folder = File(application.getFilePath(), "crash")
 
-        sourcePreferences = SourcePreferences(HeKVPreferenceStore(HeKV(application.getFilePath(), "global")))
+        this.sourcePreferences = sourcePreferences
 
         loadingExtensionFile = File(folder, ".loading_extension")
         usingComponentFile = File(folder, ".using_component")

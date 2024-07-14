@@ -37,7 +37,7 @@ data class CartoonLocalMsg (
 
         fun fromCartoonInfo(cartoonInfo: CartoonInfo): CartoonLocalMsg {
             return CartoonLocalMsg(
-                itemId = cartoonInfo.name,
+                itemId = cartoonInfo.name ,
                 title = cartoonInfo.name,
                 desc = cartoonInfo.intro,
                 cover = cartoonInfo.coverUrl,

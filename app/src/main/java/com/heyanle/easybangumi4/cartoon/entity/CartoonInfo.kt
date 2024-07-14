@@ -114,16 +114,6 @@ data class CartoonInfo(
         }
     }
 
-
-    // ext 拓展字段，这里所有字段都需要加上 Ignore
-
-    // only for local source
-    @Ignore
-    var cartoonLocalItem: CartoonLocalItem? = null
-
-    @Ignore
-    var tagIsName: Boolean = false
-
     val genres: List<String> by lazy {
         if (genre.isEmpty()) {
             emptyList<String>()
@@ -134,12 +124,13 @@ data class CartoonInfo(
 
     val tagList: List<String> by lazy {
         if (tags.isEmpty()) {
-            emptyList<String>()
+            emptyList()
         } else {
             tags.split(",").map { it.trim() }.filterNot { it.isBlank() }.distinct()
         }
     }
 
+    @Deprecated("use tagList instead")
     val tagsIdList: List<Int> by lazy {
         if (tags.isEmpty()) {
             emptyList<Int>()
@@ -159,6 +150,13 @@ data class CartoonInfo(
         playLine.map {
             PlayLineWrapper.fromKey(it, sortByKey, reversal)
         }
+    }
+
+    fun renameTag(o: String, n: String): CartoonInfo {
+        if (tagList.contains(o) && !tagList.contains(n)) {
+            return copy(tags = tagList.map { if (it == o) n else it }.joinToString(","))
+        }
+        return this
     }
 
 

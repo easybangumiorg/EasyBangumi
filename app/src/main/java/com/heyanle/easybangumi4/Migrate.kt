@@ -13,9 +13,11 @@ import com.heyanle.easybangumi4.cartoon.old.entity.CartoonHistory
 import com.heyanle.easybangumi4.cartoon.old.entity.CartoonInfoOld
 import com.heyanle.easybangumi4.cartoon.old.entity.CartoonInfoV1
 import com.heyanle.easybangumi4.cartoon.old.entity.CartoonStar
+import com.heyanle.easybangumi4.cartoon.old.entity.CartoonTagOld
 import com.heyanle.easybangumi4.cartoon.old.repository.db.AppDatabase
 import com.heyanle.easybangumi4.cartoon.old.repository.db.CacheDatabase
 import com.heyanle.easybangumi4.cartoon.repository.db.CartoonDatabase
+import com.heyanle.easybangumi4.cartoon.star.CartoonStarController
 import com.heyanle.easybangumi4.extension.store.OfficialExtensionItem
 import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
 import com.heyanle.easybangumi4.setting.SettingPreferences
@@ -33,6 +35,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
@@ -151,8 +154,21 @@ object Migrate {
         if (lastVersionCode < curVersionCode) {
 
             scope.launch(Dispatchers.IO) {
+
+                val configsOld = androidPreferenceStore.getObject(
+                    "source_config",
+                    mapOf<String, SourceConfig>(),
+                    {
+                        it.toJson()
+                    },
+                    {
+                        it.jsonTo()?: mapOf()
+                    }
+                )
+
                 // 65
                 if (lastVersionCode < 65) {
+
                     // preference 架构变更
 
                     // 主题存储变更
@@ -174,6 +190,8 @@ object Migrate {
 
                     settingMMKVPreferences.webViewCompatible.set(webViewCompatibleOkkv)
 
+
+
                     // 源配置变更
                     val configOkkv by okkv("source_config", "[]")
                     val list: List<SourceConfig> = configOkkv.jsonTo() ?: emptyList()
@@ -181,7 +199,7 @@ object Migrate {
                     list.forEach {
                         map[it.key] = it
                     }
-                    sourcePreferences.configs.set(map)
+                    configsOld.set(map)
                 }
 
                 // 73
@@ -288,6 +306,54 @@ object Migrate {
                 if (lastVersionCode < 90) {
                     val extensionFolderOld = File(context.getFilePath("extension_folder"))
                     extensionFolderOld.deleteRecursively()
+
+                }
+
+                if (lastVersionCode < 92) {
+                    sourcePreferences.configs.set(
+                        configsOld.get()
+                    )
+
+                    val oldTagList = cartoonDatabase.cartoonTag.getAll().map {
+                        it.id to it
+                    }.toMap()
+                    val oldList = cartoonDatabase.cartoonInfo.getAll()
+                    val iLabel = CartoonTag.innerLabel
+                    val n = oldList.map {
+                        if (it.starTime < 0){
+                            it.copy(
+                                tags = ""
+                            )
+                        } else {
+                            val tagLabelList = it.tagsIdList.map {
+                                if (it < 0 || iLabel.contains(oldTagList[it]?.label)){
+                                    null
+                                } else
+                                    oldTagList[it]?.label
+                            }.filterIsInstance<String>().joinToString(", ")
+                            it.copy(
+                                tags = tagLabelList
+                            )
+                        }
+                    }
+                    cartoonDatabase.cartoonInfo.modify(n)
+
+                    val r = cartoonDatabase.cartoonTag.getAll().map {
+                        if (it.id == -1) {
+                            CartoonTag.create(CartoonTag.ALL_TAG_LABEL).copy(
+                                order = it.order
+                            )
+                        } else {
+                            if (iLabel.contains(it.label)){
+                                null
+                            } else {
+                                CartoonTag.create(it.label).copy(
+                                    order = it.order
+                                )
+                            }
+                        }
+                    }.filterIsInstance<CartoonTag>()
+                    Inject.get<CartoonStarController>().modifier(r)
 
                 }
 
@@ -442,7 +508,7 @@ object Migrate {
 
         cartoonDatabase.cartoonTag.clear()
         appDatabase.cartoonTag.getAll().forEach {
-            cartoonDatabase.cartoonTag.insert(CartoonTag(it.id, it.label, it.order))
+            cartoonDatabase.cartoonTag.insert(CartoonTagOld(it.id, it.label, it.order))
         }
         appDatabase.cartoonTag.clear()
     }

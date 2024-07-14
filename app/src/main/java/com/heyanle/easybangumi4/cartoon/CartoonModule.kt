@@ -15,7 +15,7 @@ import com.heyanle.easybangumi4.cartoon.repository.CartoonNetworkDataSource
 import com.heyanle.easybangumi4.cartoon.repository.CartoonRepository
 import com.heyanle.easybangumi4.cartoon.repository.db.CartoonDatabase
 import com.heyanle.easybangumi4.cartoon.star.CartoonStarController
-import com.heyanle.easybangumi4.cartoon.tag.CartoonTagsController
+import com.heyanle.easybangumi4.cartoon.star.CartoonTagsController
 import com.heyanle.inject.api.InjectModule
 import com.heyanle.inject.api.InjectScope
 import com.heyanle.inject.api.addPerKeyFactory

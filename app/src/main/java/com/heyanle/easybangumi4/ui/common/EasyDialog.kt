@@ -27,7 +27,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
-import com.heyanle.easybangumi4.cartoon.entity.CartoonTagWrapper
 import com.heyanle.easybangumi4.source_api.Source
 
 @Composable
@@ -122,12 +121,12 @@ fun EasyClearDialog(
 @Composable
 fun EasyMutiSelectionDialogStar(
     show: Boolean,
-    items: List<CartoonTagWrapper>,
-    initSelection: List<CartoonTagWrapper>,
+    items: List<CartoonTag>,
+    initSelection: List<CartoonTag>,
     title: @Composable () -> Unit = {},
     message: @Composable () -> Unit = {},
     confirmText: String = stringResource(id = com.heyanle.easy_i18n.R.string.confirm),
-    onConfirm: (List<CartoonTagWrapper>) -> Unit,
+    onConfirm: (List<CartoonTag>) -> Unit,
     onManage: ()->Unit,
     onDismissRequest: () -> Unit,
 ) {
@@ -163,7 +162,7 @@ fun EasyMutiSelectionDialogStar(
                                     selectList.remove(key)
                                 }
                             })
-                            Text(text = key.label)
+                            Text(text = key.display)
 
                         }
                     }

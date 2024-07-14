@@ -52,7 +52,7 @@ object Scheduler {
      * application#onCreate
      */
     fun runOnAppCreate(application: Application) {
-        SourceCrashController.init(application)
+
         initCrasher(application)
 
         // 注册各种 Controller
@@ -69,6 +69,8 @@ object Scheduler {
         initOkkv(application)
         initBugly(application)
         initAria(application)
+
+        SourceCrashController.init(application, Inject.get())
         initTrustAllHost()
     }
 

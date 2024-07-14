@@ -1,176 +1,237 @@
 package com.heyanle.easybangumi4.cartoon.star
 
-import com.heyanle.easy_i18n.R
+import com.heyanle.easybangumi4.base.json.JsonFileProvider
 import com.heyanle.easybangumi4.base.preferences.android.AndroidPreferenceStore
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
-import com.heyanle.easybangumi4.cartoon.entity.CartoonTagWrapper
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
-import com.heyanle.easybangumi4.cartoon.tag.CartoonTagsController
 import com.heyanle.easybangumi4.ui.common.proc.FilterState
-import com.heyanle.easybangumi4.utils.jsonTo
-import com.heyanle.easybangumi4.utils.stringRes
+import com.heyanle.easybangumi4.utils.CoroutineProvider
 import com.heyanle.easybangumi4.utils.toJson
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 /**
- * Created by heyanle on 2024/6/8.
+ * Created by heyanle on 2024/7/14.
  * https://github.com/heyanLE
  */
 class CartoonStarController(
     private val cartoonInfoDao: CartoonInfoDao,
-    private val cartoonTagsController: CartoonTagsController,
-    private val sharePreferenceStore: AndroidPreferenceStore,
+    private val androidPreferenceStore: AndroidPreferenceStore,
+    private val jsonFileProvider: JsonFileProvider,
 ) {
 
-    companion object {
-        const val DEFAULT_STATE_ID = -3
-    }
+    private val dispatcher = CoroutineProvider.SINGLE
+    private val scope = CoroutineScope(SupervisorJob() + dispatcher)
 
-
-    private val scope = MainScope()
-
-    private val tagSortFilterStateItemShare =
-        sharePreferenceStore.getString("cartoon_tag_sort_filter_state_map", "{}")
-
-    val tagSortFilterStateItem = tagSortFilterStateItemShare.flow().map {
-        it.jsonTo<Map<Int, CartoonTagWrapper.TagSortFilterStateItem>>() ?: emptyMap()
-    }.map {
-        if (it.isEmpty()) {
-            it + (DEFAULT_STATE_ID to CartoonTagWrapper.TagSortFilterStateItem.default)
-        } else {
-            it
-        }
-    }.stateIn(
-        scope,
-        SharingStarted.Lazily,
-        tagSortFilterStateItemShare.get().jsonTo<Map<Int, CartoonTagWrapper.TagSortFilterStateItem>>() ?: mapOf((DEFAULT_STATE_ID to CartoonTagWrapper.TagSortFilterStateItem.default))
+    data class StarState(
+        val tagList: List<CartoonTag> = emptyList(),
+        val label2Cartoon: Map<String, List<CartoonInfo>> = emptyMap(),
+        val cartoonInfoList : List<CartoonInfo> = emptyList()
     )
 
-
-    val flowCartoonTag: Flow<Map<CartoonTagWrapper, List<CartoonInfo>>> = combine(
-        tagSortFilterStateItem,
-        cartoonTagsController.tagsList.distinctUntilChanged(),
+    // 1. 保证有内部 tag （全部，本地，更新），如果 tagList 里没有会补充
+    // 2. 保证所有 cartoonInfo 里的 tag 都有对应的 CartoonTag，如果 tagList 里没有会补充
+    val cartoonTagFlow = combine(
         cartoonInfoDao.flowAllStar().distinctUntilChanged(),
-    ) { tagSortFilterState, tagList, cartoonInfoList ->
-        val defaultSortFiler =
-            tagSortFilterState[DEFAULT_STATE_ID] ?: CartoonTagWrapper.TagSortFilterStateItem.default
+        jsonFileProvider.cartoonTag.flow
+    ) { cartoonInfoList, tagListRes ->
+        (tagListRes.okOrNull() ?: emptyList())
+            .process(cartoonInfoList)
+    }.stateIn(scope, SharingStarted.Lazily, StarState())
 
-        val tagMap = HashMap<Int, CartoonTag>()
-        tagList.forEach {
-            tagMap[it.id] = it
+    fun remove(cartoonTag: CartoonTag) {
+        if (cartoonTag.isInner) {
+            return
         }
 
-        if (!tagMap.containsKey(CartoonTagsController.ALL_TAG_ID)){
-            tagMap[CartoonTagsController.ALL_TAG_ID] =  CartoonTag(
-                CartoonTagsController.ALL_TAG_ID, stringRes(
-                    R.string.all_word), -1)
+        jsonFileProvider.cartoonTag.update {
+            filter { it.label != cartoonTag.label }
         }
-        val allTag = tagMap[CartoonTagsController.ALL_TAG_ID] ?: CartoonTag(
-            CartoonTagsController.ALL_TAG_ID, stringRes(
-                R.string.all_word), -1)
-        val temp = HashMap<CartoonTag, ArrayList<CartoonInfo>>()
-        val res = HashMap<CartoonTagWrapper, List<CartoonInfo>>()
+    }
 
-
-
-        for (entry in tagMap.entries) {
-            // 空列表也加上
-            temp[entry.value] = arrayListOf()
+    fun insert(label: String) {
+        jsonFileProvider.cartoonTag.update {
+            this + CartoonTag.create(label)
         }
+    }
 
-        val allList = temp[allTag]?: arrayListOf()
-        allList.addAll(cartoonInfoList)
-        temp[allTag] = allList
-
-        // 打包
-        cartoonInfoList.forEach { cartoon ->
-            cartoon.tagsIdList.forEach { tagId ->
-                val tag = tagMap[tagId]
-                if (tag != null) {
-                    val oldList = temp[tag] ?: arrayListOf()
-                    oldList.add(cartoon)
-                    temp[tag] = oldList
+    fun modifier(cartoonTag: CartoonTag) {
+        jsonFileProvider.cartoonTag.update {
+            if (cartoonTag.isCustomSetting)
+                map {
+                    if (it.label == cartoonTag.label) {
+                        cartoonTag
+                    } else {
+                        it
+                    }
+                }
+            else {
+                map {
+                    when (it.label) {
+                        CartoonTag.ALL_TAG_LABEL -> {
+                            it.copy(
+                                sortId = cartoonTag.sortId,
+                                isReverse = cartoonTag.isReverse,
+                                filterState = cartoonTag.filterState
+                            )
+                        }
+                        cartoonTag.label -> {
+                            cartoonTag
+                        }
+                        else -> {
+                            it
+                        }
+                    }
                 }
 
             }
         }
+    }
+    fun modifier(cartoonTag: List<CartoonTag>) {
+        jsonFileProvider.cartoonTag.set(cartoonTag)
+    }
 
-        // 排序 过滤 置顶
-        for (cartoonItem in temp.entries) {
-            val tag = cartoonItem.key
-            var cartoonList: List<CartoonInfo> = cartoonItem.value
+    private fun List<CartoonTag>.process(
+        cartoonInfoList: List<CartoonInfo>
+    ) : StarState {
 
 
-            var state = tagSortFilterState[tag.id]
-            if (state == null || !state.isCustomSetting){
-                state = defaultSortFiler.copy(tagId = tag.id, isCustomSetting = false)
+        val oriInnerTag = CartoonTag.innerLabel
+        val innerTag = oriInnerTag.toMutableSet()
+        // 确保 tag 里有内置 tag 和所有 cartoonInfo 中的 tag
+        val label2Tag = HashMap<String, CartoonTag>()
+
+        for (cartoonTag in this) {
+            if (innerTag.contains(cartoonTag.label)) {
+                innerTag.remove(cartoonTag.label)
+            } else if (cartoonTag.isInner) {
+                continue
             }
-            state = state.copy(tagId = tag.id)
+            label2Tag[cartoonTag.label] = cartoonTag
+        }
+        // 补充缺少的内部 tag
+        innerTag.forEach {
+            label2Tag[it] = CartoonTag.create(it)
+        }
 
+        val allTag = label2Tag[CartoonTag.ALL_TAG_LABEL] ?: CartoonTag.create(CartoonTag.ALL_TAG_LABEL)
+
+        // 打包
+        val pack = HashMap<String, MutableList<CartoonInfo>>()
+
+        for (entry in label2Tag.entries) {
+            pack[entry.value.label] = arrayListOf()
+        }
+
+
+        for (cartoonInfo in cartoonInfoList) {
+            for (tag in cartoonInfo.tagList) {
+                // 内部 tag 额外处理
+                if (oriInnerTag.contains(tag)) {
+                    continue
+                }
+                val cartoonTag = label2Tag[tag]
+                if (cartoonTag != null) {
+                    pack[cartoonTag.label]?.add(cartoonInfo)
+                }
+            }
+
+            // 内部 tag 处理
+            pack[CartoonTag.ALL_TAG_LABEL]?.add(cartoonInfo)
+
+            if (cartoonInfo.tagList.isEmpty()) {
+                pack[CartoonTag.DEFAULT_TAG_LABEL]?.add(cartoonInfo)
+            }
+
+
+        }
+
+        val res = HashMap<String, List<CartoonInfo>>()
+
+        // 打包完毕，后面是排序，过滤，置顶
+
+        for (entry in pack.entries) {
+
+            val pinList = arrayListOf<CartoonInfo>()
+            val normalList = arrayListOf<CartoonInfo>()
+
+            val tag = label2Tag[entry.key] ?: continue
+
+            val sortId = if (tag.isCustomSetting) tag.sortId else allTag.sortId
             val currentSort = CartoonInfoSortFilterConst.sortByList.firstOrNull() {
-                it.id == state.sortId
+                it.id == sortId
             } ?: CartoonInfoSortFilterConst.sortByStarTime
-            val isSortReverse = state.isReverse
+
+            val isSortReverse = if (tag.isCustomSetting) tag.isReverse else allTag.isReverse
+
+            val filterState = if (tag.isCustomSetting) tag.filterState else allTag.filterState
 
             val onFilter = CartoonInfoSortFilterConst.filterWithList.filter {
-                state.filterState[it.id] == FilterState.STATUS_ON
+                filterState[it.id] == FilterState.STATUS_ON
             }
             val excludeFilter = CartoonInfoSortFilterConst.filterWithList.filter {
-                state.filterState[it.id] == FilterState.STATUS_EXCLUDE
+                filterState[it.id] == FilterState.STATUS_EXCLUDE
             }
 
-            cartoonList = cartoonList.filter {
+            for (cartoonInfo in entry.value) {
                 var check = true
                 for (filterWith in onFilter) {
-                    if (!filterWith.filter(it)) {
+                    if (!filterWith.filter(cartoonInfo)) {
                         check = false
                         break
                     }
                 }
                 if (!check) {
-                    return@filter false
+                    continue
                 }
                 for (filterWith in excludeFilter) {
-                    if (filterWith.filter(it)) {
+                    if (filterWith.filter(cartoonInfo)) {
                         check = false
                         break
                     }
                 }
-                check
+                if (!check) {
+                    continue
+                }
+
+                if (cartoonInfo.isUp()){
+                    pinList.add(cartoonInfo)
+                } else {
+                    normalList.add(cartoonInfo)
+                }
             }
 
-            val upList =
-                cartoonList.filter { it.isUp() }
-                    .sortedWith { o1, o2 -> (o2.upTime - o1.upTime).toInt() }
-            val normalList = cartoonList.filter { !it.isUp() }.sortedWith() { o1, o2 ->
-                val res = currentSort.comparator.compare(o1, o2)
-                if (isSortReverse) -res else res
+            pinList.sortBy {
+                it.upTime
             }
 
-            res[CartoonTagWrapper(tag, state)] = upList + normalList
+            normalList.sortWith { o1, o2 ->
+                val r = currentSort.comparator.compare(o1, o2)
+                if (isSortReverse) -r else r
+            }
+
+            res[entry.key] = pinList + normalList
         }
-        res
-    }
-
-
-
-    fun changeState(tagId: Int, item: CartoonTagWrapper.TagSortFilterStateItem) {
-        val current = tagSortFilterStateItem.value.toMutableMap()
-        if (item.isCustomSetting) {
-            current[tagId] = item.copy(tagId = tagId)
-            tagSortFilterStateItemShare.set(current.toJson())
-        }else{
-            current[DEFAULT_STATE_ID] = item
-            current[tagId] = item
-            tagSortFilterStateItemShare.set(current.toJson())
-        }
+        return StarState(
+            tagList = label2Tag.values.toList().map {
+                if (!it.isInner && !it.isCustomSetting) {
+                    it.copy(
+                        sortId = allTag.sortId,
+                        isReverse = allTag.isReverse,
+                        filterState = allTag.filterState
+                    )
+                } else {
+                    it
+                }
+            }.sortedBy { it.order },
+            label2Cartoon = res,
+            cartoonInfoList = cartoonInfoList,
+        )
     }
 
 

@@ -11,8 +11,6 @@ import com.heyanle.easybangumi4.cartoon.old.repository.db.dao.CartoonTagDao
 import com.heyanle.easybangumi4.cartoon.old.repository.db.dao.SearchHistoryDao
 import com.heyanle.easybangumi4.cartoon.old.entity.CartoonHistory
 import com.heyanle.easybangumi4.cartoon.old.entity.CartoonStar
-import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
-import com.heyanle.easybangumi4.cartoon.entity.SearchHistory
 import com.heyanle.easybangumi4.cartoon.old.entity.CartoonTagOld
 import com.heyanle.easybangumi4.cartoon.old.entity.SearchHistoryOld
 

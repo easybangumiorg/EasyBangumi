@@ -23,7 +23,6 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ListItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FilterAlt
@@ -81,14 +80,10 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
-import com.heyanle.easybangumi4.BuildConfig
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.star.CartoonInfoSortFilterConst
-import com.heyanle.easybangumi4.cartoon.star.CartoonStarController
-import com.heyanle.easybangumi4.cartoon.tag.CartoonTagsController
-import com.heyanle.easybangumi4.cartoon.tag.isInner
-import com.heyanle.easybangumi4.cartoon.tag.tagLabel
+import com.heyanle.easybangumi4.cartoon.star.isInner
 import com.heyanle.easybangumi4.navigationCartoonTag
 import com.heyanle.easybangumi4.navigationDetailed
 import com.heyanle.easybangumi4.navigationMigrate
@@ -106,7 +101,6 @@ import com.heyanle.easybangumi4.ui.common.proc.FilterState
 import com.heyanle.easybangumi4.ui.common.proc.SortColumn
 import com.heyanle.easybangumi4.ui.common.proc.SortState
 import com.heyanle.easybangumi4.ui.main.MainViewModel
-import com.heyanle.easybangumi4.utils.logi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -152,8 +146,6 @@ fun Star() {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     val state by starVM.stateFlow.collectAsState()
-
-    val isFilter by starVM.isFilter.collectAsState(initial = false)
 
     val focusRequester = remember {
         FocusRequester()
@@ -203,7 +195,7 @@ fun Star() {
                     //scrollBehavior = scrollBehavior,
                     focusRequester = focusRequester,
                     isSearch = state.searchQuery != null,
-                    isFilter = isFilter,
+                    isFilter = state.isFilter,
                     text = state.searchQuery ?: "",
                     onTextChange = {
                         starVM.onSearch(it)
@@ -230,9 +222,9 @@ fun Star() {
             }
         }
 
-        if (state.tabs.size == 1) {
-            val tab = state.tabs.firstOrNull()
-            val list = state.data[tab] ?: emptyList()
+        if (state.tagList.size == 1) {
+            val tab = state.tagList.firstOrNull()
+            val list = state.data[tab?.label] ?: emptyList()
             StarList(
                 nestedScrollConnection = scrollBehavior.nestedScrollConnection,
                 starCartoon = list, selectionSet = state.selection, onStarClick = {
@@ -247,20 +239,20 @@ fun Star() {
                     starVM.onUpdate()
                 })
         } else {
-            TabPage(initialPage = state.tabs.indexOf(state.curTab).coerceAtLeast(0),
-                tabSize = state.tabs.size,
+            TabPage(initialPage = state.tagList.indexOf(state.curTab).coerceAtLeast(0),
+                tabSize = state.tagList.size,
                 onTabSelect = {
                     runCatching {
-                        starVM.changeTab(state.tabs[it])
+                        starVM.changeTab(state.tagList[it])
                     }.onFailure {
                         it.printStackTrace()
                     }
                 },
                 tabs = { i, _ ->
                     Row {
-                        val tab = state.tabs[i]
-                        val starNum = state.data[state.tabs[i]]?.size ?: 0
-                        Text(text = tab.cartoonTag.tagLabel())
+                        val tab = state.tagList[i]
+                        val starNum = state.data[tab.label]?.size ?: 0
+                        Text(text = tab.display)
                         Badge(
                             containerColor = MaterialTheme.colorScheme.primaryContainer,
                             contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -270,8 +262,8 @@ fun Star() {
                     }
 
                 }) {
-                val tab = state.tabs[it]
-                val list = state.data[tab] ?: emptyList()
+                val tab = state.tagList[it]
+                val list = state.data[tab.label] ?: emptyList()
                 StarList(
                     //nestedScrollConnection = scrollBehavior.nestedScrollConnection,
                     starCartoon = list, selectionSet = state.selection, onStarClick = {
@@ -294,7 +286,8 @@ fun Star() {
     when (val sta = state.dialog) {
         is StarViewModel.DialogState.ChangeTag -> {
             val tags =
-                state.tabs.filter { !it.cartoonTag.isInner() }
+                state.tagList
+
             if (tags.isEmpty()) {
                 AlertDialog(
                     title = {
@@ -416,22 +409,28 @@ fun CartoonStarProcBottomSheet(
                 CompositionLocalProvider(
                     LocalContentColor provides MaterialTheme.colorScheme.onSurface
                 ) {
-                    if (state.tabs.size > 1) {
+                    if (state.tagList.size > 1 && ! currentTab.isAll) {
                         ListItem(
                             colors = ListItemDefaults.colors(
                                 containerColor = Color.Transparent
                             ),
                             modifier = Modifier.clickable {
-                                vm.onCustomChange(currentTab)
+                                vm.tagConfigChange(
+                                    currentTab,
+                                    isCustomSetting = ! currentTab.isCustomSetting,
+                                )
                             },
                             headlineContent = {
                                 Text(text = stringResource(id = R.string.tag_custom))
                             },
                             trailingContent = {
                                 Switch(
-                                    checked = currentTab.tagSortFilterState.isCustomSetting,
+                                    checked = currentTab.isCustomSetting,
                                     onCheckedChange = {
-                                        vm.onCustomChange(currentTab)
+                                        vm.tagConfigChange(
+                                            currentTab,
+                                            isCustomSetting = ! currentTab.isCustomSetting,
+                                        )
                                     }
                                 )
                             }
@@ -460,10 +459,19 @@ fun CartoonStarProcBottomSheet(
                                 modifier = Modifier,
                                 filterState = FilterState(
                                     CartoonInfoSortFilterConst.filterWithList,
-                                    currentTab.tagSortFilterState.filterState
+                                    currentTab.filterState
                                 ),
                                 onFilterClick = { filter, sta ->
-                                    vm.onFilterChange(currentTab, filter, sta)
+                                    vm.tagConfigChange(
+                                        currentTab,
+                                        filterWithId = filter.id,
+                                        filterState = when(sta) {
+                                            FilterState.STATUS_OFF -> FilterState.STATUS_ON
+                                            FilterState.STATUS_ON -> FilterState.STATUS_EXCLUDE
+                                            FilterState.STATUS_EXCLUDE -> FilterState.STATUS_OFF
+                                            else -> FilterState.STATUS_OFF
+                                        }
+                                    )
                                 }
                             )
                         } else if (it == 1) {
@@ -471,10 +479,19 @@ fun CartoonStarProcBottomSheet(
                                 modifier = Modifier,
                                 sortState = SortState(
                                     CartoonInfoSortFilterConst.sortByList,
-                                    currentTab.tagSortFilterState.sortId,
-                                    currentTab.tagSortFilterState.isReverse
+                                    currentTab.sortId,
+                                    currentTab.isReverse
                                 ), onClick = { i, sta ->
-                                    vm.onSortChange(currentTab, i, sta)
+
+                                    vm.tagConfigChange(
+                                        currentTab,
+                                        sortById = i.id,
+                                        isReverse = when(sta) {
+                                            SortState.STATUS_OFF -> false
+                                            SortState.STATUS_ON -> true
+                                            else -> false
+                                        }
+                                    )
                                 }
                             )
                         }

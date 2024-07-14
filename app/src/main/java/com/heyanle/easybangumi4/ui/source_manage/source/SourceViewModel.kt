@@ -54,7 +54,7 @@ class SourceViewModel : ViewModel() {
 
 
     fun enable(sourceConfig: ConfigSource) {
-        val map = sourcePreferences.configs.get().toMutableMap()
+        val map = sourcePreferences.configs.getOrNull()?.toMutableMap() ?: mutableMapOf()
         val config = map[sourceConfig.sourceInfo.source.key]?.copy(enable = true) ?: SourceConfig(
             sourceConfig.sourceInfo.source.key,
             Int.MAX_VALUE,
@@ -65,7 +65,7 @@ class SourceViewModel : ViewModel() {
     }
 
     fun disable(sourceConfig: ConfigSource) {
-        val map = sourcePreferences.configs.get().toMutableMap()
+        val map = sourcePreferences.configs.getOrNull()?.toMutableMap() ?: mutableMapOf()
         val config = map[sourceConfig.sourceInfo.source.key]?.copy(enable = false) ?: SourceConfig(
             sourceConfig.sourceInfo.source.key,
             Int.MAX_VALUE,
