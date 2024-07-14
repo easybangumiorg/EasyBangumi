@@ -39,7 +39,7 @@ data class CartoonLocalMsg (
             return CartoonLocalMsg(
                 itemId = cartoonInfo.name ,
                 title = cartoonInfo.name,
-                desc = cartoonInfo.intro,
+                desc = cartoonInfo.description,
                 cover = cartoonInfo.coverUrl,
                 genres = cartoonInfo.genres
             )
