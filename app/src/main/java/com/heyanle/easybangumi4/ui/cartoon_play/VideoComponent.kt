@@ -64,6 +64,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
@@ -89,6 +90,7 @@ import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayingViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.DetailedViewModel
 import com.heyanle.easybangumi4.ui.common.CombineClickIconButton
+import com.heyanle.easybangumi4.ui.common.DonateDialog
 import com.heyanle.easybangumi4.ui.common.ErrorPage
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.ToggleButton
@@ -99,6 +101,7 @@ import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.shareImageText
 import com.heyanle.easybangumi4.utils.shareText
 import com.heyanle.easybangumi4.utils.stringRes
+import com.heyanle.okkv2.core.okkv
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -123,6 +126,9 @@ import loli.ball.easyplayer2.utils.rememberBatteryReceiver
  * Created by heyanle on 2023/12/17.
  * https://github.com/heyanLE
  */
+
+var hasDonateFromVideo by okkv<Boolean>("hasDonateFromVideo", def = false)
+
 @UnstableApi
 @Composable
 fun VideoFloat(
@@ -172,9 +178,9 @@ fun VideoFloat(
 
         val defaultSpeed = cartoonPlayingViewModel.defaultSpeed.value
         val customSpeed = cartoonPlayingViewModel.customSpeed.value
-        if (defaultSpeed == -1f){
+        if (defaultSpeed == -1f) {
             controlVM.setSpeed(if (customSpeed > 0) customSpeed else 1f)
-        }else{
+        } else {
             controlVM.setSpeed(if (defaultSpeed > 0) defaultSpeed else 1f)
         }
     }
@@ -440,7 +446,7 @@ fun VideoFloat(
         showScaleTypeWin.value && controlVM.isFullScreen,
         enter = slideInHorizontally(tween()) { it },
         exit = slideOutHorizontally(tween()) { it },
-        ) {
+    ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -526,7 +532,7 @@ fun VideoControl(
             val fastTopWeightMolecule by cartoonPlayingVM.fastTopWeightMolecule.collectAsState()
             val playerSeekFullWidthTime by cartoonPlayingVM.playerSeekFullWidthTimeMS.collectAsState()
 
-            if(fastWeight <= 0){
+            if (fastWeight <= 0) {
                 // 手势
                 SimpleGestureController(
                     vm = controlVM,
@@ -536,7 +542,7 @@ fun VideoControl(
                     longTouchText = stringResource(id = R.string.long_press_fast_forward),
                     slideFullTime = playerSeekFullWidthTime,
                 )
-            }else{
+            } else {
 
                 GestureController(
                     controlVM,
@@ -545,7 +551,7 @@ fun VideoControl(
                         .padding(6.dp, 64.dp),
                     playerSeekFullWidthTime,
                     supportFast = true,
-                    horizontalDoubleTapWeight = 1f/fastWeight,
+                    horizontalDoubleTapWeight = 1f / fastWeight,
                     verticalDoubleTapWeight = fastTopWeightMolecule.toFloat() / fastWeightTopDenominator.toFloat(),
                     topFastTime = fastTopSecond * 1000L,
                 ) {
@@ -570,14 +576,21 @@ fun VideoControl(
             }
 
 
-
             // 全屏顶部工具栏
             FullScreenVideoTopBar(
                 vm = controlVM,
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-            ){
+            ) {
                 showVideoScaleTypeWin.value = true
+            }
+
+            val showDonate = remember { mutableStateOf(false) }
+
+            DonateDialog(show = showDonate.value, hasDonate = {
+                hasDonateFromVideo = true
+            }) {
+                showDonate.value = false
             }
 
             FullScreenRightToolBar(
@@ -587,10 +600,18 @@ fun VideoControl(
                     .defaultMinSize(64.dp, Dp.Unspecified)
                     .align(Alignment.CenterEnd),
                 onImage = {
-                    cartoonPlayingVM.image()
+                    if (hasDonateFromVideo)
+                        cartoonPlayingVM.image()
+                    else {
+                        showDonate.value = true
+                    }
                 },
                 onShowRecorded = {
-                    cartoonPlayingVM.showRecord()
+                    if (hasDonateFromVideo)
+                        cartoonPlayingVM.showRecord()
+                    else {
+                        showDonate.value = true
+                    }
 
                 }
             )
@@ -626,8 +647,8 @@ fun VideoControl(
                             adviceProgress = 0,
                         )
                         nav.navigationDlna(
-                            detailState.cartoonInfo?.id?:"",
-                            detailState.cartoonInfo?.source?:"",
+                            detailState.cartoonInfo?.id ?: "",
+                            detailState.cartoonInfo?.source ?: "",
                             enterData
                         )
                     }
@@ -748,7 +769,7 @@ fun FullScreenVideoTopBar(
     vm: ControlViewModel,
     modifier: Modifier = Modifier,
     isShowOnNormalScreen: Boolean = false,
-    onMoreClick: ()->Unit,
+    onMoreClick: () -> Unit,
 ) {
     AnimatedVisibility(
         modifier = modifier,
@@ -999,7 +1020,7 @@ fun FastUI(
         }
     }
 
-    Row(modifier = Modifier.fillMaxSize()){
+    Row(modifier = Modifier.fillMaxSize()) {
         AnimatedVisibility(
             visible = vm.isFastRewindWinShow,
             modifier = Modifier
@@ -1092,7 +1113,6 @@ fun FastUI(
 }
 
 
-
 @Composable
 fun FastUI(
     vm: ControlViewModel,
@@ -1138,7 +1158,7 @@ fun FastUI(
                     .fillMaxHeight()
                     .weight(realHorizontalWeight)
             ) {
-                if(vm.isFastRewindTopShow) {
+                if (vm.isFastRewindTopShow) {
                     Box(
                         modifier = Modifier
                             .fillMaxHeight(verticalDoubleTapWeight)
@@ -1184,7 +1204,7 @@ fun FastUI(
                     }
                 }
 
-                if(vm.isFastRewindWinShow) {
+                if (vm.isFastRewindWinShow) {
                     Box(
                         modifier = Modifier
                             .fillMaxHeight(1 - verticalDoubleTapWeight)
@@ -1230,13 +1250,13 @@ fun FastUI(
                     }
                 }
             }
-            Spacer(modifier = Modifier.weight(1f - 2*realHorizontalWeight))
+            Spacer(modifier = Modifier.weight(1f - 2 * realHorizontalWeight))
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
                     .weight(realHorizontalWeight)
             ) {
-                if(vm.isFastForwardTopShow) {
+                if (vm.isFastForwardTopShow) {
                     Box(
                         modifier = Modifier
                             .fillMaxHeight(verticalDoubleTapWeight)
@@ -1279,7 +1299,7 @@ fun FastUI(
                         }
                     }
                 }
-                if(vm.isFastForwardWinShow) {
+                if (vm.isFastForwardWinShow) {
                     Box(
                         modifier = Modifier
                             .fillMaxHeight(1 - verticalDoubleTapWeight)

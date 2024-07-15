@@ -1,10 +1,13 @@
 package com.heyanle.easybangumi4.ui.common
 
+import android.net.Uri
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -21,13 +24,19 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
 import com.heyanle.easybangumi4.source_api.Source
+import com.heyanle.easybangumi4.utils.MediaAndroidUtils
+import com.heyanle.easybangumi4.utils.toast
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Composable
 fun EasyDeleteDialog(
@@ -410,4 +419,83 @@ fun EasyMutiSelectionDialog(
 
 }
 
+
+@Composable
+fun DonateDialog(
+    show: Boolean,
+    hasDonate: () ->Unit,
+    onDismissRequest: () -> Unit,
+){
+    val scope = rememberCoroutineScope()
+    if (show) {
+        AlertDialog(
+            title = {
+                Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.donate_title))
+            },
+            text = {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(300.dp),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    OkImage(image = Uri.parse("file:///android_asset/thanks_wx.png"), contentDescription = "" )
+                    OkImage(image = Uri.parse("file:///android_asset/thanks_zfb.png"), contentDescription = "" )
+                }
+            },
+            onDismissRequest = onDismissRequest,
+            confirmButton = {
+                Column(
+                    horizontalAlignment = Alignment.End
+                ) {
+                    TextButton(
+                        onClick = {
+                            scope.launch (Dispatchers.IO) {
+                                APP.assets?.open("thanks_wx.png")?.use {
+                                    MediaAndroidUtils.saveToDownload(
+                                        it,
+                                        "donate",
+                                        "thanks_wx.png"
+                                    )
+                                }
+
+                                APP.assets?.open("thanks_zfb.jpg")?.use {
+                                    MediaAndroidUtils.saveToDownload(
+                                        it,
+                                        "donate",
+                                        "thanks_zfb.jpg"
+                                    )
+                                }
+                                scope.launch {
+                                    "保存成功！".toast()
+                                }
+                            }
+                        }) {
+                        Text(text = "保存二维码")
+                    }
+
+                    TextButton(
+
+                        onClick = {
+                            onDismissRequest()
+                            hasDonate()
+                            "感谢支持！".toast()
+                        }) {
+                        Text(text = "我已捐赠")
+                    }
+
+                    TextButton(
+
+                        onClick = {
+                            onDismissRequest()
+                        }) {
+                        Text(text = "我已拒绝")
+                    }
+                }
+
+            },
+
+        )
+    }
+}
 

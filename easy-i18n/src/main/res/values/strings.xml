@@ -566,5 +566,10 @@
 
     <string name="local_folder_change_completely">本地目录切换成功，可能需要自行复制原有数据</string>
 
+    <string name="donate">给开发者加个鸡腿</string>
+
+    <string name="donate_title">如果你觉得该软件对你有帮助，请给开发者加个鸡腿吧！</string>
+
+    <string name="donate_do">我已捐赠</string>
 
 </resources>

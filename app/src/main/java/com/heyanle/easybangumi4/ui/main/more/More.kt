@@ -11,8 +11,10 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CardGiftcard
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Extension
+import androidx.compose.material.icons.filled.Handshake
 import androidx.compose.material.icons.filled.HistoryToggleOff
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Storage
@@ -24,6 +26,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -41,6 +47,7 @@ import com.heyanle.easybangumi4.navigationSetting
 import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.ui.common.BooleanPreferenceItem
+import com.heyanle.easybangumi4.ui.common.DonateDialog
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.setting.SettingPage
 import com.heyanle.inject.core.Inject
@@ -140,6 +147,27 @@ fun More() {
 
 
         //Divider()
+        var showDonate by remember {
+            mutableStateOf(false)
+        }
+
+        ListItem(
+            modifier = Modifier.clickable {
+                showDonate = true
+            },
+            headlineContent = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.donate)) },
+            leadingContent = {
+                Icon(
+                    Icons.Filled.Handshake,
+                    contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.donate)
+                )
+            }
+        )
+
+        DonateDialog(show = showDonate, hasDonate = {}) {
+            showDonate = false
+        }
+
 
 
         ListItem(
