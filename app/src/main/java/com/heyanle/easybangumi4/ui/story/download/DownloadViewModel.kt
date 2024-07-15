@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.base.DataResult
 import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadInfo
 import com.heyanle.easybangumi4.cartoon.story.CartoonStoryController
+import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.inject.core.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -65,6 +66,11 @@ class DownloadViewModel: ViewModel() {
     }
 
     fun clickDownloadInfo(info: CartoonDownloadInfo){
+        if (info.runtime == null){
+            cartoonStoryController.tryResumeDownloadReq(info)
+        } else {
+            "暂不支持断电续传，可长按删除".moeSnackBar()
+        }
     }
 
 
