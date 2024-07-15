@@ -7,6 +7,7 @@ import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import com.heyanle.easybangumi4.APP
+import com.heyanle.easybangumi4.BuildConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -34,7 +35,7 @@ object MediaAndroidUtils {
                     Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
                         ?: File(APP.getFilePath())
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                    val targetRoot = File(picturesFile, "EasyBangumi/${type}")
+                    val targetRoot = File(picturesFile, "${if (BuildConfig.DEBUG) "EasyBangumi.debug" else "EasyBangumi"}/${type}")
                     val target = File(targetRoot, file.name)
                     file.copyTo(target, true)
                 } else {
@@ -43,7 +44,7 @@ object MediaAndroidUtils {
                         put(
                             MediaStore.MediaColumns.RELATIVE_PATH, "${
                                 Environment.getExternalStoragePublicDirectory(
-                                    Environment.DIRECTORY_DOWNLOADS)}/EasyBangumi/${type}")
+                                    Environment.DIRECTORY_DOWNLOADS)}/${if (BuildConfig.DEBUG) "EasyBangumi.debug" else "EasyBangumi"}/${type}")
                     }
                     APP.contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
                         ?.let { uri ->

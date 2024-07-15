@@ -541,16 +541,25 @@
     <string name="local_cartoon_creating">正在新建本地剧集……</string>
 
     <string name="create_local_cartoon_from_current">是否以当前番剧信息新建本地剧集？</string>
+    <string name="create_local_cartoon_from_current_name_repeat">同名剧集已存在，请选择后续操作</string>
 
+    <string name="refresh_local_cartoon">更新同名剧集元数据</string>
+    <string name="new_local_cartoon_name">自定义新剧集名称</string>
+    <string name="local_cartoon_name_repeat_reenter">名称为空或同名剧集已存在，请重新输入</string>
+
+    <string name="local_item_name">剧集名称</string>
     <string name="episode_label">标题</string>
     <string name="episode_count">集数</string>
 
-    <string name="episode_repeat">集数冲突，下载请求中有重复集数。请先删除本地番源中该集数</string>
+    <string name="episode_repeat">集数冲突。请先删除本地番源中该集数</string>
 
     <string name="sort_now">刷新排序</string>
 
     <string name="label_empty">标题不能为空</string>
 
     <string name="download_stop_click_to_restart">点击重新下载</string>
+
+    <string name="local_cant_dlna">本地番剧暂不支持投屏</string>
+
 
 </resources>

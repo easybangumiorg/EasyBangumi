@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.ui.download
+package com.heyanle.easybangumi4.ui.story.download
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -20,7 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.overscroll
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -34,12 +34,15 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -47,6 +50,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.R
 import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadInfo
+import com.heyanle.easybangumi4.ui.common.EasyDeleteDialog
+import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
+import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.common.SelectionTopAppBar
 
@@ -54,86 +60,109 @@ import com.heyanle.easybangumi4.ui.common.SelectionTopAppBar
  * Created by heyanle on 2024/7/14.
  * https://github.com/heyanLE
  */
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Download() {
+fun DownloadTopAppBar(){
     val nav = LocalNavController.current
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val vm = viewModel<DownloadViewModel>()
     val state = vm.state.collectAsState()
     val sta = state.value
-    Surface(
-        color = MaterialTheme.colorScheme.background,
-        contentColor = MaterialTheme.colorScheme.onBackground
-    ) {
-
-        Column {
-            if (sta.selection.isEmpty())
-                TopAppBar(
-                    title = {
-                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.local_download))
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = {
-                            nav.popBackStack()
-                        }) {
-                            Icon(
-                                imageVector = Icons.Filled.ArrowBack,
-                                stringResource(id = com.heyanle.easy_i18n.R.string.back)
-                            )
-                        }
-                    },
-                    scrollBehavior = scrollBehavior
-                )
-            else {
-                SelectionTopAppBar(
-                    selectionItemsCount = sta.selection.size,
-                    onExit = {
-                        vm.clearSelection()
-                    },
-                    actions = {
-                        IconButton(onClick = { vm.deleteSelection() }) {
-                            Icon(
-                                Icons.Filled.Delete, contentDescription = stringResource(
-                                    id = com.heyanle.easy_i18n.R.string.delete
-                                )
-                            )
-                        }
-                    }
-                )
-            }
-            
-            Box {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .nestedScroll(scrollBehavior.nestedScrollConnection),
-                    contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 86.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    items(sta.downloadInfo) {
-                        DownloadItem(
-                            downloadItem = it,
-                            isSelect = sta.selection.contains(it),
-                            onClick = {
-                                if (sta.selection.isEmpty()) {
-                                    vm.clickDownloadInfo(it)
-                                } else {
-                                    vm.selectDownloadInfo(it)
-                                }
-
-                            },
-                            onLongPress = {
-                                vm.onSelectionLongPress(it)
-                            }
+    if (sta.selection.isEmpty())
+        TopAppBar(
+            title = {
+                Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.local_download))
+            },
+            navigationIcon = {
+                IconButton(onClick = {
+                    nav.popBackStack()
+                }) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBack,
+                        stringResource(id = com.heyanle.easy_i18n.R.string.back)
+                    )
+                }
+            },
+        )
+    else {
+        SelectionTopAppBar(
+            selectionItemsCount = sta.selection.size,
+            onExit = {
+                vm.clearSelection()
+            },
+            actions = {
+                IconButton(onClick = { vm.showDeleteDialog() }) {
+                    Icon(
+                        Icons.Filled.Delete, contentDescription = stringResource(
+                            id = com.heyanle.easy_i18n.R.string.delete
                         )
-                    }
+                    )
                 }
             }
-            
-            
-        }
+        )
+    }
+}
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@Composable
+fun Download(
+) {
+    val nav = LocalNavController.current
+    val vm = viewModel<DownloadViewModel>()
+    val state = vm.state.collectAsState()
+    val sta = state.value
+    val haptic = LocalHapticFeedback.current
+    val listState = rememberLazyListState()
+    Box {
+        if (sta.loading) {
+            LoadingPage(
+                modifier = Modifier.fillMaxSize()
+            )
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize(),
+                contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 86.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                state = listState
+            ) {
+                items(sta.downloadInfo) {
+                    DownloadItem(
+                        downloadItem = it,
+                        isSelect = sta.selection.contains(it),
+                        onClick = {
+                            if (sta.selection.isEmpty()) {
+                                vm.clickDownloadInfo(it)
+                            } else {
+                                vm.selectDownloadInfo(it)
+                            }
+
+                        },
+                        onLongPress = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            vm.onSelectionLongPress(it)
+                        }
+                    )
+                }
+            }
+
+            FastScrollToTopFab(listState = listState)
+        }
+    }
+    val dialog = sta.dialog
+    when(dialog){
+        is DownloadViewModel.Dialog.DeleteSelection -> {
+            EasyDeleteDialog(show = true, onDelete = {
+                vm.deleteDownload(dialog.selection)
+                vm.dismissDialog()
+            }) {
+                vm.dismissDialog()
+            }
+        }
+        else -> {
+
+        }
     }
 }
 

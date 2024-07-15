@@ -104,13 +104,9 @@
 
 
         <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="${package_name}.fileProvider"
-            android:exported="false"
+            android:name=".provider.MediaContentProvider"
+            android:authorities="${package_name}.provider"
             android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_path" />
         </provider>
 
     </application>

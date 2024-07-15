@@ -30,11 +30,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.heyanle.easybangumi4.ABOUT
 import com.heyanle.easybangumi4.BuildConfig
-import com.heyanle.easybangumi4.DOWNLOAD
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.R
 import com.heyanle.easybangumi4.SOURCE_MANAGER
 import com.heyanle.easybangumi4.STORAGE
+import com.heyanle.easybangumi4.STORY
 import com.heyanle.easybangumi4.TestMain
 import com.heyanle.easybangumi4.navigationCartoonTag
 import com.heyanle.easybangumi4.navigationSetting
@@ -124,7 +124,7 @@ fun More() {
 
         ListItem(
             modifier = Modifier.clickable {
-                nav.navigate(DOWNLOAD)
+                nav.navigate(STORY)
             },
             headlineContent = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.local_download)) },
             leadingContent = {

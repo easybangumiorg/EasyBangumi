@@ -1,7 +1,7 @@
-package com.heyanle.easybangumi4.cartoon.download.runtime
+package com.heyanle.easybangumi4.cartoon.story.download.runtime
 
 import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadReq
-import com.heyanle.easybangumi4.cartoon.download.step.BaseStep
+import com.heyanle.easybangumi4.cartoon.story.download.step.BaseStep
 import com.heyanle.inject.api.get
 import com.heyanle.inject.core.Inject
 
@@ -32,6 +32,7 @@ class CartoonDownloadRuntimeFactory {
                             }
                             if (cartoonDownloadRuntime.stepIndex >= stepChain.size) {
                                 cartoonDownloadRuntime.state = 4
+                                cartoonDownloadRuntime.dispatchStateToBus()
                                 break
                             }
                             cartoonDownloadRuntime.dispatchStateToBus()

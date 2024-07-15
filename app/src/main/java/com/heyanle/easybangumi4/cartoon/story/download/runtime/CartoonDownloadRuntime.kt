@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.cartoon.download.runtime
+package com.heyanle.easybangumi4.cartoon.story.download.runtime
 
 import androidx.media3.transformer.ExportException
 import androidx.media3.transformer.ExportResult
@@ -22,8 +22,17 @@ class CartoonDownloadRuntime(
     val req: CartoonDownloadReq,
 ) {
 
-    companion object {
+    interface Listener {
+        fun onStateChange(runtime: CartoonDownloadRuntime)
+    }
 
+    companion object {
+        const val STATE_WAITING = 0
+        const val STATE_DOING = 1
+        const val STATE_COMPLETELY = 2
+        const val STATE_ERROR = 3
+        const val STATE_SUCCESS = 4
+        const val STATE_CANCEL = 5
     }
 
     // 是否已经被调度（加进线程池）
@@ -58,6 +67,10 @@ class CartoonDownloadRuntime(
     // 5 -> cancel
     @Volatile
     var state: Int = 0
+        set(value) {
+            field = value
+            listener?.onStateChange(this)
+        }
 
     @Volatile
     var error: Throwable? = null
@@ -82,6 +95,9 @@ class CartoonDownloadRuntime(
 
     @Volatile
     var targetDisplayName: String? = null
+
+    var listener: Listener? = null
+
 
     fun getDownloadInfo(): DownloadingBus.DownloadingInfo {
         val bus: DownloadingBus = Inject.get()

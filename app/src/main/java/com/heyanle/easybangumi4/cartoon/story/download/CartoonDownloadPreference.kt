@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.cartoon.download
+package com.heyanle.easybangumi4.cartoon.story.download
 
 import com.heyanle.easybangumi4.base.preferences.android.AndroidPreferenceStore
 

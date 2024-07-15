@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.cartoon.local
+package com.heyanle.easybangumi4.cartoon.story.local
 
 import android.graphics.Bitmap
 import androidx.annotation.WorkerThread
@@ -9,7 +9,6 @@ import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.cartoon.entity.CartoonLocalEpisode
 import com.heyanle.easybangumi4.cartoon.entity.CartoonLocalItem
 import com.heyanle.easybangumi4.cartoon.entity.CartoonLocalMsg
-import com.heyanle.easybangumi4.utils.deleteRecursively
 import com.hippo.unifile.UniFile
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
@@ -25,11 +24,7 @@ object LocalItemFactory {
 
     @WorkerThread
     suspend fun newItemFolder(cartoonInfo: CartoonLocalMsg, rootFolder: UniFile): UniFile? {
-        var targetFolder = rootFolder.findFile(cartoonInfo.itemId)
-        if (targetFolder != null && targetFolder.exists()){
-            targetFolder.deleteRecursively()
-        }
-        targetFolder = rootFolder.createDirectory(cartoonInfo.itemId) ?: return null
+        val targetFolder = rootFolder.createDirectory(cartoonInfo.itemId) ?: return null
         if (!targetFolder.canWrite()) {
             return null
         }
@@ -50,6 +45,7 @@ object LocalItemFactory {
                 hasPng = true
             }
         }
+        targetFolder.findFile("tvshow.nfo")?.delete()
         val nfoFile = targetFolder.createFile("tvshow.nfo") ?: return null
         val tvShow =  Element("tvshow")
         tvShow.appendElement("title").text(cartoonInfo.title)

@@ -1,11 +1,11 @@
-package com.heyanle.easybangumi4.cartoon.download.req
+package com.heyanle.easybangumi4.cartoon.story.download.req
 
 import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadReq
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
-import com.heyanle.easybangumi4.cartoon.download.step.CopyAndNfoStep
-import com.heyanle.easybangumi4.cartoon.download.step.ParseStep
-import com.heyanle.easybangumi4.cartoon.download.step.TransformerStep
-import com.heyanle.easybangumi4.cartoon.entity.CartoonLocalInfo
+import com.heyanle.easybangumi4.cartoon.story.download.step.CopyAndNfoStep
+import com.heyanle.easybangumi4.cartoon.story.download.step.ParseStep
+import com.heyanle.easybangumi4.cartoon.story.download.step.TransformerStep
+import com.heyanle.easybangumi4.cartoon.entity.CartoonStoryItem
 import com.heyanle.easybangumi4.source_api.entity.Episode
 import com.heyanle.easybangumi4.source_api.entity.PlayLine
 
@@ -19,7 +19,7 @@ object CartoonDownloadReqFactory {
         cartoonInfo: CartoonInfo,
         playLine: PlayLine,
         list: List<Episode>,
-        targetLocalInfo: CartoonLocalInfo,
+        targetLocalInfo: CartoonStoryItem,
     ): List<CartoonDownloadReq> {
         val episodeList = list.sortedBy { it.order }
         val orderSet = mutableSetOf<Int>()
@@ -36,7 +36,7 @@ object CartoonDownloadReqFactory {
                 targetEpisode ++
             }
 
-            orderSet.add(episode.order)
+            orderSet.add(targetEpisode)
             reqList.add(
                 CartoonDownloadReq(
                     uuid = "req-${System.currentTimeMillis()}-${i}",

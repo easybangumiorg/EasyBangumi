@@ -61,6 +61,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.heyanle.easy_i18n.R
+import com.heyanle.easybangumi4.base.DataResult
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.entity.PlayLineWrapper
 import com.heyanle.easybangumi4.source_api.entity.Episode
@@ -203,14 +204,16 @@ fun CartoonDownloadDialog(
             }
         )
 
-        if (sta.localState.loading) {
+        val sl = sta.storyList
+
+        if (sl is DataResult.Loading) {
             LoadingPage(
                 modifier = Modifier.fillMaxSize()
             )
-        } else if (sta.localState.error != null || sta.localState.errorMsg != null) {
+        } else if (sl is DataResult.Error) {
             ErrorPage(
                 modifier = Modifier.fillMaxSize(),
-                errorMsg = sta.localState.errorMsg ?: sta.localState.error?.message ?: "error",
+                errorMsg = sl.errorMsg,
                 other = {
                     Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.click_to_retry))
                 },
@@ -313,7 +316,11 @@ fun CartoonDownloadDialog(
                 items(
                     sta.reqList
                 ) { req ->
-                    val repeat = sta.episodeList.count { it == req.toEpisode } > 1
+                    val repeat = remember(sta) {
+                        sta.cantEpisodeSet.contains(req.toEpisode) || sta.reqList.any {
+                            it != req && (it.toEpisode == req.toEpisode)
+                        }
+                    }
                     ListItem(
                         modifier = Modifier.clickable {
                             model.showChangeEpisode(req.uuid, req.toEpisodeTitle, req.toEpisode)
@@ -356,18 +363,45 @@ fun CartoonDownloadDialog(
     }
 
     when (dialog) {
-        is CartoonDownloadReqModel.Dialog.NewLocalReq -> {
+        is CartoonDownloadReqModel.Dialog.NewLocalReqWithTitle -> {
+            val textLabel = remember {
+                mutableStateOf(dialog.localMsg.itemId)
+            }
+            val fq = remember { FocusRequester() }
+            LaunchedEffect(key1 = Unit){
+                try {
+                    fq.requestFocus()
+                }catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
             AlertDialog(
                 onDismissRequest = { model.dismissDialog() },
                 title = {
                     Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.new_local_cartoon))
                 },
                 text = {
-                    Text(text = stringResource(id = R.string.create_local_cartoon_from_current))
+                    TextField(
+                        value = textLabel.value,
+                        onValueChange = {
+                            textLabel.value = it
+                        },
+                        label = {
+                            Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.episode_label))
+                        },
+                        isError = textLabel.value.isNotEmpty() && sta.storyList.okOrNull()?.any { it.cartoonLocalItem.itemId == textLabel.value } == true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+
+                    )
                 },
                 confirmButton = {
                     TextButton(onClick = {
-                        model.addLocalCartoon(dialog.localMsg)
+                        val repeat = textLabel.value.isNotEmpty() && sta.storyList.okOrNull()?.any { it.cartoonLocalItem.itemId == textLabel.value } == true
+                        if (repeat) {
+                            stringRes(R.string.local_cartoon_name_repeat_reenter).toast()
+                            return@TextButton
+                        }
+                        model.addLocalCartoon(dialog.localMsg.copy(itemId = textLabel.value, title = textLabel.value))
                     }) {
                         Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.confirm))
                     }
@@ -379,7 +413,50 @@ fun CartoonDownloadDialog(
                 }
             )
         }
+        is CartoonDownloadReqModel.Dialog.NewLocalReq -> {
+            val isRepeatName = sta.storyList.okOrNull()?.any { it.cartoonLocalItem.itemId == dialog.localMsg.itemId } == true
+            AlertDialog(
+                onDismissRequest = { model.dismissDialog() },
+                title = {
+                    Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.new_local_cartoon))
+                },
+                text = {
+                    if (!isRepeatName) {
+                        Text(text = stringResource(id = R.string.create_local_cartoon_from_current))
+                    } else {
+                        Text(text = stringResource(id = R.string.create_local_cartoon_from_current_name_repeat))
+                    }
+                },
+                confirmButton = {
+                    if (!isRepeatName) {
+                        TextButton(onClick = {
+                            model.addLocalCartoon(dialog.localMsg)
+                        }) {
+                            Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.confirm))
+                        }
+                    } else {
+                        Column(
+                            horizontalAlignment = Alignment.End
+                        ) {
+                            TextButton(onClick = {
+                                model.addLocalCartoon(dialog.localMsg, true)
+                            }) {
+                                Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.refresh_local_cartoon))
+                            }
+                            TextButton(onClick = {
+                                model.showNewLocalDialogWithTitle()
+                            }) {
+                                Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.new_local_cartoon_name))
+                            }
+                            TextButton(onClick = { model.dismissDialog() }) {
+                                Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.cancel))
+                            }
 
+                        }
+                    }
+                },
+            )
+        }
         is CartoonDownloadReqModel.Dialog.LoadingNewLocal -> {
             AlertDialog(
                 onDismissRequest = {
@@ -397,7 +474,6 @@ fun CartoonDownloadDialog(
                 confirmButton = {}
             )
         }
-
         is CartoonDownloadReqModel.Dialog.ChangeEpisode -> {
 
             val textEpisode = remember {
@@ -459,7 +535,7 @@ fun CartoonDownloadDialog(
                                 stringRes(R.string.please_input_right_speed).toast()
                                 return@TextButton
                             }
-                            if (sta.repeatEpisode.contains(i)) {
+                            if (sta.cantEpisodeSet.contains(i)) {
                                 stringRes(R.string.episode_repeat).toast()
                                 return@TextButton
                             }

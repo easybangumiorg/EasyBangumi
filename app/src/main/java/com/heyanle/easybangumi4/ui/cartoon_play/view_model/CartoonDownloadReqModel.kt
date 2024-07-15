@@ -1,21 +1,19 @@
 package com.heyanle.easybangumi4.ui.cartoon_play.view_model
 
-import androidx.collection.arraySetOf
-import com.heyanle.easybangumi4.cartoon.CartoonLocalDownloadController
-import com.heyanle.easybangumi4.cartoon.download.req.CartoonDownloadReqController
-import com.heyanle.easybangumi4.cartoon.download.req.CartoonDownloadReqFactory
-import com.heyanle.easybangumi4.cartoon.download.runtime.CartoonDownloadDispatcher
+import com.heyanle.easybangumi4.base.DataResult
+import com.heyanle.easybangumi4.cartoon.story.download.req.CartoonDownloadReqFactory
 import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadReq
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
-import com.heyanle.easybangumi4.cartoon.entity.CartoonLocalInfo
+import com.heyanle.easybangumi4.cartoon.entity.CartoonStoryItem
 import com.heyanle.easybangumi4.cartoon.entity.CartoonLocalMsg
 import com.heyanle.easybangumi4.cartoon.entity.PlayLineWrapper
-import com.heyanle.easybangumi4.cartoon.local.CartoonLocalController
+import com.heyanle.easybangumi4.cartoon.story.CartoonStoryController
 import com.heyanle.easybangumi4.source_api.entity.Episode
 import com.heyanle.inject.core.Inject
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -34,57 +32,35 @@ class CartoonDownloadReqModel(
 
 
     private val scope = MainScope()
-    private val cartoonLocalController: CartoonLocalController by Inject.injectLazy()
-    private val cartoonDownloadDispatcher: CartoonDownloadDispatcher by Inject.injectLazy()
-    private val cartoonLocalDownloadController: CartoonLocalDownloadController by Inject.injectLazy()
 
-    private val cartoonDownloadReqController: CartoonDownloadReqController by Inject.injectLazy()
+    private val cartoonStoryController: CartoonStoryController by Inject.injectLazy()
+
 
     data class State(
-        val localState: CartoonLocalDownloadController.CartoonLocalInfoState = CartoonLocalDownloadController.CartoonLocalInfoState(),
+        val storyList: DataResult<List<CartoonStoryItem>> = DataResult.Loading(),
 
         val keyword: String? = null,
-        val localWithKeyword: List<CartoonLocalInfo> = listOf(),
+        val localWithKeyword: List<CartoonStoryItem> = listOf(),
 
-        val targetLocalInfo: CartoonLocalInfo? = null,
+        val targetLocalInfo: CartoonStoryItem? = null,
         val reqList: List<CartoonDownloadReq> = emptyList(),
 
         val dialog: Dialog? = null,
     ) {
 
-        val enableEpisode: List<Int> by lazy {
-            val res = arrayListOf<Int>()
-            for (i in 0..99) {
-                if (targetLocalInfo?.cartoonLocalItem?.episodes?.any { it.episode == i } != true) {
-                    res.add(i)
-                }
-            }
-            res
+        // 该集合可能会缺少调用后才进入下载错误阶段的任务
+        val cantEpisodeSet: Set<Int> by lazy {
+            targetLocalInfo?.cantReqEpisode?.plus(
+                targetLocalInfo.errorDownloadEpisode ?: emptySet()) ?: emptySet()
         }
 
-        val repeatEpisode: Set<Int> by lazy {
-            (targetLocalInfo?.cartoonLocalItem?.episodes?.map { it.episode }?.toSet()
-                ?: emptySet()) + (targetLocalInfo?.downloadInfoList?.map { it.req.toEpisode }
-                ?.toSet() ?: emptySet())
+        val reqEpisode: Set<Int> by lazy {
+            reqList.map { it.toEpisode }.toSet()
         }
 
-        val episodeList: List<Int> by lazy {
-            val el = arraySetOf<Int>()
-            targetLocalInfo?.downloadInfoList?.forEach {
-                el.add(it.req.toEpisode)
-            }
-            targetLocalInfo?.cartoonLocalItem?.episodes?.forEach {
-                el.add(it.episode)
-            }
-            var res = el.toMutableList()
-            reqList.forEach {
-                res.add(it.toEpisode)
-            }
-            res
-        }
 
         val isRepeat: Boolean by lazy {
-            episodeList.toSet().size != episodeList.size
+            reqEpisode.size != reqList.size || reqEpisode.any { cantEpisodeSet.contains(it) }
         }
     }
 
@@ -93,25 +69,25 @@ class CartoonDownloadReqModel(
 
     init {
         scope.launch {
-            cartoonLocalDownloadController.cartoonLocalInfo.collect { sta ->
+            cartoonStoryController.storyItemList.collectLatest { result ->
                 _state.update {
                     it.copy(
-                        localState = sta
+                        storyList = result
                     )
                 }
             }
         }
         scope.launch {
             combine(
-                _state.map { it.localState.localCartoonInfo }.distinctUntilChanged(),
+                _state.map { it.storyList }.distinctUntilChanged(),
                 _state.map { it.keyword }.distinctUntilChanged(),
             ) { local, keyword ->
                 if (keyword == null) {
-                    local
+                    local.okOrNull() ?: emptyList()
                 } else {
-                    local.filter {
+                    local.okOrNull()?.filter {
                         it.cartoonLocalItem.matches(keyword)
-                    }
+                    } ?: emptyList()
                 }
             }.collect { li ->
                 _state.update {
@@ -125,6 +101,11 @@ class CartoonDownloadReqModel(
     }
 
     sealed class Dialog {
+
+        data class NewLocalReqWithTitle(
+            val localMsg: CartoonLocalMsg,
+        ) : Dialog()
+
         data class NewLocalReq(
             val localMsg: CartoonLocalMsg,
         ) : Dialog()
@@ -140,7 +121,7 @@ class CartoonDownloadReqModel(
 
 
     fun retry() {
-        cartoonLocalController.refresh()
+        cartoonStoryController.refreshLocal()
     }
 
     fun changeKeyword(keyword: String?) {
@@ -151,7 +132,7 @@ class CartoonDownloadReqModel(
         }
     }
 
-    fun targetLocalItem(localItem: CartoonLocalInfo?) {
+    fun targetLocalItem(localItem: CartoonStoryItem?) {
         _state.update {
             it.copy(
                 targetLocalInfo = localItem,
@@ -171,6 +152,14 @@ class CartoonDownloadReqModel(
         _state.update {
             it.copy(
                 dialog = Dialog.NewLocalReq(CartoonLocalMsg.fromCartoonInfo(cartoonInfo))
+            )
+        }
+    }
+
+    fun showNewLocalDialogWithTitle() {
+        _state.update {
+            it.copy(
+                dialog = Dialog.NewLocalReqWithTitle(CartoonLocalMsg.fromCartoonInfo(cartoonInfo))
             )
         }
     }
@@ -203,7 +192,7 @@ class CartoonDownloadReqModel(
                         } else {
                             current++
                             current = maxOf(it.toEpisode, current)
-                            while (sta.repeatEpisode.contains(current)) {
+                            while (sta.cantEpisodeSet.contains(current)) {
                                 current++
                             }
                             it.copy(
@@ -219,27 +208,25 @@ class CartoonDownloadReqModel(
 
     fun pushReq(state: State) {
         scope.launch {
-            state.reqList?.forEach {
-                cartoonDownloadReqController.newDownloadItem(it)
-                cartoonDownloadDispatcher.addTask(it)
-            }
+            cartoonStoryController.newDownloadReq(
+                state.reqList
+            )
         }
     }
 
 
-    fun addLocalCartoon(localMsg: CartoonLocalMsg) {
+    fun addLocalCartoon(localMsg: CartoonLocalMsg, refresh: Boolean = false) {
         scope.launch {
             _state.update {
                 it.copy(
                     dialog = Dialog.LoadingNewLocal
                 )
             }
-            cartoonLocalController.newLocal(localMsg) {
-                _state.update {
-                    it.copy(
-                        dialog = null
-                    )
-                }
+            cartoonStoryController.newStory(localMsg)
+            _state.update {
+                it.copy(
+                    dialog = null
+                )
             }
         }
     }

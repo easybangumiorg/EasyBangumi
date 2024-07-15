@@ -2,6 +2,7 @@ package com.heyanle.easybangumi4.ui.cartoon_play
 
 import android.app.Activity
 import androidx.activity.compose.BackHandler
+import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -77,9 +78,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
+import androidx.media3.common.util.UnstableApi
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.LocalNavController
+import com.heyanle.easybangumi4.cartoon.story.local.source.LocalSource
 import com.heyanle.easybangumi4.navigationDlna
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayingViewModel
@@ -88,11 +91,13 @@ import com.heyanle.easybangumi4.ui.common.CombineClickIconButton
 import com.heyanle.easybangumi4.ui.common.ErrorPage
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.ToggleButton
+import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.bufferImageCache
 import com.heyanle.easybangumi4.utils.downloadImage
 import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.shareImageText
 import com.heyanle.easybangumi4.utils.shareText
+import com.heyanle.easybangumi4.utils.stringRes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -117,6 +122,7 @@ import loli.ball.easyplayer2.utils.rememberBatteryReceiver
  * Created by heyanle on 2023/12/17.
  * https://github.com/heyanLE
  */
+@UnstableApi
 @Composable
 fun VideoFloat(
     cartoonPlayingViewModel: CartoonPlayingViewModel,
@@ -478,6 +484,7 @@ fun VideoFloat(
     }
 }
 
+@OptIn(UnstableApi::class)
 @Composable
 fun VideoControl(
     controlVM: ControlViewModel,
@@ -592,6 +599,10 @@ fun VideoControl(
                 },
                 onDlna = {
                     // cartoonPlayingVM.playCurrentExternal()
+                    if (detailState.cartoonInfo?.source == LocalSource.LOCAL_SOURCE_KEY) {
+                        stringRes(R.string.local_cant_dlna).moeSnackBar()
+                        return@NormalVideoTopBar
+                    }
                     sourcePlayState?.let { playState ->
                         val playLine = playState?.playLine
                         val episode = playState?.episode

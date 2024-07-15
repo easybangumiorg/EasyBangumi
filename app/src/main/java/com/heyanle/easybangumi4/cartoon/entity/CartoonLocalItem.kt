@@ -2,7 +2,7 @@ package com.heyanle.easybangumi4.cartoon.entity
 
 import androidx.core.net.toUri
 import com.heyanle.easybangumi4.APP
-import com.heyanle.easybangumi4.cartoon.local.source.LocalSource
+import com.heyanle.easybangumi4.cartoon.story.local.source.LocalSource
 import com.heyanle.easybangumi4.source_api.entity.CartoonCover
 import com.heyanle.easybangumi4.source_api.entity.CartoonCoverImpl
 import com.heyanle.easybangumi4.utils.getMatchReg

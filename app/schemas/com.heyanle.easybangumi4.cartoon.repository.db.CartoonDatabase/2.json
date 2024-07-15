@@ -224,6 +224,38 @@
         "foreignKeys": []
       },
       {
+        "tableName": "SearchHistory",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `timestamp` INTEGER NOT NULL, `content` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timestamp",
+            "columnName": "timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "content",
+            "columnName": "content",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
         "tableName": "CartoonInfo",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `source` TEXT NOT NULL, `url` TEXT NOT NULL, `name` TEXT NOT NULL, `coverUrl` TEXT NOT NULL, `intro` TEXT NOT NULL, `isDetailed` INTEGER NOT NULL, `genre` TEXT NOT NULL, `description` TEXT NOT NULL, `updateStrategy` INTEGER NOT NULL, `isUpdate` INTEGER NOT NULL, `status` INTEGER NOT NULL, `lastUpdateTime` INTEGER NOT NULL, `isShowLine` INTEGER NOT NULL, `sourceName` TEXT NOT NULL, `reversal` INTEGER NOT NULL, `sortByKey` TEXT NOT NULL, `isPlayLineLoad` INTEGER NOT NULL, `playLineString` TEXT NOT NULL, `tags` TEXT NOT NULL, `starTime` INTEGER NOT NULL, `upTime` INTEGER NOT NULL, `lastHistoryTime` INTEGER NOT NULL, `lastPlayLineEpisodeString` TEXT NOT NULL, `lastLineId` TEXT NOT NULL, `lastLinesIndex` INTEGER NOT NULL, `lastLineLabel` TEXT NOT NULL, `lastEpisodeId` TEXT NOT NULL, `lastEpisodeOrder` INTEGER NOT NULL, `lastEpisodeIndex` INTEGER NOT NULL, `lastEpisodeLabel` TEXT NOT NULL, `lastTotalTile` INTEGER NOT NULL, `lastProcessTime` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY(`id`, `source`, `url`))",
         "fields": [
@@ -463,38 +495,6 @@
             "fieldPath": "order",
             "columnName": "order",
             "affinity": "INTEGER",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": true,
-          "columnNames": [
-            "id"
-          ]
-        },
-        "indices": [],
-        "foreignKeys": []
-      },
-      {
-        "tableName": "SearchHistory",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `timestamp` INTEGER NOT NULL, `content` TEXT NOT NULL)",
-        "fields": [
-          {
-            "fieldPath": "id",
-            "columnName": "id",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "timestamp",
-            "columnName": "timestamp",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "content",
-            "columnName": "content",
-            "affinity": "TEXT",
             "notNull": true
           }
         ],

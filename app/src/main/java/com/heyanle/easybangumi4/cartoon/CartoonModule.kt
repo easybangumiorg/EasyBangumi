@@ -1,23 +1,26 @@
 package com.heyanle.easybangumi4.cartoon
 
 import android.app.Application
-import com.heyanle.easybangumi4.cartoon.download.CartoonDownloadPreference
-import com.heyanle.easybangumi4.cartoon.download.req.CartoonDownloadReqController
-import com.heyanle.easybangumi4.cartoon.download.runtime.CartoonDownloadDispatcher
-import com.heyanle.easybangumi4.cartoon.download.runtime.CartoonDownloadRuntimeFactory
-import com.heyanle.easybangumi4.cartoon.download.step.BaseStep
-import com.heyanle.easybangumi4.cartoon.download.step.CopyAndNfoStep
-import com.heyanle.easybangumi4.cartoon.download.step.ParseStep
-import com.heyanle.easybangumi4.cartoon.download.step.TransformerStep
-import com.heyanle.easybangumi4.cartoon.local.CartoonLocalController
-import com.heyanle.easybangumi4.cartoon.local.LocalCartoonPreference
+import com.heyanle.easybangumi4.cartoon.story.download.CartoonDownloadPreference
+import com.heyanle.easybangumi4.cartoon.story.download.req.CartoonDownloadReqController
+import com.heyanle.easybangumi4.cartoon.story.download.runtime.CartoonDownloadDispatcher
+import com.heyanle.easybangumi4.cartoon.story.download.runtime.CartoonDownloadRuntimeFactory
+import com.heyanle.easybangumi4.cartoon.story.download.step.BaseStep
+import com.heyanle.easybangumi4.cartoon.story.download.step.CopyAndNfoStep
+import com.heyanle.easybangumi4.cartoon.story.download.step.ParseStep
+import com.heyanle.easybangumi4.cartoon.story.download.step.TransformerStep
+import com.heyanle.easybangumi4.cartoon.story.local.CartoonLocalController
+import com.heyanle.easybangumi4.cartoon.story.local.LocalCartoonPreference
 import com.heyanle.easybangumi4.cartoon.repository.CartoonNetworkDataSource
 import com.heyanle.easybangumi4.cartoon.repository.CartoonRepository
 import com.heyanle.easybangumi4.cartoon.repository.db.CartoonDatabase
 import com.heyanle.easybangumi4.cartoon.star.CartoonStarController
 import com.heyanle.easybangumi4.cartoon.star.CartoonTagsController
+import com.heyanle.easybangumi4.cartoon.story.CartoonStoryController
+import com.heyanle.easybangumi4.cartoon.story.CartoonStoryControllerImpl
 import com.heyanle.inject.api.InjectModule
 import com.heyanle.inject.api.InjectScope
+import com.heyanle.inject.api.addAlias
 import com.heyanle.inject.api.addPerKeyFactory
 import com.heyanle.inject.api.addSingletonFactory
 import com.heyanle.inject.api.get
@@ -95,7 +98,7 @@ class CartoonModule(
         }
 
         addSingletonFactory {
-            CartoonDownloadReqController(application)
+            CartoonDownloadReqController(get())
         }
 
         // local
@@ -109,8 +112,11 @@ class CartoonModule(
         }
 
 
+
         addSingletonFactory {
-            CartoonLocalDownloadController(get(), get(), get())
+            CartoonStoryControllerImpl(get(), get(), get())
         }
+
+        addAlias<CartoonStoryControllerImpl, CartoonStoryController>()
     }
 }

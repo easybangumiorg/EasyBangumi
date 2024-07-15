@@ -50,20 +50,20 @@ class CartoonStarController(
         }
 
         jsonFileProvider.cartoonTag.update {
-            filter { it.label != cartoonTag.label }
+            it.filter { it.label != cartoonTag.label }
         }
     }
 
     fun insert(label: String) {
         jsonFileProvider.cartoonTag.update {
-            this + CartoonTag.create(label)
+           it + CartoonTag.create(label)
         }
     }
 
     fun modifier(cartoonTag: CartoonTag) {
         jsonFileProvider.cartoonTag.update {
             if (cartoonTag.isCustomSetting)
-                map {
+                it.map {
                     if (it.label == cartoonTag.label) {
                         cartoonTag
                     } else {
@@ -71,7 +71,7 @@ class CartoonStarController(
                     }
                 }
             else {
-                map {
+                it.map {
                     when (it.label) {
                         CartoonTag.ALL_TAG_LABEL -> {
                             it.copy(

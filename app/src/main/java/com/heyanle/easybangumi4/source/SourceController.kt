@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.source
 
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
+import com.heyanle.easybangumi4.cartoon.story.local.source.LocalSource
 import com.heyanle.easybangumi4.case.ExtensionCase
 import com.heyanle.easybangumi4.extension.ExtensionInfo
 import com.heyanle.easybangumi4.source.bundle.ComponentBundle
@@ -15,7 +16,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -41,6 +44,15 @@ class SourceController(
 
         class Info(val info: List<SourceInfo>) : SourceInfoState()
     }
+    private val _extensionSourceInfo = MutableStateFlow<SourceInfoState>(SourceInfoState.Loading)
+    private val _innerSourceInfo = flow<SourceInfoState> {
+        emit(SourceInfoState.Loading)
+        val n = innerSource.map {
+            loadSource(it)
+        }
+        emit(SourceInfoState.Info(n))
+    }
+
 
     private val _sourceInfo = MutableStateFlow<SourceInfoState>(SourceInfoState.Loading)
     val sourceInfo = _sourceInfo.asStateFlow()
@@ -55,6 +67,10 @@ class SourceController(
     private val dispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     private val migrateScope = CoroutineScope(SupervisorJob() + dispatcher)
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
+
+    private val innerSource = listOf<Source>(
+        LocalSource
+    )
 
 
 
@@ -80,10 +96,10 @@ class SourceController(
                         }
                     }
                     val n = map.values.map {
-                        val res = loadSource(it.second, it.first)
+                        val res = loadSource(it.second)
                         res
                     }
-                    _sourceInfo.update {
+                    _extensionSourceInfo.update {
                         SourceInfoState.Info(n)
                     }
                 }
@@ -100,6 +116,25 @@ class SourceController(
 //                    }
 //                }
 //        }
+        scope.launch {
+            combine(
+                _extensionSourceInfo,
+                _innerSourceInfo.distinctUntilChanged()
+            ) { extensionSource, innerSource ->
+                if (extensionSource is SourceInfoState.Loading || innerSource is SourceInfoState.Loading) {
+                    SourceInfoState.Loading
+                } else {
+                    val e = extensionSource as SourceInfoState.Info
+                    val i = innerSource as SourceInfoState.Info
+                    SourceInfoState.Info(e.info + i.info)
+                }
+
+            }.collectLatest { n ->
+                _sourceInfo.update {
+                    n
+                }
+            }
+        }
         scope.launch {
             combine(
                 _sourceInfo.filterIsInstance<SourceInfoState.Info>().map { it.info },
@@ -123,7 +158,7 @@ class SourceController(
 
     }
 
-    private suspend fun loadSource(source: Source, extensionInfo: ExtensionInfo.Installed): SourceInfo {
+    private suspend fun loadSource(source: Source): SourceInfo {
         TimeLogUtils.i("loadSource ${source.key} start")
         return try {
             val bundle = ComponentBundle(source)
@@ -131,15 +166,15 @@ class SourceController(
 
 //            // 加载 So 咯
             if (source is NativeSupportedSource){
-                return SourceInfo.Error(source, extensionInfo, "NativeSupportedSource 已过时，请在 onInit 中加载 so")
+                return SourceInfo.Error(source, "NativeSupportedSource 已过时，请在 onInit 中加载 so")
             }
 
-            SourceInfo.Loaded(source, extensionInfo, bundle)
+            SourceInfo.Loaded(source, bundle)
         } catch (e: SourceException) {
-            SourceInfo.Error(source, extensionInfo, e.msg, e)
+            SourceInfo.Error(source,  e.msg, e)
         } catch (e: Exception) {
             e.printStackTrace()
-            SourceInfo.Error(source, extensionInfo, "加载错误：${e.message}", e)
+            SourceInfo.Error(source, "加载错误：${e.message}", e)
         }
     }
 

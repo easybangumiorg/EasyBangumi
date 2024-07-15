@@ -111,10 +111,10 @@ class JsonFileHelper<T : Any>(
     }
 
     fun update(
-        block: T.() -> T
+        block:(T) -> T
     ){
         val data = getOrDef()
-        set(data.block())
+        set( block(data))
     }
 
 

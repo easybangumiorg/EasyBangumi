@@ -1,7 +1,7 @@
 package com.heyanle.easybangumi4.splash
 
 import com.heyanle.easybangumi4.base.preferences.android.AndroidPreferenceStore
-import com.heyanle.easybangumi4.cartoon.local.CartoonLocalController
+import com.heyanle.easybangumi4.cartoon.story.local.CartoonLocalController
 import com.heyanle.easybangumi4.splash.step.LocalStep
 import com.heyanle.easybangumi4.splash.step.PermissionStep
 import com.heyanle.easybangumi4.splash.step.ThemeStep

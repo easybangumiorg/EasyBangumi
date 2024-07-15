@@ -2,6 +2,7 @@ package com.heyanle.easybangumi4.cartoon.entity
 
 import androidx.room.Entity
 import androidx.room.Ignore
+import com.heyanle.easybangumi4.cartoon.story.local.source.LocalSource
 import com.heyanle.easybangumi4.source_api.component.detailed.DetailedComponent
 import com.heyanle.easybangumi4.source_api.entity.Cartoon
 import com.heyanle.easybangumi4.source_api.entity.CartoonCover
@@ -159,6 +160,8 @@ data class CartoonInfo(
         return this
     }
 
+    @Transient
+    val isLocal: Boolean = (source == LocalSource.LOCAL_SOURCE_KEY)
 
     val matchHistoryEpisode: Pair<PlayLineWrapper, Episode>? by lazy {
         /**

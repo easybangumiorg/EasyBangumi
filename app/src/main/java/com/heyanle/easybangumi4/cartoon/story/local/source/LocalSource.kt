@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.cartoon.local.source
+package com.heyanle.easybangumi4.cartoon.story.local.source
 
 import android.graphics.drawable.Drawable
 import androidx.core.content.res.ResourcesCompat
@@ -35,7 +35,9 @@ object LocalSource: ExtensionIconSource {
         get() = 0
 
     override fun register(): List<KClass<*>> {
-        TODO("Not yet implemented")
+        return listOf(
+            LocalSourceComponent::class
+        )
     }
 
 

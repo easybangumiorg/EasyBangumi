@@ -2,6 +2,8 @@ package com.heyanle.easybangumi4.base.json
 
 
 import com.heyanle.easybangumi4.APP
+import com.heyanle.easybangumi4.bus.DownloadingBus
+import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadReq
 import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
 import com.heyanle.easybangumi4.source.SourceConfig
 import com.heyanle.easybangumi4.utils.CoroutineProvider
@@ -38,6 +40,15 @@ class JsonFileProvider {
         def = emptyMap(),
         scope = scope,
         type = typeOf<Map<String, SourceConfig>>().javaType
+    )
+
+    // /storage/emulated/0/Android/data/com.heyanle.easybangumi4/files/cartoon/cartoon_download.json
+    val cartoonDownload: JsonFileHelper<List<CartoonDownloadReq>> = JsonFileHelper(
+        folder = UniFile.fromFile(File(APP.getFilePath("cartoon")))!!,
+        name = "cartoon_download.json",
+        def = emptyList(),
+        scope = scope,
+        type = typeOf<List<CartoonDownloadReq>>().javaType
     )
 
 }

@@ -28,7 +28,7 @@ import com.heyanle.easybangumi4.ui.about.About
 import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlay
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.dlna.Dlna
-import com.heyanle.easybangumi4.ui.download.Download
+import com.heyanle.easybangumi4.ui.story.download.Download
 import com.heyanle.easybangumi4.ui.main.Main
 import com.heyanle.easybangumi4.ui.main.history.History
 import com.heyanle.easybangumi4.ui.search_migrate.migrate.Migrate
@@ -38,6 +38,7 @@ import com.heyanle.easybangumi4.ui.setting.SettingPage
 import com.heyanle.easybangumi4.ui.source_config.SourceConfig
 import com.heyanle.easybangumi4.ui.source_manage.SourceManager
 import com.heyanle.easybangumi4.ui.storage.Storage
+import com.heyanle.easybangumi4.ui.story.Story
 import com.heyanle.easybangumi4.ui.tags.CartoonTag
 import com.heyanle.easybangumi4.utils.jsonTo
 import com.heyanle.easybangumi4.utils.toJson
@@ -86,7 +87,7 @@ const val TAG_MANAGE = "tag_manage"
 
 const val STORAGE = "storage"
 
-const val DOWNLOAD = "download"
+const val STORY = "story"
 
 fun NavHostController.navigationSearch(defSourceKey: String) {
     val ed = URLEncoder.encode(defSourceKey, "utf-8")
@@ -317,10 +318,10 @@ fun Nav() {
 
             }
 
-            composable(DOWNLOAD) {
+            composable(STORY) {
                 NormalSystemBarColor()
                 //Download()
-                Download()
+                Story()
             }
 
             composable(

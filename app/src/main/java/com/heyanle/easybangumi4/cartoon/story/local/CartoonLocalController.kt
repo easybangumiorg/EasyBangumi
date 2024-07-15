@@ -1,7 +1,9 @@
-package com.heyanle.easybangumi4.cartoon.local
+package com.heyanle.easybangumi4.cartoon.story.local
 
 import android.net.Uri
 import com.heyanle.easybangumi4.APP
+import com.heyanle.easybangumi4.base.DataResult
+import com.heyanle.easybangumi4.base.map
 import com.heyanle.easybangumi4.cartoon.entity.CartoonLocalItem
 import com.heyanle.easybangumi4.cartoon.entity.CartoonLocalMsg
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
@@ -27,18 +29,10 @@ class CartoonLocalController(
     private val localCartoonPreference: LocalCartoonPreference,
 ) {
 
-    data class State(
-        val loading: Boolean = true,
-        val errorMsg: String? = null,
-        val error: Throwable? = null,
-
-        val localCartoonItem: Map<String, CartoonLocalItem> = mapOf()
-    )
-
     private val localEpisodeLock = ReentrantLock()
     private val localEpisodeMap = HashMap<String, Set<Int>>()
 
-    private val _flowState = MutableStateFlow(State())
+    private val _flowState = MutableStateFlow<DataResult<Map<String, CartoonLocalItem>>>(DataResult.Loading())
     val flowState = _flowState.asStateFlow()
 
     private val singleDispatcher = CoroutineProvider.SINGLE
@@ -68,17 +62,14 @@ class CartoonLocalController(
         uri: Uri? = null
     ) {
         _flowState.update {
-            it.copy(loading = true)
+           DataResult.Loading()
         }
         try {
             val ru = uri ?: localCartoonPreference.realLocalUri.value
             val uniFile = UniFile.fromUri(APP, ru)
             if (uniFile == null) {
                 _flowState.update {
-                    it.copy(
-                        loading = false,
-                        errorMsg = "无法打开文件夹"
-                    )
+                    DataResult.error("无法打开文件夹")
                 }
                 stringRes(com.heyanle.easy_i18n.R.string.local_folder_error).moeSnackBar()
                 return
@@ -93,20 +84,11 @@ class CartoonLocalController(
                 }
             }
             _flowState.update {
-                it.copy(
-                    loading = false,
-                    errorMsg = null,
-                    error = null,
-                    localCartoonItem = items.associateBy { it.folderUri }
-                )
+                DataResult.ok(items.associateBy { it.folderUri })
             }
         }catch (e: Throwable){
             _flowState.update {
-                it.copy(
-                    loading = false,
-                    errorMsg = e.message,
-                    error = e
-                )
+                DataResult.error(e.message?:"未知错误", e)
             }
             e.printStackTrace()
         }
@@ -118,7 +100,7 @@ class CartoonLocalController(
     fun newLocal(cartoonLocalMsg: CartoonLocalMsg, callback: (Boolean) -> Unit = {}){
         scope.launch(Dispatchers.IO) {
             lastLoadJob?.join()
-            if (flowState.value.localCartoonItem.any { it.key == cartoonLocalMsg.itemId }) {
+            if (flowState.value.okOrNull()?.any { it.key == cartoonLocalMsg.itemId } == true) {
                 callback(false)
                 return@launch
             }
@@ -140,12 +122,13 @@ class CartoonLocalController(
                 return@launch
             }
             _flowState.update {
-                it.copy(
-                    localCartoonItem = it.localCartoonItem + (item.itemId to item)
-                )
+                it.map {
+                    val om = it.toMutableMap()
+                    om[item.folderUri] = item
+                    om
+                }
             }
             callback(true)
-
         }
     }
 

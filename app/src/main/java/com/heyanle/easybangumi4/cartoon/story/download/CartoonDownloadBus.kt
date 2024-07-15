@@ -1,10 +1,6 @@
-package com.heyanle.easybangumi4.cartoon.download
+package com.heyanle.easybangumi4.cartoon.story.download
 
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import com.heyanle.easybangumi4.bus.DownloadingBus
-import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Created by HeYanLe on 2023/9/17 15:39.

@@ -1,11 +1,10 @@
-package com.heyanle.easybangumi4.ui.download
+package com.heyanle.easybangumi4.ui.story.download
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.heyanle.easybangumi4.cartoon.CartoonLocalDownloadController
-import com.heyanle.easybangumi4.cartoon.download.runtime.CartoonDownloadDispatcher
+import com.heyanle.easybangumi4.base.DataResult
 import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadInfo
-import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
+import com.heyanle.easybangumi4.cartoon.story.CartoonStoryController
 import com.heyanle.inject.core.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,14 +19,19 @@ import kotlinx.coroutines.launch
 class DownloadViewModel: ViewModel() {
 
 
-    val downloadDispatcher: CartoonDownloadDispatcher by Inject.injectLazy()
-    val localDownloadController: CartoonLocalDownloadController by Inject.injectLazy()
+    val cartoonStoryController: CartoonStoryController by Inject.injectLazy()
 
     data class State(
         val loading: Boolean = true,
         val downloadInfo: List<CartoonDownloadInfo> = listOf(),
-        val selection : Set<CartoonDownloadInfo> = emptySet()
+        val selection : Set<CartoonDownloadInfo> = emptySet(),
+        val dialog: Dialog? = null,
     )
+
+
+    sealed class Dialog {
+        data class DeleteSelection(val selection : Set<CartoonDownloadInfo>): Dialog()
+    }
 
     private val _state = MutableStateFlow(State())
     val state = _state.asStateFlow()
@@ -36,18 +40,31 @@ class DownloadViewModel: ViewModel() {
 
     init {
         viewModelScope.launch {
-            localDownloadController.downloadInfo.collectLatest {
-                _state.value = _state.value.copy(
-                    loading = false,
-                    downloadInfo = it
-                )
+            cartoonStoryController.downloadInfoList.collectLatest { re ->
+                when (re) {
+                    is DataResult.Loading -> {
+                        _state.update {
+                            it.copy(
+                                loading = true
+                            )
+                        }
+                    }
+                    else -> {
+                        _state.update {
+                            it.copy(
+                                loading = false,
+                                downloadInfo = re.okOrNull() ?: emptyList()
+                            )
+                        }
+                    }
+
+                }
             }
 
         }
     }
 
     fun clickDownloadInfo(info: CartoonDownloadInfo){
-
     }
 
 
@@ -107,22 +124,45 @@ class DownloadViewModel: ViewModel() {
     }
 
     fun selectAll(){
-        _state.value = _state.value.copy(
-            selection = _state.value.downloadInfo.toSet()
-        )
+        _state.update {
+            it.copy(
+                selection = it.downloadInfo.toSet()
+            )
+        }
     }
 
     fun clearSelection(){
-        _state.value = _state.value.copy(
-            selection = emptySet()
-        )
+        _state.update {
+            it.copy(
+                selection = emptySet()
+            )
+        }
+        lastDownloadInfo = null
     }
 
 
 
-    fun deleteSelection(){
-
+    fun showDeleteDialog(){
+        _state.update {
+            it.copy(
+                dialog = Dialog.DeleteSelection(it.selection),
+                selection = emptySet()
+            )
+        }
+        lastDownloadInfo = null
     }
 
+
+    fun dismissDialog(){
+        _state.update {
+            it.copy(
+                dialog = null
+            )
+        }
+    }
+
+    fun deleteDownload(selection: Set<CartoonDownloadInfo>) {
+        cartoonStoryController.removeDownloadReq(selection.map { it.req })
+    }
 
 }

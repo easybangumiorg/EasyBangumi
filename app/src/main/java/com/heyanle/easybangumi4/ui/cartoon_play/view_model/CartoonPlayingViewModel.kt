@@ -6,6 +6,7 @@ import android.graphics.SurfaceTexture
 import android.view.TextureView
 import androidx.annotation.OptIn
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -17,6 +18,7 @@ import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
 import com.heyanle.easybangumi4.case.SourceStateCase
 import com.heyanle.easybangumi4.exo.CartoonMediaSourceFactory
 import com.heyanle.easybangumi4.exo.thumbnail.ThumbnailBuffer
+import com.heyanle.easybangumi4.provider.MediaContentProvider
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.source_api.entity.Episode
 import com.heyanle.easybangumi4.source_api.entity.PlayLine
@@ -27,6 +29,7 @@ import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.inject.core.Inject
+import com.hippo.unifile.UniFile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
@@ -121,7 +124,8 @@ class CartoonPlayingViewModel(
     val fastTopWeightMolecule = settingPreferences.fastWeightTopMolecule.stateIn(viewModelScope)
     val fastWeightTopDenominator = settingPreferences.fastWeightTopDenominator
 
-    val playerSeekFullWidthTimeMS = settingPreferences.playerSeekFullWidthTimeMS.stateIn(viewModelScope)
+    val playerSeekFullWidthTimeMS =
+        settingPreferences.playerSeekFullWidthTimeMS.stateIn(viewModelScope)
 
     val defaultSpeed = settingPreferences.defaultSpeed.stateIn(viewModelScope)
 
@@ -133,9 +137,9 @@ class CartoonPlayingViewModel(
     val thumbnailFolder: File = File(APP.getCachePath("thumbnail"))
 
     @OptIn(UnstableApi::class)
-    fun showRecord(){
+    fun showRecord() {
         val playerInfo = playingInfo
-        if (playerInfo == null){
+        if (playerInfo == null) {
             stringRes(com.heyanle.easy_i18n.R.string.waiting_parsing)
             return
         }
@@ -241,9 +245,15 @@ class CartoonPlayingViewModel(
      * 调用外部播放器播放
      */
     private fun innerPlayExternal(playerInfo: PlayerInfo) {
+        var uri = playerInfo.uri.toUri()
+        if (uri.scheme == "content" || uri.scheme == "file") {
+            uri = MediaContentProvider.getProviderUriFromUri(uri.toString())
+        }
+
         APP.startActivity(Intent("android.intent.action.VIEW").apply {
-            setDataAndType(playerInfo.uri.toUri(), "video/*")
+            setDataAndType(uri, "video/*")
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             // for mx player https://mx.j2inter.com/api
             putExtra("video_list", arrayOf(playerInfo.uri.toUri()))
             val list = arrayListOf<String>()
@@ -303,7 +313,6 @@ class CartoonPlayingViewModel(
 
 
     }
-
 
 
     @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
@@ -433,7 +442,7 @@ class CartoonPlayingViewModel(
             val currentPosition = exoPlayer.currentPosition
             // 如果该进度前后五秒都没有缩略图就保存一张
             val currentFile = thumbnailBuffer?.getThumbnail(currentPosition, 2000)
-            if (currentFile == null){
+            if (currentFile == null) {
                 //"onSurfaceTextureUpdated 3".logi(TAG)
                 // 保存缩略图
                 thumbnailJob?.cancel()

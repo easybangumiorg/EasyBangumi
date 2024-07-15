@@ -465,13 +465,13 @@ class StorageController(
                 val downloadFile =
                     Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                    val targetRoot = File(downloadFile, "EasyBangumi/backup")
+                    val targetRoot = File(downloadFile, "${if (BuildConfig.DEBUG) "EasyBangumi.debug" else "EasyBangumi"}/backup")
                     val target = File(targetRoot, file.name)
                     file.copyTo(target, true)
                 } else {
                     val values = ContentValues().apply {
                         put(MediaStore.MediaColumns.DISPLAY_NAME, file.name)
-                        put(MediaStore.MediaColumns.RELATIVE_PATH, "${Environment.DIRECTORY_DOWNLOADS}/EasyBangumi/backup")
+                        put(MediaStore.MediaColumns.RELATIVE_PATH, "${Environment.DIRECTORY_DOWNLOADS}/${if (BuildConfig.DEBUG) "EasyBangumi.debug" else "EasyBangumi"}/backup")
                     }
                     APP.contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
                         ?.let { uri ->

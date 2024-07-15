@@ -1,7 +1,7 @@
-package com.heyanle.easybangumi4.cartoon.download.step
+package com.heyanle.easybangumi4.cartoon.story.download.step
 
-import com.heyanle.easybangumi4.cartoon.download.runtime.CartoonDownloadRuntimeFactory
-import com.heyanle.easybangumi4.cartoon.download.runtime.CartoonDownloadRuntime
+import com.heyanle.easybangumi4.cartoon.story.download.runtime.CartoonDownloadRuntimeFactory
+import com.heyanle.easybangumi4.cartoon.story.download.runtime.CartoonDownloadRuntime
 import com.heyanle.easybangumi4.case.SourceStateCase
 import com.heyanle.easybangumi4.utils.CoroutineProvider
 import com.heyanle.easybangumi4.utils.logi

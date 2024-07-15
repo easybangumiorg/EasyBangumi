@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.cartoon.download.step
+package com.heyanle.easybangumi4.cartoon.story.download.step
 
 import androidx.annotation.OptIn
 import androidx.core.net.toUri
@@ -15,15 +15,14 @@ import androidx.media3.transformer.ProgressHolder
 import androidx.media3.transformer.Transformer
 import androidx.media3.transformer.Transformer.PROGRESS_STATE_AVAILABLE
 import com.heyanle.easybangumi4.APP
-import com.heyanle.easybangumi4.cartoon.download.runtime.CartoonDownloadRuntimeFactory
-import com.heyanle.easybangumi4.cartoon.download.runtime.CartoonDownloadRuntime
+import com.heyanle.easybangumi4.cartoon.story.download.runtime.CartoonDownloadRuntimeFactory
+import com.heyanle.easybangumi4.cartoon.story.download.runtime.CartoonDownloadRuntime
 import com.heyanle.easybangumi4.exo.CartoonMediaSourceFactory
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.inject.api.get
 import com.heyanle.inject.core.Inject
-import com.hippo.unifile.UniFile
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import java.io.File
@@ -80,9 +79,7 @@ object TransformerStep : BaseStep {
                     exportException: ExportException
                 ) {
                     super.onError(composition, exportResult, exportException)
-                    runtime.exportResult = exportResult
-                    runtime.exportException = exportException
-                    runtime.state = 3
+                    runtime.error(exportException, exportException.message)
                     exportException.printStackTrace()
                     countDownLatch.countDown()
                 }
@@ -137,7 +134,7 @@ object TransformerStep : BaseStep {
             scope.launch {
                 transformer.cancel()
             }
-            runtime.error(runtime.exportException, runtime.exportException?.message)
+
             return
         }
         runtime.stepCompletely()
