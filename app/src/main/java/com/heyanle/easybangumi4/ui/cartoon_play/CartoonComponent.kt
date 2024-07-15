@@ -11,6 +11,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -37,6 +38,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -93,6 +95,7 @@ import com.heyanle.easybangumi4.ui.common.TabIndicator
 import com.heyanle.easybangumi4.ui.common.TabPage
 import com.heyanle.easybangumi4.ui.common.proc.SortColumn
 import com.heyanle.easybangumi4.ui.common.proc.SortState
+import com.heyanle.easybangumi4.utils.toast
 import com.heyanle.inject.core.Inject
 import kotlin.math.max
 
@@ -104,7 +107,6 @@ import kotlin.math.max
 @Composable
 fun CartoonPlayDetailed(
     cartoon: CartoonInfo,
-
 
 
     playLines: List<PlayLineWrapper>,
@@ -132,19 +134,22 @@ fun CartoonPlayDetailed(
     onWeb: () -> Unit,
     onExtPlayer: () -> Unit,
     onDownload: (PlayLineWrapper, List<Episode>) -> Unit,
+    onDelete: (PlayLineWrapper, List<Episode>) -> Unit,
     onSortChange: (String, Boolean) -> Unit,
 ) {
-    val currentDownloadPlayLine = remember {
-        mutableStateOf<PlayLineWrapper?>(null)
+
+    // 0-> download 1->delete
+    val selectionMode = remember {
+        mutableStateOf<Pair<Int, PlayLineWrapper>?>(null)
     }
-    val currentDownloadSelect = remember {
+    val selection = remember {
         mutableStateOf(setOf<Int>())
     }
 
-    // 下载模式处理返回事件
-    if (currentDownloadPlayLine.value != null) {
+
+    if (selectionMode.value != null) {
         BackHandler {
-            currentDownloadPlayLine.value = null
+            selectionMode.value = null
         }
     }
 
@@ -169,21 +174,33 @@ fun CartoonPlayDetailed(
             Column {
                 CartoonActions(
                     isStar = isStar,
-                    isDownloading = currentDownloadPlayLine.value != null,
+                    isDownloading = selectionMode.value?.first == 0,
+                    isDeleting = selectionMode.value?.first == 1,
+                    showWeb = cartoon.url.isNotEmpty(),
+                    canDownload = !cartoon.isLocal,
                     onStar = onStar,
                     onSearch = onSearch,
                     onWeb = onWeb,
                     onExtPlayer = onExtPlayer,
                     onDownload = {
-                        if (currentDownloadPlayLine.value == null && selectLineIndex in playLines.indices) {
-                            currentDownloadPlayLine.value = playLines[selectLineIndex]
-                            currentDownloadSelect.value = setOf()
+
+                        if (selectionMode.value == null && selectLineIndex in playLines.indices) {
+                            selectionMode.value = 0 to playLines[selectLineIndex]
+                            selection.value = emptySet()
                         } else {
-                            currentDownloadPlayLine.value = null
+                            selectionMode.value = null
                         }
                         val cartoonDownloadReqController: CartoonDownloadReqController by Inject.injectLazy()
                         //cartoonDownloadController.tryShowFirstDownloadDialog()
                     },
+                    onDelete = {
+                        if (selectionMode.value == null && selectLineIndex in playLines.indices) {
+                            selectionMode.value = 1 to playLines[selectLineIndex]
+                            selection.value = emptySet()
+                        } else {
+                            selectionMode.value = null
+                        }
+                    }
                 )
                 Spacer(modifier = Modifier.size(8.dp))
                 Divider()
@@ -193,12 +210,13 @@ fun CartoonPlayDetailed(
         // 播放线路
         cartoonPlayLines(
             playLines = playLines,
-            currentDownloadPlayLine = currentDownloadPlayLine,
+
+            selectionMode = selectionMode,
+            selection = selection,
             showPlayLine = showPlayLine,
             selectLineIndex = selectLineIndex,
             sortState = sortState,
             playingPlayLine = playingPlayLine,
-            currentDownloadSelect = currentDownloadSelect,
             onLineSelect = onLineSelect,
             onSortChange = onSortChange,
             gridCount = gridCount,
@@ -211,14 +229,15 @@ fun CartoonPlayDetailed(
             selectLineIndex = selectLineIndex,
             playingPlayLine = playingPlayLine,
             playingEpisode = playingEpisode,
-            currentDownloadSelect = currentDownloadSelect,
-            currentDownloadPlayLine = currentDownloadPlayLine,
+
+            selectionMode = selectionMode,
+            selection = selection,
             onEpisodeClick = onEpisodeClick
         )
 
     }
 
-    currentDownloadPlayLine.value?.let { dowPlayLine ->
+    selectionMode.value?.let { (mode, line) ->
         Box(contentAlignment = Alignment.BottomEnd, modifier = Modifier.fillMaxSize()) {
             val up = remember { derivedStateOf { listState.firstVisibleItemIndex > 10 } }
             val downPadding by animateDpAsState(if (up.value) 80.dp else 40.dp, label = "")
@@ -226,28 +245,58 @@ fun CartoonPlayDetailed(
                 modifier = Modifier
                     .padding(16.dp, downPadding),
                 text = {
-                    Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.start_download))
+                    if (mode == 0)
+                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.start_download))
+                    else
+                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.delete))
                 },
                 icon = {
-                    Icon(
-                        Icons.Filled.Download,
-                        contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.start_download)
-                    )
+                    if (mode == 0)
+                        Icon(
+                            Icons.Filled.Download,
+                            contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.start_download)
+                        )
+                    else
+                        Icon(
+                            Icons.Filled.Delete,
+                            contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.delete)
+                        )
                 },
                 onClick = {
-                    currentDownloadPlayLine.value = null
-                    onDownload(dowPlayLine, currentDownloadSelect.value.flatMap {
-                        val epi = dowPlayLine.sortedEpisodeList.getOrNull(it)
-                        if (epi == null) {
-                            listOf()
-                        } else {
-                            listOf(epi)
-                        }
-                    })
+                    selectionMode.value = null
+                    if (mode == 0) {
+
+                        onDownload(
+                            line,
+                            selection.value.flatMap {
+                                val epi = line.sortedEpisodeList.getOrNull(it)
+                                if (epi == null) {
+                                    listOf()
+                                } else {
+                                    listOf(epi)
+                                }
+                            }
+                        )
+                    } else {
+                        onDelete(
+                            line,
+                            selection.value.flatMap {
+                                val epi = line.sortedEpisodeList.getOrNull(it)
+                                if (epi == null) {
+                                    listOf()
+                                } else {
+                                    listOf(epi)
+                                }
+                            }
+                        )
+                    }
                 }
             )
         }
+
     }
+
+
 }
 
 
@@ -415,11 +464,15 @@ fun CartoonTitleCard(
 fun CartoonActions(
     isStar: Boolean,
     isDownloading: Boolean,
+    isDeleting: Boolean,
+    showWeb: Boolean,
+    canDownload: Boolean,
     onStar: (Boolean) -> Unit,
     onSearch: () -> Unit,
     onWeb: () -> Unit,
     onExtPlayer: () -> Unit,
     onDownload: () -> Unit,
+    onDelete: () -> Unit,
 ) {
     ActionRow(
         modifier = Modifier.fillMaxWidth()
@@ -466,41 +519,64 @@ fun CartoonActions(
             onClick = onSearch
         )
 
-        // 打开原网站
-        Action(
-            icon = {
-                Icon(
-                    painterResource(id = R.drawable.ic_webview_24dp),
-                    stringResource(id = com.heyanle.easy_i18n.R.string.open_source_url)
-                )
-            },
-            msg = {
-                Text(
-                    text = stringResource(id = com.heyanle.easy_i18n.R.string.open_source_url),
-                    fontSize = 12.sp
-                )
-            },
-            onClick = onWeb
-        )
+        if (showWeb) {
+            // 打开原网站
+            Action(
+                icon = {
+                    Icon(
+                        painterResource(id = R.drawable.ic_webview_24dp),
+                        stringResource(id = com.heyanle.easy_i18n.R.string.open_source_url)
+                    )
+                },
+                msg = {
+                    Text(
+                        text = stringResource(id = com.heyanle.easy_i18n.R.string.open_source_url),
+                        fontSize = 12.sp
+                    )
+                },
+                onClick = onWeb
+            )
+        }
 
-        // 下载
-        Action(
-            icon = {
-                Icon(
-                    Icons.Filled.Download,
-                    stringResource(id = com.heyanle.easy_i18n.R.string.download),
-                    tint = if (isDownloading) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
-                )
-            },
-            msg = {
-                Text(
-                    text = stringResource(id = com.heyanle.easy_i18n.R.string.download),
-                    color = if (isDownloading) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
-                    fontSize = 12.sp
-                )
-            },
-            onClick = onDownload
-        )
+        if (canDownload) {
+            // 下载
+            Action(
+                icon = {
+                    Icon(
+                        Icons.Filled.Download,
+                        stringResource(id = com.heyanle.easy_i18n.R.string.download),
+                        tint = if (isDownloading) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
+                    )
+                },
+                msg = {
+                    Text(
+                        text = stringResource(id = com.heyanle.easy_i18n.R.string.download),
+                        color = if (isDownloading) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
+                        fontSize = 12.sp
+                    )
+                },
+                onClick = onDownload
+            )
+        } else {
+            // 删除
+            Action(
+                icon = {
+                    Icon(
+                        Icons.Filled.Delete,
+                        stringResource(id = com.heyanle.easy_i18n.R.string.delete),
+                        tint = if (isDeleting) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
+                    )
+                },
+                msg = {
+                    Text(
+                        text = stringResource(id = com.heyanle.easy_i18n.R.string.delete),
+                        color = if (isDeleting) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
+                        fontSize = 12.sp
+                    )
+                },
+                onClick = onDelete
+            )
+        }
 
         // 外部播放
         Action(
@@ -525,14 +601,17 @@ fun CartoonActions(
 
 fun LazyGridScope.cartoonPlayLines(
     playLines: List<PlayLineWrapper>,
-    currentDownloadPlayLine: MutableState<PlayLineWrapper?>,
+
+    selectionMode: MutableState<Pair<Int, PlayLineWrapper>?>,
+    selection: MutableState<Set<Int>>,
+
     showPlayLine: Boolean,
     selectLineIndex: Int,
     sortState: SortState<Episode>,
     gridCount: Int,
     onGridChange: (Int) -> Unit,
     playingPlayLine: PlayLineWrapper?,
-    currentDownloadSelect: MutableState<Set<Int>>,
+
     onLineSelect: (Int) -> Unit,
     onSortChange: (String, Boolean) -> Unit,
 ) {
@@ -565,7 +644,7 @@ fun LazyGridScope.cartoonPlayLines(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                if (currentDownloadPlayLine.value == null) {
+                if (selectionMode.value == null) {
                     if (showPlayLine) {
                         ScrollableTabRow(
                             modifier = Modifier
@@ -625,15 +704,19 @@ fun LazyGridScope.cartoonPlayLines(
                         modifier = Modifier
                             .weight(1f)
                             .padding(16.dp, 0.dp),
-                        text = stringResource(id = com.heyanle.easy_i18n.R.string.select_to_download)
+                        text = if (selectionMode.value?.first == 0)
+                            stringResource(id = com.heyanle.easy_i18n.R.string.select_to_download)
+                        else stringResource(id = com.heyanle.easy_i18n.R.string.select_to_delete)
                     )
                     IconButton(onClick = {
-                        currentDownloadPlayLine.value?.let {
+
+
+                        selectionMode.value?.second?.let {
                             val set = hashSetOf<Int>()
                             it.sortedEpisodeList.forEachIndexed { index, _ ->
                                 set.add(index)
                             }
-                            currentDownloadSelect.value = set
+                            selection.value = set
                         }
 
                     }) {
@@ -643,7 +726,7 @@ fun LazyGridScope.cartoonPlayLines(
                         )
                     }
                 }
-                if (isSortShow){
+                if (isSortShow) {
                     PlayDetailedBottomSheet(
                         sortState = sortState,
                         onGridChange = onGridChange,
@@ -672,13 +755,16 @@ fun LazyGridScope.cartoonPlayLines(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 fun LazyGridScope.cartoonEpisodeList(
     playLines: List<PlayLineWrapper>,
     selectLineIndex: Int,
     playingPlayLine: PlayLineWrapper?,
     playingEpisode: Episode?,
-    currentDownloadSelect: MutableState<Set<Int>>,
-    currentDownloadPlayLine: MutableState<PlayLineWrapper?>,
+
+    selection: MutableState<Set<Int>>,
+    selectionMode: MutableState<Pair<Int, PlayLineWrapper>?>,
+
     onEpisodeClick: (PlayLineWrapper, Episode) -> Unit,
 ) {
     playLines.getOrNull(selectLineIndex)?.let { playLine ->
@@ -686,7 +772,8 @@ fun LazyGridScope.cartoonEpisodeList(
         items(episode.size) {
             val index = it
             episode.getOrNull(index)?.let { item ->
-                val select =  playLine.playLine == playingPlayLine?.playLine && item == playingEpisode
+                val select =
+                    playLine.playLine == playingPlayLine?.playLine && item == playingEpisode
 
                 Row(
                     modifier = Modifier
@@ -694,9 +781,9 @@ fun LazyGridScope.cartoonEpisodeList(
                         .fillMaxWidth()
                         //.then(modifier)
                         .clip(RoundedCornerShape(4.dp))
-                        .background(if (select && currentDownloadPlayLine.value == null) MaterialTheme.colorScheme.secondary else Color.Transparent)
+                        .background(if (select && selectionMode.value == null) MaterialTheme.colorScheme.secondary else Color.Transparent)
                         .run {
-                            if (select && currentDownloadPlayLine.value == null) {
+                            if (select && selectionMode.value == null) {
                                 this
                             } else {
                                 border(
@@ -706,44 +793,46 @@ fun LazyGridScope.cartoonEpisodeList(
                                 )
                             }
                         }
-                        .clickable {
-                            if (currentDownloadPlayLine.value == null) {
-                                onEpisodeClick(
-                                    playLines[selectLineIndex],
-                                    item
-                                )
-                            } else {
-                                val check = currentDownloadSelect.value.contains(index)
-                                if (!check) {
-                                    currentDownloadSelect.value += index
+                        .combinedClickable(
+                            enabled = true,
+                            onLongClick = {
+                                item.label.toast()
+                            }, onClick = {
+                                if (selectionMode.value == null) {
+                                    onEpisodeClick(
+                                        playLines[selectLineIndex],
+                                        item
+                                    )
                                 } else {
-                                    currentDownloadSelect.value -= index
-                                    if (currentDownloadSelect.value.isEmpty()) {
-                                        currentDownloadPlayLine.value = null
+                                    val check = selection.value.contains(index)
+                                    if (!check) {
+                                        selection.value += index
+                                    } else {
+                                        selection.value -= index
+                                        if (selection.value.isEmpty()) {
+                                            selectionMode.value = null
+                                        }
                                     }
                                 }
-                            }
-                        }
+                            })
+
                         .padding(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (currentDownloadPlayLine.value != null) {
+                    if (selectionMode.value != null) {
                         Checkbox(
-                            checked = currentDownloadSelect.value.contains(index),
+                            checked = selection.value.contains(index),
                             onCheckedChange = {
                                 if (it) {
-                                    currentDownloadSelect.value += index
+                                    selection.value += index
                                 } else {
-                                    currentDownloadSelect.value -= index
-                                    if (currentDownloadSelect.value.isEmpty()) {
-                                        currentDownloadPlayLine.value = null
-                                    }
+                                    selection.value -= index
                                 }
                             }
                         )
                     }
                     Text(
-                        color = if (select && currentDownloadPlayLine.value == null) MaterialTheme.colorScheme.onSecondary else Color.Unspecified,
+                        color = if (select && selectionMode.value == null) MaterialTheme.colorScheme.onSecondary else Color.Unspecified,
                         text = item.label,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
@@ -762,8 +851,8 @@ fun PlayDetailedBottomSheet(
     gridCount: Int,
     onGridChange: (Int) -> Unit,
     onSortChange: (String, Boolean) -> Unit,
-    onDismissRequest: ()->Unit,
-){
+    onDismissRequest: () -> Unit,
+) {
     var currentSelect by remember {
         mutableStateOf(0)
     }

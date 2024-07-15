@@ -101,6 +101,8 @@ import com.heyanle.easybangumi4.ui.common.proc.FilterState
 import com.heyanle.easybangumi4.ui.common.proc.SortColumn
 import com.heyanle.easybangumi4.ui.common.proc.SortState
 import com.heyanle.easybangumi4.ui.main.MainViewModel
+import com.heyanle.easybangumi4.ui.story.local.Local
+import com.heyanle.easybangumi4.ui.story.local.LocalTopAppBar
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -124,14 +126,6 @@ fun Star() {
                 onChangeTag = { starVM.dialogChangeTag() },
                 onUpdate = { starVM.onUpdateSelection() },
                 onMigrate = {
-//                    val selection = starVM.stateFlow.value.selection
-//                    if(selection.size !=  1){
-//                        stringRes(R.string.migrate_support_one).moeSnackBar()
-//                    }else{
-//                        selection.firstOrNull()?.let {
-//                            nav.navigationCartoonMigrate(it.title)
-//                        }
-//                    }
                     starVM.dialogMigrateSelect()
                 },
                 onUp = {
@@ -303,7 +297,6 @@ fun Star() {
                                 contentColor = MaterialTheme.colorScheme.onBackground
                             ),
                             onClick = {
-                                //TODO
                                 starVM.dialogDismiss()
                                 nav.navigationCartoonTag()
                             }) {
@@ -409,7 +402,7 @@ fun CartoonStarProcBottomSheet(
                 CompositionLocalProvider(
                     LocalContentColor provides MaterialTheme.colorScheme.onSurface
                 ) {
-                    if (state.tagList.size > 1 && ! currentTab.isAll) {
+                    if (state.tagList.size > 1 && !currentTab.isAll) {
                         ListItem(
                             colors = ListItemDefaults.colors(
                                 containerColor = Color.Transparent
@@ -417,7 +410,7 @@ fun CartoonStarProcBottomSheet(
                             modifier = Modifier.clickable {
                                 vm.tagConfigChange(
                                     currentTab,
-                                    isCustomSetting = ! currentTab.isCustomSetting,
+                                    isCustomSetting = !currentTab.isCustomSetting,
                                 )
                             },
                             headlineContent = {
@@ -429,7 +422,7 @@ fun CartoonStarProcBottomSheet(
                                     onCheckedChange = {
                                         vm.tagConfigChange(
                                             currentTab,
-                                            isCustomSetting = ! currentTab.isCustomSetting,
+                                            isCustomSetting = !currentTab.isCustomSetting,
                                         )
                                     }
                                 )
@@ -465,7 +458,7 @@ fun CartoonStarProcBottomSheet(
                                     vm.tagConfigChange(
                                         currentTab,
                                         filterWithId = filter.id,
-                                        filterState = when(sta) {
+                                        filterState = when (sta) {
                                             FilterState.STATUS_OFF -> FilterState.STATUS_ON
                                             FilterState.STATUS_ON -> FilterState.STATUS_EXCLUDE
                                             FilterState.STATUS_EXCLUDE -> FilterState.STATUS_OFF
@@ -486,7 +479,7 @@ fun CartoonStarProcBottomSheet(
                                     vm.tagConfigChange(
                                         currentTab,
                                         sortById = i.id,
-                                        isReverse = when(sta) {
+                                        isReverse = when (sta) {
                                             SortState.STATUS_OFF -> false
                                             SortState.STATUS_ON -> true
                                             else -> false

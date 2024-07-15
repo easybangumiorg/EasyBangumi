@@ -388,12 +388,13 @@ fun DlnaPlayDetailed(
         // 播放线路
         cartoonPlayLines(
             playLines = playLines,
-            currentDownloadPlayLine = mutableStateOf(null),
+
             showPlayLine = showPlayLine,
             selectLineIndex = selectLineIndex,
             sortState = sortState,
             playingPlayLine = playingPlayLine,
-            currentDownloadSelect = mutableStateOf(emptySet()),
+            selectionMode = mutableStateOf(null),
+            selection = mutableStateOf(emptySet()),
             onLineSelect = onLineSelect,
             onSortChange = onSortChange,
             gridCount = gridCount,
@@ -406,8 +407,8 @@ fun DlnaPlayDetailed(
             selectLineIndex = selectLineIndex,
             playingPlayLine = playingPlayLine,
             playingEpisode = playingEpisode,
-            currentDownloadSelect = mutableStateOf(emptySet()),
-            currentDownloadPlayLine = mutableStateOf(null),
+            selectionMode = mutableStateOf(null),
+            selection = mutableStateOf(emptySet()),
             onEpisodeClick = onEpisodeClick
         )
     }

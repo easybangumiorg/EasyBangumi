@@ -109,6 +109,19 @@ class CartoonDownloadDispatcher(
 
     }
 
+    fun removeTaskWithItemId(
+        localItemId: Collection<String>
+    ) {
+        scope.launch {
+            val current = _runtimeMap.value
+            val d = localItemId.toSet()
+            val needRemoveTask = current.filter {
+                d.contains(it.value.req.toLocalItemId)
+            }.map { it.value.req }
+            innerRemoveTask(needRemoveTask)
+        }
+    }
+
 
 
     fun removeTask(

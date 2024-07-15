@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,12 +25,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -44,7 +42,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -62,11 +59,13 @@ import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.cartoon.entity.CartoonStoryItem
 import com.heyanle.easybangumi4.cartoon.story.local.source.LocalSource
 import com.heyanle.easybangumi4.navigationDetailed
-import com.heyanle.easybangumi4.source.LocalSourceBundleController
+import com.heyanle.easybangumi4.source_api.entity.toIdentify
+import com.heyanle.easybangumi4.ui.common.EasyDeleteDialog
 import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.common.SelectionTopAppBar
+import com.heyanle.easybangumi4.ui.main.star.CoverStarViewModel
 
 /**
  * Created by heyanle on 2024/7/15.
@@ -74,11 +73,14 @@ import com.heyanle.easybangumi4.ui.common.SelectionTopAppBar
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LocalTopAppBar() {
+fun LocalTopAppBar(
+    label: String? = null,
+) {
     val nav = LocalNavController.current
     val vm = viewModel<LocalViewModel>()
     val state = vm.state.collectAsState()
     val sta = state.value
+    val coverStarViewModel = viewModel<CoverStarViewModel>()
     val focusRequester = remember { FocusRequester() }
     if (sta.selection.isEmpty())
         TopAppBar(
@@ -120,8 +122,10 @@ fun LocalTopAppBar() {
                                 text = stringResource(id = R.string.please_input_keyword_to_search)
                             )
                         })
+                } else {
+                    Text(text = label ?: stringResource(id = R.string.local_download))
                 }
-                Text(text = stringResource(id = R.string.local_download))
+
             },
             navigationIcon = {
                 IconButton(onClick = {
@@ -165,6 +169,17 @@ fun LocalTopAppBar() {
                 vm.clearSelection()
             },
             actions = {
+                IconButton(onClick = {
+                    sta.selection.map { it.cartoonLocalItem.cartoonCover }.forEach {
+                        coverStarViewModel.star(it)
+                    }
+                }) {
+                    Icon(
+                        Icons.Filled.Tag, contentDescription = stringResource(
+                            id = R.string.tag_custom
+                        )
+                    )
+                }
                 IconButton(onClick = { vm.showDeleteDialog() }) {
                     Icon(
                         Icons.Filled.Delete, contentDescription = stringResource(
@@ -185,6 +200,8 @@ fun Local() {
     val sta = state.value
     val haptic = LocalHapticFeedback.current
     val lazyGridState = rememberLazyGridState()
+    val coverStarViewModel = viewModel<CoverStarViewModel>()
+    val star = coverStarViewModel.setFlow.collectAsState(initial = setOf<String>())
     Box {
         if (sta.loading) {
             LoadingPage(
@@ -205,6 +222,7 @@ fun Local() {
                     StoryItemCard(
                         storyItem = it,
                         isSelect = sta.selection.contains(it),
+                        isStar = star.value.contains(it.cartoonLocalItem.cartoonCover.toIdentify()),
                         onClick = {
                             if (sta.selection.isEmpty()) {
                                 nav.navigationDetailed(
@@ -228,6 +246,22 @@ fun Local() {
 
     }
 
+    val dialog = sta.dialog
+    when(dialog){
+        is LocalViewModel.Dialog.DeleteSelection -> {
+            EasyDeleteDialog(show = true, onDelete = {
+                vm.deleteDownload(dialog.selection)
+                vm.dismissDialog()
+            }) {
+                vm.dismissDialog()
+            }
+        }
+        else -> {
+
+        }
+    }
+
+
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -235,6 +269,7 @@ fun Local() {
 fun StoryItemCard(
     storyItem: CartoonStoryItem,
     isSelect: Boolean,
+    isStar: Boolean,
     onClick: (CartoonStoryItem) -> Unit,
     onLongPress: ((CartoonStoryItem) -> Unit)? = null,
 ) {
@@ -272,6 +307,19 @@ fun StoryItemCard(
                 contentDescription = storyItem.cartoonLocalItem.title,
                 errorRes = com.heyanle.easybangumi4.R.drawable.placeholder,
             )
+            if (isStar) {
+                Text(
+                    fontSize = 13.sp,
+                    text = stringResource(id = com.heyanle.easy_i18n.R.string.stared_min),
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier
+                        .background(
+                            MaterialTheme.colorScheme.primary,
+                            RoundedCornerShape(0.dp, 0.dp, 4.dp, 0.dp)
+                        )
+                        .padding(4.dp, 0.dp)
+                )
+            }
             Text(
                 fontSize = 13.sp,
                 text = LocalSource.label,

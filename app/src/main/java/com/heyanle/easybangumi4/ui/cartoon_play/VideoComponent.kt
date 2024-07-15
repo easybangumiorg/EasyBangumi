@@ -42,6 +42,7 @@ import androidx.compose.material.icons.filled.Battery5Bar
 import androidx.compose.material.icons.filled.Battery6Bar
 import androidx.compose.material.icons.filled.BatteryChargingFull
 import androidx.compose.material.icons.filled.BatteryFull
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.CastConnected
 import androidx.compose.material.icons.filled.CloseFullscreen
 import androidx.compose.material.icons.filled.Edit
@@ -584,13 +585,18 @@ fun VideoControl(
                 modifier = Modifier
                     .fillMaxHeight()
                     .defaultMinSize(64.dp, Dp.Unspecified)
-                    .align(Alignment.CenterEnd)
-            ) {
-                cartoonPlayingVM.showRecord()
-            }
+                    .align(Alignment.CenterEnd),
+                onImage = {
+                    cartoonPlayingVM.image()
+                },
+                onShowRecorded = {
+                    cartoonPlayingVM.showRecord()
 
+                }
+            )
             NormalVideoTopBar(controlVM,
                 showTools = playingState.isPlaying,
+                showDlna = detailState.cartoonInfo?.source != LocalSource.LOCAL_SOURCE_KEY,
                 onBack = {
                     nav.popBackStack()
                 },
@@ -682,7 +688,8 @@ fun FullScreenRightToolBar(
     vm: ControlViewModel,
     modifier: Modifier = Modifier,
     isShowOnNormalScreen: Boolean = false,
-    onShowRecorded: ()->Unit,
+    onShowRecorded: () -> Unit,
+    onImage: () -> Unit,
 ) {
 
     (vm.isShowOverlay() && (vm.isFullScreen || isShowOnNormalScreen)).logi("VideoComponent")
@@ -698,6 +705,22 @@ fun FullScreenRightToolBar(
                 modifier = Modifier
             ) {
                 Spacer(Modifier.height(64.dp))
+                Box(modifier = Modifier
+                    .padding(4.dp)
+                    .clip(CircleShape)
+                    .background(Color.Black.copy(alpha = 0.6f))
+                    .clickable {
+                        onImage()
+                    }
+                    .padding(8.dp)
+                ) {
+                    Icon(
+                        Icons.Filled.CameraAlt,
+                        tint = Color.White,
+                        modifier = Modifier.size(18.dp),
+                        contentDescription = null
+                    )
+                }
                 Box(modifier = Modifier
                     .padding(4.dp)
                     .clip(CircleShape)
@@ -793,6 +816,7 @@ fun NormalVideoTopBar(
     vm: ControlViewModel,
     modifier: Modifier = Modifier,
     showTools: Boolean,
+    showDlna: Boolean,
     onBack: () -> Unit,
     onSpeed: () -> Unit,
     onDlna: () -> Unit,
@@ -818,12 +842,14 @@ fun NormalVideoTopBar(
                     )
                 }
 
-                IconButton(onClick = onDlna) {
-                    Icon(
-                        Icons.Filled.CastConnected,
-                        tint = Color.White,
-                        contentDescription = null
-                    )
+                if (showDlna) {
+                    IconButton(onClick = onDlna) {
+                        Icon(
+                            Icons.Filled.CastConnected,
+                            tint = Color.White,
+                            contentDescription = null
+                        )
+                    }
                 }
 
                 CombineClickIconButton(

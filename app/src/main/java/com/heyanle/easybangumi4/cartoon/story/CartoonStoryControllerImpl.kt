@@ -115,12 +115,15 @@ class CartoonStoryControllerImpl(
         cartoonLocalController.refresh()
     }
 
-    override fun removeStory(cartoonStoryItem: CartoonStoryItem) {
-        val file = UniFile.fromUri(APP,   cartoonStoryItem.cartoonLocalItem.folderUri.toUri())
-        file?.delete()
+    override fun removeStory(cartoonStoryItem: Collection<CartoonStoryItem>) {
+        cartoonStoryItem.forEach {
+            val file = UniFile.fromUri(APP,   it.cartoonLocalItem.folderUri.toUri())
+            file?.delete()
+        }
+
         cartoonLocalController.refresh()
-        cartoonDownloadReqController.removeDownloadItemWithItemId(listOf(cartoonStoryItem.cartoonLocalItem.itemId))
-        cartoonDownloadDispatcher.removeTaskWithItemId(cartoonStoryItem.cartoonLocalItem.itemId)
+        cartoonDownloadReqController.removeDownloadItemWithItemId(cartoonStoryItem.map { it.cartoonLocalItem.itemId })
+        cartoonDownloadDispatcher.removeTaskWithItemId(cartoonStoryItem.map { it.cartoonLocalItem.itemId })
     }
 
     override fun removeEpisodeItem(episode: Collection<CartoonLocalEpisode>) {

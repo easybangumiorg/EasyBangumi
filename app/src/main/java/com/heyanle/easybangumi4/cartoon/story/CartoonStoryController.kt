@@ -37,7 +37,7 @@ interface CartoonStoryController {
     fun refreshLocal()
     suspend fun newStory(localMsg: CartoonLocalMsg): Boolean
 
-    fun removeStory(cartoonStoryItem: CartoonStoryItem)
+    fun removeStory(cartoonStoryItem: Collection<CartoonStoryItem>)
 
     fun removeEpisodeItem(episode: Collection<CartoonLocalEpisode>)
 

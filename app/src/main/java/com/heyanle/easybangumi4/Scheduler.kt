@@ -20,6 +20,7 @@ import com.heyanle.easybangumi4.ui.common.moeDialog
 import com.heyanle.easybangumi4.utils.UUIDHelper
 import com.heyanle.easybangumi4.utils.exo_ssl.CropUtil
 import com.heyanle.easybangumi4.utils.exo_ssl.TrustAllHostnameVerifier
+import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.extension_api.IconFactory
 import com.heyanle.extension_api.iconFactory
@@ -32,6 +33,7 @@ import com.tencent.bugly.crashreport.CrashReport
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
+import java.io.File
 import javax.net.ssl.HttpsURLConnection
 
 /**
@@ -52,6 +54,14 @@ object Scheduler {
      * application#onCreate
      */
     fun runOnAppCreate(application: Application) {
+
+        try {
+            File(application.getCachePath("transformer")).deleteRecursively()
+            File(application.getCachePath("download")).deleteRecursively()
+        }catch (e: Exception) {
+            e.printStackTrace()
+        }
+
 
         initCrasher(application)
 

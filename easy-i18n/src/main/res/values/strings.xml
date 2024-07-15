@@ -443,7 +443,7 @@
     <string name="cartoon_data">番剧数据</string>
     <string name="cartoon_data_desc">包含收藏番剧、历史记录和番剧标签</string>
     <string name="preference_data">配置数据</string>
-    <string name="preference_desc">包含外观设置，播放设置以及下载设置</string>
+    <string name="preference_desc">包含外观设置，播放设置</string>
 
     <string name="extension_desc">拓展文件</string>
 
@@ -493,8 +493,8 @@
     <string name="record_success">录制成功</string>
 
     <string name="fps">帧率</string>
-    <string name="quality">压缩率</string>
-    <string name="quality_error">压缩率输入错误 [1,100]</string>
+    <string name="quality">图片质量（1–100）</string>
+    <string name="quality_error">质量输入错误 [1,100]</string>
 
 
     <string name="save_gif">保存 gif</string>
@@ -560,6 +560,11 @@
     <string name="download_stop_click_to_restart">点击重新下载</string>
 
     <string name="local_cant_dlna">本地番剧暂不支持投屏</string>
+
+    <string name="image_save_completely">图片保存成功</string>
+    <string name="record_completely">文件录制成功</string>
+
+    <string name="local_folder_change_completely">本地目录切换成功，可能需要自行复制原有数据</string>
 
 
 </resources>

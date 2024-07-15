@@ -4,6 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
@@ -40,9 +41,11 @@ import com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded.CartoonRecorded
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModelFactory
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayingViewModel
+import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonStoryViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.DetailedViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.DetailedViewModelFactory
 import com.heyanle.easybangumi4.ui.common.DetailedContainer
+import com.heyanle.easybangumi4.ui.common.EasyDeleteDialog
 import com.heyanle.easybangumi4.ui.common.EasyMutiSelectionDialog
 import com.heyanle.easybangumi4.ui.common.ErrorPage
 import com.heyanle.easybangumi4.ui.common.LoadingPage
@@ -78,13 +81,21 @@ fun CartoonPlay(
     val playVM = viewModel<CartoonPlayViewModel>(factory = CartoonPlayViewModelFactory(enterData))
     val playingVM = viewModel<CartoonPlayingViewModel>()
     val isPad = isCurPadeMode()
-    val controlVM = ControlViewModelFactory.viewModel(playingVM.exoPlayer, isPad, render = playingVM.easyTextRenderer)
+    val storyViewModel = viewModel<CartoonStoryViewModel>()
+    val controlVM = ControlViewModelFactory.viewModel(
+        playingVM.exoPlayer,
+        isPad,
+        render = playingVM.easyTextRenderer
+    )
 
     val detailedState = detailedVM.stateFlow.collectAsState()
     val playState = playVM.curringPlayState.collectAsState()
     val playingState = playingVM.playingState.collectAsState()
 
     var downloadModel by remember {
+        mutableStateOf<Triple<CartoonInfo, PlayLineWrapper, List<Episode>>?>(null)
+    }
+    var deleteDialogState by remember {
         mutableStateOf<Triple<CartoonInfo, PlayLineWrapper, List<Episode>>?>(null)
     }
 
@@ -145,6 +156,10 @@ fun CartoonPlay(
                 onDownload = {
                     controlVM.onPlayPause(false)
                     downloadModel = it
+                },
+                onDelete = {
+                    controlVM.onPlayPause(false)
+                    deleteDialogState = it
                 }
             )
 
@@ -157,6 +172,16 @@ fun CartoonPlay(
                         downloadModel = null
                     }
                 )
+            }
+
+            deleteDialogState?.let {
+                EasyDeleteDialog(show = true, onDelete = {
+                    storyViewModel.delete(it) {
+                        detailedVM.load()
+                    }
+                }) {
+                    deleteDialogState = null
+                }
             }
 
 
@@ -264,7 +289,7 @@ fun CartoonPlay(
 
     val recordState = playingVM.showRecording.value
 
-    if (recordState != null){
+    if (recordState != null) {
 
         CartoonRecorded(
             controlViewModel = controlVM,
@@ -311,6 +336,7 @@ fun CartoonPlay(
     playingState: CartoonPlayingViewModel.PlayingState,
 
     onDownload: (Triple<CartoonInfo, PlayLineWrapper, List<Episode>>) -> Unit,
+    onDelete: (Triple<CartoonInfo, PlayLineWrapper, List<Episode>>) -> Unit,
 ) {
     val nav = LocalNavController.current
     val cartoonDownloadDispatcher: CartoonDownloadDispatcher by Inject.injectLazy()
@@ -399,7 +425,14 @@ fun CartoonPlay(
         }) {
 
         Surface(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .run {
+                    if (isPad)
+                        statusBarsPadding()
+                    else
+                        this
+                },
             color = MaterialTheme.colorScheme.background,
             contentColor = MaterialTheme.colorScheme.onBackground
         ) {
@@ -463,6 +496,15 @@ fun CartoonPlay(
                     onDownload = { playLine, episodes ->
 
                         onDownload(
+                            Triple(
+                                detailState.cartoonInfo,
+                                playLine,
+                                episodes
+                            )
+                        )
+                    },
+                    onDelete = { playLine, episodes ->
+                        onDelete(
                             Triple(
                                 detailState.cartoonInfo,
                                 playLine,

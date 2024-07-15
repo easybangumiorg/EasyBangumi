@@ -17,6 +17,7 @@ import androidx.media3.common.util.Size
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.effect.Crop
 import com.heyanle.easybangumi4.APP
+import com.heyanle.easybangumi4.R
 import com.heyanle.easybangumi4.exo.CartoonMediaSourceFactory
 import com.heyanle.easybangumi4.exo.recorded.task.AbsRecordedTask
 import com.heyanle.easybangumi4.exo.recorded.task.GifRecordedTask
@@ -28,6 +29,8 @@ import com.heyanle.easybangumi4.utils.MediaAndroidUtils
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.easybangumi4.utils.logi
+import com.heyanle.easybangumi4.utils.stringRes
+import com.heyanle.easybangumi4.utils.toast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
@@ -53,6 +56,7 @@ class CartoonRecordedTaskModel(
     val scope = MainScope()
     private val outputCacheFolder = File(ctx.getCachePath("Recorded"))
         .apply {
+            deleteRecursively()
             mkdirs()
         }
 
@@ -135,13 +139,12 @@ class CartoonRecordedTaskModel(
     }
 
     override fun onCompletely(file: File) {
-        onDismissRequest()
-        if (!file.exists()){
-            return
-        }
         scope.launch {
             MediaAndroidUtils.saveToDownload(file, "recorded")
+            stringRes(com.heyanle.easy_i18n.R.string.record_completely).toast()
+            onDismissRequest()
         }
+
 
     }
 

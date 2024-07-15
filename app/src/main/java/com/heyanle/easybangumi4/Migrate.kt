@@ -355,6 +355,13 @@ object Migrate {
                     }.filterIsInstance<CartoonTag>()
                     Inject.get<CartoonStarController>().modifier(r)
 
+                    try {
+                        File(context.getFilePath("download")).deleteRecursively()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+
+
                 }
 
                 // 在这里添加新的迁移代码

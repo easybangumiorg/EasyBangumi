@@ -54,15 +54,15 @@ android {
 
     }
 
-    splits {
-
-        abi {
-            isEnable = true
-            reset()
-            include("arm64-v8a", "armeabi-v7a")
-            isUniversalApk = true
-        }
-    }
+//    splits {
+//
+//        abi {
+//            isEnable = true
+//            reset()
+//            include("arm64-v8a", "armeabi-v7a")
+//            isUniversalApk = true
+//        }
+//    }
 
     sourceSets {
         // Adds exported schema location as test app assets.
@@ -232,11 +232,7 @@ dependencies {
     // fimplementation(gecko.gecko)
 
 
-    if (release) {
-        implementation(libs.easyplayer2)
-    } else {
-        implementation(project(":EasyPlayer2:easyplayer2"))
-    }
+    implementation(project(":EasyPlayer2:easyplayer2"))
 
     implementation(project(":EasyMediaTransformer:easy_transformer"))
 

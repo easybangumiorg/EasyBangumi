@@ -25,9 +25,11 @@ import com.heyanle.easybangumi4.source_api.entity.PlayLine
 import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
 import com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded.CartoonRecordedModel
 import com.heyanle.easybangumi4.utils.CoroutineProvider
+import com.heyanle.easybangumi4.utils.MediaAndroidUtils
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.stringRes
+import com.heyanle.easybangumi4.utils.toast
 import com.heyanle.inject.core.Inject
 import com.hippo.unifile.UniFile
 import kotlinx.coroutines.CoroutineScope
@@ -134,7 +136,44 @@ class CartoonPlayingViewModel(
 
     // 缩略图缓存
     var thumbnailBuffer: ThumbnailBuffer? = null
-    val thumbnailFolder: File = File(APP.getCachePath("thumbnail"))
+    val thumbnailFolder: File = File(APP.getCachePath("thumbnail")).apply {
+        deleteRecursively()
+        mkdirs()
+    }
+
+    val imageCache: File = File(APP.getCachePath("image")).apply {
+        deleteRecursively()
+        mkdirs()
+    }
+
+    fun image() {
+        val playerInfo = playingInfo
+        if (playerInfo == null) {
+            stringRes(com.heyanle.easy_i18n.R.string.waiting_parsing)
+            return
+        }
+        val position = exoPlayer.currentPosition
+        scope.launch(dispatcher) {
+            val bmp = easyTextRenderer.getTextureViewOrNull()?.bitmap ?: return@launch
+            val file = File(imageCache, "${position}.png")
+            file.delete()
+            file.createNewFile()
+            bmp.compress(
+                Bitmap.CompressFormat.PNG,
+                100,
+                file.outputStream()
+            )
+            MediaAndroidUtils.saveToDownload(
+                file,
+                type = "image",
+                "image_${position}.png"
+            )
+            scope.launch {
+                stringRes(com.heyanle.easy_i18n.R.string.image_save_completely).toast()
+            }
+
+        }
+    }
 
     @OptIn(UnstableApi::class)
     fun showRecord() {

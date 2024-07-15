@@ -14,6 +14,7 @@ jobs:
         uses: actions/setup-java@v1.4.4
         with:
           java-version: 17
+          submodules: true
       # Gradle 缓存配置
       - name: Cache Gradle packages
         uses: actions/cache@v2

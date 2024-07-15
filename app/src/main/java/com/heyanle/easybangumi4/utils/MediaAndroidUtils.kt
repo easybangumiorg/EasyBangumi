@@ -19,9 +19,10 @@ import kotlin.coroutines.suspendCoroutine
  */
 object MediaAndroidUtils {
 
-    suspend fun mediaScan(context: Context, path: String){
+    suspend fun mediaScan(context: Context, path: String) {
         suspendCoroutine<Unit> {
-            MediaScannerConnection.scanFile(context, arrayOf(path), null
+            MediaScannerConnection.scanFile(
+                context, arrayOf(path), null
             ) { p0, p1 -> it.resume(Unit) }
         }
 
@@ -35,16 +36,19 @@ object MediaAndroidUtils {
                     Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
                         ?: File(APP.getFilePath())
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                    val targetRoot = File(picturesFile, "${if (BuildConfig.DEBUG) "EasyBangumi.debug" else "EasyBangumi"}/${type}")
+                    val targetRoot = File(
+                        picturesFile,
+                        "${if (BuildConfig.DEBUG) "EasyBangumi.debug" else "EasyBangumi"}/${type}"
+                    )
                     val target = File(targetRoot, file.name)
                     file.copyTo(target, true)
                 } else {
                     val values = ContentValues().apply {
                         put(MediaStore.MediaColumns.DISPLAY_NAME, displayName)
                         put(
-                            MediaStore.MediaColumns.RELATIVE_PATH, "${
-                                Environment.getExternalStoragePublicDirectory(
-                                    Environment.DIRECTORY_DOWNLOADS)}/${if (BuildConfig.DEBUG) "EasyBangumi.debug" else "EasyBangumi"}/${type}")
+                            MediaStore.MediaColumns.RELATIVE_PATH,
+                            "${Environment.DIRECTORY_DOWNLOADS}/${if (BuildConfig.DEBUG) "EasyBangumi.debug" else "EasyBangumi"}/${type}"
+                        )
                     }
                     APP.contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
                         ?.let { uri ->

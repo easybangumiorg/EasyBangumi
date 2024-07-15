@@ -281,6 +281,7 @@ class StorageController(
 
                 val res = migrate(targetFolder, version)
                 if (!res) {
+                    "无法恢复旧版备份".moeSnackBar()
                     throw Exception("migrate failed $version -> ${BuildConfig.VERSION_CODE}")
                 }
 
@@ -338,6 +339,10 @@ class StorageController(
             dbFileWalO.renameTo(dbFileWal)
         }
 
+        if (version < 92) {
+            return false
+        }
+
         return true
     }
 
@@ -351,33 +356,14 @@ class StorageController(
         val database = CartoonDatabase.build(APP, targetDB.absolutePath)
 
         val cartoonInfo = database.cartoonInfoDao()
-        val cartoonTagDao = database.cartoonTagDao()
 
         val currentCartoonDao = cartoonDatabase.cartoonInfo
-        val currentCartoonTagDao = cartoonDatabase.cartoonTag
 
-        val tagIdMap = hashMapOf<Int, Int>()
-        cartoonTagDao.getAll().forEach {
-            val currTag = currentCartoonTagDao.findByLabel(it.label).firstOrNull()
-            if (currTag == null) {
-                currentCartoonTagDao.insert(it)
-                val realTag = currentCartoonTagDao.findByLabel(it.label).firstOrNull()
-                if (realTag != null) {
-                    tagIdMap[it.id] = realTag.id
-                }
-            } else {
-                tagIdMap[it.id] = currTag.id
-            }
-        }
 
         cartoonInfo.getAll().forEach {
-            val tags = it.tags.split(",").map {
-                tagIdMap[it.trim().toIntOrNull()?:-1] ?: -1
-            }.filter {
-                it != -1
-            }.joinToString(", ")
-            val new = it.copy(tags = tags)
-            currentCartoonDao.modify(new)
+            if (!it.isLocal){
+                currentCartoonDao.modify(it)
+            }
         }
         return true
     }

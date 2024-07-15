@@ -76,13 +76,20 @@ object CartoonInfoSortFilterConst {
             it.upTime != 0L
         }
     )
+    val filterLocalSource = FilterWith<CartoonInfo>(
+        id = "Up",
+        label = stringRes(R.string.local_source),
+        filter = {
+            it.isLocal
+        }
+    )
 
 
     val sortByList = listOf<SortBy<CartoonInfo>>(
         sortByStarTime, sortByUpdateTime, sortByTitle, sortByLastWatchTime, sortBySource
     )
     val filterWithList = listOf(
-        filterWithUpdate, filterWithTag, filterWithUp
+        filterWithUpdate, filterWithTag, filterWithUp, filterLocalSource
     )
 
 

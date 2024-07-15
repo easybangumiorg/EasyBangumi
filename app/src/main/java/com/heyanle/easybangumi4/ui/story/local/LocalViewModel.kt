@@ -3,7 +3,6 @@ package com.heyanle.easybangumi4.ui.story.local
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.base.DataResult
-import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadInfo
 import com.heyanle.easybangumi4.cartoon.entity.CartoonStoryItem
 import com.heyanle.easybangumi4.cartoon.story.CartoonStoryController
 import com.heyanle.inject.core.Inject
@@ -166,6 +165,10 @@ class LocalViewModel: ViewModel() {
         lastStoryItem = null
     }
 
+    fun tagSelection(selection: Set<CartoonStoryItem>) {
+
+    }
+
     fun changeKey(key: String?){
         _state.update {
             it.copy(
@@ -183,7 +186,7 @@ class LocalViewModel: ViewModel() {
         }
     }
 
-    fun deleteDownload(selection: Set<CartoonDownloadInfo>) {
-        cartoonStoryController.removeDownloadReq(selection.map { it.req })
+    fun deleteDownload(selection: Set<CartoonStoryItem>) {
+        cartoonStoryController.removeStory(selection)
     }
 }
