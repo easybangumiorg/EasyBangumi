@@ -94,7 +94,7 @@ class CartoonModule(
         }
 
         addSingletonFactory {
-            CartoonDownloadDispatcher(get(), get(), get())
+            CartoonDownloadDispatcher(get(), get(), get(), get())
         }
 
         addSingletonFactory {
