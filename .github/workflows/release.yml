@@ -24,6 +24,7 @@ jobs:
           restore-keys: ${{ runner.os }}-gradle
       - name: Build
         run: |
+          git submodule update --init --recursive
           chmod +x ./gradlew
           ./gradlew :app:assemble
         env:
