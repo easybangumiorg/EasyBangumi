@@ -24,6 +24,8 @@ jobs:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle
+        env:
+          RELEASE: true
       - name: Build
         run: |
           chmod +x ./gradlew
@@ -31,6 +33,7 @@ jobs:
         env:
           APPCENTER_SECRET: ${{ secrets.APPCENTER_SECRET }}
           BUGLY_APPID: ${{ secrets.BUGLY_APPID }}
+          RELEASE: true
       - name: Setup build tool version variable
         shell: bash
         run: |
