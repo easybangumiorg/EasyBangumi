@@ -97,10 +97,10 @@ class JsonFileHelper<T : Any>(
     }
 
     fun set(data: T){
-        trySave()
         _flow.update {
             DataResult.ok(data)
         }
+        trySave()
     }
 
     fun getOrDef(): T {

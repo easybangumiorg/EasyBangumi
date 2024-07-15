@@ -62,8 +62,12 @@ class CartoonStarController(
 
     fun modifier(cartoonTag: CartoonTag) {
         jsonFileProvider.cartoonTag.update {
+            var i = it
+            if(!it.any { it.label == cartoonTag.label }) {
+                i = it + cartoonTag
+            }
             if (cartoonTag.isCustomSetting)
-                it.map {
+                i.map {
                     if (it.label == cartoonTag.label) {
                         cartoonTag
                     } else {
@@ -71,7 +75,7 @@ class CartoonStarController(
                     }
                 }
             else {
-                it.map {
+                i.map {
                     when (it.label) {
                         CartoonTag.ALL_TAG_LABEL -> {
                             it.copy(
