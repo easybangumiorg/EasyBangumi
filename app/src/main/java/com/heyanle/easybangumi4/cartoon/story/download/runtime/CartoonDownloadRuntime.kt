@@ -29,7 +29,7 @@ class CartoonDownloadRuntime(
     companion object {
         const val STATE_WAITING = 0
         const val STATE_DOING = 1
-        const val STATE_COMPLETELY = 2
+        const val STATE_STEP_COMPLETELY = 2
         const val STATE_ERROR = 3
         const val STATE_SUCCESS = 4
         const val STATE_CANCEL = 5

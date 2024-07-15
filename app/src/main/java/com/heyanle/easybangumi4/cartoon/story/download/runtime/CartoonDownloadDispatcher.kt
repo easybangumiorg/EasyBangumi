@@ -3,6 +3,7 @@ package com.heyanle.easybangumi4.cartoon.story.download.runtime
 import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadReq
 import com.heyanle.easybangumi4.cartoon.story.local.CartoonLocalController
 import com.heyanle.easybangumi4.cartoon.story.download.CartoonDownloadPreference
+import com.heyanle.easybangumi4.utils.logi
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -160,8 +161,9 @@ class CartoonDownloadDispatcher(
     }
 
     override fun onStateChange(runtime: CartoonDownloadRuntime) {
+        runtime.state.logi("CartoonDownloadDispatcher")
         when (runtime.state) {
-            CartoonDownloadRuntime.STATE_COMPLETELY -> {
+            CartoonDownloadRuntime.STATE_SUCCESS -> {
                 removeTask(runtime.req)
             }
             CartoonDownloadRuntime.STATE_CANCEL -> {
