@@ -3,6 +3,7 @@ package com.heyanle.easybangumi4.cartoon.story.download.runtime
 import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadReq
 import com.heyanle.easybangumi4.cartoon.story.local.CartoonLocalController
 import com.heyanle.easybangumi4.cartoon.story.download.CartoonDownloadPreference
+import com.heyanle.easybangumi4.cartoon.story.download.req.CartoonDownloadReqController
 import com.heyanle.easybangumi4.utils.logi
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,6 +23,7 @@ import java.util.concurrent.TimeUnit
 class CartoonDownloadDispatcher(
     private val cartoonDownloadPreference: CartoonDownloadPreference,
     private val cartoonDownloadRuntimeFactory: CartoonDownloadRuntimeFactory,
+    private val cartoonDownloadReqController: CartoonDownloadReqController,
     private val cartoonLocalController: CartoonLocalController,
 ): CartoonDownloadRuntime.Listener {
 
@@ -165,6 +167,8 @@ class CartoonDownloadDispatcher(
         when (runtime.state) {
             CartoonDownloadRuntime.STATE_SUCCESS -> {
                 removeTask(runtime.req)
+                cartoonDownloadReqController.removeDownloadItem(runtime.req.uuid)
+                cartoonLocalController.refresh()
             }
             CartoonDownloadRuntime.STATE_CANCEL -> {
                 removeTask(runtime.req)
