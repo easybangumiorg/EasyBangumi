@@ -587,7 +587,7 @@ fun VideoControl(
 
             val showDonate = remember { mutableStateOf(false) }
 
-            DonateDialog(show = showDonate.value, hasDonate = {
+            DonateDialog(title = "该功能需捐赠解锁哦！",show = showDonate.value, hasDonate = {
                 hasDonateFromVideo = true
             }) {
                 showDonate.value = false

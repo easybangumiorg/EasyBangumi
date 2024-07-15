@@ -28,6 +28,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.heyanle.easybangumi4.APP
@@ -422,6 +423,7 @@ fun EasyMutiSelectionDialog(
 
 @Composable
 fun DonateDialog(
+    title: String? = null,
     show: Boolean,
     hasDonate: () ->Unit,
     onDismissRequest: () -> Unit,
@@ -430,17 +432,26 @@ fun DonateDialog(
     if (show) {
         AlertDialog(
             title = {
-                Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.donate_title))
+                Text(text = title?:stringResource(id = com.heyanle.easy_i18n.R.string.donate_title))
             },
             text = {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(300.dp),
+                        .height(200.dp),
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    OkImage(image = Uri.parse("file:///android_asset/thanks_wx.png"), contentDescription = "" )
-                    OkImage(image = Uri.parse("file:///android_asset/thanks_zfb.png"), contentDescription = "" )
+                    OkImage(
+                        modifier = Modifier.weight(1f).height(200.dp),
+                        image = Uri.parse("file:///android_asset/thanks_wx.png"),
+                        contentDescription = "" ,
+                        contentScale = ContentScale.FillHeight,
+                    )
+                    OkImage(
+                        modifier = Modifier.weight(1f).height(200.dp),
+                        image = Uri.parse("file:///android_asset/thanks_zfb.jpg"),
+                        contentDescription = "",
+                        contentScale = ContentScale.FillHeight,)
                 }
             },
             onDismissRequest = onDismissRequest,
@@ -489,7 +500,7 @@ fun DonateDialog(
                         onClick = {
                             onDismissRequest()
                         }) {
-                        Text(text = "我已拒绝")
+                        Text(text = "我拒绝")
                     }
                 }
 
