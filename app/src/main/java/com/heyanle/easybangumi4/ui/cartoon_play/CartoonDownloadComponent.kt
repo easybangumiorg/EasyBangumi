@@ -61,6 +61,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.heyanle.easy_i18n.R
+import com.heyanle.easybangumi4.LocalNavController
+import com.heyanle.easybangumi4.STORY
 import com.heyanle.easybangumi4.base.DataResult
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.entity.PlayLineWrapper
@@ -70,6 +72,8 @@ import com.heyanle.easybangumi4.ui.common.CartoonCardWithCover
 import com.heyanle.easybangumi4.ui.common.ErrorPage
 import com.heyanle.easybangumi4.ui.common.LoadingImage
 import com.heyanle.easybangumi4.ui.common.LoadingPage
+import com.heyanle.easybangumi4.ui.common.moeDialog
+import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.easybangumi4.utils.toast
 
@@ -280,6 +284,7 @@ fun CartoonDownloadDialog(
                 }
             }
         } else {
+            val nav = LocalNavController.current
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
@@ -300,6 +305,12 @@ fun CartoonDownloadDialog(
                         onClick = {
                             onDismissRequest()
                             model.pushReq(sta)
+                            stringRes(R.string.add_download_completely).moeSnackBar(
+                                confirmLabel = stringRes(R.string.click_to_view),
+                                onConfirm = {
+                                    nav.navigate(STORY)
+                                }
+                            )
                         }) {
                         Text(stringResource(id = R.string.next))
 
