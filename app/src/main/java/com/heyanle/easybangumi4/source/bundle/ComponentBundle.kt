@@ -61,6 +61,7 @@ class ComponentBundle(
         OkhttpHelper::class,
         PreferenceHelper::class,
         WebViewHelper::class,
+        WebViewHelperV2::class,
         CaptchaHelper::class
     )
 
