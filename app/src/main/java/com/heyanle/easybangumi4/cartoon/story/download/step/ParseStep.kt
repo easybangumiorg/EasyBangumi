@@ -43,8 +43,12 @@ object ParseStep: BaseStep {
         val playComponent = bundle.play(source) ?: throw IllegalStateException("playComponent is null")
 
 
+        val startDownLatch = CountDownLatch(1)
         val countDownLatch = CountDownLatch(1)
+        runtime.countDownLatch = countDownLatch
+        runtime.countDownLatchII = startDownLatch
         scope.launch {
+            startDownLatch.countDown()
             if (runtime.needCancel()) {
                 runtime.countDownLatch?.countDown()
                 return@launch
@@ -56,7 +60,7 @@ object ParseStep: BaseStep {
             )
             runtime.countDownLatch?.countDown()
         }
-        runtime.countDownLatch = countDownLatch
+        startDownLatch.await()
         countDownLatch.await(20, TimeUnit.SECONDS)
         if (runtime.needCancel()) {
             return
@@ -80,5 +84,6 @@ object ParseStep: BaseStep {
 
     override fun cancel(runtime: CartoonDownloadRuntime) {
         runtime.countDownLatch?.countDown()
+        runtime.countDownLatchII?.countDown()
     }
 }

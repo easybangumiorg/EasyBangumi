@@ -5,6 +5,9 @@ import androidx.media3.transformer.ExportResult
 import androidx.media3.transformer.Transformer
 import com.heyanle.easybangumi4.bus.DownloadingBus
 import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadReq
+import com.heyanle.easybangumi4.cartoon.story.download.CartoonDownloadPreference
+import com.heyanle.easybangumi4.cartoon.story.download.step.BaseStep
+import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.source_api.SourceResult
 import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
 import com.heyanle.easybangumi4.utils.stringRes
@@ -35,6 +38,8 @@ class CartoonDownloadRuntime(
         const val STATE_CANCEL = 5
     }
 
+    var decodeType: CartoonDownloadPreference.DownloadEncode = CartoonDownloadPreference.DownloadEncode.H264
+
     // 是否已经被调度（加进线程池）
     val hasDispatched = AtomicBoolean(false)
 
@@ -44,10 +49,17 @@ class CartoonDownloadRuntime(
 
     var canCancel = true
 
+
+    @Volatile
+    var currentStep: BaseStep? = null
+
     // 所有异步锁收归到这里
     @Volatile
     var countDownLatch: CountDownLatch? = null
+    @Volatile
+    var countDownLatchII: CountDownLatch? = null
 
+    @Volatile
     // for parse step
     var parseResult: SourceResult<PlayerInfo>? = null
 
@@ -55,6 +67,17 @@ class CartoonDownloadRuntime(
     // for transformer step
     var transformer: Transformer? = null
     var transformerProgress: Int = 0
+
+    var lastFileSize: Long = 0L
+    var lastFileTime: Long = 0L
+
+    fun updateSeedPreSecond(fileSize: Long, fileTime: Long): Long {
+        val seed = (fileSize - lastFileSize) * 1000 / (fileTime - lastFileTime)
+        lastFileSize = fileSize
+        lastFileTime = fileTime
+        return seed
+    }
+
     var exportResult: ExportResult? = null
     var exportException: ExportException? = null
 
@@ -155,6 +178,7 @@ class CartoonDownloadRuntime(
         state = 5
         dispatchStateToBus()
         hasDispatched.set(false)
+        currentStep?.cancel(this)
     }
 
 }

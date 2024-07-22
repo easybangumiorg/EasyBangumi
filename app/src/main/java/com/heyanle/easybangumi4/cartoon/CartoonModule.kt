@@ -90,7 +90,7 @@ class CartoonModule(
         }
 
         addSingletonFactory {
-            CartoonDownloadRuntimeFactory()
+            CartoonDownloadRuntimeFactory(get())
         }
 
         addSingletonFactory {
@@ -108,7 +108,7 @@ class CartoonModule(
         }
 
         addSingletonFactory {
-            LocalCartoonPreference(get())
+            LocalCartoonPreference(get(), get())
         }
 
 

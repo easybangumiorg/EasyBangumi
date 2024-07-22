@@ -1,7 +1,9 @@
 package com.heyanle.easybangumi4.cartoon.story.download.runtime
 
 import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadReq
+import com.heyanle.easybangumi4.cartoon.story.download.CartoonDownloadPreference
 import com.heyanle.easybangumi4.cartoon.story.download.step.BaseStep
+import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.inject.api.get
 import com.heyanle.inject.core.Inject
 
@@ -9,7 +11,9 @@ import com.heyanle.inject.core.Inject
  * Created by heyanle on 2024/7/7.
  * https://github.com/heyanLE
  */
-class CartoonDownloadRuntimeFactory {
+class CartoonDownloadRuntimeFactory(
+    private val cartoonDownloadPreference: CartoonDownloadPreference
+) {
 
     companion object {
         val runtimeLocal = ThreadLocal<CartoonDownloadRuntime>()
@@ -38,7 +42,9 @@ class CartoonDownloadRuntimeFactory {
                             cartoonDownloadRuntime.dispatchStateToBus()
                             val stepName = stepChain[cartoonDownloadRuntime.stepIndex]
                             val step = Inject.get<BaseStep>(stepName)
+                            cartoonDownloadRuntime.currentStep = step
                             step.invoke()
+                            cartoonDownloadRuntime.currentStep = null
                             continue
                         } catch (e: Throwable) {
                             cartoonDownloadRuntime.error = e
@@ -56,6 +62,7 @@ class CartoonDownloadRuntimeFactory {
     fun newRuntime(cartoonDownloadReq: CartoonDownloadReq): CartoonDownloadRuntime {
         val runtime = CartoonDownloadRuntime(cartoonDownloadReq)
         runtime.runnable = CartoonDownloadRunnable(runtime)
+        runtime.decodeType = cartoonDownloadPreference.downloadEncode.get()
         return runtime
 
     }

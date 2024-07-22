@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -46,6 +47,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
@@ -125,16 +127,17 @@ fun ColumnScope.PlayerSetting(
         )
 
 
-        val customSpeed = settingPreferences.customSpeed.flow().collectAsState(settingPreferences.customSpeed.get())
+        val customSpeed = settingPreferences.customSpeed.flow()
+            .collectAsState(settingPreferences.customSpeed.get())
 
-        val speedStringList = speedConfig.keys.toList() + "自定义 (${customSpeed}X)"
+        val speedStringList = speedConfig.keys.toList() + "自定义 (${customSpeed.value}X)"
         val speedList = speedConfig.values.toList() + -1f
 
         val defaultSpeed = settingPreferences.defaultSpeed.flow()
             .map {
-                if (speedList.indexOf(it) >= 0){
+                if (speedList.indexOf(it) >= 0) {
                     it
-                }else{
+                } else {
                     settingPreferences.defaultSpeed.set(1f)
                     1f
                 }
@@ -153,15 +156,13 @@ fun ColumnScope.PlayerSetting(
         DoubleTapFastSetting(settingPreferences)
 
 
-
-
     }
 }
 
 @Composable
 fun ColumnScope.DoubleTapFastSetting(
     settingPreferences: SettingPreferences
-){
+) {
 
 
     val fastWeight by settingPreferences.fastWeight.flow()

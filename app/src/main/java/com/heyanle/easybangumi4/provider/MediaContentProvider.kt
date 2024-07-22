@@ -11,6 +11,7 @@ import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.App
 import com.heyanle.easybangumi4.BuildConfig
 import com.hippo.unifile.UniFile
+import java.io.File
 import java.net.URLDecoder
 import java.net.URLEncoder
 
@@ -23,6 +24,12 @@ class MediaContentProvider: FileProvider() {
     companion object {
         fun getProviderUriFromUri(uri: String) : Uri {
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                return uri.toUri()
+                val uniFile = UniFile.fromUri(APP, uri.toUri())
+                val path = uniFile?.filePath
+                val contentUri = FileProvider.getUriForFile(APP, "${BuildConfig.APPLICATION_ID}.provider", File(path))
+                return contentUri
+
                 Uri.Builder().scheme("content")
                     .encodedAuthority("${BuildConfig.APPLICATION_ID}.provider")
                     .appendPath("document")

@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.ui.cartoon_play.view_model
 
 import com.heyanle.easybangumi4.base.DataResult
+import com.heyanle.easybangumi4.base.map
 import com.heyanle.easybangumi4.cartoon.story.download.req.CartoonDownloadReqFactory
 import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadReq
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
@@ -38,6 +39,7 @@ class CartoonDownloadReqModel(
 
     data class State(
         val storyList: DataResult<List<CartoonStoryItem>> = DataResult.Loading(),
+        val pinId: String? = null,
 
         val keyword: String? = null,
         val localWithKeyword: List<CartoonStoryItem> = listOf(),
@@ -69,6 +71,26 @@ class CartoonDownloadReqModel(
 
     init {
         scope.launch {
+            combine(
+                cartoonStoryController.storyItemList,
+                _state.map { it.pinId }.distinctUntilChanged()
+            ) {result, pinId ->
+                result to pinId
+            }.collectLatest { (result, pinId) ->
+                _state.update {
+                    it.copy(
+                        storyList =  result.map {
+                            val newList = arrayListOf<CartoonStoryItem>()
+                            it.firstOrNull { it.cartoonLocalItem.itemId == pinId }?.let {
+                                newList.add(it)
+                            }
+                            newList.addAll(it.filter { it.cartoonLocalItem.itemId != pinId })
+                            newList
+                        }
+                    )
+                }
+            }
+
             cartoonStoryController.storyItemList.collectLatest { result ->
                 _state.update {
                     it.copy(
@@ -151,7 +173,7 @@ class CartoonDownloadReqModel(
     fun showNewLocalDialog() {
         _state.update {
             it.copy(
-                dialog = Dialog.NewLocalReq(CartoonLocalMsg.fromCartoonInfo(cartoonInfo))
+                dialog = Dialog.NewLocalReq(CartoonLocalMsg.fromCartoonInfo(cartoonInfo)),
             )
         }
     }
@@ -222,10 +244,11 @@ class CartoonDownloadReqModel(
                     dialog = Dialog.LoadingNewLocal
                 )
             }
-            cartoonStoryController.newStory(localMsg)
+            val newId = cartoonStoryController.newStory(localMsg)
             _state.update {
                 it.copy(
-                    dialog = null
+                    dialog = null,
+                    pinId = newId
                 )
             }
         }

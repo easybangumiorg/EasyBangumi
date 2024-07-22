@@ -102,8 +102,8 @@ class CartoonStoryControllerImpl(
         cartoonDownloadDispatcher.addTask(info.req)
     }
 
-    override suspend fun newStory(localMsg: CartoonLocalMsg): Boolean {
-        return suspendCoroutine<Boolean> { con ->
+    override suspend fun newStory(localMsg: CartoonLocalMsg): String? {
+        return suspendCoroutine<String?> { con ->
             cartoonLocalController.newLocal(localMsg){
                 con.resume(it)
             }

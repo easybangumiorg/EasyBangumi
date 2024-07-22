@@ -94,6 +94,7 @@ object Scheduler {
      * MainActivity#onCreate
      */
     fun runOnMainActivityCreate(activity: MainActivity, isFirst: Boolean) {
+        Migrate.update(activity)
         val extensionController: ExtensionController by Inject.injectLazy()
         val extensionIconFactory: IconFactory by Inject.injectLazy()
         iconFactory = extensionIconFactory

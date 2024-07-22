@@ -66,10 +66,10 @@ class DownloadViewModel: ViewModel() {
     }
 
     fun clickDownloadInfo(info: CartoonDownloadInfo){
-        if (info.runtime == null){
+        if (info.runtime == null || info.runtime.needCancel()){
             cartoonStoryController.tryResumeDownloadReq(info)
         } else {
-            "暂不支持断电续传，可长按删除".moeSnackBar()
+            "暂不支持断点续传，可长按删除".moeSnackBar()
         }
     }
 

@@ -39,7 +39,6 @@
         android:supportsRtl="true"
         android:screenOrientation="portrait"
         android:theme="@style/Theme.EasyBangumi"
-        tools:overrideLibrary="com.arthenica.ffmpegkit"
         tools:targetApi="31">
 
         <!-- 配置APP ID -->
@@ -106,7 +105,11 @@
         <provider
             android:name=".provider.MediaContentProvider"
             android:authorities="${package_name}.provider"
-            android:grantUriPermissions="true">
+            android:grantUriPermissions="true"
+            android:exported="false">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_path" />
         </provider>
 
     </application>

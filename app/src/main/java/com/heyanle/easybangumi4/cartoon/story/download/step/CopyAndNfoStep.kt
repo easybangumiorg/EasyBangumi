@@ -15,7 +15,7 @@ import org.jsoup.nodes.Element
  * Created by heyanle on 2024/7/7.
  * https://github.com/heyanLE
  */
-object CopyAndNfoStep: BaseStep {
+object CopyAndNfoStep : BaseStep {
 
     const val NAME = "copy_and_nfo"
 
@@ -30,21 +30,30 @@ object CopyAndNfoStep: BaseStep {
         )
         runtime.canCancel = false
 
-        val cacheFolder = UniFile.fromUri(APP, runtime.cacheFolderUri?.toUri()) ?: throw IllegalStateException("cache folder is null")
-        val cacheTarget = cacheFolder.createFile(runtime.cacheDisplayName) ?: throw IllegalStateException("cache file is null")
-        if (!cacheTarget.exists() || !cacheTarget.canRead()){
+        val cacheFolder = UniFile.fromUri(APP, runtime.cacheFolderUri?.toUri())
+            ?: throw IllegalStateException("cache folder is null")
+        val cacheTarget = cacheFolder.createFile(runtime.cacheDisplayName)
+            ?: throw IllegalStateException("cache file is null")
+        if (!cacheTarget.exists() || !cacheTarget.canRead()) {
             throw IllegalStateException("cache file is not exists or can not read")
         }
-        val targetFolder = UniFile.fromUri(APP, localPref.realLocalUri.value) ?: throw IllegalStateException("target folder is null")
-        val targetCartoonFolder = targetFolder.createDirectory(runtime.req.toLocalItemId) ?: throw IllegalStateException("target cartoon folder is null")
-        val mediaNameP = "${runtime.req.toLocalItemId} ${runtime.req.toEpisodeTitle} S1E${runtime.req.toEpisode}"
+        val targetFolder = UniFile.fromUri(APP, localPref.realLocalUri.value)
+            ?: throw IllegalStateException("target folder is null")
+
+        val targetCartoonFolder = targetFolder.findFile(runtime.req.toLocalItemId)
+            ?.let { if (it.isDirectory) it else null }
+            ?: targetFolder.createDirectory(runtime.req.toLocalItemId)
+            ?: throw IllegalStateException("target cartoon folder is null")
+        val mediaNameP =
+            "${runtime.req.toLocalItemId} ${runtime.req.toEpisodeTitle} S1E${runtime.req.toEpisode}"
         val mediaName = "${mediaNameP}.mp4"
-        val targetMediaFile = targetCartoonFolder.createFile("$mediaName.temp") ?: throw IllegalStateException("target media file is null")
+        val targetMediaFile = targetCartoonFolder.createFile("$mediaName.temp")
+            ?: throw IllegalStateException("target media file is null")
         if (!targetMediaFile.canWrite()) {
             throw IllegalStateException("target media file can not write")
         }
-        cacheTarget.openInputStream().use {  inp ->
-            targetMediaFile.openOutputStream().use  { outp ->
+        cacheTarget.openInputStream().use { inp ->
+            targetMediaFile.openOutputStream().use { outp ->
                 inp.copyTo(outp)
             }
         }
@@ -52,7 +61,7 @@ object CopyAndNfoStep: BaseStep {
 
         // write nfo
         val nfoFile = targetCartoonFolder.createFile("${mediaNameP}.nfo")
-        if (nfoFile == null || !nfoFile.canWrite()){
+        if (nfoFile == null || !nfoFile.canWrite()) {
             runtime.stepCompletely()
             return
         }

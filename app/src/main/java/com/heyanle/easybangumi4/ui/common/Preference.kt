@@ -63,7 +63,8 @@ fun BooleanPreferenceItem(
     title: @Composable (() -> Unit),
     subtitle: @Composable (() -> Unit)? = null,
     icon: @Composable (() -> Unit)? = null,
-    preference: Preference<Boolean>
+    preference: Preference<Boolean>,
+    onChange: ((Boolean) -> Unit)? = null
 ) {
     val value by preference.flow().collectAsState(preference.get())
     val scope = rememberCoroutineScope()
@@ -76,6 +77,7 @@ fun BooleanPreferenceItem(
     ) {
         scope.launch {
             preference.set(it)
+            onChange?.invoke(it)
         }
     }
 }

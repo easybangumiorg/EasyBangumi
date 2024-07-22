@@ -29,6 +29,13 @@ object MediaAndroidUtils {
 
     }
 
+    fun mediaScan(context: Context, path: List<String>, mime: List<String>? = null) {
+        MediaScannerConnection.scanFile(
+            context, path.toTypedArray(), mime?.toTypedArray()
+        ) { p0, p1 ->
+            "mediaScan: $p0, $p1".logi("MediaAndroidUtils")
+        }
+    }
 
     suspend fun saveToDownload(inputStream: InputStream, type: String, displayName: String) {
         withContext(Dispatchers.IO) {

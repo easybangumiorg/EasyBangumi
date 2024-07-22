@@ -284,10 +284,10 @@ class CartoonPlayingViewModel(
      * 调用外部播放器播放
      */
     private fun innerPlayExternal(playerInfo: PlayerInfo) {
-        var uri = playerInfo.uri.toUri()
-        if (uri.scheme == "content" || uri.scheme == "file") {
-            uri = MediaContentProvider.getProviderUriFromUri(uri.toString())
-        }
+        val uri = playerInfo.uri.toUri()
+//        if (uri.scheme == "content" || uri.scheme == "file") {
+//            uri = MediaContentProvider.getProviderUriFromUri(uri.toString())
+//        }
 
         APP.startActivity(Intent("android.intent.action.VIEW").apply {
             setDataAndType(uri, "video/*")

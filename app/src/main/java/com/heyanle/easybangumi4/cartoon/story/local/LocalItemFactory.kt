@@ -56,6 +56,7 @@ object LocalItemFactory {
         }
         nfoFile.openOutputStream().use {
             it.write(tvShow.toString().toByteArray())
+            it.flush()
         }
         return targetFolder
     }

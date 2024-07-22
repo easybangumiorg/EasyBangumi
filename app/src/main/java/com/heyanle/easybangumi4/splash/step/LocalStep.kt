@@ -22,8 +22,10 @@ import androidx.compose.ui.unit.dp
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.LauncherBus
+import com.heyanle.easybangumi4.cartoon.story.download.CartoonDownloadPreference
 import com.heyanle.easybangumi4.cartoon.story.local.LocalCartoonPreference
 import com.heyanle.easybangumi4.splash.SplashGuildController
+import com.heyanle.easybangumi4.ui.common.BooleanPreferenceItem
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.inject.core.Inject
@@ -37,6 +39,7 @@ class LocalStep: BaseStep {
 
     private val splashGuildController: SplashGuildController by Inject.injectLazy()
     private val localController: LocalCartoonPreference by Inject.injectLazy()
+    private val cartoonDownloadPreferences: CartoonDownloadPreference by Inject.injectLazy()
 
     override val name: String
         get() = "Local"
@@ -71,6 +74,16 @@ class LocalStep: BaseStep {
             )
 
             Spacer(modifier = Modifier.size(16.dp))
+
+            if (usePrivate.value) {
+
+                Text(
+                    text = stringResource(id = com.heyanle.easy_i18n.R.string.choose_folder_to_bangumi_msg),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+
+                Spacer(modifier = Modifier.size(16.dp))
+            }
 
             Text(
                 text = stringResource(id = com.heyanle.easy_i18n.R.string.current_choose_folder,
@@ -111,6 +124,23 @@ class LocalStep: BaseStep {
                 ) {
                     Text(text = stringResource(id = R.string.choose_folder))
                 }
+            }
+
+            if (!usePrivate.value) {
+
+                BooleanPreferenceItem(
+                    title = { Text(stringResource(id = R.string.local_no_media)) },
+                    subtitle = { Text(stringResource(id = R.string.local_no_media_msg)) },
+                    preference = cartoonDownloadPreferences.localNoMedia,
+                    onChange = {
+                        if (!it) {
+                            localController.deleteNoMedia()
+                        } else {
+                            localController.createNoMedia()
+                        }
+                    }
+
+                )
             }
         }
 

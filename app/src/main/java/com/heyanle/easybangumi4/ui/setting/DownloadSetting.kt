@@ -21,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
@@ -32,14 +33,19 @@ import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.LauncherBus
+import com.heyanle.easybangumi4.cartoon.story.download.CartoonDownloadPreference
 import com.heyanle.easybangumi4.cartoon.story.local.LocalCartoonPreference
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.splash.SplashGuildController
+import com.heyanle.easybangumi4.ui.common.BooleanPreferenceItem
+import com.heyanle.easybangumi4.ui.common.EmumPreferenceItem
+import com.heyanle.easybangumi4.ui.common.LongEditPreferenceItem
 import com.heyanle.easybangumi4.ui.common.StringSelectPreferenceItem
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.inject.core.Inject
 import com.hippo.unifile.UniFile
+import kotlinx.coroutines.launch
 
 /**
  * Created by heyanlin on 2023/10/2.
@@ -50,8 +56,10 @@ fun ColumnScope.DownloadSetting(
     nestedScrollConnection: NestedScrollConnection
 ) {
     val settingPreferences: SettingPreferences by Inject.injectLazy()
+
     val splashGuildController: SplashGuildController by Inject.injectLazy()
     val localController: LocalCartoonPreference by Inject.injectLazy()
+    val cartoonDownloadPreferences: CartoonDownloadPreference by Inject.injectLazy()
 
     val usePrivate = localController.localUsePrivate.collectAsState()
     val path = localController.localPath.collectAsState()
@@ -86,6 +94,16 @@ fun ColumnScope.DownloadSetting(
             )
 
             Spacer(modifier = Modifier.size(16.dp))
+
+            if (usePrivate.value) {
+
+                Text(
+                    text = stringResource(id = com.heyanle.easy_i18n.R.string.private_path_msg),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(modifier = Modifier.size(16.dp))
+
+            }
 
             Text(
                 text = stringResource(id = com.heyanle.easy_i18n.R.string.current_choose_folder,
@@ -128,6 +146,45 @@ fun ColumnScope.DownloadSetting(
                 }
             }
         }
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            EmumPreferenceItem<CartoonDownloadPreference.DownloadEncode>(
+                title = { Text(text = stringResource(id = R.string.download_decode_type)) },
+                textList = remember {
+                    cartoonDownloadPreferences.downloadEncodeSelection.map { it.second }
+                },
+                preference = cartoonDownloadPreferences.downloadEncode,
+                onChangeListener = {
+
+                }
+            )
+        }
+
+        if (!usePrivate.value) {
+
+            BooleanPreferenceItem(
+                title = { Text(stringResource(id = com.heyanle.easy_i18n.R.string.local_no_media)) },
+                subtitle = { Text(stringResource(id = com.heyanle.easy_i18n.R.string.local_no_media_msg)) },
+                preference = cartoonDownloadPreferences.localNoMedia,
+                onChange = {
+                    if (!it) {
+                        localController.deleteNoMedia()
+                    } else {
+                        localController.createNoMedia()
+                    }
+                }
+
+            )
+        }
+
+        LongEditPreferenceItem(
+            title = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.downloading_max_count)) },
+            preference = cartoonDownloadPreferences.downloadMaxCountPref,
+            onChange = {
+                stringRes(R.string.should_reboot).moeSnackBar()
+            }
+        )
     }
 
 

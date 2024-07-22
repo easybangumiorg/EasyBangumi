@@ -15,9 +15,11 @@ import androidx.media3.transformer.ProgressHolder
 import androidx.media3.transformer.Transformer
 import androidx.media3.transformer.Transformer.PROGRESS_STATE_AVAILABLE
 import com.heyanle.easybangumi4.APP
+import com.heyanle.easybangumi4.cartoon.story.download.CartoonDownloadPreference
 import com.heyanle.easybangumi4.cartoon.story.download.runtime.CartoonDownloadRuntimeFactory
 import com.heyanle.easybangumi4.cartoon.story.download.runtime.CartoonDownloadRuntime
 import com.heyanle.easybangumi4.exo.CartoonMediaSourceFactory
+import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.stringRes
@@ -54,7 +56,10 @@ object TransformerStep : BaseStep {
         val playerInfo = runtime.playerInfo ?: throw IllegalStateException("playerInfo is null")
         val mediaSourceFactory: CartoonMediaSourceFactory = Inject.get()
         val transformer = Transformer.Builder(APP)
-            .setVideoMimeType(MimeTypes.VIDEO_H264)
+            .setVideoMimeType(
+                if (runtime.decodeType == CartoonDownloadPreference.DownloadEncode.H264) MimeTypes.VIDEO_H264
+                else  MimeTypes.VIDEO_H265
+            )
             .setAssetLoaderFactory(
                 ExoPlayerAssetLoader.Factory(
                     APP,
@@ -121,21 +126,26 @@ object TransformerStep : BaseStep {
                 } else {
                     runtime.transformerProgress = -1
                 }
+
+
+                val speed = runtime.updateSeedPreSecond(t.length(), System.currentTimeMillis())
                 runtime.transformerProgress.logi("TransformerStep")
                 runtime.dispatchToBus(
                     runtime.transformerProgress.toFloat() / 100f,
-                    stringRes(com.heyanle.easy_i18n.R.string.downloading)
+                    stringRes(com.heyanle.easy_i18n.R.string.downloading),
+                    subStatus = if (runtime.transformerProgress < 0) "" else "${holder.progress}%"
                 )
             }
             // 每秒刷新一次进度
             countDownLatch.await(1, TimeUnit.SECONDS)
         }
-        if (runtime.needCancel()) {
-            scope.launch {
+        scope.launch {
+            try {
                 transformer.cancel()
+            }catch (e: Throwable) {
+                e.printStackTrace()
             }
 
-            return
         }
         runtime.stepCompletely()
     }
@@ -147,5 +157,13 @@ object TransformerStep : BaseStep {
             runtime.countDownLatch?.countDown()
         }
 
+    }
+
+    private fun getSpeedString(speed: Long): String {
+        return when {
+            speed < 1024 -> "$speed B/s"
+            speed < 1024 * 1024 -> "${speed / 1024} KB/s"
+            else -> "${speed / 1024 / 1024} MB/s"
+        }
     }
 }

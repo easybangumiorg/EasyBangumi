@@ -42,6 +42,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.ScreenShare
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SelectAll
@@ -135,10 +136,11 @@ fun CartoonPlayDetailed(
     onExtPlayer: () -> Unit,
     onDownload: (PlayLineWrapper, List<Episode>) -> Unit,
     onDelete: (PlayLineWrapper, List<Episode>) -> Unit,
+    onSave: (PlayLineWrapper, List<Episode>) -> Unit,
     onSortChange: (String, Boolean) -> Unit,
 ) {
 
-    // 0-> download 1->delete
+    // 0-> download 1->delete 2->saving
     val selectionMode = remember {
         mutableStateOf<Pair<Int, PlayLineWrapper>?>(null)
     }
@@ -176,8 +178,9 @@ fun CartoonPlayDetailed(
                     isStar = isStar,
                     isDownloading = selectionMode.value?.first == 0,
                     isDeleting = selectionMode.value?.first == 1,
+                    isSaving = selectionMode.value?.first == 2,
                     showWeb = cartoon.url.isNotEmpty(),
-                    canDownload = !cartoon.isLocal,
+                    isFromRemote = !cartoon.isLocal,
                     onStar = onStar,
                     onSearch = onSearch,
                     onWeb = onWeb,
@@ -196,6 +199,14 @@ fun CartoonPlayDetailed(
                     onDelete = {
                         if (selectionMode.value == null && selectLineIndex in playLines.indices) {
                             selectionMode.value = 1 to playLines[selectLineIndex]
+                            selection.value = emptySet()
+                        } else {
+                            selectionMode.value = null
+                        }
+                    },
+                    onSave = {
+                        if (selectionMode.value == null && selectLineIndex in playLines.indices) {
+                            selectionMode.value = 2 to playLines[selectLineIndex]
                             selection.value = emptySet()
                         } else {
                             selectionMode.value = null
@@ -245,22 +256,29 @@ fun CartoonPlayDetailed(
                 modifier = Modifier
                     .padding(16.dp, downPadding),
                 text = {
-                    if (mode == 0)
-                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.start_download))
-                    else
-                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.delete))
+                    when (mode) {
+                        0 -> Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.start_download))
+                        1 -> Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.delete))
+                        else -> Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.save_media))
+                    }
                 },
                 icon = {
-                    if (mode == 0)
-                        Icon(
+                    when (mode) {
+                        0 -> Icon(
                             Icons.Filled.Download,
                             contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.start_download)
                         )
-                    else
-                        Icon(
+                        1 -> Icon(
                             Icons.Filled.Delete,
                             contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.delete)
                         )
+                        else -> {
+                            Icon(
+                                Icons.Filled.Save,
+                                contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.save_media)
+                            )
+                        }
+                    }
                 },
                 onClick = {
                     selectionMode.value = null
@@ -277,8 +295,20 @@ fun CartoonPlayDetailed(
                                 }
                             }
                         )
-                    } else {
+                    } else if (mode == 1){
                         onDelete(
+                            line,
+                            selection.value.flatMap {
+                                val epi = line.sortedEpisodeList.getOrNull(it)
+                                if (epi == null) {
+                                    listOf()
+                                } else {
+                                    listOf(epi)
+                                }
+                            }
+                        )
+                    } else {
+                        onSave(
                             line,
                             selection.value.flatMap {
                                 val epi = line.sortedEpisodeList.getOrNull(it)
@@ -465,14 +495,16 @@ fun CartoonActions(
     isStar: Boolean,
     isDownloading: Boolean,
     isDeleting: Boolean,
+    isSaving: Boolean,
     showWeb: Boolean,
-    canDownload: Boolean,
+    isFromRemote: Boolean,
     onStar: (Boolean) -> Unit,
     onSearch: () -> Unit,
     onWeb: () -> Unit,
     onExtPlayer: () -> Unit,
     onDownload: () -> Unit,
     onDelete: () -> Unit,
+    onSave: () -> Unit,
 ) {
     ActionRow(
         modifier = Modifier.fillMaxWidth()
@@ -538,7 +570,7 @@ fun CartoonActions(
             )
         }
 
-        if (canDownload) {
+        if (isFromRemote) {
             // 下载
             Action(
                 icon = {
@@ -558,6 +590,25 @@ fun CartoonActions(
                 onClick = onDownload
             )
         } else {
+
+//            // 保存到本地
+//            Action(
+//                icon = {
+//                    Icon(
+//                        Icons.Filled.Save,
+//                        stringResource(id = com.heyanle.easy_i18n.R.string.save),
+//                        tint = if (isSaving) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
+//                    )
+//                },
+//                msg = {
+//                    Text(
+//                        text = stringResource(id = com.heyanle.easy_i18n.R.string.save),
+//                        color = if (isDeleting) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
+//                        fontSize = 12.sp
+//                    )
+//                },
+//                onClick = onSave
+//            )
             // 删除
             Action(
                 icon = {

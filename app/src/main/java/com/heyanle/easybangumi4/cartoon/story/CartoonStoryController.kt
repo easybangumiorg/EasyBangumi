@@ -35,7 +35,7 @@ interface CartoonStoryController {
     // 本地剧集新建和删除，这里会同时删除关联的下载信息
 
     fun refreshLocal()
-    suspend fun newStory(localMsg: CartoonLocalMsg): Boolean
+    suspend fun newStory(localMsg: CartoonLocalMsg): String?
 
     fun removeStory(cartoonStoryItem: Collection<CartoonStoryItem>)
 

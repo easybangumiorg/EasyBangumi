@@ -2,6 +2,8 @@ package com.heyanle.easybangumi4.ui.cartoon_play
 
 import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -24,6 +26,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.util.UnstableApi
@@ -98,6 +101,9 @@ fun CartoonPlay(
     var deleteDialogState by remember {
         mutableStateOf<Triple<CartoonInfo, PlayLineWrapper, List<Episode>>?>(null)
     }
+    var saveDialogState by remember {
+        mutableStateOf<Triple<CartoonInfo, PlayLineWrapper, List<Episode>>?>(null)
+    }
 
     // 将同步范围拓展到整个界面，包括 recorded dialog
     EasyPlayerStateSync(controlVM)
@@ -160,6 +166,10 @@ fun CartoonPlay(
                 onDelete = {
                     controlVM.onPlayPause(false)
                     deleteDialogState = it
+                },
+                onSave = {
+                    controlVM.onPlayPause(false)
+                    saveDialogState = it
                 }
             )
 
@@ -182,6 +192,39 @@ fun CartoonPlay(
                 }) {
                     deleteDialogState = null
                 }
+            }
+
+            saveDialogState?.let {
+                AlertDialog(
+                    text = {
+                        Text(
+                            text = stringResource(
+                                id = R.string.save_to_media_ready,
+                                it.third.size.toString()
+                            )
+                        )
+                    },
+                    onDismissRequest = {
+                        saveDialogState = null
+                    },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            storyViewModel.save(it) {
+                                detailedVM.load()
+                            }
+                            saveDialogState = null
+                        }) {
+                            Text(text = stringResource(id = R.string.confirm))
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = {
+                            saveDialogState = null
+                        }) {
+                            Text(text = stringResource(id = R.string.cancel))
+                        }
+                    }
+                )
             }
 
 
@@ -337,6 +380,7 @@ fun CartoonPlay(
 
     onDownload: (Triple<CartoonInfo, PlayLineWrapper, List<Episode>>) -> Unit,
     onDelete: (Triple<CartoonInfo, PlayLineWrapper, List<Episode>>) -> Unit,
+    onSave: (Triple<CartoonInfo, PlayLineWrapper, List<Episode>>) -> Unit
 ) {
     val nav = LocalNavController.current
     val cartoonDownloadDispatcher: CartoonDownloadDispatcher by Inject.injectLazy()
@@ -424,100 +468,117 @@ fun CartoonPlay(
             )
         }) {
 
-        Surface(
-            modifier = Modifier
-                .fillMaxSize()
-                .run {
-                    if (isPad)
-                        statusBarsPadding()
-                    else
-                        this
-                },
-            color = MaterialTheme.colorScheme.background,
-            contentColor = MaterialTheme.colorScheme.onBackground
-        ) {
-            if (detailState.isLoading) {
-                LoadingPage(
-                    modifier = Modifier.fillMaxSize()
-                )
-            } else if (detailState.isError || detailState.cartoonInfo == null) {
-                ErrorPage(
-                    modifier = Modifier.fillMaxSize(),
-                    errorMsg = detailState.errorMsg.ifEmpty {
-                        detailState.throwable?.message ?: ""
-                    },
-                    clickEnable = true,
-                    onClick = {
-                        detailedVM.load()
-                    },
-                    other = { Text(text = stringResource(id = R.string.click_to_retry)) }
-                )
-            } else {
-                val sortState = detailedVM.sortStateFlow.collectAsState()
-                CartoonPlayDetailed(
-                    cartoon = detailState.cartoonInfo,
-                    gridCount = gridCount.value,
-                    onGridChange = {
-                        detailedVM.setGridCount(it)
-                    },
-                    playLines = detailState.cartoonInfo.playLineWrapper,
-                    selectLineIndex = playVM.selectedLineIndex,
-                    playingPlayLine = playState?.playLine,
-                    playingEpisode = playState?.episode,
-                    showPlayLine = if (detailState.cartoonInfo.playLine.size > 1) true else detailState.cartoonInfo.isShowLine,
-                    listState = lazyGridState,
-                    onLineSelect = {
-                        playVM.selectedLineIndex = it
-                    },
-                    onEpisodeClick = { line, epi ->
-                        playVM.changePlay(detailState.cartoonInfo, line, epi)
-                    },
-                    isStar = detailState.cartoonInfo.starTime > 0,
-                    onStar = {
-                        detailedVM.setCartoonStar(it, detailState.cartoonInfo)
-                    },
-                    sortState = sortState.value,
-                    onSearch = {
-                        nav.navigationSearch(
-                            detailState.cartoonInfo.name,
-                            detailState.cartoonInfo.source
-                        )
-                    },
-                    onWeb = {
-                        runCatching {
-                            detailState.cartoonInfo.url.openUrl()
-                        }.onFailure {
-                            it.printStackTrace()
-                        }
-                    },
-                    onExtPlayer = {
-                        playingVM.playCurrentExternal()
-                    },
-                    onDownload = { playLine, episodes ->
 
-                        onDownload(
-                            Triple(
-                                detailState.cartoonInfo,
-                                playLine,
-                                episodes
+
+        val compose: @Composable ()->Unit = {
+            Surface(
+                modifier = Modifier
+                    .fillMaxSize(),
+                color = MaterialTheme.colorScheme.background,
+                contentColor = MaterialTheme.colorScheme.onBackground
+            ) {
+                if (detailState.isLoading) {
+                    LoadingPage(
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else if (detailState.isError || detailState.cartoonInfo == null) {
+                    ErrorPage(
+                        modifier = Modifier.fillMaxSize(),
+                        errorMsg = detailState.errorMsg.ifEmpty {
+                            detailState.throwable?.message ?: ""
+                        },
+                        clickEnable = true,
+                        onClick = {
+                            detailedVM.load()
+                        },
+                        other = { Text(text = stringResource(id = R.string.click_to_retry)) }
+                    )
+                } else {
+                    val sortState = detailedVM.sortStateFlow.collectAsState()
+                    CartoonPlayDetailed(
+                        cartoon = detailState.cartoonInfo,
+                        gridCount = gridCount.value,
+                        onGridChange = {
+                            detailedVM.setGridCount(it)
+                        },
+                        playLines = detailState.cartoonInfo.playLineWrapper,
+                        selectLineIndex = playVM.selectedLineIndex,
+                        playingPlayLine = playState?.playLine,
+                        playingEpisode = playState?.episode,
+                        showPlayLine = if (detailState.cartoonInfo.playLine.size > 1) true else detailState.cartoonInfo.isShowLine,
+                        listState = lazyGridState,
+                        onLineSelect = {
+                            playVM.selectedLineIndex = it
+                        },
+                        onEpisodeClick = { line, epi ->
+                            playVM.changePlay(detailState.cartoonInfo, line, epi)
+                        },
+                        isStar = detailState.cartoonInfo.starTime > 0,
+                        onStar = {
+                            detailedVM.setCartoonStar(it, detailState.cartoonInfo)
+                        },
+                        sortState = sortState.value,
+                        onSearch = {
+                            nav.navigationSearch(
+                                detailState.cartoonInfo.name,
+                                detailState.cartoonInfo.source
                             )
-                        )
-                    },
-                    onDelete = { playLine, episodes ->
-                        onDelete(
-                            Triple(
-                                detailState.cartoonInfo,
-                                playLine,
-                                episodes
+                        },
+                        onWeb = {
+                            runCatching {
+                                detailState.cartoonInfo.url.openUrl()
+                            }.onFailure {
+                                it.printStackTrace()
+                            }
+                        },
+                        onExtPlayer = {
+                            playingVM.playCurrentExternal()
+                        },
+                        onDownload = { playLine, episodes ->
+
+                            onDownload(
+                                Triple(
+                                    detailState.cartoonInfo,
+                                    playLine,
+                                    episodes
+                                )
                             )
-                        )
-                    },
-                    onSortChange = { sortKey, isReverse ->
-                        detailedVM.setCartoonSort(sortKey, isReverse, detailState.cartoonInfo)
-                    }
-                )
+                        },
+                        onDelete = { playLine, episodes ->
+                            onDelete(
+                                Triple(
+                                    detailState.cartoonInfo,
+                                    playLine,
+                                    episodes
+                                )
+                            )
+                        },
+                        onSortChange = { sortKey, isReverse ->
+                            detailedVM.setCartoonSort(sortKey, isReverse, detailState.cartoonInfo)
+                        },
+                        onSave = { playLine, episodes ->
+                            onSave(
+                                Triple(
+                                    detailState.cartoonInfo,
+                                    playLine,
+                                    episodes
+                                )
+                            )
+                        },
+                    )
+                }
             }
         }
+
+        if (isPad) {
+            Box(modifier = Modifier.background(Color.Black).statusBarsPadding()){
+                compose()
+            }
+        } else {
+            compose()
+        }
+
+
     }
 }
 

@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.setting
 
 import android.app.Application
+import android.os.Build
 import android.os.Environment
 import com.heyanle.easybangumi4.base.preferences.PreferenceStore
 import com.heyanle.easybangumi4.base.preferences.getEnum
@@ -136,4 +137,5 @@ class SettingPreferences(
 
     // 播放器拖动屏幕拉进度条的幅度（当前视频总宽度占的视频时间）
     val playerSeekFullWidthTimeMS = preferenceStore.getLong("player_seek_full_width_time_ms", 300000)
+
 }

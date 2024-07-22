@@ -3,6 +3,9 @@ package com.heyanle.easybangumi4.cartoon.story.local
 import androidx.core.net.toUri
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.base.preferences.android.AndroidPreferenceStore
+import com.heyanle.easybangumi4.cartoon.story.download.CartoonDownloadPreference
+import com.heyanle.easybangumi4.setting.SettingPreferences
+import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.CoroutineProvider
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.hippo.unifile.UniFile
@@ -18,7 +21,8 @@ import java.io.File
  * https://github.com/heyanLE
  */
 class LocalCartoonPreference (
-    private val androidPreferenceStore: AndroidPreferenceStore
+    private val androidPreferenceStore: AndroidPreferenceStore,
+    private val cartoonDownloadPreference: CartoonDownloadPreference,
 ) {
 
     val dispatcher = CoroutineProvider.SINGLE
@@ -44,8 +48,12 @@ class LocalCartoonPreference (
             privateFolder.toUri()
         } else {
             UniFile.fromUri(APP, uri.toUri())?.createDirectory("local_bangumi")?.apply {
-                createFile(".nomedia")
-            }?.uri ?: privateFolder.toUri()
+                if (cartoonDownloadPreference.localNoMedia.get())
+                    createFile(".nomedia")
+            }?.uri ?: privateFolder.toUri().apply {
+                "本地文件夹读取错误，将自动切换到私有目录，可进入设置手动重新授权".moeSnackBar()
+                usePrivate(true)
+            }
         }
     }.stateIn(
         scope, SharingStarted.Lazily, if (localUsePrivate.value) {
@@ -54,6 +62,22 @@ class LocalCartoonPreference (
             localUri.value.toUri()
         }
     )
+
+    fun deleteNoMedia(){
+        realLocalUri.value?.let {
+            UniFile.fromUri(APP, it)?.listFiles()?.forEach {
+                if(it.name == ".nomedia"){
+                    it.delete()
+                }
+            }
+        }
+    }
+
+    fun createNoMedia(){
+        realLocalUri.value?.let {
+            UniFile.fromUri(APP, it)?.createFile(".nomedia")
+        }
+    }
 
     fun usePrivate(b: Boolean){
         localUsePrivatePref.set(b)
