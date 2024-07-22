@@ -45,6 +45,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 import loli.ball.easyplayer2.texture.TexturePlayerRender
 import java.io.File
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Created by heyanle on 2023/12/17.
@@ -459,6 +460,8 @@ class CartoonPlayingViewModel(
 
     // surfaceTexture 回调 ==============================================
 
+    private var lastThumbnailTime = 0L
+
     override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
 
     }
@@ -479,13 +482,18 @@ class CartoonPlayingViewModel(
         scope.launch {
             //"onSurfaceTextureUpdated 2".logi(TAG)
             val currentPosition = exoPlayer.currentPosition
-            // 如果该进度前后五秒都没有缩略图就保存一张
+            // 如果该进度前后两秒都没有缩略图就保存一张
             val currentFile = thumbnailBuffer?.getThumbnail(currentPosition, 2000)
-            if (currentFile == null) {
+            val current = System.currentTimeMillis()
+
+            // 频次控制
+            if (currentFile == null && current - lastThumbnailTime > 2000) {
+                lastThumbnailTime = current
                 //"onSurfaceTextureUpdated 3".logi(TAG)
                 // 保存缩略图
                 thumbnailJob?.cancel()
                 thumbnailJob = singleScope.launch {
+                    yield()
                     val textureView = easyTextRenderer.getTextureViewOrNull() ?: return@launch
                     val bmp = textureView.bitmap ?: return@launch
                     thumbnailFolder.mkdirs()
@@ -497,8 +505,8 @@ class CartoonPlayingViewModel(
                         bmp.compress(Bitmap.CompressFormat.JPEG, 10, it)
                     }
                     //"onSurfaceTextureUpdated 4".logi(TAG)
-                    yield()
                     thumbnailBuffer?.addThumbnail(currentPosition, file)
+                    bmp.recycle()
                 }
 
             }
