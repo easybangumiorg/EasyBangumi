@@ -136,7 +136,7 @@ fun Storage() {
             )
 
 
-            if (sta.isBackupDoing) {
+            if (sta.isBackupDoing || sta.isRestoreDoing) {
                 LoadingPage(
                     modifier = Modifier.fillMaxSize(),
                     loadingMsg = stringResource(id = com.heyanle.easy_i18n.R.string.backup_doing)
