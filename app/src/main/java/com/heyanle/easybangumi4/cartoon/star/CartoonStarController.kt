@@ -37,7 +37,7 @@ class CartoonStarController(
         val cartoonInfoList : List<CartoonInfo> = emptyList()
     )
 
-    // 1. 保证有内部 tag （全部，本地，更新），如果 tagList 里没有会补充
+    // 1. 保证有内部 tag （全部，更新），如果 tagList 里没有会补充
     // 2. 保证所有 cartoonInfo 里的 tag 都有对应的 CartoonTag，如果 tagList 里没有会补充
     val cartoonTagFlow = combine(
         cartoonInfoDao.flowAllStar().distinctUntilChanged(),
@@ -123,6 +123,14 @@ class CartoonStarController(
         // 补充缺少的内部 tag
         innerTag.forEach {
             label2Tag[it] = CartoonTag.create(it)
+        }
+
+        cartoonInfoList.forEach {
+            it.tagList.forEach { tag ->
+                if (!label2Tag.containsKey(tag)) {
+                    label2Tag[tag] = CartoonTag.create(tag)
+                }
+            }
         }
 
         val allTag = label2Tag[CartoonTag.ALL_TAG_LABEL] ?: CartoonTag.create(CartoonTag.ALL_TAG_LABEL)

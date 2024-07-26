@@ -195,7 +195,7 @@ class ExtensionViewModel : ViewModel() {
                 val info = item.info
 
                 if (info.state == ExtensionStoreInfo.STATE_INSTALLED) {
-                    if (ext.loadType == ExtensionInfo.TYPE_APP) {
+                    if (ext.loadType == ExtensionInfo.TYPE_APK_INSTALL) {
                         IntentHelper.openAppDetailed(ext.pkgName, APP)
                     } else {
                         stringRes(com.heyanle.easy_i18n.R.string.long_press_to_delete).moeSnackBar()
@@ -207,7 +207,7 @@ class ExtensionViewModel : ViewModel() {
 
             is ExtensionItem.ExtensionInfo -> {
                 val ext = item.extensionInfo
-                if (ext.loadType == ExtensionInfo.TYPE_APP) {
+                if (ext.loadType == ExtensionInfo.TYPE_APK_INSTALL) {
                     IntentHelper.openAppDetailed(ext.pkgName, APP)
                 } else {
                     stringRes(com.heyanle.easy_i18n.R.string.long_press_to_delete).moeSnackBar()
@@ -232,7 +232,7 @@ class ExtensionViewModel : ViewModel() {
         when (item) {
             is ExtensionItem.ExtensionInfo -> {
                 val ext = item.extensionInfo
-                if (ext.loadType == ExtensionInfo.TYPE_APP) {
+                if (ext.loadType == ExtensionInfo.TYPE_APK_INSTALL) {
                     IntentHelper.openAppDetailed(ext.pkgName, APP)
                 } else {
                     item.extensionInfo.sourcePath?.let { path ->
@@ -250,7 +250,7 @@ class ExtensionViewModel : ViewModel() {
                 val info = item.info
 
                 if (info.state == ExtensionStoreInfo.STATE_INSTALLED) {
-                    if (ext.loadType == ExtensionInfo.TYPE_APP) {
+                    if (ext.loadType == ExtensionInfo.TYPE_APK_INSTALL) {
                         IntentHelper.openAppDetailed(ext.pkgName, APP)
                     } else {
                         item.extensionInfo.sourcePath?.let {

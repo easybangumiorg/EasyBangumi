@@ -55,7 +55,7 @@ class FileExtensionLoader(
             it.printStackTrace()
             return null
         }
-        return innerLoad(packageManager, pkgInfo, appInfo, classLoader, ExtensionInfo.TYPE_FILE)
+        return innerLoad(packageManager, pkgInfo, appInfo, classLoader, ExtensionInfo.TYPE_APK_FILE)
     }
 
     override fun canLoad(): Boolean {

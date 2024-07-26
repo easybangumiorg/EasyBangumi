@@ -37,7 +37,7 @@ object CopyAndNfoStep : BaseStep {
         if (!cacheTarget.exists() || !cacheTarget.canRead()) {
             throw IllegalStateException("cache file is not exists or can not read")
         }
-        val targetFolder = UniFile.fromUri(APP, localPref.realLocalUri.value)
+        val targetFolder = UniFile.fromUri(APP, localPref.realBangumiLocalUri.value)
             ?: throw IllegalStateException("target folder is null")
 
         val targetCartoonFolder = targetFolder.findFile(runtime.req.toLocalItemId)

@@ -15,8 +15,17 @@ class StorageModule(
 
 
     override fun InjectScope.registerInjectables() {
+
         addSingletonFactory {
-            StorageController(get(), get(), get(), get(), get(), get())
+            StoragePreference(get())
+        }
+
+        addSingletonFactory {
+            BackupController(get(), get(), get(), get())
+        }
+
+        addSingletonFactory {
+            RestoreController(get(), get(), get(), get(), get())
         }
     }
 }

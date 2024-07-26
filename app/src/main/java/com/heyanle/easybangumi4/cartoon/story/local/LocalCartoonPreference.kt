@@ -23,48 +23,43 @@ import java.io.File
 class LocalCartoonPreference (
     private val androidPreferenceStore: AndroidPreferenceStore,
     private val cartoonDownloadPreference: CartoonDownloadPreference,
+    private val settingPreferences: SettingPreferences,
 ) {
 
     val dispatcher = CoroutineProvider.SINGLE
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
+    private val privateBangumiFolder = File(APP.getFilePath("local_source"))
 
-    private val privateFolder = File(APP.getFilePath("local_source"))
+    val localUsePrivate = settingPreferences.localUsePrivate.stateIn(scope)
 
-    val localUsePrivatePref = androidPreferenceStore.getBoolean("local_use_private", true)
-    val localUsePrivate = localUsePrivatePref.stateIn(scope)
+    val localUri = settingPreferences.localUri.stateIn(scope)
+    val localPath = settingPreferences.localPath.stateIn(scope)
 
-
-    val localUriPref = androidPreferenceStore.getString("local_folder_uri", "")
-    val localUri = localUriPref.stateIn(scope)
-
-    val localPathPref = androidPreferenceStore.getString("local_folder_path", "")
-    val localPath = localPathPref.stateIn(scope)
-
-    val realLocalUri = combine(
+    val realBangumiLocalUri = combine(
         localUsePrivate,
         localUri,
     ) { usePrivate, uri ->
         if (usePrivate) {
-            privateFolder.toUri()
+            privateBangumiFolder.toUri()
         } else {
             UniFile.fromUri(APP, uri.toUri())?.createDirectory("local_bangumi")?.apply {
                 if (cartoonDownloadPreference.localNoMedia.get())
                     createFile(".nomedia")
-            }?.uri ?: privateFolder.toUri().apply {
+            }?.uri ?: privateBangumiFolder.toUri().apply {
                 "本地文件夹读取错误，将自动切换到私有目录，可进入设置手动重新授权".moeSnackBar()
                 usePrivate(true)
             }
         }
     }.stateIn(
         scope, SharingStarted.Lazily, if (localUsePrivate.value) {
-            privateFolder.toUri()
+            privateBangumiFolder.toUri()
         } else {
             localUri.value.toUri()
         }
     )
 
     fun deleteNoMedia(){
-        realLocalUri.value?.let {
+        realBangumiLocalUri.value?.let {
             UniFile.fromUri(APP, it)?.listFiles()?.forEach {
                 if(it.name == ".nomedia"){
                     it.delete()
@@ -74,13 +69,13 @@ class LocalCartoonPreference (
     }
 
     fun createNoMedia(){
-        realLocalUri.value?.let {
+        realBangumiLocalUri.value?.let {
             UniFile.fromUri(APP, it)?.createFile(".nomedia")
         }
     }
 
     fun usePrivate(b: Boolean){
-        localUsePrivatePref.set(b)
+        settingPreferences.localUsePrivate.set(b)
     }
 
 

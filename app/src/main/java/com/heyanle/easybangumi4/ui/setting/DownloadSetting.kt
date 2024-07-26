@@ -162,7 +162,6 @@ fun ColumnScope.DownloadSetting(
         }
 
         if (!usePrivate.value) {
-
             BooleanPreferenceItem(
                 title = { Text(stringResource(id = com.heyanle.easy_i18n.R.string.local_no_media)) },
                 subtitle = { Text(stringResource(id = com.heyanle.easy_i18n.R.string.local_no_media_msg)) },
@@ -191,21 +190,22 @@ fun ColumnScope.DownloadSetting(
 }
 
 private fun chooseFolder(){
-    val localController: LocalCartoonPreference by Inject.injectLazy()
-    val currUri = localController.localUriPref.get()
+    val localCartoonPreference: LocalCartoonPreference by Inject.injectLazy()
+    val settingPreferences: SettingPreferences by Inject.injectLazy()
+    val currUri = settingPreferences.localUri.get()
     LauncherBus.current?.getDocumentTree(Uri.parse(currUri)){ uri ->
         var completely = false
         if(uri != null){
             val path =  UniFile.fromUri(APP, uri)?.filePath
             if (path != null) {
-                localController.usePrivate(false)
-                localController.localUriPref.set(uri.toString())
-                localController.localPathPref.set(path)
+                localCartoonPreference.usePrivate(false)
+                settingPreferences.localUri.set(uri.toString())
+                settingPreferences.localPath.set(path)
                 completely = true
             }
         }
         if (!completely) {
-            localController.usePrivate(true)
+            localCartoonPreference.usePrivate(true)
             stringRes(com.heyanle.easy_i18n.R.string.choose_folder_failed).moeSnackBar()
         } else {
             stringRes(com.heyanle.easy_i18n.R.string.local_folder_change_completely).moeSnackBar()

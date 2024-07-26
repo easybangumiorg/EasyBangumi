@@ -1,11 +1,16 @@
 package com.heyanle.easybangumi4
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
+import android.provider.DocumentsContract
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.CallSuper
 import com.heyanle.easybangumi4.splash.SplashActivity
 import com.heyanle.easybangumi4.utils.CoroutineProvider
 import kotlinx.coroutines.CoroutineScope
@@ -78,6 +83,51 @@ class LauncherBus(
             }
             getDocumentTreeCallback = SoftReference(callback)
             getDocumentTreeLauncher.launch(default)
+        }
+    }
+
+
+    data class CreateDocumentReq(
+        val mimeType: String,
+        val title: String,
+        // DocumentsContract.EXTRA_INITIAL_URI
+        val initialUri: String? = null,
+    )
+
+    class CreateDocument : ActivityResultContract<CreateDocumentReq, Uri?>() {
+
+
+        override fun createIntent(context: Context, input: CreateDocumentReq): Intent {
+            return  Intent(Intent.ACTION_CREATE_DOCUMENT)
+                .setType(input.mimeType)
+                .putExtra(Intent.EXTRA_TITLE, input.title)
+                .apply {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        putExtra(DocumentsContract.EXTRA_INITIAL_URI, input.initialUri)
+                    }
+                }
+        }
+
+        override fun parseResult(resultCode: Int, intent: Intent?): Uri? {
+            return intent.takeIf { resultCode == Activity.RESULT_OK }?.data
+        }
+    }
+
+    // 3. 选择保存文件 uri
+    private var createDocumentCallback: SoftReference<(Uri?)->Unit>? = null
+    private val createDocumentLauncher = act.registerForActivityResult(CreateDocument()){
+        scope.launch {
+            createDocumentCallback?.get()?.invoke(it)
+            createDocumentCallback = null
+        }
+    }
+    fun createDocument(req: CreateDocumentReq, callback: (Uri?)->Unit){
+        scope.launch {
+            if (createDocumentCallback != null){
+                createDocumentCallback?.get()?.invoke(null)
+            }
+            createDocumentCallback = SoftReference(callback)
+            createDocumentLauncher.launch(req)
         }
     }
 

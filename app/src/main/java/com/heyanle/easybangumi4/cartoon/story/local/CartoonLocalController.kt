@@ -3,7 +3,6 @@ package com.heyanle.easybangumi4.cartoon.story.local
 import android.net.Uri
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.base.DataResult
-import com.heyanle.easybangumi4.base.map
 import com.heyanle.easybangumi4.cartoon.entity.CartoonLocalItem
 import com.heyanle.easybangumi4.cartoon.entity.CartoonLocalMsg
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
@@ -42,7 +41,7 @@ class CartoonLocalController(
 
     init {
         scope.launch {
-            localCartoonPreference.realLocalUri.collectLatest {
+            localCartoonPreference.realBangumiLocalUri.collectLatest {
                 refresh(it)
             }
         }
@@ -65,7 +64,7 @@ class CartoonLocalController(
            DataResult.Loading()
         }
         try {
-            val ru = uri ?: localCartoonPreference.realLocalUri.value
+            val ru = uri ?: localCartoonPreference.realBangumiLocalUri.value
             val uniFile = UniFile.fromUri(APP, ru)
             if (uniFile == null) {
                 _flowState.update {
@@ -104,7 +103,7 @@ class CartoonLocalController(
                 callback(null)
                 return@launch
             }
-            val rootFolder = localCartoonPreference.realLocalUri.value.let {
+            val rootFolder = localCartoonPreference.realBangumiLocalUri.value.let {
                 UniFile.fromUri(APP, it)
             }
             if (rootFolder == null) {

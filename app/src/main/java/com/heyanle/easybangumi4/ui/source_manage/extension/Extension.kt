@@ -35,12 +35,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -82,7 +79,6 @@ import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.common.moeDialog
 import com.heyanle.easybangumi4.utils.openUrl
-import com.heyanle.easybangumi4.utils.stringRes
 
 /**
  * Created by HeYanLe on 2023/2/21 23:33.
@@ -710,8 +706,8 @@ fun ExtensionInfoItem(
                         color = MaterialTheme.colorScheme.onSecondaryContainer,
                         fontWeight = FontWeight.W900,
                         text = when(extension.loadType){
-                            ExtensionInfo.TYPE_APP -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_installed)}
-                            ExtensionInfo.TYPE_FILE -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_file)}
+                            ExtensionInfo.TYPE_APK_INSTALL -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_installed)}
+                            ExtensionInfo.TYPE_APK_FILE -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_file)}
                             else -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_installed)}
                         },
                         fontSize = 12.sp
@@ -740,7 +736,7 @@ fun ExtensionInfoItem(
         trailingContent = {
             when (extension) {
                 is ExtensionInfo.Installed -> {
-                    if (extension.loadType == ExtensionInfo.TYPE_APP) {
+                    if (extension.loadType == ExtensionInfo.TYPE_APK_INSTALL) {
                         Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.detailed))
                     }else{
                         Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.long_touch_to_delete))

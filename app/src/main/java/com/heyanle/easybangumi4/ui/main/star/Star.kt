@@ -280,7 +280,7 @@ fun Star() {
     when (val sta = state.dialog) {
         is StarViewModel.DialogState.ChangeTag -> {
             val tags =
-                state.tagList
+                state.tagList.filter { !it.isInner }
 
             if (tags.isEmpty()) {
                 AlertDialog(

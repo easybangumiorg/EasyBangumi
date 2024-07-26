@@ -41,7 +41,7 @@ class AppExtensionLoader(
         TimeLogUtils.i("classLoader start ${pkgName}")
         val classLoader = PathClassLoader(appInfo.sourceDir, null, context.classLoader)
         TimeLogUtils.i("classLoader end ${pkgName}")
-        return innerLoad(packageManager, pkgInfo, appInfo, classLoader, ExtensionInfo.TYPE_APP)
+        return innerLoad(packageManager, pkgInfo, appInfo, classLoader, ExtensionInfo.TYPE_APK_INSTALL)
     }
 
     override fun canLoad(): Boolean {

@@ -13,20 +13,30 @@ import java.io.File
 sealed class ExtensionInfo {
     abstract val key: String
     abstract val label: String
-    abstract val pkgName: String
+    abstract val pkgName: String // 对于 js 文件，为 org.easybangumi.js.[key]
     abstract val versionName: String
     abstract val versionCode: Long
     abstract val libVersion: Int
     abstract val readme: String?
     abstract val icon: Drawable?
     abstract val loadType: Int
-    abstract val sourcePath: String // apk 位置
+    abstract val sourcePath: String // 文件位置 js or apk
     abstract val publicPath: String
     abstract val folderPath: String // 解压路径
 
     companion object {
-        const val TYPE_APP = 0
-        const val TYPE_FILE = 1
+        const val TYPE_APK_INSTALL = 0
+        const val TYPE_APK_FILE = 1
+        const val TYPE_JS_FILE = 2
+    }
+
+    fun suffix(): String {
+        return when(loadType){
+            TYPE_APK_INSTALL -> "apk"
+            TYPE_APK_FILE -> "apk"
+            TYPE_JS_FILE -> "js"
+            else -> "unknown"
+        }
     }
 
     data class Installed(

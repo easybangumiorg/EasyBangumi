@@ -24,6 +24,7 @@ import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.LauncherBus
 import com.heyanle.easybangumi4.cartoon.story.download.CartoonDownloadPreference
 import com.heyanle.easybangumi4.cartoon.story.local.LocalCartoonPreference
+import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.splash.SplashGuildController
 import com.heyanle.easybangumi4.ui.common.BooleanPreferenceItem
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
@@ -38,6 +39,7 @@ import com.hippo.unifile.UniFile
 class LocalStep: BaseStep {
 
     private val splashGuildController: SplashGuildController by Inject.injectLazy()
+    private val settingPreferences: SettingPreferences by Inject.injectLazy()
     private val localController: LocalCartoonPreference by Inject.injectLazy()
     private val cartoonDownloadPreferences: CartoonDownloadPreference by Inject.injectLazy()
 
@@ -147,15 +149,15 @@ class LocalStep: BaseStep {
     }
 
     private fun chooseFolder(){
-        val currUri = localController.localUriPref.get()
+        val currUri = settingPreferences.localUri.get()
         LauncherBus.current?.getDocumentTree(Uri.parse(currUri)){ uri ->
             var completely = false
             if(uri != null){
                 val path =  UniFile.fromUri(APP, uri)?.filePath
                 if (path != null) {
                     localController.usePrivate(false)
-                    localController.localUriPref.set(uri.toString())
-                    localController.localPathPref.set(path)
+                    settingPreferences.localUri.set(uri.toString())
+                    settingPreferences.localPath.set(path)
                     completely = true
                 }
             }

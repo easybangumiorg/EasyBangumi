@@ -1,16 +1,12 @@
 package com.heyanle.easybangumi4.setting
 
 import android.app.Application
-import android.os.Build
-import android.os.Environment
 import com.heyanle.easybangumi4.base.preferences.PreferenceStore
 import com.heyanle.easybangumi4.base.preferences.getEnum
 import com.heyanle.easybangumi4.theme.EasyThemeMode
-import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.easybangumi4.utils.mb
 import com.heyanle.easybangumi4.utils.stringRes
 import loli.ball.easyplayer2.utils.MeasureHelper
-import java.io.File
 
 /**
  * 设置
@@ -70,36 +66,6 @@ class SettingPreferences(
     // 最大缓存
     var cacheSize = preferenceStore.getLong("cache_size", 2000.mb.toLong())
 
-    // 缓存番剧数据过期时间（小时）
-    var cartoonInfoCacheTimeHour = preferenceStore.getLong("cartoon_cache_time_hour", 12)
-
-    // 下载番剧路径
-    val downloadPathSelection = arrayListOf<Pair<String, String>>().apply {
-        add(application.getFilePath("download") to stringRes(com.heyanle.easy_i18n.R.string.private_download_path))
-        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)?.let {
-            add(File(it, "EasyBangumi").absolutePath to stringRes(com.heyanle.easy_i18n.R.string.public_download_path))
-        }
-        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES)?.let {
-            add(File(it, "EasyBangumi").absolutePath to stringRes(com.heyanle.easy_i18n.R.string.public_movie_path))
-        }
-        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM)?.let {
-            add(File(it, "EasyBangumi").absolutePath to stringRes(com.heyanle.easy_i18n.R.string.public_dcim_path))
-        }
-    }
-    // 需要刷新媒体的路径
-    val needRefreshMedia = hashSetOf<String>().apply {
-        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)?.let {
-            add(File(it, "EasyBangumi").absolutePath)
-        }
-        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES)?.let {
-            add(File(it, "EasyBangumi").absolutePath)
-        }
-        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM)?.let {
-            add(File(it, "EasyBangumi").absolutePath)
-        }
-    }
-    val downloadPath = preferenceStore.getString("cartoon_download_path", application.getFilePath("download") )
-
     val customSpeed = preferenceStore.getFloat("custom_speed", -1f)
 
     val fastWeightSelection = listOf(2, 3, 4, 5, 6)
@@ -137,5 +103,16 @@ class SettingPreferences(
 
     // 播放器拖动屏幕拉进度条的幅度（当前视频总宽度占的视频时间）
     val playerSeekFullWidthTimeMS = preferenceStore.getLong("player_seek_full_width_time_ms", 300000)
+
+
+    // ======================================
+    // 是否使用私有目录
+    val localUsePrivate = preferenceStore.getBoolean("local_use_private", true)
+
+
+    // 选择文件夹 uri 和路径（仅供展示）
+    val localUri = preferenceStore.getString("local_folder_uri", "")
+    val localPath = preferenceStore.getString("local_folder_path", "")
+
 
 }
