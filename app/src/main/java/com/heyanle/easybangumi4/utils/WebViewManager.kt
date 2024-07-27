@@ -37,17 +37,8 @@ class WebViewManager(
             if (isMainThread()) {
                 return newWebView()
             }
-
-            if(coreWebViewList.size < CORE_WEB_VIEW_COUNT){
-                val webView = newWebView()
-                if(webView != null){
-                    coreWebViewList.add(webView)
-                }
-                return webView
-            }
             lock.notifyAll()
         }
-        lock.notifyAll()
         val countDownLatch = CountDownLatch(1)
         var webView: WebView? = null
         scope.launch {

@@ -3,10 +3,7 @@ package com.heyanle.easybangumi4.plugin.source.utils.network
 import android.graphics.Bitmap
 import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
-import android.webkit.WebSettings
 import android.webkit.WebView
-import androidx.annotation.UiThread
-import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.WEB_VIEW_USER
 import com.heyanle.easybangumi4.navControllerRef
 import com.heyanle.easybangumi4.plugin.source.utils.LightweightGettingWebViewClient
@@ -15,7 +12,6 @@ import com.heyanle.easybangumi4.utils.WebViewManager
 import com.heyanle.easybangumi4.utils.clearWeb
 import com.heyanle.easybangumi4.utils.evaluateJavascript
 import com.heyanle.easybangumi4.utils.getHtml
-import com.heyanle.easybangumi4.utils.isMainThread
 import com.heyanle.easybangumi4.utils.stop
 import com.heyanle.easybangumi4.utils.waitUntil
 import kotlinx.coroutines.CancellationException
@@ -25,8 +21,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import java.lang.ref.WeakReference
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -112,28 +106,29 @@ class WebViewHelperV2Impl: WebViewHelperV2 {
     }
 
     override suspend fun renderedHtml(strategy: WebViewHelperV2.RenderedStrategy): WebViewHelperV2.RenderedResult {
-        val _globalWebView = getGlobalWebViewOrNull() ?: throw WebViewCreatedException()
+        val webview = getGlobalWebViewOrNull() ?: throw WebViewCreatedException()
         return withContext(Dispatchers.Main){
-            _globalWebView.clearWeb()
-            _globalWebView.settings.apply {
+            webview.clearWeb()
+            webview.settings.apply {
                 setUserAgentString(strategy.userAgentString ?: userAgentString)
                 defaultTextEncodingName = strategy.encoding
             }
-            _globalWebView.resumeTimers()
+            webview.resumeTimers()
 
 
             if (!strategy.isBlockBlob) {
                 // 拦截普通资源模式
-                _globalWebView.loadUrl(strategy.url, strategy.header.orEmpty())
-                var r = _globalWebView.waitUntil(
+                webview.loadUrl(strategy.url, strategy.header.orEmpty())
+                var r = webview.waitUntil(
                     if (strategy.callBackRegex.isEmpty()) null else Regex(strategy.callBackRegex),
                     strategy.timeOut,
                     true,
                     ignoreTimeoutExt = true
                 )
                 if (r.isNotEmpty() || strategy.actionJs == null) {
-                    val content = _globalWebView.getHtml().also {
-                        _globalWebView.stop()
+                    val content = webview.getHtml().also {
+                        webview.stop()
+                        recyclerWebView(webview)
                     }
                     return@withContext WebViewHelperV2.RenderedResult(
                         strategy,
@@ -143,15 +138,16 @@ class WebViewHelperV2Impl: WebViewHelperV2 {
                         r
                     )
                 }
-                _globalWebView.evaluateJavascript(strategy.actionJs)
+                webview.evaluateJavascript(strategy.actionJs)
                 r = try {
-                    _globalWebView.waitUntil(
+                    webview.waitUntil(
                         if (strategy.callBackRegex.isEmpty()) null else Regex(strategy.callBackRegex),
                         strategy.timeOut,
                         true,
                         ignoreTimeoutExt = false
                     )
                 } catch (e: CancellationException) {
+                    recyclerWebView(webview)
                     return@withContext WebViewHelperV2.RenderedResult(
                         strategy,
                         strategy.url,
@@ -160,8 +156,9 @@ class WebViewHelperV2Impl: WebViewHelperV2 {
                         ""
                     )
                 }
-                val content = _globalWebView.getHtml().also {
-                    _globalWebView.stop()
+                val content = webview.getHtml().also {
+                    webview.stop()
+                    recyclerWebView(webview)
                 }
                 return@withContext WebViewHelperV2.RenderedResult(
                     strategy,
@@ -173,32 +170,33 @@ class WebViewHelperV2Impl: WebViewHelperV2 {
             }else {
                 // 拦截 Blob 模式
                 val targetRegex = Regex(strategy.callBackRegex)
-                _globalWebView.webViewClient =
+                webview.webViewClient =
                     object : LightweightGettingWebViewClient(targetRegex, false) {
                         override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
-                            _globalWebView.evaluateJavascript(blobHookJs)
+                            webview.evaluateJavascript(blobHookJs)
                         }
 
                         override fun onPageFinished(view: WebView?, url: String?) {
-                            _globalWebView.evaluateJavascript(strategy.actionJs)
+                            webview.evaluateJavascript(strategy.actionJs)
                         }
                     }
                 val blobResource = withTimeoutOrNull(strategy.timeOut) {
                     suspendCoroutine { con ->
-                        _globalWebView.addJavascriptInterface(object : Any() {
+                        webview.addJavascriptInterface(object : Any() {
                             @JavascriptInterface
                             fun handleWrapper(blobTextData: String) {
                                 if (targetRegex.containsMatchIn(blobTextData)) {
-                                    _globalWebView.removeJavascriptInterface("blobHook")
+                                    webview.removeJavascriptInterface("blobHook")
                                     con.resume(blobTextData)
                                 }
                             }
                         }, "blobHook")
-                        _globalWebView.loadUrl(strategy.url, strategy.header.orEmpty())
+                        webview.loadUrl(strategy.url, strategy.header.orEmpty())
                     }
                 }
                 if (blobResource == null) {
-                    _globalWebView.stop()
+                    webview.stop()
+                    recyclerWebView(webview)
                     return@withContext WebViewHelperV2.RenderedResult(
                         strategy,
                         strategy.url,
@@ -207,8 +205,9 @@ class WebViewHelperV2Impl: WebViewHelperV2 {
                         ""
                     )
                 } else {
-                    val content = _globalWebView.getHtml().also {
-                        _globalWebView.stop()
+                    val content = webview.getHtml().also {
+                        webview.stop()
+                        recyclerWebView(webview)
                     }
                     return@withContext WebViewHelperV2.RenderedResult(
                         strategy,
