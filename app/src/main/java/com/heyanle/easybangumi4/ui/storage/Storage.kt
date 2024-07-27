@@ -170,7 +170,7 @@ fun Storage() {
 
                         item {
                             ListItem(headlineContent = {
-                                Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.restore), color = MaterialTheme.colorScheme.primary)
+                                Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.backup), color = MaterialTheme.colorScheme.primary)
                             })
                         }
 

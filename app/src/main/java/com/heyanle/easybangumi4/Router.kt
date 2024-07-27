@@ -9,6 +9,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
@@ -297,6 +298,11 @@ fun Nav() {
             }
 
             composable(WEB_VIEW_USER) {
+                DisposableEffect(key1 = Unit) {
+                    onDispose {
+                        WebViewHelperV2Impl.webPageShowing = false
+                    }
+                }
                 runCatching {
                     val wb = WebViewHelperV2Impl.webViewRef?.get() ?: throw NullPointerException()
                     val onCheck = WebViewHelperV2Impl.check?.get() ?: throw NullPointerException()

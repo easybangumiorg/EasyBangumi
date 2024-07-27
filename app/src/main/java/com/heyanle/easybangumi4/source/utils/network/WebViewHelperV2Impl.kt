@@ -5,24 +5,28 @@ import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebSettings
 import android.webkit.WebView
+import androidx.annotation.UiThread
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.WEB_VIEW_USER
 import com.heyanle.easybangumi4.navControllerRef
 import com.heyanle.easybangumi4.source.utils.LightweightGettingWebViewClient
 import com.heyanle.easybangumi4.source_api.utils.api.WebViewHelperV2
+import com.heyanle.easybangumi4.utils.WebViewManager
 import com.heyanle.easybangumi4.utils.clearWeb
 import com.heyanle.easybangumi4.utils.evaluateJavascript
 import com.heyanle.easybangumi4.utils.getHtml
+import com.heyanle.easybangumi4.utils.isMainThread
 import com.heyanle.easybangumi4.utils.stop
 import com.heyanle.easybangumi4.utils.waitUntil
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.withTimeoutOrNull
 import java.lang.ref.WeakReference
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -33,9 +37,14 @@ class WebViewHelperV2Impl: WebViewHelperV2 {
 
     companion object {
 
+        // 创建三次还失败那就寄
+        const val MAX_TRY_COUNT = 3
+
         var webViewRef: WeakReference<WebView>? = null
         var check: WeakReference<(WebView) -> Boolean>? = null
         var stop: WeakReference<(WebView) -> Unit>? = null
+
+        var webPageShowing = false
 
 
         private const val blobHookJs = """
@@ -51,43 +60,38 @@ class WebViewHelperV2Impl: WebViewHelperV2 {
             return blobUrl
         }
     """
-
-        val cookieManager = CookieManager.getInstance()
-        private val _globalWebView by lazy(LazyThreadSafetyMode.NONE) {
-            WebView(APP).apply {
-                // setDefaultSettings()
-                with(settings){
-                    javaScriptEnabled = true
-                    domStorageEnabled = true
-                    databaseEnabled = true
-                    useWideViewPort = true
-                    loadWithOverviewMode = true
-                    cacheMode = WebSettings.LOAD_DEFAULT
-
-                    // Allow zooming
-                    setSupportZoom(true)
-                    builtInZoomControls = true
-                    displayZoomControls = false
-                }
-                cookieManager.also {
-                    it.setAcceptCookie(true)
-                    it.acceptCookie()
-                    it.setAcceptThirdPartyCookies(this, true) // 跨域cookie读取
-                }
-            }
-        }
-        val globalWebView: WebView get() = _globalWebView
     }
+
+
+    private val scope = MainScope()
+    private val cookieManager: CookieManager = CookieManager.getInstance()
+    private val webViewManager = WebViewManager(cookieManager)
 
     override fun getGlobalWebView(): WebView {
-        return _globalWebView
+        return webViewManager.getWebViewOrNull() ?: throw WebViewCreatedException()
     }
 
+    fun getGlobalWebViewOrNull(): WebView? {
+        return webViewManager.getWebViewOrNull()
+    }
+
+    fun recyclerWebView(webView: WebView) {
+        webViewManager.recycle(webView)
+    }
+
+
+
     override fun openWebPage(onCheck: (WebView) -> Boolean, onStop: (WebView) -> Unit) {
-        webViewRef = WeakReference(_globalWebView)
-        check = WeakReference(onCheck)
-        stop = WeakReference(onStop)
-        navControllerRef?.get()?.navigate(WEB_VIEW_USER)
+        scope.launch {
+            if (webPageShowing) {
+                return@launch
+            }
+            webPageShowing = true
+            webViewRef = WeakReference(getGlobalWebView())
+            check = WeakReference(onCheck)
+            stop = WeakReference(onStop)
+            navControllerRef?.get()?.navigate(WEB_VIEW_USER)
+        }
     }
 
     override fun openWebPage(
@@ -95,13 +99,20 @@ class WebViewHelperV2Impl: WebViewHelperV2 {
         onCheck: (WebView) -> Boolean,
         onStop: (WebView) -> Unit
     ) {
-        webViewRef = WeakReference(webView)
-        check = WeakReference(onCheck)
-        stop = WeakReference(onStop)
-        navControllerRef?.get()?.navigate(WEB_VIEW_USER)
+        scope.launch {
+            if (webPageShowing) {
+                return@launch
+            }
+            webPageShowing = true
+            webViewRef = WeakReference(webView)
+            check = WeakReference(onCheck)
+            stop = WeakReference(onStop)
+            navControllerRef?.get()?.navigate(WEB_VIEW_USER)
+        }
     }
 
     override suspend fun renderedHtml(strategy: WebViewHelperV2.RenderedStrategy): WebViewHelperV2.RenderedResult {
+        val _globalWebView = getGlobalWebViewOrNull() ?: throw WebViewCreatedException()
         return withContext(Dispatchers.Main){
             _globalWebView.clearWeb()
             _globalWebView.settings.apply {
@@ -210,4 +221,7 @@ class WebViewHelperV2Impl: WebViewHelperV2 {
             }
         }
     }
+
 }
+
+class WebViewCreatedException : Exception("WebView create error")

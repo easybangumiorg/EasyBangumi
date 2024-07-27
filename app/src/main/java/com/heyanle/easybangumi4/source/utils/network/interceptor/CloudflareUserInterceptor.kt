@@ -4,8 +4,8 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.webkit.WebView
 import androidx.core.content.ContextCompat
+import com.heyanle.easybangumi4.source.utils.network.WebViewHelperV2Impl
 import com.heyanle.easybangumi4.source_api.utils.api.NetworkHelper
-import com.heyanle.easybangumi4.source_api.utils.api.StringHelper
 import com.heyanle.easybangumi4.source_api.utils.api.WebViewHelper
 import com.heyanle.easybangumi4.utils.stringRes
 import kotlinx.coroutines.Dispatchers
@@ -18,7 +18,6 @@ import okhttp3.Request
 import okhttp3.Response
 import java.io.IOException
 
-import com.heyanle.easybangumi4.R
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 
 /**
@@ -28,8 +27,8 @@ import com.heyanle.easybangumi4.ui.common.moeSnackBar
 class CloudflareUserInterceptor(
     private val context: Context,
     private val networkHelper: NetworkHelper,
-    private val webViewHelper: WebViewHelper,
-) : WebViewInterceptor(context, networkHelper) {
+    private val webViewHelperV2Impl: WebViewHelperV2Impl,
+) : WebViewInterceptor(context, networkHelper, webViewHelperV2Impl) {
 
     private val executor = ContextCompat.getMainExecutor(context)
     override fun shouldIntercept(response: Response): Boolean {
@@ -81,13 +80,12 @@ class CloudflareUserInterceptor(
         }
 
         executor.execute {
-            webview = createWebView(originalRequest)
-
+            webview = getWebViewOrThrow(originalRequest)
             webview?.loadUrl(origRequestUrl, headers)
 
             webview?.let {
                 stringRes(com.heyanle.easy_i18n.R.string.please_cloudflare).moeSnackBar()
-                webViewHelper.start(
+                webViewHelperV2Impl.openWebPage(
                     it,
                     {
                         isCloudFlareBypassed()

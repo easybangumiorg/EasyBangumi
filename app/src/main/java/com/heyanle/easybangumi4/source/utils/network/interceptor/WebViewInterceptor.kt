@@ -2,6 +2,7 @@ package com.heyanle.easybangumi4.source.utils.network.interceptor
 
 import android.content.Context
 import android.webkit.WebView
+import com.heyanle.easybangumi4.source.utils.network.WebViewHelperV2Impl
 import com.heyanle.easybangumi4.source_api.utils.api.NetworkHelper
 import okhttp3.Headers
 import okhttp3.Interceptor
@@ -18,6 +19,7 @@ import java.util.concurrent.TimeUnit
 abstract class WebViewInterceptor(
     private val context: Context,
     private val networkHelper: NetworkHelper,
+    private val webViewHelperV2Impl: WebViewHelperV2Impl,
 ) : Interceptor {
 
     abstract fun shouldIntercept(response: Response): Boolean
@@ -53,10 +55,8 @@ abstract class WebViewInterceptor(
         await(60, TimeUnit.SECONDS)
     }
 
-    fun createWebView(request: Request): WebView {
-        return WebView(context).apply {
-            // setDefaultSettings()
-            // Avoid sending empty User-Agent, Chromium WebView will reset to default if empty
+    fun getWebViewOrThrow(request: Request): WebView {
+        return webViewHelperV2Impl.getGlobalWebView().apply {
             settings.userAgentString = request.header("User-Agent") ?: networkHelper.defaultLinuxUA
         }
     }

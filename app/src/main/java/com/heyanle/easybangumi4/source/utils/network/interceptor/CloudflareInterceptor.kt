@@ -9,6 +9,7 @@ import android.webkit.WebView
 import androidx.core.content.ContextCompat
 import androidx.webkit.WebResourceErrorCompat
 import androidx.webkit.WebViewClientCompat
+import com.heyanle.easybangumi4.source.utils.network.WebViewHelperV2Impl
 import com.heyanle.easybangumi4.source_api.utils.api.NetworkHelper
 import okhttp3.Cookie
 import okhttp3.HttpUrl.Companion.toHttpUrl
@@ -25,7 +26,8 @@ import java.util.concurrent.CountDownLatch
 class CloudflareInterceptor(
     private val context: Context,
     private val networkHelper: NetworkHelper,
-) : WebViewInterceptor(context, networkHelper) {
+    private val webViewHelperV2Impl: WebViewHelperV2Impl
+) : WebViewInterceptor(context, networkHelper, webViewHelperV2Impl) {
 
     private val executor = ContextCompat.getMainExecutor(context)
     override fun shouldIntercept(response: Response): Boolean {
@@ -70,7 +72,7 @@ class CloudflareInterceptor(
         val headers = parseHeaders(originalRequest.headers)
 
         executor.execute {
-            webview = createWebView(originalRequest)
+            webview = getWebViewOrThrow(originalRequest)
 
             webview?.webViewClient = object : WebViewClientCompat() {
                 override fun onPageFinished(view: WebView, url: String) {
@@ -161,12 +163,8 @@ class CloudflareInterceptor(
         }
 
         latch.awaitFor60Seconds()
-
-        executor.execute {
-            webview?.run {
-                stopLoading()
-                destroy()
-            }
+        webview?.let {
+            webViewHelperV2Impl.recyclerWebView(it)
         }
 
         if (!cloudflareBypassed) {
