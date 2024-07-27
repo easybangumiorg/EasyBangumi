@@ -13,9 +13,9 @@ import androidx.compose.ui.res.stringResource
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.case.SourceStateCase
-import com.heyanle.easybangumi4.source.LocalSourceBundleController
-import com.heyanle.easybangumi4.source.SourceController
-import com.heyanle.easybangumi4.source.bundle.SourceBundle
+import com.heyanle.easybangumi4.plugin.source.LocalSourceBundleController
+import com.heyanle.easybangumi4.plugin.source.SourceController
+import com.heyanle.easybangumi4.plugin.source.bundle.SourceBundle
 import com.heyanle.easybangumi4.source_api.Source
 import com.heyanle.easybangumi4.source_api.component.detailed.DetailedComponent
 import com.heyanle.easybangumi4.source_api.component.page.SourcePage

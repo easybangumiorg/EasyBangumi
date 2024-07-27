@@ -7,7 +7,7 @@ import com.heyanle.easybangumi4.base.preferences.PreferenceStore
 import com.heyanle.easybangumi4.base.preferences.android.AndroidPreferenceStore
 import com.heyanle.easybangumi4.base.preferences.hekv.HeKVPreferenceStore
 import com.heyanle.easybangumi4.base.preferences.mmkv.MMKVPreferenceStore
-import com.heyanle.easybangumi4.source.SourcePreferences
+import com.heyanle.easybangumi4.plugin.source.SourcePreferences
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.inject.api.InjectModule
 import com.heyanle.inject.api.InjectScope

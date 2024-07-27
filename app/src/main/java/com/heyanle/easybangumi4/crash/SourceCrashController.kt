@@ -7,7 +7,7 @@ import com.heyanle.easy_crasher.CrashHandler
 import com.heyanle.easybangumi4.base.hekv.HeKV
 import com.heyanle.easybangumi4.base.preferences.hekv.HeKVPreference
 import com.heyanle.easybangumi4.base.preferences.hekv.HeKVPreferenceStore
-import com.heyanle.easybangumi4.source.SourcePreferences
+import com.heyanle.easybangumi4.plugin.source.SourcePreferences
 import com.heyanle.easybangumi4.source_api.component.Component
 import com.heyanle.easybangumi4.utils.getFilePath
 import kotlinx.coroutines.CoroutineScope
@@ -21,7 +21,7 @@ import java.lang.reflect.Method
 import java.util.concurrent.Executors
 import android.os.Process
 import com.heyanle.easybangumi4.base.json.JsonFileProvider
-import com.heyanle.easybangumi4.source.SourceConfig
+import com.heyanle.easybangumi4.plugin.source.SourceConfig
 import com.heyanle.easybangumi4.ui.common.moeDialog
 import com.heyanle.easybangumi4.utils.loge
 import kotlinx.coroutines.flow.MutableStateFlow

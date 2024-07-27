@@ -7,8 +7,8 @@ import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.LauncherBus
 import com.heyanle.easybangumi4.cartoon.repository.db.CartoonDatabase
-import com.heyanle.easybangumi4.extension.ExtensionInfo
-import com.heyanle.easybangumi4.extension.ExtensionController
+import com.heyanle.easybangumi4.plugin.extension.ExtensionController
+import com.heyanle.easybangumi4.plugin.extension.ExtensionInfo
 import com.heyanle.easybangumi4.storage.BackupController
 import com.heyanle.easybangumi4.storage.RestoreController
 import com.heyanle.easybangumi4.ui.common.moeDialog

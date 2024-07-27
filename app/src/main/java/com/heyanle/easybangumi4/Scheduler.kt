@@ -5,14 +5,14 @@ import android.util.Base64
 import com.heyanle.easy_crasher.CrashHandler
 import com.heyanle.easybangumi4.cartoon.CartoonModule
 import com.heyanle.easybangumi4.exo.MediaModule
-import com.heyanle.easybangumi4.extension.ExtensionController
-import com.heyanle.easybangumi4.extension.ExtensionModule
+import com.heyanle.easybangumi4.plugin.extension.ExtensionController
 import com.heyanle.easybangumi4.case.CaseModule
 import com.heyanle.easybangumi4.crash.SourceCrashController
 import com.heyanle.easybangumi4.dlna.DlnaModule
+import com.heyanle.easybangumi4.plugin.extension.ExtensionModule
 import com.heyanle.easybangumi4.setting.SettingModule
-import com.heyanle.easybangumi4.source.SourceModule
-import com.heyanle.easybangumi4.source.utils.NativeHelperImpl
+import com.heyanle.easybangumi4.plugin.source.SourceModule
+import com.heyanle.easybangumi4.plugin.source.utils.NativeHelperImpl
 import com.heyanle.easybangumi4.splash.SplashActivity
 import com.heyanle.easybangumi4.storage.StorageModule
 import com.heyanle.easybangumi4.ui.common.dismiss
@@ -95,7 +95,7 @@ object Scheduler {
      */
     fun runOnMainActivityCreate(activity: MainActivity, isFirst: Boolean) {
         Migrate.update(activity)
-        val extensionController: ExtensionController by Inject.injectLazy()
+        val extensionController: com.heyanle.easybangumi4.plugin.extension.ExtensionController by Inject.injectLazy()
         val extensionIconFactory: IconFactory by Inject.injectLazy()
         iconFactory = extensionIconFactory
         extensionController.init()

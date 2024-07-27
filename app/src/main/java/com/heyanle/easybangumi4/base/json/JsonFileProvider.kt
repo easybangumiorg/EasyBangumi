@@ -5,7 +5,7 @@ import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.bus.DownloadingBus
 import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadReq
 import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
-import com.heyanle.easybangumi4.source.SourceConfig
+import com.heyanle.easybangumi4.plugin.source.SourceConfig
 import com.heyanle.easybangumi4.utils.CoroutineProvider
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.hippo.unifile.UniFile

@@ -5,10 +5,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.heyanle.easybangumi4.source.ConfigSource
-import com.heyanle.easybangumi4.source.SourceConfig
-import com.heyanle.easybangumi4.source.SourceController
-import com.heyanle.easybangumi4.source.SourcePreferences
+import com.heyanle.easybangumi4.plugin.source.ConfigSource
+import com.heyanle.easybangumi4.plugin.source.SourceConfig
+import com.heyanle.easybangumi4.plugin.source.SourceController
+import com.heyanle.easybangumi4.plugin.source.SourcePreferences
 import com.heyanle.easybangumi4.utils.loge
 import com.heyanle.inject.core.Inject
 import kotlinx.coroutines.flow.collectLatest

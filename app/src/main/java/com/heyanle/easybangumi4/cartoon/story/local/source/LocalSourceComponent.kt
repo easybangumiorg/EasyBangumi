@@ -4,7 +4,7 @@ import com.heyanle.easybangumi4.base.DataResult
 import com.heyanle.easybangumi4.base.map
 import com.heyanle.easybangumi4.base.toDataResult
 import com.heyanle.easybangumi4.cartoon.story.CartoonStoryController
-import com.heyanle.easybangumi4.source.SourceException
+import com.heyanle.easybangumi4.plugin.source.SourceException
 import com.heyanle.easybangumi4.source_api.SourceResult
 import com.heyanle.easybangumi4.source_api.component.ComponentWrapper
 import com.heyanle.easybangumi4.source_api.component.detailed.DetailedComponent

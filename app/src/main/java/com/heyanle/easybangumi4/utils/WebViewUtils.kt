@@ -1,7 +1,7 @@
 package com.heyanle.easybangumi4.utils
 
 import android.webkit.WebView
-import com.heyanle.easybangumi4.source.utils.LightweightGettingWebViewClient
+import com.heyanle.easybangumi4.plugin.source.utils.LightweightGettingWebViewClient
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope

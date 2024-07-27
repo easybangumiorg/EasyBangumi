@@ -2,6 +2,7 @@ package com.heyanle.easybangumi4.ui.source_manage.extension
 
 import android.app.Activity
 import androidx.activity.compose.BackHandler
+import androidx.collection.emptyIntObjectMap
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -71,8 +72,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
-import com.heyanle.easybangumi4.extension.ExtensionInfo
-import com.heyanle.easybangumi4.extension.store.ExtensionStoreInfo
+import com.heyanle.easybangumi4.plugin.extension.ExtensionInfo
+import com.heyanle.easybangumi4.plugin.extension.store.ExtensionStoreInfo
 import com.heyanle.easybangumi4.ui.common.EasyDeleteDialog
 import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.LoadingPage
@@ -171,14 +172,6 @@ fun ExtensionTopAppBar(behavior: TopAppBarScrollBehavior) {
                         imageVector = Icons.Filled.Search, stringResource(id = R.string.search)
                     )
                 }
-
-//                IconButton(onClick = {
-//                    vm.refresh()
-//                }) {
-//                    Icon(
-//                        imageVector = Icons.Filled.Refresh, stringResource(id = R.string.refresh)
-//                    )
-//                }
             } else {
                 IconButton(onClick = {
                     vm.onSearchChange(null)
@@ -216,25 +209,12 @@ fun Extension() {
                 state = listState
             ) {
                 items(sta.showList) {
-                    ExtensionInfoItem(item = it,
+                    ExtensionInfoItem(it,
                         onClick = {
                             (ctx as? Activity)?.let { act ->
                                 vm.onItemClick(it, act)
                             }
 
-                            when (it) {
-                                is ExtensionViewModel.ExtensionItem.ExtensionInfo -> {
-
-                                }
-
-                                is ExtensionViewModel.ExtensionItem.StoreInfo -> {
-
-                                }
-
-                                is ExtensionViewModel.ExtensionItem.StoreExtensionInfo -> {
-
-                                }
-                            }
                         }, onLongPress = {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             vm.onItemLongPress(it)
@@ -248,426 +228,28 @@ fun Extension() {
 }
 
 
-@Composable
-fun ExtensionInfoItem(
-    item: ExtensionViewModel.ExtensionItem,
-    onClick: (ExtensionViewModel.ExtensionItem) -> Unit,
-    onLongPress: ((ExtensionViewModel.ExtensionItem) -> Unit)?,
-) {
-    when (item) {
-        is ExtensionViewModel.ExtensionItem.ExtensionInfo -> {
-            ExtensionInfoItem(item = item, onClick = onClick, onLongPress = onLongPress)
-        }
-
-        is ExtensionViewModel.ExtensionItem.StoreExtensionInfo -> {
-            StoreExtensionInfoItem(item = item, onClick = onClick, onLongPress = onLongPress)
-        }
-
-        is ExtensionViewModel.ExtensionItem.StoreInfo -> {
-            StoreInfoItem(item = item, onClick = onClick, onLongPress = onLongPress)
-        }
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun StoreInfoItem(
-    item: ExtensionViewModel.ExtensionItem.StoreInfo,
-    onClick: (ExtensionViewModel.ExtensionItem) -> Unit,
-    onLongPress: ((ExtensionViewModel.ExtensionItem) -> Unit)?,
-) {
-    val extensionStoreInfo = item.info
-
-    ListItem(
-        modifier = Modifier.let {
-            if (onLongPress == null) {
-                it.clickable {
-                    onClick(item)
-                }
-            } else {
-                it.combinedClickable(
-                    onClick = {
-                        onClick(item)
-                    },
-                    onLongClick = {
-                        onLongPress.invoke(item)
-                    }
-                )
-            }
-        },
-        headlineContent = {
-            Text(text = extensionStoreInfo.remote.label)
-        },
-        supportingContent = {
-            Row(
-                modifier = Modifier.horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-
-                // 版本
-                Text(
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.secondaryContainer)
-                        .clickable {
-                        }
-                        .padding(8.dp, 4.dp),
-                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                    fontWeight = FontWeight.W900,
-                    text = extensionStoreInfo.remote.versionName,
-                    fontSize = 12.sp
-                )
-
-                // 作者
-                Row(modifier = Modifier
-                    .height(IntrinsicSize.Min)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.secondaryContainer)
-                    .clickable {
-                        extensionStoreInfo.remote.gitUrl.openUrl()
-                    }
-                    .padding(8.dp, 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        Icons.Filled.Person,
-                        modifier = Modifier
-                            .size(16.dp),
-                        contentDescription = stringResource(id = R.string.author)
-                    )
-                    Spacer(
-                        modifier = Modifier
-                            .width(2.dp)
-                            .fillMaxHeight()
-                    )
-                    Text(
-                        color = MaterialTheme.colorScheme.onSecondaryContainer,
-                        fontWeight = FontWeight.W900,
-                        text = extensionStoreInfo.remote.author,
-                        fontSize = 12.sp
-                    )
-                }
-
-
-                // github
-                OkImage(
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.secondaryContainer)
-                        .clickable {
-                            extensionStoreInfo.remote.gitUrl.openUrl()
-                        }
-                        .padding(8.dp, 4.dp)
-                        .size(16.dp),
-                    image = com.heyanle.easybangumi4.R.drawable.github,
-                    contentDescription = stringResource(id = R.string.github),
-                    crossFade = false,
-                    errorColor = null,
-                    errorRes = null,
-                    placeholderRes = null,
-                    placeholderColor = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                // 介绍
-                Text(
-                    modifier = Modifier
-                        .widthIn(0.dp, 100.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.secondaryContainer)
-                        .clickable {
-                            extensionStoreInfo.remote.releaseDesc.moeDialog()
-                        }
-                        .padding(8.dp, 4.dp),
-                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                    fontWeight = FontWeight.W900,
-                    text = extensionStoreInfo.remote.releaseDesc,
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 1,
-                    fontSize = 12.sp
-                )
-            }
-        },
-        trailingContent = {
-            when (extensionStoreInfo.state) {
-                ExtensionStoreInfo.STATE_INSTALLED -> {
-                    Text(text = stringResource(id = R.string.click_install))
-                }
-
-                ExtensionStoreInfo.STATE_DOWNLOADING -> {
-
-                    val info = remember(extensionStoreInfo) {
-                        extensionStoreInfo.downloadInfo
-                    }
-                    if (info?.process?.value == -1f || info == null) {
-                        CircularProgressIndicator()
-                    } else {
-                        CircularProgressIndicator(info.process.value)
-                    }
-
-                }
-
-                ExtensionStoreInfo.STATE_NEED_UPDATE -> {
-                    Text(
-                        fontSize = 13.sp,
-                        text = stringResource(id = R.string.click_to_update),
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier
-                            .background(
-                                MaterialTheme.colorScheme.primary,
-                                RoundedCornerShape(4.dp)
-                            )
-                            .padding(8.dp, 4.dp)
-                    )
-                }
-
-                ExtensionStoreInfo.STATE_ERROR -> {
-                    TextButton(
-                        enabled = false,
-                        onClick = {
-                            extensionStoreInfo.errorMsg?.moeDialog()
-                        }) {
-                        Text(
-                            modifier = Modifier.width(32.dp),
-                            text = if (extensionStoreInfo.errorMsg?.isNotEmpty() == true) extensionStoreInfo.errorMsg else stringResource(
-                                id = R.string.download_error
-                            ),
-                            maxLines = 2
-                        )
-                    }
-                }
-            }
-        },
-        leadingContent = {
-            OkImage(
-                modifier = Modifier.size(40.dp),
-                image = extensionStoreInfo.remote.iconUrl,
-                contentDescription = extensionStoreInfo.remote.label,
-                crossFade = false,
-                errorColor = null,
-                errorRes = null,
-                placeholderRes = null,
-                placeholderColor = null,
-            )
-        }
-    )
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun StoreExtensionInfoItem(
-    item: ExtensionViewModel.ExtensionItem.StoreExtensionInfo,
-    onClick: (ExtensionViewModel.ExtensionItem) -> Unit,
-    onLongPress: ((ExtensionViewModel.ExtensionItem) -> Unit)?,
-) {
-    val extensionStoreInfo = item.info
-    ListItem(
-        modifier = Modifier.let {
-            if (onLongPress == null) {
-                it.clickable {
-                    onClick(item)
-                }
-            } else {
-                it.combinedClickable(
-                    onClick = {
-                        onClick(item)
-                    },
-                    onLongClick = {
-                        onLongPress.invoke(item)
-                    }
-                )
-            }
-        },
-        headlineContent = {
-            Text(text = extensionStoreInfo.remote.label)
-        },
-        supportingContent = {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-
-                // 版本
-                Text(
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.secondaryContainer)
-                        .clickable {
-                        }
-                        .padding(8.dp, 4.dp),
-                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                    fontWeight = FontWeight.W900,
-                    text = extensionStoreInfo.remote.versionName,
-                    fontSize = 12.sp
-                )
-
-                // 作者
-                Row(modifier = Modifier
-                    .height(IntrinsicSize.Min)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.secondaryContainer)
-                    .clickable {
-                        extensionStoreInfo.remote.gitUrl.openUrl()
-                    }
-                    .padding(8.dp, 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        Icons.Filled.Person,
-                        modifier = Modifier
-                            .size(16.dp),
-                        contentDescription = stringResource(id = R.string.author)
-                    )
-                    Spacer(
-                        modifier = Modifier
-                            .width(2.dp)
-                            .fillMaxHeight()
-                    )
-                    Text(
-                        color = MaterialTheme.colorScheme.onSecondaryContainer,
-                        fontWeight = FontWeight.W900,
-                        text = extensionStoreInfo.remote.author,
-                        fontSize = 12.sp
-                    )
-                }
-
-
-                // github
-                OkImage(
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.secondaryContainer)
-                        .clickable {
-                            extensionStoreInfo.remote.gitUrl.openUrl()
-                        }
-                        .padding(8.dp, 4.dp)
-                        .size(16.dp),
-                    image = com.heyanle.easybangumi4.R.drawable.github,
-                    contentDescription = stringResource(id = R.string.github),
-                    crossFade = false,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                // 介绍
-                Text(
-                    modifier = Modifier
-                        .widthIn(0.dp, 100.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.secondaryContainer)
-                        .clickable {
-                            extensionStoreInfo.remote.releaseDesc.moeDialog()
-                        }
-                        .padding(8.dp, 4.dp),
-                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                    fontWeight = FontWeight.W900,
-                    text = extensionStoreInfo.remote.releaseDesc,
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 1,
-                    fontSize = 12.sp
-                )
-            }
-        },
-        trailingContent = {
-            when (extensionStoreInfo.state) {
-                ExtensionStoreInfo.STATE_INSTALLED -> {
-                    if (item.extensionInfo is ExtensionInfo.Installed) {
-                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.detailed))
-                    } else if (item.extensionInfo is ExtensionInfo.InstallError) {
-                        Text(text = item.extensionInfo.errMsg)
-                    }
-                }
-
-                ExtensionStoreInfo.STATE_DOWNLOADING -> {
-                    Box(modifier = Modifier.width(125.dp)) {
-                        val info = remember(extensionStoreInfo) {
-                            extensionStoreInfo.downloadInfo
-                        }
-                        if (info?.process?.value == -1f || info == null) {
-                            LinearProgressIndicator()
-                        } else {
-                            LinearProgressIndicator(info.process.value)
-                        }
-                    }
-
-                }
-
-                ExtensionStoreInfo.STATE_NEED_UPDATE -> {
-                    Text(
-                        fontSize = 13.sp,
-                        text = stringResource(id = R.string.click_to_update),
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier
-                            .background(
-                                MaterialTheme.colorScheme.primary,
-                                RoundedCornerShape(4.dp)
-                            )
-                            .padding(8.dp, 4.dp)
-                    )
-                }
-
-                ExtensionStoreInfo.STATE_ERROR -> {
-                    TextButton(
-                        onClick = {
-                            extensionStoreInfo.errorMsg?.moeDialog()
-                        }) {
-                        Text(
-                            text = if (extensionStoreInfo.errorMsg?.isNotEmpty() == true) extensionStoreInfo.errorMsg else stringResource(
-                                id = R.string.download_error
-                            )
-                        )
-                    }
-                }
-            }
-        },
-        leadingContent = {
-            if (item.extensionInfo.icon == null) {
-                OkImage(
-                    modifier = Modifier.size(40.dp),
-                    image = extensionStoreInfo.remote.iconUrl,
-                    contentDescription = extensionStoreInfo.remote.label,
-                    crossFade = false,
-                    errorColor = null,
-                    errorRes = null,
-                    placeholderRes = null,
-                    placeholderColor = null,
-                )
-            } else {
-                OkImage(
-                    modifier = Modifier.size(40.dp),
-                    image = item.extensionInfo.icon,
-                    contentDescription = extensionStoreInfo.remote.label,
-                    crossFade = false,
-                    errorColor = null,
-                    errorRes = null,
-                    placeholderRes = null,
-                    placeholderColor = null,
-                )
-            }
-
-        }
-    )
-}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ExtensionInfoItem(
-    item: ExtensionViewModel.ExtensionItem.ExtensionInfo,
-    onClick: (ExtensionViewModel.ExtensionItem) -> Unit,
-    onLongPress: ((ExtensionViewModel.ExtensionItem) -> Unit)?,
+    extension: ExtensionInfo,
+    onClick: (ExtensionInfo) -> Unit,
+    onLongPress: ((ExtensionInfo) -> Unit)?,
 ) {
-    val extension = item.extensionInfo
+
     ListItem(
         modifier = Modifier.let {
             if (onLongPress == null) {
                 it.clickable {
-                    onClick(item)
+                    onClick(extension)
                 }
             } else {
                 it.combinedClickable(
                     onClick = {
-                        onClick(item)
+                        onClick(extension)
                     },
                     onLongClick = {
-                        onLongPress.invoke(item)
+                        onLongPress.invoke(extension)
                     }
                 )
             }
@@ -761,60 +343,4 @@ fun ExtensionInfoItem(
             )
         }
     )
-}
-
-@Composable
-fun ExtensionItem(
-    extensionInfo: ExtensionInfo,
-    onClick: (ExtensionInfo) -> Unit,
-    onAction: (ExtensionInfo) -> Unit,
-) {
-
-    ListItem(
-        modifier = Modifier.clickable {
-            onClick(extensionInfo)
-        },
-        headlineContent = {
-            Text(text = extensionInfo.label)
-        },
-        supportingContent = {
-            Text(
-                text = extensionInfo.versionName,
-            )
-        },
-        trailingContent = {
-            when (extensionInfo) {
-                is ExtensionInfo.Installed -> {
-                    TextButton(onClick = {
-                        onAction(extensionInfo)
-                    }) {
-                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.detailed))
-                    }
-                }
-
-                is ExtensionInfo.InstallError -> {
-                    TextButton(
-                        enabled = false,
-                        onClick = {
-
-                        }) {
-                        Text(text = extensionInfo.errMsg)
-                    }
-                }
-            }
-        },
-        leadingContent = {
-            OkImage(
-                modifier = Modifier.size(40.dp),
-                image = extensionInfo.icon,
-                contentDescription = extensionInfo.label,
-                crossFade = false,
-                errorColor = null,
-                errorRes = null,
-                placeholderRes = null,
-                placeholderColor = null,
-            )
-        }
-    )
-
 }

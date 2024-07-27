@@ -18,11 +18,10 @@ import com.heyanle.easybangumi4.cartoon.old.repository.db.AppDatabase
 import com.heyanle.easybangumi4.cartoon.old.repository.db.CacheDatabase
 import com.heyanle.easybangumi4.cartoon.repository.db.CartoonDatabase
 import com.heyanle.easybangumi4.cartoon.star.CartoonStarController
-import com.heyanle.easybangumi4.extension.store.OfficialExtensionItem
 import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
 import com.heyanle.easybangumi4.setting.SettingPreferences
-import com.heyanle.easybangumi4.source.SourceConfig
-import com.heyanle.easybangumi4.source.SourcePreferences
+import com.heyanle.easybangumi4.plugin.source.SourceConfig
+import com.heyanle.easybangumi4.plugin.source.SourcePreferences
 import com.heyanle.easybangumi4.theme.EasyThemeMode
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.easybangumi4.utils.getInnerFilePath
@@ -232,27 +231,27 @@ object Migrate {
                             )
                         }
                     }
-                    val extensionItemJson =
-                        File(context.getFilePath("extension-store"), "official.json")
-                    if(extensionItemJson.exists()){
-                        val map = hashMapOf<String, OfficialExtensionItem>()
-                        extensionItemJson.readText().jsonTo<Map<String, OfficialExtensionItem>>()
-                            ?.asIterable()?.forEach {
-                                if (it.value.realFilePath.endsWith("..easybangumi.apk")) {
-                                    map[it.key] = it.value.copy(
-                                        realFilePath = it.value.realFilePath.replace(
-                                            "..easybangumi.apk",
-                                            ".easybangumi.apk"
-                                        )
-                                    )
-                                } else {
-                                    map[it.key] = it.value
-                                }
-                            }
-                        extensionItemJson.delete()
-                        extensionItemJson.createNewFile()
-                        extensionItemJson.writeText(map.toJson<Map<String, OfficialExtensionItem>>())
-                    }
+//                    val extensionItemJson =
+//                        File(context.getFilePath("extension-store"), "official.json")
+//                    if(extensionItemJson.exists()){
+//                        val map = hashMapOf<String, OfficialExtensionItem>()
+//                        extensionItemJson.readText().jsonTo<Map<String, OfficialExtensionItem>>()
+//                            ?.asIterable()?.forEach {
+//                                if (it.value.realFilePath.endsWith("..easybangumi.apk")) {
+//                                    map[it.key] = it.value.copy(
+//                                        realFilePath = it.value.realFilePath.replace(
+//                                            "..easybangumi.apk",
+//                                            ".easybangumi.apk"
+//                                        )
+//                                    )
+//                                } else {
+//                                    map[it.key] = it.value
+//                                }
+//                            }
+//                        extensionItemJson.delete()
+//                        extensionItemJson.createNewFile()
+//                        extensionItemJson.writeText(map.toJson<Map<String, OfficialExtensionItem>>())
+//                    }
 
                 }
 

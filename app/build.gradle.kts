@@ -155,6 +155,8 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 }
 
 dependencies {
+
+    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
     implementation(androidx.bundles.core)
     androidTestImplementation(androidx.bundles.test.core)
 
@@ -218,7 +220,7 @@ dependencies {
     // implementation(project(":easy-dlna"))
     implementation(project(":easy-crasher"))
     implementation(project(":easy-i18n"))
-    implementation(project(":injekt"))
+    implementation(project(":inject"))
     implementation(project(":lib_upnp"))
 //    implementation(project(":gpu_image"))
     //implementation(project(":lib_signal"))

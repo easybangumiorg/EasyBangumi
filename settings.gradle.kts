@@ -39,7 +39,7 @@ rootProject.name = "EasyBangumi"
 include(":app")
 include(":easy-crasher")
 include(":easy-i18n")
-include(":injekt")
+include(":inject")
 include(":lib_upnp")
 include(":EasyPlayer2:easyplayer2")
 include(":EasyMediaTransformer:easy_transformer")

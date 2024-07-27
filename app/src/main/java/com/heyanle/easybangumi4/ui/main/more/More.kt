@@ -198,7 +198,7 @@ fun More() {
         if(BuildConfig.DEBUG){
             ListItem(
                 modifier = Modifier.clickable {
-                                              TestMain.main()
+                    TestMain.main()
                 },
                 headlineContent = { Text(text = "测试按钮") },
                 leadingContent = {
