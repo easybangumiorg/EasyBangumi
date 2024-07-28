@@ -5,6 +5,7 @@ import com.heyanle.buildsrc.Android
 import com.heyanle.buildsrc.RoomSchemaArgProvider
 import java.util.Properties
 
+val DEFAULT_RELEASE = false
 val release = isRelease()
 
 fun isRelease() = (System.getenv("RELEASE") ?: "") == "true"
@@ -13,8 +14,7 @@ plugins {
     alias(build.plugins.android.application)
     alias(build.plugins.kotlin.android)
     alias(build.plugins.ksp)
-
-    if ((System.getenv("RELEASE") ?: "") == "true") {
+    if ((System.getenv("RELEASE") ?: "true") == "") {
         id("com.google.gms.google-services")
         id("com.google.firebase.crashlytics")
     }
@@ -105,9 +105,9 @@ android {
 
             buildConfig()
 
-            configure<CrashlyticsExtension> {
-                mappingFileUploadEnabled = false
-            }
+//            configure<CrashlyticsExtension> {
+//                mappingFileUploadEnabled = false
+//            }
         }
     }
     compileOptions {
