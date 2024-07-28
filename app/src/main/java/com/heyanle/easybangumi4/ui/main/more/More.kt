@@ -194,18 +194,18 @@ fun More() {
                 )
             }
         )
-        ListItem(
-            modifier = Modifier.clickable {
-                TestMain.main()
-            },
-            headlineContent = { Text(text = "测试按钮") },
-            leadingContent = {
-                Icon(
-                    Icons.Outlined.RunCircle,
-                    contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.about)
-                )
-            }
-        )
+//        ListItem(
+//            modifier = Modifier.clickable {
+//                TestMain.main()
+//            },
+//            headlineContent = { Text(text = "测试按钮") },
+//            leadingContent = {
+//                Icon(
+//                    Icons.Outlined.RunCircle,
+//                    contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.about)
+//                )
+//            }
+//        )
         if(BuildConfig.DEBUG){
             ListItem(
                 modifier = Modifier.clickable {

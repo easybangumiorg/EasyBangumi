@@ -40,7 +40,7 @@ jobs:
       - name: Build
         run: |
           mv ./private/google-services.json ./app/google-services.json
-          ls
+          ls app
           chmod +x ./gradlew
           ./gradlew :app:assemble
         env:
