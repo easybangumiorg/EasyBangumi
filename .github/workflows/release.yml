@@ -66,6 +66,11 @@ jobs:
       - name: rename-apk
         run: |
           mv app/build/outputs/apk/release/app-release-unsigned-signed.apk easybangumi-${{ github.ref_name }}.apk
+      - name: Archive apk
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: easybangumi-${{ github.ref_name }}.apk
       - name: Release
         run: |
           gh release create -d ${{ github.ref_name }} easybangumi-${{ github.ref_name }}.apk
