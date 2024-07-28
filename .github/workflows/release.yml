@@ -42,7 +42,7 @@ jobs:
           mv ./private/google-services.json ./app/google-services.json
           ls app
           chmod +x ./gradlew
-          ./gradlew :app:assemble
+          ./gradlew :app:assembleRelease
         env:
           APPCENTER_SECRET: ${{ secrets.APPCENTER_SECRET }}
           BUGLY_APPID: ${{ secrets.BUGLY_APPID }}
