@@ -93,6 +93,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
 
       - name: push_mapping
+        if: ${{ steps.getVersion.outputs.version }} != "" || ${{ steps.getVersion.outputs.version }} != "."
         run: |
           cd private
           rm -r ./mapping/${{ steps.getVersion.outputs.version }} || ls
