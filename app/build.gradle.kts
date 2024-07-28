@@ -94,9 +94,9 @@ android {
 
             buildConfig()
 
-            configure<CrashlyticsExtension> {
-                mappingFileUploadEnabled = false
-            }
+//            configure<CrashlyticsExtension> {
+//                mappingFileUploadEnabled = false
+//            }
         }
         release {
             isMinifyEnabled = true
