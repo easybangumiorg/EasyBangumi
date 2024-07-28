@@ -1,6 +1,5 @@
 @file:Suppress("UnstableApiUsage")
 import com.android.build.api.dsl.VariantDimension
-import com.google.firebase.crashlytics.buildtools.gradle.CrashlyticsExtension
 import com.heyanle.buildsrc.Android
 import com.heyanle.buildsrc.RoomSchemaArgProvider
 import java.util.Properties
