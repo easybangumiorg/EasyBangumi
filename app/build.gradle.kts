@@ -93,6 +93,10 @@ android {
             proguardFiles("proguard-rules.pro")
 
             buildConfig()
+
+            configure<CrashlyticsExtension> {
+                mappingFileUploadEnabled = false
+            }
         }
         release {
             isMinifyEnabled = true
