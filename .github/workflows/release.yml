@@ -8,23 +8,25 @@ jobs:
   build-and-release:
     runs-on: ubuntu-latest
     steps:
-
-      - name: Checkout
+      - name: Checkout Code
         uses: actions/checkout@v3.5.2
         with:
           submodules: recursive
           token: ${{ secrets.TOKEN }}
-      - name: Checkout
+
+      - name: Checkout Private
         uses: actions/checkout@v4
         with:
           repository: 'easybangumiorg/EasyBangumiPrivate'
           token: ${{ secrets.TOKEN }}
           path: 'private'
           ref: main
+
       - name: Setup Java JDK
         uses: actions/setup-java@v1.4.4
         with:
           java-version: 17
+
       # Gradle 缓存配置
       - name: Cache Gradle packages
         uses: actions/cache@v2
@@ -34,6 +36,7 @@ jobs:
           restore-keys: ${{ runner.os }}-gradle
         env:
           RELEASE: true
+
       - name: Build
         run: |
           cd private
@@ -46,12 +49,20 @@ jobs:
           APPCENTER_SECRET: ${{ secrets.APPCENTER_SECRET }}
           BUGLY_APPID: ${{ secrets.BUGLY_APPID }}
           RELEASE: true
+
+      - name: Get Version
+        id: packageOutputMetaDate
+        uses: RadovanPelka/github-action-json@main
+        with:
+          path: "app/build/outputs/apk/release/output-metadata.json"
+
       - name: Setup build tool version variable
         shell: bash
         run: |
           BUILD_TOOL_VERSION=$(ls /usr/local/lib/android/sdk/build-tools/ | tail -n 1)
           echo "BUILD_TOOL_VERSION=$BUILD_TOOL_VERSION" >> $GITHUB_ENV
           echo Last build tool version is: $BUILD_TOOL_VERSION
+
       - name: sign-apk
         uses: r0adkll/sign-android-release@v1
         with:
@@ -63,30 +74,34 @@ jobs:
         env:
           # override default build-tools version (29.0.3) -- optional
           BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOL_VERSION }}
+
       - name: rename-apk
         run: |
-          mv app/build/outputs/apk/release/app-release-unsigned-signed.apk easybangumi-${{ github.ref_name }}.apk
+          mv app/build/outputs/apk/release/app-release-unsigned-signed.apk easybangumi-${{ steps.packageOutputMetaDate.outputs.elements[0].versionName }}.apk
+
       - name: Archive apk
         uses: actions/upload-artifact@v4
         with:
           name: apk
-          path: easybangumi-${{ github.ref_name }}.apk
+          path: easybangumi-${{  steps.packageOutputMetaDate.outputs.elements[0].versionName }}.apk
+
       - name: Release
         run: |
-          gh release create -d ${{ github.ref_name }} easybangumi-${{ github.ref_name }}.apk
+          gh release create -d ${{  steps.packageOutputMetaDate.outputs.elements[0].versionName }} easybangumi-${{  steps.packageOutputMetaDate.outputs.elements[0].versionName }}.apk
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
 
       - name: push_mapping
         run: |
           cd private
-          rm -r ./mapping/${{ github.ref_name }} || ls
-          mkdir -p  ./mapping/${{ github.ref_name }}
-          mv ../app/build/outputs/mapping/release/* ./mapping/${{ github.ref_name }}
+          rm -r ./mapping/${{  steps.packageOutputMetaDate.outputs.elements[0].versionName }} || ls
+          mkdir -p  ./mapping/${{  steps.packageOutputMetaDate.outputs.elements[0].versionName }}
+          mv ../app/build/outputs/mapping/release/* ./mapping/${{  steps.packageOutputMetaDate.outputs.elements[0].versionName }}
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add .
           git commit -m "[auto] mapping"
+
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:
