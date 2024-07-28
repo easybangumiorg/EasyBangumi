@@ -4,6 +4,7 @@ plugins {
     alias(build.plugins.android.library) apply false
     alias(build.plugins.kotlin.android) apply false
     alias(build.plugins.kotlin.jvm) apply false
+    id("com.google.gms.google-services") version "4.4.2" apply false
 }
 
 tasks.create<Delete>("clean") {

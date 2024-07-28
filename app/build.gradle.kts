@@ -8,6 +8,7 @@ plugins {
     alias(build.plugins.android.application)
     alias(build.plugins.kotlin.android)
     alias(build.plugins.ksp)
+    id("com.google.gms.google-services")
 }
 
 val publishingProps = Properties()
@@ -239,6 +240,9 @@ dependencies {
     implementation(project(":EasyMediaTransformer:easy_transformer"))
 
     implementation(libs.uni.file)
+
+    implementation("com.google.firebase:firebase-analytics")
+    implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
 
 
 }

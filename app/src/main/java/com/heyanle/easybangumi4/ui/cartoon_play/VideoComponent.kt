@@ -662,7 +662,7 @@ fun VideoControl(
                             if (image != null) {
                                 val imageFile = bufferImageCache(image)
                                 val imageUri = FileProvider.getUriForFile(
-                                    APP, "${APP.packageName}.fileProvider", imageFile
+                                    APP, "${APP.packageName}.provider", imageFile
                                 )
                                 shareImageText(imageUri, detailState.cartoonInfo.url)
                             }

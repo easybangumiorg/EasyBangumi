@@ -8,11 +8,19 @@ jobs:
   build-and-release:
     runs-on: ubuntu-latest
     steps:
+
       - name: Checkout
         uses: actions/checkout@v3.5.2
         with:
           submodules: recursive
           token: ${{ secrets.TOKEN }}
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: 'easybangumiorg/EasyBangumiPrivate'
+          token: ${{ secrets.TOKEN }}
+          path: 'private'
+          ref: main
       - name: Setup Java JDK
         uses: actions/setup-java@v1.4.4
         with:
@@ -28,6 +36,7 @@ jobs:
           RELEASE: true
       - name: Build
         run: |
+          mv private/google-service.json app/google-service.json
           chmod +x ./gradlew
           ./gradlew :app:assemble
         env:
@@ -59,13 +68,7 @@ jobs:
           gh release create -d ${{ github.ref_name }} easybangumi-${{ github.ref_name }}.apk
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          repository: 'easybangumiorg/EasyBangumiPrivate'
-          token: ${{ secrets.TOKEN }}
-          path: 'private'
-          ref: main
+
       - name: push_mapping
         run: |
           cd private
