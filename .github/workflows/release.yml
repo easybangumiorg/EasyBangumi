@@ -36,6 +36,9 @@ jobs:
           RELEASE: true
       - name: Build
         run: |
+          cd private
+          ls
+          cd ..
           mv private/google-service.json app/google-service.json
           chmod +x ./gradlew
           ./gradlew :app:assemble
