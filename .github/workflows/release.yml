@@ -54,12 +54,12 @@ jobs:
         run: |
           echo "JSON file content:"
           cat app/build/outputs/apk/release/output-metadata.json
-          echo "VERSION=$(jq -r '.elements[0].versionName' app/build/outputs/apk/release/output-metadata.json)" >> $GITHUB_ENV
+          echo "EASYBANGUMI_VERSION=$(jq -r '.elements[0].versionName' app/build/outputs/apk/release/output-metadata.json)" >> $GITHUB_ENV
 
       - name: Setup build tool version variable
         shell: bash
         run: |
-          echo ${{ env.VERSION }}
+          echo ${{ env.BANGUMI_VERSION }}
           BUILD_TOOL_VERSION=$(ls /usr/local/lib/android/sdk/build-tools/ | tail -n 1)
           echo "BUILD_TOOL_VERSION=$BUILD_TOOL_VERSION" >> $GITHUB_ENV
           echo Last build tool version is: $BUILD_TOOL_VERSION
@@ -78,27 +78,27 @@ jobs:
 
       - name: rename-apk
         run: |
-          mv app/build/outputs/apk/release/app-release-unsigned-signed.apk easybangumi-${{ env.VERSION }}.apk
+          mv app/build/outputs/apk/release/app-release-unsigned-signed.apk easybangumi-${{ env.BANGUMI_VERSION }}.apk
 
       - name: Archive apk
         uses: actions/upload-artifact@v4
         with:
-          name: easybangumi-${{ env.VERSION }}.apk
-          path: easybangumi-${{ env.VERSION }}.apk
+          name: easybangumi-${{ env.BANGUMI_VERSION }}.apk
+          path: easybangumi-${{ env.BANGUMI_VERSION }}.apk
           compression-level: 0
 
       - name: Release
         run: |
-          gh release create -d ${{ env.VERSION }} easybangumi-${{ env.VERSION }}.apk
+          gh release create -d ${{ env.BANGUMI_VERSION }} easybangumi-${{ env.BANGUMI_VERSION }}.apk
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
 
       - name: push_mapping
-        if: ${{ env.VERSION }} != "" && ${{ env.VERSION }} != "."
+        if: ${{ env.BANGUMI_VERSION }} != "" && ${{ env.BANGUMI_VERSION }} != "."
         run: |
           cd private
-          mkdir -p  ./mapping/${{ env.VERSION }}
-          mv -b --suffix=.old ../app/build/outputs/mapping/release/* ./mapping/${{ env.VERSION }}
+          mkdir -p  ./mapping/${{ env.BANGUMI_VERSION }}
+          mv -b --suffix=.old ../app/build/outputs/mapping/release/* ./mapping/${{ env.BANGUMI_VERSION }}
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add .
