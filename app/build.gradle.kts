@@ -101,10 +101,8 @@ android {
 
             buildConfig()
 
-            if (release) {
-                configure<CrashlyticsExtension> {
-                    mappingFileUploadEnabled = false
-                }
+            configure<CrashlyticsExtension> {
+                mappingFileUploadEnabled = false
             }
         }
     }
