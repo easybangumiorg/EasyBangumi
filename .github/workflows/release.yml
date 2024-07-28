@@ -54,7 +54,7 @@ jobs:
         run: |
           echo "JSON file content:"
           cat app/build/outputs/apk/release/output-metadata.json
-          echo "$(jq -r '.elements[0].versionName' app/build/outputs/apk/release/output-metadata.json)" >> "$GITHUB_OUTPUT"
+          echo "version=$(jq -r '.elements[0].versionName' app/build/outputs/apk/release/output-metadata.json)" >> "$GITHUB_OUTPUT"
 
       - name: Setup build tool version variable
         shell: bash
