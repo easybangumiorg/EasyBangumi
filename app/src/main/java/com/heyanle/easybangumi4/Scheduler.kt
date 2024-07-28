@@ -43,11 +43,20 @@ import javax.net.ssl.HttpsURLConnection
  */
 object Scheduler {
 
+
+
     /**
      * application#init
      */
     fun runOnAppInit(application: Application) {
         RootModule(application).registerWith(Inject)
+    }
+
+    /**
+     * application#attachBaseContext
+     */
+    fun runOnAppAttachBaseContext(application: Application) {
+        initCrasher(application)
     }
 
     /**
@@ -62,8 +71,6 @@ object Scheduler {
             e.printStackTrace()
         }
 
-
-        initCrasher(application)
 
         // 注册各种 Controller
         SettingModule(application).registerWith(Inject)

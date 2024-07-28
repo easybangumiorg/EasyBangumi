@@ -4,12 +4,22 @@ import com.heyanle.buildsrc.Android
 import com.heyanle.buildsrc.RoomSchemaArgProvider
 import java.util.Properties
 
+val release = isRelease()
+
+fun isRelease() = (System.getenv("RELEASE") ?: "") == "true"
+
 plugins {
     alias(build.plugins.android.application)
     alias(build.plugins.kotlin.android)
     alias(build.plugins.ksp)
-    id("com.google.gms.google-services")
+
+    if ((System.getenv("RELEASE") ?: "") == "true") {
+        id("com.google.gms.google-services")
+        id("com.google.firebase.crashlytics")
+    }
 }
+
+
 
 val publishingProps = Properties()
 runCatching {
@@ -18,7 +28,6 @@ runCatching {
     // it.printStackTrace()
 }
 
-val release = (System.getenv("RELEASE") ?: "") == "true"
 val packageName = if (release) "com.heyanle.easybangumi4" else "com.heyanle.easybangumi4.debug"
 
 android {
@@ -44,6 +53,7 @@ android {
         manifestPlaceholders["bugly_app_version"] = Android.versionName
         manifestPlaceholders["bugly_app_channel"] = "github"
         manifestPlaceholders["package_name"] = packageName
+        manifestPlaceholders["is_release"] = release
 
         // bugly 调试模式
         manifestPlaceholders["bugly_is_debug"] = false
@@ -241,8 +251,9 @@ dependencies {
 
     implementation(libs.uni.file)
 
-    implementation("com.google.firebase:firebase-analytics")
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
+    implementation("com.google.firebase:firebase-crashlytics-ktx")
+    implementation("com.google.firebase:firebase-analytics-ktx")
 
 
 }

@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import java.io.PrintWriter
 import java.io.StringWriter
+import java.lang.Thread.getDefaultUncaughtExceptionHandler
 
 /**
  * Created by HeYanLe on 2022/9/4 15:10.

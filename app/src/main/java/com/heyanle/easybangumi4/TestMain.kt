@@ -71,6 +71,7 @@ function PageComponent_getContent(mainTab, subTab, pageKey){
 
 
     fun main(){
+        throw RuntimeException("Test Crash")
         val jsRuntime = JSRuntime()
         jsRuntime.init()
         val jsScope1 = JSScope(jsRuntime)

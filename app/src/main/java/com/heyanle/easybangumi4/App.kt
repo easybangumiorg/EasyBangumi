@@ -25,6 +25,10 @@ class App : Application() {
         Scheduler.runOnAppInit(this)
     }
 
+    override fun attachBaseContext(base: Context?) {
+        super.attachBaseContext(base)
+        Scheduler.runOnAppAttachBaseContext(this)
+    }
     override fun getPackageName(): String {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {

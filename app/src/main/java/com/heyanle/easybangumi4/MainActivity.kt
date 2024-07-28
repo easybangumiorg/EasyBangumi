@@ -26,6 +26,9 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.ktx.Firebase
 import com.heyanle.easybangumi4.plugin.source.SourcesHost
 import com.heyanle.easybangumi4.splash.SplashActivity
 import com.heyanle.easybangumi4.theme.EasyTheme
@@ -45,7 +48,13 @@ val LocalWindowSizeController = staticCompositionLocalOf<WindowSizeClass> {
     error("AppNavController Not Provide")
 }
 
+val LocalFirebaseAnalytics = staticCompositionLocalOf<FirebaseAnalytics?> {
+    null
+}
+
 class MainActivity : ComponentActivity() {
+
+    private var firebaseAnalytics: FirebaseAnalytics? = null
 
     var first by okkv("first_visible", def = true)
     private val launcherBus = LauncherBus(this)
@@ -53,6 +62,10 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // 非外网抛异常
+        firebaseAnalytics = runCatching {
+            Firebase.analytics
+        }.getOrNull()
         setContentView(FrameLayout(this))
         SplashActivity.lastSplashActivity?.get()?.finish()
         Scheduler.runOnMainActivityCreate(this, first)
@@ -64,7 +77,10 @@ class MainActivity : ComponentActivity() {
             LaunchedEffect(key1 = Unit){
                 Scheduler.runOnComposeLaunch(this@MainActivity)
             }
-            CompositionLocalProvider(LocalWindowSizeController provides windowClazz) {
+            CompositionLocalProvider(
+                LocalWindowSizeController provides windowClazz,
+                LocalFirebaseAnalytics provides firebaseAnalytics
+            ) {
                 EasyTheme {
                     if(isMigrating){
                         AlertDialog(
