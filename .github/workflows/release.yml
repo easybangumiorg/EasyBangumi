@@ -49,10 +49,11 @@ jobs:
           RELEASE: true
 
       - name: Get Version
-        id: packageOutputMetaDate
-        uses: RadovanPelka/github-action-json@main
-        with:
-          path: "app/build/outputs/apk/release/output-metadata.json"
+        id: getVersion
+        run: |
+          echo "JSON file content:"
+          cat app/build/outputs/apk/release/output-metadata.json
+            echo "::set-output name=version::$(jq -r '.elements[0].versionName' app/build/outputs/apk/release/output-metadata.json)"
 
       - name: Setup build tool version variable
         shell: bash
@@ -75,26 +76,26 @@ jobs:
 
       - name: rename-apk
         run: |
-          mv app/build/outputs/apk/release/app-release-unsigned-signed.apk easybangumi-${{ steps.packageOutputMetaDate.outputs.elements[0].versionName }}.apk
+          mv app/build/outputs/apk/release/app-release-unsigned-signed.apk easybangumi-${{ steps.getVersion.outputs.version }}.apk
 
       - name: Archive apk
         uses: actions/upload-artifact@v4
         with:
           name: apk
-          path: easybangumi-${{  steps.packageOutputMetaDate.outputs.elements[0].versionName }}.apk
+          path: easybangumi-${{ steps.getVersion.outputs.version }}.apk
 
       - name: Release
         run: |
-          gh release create -d ${{  steps.packageOutputMetaDate.outputs.elements[0].versionName }} easybangumi-${{  steps.packageOutputMetaDate.outputs.elements[0].versionName }}.apk
+          gh release create -d ${{ steps.getVersion.outputs.version }} easybangumi-${{ steps.getVersion.outputs.version }}.apk
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
 
       - name: push_mapping
         run: |
           cd private
-          rm -r ./mapping/${{  steps.packageOutputMetaDate.outputs.elements[0].versionName }} || ls
-          mkdir -p  ./mapping/${{  steps.packageOutputMetaDate.outputs.elements[0].versionName }}
-          mv ../app/build/outputs/mapping/release/* ./mapping/${{  steps.packageOutputMetaDate.outputs.elements[0].versionName }}
+          rm -r ./mapping/${{ steps.getVersion.outputs.version }} || ls
+          mkdir -p  ./mapping/${{ steps.getVersion.outputs.version }}
+          mv ../app/build/outputs/mapping/release/* ./mapping/${{ steps.getVersion.outputs.version }}
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add .
