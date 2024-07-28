@@ -96,9 +96,8 @@ jobs:
         if: ${{ steps.getVersion.outputs.version }} != "" && ${{ steps.getVersion.outputs.version }} != "."
         run: |
           cd private
-          rm -r ./mapping/${{ steps.getVersion.outputs.version }} || ls
           mkdir -p  ./mapping/${{ steps.getVersion.outputs.version }}
-          mv ../app/build/outputs/mapping/release/* ./mapping/${{ steps.getVersion.outputs.version }}
+          mv -b --suffix=.old ../app/build/outputs/mapping/release/* ./mapping/${{ steps.getVersion.outputs.version }}
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add .
