@@ -126,9 +126,6 @@ object TransformerStep : BaseStep {
                 } else {
                     runtime.transformerProgress = -1
                 }
-
-
-                val speed = runtime.updateSeedPreSecond(t.length(), System.currentTimeMillis())
                 runtime.transformerProgress.logi("TransformerStep")
                 runtime.dispatchToBus(
                     runtime.transformerProgress.toFloat() / 100f,
@@ -147,6 +144,11 @@ object TransformerStep : BaseStep {
             }
 
         }
+        if (runtime.needCancel()) {
+            runtime.error(runtime.exportException, runtime.exportException?.message)
+            return
+        }
+
         runtime.stepCompletely()
     }
 

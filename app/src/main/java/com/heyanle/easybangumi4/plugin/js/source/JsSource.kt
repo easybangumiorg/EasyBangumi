@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.plugin.js.source
 
 import com.heyanle.easybangumi4.plugin.js.runtime.JSRuntime
+import com.heyanle.easybangumi4.plugin.js.runtime.JSScope
 import com.heyanle.easybangumi4.source_api.Source
 import java.io.File
 import kotlin.reflect.KClass
@@ -10,9 +11,9 @@ import kotlin.reflect.KClass
  * https://github.com/heyanLE
  */
 class JsSource(
-    private val map: Map<String, String>,
-    private val jsString: String,
-    private val jsRuntime: JSRuntime
+    val map: Map<String, String>,
+    val file: File,
+    val jsScope: JSScope,
 ): Source {
 
     companion object {
@@ -36,15 +37,10 @@ class JsSource(
     override val versionCode: Int
         get() = map.get("versionCode")?.toIntOrNull() ?: 0
 
-    init {
-        jsRuntime.postWithScope { context, scriptableObject ->
-            context.evaluateString(scriptableObject, JS_IMPORT, "<js>", 1, null)
-            context.evaluateString(scriptableObject, jsString, "<js>", 1, null)
 
-        }
-    }
 
+    // 轻量级插件的业务注册交给 JSComponentBundle 处理
     override fun register(): List<KClass<*>> {
-        TODO("Not yet implemented")
+        return emptyList()
     }
 }

@@ -25,5 +25,11 @@ class JSScope(
         }
     }
 
+    suspend fun <R> runWithScope(block: (JSContext, Scriptable) -> R) : R? {
+        return jsRuntime.runWithScope { ctx, scope ->
+            block(ctx, scriptable)
+        }
+    }
+
 
 }

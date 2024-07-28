@@ -29,7 +29,7 @@ class WebViewManager(
 
 
     fun getWebViewOrNull(): WebView? {
-        synchronized(lock){
+        synchronized(lock) {
             if (coreWebViewList.isNotEmpty()) {
                 return coreWebViewList.removeLast()
             }
@@ -42,7 +42,7 @@ class WebViewManager(
         val countDownLatch = CountDownLatch(1)
         var webView: WebView? = null
         scope.launch {
-             webView = newWebView()
+            webView = newWebView()
             countDownLatch.countDown()
         }
         countDownLatch.await(3000, TimeUnit.MILLISECONDS)
@@ -55,7 +55,7 @@ class WebViewManager(
                 try {
                     webView.removeAllViews()
                     webView.destroy()
-                }catch (e: Throwable) {
+                } catch (e: Throwable) {
                     e.printStackTrace()
                 }
 
@@ -69,7 +69,7 @@ class WebViewManager(
                     try {
                         webView.removeAllViews()
                         webView.destroy()
-                    }catch (e: Throwable) {
+                    } catch (e: Throwable) {
                         e.printStackTrace()
                     }
 
@@ -86,7 +86,7 @@ class WebViewManager(
         return try {
             WebView(APP).apply {
                 // setDefaultSettings()
-                with(settings){
+                with(settings) {
                     javaScriptEnabled = true
                     domStorageEnabled = true
                     databaseEnabled = true
@@ -110,8 +110,6 @@ class WebViewManager(
             null
         }
     }
-
-
 
 
 }

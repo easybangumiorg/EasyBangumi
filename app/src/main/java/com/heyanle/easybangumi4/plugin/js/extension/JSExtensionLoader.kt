@@ -3,6 +3,8 @@ package com.heyanle.easybangumi4.plugin.js.extension
 import com.heyanle.easybangumi4.plugin.extension.ExtensionInfo
 import com.heyanle.easybangumi4.plugin.extension.loader.ExtensionLoader
 import com.heyanle.easybangumi4.plugin.js.runtime.JSRuntime
+import com.heyanle.easybangumi4.plugin.js.runtime.JSScope
+import com.heyanle.easybangumi4.plugin.js.source.JsSource
 import java.io.File
 
 /**
@@ -11,6 +13,7 @@ import java.io.File
  */
 class JSExtensionLoader(
     private val file: File,
+    private val jsRuntime: JSRuntime,
 ): ExtensionLoader {
 
     companion object {
@@ -40,56 +43,44 @@ class JSExtensionLoader(
 
         val map = HashMap<String, String>()
 
-        val lineList = file.readLines()
-        for (line in lineList) {
-            if (line.isEmpty() || !line.startsWith("//")){
-                break
-            }
-
-            var firstAtIndex = -1
-            var spacerAfterAtIndex = -1
-
-            line.forEachIndexed { index, c ->
-                if (firstAtIndex == -1 && c != '@'){
-                    firstAtIndex = index
+        file.reader().buffered().use {
+            var line = it.readLine()
+            while(line != null) {
+                if (line.isEmpty() || !line.startsWith("//")){
+                    break
                 }
-                if (firstAtIndex != -1 && spacerAfterAtIndex == -1 && c == ' '){
-                    spacerAfterAtIndex = index
-                }
-                if (firstAtIndex != -1 && spacerAfterAtIndex != -1){
-                    return@forEachIndexed
-                }
-            }
+                var firstAtIndex = -1
+                var spacerAfterAtIndex = -1
 
-            if (firstAtIndex == -1 || spacerAfterAtIndex == -1){
-                continue
-            }
+                line.forEachIndexed { index, c ->
+                    if (firstAtIndex == -1 && c != '@'){
+                        firstAtIndex = index
+                    }
+                    if (firstAtIndex != -1 && spacerAfterAtIndex == -1 && c == ' '){
+                        spacerAfterAtIndex = index
+                    }
+                    if (firstAtIndex != -1 && spacerAfterAtIndex != -1){
+                        return@forEachIndexed
+                    }
+                }
 
-            val key = line.substring(firstAtIndex + 1, spacerAfterAtIndex)
-            val value = line.substring(spacerAfterAtIndex + 1)
-            map[key] = value
+                if (firstAtIndex == -1 || spacerAfterAtIndex == -1){
+                    continue
+                }
+
+                val key = line.substring(firstAtIndex + 1, spacerAfterAtIndex)
+                val value = line.substring(spacerAfterAtIndex + 1)
+                map[key] = value
+                line = it.readLine()
+            }
         }
-        val text = lineList.joinToString("\n")
-        val jsRuntime = JSRuntime()
-        jsRuntime.init()
-        jsRuntime.postWithScope { context, scriptableObject ->
-            context.evaluateString(
-                scriptableObject,
-                JS_IMPORT,
-                null,
-                1,
-                null
 
-            )
-            context.evaluateString(
-                scriptableObject,
-                text,
-                null,
-                1,
-                null
-            )
-
-        }
+        val jsScope = JSScope(jsRuntime)
+        val source = JsSource(
+            map,
+            file,
+            jsScope
+        )
 
         return null
 

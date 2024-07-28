@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.plugin.source
 
 import com.heyanle.easybangumi4.plugin.source.bundle.ComponentBundle
+import com.heyanle.easybangumi4.plugin.source.bundle.SimpleComponentBundle
 import com.heyanle.easybangumi4.source_api.Source
 
 /**
