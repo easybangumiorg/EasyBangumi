@@ -81,8 +81,9 @@ jobs:
       - name: Archive apk
         uses: actions/upload-artifact@v4
         with:
-          name: apk
+          name: easybangumi-${{ steps.getVersion.outputs.version }}.apk
           path: easybangumi-${{ steps.getVersion.outputs.version }}.apk
+          compression-level: 0
 
       - name: Release
         run: |
