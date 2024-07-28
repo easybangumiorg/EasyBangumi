@@ -39,8 +39,8 @@ jobs:
 
       - name: Build
         run: |
-          ls private
-          mv ./private/google-services.json ./app/google-service.json
+          mv ./private/google-services.json ./app/google-services.json
+          ls
           chmod +x ./gradlew
           ./gradlew :app:assemble
         env:
