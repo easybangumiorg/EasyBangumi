@@ -54,7 +54,7 @@ jobs:
         run: |
           echo "JSON file content:"
           cat app/build/outputs/apk/release/output-metadata.json
-          echo "EASYBANGUMI_VERSION=$(jq -r '.elements[0].versionName' app/build/outputs/apk/release/output-metadata.json)" >> $GITHUB_ENV
+          echo "BANGUMI_VERSION=$(jq -r '.elements[0].versionName' app/build/outputs/apk/release/output-metadata.json)" >> $GITHUB_ENV
 
       - name: Setup build tool version variable
         shell: bash
