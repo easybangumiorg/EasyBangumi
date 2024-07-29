@@ -32,6 +32,7 @@ class JsSource(
             importPackage(Packages.com.heyanle.easybangumi4.source_api.utils.api);
             importPackage(Packages.com.heyanle.easybangumi4.source_api.entity);
             importPackage(Packages.kotlin.text);
+            importPackage(Packages.kotlin);
             importPackage(Packages.java.util);
         """
     }

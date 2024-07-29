@@ -49,13 +49,13 @@ function getRecomElement() {
 
 function createCartoonCover(element) {
     var id = getCartoonId(element.attr("href"));
-    var title = it.attr("title");
+    var title = element.attr("title");
     if (title.isEmpty()) {
-        title = it.getElementsByTag("img").attr("alt");
+        title = element.getElementsByTag("img").attr("alt");
     }
     var url = "https://www.cycanime.com" + element.attr("href");
     var coverUrl = element.getElementsByTag("img").attr("data-src");
-    return new CartoonCoverImpl(id, title, url, coverUrl, "cyc");
+    return new CartoonCoverImpl(id, "cyc", url, title, "intro", coverUrl);
 
 
 }
