@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.plugin.js.component
 
 import com.heyanle.easybangumi4.plugin.js.runtime.JSScope
+import com.heyanle.easybangumi4.plugin.js.utils.jsUnwrap
 import com.heyanle.easybangumi4.source_api.SourceResult
 import com.heyanle.easybangumi4.source_api.component.ComponentWrapper
 import com.heyanle.easybangumi4.source_api.component.search.SearchComponent
@@ -14,7 +15,7 @@ import org.mozilla.javascript.Function
 class JSSearchComponent(
     private val jsScope: JSScope,
     private val search: Function,
-): ComponentWrapper(), SearchComponent {
+): ComponentWrapper(), SearchComponent, JSBaseComponent {
 
     companion object {
         const val FUNCTION_NAME_SEARCH = "SearchComponent_search"
@@ -47,7 +48,7 @@ class JSSearchComponent(
                     pageKey,
                     keyword
                 )
-            )
+            ).jsUnwrap()
             if (res is Map<*, *>) {
 
             } else if (res is Pair<*, *>) {

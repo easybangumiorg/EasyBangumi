@@ -53,7 +53,7 @@ class ExtensionViewModel : ViewModel() {
     init {
         viewModelScope.launch {
             extensionController.state.collectLatest {extensions ->
-                if (extensions.isLoading) {
+                if (extensions.loading) {
                     _stateFlow.update {
                         it.copy(
                             isLoading = true
@@ -63,7 +63,7 @@ class ExtensionViewModel : ViewModel() {
                     _stateFlow.update {
                         it.copy(
                             isLoading = false,
-                            list = extensions.listExtensionInfo,
+                            list = extensions.extensionInfoMap.values.toList(),
                         )
                     }
                 }

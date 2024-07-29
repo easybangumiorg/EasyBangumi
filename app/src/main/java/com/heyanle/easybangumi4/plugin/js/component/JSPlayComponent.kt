@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.plugin.js.component
 
 import com.heyanle.easybangumi4.plugin.js.runtime.JSScope
+import com.heyanle.easybangumi4.plugin.js.utils.jsUnwrap
 import com.heyanle.easybangumi4.source_api.ParserException
 import com.heyanle.easybangumi4.source_api.SourceResult
 import com.heyanle.easybangumi4.source_api.component.ComponentWrapper
@@ -20,7 +21,7 @@ import org.mozilla.javascript.Function
 class JSPlayComponent(
     private val jsScope: JSScope,
     private val getPlayInfo: Function,
-): ComponentWrapper(), PlayComponent {
+): ComponentWrapper(), PlayComponent, JSBaseComponent {
 
     companion object {
         const val FUNCTION_NAME_GET_PLAY_INFO = "PlayComponent_getPlayInfo"
@@ -47,7 +48,7 @@ class JSPlayComponent(
                     arrayOf(
                         summary, playLine, episode
                     )
-                ) as? PlayerInfo
+                ).jsUnwrap() as? PlayerInfo
                 if (res == null) {
                     throw ParserException("js parse error")
                 }

@@ -126,6 +126,7 @@ fun SourceListPage(
 
         }
 
+
     } else {
         LazyVerticalStaggeredGrid(
             columns = StaggeredGridCells.Adaptive(150.dp),
@@ -162,6 +163,10 @@ fun SourceListPage(
                 pagingCommon(pagingItems)
             }
         }
+    }
+
+    pagingItems?.let {
+        PagingCommon(items = it)
     }
 
 

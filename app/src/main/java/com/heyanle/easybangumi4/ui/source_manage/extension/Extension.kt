@@ -73,7 +73,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.plugin.extension.ExtensionInfo
-import com.heyanle.easybangumi4.plugin.extension.store.ExtensionStoreInfo
 import com.heyanle.easybangumi4.ui.common.EasyDeleteDialog
 import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.LoadingPage
@@ -289,7 +288,8 @@ fun ExtensionInfoItem(
                         fontWeight = FontWeight.W900,
                         text = when(extension.loadType){
                             ExtensionInfo.TYPE_APK_INSTALL -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_installed)}
-                            ExtensionInfo.TYPE_APK_FILE -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_file)}
+                            ExtensionInfo.TYPE_APK_FILE -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_file_apk)}
+                            ExtensionInfo.TYPE_JS_FILE -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_file_js)}
                             else -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_installed)}
                         },
                         fontSize = 12.sp

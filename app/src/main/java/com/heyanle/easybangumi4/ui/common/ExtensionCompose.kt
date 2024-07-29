@@ -31,14 +31,14 @@ fun ExtensionContainer(
             .fillMaxSize()
             .then(modifier)
     ) {
-        if (state.isLoading) {
+        if (state.loading) {
             LoadingPage(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(loadingContainerColor)
             )
         } else {
-            content((state.appExtensions + state.fileExtensionInfo).values.toList())
+            content(state.extensionInfoMap.values.toList())
         }
 
     }

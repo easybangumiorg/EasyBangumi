@@ -3,6 +3,7 @@ package com.heyanle.easybangumi4.plugin.js.component
 import com.heyanle.easybangumi4.plugin.js.entity.MainTab
 import com.heyanle.easybangumi4.plugin.js.entity.SubTab
 import com.heyanle.easybangumi4.plugin.js.runtime.JSScope
+import com.heyanle.easybangumi4.plugin.js.utils.jsUnwrap
 import com.heyanle.easybangumi4.source_api.ParserException
 import com.heyanle.easybangumi4.source_api.SourceResult
 import com.heyanle.easybangumi4.source_api.component.ComponentWrapper
@@ -10,8 +11,10 @@ import com.heyanle.easybangumi4.source_api.component.page.PageComponent
 import com.heyanle.easybangumi4.source_api.component.page.SourcePage
 import com.heyanle.easybangumi4.source_api.entity.CartoonCover
 import com.heyanle.easybangumi4.source_api.withResult
+import com.heyanle.easybangumi4.utils.logi
 import kotlinx.coroutines.Dispatchers
 import org.mozilla.javascript.Function
+import org.mozilla.javascript.NativeJavaObject
 import java.util.ArrayList
 import java.util.concurrent.CountDownLatch
 import kotlin.coroutines.suspendCoroutine
@@ -62,7 +65,9 @@ class JSPageComponent(
             val result = arrayListOf<MainTab>()
             (getMainTabs.call(
                 context, scriptable, scriptable, arrayOf()
-            ) as? ArrayList<*>)?.forEach {
+            )?.apply {
+                this.logi("JSPageComponent")
+            }.jsUnwrap() as? ArrayList<*>)?.forEach {
                 if (it is MainTab) {
                     result.add(it)
                 }
@@ -82,7 +87,9 @@ class JSPageComponent(
                 )
             }
         }
-        return mainTabList.map { mainTab2SourcePage(it) }
+        return mainTabList.map { mainTab2SourcePage(it) }.apply {
+            this.logi("JSPageComponent")
+        }
     }
 
     private fun mainTab2SourcePage(mainTab: MainTab) : SourcePage{
@@ -96,7 +103,7 @@ class JSPageComponent(
                             ((getSubTabs.call(
                                 context, scriptable, scriptable,
                                 arrayOf(mainTab)
-                            ) as? ArrayList<*>) ?: arrayListOf<Any>()).filterIsInstance<SubTab>()
+                            ).jsUnwrap() as? ArrayList<*>) ?: arrayListOf<Any>()).filterIsInstance<SubTab>()
                                 .map {
                                     subTab2SourcePage(mainTab, it)
                                 }
@@ -155,7 +162,7 @@ class JSPageComponent(
                         arrayOf(
                             mainTab, subTab, key
                         )
-                    ) as? Pair<*, *>)
+                    ).jsUnwrap() as? Pair<*, *>)
                     if (res == null) {
                         throw ParserException("js parse error")
                     }
@@ -166,6 +173,8 @@ class JSPageComponent(
                     }
                     return@requestRunWithScope nextKey to data.filterIsInstance<CartoonCover>()
                 }
+            }.apply {
+                this.logi("JSPageComponent")
             }
         }
     }

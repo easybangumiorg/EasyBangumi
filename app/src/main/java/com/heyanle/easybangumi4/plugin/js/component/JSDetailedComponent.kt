@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.plugin.js.component
 
 import com.heyanle.easybangumi4.plugin.js.runtime.JSScope
+import com.heyanle.easybangumi4.plugin.js.utils.jsUnwrap
 import com.heyanle.easybangumi4.source_api.ParserException
 import com.heyanle.easybangumi4.source_api.SourceResult
 import com.heyanle.easybangumi4.source_api.component.ComponentWrapper
@@ -39,7 +40,7 @@ class JSDetailedComponent(
                 val res = getDetailed.call(
                     context, scriptable, scriptable,
                     arrayOf(summary)
-                ) as? Pair<*, *>
+                ).jsUnwrap() as? Pair<*, *>
                 if (res == null) {
                     throw ParserException("js parse error")
                 }

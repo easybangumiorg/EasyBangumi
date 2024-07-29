@@ -4,6 +4,7 @@ import com.heyanle.easybangumi4.utils.PostThread
 import org.mozilla.javascript.ImporterTopLevel
 import org.mozilla.javascript.ScriptableObject
 import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 import org.mozilla.javascript.Context as JSContext
 
@@ -60,7 +61,14 @@ class JSRuntime {
                     continuation.resume(null)
                     return@post
                 }
-                continuation.resume(block(ctx, scope))
+                try {
+                    continuation.resume(block(ctx, scope))
+                }catch (e: Throwable){
+                    e.printStackTrace()
+                    continuation.resumeWithException(e)
+                }
+
+
             }
         }
     }

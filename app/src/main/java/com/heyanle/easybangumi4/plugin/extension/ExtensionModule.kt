@@ -22,14 +22,12 @@ class ExtensionModule(
     private val extensionCachePath = application.getCachePath("extension")
 
     private val extensionJSPath = application.getFilePath("extension-js")
-
-    private val storePath = application.getFilePath("extension-store")
-    private val storeCachePath = application.getCachePath("extension-store")
     override fun InjectScope.registerInjectables() {
         addSingletonFactory {
             ExtensionController(
                 application,
                 extensionPath,
+                extensionJSPath,
                 extensionCachePath
             )
         }

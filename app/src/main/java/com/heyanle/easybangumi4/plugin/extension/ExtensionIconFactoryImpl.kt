@@ -23,7 +23,7 @@ class ExtensionIconFactoryImpl(
         }
         val state = extensionCase.flowExtensionState().value
         val extensionInfo =
-            (state.appExtensions.values + state.fileExtensionInfo.values).filterIsInstance<ExtensionInfo.Installed>()
+            state.extensionInfoMap.values.filterIsInstance<ExtensionInfo.Installed>()
                 .find {
                     it.sources.find { it.key == source.key } != null
                 } ?: return null

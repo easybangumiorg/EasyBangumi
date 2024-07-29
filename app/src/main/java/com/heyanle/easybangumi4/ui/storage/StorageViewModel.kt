@@ -67,7 +67,7 @@ class StorageViewModel : ViewModel() {
             }.collectLatest { pair ->
                 _state.update {
                     it.copy(
-                        extensionInfoList = pair.first.listExtensionInfo,
+                        extensionInfoList = pair.first.extensionInfoMap.values.toList(),
                         cartoonCount = pair.second
                     )
                 }

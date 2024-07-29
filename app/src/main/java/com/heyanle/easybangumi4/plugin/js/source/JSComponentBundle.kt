@@ -9,7 +9,6 @@ import com.heyanle.easybangumi4.plugin.js.component.JSPageComponent
 import com.heyanle.easybangumi4.plugin.js.component.JSPlayComponent
 import com.heyanle.easybangumi4.plugin.js.component.JSPreferenceComponent
 import com.heyanle.easybangumi4.plugin.js.component.JSSearchComponent
-import com.heyanle.easybangumi4.plugin.js.runtime.JSScope
 import com.heyanle.easybangumi4.plugin.source.bundle.ComponentBundle
 import com.heyanle.easybangumi4.plugin.source.bundle.ComponentProxy
 import com.heyanle.easybangumi4.source_api.component.Component
@@ -27,7 +26,6 @@ import com.heyanle.easybangumi4.source_api.utils.api.WebViewHelper
 import com.heyanle.easybangumi4.source_api.utils.api.WebViewHelperV2
 import com.heyanle.inject.api.get
 import com.heyanle.inject.core.Inject
-import org.slf4j.MDC.put
 import java.lang.reflect.Proxy
 import kotlin.reflect.KClass
 
@@ -62,7 +60,7 @@ class JSComponentBundle(
             }
         }
 
-        val jsText = jsSource.file.readText()
+        val jsText = jsSource.getJsString()
 
         jsSource.jsScope.runWithScope { context, scriptable ->
             // 2. import
@@ -97,19 +95,27 @@ class JSComponentBundle(
         val jsPreferenceComponent = JSPreferenceComponent.of(jsSource.jsScope)
 
         if(jsSearchComponent != null){
+            jsSearchComponent.innerSource = jsSource
+            jsSearchComponent.init()
             put(SearchComponent::class, jsSearchComponent)
         }
         if(jsPageComponent != null){
+            jsPageComponent.innerSource = jsSource
             jsPageComponent.init()
             put(PageComponent::class, jsPageComponent)
         }
         if(jsPlayComponent != null){
+            jsPlayComponent.innerSource = jsSource
+            jsPlayComponent.init()
             put(PlayComponent::class, jsPlayComponent)
         }
         if(jsDetailedComponent != null){
+            jsDetailedComponent.innerSource = jsSource
+            jsDetailedComponent.init()
             put(DetailedComponent::class, jsDetailedComponent)
         }
         if(jsPreferenceComponent != null){
+            jsPreferenceComponent.innerSource = jsSource
             jsPreferenceComponent.init()
             put(PreferenceComponent::class, jsPreferenceComponent)
         }

@@ -79,13 +79,13 @@ class SourceController(
     init {
         scope.launch {
             extensionCase.flowExtensionState().collectLatest { sta ->
-                if(sta.isLoading){
+                if(sta.loading){
                     _sourceInfo.update {
                         SourceInfoState.Loading
                     }
                 }else{
                     TimeLogUtils.i("loadSource start")
-                    val it = sta.appExtensions.values + sta.fileExtensionInfo.values
+                    val it = sta.extensionInfoMap.values
                     val map = hashMapOf<String, Pair<ExtensionInfo.Installed, Source>>()
                     it.filterIsInstance<ExtensionInfo.Installed>().flatMap { exten ->
                         exten.sources.map {

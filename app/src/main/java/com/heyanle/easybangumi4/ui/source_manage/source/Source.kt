@@ -32,6 +32,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.navigationSourceConfig
+import com.heyanle.easybangumi4.plugin.js.source.getIconWithAsyncOrDrawable
 import com.heyanle.easybangumi4.plugin.source.ConfigSource
 import com.heyanle.easybangumi4.plugin.source.LocalSourceBundleController
 import com.heyanle.easybangumi4.plugin.source.SourceInfo
@@ -194,7 +195,7 @@ fun SourceItem(
         leadingContent = {
             OkImage(
                 modifier = Modifier.size(40.dp),
-                image = icon?.getIconFactory()?.invoke(),
+                image = icon?.getIconWithAsyncOrDrawable(),
                 contentDescription = sourceInfo.source.label,
                 crossFade = false,
                 placeholderColor = null,

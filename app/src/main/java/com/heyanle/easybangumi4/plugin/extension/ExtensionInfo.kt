@@ -18,7 +18,7 @@ sealed class ExtensionInfo {
     abstract val versionCode: Long
     abstract val libVersion: Int
     abstract val readme: String?
-    abstract val icon: Drawable?
+    abstract val icon: Any?
     abstract val loadType: Int
     abstract val sourcePath: String // 文件位置 js or apk
     abstract val publicPath: String
@@ -47,13 +47,12 @@ sealed class ExtensionInfo {
         override val versionCode: Long,
         override val libVersion: Int,
         override val readme: String?,
-        override val icon: Drawable?,
+        override val icon: Any?,
         override val loadType: Int,
         override val sourcePath: String,
         override val publicPath: String,
         override val folderPath: String,
         val extension: Extension?,
-        val clazzLoader: ClassLoader,
         val sources: List<Source>,
         val resources: Resources?,
 
@@ -67,7 +66,7 @@ sealed class ExtensionInfo {
         override val versionCode: Long,
         override val libVersion: Int,
         override val readme: String?,
-        override val icon: Drawable?,
+        override val icon: Any?,
         override val loadType: Int,
         override val sourcePath: String,
         override val publicPath: String,

@@ -13,20 +13,20 @@ import kotlinx.coroutines.flow.map
  * Created by heyanlin on 2023/10/25.
  */
 class ExtensionCase(
-    private val extensionController: com.heyanle.easybangumi4.plugin.extension.ExtensionController
+    private val extensionController: ExtensionController
 ) {
 
-    fun flowExtensionState(): StateFlow<com.heyanle.easybangumi4.plugin.extension.ExtensionController.ExtensionLoaderState> {
+    fun flowExtensionState(): StateFlow<ExtensionController.ExtensionState> {
         return extensionController.state
     }
 
     fun flowExtension(): Flow<Collection<ExtensionInfo>> {
         return extensionController.state
             .filter {
-                !it.isLoading
+                !it.loading
             }
             .map {
-                it.appExtensions.values + it.fileExtensionInfo.values
+                it.extensionInfoMap.values
             }
     }
 

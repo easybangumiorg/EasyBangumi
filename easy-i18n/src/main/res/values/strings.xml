@@ -454,7 +454,8 @@
     <string name="share_file">分享文件</string>
 
     <string name="load_type_installed">APK 安装</string>
-    <string name="load_type_file">文件加载</string>
+    <string name="load_type_file_apk">apk 文件加载</string>
+    <string name="load_type_file_js">js 文件加载</string>
 
     <string name="add_store_file_completely">导入备份文件成功！可在恢复页查看。 文件名： %1$s</string>
     <string name="add_store_file_failed">导入备份文件失败。</string>

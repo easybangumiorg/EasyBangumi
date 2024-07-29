@@ -334,7 +334,6 @@ abstract class AbsExtensionLoader(
                 publicPath = appInfo.publicSourceDir,
                 folderPath = apkFolder.absolutePath,
                 extension = extension,
-                clazzLoader = classLoader
             )
         } catch (e: Exception) {
             e.printStackTrace()
