@@ -38,6 +38,22 @@ class JSSearchComponent(
         pageKey: Int,
         keyword: String
     ): SourceResult<Pair<Int?, List<CartoonCover>>> {
+        jsScope.runWithScope { context, scriptable ->
+            val res = search.call(
+                context,
+                scriptable,
+                scriptable,
+                arrayOf(
+                    pageKey,
+                    keyword
+                )
+            )
+            if (res is Map<*, *>) {
+
+            } else if (res is Pair<*, *>) {
+
+            }
+        }
         TODO("Not yet implemented")
     }
 }

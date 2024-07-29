@@ -19,6 +19,7 @@ class JSScope(
     }
 
 
+
     fun postWithScope(block: (JSContext, Scriptable) -> Unit) {
         jsRuntime.postWithScope { ctx, scope ->
             block(ctx, scriptable)
@@ -31,5 +32,13 @@ class JSScope(
         }
     }
 
+    suspend fun <R> requestRunWithScope(block: (JSContext, Scriptable) -> R) : R {
+        return jsRuntime.runWithScope { ctx, scope ->
+            block(ctx, scriptable)
+        } ?: throw JSScopeException("jsContext or jsScope is null")
+    }
+
 
 }
+
+class JSScopeException(msg: String) : Exception(msg)

@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.plugin.js.component
 
 import com.heyanle.easybangumi4.plugin.js.runtime.JSScope
+import com.heyanle.easybangumi4.source_api.ParserException
 import com.heyanle.easybangumi4.source_api.SourceResult
 import com.heyanle.easybangumi4.source_api.component.ComponentWrapper
 import com.heyanle.easybangumi4.source_api.component.play.PlayComponent
@@ -8,6 +9,8 @@ import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
 import com.heyanle.easybangumi4.source_api.entity.Episode
 import com.heyanle.easybangumi4.source_api.entity.PlayLine
 import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
+import com.heyanle.easybangumi4.source_api.withResult
+import kotlinx.coroutines.Dispatchers
 import org.mozilla.javascript.Function
 
 /**
@@ -37,6 +40,19 @@ class JSPlayComponent(
         playLine: PlayLine,
         episode: Episode
     ): SourceResult<PlayerInfo> {
-        TODO("Not yet implemented")
+        return withResult(Dispatchers.IO) {
+            jsScope.requestRunWithScope { context, scriptable ->
+                val res = getPlayInfo.call(
+                    context, scriptable, scriptable,
+                    arrayOf(
+                        summary, playLine, episode
+                    )
+                ) as? PlayerInfo
+                if (res == null) {
+                    throw ParserException("js parse error")
+                }
+                return@requestRunWithScope res
+            }
+        }
     }
 }

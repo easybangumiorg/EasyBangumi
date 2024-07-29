@@ -100,6 +100,7 @@ class JSComponentBundle(
             put(SearchComponent::class, jsSearchComponent)
         }
         if(jsPageComponent != null){
+            jsPageComponent.init()
             put(PageComponent::class, jsPageComponent)
         }
         if(jsPlayComponent != null){
@@ -109,6 +110,7 @@ class JSComponentBundle(
             put(DetailedComponent::class, jsDetailedComponent)
         }
         if(jsPreferenceComponent != null){
+            jsPreferenceComponent.init()
             put(PreferenceComponent::class, jsPreferenceComponent)
         }
 
