@@ -1,5 +1,7 @@
 package com.heyanle.easybangumi4.plugin.js.entity
 
+import java.util.ArrayList
+
 data class MainTab (
     val label: String,
     val type: Int,
@@ -10,6 +12,10 @@ data class MainTab (
         const val MAIN_TAB_WITHOUT_COVER = 2
     }
 }
+
+class NonLabelMainTab(
+    val type: Int,
+): ArrayList<MainTab>()
 
 data class SubTab (
     val label: String,

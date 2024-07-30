@@ -71,42 +71,7 @@ function PageComponent_getContent(mainTab, subTab, pageKey){
 
 
     fun main(){
-        throw RuntimeException("Test Crash")
-        val jsRuntime = JSRuntime()
-        jsRuntime.init()
-        val jsScope1 = JSScope(jsRuntime)
-        val jsScope2 = JSScope(jsRuntime)
 
-        jsScope1.postWithScope { context, scriptable ->
-            context.evaluateString(
-                scriptable,
-                JSExtensionLoader.JS_IMPORT,
-                "1",
-                1,
-                null
-
-            )
-        }
-
-
-        jsScope2.postWithScope { context, scriptable ->
-            context.evaluateString(
-                scriptable,
-                TEST_JS,
-                "1",
-                1,
-                null
-            )
-
-            val f = scriptable.get("PageComponent_getContent", scriptable) as? Function
-            val r = f?.call(
-                context,
-                scriptable,
-                scriptable,
-                arrayOf("首页", "动漫", 1)
-            )
-            r.logi("TestMain")
-        }
     }
 
 }

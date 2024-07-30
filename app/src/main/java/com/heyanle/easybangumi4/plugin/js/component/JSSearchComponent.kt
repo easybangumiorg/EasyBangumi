@@ -1,12 +1,17 @@
 package com.heyanle.easybangumi4.plugin.js.component
 
 import com.heyanle.easybangumi4.plugin.js.runtime.JSScope
+import com.heyanle.easybangumi4.plugin.js.utils.JSFunction
 import com.heyanle.easybangumi4.plugin.js.utils.jsUnwrap
+import com.heyanle.easybangumi4.source_api.ParserException
 import com.heyanle.easybangumi4.source_api.SourceResult
 import com.heyanle.easybangumi4.source_api.component.ComponentWrapper
 import com.heyanle.easybangumi4.source_api.component.search.SearchComponent
 import com.heyanle.easybangumi4.source_api.entity.CartoonCover
+import com.heyanle.easybangumi4.source_api.withResult
+import kotlinx.coroutines.Dispatchers
 import org.mozilla.javascript.Function
+import java.util.ArrayList
 
 /**
  * Created by heyanle on 2024/7/28.
@@ -14,7 +19,7 @@ import org.mozilla.javascript.Function
  */
 class JSSearchComponent(
     private val jsScope: JSScope,
-    private val search: Function,
+    private val search: JSFunction,
 ): ComponentWrapper(), SearchComponent, JSBaseComponent {
 
     companion object {
@@ -22,7 +27,7 @@ class JSSearchComponent(
 
         suspend fun of (jsScope: JSScope) : JSSearchComponent ? {
             return jsScope.runWithScope { _, scriptable ->
-                val search = scriptable.get(FUNCTION_NAME_SEARCH, scriptable) as? Function
+                val search = scriptable.get(FUNCTION_NAME_SEARCH, scriptable) as? JSFunction
                     ?: return@runWithScope null
                 return@runWithScope JSSearchComponent(jsScope, search)
             }
@@ -39,22 +44,27 @@ class JSSearchComponent(
         pageKey: Int,
         keyword: String
     ): SourceResult<Pair<Int?, List<CartoonCover>>> {
-        jsScope.runWithScope { context, scriptable ->
-            val res = search.call(
-                context,
-                scriptable,
-                scriptable,
-                arrayOf(
-                    pageKey,
-                    keyword
-                )
-            ).jsUnwrap()
-            if (res is Map<*, *>) {
-
-            } else if (res is Pair<*, *>) {
-
+        return withResult(Dispatchers.IO) {
+            return@withResult jsScope.requestRunWithScope { context, scriptable ->
+                val res = search.call(
+                    context,
+                    scriptable,
+                    scriptable,
+                    arrayOf(
+                        pageKey,
+                        keyword
+                    )
+                ).jsUnwrap() as? Pair<*, *>
+                if (res == null) {
+                    throw ParserException("js parse error")
+                }
+                val nextKey = res.first as? Int
+                val data = res.second as? ArrayList<*> ?: throw ParserException("js parse error")
+                if (data.isNotEmpty() && data.first() !is CartoonCover) {
+                    throw ParserException("js parse error")
+                }
+                return@requestRunWithScope nextKey to data.filterIsInstance<CartoonCover>()
             }
         }
-        TODO("Not yet implemented")
     }
 }

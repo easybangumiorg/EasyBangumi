@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.plugin.js.component
 
 import com.heyanle.easybangumi4.plugin.js.runtime.JSScope
+import com.heyanle.easybangumi4.plugin.js.utils.JSFunction
 import com.heyanle.easybangumi4.plugin.js.utils.jsUnwrap
 import com.heyanle.easybangumi4.source_api.ParserException
 import com.heyanle.easybangumi4.source_api.SourceResult
@@ -19,7 +20,7 @@ import org.mozilla.javascript.Function
  */
 class JSDetailedComponent(
     private val jsScope: JSScope,
-    private val getDetailed: Function,
+    private val getDetailed: JSFunction,
 ): ComponentWrapper(), DetailedComponent, JSBaseComponent {
 
     companion object {
@@ -27,7 +28,7 @@ class JSDetailedComponent(
 
         suspend fun of (jsScope: JSScope) : JSDetailedComponent ? {
             return jsScope.runWithScope { _, scriptable ->
-                val getDetailed = scriptable.get(FUNCTION_NAME_GET_DETAILED, scriptable) as? Function
+                val getDetailed = scriptable.get(FUNCTION_NAME_GET_DETAILED, scriptable) as? JSFunction
                     ?: return@runWithScope null
                 return@runWithScope JSDetailedComponent(jsScope, getDetailed)
             }

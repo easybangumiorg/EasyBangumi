@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.plugin.js.component
 
 import com.heyanle.easybangumi4.plugin.js.runtime.JSScope
+import com.heyanle.easybangumi4.plugin.js.utils.JSFunction
 import com.heyanle.easybangumi4.plugin.js.utils.jsUnwrap
 import com.heyanle.easybangumi4.source_api.ParserException
 import com.heyanle.easybangumi4.source_api.SourceResult
@@ -20,7 +21,7 @@ import org.mozilla.javascript.Function
  */
 class JSPlayComponent(
     private val jsScope: JSScope,
-    private val getPlayInfo: Function,
+    private val getPlayInfo: JSFunction,
 ): ComponentWrapper(), PlayComponent, JSBaseComponent {
 
     companion object {
@@ -28,7 +29,7 @@ class JSPlayComponent(
 
         suspend fun of (jsScope: JSScope) : JSPlayComponent ? {
             return jsScope.runWithScope { _, scriptable ->
-                val getPlayInfo = scriptable.get(FUNCTION_NAME_GET_PLAY_INFO, scriptable) as? Function
+                val getPlayInfo = scriptable.get(FUNCTION_NAME_GET_PLAY_INFO, scriptable) as? JSFunction
                     ?: return@runWithScope null
                 return@runWithScope JSPlayComponent(jsScope, getPlayInfo)
             }

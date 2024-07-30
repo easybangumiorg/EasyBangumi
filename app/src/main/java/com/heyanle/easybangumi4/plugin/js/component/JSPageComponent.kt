@@ -1,8 +1,11 @@
 package com.heyanle.easybangumi4.plugin.js.component
 
 import com.heyanle.easybangumi4.plugin.js.entity.MainTab
+import com.heyanle.easybangumi4.plugin.js.entity.NonLabelMainTab
 import com.heyanle.easybangumi4.plugin.js.entity.SubTab
 import com.heyanle.easybangumi4.plugin.js.runtime.JSScope
+import com.heyanle.easybangumi4.plugin.js.runtime.JSScopeException
+import com.heyanle.easybangumi4.plugin.js.utils.JSFunction
 import com.heyanle.easybangumi4.plugin.js.utils.jsUnwrap
 import com.heyanle.easybangumi4.source_api.ParserException
 import com.heyanle.easybangumi4.source_api.SourceResult
@@ -13,11 +16,8 @@ import com.heyanle.easybangumi4.source_api.entity.CartoonCover
 import com.heyanle.easybangumi4.source_api.withResult
 import com.heyanle.easybangumi4.utils.logi
 import kotlinx.coroutines.Dispatchers
-import org.mozilla.javascript.Function
-import org.mozilla.javascript.NativeJavaObject
+import kotlinx.coroutines.TimeoutCancellationException
 import java.util.ArrayList
-import java.util.concurrent.CountDownLatch
-import kotlin.coroutines.suspendCoroutine
 
 /**
  * Created by heyanle on 2024/7/27.
@@ -25,9 +25,9 @@ import kotlin.coroutines.suspendCoroutine
  */
 class JSPageComponent(
     private val jsScope: JSScope,
-    private val getMainTabs: Function,
-    private val getSubTabs: Function,
-    private val getContent: Function,
+    private val getMainTabs: JSFunction,
+    private val getSubTabs: JSFunction,
+    private val getContent: JSFunction,
 ) : ComponentWrapper(), PageComponent, JSBaseComponent {
 
 
@@ -41,9 +41,9 @@ class JSPageComponent(
         suspend fun of(jsScope: JSScope): JSPageComponent? {
             return jsScope.runWithScope { _, scriptable ->
                 val getMainTabs =
-                    scriptable.get(FUNCTION_NAME_GET_MAIN_TABS, scriptable) as? Function
-                val getSubTabs = scriptable.get(FUNCTION_NAME_GET_SUB_TABS, scriptable) as? Function
-                val getContent = scriptable.get(FUNCTION_NAME_GET_CONTENT, scriptable) as? Function
+                    scriptable.get(FUNCTION_NAME_GET_MAIN_TABS, scriptable) as? JSFunction
+                val getSubTabs = scriptable.get(FUNCTION_NAME_GET_SUB_TABS, scriptable) as? JSFunction
+                val getContent = scriptable.get(FUNCTION_NAME_GET_CONTENT, scriptable) as? JSFunction
                 if (getMainTabs == null || getSubTabs == null || getContent == null) {
                     return@runWithScope null
                 }
@@ -60,22 +60,39 @@ class JSPageComponent(
     @Volatile
     private var mainTabList = arrayListOf<MainTab>()
 
-    override suspend fun init() {
-        jsScope.requestRunWithScope { context, scriptable ->
-            val result = arrayListOf<MainTab>()
-            (getMainTabs.call(
-                context, scriptable, scriptable, arrayOf()
-            )?.apply {
-                this.logi("JSPageComponent")
-            }.jsUnwrap() as? ArrayList<*>)?.forEach {
-                if (it is MainTab) {
-                    result.add(it)
-                }
 
+    override suspend fun init() {
+        // 历史遗留问题导致 getPages 不是 suspend 方法，业务也没有做加载态直接同步加载
+        // 这里 getMainTab 的操作只能前置到 init
+        // 这里 5s 超时尽量保证 getMainTab 不做延时操作
+        try {
+            jsScope.requestRunWithScope (
+                5000,
+            ) { context, scriptable ->
+                val result = arrayListOf<MainTab>()
+                (getMainTabs.call(
+                    context, scriptable, scriptable, arrayOf()
+                )?.apply {
+                    this.logi("JSPageComponent")
+                }.jsUnwrap() as? ArrayList<*>)?.let {
+                    if (it is NonLabelMainTab) {
+                        result.add(MainTab("", it.type))
+                    } else {
+                        it.forEach {
+                            if (it is MainTab) {
+                                result.add(it)
+                            }
+                        }
+                    }
+                }
+                mainTabList.clear()
+                mainTabList.addAll(result)
             }
-            mainTabList.clear()
-            mainTabList.addAll(result)
+        } catch (e: TimeoutCancellationException) {
+            e.printStackTrace()
+            throw JSScopeException("${FUNCTION_NAME_GET_MAIN_TABS} 方法需要同步返回，异步 tab 需要设定 NonLabelMainTab 后在 subTab 处理")
         }
+
     }
 
     override fun getPages(): List<SourcePage> {

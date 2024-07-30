@@ -1,12 +1,12 @@
 package com.heyanle.easybangumi4.plugin.js.runtime
 
+import com.heyanle.easybangumi4.plugin.js.utils.JSContext
 import com.heyanle.easybangumi4.utils.PostThread
 import org.mozilla.javascript.ImporterTopLevel
 import org.mozilla.javascript.ScriptableObject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
-import org.mozilla.javascript.Context as JSContext
 
 
 /**

@@ -23,18 +23,6 @@ class JSExtensionLoader(
     companion object {
         const val TAG = "JSExtensionLoader"
 
-        const val JS_IMPORT = """
-            importPackage(Packages.com.heyanle.easybangumi4.plugin.extension);
-            importPackage(Packages.com.heyanle.easybangumi4.plugin.js.runtime);
-            importPackage(Packages.com.heyanle.easybangumi4.plugin.js.entity);
-            importPackage(Packages.org.jsoup);
-            importPackage(Packages.okhttp3);
-            importPackage(Packages.com.heyanle.easybangumi4.source_api.utils.api);
-            importPackage(Packages.com.heyanle.easybangumi4.source_api.entity);
-            importPackage(Packages.kotlin.text);
-            importPackage(Packages.java.util);
-        """
-
         const val JS_SOURCE_TAG_KEY = "key"
         const val JS_SOURCE_TAG_LABEL = "label"
         const val JS_SOURCE_TAG_VERSION_NAME = "versionName"
