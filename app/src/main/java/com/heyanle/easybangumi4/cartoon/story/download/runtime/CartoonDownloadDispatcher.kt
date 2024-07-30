@@ -1,9 +1,12 @@
 package com.heyanle.easybangumi4.cartoon.story.download.runtime
 
+import androidx.annotation.OptIn
+import androidx.media3.common.util.UnstableApi
 import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadReq
 import com.heyanle.easybangumi4.cartoon.story.local.CartoonLocalController
 import com.heyanle.easybangumi4.cartoon.story.download.CartoonDownloadPreference
 import com.heyanle.easybangumi4.cartoon.story.download.req.CartoonDownloadReqController
+import com.heyanle.easybangumi4.cartoon.story.download.step.DownloadStep
 import com.heyanle.easybangumi4.utils.logi
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,7 +33,7 @@ class CartoonDownloadDispatcher(
     // 调度统一给主线程调度
     private val scope = MainScope()
     private val executor = ThreadPoolExecutor(
-        cartoonDownloadPreference.downloadMaxCountPref.get().toInt(),
+        0,
         cartoonDownloadPreference.downloadMaxCountPref.get().toInt(),
         50,
         TimeUnit.SECONDS,
@@ -42,7 +45,7 @@ class CartoonDownloadDispatcher(
     val runtimeMap = _runtimeMap.asStateFlow()
 
 
-
+    @OptIn(UnstableApi::class)
     fun addTask(
         item: CartoonDownloadReq
     ) {
@@ -51,6 +54,7 @@ class CartoonDownloadDispatcher(
         }
     }
 
+    @OptIn(UnstableApi::class)
     fun addTask(
         itemList: Collection<CartoonDownloadReq>
     ) {
@@ -59,6 +63,7 @@ class CartoonDownloadDispatcher(
         }
     }
 
+    @UnstableApi
     private fun innerAddTask(
         itemList: Collection<CartoonDownloadReq>
     ) {
@@ -73,6 +78,10 @@ class CartoonDownloadDispatcher(
             }
             var targetRuntime: CartoonDownloadRuntime? = null
             val runtime = cartoonDownloadRuntimeFactory.newRuntime(item)
+            if (DownloadStep.canRestart(item)) {
+                // 有点脏，后续看看怎么优化
+                runtime.stepIndex = 1
+            }
             if (runtime.dispatcher()) {
                 executor.execute(runtime.runnable)
                 targetRuntime = runtime

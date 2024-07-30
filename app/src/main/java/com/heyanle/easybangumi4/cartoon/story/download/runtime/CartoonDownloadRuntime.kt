@@ -1,5 +1,7 @@
 package com.heyanle.easybangumi4.cartoon.story.download.runtime
 
+import androidx.media3.exoplayer.offline.Download
+import androidx.media3.exoplayer.offline.DownloadRequest
 import androidx.media3.transformer.ExportException
 import androidx.media3.transformer.ExportResult
 import androidx.media3.transformer.Transformer
@@ -13,6 +15,7 @@ import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.inject.api.get
 import com.heyanle.inject.core.Inject
+import java.io.IOException
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -62,6 +65,18 @@ class CartoonDownloadRuntime(
     @Volatile
     // for parse step
     var parseResult: SourceResult<PlayerInfo>? = null
+
+    // for download step
+    @Volatile
+    var downloadRequest: DownloadRequest? = null
+    @Volatile
+    var download: Download? = null
+    @Volatile
+    var downloadHelperIOException: IOException? = null
+    @Volatile
+    var lastDownloadSize: Long = 0L
+    @Volatile
+    var lastDownloadTime: Long = 0L
 
 
     // for transformer step

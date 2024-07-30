@@ -7,6 +7,7 @@ import com.heyanle.easybangumi4.plugin.extension.ExtensionInfo
 import com.heyanle.easybangumi4.plugin.extension.loader.AbsExtensionLoader
 import com.heyanle.easybangumi4.plugin.extension.loader.ExtensionLoader
 import com.heyanle.easybangumi4.plugin.js.runtime.JSRuntime
+import com.heyanle.easybangumi4.plugin.js.runtime.JSRuntimeProvider
 import com.heyanle.easybangumi4.plugin.js.runtime.JSScope
 import com.heyanle.easybangumi4.plugin.js.source.JsSource
 import org.jsoup.Jsoup
@@ -17,7 +18,7 @@ import org.jsoup.Jsoup
  */
 class JSExtensionInnerLoader(
     val js: String,
-    val jsRuntime: JSRuntime,
+    val jsRuntime: JSRuntimeProvider,
 ): ExtensionLoader {
 
     override val key: String
@@ -56,7 +57,7 @@ class JSExtensionInnerLoader(
             map[key] = value
         }
 
-        val jsScope = JSScope(jsRuntime)
+        val jsScope = JSScope(jsRuntime.getRuntime())
 
         val label = map[JSExtensionLoader.JS_SOURCE_TAG_LABEL] ?: ""
         val key = map[JSExtensionLoader.JS_SOURCE_TAG_KEY] ?: ""

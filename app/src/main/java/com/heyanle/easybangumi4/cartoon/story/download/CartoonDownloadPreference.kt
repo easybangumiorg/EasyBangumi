@@ -12,7 +12,11 @@ class CartoonDownloadPreference(
     private val androidPreferenceStore: AndroidPreferenceStore
 ) {
 
+    // 最大下载数量
     val downloadMaxCountPref = androidPreferenceStore.getLong("download_max_count", 3L)
+
+    // 最大编解码数量
+    val transformMaxCountPref = androidPreferenceStore.getLong("transform_max_count", 1L)
 
     val downloadMaxCountPreSourcePref = androidPreferenceStore.getInt("download_max_count_pre_source", 1)
 

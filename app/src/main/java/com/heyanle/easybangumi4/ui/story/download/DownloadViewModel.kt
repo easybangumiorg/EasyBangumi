@@ -69,7 +69,11 @@ class DownloadViewModel: ViewModel() {
         if (info.runtime == null || info.runtime.needCancel()){
             cartoonStoryController.tryResumeDownloadReq(info)
         } else {
-            "暂不支持断点续传，可长按删除".moeSnackBar()
+            val step = info.runtime.currentStep
+            if (step == null || !step.tryToggle(info.runtime)){
+                "当前步骤不支持断点续传".moeSnackBar()
+            }
+
         }
     }
 

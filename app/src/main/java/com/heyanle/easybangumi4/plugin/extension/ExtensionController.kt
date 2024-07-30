@@ -6,6 +6,7 @@ import com.heyanle.easybangumi4.plugin.extension.provider.FileApkExtensionProvid
 import com.heyanle.easybangumi4.plugin.extension.provider.FileJsExtensionProvider
 import com.heyanle.easybangumi4.plugin.extension.provider.InstalledAppExtensionProvider
 import com.heyanle.easybangumi4.plugin.js.runtime.JSRuntime
+import com.heyanle.easybangumi4.plugin.js.runtime.JSRuntimeProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -37,11 +38,7 @@ class ExtensionController(
 
     }
 
-    private val jsRuntime: JSRuntime by lazy {
-        JSRuntime().apply {
-            init()
-        }
-    }
+    private val jsRuntimeProvider = JSRuntimeProvider(2)
 
     private val dispatcher = Dispatchers.IO
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
@@ -75,7 +72,7 @@ class ExtensionController(
 
     private val fileJsExtensionProvider: FileJsExtensionProvider by lazy {
         FileJsExtensionProvider(
-            jsRuntime,
+            jsRuntimeProvider,
             jsExtensionFolder,
             dispatcher,
             cacheFolder

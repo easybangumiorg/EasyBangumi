@@ -12,6 +12,8 @@ import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.NoOpCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.exoplayer.ExoPlayer
+import com.heyanle.easybangumi4.exo.download.ExoDownloadController
+import com.heyanle.easybangumi4.exo.download.MediaDownloadCacheDB
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.getFilePath
@@ -32,17 +34,16 @@ class MediaModule(
     private val application: Application
 ) : InjectModule {
     override fun InjectScope.registerInjectables() {
-        addSingletonFactory<DatabaseProvider> {
-            StandaloneDatabaseProvider(application)
-        }
+
 
         addSingletonFactory {
             MediaCacheDB(application)
         }
 
         addSingletonFactory {
-            StandaloneDatabaseProvider(application)
+            MediaDownloadCacheDB(application)
         }
+
 
         addScopedFactory {
             ExoPlayer.Builder(application).apply {
@@ -58,19 +59,20 @@ class MediaModule(
         }
 
         addSingletonFactory {
-            HeaderDataSourceFactory(application)
+            CartoonMediaSourceFactory(get<Cache>(false), get<Cache>(true))
         }
 
         addSingletonFactory {
-            CartoonMediaSourceFactory(get<Cache>(false))
+            ExoDownloadController(application, get(), get<Cache>(true), get(), get())
         }
+
 
         // 以下实体都跟缓存上限有关，0 为无限制或下载
         // Cache
         addPerKeyFactory<Cache, Boolean> { isDownload ->
             if (isDownload) {
                 val downloadFolder = File(application.getFilePath(), "download")
-                SimpleCache(downloadFolder, NoOpCacheEvictor(), get<StandaloneDatabaseProvider>())
+                SimpleCache(downloadFolder, NoOpCacheEvictor(), get<MediaDownloadCacheDB>())
             } else {
                 val settingPreferences: SettingPreferences = get()
                 val cacheSize = settingPreferences.cacheSize.get()
@@ -83,32 +85,6 @@ class MediaModule(
             }
         }
 
-        // CacheDataSource.Factory
-        addPerKeyFactory<CacheDataSource.Factory, Long> { cacheSize ->
-            val cache = get<Cache>(false)
-            if (cacheSize == 0L) {
-                CacheDataSource.Factory()
-                    .setCache(cache)
-                    .setUpstreamDataSourceFactory(get<HttpDataSource.Factory>())
-                    .setCacheWriteDataSinkFactory(null) // 只读不写，只允许下载器写
-                    .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
-            } else {
-                val streamDataSinkFactory = CacheDataSink.Factory().setCache(cache)
-                CacheDataSource.Factory()
-                    .setCache(cache)
-                    // 将 无限制的 下载 dataSource 组合
-                    .setUpstreamDataSourceFactory(get<CacheDataSource.Factory>(0))
-                    .setCacheWriteDataSinkFactory(streamDataSinkFactory)
-                    .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
-            }
-
-        }
-
-        // CacheDataSource
-        addPerKeyFactory<CacheDataSource, Long> { cacheSize ->
-            val factory = get<CacheDataSource.Factory>(cacheSize)
-            factory.createDataSource()
-        }
 
 
     }

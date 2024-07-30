@@ -5,11 +5,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.media3.common.MediaItem
-import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.source.MediaSource
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.exo.CartoonMediaSourceFactory
 import com.heyanle.easybangumi4.exo.thumbnail.OutputThumbnailHelper
@@ -17,12 +14,7 @@ import com.heyanle.easybangumi4.exo.thumbnail.ThumbnailBuffer
 import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
 import com.heyanle.easybangumi4.utils.dip2px
 import com.heyanle.easybangumi4.utils.getCachePath
-import com.heyanle.easybangumi4.utils.logi
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.Locale
@@ -91,7 +83,7 @@ class ClipVideoModel(
     // 加载缩略图
     val outputThumbnailHelper = OutputThumbnailHelper(
         ctx,
-        cartoonMediaSourceFactory.get(playerInfo),
+        cartoonMediaSourceFactory.getWithCache(playerInfo),
         File(APP.getCachePath("thumbnail")),
         thumbnailBuffer,
         start,

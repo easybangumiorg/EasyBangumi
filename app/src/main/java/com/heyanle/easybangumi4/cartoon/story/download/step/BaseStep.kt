@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.cartoon.story.download.step
 
 import androidx.annotation.WorkerThread
+import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadReq
 import com.heyanle.easybangumi4.cartoon.story.download.runtime.CartoonDownloadRuntime
 
 /**
@@ -12,6 +13,11 @@ interface BaseStep {
 
     @WorkerThread
     fun invoke()
+
+    fun canRestart(req: CartoonDownloadReq): Boolean = false
+
+    fun tryToggle(runtime: CartoonDownloadRuntime) : Boolean = false
+
 
     fun cancel(runtime: CartoonDownloadRuntime)
 

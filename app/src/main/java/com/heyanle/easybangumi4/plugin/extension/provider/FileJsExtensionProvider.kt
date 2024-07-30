@@ -8,6 +8,7 @@ import com.heyanle.easybangumi4.plugin.extension.loader.ExtensionLoaderFactory
 import com.heyanle.easybangumi4.plugin.js.JsTestProvider
 import com.heyanle.easybangumi4.plugin.js.extension.JSExtensionInnerLoader
 import com.heyanle.easybangumi4.plugin.js.runtime.JSRuntime
+import com.heyanle.easybangumi4.plugin.js.runtime.JSRuntimeProvider
 import kotlinx.coroutines.CoroutineDispatcher
 import java.io.File
 
@@ -16,7 +17,7 @@ import java.io.File
  * https://github.com/heyanLE
  */
 class FileJsExtensionProvider(
-    private val jsRuntime: JSRuntime,
+    private val jsRuntimeProvider: JSRuntimeProvider,
     private val jsFileExtensionFolder: String,
     dispatcher: CoroutineDispatcher,
     cacheFolder: String,
@@ -34,12 +35,12 @@ class FileJsExtensionProvider(
     }
 
     override fun getExtensionLoader(fileList: List<File>): List<ExtensionLoader> {
-        return ExtensionLoaderFactory.getFileJsExtensionLoaders(fileList, jsRuntime)
+        return ExtensionLoaderFactory.getFileJsExtensionLoaders(fileList, jsRuntimeProvider)
     }
 
     override fun coverExtensionLoaderList(loaderList: List<ExtensionLoader>): List<ExtensionLoader> {
         if (BuildConfig.DEBUG && JsTestProvider.testJs.isNotEmpty()) {
-            return loaderList + JSExtensionInnerLoader(JsTestProvider.testJs, jsRuntime)
+            return loaderList + JSExtensionInnerLoader(JsTestProvider.testJs, jsRuntimeProvider)
         }
         return super.coverExtensionLoaderList(loaderList)
     }

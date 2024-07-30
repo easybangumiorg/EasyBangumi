@@ -586,7 +586,7 @@
     <string name="private_path_msg">私有目录中的文件无法保存到相册，只能在纯纯看番中查看，卸载后将同步删除。</string>
 
     <string name="downloading_max_count">最大同时下载数量</string>
-
+    <string name="transforming_max_count">最大同时转码数量</string>
 
 
     <string name="save_to_media_ready">是否要保存%1$s个视频到相册？</string>

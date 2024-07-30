@@ -68,7 +68,7 @@ class SourceController(
 
     private val dispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     private val migrateScope = CoroutineScope(SupervisorJob() + dispatcher)
-    private val scope = CoroutineScope(SupervisorJob() + dispatcher)
+    val scope = CoroutineScope(SupervisorJob() + dispatcher)
 
     private val innerSource = listOf<Source>(
         LocalSource
@@ -139,8 +139,10 @@ class SourceController(
         }
         scope.launch {
             combine(
-                _sourceInfo.filterIsInstance<SourceInfoState.Info>().map { it.info },
-                sourcePreferences.configs.requestFlow.stateIn(scope)
+                _sourceInfo.filterIsInstance<SourceInfoState.Info>().map {
+                    it.info
+                },
+                sourcePreferences.configs.requestFlow.distinctUntilChanged()
             ) { sourceInfo, config ->
                 val d = sourceInfo.map {
                     val con =

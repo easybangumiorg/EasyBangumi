@@ -1,11 +1,13 @@
 package com.heyanle.easybangumi4.cartoon.story.download.req
 
+import androidx.media3.common.util.UnstableApi
 import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadReq
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.story.download.step.CopyAndNfoStep
 import com.heyanle.easybangumi4.cartoon.story.download.step.ParseStep
 import com.heyanle.easybangumi4.cartoon.story.download.step.TransformerStep
 import com.heyanle.easybangumi4.cartoon.entity.CartoonStoryItem
+import com.heyanle.easybangumi4.cartoon.story.download.step.DownloadStep
 import com.heyanle.easybangumi4.source_api.entity.Episode
 import com.heyanle.easybangumi4.source_api.entity.PlayLine
 
@@ -13,8 +15,10 @@ import com.heyanle.easybangumi4.source_api.entity.PlayLine
  * Created by heyanle on 2024/7/9.
  * https://github.com/heyanLE
  */
+
 object CartoonDownloadReqFactory {
 
+    @UnstableApi
     fun newReqList(
         cartoonInfo: CartoonInfo,
         playLine: PlayLine,
@@ -49,6 +53,7 @@ object CartoonDownloadReqFactory {
                     toEpisode = targetEpisode,
                     stepChain = listOf(
                         ParseStep.NAME,
+                        DownloadStep.NAME,
                         TransformerStep.NAME,
                         CopyAndNfoStep.NAME
                     )

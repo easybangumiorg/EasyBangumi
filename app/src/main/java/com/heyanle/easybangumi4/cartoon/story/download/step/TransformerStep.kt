@@ -20,6 +20,7 @@ import com.heyanle.easybangumi4.cartoon.story.download.runtime.CartoonDownloadRu
 import com.heyanle.easybangumi4.cartoon.story.download.runtime.CartoonDownloadRuntime
 import com.heyanle.easybangumi4.exo.CartoonMediaSourceFactory
 import com.heyanle.easybangumi4.setting.SettingPreferences
+import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.stringRes
@@ -49,28 +50,49 @@ object TransformerStep : BaseStep {
         runtime.state = 1
         runtime.dispatchToBus(
             -1f,
-            "开始下载中",
+            "开始转码中",
         )
         val countDownLatch: CountDownLatch = CountDownLatch(1)
         runtime.countDownLatch = countDownLatch
-        val playerInfo = runtime.playerInfo ?: throw IllegalStateException("playerInfo is null")
+
+        val playerInfo = runtime.playerInfo
+        val req = runtime.downloadRequest
+
         val mediaSourceFactory: CartoonMediaSourceFactory = Inject.get()
+
+        // 有点脏，先这样，后续看怎么优化
+        val mediaItem =
+            req?.toMediaItem()
+                ?: if (playerInfo != null) mediaSourceFactory.getMediaItem(
+                    playerInfo
+                ) else throw IllegalStateException("req and playerInfo is null")
+        val sourceFactory =
+            if (playerInfo != null) mediaSourceFactory.getMediaSourceFactoryWithDownload(playerInfo)
+            else if (req != null) {
+                val info = PlayerInfo(
+                    uri = req.uri.toString(),
+                    decodeType = req.data[0].toInt(),
+                )
+                mediaSourceFactory.getMediaSourceFactoryWithDownload(info)
+            } else throw IllegalStateException("req and playerInfo is null")
+
+
         val transformer = Transformer.Builder(APP)
             .setVideoMimeType(
                 if (runtime.decodeType == CartoonDownloadPreference.DownloadEncode.H264) MimeTypes.VIDEO_H264
-                else  MimeTypes.VIDEO_H265
+                else MimeTypes.VIDEO_H265
             )
             .setAssetLoaderFactory(
                 ExoPlayerAssetLoader.Factory(
                     APP,
                     DefaultDecoderFactory.Builder(APP).build(),
                     Clock.DEFAULT,
-                    mediaSourceFactory.getMediaSourceFactory(playerInfo)
+                    sourceFactory
                 )
             )
             .setMuxerFactory(InAppMuxer.Factory.Builder().build())
             .setMaxDelayBetweenMuxerSamplesMs(500000)
-            .addListener(object: Transformer.Listener {
+            .addListener(object : Transformer.Listener {
                 override fun onCompleted(composition: Composition, exportResult: ExportResult) {
                     super.onCompleted(composition, exportResult)
                     runtime.exportResult = exportResult
@@ -105,12 +127,12 @@ object TransformerStep : BaseStep {
         val holder: ProgressHolder = ProgressHolder()
         scope.launch {
             transformer.start(
-                mediaSourceFactory.getMediaItem(playerInfo),
+                mediaItem,
                 t.absolutePath,
             )
         }
 
-        while (countDownLatch.count > 0){
+        while (countDownLatch.count > 0) {
 
             if (runtime.needCancel()) {
                 scope.launch {
@@ -129,7 +151,7 @@ object TransformerStep : BaseStep {
                 runtime.transformerProgress.logi("TransformerStep")
                 runtime.dispatchToBus(
                     runtime.transformerProgress.toFloat() / 100f,
-                    stringRes(com.heyanle.easy_i18n.R.string.downloading),
+                    "转码中",
                     subStatus = if (runtime.transformerProgress < 0) "" else "${holder.progress}%"
                 )
             }
@@ -139,7 +161,7 @@ object TransformerStep : BaseStep {
         scope.launch {
             try {
                 transformer.cancel()
-            }catch (e: Throwable) {
+            } catch (e: Throwable) {
                 e.printStackTrace()
             }
 

@@ -9,6 +9,13 @@ import java.util.concurrent.TimeUnit
 object CoroutineProvider {
 
     val SINGLE = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
-    val CUSTOM_SINGLE get() =  Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+
+    // 未使用的线程将在 10 秒后被终止
+    val CUSTOM_SINGLE
+        get() = ThreadPoolExecutor(
+            0, 1,
+            10L, TimeUnit.SECONDS,
+            LinkedBlockingQueue()
+        ).asCoroutineDispatcher()
 
 }

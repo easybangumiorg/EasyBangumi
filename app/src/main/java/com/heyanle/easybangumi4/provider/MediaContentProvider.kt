@@ -22,6 +22,10 @@ import java.net.URLEncoder
 class MediaContentProvider: FileProvider() {
 
     companion object {
+
+        const val TAG = "MediaContentProvider"
+        val FILE_PROVIDER = "${BuildConfig.APPLICATION_ID}.provider"
+
         fun getProviderUriFromUri(uri: String) : Uri {
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 return uri.toUri()

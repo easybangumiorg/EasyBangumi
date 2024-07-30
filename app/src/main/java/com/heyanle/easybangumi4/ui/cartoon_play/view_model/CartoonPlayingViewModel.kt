@@ -15,10 +15,10 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
+import com.heyanle.easybangumi4.cartoon.story.local.source.LocalSource
 import com.heyanle.easybangumi4.case.SourceStateCase
 import com.heyanle.easybangumi4.exo.CartoonMediaSourceFactory
 import com.heyanle.easybangumi4.exo.thumbnail.ThumbnailBuffer
-import com.heyanle.easybangumi4.provider.MediaContentProvider
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.source_api.entity.Episode
 import com.heyanle.easybangumi4.source_api.entity.PlayLine
@@ -31,7 +31,6 @@ import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.easybangumi4.utils.toast
 import com.heyanle.inject.core.Inject
-import com.hippo.unifile.UniFile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
@@ -45,7 +44,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 import loli.ball.easyplayer2.texture.TexturePlayerRender
 import java.io.File
-import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Created by heyanle on 2023/12/17.
@@ -285,11 +283,17 @@ class CartoonPlayingViewModel(
      * 调用外部播放器播放
      */
     private fun innerPlayExternal(playerInfo: PlayerInfo) {
-        val uri = playerInfo.uri.toUri()
-//        if (uri.scheme == "content" || uri.scheme == "file") {
-//            uri = MediaContentProvider.getProviderUriFromUri(uri.toString())
-//        }
-
+        var uri = playerInfo.uri.toUri()
+        if (uri.scheme == "file") {
+            val file = File(uri.path ?: "")
+            if (file.exists()) {
+                uri = FileProvider.getUriForFile(
+                    APP,
+                    APP.packageName + ".provider",
+                    file
+                )
+            }
+        }
         APP.startActivity(Intent("android.intent.action.VIEW").apply {
             setDataAndType(uri, "video/*")
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -386,7 +390,11 @@ class CartoonPlayingViewModel(
         thumbnailFolder.deleteRecursively()
         thumbnailBuffer = ThumbnailBuffer(thumbnailFolder)
         playingInfo = playerInfo
-        val media = cartoonMediaSourceFactory.get(playerInfo)
+        // 本地番源不过缓存
+        val media =
+            if (cartoonPlayingState?.cartoonSummary?.source?.equals(LocalSource.LOCAL_SOURCE_KEY) == true)
+                cartoonMediaSourceFactory.getWithoutCache(playerInfo) else
+                cartoonMediaSourceFactory.getWithCache(playerInfo)
         exoPlayer.setMediaSource(media, adviceProcess)
         exoPlayer.prepare()
         exoPlayer.playWhenReady = true
@@ -475,42 +483,43 @@ class CartoonPlayingViewModel(
     }
 
     override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {
-        //"onSurfaceTextureUpdated 1".logi(TAG)
-        if (thumbnailBuffer == null) {
-            return
-        }
-        scope.launch {
-            //"onSurfaceTextureUpdated 2".logi(TAG)
-            val currentPosition = exoPlayer.currentPosition
-            // 如果该进度前后两秒都没有缩略图就保存一张
-            val currentFile = thumbnailBuffer?.getThumbnail(currentPosition, 2000)
-            val current = System.currentTimeMillis()
-
-            // 频次控制
-            if (currentFile == null && current - lastThumbnailTime > 2000) {
-                lastThumbnailTime = current
-                //"onSurfaceTextureUpdated 3".logi(TAG)
-                // 保存缩略图
-                thumbnailJob?.cancel()
-                thumbnailJob = singleScope.launch {
-                    yield()
-                    val textureView = easyTextRenderer.getTextureViewOrNull() ?: return@launch
-                    val bmp = textureView.bitmap ?: return@launch
-                    thumbnailFolder.mkdirs()
-                    val file = File(thumbnailFolder, "${currentPosition}.jpg")
-                    file.delete()
-                    file.createNewFile()
-                    file.deleteOnExit()
-                    file.outputStream().use {
-                        bmp.compress(Bitmap.CompressFormat.JPEG, 10, it)
-                    }
-                    //"onSurfaceTextureUpdated 4".logi(TAG)
-                    thumbnailBuffer?.addThumbnail(currentPosition, file)
-                    bmp.recycle()
-                }
-
-            }
-        }
+        // 耗电有点猛，先关闭
+//        //"onSurfaceTextureUpdated 1".logi(TAG)
+//        if (thumbnailBuffer == null) {
+//            return
+//        }
+//        scope.launch {
+//            //"onSurfaceTextureUpdated 2".logi(TAG)
+//            val currentPosition = exoPlayer.currentPosition
+//            // 如果该进度前后两秒都没有缩略图就保存一张
+//            val currentFile = thumbnailBuffer?.getThumbnail(currentPosition, 2000)
+//            val current = System.currentTimeMillis()
+//
+//            // 频次控制
+//            if (currentFile == null && current - lastThumbnailTime > 2000) {
+//                lastThumbnailTime = current
+//                //"onSurfaceTextureUpdated 3".logi(TAG)
+//                // 保存缩略图
+//                thumbnailJob?.cancel()
+//                thumbnailJob = singleScope.launch {
+//                    yield()
+//                    val textureView = easyTextRenderer.getTextureViewOrNull() ?: return@launch
+//                    val bmp = textureView.bitmap ?: return@launch
+//                    thumbnailFolder.mkdirs()
+//                    val file = File(thumbnailFolder, "${currentPosition}.jpg")
+//                    file.delete()
+//                    file.createNewFile()
+//                    file.deleteOnExit()
+//                    file.outputStream().use {
+//                        bmp.compress(Bitmap.CompressFormat.JPEG, 10, it)
+//                    }
+//                    //"onSurfaceTextureUpdated 4".logi(TAG)
+//                    thumbnailBuffer?.addThumbnail(currentPosition, file)
+//                    bmp.recycle()
+//                }
+//
+//            }
+//        }
     }
 
     private fun ExoPlayer.isMedia(): Boolean {

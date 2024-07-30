@@ -7,6 +7,7 @@ import android.os.Build
 import com.heyanle.easybangumi4.plugin.extension.ExtensionController
 import com.heyanle.easybangumi4.plugin.js.extension.JSExtensionLoader
 import com.heyanle.easybangumi4.plugin.js.runtime.JSRuntime
+import com.heyanle.easybangumi4.plugin.js.runtime.JSRuntimeProvider
 import com.heyanle.easybangumi4.utils.logi
 import java.io.File
 
@@ -43,7 +44,7 @@ object ExtensionLoaderFactory {
 
     fun getFileJsExtensionLoaders(
         fileList: List<File>,
-        jsRuntime: JSRuntime
+        jsRuntime: JSRuntimeProvider
     ): List<JSExtensionLoader> {
         return try {
             fileList.map {

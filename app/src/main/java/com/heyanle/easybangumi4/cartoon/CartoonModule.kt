@@ -1,6 +1,8 @@
 package com.heyanle.easybangumi4.cartoon
 
 import android.app.Application
+import androidx.annotation.OptIn
+import androidx.media3.common.util.UnstableApi
 import com.heyanle.easybangumi4.cartoon.story.download.CartoonDownloadPreference
 import com.heyanle.easybangumi4.cartoon.story.download.req.CartoonDownloadReqController
 import com.heyanle.easybangumi4.cartoon.story.download.runtime.CartoonDownloadDispatcher
@@ -18,6 +20,7 @@ import com.heyanle.easybangumi4.cartoon.star.CartoonStarController
 import com.heyanle.easybangumi4.cartoon.star.CartoonTagsController
 import com.heyanle.easybangumi4.cartoon.story.CartoonStoryController
 import com.heyanle.easybangumi4.cartoon.story.CartoonStoryControllerImpl
+import com.heyanle.easybangumi4.cartoon.story.download.step.DownloadStep
 import com.heyanle.inject.api.InjectModule
 import com.heyanle.inject.api.InjectScope
 import com.heyanle.inject.api.addAlias
@@ -33,6 +36,7 @@ class CartoonModule(
     private val application: Application
 ) : InjectModule {
 
+    @OptIn(UnstableApi::class)
     override fun InjectScope.registerInjectables() {
         addSingletonFactory {
             CartoonDatabase.build(application)
@@ -76,11 +80,13 @@ class CartoonModule(
 
         // download
 
+
         addPerKeyFactory<BaseStep, String> {
             when(it) {
                 ParseStep.NAME -> ParseStep
                 TransformerStep.NAME -> TransformerStep
                 CopyAndNfoStep.NAME -> CopyAndNfoStep
+                DownloadStep.NAME -> DownloadStep
                 else -> throw IllegalArgumentException("not found step: $it")
             }
         }

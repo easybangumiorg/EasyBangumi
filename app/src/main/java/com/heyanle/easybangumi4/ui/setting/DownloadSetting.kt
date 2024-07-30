@@ -184,6 +184,14 @@ fun ColumnScope.DownloadSetting(
                 stringRes(R.string.should_reboot).moeSnackBar()
             }
         )
+
+        LongEditPreferenceItem(
+            title = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.transforming_max_count)) },
+            preference = cartoonDownloadPreferences.transformMaxCountPref,
+            onChange = {
+                stringRes(R.string.should_reboot).moeSnackBar()
+            }
+        )
     }
 
 

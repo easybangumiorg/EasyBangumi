@@ -7,6 +7,7 @@ import com.heyanle.easybangumi4.plugin.extension.ExtensionInfo
 import com.heyanle.easybangumi4.plugin.extension.loader.AbsExtensionLoader
 import com.heyanle.easybangumi4.plugin.extension.loader.ExtensionLoader
 import com.heyanle.easybangumi4.plugin.js.runtime.JSRuntime
+import com.heyanle.easybangumi4.plugin.js.runtime.JSRuntimeProvider
 import com.heyanle.easybangumi4.plugin.js.runtime.JSScope
 import com.heyanle.easybangumi4.plugin.js.source.JsSource
 import java.io.File
@@ -17,7 +18,7 @@ import java.io.File
  */
 class JSExtensionLoader(
     private val file: File,
-    private val jsRuntime: JSRuntime,
+    private val jsRuntime: JSRuntimeProvider,
 ): ExtensionLoader {
 
     companion object {
@@ -80,7 +81,7 @@ class JSExtensionLoader(
             }
         }
 
-        val jsScope = JSScope(jsRuntime)
+        val jsScope = JSScope(jsRuntime.getRuntime())
 
         val label = map[JS_SOURCE_TAG_LABEL] ?: ""
         val key = map[JS_SOURCE_TAG_KEY] ?: ""
