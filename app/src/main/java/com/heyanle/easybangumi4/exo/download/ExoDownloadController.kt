@@ -48,6 +48,7 @@ class ExoDownloadController(
             downloadExecutor
         ).apply {
             maxParallelDownloads = downloadPreference.downloadMaxCountPref.get().toInt()
+            resumeDownloads()
         }
 
 
@@ -59,7 +60,7 @@ class ExoDownloadController(
         val downloadHelper =
             DownloadHelper.forMediaItem(
                 context,
-                MediaItem.fromUri(playerInfo.uri),
+                cartoonMediaSourceFactory.getMediaItem(playerInfo),
                 DefaultRenderersFactory(context),
                 cartoonMediaSourceFactory.getDataSourceFactory(playerInfo),
             )

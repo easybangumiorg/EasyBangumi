@@ -33,8 +33,10 @@ class CartoonDownloadDispatcher(
     // 调度统一给主线程调度
     private val scope = MainScope()
     private val executor = ThreadPoolExecutor(
-        0,
-        cartoonDownloadPreference.downloadMaxCountPref.get().toInt(),
+        cartoonDownloadPreference.downloadMaxCountPref.get().toInt()
+            .coerceAtLeast(cartoonDownloadPreference.transformMaxCountPref.get().toInt()),
+        cartoonDownloadPreference.downloadMaxCountPref.get().toInt()
+            .coerceAtLeast(cartoonDownloadPreference.transformMaxCountPref.get().toInt()),
         50,
         TimeUnit.SECONDS,
         LinkedBlockingQueue<Runnable>(),

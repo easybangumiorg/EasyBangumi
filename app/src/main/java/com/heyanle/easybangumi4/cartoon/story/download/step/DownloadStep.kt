@@ -84,7 +84,7 @@ object DownloadStep : BaseStep, DownloadManager.Listener {
         runtime.countDownLatch = countDownLatch
         while (countDownLatch.count > 0) {
             download = downloadIndex.getDownload(runtime.req.uuid)
-                ?: throw IllegalStateException("download is null")
+                ?: continue
             when (download.state) {
                 Download.STATE_QUEUED -> {
                     val isPause = download.stopReason != Download.STOP_REASON_NONE
@@ -107,8 +107,9 @@ object DownloadStep : BaseStep, DownloadManager.Listener {
 
                     runtime.lastDownloadSize = currentSize
                     runtime.lastDownloadTime = current
+                    download.percentDownloaded.toFloat().logi("DownloadStep")
                     runtime.dispatchToBus(
-                        download.percentDownloaded.toFloat(),
+                        download.percentDownloaded.toFloat() / 100f,
                         "下载中",
                         speed
                     )
@@ -175,6 +176,7 @@ object DownloadStep : BaseStep, DownloadManager.Listener {
                 runtime.req.uuid,
                 1
             )
+            return true
 
         } else if (download.state == Download.STATE_QUEUED ) {
             exoDownloadController.downloadManager.setStopReason(

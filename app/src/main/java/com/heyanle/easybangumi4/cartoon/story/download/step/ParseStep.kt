@@ -34,7 +34,7 @@ object ParseStep: BaseStep {
         "${runtime.req.toEpisodeTitle} invoke".logi("ParseStep")
         runtime.state = 1
         runtime.getDownloadInfo().process.value = -1f
-        runtime.getDownloadInfo().status.value = stringRes(com.heyanle.easy_i18n.R.string.waiting)
+        runtime.getDownloadInfo().status.value = stringRes(com.heyanle.easy_i18n.R.string.parsing)
         runtime.getDownloadInfo().subStatus.value = ""
 
         val sourceStateCase: SourceStateCase = Inject.get()
