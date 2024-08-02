@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.cartoon.story.download
+package com.heyanle.easybangumi4.cartoon.story.download_v1
 
 import com.heyanle.easybangumi4.bus.DownloadingBus
 

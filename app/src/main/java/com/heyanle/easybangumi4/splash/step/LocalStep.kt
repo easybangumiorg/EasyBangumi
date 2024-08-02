@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.LauncherBus
-import com.heyanle.easybangumi4.cartoon.story.download.CartoonDownloadPreference
+import com.heyanle.easybangumi4.cartoon.story.download_v1.CartoonDownloadPreference
 import com.heyanle.easybangumi4.cartoon.story.local.LocalCartoonPreference
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.splash.SplashGuildController

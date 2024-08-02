@@ -1,26 +1,17 @@
 package com.heyanle.easybangumi4.exo.download
 
 import android.content.Context
-import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.database.StandaloneDatabaseProvider
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.datasource.cache.Cache
-import androidx.media3.datasource.cache.NoOpCacheEvictor
-import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.offline.DownloadHelper
 import androidx.media3.exoplayer.offline.DownloadManager
 import androidx.media3.exoplayer.offline.DownloadRequest
-import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
-import com.heyanle.easybangumi4.cartoon.story.download.CartoonDownloadPreference
+import com.heyanle.easybangumi4.cartoon.story.download_v1.CartoonDownloadPreference
 import com.heyanle.easybangumi4.exo.CartoonMediaSourceFactory
-import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
-import com.heyanle.easybangumi4.utils.getCachePath
-import java.io.File
 import java.io.IOException
-import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
 /**

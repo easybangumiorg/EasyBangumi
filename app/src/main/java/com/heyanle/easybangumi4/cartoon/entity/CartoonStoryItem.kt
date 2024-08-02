@@ -1,6 +1,6 @@
 package com.heyanle.easybangumi4.cartoon.entity
 
-import com.heyanle.easybangumi4.cartoon.story.download.runtime.CartoonDownloadRuntime
+import com.heyanle.easybangumi4.cartoon.story.download_v1.runtime.CartoonDownloadRuntime
 
 /**
  * Created by heyanle on 2024/7/12.

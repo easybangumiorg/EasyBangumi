@@ -1,9 +1,9 @@
-package com.heyanle.easybangumi4.cartoon.story.download.step
+package com.heyanle.easybangumi4.cartoon.story.download_v1.step
 
 import androidx.core.net.toUri
 import com.heyanle.easybangumi4.APP
-import com.heyanle.easybangumi4.cartoon.story.download.runtime.CartoonDownloadRuntimeFactory
-import com.heyanle.easybangumi4.cartoon.story.download.runtime.CartoonDownloadRuntime
+import com.heyanle.easybangumi4.cartoon.story.download_v1.runtime.CartoonDownloadRuntimeFactory
+import com.heyanle.easybangumi4.cartoon.story.download_v1.runtime.CartoonDownloadRuntime
 import com.heyanle.easybangumi4.cartoon.story.local.LocalCartoonPreference
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.inject.api.get

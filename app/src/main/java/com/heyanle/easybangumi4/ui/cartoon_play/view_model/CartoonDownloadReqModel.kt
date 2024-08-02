@@ -2,7 +2,7 @@ package com.heyanle.easybangumi4.ui.cartoon_play.view_model
 
 import com.heyanle.easybangumi4.base.DataResult
 import com.heyanle.easybangumi4.base.map
-import com.heyanle.easybangumi4.cartoon.story.download.req.CartoonDownloadReqFactory
+import com.heyanle.easybangumi4.cartoon.story.download_v1.req.CartoonDownloadReqFactory
 import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadReq
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.entity.CartoonStoryItem

@@ -9,8 +9,8 @@ import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadReq
 import com.heyanle.easybangumi4.cartoon.entity.CartoonLocalEpisode
 import com.heyanle.easybangumi4.cartoon.entity.CartoonLocalMsg
 import com.heyanle.easybangumi4.cartoon.entity.CartoonStoryItem
-import com.heyanle.easybangumi4.cartoon.story.download.req.CartoonDownloadReqController
-import com.heyanle.easybangumi4.cartoon.story.download.runtime.CartoonDownloadDispatcher
+import com.heyanle.easybangumi4.cartoon.story.download_v1.req.CartoonDownloadReqController
+import com.heyanle.easybangumi4.cartoon.story.download_v1.runtime.CartoonDownloadDispatcher
 import com.heyanle.easybangumi4.cartoon.story.local.CartoonLocalController
 import com.hippo.unifile.UniFile
 import kotlinx.coroutines.MainScope

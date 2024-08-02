@@ -1,9 +1,8 @@
-package com.heyanle.easybangumi4.cartoon.story.download.runtime
+package com.heyanle.easybangumi4.cartoon.story.download_v1.runtime
 
 import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadReq
-import com.heyanle.easybangumi4.cartoon.story.download.CartoonDownloadPreference
-import com.heyanle.easybangumi4.cartoon.story.download.step.BaseStep
-import com.heyanle.easybangumi4.setting.SettingPreferences
+import com.heyanle.easybangumi4.cartoon.story.download_v1.CartoonDownloadPreference
+import com.heyanle.easybangumi4.cartoon.story.download_v1.step.BaseStep
 import com.heyanle.inject.api.get
 import com.heyanle.inject.core.Inject
 

@@ -1,13 +1,13 @@
-package com.heyanle.easybangumi4.cartoon.story.download.req
+package com.heyanle.easybangumi4.cartoon.story.download_v1.req
 
 import androidx.media3.common.util.UnstableApi
 import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadReq
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
-import com.heyanle.easybangumi4.cartoon.story.download.step.CopyAndNfoStep
-import com.heyanle.easybangumi4.cartoon.story.download.step.ParseStep
-import com.heyanle.easybangumi4.cartoon.story.download.step.TransformerStep
+import com.heyanle.easybangumi4.cartoon.story.download_v1.step.CopyAndNfoStep
+import com.heyanle.easybangumi4.cartoon.story.download_v1.step.ParseStep
+import com.heyanle.easybangumi4.cartoon.story.download_v1.step.TransformerStep
 import com.heyanle.easybangumi4.cartoon.entity.CartoonStoryItem
-import com.heyanle.easybangumi4.cartoon.story.download.step.DownloadStep
+import com.heyanle.easybangumi4.cartoon.story.download_v1.step.DownloadStep
 import com.heyanle.easybangumi4.source_api.entity.Episode
 import com.heyanle.easybangumi4.source_api.entity.PlayLine
 

@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.cartoon.story.download.step
+package com.heyanle.easybangumi4.cartoon.story.download_v1.step
 
 import androidx.annotation.OptIn
 import androidx.core.net.toUri
@@ -15,9 +15,9 @@ import androidx.media3.transformer.ProgressHolder
 import androidx.media3.transformer.Transformer
 import androidx.media3.transformer.Transformer.PROGRESS_STATE_AVAILABLE
 import com.heyanle.easybangumi4.APP
-import com.heyanle.easybangumi4.cartoon.story.download.CartoonDownloadPreference
-import com.heyanle.easybangumi4.cartoon.story.download.runtime.CartoonDownloadRuntimeFactory
-import com.heyanle.easybangumi4.cartoon.story.download.runtime.CartoonDownloadRuntime
+import com.heyanle.easybangumi4.cartoon.story.download_v1.CartoonDownloadPreference
+import com.heyanle.easybangumi4.cartoon.story.download_v1.runtime.CartoonDownloadRuntimeFactory
+import com.heyanle.easybangumi4.cartoon.story.download_v1.runtime.CartoonDownloadRuntime
 import com.heyanle.easybangumi4.exo.CartoonMediaSourceFactory
 import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
 import com.heyanle.easybangumi4.utils.getCachePath
