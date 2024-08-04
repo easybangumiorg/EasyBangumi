@@ -88,7 +88,7 @@ class CartoonPlayingViewModel(
     val playingState = _playingState.asStateFlow()
 
     // 协程
-    private val dispatcher = CoroutineProvider.CUSTOM_SINGLE
+    private val dispatcher = CoroutineProvider.newSingleDispatcher
     private val singleScope = CoroutineScope(SupervisorJob() + dispatcher)
     private val scope = MainScope()
 

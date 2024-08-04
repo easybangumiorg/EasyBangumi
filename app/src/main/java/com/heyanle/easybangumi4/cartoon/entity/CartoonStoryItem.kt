@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.cartoon.entity
 
-import com.heyanle.easybangumi4.cartoon.story.download_v1.runtime.CartoonDownloadRuntime
+import com.heyanle.easybangumi4.cartoon.story.download.runtime.CartoonDownloadRuntime
+
 
 /**
  * Created by heyanle on 2024/7/12.
@@ -22,6 +23,6 @@ data class CartoonStoryItem (
 
     // 对于下载错误的信息，这里无法稳定，需要每次重新获取
     val errorDownloadEpisode: Set<Int>
-        get() =  downloadInfoList.filter { it.runtime?.state == CartoonDownloadRuntime.STATE_ERROR }.map { it.req.toEpisode }.toSet()
+        get() =  downloadInfoList.filter { it.runtime?.state == CartoonDownloadRuntime.State.ERROR }.map { it.req.toEpisode }.toSet()
 
 }

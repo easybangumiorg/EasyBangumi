@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.cartoon.story.download_v1.req
+package com.heyanle.easybangumi4.cartoon.story.download.req
 
 import com.heyanle.easybangumi4.base.json.JsonFileProvider
 import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadReq

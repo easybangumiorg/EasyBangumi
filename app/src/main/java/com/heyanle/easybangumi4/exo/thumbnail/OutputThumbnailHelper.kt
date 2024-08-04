@@ -32,7 +32,7 @@ class OutputThumbnailHelper(
     private val interval: Long,
 ) : BitmapOut(), Player.Listener {
 
-    private val dispatcher = CoroutineProvider.CUSTOM_SINGLE
+    private val dispatcher = CoroutineProvider.newSingleDispatcher
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
     private val mainScope = MainScope()
 

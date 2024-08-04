@@ -10,8 +10,15 @@ object CoroutineProvider {
 
     val SINGLE = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
 
+    val newSingleExecutor
+        get() = ThreadPoolExecutor(
+            0, 1,
+            10L, TimeUnit.SECONDS,
+            LinkedBlockingQueue()
+        )
+
     // 未使用的线程将在 10 秒后被终止
-    val CUSTOM_SINGLE
+    val newSingleDispatcher
         get() = ThreadPoolExecutor(
             0, 1,
             10L, TimeUnit.SECONDS,

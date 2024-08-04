@@ -11,6 +11,7 @@ import com.heyanle.easybangumi4.source_api.entity.Cartoon
 import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
 import com.heyanle.easybangumi4.source_api.entity.PlayLine
 import com.heyanle.easybangumi4.source_api.withResult
+import com.heyanle.easybangumi4.utils.logi
 import kotlinx.coroutines.Dispatchers
 import org.mozilla.javascript.Function
 
@@ -36,6 +37,7 @@ class JSDetailedComponent(
     }
 
     override suspend fun getAll(summary: CartoonSummary): SourceResult<Pair<Cartoon, List<PlayLine>>> {
+        summary.id.logi("JSDetailedComponent")
         return withResult(Dispatchers.IO) {
             jsScope.requestRunWithScope { context, scriptable ->
                 val res = getDetailed.call(

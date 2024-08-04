@@ -27,6 +27,7 @@
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="QueryAllPackagesPermission" />
     <uses-permission android:name="com.android.permission.GET_INSTALLED_APPS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <application
         android:name="com.heyanle.easybangumi4.App"
         android:allowBackup="true"
@@ -105,6 +106,8 @@
 <!--        </service>-->
 
 
+        <service android:name=".cartoon.story.download.service.DownloadingService"
+            android:foregroundServiceType="dataSync"/>
 
         <provider
             android:name=".provider.MediaContentProvider"

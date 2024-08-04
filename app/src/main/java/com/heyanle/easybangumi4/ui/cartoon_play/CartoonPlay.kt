@@ -34,7 +34,7 @@ import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.entity.PlayLineWrapper
-import com.heyanle.easybangumi4.cartoon.story.download_v1.runtime.CartoonDownloadDispatcher
+import com.heyanle.easybangumi4.cartoon.story.download.runtime.CartoonDownloadDispatcher
 import com.heyanle.easybangumi4.navigationCartoonTag
 import com.heyanle.easybangumi4.navigationSearch
 import com.heyanle.easybangumi4.setting.SettingPreferences
@@ -383,7 +383,6 @@ fun CartoonPlay(
     onSave: (Triple<CartoonInfo, PlayLineWrapper, List<Episode>>) -> Unit
 ) {
     val nav = LocalNavController.current
-    val cartoonDownloadDispatcher: CartoonDownloadDispatcher by Inject.injectLazy()
 
 
     DisposableEffect(key1 = Unit) {

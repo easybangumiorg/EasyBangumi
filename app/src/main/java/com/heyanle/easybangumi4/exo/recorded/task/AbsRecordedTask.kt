@@ -1,7 +1,6 @@
 package com.heyanle.easybangumi4.exo.recorded.task
 
 import com.heyanle.easybangumi4.utils.CoroutineProvider
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
@@ -19,7 +18,7 @@ abstract class AbsRecordedTask : RecordedTask {
 
     // 协程 ===========================
     protected val dispatcher = Dispatchers.IO
-    protected val singleDispatcher = CoroutineProvider.CUSTOM_SINGLE
+    protected val singleDispatcher = CoroutineProvider.newSingleDispatcher
     protected val scope = CoroutineScope(SupervisorJob() + dispatcher)
     protected val singleScope = CoroutineScope(SupervisorJob() + singleDispatcher)
     protected val mainScope = MainScope()

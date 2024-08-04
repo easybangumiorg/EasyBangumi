@@ -3,7 +3,7 @@ package com.heyanle.easybangumi4.cartoon.story.local
 import androidx.core.net.toUri
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.base.preferences.android.AndroidPreferenceStore
-import com.heyanle.easybangumi4.cartoon.story.download_v1.CartoonDownloadPreference
+import com.heyanle.easybangumi4.cartoon.story.download.CartoonDownloadPreference
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.CoroutineProvider

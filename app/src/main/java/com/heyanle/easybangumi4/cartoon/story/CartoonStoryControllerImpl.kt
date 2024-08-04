@@ -9,8 +9,8 @@ import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadReq
 import com.heyanle.easybangumi4.cartoon.entity.CartoonLocalEpisode
 import com.heyanle.easybangumi4.cartoon.entity.CartoonLocalMsg
 import com.heyanle.easybangumi4.cartoon.entity.CartoonStoryItem
-import com.heyanle.easybangumi4.cartoon.story.download_v1.req.CartoonDownloadReqController
-import com.heyanle.easybangumi4.cartoon.story.download_v1.runtime.CartoonDownloadDispatcher
+import com.heyanle.easybangumi4.cartoon.story.download.req.CartoonDownloadReqController
+import com.heyanle.easybangumi4.cartoon.story.download.runtime.CartoonDownloadDispatcher
 import com.heyanle.easybangumi4.cartoon.story.local.CartoonLocalController
 import com.hippo.unifile.UniFile
 import kotlinx.coroutines.MainScope
@@ -90,21 +90,34 @@ class CartoonStoryControllerImpl(
 
     override fun newDownloadReq(reqList: Collection<CartoonDownloadReq>) {
         cartoonDownloadReqController.newDownloadItem(reqList)
-        cartoonDownloadDispatcher.addTask(reqList)
+        cartoonDownloadDispatcher.newRequest(reqList)
     }
 
     override fun removeDownloadReq(reqList: Collection<CartoonDownloadReq>) {
         cartoonDownloadReqController.removeDownloadItem(reqList.map { it.uuid })
-        cartoonDownloadDispatcher.removeTask(reqList)
+        cartoonDownloadDispatcher.remove(reqList)
     }
 
-    override fun tryResumeDownloadReq(info: CartoonDownloadInfo) {
-        cartoonDownloadDispatcher.addTask(info.req)
+    override fun tryResumeDownloadReq(info: CartoonDownloadInfo, closeQuickMode: Boolean) {
+        if (!closeQuickMode || !info.req.quickMode) {
+            cartoonDownloadDispatcher.tryResume(listOf(info.req))
+
+        } else {
+            cartoonDownloadDispatcher.remove(listOf(info.req))
+            cartoonDownloadReqController.removeDownloadItem(info.req.uuid)
+            cartoonDownloadReqController.newDownloadItem(
+                listOf(
+                    info.req.copy(
+                        quickMode = false
+                    )
+                )
+            )
+        }
     }
 
     override suspend fun newStory(localMsg: CartoonLocalMsg): String? {
         return suspendCoroutine<String?> { con ->
-            cartoonLocalController.newLocal(localMsg){
+            cartoonLocalController.newLocal(localMsg) {
                 con.resume(it)
             }
         }
@@ -117,13 +130,13 @@ class CartoonStoryControllerImpl(
 
     override fun removeStory(cartoonStoryItem: Collection<CartoonStoryItem>) {
         cartoonStoryItem.forEach {
-            val file = UniFile.fromUri(APP,   it.cartoonLocalItem.folderUri.toUri())
+            val file = UniFile.fromUri(APP, it.cartoonLocalItem.folderUri.toUri())
             file?.delete()
         }
 
         cartoonLocalController.refresh()
         cartoonDownloadReqController.removeDownloadItemWithItemId(cartoonStoryItem.map { it.cartoonLocalItem.itemId })
-        cartoonDownloadDispatcher.removeTaskWithItemId(cartoonStoryItem.map { it.cartoonLocalItem.itemId })
+        cartoonDownloadDispatcher.removeWithItemId(cartoonStoryItem.map { it.cartoonLocalItem.itemId })
     }
 
     override fun removeEpisodeItem(episode: Collection<CartoonLocalEpisode>) {

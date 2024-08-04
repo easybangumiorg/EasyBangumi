@@ -33,7 +33,7 @@ class PermissionStep: BaseStep {
     override val name: String
         get() = "permission"
     override val version: Int
-        get() = 0
+        get() = 1
 
     @Composable
     override fun Compose() {
@@ -65,6 +65,33 @@ class PermissionStep: BaseStep {
                         onClick = {
                             IntentHelper.openAppDetailed(APP.packageName, APP)
                             stringRes(com.heyanle.easy_i18n.R.string.get_app_list_permission_toast).toast()
+                        }
+                    ) {
+                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.app_detailed))
+                    }
+                }
+            )
+
+            ListItem(
+                colors = ListItemDefaults.colors(
+                    containerColor = Color.Transparent
+                ),
+                headlineContent = {
+                    Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.notification_permission))
+                },
+                supportingContent = {
+                    Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.notification_permission_msg))
+                },
+                trailingContent = {
+                    OutlinedButton(
+                        colors = ButtonDefaults.outlinedButtonColors(),
+                        border = BorderStroke(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.primary,
+                        ),
+                        onClick = {
+                            IntentHelper.openAppDetailed(APP.packageName, APP)
+                            stringRes(com.heyanle.easy_i18n.R.string.notification_permission_toast).toast()
                         }
                     ) {
                         Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.app_detailed))

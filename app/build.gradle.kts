@@ -252,6 +252,12 @@ dependencies {
 
     // fimplementation(gecko.gecko)
 
+    implementation(libs.aria.m3u8)
+    implementation(libs.aria.compiler)
+    implementation(libs.aria)
+
+    implementation(libs.jeff.m3u8)
+
 
     implementation(project(":EasyPlayer2:easyplayer2"))
 

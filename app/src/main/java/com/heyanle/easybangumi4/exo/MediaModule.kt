@@ -12,8 +12,6 @@ import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.NoOpCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.exoplayer.ExoPlayer
-import com.heyanle.easybangumi4.exo.download.ExoDownloadController
-import com.heyanle.easybangumi4.exo.download.MediaDownloadCacheDB
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.getFilePath
@@ -40,9 +38,6 @@ class MediaModule(
             MediaCacheDB(application)
         }
 
-        addSingletonFactory {
-            MediaDownloadCacheDB(application)
-        }
 
 
         addScopedFactory {
@@ -62,9 +57,6 @@ class MediaModule(
             CartoonMediaSourceFactory(get<Cache>(false), get<Cache>(true))
         }
 
-        addSingletonFactory {
-            ExoDownloadController(application, get(), get<Cache>(true), get(), get())
-        }
 
 
         // 以下实体都跟缓存上限有关，0 为无限制或下载
@@ -72,7 +64,7 @@ class MediaModule(
         addPerKeyFactory<Cache, Boolean> { isDownload ->
             if (isDownload) {
                 val downloadFolder = File(application.getFilePath(), "download")
-                SimpleCache(downloadFolder, NoOpCacheEvictor(), get<MediaDownloadCacheDB>())
+                SimpleCache(downloadFolder, NoOpCacheEvictor(), StandaloneDatabaseProvider(application))
             } else {
                 val settingPreferences: SettingPreferences = get()
                 val cacheSize = settingPreferences.cacheSize.get()

@@ -1,42 +1,62 @@
-package com.heyanle.easybangumi4.cartoon.story.download_v1.step
+package com.heyanle.easybangumi4.cartoon.story.download.action
 
 import androidx.core.net.toUri
+import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.APP
-import com.heyanle.easybangumi4.cartoon.story.download_v1.runtime.CartoonDownloadRuntimeFactory
-import com.heyanle.easybangumi4.cartoon.story.download_v1.runtime.CartoonDownloadRuntime
+import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadReq
+import com.heyanle.easybangumi4.cartoon.story.download.runtime.CartoonDownloadRuntime
 import com.heyanle.easybangumi4.cartoon.story.local.LocalCartoonPreference
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.inject.api.get
 import com.heyanle.inject.core.Inject
 import com.hippo.unifile.UniFile
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import org.jsoup.nodes.Element
+import java.io.File
 
 /**
- * Created by heyanle on 2024/7/7.
+ * Created by heyanle on 2024/8/4.
  * https://github.com/heyanLE
  */
-object CopyAndNfoStep : BaseStep {
+class CopyAndNfoAction: BaseAction {
 
-    const val NAME = "copy_and_nfo"
+    companion object {
+        const val NAME = "CopyAndNfoAction"
+    }
 
-    override fun invoke() {
-        val runtime = CartoonDownloadRuntimeFactory.runtimeLocal.get()
-            ?: throw IllegalStateException("runtime is null")
+    private val mainScope = MainScope()
+
+    override fun isAsyncAction(): Boolean {
+        return false
+    }
+
+    override suspend fun canResume(cartoonDownloadReq: CartoonDownloadReq): Boolean {
+        return false
+    }
+
+    override suspend fun toggle(cartoonDownloadRuntime: CartoonDownloadRuntime): Boolean {
+        return false
+    }
+
+    override fun push(cartoonDownloadRuntime: CartoonDownloadRuntime) {
+        val runtime = cartoonDownloadRuntime
         val localPref: LocalCartoonPreference = Inject.get()
-        runtime.state = 1
-        runtime.dispatchToBus(
-            -1f,
-            stringRes(com.heyanle.easy_i18n.R.string.copying),
-        )
-        runtime.canCancel = false
-
-        val cacheFolder = UniFile.fromUri(APP, runtime.cacheFolderUri?.toUri())
-            ?: throw IllegalStateException("cache folder is null")
-        val cacheTarget = cacheFolder.createFile(runtime.cacheDisplayName)
-            ?: throw IllegalStateException("cache file is null")
-        if (!cacheTarget.exists() || !cacheTarget.canRead()) {
-            throw IllegalStateException("cache file is not exists or can not read")
+        mainScope.launch {
+            cartoonDownloadRuntime.dispatchToBus(
+                -1f,
+                stringRes(R.string.copying),
+            )
         }
+
+
+
+        val sourcePath = runtime.filePathBeforeCopy
+        val sourceFile = File(sourcePath)
+        if (!sourceFile.exists() || !sourceFile.canRead()) {
+            throw IllegalStateException("source file is not exists or can not read")
+        }
+
         val targetFolder = UniFile.fromUri(APP, localPref.realBangumiLocalUri.value)
             ?: throw IllegalStateException("target folder is null")
 
@@ -52,18 +72,19 @@ object CopyAndNfoStep : BaseStep {
         if (!targetMediaFile.canWrite()) {
             throw IllegalStateException("target media file can not write")
         }
-        cacheTarget.openInputStream().use { inp ->
-            targetMediaFile.openOutputStream().use { outp ->
+        sourceFile.inputStream().buffered().use { inp ->
+            targetMediaFile.openOutputStream().buffered().use { outp ->
                 inp.copyTo(outp)
+                outp.flush()
             }
         }
+
         targetMediaFile.renameTo(mediaName)
 
         // write nfo
         val nfoFile = targetCartoonFolder.createFile("${mediaNameP}.nfo")
         if (nfoFile == null || !nfoFile.canWrite()) {
-            runtime.stepCompletely()
-            return
+            throw IllegalStateException("nfo file is null or can not write")
         }
 
         val details = Element("episodedetails")
@@ -76,13 +97,11 @@ object CopyAndNfoStep : BaseStep {
             it.write(text)
         }
 
-        runtime.stepCompletely()
-        cacheTarget.delete()
-
-
+        sourceFile.delete()
+        runtime.stepCompletely(this)
     }
 
-    override fun cancel(runtime: CartoonDownloadRuntime) {
+    override fun onCancel(cartoonDownloadRuntime: CartoonDownloadRuntime) {
 
     }
 }

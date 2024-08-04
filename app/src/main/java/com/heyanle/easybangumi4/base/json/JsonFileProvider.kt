@@ -2,7 +2,6 @@ package com.heyanle.easybangumi4.base.json
 
 
 import com.heyanle.easybangumi4.APP
-import com.heyanle.easybangumi4.bus.DownloadingBus
 import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadReq
 import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
 import com.heyanle.easybangumi4.plugin.source.SourceConfig
@@ -21,7 +20,7 @@ import kotlin.reflect.typeOf
  */
 class JsonFileProvider {
 
-    private val dispatcher = CoroutineProvider.CUSTOM_SINGLE
+    private val dispatcher = CoroutineProvider.newSingleDispatcher
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
 
     // /storage/emulated/0/Android/data/com.heyanle.easybangumi4/files/cartoon/cartoon_tag.json

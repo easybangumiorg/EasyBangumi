@@ -25,6 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,6 +33,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -46,6 +48,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.R
@@ -160,6 +163,38 @@ fun Download(
                 vm.dismissDialog()
             }
         }
+        is DownloadViewModel.Dialog.ResumeTask -> {
+            AlertDialog(
+                text = {
+                    Text(
+                        stringResource(
+                            id = com.heyanle.easy_i18n.R.string.need_close_quick,
+                            dialog.info.req.localItem.title
+                        )
+                    )
+                },
+                onDismissRequest = {
+                    vm.dismissDialog()
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        vm.tryResume(dialog.info, false)
+                        vm.dismissDialog()
+                    }) {
+                        Text(stringResource(id = com.heyanle.easy_i18n.R.string.no_need))
+                    }
+
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        vm.tryResume(dialog.info, true)
+                        vm.dismissDialog()
+                    }) {
+                        Text(stringResource(id = com.heyanle.easy_i18n.R.string.close_quick_mode))
+                    }
+
+                })
+        }
         else -> {
 
         }
@@ -196,16 +231,36 @@ fun DownloadItem(
             .height(IntrinsicSize.Min)
 
     ) {
-        OkImage(
+        Box(
             modifier = Modifier
                 .width(95.dp)
                 .aspectRatio(19 / 13.5F)
-                .clip(RoundedCornerShape(4.dp)),
-            image = downloadItem.req.localItem.cartoonCover.coverUrl,
-            crossFade = false,
-            contentDescription = downloadItem.req.localItem.title,
-            errorRes = R.drawable.placeholder,
-        )
+                .clip(RoundedCornerShape(4.dp))
+        ) {
+            OkImage(
+                modifier = Modifier
+                    .width(95.dp)
+                    .aspectRatio(19 / 13.5F)
+                    .clip(RoundedCornerShape(4.dp)),
+                image = downloadItem.req.localItem.cartoonCover.coverUrl,
+                crossFade = false,
+                contentDescription = downloadItem.req.localItem.title,
+                errorRes = R.drawable.placeholder,
+            )
+            if (downloadItem.req.quickMode)
+                Text(
+                    fontSize = 13.sp,
+                    text = stringResource(id = com.heyanle.easy_i18n.R.string.quick_download_mode),
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier
+                        .background(
+                            MaterialTheme.colorScheme.primary,
+                            RoundedCornerShape(0.dp, 0.dp, 4.dp, 0.dp)
+                        )
+                        .padding(4.dp, 0.dp)
+                )
+        }
+
         Spacer(modifier = Modifier.size(8.dp))
         Column(
             modifier = Modifier

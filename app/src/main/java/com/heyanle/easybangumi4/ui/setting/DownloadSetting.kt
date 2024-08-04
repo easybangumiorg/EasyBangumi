@@ -31,7 +31,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.LauncherBus
-import com.heyanle.easybangumi4.cartoon.story.download_v1.CartoonDownloadPreference
+import com.heyanle.easybangumi4.cartoon.story.download.CartoonDownloadPreference
 import com.heyanle.easybangumi4.cartoon.story.local.LocalCartoonPreference
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.splash.SplashGuildController
@@ -144,18 +144,7 @@ fun ColumnScope.DownloadSetting(
         }
 
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            EmumPreferenceItem<CartoonDownloadPreference.DownloadEncode>(
-                title = { Text(text = stringResource(id = R.string.download_decode_type)) },
-                textList = remember {
-                    cartoonDownloadPreferences.downloadEncodeSelection.map { it.second }
-                },
-                preference = cartoonDownloadPreferences.downloadEncode,
-                onChangeListener = {
 
-                }
-            )
-        }
 
         if (!usePrivate.value) {
             BooleanPreferenceItem(
@@ -188,6 +177,19 @@ fun ColumnScope.DownloadSetting(
                 stringRes(R.string.should_reboot).moeSnackBar()
             }
         )
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            EmumPreferenceItem<CartoonDownloadPreference.DownloadEncode>(
+                title = { Text(text = stringResource(id = R.string.download_decode_type)) },
+                textList = remember {
+                    cartoonDownloadPreferences.downloadEncodeSelection.map { it.second }
+                },
+                preference = cartoonDownloadPreferences.downloadEncode,
+                onChangeListener = {
+
+                }
+            )
+        }
     }
 
 

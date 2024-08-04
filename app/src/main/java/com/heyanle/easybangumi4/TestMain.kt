@@ -68,6 +68,12 @@ function PageComponent_getContent(mainTab, subTab, pageKey){
     }
     return [];
 }
+
+function getCartoonPageDocById(id: String) {
+    return Jsoup.connect("https://www.cycdm.com//bangumi/"+id+".html").userAgent(userAgent).get()
+}
+
+
     """
 
 

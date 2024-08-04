@@ -28,7 +28,8 @@ interface CartoonStoryController {
     fun removeDownloadReq(reqList: Collection<CartoonDownloadReq>)
 
     // 尝试重新下载，只有下载错误或者重启后点击才能恢复
-    fun tryResumeDownloadReq(info: CartoonDownloadInfo)
+    // @closeQuickMode 关闭快速下载模式
+    fun tryResumeDownloadReq(info: CartoonDownloadInfo, closeQuickMode: Boolean)
 
 
 

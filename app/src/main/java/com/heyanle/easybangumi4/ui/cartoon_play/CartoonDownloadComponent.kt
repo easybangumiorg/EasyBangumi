@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -31,13 +32,17 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Help
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -72,7 +77,6 @@ import com.heyanle.easybangumi4.ui.common.CartoonCardWithCover
 import com.heyanle.easybangumi4.ui.common.ErrorPage
 import com.heyanle.easybangumi4.ui.common.LoadingImage
 import com.heyanle.easybangumi4.ui.common.LoadingPage
-import com.heyanle.easybangumi4.ui.common.moeDialog
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.easybangumi4.utils.toast
@@ -285,38 +289,59 @@ fun CartoonDownloadDialog(
             }
         } else {
             val nav = LocalNavController.current
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                if (sta.isRepeat) {
+            if (sta.isRepeat) {
+                ListItem(headlineContent = {
                     Text(
                         text = stringResource(id = R.string.episode_repeat),
                         color = MaterialTheme.colorScheme.error
                     )
-                } else {
-                    FilledTonalButton(
-                        modifier = Modifier
-                            .padding(16.dp, 0.dp),
-                        colors = ButtonDefaults.filledTonalButtonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary
-                        ),
-                        onClick = {
-                            onDismissRequest()
-                            model.pushReq(sta)
-                            stringRes(R.string.add_download_completely).moeSnackBar(
-                                confirmLabel = stringRes(R.string.click_to_view),
-                                onConfirm = {
-                                    nav.navigate(STORY)
-                                }
-                            )
-                        }) {
-                        Text(stringResource(id = R.string.next))
+                })
+            } else {
+                ListItem(
+                    headlineContent = {
+                        Row(
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .clickable {
+                                    model.changeQuickMode(!sta.isQuickMode)
+                                },
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Checkbox(
+                                modifier = Modifier.padding(0.dp), checked = sta.isQuickMode, onCheckedChange = {
+                                    model.changeQuickMode(it)
+                                })
+                            Text(text = stringResource(id = R.string.quick_download_mode))
+                            Spacer(modifier = Modifier.size(16.dp))
+                        }
+                    },
+                    trailingContent = {
+                        FilledTonalButton(
+                            modifier = Modifier
+                                .padding(16.dp, 0.dp),
+                            colors = ButtonDefaults.filledTonalButtonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary
+                            ),
+                            onClick = {
+                                onDismissRequest()
+                                model.pushReq(sta)
+                                stringRes(R.string.add_download_completely).moeSnackBar(
+                                    confirmLabel = stringRes(R.string.click_to_view),
+                                    onConfirm = {
+                                        nav.navigate(STORY)
+                                    }
+                                )
+                            }) {
+                            Text(stringResource(id = R.string.next))
 
+                        }
                     }
-                }
+
+                )
+
             }
+            Divider()
             LazyColumn(
                 modifier = Modifier
                     .weight(1f),

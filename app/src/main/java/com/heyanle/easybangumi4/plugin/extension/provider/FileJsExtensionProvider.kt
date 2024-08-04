@@ -10,6 +10,7 @@ import com.heyanle.easybangumi4.plugin.js.extension.JSExtensionInnerLoader
 import com.heyanle.easybangumi4.plugin.js.runtime.JSRuntime
 import com.heyanle.easybangumi4.plugin.js.runtime.JSRuntimeProvider
 import kotlinx.coroutines.CoroutineDispatcher
+import org.jsoup.Jsoup
 import java.io.File
 
 /**
@@ -31,6 +32,7 @@ class FileJsExtensionProvider(
     }
 
     override fun getSuffix(): String {
+
         return EXTENSION_SUFFIX
     }
 

@@ -181,6 +181,9 @@
     <string name="no_source">没有番剧源</string>
     <string name="click_to_get">点击获取</string>
 
+    <string name="waiting_parse">等待解析中</string>
+    <string name="waiting_transformer">等待下载中</string>
+
     <string name="waiting_parsing">请等待视频开始播放后在操作</string>
 
 
@@ -370,6 +373,13 @@
     <string name="transcoding">转码中</string>
     <string name="transcode_error">转码失败</string>
 
+    <string name="quick_download_mode">快速模式</string>
+
+    <string name="need_close_quick">下载模式发现错误，是否使用非快速模式重试该任务？</string>
+
+    <string name="no_need">继续使用快速模式</string>
+    <string name="close_quick_mode">关闭快速模式</string>
+
     <string name="click_to_view">点击查看</string>
 
     <string name="click_install">点击安装</string>
@@ -383,6 +393,7 @@
     <string name="x_downloading">%1$d个任务下载中</string>
 
     <string name="copying">复制中</string>
+
 
     <string name="download_path">番剧本地下载路径</string>
 
@@ -497,6 +508,8 @@
     <string name="record_error">录制失败</string>
     <string name="record_success">录制成功</string>
 
+    <string name="resuming_download">恢复下载中</string>
+
     <string name="fps">帧率</string>
     <string name="quality">图片质量（1–100）</string>
     <string name="quality_error">质量输入错误 [1,100]</string>
@@ -528,7 +541,12 @@
     <string name="choose_folder_failed">文件夹选择失败，选择私有目录</string>
 
     <string name="get_app_list_permission">获取应用列表权限</string>
+    <string name="notification_permission">通知权限</string>
+    <string name="notification_permission_msg">用于下载番剧时的后台保持</string>
+    <string name="notification_permission_toast">请手动授予通知权限</string>
+
     <string name="get_app_list_permission_msg">用于加载番源。</string>
+
     <string name="get_app_list_permission_toast">请手动授予获取应用列表权限</string>
 
     <string name="next">下一步</string>
@@ -563,7 +581,7 @@
 
     <string name="label_empty">标题不能为空</string>
 
-    <string name="download_stop_click_to_restart">点击重新下载</string>
+    <string name="download_stop_click_to_restart">点击恢复下载</string>
 
     <string name="local_cant_dlna">本地番剧暂不支持投屏</string>
 
@@ -578,15 +596,16 @@
 
     <string name="donate_do">我已捐赠</string>
 
-    <string name="download_decode_type">下载番剧编码方式</string>
+    <string name="download_decode_type">下载番剧编码方式（非快速模式）</string>
+    <string name="transforming_max_count">最大同时转码数量（非快速模式）</string>
 
     <string name="local_no_media">本地文件夹添加&#160;.nomedia&#160;文件</string>
     <string name="local_no_media_msg">.nomedia&#160;文件代表你不希望本地番剧出现在相册。具体表现因设备而异，无法控制。</string>
 
     <string name="private_path_msg">私有目录中的文件无法保存到相册，只能在纯纯看番中查看，卸载后将同步删除。</string>
 
-    <string name="downloading_max_count">最大同时下载数量</string>
-    <string name="transforming_max_count">最大同时转码数量</string>
+    <string name="downloading_max_count">最大同时下载数量（快速模式）</string>
+
 
 
     <string name="save_to_media_ready">是否要保存%1$s个视频到相册？</string>

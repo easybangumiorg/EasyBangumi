@@ -3,14 +3,8 @@ package com.heyanle.easybangumi4.cartoon
 import android.app.Application
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
-import com.heyanle.easybangumi4.cartoon.story.download_v1.CartoonDownloadPreference
-import com.heyanle.easybangumi4.cartoon.story.download_v1.req.CartoonDownloadReqController
-import com.heyanle.easybangumi4.cartoon.story.download_v1.runtime.CartoonDownloadDispatcher
-import com.heyanle.easybangumi4.cartoon.story.download_v1.runtime.CartoonDownloadRuntimeFactory
-import com.heyanle.easybangumi4.cartoon.story.download_v1.step.BaseStep
-import com.heyanle.easybangumi4.cartoon.story.download_v1.step.CopyAndNfoStep
-import com.heyanle.easybangumi4.cartoon.story.download_v1.step.ParseStep
-import com.heyanle.easybangumi4.cartoon.story.download_v1.step.TransformerStep
+import com.heyanle.easybangumi4.cartoon.story.download.CartoonDownloadPreference
+import com.heyanle.easybangumi4.cartoon.story.download.req.CartoonDownloadReqController
 import com.heyanle.easybangumi4.cartoon.story.local.CartoonLocalController
 import com.heyanle.easybangumi4.cartoon.story.local.LocalCartoonPreference
 import com.heyanle.easybangumi4.cartoon.repository.CartoonNetworkDataSource
@@ -20,7 +14,13 @@ import com.heyanle.easybangumi4.cartoon.star.CartoonStarController
 import com.heyanle.easybangumi4.cartoon.star.CartoonTagsController
 import com.heyanle.easybangumi4.cartoon.story.CartoonStoryController
 import com.heyanle.easybangumi4.cartoon.story.CartoonStoryControllerImpl
-import com.heyanle.easybangumi4.cartoon.story.download_v1.step.DownloadStep
+import com.heyanle.easybangumi4.cartoon.story.download.action.AriaAction
+import com.heyanle.easybangumi4.cartoon.story.download.action.BaseAction
+import com.heyanle.easybangumi4.cartoon.story.download.action.CopyAndNfoAction
+import com.heyanle.easybangumi4.cartoon.story.download.action.ParseAction
+import com.heyanle.easybangumi4.cartoon.story.download.action.TranscodeAction
+import com.heyanle.easybangumi4.cartoon.story.download.action.TransformerAction
+import com.heyanle.easybangumi4.cartoon.story.download.runtime.CartoonDownloadDispatcher
 import com.heyanle.inject.api.InjectModule
 import com.heyanle.inject.api.InjectScope
 import com.heyanle.inject.api.addAlias
@@ -81,27 +81,26 @@ class CartoonModule(
         // download
 
 
-        addPerKeyFactory<BaseStep, String> {
+        addPerKeyFactory<BaseAction, String> {
             when(it) {
-                ParseStep.NAME -> ParseStep
-                TransformerStep.NAME -> TransformerStep
-                CopyAndNfoStep.NAME -> CopyAndNfoStep
-                DownloadStep.NAME -> DownloadStep
-                else -> throw IllegalArgumentException("not found step: $it")
+                ParseAction.NAME -> ParseAction(get())
+                AriaAction.NAME -> AriaAction(application, get())
+                TranscodeAction.NAME -> TranscodeAction(application)
+                TransformerAction.NAME -> TransformerAction(get(), get())
+                CopyAndNfoAction.NAME -> CopyAndNfoAction()
+                else -> throw IllegalArgumentException("not found action: $it")
             }
         }
+
+        addSingletonFactory {
+            CartoonDownloadDispatcher(get(), get())
+        }
+
 
         addSingletonFactory {
             CartoonDownloadPreference(get())
         }
 
-        addSingletonFactory {
-            CartoonDownloadRuntimeFactory(get())
-        }
-
-        addSingletonFactory {
-            CartoonDownloadDispatcher(get(), get(), get(), get())
-        }
 
         addSingletonFactory {
             CartoonDownloadReqController(get())

@@ -2,7 +2,7 @@ package com.heyanle.easybangumi4.ui.cartoon_play.view_model
 
 import com.heyanle.easybangumi4.base.DataResult
 import com.heyanle.easybangumi4.base.map
-import com.heyanle.easybangumi4.cartoon.story.download_v1.req.CartoonDownloadReqFactory
+import com.heyanle.easybangumi4.cartoon.story.download.req.CartoonDownloadReqFactory
 import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadReq
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.entity.CartoonStoryItem
@@ -46,6 +46,8 @@ class CartoonDownloadReqModel(
 
         val targetLocalInfo: CartoonStoryItem? = null,
         val reqList: List<CartoonDownloadReq> = emptyList(),
+
+        val isQuickMode: Boolean = true,
 
         val dialog: Dialog? = null,
     ) {
@@ -154,16 +156,25 @@ class CartoonDownloadReqModel(
         }
     }
 
-    fun targetLocalItem(localItem: CartoonStoryItem?) {
+    fun changeQuickMode(quickMode: Boolean) {
         _state.update {
             it.copy(
+                isQuickMode = quickMode
+            )
+        }
+    }
+
+    fun targetLocalItem(localItem: CartoonStoryItem?) {
+        _state.update { sta ->
+            sta.copy(
                 targetLocalInfo = localItem,
                 reqList = localItem?.let {
                     CartoonDownloadReqFactory.newReqList(
                         cartoonInfo,
                         playerLineWrapper.playLine,
                         episodes,
-                        it
+                        it,
+                        sta.isQuickMode
                     )
                 } ?: emptyList()
             )
@@ -231,7 +242,10 @@ class CartoonDownloadReqModel(
     fun pushReq(state: State) {
         scope.launch {
             cartoonStoryController.newDownloadReq(
-                state.reqList
+                CartoonDownloadReqFactory.changeReqListMode(
+                    state.reqList,
+                    state.isQuickMode
+                )
             )
         }
     }

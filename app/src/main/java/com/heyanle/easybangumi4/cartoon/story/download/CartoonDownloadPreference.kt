@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.cartoon.story.download_v1
+package com.heyanle.easybangumi4.cartoon.story.download
 
 import android.os.Build
 import com.heyanle.easybangumi4.base.preferences.android.AndroidPreferenceStore
@@ -12,16 +12,15 @@ class CartoonDownloadPreference(
     private val androidPreferenceStore: AndroidPreferenceStore
 ) {
 
-    // 最大下载数量
+    // 最大下载数量，仅快速转码模式可用
     val downloadMaxCountPref = androidPreferenceStore.getLong("download_max_count", 3L)
 
-    // 最大编解码数量
+
+    // 最大编解码数量，仅完整编码模式可用
     val transformMaxCountPref = androidPreferenceStore.getLong("transform_max_count", 1L)
 
-    val downloadMaxCountPreSourcePref = androidPreferenceStore.getInt("download_max_count_pre_source", 1)
 
-
-    // 下载编码方式
+    // 下载编码方式，仅完整编码模式可用
     enum class DownloadEncode {
         H264, H265
     }

@@ -32,6 +32,8 @@ class DownloadViewModel: ViewModel() {
 
     sealed class Dialog {
         data class DeleteSelection(val selection : Set<CartoonDownloadInfo>): Dialog()
+
+        data class ResumeTask(val info: CartoonDownloadInfo): Dialog()
     }
 
     private val _state = MutableStateFlow(State())
@@ -65,15 +67,29 @@ class DownloadViewModel: ViewModel() {
         }
     }
 
-    fun clickDownloadInfo(info: CartoonDownloadInfo){
-        if (info.runtime == null || info.runtime.needCancel()){
-            cartoonStoryController.tryResumeDownloadReq(info)
-        } else {
-            val step = info.runtime.currentStep
-            if (step == null || !step.tryToggle(info.runtime)){
-                "当前步骤不支持断点续传".moeSnackBar()
-            }
+    fun tryResume(info: CartoonDownloadInfo, closeQuickMode: Boolean) {
+        cartoonStoryController.tryResumeDownloadReq(info, closeQuickMode)
+    }
 
+    fun clickDownloadInfo(info: CartoonDownloadInfo){
+        if (info.runtime == null || info.runtime.isCanceled() || info.runtime.isError()){
+            if (info.runtime != null && info.runtime.isError() && info.req.quickMode){
+                _state.update {
+                    it.copy(
+                        dialog = Dialog.ResumeTask(info)
+                    )
+                }
+            } else {
+                cartoonStoryController.tryResumeDownloadReq(info, false)
+
+            }
+        } else {
+            viewModelScope.launch {
+                val step = info.runtime.currentAction
+                if (step == null || !step.toggle(info.runtime)){
+                    "当前步骤不支持断点续传".moeSnackBar()
+                }
+            }
         }
     }
 
