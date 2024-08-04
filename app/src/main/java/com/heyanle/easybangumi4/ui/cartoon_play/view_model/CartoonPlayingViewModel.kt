@@ -287,11 +287,16 @@ class CartoonPlayingViewModel(
         if (uri.scheme == "file") {
             val file = File(uri.path ?: "")
             if (file.exists()) {
-                uri = FileProvider.getUriForFile(
-                    APP,
-                    APP.packageName + ".provider",
-                    file
-                )
+                try {
+                    uri = FileProvider.getUriForFile(
+                        APP,
+                        APP.packageName + ".provider",
+                        file
+                    )
+                }catch (e: Throwable) {
+                    e.printStackTrace()
+                }
+
             }
         }
         APP.startActivity(Intent("android.intent.action.VIEW").apply {
