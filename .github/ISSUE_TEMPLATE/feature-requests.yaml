@@ -1,5 +1,5 @@
 name: 功能建议
-description: 向开发者提出功能建议以完善纯纯看番
+about: 向开发者提出功能建议以完善纯纯看番
 labels: ["enhancement"]
 body:
   - type: markdown
