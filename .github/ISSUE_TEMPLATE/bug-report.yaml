@@ -1,0 +1,49 @@
+name: 问题上报
+description: 上报软件运行出现的问题以帮助开发者改进纯纯看番
+title: ""
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        请花些时间填写您遇到的问题，不胜感激！
+  - type: input
+    id: phone
+    attributes:
+      label: 手机型号
+      description: 您使用手机型号
+      placeholder: 例如 小米10 Ultra
+    validations:
+      required: false
+  - type: input
+    id: os
+    attributes:
+      label: 系统
+      description: 开发者需要知道您手机的系统及版本，请尽量填写安卓版本号，如果不知道也可以填写诸如Hyper OS 2.0这样的外壳版本号。
+      placeholder: 例如 Android 15
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: 纯纯看番版本号
+      description: 在更多->关于里可以查看当前版本
+      placeholder: 例如 5.4.2
+    validations:
+      required: false
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: 发生了什么？
+      description: 开发者需要了解问题发生的背景，确定问题是如何发生的。
+      placeholder: 请简单说说你做了什么，本来期望发生什么，结果却是什么
+    validations:
+      required: true
+  - type: textarea
+    id: stack-trace
+    attributes:
+      label: 错误栈报告
+      description: 如果问题导致了纯纯看番崩溃，请在下方粘贴崩溃页面的内容，文本和截图都可以。
+      placeholder: Stack Trace
+    validations:
+      required: false
