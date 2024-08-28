@@ -1,5 +1,5 @@
 name: 功能建议
-about: 向开发者提出功能建议以完善纯纯看番
+description: 向开发者提出功能建议以完善纯纯看番
 labels: ["enhancement"]
 body:
   - type: markdown
@@ -8,17 +8,19 @@ body:
         请花些时间填写您期望的功能，不胜感激！
         在开始之前请给问卷**起个标题**
   - type: dropdown
-      id: feature-range
-      attributes:
-        label: 功能范围
-        multiple: true
-        options:
-          - 番剧管理
-          - 插件能力
-          - 播放器
-          - 界面
-          - 信息集成
-          - 其他
+    id: feature-range
+    attributes:
+      label: 功能范围
+      multiple: true
+      options:
+        - 番剧管理
+        - 插件能力
+        - 播放器
+        - 界面
+        - 信息集成
+        - 其他
+    validations:
+      required: true
   - type: textarea
     id: feature-requests
     attributes:
