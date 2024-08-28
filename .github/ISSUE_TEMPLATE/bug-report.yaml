@@ -1,6 +1,6 @@
 name: 问题上报
 description: 上报软件运行出现的问题以帮助开发者改进纯纯看番
-title: ""
+title: "[BUG]: "
 labels: ["bug"]
 body:
   - type: markdown
