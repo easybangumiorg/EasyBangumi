@@ -7,17 +7,17 @@ body:
       value: |
         请花些时间填写您期望的功能，不胜感激！
         在开始之前请给问卷**起个标题**
-- type: dropdown
-    id: part
-    attributes:
-      label: 功能范围
-      multiple: true
-      options:
-        - 番剧管理
-        - 插件能力
-        - 播放器
-        - 界面
-        - 其他
+  - type: dropdown
+      id: part
+      attributes:
+        label: 功能范围
+        multiple: true
+        options:
+          - 番剧管理
+          - 插件能力
+          - 播放器
+          - 界面
+          - 其他
   - type: textarea
     id: feature-requests
     attributes:
