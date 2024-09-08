@@ -11,6 +11,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.unit.IntSize
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.Size
@@ -47,6 +49,8 @@ class CartoonRecordedTaskModel(
     val cartoonMediaSourceFactory: CartoonMediaSourceFactory,
     val start: Long,
     val end: Long,
+    // x 轴和 y 轴都是 [0,1]，该矩形表示裁剪范围占各个边的比例
+    // y 轴正方向向下
     val cropRect: RectF,
     // 1 -> gif 2 -> mp4
     val type: Int,
@@ -92,15 +96,9 @@ class CartoonRecordedTaskModel(
                 "recorded_${System.currentTimeMillis()}.mp4",
                 start,
                 end,
-                Crop(
-                    cropRect.left - 0.5f,
-                    cropRect.right - 0.5f,
-
-                    0.5f - cropRect.bottom,
-                    0.5f - cropRect.top,
-                ),
-                fps.value,
-                quality.value,
+                cropRect,
+                fps.intValue,
+                quality.intValue,
                 speed,
             ).apply {
                 listener = this@CartoonRecordedTaskModel

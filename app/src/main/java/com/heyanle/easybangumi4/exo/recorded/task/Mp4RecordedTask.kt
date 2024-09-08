@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.exo.recorded.task
 
 import android.content.Context
+import android.graphics.RectF
 import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
@@ -52,8 +53,10 @@ class Mp4RecordedTask(
     private val startPosition: Long,
     private val endPosition: Long,
 
-    //NDC 坐标
-    private val crop: Crop,
+    // x 轴和 y 轴都是 [0,1]，该矩形表示裁剪范围占各个边的比例
+    // y 轴正方向向下
+    private val cropRect: RectF,
+
     private val fps: Int,
     private val quality: Int,
     private val speed: Float,
@@ -79,9 +82,45 @@ class Mp4RecordedTask(
                     // 变速
                     SpeedChangeEffect(speed),
                     // 码率（抽帧）
-                    FrameDropEffect.createDefaultFrameDropEffect(5f), //fps.toFloat()),
+                    FrameDropEffect.createDefaultFrameDropEffect(fps.toFloat()), //fps.toFloat()),
                     // 裁剪
-                    crop,
+                    run {
+                        // 1. 平移到 [-0.5,0.5]
+                        var cropRealRect = cropRect.run {
+                            RectF(
+                                left - 0.5f,
+                                top - 0.5f,
+                                right - 0.5f,
+                                bottom - 0.5f
+                            )
+                        }
+
+                        // 2. 缩放到 [-1,1]
+                        cropRealRect = cropRealRect.run {
+                            RectF(
+                                left * 2,
+                                top * 2,
+                                right * 2,
+                                bottom * 2
+                            )
+                        }
+
+                        // 3. 反转 y 轴方向
+                        cropRealRect = cropRealRect.run {
+                            RectF(
+                                left,
+                                - top,
+                                right,
+                                - bottom
+                            )
+                        }
+                        Crop(
+                            cropRealRect.left,
+                            cropRealRect.right,
+                            cropRealRect.bottom,
+                            cropRealRect.top,
+                        )
+                    },
                     // 压制
                     ScaleAndRotateTransformation.Builder().setScale(quality/100f, quality/100f).build()
                 )

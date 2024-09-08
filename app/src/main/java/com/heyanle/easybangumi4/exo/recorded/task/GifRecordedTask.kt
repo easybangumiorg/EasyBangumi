@@ -41,7 +41,8 @@ class GifRecordedTask(
     private val startPosition: Long,
     private val endPosition: Long,
 
-    // 原图 x 轴和 y 轴都是 [0,1]，该矩形表示裁剪范围占各个边的比例
+    // x 轴和 y 轴都是 [0,1]，该矩形表示裁剪范围占各个边的比例
+    // y 轴正方向向下
     private val crop: RectF,
     private val fps: Int,
     private val quality: Int,
