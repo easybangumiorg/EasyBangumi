@@ -17,7 +17,9 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.net.URLDecoder
 import java.net.URLEncoder
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
@@ -51,6 +53,7 @@ class HeKV(
 
     private val dispatcher = CoroutineProvider.SINGLE
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
+    private val init = CountDownLatch(1)
 
     init {
         runCatching {
@@ -72,48 +75,55 @@ class HeKV(
                 map[key] = value
             }
             scope.launch {
-                var lines = 0
-                runCatching {
-                    lines = append(key, value, journalFile)
-                }.onFailure {
-                    it.printStackTrace()
-                }
-                runCatching {
-                    keyFlow.emit(key)
-                }.onFailure {
-                    it.printStackTrace()
-                }
-                runCatching {
-                    if(lines > map.size* LOAD_FACTORY){
-                        saveToFile()
+                readWriteLock.write {
+                    var lines = 0
+                    runCatching {
+                        lines = append(key, value, journalFile)
+                    }.onFailure {
+                        it.printStackTrace()
                     }
-                }.onFailure {
-                    it.printStackTrace()
+                    runCatching {
+                        keyFlow.emit(key)
+                    }.onFailure {
+                        it.printStackTrace()
+                    }
+                    runCatching {
+                        if(lines > map.size* LOAD_FACTORY){
+                            saveToFile()
+                        }
+                    }.onFailure {
+                        it.printStackTrace()
+                    }
                 }
             }
         }
     }
 
     fun remove(key: String){
+        init.await(500L, TimeUnit.MINUTES)
         put(key, "")
     }
 
     fun get(key: String, def: String): String{
+        init.await(500L, TimeUnit.MINUTES)
         return readWriteLock.read {
             map[key]?:def
         }
     }
 
     fun keys(): Set<String>{
+        init.await(500L, TimeUnit.MINUTES)
         return map.keys
     }
 
     fun map(): Map<String, String>{
+        init.await(500L, TimeUnit.MINUTES)
         return map.toMap()
     }
 
     // 如果被删除，视为存入空字符串
     fun flow(key: String, def: String): Flow<String> {
+        init.await(500L, TimeUnit.MINUTES)
         return keyFlow
             .filter { it == key }
             .onStart { emit("ignition") }
@@ -156,6 +166,7 @@ class HeKV(
                 bkbFile.renameTo(journalFile)
                 loadFromFile(journalFile)
             }
+            init.countDown()
         }
     }
     // 从文件中读数据到 map
