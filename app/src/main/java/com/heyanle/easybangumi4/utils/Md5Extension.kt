@@ -24,6 +24,17 @@ fun File.getFileMD5(): String {
     }
 }
 
+fun String.getMD5(): String {
+    val digest = MessageDigest.getInstance("MD5")
+    return kotlin.runCatching {
+        val md5 = digest.digest(this.toByteArray())
+        bytesToHex(md5)
+    }.getOrElse {
+        it.printStackTrace()
+        ""
+    }
+}
+
 fun bytesToHex(bytes: ByteArray): String {
     val hexArray = "0123456789ABCDEF".toCharArray()
     val hexChars = CharArray(bytes.size * 2)

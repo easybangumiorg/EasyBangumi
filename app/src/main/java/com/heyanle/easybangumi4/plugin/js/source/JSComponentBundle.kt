@@ -60,7 +60,8 @@ class JSComponentBundle(
             }
         }
 
-        val jsText = jsSource.getJsString()
+        val jsFile = jsSource.getJsFile()
+
 
         jsSource.jsScope.runWithScope { context, scriptable ->
             // 2. import
@@ -73,13 +74,26 @@ class JSComponentBundle(
             )
 
             // 3. 加载插件源代码
-            context.evaluateString(
-                scriptable,
-                jsText,
-                "source ${jsSource.key}",
-                1,
-                null
-            )
+            if (jsFile == null) {
+                context.evaluateString(
+                    scriptable,
+                    jsSource.getJsString(),
+                    "source ${jsSource.key}",
+                    1,
+                    null
+                )
+            } else {
+                val reader = jsFile.reader()
+                context.evaluateReader(
+                    scriptable,
+                    reader,
+                    "source ${jsSource.key}",
+                    1,
+                    null
+                )
+            }
+
+
 
             // 4. 注入工具给 JS
             bundle.forEach { (k, v) ->

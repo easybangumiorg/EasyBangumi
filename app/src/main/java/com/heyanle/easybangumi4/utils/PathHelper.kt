@@ -37,3 +37,11 @@ fun Context.getCachePath(type: String): String {
         type
     ).absolutePath
 }
+
+
+fun Context.getInnerCachePath(type: String) : String {
+    return File(
+        cacheDir,
+        type
+    ).absolutePath
+}

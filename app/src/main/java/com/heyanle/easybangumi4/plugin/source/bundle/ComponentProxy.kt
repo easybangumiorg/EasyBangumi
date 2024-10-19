@@ -10,6 +10,7 @@ import java.lang.reflect.InvocationHandler
 import java.lang.reflect.Method
 
 /**
+ * hook 源的所有方法，遇到不能闭环的在下次启动时进入安全模式
  * Created by heyanle on 2024/5/31.
  * https://github.com/heyanLE
  */

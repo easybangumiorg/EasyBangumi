@@ -29,11 +29,18 @@ class FileJsExtensionProvider(
 
         // 扩展名
         const val EXTENSION_SUFFIX = ".ebg.js"
+
+        // 加密后的后缀
+        const val EXTENSION_CRY_SUFFIX = ".ebg.jsc"
     }
 
-    override fun getSuffix(): String {
+    override fun checkName(path: String): Boolean {
+        return path.endsWith(EXTENSION_CRY_SUFFIX) || path.endsWith(EXTENSION_SUFFIX)
+    }
 
-        return EXTENSION_SUFFIX
+    override fun getNameWhenLoad(path: String, time: Long, atomicLong: Long): String {
+        val suffix = if (path.endsWith(EXTENSION_CRY_SUFFIX)) EXTENSION_CRY_SUFFIX else EXTENSION_SUFFIX
+        return "${time}-${atomicLong}${suffix}"
     }
 
     override fun getExtensionLoader(fileList: List<File>): List<ExtensionLoader> {

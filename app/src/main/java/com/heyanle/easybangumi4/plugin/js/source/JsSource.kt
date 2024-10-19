@@ -46,6 +46,10 @@ class JsSource(
         }
     }
 
+    fun getJsFile(): File? {
+        return js as? File
+    }
+
 
     override val describe: String?
         get() = map.get("describe")

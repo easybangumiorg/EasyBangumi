@@ -82,8 +82,10 @@ abstract class AbsFolderExtensionProvider(
             fileObserver.startWatching()
         }
     }
-    
-    abstract fun getSuffix(): String
+
+    abstract fun checkName(path: String): Boolean
+    abstract fun getNameWhenLoad(path: String, time: Long, atomicLong: Long): String
+
     abstract fun getExtensionLoader(fileList: List<File>): List<ExtensionLoader>
 
     open fun coverExtensionLoaderList(loaderList: List<ExtensionLoader>): List<ExtensionLoader> {
@@ -94,7 +96,7 @@ abstract class AbsFolderExtensionProvider(
         scope.launch {
             try {
                 val inputStream = File(path).inputStream()
-                innerAppendExtension(inputStream)
+                innerAppendExtension(path, inputStream)
                 callback?.invoke(null)
             } catch (e: IOException) {
                 e.printStackTrace()
@@ -106,9 +108,9 @@ abstract class AbsFolderExtensionProvider(
     /**
      * 调用完后 inputSteam 会自动 close
      */
-    protected fun innerAppendExtension(inputStream: InputStream) {
-        val fileName =
-            "${System.currentTimeMillis()}-${atomicLong.getAndIncrement()}${getSuffix()}"
+    protected fun innerAppendExtension(path: String, inputStream: InputStream) {
+        val fileName = getNameWhenLoad(path, System.currentTimeMillis(), atomicLong.getAndIncrement())
+            // "${System.currentTimeMillis()}-${atomicLong.getAndIncrement()}${getSuffix()}"
         val cacheFile = File(cacheFolder, fileName)
         val targetFile = File(folderPath, fileName)
         val targetFileTemp = File(folderPath, "${fileName}.temp")
@@ -144,10 +146,7 @@ abstract class AbsFolderExtensionProvider(
     // 文件观察
 
     protected fun onEvent(event: Int, path: String) {
-        if (event and FileObserver.DELETE == FileObserver.DELETE || event and FileObserver.DELETE_SELF == FileObserver.DELETE_SELF || path.endsWith(
-                getSuffix()
-            )
-        ) {
+        if (event and FileObserver.DELETE == FileObserver.DELETE || event and FileObserver.DELETE_SELF == FileObserver.DELETE_SELF || checkName(path)) {
             scanFolder()
         }
     }

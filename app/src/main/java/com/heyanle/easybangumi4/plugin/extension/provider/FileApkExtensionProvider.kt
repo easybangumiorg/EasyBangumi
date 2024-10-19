@@ -24,8 +24,16 @@ class FileApkExtensionProvider(
         const val EXTENSION_SUFFIX = ".easybangumi.apk"
     }
 
-    override fun getSuffix(): String {
+    fun getSuffix(): String {
         return EXTENSION_SUFFIX
+    }
+
+    override fun checkName(path: String): Boolean {
+        return path.endsWith(getSuffix())
+    }
+
+    override fun getNameWhenLoad(path: String, time: Long, atomicLong: Long): String {
+        return "${time}-${atomicLong}${getSuffix()}"
     }
 
     override fun getExtensionLoader(fileList: List<File>): List<ExtensionLoader> {

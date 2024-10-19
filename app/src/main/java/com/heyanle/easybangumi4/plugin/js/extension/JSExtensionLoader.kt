@@ -6,6 +6,7 @@ import com.heyanle.easybangumi4.crash.SourceCrashController
 import com.heyanle.easybangumi4.plugin.extension.ExtensionInfo
 import com.heyanle.easybangumi4.plugin.extension.loader.AbsExtensionLoader
 import com.heyanle.easybangumi4.plugin.extension.loader.ExtensionLoader
+import com.heyanle.easybangumi4.plugin.extension.provider.FileJsExtensionProvider
 import com.heyanle.easybangumi4.plugin.js.runtime.JSRuntime
 import com.heyanle.easybangumi4.plugin.js.runtime.JSRuntimeProvider
 import com.heyanle.easybangumi4.plugin.js.runtime.JSScope
@@ -37,7 +38,7 @@ class JSExtensionLoader(
         get() = "js:${file.path}"
 
     override fun canLoad(): Boolean {
-        return file.isFile && file.exists() && file.canRead()
+        return file.isFile && file.exists() && file.canRead() && file.name.endsWith(FileJsExtensionProvider.EXTENSION_SUFFIX)
     }
 
     override fun load(): ExtensionInfo? {
