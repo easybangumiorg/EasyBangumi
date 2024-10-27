@@ -4,9 +4,9 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
-import com.heyanle.easybangumi4.plugin.extension.ExtensionController
+import com.heyanle.easybangumi4.plugin.extension.provider.JsExtensionProvider
+import com.heyanle.easybangumi4.plugin.js.extension.JSExtensionCryLoader
 import com.heyanle.easybangumi4.plugin.js.extension.JSExtensionLoader
-import com.heyanle.easybangumi4.plugin.js.runtime.JSRuntime
 import com.heyanle.easybangumi4.plugin.js.runtime.JSRuntimeProvider
 import com.heyanle.easybangumi4.utils.logi
 import java.io.File
@@ -45,10 +45,16 @@ object ExtensionLoaderFactory {
     fun getFileJsExtensionLoaders(
         fileList: List<File>,
         jsRuntime: JSRuntimeProvider
-    ): List<JSExtensionLoader> {
+    ): List<ExtensionLoader> {
         return try {
             fileList.map {
-                JSExtensionLoader(it, jsRuntime)
+                if (it.name.endsWith(JsExtensionProvider.EXTENSION_CRY_SUFFIX)) {
+                    logi("load js file: ${it.name}")
+                    JSExtensionCryLoader(it, jsRuntime)
+                } else {
+                    logi("load js file: ${it.name}")
+                    JSExtensionLoader(it, jsRuntime)
+                }
             }
         } catch (e: Exception) {
             e.printStackTrace()

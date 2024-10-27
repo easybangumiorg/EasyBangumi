@@ -31,6 +31,7 @@ import com.heyanle.easybangumi4.ui.about.About
 import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlay
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.dlna.Dlna
+import com.heyanle.easybangumi4.ui.extension_push.ExtensionPush
 import com.heyanle.easybangumi4.ui.story.download.Download
 import com.heyanle.easybangumi4.ui.main.Main
 import com.heyanle.easybangumi4.ui.main.history.History
@@ -91,6 +92,8 @@ const val TAG_MANAGE = "tag_manage"
 const val STORAGE = "storage"
 
 const val STORY = "story"
+
+const val EXTENSION_PUSH = "extension_push"
 
 fun NavHostController.navigationSearch(
     defSourceKey: String,
@@ -378,6 +381,14 @@ fun Nav() {
                 NormalSystemBarColor()
                 //Download()
                 Story()
+            }
+
+            composable(EXTENSION_PUSH) {
+                ScreenShowEvent()
+                NormalSystemBarColor()
+                ExtensionPush()
+                //Download()
+                //ExtensionPush()
             }
 
             composable(

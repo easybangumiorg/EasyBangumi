@@ -33,6 +33,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Person
@@ -71,6 +72,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
+import com.heyanle.easybangumi4.EXTENSION_PUSH
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.plugin.extension.ExtensionInfo
 import com.heyanle.easybangumi4.ui.common.EasyDeleteDialog
@@ -136,14 +138,13 @@ fun ExtensionTopAppBar(behavior: TopAppBarScrollBehavior) {
                         }
                     }
                 }
-
-
                 TextField(keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                     keyboardActions = KeyboardActions(onSearch = {}),
                     maxLines = 1,
                     modifier = Modifier.focusRequester(focusRequester),
-                    colors = TextFieldDefaults.textFieldColors(
-                        containerColor = Color.Transparent,
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent,
                         focusedIndicatorColor = Color.Transparent,
                     ),
@@ -164,6 +165,15 @@ fun ExtensionTopAppBar(behavior: TopAppBarScrollBehavior) {
         },
         actions = {
             if (!isSearch) {
+                IconButton(onClick = {
+                    nav.navigate(EXTENSION_PUSH)
+                }) {
+                    Icon(
+                        imageVector = Icons.Filled.Add, stringResource(id = R.string.extension_push)
+                    )
+                }
+
+
                 IconButton(onClick = {
                     vm.onSearchChange("")
                 }) {
@@ -197,28 +207,23 @@ fun Extension() {
     if (sta.isLoading) {
         LoadingPage(modifier = Modifier.fillMaxSize())
     } else {
-        Column {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize(),
+            contentPadding = PaddingValues(0.dp, 0.dp, 0.dp, 60.dp),
+            state = listState
+        ) {
+            items(sta.showList) {
+                ExtensionInfoItem(it,
+                    onClick = {
+                        (ctx as? Activity)?.let { act ->
+                            vm.onItemClick(it, act)
+                        }
 
-
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                contentPadding = PaddingValues(0.dp, 0.dp, 0.dp, 60.dp),
-                state = listState
-            ) {
-                items(sta.showList) {
-                    ExtensionInfoItem(it,
-                        onClick = {
-                            (ctx as? Activity)?.let { act ->
-                                vm.onItemClick(it, act)
-                            }
-
-                        }, onLongPress = {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            vm.onItemLongPress(it)
-                        })
-                }
+                    }, onLongPress = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        vm.onItemLongPress(it)
+                    })
             }
         }
 
@@ -257,62 +262,40 @@ fun ExtensionInfoItem(
             Text(text = extension.label)
         },
         supportingContent = {
-            LazyRow(
+            Row(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                item {
-                    // 版本
-                    Text(
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.secondaryContainer)
-                            .clickable {
-                            }
-                            .padding(8.dp, 4.dp),
-                        color = MaterialTheme.colorScheme.onSecondaryContainer,
-                        fontWeight = FontWeight.W900,
-                        text = extension.versionName,
-                        fontSize = 12.sp
-                    )
-                }
-                item {
-                    // 加载方式
-                    Text(
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.secondaryContainer)
-                            .clickable {
-                            }
-                            .padding(8.dp, 4.dp),
-                        color = MaterialTheme.colorScheme.onSecondaryContainer,
-                        fontWeight = FontWeight.W900,
-                        text = when(extension.loadType){
-                            ExtensionInfo.TYPE_APK_INSTALL -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_installed)}
-                            ExtensionInfo.TYPE_APK_FILE -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_file_apk)}
-                            ExtensionInfo.TYPE_JS_FILE -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_file_js)}
-                            else -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_installed)}
-                        },
-                        fontSize = 12.sp
-                    )
-                }
-//                item {
-//                    Text(
-//                        modifier = Modifier
-//                            .clip(CircleShape)
-//                            .background(MaterialTheme.colorScheme.secondaryContainer)
-//                            .clickable {
-//                            }
-//                            .padding(8.dp, 4.dp),
-//                        color = MaterialTheme.colorScheme.onSecondaryContainer,
-//                        fontWeight = FontWeight.W900,
-//                        text = when(extension.loadType){
-//                            Extension.TYPE_APP -> {extension.pkgName}
-//                            Extension.TYPE_FILE -> {extension.fileName}
-//                            else -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_installed)}
-//                        },
-//                        fontSize = 12.sp
-//                    )
-//                }
+                // 版本
+                Text(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.secondaryContainer)
+                        .clickable {
+                        }
+                        .padding(8.dp, 4.dp),
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    fontWeight = FontWeight.W900,
+                    text = extension.versionName,
+                    fontSize = 12.sp
+                )
+                // 加载方式
+                Text(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.secondaryContainer)
+                        .clickable {
+                        }
+                        .padding(8.dp, 4.dp),
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    fontWeight = FontWeight.W900,
+                    text = when(extension.loadType){
+                        ExtensionInfo.TYPE_APK_INSTALL -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_installed)}
+                        ExtensionInfo.TYPE_APK_FILE -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_file_apk)}
+                        ExtensionInfo.TYPE_JS_FILE -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_file_js)}
+                        else -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_installed)}
+                    },
+                    fontSize = 12.sp
+                )
             }
         },
         trailingContent = {

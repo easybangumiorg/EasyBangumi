@@ -157,8 +157,9 @@ fun CartoonDownloadDialog(
                         }),
                         maxLines = 1,
                         modifier = Modifier.focusRequester(focusRequester),
-                        colors = TextFieldDefaults.textFieldColors(
-                            containerColor = Color.Transparent,
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
                             unfocusedIndicatorColor = Color.Transparent,
                             focusedIndicatorColor = Color.Transparent,
                         ),

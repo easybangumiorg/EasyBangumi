@@ -3,7 +3,7 @@ package com.heyanle.easybangumi4.plugin.js.extension
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.plugin.extension.ExtensionInfo
 import com.heyanle.easybangumi4.plugin.extension.loader.ExtensionLoader
-import com.heyanle.easybangumi4.plugin.extension.provider.FileJsExtensionProvider
+import com.heyanle.easybangumi4.plugin.extension.provider.JsExtensionProvider
 import com.heyanle.easybangumi4.plugin.js.runtime.JSRuntimeProvider
 import com.heyanle.easybangumi4.utils.PackageHelper
 import com.heyanle.easybangumi4.utils.aesEncryptTo
@@ -44,6 +44,6 @@ class JSExtensionCryLoader(
 
     override fun canLoad(): Boolean {
         return file.isFile && file.exists() && file.canRead() && file.name.endsWith(
-            FileJsExtensionProvider.EXTENSION_CRY_SUFFIX)
+            JsExtensionProvider.EXTENSION_CRY_SUFFIX)
     }
 }

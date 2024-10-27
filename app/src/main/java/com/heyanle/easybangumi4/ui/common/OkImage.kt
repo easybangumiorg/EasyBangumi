@@ -158,7 +158,7 @@ fun LoadingImage(
                 else GifDecoder.Factory()
             )
             .crossfade(true)
-            .data(Uri.parse("file:///android_asset/loading_ryo.gif")).build(),
+            .data(Uri.parse("file:///android_asset/loading_himemiya.gif")).build(),
         contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.loading),
         modifier = Modifier
             .then(modifier)

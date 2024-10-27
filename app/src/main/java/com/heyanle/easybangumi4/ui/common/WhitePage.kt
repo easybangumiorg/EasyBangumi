@@ -64,7 +64,7 @@ fun LoadingPage(
     msgColor: Color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
     other: @Composable () -> Unit = {},
 ) {
-    WhitePage(modifier, Uri.parse("file:///android_asset/loading_ryo.gif"), loadingMsg, other = other, msgColor = msgColor)
+    WhitePage(modifier, Uri.parse("file:///android_asset/loading_himemiya.gif"), loadingMsg, other = other, msgColor = msgColor)
 }
 
 @Composable

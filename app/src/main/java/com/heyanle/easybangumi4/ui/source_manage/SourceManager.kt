@@ -103,6 +103,7 @@ fun SourceManager(
                     onClick = {
                         scope.launch {
                             pagerState.animateScrollToPage(index)
+                            explorePageIndex = index
                         }
                     },
                     text = {

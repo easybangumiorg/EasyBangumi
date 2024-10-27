@@ -1,13 +1,10 @@
 package com.heyanle.easybangumi4.plugin.extension.provider
 
-import android.content.Context
 import android.os.Build
 import android.os.FileObserver
 import androidx.annotation.RequiresApi
 import com.heyanle.easybangumi4.plugin.extension.ExtensionInfo
 import com.heyanle.easybangumi4.plugin.extension.loader.ExtensionLoader
-import com.heyanle.easybangumi4.plugin.extension.loader.ExtensionLoaderFactory
-import com.heyanle.easybangumi4.plugin.extension.loader.FileExtensionLoader
 import com.heyanle.easybangumi4.utils.TimeLogUtils
 import com.heyanle.easybangumi4.utils.logi
 import kotlinx.coroutines.CoroutineDispatcher
@@ -69,7 +66,7 @@ abstract class AbsFolderExtensionProvider(
             } ?: emptyList()
 
 
-            val extensionInfos = coverExtensionLoaderList(getExtensionLoader(fileList)).map {
+            val extensionInfos = coverExtensionLoaderList(loadExtensionLoader(fileList)).map {
                 it.load()
             }.filterIsInstance<ExtensionInfo>()
 
@@ -83,10 +80,10 @@ abstract class AbsFolderExtensionProvider(
         }
     }
 
-    abstract fun checkName(path: String): Boolean
-    abstract fun getNameWhenLoad(path: String, time: Long, atomicLong: Long): String
+    abstract fun checkName(displayName: String): Boolean
+    abstract fun getNameWhenLoad(displayName: String, time: Long, atomicLong: Long): String
 
-    abstract fun getExtensionLoader(fileList: List<File>): List<ExtensionLoader>
+    abstract fun loadExtensionLoader(fileList: List<File>): List<ExtensionLoader>
 
     open fun coverExtensionLoaderList(loaderList: List<ExtensionLoader>): List<ExtensionLoader> {
         return loaderList;
@@ -105,11 +102,23 @@ abstract class AbsFolderExtensionProvider(
         }
     }
 
+    fun appendExtensionStream(displayName: String, inputStream: InputStream, callback: ((Exception?) -> Unit)? = null) {
+        scope.launch {
+            try {
+                innerAppendExtension(displayName, inputStream)
+                callback?.invoke(null)
+            } catch (e: IOException) {
+                e.printStackTrace()
+                callback?.invoke(e)
+            }
+        }
+    }
+
     /**
      * 调用完后 inputSteam 会自动 close
      */
-    protected fun innerAppendExtension(path: String, inputStream: InputStream) {
-        val fileName = getNameWhenLoad(path, System.currentTimeMillis(), atomicLong.getAndIncrement())
+    protected fun innerAppendExtension(displayName: String, inputStream: InputStream) {
+        val fileName = getNameWhenLoad(displayName, System.currentTimeMillis(), atomicLong.getAndIncrement())
             // "${System.currentTimeMillis()}-${atomicLong.getAndIncrement()}${getSuffix()}"
         val cacheFile = File(cacheFolder, fileName)
         val targetFile = File(folderPath, fileName)
@@ -122,7 +131,7 @@ abstract class AbsFolderExtensionProvider(
             }
         }
         cacheFile.deleteOnExit()
-        val loader = getExtensionLoader(listOf(cacheFile)).firstOrNull() ?: return
+        val loader = loadExtensionLoader(listOf(cacheFile)).firstOrNull() ?: return
         if (loader.canLoad()) {
             cacheFile.copyTo(targetFileTemp)
             targetFileTemp.renameTo(targetFile)

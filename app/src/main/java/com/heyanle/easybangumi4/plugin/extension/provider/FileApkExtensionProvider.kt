@@ -28,15 +28,15 @@ class FileApkExtensionProvider(
         return EXTENSION_SUFFIX
     }
 
-    override fun checkName(path: String): Boolean {
-        return path.endsWith(getSuffix())
+    override fun checkName(displayName: String): Boolean {
+        return displayName.endsWith(getSuffix())
     }
 
-    override fun getNameWhenLoad(path: String, time: Long, atomicLong: Long): String {
+    override fun getNameWhenLoad(displayName: String, time: Long, atomicLong: Long): String {
         return "${time}-${atomicLong}${getSuffix()}"
     }
 
-    override fun getExtensionLoader(fileList: List<File>): List<ExtensionLoader> {
+    override fun loadExtensionLoader(fileList: List<File>): List<ExtensionLoader> {
         return ExtensionLoaderFactory.getFileApkExtensionLoaders(context, fileList.map { it.absolutePath })
     }
 

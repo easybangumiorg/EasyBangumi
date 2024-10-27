@@ -609,4 +609,19 @@
 
 
     <string name="save_to_media_ready">是否要保存%1$s个视频到相册？</string>
+
+    <string name="extension_push">添加 JS 拓展</string>
+    <string name="extension_push_from_file">选择文件 (JS)</string>
+    <string name="extension_push_completely">拓展添加完成</string>
+    <string name="extension_push_error">拓展添加错误</string>
+
+    <string name="extension_push_from_input">手动输入添加</string>
+    <string name="js_file_url">JS 文件 URL</string>
+    <string name="js_code">JS 代码</string>
+    <string name="js_repo">JS 仓库</string>
+
+    <string name="js_file_url_desc">请输入 JS 文件 URL （一行一个）</string>
+    <string name="js_code_desc">请直接输入 JS 代码</string>
+    <string name="js_repo_desc">请输入 JS 仓库地址</string>
+
 </resources>

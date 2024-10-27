@@ -46,11 +46,6 @@ fun CombineClickIconButton(
                 onClick = onClick,
                 onLongClick = onLongClick,
                 role = Role.Button,
-                interactionSource = interactionSource,
-                indication = rememberRipple(
-                    bounded = false,
-                    radius = 20.dp
-                )
             ),
         contentAlignment = Alignment.Center
     ) {

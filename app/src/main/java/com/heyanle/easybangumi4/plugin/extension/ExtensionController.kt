@@ -1,12 +1,15 @@
 package com.heyanle.easybangumi4.plugin.extension
 
 import android.content.Context
+import android.net.Uri
+import androidx.core.net.toUri
+import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.crash.SourceCrashController
 import com.heyanle.easybangumi4.plugin.extension.provider.FileApkExtensionProvider
-import com.heyanle.easybangumi4.plugin.extension.provider.FileJsExtensionProvider
+import com.heyanle.easybangumi4.plugin.extension.provider.JsExtensionProvider
 import com.heyanle.easybangumi4.plugin.extension.provider.InstalledAppExtensionProvider
-import com.heyanle.easybangumi4.plugin.js.runtime.JSRuntime
 import com.heyanle.easybangumi4.plugin.js.runtime.JSRuntimeProvider
+import com.hippo.unifile.UniFile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -16,6 +19,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
 
@@ -38,8 +42,6 @@ class ExtensionController(
 
     }
 
-    private val jsRuntimeProvider = JSRuntimeProvider(2)
-
     private val dispatcher = Dispatchers.IO
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
 
@@ -53,7 +55,9 @@ class ExtensionController(
     )
     val state = _state.asStateFlow()
 
+    // ============================ 插件 Provider ============================
 
+    // 已安装 apk
     private val installedAppExtensionProvider: InstalledAppExtensionProvider by lazy {
         InstalledAppExtensionProvider(
             context,
@@ -61,6 +65,7 @@ class ExtensionController(
         )
     }
 
+    // 文件夹里的 apk
     private val fileApkExtensionProvider: FileApkExtensionProvider by lazy {
         FileApkExtensionProvider(
             context,
@@ -70,8 +75,10 @@ class ExtensionController(
         )
     }
 
-    private val fileJsExtensionProvider: FileJsExtensionProvider by lazy {
-        FileJsExtensionProvider(
+    // js 文件
+    private val jsRuntimeProvider = JSRuntimeProvider(2)
+    private val jsExtensionProvider: JsExtensionProvider by lazy {
+        JsExtensionProvider(
             jsRuntimeProvider,
             jsExtensionFolder,
             dispatcher,
@@ -85,14 +92,14 @@ class ExtensionController(
         SourceCrashController.onExtensionStart()
         installedAppExtensionProvider.init()
         fileApkExtensionProvider.init()
-        fileJsExtensionProvider.init()
+        jsExtensionProvider.init()
         SourceCrashController.onExtensionEnd()
 
         scope.launch {
             combine(
                 installedAppExtensionProvider.flow,
                 fileApkExtensionProvider.flow,
-                fileJsExtensionProvider.flow
+                jsExtensionProvider.flow
             ) { installedAppExtensionProviderState, fileApkExtensionProviderState, fileJsExtensionProviderState ->
                 val map = mutableMapOf<String, ExtensionInfo>()
                 installedAppExtensionProviderState.extensionMap.forEach {
@@ -117,6 +124,31 @@ class ExtensionController(
 
     }
 
+    // 如果 type 没指定，会根据文件后缀名判断
+    suspend fun appendExtensionUri(uri: Uri, type: Int = -1) : Exception? {
+        return withContext(dispatcher) {
+            try {
+                val uniFile = UniFile.fromUri(context, uri)
+                if (uniFile?.exists() != true || !uniFile.canRead()){
+                    return@withContext IOException("文件不存在或无法读取")
+                }
+
+                val name = uniFile.name ?: ""
+                if (JsExtensionProvider.isEndWithJsExtensionSuffix(name) || type == ExtensionInfo.TYPE_JS_FILE) {
+                    jsExtensionProvider.appendExtensionStream(name, uniFile.openInputStream())
+                } else if (name.endsWith(FileApkExtensionProvider.EXTENSION_SUFFIX) || type == ExtensionInfo.TYPE_APK_FILE) {
+                    fileApkExtensionProvider.appendExtensionStream(name, uniFile.openInputStream())
+                } else {
+                    return@withContext IOException("不支持的文件类型")
+                }
+                return@withContext null
+            } catch (e: IOException) {
+                e.printStackTrace()
+                return@withContext e
+            }
+        }
+    }
+
 
     fun appendExtensionPath(path: String, callback: ((Exception?) -> Unit)? = null) {
         scope.launch {
@@ -128,8 +160,8 @@ class ExtensionController(
                     return@launch
                 }
 
-                if (file.name.endsWith(FileJsExtensionProvider.EXTENSION_SUFFIX)) {
-                    fileJsExtensionProvider.appendExtensionPath(path)
+                if (JsExtensionProvider.isEndWithJsExtensionSuffix(file.name)) {
+                    jsExtensionProvider.appendExtensionPath(path)
                 } else if (file.name.endsWith(FileApkExtensionProvider.EXTENSION_SUFFIX)) {
                     fileApkExtensionProvider.appendExtensionPath(path)
                 } else {

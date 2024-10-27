@@ -82,7 +82,7 @@ fun ColumnScope.TabPage(
         Divider()
         HorizontalPager(
             modifier = pagerModifier,
-            beyondBoundsPageCount = beyondBoundsPageCount,
+            beyondViewportPageCount = beyondBoundsPageCount,
             verticalAlignment = Alignment.Top,
             state = pagerState,
         ) {

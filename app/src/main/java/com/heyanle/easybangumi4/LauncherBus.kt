@@ -131,5 +131,23 @@ class LauncherBus(
         }
     }
 
+    // 4. 选择 js 文件
+    private var getJSCallback: SoftReference<(Uri?)->Unit>? = null
+    private val getJSLauncher = act.registerForActivityResult(ActivityResultContracts.GetContent()){
+        scope.launch {
+            getJSCallback?.get()?.invoke(it)
+            getJSCallback = null
+        }
+    }
+    fun getJsFile(callback: (Uri?)->Unit){
+        scope.launch {
+            if (getJSCallback != null){
+                getJSCallback?.get()?.invoke(null)
+            }
+            getJSCallback = SoftReference(callback)
+            getJSLauncher.launch("application/javascript")
+        }
+    }
+
 
 }
