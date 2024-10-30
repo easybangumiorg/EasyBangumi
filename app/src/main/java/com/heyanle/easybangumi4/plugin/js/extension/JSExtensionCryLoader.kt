@@ -24,6 +24,9 @@ class JSExtensionCryLoader(
 
     companion object {
         val CHUNK_SIZE = 1024
+
+        // 加密 js 文件首行
+        val FIRST_LINE_MARK = "easybangumi.cryjs"
     }
 
     private val plaintextCacheFolder = APP.getInnerCachePath("js_plaintext")
@@ -33,11 +36,47 @@ class JSExtensionCryLoader(
         get() = "js:${file.path}"
 
     override fun load(): ExtensionInfo? {
-        val plaintextFileName = file.absolutePath.getMD5()
+        File(plaintextCacheFolder).mkdirs()
+
+        val plaintextDisplayName = file.absolutePath.getMD5()
+        val plaintextFileCacheName = plaintextDisplayName + ".${JsExtensionProvider.EXTENSION_CRY_SUFFIX}"
+        val plaintextFileName = plaintextDisplayName + ".${JsExtensionProvider.EXTENSION_SUFFIX}"
+        val plaintextCacheFile = File(plaintextCacheFolder, plaintextFileCacheName)
         val plaintextFile = File(plaintextCacheFolder, plaintextFileName)
+
+        plaintextCacheFile.delete()
+        plaintextCacheFile.createNewFile()
+
+        // 1. 把第一行标志拆分
+        var needBlock = false
+        plaintextFile.bufferedReader().use { reader ->
+            plaintextCacheFile.bufferedWriter().use { writer ->
+                var isFirstLineRead = false
+                while(reader.ready()) {
+                    val it = reader.readLine()
+                    if (!isFirstLineRead) {
+                        isFirstLineRead = true
+                        if (it != FIRST_LINE_MARK) {
+                            needBlock = true
+                            break
+                        }
+                    } else {
+                        writer.write(it)
+                    }
+                }
+            }
+        }
+        if (needBlock) {
+            plaintextCacheFile.delete()
+            plaintextFile.delete()
+            return null
+        }
+
         plaintextFile.delete()
-        // 解密
-        file.aesEncryptTo(plaintextFile, PackageHelper.appSignature, CHUNK_SIZE)
+
+        // 2. 解密
+        plaintextFile.createNewFile()
+        plaintextCacheFile.aesEncryptTo(plaintextFile, PackageHelper.appSignature, CHUNK_SIZE)
         plaintextFile.deleteOnExit()
         return JSExtensionLoader(plaintextFile, jsRuntime).load()
     }

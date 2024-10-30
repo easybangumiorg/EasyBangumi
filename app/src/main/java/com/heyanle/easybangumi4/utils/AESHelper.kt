@@ -2,6 +2,7 @@ package com.heyanle.easybangumi4.utils
 
 import androidx.annotation.WorkerThread
 import java.io.File
+import java.io.InputStream
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.spec.SecretKeySpec

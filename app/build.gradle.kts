@@ -29,6 +29,7 @@ runCatching {
 }
 
 val packageName = if (release) "com.heyanle.easybangumi4" else "com.heyanle.easybangumi4.debug"
+val labelNameRes = if (release) "@string/app_name" else "纯纯看番 Debug"
 
 android {
     namespace =  "com.heyanle.easybangumi4"
@@ -53,6 +54,7 @@ android {
         manifestPlaceholders["bugly_app_version"] = Android.versionName
         manifestPlaceholders["bugly_app_channel"] = "github"
         manifestPlaceholders["package_name"] = packageName
+        manifestPlaceholders["label_res"] = labelNameRes
         manifestPlaceholders["is_release"] = release
 
         // bugly 调试模式

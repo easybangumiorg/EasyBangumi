@@ -124,6 +124,26 @@ class ExtensionController(
 
     }
 
+    suspend fun <R> withNoWatching(isScan: Boolean = true, block:suspend  ()-> R): R? {
+        jsExtensionProvider.stopWatching()
+        fileApkExtensionProvider.stopWatching()
+        val r = try {
+            block()
+        } catch (e: Throwable) {
+            e.printStackTrace()
+            null
+        }
+        jsExtensionProvider.startWatching()
+        fileApkExtensionProvider.startWatching()
+
+        if (isScan) {
+            jsExtensionProvider.scanFolder()
+            fileApkExtensionProvider.scanFolder()
+        }
+        return r
+    }
+
+
     // 如果 type 没指定，会根据文件后缀名判断
     suspend fun appendExtensionUri(uri: Uri, type: Int = -1) : Exception? {
         return withContext(dispatcher) {
@@ -138,6 +158,29 @@ class ExtensionController(
                     jsExtensionProvider.appendExtensionStream(name, uniFile.openInputStream())
                 } else if (name.endsWith(FileApkExtensionProvider.EXTENSION_SUFFIX) || type == ExtensionInfo.TYPE_APK_FILE) {
                     fileApkExtensionProvider.appendExtensionStream(name, uniFile.openInputStream())
+                } else {
+                    return@withContext IOException("不支持的文件类型")
+                }
+                return@withContext null
+            } catch (e: IOException) {
+                e.printStackTrace()
+                return@withContext e
+            }
+        }
+    }
+
+    suspend fun appendExtensionFile(file: File, type: Int = -1) : Exception? {
+        return withContext(dispatcher) {
+            try {
+                if (!file.exists() || !file.canRead()){
+                    return@withContext IOException("文件不存在或无法读取")
+                }
+
+                val name = file.name ?: ""
+                if (JsExtensionProvider.isEndWithJsExtensionSuffix(name) || type == ExtensionInfo.TYPE_JS_FILE) {
+                    jsExtensionProvider.appendExtensionStream(name, file.inputStream())
+                } else if (name.endsWith(FileApkExtensionProvider.EXTENSION_SUFFIX) || type == ExtensionInfo.TYPE_APK_FILE) {
+                    fileApkExtensionProvider.appendExtensionStream(name, file.inputStream())
                 } else {
                     return@withContext IOException("不支持的文件类型")
                 }

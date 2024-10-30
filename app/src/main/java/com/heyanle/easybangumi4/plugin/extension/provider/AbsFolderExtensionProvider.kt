@@ -89,6 +89,14 @@ abstract class AbsFolderExtensionProvider(
         return loaderList;
     }
 
+    fun stopWatching() {
+        fileObserver.stopWatching()
+    }
+
+    fun startWatching() {
+        fileObserver.startWatching()
+    }
+
     fun appendExtensionPath(path: String, callback: ((Exception?) -> Unit)? = null) {
         scope.launch {
             try {

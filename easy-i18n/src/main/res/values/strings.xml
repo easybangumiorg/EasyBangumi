@@ -624,4 +624,8 @@
     <string name="js_code_desc">请直接输入 JS 代码</string>
     <string name="js_repo_desc">请输入 JS 仓库地址</string>
 
+    <string name="succeed">成功</string>
+    <string name="download_fail">下载失败</string>
+    <string name="load_fail">加载失败</string>
+
 </resources>

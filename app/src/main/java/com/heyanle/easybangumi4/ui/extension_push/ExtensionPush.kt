@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -56,6 +57,19 @@ import com.heyanle.easybangumi4.utils.stringRes
  * Created by HeYanLe on 2024/10/27 14:14.
  * https://github.com/heyanLE
  */
+
+interface ExtensionPushType {
+    @Composable
+    fun label(): String
+
+    fun LazyListScope.content()
+
+    @Composable
+    fun OutContent()
+
+    fun onPush(viewModel: ExtensionPushViewModel)
+}
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ExtensionPush() {
@@ -68,7 +82,9 @@ fun ExtensionPush() {
     val fq = remember { FocusRequester() }
 
     Surface(
-        modifier = Modifier.fillMaxSize().navigationBarsPadding(),
+        modifier = Modifier
+            .fillMaxSize()
+            .navigationBarsPadding(),
         color = MaterialTheme.colorScheme.background,
         contentColor = MaterialTheme.colorScheme.onBackground
     ) {
@@ -109,7 +125,9 @@ fun ExtensionPush() {
 
 
             LazyColumn(
-                modifier = Modifier.fillMaxWidth().nestedScroll(scrollBehavior.nestedScrollConnection)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .nestedScroll(scrollBehavior.nestedScrollConnection)
             ) {
                 // 选择文件按钮
                 item {
@@ -129,13 +147,16 @@ fun ExtensionPush() {
                     }
                 }
 
-                item {
-                    HorizontalDivider()
-                }
+//                item {
+//                    HorizontalDivider()
+//                }
 
                 item {
                     ListItem(headlineContent = {
-                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.extension_push_from_input), color = MaterialTheme.colorScheme.primary)
+                        Text(
+                            text = stringResource(id = com.heyanle.easy_i18n.R.string.extension_push_from_input),
+                            color = MaterialTheme.colorScheme.primary
+                        )
                     })
                 }
 
@@ -146,7 +167,7 @@ fun ExtensionPush() {
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
 
-                    ) {
+                        ) {
                         Spacer(modifier = Modifier.padding(4.dp))
                         repeat(labelList.size) {
                             FilterChip(
@@ -181,7 +202,7 @@ fun ExtensionPush() {
                         },
                         placeholder = {
                             Text(
-                                text = descList.getOrNull(sta.sourceType)?:"",
+                                text = descList.getOrNull(sta.sourceType) ?: "",
                                 maxLines = 1
                             )
                         })
@@ -195,5 +216,10 @@ fun ExtensionPush() {
         }
     }
 
+
+}
+
+@Composable
+fun ExtensionPushFileUrl() {
 
 }

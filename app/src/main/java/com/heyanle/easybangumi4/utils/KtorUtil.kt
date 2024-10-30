@@ -6,9 +6,6 @@ import io.ktor.client.request.prepareGet
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.core.isEmpty
 import io.ktor.utils.io.core.readBytes
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
 import java.io.File
 
 /**
@@ -21,14 +18,15 @@ object KtorUtil {
 
 }
 
-suspend fun String.downloadTo(path: String, onProcess: (Float) -> Unit) {
+suspend fun String.downloadTo(path: String) {
     val targetFileTemp = File("${path}.temp")
     val targetFile = File(path)
+    targetFile.parentFile?.mkdirs()
 
     if(targetFileTemp.exists()){
         targetFileTemp.delete()
     }
-    val statement = KtorUtil.client.prepareGet (this).execute { httpResponse ->
+    KtorUtil.client.prepareGet (this).execute { httpResponse ->
         val channel: ByteReadChannel = httpResponse.body()
         while (!channel.isClosedForRead) {
             val packet = channel.readRemaining(DEFAULT_BUFFER_SIZE.toLong())
@@ -40,6 +38,10 @@ suspend fun String.downloadTo(path: String, onProcess: (Float) -> Unit) {
                 targetFileTemp.appendBytes(bytes)
             }
         }
+    }
+    if (targetFileTemp.exists() && targetFileTemp.length() > 0){
+        targetFile.delete()
+        targetFileTemp.renameTo(targetFile)
     }
 
 }

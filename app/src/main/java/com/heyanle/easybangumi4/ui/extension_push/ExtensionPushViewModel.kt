@@ -22,6 +22,10 @@ import kotlinx.coroutines.launch
 
 class ExtensionPushViewModel: ViewModel() {
 
+    companion object {
+
+    }
+
     private val extensionController: ExtensionController by Inject.injectLazy()
 
     data class State(
@@ -41,6 +45,8 @@ class ExtensionPushViewModel: ViewModel() {
             }
         }
     }
+
+
 
     private val _state = MutableStateFlow(State())
     val state = _state.asStateFlow()
