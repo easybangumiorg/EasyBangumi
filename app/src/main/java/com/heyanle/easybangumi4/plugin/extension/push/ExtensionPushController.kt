@@ -9,6 +9,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 /**
  * 添加 JS 拓展任务管理
@@ -60,6 +61,7 @@ class ExtensionPushController(
         val isError: Boolean = false,
         val isCompletely: Boolean = false,
         val currentJob: Job? = null,
+        val currentParam: ExtensionPushTask.Param? = null,
         val loadingMsg: String = "",
         val errorMsg: String = "",
         val completelyMsg: String = "",
@@ -67,17 +69,41 @@ class ExtensionPushController(
     private val _state = MutableStateFlow(State())
     val state = _state.asStateFlow()
 
-    fun cleanError() {
+    fun cleanErrorOrCompletely() {
         _state.update {
             it.currentJob?.cancel()
             it.copy(
                 isDoing = false,
                 isError = false,
+                isCompletely = false,
                 currentJob = null,
-                loadingMsg = ""
             )
         }
     }
+
+
+    fun push(param: ExtensionPushTask.Param){
+        val job = scope.launch { innerInvoke(param) }
+        while (true) {
+            val current = _state.value
+            val n = current.copy(
+                isDoing = true,
+                isError = false,
+                isCompletely = false,
+                currentJob = job,
+                currentParam = param
+            )
+            if (_state.compareAndSet(current, n)) {
+                current.currentJob?.cancel()
+                break
+            }
+        }
+    }
+
+    private suspend fun innerInvoke(param: ExtensionPushTask.Param) {
+
+    }
+
 
 
     private fun dispatchLoadingMsg(msg: String){

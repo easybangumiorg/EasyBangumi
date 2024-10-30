@@ -15,6 +15,7 @@ interface ExtensionPushTask {
     }
 
     data class Param(
+        val identify: String,
         val str1: String,
         val str2: String,
     )
