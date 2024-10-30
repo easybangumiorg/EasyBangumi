@@ -1,5 +1,6 @@
 package com.heyanle.easybangumi4.plugin.extension.push
 
+import android.content.Context
 import com.heyanle.easybangumi4.plugin.extension.ExtensionController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -14,6 +15,7 @@ import kotlinx.coroutines.flow.update
  * Created by heyanlin on 2024/10/29.
  */
 class ExtensionPushController(
+    private val context: Context,
     private val extensionController: ExtensionController
 ) {
 
@@ -38,7 +40,20 @@ class ExtensionPushController(
         override fun dispatchError(msg: String) {
             this@ExtensionPushController.dispatchError(msg)
         }
+
+        override fun dispatchCompletely(msg: String) {
+            this@ExtensionPushController.dispatchCompletely(msg)
+        }
     }
+
+    private val pushFromFileUrl = PushFromFileUrl(context, extensionController)
+    private val pushFromCode = PushFromCode(context, extensionController)
+    private val pushFromRepo = PushFromRepo(context, extensionController)
+    private val taskMap = mapOf(
+        pushFromFileUrl.identify() to pushFromFileUrl,
+        pushFromCode.identify() to pushFromCode,
+        pushFromRepo.identify() to pushFromRepo,
+    )
 
     data class State (
         val isDoing: Boolean = false,
@@ -64,30 +79,13 @@ class ExtensionPushController(
         }
     }
 
-    private suspend fun startPushFromFileUrl(
-        input: String,
-    ): Job {
-
-    }
-
-    private suspend fun startPushFromCode(
-        fileName: String,
-        code: String,
-    ): Job {
-
-    }
-
-    private suspend fun startPushFromRepo(
-        repoUrl: String,
-    ): Job {
-
-    }
 
     private fun dispatchLoadingMsg(msg: String){
         _state.update {
             it.copy(
                 isDoing = true,
                 isError = false,
+                isCompletely = false,
                 loadingMsg = msg
             )
         }
@@ -99,7 +97,20 @@ class ExtensionPushController(
             it.copy(
                 isDoing = false,
                 isError = true,
+                isCompletely = false,
                 errorMsg = msg
+            )
+        }
+    }
+
+    private fun dispatchCompletely(msg: String) {
+        _state.update {
+            it.currentJob?.cancel()
+            it.copy(
+                isDoing = false,
+                isError = false,
+                isCompletely = true,
+                completelyMsg = msg
             )
         }
     }
