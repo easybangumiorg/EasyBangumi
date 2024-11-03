@@ -1,6 +1,8 @@
 package com.heyanle.easybangumi4.plugin.extension
 
 import android.app.Application
+import com.heyanle.easybangumi4.plugin.extension.push.ExtensionPushController
+import com.heyanle.easybangumi4.plugin.js.JSDebugPreference
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.easybangumi4.utils.getInnerFilePath
@@ -36,6 +38,14 @@ class ExtensionModule(
             ExtensionIconFactoryImpl(get())
         }
         addAlias<ExtensionIconFactoryImpl, IconFactory>()
+
+        addSingletonFactory {
+            ExtensionPushController(application, get())
+        }
+
+        addSingletonFactory {
+            JSDebugPreference(application, get(), get())
+        }
 
 
     }

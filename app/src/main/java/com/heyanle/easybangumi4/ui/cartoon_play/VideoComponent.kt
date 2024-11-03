@@ -90,7 +90,6 @@ import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayingViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.DetailedViewModel
 import com.heyanle.easybangumi4.ui.common.CombineClickIconButton
-import com.heyanle.easybangumi4.ui.common.DonateDialog
 import com.heyanle.easybangumi4.ui.common.ErrorPage
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.ToggleButton
@@ -127,7 +126,6 @@ import loli.ball.easyplayer2.utils.rememberBatteryReceiver
  * https://github.com/heyanLE
  */
 
-var hasDonateFromVideo by okkv<Boolean>("hasDonateFromVideo", def = false)
 
 @UnstableApi
 @Composable
@@ -585,13 +583,6 @@ fun VideoControl(
                 showVideoScaleTypeWin.value = true
             }
 
-            val showDonate = remember { mutableStateOf(false) }
-
-            DonateDialog(title = "该功能需捐赠解锁哦！",show = showDonate.value, hasDonate = {
-                hasDonateFromVideo = true
-            }) {
-                showDonate.value = false
-            }
 
             FullScreenRightToolBar(
                 vm = controlVM,
@@ -600,18 +591,10 @@ fun VideoControl(
                     .defaultMinSize(64.dp, Dp.Unspecified)
                     .align(Alignment.CenterEnd),
                 onImage = {
-                    if (hasDonateFromVideo)
-                        cartoonPlayingVM.image()
-                    else {
-                        showDonate.value = true
-                    }
+                    cartoonPlayingVM.image()
                 },
                 onShowRecorded = {
-                    if (hasDonateFromVideo)
-                        cartoonPlayingVM.showRecord()
-                    else {
-                        showDonate.value = true
-                    }
+                    cartoonPlayingVM.showRecord()
 
                 }
             )

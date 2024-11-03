@@ -2,6 +2,7 @@ package com.heyanle.easybangumi4.plugin.extension.push
 
 import android.content.Context
 import com.heyanle.easybangumi4.plugin.extension.ExtensionController
+import com.heyanle.easybangumi4.utils.getCachePath
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -47,9 +48,11 @@ class ExtensionPushController(
         }
     }
 
-    private val pushFromFileUrl = PushFromFileUrl(context, extensionController)
-    private val pushFromCode = PushFromCode(context, extensionController)
-    private val pushFromRepo = PushFromRepo(context, extensionController)
+    private val cacheFolder = context.getCachePath("extension_js_push")
+
+    private val pushFromFileUrl = PushFromFileUrl(cacheFolder, extensionController)
+    private val pushFromCode = PushFromCode(cacheFolder, extensionController)
+    private val pushFromRepo = PushFromRepo(cacheFolder, extensionController)
     private val taskMap = mapOf(
         pushFromFileUrl.identify() to pushFromFileUrl,
         pushFromCode.identify() to pushFromCode,
@@ -101,7 +104,22 @@ class ExtensionPushController(
     }
 
     private suspend fun innerInvoke(param: ExtensionPushTask.Param) {
+        val task = taskMap[param.identify] ?: return
+        scope.launch {
+            task.invoke(this, param, container)
+        }
+    }
 
+    fun cancelCurrent(){
+        _state.update {
+            it.currentJob?.cancel()
+            it.copy(
+                isDoing = false,
+                isError = false,
+                isCompletely = false,
+                currentJob = null,
+            )
+        }
     }
 
 

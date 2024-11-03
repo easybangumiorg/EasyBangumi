@@ -1,13 +1,3 @@
-package com.heyanle.easybangumi4.plugin.js
-
-/**
- * Created by heyanle on 2024/7/30.
- * https://github.com/heyanLE
- */
-class JsTestProvider {
-
-    companion object {
-        val testJs = """
 // @key heyanle.catwcy
 // @label 喵物次元
 // @versionName 1.0
@@ -49,7 +39,7 @@ function PageComponent_getContent(mainTab, subTab, key) {
             var doc = getMainHomeDocument();
             return coverHomeMainCartoonCover(doc);
         }
-     
+
     }
     return new Pair(null, new ArrayList());
 }
@@ -95,39 +85,32 @@ function coverHomeMainCartoonCover(doc){
         var lastIndex = array.length - 1;
         var id = array[lastIndex];
         if (id.endsWith(".html")) {
-            id = id.substring(0, id.length - 5);
+            id = id.substring(0, id.length() - 5);
         }
-        var coverPattern = new Regex("(?<=url\().*(?=\))");
+
         var coverStyle = item.select("a div.slide-time-img3").attr("style");
-        var cover = coverPattern.find(coverStyle, 0).groupValues[0];
-        if (cover.startsWith("'")) {
-            cover = cover.substring(1);
+        var cover = coverStyle;
+        var start = coverStyle.indexOf("url(");
+        if(start != -1){
+            var end = coverStyle.indexOf(")", start);
+            if(end != -1){
+                cover = coverStyle.substring(start+4, end);
+                if(cover.startsWith("'") || cover.startsWith("\"")){
+                    cover = cover.substring(1, cover.length()-1);
+                }
+            }
         }
-        if (cover.endsWith("'")) {
-            cover = cover.substring(0, cover.length - 1);
-        }
-
-
-        var url = element.select("a").attr("href");
-        var coverUrl = element.select("img").attr("data-src");
-        var title = element.select("img").attr("alt");
-        var id = getCartoonId(url);
         res.add(makeCartoonCover({
             id: id,
             url: url,
             title: title,
-            cover: coverUrl,
+            cover: cover,
             intro: "",
         }));
-        
+
     }
     return new Pair(null, res);
 
 
 
-}
-
-
-        """.trim()
-    }
 }

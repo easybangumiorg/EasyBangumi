@@ -13,6 +13,7 @@ import com.heyanle.inject.core.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
+import org.jsoup.Jsoup
 import org.mozilla.javascript.Function
 
 /**
@@ -78,6 +79,7 @@ function getCartoonPageDocById(id: String) {
 
 
     fun main(){
+
         val sourceController: SourceController by Inject.injectLazy()
         sourceController.scope.launch {
             "test".logi("TestMain")

@@ -5,12 +5,18 @@ import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.LauncherBus
 import com.heyanle.easybangumi4.plugin.extension.ExtensionController
 import com.heyanle.easybangumi4.plugin.extension.ExtensionInfo
+import com.heyanle.easybangumi4.plugin.extension.push.ExtensionPushController
+import com.heyanle.easybangumi4.plugin.extension.push.ExtensionPushTask
 import com.heyanle.easybangumi4.ui.common.moeDialog
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.inject.core.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -27,29 +33,71 @@ class ExtensionPushViewModel: ViewModel() {
     }
 
     private val extensionController: ExtensionController by Inject.injectLazy()
+    private val extensionPushController: ExtensionPushController by Inject.injectLazy()
 
-    data class State(
-        val loading: Boolean = false,
-        val sourceType: Int = 0, // 0: js 文件连接，一行一个, 1: js 代码, 2: js 仓库连接
-
-        val editTextI: String = "",
-        val editTextII: String = "",
-        val editTextIII: String = "",
+    data class State (
+        val textMap: Map<ExtensionPushType, String> = mapOf(),
+        val currentType: ExtensionPushType = ExtensionPushType.FromFileUrl,
+        val dialog: Dialog? = null
     ){
-        fun getText(): String{
-            return when(sourceType){
-                0 -> editTextI
-                1 -> editTextII
-                2 -> editTextIII
-                else -> ""
+        val text: String
+            get() = textMap[currentType] ?: ""
+    }
+    private val _state = MutableStateFlow(State())
+    val state = _state.asStateFlow()
+
+    sealed class Dialog {
+        data class Loading(val msg: String): Dialog()
+        data class ErrorOrCompletely(val msg: String): Dialog()
+    }
+
+    init {
+        viewModelScope.launch {
+            extensionPushController.state.collectLatest { pushState ->
+                _state.update {
+                    it.copy(
+                        dialog =  if (pushState.isDoing) {
+                            Dialog.Loading(pushState.loadingMsg)
+                        } else if (pushState.isError){
+                            Dialog.ErrorOrCompletely(pushState.errorMsg)
+                        } else if (pushState.isCompletely){
+                            Dialog.ErrorOrCompletely(pushState.completelyMsg)
+                        } else {
+                            null
+                        }
+                    )
+                }
             }
         }
     }
 
+    fun changeText(text: String){
+        _state.update {
+            it.copy(
+                textMap = it.textMap.toMutableMap().apply {
+                    put(it.currentType, text)
+                }
+            )
+        }
+    }
 
+    fun changeType(type: ExtensionPushType){
+        _state.update {
+            it.copy(
+                currentType = type
+            )
+        }
+    }
 
-    private val _state = MutableStateFlow(State())
-    val state = _state.asStateFlow()
+    fun push(){
+        val text = state.value.textMap[state.value.currentType] ?: return
+        extensionPushController.push(
+            ExtensionPushTask.Param(
+                state.value.currentType.identify,
+                text
+            )
+        )
+    }
 
     fun chooseJSFile(){
         LauncherBus.current?.getJsFile { uri ->
@@ -71,21 +119,14 @@ class ExtensionPushViewModel: ViewModel() {
         }
     }
 
-    fun onSourceTypeChange(type: Int){
-        _state.update {
-            it.copy(sourceType = type)
-        }
+    fun cleanErrorOrCompletely(){
+        extensionPushController.cleanErrorOrCompletely()
     }
 
-    fun onTextChange(type: Int, text: String) {
-        _state.update {
-            when(type){
-                0 -> it.copy(editTextI = text)
-                1 -> it.copy(editTextII = text)
-                2 -> it.copy(editTextIII = text)
-                else -> it
-            }
-        }
+    fun cancelCurrent(){
+        extensionPushController.cancelCurrent()
     }
+
+
 
 }

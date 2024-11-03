@@ -16,13 +16,14 @@ interface ExtensionPushTask {
 
     data class Param(
         val identify: String,
-        val str1: String,
-        val str2: String,
+        val str1: String = "",
+        val str2: String = "",
     )
 
     fun identify(): String
 
-    suspend fun CoroutineScope.invoke(
+    suspend fun invoke(
+        scope: CoroutineScope,
         param: Param,
         container: ExtensionPushController.ExtensionPushTaskContainer,
     )

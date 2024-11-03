@@ -55,6 +55,8 @@ class ExtensionController(
     )
     val state = _state.asStateFlow()
 
+    private var firstLoad = true
+
     // ============================ 插件 Provider ============================
 
     // 已安装 apk
@@ -101,6 +103,15 @@ class ExtensionController(
                 fileApkExtensionProvider.flow,
                 jsExtensionProvider.flow
             ) { installedAppExtensionProviderState, fileApkExtensionProviderState, fileJsExtensionProviderState ->
+                // 首次必须所有 Provider 都加载完才算加载完
+                if (firstLoad &&
+                    (installedAppExtensionProviderState.loading || fileApkExtensionProviderState.loading || fileJsExtensionProviderState.loading)) {
+                    return@combine ExtensionState(
+                        loading = true,
+                        extensionInfoMap = emptyMap()
+                    )
+                }
+                firstLoad = false
                 val map = mutableMapOf<String, ExtensionInfo>()
                 installedAppExtensionProviderState.extensionMap.forEach {
                     map[it.key] = it.value

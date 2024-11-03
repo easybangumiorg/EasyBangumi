@@ -59,7 +59,7 @@ class JSExtensionLoader(
                 var spacerAfterAtIndex = -1
 
                 line.forEachIndexed { index, c ->
-                    if (firstAtIndex == -1 && c != '@'){
+                    if (firstAtIndex == -1 && c == '@'){
                         firstAtIndex = index
                     }
                     if (firstAtIndex != -1 && spacerAfterAtIndex == -1 && c == ' '){

@@ -15,22 +15,30 @@ import java.io.File
  * Created by heyanlin on 2024/10/29.
  */
 class PushFromCode(
-    private val context: Context,
+    private val cacheFolder: String,
     private val extensionController: ExtensionController,
 ) : ExtensionPushTask {
 
     companion object {
-        const val CACHE_FILE_NAME = "bangumi_extension"
+        const val CACHE_FILE_NAME = "bangumi_extension_cache"
     }
 
-    private val downloadRootFolder = context.getCachePath("js_file_cache")
+    private val downloadRootFolder = cacheFolder
 
 
     override fun identify(): String {
         return ExtensionPushTask.EXTENSION_PUSH_TASK_IDENTIFY_FROM_CODE
     }
 
-    override suspend fun CoroutineScope.invoke(
+    override suspend fun invoke(
+        scope: CoroutineScope,
+        param: ExtensionPushTask.Param,
+        container: ExtensionPushController.ExtensionPushTaskContainer
+    ) {
+        scope.load(param, container)
+    }
+
+    private suspend fun CoroutineScope.load(
         param: ExtensionPushTask.Param,
         container: ExtensionPushController.ExtensionPushTaskContainer
     ) {

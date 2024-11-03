@@ -6,6 +6,7 @@ import com.heyanle.easybangumi4.plugin.extension.loader.ExtensionLoader
 import com.heyanle.easybangumi4.plugin.extension.provider.JsExtensionProvider
 import com.heyanle.easybangumi4.plugin.js.runtime.JSRuntimeProvider
 import com.heyanle.easybangumi4.utils.PackageHelper
+import com.heyanle.easybangumi4.utils.aesDecryptTo
 import com.heyanle.easybangumi4.utils.aesEncryptTo
 import com.heyanle.easybangumi4.utils.getInnerCachePath
 import com.heyanle.easybangumi4.utils.getMD5
@@ -76,7 +77,7 @@ class JSExtensionCryLoader(
 
         // 2. 解密
         plaintextFile.createNewFile()
-        plaintextCacheFile.aesEncryptTo(plaintextFile, PackageHelper.appSignature, CHUNK_SIZE)
+        plaintextCacheFile.aesDecryptTo(plaintextFile, PackageHelper.appSignature, CHUNK_SIZE)
         plaintextFile.deleteOnExit()
         return JSExtensionLoader(plaintextFile, jsRuntime).load()
     }

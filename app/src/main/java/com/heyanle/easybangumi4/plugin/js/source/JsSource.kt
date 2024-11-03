@@ -34,6 +34,21 @@ class JsSource(
             importPackage(Packages.kotlin.text);
             importPackage(Packages.kotlin);
             importPackage(Packages.java.util);
+            importPackage(Packages.java.lang);
+            importPackage(Packages.com.heyanle.easybangumi4.plugin.js.utils);
+            
+            var Log = com.android.util.Log;
+         
+            
+            function makeCartoonCover(map) {
+                var id = map.id;
+                var source = Source.key;
+                var url = map.url;
+                var title = map.title;
+                var intro = map.intro;
+                var cover = map.cover;
+                return new CartoonCoverImpl(id, source, url, title, intro, cover);
+            }
         """
     }
 

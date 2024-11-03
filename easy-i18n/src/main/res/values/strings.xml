@@ -628,4 +628,14 @@
     <string name="download_fail">下载失败</string>
     <string name="load_fail">加载失败</string>
 
+    <string name="import_word">导入</string>
+
+    <string name="js_extension">JS 拓展</string>
+    <string name="js_extension_encrypt">JS 拓展加密</string>
+
+    <string name="js_extension_encrypt_desc">将 js 拓展加密成 ebg.jsc 文件</string>
+
+    <string name="developers_setting">开发者设置</string>
+
+
 </resources>

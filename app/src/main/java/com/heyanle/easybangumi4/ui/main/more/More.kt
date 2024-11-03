@@ -47,7 +47,6 @@ import com.heyanle.easybangumi4.navigationSetting
 import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.ui.common.BooleanPreferenceItem
-import com.heyanle.easybangumi4.ui.common.DonateDialog
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.setting.SettingPage
 import com.heyanle.inject.core.Inject
@@ -143,30 +142,6 @@ fun More() {
         )
 
         Divider()
-
-
-
-        //Divider()
-        var showDonate by remember {
-            mutableStateOf(false)
-        }
-
-        ListItem(
-            modifier = Modifier.clickable {
-                showDonate = true
-            },
-            headlineContent = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.donate)) },
-            leadingContent = {
-                Icon(
-                    Icons.Filled.Handshake,
-                    contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.donate)
-                )
-            }
-        )
-
-        DonateDialog(show = showDonate, hasDonate = {}) {
-            showDonate = false
-        }
 
 
 

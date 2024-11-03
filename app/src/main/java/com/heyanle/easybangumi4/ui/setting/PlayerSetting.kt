@@ -248,6 +248,7 @@ fun ColumnScope.DoubleTapFastSetting(
 
             Spacer(modifier = Modifier.size(12.dp))
             Slider(
+                modifier = Modifier.padding(16.dp, 0.dp),
                 value = max(
                     settingPreferences.fastWeightSelection.indexOf(fastWeight).toFloat(),
                     0F
@@ -265,6 +266,7 @@ fun ColumnScope.DoubleTapFastSetting(
 
             if (fastWeightTop > 0f) {
                 Slider(
+                    modifier = Modifier.padding(16.dp, 0.dp),
                     value = max(
                         settingPreferences.fastWeightTopMoleculeSelection.indexOf(
                             fastWeightTop

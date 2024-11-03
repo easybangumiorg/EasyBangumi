@@ -8,6 +8,7 @@ import com.heyanle.easybangumi4.plugin.js.source.JSComponentBundle
 import com.heyanle.easybangumi4.plugin.js.source.JsSource
 import com.heyanle.easybangumi4.plugin.source.bundle.SimpleComponentBundle
 import com.heyanle.easybangumi4.plugin.source.bundle.SourceBundle
+import com.heyanle.easybangumi4.plugin.source.debug.DebugSource
 import com.heyanle.easybangumi4.source_api.Source
 import com.heyanle.easybangumi4.utils.TimeLogUtils
 import com.heyanle.extension_api.NativeSupportedSource
@@ -71,7 +72,8 @@ class SourceController(
     val scope = CoroutineScope(SupervisorJob() + dispatcher)
 
     private val innerSource = listOf<Source>(
-        LocalSource
+        LocalSource,
+        DebugSource
     )
 
 

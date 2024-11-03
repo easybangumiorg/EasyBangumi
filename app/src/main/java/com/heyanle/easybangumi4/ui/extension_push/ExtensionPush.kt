@@ -1,6 +1,5 @@
 package com.heyanle.easybangumi4.ui.extension_push
 
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -13,18 +12,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -32,8 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -42,7 +38,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -51,6 +46,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
+import com.heyanle.easybangumi4.plugin.extension.push.ExtensionPushTask
+import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.stringRes
 
 /**
@@ -58,17 +55,38 @@ import com.heyanle.easybangumi4.utils.stringRes
  * https://github.com/heyanLE
  */
 
-interface ExtensionPushType {
-    @Composable
-    fun label(): String
+// 先放弃拓展性，直接写
+sealed class ExtensionPushType(
+    val identify: String,
+    val label: @Composable ()-> String,
+    val desc: @Composable ()-> String,
+) {
 
-    fun LazyListScope.content()
+    data object FromFileUrl: ExtensionPushType(
+        identify = ExtensionPushTask.EXTENSION_PUSH_TASK_IDENTIFY_FROM_FILE_URL,
+        label = @Composable { stringResource(R.string.js_file_url) },
+        desc = @Composable { stringResource(R.string.js_file_url_desc) }
+    )
 
-    @Composable
-    fun OutContent()
+    data object FromCode: ExtensionPushType(
+        identify = ExtensionPushTask.EXTENSION_PUSH_TASK_IDENTIFY_FROM_CODE,
+        label = { stringResource(R.string.js_code) },
+        desc = { stringResource(R.string.js_code_desc) }
+    )
 
-    fun onPush(viewModel: ExtensionPushViewModel)
+    data object FromRepo: ExtensionPushType(
+        identify = ExtensionPushTask.EXTENSION_PUSH_TASK_IDENTIFY_FROM_FILE_REPO,
+        label = { stringResource(R.string.js_repo) },
+        desc = { stringResource(R.string.js_repo_desc) }
+    )
+
 }
+
+val extensionPushTypeList = listOf(
+    ExtensionPushType.FromFileUrl,
+    ExtensionPushType.FromCode,
+    ExtensionPushType.FromRepo
+)
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -79,6 +97,7 @@ fun ExtensionPush() {
     val vm = viewModel<ExtensionPushViewModel>()
     val state = vm.state.collectAsState()
     val sta = state.value
+    val dialog = sta.dialog
     val fq = remember { FocusRequester() }
 
     Surface(
@@ -106,29 +125,12 @@ fun ExtensionPush() {
                 scrollBehavior = scrollBehavior
             )
 
-            val labelList = remember {
-                listOf(
-                    stringRes(R.string.js_file_url),
-                    stringRes(R.string.js_code),
-                    stringRes(R.string.js_repo)
-                )
-            }
-
-            val descList = remember {
-                listOf(
-                    stringRes(R.string.js_file_url_desc),
-                    stringRes(R.string.js_code_desc),
-                    stringRes(R.string.js_repo_desc)
-                )
-            }
-
-
-
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
             ) {
+
                 // 选择文件按钮
                 item {
                     FilledTonalButton(
@@ -147,10 +149,6 @@ fun ExtensionPush() {
                     }
                 }
 
-//                item {
-//                    HorizontalDivider()
-//                }
-
                 item {
                     ListItem(headlineContent = {
                         Text(
@@ -161,21 +159,19 @@ fun ExtensionPush() {
                 }
 
                 item {
-
-
                     FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
 
                         ) {
                         Spacer(modifier = Modifier.padding(4.dp))
-                        repeat(labelList.size) {
+                        extensionPushTypeList.forEach {
                             FilterChip(
-                                selected = sta.sourceType == it,
+                                selected = sta.currentType == it,
                                 onClick = {
-                                    vm.onSourceTypeChange(it)
+                                    vm.changeType(it)
                                 },
-                                label = { Text(text = labelList[it]) },
+                                label = { Text(text = it.label()) },
                                 colors = FilterChipDefaults.filterChipColors(),
                             )
                         }
@@ -190,19 +186,13 @@ fun ExtensionPush() {
                             .padding(16.dp)
                             .focusRequester(fq),
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.None),
-//                        colors = TextFieldDefaults.colors(
-//                            unfocusedContainerColor = Color.Transparent,
-//                            focusedContainerColor = Color.Transparent,
-//                            unfocusedIndicatorColor = Color.Transparent,
-//                            focusedIndicatorColor = Color.Transparent,
-//                        ),
-                        value = sta.getText(),
+                        value = sta.text,
                         onValueChange = {
-                            vm.onTextChange(sta.sourceType, it)
+                            vm.changeText(it)
                         },
                         placeholder = {
                             Text(
-                                text = descList.getOrNull(sta.sourceType) ?: "",
+                                text = sta.currentType.desc() ?: "",
                                 maxLines = 1
                             )
                         })
@@ -211,15 +201,46 @@ fun ExtensionPush() {
                 item { Spacer(Modifier.height(300.dp)) }
 
             }
-
-
         }
     }
 
+    when(sta.dialog) {
+        is ExtensionPushViewModel.Dialog.Loading -> {
+            AlertDialog(
+                onDismissRequest = {
+                    //vm.cancelCurrent()
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        vm.cancelCurrent()
+                    }) {
+                        Text(text = stringResource(id = R.string.cancel))
+                    }
+                },
+                text = {
+                    Text( sta.dialog.msg)
+                }
+            )
+        }
+        is ExtensionPushViewModel.Dialog.ErrorOrCompletely -> {
+            AlertDialog(
+                onDismissRequest = {
+                    vm.cleanErrorOrCompletely()
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        vm.cleanErrorOrCompletely()
+                    }) {
+                        Text(text = stringResource(id = R.string.confirm))
+                    }
+                },
+                text = {
+                    Text( sta.dialog.msg)
+                }
+            )
+        }
+        else -> {}
+    }
 
-}
-
-@Composable
-fun ExtensionPushFileUrl() {
 
 }

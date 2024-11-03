@@ -1,10 +1,12 @@
 package com.heyanle.easybangumi4.plugin.extension.provider
 
+import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.BuildConfig
 import com.heyanle.easybangumi4.plugin.extension.loader.ExtensionLoader
 import com.heyanle.easybangumi4.plugin.extension.loader.ExtensionLoaderFactory
 import com.heyanle.easybangumi4.plugin.js.JsTestProvider
 import com.heyanle.easybangumi4.plugin.js.extension.JSExtensionInnerLoader
+import com.heyanle.easybangumi4.plugin.js.extension.JSExtensionLoader
 import com.heyanle.easybangumi4.plugin.js.runtime.JSRuntimeProvider
 import kotlinx.coroutines.CoroutineDispatcher
 import java.io.File
@@ -24,10 +26,10 @@ class JsExtensionProvider(
         const val TAG = "FileJsExtensionProvider"
 
         // 扩展名
-        const val EXTENSION_SUFFIX = ".ebg.js"
+        const val EXTENSION_SUFFIX = "ebg.js"
 
         // 加密后的后缀
-        const val EXTENSION_CRY_SUFFIX = ".ebg.jsc"
+        const val EXTENSION_CRY_SUFFIX = "ebg.jsc"
 
         fun isEndWithJsExtensionSuffix(path: String) = path.endsWith(EXTENSION_SUFFIX) || path.endsWith(EXTENSION_CRY_SUFFIX)
     }
@@ -51,8 +53,16 @@ class JsExtensionProvider(
     }
 
     override fun coverExtensionLoaderList(loaderList: List<ExtensionLoader>): List<ExtensionLoader> {
-        if (BuildConfig.DEBUG && JsTestProvider.testJs.isNotEmpty()) {
-            return loaderList + JSExtensionInnerLoader(JsTestProvider.testJs, jsRuntimeProvider)
+        if (BuildConfig.DEBUG) {
+            val file = APP.assets.open("extension_test.js").use {
+                File(cacheFolder).mkdirs()
+                val file = File(cacheFolder, "test.js")
+                file.outputStream().use { output ->
+                    it.copyTo(output)
+                }
+                file
+            }
+            return loaderList + JSExtensionLoader(file, jsRuntimeProvider)
         }
         return super.coverExtensionLoaderList(loaderList)
     }

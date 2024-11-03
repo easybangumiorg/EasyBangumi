@@ -24,6 +24,7 @@ import com.heyanle.easybangumi4.source_api.utils.api.PreferenceHelper
 import com.heyanle.easybangumi4.source_api.utils.api.StringHelper
 import com.heyanle.easybangumi4.source_api.utils.api.WebViewHelper
 import com.heyanle.easybangumi4.source_api.utils.api.WebViewHelperV2
+import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.inject.api.get
 import com.heyanle.inject.core.Inject
 import java.lang.reflect.Proxy
@@ -97,6 +98,7 @@ class JSComponentBundle(
 
             // 4. 注入工具给 JS
             bundle.forEach { (k, v) ->
+                k.simpleName.logi("JsImport")
                 scriptable.put(k.simpleName, scriptable, v)
             }
         }

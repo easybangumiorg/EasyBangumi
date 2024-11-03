@@ -1,8 +1,6 @@
 package com.heyanle.easybangumi4.plugin.extension.push
 
-import android.content.Context
 import com.heyanle.easybangumi4.plugin.extension.ExtensionController
-import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.stringRes
 import kotlinx.coroutines.CoroutineScope
 import com.heyanle.easy_i18n.R
@@ -18,17 +16,25 @@ import java.io.File
  * Created by heyanlin on 2024/10/29.
  */
 class PushFromFileUrl(
-    private val context: Context,
+    private val cacheFolder: String,
     private val extensionController: ExtensionController,
 ) : ExtensionPushTask {
 
-    private val downloadRootFolder = context.getCachePath("js_file_download")
+    private val downloadRootFolder = cacheFolder
 
     override fun identify(): String {
         return ExtensionPushTask.EXTENSION_PUSH_TASK_IDENTIFY_FROM_FILE_URL
     }
 
-    override suspend fun CoroutineScope.invoke(
+    override suspend fun invoke(
+        scope: CoroutineScope,
+        param: ExtensionPushTask.Param,
+        container: ExtensionPushController.ExtensionPushTaskContainer
+    ) {
+        scope.load(param, container)
+    }
+
+    private suspend fun CoroutineScope.load(
         param: ExtensionPushTask.Param,
         container: ExtensionPushController.ExtensionPushTaskContainer
     ) {

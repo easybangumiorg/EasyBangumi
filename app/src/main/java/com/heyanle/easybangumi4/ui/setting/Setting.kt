@@ -14,6 +14,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ColorLens
+import androidx.compose.material.icons.filled.DeveloperMode
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Extension
 import androidx.compose.material.icons.filled.PlayCircle
@@ -75,6 +76,14 @@ sealed class SettingPage(
     }, {
         ExtensionSetting(nestedScrollConnection = it)
     })
+
+    data object Developers : SettingPage("developers", {
+        Text(text = stringResource(id = R.string.developers_setting))
+    }, {
+        DevelopersSetting(nestedScrollConnection = it)
+    })
+
+
 }
 
 val settingPages = mapOf(
@@ -83,6 +92,7 @@ val settingPages = mapOf(
     SettingPage.Download.router to SettingPage.Download,
     SettingPage.First.router to SettingPage.First,
     SettingPage.Extension.router to SettingPage.Extension,
+    SettingPage.Developers.router to SettingPage.Developers
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -187,6 +197,19 @@ fun ColumnScope.FirstSetting(
                 Icon(
                     Icons.Filled.Extension,
                     contentDescription = stringResource(id = R.string.extension_setting)
+                )
+            }
+        )
+
+        ListItem(
+            modifier = Modifier.clickable {
+                nav.navigationSetting(SettingPage.Developers)
+            },
+            headlineContent = { Text(text = stringResource(id = R.string.developers_setting)) },
+            leadingContent = {
+                Icon(
+                    Icons.Filled.DeveloperMode,
+                    contentDescription = stringResource(id = R.string.developers_setting)
                 )
             }
         )

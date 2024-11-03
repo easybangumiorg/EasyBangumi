@@ -172,14 +172,16 @@ class JSPageComponent(
         private suspend fun load(mainTab: MainTab, subTab: SubTab?, key: Int): SourceResult<Pair<Int?, List<CartoonCover>>> {
             return withResult(Dispatchers.IO) {
                 jsScope.requestRunWithScope { context, scriptable ->
-                    val res = (getContent.call(
+                    val source = (getContent.call(
                         context,
                         scriptable,
                         scriptable,
                         arrayOf(
                             mainTab, subTab, key
                         )
-                    ).jsUnwrap() as? Pair<*, *>)
+                    ))
+                    val jsSource = source.jsUnwrap()
+                    val res = jsSource as? Pair<*, *>
                     if (res == null) {
                         throw ParserException("js parse error")
                     }
