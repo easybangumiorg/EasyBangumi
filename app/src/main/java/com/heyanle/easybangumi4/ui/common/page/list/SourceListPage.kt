@@ -3,9 +3,11 @@ package com.heyanle.easybangumi4.ui.common.page.list
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
@@ -52,6 +54,7 @@ import com.heyanle.easybangumi4.source_api.entity.toIdentify
 import com.heyanle.easybangumi4.ui.common.CartoonCardWithCover
 import com.heyanle.easybangumi4.ui.common.CartoonCardWithoutCover
 import com.heyanle.easybangumi4.ui.common.PagingCommon
+import com.heyanle.easybangumi4.ui.common.commonShow
 import com.heyanle.easybangumi4.ui.common.pagingCommon
 import com.heyanle.easybangumi4.ui.main.star.CoverStarViewModel
 
@@ -95,19 +98,21 @@ fun SourceListPage(
             horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
             contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
         ) {
-            item(
-                span = {
-                    GridItemSpan(maxLineSpan)
-                }
-            ) {
-                SourceListGroupTab(
-                    list = pageList,
-                    curPage = vm.selected.intValue,
-                    lazyListState = lazyListState,
-                    onClick = {
-                        vm.selected.intValue = it
+            if (pagingItems?.commonShow() != true) {
+                item(
+                    span = {
+                        GridItemSpan(maxLineSpan)
                     }
-                )
+                ) {
+                    SourceListGroupTab(
+                        list = pageList,
+                        curPage = vm.selected.intValue,
+                        lazyListState = lazyListState,
+                        onClick = {
+                            vm.selected.intValue = it
+                        }
+                    )
+                }
             }
             pagingItems?.let { pagingItems ->
                 listPageWithCover(
@@ -136,18 +141,21 @@ fun SourceListPage(
             contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp),
             modifier = Modifier.fillMaxSize()
         ) {
-            item(
-                span = StaggeredGridItemSpan.FullLine
-            ) {
-                SourceListGroupTab(
-                    list = pageList,
-                    curPage = vm.selected.intValue,
-                    lazyListState = lazyListState,
-                    onClick = {
-                        vm.selected.intValue = it
-                    }
-                )
+            if (pagingItems?.commonShow() != true) {
+                item(
+                    span = StaggeredGridItemSpan.FullLine
+                ) {
+                    SourceListGroupTab(
+                        list = pageList,
+                        curPage = vm.selected.intValue,
+                        lazyListState = lazyListState,
+                        onClick = {
+                            vm.selected.intValue = it
+                        }
+                    )
+                }
             }
+
             pagingItems?.let {
                 listPageWithoutCover(
                     pagingItems,
@@ -166,7 +174,17 @@ fun SourceListPage(
     }
 
     pagingItems?.let {
-        PagingCommon(items = it)
+        PagingCommon(items = it){
+            Spacer(Modifier.size(4.dp))
+            SourceListGroupTab(
+                list = pageList,
+                curPage = vm.selected.intValue,
+                lazyListState = lazyListState,
+                onClick = {
+                    vm.selected.intValue = it
+                }
+            )
+        }
     }
 
 

@@ -27,17 +27,22 @@ class JsSource(
             importPackage(Packages.com.heyanle.easybangumi4.plugin.extension);
             importPackage(Packages.com.heyanle.easybangumi4.plugin.js.runtime);
             importPackage(Packages.com.heyanle.easybangumi4.plugin.js.entity);
-            importPackage(Packages.org.jsoup);
-            importPackage(Packages.okhttp3);
+            importPackage(Packages.com.heyanle.easybangumi4.source_api);
             importPackage(Packages.com.heyanle.easybangumi4.source_api.utils.api);
             importPackage(Packages.com.heyanle.easybangumi4.source_api.entity);
-            importPackage(Packages.kotlin.text);
-            importPackage(Packages.kotlin);
-            importPackage(Packages.java.util);
-            importPackage(Packages.java.lang);
             importPackage(Packages.com.heyanle.easybangumi4.plugin.js.utils);
             
-            var Log = com.android.util.Log;
+            importPackage(Packages.kotlin.text);
+            importPackage(Packages.kotlin);
+            
+            importPackage(Packages.java.util);
+            importPackage(Packages.java.lang);
+            
+            importPackage(Packages.org.jsoup);
+            importPackage(Packages.okhttp3);
+           
+            
+            var Log = JSLogUtils;
          
             
             function makeCartoonCover(map) {
@@ -48,6 +53,55 @@ class JsSource(
                 var intro = map.intro;
                 var cover = map.cover;
                 return new CartoonCoverImpl(id, source, url, title, intro, cover);
+            }
+            
+            function makeCartoon(map) {
+                var id = map.id;
+                var source = Source.key;
+                var url = map.url;
+                
+                var title = map.title;
+                
+                
+                var genre = null;
+                var coverUrl = null;
+                var intro = null;
+                var description = null;
+                var updateStrategy = 0;
+                var isUpdate = false;
+                var status = 0;
+                
+                try {
+                    genre = map.genre;
+                }catch(e) {}
+
+                try {
+                    coverUrl = map.cover;
+                }catch(e) {}
+                
+                try {
+                    intro = map.intro;
+                }catch(e) {}
+                
+                try {
+                    description = map.description;
+                }catch(e) {}
+                
+                try {
+                    updateStrategy = map.updateStrategy;
+                }catch(e) {}
+                
+                try {
+                    isUpdate = map.isUpdate;
+                }catch(e) {}
+                
+                try {
+                    status = map.status;
+                }catch(e) {}
+                
+                return new CartoonImpl(
+                    id, source, url, title, genre, coverUrl, intro, description, updateStrategy, isUpdate, status
+                );
             }
         """
     }

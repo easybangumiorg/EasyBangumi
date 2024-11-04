@@ -1,5 +1,7 @@
 package com.heyanle.easybangumi4.ui.common
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -111,21 +113,35 @@ fun <T : Any> LazyStaggeredGridScope.pagingCommon(
     }
 }
 
+fun<T : Any> LazyPagingItems<T>.commonShow(): Boolean{
+    return (loadState.refresh is LoadState.NotLoading &&
+            loadState.append is LoadState.NotLoading && itemCount == 0) ||
+            loadState.refresh is LoadState.Loading || loadState.refresh is LoadState.Error
+}
+
 @Composable
-fun <T : Any> PagingCommon(items: LazyPagingItems<T>, isShowLoading: Boolean = true) {
+fun <T : Any> PagingCommon(items: LazyPagingItems<T>, isShowLoading: Boolean = true, headerWhenErrorEmpty: (@Composable ColumnScope.()->Unit)? = null) {
     if (items.loadState.refresh is LoadState.NotLoading &&
         items.loadState.append is LoadState.NotLoading && items.itemCount == 0
     ) {
-        EmptyPage(
-            modifier = Modifier.fillMaxSize(),
-        )
+        Column {
+            headerWhenErrorEmpty?.invoke(this)
+            EmptyPage(
+                modifier = Modifier.fillMaxWidth().weight(1f),
+            )
+        }
+
     }
     when (items.loadState.refresh) {
         is LoadState.Loading -> {
             if (isShowLoading)
-                LoadingPage(
-                    modifier = Modifier.fillMaxSize(),
-                )
+                Column {
+                    headerWhenErrorEmpty?.invoke(this)
+                    LoadingPage(
+                        modifier = Modifier.fillMaxWidth().weight(1f),
+                    )
+                }
+
 
         }
 
@@ -134,15 +150,19 @@ fun <T : Any> PagingCommon(items: LazyPagingItems<T>, isShowLoading: Boolean = t
                 (items.loadState.refresh as? LoadState.Error)?.error?.message ?: stringRes(
                     R.string.net_error
                 )
-            ErrorPage(modifier = Modifier.fillMaxSize(),
-                errorMsg = errorMsg,
-                clickEnable = true,
-                other = {
-                    Text(text = stringResource(id = R.string.click_to_retry))
-                },
-                onClick = {
-                    items.refresh()
-                })
+            Column {
+                headerWhenErrorEmpty?.invoke(this)
+                ErrorPage(modifier = Modifier.fillMaxWidth().weight(1f),
+                    errorMsg = errorMsg,
+                    clickEnable = true,
+                    other = {
+                        Text(text = stringResource(id = R.string.click_to_retry))
+                    },
+                    onClick = {
+                        items.refresh()
+                    })
+            }
+
         }
 
         else -> {
