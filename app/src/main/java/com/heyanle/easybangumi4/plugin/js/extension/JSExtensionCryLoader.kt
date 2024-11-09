@@ -27,7 +27,7 @@ class JSExtensionCryLoader(
         val CHUNK_SIZE = 1024
 
         // 加密 js 文件首行
-        val FIRST_LINE_MARK = "easybangumi.cryjs"
+        val FIRST_LINE_MARK = "easybangumi.cryjs".toByteArray()
     }
 
     private val plaintextCacheFolder = APP.getInnerCachePath("js_plaintext")
@@ -39,6 +39,9 @@ class JSExtensionCryLoader(
     override fun load(): ExtensionInfo? {
         File(plaintextCacheFolder).mkdirs()
 
+
+
+
         val plaintextDisplayName = file.absolutePath.getMD5()
         val plaintextFileCacheName = plaintextDisplayName + ".${JsExtensionProvider.EXTENSION_CRY_SUFFIX}"
         val plaintextFileName = plaintextDisplayName + ".${JsExtensionProvider.EXTENSION_SUFFIX}"
@@ -48,38 +51,42 @@ class JSExtensionCryLoader(
         plaintextCacheFile.delete()
         plaintextCacheFile.createNewFile()
 
-        // 1. 把第一行标志拆分
-        var needBlock = false
-        plaintextFile.bufferedReader().use { reader ->
-            plaintextCacheFile.bufferedWriter().use { writer ->
-                var isFirstLineRead = false
-                while(reader.ready()) {
-                    val it = reader.readLine()
-                    if (!isFirstLineRead) {
-                        isFirstLineRead = true
-                        if (it != FIRST_LINE_MARK) {
-                            needBlock = true
-                            break
-                        }
-                    } else {
-                        writer.write(it)
-                    }
-                }
+
+
+        // 1. 复制 Mask 以外的内容
+        file.inputStream().buffered().use {  i ->
+            val maskBuffer = ByteArray(FIRST_LINE_MARK.size)
+            i.read(maskBuffer, 0, maskBuffer.size)
+            if (!maskBuffer.contentEquals(FIRST_LINE_MARK)){
+                // 不是加密文件
+                return null
+            }
+
+            plaintextCacheFile.outputStream().buffered().use {  o ->
+                i.copyTo(o)
             }
         }
-        if (needBlock) {
-            plaintextCacheFile.delete()
-            plaintextFile.delete()
-            return null
-        }
 
-        plaintextFile.delete()
 
         // 2. 解密
-        plaintextFile.createNewFile()
-        plaintextCacheFile.aesDecryptTo(plaintextFile, PackageHelper.appSignature, CHUNK_SIZE)
+        plaintextCacheFile.aesDecryptTo(plaintextFile, PackageHelper.appSignatureMD5, CHUNK_SIZE)
+        if (!plaintextFile.exists() || plaintextFile.length() <= 0) {
+            return null
+        }
         plaintextFile.deleteOnExit()
-        return JSExtensionLoader(plaintextFile, jsRuntime).load()
+
+        // 3. 加载
+        return JSExtensionLoader(plaintextFile, jsRuntime).load()?.let {
+            when(it) {
+                is ExtensionInfo.InstallError -> {
+                    it.copy(sourcePath = file.absolutePath)
+                }
+                is ExtensionInfo.Installed -> {
+                    it.copy(sourcePath = file.absolutePath)
+                }
+                else -> null
+            }
+        }
     }
 
     override fun canLoad(): Boolean {

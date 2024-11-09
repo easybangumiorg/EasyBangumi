@@ -3,6 +3,7 @@ package com.heyanle.easybangumi4.plugin.js.component
 import com.heyanle.easybangumi4.plugin.js.runtime.JSScope
 import com.heyanle.easybangumi4.plugin.js.runtime.JSScopeException
 import com.heyanle.easybangumi4.plugin.js.utils.JSFunction
+import com.heyanle.easybangumi4.plugin.js.utils.jsUnwrap
 import com.heyanle.easybangumi4.source_api.ParserException
 import com.heyanle.easybangumi4.source_api.component.ComponentWrapper
 import com.heyanle.easybangumi4.source_api.component.preference.PreferenceComponent
@@ -40,7 +41,7 @@ class JSPreferenceComponent(
             ) { context, scriptable ->
                 val res = getPreference.call(
                     context, scriptable, scriptable, arrayOf()
-                ) as? java.util.ArrayList<*>
+                ).jsUnwrap() as? java.util.ArrayList<*>
                 if (res == null) {
                     throw ParserException("js parse error")
                 }

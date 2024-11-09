@@ -145,7 +145,7 @@ class LauncherBus(
                 getJSCallback?.get()?.invoke(null)
             }
             getJSCallback = SoftReference(callback)
-            getJSLauncher.launch("application/javascript")
+            getJSLauncher.launch("*/*")
         }
     }
 

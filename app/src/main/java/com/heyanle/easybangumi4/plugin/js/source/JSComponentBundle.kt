@@ -74,7 +74,15 @@ class JSComponentBundle(
                 null
             )
 
-            // 3. 加载插件源代码
+            // 3. 注入工具给 JS
+            bundle.forEach { (k, v) ->
+                val simpleName = k.simpleName ?: return@forEach
+                val name = "Inject_${simpleName}"
+                name.logi("JsImport")
+                scriptable.put(name, scriptable, v)
+            }
+
+            // 4. 加载插件源代码
             if (jsFile == null) {
                 context.evaluateString(
                     scriptable,
@@ -96,11 +104,7 @@ class JSComponentBundle(
 
 
 
-            // 4. 注入工具给 JS
-            bundle.forEach { (k, v) ->
-                k.simpleName.logi("JsImport")
-                scriptable.put(k.simpleName, scriptable, v)
-            }
+
         }
 
         // 5. 检查 & 加载 Component

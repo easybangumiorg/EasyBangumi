@@ -8,6 +8,7 @@ import com.heyanle.easybangumi4.WEB_VIEW_USER
 import com.heyanle.easybangumi4.navControllerRef
 import com.heyanle.easybangumi4.plugin.source.utils.LightweightGettingWebViewClient
 import com.heyanle.easybangumi4.source_api.utils.api.WebViewHelperV2
+import com.heyanle.easybangumi4.source_api.utils.api.WebViewHelperV2.RenderedResult
 import com.heyanle.easybangumi4.utils.WebViewManager
 import com.heyanle.easybangumi4.utils.clearWeb
 import com.heyanle.easybangumi4.utils.evaluateJavascript
@@ -21,6 +22,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import java.lang.ref.WeakReference
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -103,6 +106,23 @@ class WebViewHelperV2Impl: WebViewHelperV2 {
             stop = WeakReference(onStop)
             navControllerRef?.get()?.navigate(WEB_VIEW_USER)
         }
+    }
+
+    fun renderHtmlFromJs(strategy: WebViewHelperV2.RenderedStrategy): WebViewHelperV2.RenderedResult {
+        var res: RenderedResult? = null
+        val countDownLatch = CountDownLatch(1)
+        scope.launch {
+            res = renderedHtml(strategy)
+            countDownLatch.countDown()
+        }
+        countDownLatch.await(10, TimeUnit.SECONDS)
+        return res ?: RenderedResult(
+            strategy = strategy,
+            url = "",
+            isTimeout = true,
+            content = "",
+            interceptResource = ""
+        )
     }
 
     override suspend fun renderedHtml(strategy: WebViewHelperV2.RenderedStrategy): WebViewHelperV2.RenderedResult {

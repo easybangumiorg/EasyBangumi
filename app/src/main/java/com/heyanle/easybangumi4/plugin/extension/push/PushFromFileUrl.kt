@@ -72,9 +72,13 @@ class PushFromFileUrl(
                 null
             }
         }.filterIsInstance<File>().map {
-            // 根据首行判断是否是加密 jsc
-            val firstLine = it.bufferedReader().use { it.readLine() }
-            if (firstLine == JSExtensionCryLoader.FIRST_LINE_MARK) {
+            // 根据 Mask 判断是否是加密
+            val buffer = ByteArray(JSExtensionCryLoader.FIRST_LINE_MARK.size)
+
+            val size = it.inputStream().use {
+                it.read(buffer)
+            }
+            if (size == JSExtensionCryLoader.FIRST_LINE_MARK.size && buffer.contentEquals(JSExtensionCryLoader.FIRST_LINE_MARK)) {
                 it to true
             } else {
                 it to false

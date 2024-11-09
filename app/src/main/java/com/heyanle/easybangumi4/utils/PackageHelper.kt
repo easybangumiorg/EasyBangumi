@@ -17,6 +17,10 @@ object PackageHelper {
         getAppSignatures()
     }
 
+    val appSignatureMD5: String by lazy {
+        appSignature.getMD5()
+    }
+
     fun getAppSignatures(packageName: String): List<String> {
         val signatures = mutableListOf<String>()
         try {

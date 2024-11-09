@@ -31,12 +31,14 @@ class JsSource(
             importPackage(Packages.com.heyanle.easybangumi4.source_api.utils.api);
             importPackage(Packages.com.heyanle.easybangumi4.source_api.entity);
             importPackage(Packages.com.heyanle.easybangumi4.plugin.js.utils);
+            importPackage(Packages.com.heyanle.easybangumi4.source_api.component.preference);
             
             importPackage(Packages.kotlin.text);
             importPackage(Packages.kotlin);
             
             importPackage(Packages.java.util);
             importPackage(Packages.java.lang);
+            importPackage(Packages.java.net);
             
             importPackage(Packages.org.jsoup);
             importPackage(Packages.okhttp3);
@@ -47,7 +49,7 @@ class JsSource(
             
             function makeCartoonCover(map) {
                 var id = map.id;
-                var source = Source.key;
+                var source = Inject_Source.key;
                 var url = map.url;
                 var title = map.title;
                 var intro = map.intro;
@@ -57,7 +59,7 @@ class JsSource(
             
             function makeCartoon(map) {
                 var id = map.id;
-                var source = Source.key;
+                var source = Inject_Source.key;
                 var url = map.url;
                 
                 var title = map.title;
@@ -71,33 +73,46 @@ class JsSource(
                 var isUpdate = false;
                 var status = 0;
                 
-                try {
+                if (map.genreList != undefined) {
+                    var stringBuilder = new StringBuilder();
+                    for (var i = 0 ; i < map.genreList.length; i++) {
+                        stringBuilder.append(map.genreList[i]);
+                        if(i != map.genreList.length - 1) {
+                            stringBuilder.append(", ");
+                        }
+                    }
+                    genre = stringBuilder.toString();
+                }
+                
+                if (map.genre != undefined) {
                     genre = map.genre;
-                }catch(e) {}
-
-                try {
+                }
+                
+              
+                if (map.cover != undefined) {
                     coverUrl = map.cover;
-                }catch(e) {}
+                }
                 
-                try {
+                if (map.intro != undefined) {
                     intro = map.intro;
-                }catch(e) {}
+                }
                 
-                try {
+               
+                if (map.description != undefined) {
                     description = map.description;
-                }catch(e) {}
+                }
                 
-                try {
+                if (map.updateStrategy != undefined) {
                     updateStrategy = map.updateStrategy;
-                }catch(e) {}
+                }
                 
-                try {
+                if (map.isUpdate != undefined) {
                     isUpdate = map.isUpdate;
-                }catch(e) {}
+                }
                 
-                try {
+                if (map.status != undefined) {
                     status = map.status;
-                }catch(e) {}
+                }
                 
                 return new CartoonImpl(
                     id, source, url, title, genre, coverUrl, intro, description, updateStrategy, isUpdate, status

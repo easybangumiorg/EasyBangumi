@@ -48,10 +48,7 @@ class PushFromCode(
         }
         container.dispatchLoadingMsg(stringRes(R.string.loading))
         try {
-            val firstLine = code.lineSequence().firstOrNull()
-            val isCry = firstLine == JSExtensionCryLoader.FIRST_LINE_MARK
-            val suffix = if (isCry) JsExtensionProvider.EXTENSION_CRY_SUFFIX else JsExtensionProvider.EXTENSION_SUFFIX
-            val file = File(downloadRootFolder, "${CACHE_FILE_NAME}.${suffix}")
+            val file = File(downloadRootFolder, "${CACHE_FILE_NAME}.${JsExtensionProvider.EXTENSION_SUFFIX}")
             File(downloadRootFolder).mkdirs()
             file.delete()
             file.createNewFile()

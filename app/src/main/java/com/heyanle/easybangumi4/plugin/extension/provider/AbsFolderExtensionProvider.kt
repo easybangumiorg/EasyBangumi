@@ -59,7 +59,7 @@ abstract class AbsFolderExtensionProvider(
             val file = File(folderPath)
             val fileList = if (file.exists() && file.isDirectory) {
                 file.listFiles()?.filter {
-                    it != null && it.isFile && it.name.endsWith(FileApkExtensionProvider.EXTENSION_SUFFIX)
+                    it != null && it.isFile && checkName(it.name)
                 }
             }else {
                 emptyList()
@@ -126,6 +126,7 @@ abstract class AbsFolderExtensionProvider(
      * 调用完后 inputSteam 会自动 close
      */
     protected fun innerAppendExtension(displayName: String, inputStream: InputStream) {
+        fileObserver.stopWatching()
         val fileName = getNameWhenLoad(displayName, System.currentTimeMillis(), atomicLong.getAndIncrement())
             // "${System.currentTimeMillis()}-${atomicLong.getAndIncrement()}${getSuffix()}"
         val cacheFile = File(cacheFolder, fileName)
@@ -146,6 +147,8 @@ abstract class AbsFolderExtensionProvider(
         }
         cacheFolderFile.deleteRecursively()
         cacheFolderFile.mkdirs()
+        scanFolder()
+        fileObserver.startWatching()
     }
 
 

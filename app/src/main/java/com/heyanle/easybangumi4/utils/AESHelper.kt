@@ -4,6 +4,8 @@ import androidx.annotation.WorkerThread
 import java.io.File
 import java.io.InputStream
 import javax.crypto.Cipher
+import javax.crypto.CipherInputStream
+import javax.crypto.CipherOutputStream
 import javax.crypto.KeyGenerator
 import javax.crypto.spec.SecretKeySpec
 
@@ -27,15 +29,16 @@ fun File.aesEncryptTo(file: File, key: String, chunkSize: Int) {
             return
         }
         val secretKey = SecretKeySpec(key.toByteArray(), "AES")
-        val cipher = Cipher.getInstance("AES/ECB/PKCS5Padding")
+        val cipher = Cipher.getInstance("AES/ECB/PKCS7Padding")
         cipher.init(Cipher.ENCRYPT_MODE, secretKey)
         inputStream().buffered().use { input ->
             file.outputStream().buffered().use { output ->
-                val buffer = ByteArray(chunkSize)
-                var len = input.read(buffer)
-                while (len != -1) {
-                    output.write(cipher.doFinal(buffer, 0, len))
-                    len = input.read(buffer)
+                CipherOutputStream(output, cipher).use { cos ->
+                    val buffer = ByteArray(chunkSize)
+                    var bytesRead: Int
+                    while (input.read(buffer).also { bytesRead = it } != -1) {
+                        cos.write(buffer, 0, bytesRead)
+                    }
                 }
             }
         }
@@ -60,15 +63,16 @@ fun File.aesDecryptTo(file: File, key: String, chunkSize: Int) {
             return
         }
         val secretKey = SecretKeySpec(key.toByteArray(), "AES")
-        val cipher = Cipher.getInstance("AES/ECB/PKCS5Padding")
+        val cipher = Cipher.getInstance("AES/ECB/PKCS7Padding")
         cipher.init(Cipher.DECRYPT_MODE, secretKey)
         inputStream().buffered().use { input ->
             file.outputStream().buffered().use { output ->
-                val buffer = ByteArray(chunkSize)
-                var len = input.read(buffer)
-                while (len != -1) {
-                    output.write(cipher.doFinal(buffer, 0, len))
-                    len = input.read(buffer)
+                CipherInputStream(input, cipher).use { cis ->
+                    val buffer = ByteArray(chunkSize)
+                    var bytesRead: Int
+                    while (cis.read(buffer).also { bytesRead = it } != -1) {
+                        output.write(buffer, 0, bytesRead)
+                    }
                 }
             }
         }

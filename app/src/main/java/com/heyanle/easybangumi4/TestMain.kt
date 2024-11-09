@@ -1,20 +1,9 @@
 package com.heyanle.easybangumi4
 
-import com.heyanle.easybangumi4.plugin.js.component.JSPageComponent
-import com.heyanle.easybangumi4.plugin.js.extension.JSExtensionLoader
-import com.heyanle.easybangumi4.plugin.js.runtime.JSRuntime
-import com.heyanle.easybangumi4.plugin.js.runtime.JSScope
 import com.heyanle.easybangumi4.plugin.source.SourceController
-import com.heyanle.easybangumi4.plugin.source.utils.network.WebViewHelperV2Impl
-import com.heyanle.easybangumi4.source_api.utils.api.WebViewHelperV2
 import com.heyanle.easybangumi4.utils.logi
-import com.heyanle.inject.api.get
 import com.heyanle.inject.core.Inject
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
-import org.jsoup.Jsoup
-import org.mozilla.javascript.Function
 
 /**
  * Created by heyanle on 2024/6/10.

@@ -637,5 +637,7 @@
 
     <string name="developers_setting">开发者设置</string>
 
+    <string name="encrypt_completely">加密完成</string>
+
 
 </resources>

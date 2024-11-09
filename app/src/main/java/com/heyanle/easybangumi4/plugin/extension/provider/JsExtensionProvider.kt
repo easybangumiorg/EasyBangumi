@@ -45,7 +45,7 @@ class JsExtensionProvider(
             displayName.endsWith(EXTENSION_CRY_SUFFIX) -> EXTENSION_CRY_SUFFIX
             else -> EXTENSION_SUFFIX
         }
-        return "${time}-${atomicLong}${suffix}"
+        return "${time}-${atomicLong}.${suffix}"
     }
 
     override fun loadExtensionLoader(fileList: List<File>): List<ExtensionLoader> {
@@ -53,7 +53,7 @@ class JsExtensionProvider(
     }
 
     override fun coverExtensionLoaderList(loaderList: List<ExtensionLoader>): List<ExtensionLoader> {
-        if (BuildConfig.DEBUG) {
+        if (false) {
             val file = APP.assets.open("extension_test.js").use {
                 File(cacheFolder).mkdirs()
                 val file = File(cacheFolder, "test.js")

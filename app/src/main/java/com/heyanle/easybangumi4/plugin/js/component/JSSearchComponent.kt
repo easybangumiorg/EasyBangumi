@@ -11,6 +11,7 @@ import com.heyanle.easybangumi4.source_api.entity.CartoonCover
 import com.heyanle.easybangumi4.source_api.withResult
 import kotlinx.coroutines.Dispatchers
 import org.mozilla.javascript.Function
+import java.net.URLEncoder
 import java.util.ArrayList
 
 /**
@@ -37,6 +38,7 @@ class JSSearchComponent(
 
     // 这里因为不支持异步，因此强迫从 0 开始，交给 js 端处理
     override fun getFirstSearchKey(keyword: String): Int {
+        URLEncoder.encode(keyword, "utf-8")
         return 0
     }
 

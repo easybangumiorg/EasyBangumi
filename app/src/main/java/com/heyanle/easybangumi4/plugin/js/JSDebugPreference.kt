@@ -8,6 +8,7 @@ import com.heyanle.easybangumi4.cartoon.story.local.LocalCartoonPreference
 import com.heyanle.easybangumi4.plugin.extension.provider.JsExtensionProvider
 import com.heyanle.easybangumi4.plugin.js.extension.JSExtensionCryLoader
 import com.heyanle.easybangumi4.ui.common.moeDialog
+import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.PackageHelper
 import com.heyanle.easybangumi4.utils.aesDecryptTo
 import com.heyanle.easybangumi4.utils.aesEncryptTo
@@ -96,13 +97,22 @@ class JSDebugPreference(
                 val cacheTempFile = File(cacheFolder, "encrypt.ebg.jsc.temp")
                 val cacheFile = File(cacheFolder, "encrypt.ebg.jsc")
 
+                cacheSourceFile.createNewFile()
+                cacheTempFile.createNewFile()
+                cacheFile.createNewFile()
+
+                cacheSourceFile.deleteOnExit()
+                cacheTempFile.deleteOnExit()
+                cacheFile.deleteOnExit()
+
+
                 jsUniFile.openInputStream().use { input ->
                     cacheSourceFile.outputStream().use { output ->
                         input.copyTo(output)
                     }
                 }
 
-                cacheTempFile.aesEncryptTo(cacheTempFile, PackageHelper.appSignature, JSExtensionCryLoader.CHUNK_SIZE)
+                cacheSourceFile.aesEncryptTo(cacheTempFile, PackageHelper.appSignatureMD5, JSExtensionCryLoader.CHUNK_SIZE)
                 if (!cacheTempFile.exists() || cacheTempFile.length() <= 0L) {
                     throw Throwable("encrypt failed")
                 }
@@ -111,11 +121,9 @@ class JSDebugPreference(
                 cacheFile.createNewFile()
                 cacheTempFile.inputStream().buffered().use { i ->
                     cacheFile.outputStream().buffered().use { o ->
-                        o.bufferedWriter().let {
-                            it.write(JSExtensionCryLoader.FIRST_LINE_MARK)
-                            it.write("\n")
-                        }
+                        o.write(JSExtensionCryLoader.FIRST_LINE_MARK)
                         i.copyTo(o)
+                        o.flush()
                     }
                 }
 
@@ -124,6 +132,8 @@ class JSDebugPreference(
                         input.copyTo(output)
                     }
                 }
+
+                stringRes(com.heyanle.easy_i18n.R.string.encrypt_completely).moeSnackBar()
 
             }catch (e: Throwable) {
                 e.printStackTrace()
@@ -153,7 +163,7 @@ class JSDebugPreference(
     private suspend fun createEncryptJS(): Uri? {
         val req = LauncherBus.CreateDocumentReq(
             "text/javascript",
-            "extension${JsExtensionProvider.EXTENSION_CRY_SUFFIX}",
+            "extension.${JsExtensionProvider.EXTENSION_CRY_SUFFIX}",
             localCartoonPreference.localUri.value
         )
         return suspendCoroutine { con ->
