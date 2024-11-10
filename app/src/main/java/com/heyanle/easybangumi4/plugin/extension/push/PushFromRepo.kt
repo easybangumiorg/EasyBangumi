@@ -48,7 +48,12 @@ class PushFromRepo(
         val repoJsonlFile = File(cacheFolder, CACHE_REPO_JSONL_NAME)
         repoJsonlFile.delete()
         // 1. 下载 jsonl
-        param.str1.downloadTo(repoJsonlFile.absolutePath)
+        kotlin.runCatching {
+            param.str1.downloadTo(repoJsonlFile.absolutePath)
+        }.onFailure {
+            it.printStackTrace()
+        }
+
         if (!repoJsonlFile.exists() || repoJsonlFile.length().toInt() == 0){
             container.dispatchError(stringRes(R.string.load_fail))
             return
@@ -78,7 +83,12 @@ class PushFromRepo(
             // 下载
             try {
                 it.first.delete()
-                it.second.downloadTo(it.first.absolutePath)
+                kotlin.runCatching {
+                    it.second.downloadTo(it.first.absolutePath)
+                }.onFailure {
+                    it.printStackTrace()
+                }
+
                 yield()
                 if (it.first.exists() && it.first.length() > 0){
                     completelyDownloadCount ++

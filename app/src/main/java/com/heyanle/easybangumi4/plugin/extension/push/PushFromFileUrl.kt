@@ -59,7 +59,12 @@ class PushFromFileUrl(
             // 下载
             try {
                 it.first.delete()
-                it.second.downloadTo(it.first.absolutePath)
+                kotlin.runCatching {
+                    it.second.downloadTo(it.first.absolutePath)
+                }.onFailure {
+                    it.printStackTrace()
+                }
+
                 yield()
                 if (it.first.exists() && it.first.length() > 0){
                     completelyDownloadCount ++
