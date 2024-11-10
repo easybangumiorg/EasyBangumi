@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.ui.extension_push
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -16,9 +17,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -35,6 +38,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -201,6 +205,25 @@ fun ExtensionPush() {
                 item { Spacer(Modifier.height(300.dp)) }
 
             }
+        }
+
+        Box(contentAlignment = Alignment.BottomEnd, modifier = Modifier.fillMaxSize()) {
+            ExtendedFloatingActionButton(
+                modifier = Modifier
+                    .padding(16.dp, 40.dp),
+                text = {
+                    Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.js_extension_push))
+                },
+                icon = {
+                    Icon(
+                        Icons.Filled.Check,
+                        contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.js_extension_push)
+                    )
+                },
+                onClick = {
+                    vm.push()
+                }
+            )
         }
     }
 

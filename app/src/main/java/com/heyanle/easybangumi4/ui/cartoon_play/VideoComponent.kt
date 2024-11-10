@@ -777,7 +777,6 @@ fun FullScreenVideoTopBar(
 
             val br = rememberBatteryReceiver()
 
-
             val ic = if (br.isCharge.value) {
                 Icons.Filled.BatteryChargingFull
             } else {

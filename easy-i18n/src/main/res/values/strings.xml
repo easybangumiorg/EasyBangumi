@@ -639,5 +639,7 @@
 
     <string name="encrypt_completely">加密完成</string>
 
+    <string name="js_extension_push">添加拓展</string>
+
 
 </resources>

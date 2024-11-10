@@ -53,7 +53,7 @@ class JsExtensionProvider(
     }
 
     override fun coverExtensionLoaderList(loaderList: List<ExtensionLoader>): List<ExtensionLoader> {
-        if (false) {
+        if (BuildConfig.DEBUG) {
             val file = APP.assets.open("extension_test.js").use {
                 File(cacheFolder).mkdirs()
                 val file = File(cacheFolder, "test.js")

@@ -56,7 +56,7 @@ class PushFromRepo(
 
         // 2. 解析 jsonl
         val taskList = repoJsonlFile.bufferedReader().use {
-            it.lineSequence().map {
+            it.readLines().map {
                 JSONObject(it)
             }.map {
                 val url = it.optString("url")
