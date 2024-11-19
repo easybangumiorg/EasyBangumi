@@ -65,7 +65,8 @@ import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.common.SelectionTopAppBar
-import com.heyanle.easybangumi4.ui.main.star.CoverStarViewModel
+import com.heyanle.easybangumi4.ui.common.cover_star.CoverStarCommon
+import com.heyanle.easybangumi4.ui.common.cover_star.CoverStarViewModel
 
 /**
  * Created by heyanle on 2024/7/15.
@@ -172,7 +173,7 @@ fun LocalTopAppBar(
             actions = {
                 IconButton(onClick = {
                     sta.selection.map { it.cartoonLocalItem.cartoonCover }.forEach {
-                        coverStarViewModel.star(it)
+                        coverStarViewModel.dispatchStar(it)
                     }
                 }) {
                     Icon(
@@ -202,7 +203,8 @@ fun Local() {
     val haptic = LocalHapticFeedback.current
     val lazyGridState = rememberLazyGridState()
     val coverStarViewModel = viewModel<CoverStarViewModel>()
-    val star = coverStarViewModel.setFlow.collectAsState(initial = setOf<String>())
+    val star = coverStarViewModel.stateFlow.collectAsState().value.identifySet
+    CoverStarCommon(coverStarViewModel)
     Box {
         if (sta.loading) {
             LoadingPage(
@@ -223,7 +225,7 @@ fun Local() {
                     StoryItemCard(
                         storyItem = it,
                         isSelect = sta.selection.contains(it),
-                        isStar = star.value.contains(it.cartoonLocalItem.cartoonCover.toIdentify()),
+                        isStar = star.contains(it.cartoonLocalItem.cartoonCover.toIdentify()),
                         onClick = {
                             if (sta.selection.isEmpty()) {
                                 nav.navigationDetailed(

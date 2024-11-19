@@ -38,8 +38,9 @@ import com.heyanle.easybangumi4.source_api.entity.CartoonCover
 import com.heyanle.easybangumi4.source_api.entity.toIdentify
 import com.heyanle.easybangumi4.ui.common.CartoonCardWithCover
 import com.heyanle.easybangumi4.ui.common.PagingCommon
+import com.heyanle.easybangumi4.ui.common.cover_star.CoverStarCommon
 import com.heyanle.easybangumi4.ui.common.pagingCommonHor
-import com.heyanle.easybangumi4.ui.main.star.CoverStarViewModel
+import com.heyanle.easybangumi4.ui.common.cover_star.CoverStarViewModel
 import com.heyanle.easybangumi4.ui.search_migrate.search.SearchViewModel
 
 /**
@@ -66,8 +67,7 @@ fun ColumnScope.GatherSearch(
 
     Divider()
 
-
-
+    CoverStarCommon(starVm)
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
@@ -103,7 +103,7 @@ fun MigrateSourceItem(
 ) {
     val page = sourceItem.flow.collectAsLazyPagingItems()
     val haptic = LocalHapticFeedback.current
-    val set = starVm.setFlow.collectAsState(initial = setOf<String>())
+    val set = starVm.stateFlow.collectAsState().value.identifySet
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -127,14 +127,14 @@ fun MigrateSourceItem(
                     page[it]?.let {
                         CartoonCardWithCover(
                             modifier = Modifier.width(100.dp),
-                            star = set.value.contains(it.toIdentify()),
+                            star = set.contains(it.toIdentify()),
                             cartoonCover = it,
                             onClick = {
                                onClick(it)
                             },
                             onLongPress = if (supportLongTouchStart) {
                                 {
-                                    starVm.star(it)
+                                    starVm.dispatchStar(it)
                                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 }
                             } else null,

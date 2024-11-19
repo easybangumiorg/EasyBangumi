@@ -125,7 +125,7 @@ abstract class AbsFolderExtensionProvider(
     /**
      * 调用完后 inputSteam 会自动 close
      */
-    protected fun innerAppendExtension(displayName: String, inputStream: InputStream) {
+    protected open fun innerAppendExtension(displayName: String, inputStream: InputStream) {
         fileObserver.stopWatching()
         val fileName = getNameWhenLoad(displayName, System.currentTimeMillis(), atomicLong.getAndIncrement())
             // "${System.currentTimeMillis()}-${atomicLong.getAndIncrement()}${getSuffix()}"

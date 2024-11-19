@@ -29,11 +29,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easybangumi4.source_api.component.page.SourcePage
 import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
+import com.heyanle.easybangumi4.ui.common.cover_star.CoverStarCommon
 import com.heyanle.easybangumi4.ui.common.page.list.SourceListPage
 import com.heyanle.easybangumi4.ui.common.page.list.SourceListViewModel
 import com.heyanle.easybangumi4.ui.common.page.list.SourceListViewModelFactory
 import com.heyanle.easybangumi4.ui.common.page.listgroup.SourceListPageGroup
-import com.heyanle.easybangumi4.ui.main.star.CoverStarViewModel
+import com.heyanle.easybangumi4.ui.common.cover_star.CoverStarViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -63,6 +64,7 @@ fun CartoonPageUI(
                 }
             })
 
+            CoverStarCommon(coverStarViewModel)
             Box(
                 modifier = Modifier
                     .fillMaxSize()

@@ -4,11 +4,17 @@ import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -28,6 +34,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.util.UnstableApi
 import com.heyanle.easy_i18n.R
@@ -243,11 +250,24 @@ fun CartoonPlay(
                 onConfirm = {
                     detailedVM.dialogSetCartoonStar(starDialog.cartoon, it)
                 },
-                onManage = {
-                    runCatching {
-                        nav.navigationCartoonTag()
-                    }.onFailure {
-                        it.printStackTrace()
+                action = {
+                    TextButton(
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Transparent,
+                            contentColor = MaterialTheme.colorScheme.onBackground
+                        ),
+                        onClick = {
+                            runCatching {
+                                nav.navigationCartoonTag()
+                            }.onFailure {
+                                it.printStackTrace()
+                            }
+                            detailedVM.dialogExit()
+                        }
+                    ) {
+                        Icon(Icons.Filled.Edit, contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.edit))
+                        Spacer(modifier = Modifier.size(4.dp))
+                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.edit))
                     }
                 }) {
                 detailedVM.dialogExit()

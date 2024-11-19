@@ -239,9 +239,9 @@ fun EasyMutiSelectionDialog(
     initSelection: List<CartoonTag>,
     title: @Composable () -> Unit = {},
     message: @Composable () -> Unit = {},
+    action: @Composable () -> Unit = {},
     confirmText: String = stringResource(id = com.heyanle.easy_i18n.R.string.confirm),
     onConfirm: (List<CartoonTag>) -> Unit,
-    onManage: ()->Unit,
     onDismissRequest: () -> Unit,
 ) {
     val selectList = remember {
@@ -288,20 +288,7 @@ fun EasyMutiSelectionDialog(
                 Row (
                     modifier = Modifier.fillMaxWidth()
                 ){
-                    TextButton(
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Transparent,
-                            contentColor = MaterialTheme.colorScheme.onBackground
-                        ),
-                        onClick = {
-                            onManage()
-                            onDismissRequest()
-                        }
-                    ) {
-                        Icon(Icons.Filled.Edit, contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.edit))
-                        Spacer(modifier = Modifier.size(4.dp))
-                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.edit))
-                    }
+                    action()
 
                     Spacer(modifier = Modifier.weight(1f))
 

@@ -9,6 +9,7 @@ import com.heyanle.easybangumi4.plugin.js.component.JSPageComponent
 import com.heyanle.easybangumi4.plugin.js.component.JSPlayComponent
 import com.heyanle.easybangumi4.plugin.js.component.JSPreferenceComponent
 import com.heyanle.easybangumi4.plugin.js.component.JSSearchComponent
+import com.heyanle.easybangumi4.plugin.source.SourceException
 import com.heyanle.easybangumi4.plugin.source.bundle.ComponentBundle
 import com.heyanle.easybangumi4.plugin.source.bundle.ComponentProxy
 import com.heyanle.easybangumi4.source_api.component.Component
@@ -16,6 +17,7 @@ import com.heyanle.easybangumi4.source_api.component.detailed.DetailedComponent
 import com.heyanle.easybangumi4.source_api.component.page.PageComponent
 import com.heyanle.easybangumi4.source_api.component.play.PlayComponent
 import com.heyanle.easybangumi4.source_api.component.preference.PreferenceComponent
+import com.heyanle.easybangumi4.source_api.component.preference.SourcePreference
 import com.heyanle.easybangumi4.source_api.component.search.SearchComponent
 import com.heyanle.easybangumi4.source_api.utils.api.CaptchaHelper
 import com.heyanle.easybangumi4.source_api.utils.api.NetworkHelper
@@ -138,6 +140,38 @@ class JSComponentBundle(
             jsPreferenceComponent.innerSource = jsSource
             jsPreferenceComponent.init()
             put(PreferenceComponent::class, jsPreferenceComponent)
+
+            val preferenceHelper = get(PreferenceHelper::class) as? PreferenceHelper
+            if (preferenceHelper != null) {
+                val preferenceList = jsPreferenceComponent.register()
+                val keySet = hashSetOf<String>()
+                preferenceList.forEach {
+                    if (keySet.contains(it.key)) {
+                        throw SourceException("PreferenceComponent 装配错误：key 冲突 ${it.key}")
+                    }
+                    if (it is SourcePreference.Selection) {
+                        val current = preferenceHelper.get(it.key, "")
+                        if (it.selections.indexOf(current) == -1) {
+                            if (it.selections.indexOf(it.def) == -1) {
+                                throw SourceException("PreferenceComponent 装配错误：def not fount in selections of ${it.key}")
+                            }
+                            preferenceHelper.put(it.key, it.def)
+                        }
+                    } else if (it is SourcePreference.Switch) {
+                        val current = preferenceHelper.get(it.key, "")
+                        if (current != "true" && current != "false") {
+                            preferenceHelper.put(it.key, it.def)
+                        }
+                    } else if (it is SourcePreference.Edit) {
+                        val current = preferenceHelper.get(it.key, it.def)
+                        if (current == it.def) {
+                            preferenceHelper.put(it.key, it.def)
+                        }
+                    }
+                    keySet.add(it.key)
+                }
+            }
+
         }
 
 

@@ -4,16 +4,11 @@ import android.app.Application
 import android.content.Context
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.plugin.source.SourceException
-import com.heyanle.easybangumi4.source_api.IconSource
 import com.heyanle.easybangumi4.source_api.Source
 import com.heyanle.easybangumi4.source_api.component.Component
 import com.heyanle.easybangumi4.source_api.component.ComponentWrapper
-import com.heyanle.easybangumi4.source_api.component.detailed.DetailedComponent
-import com.heyanle.easybangumi4.source_api.component.page.PageComponent
-import com.heyanle.easybangumi4.source_api.component.play.PlayComponent
 import com.heyanle.easybangumi4.source_api.component.preference.PreferenceComponent
-import com.heyanle.easybangumi4.source_api.component.search.SearchComponent
-import com.heyanle.easybangumi4.source_api.component.update.UpdateComponent
+import com.heyanle.easybangumi4.source_api.component.preference.SourcePreference
 import com.heyanle.easybangumi4.source_api.utils.api.CaptchaHelper
 import com.heyanle.easybangumi4.source_api.utils.api.NetworkHelper
 import com.heyanle.easybangumi4.source_api.utils.api.OkhttpHelper
@@ -21,8 +16,6 @@ import com.heyanle.easybangumi4.source_api.utils.api.PreferenceHelper
 import com.heyanle.easybangumi4.source_api.utils.api.StringHelper
 import com.heyanle.easybangumi4.source_api.utils.api.WebViewHelper
 import com.heyanle.easybangumi4.source_api.utils.api.WebViewHelperV2
-import com.heyanle.extension_api.ExtensionIconSource
-import com.heyanle.extension_api.ExtensionSource
 import com.heyanle.inject.api.get
 import com.heyanle.inject.core.Inject
 import java.lang.reflect.Proxy
@@ -85,6 +78,37 @@ class SimpleComponentBundle(
             registerClazz.forEach {
                 if (innerGet(it) == null) {
                     throw SourceException("Component 装配错误")
+                }
+            }
+            val preferenceComponent = get(PreferenceComponent::class) as? PreferenceComponent
+            val preferenceHelper = get(PreferenceHelper::class) as? PreferenceHelper
+            if (preferenceComponent != null && preferenceHelper != null) {
+                val preferenceList = preferenceComponent.register()
+                val keySet = hashSetOf<String>()
+                preferenceList.forEach {
+                    if (keySet.contains(it.key)) {
+                        throw SourceException("PreferenceComponent 装配错误：key 冲突 ${it.key}")
+                    }
+                    if (it is SourcePreference.Selection) {
+                        val current = preferenceHelper.get(it.key, "")
+                        if (it.selections.indexOf(current) == -1) {
+                            if (it.selections.indexOf(it.def) == -1) {
+                                throw SourceException("PreferenceComponent 装配错误：def not fount in selections of ${it.key}")
+                            }
+                            preferenceHelper.put(it.key, it.def)
+                        }
+                    } else if (it is SourcePreference.Switch) {
+                        val current = preferenceHelper.get(it.key, "")
+                        if (current != "true" && current != "false") {
+                            preferenceHelper.put(it.key, it.def)
+                        }
+                    } else if (it is SourcePreference.Edit) {
+                        val current = preferenceHelper.get(it.key, it.def)
+                        if (current == it.def) {
+                            preferenceHelper.put(it.key, it.def)
+                        }
+                    }
+                    keySet.add(it.key)
                 }
             }
         }

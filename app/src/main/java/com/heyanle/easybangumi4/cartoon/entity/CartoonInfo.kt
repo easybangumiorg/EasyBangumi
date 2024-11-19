@@ -74,7 +74,10 @@ data class CartoonInfo(
 ) {
 
     companion object {
-        fun fromCartoonCover(cartoonCover: CartoonCover): CartoonInfo {
+        fun fromCartoonCover(
+            cartoonCover: CartoonCover,
+            tagList: List<CartoonTag>? = null
+        ): CartoonInfo {
             return CartoonInfo(
                 id = cartoonCover.id,
                 source = cartoonCover.source,
@@ -82,6 +85,7 @@ data class CartoonInfo(
                 name = cartoonCover.title,
                 coverUrl = cartoonCover.coverUrl ?: "",
                 intro = cartoonCover.intro ?: "",
+                tags = tagList?.joinToString(", ") { it.label.toString() } ?: "",
             )
         }
 
