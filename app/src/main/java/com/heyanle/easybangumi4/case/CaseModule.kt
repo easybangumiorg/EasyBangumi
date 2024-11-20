@@ -15,7 +15,7 @@ class CaseModule(
 
     override fun InjectScope.registerInjectables() {
         addSingletonFactory {
-            CartoonInfoCase(get())
+            CartoonInfoCase(get(), get())
         }
         addSingletonFactory {
             ExtensionCase(get())

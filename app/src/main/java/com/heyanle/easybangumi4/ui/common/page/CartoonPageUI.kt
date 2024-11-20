@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easybangumi4.source_api.component.page.SourcePage
 import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
-import com.heyanle.easybangumi4.ui.common.cover_star.CoverStarCommon
 import com.heyanle.easybangumi4.ui.common.page.list.SourceListPage
 import com.heyanle.easybangumi4.ui.common.page.list.SourceListViewModel
 import com.heyanle.easybangumi4.ui.common.page.list.SourceListViewModelFactory
@@ -64,7 +63,6 @@ fun CartoonPageUI(
                 }
             })
 
-            CoverStarCommon(coverStarViewModel)
             Box(
                 modifier = Modifier
                     .fillMaxSize()

@@ -63,7 +63,6 @@ import com.heyanle.easybangumi4.ui.common.CartoonCard
 import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.PagingCommon
 import com.heyanle.easybangumi4.ui.common.TabIndicator
-import com.heyanle.easybangumi4.ui.common.cover_star.CoverStarCommon
 import com.heyanle.easybangumi4.ui.common.pagingCommon
 import com.heyanle.easybangumi4.ui.common.cover_star.CoverStarViewModel
 import com.heyanle.easybangumi4.ui.search_migrate.search.SearchViewModel
@@ -189,7 +188,6 @@ fun NormalSearchPage(
     val lazyListState = rememberLazyListState()
     val haptic = LocalHapticFeedback.current
 
-    CoverStarCommon(starVm)
     if (page != null) {
         Box(
             modifier = Modifier

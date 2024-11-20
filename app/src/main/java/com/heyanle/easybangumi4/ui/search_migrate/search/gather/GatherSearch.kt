@@ -38,7 +38,6 @@ import com.heyanle.easybangumi4.source_api.entity.CartoonCover
 import com.heyanle.easybangumi4.source_api.entity.toIdentify
 import com.heyanle.easybangumi4.ui.common.CartoonCardWithCover
 import com.heyanle.easybangumi4.ui.common.PagingCommon
-import com.heyanle.easybangumi4.ui.common.cover_star.CoverStarCommon
 import com.heyanle.easybangumi4.ui.common.pagingCommonHor
 import com.heyanle.easybangumi4.ui.common.cover_star.CoverStarViewModel
 import com.heyanle.easybangumi4.ui.search_migrate.search.SearchViewModel
@@ -67,7 +66,6 @@ fun ColumnScope.GatherSearch(
 
     Divider()
 
-    CoverStarCommon(starVm)
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()

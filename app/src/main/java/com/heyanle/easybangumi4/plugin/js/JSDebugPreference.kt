@@ -7,10 +7,9 @@ import com.heyanle.easybangumi4.base.preferences.PreferenceStore
 import com.heyanle.easybangumi4.cartoon.story.local.LocalCartoonPreference
 import com.heyanle.easybangumi4.plugin.extension.provider.JsExtensionProvider
 import com.heyanle.easybangumi4.plugin.js.extension.JSExtensionCryLoader
-import com.heyanle.easybangumi4.ui.common.moeDialog
+import com.heyanle.easybangumi4.ui.common.moeDialogAlert
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.PackageHelper
-import com.heyanle.easybangumi4.utils.aesDecryptTo
 import com.heyanle.easybangumi4.utils.aesEncryptTo
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.stringRes
@@ -25,7 +24,6 @@ import kotlinx.coroutines.launch
 import java.io.File
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
-import kotlin.jvm.Throws
 
 
 /**
@@ -71,7 +69,7 @@ class JSDebugPreference(
                         loading = false
                     )
                 }
-                stringRes(com.heyanle.easy_i18n.R.string.no_document).moeDialog()
+                stringRes(com.heyanle.easy_i18n.R.string.no_document).moeDialogAlert()
                 return@launch
             }
 
@@ -82,7 +80,7 @@ class JSDebugPreference(
                         loading = false
                     )
                 }
-                stringRes(com.heyanle.easy_i18n.R.string.no_document).moeDialog()
+                stringRes(com.heyanle.easy_i18n.R.string.no_document).moeDialogAlert()
                 return@launch
             }
             try {
@@ -137,7 +135,7 @@ class JSDebugPreference(
 
             }catch (e: Throwable) {
                 e.printStackTrace()
-                e.message?.moeDialog()
+                e.message?.moeDialogAlert()
                 _state.update {
                     it.copy(
                         loading = false

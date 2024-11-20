@@ -65,7 +65,6 @@ import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.common.SelectionTopAppBar
-import com.heyanle.easybangumi4.ui.common.cover_star.CoverStarCommon
 import com.heyanle.easybangumi4.ui.common.cover_star.CoverStarViewModel
 
 /**
@@ -204,7 +203,6 @@ fun Local() {
     val lazyGridState = rememberLazyGridState()
     val coverStarViewModel = viewModel<CoverStarViewModel>()
     val star = coverStarViewModel.stateFlow.collectAsState().value.identifySet
-    CoverStarCommon(coverStarViewModel)
     Box {
         if (sta.loading) {
             LoadingPage(

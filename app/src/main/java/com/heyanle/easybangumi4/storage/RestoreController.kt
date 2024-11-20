@@ -13,7 +13,7 @@ import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.source_api.utils.api.PreferenceHelper
 import com.heyanle.easybangumi4.storage.entity.CartoonStorage
 import com.heyanle.easybangumi4.theme.EasyThemeMode
-import com.heyanle.easybangumi4.ui.common.moeDialog
+import com.heyanle.easybangumi4.ui.common.moeDialogAlert
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.jsonTo
@@ -115,7 +115,7 @@ class RestoreController(
                 stringRes(R.string.restore_completely).moeSnackBar()
             }.onFailure {
                 it.printStackTrace()
-                "${stringRes(R.string.restore_error)} $it".moeDialog()
+                "${stringRes(R.string.restore_error)} $it".moeDialogAlert()
             }
         }
     }

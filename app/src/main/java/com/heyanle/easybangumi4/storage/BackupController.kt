@@ -5,16 +5,14 @@ import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.BuildConfig
 import com.heyanle.easybangumi4.base.hekv.HeKV
-import com.heyanle.easybangumi4.cartoon.repository.db.CartoonDatabase
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
-import com.heyanle.easybangumi4.plugin.extension.ExtensionController
 import com.heyanle.easybangumi4.plugin.extension.ExtensionInfo
 import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.source_api.Source
 import com.heyanle.easybangumi4.source_api.utils.api.PreferenceHelper
 import com.heyanle.easybangumi4.storage.entity.CartoonStorage
-import com.heyanle.easybangumi4.ui.common.moeDialog
+import com.heyanle.easybangumi4.ui.common.moeDialogAlert
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.easybangumi4.utils.toJson
@@ -28,10 +26,6 @@ import net.lingala.zip4j.ZipFile
 import net.lingala.zip4j.model.ZipParameters
 import org.json.JSONObject
 import java.io.File
-import java.text.DateFormat
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import java.util.zip.GZIPOutputStream
 
 /**
@@ -91,7 +85,7 @@ class BackupController(
 
             val uniFile = UniFile.fromUri(APP, uri)
             if (uniFile == null || !uniFile.canWrite()) {
-                stringRes(R.string.create_document_err).moeDialog()
+                stringRes(R.string.create_document_err).moeDialogAlert()
                 return@withContext
             }
 
@@ -127,10 +121,10 @@ class BackupController(
                 uniFile.openOutputStream(false).use {
                     targetZip.inputStream().copyTo(it)
                 }
-                "${stringRes(R.string.backup_completely)} ".moeDialog()
+                "${stringRes(R.string.backup_completely)} ".moeDialogAlert()
             } catch (e: Exception) {
                 e.printStackTrace()
-                "${stringRes(R.string.backup_error)} $e".moeDialog()
+                "${stringRes(R.string.backup_error)} $e".moeDialogAlert()
             }
         }
     }

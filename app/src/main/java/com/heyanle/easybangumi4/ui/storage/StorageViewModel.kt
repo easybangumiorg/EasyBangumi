@@ -11,7 +11,7 @@ import com.heyanle.easybangumi4.plugin.extension.ExtensionController
 import com.heyanle.easybangumi4.plugin.extension.ExtensionInfo
 import com.heyanle.easybangumi4.storage.BackupController
 import com.heyanle.easybangumi4.storage.RestoreController
-import com.heyanle.easybangumi4.ui.common.moeDialog
+import com.heyanle.easybangumi4.ui.common.moeDialogAlert
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.inject.core.Inject
@@ -140,7 +140,7 @@ class StorageViewModel : ViewModel() {
 
     fun onBackup(uri: Uri?) {
         if (uri == null) {
-            stringRes(com.heyanle.easy_i18n.R.string.no_document).moeDialog()
+            stringRes(com.heyanle.easy_i18n.R.string.no_document).moeDialogAlert()
             return
         }
         _state.update {
@@ -164,7 +164,7 @@ class StorageViewModel : ViewModel() {
                 )
             } catch (e: Exception) {
                 e.printStackTrace()
-                "${stringRes(R.string.backup_error)} $e".moeDialog()
+                "${stringRes(R.string.backup_error)} $e".moeDialogAlert()
             }
 
             _state.update {
@@ -179,7 +179,7 @@ class StorageViewModel : ViewModel() {
     fun onRestoreClick() {
         LauncherBus.current?.getBackupZip { uri ->
             if (uri == null) {
-                stringRes(com.heyanle.easy_i18n.R.string.no_document).moeDialog()
+                stringRes(com.heyanle.easy_i18n.R.string.no_document).moeDialogAlert()
                 return@getBackupZip
             }
             showRestoreDialog(uri)
@@ -198,7 +198,7 @@ class StorageViewModel : ViewModel() {
                 restoreController.restore(uri)
             } catch (e: Exception) {
                 e.printStackTrace()
-                "${stringRes(R.string.restore_error)} $e".moeDialog()
+                "${stringRes(R.string.restore_error)} $e".moeDialogAlert()
             }
 
             _state.update {

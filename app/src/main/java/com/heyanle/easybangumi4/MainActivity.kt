@@ -1,8 +1,6 @@
 package com.heyanle.easybangumi4
 
-import android.content.Intent
 import android.os.Bundle
-import android.view.KeyEvent
 import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -33,7 +31,7 @@ import com.heyanle.easybangumi4.plugin.source.SourcesHost
 import com.heyanle.easybangumi4.splash.SplashActivity
 import com.heyanle.easybangumi4.theme.EasyTheme
 import com.heyanle.easybangumi4.ui.common.LoadingImage
-import com.heyanle.easybangumi4.ui.common.MoeDialog
+import com.heyanle.easybangumi4.ui.common.MoeDialogHost
 import com.heyanle.easybangumi4.ui.common.MoeSnackBar
 import com.heyanle.easybangumi4.utils.MediaUtils
 import com.heyanle.okkv2.core.okkv
@@ -107,7 +105,7 @@ class MainActivity : ComponentActivity() {
                             Nav()
                         }
                         MoeSnackBar(Modifier.statusBarsPadding())
-                        MoeDialog()
+                        MoeDialogHost()
                     }
 
                 }

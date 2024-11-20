@@ -3,7 +3,7 @@ package com.heyanle.easybangumi4.plugin.source.utils
 import android.widget.Toast
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.source_api.utils.api.StringHelper
-import com.heyanle.easybangumi4.ui.common.moeDialog
+import com.heyanle.easybangumi4.ui.common.moeDialogAlert
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 
 /**
@@ -13,7 +13,7 @@ import com.heyanle.easybangumi4.ui.common.moeSnackBar
 object StringHelperImpl: StringHelper {
 
     override fun moeDialog(text: String, title: String?) {
-        text.moeDialog(title)
+        text.moeDialogAlert(title)
     }
 
     override fun moeSnackBar(string: String) {

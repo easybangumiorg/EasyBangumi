@@ -2,6 +2,7 @@ package com.heyanle.easybangumi4.plugin.extension
 
 import android.content.res.Resources
 import android.graphics.drawable.Drawable
+import com.heyanle.easybangumi4.plugin.extension.provider.JsExtensionProvider
 import com.heyanle.easybangumi4.source_api.Source
 import com.heyanle.easybangumi4.utils.getMatchReg
 import com.heyanle.extension_api.Extension
@@ -31,10 +32,17 @@ sealed class ExtensionInfo {
     }
 
     fun suffix(): String {
+        // TODO 后续再想想怎么优化，ExtensionInfo 应该需要和 Provider 对应比较合理？
         return when(loadType){
             TYPE_APK_INSTALL -> "apk"
             TYPE_APK_FILE -> "apk"
-            TYPE_JS_FILE -> "js"
+            TYPE_JS_FILE -> {
+                if (sourcePath.endsWith(JsExtensionProvider.EXTENSION_CRY_SUFFIX)) {
+                    JsExtensionProvider.EXTENSION_CRY_SUFFIX
+                } else {
+                    JsExtensionProvider.EXTENSION_SUFFIX
+                }
+            }
             else -> "unknown"
         }
     }

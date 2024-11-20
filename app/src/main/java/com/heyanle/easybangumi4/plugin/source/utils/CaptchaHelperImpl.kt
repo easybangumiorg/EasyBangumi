@@ -17,8 +17,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import coil.compose.AsyncImage
 import com.heyanle.easybangumi4.source_api.utils.api.CaptchaHelper
+import com.heyanle.easybangumi4.ui.common.MoeDialogData
 import com.heyanle.easybangumi4.ui.common.dismiss
-import com.heyanle.easybangumi4.ui.common.moeDialog
+import com.heyanle.easybangumi4.ui.common.moeDialogAlert
+import com.heyanle.easybangumi4.ui.common.show
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.resume
@@ -47,7 +49,7 @@ object CaptchaHelperImpl : CaptchaHelper {
         hint: String?,
         onFinish: (String) -> Unit
     ) {
-        "".moeDialog { self ->
+        MoeDialogData.BaseDialog { self ->
             Surface {
                 Column {
                     title?.let { Text(text = it, style = MaterialTheme.typography.titleMedium) }
@@ -80,7 +82,7 @@ object CaptchaHelperImpl : CaptchaHelper {
                     }
                 }
             }
-        }
+        }.show()
     }
 
 }

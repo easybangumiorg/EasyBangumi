@@ -7,16 +7,13 @@ import com.heyanle.easybangumi4.plugin.extension.ExtensionController
 import com.heyanle.easybangumi4.plugin.extension.ExtensionInfo
 import com.heyanle.easybangumi4.plugin.extension.push.ExtensionPushController
 import com.heyanle.easybangumi4.plugin.extension.push.ExtensionPushTask
-import com.heyanle.easybangumi4.ui.common.moeDialog
+import com.heyanle.easybangumi4.ui.common.moeDialogAlert
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.inject.core.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -102,7 +99,7 @@ class ExtensionPushViewModel: ViewModel() {
     fun chooseJSFile(){
         LauncherBus.current?.getJsFile { uri ->
             if (uri == null) {
-                stringRes(com.heyanle.easy_i18n.R.string.no_document).moeDialog()
+                stringRes(com.heyanle.easy_i18n.R.string.no_document).moeDialogAlert()
                 return@getJsFile
             }
 
@@ -111,7 +108,7 @@ class ExtensionPushViewModel: ViewModel() {
                 if (ex == null) {
                     stringRes(com.heyanle.easy_i18n.R.string.extension_push_completely).moeSnackBar()
                 } else {
-                    (ex.message?: stringRes(com.heyanle.easy_i18n.R.string.load_error)).moeDialog(
+                    (ex.message?: stringRes(com.heyanle.easy_i18n.R.string.load_error)).moeDialogAlert(
                         title = stringRes(com.heyanle.easy_i18n.R.string.extension_push_error)
                     )
                 }

@@ -3,13 +3,11 @@ package com.heyanle.easybangumi4.plugin.source.utils
 import android.content.Context
 import android.os.Build
 import com.heyanle.easybangumi4.plugin.extension.service.NativeLoadService
-import com.heyanle.easybangumi4.ui.common.moeDialog
-import com.heyanle.easybangumi4.utils.getFilePath
+import com.heyanle.easybangumi4.ui.common.moeDialogAlert
 import com.heyanle.easybangumi4.utils.getInnerFilePath
 import com.heyanle.extension_api.Extension
 import com.heyanle.extension_api.NativeHelper
 import com.heyanle.extension_api.nativeHelper
-import dalvik.system.PathClassLoader
 import java.io.File
 
 /**
@@ -44,7 +42,7 @@ class NativeHelperImpl(
                 }
 
                 if (loadedSoPath.contains(soFile.absolutePath)){
-                    "检测到插件尝试重复加载 Native 库，建议重启刷新".moeDialog()
+                    "检测到插件尝试重复加载 Native 库，建议重启刷新".moeDialogAlert()
                     return true
                 }
 

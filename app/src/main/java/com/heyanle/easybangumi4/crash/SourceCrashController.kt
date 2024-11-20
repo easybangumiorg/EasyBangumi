@@ -1,32 +1,14 @@
 package com.heyanle.easybangumi4.crash
 
 import android.app.Application
-import android.content.Intent
-import com.heyanle.easy_crasher.CrashActivity
-import com.heyanle.easy_crasher.CrashHandler
-import com.heyanle.easybangumi4.base.hekv.HeKV
-import com.heyanle.easybangumi4.base.preferences.hekv.HeKVPreference
-import com.heyanle.easybangumi4.base.preferences.hekv.HeKVPreferenceStore
 import com.heyanle.easybangumi4.plugin.source.SourcePreferences
-import com.heyanle.easybangumi4.source_api.component.Component
 import com.heyanle.easybangumi4.utils.getFilePath
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.launch
 import java.io.File
-import java.io.PrintWriter
-import java.io.StringWriter
-import java.lang.reflect.Method
 import java.util.concurrent.Executors
-import android.os.Process
-import com.heyanle.easybangumi4.base.json.JsonFileProvider
-import com.heyanle.easybangumi4.plugin.source.SourceConfig
-import com.heyanle.easybangumi4.ui.common.moeDialog
-import com.heyanle.easybangumi4.utils.loge
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.withContext
+import com.heyanle.easybangumi4.ui.common.moeDialogAlert
 
 /**
  * Created by heyanle on 2024/5/31.
@@ -62,7 +44,7 @@ object SourceCrashController {
             needBlock = true
             loadingExtensionFile.delete()
             usingComponentFile.delete()
-            "检测到崩溃，以启用安全模式，请排除崩溃拓展之后重启".moeDialog()
+            "检测到崩溃，以启用安全模式，请排除崩溃拓展之后重启".moeDialogAlert()
         }
     }
 

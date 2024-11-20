@@ -7,6 +7,9 @@ import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
 import com.heyanle.easybangumi4.cartoon.star.CartoonStarController
 import com.heyanle.easybangumi4.source_api.entity.CartoonCover
+import com.heyanle.easybangumi4.ui.common.MoeDialogData
+import com.heyanle.easybangumi4.ui.common.dismiss
+import com.heyanle.easybangumi4.ui.common.show
 import com.heyanle.inject.core.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,7 +31,6 @@ class CoverStarViewModel : ViewModel() {
 
     data class State(
         val startList: List<CartoonInfo> = emptyList(),
-        val dialog: Dialog? = null,
     ) {
         val starIdList: List<String> by lazy {
             startList.map { it.id }
@@ -72,13 +74,19 @@ class CoverStarViewModel : ViewModel() {
             }
             val tl = cartoonStarController.cartoonTagFlow.first().tagList
             if (tl.find { !it.isInner && !it.isDefault } != null) {
-                _stateFlow.update {
-                    it.copy(
-                        dialog = Dialog.StarDialogState(
-                            cartoonCover,
-                            tl.filter { !it.isInner }.sortedBy { it.order })
-                    )
-                }
+                MoeDialogData.Compose {
+                    CoverStarDialog(
+                        true,
+                        cartoonCover,
+                        tl.filter { !it.isInner }.sortedBy { it.order },
+                        {
+                            it.dismiss()
+                        }
+                    ) { cartoonCover, tagList ->
+                        realStar(cartoonCover, tagList)
+
+                    }
+                }.show()
             } else {
                 realStar(cartoonCover)
             }
@@ -106,11 +114,4 @@ class CoverStarViewModel : ViewModel() {
         }
     }
 
-    fun dismissDialog() {
-        _stateFlow.update {
-            it.copy(
-                dialog = null
-            )
-        }
-    }
 }

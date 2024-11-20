@@ -24,7 +24,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.plugin.source.LocalSourceBundleController
 import com.heyanle.easybangumi4.source_api.entity.CartoonCover
-import com.heyanle.easybangumi4.ui.common.cover_star.CoverStarCommon
 import com.heyanle.easybangumi4.ui.common.cover_star.CoverStarViewModel
 import com.heyanle.easybangumi4.ui.search_migrate.search.SearchTopAppBar
 import com.heyanle.easybangumi4.ui.search_migrate.search.gather.GatherSearchViewModel
@@ -67,7 +66,6 @@ fun MigrateGather(
     }
 
     val starVm = viewModel<CoverStarViewModel>()
-    CoverStarCommon(starVm)
 
     BackHandler {
         onBack()

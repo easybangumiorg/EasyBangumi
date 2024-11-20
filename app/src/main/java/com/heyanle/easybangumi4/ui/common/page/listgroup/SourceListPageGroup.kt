@@ -25,7 +25,6 @@ import com.heyanle.easybangumi4.source_api.component.page.SourcePage
 import com.heyanle.easybangumi4.ui.common.ErrorPage
 import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.LoadingPage
-import com.heyanle.easybangumi4.ui.common.cover_star.CoverStarCommon
 import com.heyanle.easybangumi4.ui.common.page.list.SourceListPage
 import com.heyanle.easybangumi4.ui.common.cover_star.CoverStarViewModel
 import kotlinx.coroutines.delay
@@ -96,7 +95,6 @@ fun SourceListWithGroup(
             refreshing = false
         }
     })
-    CoverStarCommon(coverStarViewModel)
     Box(
         modifier = Modifier
             .fillMaxSize()
