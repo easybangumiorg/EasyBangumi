@@ -30,4 +30,4 @@ dependencyResolutionManagement {
 
 include(":composeApp")
 
-include(":business:business-cartoon")
+include(":business:business_media")

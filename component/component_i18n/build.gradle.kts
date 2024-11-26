@@ -6,7 +6,7 @@ plugins {
     alias(libs.plugins.androidLibrary)
 }
 
-group = "com.heyanle.easy_bangumi_cm.business.media"
+group = "com.heyanle.easy_bangumi_cm.component.i18n"
 version = "1.0.0"
 
 kotlin {
@@ -61,7 +61,7 @@ kotlin {
 }
 
 android {
-    namespace = "com.heyanle.easy_bangumi_cm.business.media"
+    namespace = "com.heyanle.easy_bangumi_cm.component.i18n"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()
