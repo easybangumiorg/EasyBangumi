@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material.icons.filled.SyncAlt
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -231,7 +232,7 @@ fun HomeTopAppBar(
         navigationIcon = {
             IconButton(onClick = { onChangeClick() }) {
                 Icon(
-                    Icons.Filled.Sync,
+                    Icons.Filled.SyncAlt,
                     stringResource(id = com.heyanle.easy_i18n.R.string.source)
                 )
             }
