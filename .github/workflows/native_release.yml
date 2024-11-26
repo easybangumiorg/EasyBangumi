@@ -40,8 +40,8 @@ jobs:
       - name: Build
         run: |
           ls private
-          cp ./private/google-services.json ./app/google-services.json
-          ls app
+          cp ./private/google-services.json ./android_native/app/google-services.json
+          cd android_native
           chmod +x ./gradlew
           ./gradlew :app:assembleRelease
         env:
@@ -52,6 +52,7 @@ jobs:
       - name: Get Version
         id: getVersion
         run: |
+          cd android_native
           echo "JSON file content:"
           cat app/build/outputs/apk/release/output-metadata.json
           echo "BANGUMI_VERSION=$(jq -r '.elements[0].versionName' app/build/outputs/apk/release/output-metadata.json)" >> $GITHUB_ENV
@@ -67,7 +68,7 @@ jobs:
       - name: sign-apk
         uses: r0adkll/sign-android-release@v1
         with:
-          releaseDirectory: app/build/outputs/apk/release
+          releaseDirectory: /android_native/app/build/outputs/apk/release
           signingKeyBase64: ${{ secrets.SIGNING_KEY }}
           alias: ${{ secrets.KEY_ALIAS }}
           keyStorePassword: ${{ secrets.KEY_STORE_PWD }}
@@ -78,7 +79,7 @@ jobs:
 
       - name: rename-apk
         run: |
-          mv app/build/outputs/apk/release/app-release-unsigned-signed.apk easybangumi-${{ env.BANGUMI_VERSION }}.apk
+          mv android_native/app/build/outputs/apk/release/app-release-unsigned-signed.apk easybangumi-${{ env.BANGUMI_VERSION }}.apk
 
       - name: Archive apk
         uses: actions/upload-artifact@v4
