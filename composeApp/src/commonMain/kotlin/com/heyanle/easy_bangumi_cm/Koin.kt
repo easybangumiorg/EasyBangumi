@@ -12,14 +12,9 @@ import org.koin.dsl.module
  * Created by HeYanLe on 2024/11/27 0:29.
  * https://github.com/heyanLE
  */
-expect val MODULE_PLATFORM: Module
-
-val koin: KoinApplication by lazy {
+fun initKoin(){
     startKoin {
-        modules(MODULE_PLATFORM)
-
         modules(MODULE_COMPONENT_PROVIDER)
-
         modules(MODULE_BUSINESS_MEDIA)
     }
 }

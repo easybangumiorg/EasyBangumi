@@ -43,6 +43,7 @@ kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime",
 kotlin-reflect = {group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin-reflect"}
 
 koin-core = {group = "io.insert-koin", name = "koin-core", version.ref = "koin"}
+koin-android = {group = "io.insert-koin", name = "koin-android", version.ref = "koin"}
 
 sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "androidx-room" }
