@@ -1,0 +1,6 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="composeApp-jvm">
+    <output-path>$PROJECT_DIR$/composeApp/build/libs</output-path>
+    <root id="archive" name="composeApp-jvm.jar" />
+  </artifact>
+</component>

@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="component-inject-desktop-1.0.0">
+    <output-path>$PROJECT_DIR$/component/component-inject/build/libs</output-path>
+    <root id="archive" name="component-inject-desktop-1.0.0.jar">
+      <element id="module-output" name="EasyBangumi.component.component-inject.desktopMain" />
+    </root>
+  </artifact>
+</component>
