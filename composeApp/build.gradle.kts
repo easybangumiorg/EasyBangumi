@@ -26,19 +26,13 @@ kotlin {
             isStatic = true
         }
     }
-    
-    jvm()
+
     jvm("desktop")
     
     sourceSets {
-        val jvmMain by getting
-        val desktopMain by getting {
-            dependsOn(jvmMain)
-        }
-        
-        val androidMain by getting {
-            dependsOn(jvmMain)
-        }
+
+        val desktopMain by getting
+
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
@@ -52,6 +46,11 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtime.compose)
+            implementation(libs.koin.core)
+
+            implementation(project(":component:component_provider"))
+
+            implementation(project(":business:business_media"))
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)

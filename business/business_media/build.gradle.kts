@@ -4,6 +4,9 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
+
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.room)
 }
 
 group = "com.heyanle.easy_bangumi_cm.business.media"
@@ -20,31 +23,22 @@ kotlin {
     iosArm64()
     iosSimulatorArm64()
     linuxX64()
-    jvm()
     jvm("desktop")
 
     sourceSets {
 
-        val commonMain by getting
-        val jvmMain by getting {
-            dependsOn(commonMain)
-        }
-        val androidMain by getting {
-            dependsOn(jvmMain)
-        }
-        val desktopMain by getting {
-            dependsOn(jvmMain)
-        }
+        val desktopMain by getting
 
         commonMain.dependencies {
             implementation(libs.koin.core)
+            implementation(libs.androidx.room.runtime)
+            implementation(libs.sqlite.bundled)
+            implementation(libs.kotlinx.datetime)
+
+            implementation(project(":component:component_provider"))
         }
 
         iosMain.dependencies {
-
-        }
-
-        jvmMain.dependencies {
 
         }
 
@@ -58,6 +52,10 @@ kotlin {
 
 
     }
+}
+
+room {
+    schemaDirectory("$projectDir/schemas")
 }
 
 android {
