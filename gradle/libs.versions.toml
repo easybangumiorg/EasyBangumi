@@ -17,10 +17,11 @@ kotlin = "2.0.21"
 kotlin-reflect = "1.9.24"
 kotlinx-coroutines = "1.9.0"
 kotlinx-datetime = "0.6.1"
+kotlinx-io = "0.6.0"
 
 ksp = "2.0.10-1.0.24"
-sqlite = "2.5.0-alpha07"
-androidx-room = "2.7.0-alpha07"
+sqlite = "2.5.0-alpha11"
+androidx-room = "2.7.0-alpha11"
 
 koin = "4.0.0"
 
@@ -40,7 +41,10 @@ androidx-lifecycle-runtime-compose = { group = "org.jetbrains.androidx.lifecycle
 kotlinx-coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinx-datetime" }
+kotlinx-io = { group = "org.jetbrains.kotlinx", name = "kotlinx-io-core", version.ref = "kotlinx-io" }
+
 kotlin-reflect = {group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin-reflect"}
+
 
 koin-core = {group = "io.insert-koin", name = "koin-core", version.ref = "koin"}
 koin-android = {group = "io.insert-koin", name = "koin-android", version.ref = "koin"}

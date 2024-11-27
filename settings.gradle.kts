@@ -30,6 +30,4 @@ dependencyResolutionManagement {
 
 include(":composeApp")
 
-//include(":business:business_media")
-//
-//include(":component:component_provider")
+include(":base")

@@ -48,10 +48,12 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtime.compose)
             implementation(libs.koin.core)
+            implementation(libs.kotlinx.io)
 
 //            implementation(project(":component:component_provider"))
 //
 //            implementation(project(":business:business_media"))
+            implementation(project(":base"))
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
