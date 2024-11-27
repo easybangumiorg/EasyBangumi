@@ -49,9 +49,9 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtime.compose)
             implementation(libs.koin.core)
 
-            implementation(project(":component:component_provider"))
-
-            implementation(project(":business:business_media"))
+//            implementation(project(":component:component_provider"))
+//
+//            implementation(project(":business:business_media"))
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
