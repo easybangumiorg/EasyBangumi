@@ -7,6 +7,9 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.room)
 }
 
 kotlin {
@@ -92,6 +95,11 @@ android {
 dependencies {
     debugImplementation(compose.uiTooling)
 }
+
+room {
+    schemaDirectory("$projectDir/schemas")
+}
+
 
 compose.desktop {
     application {
