@@ -52,6 +52,9 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtime.compose)
             implementation(libs.koin.core)
             implementation(libs.kotlinx.io)
+            implementation(libs.androidx.room.runtime)
+            implementation(libs.sqlite.bundled)
+            implementation(libs.kotlinx.datetime)
 
 //            implementation(project(":component:component_provider"))
 //

@@ -35,6 +35,8 @@ kotlin {
             implementation(libs.sqlite.bundled)
             implementation(libs.kotlinx.datetime)
 
+            implementation(libs.kotlinx.coroutines.core)
+
             implementation(project(":component:component_provider"))
         }
 
