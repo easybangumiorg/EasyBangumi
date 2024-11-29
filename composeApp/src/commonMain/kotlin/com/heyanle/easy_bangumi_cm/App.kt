@@ -10,27 +10,31 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.heyanle.easy_bangumi_cm.media.entity.TestInfo
+import com.heyanle.easy_bangumi_cm.media.repository.dao.MediaInfoDao
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 import easybangumi.composeapp.generated.resources.Res
 import easybangumi.composeapp.generated.resources.compose_multiplatform
+import kotlinx.datetime.Clock
 
 @Composable
 @Preview
 fun App() {
+
+    val dao by remember { koin.inject<MediaInfoDao>() }
+    val testList = dao.flowTest().collectAsState(emptyList())
+
     MaterialTheme {
-        var showContent by remember { mutableStateOf(false) }
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            Button(onClick = { showContent = !showContent }) {
-                Text("Click me!")
+            Button(onClick = {
+                dao.insert(TestInfo(Clock.System.now().epochSeconds.toString(), "test"))
+            }) {
+                Text("Push")
             }
-            AnimatedVisibility(showContent) {
-                val greeting = remember { Greeting().greet() }
-                Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Image(painterResource(Res.drawable.compose_multiplatform), null)
-                    Text("Compose: $greeting")
-                }
+            testList.value.forEach {
+                Text(it.name)
             }
         }
     }

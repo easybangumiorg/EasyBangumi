@@ -1,6 +1,6 @@
 package com.heyanle.easy_bangumi_cm
 
-import com.heyanle.easy_bangumi_cm.base.initBase
+// import com.heyanle.easy_bangumi_cm.base.initBase
 import com.heyanle.easy_bangumi_cm.media.initMediaModule
 import org.koin.core.Koin
 import org.koin.core.context.KoinContext
@@ -19,7 +19,7 @@ val koin: Koin by lazy {
 object Global {
 
     fun onInit(){
-        initBase()
+        // initBase()
         initMediaModule()
     }
 

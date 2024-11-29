@@ -1,0 +1,39 @@
+CREATE TABLE IF NOT EXISTS MediaInfo (
+    id TEXT NOT NULL,
+    sourceId TEXT NOT NULL,
+
+    name TEXT NOT NULL,
+    coverUrl TEXT NOT NULL,
+    intro TEXT NOT NULL,
+    url TEXT NOT NULL,
+
+    isDetailLoad INTEGER NOT NULL,
+    genre TEXT NOT NULL,
+    description TEXT NOT NULL,
+    isUpdate INTEGER NOT NULL,
+    status INTEGER NOT NULL,
+    lastUpdateTime INTEGER NOT NULL,
+
+    isShowLine INTEGER NOT NULL,
+    sourceName TEXT NOT NULL,
+    isReversal INTEGER NOT NULL,
+    sortKey TEXT NOT NULL,
+
+    isPlayLineLoad INTEGER NOT NULL,
+    playLineString TEXT NOT NULL,
+
+    tags TEXT NOT NULL,
+    starTime INTEGER NOT NULL,
+    pinTime INTEGER NOT NULL,
+
+    lastHistoryTime INTEGER NOT NULL,
+    lastPlayLineEpisodeString TEXT NOT NULL,
+
+    lastPlayLineFinder TEXT NOT NULL,
+    lastPlayEpisodeFinder TEXT NOT NULL,
+
+    lastProcessTime INTEGER NOT NULL,
+
+    PRIMARY KEY (id, sourceId)
+);
+

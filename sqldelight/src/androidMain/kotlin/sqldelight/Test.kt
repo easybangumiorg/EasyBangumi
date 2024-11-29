@@ -6,5 +6,6 @@ package com.heyanle.easy_bangumi_cm.sqldelight
 class Test {
 
     fun init (){
+
     }
 }
