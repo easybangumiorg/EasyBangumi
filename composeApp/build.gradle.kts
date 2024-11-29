@@ -9,7 +9,6 @@ plugins {
     alias(libs.plugins.composeCompiler)
 
     alias(libs.plugins.ksp)
-    alias(libs.plugins.room)
 }
 
 kotlin {
@@ -52,13 +51,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtime.compose)
             implementation(libs.koin.core)
             implementation(libs.kotlinx.io)
-            implementation(libs.androidx.room.runtime)
-            implementation(libs.sqlite.bundled)
             implementation(libs.kotlinx.datetime)
-
-//            implementation(project(":component:component_provider"))
-//
-//            implementation(project(":business:business_media"))
             implementation(project(":base"))
         }
         desktopMain.dependencies {
@@ -97,10 +90,6 @@ android {
 
 dependencies {
     debugImplementation(compose.uiTooling)
-}
-
-room {
-    schemaDirectory("$projectDir/schemas")
 }
 
 

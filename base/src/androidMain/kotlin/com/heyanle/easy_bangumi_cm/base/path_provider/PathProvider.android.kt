@@ -1,6 +1,7 @@
 package com.heyanle.easy_bangumi_cm.base.path_provider
 
 import org.koin.core.module.Module
+import org.koin.dsl.bind
 import org.koin.dsl.module
 
 /**
@@ -10,5 +11,5 @@ import org.koin.dsl.module
  */
 internal actual val pathProviderModule: Module
     get() = module {
-        single<PathProvider> { AndroidPathProvider(it.get()) }
+        single<PathProvider> { AndroidPathProvider(it.get()) } bind PathProvider::class
     }

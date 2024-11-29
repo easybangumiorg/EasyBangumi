@@ -1,6 +1,5 @@
 package com.heyanle.easy_bangumi_cm.media.entity
 
-import androidx.room.Entity
 import kotlinx.datetime.Clock
 
 
@@ -8,7 +7,6 @@ import kotlinx.datetime.Clock
  * Created by HeYanLe on 2024/11/26 23:35.
  * https://github.com/heyanLE
  */
-@Entity(tableName = "MediaInfo", primaryKeys = ["id", "source"])
 class MediaInfo(
     // finder
     val id: String,              // 标识，由源自己支持，用于区分番剧
