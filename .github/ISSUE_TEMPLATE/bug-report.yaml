@@ -1,12 +1,12 @@
-name: 问题上报
-description: 上报软件运行出现的问题以帮助开发者改进纯纯看番
+name: Bug上报
+description: 提交一个非预期行为（Bug）
 title: "[BUG]: "
 labels: ["bug"]
 body:
   - type: markdown
     attributes:
       value: |
-        请花些时间填写您遇到的问题，不胜感激！
+        请花些时间填写您遇到的Bug，不胜感激！
         在开始之前请给问卷**起个标题**
   - type: input
     id: phone
@@ -31,7 +31,7 @@ body:
       description: 在更多->关于里可以查看当前版本
       placeholder: 例如 5.4.2
     validations:
-      required: false
+      required: true
   - type: textarea
     id: what-happened
     attributes:
