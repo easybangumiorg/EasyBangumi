@@ -5,11 +5,10 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
 import com.heyanle.easy_bangumi_cm.room.media.entity.MediaInfo
-import com.heyanle.easy_bangumi_cm.room.media.entity.TestInfo
 import com.heyanle.easy_bangumi_cm.room.media.repository.dao.MediaInfoDao
 
 
-@Database(entities = [MediaInfo::class, TestInfo::class], version = 1)
+@Database(entities = [MediaInfo::class], version = 1)
 @ConstructedBy(MediaDatabaseConstructor::class)
 abstract class MediaDatabase : RoomDatabase() {
 
