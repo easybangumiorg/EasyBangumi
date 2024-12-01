@@ -1,6 +1,6 @@
 package com.heyanle.easy_bangumi_cm
 
-import com.heyanle.easy_bangumi_cm.base.initBase
+import com.heyanle.easy_bangumi_cm.base.baseModule
 import com.heyanle.easy_bangumi_cm.room.roomModule
 import org.koin.core.Koin
 import org.koin.core.context.startKoin
@@ -20,8 +20,9 @@ object Global {
 
     fun onInit(){
         // initBase()
-        initBase()
+
         startKoin {
+            modules(baseModule)
             modules(roomModule)
         }
     }
