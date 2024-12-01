@@ -8,9 +8,10 @@ package com.heyanle.easy_bangumi_cm.base.path_provider
 
 class DesktopPathProvider: PathProvider {
 
-    private val PROP = System.getProperty("compose.application.resources.dir")
+    //private val PROP = System.getProperty("compose.application.resources.dir")
 
     override fun getCachePath(type: String): String {
+
         TODO("Not yet implemented")
     }
 
