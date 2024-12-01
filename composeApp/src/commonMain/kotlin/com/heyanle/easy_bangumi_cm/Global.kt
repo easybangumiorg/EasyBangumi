@@ -1,9 +1,8 @@
 package com.heyanle.easy_bangumi_cm
 
-// import com.heyanle.easy_bangumi_cm.base.initBase
-import com.heyanle.easy_bangumi_cm.media.initMediaModule
+import com.heyanle.easy_bangumi_cm.base.initBase
+import com.heyanle.easy_bangumi_cm.room.initRoom
 import org.koin.core.Koin
-import org.koin.core.context.KoinContext
 import org.koin.mp.KoinPlatformTools
 
 
@@ -20,7 +19,8 @@ object Global {
 
     fun onInit(){
         // initBase()
-        initMediaModule()
+        initBase()
+        initRoom()
     }
 
 }

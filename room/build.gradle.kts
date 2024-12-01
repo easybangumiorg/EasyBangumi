@@ -4,9 +4,10 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.ksp)
 }
 
-group = "com.heyanle.easy_bangumi_cm.base"
+group = "com.heyanle.easy_bangumi_cm.room"
 version = "1.0.0"
 
 kotlin {
@@ -29,6 +30,8 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.koin.core)
             implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.androidx.room.runtime)
+            implementation(libs.sqlite.bundled)
         }
 
         iosMain.dependencies {
@@ -50,7 +53,7 @@ kotlin {
 
 
 android {
-    namespace = "com.heyanle.easy_bangumi_cm.base"
+    namespace = "com.heyanle.easy_bangumi_cm.room"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()
@@ -60,3 +63,23 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 }
+
+ksp {
+    arg("room.schemaLocation", "${projectDir}/schemas")
+}
+
+val kspMetaDataList = listOf(
+    "kspCommonMainMetadata",
+    "kspAndroid",
+    "kspDesktop",
+    "kspIosSimulatorArm64",
+    "kspIosX64",
+    "kspIosArm64",
+)
+
+dependencies {
+    kspMetaDataList.forEach {
+        add(it, libs.androidx.room.compiler)
+    }
+}
+

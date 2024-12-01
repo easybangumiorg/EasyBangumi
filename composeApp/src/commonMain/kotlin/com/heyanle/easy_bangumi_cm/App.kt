@@ -17,6 +17,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 
 import easybangumi.composeapp.generated.resources.Res
 import easybangumi.composeapp.generated.resources.compose_multiplatform
+import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 
 @Composable
@@ -25,11 +26,14 @@ fun App() {
 
     val dao by remember { koin.inject<MediaInfoDao>() }
     val testList = dao.flowTest().collectAsState(emptyList())
+    val scope = rememberCoroutineScope()
 
     MaterialTheme {
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
             Button(onClick = {
-                dao.insert(TestInfo(Clock.System.now().epochSeconds.toString(), "test"))
+                scope.launch {
+                    dao.insert(TestInfo(Clock.System.now().epochSeconds.toString(), "test"))
+                }
             }) {
                 Text("Push")
             }

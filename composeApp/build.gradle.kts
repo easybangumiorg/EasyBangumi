@@ -8,8 +8,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.ksp)
-    alias(libs.plugins.room)
-    // alias(libs.plugins.sqldeight)
+    // alias(libs.plugins.room)
 }
 
 val appPackageName = "com.heyanle.easy_bangumi_cm"
@@ -56,10 +55,10 @@ kotlin {
             implementation(libs.kotlinx.io)
             implementation(libs.kotlinx.datetime)
 
-            implementation(libs.androidx.room.compiler)
             implementation(libs.androidx.room.runtime)
             implementation(libs.sqlite.bundled)
             implementation(project(":base"))
+            implementation(project(":room"))
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
@@ -95,13 +94,15 @@ android {
     }
 }
 
+
+
+
 dependencies {
     debugImplementation(compose.uiTooling)
 }
 
-room {
-    schemaDirectory("$projectDir/schemas")
-}
+
+
 
 compose.desktop {
     application {

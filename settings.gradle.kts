@@ -29,4 +29,5 @@ dependencyResolutionManagement {
 }
 
 include(":composeApp")
+include(":room")
 include(":base")
