@@ -1,0 +1,18 @@
+[versions]
+agp = "8.5.2"
+compose = "1.7.0"
+kotlin = "2.0.21"
+ksp = "2.0.21-1.0.28"
+
+
+[plugins]
+androidApplication = { id = "com.android.application", version.ref = "agp" }
+androidLibrary = { id = "com.android.library", version.ref = "agp" }
+
+compose = { id = "org.jetbrains.compose", version.ref = "compose" }
+
+kotlinCompose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

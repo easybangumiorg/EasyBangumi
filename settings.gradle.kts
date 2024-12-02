@@ -26,8 +26,24 @@ dependencyResolutionManagement {
         }
         mavenCentral()
     }
+
+    versionCatalogs {
+        create("builds") {
+            from(files("versions/builds.version.toml"))
+        }
+        create("libs") {
+            from(files("versions/libs.version.toml"))
+        }
+    }
 }
 
-include(":composeApp")
-include(":room")
-include(":base")
+fun includeModule(moduleName: String, dir: String? = null) {
+    include(":$moduleName")
+    if (dir != null) {
+        project(moduleName).projectDir = file(dir)
+    }
+}
+
+rootProject.name = "EasyBangumi"
+includeModule(":app:android", "app/android")
+
