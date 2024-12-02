@@ -35,7 +35,7 @@ compose.desktop {
             "-namespace=${AppConfig.namespace}",
         )
 
-        // 有点 chuck 但没办法
+        // 有点 trick 但没办法
         if (project.gradle.startParameter.taskNames.contains("Release")
             || project.gradle.startParameter.taskNames.contains("release")) {
             jvmArgs(

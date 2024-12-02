@@ -1,5 +1,6 @@
 package com.heyanle.easy_bangumi_cm
 
+import org.koin.core.context.startKoin
 import java.lang.management.ManagementFactory
 
 
@@ -9,7 +10,5 @@ import java.lang.management.ManagementFactory
  */
 
 fun main(){
-    System.getProperty("compose.application.resources.dir")?.let {
-        println(it)
-    }
+    startKoin {  }
 }

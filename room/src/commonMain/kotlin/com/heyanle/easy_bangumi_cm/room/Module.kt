@@ -1,7 +1,6 @@
 package com.heyanle.easy_bangumi_cm.room
 
-import com.heyanle.easy_bangumi_cm.room.media.mediaModule
-import org.koin.core.context.startKoin
+import com.heyanle.easy_bangumi_cm.room.media.repository.mediaDatabaseModule
 import org.koin.core.module.Module
 import org.koin.dsl.module
 
@@ -12,5 +11,5 @@ import org.koin.dsl.module
  */
 val roomModule: Module
     get() = module {
-        includes(mediaModule)
+        includes(mediaDatabaseModule)
     }

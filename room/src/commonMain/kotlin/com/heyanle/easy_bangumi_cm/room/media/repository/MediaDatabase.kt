@@ -6,6 +6,7 @@ import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
 import com.heyanle.easy_bangumi_cm.room.media.entity.MediaInfo
 import com.heyanle.easy_bangumi_cm.room.media.repository.dao.MediaInfoDao
+import org.koin.core.module.Module
 
 
 @Database(entities = [MediaInfo::class], version = 1)
@@ -19,7 +20,7 @@ abstract class MediaDatabase : RoomDatabase() {
     abstract fun mediaInfoDao(): MediaInfoDao
 }
 
-expect fun onCreateMediaDatabase(): MediaDatabase
+expect val mediaDatabaseModule: Module
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")
 expect object MediaDatabaseConstructor : RoomDatabaseConstructor<MediaDatabase>

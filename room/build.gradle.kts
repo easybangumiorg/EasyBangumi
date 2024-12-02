@@ -33,6 +33,7 @@ kotlin {
             implementation(libs.androidx.room.runtime)
             implementation(libs.sqlite.bundled)
             implementation(libs.kotlinx.datetime)
+            implementation(projects.base)
         }
 
         iosMain.dependencies {
