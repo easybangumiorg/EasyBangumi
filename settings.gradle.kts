@@ -49,4 +49,5 @@ includeModule(":app:android", "app/android")
 includeModule(":app:desktop", "app/desktop")
 includeModule(":app:shared", "app/shared")
 includeModule(":base", "base")
+includeModule(":room", "room")
 

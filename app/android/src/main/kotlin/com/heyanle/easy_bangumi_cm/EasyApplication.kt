@@ -1,7 +1,6 @@
 package com.heyanle.easy_bangumi_cm
 
 import android.app.Application
-import com.heyanle.easy_bangumi_cm.base.AndroidBaseFactory
 import com.heyanle.easy_bangumi_cm.base.AndroidLogger
 import com.heyanle.easy_bangumi_cm.base.AndroidPathProvider
 import com.heyanle.easy_bangumi_cm.base.Logger
@@ -15,7 +14,6 @@ import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
 import org.koin.dsl.bind
 import org.koin.dsl.module
-import kotlin.math.sin
 
 
 /**
@@ -51,6 +49,7 @@ class EasyApplication: Application() {
             androidContext(this@EasyApplication)
             modules(baseModule)
         }
+        SharedApp.init()
     }
 
 }

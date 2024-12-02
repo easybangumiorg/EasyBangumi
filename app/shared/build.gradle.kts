@@ -52,6 +52,7 @@ kotlin {
 //            implementation(libs.androidx.lifecycle.viewmodel)
 //            implementation(libs.androidx.lifecycle.runtime.compose)
             implementation(libs.koin.core)
+            implementation(projects.room)
 //            implementation(libs.kotlinx.io)
 //            implementation(libs.kotlinx.datetime)
 //

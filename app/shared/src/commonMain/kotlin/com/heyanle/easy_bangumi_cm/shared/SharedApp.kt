@@ -1,12 +1,7 @@
 package com.heyanle.easy_bangumi_cm.shared
 
-import com.heyanle.easy_bangumi_cm.base.BaseFactory
-import com.heyanle.easy_bangumi_cm.base.Logger
-import com.heyanle.easy_bangumi_cm.base.path_provider.PathProvider
-import com.heyanle.easy_bangumi_cm.base.preference.PreferenceStore
+import com.heyanle.easy_bangumi_cm.room.roomModule
 import org.koin.core.context.startKoin
-import org.koin.dsl.bind
-import org.koin.dsl.module
 
 
 /**
@@ -16,23 +11,9 @@ import org.koin.dsl.module
 
 object SharedApp {
 
-    fun initBase(
-        baseFactory: BaseFactory
-    ){
+    fun init(){
         startKoin {
-            modules(module {
-                single {
-                    baseFactory.getLogger()
-                } bind Logger::class
-
-                single {
-                    baseFactory.getPathProvider()
-                } bind PathProvider::class
-
-                single {
-                    baseFactory.getPreferenceStore()
-                } bind PreferenceStore::class
-            })
+            modules(roomModule)
         }
     }
 

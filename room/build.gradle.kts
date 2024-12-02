@@ -4,11 +4,11 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(builds.plugins.kotlinMultiplatform)
     alias(builds.plugins.androidLibrary)
-    alias(libs.plugins.ksp)
+    alias(builds.plugins.ksp)
 }
 
-group = "com.heyanle.easy_bangumi_cm.room"
-version = "1.0.0"
+group = "${AppConfig.namespace}.room"
+version = AppConfig.versionName
 
 kotlin {
     androidTarget {
@@ -54,10 +54,10 @@ kotlin {
 
 
 android {
-    namespace = "com.heyanle.easy_bangumi_cm.room"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    namespace = "${AppConfig.namespace}.room"
+    compileSdk = 34
     defaultConfig {
-        minSdk = libs.versions.android.minSdk.get().toInt()
+        minSdk = 21
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
