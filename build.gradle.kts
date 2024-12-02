@@ -7,4 +7,6 @@ plugins {
     alias(builds.plugins.kotlinCompose) apply false
     alias(builds.plugins.kotlinMultiplatform) apply false
     alias(builds.plugins.kotlinAndroid) apply false
+
+    alias(builds.plugins.kotlinJvm) apply false
 }

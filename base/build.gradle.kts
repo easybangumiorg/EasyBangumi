@@ -2,12 +2,12 @@ import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidLibrary)
+    alias(builds.plugins.kotlinMultiplatform)
+    alias(builds.plugins.androidLibrary)
 }
 
-group = "com.heyanle.easy_bangumi_cm.base"
-version = "1.0.0"
+group = AppConfig.namespace + ".base"
+version = AppConfig.versionName
 
 kotlin {
     androidTarget {
@@ -50,10 +50,10 @@ kotlin {
 
 
 android {
-    namespace = "com.heyanle.easy_bangumi_cm.base"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    namespace = AppConfig.namespace + ".base"
+    compileSdk = 34
     defaultConfig {
-        minSdk = libs.versions.android.minSdk.get().toInt()
+        minSdk = 21
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

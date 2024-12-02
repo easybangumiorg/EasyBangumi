@@ -38,7 +38,7 @@ dependencyResolutionManagement {
 }
 
 fun includeModule(moduleName: String, dir: String? = null) {
-    include(":$moduleName")
+    include(moduleName)
     if (dir != null) {
         project(moduleName).projectDir = file(dir)
     }
@@ -46,4 +46,7 @@ fun includeModule(moduleName: String, dir: String? = null) {
 
 rootProject.name = "EasyBangumi"
 includeModule(":app:android", "app/android")
+includeModule(":app:desktop", "app/desktop")
+includeModule(":app:shared", "app/shared")
+includeModule(":base", "base")
 

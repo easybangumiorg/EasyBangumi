@@ -5,6 +5,9 @@ plugins {
     alias(builds.plugins.ksp)
 }
 
+group = AppConfig.namespace
+version = AppConfig.versionName
+
 android {
     namespace =  AppConfig.namespace
     compileSdk = 34
@@ -25,7 +28,6 @@ android {
 
 
     }
-
 
     packaging {
         resources.excludes.add("META-INF/beans.xml")
@@ -69,6 +71,12 @@ dependencies {
 
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.preference.ktx)
+
+    implementation(libs.koin.core)
+    implementation(libs.koin.android)
+    implementation(projects.base)
+    implementation(projects.app.shared)
 
 
 }
