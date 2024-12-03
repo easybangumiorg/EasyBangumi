@@ -1,7 +1,7 @@
 package com.heyanle.easy_bangumi_cm.base
 
-import com.heyanle.easy_bangumi_cm.base.path_provider.PathProvider
-import com.heyanle.easy_bangumi_cm.BaseException
+import com.heyanle.easy_bangumi_cm.shared.base.Logger
+import com.heyanle.easy_bangumi_cm.shared.base.PathProvider
 import kotlin.io.path.Path
 import kotlin.io.path.pathString
 
@@ -39,7 +39,7 @@ class DesktopPathProvider: PathProvider {
             return@lazy userHome
         }
 
-        throw BaseException("Desktop can not find cache path")
+        throw Exception("Desktop can not find cache path")
     }
 
     private val filePathRoot: String by lazy {
@@ -62,7 +62,7 @@ class DesktopPathProvider: PathProvider {
             return@lazy userHome
         }
 
-        throw BaseException("Desktop can not find cache path")
+        throw Exception("Desktop can not find cache path")
     }
 
     override fun getCachePath(type: String): String {

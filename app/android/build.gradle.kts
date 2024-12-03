@@ -78,11 +78,7 @@ dependencies {
 
 
     implementation(projects.app.shared)
-
-    implementation(projects.utils.android)
-
-    implementation(projects.base)
-
+    implementation(projects.inject)
 
 
 

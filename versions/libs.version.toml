@@ -21,6 +21,12 @@ preference = "1.2.1"
 kotlin-serialization-plugin = "1.9.24"
 kotlinx-serialization = "1.6.3"
 
+navigation = "2.8.0-alpha10"
+
+decompose = "3.2.2"
+
+moshi = "1.14.0"
+
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidx-core-ktx" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidx-appcompat" }
@@ -45,10 +51,16 @@ androidx-room-compiler = { group = "androidx.room", name = "room-compiler", vers
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "androidx-room" }
 androidx-room-paging = { group = "androidx.room", name = "room-paging", version.ref = "androidx-room" }
 
+navigation-compose = { group = "org.jetbrains.androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
+
 preference-ktx = { module = "androidx.preference:preference-ktx", version.ref = "preference" }
 
 kotlinx-serialization-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-core", version.ref = "kotlinx-serialization" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+
+decompose = { group = "com.arkivanov.decompose", name = "extensions-compose", version.ref = "decompose" }
+
+moshi = { group = "com.squareup.moshi", name = "moshi-kotlin", version.ref = "moshi" }
 
 [plugins]
 kotlinxSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin-serialization-plugin" }

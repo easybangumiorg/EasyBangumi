@@ -23,13 +23,11 @@ dependencies {
 
     implementation(compose.desktop.currentOs)
 
-    implementation(libs.koin.core)
     implementation(libs.kotlinx.serialization.json)
 
     implementation(projects.app.shared)
+    implementation(projects.inject)
 
-    implementation(projects.utils.jvm)
-    implementation(projects.base)
 
 }
 

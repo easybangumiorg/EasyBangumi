@@ -1,6 +1,7 @@
 package com.heyanle.easy_bangumi_cm.base
 
 import com.heyanle.easy_bangumi_cm.BuildConfig
+import com.heyanle.easy_bangumi_cm.shared.base.Platform
 
 
 /**

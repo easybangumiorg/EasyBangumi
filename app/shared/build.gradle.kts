@@ -8,6 +8,7 @@ plugins {
     alias(builds.plugins.kotlinCompose)
     alias(builds.plugins.compose)
     alias(libs.plugins.kotlinxSerialization)
+    alias(builds.plugins.ksp)
 }
 
 kotlin {
@@ -17,16 +18,6 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-//    listOf(
-//        iosX64(),
-//        iosArm64(),
-//        iosSimulatorArm64()
-//    ).forEach { iosTarget ->
-//        iosTarget.binaries.framework {
-//            baseName = "ComposeApp"
-//            isStatic = true
-//        }
-//    }
 
     jvm("desktop")
 
@@ -35,18 +26,21 @@ kotlin {
         val desktopMain by getting
 
         androidMain.dependencies {
+            implementation(libs.moshi)
         }
         commonMain.dependencies {
             implementation(compose.components.resources)
             implementation(compose.ui)
 
-            implementation(libs.koin.core)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.moshi)
 
-            implementation(projects.component.room)
-            implementation(projects.base)
+            implementation(projects.inject)
+
         }
         desktopMain.dependencies {
+            implementation(libs.moshi)
             implementation(compose.desktop.currentOs)
         }
         iosMain.dependencies {
@@ -73,6 +67,26 @@ android {
 dependencies {
     // debugImplementation(compose.uiTooling)
 }
+
+ksp {
+    arg("room.schemaLocation", "${projectDir}/schemas")
+}
+
+val kspMetaDataList = listOf(
+    "kspCommonMainMetadata",
+    "kspAndroid",
+    "kspDesktop",
+//    "kspIosSimulatorArm64",
+//    "kspIosX64",
+//    "kspIosArm64",
+)
+
+dependencies {
+    kspMetaDataList.forEach {
+        add(it, libs.androidx.room.compiler)
+    }
+}
+
 
 
 

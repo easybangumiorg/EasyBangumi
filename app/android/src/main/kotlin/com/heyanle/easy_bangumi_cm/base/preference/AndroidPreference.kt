@@ -2,6 +2,7 @@ package com.heyanle.easy_bangumi_cm.base.preference
 
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import com.heyanle.easy_bangumi_cm.shared.base.preference.Preference
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
