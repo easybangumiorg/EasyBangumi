@@ -1,6 +1,8 @@
 package com.heyanle.easy_bangumi_cm.base
 
 import com.heyanle.easy_bangumi_cm.BaseException
+import org.jetbrains.skiko.hostArch
+import org.jetbrains.skiko.hostOs
 import java.util.*
 
 
@@ -11,13 +13,13 @@ import java.util.*
 
 class DesktopPlatform: Platform {
 
-    val properties = Properties()
+    private val properties = Properties()
     private val _namespace: String by lazy {
         properties.getProperty("namespace") ?: throw BaseException("desktop namespace is null")
     }
 
     private val _platformName: String by lazy {
-        properties.getProperty("platformName") ?: throw BaseException("desktop platformName is null")
+        "Desktop ${hostOs.name} ${hostArch.name}"
     }
 
     private val _versionCode: Int by lazy {
