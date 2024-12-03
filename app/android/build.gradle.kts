@@ -75,8 +75,15 @@ dependencies {
 
     implementation(libs.koin.core)
     implementation(libs.koin.android)
-    implementation(projects.base)
+
+
     implementation(projects.app.shared)
+
+    implementation(projects.utils.android)
+
+    implementation(projects.base)
+
+
 
 
 }

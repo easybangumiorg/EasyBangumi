@@ -1,6 +1,8 @@
 package com.heyanle.easy_bangumi_cm.shared
 
+import androidx.compose.runtime.Composable
 import com.heyanle.easy_bangumi_cm.room.roomModule
+import org.jetbrains.compose.resources.Resource
 import org.koin.core.context.startKoin
 
 
@@ -15,6 +17,12 @@ object SharedApp {
         startKoin {
             modules(roomModule)
         }
+    }
+
+
+    @Composable
+    fun Compose(){
+
     }
 
 

@@ -16,35 +16,13 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()
     jvm("desktop")
 
     sourceSets {
-
-
-        val desktopMain by getting
-
         commonMain.dependencies {
             implementation(libs.koin.core)
             implementation(libs.kotlinx.coroutines.core)
         }
-
-        iosMain.dependencies {
-
-        }
-
-
-        androidMain.dependencies {
-
-        }
-        desktopMain.dependencies {
-
-        }
-
-
-
     }
 }
 

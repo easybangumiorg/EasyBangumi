@@ -19,10 +19,17 @@ dependencies {
     // (in a separate module for demo project and in testMain).
     // With compose.desktop.common you will also lose @Preview functionality
 
-    implementation(libs.koin.core)
+
     implementation(compose.desktop.currentOs)
+
+    implementation(libs.koin.core)
+    implementation(libs.kotlinx.serialization.json)
+
     implementation(projects.app.shared)
+
+    implementation(projects.utils.jvm)
     implementation(projects.base)
+
 }
 
 compose.desktop {

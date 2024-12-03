@@ -1,5 +1,9 @@
 package com.heyanle.easy_bangumi_cm.base
 
+import org.koin.core.logger.Level
+import org.koin.core.logger.MESSAGE
+
+typealias KoinLogger = org.koin.core.logger.Logger
 
 /**
  * TODO file logger
@@ -7,15 +11,19 @@ package com.heyanle.easy_bangumi_cm.base
  * https://github.com/heyanLE
  */
 
-class DesktopLogger: Logger {
+class DesktopLogger: Logger, KoinLogger(){
+
+    init {
+        logger = this
+    }
 
     override fun d(tag: String, msg: String) {
         println("[$tag] $msg")
     }
 
-    override fun e(tag: String, msg: String, e: Throwable) {
+    override fun e(tag: String, msg: String, e: Throwable?) {
         println("[$tag] $msg")
-        e.printStackTrace()
+        e?.printStackTrace()
     }
 
     override fun i(tag: String, msg: String) {
@@ -32,5 +40,15 @@ class DesktopLogger: Logger {
 
     override fun wtf(tag: String, msg: String) {
         println("[$tag] $msg")
+    }
+
+    override fun display(level: Level, msg: MESSAGE) {
+        when(level){
+            Level.DEBUG -> d("Koin", msg)
+            Level.INFO -> i("Koin", msg)
+            Level.ERROR -> e("Koin", msg, null)
+            Level.NONE -> {}
+            else -> {}
+        }
     }
 }

@@ -10,11 +10,15 @@ import android.util.Log
 
 class AndroidLogger: Logger {
 
+    init {
+        logger = this
+    }
+
     override fun d(tag: String, msg: String) {
         Log.d(tag, msg)
     }
 
-    override fun e(tag: String, msg: String, e: Throwable) {
+    override fun e(tag: String, msg: String, e: Throwable?) {
         Log.e(tag, msg, e)
     }
 

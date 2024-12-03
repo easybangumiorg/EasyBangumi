@@ -9,4 +9,5 @@ plugins {
     alias(builds.plugins.kotlinAndroid) apply false
 
     alias(builds.plugins.kotlinJvm) apply false
+    alias(libs.plugins.kotlinxSerialization) apply false
 }

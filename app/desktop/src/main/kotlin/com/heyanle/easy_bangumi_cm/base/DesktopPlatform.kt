@@ -1,5 +1,6 @@
 package com.heyanle.easy_bangumi_cm.base
 
+import com.heyanle.easy_bangumi_cm.BaseException
 import java.util.*
 
 

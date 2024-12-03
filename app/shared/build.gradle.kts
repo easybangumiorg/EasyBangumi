@@ -7,8 +7,7 @@ plugins {
     alias(builds.plugins.androidLibrary)
     alias(builds.plugins.kotlinCompose)
     alias(builds.plugins.compose)
-
-    alias(builds.plugins.ksp)
+    alias(libs.plugins.kotlinxSerialization)
 }
 
 kotlin {
@@ -18,16 +17,16 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    listOf(
-        iosX64(),
-        iosArm64(),
-        iosSimulatorArm64()
-    ).forEach { iosTarget ->
-        iosTarget.binaries.framework {
-            baseName = "ComposeApp"
-            isStatic = true
-        }
-    }
+//    listOf(
+//        iosX64(),
+//        iosArm64(),
+//        iosSimulatorArm64()
+//    ).forEach { iosTarget ->
+//        iosTarget.binaries.framework {
+//            baseName = "ComposeApp"
+//            isStatic = true
+//        }
+//    }
 
     jvm("desktop")
 
@@ -36,38 +35,28 @@ kotlin {
         val desktopMain by getting
 
         androidMain.dependencies {
-//            implementation(compose.preview)
-//            implementation(libs.androidx.activity.compose)
-//            implementation(libs.koin.android)
         }
         commonMain.dependencies {
             implementation(compose.components.resources)
-            implementation(projects.base)
-//            implementation(compose.runtime)
-//            implementation(compose.foundation)
-//            implementation(compose.material)
-//            implementation(compose.ui)
-//            implementation(compose.components.resources)
-//            implementation(compose.components.uiToolingPreview)
-//            implementation(libs.androidx.lifecycle.viewmodel)
-//            implementation(libs.androidx.lifecycle.runtime.compose)
+            implementation(compose.ui)
+
             implementation(libs.koin.core)
-            implementation(projects.room)
-//            implementation(libs.kotlinx.io)
-//            implementation(libs.kotlinx.datetime)
-//
-//            implementation(libs.androidx.room.runtime)
-//            implementation(libs.sqlite.bundled)
+            implementation(libs.kotlinx.serialization.json)
+
+            implementation(projects.component.room)
+            implementation(projects.base)
         }
         desktopMain.dependencies {
-//            implementation(compose.desktop.currentOs)
-//            implementation(libs.kotlinx.coroutines.swing)
+            implementation(compose.desktop.currentOs)
+        }
+        iosMain.dependencies {
+
         }
     }
 }
 
 android {
-    namespace = AppConfig.namespace + ".shared"
+    namespace = AppConfig.namespace + ".component.room"
     compileSdk = 34
     defaultConfig {
         minSdk = 21
