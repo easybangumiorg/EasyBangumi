@@ -1,6 +1,6 @@
 package com.heyanle.easy_bangumi_cm.base.preference
 
-import com.heyanle.easy_bangumi_cm.utils.HeKV
+import com.heyanle.easy_bangumi_cm.utils.jvm.HeKV
 import java.net.URLDecoder
 import java.net.URLEncoder
 

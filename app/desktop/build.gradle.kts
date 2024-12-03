@@ -1,3 +1,4 @@
+import org.gradle.kotlin.dsl.support.kotlinCompilerOptions
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 plugins {
@@ -30,6 +31,10 @@ dependencies {
     implementation(projects.utils.jvm)
     implementation(projects.base)
 
+}
+
+kotlin {
+    jvmToolchain(17)
 }
 
 compose.desktop {
