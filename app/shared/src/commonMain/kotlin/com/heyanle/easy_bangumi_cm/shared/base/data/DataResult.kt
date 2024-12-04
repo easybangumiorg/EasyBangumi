@@ -1,4 +1,4 @@
-package com.heyanle.easy_bangumi_cm.shared.base
+package com.heyanle.easy_bangumi_cm.shared.base.data
 
 /**
  * Created by HeYanLe on 2023/8/13 16:36.

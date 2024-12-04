@@ -1,5 +1,7 @@
 package com.heyanle.easy_bangumi_cm.shared.base
 
+import com.heyanle.inject.api.getOrNull
+import com.heyanle.inject.core.Inject
 
 
 /**
@@ -13,11 +15,12 @@ interface Logger {
     companion object {
 
         fun d(tag: String, msg: String) {
+
             logger?.d(tag, msg) ?: Inject.getOrNull<Logger>()?.d(tag, msg) ?: println("[$tag] $msg")
         }
 
         fun e(tag: String, msg: String, e: Throwable) {
-            logger?.e(tag, msg, e) ?: koin.getOrNull<Logger>()?.d(tag, msg) ?: {
+            logger?.e(tag, msg, e) ?:  Inject.getOrNull<Logger>()?.d(tag, msg) ?: {
                 println("[$tag] $msg")
                 e.printStackTrace()
             }
@@ -25,19 +28,19 @@ interface Logger {
         }
 
         fun i(tag: String, msg: String) {
-            logger?.i(tag, msg) ?: koin.getOrNull<Logger>()?.d(tag, msg) ?: println("[$tag] $msg")
+            logger?.i(tag, msg) ?:  Inject.getOrNull<Logger>()?.d(tag, msg) ?: println("[$tag] $msg")
         }
 
         fun w(tag: String, msg: String) {
-            logger?.w(tag, msg) ?: koin.getOrNull<Logger>()?.d(tag, msg) ?: println("[$tag] $msg")
+            logger?.w(tag, msg) ?:  Inject.getOrNull<Logger>()?.d(tag, msg) ?: println("[$tag] $msg")
         }
 
         fun v(tag: String, msg: String) {
-            logger?.v(tag, msg) ?: koin.getOrNull<Logger>()?.d(tag, msg) ?: println("[$tag] $msg")
+            logger?.v(tag, msg) ?:  Inject.getOrNull<Logger>()?.d(tag, msg) ?: println("[$tag] $msg")
         }
 
         fun wtf(tag: String, msg: String) {
-            logger?.wtf(tag, msg) ?: koin.getOrNull<Logger>()?.d(tag, msg) ?: println("[$tag] $msg")
+            logger?.wtf(tag, msg) ?:  Inject.getOrNull<Logger>()?.d(tag, msg) ?: println("[$tag] $msg")
         }
 
 

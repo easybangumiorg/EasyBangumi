@@ -13,7 +13,6 @@ import com.heyanle.inject.api.InjectModule
 import com.heyanle.inject.api.InjectScope
 import com.heyanle.inject.api.addAlias
 import com.heyanle.inject.api.addSingletonFactory
-import com.squareup.moshi.Moshi
 
 /**
  * Created by heyanlin on 2023/10/30.
@@ -33,13 +32,6 @@ class BaseModule(
 
         addSingletonFactory<Logger> {
             logger ?: AndroidLogger()
-        }
-
-        addSingletonFactory {
-            Moshi.Builder()
-                .add(MoshiArrayListJsonAdapter.FACTORY)
-                .addLast(KotlinJsonAdapterFactory())
-                .build()
         }
     }
 }

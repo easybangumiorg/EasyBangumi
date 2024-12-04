@@ -15,7 +15,7 @@ kotlin {
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
+            jvmTarget.set(JvmTarget.JVM_17)
         }
     }
 
@@ -35,8 +35,11 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.moshi)
+            implementation(libs.navigation.compose)
+            implementation(libs.androidx.room.runtime)
 
             implementation(projects.inject)
+            implementation(projects.unifile)
 
         }
         desktopMain.dependencies {
@@ -50,14 +53,14 @@ kotlin {
 }
 
 android {
-    namespace = AppConfig.namespace + ".component.room"
+    namespace = AppConfig.namespace + ".shared"
     compileSdk = 34
     defaultConfig {
         minSdk = 21
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 }
 
@@ -65,7 +68,7 @@ android {
 
 
 dependencies {
-    // debugImplementation(compose.uiTooling)
+
 }
 
 ksp {
@@ -76,9 +79,6 @@ val kspMetaDataList = listOf(
     "kspCommonMainMetadata",
     "kspAndroid",
     "kspDesktop",
-//    "kspIosSimulatorArm64",
-//    "kspIosX64",
-//    "kspIosArm64",
 )
 
 dependencies {

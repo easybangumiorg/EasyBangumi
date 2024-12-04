@@ -6,6 +6,7 @@ import com.heyanle.inject.core.Inject
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import java.lang.reflect.Type
+import kotlin.reflect.KType
 import kotlin.reflect.javaType
 import kotlin.reflect.typeOf
 
@@ -25,7 +26,6 @@ fun <T> moshiAdapter(type: Type): JsonAdapter<T> {
     val moshi: Moshi by Inject.injectLazy()
     return moshi.adapter(type)
 }
-
 
 inline fun <reified T> String.jsonTo(): T? {
     val adapter = moshiAdapter<T>()
@@ -72,3 +72,4 @@ fun <T: Any> String.jsonTo(type: Type): T? {
         }
     }
 }
+

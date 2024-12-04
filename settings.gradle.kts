@@ -50,15 +50,6 @@ includeModule(":app:desktop", "app/desktop")
 includeModule(":app:shared", "app/shared")
 
 includeModule(":inject", "inject")
+includeModule(":unifile", "unifile")
 
-//// component
-//includeModule(":component:room", "component/component-room")
-//includeModule(":component:router", "component/component-router")
-//
-//// utils
-//includeModule(":utils:android", "utils/android")
-//includeModule(":utils:jvm", "utils/jvm")
-//
-//// base
-//includeModule(":base", "base")
 

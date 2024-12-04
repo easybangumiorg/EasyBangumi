@@ -9,7 +9,7 @@ import java.util.concurrent.Executors
 /**
  * Created by heyanlin on 2024/12/3.
  */
-class CoroutineProvider() {
+object CoroutineProvider {
 
     val io: CoroutineDispatcher = Dispatchers.IO
 

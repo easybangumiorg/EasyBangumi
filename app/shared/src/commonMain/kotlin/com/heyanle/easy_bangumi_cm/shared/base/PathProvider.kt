@@ -1,6 +1,5 @@
 package com.heyanle.easy_bangumi_cm.shared.base
 
-import org.koin.core.module.Module
 
 
 /**

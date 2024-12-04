@@ -1,7 +1,6 @@
 package com.heyanle.easy_bangumi_cm.shared.utils
 
 
-import com.heyanle.easy_bangumi_cm.base.logi
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -62,7 +61,7 @@ class HeKV(
     }
 
     fun put(key: String, value: String){
-        logi("${key}, ${value}")
+        //logi("${key}, ${value}")
         readWriteLock.write {
             if(value.isEmpty()){
                 map.remove(key)
