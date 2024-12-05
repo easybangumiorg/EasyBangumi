@@ -37,6 +37,7 @@ kotlin {
             implementation(libs.moshi)
             implementation(libs.navigation.compose)
             implementation(libs.androidx.room.runtime)
+            implementation(libs.sqlite.bundled)
 
             implementation(projects.inject)
             implementation(projects.unifile)

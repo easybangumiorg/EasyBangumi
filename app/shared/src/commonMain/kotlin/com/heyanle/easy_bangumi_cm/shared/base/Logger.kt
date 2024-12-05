@@ -8,7 +8,7 @@ import com.heyanle.inject.core.Inject
  * Created by HeYanLe on 2024/12/3 0:15.
  * https://github.com/heyanLE
  */
-var logger: Logger? = null
+lateinit var logger: Logger
 
 interface Logger {
 

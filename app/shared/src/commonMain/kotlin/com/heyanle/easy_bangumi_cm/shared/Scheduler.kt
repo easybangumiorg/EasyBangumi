@@ -1,5 +1,6 @@
 package com.heyanle.easy_bangumi_cm.shared
 
+import com.heyanle.easy_bangumi_cm.shared.cartoon.CartoonModule
 import com.heyanle.inject.core.Inject
 
 /**
@@ -11,6 +12,7 @@ object Scheduler {
 
     fun onInit() {
         SharedModule().registerWith(Inject)
+        CartoonModule().registerWith(Inject)
     }
 
     fun onSplashPageLaunch(){

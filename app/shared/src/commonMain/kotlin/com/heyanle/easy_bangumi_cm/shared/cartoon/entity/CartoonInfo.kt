@@ -5,24 +5,31 @@ import com.heyanle.easy_bangumi_cm.shared.utils.getMatchReg
 
 
 /**
+ * 番剧总包，聚合了一部番剧的所有数据
+ * 包括元数据和缓存
  * Created by heyanle on 2023/12/16.
  * https://github.com/heyanLE
  */
-@Entity(tableName = "CartoonInfo", primaryKeys = ["id", "source"])
+@Entity(tableName = "CartoonInfo", primaryKeys = ["id", "source", "mount"])
 data class CartoonInfo(
 
     // finder
     val id: String,              // 标识，由源自己支持，用于区分番剧
     val source: String,
 
+    // 挂载类型，暂定有
+    // 挂载到番视频源
+    // 挂载到元数据源
+    // 挂载到本地番源
+    val mount: String,
+
     // cartoonCover
     val name: String,
     val coverUrl: String,
-    val intro: String,
-    val url: String,
+    val detailedUrl: String,
 
     // cartoon detailed
-    val isDetailed: Boolean = false,
+    val isDetailedLoaded: Boolean = false,
     val genre: String = "",          // 标签，为 "xx, xx"，标签 id
     val description: String = "",
     val isUpdate: Boolean = false,
@@ -32,14 +39,14 @@ data class CartoonInfo(
     val sourceName: String = "",     // 源名称
     val reversal: Boolean = false, // 是否反转集数
     val sortByKey: String = "", // 排序名称
-    val playLineString: String = "",             // List<PlayLine> 的 json 数据，可能为 ""
+    val playLineString: String = "",             // List<PlayLine> 的 jsonl 数据，可能为 ""
 
     // star
     val tags: String = "", // 番剧分类 "1, 2, 3" 的格式
     val starTime: Long = 0, // 收藏时间，为 0 则为未收藏
     val pinTime: Long = 0, // 置顶时间，为 0 则不置顶
 
-    val displayTile : String = "", // 收藏页展示的角标
+
 
     // history
     val lastHistoryTime: Long = 0, // 如果为 0 则代表没有历史记录
@@ -51,6 +58,8 @@ data class CartoonInfo(
     val lastEpisodeIndex: Int = 0,
     val lastEpisodeOrder: Int = 0,
 
+    val lastEpisodeNum: Int = 0, // 最后一次观看时的总集数
+
     // other data
     val ext: String = "", // 扩展字段，帮源缓存
     val createTime: Long = System.currentTimeMillis(),
@@ -59,6 +68,12 @@ data class CartoonInfo(
 
 
 ) {
+
+    companion object {
+        const val MOUNT_SOURCE = "source"
+        const val MOUNT_META = "meta"
+        const val MOUNT_LOCAL = "local"
+    }
 
     val genres: List<String> by lazy {
         if (genre.isEmpty()) {
@@ -109,7 +124,7 @@ data class CartoonInfo(
 
         other as CartoonInfo
 
-        if (isDetailed != other.isDetailed) return false
+        if (isDetailedLoaded != other.isDetailedLoaded) return false
         if (isUpdate != other.isUpdate) return false
         if (lastUpdateTime != other.lastUpdateTime) return false
         if (isShowLine != other.isShowLine) return false
@@ -120,20 +135,20 @@ data class CartoonInfo(
         if (lastLineIndex != other.lastLineIndex) return false
         if (lastEpisodeIndex != other.lastEpisodeIndex) return false
         if (lastEpisodeOrder != other.lastEpisodeOrder) return false
+        if (lastEpisodeNum != other.lastEpisodeNum) return false
         if (createTime != other.createTime) return false
         if (id != other.id) return false
         if (source != other.source) return false
+        if (mount != other.mount) return false
         if (name != other.name) return false
         if (coverUrl != other.coverUrl) return false
-        if (intro != other.intro) return false
-        if (url != other.url) return false
+        if (detailedUrl != other.detailedUrl) return false
         if (genre != other.genre) return false
         if (description != other.description) return false
         if (sourceName != other.sourceName) return false
         if (sortByKey != other.sortByKey) return false
         if (playLineString != other.playLineString) return false
         if (tags != other.tags) return false
-        if (displayTile != other.displayTile) return false
         if (lastLineId != other.lastLineId) return false
         if (lastEpisodeId != other.lastEpisodeId) return false
         if (ext != other.ext) return false
@@ -144,7 +159,7 @@ data class CartoonInfo(
     }
 
     override fun hashCode(): Int {
-        var result = isDetailed.hashCode()
+        var result = isDetailedLoaded.hashCode()
         result = 31 * result + isUpdate.hashCode()
         result = 31 * result + lastUpdateTime.hashCode()
         result = 31 * result + isShowLine.hashCode()
@@ -155,20 +170,20 @@ data class CartoonInfo(
         result = 31 * result + lastLineIndex
         result = 31 * result + lastEpisodeIndex
         result = 31 * result + lastEpisodeOrder
+        result = 31 * result + lastEpisodeNum
         result = 31 * result + createTime.hashCode()
         result = 31 * result + id.hashCode()
         result = 31 * result + source.hashCode()
+        result = 31 * result + mount.hashCode()
         result = 31 * result + name.hashCode()
         result = 31 * result + coverUrl.hashCode()
-        result = 31 * result + intro.hashCode()
-        result = 31 * result + url.hashCode()
+        result = 31 * result + detailedUrl.hashCode()
         result = 31 * result + genre.hashCode()
         result = 31 * result + description.hashCode()
         result = 31 * result + sourceName.hashCode()
         result = 31 * result + sortByKey.hashCode()
         result = 31 * result + playLineString.hashCode()
         result = 31 * result + tags.hashCode()
-        result = 31 * result + displayTile.hashCode()
         result = 31 * result + lastLineId.hashCode()
         result = 31 * result + lastEpisodeId.hashCode()
         result = 31 * result + ext.hashCode()

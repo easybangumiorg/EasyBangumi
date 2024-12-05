@@ -49,6 +49,11 @@ includeModule(":app:android", "app/android")
 includeModule(":app:desktop", "app/desktop")
 includeModule(":app:shared", "app/shared")
 
+// ----------cartoon_repository----------
+includeModule(":repository", "repository")
+includeModule(":plugin", "plugin")
+
+// ----------utils----------
 includeModule(":inject", "inject")
 includeModule(":unifile", "unifile")
 

@@ -2,6 +2,8 @@ package com.heyanle.easy_bangumi_cm
 
 import android.app.Application
 import com.heyanle.easy_bangumi_cm.base.AndroidLogger
+import com.heyanle.easy_bangumi_cm.shared.Global
+import com.heyanle.easy_bangumi_cm.shared.Scheduler
 import com.heyanle.easy_bangumi_cm.shared.base.logger
 import com.heyanle.inject.core.Inject
 
@@ -22,6 +24,7 @@ class EasyApplication: Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
+        Global.app = this
         initBase()
         Scheduler.onInit()
     }
