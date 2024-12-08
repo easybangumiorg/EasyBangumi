@@ -51,7 +51,11 @@ includeModule(":app:shared", "app/shared")
 
 // ----------cartoon_repository----------
 includeModule(":repository", "repository")
-includeModule(":plugin", "plugin")
+
+// ----------plugin----------
+includeModule(":plugin:api", "plugin/api")
+includeModule(":plugin:core", "plugin/core")
+includeModule(":plugin:utils", "plugin/utils")
 
 // ----------utils----------
 includeModule(":inject", "inject")
