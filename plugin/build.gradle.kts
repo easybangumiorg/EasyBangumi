@@ -13,4 +13,5 @@ java {
 
 dependencies {
     implementation(projects.inject)
+    implementation(projects.repository)
 }

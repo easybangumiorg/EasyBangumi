@@ -6,22 +6,27 @@ import com.heyanle.easy_bangumi_cm.shared.utils.getMatchReg
 
 /**
  * 番剧总包，聚合了一部番剧的所有数据
- * 包括元数据和缓存
+ * 1. 番剧最小标识（主键）  →   id, mediaSourceKey
+ *
+ * 2. CartoonCover      ↘
+ * 3. CartoonDetailed   →   来自播放源的数据
+ * 4. Lise<PlayLine>    ↗
+ *
+ * 5. CartoonMata   →   来自元数据源的数据
+ *
+ * 6. 收藏番剧相关数据
+ * 7. 历史记录相关数据
+ * 8. 其他数据 （如排序方式存储）
  * Created by heyanle on 2023/12/16.
  * https://github.com/heyanLE
  */
-@Entity(tableName = "CartoonInfo", primaryKeys = ["id", "source", "mount"])
+@Entity(tableName = "CartoonInfo", primaryKeys = ["id", "mediaSourceKey"])
 data class CartoonInfo(
 
     // finder
     val id: String,              // 标识，由源自己支持，用于区分番剧
-    val source: String,
-
-    // 挂载类型，暂定有
-    // 挂载到番视频源
-    // 挂载到元数据源
-    // 挂载到本地番源
-    val mount: String,
+    // 所属的播放源 Key
+    val mediaSourceKey: String,
 
     // cartoonCover
     val name: String,
@@ -60,20 +65,21 @@ data class CartoonInfo(
 
     val lastEpisodeNum: Int = 0, // 最后一次观看时的总集数
 
+    // sourceMata
+    val mataSourceKey: String = "",
+    val cartoonMataId: String = "", // 对应元数据库数据的 id，具体数据交给另一个库
+
     // other data
-    val ext: String = "", // 扩展字段，帮源缓存
+    // 扩展字段，帮源缓存，这里只是用于持久化，可能会过时
+    // 业务需要在 extController 中获取
+    val mediaExt: String = "",
+    val mataSourceExt: String = "",
     val createTime: Long = System.currentTimeMillis(),
 
     // temp
 
 
 ) {
-
-    companion object {
-        const val MOUNT_SOURCE = "source"
-        const val MOUNT_META = "meta"
-        const val MOUNT_LOCAL = "local"
-    }
 
     val genres: List<String> by lazy {
         if (genre.isEmpty()) {
@@ -111,7 +117,7 @@ data class CartoonInfo(
     }
 
     fun toIdentify(): String {
-        return "${id},${source}"
+        return "${id},${mediaSourceKey}"
     }
 
     fun match(identify: String): Boolean {
@@ -138,8 +144,7 @@ data class CartoonInfo(
         if (lastEpisodeNum != other.lastEpisodeNum) return false
         if (createTime != other.createTime) return false
         if (id != other.id) return false
-        if (source != other.source) return false
-        if (mount != other.mount) return false
+        if (mediaSourceKey != other.mediaSourceKey) return false
         if (name != other.name) return false
         if (coverUrl != other.coverUrl) return false
         if (detailedUrl != other.detailedUrl) return false
@@ -151,7 +156,10 @@ data class CartoonInfo(
         if (tags != other.tags) return false
         if (lastLineId != other.lastLineId) return false
         if (lastEpisodeId != other.lastEpisodeId) return false
-        if (ext != other.ext) return false
+        if (mataSourceKey != other.mataSourceKey) return false
+        if (cartoonMataId != other.cartoonMataId) return false
+        if (mediaExt != other.mediaExt) return false
+        if (mataSourceExt != other.mataSourceExt) return false
         if (genres != other.genres) return false
         if (tagList != other.tagList) return false
 
@@ -173,8 +181,7 @@ data class CartoonInfo(
         result = 31 * result + lastEpisodeNum
         result = 31 * result + createTime.hashCode()
         result = 31 * result + id.hashCode()
-        result = 31 * result + source.hashCode()
-        result = 31 * result + mount.hashCode()
+        result = 31 * result + mediaSourceKey.hashCode()
         result = 31 * result + name.hashCode()
         result = 31 * result + coverUrl.hashCode()
         result = 31 * result + detailedUrl.hashCode()
@@ -186,7 +193,10 @@ data class CartoonInfo(
         result = 31 * result + tags.hashCode()
         result = 31 * result + lastLineId.hashCode()
         result = 31 * result + lastEpisodeId.hashCode()
-        result = 31 * result + ext.hashCode()
+        result = 31 * result + mataSourceKey.hashCode()
+        result = 31 * result + cartoonMataId.hashCode()
+        result = 31 * result + mediaExt.hashCode()
+        result = 31 * result + mataSourceExt.hashCode()
         result = 31 * result + genres.hashCode()
         result = 31 * result + tagList.hashCode()
         return result

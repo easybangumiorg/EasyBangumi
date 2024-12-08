@@ -55,8 +55,8 @@ navigation-compose = { group = "org.jetbrains.androidx.navigation", name = "navi
 
 preference-ktx = { module = "androidx.preference:preference-ktx", version.ref = "preference" }
 
-kotlinx-serialization-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-core", version.ref = "kotlinx-serialization" }
-kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+#kotlinx-serialization-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-core", version.ref = "kotlinx-serialization" }
+#kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 
 decompose = { group = "com.arkivanov.decompose", name = "extensions-compose", version.ref = "decompose" }
 

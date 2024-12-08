@@ -23,8 +23,6 @@ dependencies {
 
     implementation(compose.desktop.currentOs)
 
-    implementation(libs.kotlinx.serialization.json)
-
     implementation(projects.app.shared)
     implementation(projects.inject)
 

@@ -4,18 +4,18 @@ package com.heyanle.easy_bangumi_cm.shared.base.data
  * Created by HeYanLe on 2023/8/13 16:36.
  * https://github.com/heyanLE
  */
-sealed class DataResult<T> {
+sealed class DataState<T> {
 
-    class Loading<T> : DataResult<T>()
+    class Loading<T> : DataState<T>()
 
     data class Ok<T>(
         val data: T
-    ) : DataResult<T>()
+    ) : DataState<T>()
 
     data class Error<T>(
         val errorMsg: String,
         val throwable: Throwable?,
-    ) : DataResult<T>()
+    ) : DataState<T>()
 
     companion object {
         fun <T> ok(data: T) = Ok(data)
@@ -34,14 +34,14 @@ sealed class DataResult<T> {
         }
     }
 
-    inline fun onOK(block: (T) -> Unit): DataResult<T> {
+    inline fun onOK(block: (T) -> Unit): DataState<T> {
         if (this is Ok) {
             block(data)
         }
         return this
     }
 
-    inline fun onError(block: (Error<T>) -> Unit): DataResult<T> {
+    inline fun onError(block: (Error<T>) -> Unit): DataState<T> {
         if (this is Error) {
             block(this)
         }
@@ -82,16 +82,16 @@ sealed class DataResult<T> {
 
 }
 
-public inline fun <T, R> DataResult<T>.map(transform: (value: T) -> R): DataResult<R> =
+public inline fun <T, R> DataState<T>.map(transform: (value: T) -> R): DataState<R> =
     when (this) {
-        is DataResult.Ok -> {
-            DataResult.ok(transform(data))
+        is DataState.Ok -> {
+            DataState.ok(transform(data))
         }
 
-        is DataResult.Error -> {
-            DataResult.error<R>(errorMsg = errorMsg, throwable)
+        is DataState.Error -> {
+            DataState.error<R>(errorMsg = errorMsg, throwable)
         }
-        is DataResult.Loading -> {
-            DataResult.Loading()
+        is DataState.Loading -> {
+            DataState.Loading()
         }
     }

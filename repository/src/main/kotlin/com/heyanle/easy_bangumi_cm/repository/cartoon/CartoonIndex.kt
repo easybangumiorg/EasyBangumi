@@ -1,15 +1,17 @@
 package com.heyanle.easy_bangumi_cm.repository.cartoon
 
+import com.heyanle.easy_bangumi_cm.repository.Extractor
+
 /**
  * Created by heyanlin on 2024/12/5.
  */
-data class CartoonIndex(
+class CartoonIndex(
     val id: String,
-    val source: String,
-    val mount: String,
-) {
-    var ext: String = ""
+    val mediaSource: String,
+): Extractor {
 
+    @Transient
+    override var ext: String = ""
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -17,18 +19,14 @@ data class CartoonIndex(
         other as CartoonIndex
 
         if (id != other.id) return false
-        if (source != other.source) return false
-        if (mount != other.mount) return false
-        if (ext != other.ext) return false
+        if (mediaSource != other.mediaSource) return false
 
         return true
     }
 
     override fun hashCode(): Int {
         var result = id.hashCode()
-        result = 31 * result + source.hashCode()
-        result = 31 * result + mount.hashCode()
-        result = 31 * result + ext.hashCode()
+        result = 31 * result + mediaSource.hashCode()
         return result
     }
 

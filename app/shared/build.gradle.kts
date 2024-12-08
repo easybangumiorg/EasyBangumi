@@ -7,7 +7,6 @@ plugins {
     alias(builds.plugins.androidLibrary)
     alias(builds.plugins.kotlinCompose)
     alias(builds.plugins.compose)
-    alias(libs.plugins.kotlinxSerialization)
     alias(builds.plugins.ksp)
 }
 
@@ -32,8 +31,6 @@ kotlin {
             implementation(compose.components.resources)
             implementation(compose.ui)
 
-            implementation(libs.kotlinx.serialization.json)
-            implementation(libs.kotlinx.coroutines.core)
             implementation(libs.moshi)
             implementation(libs.navigation.compose)
             implementation(libs.androidx.room.runtime)

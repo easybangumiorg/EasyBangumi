@@ -1,14 +1,12 @@
 package com.heyanle.easy_bangumi_cm.shared.utils.file_helper
 
-import com.heyanle.easy_bangumi_cm.shared.base.data.DataResult
-import com.heyanle.easy_bangumi_cm.shared.utils.toJson
+import com.heyanle.easy_bangumi_cm.shared.base.data.DataState
 import com.heyanle.easy_bangumi_cm.unifile.IUniFile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.io.InputStream
 import java.io.OutputStream
-import java.lang.reflect.Type
 
 /**
  * 维护一个持久化数据，不支持 Error 态，需要指定 Default
@@ -25,9 +23,9 @@ abstract class BaseFileHelper<T>(
 
     abstract fun save(t: T, outputStream: OutputStream): Boolean
 
-    private val _flow = MutableStateFlow<DataResult<T>>(DataResult.Loading())
+    private val _flow = MutableStateFlow<DataState<T>>(DataState.Loading())
     val flow = _flow.asStateFlow()
-    val requestFlow = flow.filterIsInstance<DataResult.Ok<T>>().map { it.data }
+    val requestFlow = flow.filterIsInstance<DataState.Ok<T>>().map { it.data }
 
     private val tempFileName = "${fileName}.temp"
 
@@ -118,13 +116,13 @@ abstract class BaseFileHelper<T>(
 
     private fun fireDef(){
         _flow.update {
-            DataResult.ok(def)
+            DataState.ok(def)
         }
     }
 
     private fun fireData(data: T){
         _flow.update {
-            DataResult.ok(data)
+            DataState.ok(data)
         }
     }
 }
