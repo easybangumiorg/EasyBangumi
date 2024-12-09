@@ -14,4 +14,5 @@ java {
 dependencies {
     implementation(projects.inject)
     implementation(projects.repository)
+    implementation(libs.kotlinx.coroutines.core)
 }

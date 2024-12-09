@@ -1,7 +1,7 @@
 package com.heyanle.easy_bangumi_cm.shared.cartoon.entity
 
 import androidx.room.Entity
-import com.heyanle.easy_bangumi_cm.shared.utils.getMatchReg
+import com.heyanle.easy_bangumi_cm.base.utils.getMatchReg
 
 
 /**

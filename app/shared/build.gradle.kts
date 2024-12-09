@@ -38,6 +38,7 @@ kotlin {
 
             implementation(projects.inject)
             implementation(projects.unifile)
+            implementation(projects.base)
 
         }
         desktopMain.dependencies {

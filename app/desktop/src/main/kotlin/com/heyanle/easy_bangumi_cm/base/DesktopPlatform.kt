@@ -1,6 +1,6 @@
 package com.heyanle.easy_bangumi_cm.base
 
-import com.heyanle.easy_bangumi_cm.shared.base.Platform
+import com.heyanle.easy_bangumi_cm.base.Platform
 import org.jetbrains.skiko.hostArch
 import org.jetbrains.skiko.hostOs
 import java.util.*

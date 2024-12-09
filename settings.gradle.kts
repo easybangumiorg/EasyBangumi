@@ -61,4 +61,7 @@ includeModule(":plugin:utils", "plugin/utils")
 includeModule(":inject", "inject")
 includeModule(":unifile", "unifile")
 
+// ----------base----------
+includeModule(":base", "base")
+
 

@@ -3,7 +3,7 @@ package com.heyanle.easy_bangumi_cm.unifile.core
 import android.content.Context
 import android.net.Uri
 import com.heyanle.easy_bangumi_cm.unifile.FDRandomAccessFile
-import com.heyanle.easy_bangumi_cm.unifile.IUniFile
+import com.heyanle.easy_bangumi_cm.unifile.UniFile
 import com.heyanle.easy_bangumi_cm.unifile.UniRandomAccessFile
 import com.heyanle.easy_bangumi_cm.unifile.core.contract.DocumentsContractApi19
 import com.heyanle.easy_bangumi_cm.unifile.core.contract.DocumentsContractApi21
@@ -15,18 +15,18 @@ import java.io.OutputStream
  * Created by heyanlin on 2024/12/4.
  */
 class SingleDocumentFile(
-    private val parent: IUniFile?,
+    private val parent: UniFile?,
     ctx: Context,
     private val uri: Uri,
-) : IUniFile, TypeIUniFile {
+) : UniFile, TypeUniFile {
 
     private val context = ctx.applicationContext
 
-    override fun createFile(displayName: String): IUniFile? {
+    override fun createFile(displayName: String): UniFile? {
         return null
     }
 
-    override fun createDirectory(displayName: String): IUniFile? {
+    override fun createDirectory(displayName: String): UniFile? {
         return null
     }
 
@@ -42,7 +42,7 @@ class SingleDocumentFile(
         return DocumentsContractApi19.getFilePath(context, uri) ?: ""
     }
 
-    override fun getParentFile(): IUniFile? {
+    override fun getParentFile(): UniFile? {
         return parent
     }
 
@@ -78,11 +78,11 @@ class SingleDocumentFile(
         return DocumentsContractApi19.exists(context, uri)
     }
 
-    override fun listFiles(filter: ((IUniFile, String) -> Boolean)?): Array<IUniFile?> {
+    override fun listFiles(filter: ((UniFile, String) -> Boolean)?): Array<UniFile?> {
         return emptyArray()
     }
 
-    override fun findFile(displayName: String): IUniFile? {
+    override fun findFile(displayName: String): UniFile? {
         return null
     }
 

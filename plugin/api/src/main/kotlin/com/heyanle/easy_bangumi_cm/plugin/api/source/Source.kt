@@ -1,5 +1,7 @@
 package com.heyanle.easy_bangumi_cm.plugin.api.source
 
+import kotlin.reflect.KClass
+
 
 /**
  * Created by HeYanLe on 2024/12/8 21:00.
@@ -20,5 +22,5 @@ interface Source {
     val sourceIndex
         get() = "${type}-${source}"
 
-    fun register(): Class<*>
+    fun register(): List<KClass<*>>
 }

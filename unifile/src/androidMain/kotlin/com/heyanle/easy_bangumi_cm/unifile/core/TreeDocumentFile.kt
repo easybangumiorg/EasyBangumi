@@ -6,7 +6,7 @@ import android.provider.DocumentsContract
 import android.text.TextUtils
 import android.webkit.MimeTypeMap
 import com.heyanle.easy_bangumi_cm.unifile.FDRandomAccessFile
-import com.heyanle.easy_bangumi_cm.unifile.IUniFile
+import com.heyanle.easy_bangumi_cm.unifile.UniFile
 import com.heyanle.easy_bangumi_cm.unifile.UniRandomAccessFile
 import com.heyanle.easy_bangumi_cm.unifile.core.contract.DocumentsContractApi19
 import com.heyanle.easy_bangumi_cm.unifile.core.contract.DocumentsContractApi21
@@ -20,15 +20,15 @@ import java.io.OutputStream
  * Created by heyanlin on 2024/12/4.
  */
 class TreeDocumentFile(
-    private val parent: IUniFile?,
+    private val parent: UniFile?,
     ctx: Context,
     private var uri: Uri,
     private var name: String = ""
-) : IUniFile, TypeIUniFile {
+) : UniFile, TypeUniFile {
 
     private val context = ctx.applicationContext
 
-    override fun createFile(displayName: String): IUniFile? {
+    override fun createFile(displayName: String): UniFile? {
         if (TextUtils.isEmpty(displayName)) {
             return null
         }
@@ -64,7 +64,7 @@ class TreeDocumentFile(
         }
     }
 
-    override fun createDirectory(displayName: String): IUniFile? {
+    override fun createDirectory(displayName: String): UniFile? {
         if (TextUtils.isEmpty(displayName)) {
             return null
         }
@@ -98,7 +98,7 @@ class TreeDocumentFile(
         return DocumentsContractApi19.getFilePath(context, uri) ?: ""
     }
 
-    override fun getParentFile(): IUniFile? {
+    override fun getParentFile(): UniFile? {
         return parent
     }
 
@@ -135,13 +135,13 @@ class TreeDocumentFile(
         return DocumentsContractApi19.exists(context, uri)
     }
 
-    override fun listFiles(filter: ((IUniFile, String) -> Boolean)?): Array<IUniFile?> {
+    override fun listFiles(filter: ((UniFile, String) -> Boolean)?): Array<UniFile?> {
         if (!isDirectory()) {
             return emptyArray()
         }
 
         val result = listFilesNamed(context, uri)
-        val resultFiles = kotlin.arrayOfNulls<IUniFile>(result.size)
+        val resultFiles = kotlin.arrayOfNulls<UniFile>(result.size)
 
         var i = 0
         val n = result.size
@@ -158,7 +158,7 @@ class TreeDocumentFile(
         return resultFiles
     }
 
-    override fun findFile(displayName: String): IUniFile? {
+    override fun findFile(displayName: String): UniFile? {
         if (TextUtils.isEmpty(displayName)) {
             return null
         }
@@ -199,7 +199,7 @@ class TreeDocumentFile(
         documentId += "/$displayName"
 
         val documentUri = DocumentsContract.buildDocumentUriUsingTree(uri, documentId)
-        val child: IUniFile = TreeDocumentFile(this, context, documentUri, displayName)
+        val child: UniFile = TreeDocumentFile(this, context, documentUri, displayName)
 
         return if (child.exists()) {
             child

@@ -1,7 +1,7 @@
 package com.heyanle.easy_bangumi_cm.base
 
 import android.content.Context
-import com.heyanle.easy_bangumi_cm.shared.base.PathProvider
+import com.heyanle.easy_bangumi_cm.base.PathProvider
 import java.io.File
 
 

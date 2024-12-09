@@ -14,12 +14,12 @@ import java.io.OutputStream
  * Created by heyanlin on 2024/12/4.
  */
 class AssetsFile(
-    private val parent: IUniFile?,
+    private val parent: UniFile?,
     private val assetsManager: AssetManager,
     private val path: String,
-): IUniFile, TypeIUniFile {
+): UniFile, TypeUniFile {
 
-    override fun createFile(displayName: String): IUniFile? {
+    override fun createFile(displayName: String): UniFile? {
         val file = findFile(displayName)
         return if (file != null && file.isFile()) {
             file
@@ -28,7 +28,7 @@ class AssetsFile(
         }
     }
 
-    override fun createDirectory(displayName: String): IUniFile? {
+    override fun createDirectory(displayName: String): UniFile? {
         val file = findFile(displayName)
         return if (file != null && file.isDirectory()) {
             file
@@ -59,7 +59,7 @@ class AssetsFile(
         return path
     }
 
-    override fun getParentFile(): IUniFile? {
+    override fun getParentFile(): UniFile? {
         if (parent != null) {
             return parent
         }
@@ -115,7 +115,7 @@ class AssetsFile(
         return isDirectory() || isFile();
     }
 
-    override fun listFiles(filter: ((IUniFile, String) -> Boolean)?): Array<IUniFile?> {
+    override fun listFiles(filter: ((UniFile, String) -> Boolean)?): Array<UniFile?> {
         try {
             val files: Array<String> = assetsManager.list(path) ?: emptyArray()
             if (files.isEmpty()) {
@@ -123,7 +123,7 @@ class AssetsFile(
             }
 
             val length = files.size
-            val results = arrayOfNulls<IUniFile>(length)
+            val results = arrayOfNulls<UniFile>(length)
             for (i in 0..<length) {
                 val name = files[i]
                 if (filter != null && !filter(this, name)) {
@@ -137,7 +137,7 @@ class AssetsFile(
         }
     }
 
-    override fun findFile(displayName: String): IUniFile? {
+    override fun findFile(displayName: String): UniFile? {
         if (displayName.isEmpty()) {
             return null
         }

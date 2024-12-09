@@ -12,9 +12,9 @@ data class SourceManifest (
     val label: String,
     val version: Int,
 
-    val author: String?,
-    val description: String?,
+    val author: String? = null,
+    val description: String? = null,
     // base64/url/assets
-    val icon: String?,
-    val website: String?,
+    val icon: String? = null,
+    val website: String? = null,
 )

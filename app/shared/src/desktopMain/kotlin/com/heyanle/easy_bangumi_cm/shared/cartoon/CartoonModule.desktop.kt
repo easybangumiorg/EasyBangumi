@@ -3,8 +3,8 @@ package com.heyanle.easy_bangumi_cm.shared.cartoon
 import androidx.room.Room
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.heyanle.easy_bangumi_cm.shared.Migrate
-import com.heyanle.easy_bangumi_cm.shared.base.PathProvider
-import com.heyanle.easy_bangumi_cm.shared.base.logger
+import com.heyanle.easy_bangumi_cm.base.PathProvider
+import com.heyanle.easy_bangumi_cm.base.logger
 import com.heyanle.easy_bangumi_cm.shared.cartoon.database.CartoonDatabase
 import com.heyanle.inject.api.InjectScope
 import com.heyanle.inject.api.get

@@ -17,9 +17,9 @@ import java.net.URI
 val ASSET_PATH_PREFIX_LENGTH
     get() = "/android_asset/".length
 
-actual object UniFile {
+actual object UniFileFactory {
 
-    fun fromUri(u: Uri, app: Context? = null) : IUniFile? {
+    fun fromUri(u: Uri, app: Context? = null) : UniFile? {
         if (u.isFile() && ! u.isAssetUri() && !u.path.isNullOrEmpty()) {
             return RawFile(null, File(u.path?:""))
         }
@@ -46,22 +46,22 @@ actual object UniFile {
         return null
     }
 
-    fun fromUri(uri: String, app: Context? = null): IUniFile? {
+    fun fromUri(uri: String, app: Context? = null): UniFile? {
         return fromUri(Uri.parse(uri), app)
     }
 
-    actual fun fromFile(file: File): IUniFile {
+    actual fun fromFile(file: File): UniFile {
         return RawFile(null, file)
     }
 
-    actual fun fromUri(uri: URI): IUniFile? {
+    actual fun fromUri(uri: URI): UniFile? {
         if (uri.scheme != "file") {
             return null
         }
         return RawFile(null, File(uri))
     }
 
-    fun fromAssets(path: String, context: Context): IUniFile? {
+    fun fromAssets(path: String, context: Context): UniFile? {
         val uri = Uri.Builder()
             .scheme(ContentResolver.SCHEME_FILE)
             .authority("")

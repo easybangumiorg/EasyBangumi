@@ -16,6 +16,7 @@ dependencies {
 
     implementation(projects.inject)
     implementation(projects.repository)
-    api(project(":plugin:api"))
+    implementation(projects.plugin.api)
+    implementation(projects.base)
     //api(projects.plugin.)
 }

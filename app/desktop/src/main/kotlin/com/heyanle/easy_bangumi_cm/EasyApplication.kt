@@ -2,7 +2,7 @@ package com.heyanle.easy_bangumi_cm
 
 import com.heyanle.easy_bangumi_cm.base.*
 import com.heyanle.easy_bangumi_cm.shared.Scheduler
-import com.heyanle.easy_bangumi_cm.shared.base.logger
+import com.heyanle.easy_bangumi_cm.base.logger
 import com.heyanle.inject.core.Inject
 
 /**

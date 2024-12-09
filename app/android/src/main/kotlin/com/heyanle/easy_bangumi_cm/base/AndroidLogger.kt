@@ -1,8 +1,8 @@
 package com.heyanle.easy_bangumi_cm.base
 
 import android.util.Log
-import com.heyanle.easy_bangumi_cm.shared.base.Logger
-import com.heyanle.easy_bangumi_cm.shared.base.logger
+import com.heyanle.easy_bangumi_cm.base.Logger
+import com.heyanle.easy_bangumi_cm.base.logger
 
 
 /**

@@ -1,6 +1,6 @@
 package com.heyanle.easy_bangumi_cm.shared
 
-import com.heyanle.easy_bangumi_cm.shared.utils.MoshiArrayListJsonAdapter
+import com.heyanle.easy_bangumi_cm.base.utils.MoshiArrayListJsonAdapter
 import com.heyanle.inject.api.InjectModule
 import com.heyanle.inject.api.InjectScope
 import com.heyanle.inject.api.addSingletonFactory

@@ -15,15 +15,15 @@ import java.io.OutputStream
 class MediaFile(
     ctx: Context,
     private val uri: Uri
-): IUniFile, TypeIUniFile {
+): UniFile, TypeUniFile {
 
     private val context = ctx.applicationContext
 
-    override fun createFile(displayName: String): IUniFile? {
+    override fun createFile(displayName: String): UniFile? {
         return null
     }
 
-    override fun createDirectory(displayName: String): IUniFile? {
+    override fun createDirectory(displayName: String): UniFile? {
         return null
     }
 
@@ -39,7 +39,7 @@ class MediaFile(
         return MediaContract.getFilePath(context, uri) ?: ""
     }
 
-    override fun getParentFile(): IUniFile? {
+    override fun getParentFile(): UniFile? {
         return null
     }
 
@@ -89,11 +89,11 @@ class MediaFile(
         return isFile()
     }
 
-    override fun listFiles(filter: ((IUniFile, String) -> Boolean)?): Array<IUniFile?> {
+    override fun listFiles(filter: ((UniFile, String) -> Boolean)?): Array<UniFile?> {
         return emptyArray()
     }
 
-    override fun findFile(displayName: String): IUniFile? {
+    override fun findFile(displayName: String): UniFile? {
         return null
     }
 

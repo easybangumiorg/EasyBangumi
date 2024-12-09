@@ -1,6 +1,6 @@
 package com.heyanle.easy_bangumi_cm.unifile.core
 
-import com.heyanle.easy_bangumi_cm.unifile.IUniFile
+import com.heyanle.easy_bangumi_cm.unifile.UniFile
 import com.heyanle.easy_bangumi_cm.unifile.UniRandomAccessFile
 import java.io.*
 
@@ -9,9 +9,9 @@ import java.io.*
  * Created by heyanlin on 2024/12/4.
  */
 class RawFile(
-    private val parent: IUniFile?,
+    private val parent: UniFile?,
     private val file: File,
-): IUniFile {
+): UniFile {
 
     companion object {
         private fun deleteContents(dir: File): Boolean {
@@ -33,7 +33,7 @@ class RawFile(
 
 
 
-    override fun createFile(displayName: String): IUniFile? {
+    override fun createFile(displayName: String): UniFile? {
         if (displayName.isEmpty()) {
             return null
         }
@@ -56,7 +56,7 @@ class RawFile(
         }
     }
 
-    override fun createDirectory(displayName: String): IUniFile? {
+    override fun createDirectory(displayName: String): UniFile? {
         if (displayName.isEmpty()) {
             return null
         }
@@ -82,7 +82,7 @@ class RawFile(
         return file.absolutePath
     }
 
-    override fun getParentFile(): IUniFile? {
+    override fun getParentFile(): UniFile? {
         if (parent != null) {
             return parent
         }
@@ -123,7 +123,7 @@ class RawFile(
         return file.exists()
     }
 
-    override fun listFiles(filter: ((IUniFile, String) -> Boolean)?): Array<IUniFile?> {
+    override fun listFiles(filter: ((UniFile, String) -> Boolean)?): Array<UniFile?> {
         val files = if (filter != null) file.listFiles(object: FilenameFilter {
             override fun accept(p0: File?, p1: String?): Boolean {
                 return filter?.invoke(this@RawFile, p1?:"")?:true
@@ -134,7 +134,7 @@ class RawFile(
         }?.toTypedArray()?: emptyArray()
     }
 
-    override fun findFile(displayName: String): IUniFile? {
+    override fun findFile(displayName: String): UniFile? {
         val target = File(file, displayName)
         return if (target.exists()) {
             RawFile(this, target)

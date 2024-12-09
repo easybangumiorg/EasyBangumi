@@ -4,7 +4,7 @@ import android.app.Application
 import com.heyanle.easy_bangumi_cm.base.AndroidLogger
 import com.heyanle.easy_bangumi_cm.shared.Global
 import com.heyanle.easy_bangumi_cm.shared.Scheduler
-import com.heyanle.easy_bangumi_cm.shared.base.logger
+import com.heyanle.easy_bangumi_cm.base.logger
 import com.heyanle.inject.core.Inject
 
 
