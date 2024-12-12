@@ -15,6 +15,10 @@ This is a Kotlin Multiplatform project targeting Android, iOS, Desktop.
 
 Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
 
+## 一个可能的流程
+
+![这里有个svg！](./.github/resource/workflow.svg)
+
 ## 关于~~如何重写~~奇思妙想
 
 这是一个复杂的系统工程，难以做到尽善尽美，及其容易顾此失彼，究竟是该侧重于数据源测呢还是倾向于元数据源测呢，该设计何种API以提供二级功能呢，这是一个很难回答的问题。
@@ -65,7 +69,7 @@ plugin.register({
   version: '1.0.0',
   minHostVersion: 1,
   icon: 'icon.png',
-  access: ['network', 'fs-read', 'fs-write'， ‘internal-aria’, 'notefication'， 'webview'， 'uri', 'pipeline', 'interceptor'],
+  access: ['network', 'fs-read', 'fs-write'， 'internal-aria', 'notefication'， 'webview'， 'uri', 'pipeline', 'interceptor'],
   preferrence: {
     server: {
       type: 'input',
@@ -186,7 +190,7 @@ plugin.media_of(content_type.bangumi, async (context) => {
     return ...
 })
 
-plugin.do_upgrade(content_type.bangumi, async (context) => {
+plugin.do_update(content_type.bangumi, async (context) => {
     // 检查资源是否有更新
     return ...
 })
