@@ -1,5 +1,6 @@
 package com.heyanle.easy_bangumi_cm.plugin.api.component
 
+import com.heyanle.easy_bangumi_cm.plugin.api.source.Source
 import kotlin.reflect.KClass
 
 
@@ -8,7 +9,9 @@ import kotlin.reflect.KClass
  * https://github.com/heyanLE
  */
 
-interface ComponentContainer {
+interface ComponentBundle {
+
+    fun getSource(): Source
 
     fun <T: Component> getComponent(clazz: KClass<T>): T? = getComponent(clazz.java)
 

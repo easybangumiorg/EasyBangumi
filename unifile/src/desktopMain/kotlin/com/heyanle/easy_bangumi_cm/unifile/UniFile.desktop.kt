@@ -8,7 +8,7 @@ import java.net.URI
  * Created by heyanlin on 2024/12/4.
  */
 
-actual object UniFileFactory {
+actual open class UniFileFactory {
 
     actual fun fromFile(file: File): UniFile {
         return RawFile(null, file)

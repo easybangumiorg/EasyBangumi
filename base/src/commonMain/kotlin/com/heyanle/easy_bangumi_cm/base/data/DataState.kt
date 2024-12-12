@@ -27,6 +27,10 @@ sealed class DataState<T> {
             Error<T>(errorMsg, throwable)
     }
 
+    fun isOk() : Boolean {
+        return this is Ok
+    }
+
     fun okOrNull () : T? {
         return when (this) {
             is Ok -> data

@@ -1,6 +1,6 @@
 package com.heyanle.easy_bangumi_cm.plugin.core.source.entity
 
-import com.heyanle.easy_bangumi_cm.plugin.api.component.ComponentContainer
+import com.heyanle.easy_bangumi_cm.plugin.api.component.ComponentBundle
 import com.heyanle.easy_bangumi_cm.plugin.api.source.Source
 
 /**
@@ -12,7 +12,7 @@ sealed class SourceInfo {
     // 加载成功
     class Loaded(
         override val source: Source,
-        val componentContainer: ComponentContainer,
+        val componentBundle: ComponentBundle,
     ): SourceInfo()
 
     // 加载失败

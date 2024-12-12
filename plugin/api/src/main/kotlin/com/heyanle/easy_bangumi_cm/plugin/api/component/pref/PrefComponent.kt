@@ -1,7 +1,7 @@
 package com.heyanle.easy_bangumi_cm.plugin.api.component.pref
 
 import com.heyanle.easy_bangumi_cm.plugin.api.component.Component
-import com.heyanle.easy_bangumi_cm.plugin.api.component.ComponentContainer
+import com.heyanle.easy_bangumi_cm.plugin.api.component.ComponentBundle
 
 
 /**
@@ -15,6 +15,6 @@ interface PrefComponent : Component {
 
 }
 
-fun ComponentContainer.prefComponent(): PrefComponent?{
+fun ComponentBundle.prefComponent(): PrefComponent?{
     return this.getComponent(PrefComponent::class)
 }

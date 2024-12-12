@@ -80,6 +80,8 @@ dependencies {
     implementation(projects.app.shared)
     implementation(projects.inject)
 
+    implementation(projects.javascript)
+
     implementation(projects.base)
 
 

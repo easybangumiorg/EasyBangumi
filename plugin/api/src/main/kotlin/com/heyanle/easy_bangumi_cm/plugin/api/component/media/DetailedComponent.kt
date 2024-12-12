@@ -1,7 +1,7 @@
 package com.heyanle.easy_bangumi_cm.plugin.api.component.media
 
 import com.heyanle.easy_bangumi_cm.plugin.api.base.SourceResult
-import com.heyanle.easy_bangumi_cm.plugin.api.component.ComponentContainer
+import com.heyanle.easy_bangumi_cm.plugin.api.component.ComponentBundle
 import com.heyanle.easy_bangumi_cm.plugin.api.component.MediaComponent
 import com.heyanle.easy_bangumi_cm.repository.cartoon.CartoonDetailed
 import com.heyanle.easy_bangumi_cm.repository.cartoon.CartoonIndex
@@ -19,6 +19,6 @@ interface DetailedComponent : MediaComponent {
 
 }
 
-fun ComponentContainer.detailedComponent(): DetailedComponent?{
+fun ComponentBundle.detailedComponent(): DetailedComponent?{
     return this.getComponent(DetailedComponent::class)
 }

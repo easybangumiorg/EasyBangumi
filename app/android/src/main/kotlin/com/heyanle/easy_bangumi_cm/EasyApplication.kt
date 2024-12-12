@@ -26,6 +26,7 @@ class EasyApplication: Application() {
         instance = this
         Global.app = this
         initBase()
+        initJavascript()
         Scheduler.onInit()
     }
 
@@ -37,4 +38,7 @@ class EasyApplication: Application() {
         BaseModule(this).registerWith(Inject)
     }
 
+    private fun initJavascript(){
+        AndroidJSMain.init()
+    }
 }

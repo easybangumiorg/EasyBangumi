@@ -1,7 +1,7 @@
 package com.heyanle.easy_bangumi_cm.plugin.api.component.media.home
 
 import com.heyanle.easy_bangumi_cm.plugin.api.base.SourceResult
-import com.heyanle.easy_bangumi_cm.plugin.api.component.ComponentContainer
+import com.heyanle.easy_bangumi_cm.plugin.api.component.ComponentBundle
 import com.heyanle.easy_bangumi_cm.plugin.api.component.MediaComponent
 
 
@@ -21,4 +21,4 @@ interface HomeComponent : MediaComponent {
 
 }
 
-fun ComponentContainer.homeComponent(): HomeComponent? = getComponent(HomeComponent::class)
+fun ComponentBundle.homeComponent(): HomeComponent? = getComponent(HomeComponent::class)

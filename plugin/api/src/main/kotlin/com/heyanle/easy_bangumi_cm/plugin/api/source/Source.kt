@@ -1,5 +1,6 @@
 package com.heyanle.easy_bangumi_cm.plugin.api.source
 
+import com.heyanle.easy_bangumi_cm.plugin.api.component.ComponentBundle
 import kotlin.reflect.KClass
 
 
@@ -16,11 +17,7 @@ interface Source {
     }
 
     val manifest: SourceManifest
-    val source: String
-    val type: String
-
     val sourceIndex
-        get() = "${type}-${source}"
+        get() = "${manifest.type}-${manifest.key}"
 
-    fun register(): List<KClass<*>>
 }

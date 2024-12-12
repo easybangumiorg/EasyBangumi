@@ -4,12 +4,14 @@ import com.heyanle.easy_bangumi_cm.base.utils.jsonTo
 import com.heyanle.easy_bangumi_cm.base.utils.toJson
 import com.heyanle.easy_bangumi_cm.unifile.UniFile
 import kotlinx.coroutines.CoroutineScope
+import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 import java.lang.reflect.Type
 
 /**
  * 按行读取 jsonl 文件
+ * 可防止同时读入整个文本文件导致 OOM
  * 暂不支持分页
  * Created by heyanle on 2024/7/14.
  * https://github.com/heyanLE
@@ -26,9 +28,11 @@ class JsonlFileHelper<T : Any>(
     }
 
     override fun load(inputStream: InputStream): List<T> {
-        return inputStream.bufferedReader().lineSequence().mapNotNull {
-            it.jsonTo<T>(type)
-        }.toList()
+        return inputStream.bufferedReader().use {
+            it.lineSequence().mapNotNull {
+                it.jsonTo<T>(type)
+            }.toList()
+        }
     }
 
     override fun save(t: List<T>, outputStream: OutputStream): Boolean {

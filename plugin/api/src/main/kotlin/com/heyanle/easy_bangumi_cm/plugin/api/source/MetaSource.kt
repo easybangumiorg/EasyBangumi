@@ -8,7 +8,6 @@ package com.heyanle.easy_bangumi_cm.plugin.api.source
 
 interface MetaSource: Source {
 
-    override val type: String
-        get() = Source.TYPE_META
+
 
 }
