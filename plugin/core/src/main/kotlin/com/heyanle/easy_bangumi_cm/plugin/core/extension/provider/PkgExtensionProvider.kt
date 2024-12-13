@@ -76,6 +76,7 @@ class PkgExtensionProvider(
     /**
      * 1. 自动处理 key 冲突
      * 2. 自动处理文件名不为 key
+     * 3. 缓存解压
      */
     private suspend fun innerLoad(
         o: Map<String, ExtensionManifest>,
