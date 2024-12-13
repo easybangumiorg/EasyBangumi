@@ -74,7 +74,8 @@ class PkgExtensionProvider(
     }
 
     /**
-     *
+     * 1. 自动处理 key 冲突
+     * 2. 自动处理文件名不为 key
      */
     private suspend fun innerLoad(
         o: Map<String, ExtensionManifest>,
@@ -134,7 +135,6 @@ class PkgExtensionProvider(
                         unzipFolder.deleteRecursively()
                         return@async null
                     }
-
 
                     val manifestText = manifestFile.readText()
                     val manifest = manifestText.jsonTo<PkgExtensionManifest>(ignoreError = true)
