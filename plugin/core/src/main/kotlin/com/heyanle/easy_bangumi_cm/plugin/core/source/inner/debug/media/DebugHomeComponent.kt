@@ -56,7 +56,7 @@ class DebugHomeComponent: ComponentWrapper(), HomeComponent {
     private fun newCartoonCover(start: Int, count: Int): List<CartoonCover> {
         val list = mutableListOf<CartoonCover>()
         for (i in 0 until count) {
-            list.add(CartoonCover("https://www.baidu.com", source.source, "test ${start + i}", "test", "test"))
+            list.add(CartoonCover("https://www.baidu.com", source.key, "test ${start + i}", "test", "test"))
         }
         return list
     }

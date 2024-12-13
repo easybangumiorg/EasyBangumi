@@ -27,6 +27,7 @@ kotlin {
             implementation(libs.moshi)
             implementation(libs.kotlinx.coroutines.core)
             implementation(projects.unifile)
+            implementation(projects.inject)
 
         }
         desktopMain.dependencies {

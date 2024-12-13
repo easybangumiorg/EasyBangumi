@@ -1,10 +1,13 @@
 package com.heyanle.easy_bangumi_cm.plugin.core.extension
 
-import com.heyanle.easy_bangumi_cm.plugin.api.ExtensionInfo
+import com.heyanle.easy_bangumi_cm.plugin.core.entity.ExtensionInfo
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /**
+ * ExtensionProvider1 ↘
+ * ExtensionProvider2 → ExtensionManifest -> ExtensionInfo
+ * ExtensionProvider3 ↗
  * Created by heyanlin on 2024/12/9.
  */
 class ExtensionController {

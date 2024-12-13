@@ -26,11 +26,12 @@ kotlin {
         val desktopMain by getting
 
         androidMain.dependencies {
-            implementation(libs.quickjs.android)
+            // implementation(libs.quickjs.android)
         }
         commonMain.dependencies {
             implementation(libs.kotlin.reflect)
-            implementation(libs.quickjs.java)
+            // implementation(libs.quickjs.java)
+            implementation(libs.quickjs.kt)
 
         }
         desktopMain.dependencies {

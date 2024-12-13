@@ -1,6 +1,6 @@
 package com.heyanle.easy_bangumi_cm.plugin.core.extension.provider
 
-import com.heyanle.easy_bangumi_cm.plugin.api.ExtensionInfo
+import com.heyanle.easy_bangumi_cm.plugin.entity.ExtensionManifest
 import kotlinx.coroutines.flow.StateFlow
 
 
@@ -12,13 +12,13 @@ import kotlinx.coroutines.flow.StateFlow
 interface ExtensionProvider {
 
     data class ExtensionProviderState (
-        val loading: Boolean,
-        val extensionInfoMap: Map<String, ExtensionInfo> = emptyMap(),
+        val loading: Boolean = true,
+        val extensionManifestMap: Map<String, ExtensionManifest> = emptyMap(),
     )
 
     val flow: StateFlow<ExtensionProviderState>
 
-    fun init()
+    fun load()
 
     fun release()
 

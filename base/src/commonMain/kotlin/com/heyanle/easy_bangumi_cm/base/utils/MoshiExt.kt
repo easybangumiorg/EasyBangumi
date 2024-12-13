@@ -26,7 +26,7 @@ fun <T> moshiAdapter(type: Type): JsonAdapter<T> {
     return moshi.adapter(type)
 }
 
-inline fun <reified T> String.jsonTo(): T? {
+inline fun <reified T> String.jsonTo(ignoreError: Boolean? = null): T? {
     val adapter = moshiAdapter<T>()
     if (isEmpty()) {
         return null
@@ -35,7 +35,8 @@ inline fun <reified T> String.jsonTo(): T? {
         adapter.fromJson(this)
     }.getOrElse {
         val platform = Inject.get<Platform>()
-        if (!platform.isRelease) {
+        val ignore = ignoreError ?: platform.isRelease
+        if (!ignore) {
             throw it
         } else {
             null
@@ -55,7 +56,7 @@ fun <T: Any> T.toJson(type: Type): String {
     return adapter.toJson(this)
 }
 
-fun <T: Any> String.jsonTo(type: Type): T? {
+fun <T: Any> String.jsonTo(type: Type, ignoreError: Boolean? = null): T? {
     val adapter = moshiAdapter<T>(type)
     if (isEmpty()) {
         return null
@@ -64,7 +65,8 @@ fun <T: Any> String.jsonTo(type: Type): T? {
         adapter.fromJson(this)
     }.getOrElse {
         val platform = Inject.get<Platform>()
-        if (!platform.isRelease) {
+        val ignore = ignoreError ?: platform.isRelease
+        if (!ignore) {
             throw it
         } else {
             null

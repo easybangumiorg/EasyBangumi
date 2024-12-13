@@ -1,6 +1,5 @@
 package com.heyanle.easy_bangumi_cm
 
-import com.whl.quickjs.wrapper.QuickJSContext
 import java.util.concurrent.Executors
 
 /**
@@ -11,7 +10,6 @@ class JSRuntime {
     private val executor = Executors.newSingleThreadExecutor()
 
     companion object {
-        val JSContextLocal = ThreadLocal<QuickJSContext>()
 
     }
 

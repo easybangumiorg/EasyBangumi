@@ -29,6 +29,10 @@ moshi = "1.14.0"
 
 quickjs-wrapper = "2.4.0"
 
+quickjs-kt = "1.0.0-alpha13"
+
+zip4j = "2.11.5"
+
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidx-core-ktx" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidx-appcompat" }
@@ -66,6 +70,10 @@ moshi = { group = "com.squareup.moshi", name = "moshi-kotlin", version.ref = "mo
 
 quickjs-java = { group = "wang.harlon.quickjs", name = "wrapper-java", version.ref = "quickjs-wrapper" }
 quickjs-android = { group = "wang.harlon.quickjs", name = "wrapper-android", version.ref = "quickjs-wrapper" }
+
+quickjs-kt = { module = "io.github.dokar3:quickjs-kt", version.ref = "quickjs-kt" }
+
+zip4j = { module = "net.lingala.zip4j:zip4j", version.ref = "zip4j" }
 
 [plugins]
 kotlinxSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin-serialization-plugin" }

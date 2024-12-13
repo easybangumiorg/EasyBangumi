@@ -1,7 +1,6 @@
 package com.heyanle.easy_bangumi_cm.plugin.api.source
 
-import com.heyanle.easy_bangumi_cm.plugin.api.component.ComponentBundle
-import kotlin.reflect.KClass
+import com.heyanle.easy_bangumi_cm.plugin.entity.SourceManifest
 
 
 /**
@@ -17,7 +16,7 @@ interface Source {
     }
 
     val manifest: SourceManifest
-    val sourceIndex
-        get() = "${manifest.type}-${manifest.key}"
+
+    val key: String get() = manifest.key
 
 }

@@ -15,6 +15,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
 
     implementation(projects.inject)
+    implementation(libs.zip4j)
     implementation(projects.repository)
     implementation(projects.plugin.api)
     implementation(projects.base)

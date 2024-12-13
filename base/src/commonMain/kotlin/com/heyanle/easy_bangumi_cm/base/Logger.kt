@@ -65,6 +65,6 @@ fun Any.logi(msg: String) {
     Logger.i(this::class.simpleName ?: "Unknown", msg)
 }
 
-fun CharSequence.tlogi(tag: String) {
+fun CharSequence.tlogi(tag: String = "EasyBangumi") {
     Logger.i(tag, this.toString())
 }
