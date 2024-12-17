@@ -18,6 +18,8 @@ import java.io.File
 class PkgExtensionProvider(
     workFolder: String,
     cacheFolder: String,
+    // 用于调度的单线程 Scope
+    val singleScope : CoroutineScope,
 ) : AbsExtensionProvider() {
 
     companion object {
@@ -52,7 +54,6 @@ class PkgExtensionProvider(
 
 
     // 用于异步加载
-    private val singleDispatcher = CoroutineProvider.newSingle()
     private val ioDispatcher = CoroutineProvider.io
     private val scope = CoroutineScope(SupervisorJob() + ioDispatcher)
 
@@ -67,12 +68,20 @@ class PkgExtensionProvider(
         )
     }
 
+    // 这两个变量必须在 singleScope 中使用
+
+    // 0->refreshJob 1->installJob
     private var lastJobType = 0
     private var lastJob: Job? = null
 
     override fun refresh() {
-        scope.launch(singleDispatcher) {
-            lastJob?.cancelAndJoin()
+        singleScope.launch {
+            if (lastJobType == 0) {
+                lastJob?.cancelAndJoin()
+            } else {
+                lastJob?.join()
+            }
+            lastJobType = 0
             lastJob = scope.launch {
                 val index = workIndexHelper.get()
                 val res = innerLoad(index)
@@ -174,7 +183,7 @@ class PkgExtensionProvider(
     }
 
     override fun install(file: File, callback: ((ExtensionManifest?, Throwable?) -> Unit)?) {
-        scope.launch(singleDispatcher) {
+        singleScope.launch {
             lastJob?.join()
             lastJob = scope.launch {
                 val installCache = File(cacheFolderFile, CACHE_INSTALL)
