@@ -1,5 +1,6 @@
 package com.heyanle.easy_bangumi_cm.plugin.core.extension.provider
 
+import com.heyanle.easy_bangumi_cm.base.data.DataState
 import com.heyanle.easy_bangumi_cm.base.utils.CoroutineProvider
 import com.heyanle.easy_bangumi_cm.base.utils.file_helper.JsonlFileHelper
 import com.heyanle.easy_bangumi_cm.base.utils.jsonTo
@@ -182,7 +183,7 @@ class PkgExtensionProvider(
 
     }
 
-    override fun install(file: File, callback: ((ExtensionManifest?, Throwable?) -> Unit)?) {
+    override fun install(file: File, callback: ((DataState<ExtensionManifest>) -> Unit)?) {
         singleScope.launch {
             lastJob?.join()
             lastJob = scope.launch {
@@ -193,14 +194,14 @@ class PkgExtensionProvider(
                     ZipFile(file).extractAll(installCache.absolutePath)
                 } catch (e: ZipException) {
                     // 解压失败
-                    callback?.invoke(null, e)
+                    callback?.invoke(DataState.error(e))
                     return@launch
                 }
 
                 val manifestFile = File(installCache, MANIFEST_FILE)
                 if(!manifestFile.exists()){
                     // manifest 文件不存在
-                    callback?.invoke(null, Throwable("Manifest 文件不存在"))
+                    callback?.invoke(DataState.error(Throwable("Manifest 文件不存在")))
                     return@launch
                 }
 
@@ -208,7 +209,7 @@ class PkgExtensionProvider(
                 val manifest = manifestText.jsonTo<PkgExtensionManifest>(ignoreError = true)
                 if(manifest == null){
                     // manifest 文件解析失败
-                    callback?.invoke(null, Throwable("Manifest 文件解析失败"))
+                    callback?.invoke(DataState.error(Throwable("Manifest 文件解析失败")))
                     return@launch
                 }
 
