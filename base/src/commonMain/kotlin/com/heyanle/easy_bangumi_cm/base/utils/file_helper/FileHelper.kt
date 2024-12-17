@@ -1,16 +1,23 @@
 package com.heyanle.easy_bangumi_cm.base.utils.file_helper
 
-import com.heyanle.easy_bangumi_cm.base.data.DataState
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.firstOrNull
+import kotlin.reflect.KClass
 
 /**
  * Created by heyanlin on 2024/12/11.
  */
-interface FileHelper<T> {
-
-    val flow: Flow<DataState<T>>
+interface FileHelper<T: Any> {
 
     fun set(t: T)
+
+    fun get(): T
+
+    fun def(): T
+
+    fun flow(): Flow<T>
+
+    fun update(block: (T) -> T){
+        set(block(get()))
+    }
 }
 

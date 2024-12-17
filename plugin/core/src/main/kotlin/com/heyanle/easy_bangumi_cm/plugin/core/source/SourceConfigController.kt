@@ -3,7 +3,7 @@ package com.heyanle.easy_bangumi_cm.plugin.core.source
 
 import com.heyanle.easy_bangumi_cm.base.data.DataState
 import com.heyanle.easy_bangumi_cm.base.utils.CoroutineProvider
-import com.heyanle.easy_bangumi_cm.base.utils.file_helper.JsonlFileHelper
+import com.heyanle.easy_bangumi_cm.base.utils.file_helper_o.JsonlFileHelper
 import com.heyanle.easy_bangumi_cm.plugin.core.entity.SourceConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob

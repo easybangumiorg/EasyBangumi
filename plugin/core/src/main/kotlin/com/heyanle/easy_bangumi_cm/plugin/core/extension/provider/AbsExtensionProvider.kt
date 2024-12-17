@@ -22,10 +22,4 @@ abstract class AbsExtensionProvider: ExtensionProvider {
         }
     }
 
-    fun fireData(extensionManifestMap: Map<String, ExtensionManifest>){
-        innerFlow.update {
-            it.copy(loading = false, extensionManifestMap = extensionManifestMap)
-        }
-    }
-
 }

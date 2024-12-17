@@ -61,7 +61,7 @@ class PkgExtensionProviderOld(
         }
     }
 
-    override fun load() {
+    override fun refresh() {
         loadJob?.cancel()
         loadJob = singleScope.launch {
             _flow.update {

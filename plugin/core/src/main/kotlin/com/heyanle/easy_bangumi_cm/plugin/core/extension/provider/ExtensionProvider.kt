@@ -2,6 +2,7 @@ package com.heyanle.easy_bangumi_cm.plugin.core.extension.provider
 
 import com.heyanle.easy_bangumi_cm.plugin.entity.ExtensionManifest
 import kotlinx.coroutines.flow.StateFlow
+import java.io.File
 
 
 /**
@@ -13,12 +14,16 @@ interface ExtensionProvider {
 
     data class ExtensionProviderState (
         val loading: Boolean = true,
-        val extensionManifestMap: Map<String, ExtensionManifest> = emptyMap(),
+        val extensionManifestList: List<ExtensionManifest> = emptyList(),
     )
 
     val flow: StateFlow<ExtensionProviderState>
 
-    fun load()
+    fun refresh()
+
+    fun uninstall(extensionManifest: ExtensionManifest)
+
+    fun install(file: File, callback: ((ExtensionManifest?, Throwable?) -> Unit)? = null)
 
     fun release()
 

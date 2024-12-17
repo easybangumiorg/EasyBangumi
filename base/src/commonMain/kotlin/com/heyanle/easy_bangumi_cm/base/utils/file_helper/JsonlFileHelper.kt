@@ -6,27 +6,30 @@ import com.heyanle.easy_bangumi_cm.base.utils.toJson
 import com.heyanle.easy_bangumi_cm.unifile.UniFile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
-import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 import java.lang.reflect.Type
 
 /**
- * 按行读取 jsonl 文件
- * 可防止同时读入整个文本文件导致 OOM
- * 暂不支持分页
- * Created by heyanle on 2024/7/14.
- * https://github.com/heyanLE
+ * Created by heyanlin on 2024/12/17.
  */
 class JsonlFileHelper<T : Any>(
     folder: UniFile,
     name: String,
+    scope: CoroutineScope,
     private val type: Type,
-    scope: CoroutineScope =  CoroutineScope(SupervisorJob() + CoroutineProvider.io),
-): BaseFileHelper<List<T>>(folder, "${name}$FILE_SUFFIX", emptyList(), scope) {
+) : AbsFileHelper<List<T>>(folder, "${name}${FILE_SUFFIX}", emptyList(), scope) {
 
     companion object {
         const val FILE_SUFFIX = ".jsonl"
+
+        inline fun <reified T: Any> from(
+            folder: UniFile,
+            name: String,
+            scope: CoroutineScope = CoroutineScope(SupervisorJob() + CoroutineProvider.io)
+        ): JsonlFileHelper<T> {
+            return JsonlFileHelper<T>(folder, name,  scope,  T::class.java)
+        }
     }
 
     override fun load(inputStream: InputStream): List<T> {
@@ -50,6 +53,5 @@ class JsonlFileHelper<T : Any>(
             it.printStackTrace()
         }.isSuccess
     }
-
 
 }

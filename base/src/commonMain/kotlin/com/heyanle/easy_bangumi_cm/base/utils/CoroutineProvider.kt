@@ -4,6 +4,9 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
 import java.util.concurrent.Executors
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
 
 /**
  * Created by heyanlin on 2024/12/3.
@@ -14,9 +17,15 @@ object CoroutineProvider {
 
     val main: CoroutineDispatcher = Dispatchers.Main
 
-    val single = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+    val single: CoroutineDispatcher by lazy {
+        newSingle()
+    }
 
     fun newSingle(): CoroutineDispatcher {
-        return Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+        return ThreadPoolExecutor(
+            0, 1,
+            10L, TimeUnit.SECONDS,
+            LinkedBlockingQueue()
+        ).asCoroutineDispatcher()
     }
 }
