@@ -17,7 +17,7 @@ import java.net.URI
 val ASSET_PATH_PREFIX_LENGTH
     get() = "/android_asset/".length
 
-actual open class UniFileFactory {
+actual object UniFileFactory {
 
     fun fromUri(u: Uri, app: Context? = null) : UniFile? {
         if (u.isFile() && ! u.isAssetUri() && !u.path.isNullOrEmpty()) {

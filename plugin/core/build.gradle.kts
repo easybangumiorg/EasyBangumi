@@ -18,6 +18,7 @@ dependencies {
     implementation(libs.zip4j)
     implementation(projects.repository)
     implementation(projects.plugin.api)
+    implementation(projects.unifile)
     implementation(projects.base)
     //api(projects.plugin.)
 }

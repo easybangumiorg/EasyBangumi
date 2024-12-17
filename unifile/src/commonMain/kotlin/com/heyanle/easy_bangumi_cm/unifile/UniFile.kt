@@ -11,7 +11,7 @@ import java.net.URI
  * Created by heyanlin on 2024/12/4.
  */
 
-expect open class UniFileFactory() {
+expect object UniFileFactory {
 
     fun fromFile(file: File): UniFile
 
@@ -20,10 +20,6 @@ expect open class UniFileFactory() {
 }
 
 interface UniFile {
-
-    companion object: UniFileFactory() {
-
-    }
 
     fun createFile(displayName: String): UniFile?
 

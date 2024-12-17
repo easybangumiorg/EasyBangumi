@@ -29,7 +29,8 @@ object FolderIndex {
 
     suspend fun check(
         path: String,
-        modifiedTime: Long,
+        // 为空则不检查该字段
+        modifiedTime: Long? = null,
     ): Boolean = withContext(CoroutineProvider.io)  {
         val indexFile = File(path, INDEX_FILE_NAME)
         if(!indexFile.exists()){
@@ -37,7 +38,7 @@ object FolderIndex {
         }
         val index = indexFile.readText()
         val folderIndex = index.jsonTo<FolderIndex>() ?: return@withContext false
-        if (folderIndex.modifiedTime != modifiedTime){
+        if (modifiedTime != null && folderIndex.modifiedTime != modifiedTime){
             return@withContext false
         }
 

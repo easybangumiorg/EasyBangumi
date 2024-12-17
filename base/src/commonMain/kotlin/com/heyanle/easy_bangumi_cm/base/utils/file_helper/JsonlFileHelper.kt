@@ -1,9 +1,11 @@
 package com.heyanle.easy_bangumi_cm.base.utils.file_helper
 
+import com.heyanle.easy_bangumi_cm.base.utils.CoroutineProvider
 import com.heyanle.easy_bangumi_cm.base.utils.jsonTo
 import com.heyanle.easy_bangumi_cm.base.utils.toJson
 import com.heyanle.easy_bangumi_cm.unifile.UniFile
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
@@ -19,8 +21,8 @@ import java.lang.reflect.Type
 class JsonlFileHelper<T : Any>(
     folder: UniFile,
     name: String,
-    scope: CoroutineScope,
     private val type: Type,
+    scope: CoroutineScope =  CoroutineScope(SupervisorJob() + CoroutineProvider.io),
 ): BaseFileHelper<List<T>>(folder, "${name}$FILE_SUFFIX", emptyList(), scope) {
 
     companion object {
