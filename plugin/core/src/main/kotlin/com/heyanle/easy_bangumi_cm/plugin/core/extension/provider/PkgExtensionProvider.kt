@@ -14,6 +14,21 @@ import net.lingala.zip4j.exception.ZipException
 import java.io.File
 
 /**
+ * pkg 类型插件提供者，为一个 zip 包，内部包含 manifest.json 和 assets 文件夹
+ * cacheFolder 缓存路径 用于暂存文件读元数据
+ * workFolder 工作路径
+ *  |- index.jsonl              -> 记录所有的 key 和 lastModified
+ *  |- 'key1'                   -> 每个 key 一个文件夹
+ *    |- base.eb.pkg            -> 拓展原始文件，为 zip 包
+ *    |- unzip
+ *      |- .folder_index.jsonl  -> 记录文件夹的清单文件，用于判断文件是否有变化
+ *      |- manifest.json        -> 拓展的 manifest 文件，provider 只依赖里面的 key 信息，其他信息交给 loader 处理
+ *      |- assets               -> 资源文件夹
+ *      |- ...                  -> 其他业务文件，具体交给 loader 处理
+ *
+ *
+ *  |- 'key2'                   -> 每个 key 一个文件夹
+ *    |- ...
  * Created by heyanlin on 2024/12/17.
  */
 class PkgExtensionProvider(
@@ -27,6 +42,7 @@ class PkgExtensionProvider(
         const val INDEX_FILE_NAME = "index.jsonl"
         const val FILE_SUFFIX = "eb.pkg"
 
+        const val BASE_FILE = "base.${FILE_SUFFIX}"
         const val MANIFEST_FILE = "manifest.json"
 
         const val UNZIP_FOLDER = "unzip"
@@ -53,6 +69,9 @@ class PkgExtensionProvider(
         val icon: String? = null,
     )
 
+    override val type: Int
+        get() = ExtensionManifest.PROVIDER_TYPE_PKG
+
 
     // 用于异步加载
     private val ioDispatcher = CoroutineProvider.io
@@ -71,7 +90,7 @@ class PkgExtensionProvider(
 
     // 这两个变量必须在 singleScope 中使用
 
-    // 0->refreshJob 1->installJob
+    // 0->refreshJob 1->installJob 2->uninstallJob
     private var lastJobType = 0
     private var lastJob: Job? = null
 
@@ -113,8 +132,9 @@ class PkgExtensionProvider(
     }
 
     private suspend fun innerLoadItem(indexItem: PkgExtensionIndexItem): ExtensionManifest? {
-        val pkgFile = File(workFolderFile, "${indexItem.key}.$FILE_SUFFIX")
-        val unzipFolder = File(workFolderFile, UNZIP_FOLDER)
+        val indexFolderFile: File = File(workFolderFile, indexItem.key)
+        val pkgFile = File(indexFolderFile, BASE_FILE)
+        val unzipFolder = File(indexFolderFile, UNZIP_FOLDER)
 
         // 1. 源文件不存在直接删除
         if(!pkgFile.exists()){
@@ -133,7 +153,7 @@ class PkgExtensionProvider(
                 providerType = ExtensionManifest.PROVIDER_TYPE_PKG,
                 loadType = ExtensionManifest.LOAD_TYPE_JS_PKG,
                 sourcePath = pkgFile.absolutePath,
-                assetsPath = File(pkgFile.parentFile, ASSETS_FOLDER).absolutePath,
+                assetsPath = File(unzipFolder, ASSETS_FOLDER).absolutePath,
                 workPath = unzipFolder.absolutePath,
                 lastModified = pkgFile.lastModified(),
             )
@@ -159,6 +179,11 @@ class PkgExtensionProvider(
             return getErrorManifest(false, "Manifest 文件解析失败")
         }
 
+        if (manifest.key != indexItem.key) {
+            unzipFolder.deleteRecursively()
+            return getErrorManifest(false, "Manifest key 不匹配")
+        }
+
 
 
         // 4. 生成 ExtensionManifest
@@ -180,12 +205,31 @@ class PkgExtensionProvider(
     }
 
     override fun uninstall(extensionManifest: ExtensionManifest) {
-
-    }
-
-    override fun install(file: File, callback: ((DataState<ExtensionManifest>) -> Unit)?) {
+        // 类型不匹配
+        if (extensionManifest.providerType != ExtensionManifest.PROVIDER_TYPE_PKG) {
+            return
+        }
         singleScope.launch {
             lastJob?.join()
+            lastJobType = 2
+            lastJob = scope.launch {
+                val index = workIndexHelper.get().filter { it.key != extensionManifest.key }
+                workIndexHelper.set(index)
+                innerFlow.update {
+                    it.copy(
+                        extensionManifestList = it.extensionManifestList.filter { it.key != extensionManifest.key }
+                    )
+                }
+                val indexFolderFile = File(workFolderFile, extensionManifest.key)
+                indexFolderFile.deleteRecursively()
+            }
+        }
+    }
+
+    override fun install(file: File, override: Boolean, callback: ((DataState<ExtensionManifest>) -> Unit)?) {
+        singleScope.launch {
+            lastJob?.join()
+            lastJobType = 1
             lastJob = scope.launch {
                 val installCache = File(cacheFolderFile, CACHE_INSTALL)
                 installCache.deleteRecursively()
@@ -214,15 +258,63 @@ class PkgExtensionProvider(
                 }
 
                 val key = manifest.key
-                val targetFile = File(workFolderFile, "$key.$FILE_SUFFIX")
 
+                // 检查是否已经安装
+                if(!override && workIndexHelper.get().any { it.key == key }){
+                    callback?.invoke(DataState.error(Throwable("已经安装")))
+                    return@launch
+                }
+
+                val indexFolderFile = File(workFolderFile, key)
+
+                val targetFile = File(indexFolderFile, BASE_FILE)
+                val targetTemp = File(indexFolderFile, "$BASE_FILE.temp")
+                val unzipFolder = File(indexFolderFile, UNZIP_FOLDER)
+
+                targetFile.deleteRecursively()
+                targetTemp.deleteRecursively()
+                unzipFolder.deleteRecursively()
+                unzipFolder.mkdirs()
+                indexFolderFile.mkdirs()
+
+                installCache.copyRecursively(unzipFolder, true)
+                file.copyTo(targetTemp, true)
+                targetTemp.renameTo(targetFile)
+                FolderIndex.make(unzipFolder.absolutePath, targetFile.lastModified())
+
+                val indexItem = PkgExtensionIndexItem(key, targetFile.lastModified())
+                val finManifest = innerLoadItem(indexItem)
+                if(finManifest == null){
+                    callback?.invoke(DataState.error(Throwable("安装失败")))
+                    return@launch
+                }
+
+                // 更新 index
+                workIndexHelper.set(workIndexHelper.get().filter { it.key != key } + indexItem)
+                innerFlow.update {
+                    it.copy(
+                        extensionManifestList = it.extensionManifestList.filter { it.key != key } + finManifest
+                    )
+                }
+                callback?.invoke(DataState.Ok(finManifest))
             }
         }
 
     }
 
     override fun release() {
-        TODO("Not yet implemented")
+        lastJob?.cancel()
+        try {
+            scope.cancel()
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
+        innerFlow.update {
+            it.copy(
+                loading = true,
+                extensionManifestList = emptyList()
+            )
+        }
     }
 
 

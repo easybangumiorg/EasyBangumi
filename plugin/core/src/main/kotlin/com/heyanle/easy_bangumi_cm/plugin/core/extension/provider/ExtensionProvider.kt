@@ -18,13 +18,15 @@ interface ExtensionProvider {
         val extensionManifestList: List<ExtensionManifest> = emptyList(),
     )
 
+    val type: Int
+
     val flow: StateFlow<ExtensionProviderState>
 
     fun refresh()
 
     fun uninstall(extensionManifest: ExtensionManifest)
 
-    fun install(file: File, callback: ((DataState<ExtensionManifest>) -> Unit)? = null)
+    fun install(file: File, override: Boolean, callback: ((DataState<ExtensionManifest>) -> Unit)? = null)
 
     fun release()
 

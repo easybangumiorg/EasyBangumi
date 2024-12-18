@@ -24,7 +24,7 @@ data class ExtensionManifest (
 
 
     val sourcePath: String?,        // 拓展源文件位置，可能为空
-    val assetsPath: String,         // 资源文件位置
+    val assetsPath: String?,         // 资源文件位置
 
     val workPath: String,           // 拓展工作路径，对于解压类拓展为解压路径
 
@@ -39,8 +39,9 @@ data class ExtensionManifest (
         const val LOAD_TYPE_JS_FILE = 2
         const val LOAD_TYPE_JS_PKG = 3
 
-        const val PROVIDER_TYPE_INNER = 1
-        const val PROVIDER_TYPE_PKG = 2
+        const val PROVIDER_TYPE_JS_FILE = 1
+        const val PROVIDER_TYPE_INNER = 2
+        const val PROVIDER_TYPE_PKG = 3
 
         const val STATUS_CAN_LOAD = 0
         const val STATUS_NEED_REINSTALL = 1

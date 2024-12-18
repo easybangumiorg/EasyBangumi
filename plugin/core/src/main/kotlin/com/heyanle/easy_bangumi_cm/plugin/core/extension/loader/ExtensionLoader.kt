@@ -8,7 +8,11 @@ import com.heyanle.easy_bangumi_cm.plugin.entity.ExtensionManifest
  */
 interface ExtensionLoader {
 
-    fun canLoad(extensionManifest: ExtensionManifest): Boolean
+    fun loadType(): Int
+
+    fun canLoad(extensionManifest: ExtensionManifest): Boolean {
+        return extensionManifest.loadType == ExtensionManifest.LOAD_TYPE_JS_PKG
+    }
 
     suspend fun load(extensionManifest: ExtensionManifest): ExtensionInfo
 

@@ -9,7 +9,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 
 /**
- *  ExtensionInfo 拓展数据
+ *  SourceManifest 源清单
  *             ↓
  *  SourceInfo 源数据          SourceConfig 源配置
  *           ↘                        ↙

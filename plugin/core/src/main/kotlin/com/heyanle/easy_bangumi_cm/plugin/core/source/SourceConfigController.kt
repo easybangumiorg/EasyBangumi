@@ -3,14 +3,11 @@ package com.heyanle.easy_bangumi_cm.plugin.core.source
 
 import com.heyanle.easy_bangumi_cm.base.data.DataState
 import com.heyanle.easy_bangumi_cm.base.utils.CoroutineProvider
-import com.heyanle.easy_bangumi_cm.base.utils.file_helper_o.JsonlFileHelper
+import com.heyanle.easy_bangumi_cm.base.utils.file_helper.JsonlFileHelper
 import com.heyanle.easy_bangumi_cm.plugin.core.entity.SourceConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 /**
@@ -33,12 +30,8 @@ class SourceConfigController(
 
     init {
         scope.launch {
-            configFileHelper.flow.map {
-                if (it is DataState.Ok) {
-                    SourceConfigState(false, it.data.associateBy { it.key })
-                } else {
-                    SourceConfigState(true, emptyMap())
-                }
+            configFileHelper.flow().stateIn(scope).map {
+                SourceConfigState(false, it.associateBy { it.key })
             }.collect { n ->
                 _sourceConfigFlow.update {
                     n

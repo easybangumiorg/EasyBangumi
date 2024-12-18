@@ -15,8 +15,8 @@ sealed class ExtensionInfo {
 
     data class LoadedError(
         val manifest: ExtensionManifest,
-        val exception: Throwable?,
         val errMsg: String,
+        val exception: Throwable? = null,
     ) : ExtensionInfo()
 
 }
