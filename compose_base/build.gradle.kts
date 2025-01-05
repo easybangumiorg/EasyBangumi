@@ -7,7 +7,6 @@ plugins {
     alias(builds.plugins.androidLibrary)
     alias(builds.plugins.kotlinCompose)
     alias(builds.plugins.compose)
-    alias(builds.plugins.ksp)
 }
 
 kotlin {
@@ -33,15 +32,11 @@ kotlin {
 
             implementation(libs.moshi)
             implementation(libs.navigation.compose)
-            implementation(libs.androidx.room.runtime)
-            implementation(libs.sqlite.bundled)
-
-            implementation(compose.material3)
 
             implementation(projects.inject)
             implementation(projects.unifile)
-            implementation(projects.composeBase)
             implementation(projects.base)
+
         }
         desktopMain.dependencies {
             implementation(libs.moshi)
@@ -54,7 +49,7 @@ kotlin {
 }
 
 android {
-    namespace = AppConfig.namespace + ".shared"
+    namespace = AppConfig.namespace + ".compose_base"
     compileSdk = 34
     defaultConfig {
         minSdk = 21
@@ -72,21 +67,6 @@ dependencies {
 
 }
 
-ksp {
-    arg("room.schemaLocation", "${projectDir}/schemas")
-}
-
-val kspMetaDataList = listOf(
-    "kspCommonMainMetadata",
-    "kspAndroid",
-    "kspDesktop",
-)
-
-dependencies {
-    kspMetaDataList.forEach {
-        add(it, libs.androidx.room.compiler)
-    }
-}
 
 
 
