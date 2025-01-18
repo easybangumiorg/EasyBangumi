@@ -21,11 +21,15 @@ Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-mu
 
 ## 关于~~如何重写~~奇思妙想
 
-这是一个复杂的系统工程，难以做到尽善尽美，及其容易顾此失彼，究竟是该侧重于数据源测呢还是倾向于元数据源测呢，该设计何种API以提供二级功能呢，这是一个很难回答的问题。
+~~这是一个复杂的系统工程，难以做到尽善尽美，及其容易顾此失彼，究竟是该侧重于数据源测呢还是倾向于元数据源测呢，该设计何种API以提供二级功能呢，这是一个很难回答的问题。~~
+
+本地CMS，带点插件可以提供额外功能，还能在局域网里互相提供资源，没错，就是为了愉快的看番！
 
 --Ayala评
 
 计划是作为一个媒体中间件的概念做设计，该中间件需要有多个输入端和多个输出端。
+
+请无视下面的图，把它理解为产品经理的ppt即可
 
 ![这里有个svg！](./.github/resource/platform.svg)
 
@@ -64,6 +68,17 @@ Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-mu
 比如用js实现插件源可以这样：
 
 ```js
+// @key com.ayala.ebplugin.jellfin
+// @label Jellyfin
+// @versionName 1.6
+// @versionCode 7
+// @libVersion 11
+// @cover https://jellyfin.org/images/favicon.ico
+
+// 为了在不执行插件代码的情况下还能获取插件元数据，需要额外补充一个头部
+
+// 话说为啥不直接在头部塞个json，然后在插件注册阶段注入回来啊？
+
 // 插件注册，不可以异步执行，如果插件加载超过一定时间直接视为加载失败
 plugin.register({
   name: 'Jellfin',
@@ -227,3 +242,10 @@ plugin.interceptor(interceptor.progress, content_type.bangumi, async (context) =
 ```
 
 这不一定是最万金油的做法，如果硬要在元数据源和数据源中分一个主次的话，我会更倾向于元数据源，但是考虑到纯纯看番应该会做到干净安装后没有任何插件的情况下，那么对于数据库的设计应该是跟占上风的。
+
+新描述：不再采用拦截器而是直接问插件提供这个功能不，评论字幕弹幕什么的都可以本地提供，再写套插件改为云提供，总之做到就算不在线看也能有内容。
+
+
+## 精简描述
+
+可以看到以上两节写了大量废话，最终采用何种设计也未知，当发生具体的变化后将会把内容填充到下面。
