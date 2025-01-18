@@ -1,12 +1,11 @@
 name: Bug上报
 description: 提交一个非预期行为（Bug）
 title: "[BUG]: "
-labels: ["bug"]
+type: Bug
 body:
   - type: markdown
     attributes:
       value: |
-        请花些时间填写您遇到的Bug，不胜感激！
         在开始之前请给问卷**起个标题**
   - type: input
     id: phone

@@ -1,11 +1,10 @@
-name: 功能建议
-description: 向开发者提出功能建议以完善纯纯看番
-labels: ["enhancement"]
+name: 新功能
+description: 向开发者提出新功能
+type: Feature
 body:
   - type: markdown
     attributes:
       value: |
-        请花些时间填写您期望的功能，不胜感激！
         在开始之前请给问卷**起个标题**
   - type: dropdown
     id: feature-range
