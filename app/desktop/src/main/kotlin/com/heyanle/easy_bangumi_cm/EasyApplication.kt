@@ -16,8 +16,6 @@ class EasyApplication {
 
     init {
         instance = this
-        initBase()
-        Scheduler.onInit()
     }
 
 
@@ -25,8 +23,14 @@ class EasyApplication {
 
     private val _logger = DesktopLogger()
     private fun initBase(){
+        println(_logger)
         logger = _logger
         BaseModule().registerWith(Inject)
+    }
+
+    init {
+        initBase()
+        Scheduler.onInit()
     }
 
 }

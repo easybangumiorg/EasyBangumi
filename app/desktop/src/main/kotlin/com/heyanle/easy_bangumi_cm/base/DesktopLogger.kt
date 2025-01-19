@@ -11,9 +11,6 @@ import com.heyanle.easy_bangumi_cm.base.logger
 
 class DesktopLogger: Logger{
 
-    init {
-        logger = this
-    }
 
     override fun d(tag: String, msg: String) {
         println("[$tag] $msg")

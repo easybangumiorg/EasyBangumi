@@ -36,7 +36,7 @@ kotlin {
 
 compose.desktop {
     application {
-        mainClass = "MainKt"
+        mainClass = "com.heyanle.easy_bangumi_cm.MainKt"
 
         jvmArgs(
             "-versionCode=${AppConfig.versionCode}",

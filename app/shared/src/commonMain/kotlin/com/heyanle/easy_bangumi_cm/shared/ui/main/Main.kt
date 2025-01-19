@@ -58,7 +58,7 @@ fun Main(){
     val pagerState =
         rememberPagerState(0) { MainPageItems.size }
 
-    val windowSizeClass = calculateWindowSizeClass()
+    // val windowSizeClass = calculateWindowSizeClass()
 
     Surface(
         color = MaterialTheme.colorScheme.background,
