@@ -22,7 +22,7 @@ flowchart TD
 
   subgraph utils ["实用工具"]
     direction LR
-    unifile[unifile <br/> 文件选择器]
+    unifile[unifile <br/> 文件抽象]
     javascript[javascript <br/> JS运行时]
     inject[inject <br/> 依赖注入]
   end
@@ -62,6 +62,9 @@ flowchart TD
     ui --> data
   end
 
+  composeBase["compose_base"]
+
+  ui -->|外挂| composeBase
   app -->|是依赖注入！| utils
   dataSource -->|可能存在依赖注入| utils
   app --> base
