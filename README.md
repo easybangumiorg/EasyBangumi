@@ -15,10 +15,6 @@ This is a Kotlin Multiplatform project targeting Android, iOS, Desktop.
 
 Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
 
-## 一个可能的流程
-
-![这里有个svg！](./.github/resource/workflow.svg)
-
 ## 关于~~如何重写~~奇思妙想
 
 ~~这是一个复杂的系统工程，难以做到尽善尽美，及其容易顾此失彼，究竟是该侧重于数据源测呢还是倾向于元数据源测呢，该设计何种API以提供二级功能呢，这是一个很难回答的问题。~~
@@ -28,12 +24,6 @@ Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-mu
 --Ayala评
 
 计划是作为一个媒体中间件的概念做设计，该中间件需要有多个输入端和多个输出端。
-
-请无视下面的图，把它理解为产品经理的ppt即可
-
-![这里有个svg！](./.github/resource/platform.svg)
-
-其中上侧的是输出端，除了实现纯纯看番本体的功能外，应当注意留出接口使得整个下层还能被API Server实现，需要进行一定程度的抽象，可以支持局域网内的web服务器播放，也能通过纯纯看番的群组互相共享播放资源，而抽象出的通用媒体接口也可以用其他方式实现输出端，甚至DI为底层插件服务实现功能扩展。
 
 资源应当予以分类
 
