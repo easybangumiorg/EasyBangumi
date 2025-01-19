@@ -15,6 +15,62 @@ This is a Kotlin Multiplatform project targeting Android, iOS, Desktop.
 
 Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
 
+## 疑似架构图
+
+```mermaid
+flowchart TD
+
+  subgraph utils ["实用工具"]
+    direction LR
+    unifile[unifile <br/> 文件选择器]
+    javascript[javascript <br/> JS运行时]
+    inject[inject <br/> 依赖注入]
+  end
+
+  subgraph base[base]
+    direction LR
+    Logger
+    Platform
+    KV
+    Preferrence
+    subgraph base_lib_utils["utils"]
+      file_helper
+      Coroutine
+      HeKV
+      Moshi
+      Zip
+      StringUtils
+    end
+  end
+
+  subgraph dataSource ["数据源"]
+    subgraph plugin
+      api
+      core
+      dataSourceUtils["utils"]
+    end
+    plugin --> repository
+  end
+
+  subgraph "app"
+    subgraph ui ["UI<br/>目前未动工"]
+    
+    end
+    subgraph "data"
+      room[(room)]
+    end
+    ui --> data
+  end
+
+  app -->|是依赖注入！| utils
+  dataSource -->|可能存在依赖注入| utils
+  app --> base
+  dataSource --> base
+
+```
+
+是不是很混乱，等何言自己改吧
+
 ## 关于~~如何重写~~奇思妙想
 
 ~~这是一个复杂的系统工程，难以做到尽善尽美，及其容易顾此失彼，究竟是该侧重于数据源测呢还是倾向于元数据源测呢，该设计何种API以提供二级功能呢，这是一个很难回答的问题。~~
