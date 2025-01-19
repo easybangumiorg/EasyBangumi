@@ -29,10 +29,10 @@ dependencyResolutionManagement {
 
     versionCatalogs {
         create("builds") {
-            from(files("versions/builds.version.toml"))
+            from(files("gradle/builds.version.toml"))
         }
         create("libs") {
-            from(files("versions/libs.version.toml"))
+            from(files("gradle/libs.version.toml"))
         }
     }
 }
@@ -44,7 +44,6 @@ fun includeModule(moduleName: String, dir: String? = null) {
     }
 }
 
-rootProject.name = "EasyBangumi"
 includeModule(":app:android", "app/android")
 includeModule(":app:desktop", "app/desktop")
 includeModule(":app:shared", "app/shared")
