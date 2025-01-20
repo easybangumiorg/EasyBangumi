@@ -1,6 +1,6 @@
 package com.heyanle.easy_bangumi_cm.shared
 
-import com.heyanle.easy_bangumi_cm.utils.moshi.MoshiArrayListJsonAdapter
+import com.heyanle.easy_bangumi_cm.shared.utils.moshi.MoshiArrayListJsonAdapter
 import com.heyanle.easy_bangumi_cm.shared.model.provider.IPathProvider
 import com.heyanle.easy_bangumi_cm.shared.model.system.ILogger
 import com.heyanle.easy_bangumi_cm.shared.model.system.IPlatformInformation

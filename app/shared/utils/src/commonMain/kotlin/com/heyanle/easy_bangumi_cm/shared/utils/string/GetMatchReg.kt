@@ -1,4 +1,4 @@
-package com.heyanle.easy_bangumi_cm.utils.string
+package com.heyanle.easy_bangumi_cm.shared.utils.string
 
 private val regCharSet = setOf<Char>(
     '*', '.', '?', '+', '$', '^', '[', ']', '(', ')', '{', '}', '|', '\\', '/'

@@ -1,8 +1,8 @@
-package com.heyanle.easy_bangumi_cm.utils.preference.hekv
+package com.heyanle.easy_bangumi_cm.shared.utils.preference.hekv
 
 
-import com.heyanle.easy_bangumi_cm.utils.preference.Preference
-import com.heyanle.easy_bangumi_cm.utils.HeKV
+import com.heyanle.easy_bangumi_cm.shared.utils.preference.Preference
+import com.heyanle.easy_bangumi_cm.shared.utils.HeKV
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted

@@ -1,4 +1,4 @@
-package com.heyanle.easy_bangumi_cm.utils
+package com.heyanle.easy_bangumi_cm.shared.utils
 
 
 import kotlinx.coroutines.*

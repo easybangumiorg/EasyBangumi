@@ -1,4 +1,4 @@
-package com.heyanle.easy_bangumi_cm.utils.moshi
+package com.heyanle.easy_bangumi_cm.shared.utils.moshi
 
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.JsonAdapter.Factory

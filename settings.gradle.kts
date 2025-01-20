@@ -66,5 +66,4 @@ includeModule(":javascript", "javascript")
 
 // ----------base----------
 includeModule(":compose_base", "compose_base")
-//includeModule(":base", "base")
 

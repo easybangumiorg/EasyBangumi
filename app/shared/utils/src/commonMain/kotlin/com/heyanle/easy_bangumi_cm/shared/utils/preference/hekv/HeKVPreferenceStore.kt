@@ -1,10 +1,10 @@
-package com.heyanle.easy_bangumi_cm.utils.preference.hekv
+package com.heyanle.easy_bangumi_cm.shared.utils.preference.hekv
 
-import com.heyanle.easy_bangumi_cm.utils.preference.Preference
-import com.heyanle.easy_bangumi_cm.utils.preference.PreferenceStore
-import com.heyanle.easy_bangumi_cm.utils.HeKV
-import com.heyanle.easy_bangumi_cm.utils.moshi.toJson
-import com.heyanle.easy_bangumi_cm.utils.moshi.jsonTo
+import com.heyanle.easy_bangumi_cm.shared.utils.preference.Preference
+import com.heyanle.easy_bangumi_cm.shared.utils.preference.PreferenceStore
+import com.heyanle.easy_bangumi_cm.shared.utils.HeKV
+import com.heyanle.easy_bangumi_cm.shared.utils.moshi.toJson
+import com.heyanle.easy_bangumi_cm.shared.utils.moshi.jsonTo
 
 /**
  * Created by HeYanLe on 2023/8/5 19:17.

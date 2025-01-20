@@ -1,4 +1,4 @@
-package com.heyanle.easy_bangumi_cm.utils.preference
+package com.heyanle.easy_bangumi_cm.shared.utils.preference
 
 /**
  * Created by HeYanLe on 2023/7/29 16:48.
