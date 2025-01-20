@@ -25,9 +25,10 @@ kotlin {
         val desktopMain by getting
 
         androidMain.dependencies {
-            implementation(projects.app.android)
+
         }
         commonMain.dependencies {
+            implementation(compose.ui) //! 此处是个临时解决方法 防止编译安卓时找不到编译器
             implementation(projects.inject)
             implementation(projects.app.shared.model)
         }

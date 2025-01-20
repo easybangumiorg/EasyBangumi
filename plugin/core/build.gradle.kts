@@ -19,6 +19,4 @@ dependencies {
     implementation(projects.repository)
     implementation(projects.plugin.api)
     implementation(projects.unifile)
-    implementation(projects.base)
-    //api(projects.plugin.)
 }

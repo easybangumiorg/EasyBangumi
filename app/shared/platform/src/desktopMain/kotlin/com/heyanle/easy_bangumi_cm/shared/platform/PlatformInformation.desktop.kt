@@ -12,7 +12,7 @@ actual class PlatformInformation : IPlatformInformation {
     }
 
     private val _platformName: String by lazy {
-        "Desktop ${hostOs.name} ${hostArch.name}"
+        "Desktop ${hostOs.name} (${hostArch.name})"
     }
 
     private val _versionCode: Int by lazy {

@@ -25,7 +25,6 @@ dependencies {
 
     implementation(projects.app.shared)
     implementation(projects.inject)
-    implementation(projects.base)
 
 
 }

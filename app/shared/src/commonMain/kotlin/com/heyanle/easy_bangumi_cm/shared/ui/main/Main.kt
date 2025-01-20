@@ -9,7 +9,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import com.heyanle.easy_bangumi_cm.compose_base.back_handler.InnerBackHandler
 import com.heyanle.easy_bangumi_cm.shared.ui.main.home.Home
 import easybangumi.app.shared.generated.resources.Res
 import easybangumi.app.shared.generated.resources.home

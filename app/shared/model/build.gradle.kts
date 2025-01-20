@@ -1,13 +1,9 @@
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(builds.plugins.kotlinMultiplatform)
     alias(builds.plugins.androidLibrary)
-    alias(builds.plugins.kotlinCompose)
-    alias(builds.plugins.compose)
-    alias(builds.plugins.ksp)
 }
 
 kotlin {
@@ -30,6 +26,7 @@ kotlin {
             implementation(projects.inject)
         }
         desktopMain.dependencies {
+
         }
         iosMain.dependencies {
 
@@ -39,4 +36,17 @@ kotlin {
 
 android {
     namespace = AppConfig.namespace + ".shared.model"
+    compileSdk = 34
+    defaultConfig {
+        minSdk = 21
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
 }
+
+dependencies {
+
+}
+

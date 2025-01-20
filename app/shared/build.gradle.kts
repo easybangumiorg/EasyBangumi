@@ -1,4 +1,3 @@
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -41,7 +40,9 @@ kotlin {
             implementation(projects.inject)
             implementation(projects.unifile)
             implementation(projects.composeBase)
-            implementation(projects.base)
+            implementation(projects.app.shared.model)
+            implementation(projects.app.shared.platform)
+            implementation(projects.app.shared.utils)
         }
         desktopMain.dependencies {
             implementation(libs.moshi)

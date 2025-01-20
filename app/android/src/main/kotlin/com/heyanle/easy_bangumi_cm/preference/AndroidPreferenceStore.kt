@@ -1,10 +1,10 @@
-package com.heyanle.easy_bangumi_cm.base.preference
+package com.heyanle.easy_bangumi_cm.preference
 
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
-import com.heyanle.easy_bangumi_cm.base.preference.Preference
-import com.heyanle.easy_bangumi_cm.base.preference.PreferenceStore
+import com.heyanle.easy_bangumi_cm.utils.preference.Preference
+import com.heyanle.easy_bangumi_cm.utils.preference.PreferenceStore
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.toSet

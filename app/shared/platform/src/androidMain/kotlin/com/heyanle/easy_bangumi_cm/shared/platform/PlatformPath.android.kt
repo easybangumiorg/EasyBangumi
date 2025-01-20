@@ -6,7 +6,7 @@ import com.heyanle.inject.core.injectLazy
 import java.io.File
 
 actual class PlatformPath : IPathProvider {
-    val context by injectLazy<Application>()
+    private val context by injectLazy<Application>()
 
     override fun getCachePath(type: String): String {
         val root = context.externalCacheDir?:context.cacheDir
