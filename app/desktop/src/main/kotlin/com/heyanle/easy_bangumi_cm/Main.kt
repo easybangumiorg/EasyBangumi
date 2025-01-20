@@ -2,6 +2,7 @@ package com.heyanle.easy_bangumi_cm
 
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import com.heyanle.easy_bangumi_cm.shared.ui.main.Main
 
 
 /**
@@ -17,7 +18,7 @@ fun main(){
             onCloseRequest = ::exitApplication,
             title = "EasyBangumi",
         ) {
-
+            Main()
         }
     }
 }

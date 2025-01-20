@@ -24,18 +24,25 @@ kotlin {
         val desktopMain by getting
 
         androidMain.dependencies {
+            implementation(compose.preview)
             implementation(libs.moshi)
+            implementation(libs.androidx.activity.compose)
         }
         commonMain.dependencies {
+            implementation(compose.runtime)
+            implementation(compose.foundation)
             implementation(compose.components.resources)
+            implementation(compose.materialIconsExtended) // 此依赖需要在生产环境中进行剪枝，非常巨大
             implementation(compose.ui)
+            implementation(compose.material3)
+            implementation(compose.components.resources)
+            implementation(compose.components.uiToolingPreview)
 
             implementation(libs.moshi)
             implementation(libs.navigation.compose)
             implementation(libs.androidx.room.runtime)
             implementation(libs.sqlite.bundled)
 
-            implementation(compose.material3)
 
             implementation(projects.inject)
             implementation(projects.unifile)
