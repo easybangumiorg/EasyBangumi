@@ -20,56 +20,60 @@ Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-mu
 ```mermaid
 flowchart TD
 
-  subgraph utils ["实用工具"]
-    direction LR
-    unifile[unifile <br/> 文件抽象]
-    javascript[javascript <br/> JS运行时]
-    inject[inject <br/> 依赖注入]
-  end
-
-  subgraph base[base]
-    direction LR
-    Logger
-    Platform
-    KV
-    Preferrence
-    subgraph base_lib_utils["utils"]
-      file_helper
-      Coroutine
-      HeKV
-      Moshi
-      Zip
-      StringUtils
+    subgraph framework ["framework"]
+        unifile[unifile <br/> 文件抽象]
+        javascript[javascript <br/> JS运行时]
+        inject[inject <br/> 依赖注入]
     end
-  end
 
-  subgraph dataSource ["数据源"]
-    subgraph plugin
-      api
-      core
-      dataSourceUtils["utils"]
+    subgraph app_shared_platform[":app:shared:platform"]
+        PlatformInformaiton
+        PlatformLogger
+        PlatformPath
     end
-    plugin --> repository
-  end
-
-  subgraph "app"
-    subgraph ui ["UI<br/>目前未动工"]
+  
+    subgraph app_shared_utils[":app:shared:utils"]
+        unInjectable_utils
+        Injectable_utils
+    end
     
+    subgraph app_shared_model[":app:shared:model"]
+        system
+        io
+        provider
+        etc.
     end
-    subgraph "data"
-      room[(room)]
+
+    subgraph dataSource ["数据源"]
+        direction LR
+        subgraph plugin
+            api
+            core
+            dataSource_utils["utils"]
+        end
+        plugin --> repository
     end
-    ui --> data
-  end
 
-  composeBase["compose_base"]
+    subgraph app[":app"]
+        preference
+        subgraph ui ["UI<br/>目前未动工"]
+        
+        end
+        subgraph app_shared[":app:shared<br/>此处要改"]
+            room[(room)]
+        end
+        ui --> app_shared
+    end
 
-  ui -->|外挂| composeBase
-  app -->|是依赖注入！| utils
-  dataSource -->|可能存在依赖注入| utils
-  app --> base
-  dataSource --> base
-
+    composeBase["compose_base"]
+    app --> composeBase
+    app --> app_shared_model
+    preference --> app_shared_utils
+    app_shared --> app_shared_model
+    app_shared --> app_shared_utils
+    app_shared -->|inject| app_shared_platform
+    app_shared_platform --> app_shared_model
+    app_shared_utils --> app_shared_model
 ```
 
 是不是很混乱，等何言自己改吧
