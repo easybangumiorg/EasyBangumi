@@ -1,6 +1,6 @@
 package com.heyanle.easy_bangumi_cm.base.utils.moshi
 
-import com.heyanle.easy_bangumi_cm.shared.model.system.IPlatformInformation
+import com.heyanle.easy_bangumi_cm.base.model.system.IPlatformInformation
 import com.heyanle.lib.inject.api.get
 import com.heyanle.lib.inject.core.Inject
 import com.squareup.moshi.JsonAdapter

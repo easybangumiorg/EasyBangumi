@@ -25,6 +25,7 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.moshi)
             implementation(libs.kotlinx.coroutines.core)
+            implementation(projects.base.model)
             implementation(projects.lib.inject)
             implementation(projects.repository.cartoon)
         }
@@ -38,7 +39,7 @@ kotlin {
 }
 
 android {
-    namespace = AppConfig.namespace + ".shared.utils"
+    namespace = AppConfig.namespace + ".base.utils"
     compileSdk = 34
     defaultConfig {
         minSdk = 21
