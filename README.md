@@ -15,12 +15,78 @@ This is a Kotlin Multiplatform project targeting Android, iOS, Desktop.
 
 Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
 
-## 疑似架构图
+## 功能框图
+
+```mermaid
+flowchart TD
+    subgraph user_interface["用户界面"]
+        subgraph main["主页"]
+            多视图集合主页
+            标签视图
+            文件系统视图
+            element_only["仅元素，由纯纯看番统一呈现"]
+        end
+        subgraph search["搜索"]
+            年代
+            类型
+        end
+        subgraph repository["媒体库"]
+            搜索
+            合集
+            喜爱
+        end
+        subgraph media_present["媒体呈现"]
+            源/播放列表/视频
+            源/章节/文章漫画
+        end
+    end
+    subgraph plugin_host["插件主机"]
+        JS运行时
+        固化插件
+        插件数据库
+        管理器
+        执行器
+        调度
+        源进度管理
+    end
+    subgraph repository_host["库存主机"]
+        库存数据库
+        定时任务
+        本地源管理
+        库进度管理
+    end
+    subgraph application_host["应用主机"]
+        语言
+        KV数据库
+        关系型数据库
+        依赖注入
+        文件系统
+        下载器
+        事件系统
+    end
+    subgraph plugins["外部插件"]
+        jellyfin.js
+        bangumi.meta.js
+    end
+    plugins --> plugin_host
+    plugin_host --> main
+    plugin_host --> search
+    plugin_host --> repository_host
+    plugin_host --> media_present
+    repository_host --> media_present
+    repository_host --> repository
+    repository_host --> main
+    repository_host --> search
+    application_host --> plugin_host
+    application_host --> repository_host
+```
+
+## 架构图
 
 ```mermaid
 flowchart TD
 
-    subgraph framework ["framework"]
+    subgraph framework ["lib"]
         unifile[unifile <br/> 文件抽象]
         javascript[javascript <br/> JS运行时]
         inject[inject <br/> 依赖注入]
@@ -63,7 +129,7 @@ flowchart TD
         subgraph ui ["UI<br/>目前未动工"]
         
         end
-        subgraph app_shared[":app:shared<br/>此处要改"]
+        subgraph app_shared[":app:shared"]
             room[(room)]
         end
         ui --> app_shared
