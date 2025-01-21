@@ -1,7 +1,7 @@
 package com.heyanle.easy_bangumi_cm.shared.platform
 
 import android.util.Log
-import com.heyanle.easy_bangumi_cm.shared.model.system.ILogger
+import com.heyanle.easy_bangumi_cm.base.model.system.ILogger
 
 actual class PlatformLogger : ILogger {
 
