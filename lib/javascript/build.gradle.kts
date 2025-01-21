@@ -41,7 +41,7 @@ kotlin {
 }
 
 android {
-    namespace = AppConfig.namespace + ".javascript"
+    namespace = AppConfig.namespace + "lib.javascript"
     compileSdk = 34
     defaultConfig {
         minSdk = 21

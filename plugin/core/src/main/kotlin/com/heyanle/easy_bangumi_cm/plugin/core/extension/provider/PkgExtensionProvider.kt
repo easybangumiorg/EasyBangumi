@@ -3,10 +3,9 @@ package com.heyanle.easy_bangumi_cm.plugin.core.extension.provider
 import com.heyanle.easy_bangumi_cm.base.data.DataState
 import com.heyanle.easy_bangumi_cm.base.utils.CoroutineProvider
 import com.heyanle.easy_bangumi_cm.base.utils.file_helper.JsonlFileHelper
-import com.heyanle.easy_bangumi_cm.base.utils.jsonTo
 import com.heyanle.easy_bangumi_cm.plugin.core.utils.FolderIndex
 import com.heyanle.easy_bangumi_cm.plugin.entity.ExtensionManifest
-import com.heyanle.easy_bangumi_cm.unifile.UniFileFactory
+import com.heyanle.lib.unifile.UniFileFactory
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.update
 import net.lingala.zip4j.ZipFile

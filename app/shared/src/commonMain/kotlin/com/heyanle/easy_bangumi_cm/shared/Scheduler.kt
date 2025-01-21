@@ -1,7 +1,7 @@
 package com.heyanle.easy_bangumi_cm.shared
 
 import com.heyanle.easy_bangumi_cm.shared.cartoon.CartoonModule
-import com.heyanle.inject.core.Inject
+import com.heyanle.lib.inject.core.Inject
 
 /**
  * 初始化时点分发

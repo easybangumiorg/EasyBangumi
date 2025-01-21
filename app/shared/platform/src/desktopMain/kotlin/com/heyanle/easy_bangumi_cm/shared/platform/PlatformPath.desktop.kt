@@ -2,7 +2,7 @@ package com.heyanle.easy_bangumi_cm.shared.platform
 
 import com.heyanle.easy_bangumi_cm.shared.model.provider.IPathProvider
 import com.heyanle.easy_bangumi_cm.shared.model.system.ILogger
-import com.heyanle.inject.core.injectLazy
+import com.heyanle.lib.inject.core.injectLazy
 import kotlin.io.path.Path
 import kotlin.io.path.pathString
 

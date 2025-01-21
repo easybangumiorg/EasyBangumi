@@ -5,7 +5,7 @@ import com.heyanle.easy_bangumi_cm.base.utils.CoroutineProvider
 import com.heyanle.easy_bangumi_cm.base.utils.file_helper.JsonlFileHelper
 import com.heyanle.easy_bangumi_cm.plugin.core.utils.JsHelper
 import com.heyanle.easy_bangumi_cm.plugin.entity.ExtensionManifest
-import com.heyanle.easy_bangumi_cm.unifile.UniFileFactory
+import com.heyanle.lib.unifile.UniFileFactory
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.update
 import java.io.File

@@ -6,8 +6,8 @@ import com.heyanle.easy_bangumi_cm.shared.Migrate
 import com.heyanle.easy_bangumi_cm.shared.cartoon.database.CartoonDatabase
 import com.heyanle.easy_bangumi_cm.shared.model.provider.IPathProvider
 import com.heyanle.easy_bangumi_cm.shared.model.system.ILogger
-import com.heyanle.inject.api.InjectScope
-import com.heyanle.inject.api.get
+import com.heyanle.lib.inject.api.InjectScope
+import com.heyanle.lib.inject.api.get
 import kotlinx.coroutines.Dispatchers
 import java.io.File
 

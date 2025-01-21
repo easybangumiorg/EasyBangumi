@@ -5,8 +5,8 @@ import androidx.room.Room
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.heyanle.easy_bangumi_cm.shared.Migrate
 import com.heyanle.easy_bangumi_cm.shared.cartoon.database.CartoonDatabase
-import com.heyanle.inject.api.InjectScope
-import com.heyanle.inject.api.get
+import com.heyanle.lib.inject.api.InjectScope
+import com.heyanle.lib.inject.api.get
 import kotlinx.coroutines.Dispatchers
 
 /**

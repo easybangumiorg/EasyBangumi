@@ -1,7 +1,5 @@
 package com.heyanle.easy_bangumi_cm.repository.cartoon
 
-import com.heyanle.easy_bangumi_cm.repository.Extractor
-
 /**
  * Created by heyanlin on 2024/12/5.
  */

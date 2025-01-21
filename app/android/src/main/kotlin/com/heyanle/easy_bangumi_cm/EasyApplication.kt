@@ -3,7 +3,7 @@ package com.heyanle.easy_bangumi_cm
 import android.app.Application
 import com.heyanle.easy_bangumi_cm.shared.Global
 import com.heyanle.easy_bangumi_cm.shared.Scheduler
-import com.heyanle.inject.core.Inject
+import com.heyanle.lib.inject.core.Inject
 
 
 /**
