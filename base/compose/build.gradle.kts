@@ -48,7 +48,7 @@ kotlin {
 }
 
 android {
-    namespace = AppConfig.namespace + ".compose_base"
+    namespace = AppConfig.namespace + ".base.compose"
     compileSdk = 34
     defaultConfig {
         minSdk = 21
