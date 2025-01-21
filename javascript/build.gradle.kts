@@ -30,7 +30,7 @@ kotlin {
         }
         commonMain.dependencies {
             implementation(libs.kotlin.reflect)
-            // implementation(libs.quickjs.java)
+            implementation(libs.kotlinx.coroutines.core)
             implementation(libs.quickjs.kt)
 
         }

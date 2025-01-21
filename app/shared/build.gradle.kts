@@ -47,9 +47,9 @@ kotlin {
             implementation(projects.inject)
             implementation(projects.unifile)
             implementation(projects.composeBase)
-            implementation(projects.app.shared.model)
             implementation(projects.app.shared.platform)
-            implementation(projects.app.shared.utils)
+            implementation(projects.base.model)
+            implementation(projects.base.utils)
         }
         desktopMain.dependencies {
             implementation(libs.moshi)

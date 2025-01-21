@@ -3,14 +3,12 @@ package com.heyanle.easy_bangumi_cm.plugin.core.extension.provider
 import com.heyanle.easy_bangumi_cm.base.data.DataState
 import com.heyanle.easy_bangumi_cm.base.utils.CoroutineProvider
 import com.heyanle.easy_bangumi_cm.base.utils.file_helper.JsonlFileHelper
-import com.heyanle.easy_bangumi_cm.plugin.core.cry.JsCryHelper
+import com.heyanle.easy_bangumi_cm.plugin.core.utils.JsHelper
 import com.heyanle.easy_bangumi_cm.plugin.entity.ExtensionManifest
 import com.heyanle.easy_bangumi_cm.unifile.UniFileFactory
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.update
-import java.io.BufferedReader
 import java.io.File
-import java.io.InputStream
 
 /**
  * 纯js 文件比较简单，不支持 assets，直接单文件存储即可
@@ -127,18 +125,16 @@ class JSFileExtensionProvider(
             }
             lastJobType = 1
             lastJob = scope.launch {
-                val isCry = file.inputStream().use {
-                    JsCryHelper.isCryJs(it)
-                }
-
-                val key = if (isCry) {
-                    JsCryHelper.getManifest(file)?.get("key")
-                } else {
-                    file.inputStream().bufferedReader().use {
-                        getJsManifest(it)["key"]
+                val (isCry, manifest) = file.inputStream().use {
+                    val isCry = JsHelper.isCryptJs(it)
+                    val manifest = if (isCry) {
+                        JsHelper.getManifestFromCry(it)
+                    } else {
+                        JsHelper.getManifestFromNormal(it)
                     }
+                    isCry to manifest
                 }
-
+                val key = manifest["key"]
                 if (key.isNullOrEmpty()) {
                     callback?.invoke(DataState.error("key 为空"))
                     return@launch
@@ -182,7 +178,7 @@ class JSFileExtensionProvider(
     }
 
     override fun release() {
-        TODO("Not yet implemented")
+
     }
 
     private suspend fun innerLoad(index: List<JsExtensionIndexItem>): List<ExtensionManifest> {
@@ -234,15 +230,20 @@ class JSFileExtensionProvider(
                 errorMsg = "文件已被修改，需要重新安装"
             )
         }
-        val manifest = when (item.type) {
-            JsExtensionIndexItem.TYPE_JS -> file.bufferedReader().use { getJsManifest(it) }
-            JsExtensionIndexItem.TYPE_JSC -> JsCryHelper.getManifest(file)
-            else -> return null
+
+        val manifest = file.inputStream().use {
+            val isCry = JsHelper.isCryptJs(it)
+            if (isCry && item.type == JsExtensionIndexItem.TYPE_JSC) {
+                JsHelper.getManifestFromCry(it)
+            } else if (!isCry && item.type == JsExtensionIndexItem.TYPE_JS) {
+                JsHelper.getManifestFromNormal(it)
+            } else {
+                null
+            }
         } ?: return getErrorManifest(
-            canReinstall = true,
+            canReinstall = false,
             errorMsg = "元数据解析失败"
         )
-
 
         val key = manifest["key"]
         if (key != item.key) {
@@ -260,8 +261,9 @@ class JSFileExtensionProvider(
             readme = manifest["readme"],
             author = manifest["author"],
             icon = manifest["icon"],
-            versionCode = manifest["versionCode"]?.toLongOrNull() ?: 0,
-            libVersion = manifest["libVersion"]?.toIntOrNull() ?: 0,
+            versionCode = manifest["version_code"]?.toLongOrNull() ?: 0,
+            libVersion = manifest["lib_version"]?.toIntOrNull() ?: 0,
+            map = manifest,
             providerType = ExtensionManifest.PROVIDER_TYPE_JS_FILE,
             loadType = ExtensionManifest.LOAD_TYPE_JS_FILE,
             sourcePath = file.absolutePath,
@@ -270,27 +272,6 @@ class JSFileExtensionProvider(
             lastModified = item.lastModified,
             ext = null
         )
-    }
-
-
-    private fun getJsManifest(bufferedReader: BufferedReader): Map<String, String> {
-        val i = bufferedReader.lineSequence()
-        val map = mutableMapOf<String, String>()
-        for (it in i) {
-            if (it.startsWith("//")) {
-                val atIndex = it.indexOf("@")
-                val spaceIndex = it.indexOf(" ")
-                if (atIndex != -1 && spaceIndex != -1) {
-                    val key = it.substring(atIndex + 1, spaceIndex)
-                    val value = it.substring(spaceIndex + 1)
-                    map[key] = value
-                }
-            } else {
-                break
-            }
-        }
-        return map
-
     }
 
 }

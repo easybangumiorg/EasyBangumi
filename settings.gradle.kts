@@ -47,9 +47,9 @@ fun includeModule(moduleName: String, dir: String? = null) {
 includeModule(":app:android", "app/android")
 includeModule(":app:desktop", "app/desktop")
 includeModule(":app:shared")
-includeModule(":app:shared:model")
+
 includeModule(":app:shared:platform")
-includeModule(":app:shared:utils")
+
 
 // ----------cartoon_repository----------
 includeModule(":repository", "repository")
@@ -66,4 +66,6 @@ includeModule(":javascript", "javascript")
 
 // ----------base----------
 includeModule(":compose_base", "compose_base")
+includeModule(":base:model", "base/model")
+includeModule(":base:utils", "base/utils")
 

@@ -17,6 +17,7 @@ data class ExtensionManifest (
     val icon: Any? = null,
     val versionCode: Long = 0,
     val libVersion: Int = 0,        // 纯纯看番拓展引擎版本
+    val map: Map<String, String> = emptyMap(), // 所有元数据
 
     // 加载数据
     val providerType: Int,          // 提供者类型

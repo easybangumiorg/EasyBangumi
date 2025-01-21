@@ -23,24 +23,21 @@ kotlin {
         androidMain.dependencies {
         }
         commonMain.dependencies {
-
             implementation(libs.moshi)
             implementation(libs.kotlinx.coroutines.core)
-            implementation(projects.unifile)
             implementation(projects.inject)
-
         }
         desktopMain.dependencies {
 
-
+        }
+        iosMain.dependencies {
 
         }
-
     }
 }
 
 android {
-    namespace = AppConfig.namespace + ".base"
+    namespace = AppConfig.namespace + ".shared.utils"
     compileSdk = 34
     defaultConfig {
         minSdk = 21
@@ -51,14 +48,7 @@ android {
     }
 }
 
-
-
-
 dependencies {
 
 }
-
-
-
-
 

@@ -11,7 +11,7 @@ interface ExtensionLoader {
     fun loadType(): Int
 
     fun canLoad(extensionManifest: ExtensionManifest): Boolean {
-        return extensionManifest.loadType == ExtensionManifest.LOAD_TYPE_JS_PKG
+        return extensionManifest.loadType == loadType()
     }
 
     suspend fun load(extensionManifest: ExtensionManifest): ExtensionInfo

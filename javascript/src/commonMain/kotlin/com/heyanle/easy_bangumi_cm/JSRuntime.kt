@@ -1,16 +1,26 @@
 package com.heyanle.easy_bangumi_cm
 
+import com.dokar.quickjs.QuickJs
+import com.dokar.quickjs.quickJs
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.asCoroutineDispatcher
 import java.util.concurrent.Executors
 
 /**
  * Created by heyanlin on 2024/12/11.
  */
-class JSRuntime {
+class JSRuntime(
+    val dispatcher: CoroutineDispatcher,
+) {
 
-    private val executor = Executors.newSingleThreadExecutor()
+    private val quickJs = QuickJs.create(dispatcher)
 
-    companion object {
+    suspend fun run(){
 
+    }
+
+    fun gc(){
+        quickJs.gc()
     }
 
 }

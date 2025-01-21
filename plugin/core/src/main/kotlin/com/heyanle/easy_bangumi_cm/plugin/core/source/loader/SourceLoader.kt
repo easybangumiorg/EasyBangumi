@@ -9,7 +9,11 @@ import com.heyanle.easy_bangumi_cm.plugin.entity.SourceManifest
  */
 interface SourceLoader {
 
-    fun canLoad(sourceManifest: SourceManifest): Boolean
+    fun loadType(): Int
+
+    fun canLoad(sourceManifest: SourceManifest): Boolean {
+        return sourceManifest.loadType == loadType()
+    }
 
     suspend fun load(sourceManifest: SourceManifest): List<SourceInfo>
 

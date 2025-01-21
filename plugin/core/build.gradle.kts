@@ -13,10 +13,15 @@ java {
 
 dependencies {
     implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.io)
+
+    implementation(libs.zip4j)
+
 
     implementation(projects.inject)
-    implementation(libs.zip4j)
     implementation(projects.repository)
     implementation(projects.plugin.api)
     implementation(projects.unifile)
+
+    implementation(projects.base.utils)
 }

@@ -16,6 +16,7 @@ object FolderIndex {
         val name: String,
         val lastModified: Long,
         val size: Long,
+        val tag: String? = null,
     )
 
     const val INDEX_FILE_NAME = ".folder_index.jsonl"
@@ -23,7 +24,7 @@ object FolderIndex {
     suspend fun check(
         path: String,
         // 为空则不检查该字段
-        modifiedTime: Long? = null,
+        tag: String? = null,
     ): Boolean = withContext(CoroutineProvider.io)  {
         val indexItemFile = File(path, INDEX_FILE_NAME)
         if(!indexItemFile.exists()){
@@ -48,7 +49,7 @@ object FolderIndex {
                     }
                     // index 文件夹本身存储的是整个文件夹的信息
                     sizeFromIndex = item.size
-                    if (modifiedTime != null && item.lastModified != modifiedTime) {
+                    if (tag != null && item.tag != tag) {
                         return@withContext false
                     }
                     hasIndex = true
@@ -79,7 +80,7 @@ object FolderIndex {
 
     suspend fun make(
         path: String,
-        modifiedTime: Long,
+        tag: String?,
     ) = withContext(CoroutineProvider.io)  {
         val folderFile = File(path)
 
@@ -135,7 +136,8 @@ object FolderIndex {
                 FolderIndexItem(
                     relative = "",
                     name = INDEX_FILE_NAME,
-                    lastModified = modifiedTime,
+                    lastModified = System.currentTimeMillis(),
+                    tag = tag,
                     size = size
                 ).toJson()
             )

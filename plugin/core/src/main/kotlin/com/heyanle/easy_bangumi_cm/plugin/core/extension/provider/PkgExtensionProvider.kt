@@ -22,7 +22,7 @@ import java.io.File
  *    |- base.eb.pkg            -> 拓展原始文件，为 zip 包
  *    |- unzip
  *      |- .folder_index.jsonl  -> 记录文件夹的清单文件，用于判断文件是否有变化
- *      |- manifest.json        -> 拓展的 manifest 文件，provider 只依赖里面的 key 信息，其他信息交给 loader 处理
+ *      |- manifest.yaml        -> 拓展的 manifest 文件，provider 只依赖里面的 key 信息，其他信息交给 loader 处理
  *      |- assets               -> 资源文件夹
  *      |- ...                  -> 其他业务文件，具体交给 loader 处理
  *
@@ -43,7 +43,7 @@ class PkgExtensionProvider(
         const val FILE_SUFFIX = "eb.pkg"
 
         const val BASE_FILE = "base.${FILE_SUFFIX}"
-        const val MANIFEST_FILE = "manifest.json"
+        const val MANIFEST_FILE = "manifest.yaml"
 
         const val UNZIP_FOLDER = "unzip"
         const val ASSETS_FOLDER = "assets"
@@ -67,7 +67,27 @@ class PkgExtensionProvider(
         val readme: String? = null,
         val author: String? = null,
         val icon: String? = null,
-    )
+        val map: Map<String, String> = emptyMap(),
+    ) {
+        companion object {
+            fun fromMap(map: Map<String, String>): PkgExtensionManifest? {
+                return try {
+                    PkgExtensionManifest(
+                        key = map["key"] ?: return null,
+                        label = map["label"] ?: return null,
+                        versionCode = (map["version_code"] ?: return null).toLong(),
+                        libVersion = (map["lib_version"] ?: return null).toInt(),
+                        readme = map["readme"],
+                        author = map["author"],
+                        icon = map["icon"],
+                        map = map,
+                    )
+                } catch (e: Throwable) {
+                    null
+                }
+            }
+        }
+    }
 
     override val type: Int
         get() = ExtensionManifest.PROVIDER_TYPE_PKG
@@ -160,7 +180,7 @@ class PkgExtensionProvider(
         }
 
         // 2. 检查源文件是否有变化，如果有则需要重新安装
-        val isChange = pkgFile.lastModified() != indexItem.lastModified || !unzipFolder.exists() || FolderIndex.check(unzipFolder.absolutePath, indexItem.lastModified)
+        val isChange = pkgFile.lastModified() != indexItem.lastModified || !unzipFolder.exists() || FolderIndex.check(unzipFolder.absolutePath, indexItem.lastModified.toString())
         if (isChange) {
             unzipFolder.deleteRecursively()
             return getErrorManifest(true, "源文件已变化，请重新安装")
@@ -172,8 +192,8 @@ class PkgExtensionProvider(
             unzipFolder.deleteRecursively()
             return getErrorManifest(false, "Manifest 文件不存在")
         }
-        val manifestText = manifestFile.readText()
-        val manifest = manifestText.jsonTo<PkgExtensionManifest>(ignoreError = true)
+        val manifestMap = getManifest(manifestFile)
+        val manifest = PkgExtensionManifest.fromMap(manifestMap)
         if (manifest == null) {
             unzipFolder.deleteRecursively()
             return getErrorManifest(false, "Manifest 文件解析失败")
@@ -195,6 +215,7 @@ class PkgExtensionProvider(
             readme = manifest.readme,
             author = manifest.author,
             icon = manifest.icon,
+            map = manifest.map,
             providerType = ExtensionManifest.PROVIDER_TYPE_PKG,
             loadType = ExtensionManifest.LOAD_TYPE_JS_PKG,
             sourcePath = pkgFile.absolutePath,
@@ -249,8 +270,8 @@ class PkgExtensionProvider(
                     return@launch
                 }
 
-                val manifestText = manifestFile.readText()
-                val manifest = manifestText.jsonTo<PkgExtensionManifest>(ignoreError = true)
+                val manifestMap = getManifest(manifestFile)
+                val manifest = PkgExtensionManifest.fromMap(manifestMap)
                 if(manifest == null){
                     // manifest 文件解析失败
                     callback?.invoke(DataState.error(Throwable("Manifest 文件解析失败")))
@@ -280,7 +301,7 @@ class PkgExtensionProvider(
                 installCache.copyRecursively(unzipFolder, true)
                 file.copyTo(targetTemp, true)
                 targetTemp.renameTo(targetFile)
-                FolderIndex.make(unzipFolder.absolutePath, targetFile.lastModified())
+                FolderIndex.make(unzipFolder.absolutePath, targetFile.lastModified().toString())
 
                 val indexItem = PkgExtensionIndexItem(key, targetFile.lastModified())
                 val finManifest = innerLoadItem(indexItem)
@@ -316,6 +337,21 @@ class PkgExtensionProvider(
             )
         }
     }
+
+    private fun getManifest(file: File): Map<String, String> {
+        return file.bufferedReader().use {
+            it.lineSequence().map {
+                val kv = it.split(":", limit = 2)
+                if (kv.size == 2) {
+                    kv[0].trim() to kv[1].trim()
+                } else {
+                    null
+                }
+            }.filterNotNull().toMap()
+        }
+    }
+
+
 
 
 

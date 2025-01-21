@@ -19,12 +19,14 @@ data class SourceManifest (
     // base64/url/assets
     val icon: String? = null,
     val website: String? = null,
+    val map: Map<String, String> = emptyMap(),
 
     val loadType: Int,      // 加载类型，决定用哪个 Loader 加载
     val sourceUri: String,  // 文件 Uri，含义由 Loader 决定
 ) {
 
     companion object {
+        const val LOAD_TYPE_INNER = 0
         const val LOAD_TYPE_JS = 1
         const val LOAD_TYPE_CRY_JS = 2
     }

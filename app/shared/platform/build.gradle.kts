@@ -5,9 +5,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(builds.plugins.kotlinMultiplatform)
     alias(builds.plugins.androidLibrary)
-    alias(builds.plugins.kotlinCompose)
-    alias(builds.plugins.compose)
-    alias(builds.plugins.ksp)
 }
 
 kotlin {
@@ -28,12 +25,10 @@ kotlin {
 
         }
         commonMain.dependencies {
-            implementation(compose.ui) //! 此处是个临时解决方法 防止编译安卓时找不到编译器
             implementation(projects.inject)
-            implementation(projects.app.shared.model)
+            implementation(projects.base.model)
         }
         desktopMain.dependencies {
-            implementation(compose.desktop.currentOs)
         }
         iosMain.dependencies {
 

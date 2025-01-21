@@ -24,7 +24,7 @@ class JsPkgExtensionLoader(
         if(!jsFileFolder.exists() || !jsFileFolder.isDirectory){
             return ExtensionInfo.LoadedError(extensionManifest, "script folder not exists")
         }
-        val sourceManifestList = jsFileFolder.listFiles()?.filter { it.isFile }?.map { jsFileExtensionLoader.loadFile(it) }?.filterNotNull() ?: emptyList()
+        val sourceManifestList = jsFileFolder.listFiles()?.filter { it.isFile }?.map { jsFileExtensionLoader.loadFile(extensionManifest, it) }?.filterNotNull() ?: emptyList()
         if (sourceManifestList.isEmpty()){
             return ExtensionInfo.LoadedError(extensionManifest, "script file load error")
         }
