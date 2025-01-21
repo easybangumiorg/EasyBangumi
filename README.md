@@ -32,16 +32,20 @@ flowchart TD
         PlatformPath
     end
   
-    subgraph app_shared_utils[":app:shared:utils"]
+    subgraph base_utils[":base:utils"]
         unInjectable_utils
         Injectable_utils
     end
     
-    subgraph app_shared_model[":app:shared:model"]
+    subgraph base_model[":base:model"]
         system
         io
         provider
         etc.
+    end
+
+    subgraph base_compose[":base:compose"]
+        BackHandler
     end
 
     subgraph dataSource ["数据源"]
@@ -64,16 +68,15 @@ flowchart TD
         end
         ui --> app_shared
     end
-
-    composeBase["compose_base"]
-    app --> composeBase
-    app --> app_shared_model
-    preference --> app_shared_utils
-    app_shared --> app_shared_model
-    app_shared --> app_shared_utils
+    
+    app --> base_compose
+    app --> base_model
+    app_shared --> base_model
+    app_shared --> base_utils
     app_shared -->|inject| app_shared_platform
-    app_shared_platform --> app_shared_model
-    app_shared_utils --> app_shared_model
+    app_shared_platform --> base_model
+    base_utils --> base_model
+    dataSource --> base_model
 ```
 
 是不是很混乱，等何言自己改吧
