@@ -23,7 +23,7 @@ kotlin {
         androidMain.dependencies {
         }
         commonMain.dependencies {
-            implementation(projects.inject)
+            implementation(projects.lib.inject)
         }
         desktopMain.dependencies {
 

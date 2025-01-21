@@ -24,8 +24,8 @@ kotlin {
         }
         commonMain.dependencies {
             implementation(libs.moshi)
-            implementation(projects.inject)
-            implementation(projects.unifile)
+            implementation(projects.lib.inject)
+            implementation(projects.lib.unifile)
 
         }
         desktopMain.dependencies {

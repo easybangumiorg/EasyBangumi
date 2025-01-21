@@ -1,3 +1,4 @@
+import org.jetbrains.compose.compose
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -25,10 +26,11 @@ kotlin {
 
         }
         commonMain.dependencies {
-            implementation(projects.inject)
+            implementation(projects.lib.inject)
             implementation(projects.base.model)
         }
         desktopMain.dependencies {
+
         }
         iosMain.dependencies {
 

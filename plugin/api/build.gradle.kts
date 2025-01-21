@@ -12,7 +12,7 @@ java {
 }
 
 dependencies {
-    implementation(projects.inject)
-    implementation(projects.repository)
+    implementation(projects.lib.inject)
+    implementation(projects.repository.cartoon)
     implementation(libs.kotlinx.coroutines.core)
 }

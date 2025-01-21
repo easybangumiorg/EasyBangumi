@@ -44,12 +44,12 @@ kotlin {
             implementation(libs.sqlite.bundled)
 
 
-            implementation(projects.inject)
-            implementation(projects.unifile)
-            implementation(projects.composeBase)
+            implementation(projects.lib.inject)
+            implementation(projects.lib.unifile)
             implementation(projects.app.shared.platform)
             implementation(projects.base.model)
             implementation(projects.base.utils)
+            implementation(projects.base.compose)
         }
         desktopMain.dependencies {
             implementation(libs.moshi)

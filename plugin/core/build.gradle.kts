@@ -18,10 +18,10 @@ dependencies {
     implementation(libs.zip4j)
 
 
-    implementation(projects.inject)
-    implementation(projects.repository)
+    implementation(projects.lib.inject)
+    implementation(projects.repository.cartoon)
     implementation(projects.plugin.api)
-    implementation(projects.unifile)
+    implementation(projects.lib.unifile)
 
     implementation(projects.base.utils)
 }

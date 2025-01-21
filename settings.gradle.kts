@@ -51,21 +51,21 @@ includeModule(":app:shared")
 includeModule(":app:shared:platform")
 
 
-// ----------cartoon_repository----------
-includeModule(":repository", "repository")
+// ----------repository----------
+includeModule(":repository:cartoon", "repository/cartoon")
 
 // ----------plugin----------
 includeModule(":plugin:api", "plugin/api")
 includeModule(":plugin:core", "plugin/core")
 includeModule(":plugin:utils", "plugin/utils")
 
-// ----------utils----------
-includeModule(":inject", "inject")
-includeModule(":unifile", "unifile")
-includeModule(":javascript", "javascript")
+// ----------lib----------
+includeModule(":lib:inject", "lib/inject")
+includeModule(":lib:unifile", "lib/unifile")
+includeModule(":lib:javascript", "lib/javascript")
 
 // ----------base----------
-includeModule(":compose_base", "compose_base")
+includeModule(":base:compose", "base/compose")
 includeModule(":base:model", "base/model")
 includeModule(":base:utils", "base/utils")
 

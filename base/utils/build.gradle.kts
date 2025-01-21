@@ -25,7 +25,8 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.moshi)
             implementation(libs.kotlinx.coroutines.core)
-            implementation(projects.inject)
+            implementation(projects.lib.inject)
+            implementation(projects.repository.cartoon)
         }
         desktopMain.dependencies {
 
@@ -47,8 +48,3 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 }
-
-dependencies {
-
-}
-

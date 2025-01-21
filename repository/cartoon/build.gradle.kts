@@ -12,5 +12,5 @@ java {
 }
 
 dependencies {
-
+    implementation(libs.androidx.room.common)
 }

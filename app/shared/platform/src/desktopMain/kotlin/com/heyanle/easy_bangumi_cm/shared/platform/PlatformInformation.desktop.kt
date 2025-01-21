@@ -2,17 +2,37 @@ package com.heyanle.easy_bangumi_cm.shared.platform
 
 import com.heyanle.easy_bangumi_cm.shared.model.system.IPlatformInformation
 import java.util.Properties
-import org.jetbrains.skiko.hostArch
-import org.jetbrains.skiko.hostOs
 
 actual class PlatformInformation : IPlatformInformation {
+
+
+    val hostOs: String by lazy {
+        val osName = System.getProperty("os.name")
+        when {
+            osName == "Mac OS X" -> "macos"
+            osName.startsWith("Win") -> "windows"
+            osName == "Linux" -> "linux"
+            else -> throw Error("Unknown OS $osName")
+        }
+    }
+
+    val hostArch: String by lazy {
+        val osArch = System.getProperty("os.arch")
+        when (osArch) {
+            "x86_64", "amd64" -> "x64"
+            "aarch64" -> "arm64"
+            else -> throw Error("Unknown arch $osArch")
+        }
+    }
+
+
     private val properties = Properties()
     private val _namespace: String by lazy {
         properties.getProperty("namespace") ?: throw Exception("desktop namespace is null")
     }
 
     private val _platformName: String by lazy {
-        "Desktop ${hostOs.name} (${hostArch.name})"
+        "Desktop ${hostOs} (${hostArch})"
     }
 
     private val _versionCode: Int by lazy {

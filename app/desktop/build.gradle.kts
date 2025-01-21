@@ -24,7 +24,7 @@ dependencies {
     implementation(compose.desktop.currentOs)
 
     implementation(projects.app.shared)
-    implementation(projects.inject)
+    implementation(projects.lib.inject)
 
 
 }

@@ -79,9 +79,8 @@ dependencies {
 
     implementation(projects.app.shared)
     implementation(projects.base.utils)
-    implementation(projects.inject)
-
-    implementation(projects.javascript)
+    implementation(projects.lib.inject)
+    implementation(projects.lib.javascript)
 
 
 

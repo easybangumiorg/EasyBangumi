@@ -6,6 +6,7 @@ import com.heyanle.inject.core.injectLazy
 import kotlin.io.path.Path
 import kotlin.io.path.pathString
 
+@Suppress("NewApi")
 actual class PlatformPath : IPathProvider {
     val logger by injectLazy<ILogger>()
 

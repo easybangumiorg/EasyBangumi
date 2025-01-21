@@ -33,8 +33,8 @@ kotlin {
             implementation(libs.moshi)
             implementation(libs.navigation.compose)
 
-            implementation(projects.inject)
-            implementation(projects.unifile)
+            implementation(projects.lib.inject)
+            implementation(projects.lib.unifile)
 
         }
         desktopMain.dependencies {
