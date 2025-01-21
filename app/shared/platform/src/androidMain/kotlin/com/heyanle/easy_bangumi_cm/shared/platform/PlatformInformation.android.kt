@@ -1,6 +1,6 @@
 package com.heyanle.easy_bangumi_cm.shared.platform
 
-import com.heyanle.easy_bangumi_cm.shared.model.system.IPlatformInformation
+import com.heyanle.easy_bangumi_cm.base.model.system.IPlatformInformation
 import java.util.Properties
 
 actual class PlatformInformation : IPlatformInformation {
@@ -46,4 +46,9 @@ actual class PlatformInformation : IPlatformInformation {
 
     override val isDesktop: Boolean
         get() = false
+
+
+    override fun toString(): String {
+        return "PlatformInformation(namespace='$namespace', platformName='$platformName', versionCode=$versionCode, versionName='$versionName', isRelease=$isRelease, isAndroid=$isAndroid, isIos=$isIos, isDesktop=$isDesktop)"
+    }
 }

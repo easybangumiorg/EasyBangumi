@@ -1,9 +1,9 @@
 package com.heyanle.easy_bangumi_cm.shared
 
+import com.heyanle.easy_bangumi_cm.base.model.provider.IPathProvider
+import com.heyanle.easy_bangumi_cm.base.model.system.ILogger
+import com.heyanle.easy_bangumi_cm.base.model.system.IPlatformInformation
 import com.heyanle.easy_bangumi_cm.base.utils.moshi.MoshiArrayListJsonAdapter
-import com.heyanle.easy_bangumi_cm.shared.model.provider.IPathProvider
-import com.heyanle.easy_bangumi_cm.shared.model.system.ILogger
-import com.heyanle.easy_bangumi_cm.shared.model.system.IPlatformInformation
 import com.heyanle.easy_bangumi_cm.shared.platform.PlatformInformation
 import com.heyanle.easy_bangumi_cm.shared.platform.PlatformLogger
 import com.heyanle.easy_bangumi_cm.shared.platform.PlatformPath

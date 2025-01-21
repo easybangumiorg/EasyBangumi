@@ -27,18 +27,18 @@ kotlin {
             implementation(libs.kotlinx.coroutines.core)
             implementation(projects.lib.inject)
             implementation(projects.repository.cartoon)
+
+            implementation(projects.base.model)
         }
         desktopMain.dependencies {
 
         }
-        iosMain.dependencies {
 
-        }
     }
 }
 
 android {
-    namespace = AppConfig.namespace + ".shared.utils"
+    namespace = AppConfig.namespace + ".base.utils"
     compileSdk = 34
     defaultConfig {
         minSdk = 21

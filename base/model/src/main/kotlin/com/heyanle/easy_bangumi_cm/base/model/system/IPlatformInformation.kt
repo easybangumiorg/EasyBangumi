@@ -12,4 +12,5 @@ interface IPlatformInformation {
     val isAndroid: Boolean
     val isIos: Boolean
     val isDesktop: Boolean
+
 }

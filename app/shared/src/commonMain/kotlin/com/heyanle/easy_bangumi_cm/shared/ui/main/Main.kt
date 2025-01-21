@@ -21,7 +21,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import com.heyanle.easy_bangumi_cm.base.model.provider.IPathProvider
+import com.heyanle.easy_bangumi_cm.base.model.system.ILogger
+import com.heyanle.easy_bangumi_cm.base.model.system.IPlatformInformation
 import com.heyanle.easy_bangumi_cm.shared.ui.main.home.Home
+import com.heyanle.lib.inject.api.get
+import com.heyanle.lib.inject.core.Inject
 import easybangumi.app.shared.generated.resources.Res
 import easybangumi.app.shared.generated.resources.home
 import kotlinx.coroutines.launch
@@ -116,6 +121,13 @@ fun Main() {
     MainHook()
     val pagerState = rememberPagerState(0) { MainPageItems.size }
     val scope = rememberCoroutineScope()
+
+    val fileProvider = Inject.get<IPathProvider>()
+    val platform = Inject.get<IPlatformInformation>()
+    val logger = Inject.get<ILogger>()
+    logger.i("Main", "platform: ${platform}")
+    logger.i("Main", "fileProvider: ${fileProvider.getFilePath("test")}")
+    logger.i("Main", "fileProvider: ${fileProvider.getCachePath("test")}")
 
     // val windowSizeClass = calculateWindowSizeClass()
 

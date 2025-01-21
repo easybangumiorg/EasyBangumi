@@ -38,16 +38,16 @@ compose.desktop {
         mainClass = "com.heyanle.easy_bangumi_cm.MainKt"
 
         jvmArgs(
-            "-versionCode=${AppConfig.versionCode}",
-            "-versionName=${AppConfig.versionName}",
-            "-namespace=${AppConfig.namespace}",
+            "-DversionCode=${AppConfig.versionCode}",
+            "-DversionName=${AppConfig.versionName}",
+            "-Dnamespace=${AppConfig.namespace}",
         )
 
         // 有点 trick 但没办法
         if (project.gradle.startParameter.taskNames.contains("Release")
             || project.gradle.startParameter.taskNames.contains("release")) {
             jvmArgs(
-                "-release=true",
+                "-Drelease=true",
             )
         }
 
