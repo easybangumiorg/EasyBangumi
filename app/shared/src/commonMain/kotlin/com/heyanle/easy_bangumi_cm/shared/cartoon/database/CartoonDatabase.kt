@@ -4,8 +4,8 @@ import androidx.room.ConstructedBy
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
+import com.heyanle.easy_bangumi_cm.repository.cartoon.CartoonInfo
 import com.heyanle.easy_bangumi_cm.shared.cartoon.database.dao.CartoonInfoDao
-import com.heyanle.easy_bangumi_cm.shared.cartoon.entity.CartoonInfo
 
 /**
  * Created by heyanlin on 2024/12/5.

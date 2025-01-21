@@ -46,7 +46,11 @@ kotlin {
 
             implementation(projects.lib.inject)
             implementation(projects.lib.unifile)
+
             implementation(projects.app.shared.platform)
+
+            implementation(projects.repository.cartoon)
+
             implementation(projects.base.model)
             implementation(projects.base.utils)
             implementation(projects.base.compose)

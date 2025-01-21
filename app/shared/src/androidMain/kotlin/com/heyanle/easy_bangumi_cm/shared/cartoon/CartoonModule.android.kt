@@ -15,7 +15,7 @@ import kotlinx.coroutines.Dispatchers
 actual fun InjectScope.registerCartoonDatabase(): CartoonDatabase {
     val ctx = get<Context>()
     val appContext = ctx.applicationContext
-    val dbFile = appContext.getDatabasePath("my_room.db")
+    val dbFile = appContext.getDatabasePath(CartoonDatabase.DB_FILE_NAME)
     return Room.databaseBuilder<CartoonDatabase>(
         context = appContext,
         name = dbFile.absolutePath
