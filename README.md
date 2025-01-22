@@ -38,6 +38,7 @@ flowchart TD
         subgraph media_present["媒体呈现"]
             源/播放列表/视频
             源/章节/文章漫画
+            源/专辑/音乐
         end
     end
     subgraph plugin_host["插件主机"]
@@ -47,13 +48,42 @@ flowchart TD
         管理器
         执行器
         调度
-        源进度管理
+    end
+    subgraph plugin_asbtract["插件抽象集"]
+        目录资源
+        元数据资源
+        媒体资源
+        附加资源
+        数据同步
+    end
+    subgraph local_repository["本地插件"]
+        解析器
+        封装
+        目录监听
+        组合器
+        虚拟文件系统
+    end
+    subgraph local_repository_asbtract["本地抽象"]
+        本地媒体虚拟目录
+        本地状态更新
+        虚目录与实库存项绑定
     end
     subgraph repository_host["库存主机"]
+        Notefication["库存通知 Notefication"]
+        Provider["库存内容提供 Provider"]
+        Receiver["库存事件 Receiver"]
+        Bridge["插件扩展桥 Bridge"]
         库存数据库
         定时任务
         本地源管理
-        库进度管理
+        聚合
+        媒体资源处理
+        媒体类型管理
+    end
+    subgraph universal_media_interface["通用媒体接口"]
+        资源交互
+        配置项
+        插件管理
     end
     subgraph application_host["应用主机"]
         语言
@@ -62,24 +92,33 @@ flowchart TD
         依赖注入
         文件系统
         下载器
-        事件系统
+        流处理
+        携程
+        编解码
     end
     subgraph plugins["外部插件"]
         jellyfin.js
         bangumi.meta.js
     end
     plugins --> plugin_host
-    plugin_host --> main
-    plugin_host --> search
-    plugin_host --> repository_host
-    plugin_host --> media_present
-    repository_host --> media_present
-    repository_host --> repository
-    repository_host --> main
-    repository_host --> search
+    plugin_host --> plugin_asbtract
+    plugin_asbtract --> repository_host
     application_host --> plugin_host
     application_host --> repository_host
+    application_host --> local_repository
+    local_repository --> local_repository_asbtract
+    local_repository_asbtract --> repository_host
+    Provider --> universal_media_interface
+    Receiver --> universal_media_interface
+    Bridge --> universal_media_interface
+    Notefication --> universal_media_interface
+    universal_media_interface --> user_interface
+    application_host --> user_interface
 ```
+
+1. 不要做成纯纯屯番
+2. 将本地源做成一种特殊的插件会导致插件的抽象非常复杂
+3. 插件是组件形式的，可以声明式，也能注册式
 
 ## 架构图
 
