@@ -68,4 +68,5 @@ includeModule(":lib:javascript", "lib/javascript")
 includeModule(":base:compose", "base/compose")
 includeModule(":base:model", "base/model")
 includeModule(":base:utils", "base/utils")
+includeModule(":base:i18n", "base/i18n")
 
