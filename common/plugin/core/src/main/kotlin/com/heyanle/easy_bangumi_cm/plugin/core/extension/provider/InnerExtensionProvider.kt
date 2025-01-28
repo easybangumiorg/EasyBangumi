@@ -1,6 +1,6 @@
 package com.heyanle.easy_bangumi_cm.plugin.core.extension.provider
 
-import com.heyanle.easy_bangumi_cm.base.data.DataState
+import com.heyanle.easy_bangumi_cm.base.utils.DataState
 import com.heyanle.easy_bangumi_cm.plugin.entity.ExtensionManifest
 import java.io.File
 

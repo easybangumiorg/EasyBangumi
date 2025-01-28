@@ -1,6 +1,6 @@
 package com.heyanle.easy_bangumi_cm.plugin.core.extension
 
-import com.heyanle.easy_bangumi_cm.base.PathProvider
+import com.heyanle.easy_bangumi_cm.base.model.provider.IPathProvider
 import com.heyanle.easy_bangumi_cm.base.utils.CoroutineProvider
 import com.heyanle.easy_bangumi_cm.plugin.core.entity.ExtensionInfo
 import com.heyanle.easy_bangumi_cm.plugin.core.extension.provider.JSFileExtensionProvider
@@ -19,7 +19,7 @@ import java.io.File
  * Created by heyanlin on 2024/12/9.
  */
 class ExtensionController(
-    private val pathProvider: PathProvider
+    private val pathProvider: IPathProvider
 ) {
 
     // == ExtensionInfo Flow ================================================================================
@@ -63,7 +63,7 @@ class ExtensionController(
         singleScope,
     )
 
-    private val PkgExtensionProvider = PkgExtensionProvider(
+    private val pkgExtensionProvider = PkgExtensionProvider(
         File(workPath, "package").absolutePath,
         File(cachePath, "package").absolutePath,
         singleScope,
@@ -76,7 +76,7 @@ class ExtensionController(
         scope.launch {
             combine(
                 jsFileExtensionProvider.flow,
-                PkgExtensionProvider.flow,
+                pkgExtensionProvider.flow,
             ) { js, pkg ->
                 if (firstLoad && (!js.loading && !pkg.loading)) {
                     firstLoad = false

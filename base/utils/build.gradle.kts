@@ -26,10 +26,13 @@ kotlin {
             implementation(libs.moshi)
             implementation(libs.kotlinx.coroutines.core)
             implementation(projects.base.model)
-            implementation(projects.lib.inject)
+
             implementation(projects.repository.cartoon)
 
             implementation(projects.base.model)
+
+            implementation(projects.lib.inject)
+            implementation(projects.lib.unifile)
         }
         desktopMain.dependencies {
 
