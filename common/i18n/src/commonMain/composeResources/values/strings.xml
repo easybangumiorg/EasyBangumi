@@ -1,0 +1,12 @@
+<resources>
+
+    <string name="app_name">纯纯看番</string>
+
+    <string name="theme_default">默认</string>
+    <string name="theme_greenapple">青苹果</string>
+    <string name="theme_midnightdusk">午夜幽暗</string>
+    <string name="theme_strawberry">草莓巧克力</string>
+    <string name="theme_tako">薰衣草</string>
+    <string name="theme_tealturqoise">浪潮</string>
+
+</resources>

@@ -48,16 +48,17 @@ includeModule(":app:android", "app/android")
 includeModule(":app:desktop", "app/desktop")
 includeModule(":app:shared")
 
-includeModule(":app:shared:platform")
-
-
 // ----------repository----------
 includeModule(":repository:cartoon", "repository/cartoon")
 
-// ----------plugin----------
-includeModule(":plugin:api", "plugin/api")
-includeModule(":plugin:core", "plugin/core")
-includeModule(":plugin:utils", "plugin/utils")
+// ----------common----------
+includeModule(":common:plugin:api", "common/plugin/api")
+includeModule(":common:plugin:core", "common/plugin/core")
+includeModule(":common:plugin:utils", "common/plugin/utils")
+
+includeModule(":common:theme", "common/theme")
+includeModule(":common:i18n", "common/i18n")
+includeModule(":common:platform", "common/platform")
 
 // ----------lib----------
 includeModule(":lib:inject", "lib/inject")
@@ -68,5 +69,4 @@ includeModule(":lib:javascript", "lib/javascript")
 includeModule(":base:compose", "base/compose")
 includeModule(":base:model", "base/model")
 includeModule(":base:utils", "base/utils")
-includeModule(":base:i18n", "base/i18n")
 

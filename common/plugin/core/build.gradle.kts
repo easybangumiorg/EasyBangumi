@@ -17,10 +17,9 @@ dependencies {
 
     implementation(libs.zip4j)
 
-
     implementation(projects.lib.inject)
     implementation(projects.repository.cartoon)
-    implementation(projects.plugin.api)
+    implementation(projects.common.plugin.api)
     implementation(projects.lib.unifile)
 
     implementation(projects.base.utils)

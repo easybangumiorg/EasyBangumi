@@ -43,17 +43,20 @@ kotlin {
             implementation(libs.androidx.room.runtime)
             implementation(libs.sqlite.bundled)
 
-
             implementation(projects.lib.inject)
             implementation(projects.lib.unifile)
 
-            implementation(projects.app.shared.platform)
+
 
             implementation(projects.repository.cartoon)
 
             implementation(projects.base.model)
             implementation(projects.base.utils)
             implementation(projects.base.compose)
+
+            implementation(projects.common.platform)
+            //implementation(projects.common.theme)
+            implementation(projects.common.i18n)
         }
         desktopMain.dependencies {
             implementation(libs.moshi)

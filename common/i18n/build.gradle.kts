@@ -1,4 +1,3 @@
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -24,30 +23,19 @@ kotlin {
         val desktopMain by getting
 
         androidMain.dependencies {
-            implementation(libs.moshi)
         }
         commonMain.dependencies {
             implementation(compose.components.resources)
-            implementation(compose.ui)
-
-            implementation(libs.moshi)
-            implementation(libs.navigation.compose)
-
-            implementation(projects.lib.inject)
-            implementation(projects.lib.unifile)
         }
         desktopMain.dependencies {
-            implementation(libs.moshi)
-            implementation(compose.desktop.currentOs)
-        }
-        iosMain.dependencies {
 
         }
+
     }
 }
 
 android {
-    namespace = AppConfig.namespace + ".base.compose"
+    namespace = AppConfig.namespace + ".common.i18n"
     compileSdk = 34
     defaultConfig {
         minSdk = 21
@@ -58,15 +46,8 @@ android {
     }
 }
 
-
-
-
-dependencies {
-
+compose.resources {
+    publicResClass = true
+    packageOfResClass = AppConfig.namespace + ".common.i18n"
+    generateResClass = always
 }
-
-
-
-
-
-
