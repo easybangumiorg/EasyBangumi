@@ -23,6 +23,8 @@ data class SourceManifest (
 
     val loadType: Int,      // 加载类型，决定用哪个 Loader 加载
     val sourceUri: String,  // 文件 Uri，含义由 Loader 决定
+
+    val lastModified: Long, // 最后修改时间，用于判断是否需要重新加载
 ) {
 
     companion object {
