@@ -17,7 +17,11 @@ kotlin {
         }
     }
 
-    jvm("desktop")
+    jvm("desktop") {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_17)
+        }
+    }
 
     sourceSets {
 
@@ -54,8 +58,6 @@ kotlin {
             implementation(projects.base.utils)
             implementation(projects.base.compose)
 
-            implementation(projects.common.platform)
-            //implementation(projects.common.theme)
             implementation(projects.common.i18n)
         }
         desktopMain.dependencies {
@@ -70,7 +72,7 @@ kotlin {
 
 android {
     namespace = AppConfig.namespace + ".shared"
-    compileSdk = 34
+    compileSdk = 35
     defaultConfig {
         minSdk = 21
     }

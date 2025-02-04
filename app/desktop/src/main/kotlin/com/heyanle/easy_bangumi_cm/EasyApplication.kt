@@ -1,5 +1,6 @@
 package com.heyanle.easy_bangumi_cm
 
+import com.heyanle.easy_bangumi_cm.base.BaseModule
 import com.heyanle.easy_bangumi_cm.shared.Scheduler
 import com.heyanle.lib.inject.core.Inject
 

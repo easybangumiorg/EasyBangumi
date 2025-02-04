@@ -1,9 +1,14 @@
-package com.heyanle.easy_bangumi_cm.shared.platform
+package com.heyanle.easy_bangumi_cm.base.model.system
 
 import android.util.Log
-import com.heyanle.easy_bangumi_cm.base.model.system.ILogger
 
-actual class PlatformLogger : ILogger {
+
+/**
+ * Created by HeYanLe on 2025/2/4 17:42.
+ * https://github.com/heyanLE
+ */
+
+class AndroidLogger: ILogger {
 
     override fun d(tag: String, msg: String) {
         Log.d(tag, msg)
@@ -28,4 +33,5 @@ actual class PlatformLogger : ILogger {
     override fun wtf(tag: String, msg: String) {
         Log.wtf(tag, msg)
     }
+
 }

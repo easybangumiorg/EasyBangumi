@@ -1,8 +1,8 @@
 package com.heyanle.easy_bangumi_cm.common.plugin.core.utils
 
 import com.heyanle.easy_bangumi_cm.base.utils.CoroutineProvider
-import com.heyanle.easy_bangumi_cm.base.utils.jsonTo
-import com.heyanle.easy_bangumi_cm.base.utils.toJson
+import com.heyanle.easy_bangumi_cm.base.utils.moshi.jsonTo
+import com.heyanle.easy_bangumi_cm.base.utils.moshi.toJson
 import kotlinx.coroutines.withContext
 import java.io.File
 

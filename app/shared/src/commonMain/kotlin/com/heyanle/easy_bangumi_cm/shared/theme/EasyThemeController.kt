@@ -3,10 +3,10 @@ package com.heyanle.easy_bangumi_cm.shared.theme
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
+import com.heyanle.easy_bangumi_cm.base.model.system.IPlatformInformation
 import com.heyanle.easy_bangumi_cm.base.utils.CoroutineProvider
 import com.heyanle.easy_bangumi_cm.base.utils.preference.PreferenceStore
 import com.heyanle.easy_bangumi_cm.base.utils.preference.getEnum
-import com.heyanle.easy_bangumi_cm.shared.platform.PlatformInformation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.SharingStarted
@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.stateIn
  */
 class EasyThemeController(
     private val preferenceStore: PreferenceStore,
-    private val platformInformation: PlatformInformation
+    private val platformInformation: IPlatformInformation
 ) {
 
     companion object {
@@ -76,4 +76,4 @@ class EasyThemeController(
 
 }
 
-expect fun PlatformInformation.isSupportDynamicColor(): Boolean
+expect fun IPlatformInformation.isSupportDynamicColor(): Boolean

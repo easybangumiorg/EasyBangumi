@@ -40,7 +40,7 @@ kotlin {
 
 android {
     namespace = "com.heyanle.lib.unifile"
-    compileSdk = 34
+    compileSdk = 35
     defaultConfig {
         minSdk = 21
     }

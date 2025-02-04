@@ -17,7 +17,11 @@ kotlin {
         }
     }
 
-    jvm("desktop")
+    jvm("desktop"){
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_17)
+        }
+    }
 
     sourceSets {
 
@@ -51,7 +55,7 @@ kotlin {
 
 android {
     namespace = AppConfig.namespace + ".common.theme"
-    compileSdk = 34
+    compileSdk = 35
     defaultConfig {
         minSdk = 21
     }

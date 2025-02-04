@@ -58,7 +58,6 @@ includeModule(":common:plugin:utils", "common/plugin/utils")
 
 includeModule(":common:theme", "common/theme")
 includeModule(":common:i18n", "common/i18n")
-includeModule(":common:platform", "common/platform")
 
 // ----------lib----------
 includeModule(":lib:inject", "lib/inject")

@@ -10,7 +10,7 @@ version = AppConfig.versionName
 
 android {
     namespace =  AppConfig.namespace
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
 
@@ -79,6 +79,8 @@ dependencies {
 
     implementation(projects.app.shared)
     implementation(projects.base.utils)
+    implementation(projects.base.model)
+
     implementation(projects.lib.inject)
     implementation(projects.lib.javascript)
 

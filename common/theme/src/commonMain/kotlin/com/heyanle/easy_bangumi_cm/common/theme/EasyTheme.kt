@@ -19,6 +19,7 @@ expect fun NormalSystemBarColor(
     getNavigationBarDark: (Boolean) -> Boolean = { !it },
 )
 
+@Composable
 expect fun hookColorScheme(
     isDynamic: Boolean,
     isDark: Boolean,

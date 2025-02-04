@@ -50,7 +50,7 @@ actual fun NormalSystemBarColor(
 
 }
 
-
+@Composable
 actual fun hookColorScheme(
     isDynamic: Boolean,
     isDark: Boolean,

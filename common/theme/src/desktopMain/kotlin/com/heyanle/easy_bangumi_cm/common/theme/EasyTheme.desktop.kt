@@ -14,7 +14,7 @@ actual fun NormalSystemBarColor(
     getNavigationBarDark: (Boolean) -> Boolean
 ) { }
 
-
+@Composable
 actual fun hookColorScheme(
     isDynamic: Boolean,
     isDark: Boolean,

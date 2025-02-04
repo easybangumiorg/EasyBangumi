@@ -1,11 +1,12 @@
-package com.heyanle.easy_bangumi_cm.shared.platform
-
-import com.heyanle.easy_bangumi_cm.base.model.system.IPlatformInformation
-import java.util.Properties
-
-actual class PlatformInformation : IPlatformInformation {
+package com.heyanle.easy_bangumi_cm.base.model.system
 
 
+/**
+ * Created by HeYanLe on 2025/2/4 17:50.
+ * https://github.com/heyanLE
+ */
+
+class DesktopPlatformInformation: IPlatformInformation {
     val hostOs: String by lazy {
         val osName = System.getProperty("os.name")
         when {
@@ -76,6 +77,4 @@ actual class PlatformInformation : IPlatformInformation {
     override fun toString(): String {
         return "PlatformInformation(namespace='$namespace', platformName='$platformName', versionCode=$versionCode, versionName='$versionName', isRelease=$isRelease, isAndroid=$isAndroid, isIos=$isIos, isDesktop=$isDesktop)"
     }
-
-
 }

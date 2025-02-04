@@ -1,14 +1,19 @@
-package com.heyanle.easy_bangumi_cm.shared.platform
+package com.heyanle.easy_bangumi_cm.base.model.provider
 
-import com.heyanle.easy_bangumi_cm.base.model.provider.IPathProvider
 import com.heyanle.easy_bangumi_cm.base.model.system.ILogger
 import com.heyanle.lib.inject.core.injectLazy
 import kotlin.io.path.Path
 import kotlin.io.path.pathString
 
-@Suppress("NewApi")
-actual class PlatformPath : IPathProvider {
-    val logger by injectLazy<ILogger>()
+
+/**
+ * Created by HeYanLe on 2025/2/4 17:49.
+ * https://github.com/heyanLE
+ */
+
+class DesktopPathProvider(
+    private val logger: ILogger
+): IPathProvider {
 
     private val cachePathRoot: String by lazy {
         // 1. 先找 jvm 缓存

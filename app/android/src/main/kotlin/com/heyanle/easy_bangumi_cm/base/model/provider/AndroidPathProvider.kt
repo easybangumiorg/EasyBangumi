@@ -1,12 +1,17 @@
-package com.heyanle.easy_bangumi_cm.shared.platform
+package com.heyanle.easy_bangumi_cm.base.model.provider
 
-import android.app.Application
-import com.heyanle.easy_bangumi_cm.base.model.provider.IPathProvider
-import com.heyanle.lib.inject.core.injectLazy
+import android.content.Context
 import java.io.File
 
-actual class PlatformPath : IPathProvider {
-    private val context by injectLazy<Application>()
+
+/**
+ * Created by HeYanLe on 2025/2/4 17:41.
+ * https://github.com/heyanLE
+ */
+
+class AndroidPathProvider(
+    private val context: Context
+): IPathProvider {
 
     override fun getCachePath(type: String): String {
         val root = context.externalCacheDir?:context.cacheDir

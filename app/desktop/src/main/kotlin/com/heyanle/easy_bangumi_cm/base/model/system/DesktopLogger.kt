@@ -1,9 +1,12 @@
-package com.heyanle.easy_bangumi_cm.shared.platform
-
-import com.heyanle.easy_bangumi_cm.base.model.system.ILogger
+package com.heyanle.easy_bangumi_cm.base.model.system
 
 
-actual class PlatformLogger : ILogger {
+/**
+ * Created by HeYanLe on 2025/2/4 17:50.
+ * https://github.com/heyanLE
+ */
+
+class DesktopLogger: ILogger {
     override fun d(tag: String, msg: String) {
         println("[$tag] $msg")
     }
