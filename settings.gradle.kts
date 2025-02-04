@@ -46,7 +46,7 @@ fun includeModule(moduleName: String, dir: String? = null) {
 
 includeModule(":app:android", "app/android")
 includeModule(":app:desktop", "app/desktop")
-includeModule(":app:shared")
+includeModule(":app:shared", "app/shared")
 
 // ----------repository----------
 includeModule(":repository:cartoon", "repository/cartoon")

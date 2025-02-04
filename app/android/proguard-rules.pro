@@ -1,0 +1,1 @@
+-keep class androidx.test.platform.app.InstrumentationRegistry { *; }

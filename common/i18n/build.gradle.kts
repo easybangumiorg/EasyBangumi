@@ -25,6 +25,7 @@ kotlin {
         androidMain.dependencies {
         }
         commonMain.dependencies {
+            implementation(compose.runtime)
             implementation(compose.components.resources)
         }
         desktopMain.dependencies {
