@@ -48,7 +48,7 @@ kotlin {
 }
 
 android {
-    namespace = AppConfig.namespace + ".shared"
+    namespace = AppConfig.namespace + ".repository.cartoon"
     compileSdk = 35
     defaultConfig {
         minSdk = 21
