@@ -1,7 +1,7 @@
 package com.heyanle.easy_bangumi_cm.plugin.api.component.media.home
 
 import com.heyanle.easy_bangumi_cm.plugin.api.base.SourceResult
-import com.heyanle.easy_bangumi_cm.repository.cartoon.CartoonCover
+import com.heyanle.easy_bangumi_cm.model.cartoon.CartoonCover
 
 
 /**

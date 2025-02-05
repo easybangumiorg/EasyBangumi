@@ -2,10 +2,10 @@ package com.heyanle.easy_bangumi_cm.plugin.api.component.media
 
 import com.heyanle.easy_bangumi_cm.plugin.api.component.EventComponent
 import com.heyanle.easy_bangumi_cm.plugin.api.component.MediaComponent
-import com.heyanle.easy_bangumi_cm.repository.cartoon.CartoonDetailed
-import com.heyanle.easy_bangumi_cm.repository.cartoon.Episode
-import com.heyanle.easy_bangumi_cm.repository.cartoon.PlayInfo
-import com.heyanle.easy_bangumi_cm.repository.cartoon.PlayerLine
+import com.heyanle.easy_bangumi_cm.model.cartoon.CartoonDetailed
+import com.heyanle.easy_bangumi_cm.model.cartoon.Episode
+import com.heyanle.easy_bangumi_cm.model.cartoon.PlayInfo
+import com.heyanle.easy_bangumi_cm.model.cartoon.PlayerLine
 
 /**
  * Created by heyanlin on 2024/12/13.

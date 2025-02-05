@@ -78,9 +78,9 @@ class InnerComponentBundle(
     suspend fun load() {
         if (init.compareAndSet(false, true)) {
             val source = getSource()
-            put(StringHelper::class, Inject.get(source.key))
-            put(PreferenceHelper::class, Inject.get(source.key))
-            put(WebViewHelper::class, Inject.get(source.key))
+            put(StringHelper::class, Inject.get(source.manifest))
+            put(PreferenceHelper::class, Inject.get(source.manifest))
+            put(WebViewHelper::class, Inject.get(source.manifest))
 
             sourceClazz.forEach {
                 if (it.isInstance(source)) {

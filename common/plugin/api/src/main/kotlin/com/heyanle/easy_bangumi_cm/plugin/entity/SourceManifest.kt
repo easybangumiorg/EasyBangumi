@@ -17,7 +17,7 @@ data class SourceManifest (
     val author: String? = null,
     val description: String? = null,
     // base64/url/assets
-    val icon: String? = null,
+    val icon: Any? = null,
     val website: String? = null,
     val map: Map<String, String> = emptyMap(),
 

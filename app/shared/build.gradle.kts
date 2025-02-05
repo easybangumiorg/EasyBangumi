@@ -50,13 +50,17 @@ kotlin {
             implementation(projects.lib.inject)
             implementation(projects.lib.unifile)
 
-
-
-            implementation(projects.repository.cartoon)
+            implementation(projects.model.cartoon)
 
             implementation(projects.base.model)
             implementation(projects.base.utils)
             implementation(projects.base.compose)
+
+            implementation(projects.common.plugin.api)
+            implementation(projects.common.plugin.core)
+            implementation(projects.common.plugin.utils)
+
+            implementation(projects.repository.cartoon)
 
             implementation(projects.common.i18n)
         }

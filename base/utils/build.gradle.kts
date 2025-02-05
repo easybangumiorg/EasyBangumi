@@ -31,7 +31,7 @@ kotlin {
             implementation(libs.kotlinx.coroutines.core)
             implementation(projects.base.model)
 
-            implementation(projects.repository.cartoon)
+            implementation(projects.model.cartoon)
 
             implementation(projects.base.model)
 

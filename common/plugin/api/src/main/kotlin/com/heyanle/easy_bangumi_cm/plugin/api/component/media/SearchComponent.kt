@@ -3,7 +3,7 @@ package com.heyanle.easy_bangumi_cm.plugin.api.component.media
 import com.heyanle.easy_bangumi_cm.plugin.api.base.SourceResult
 import com.heyanle.easy_bangumi_cm.plugin.api.component.ComponentBundle
 import com.heyanle.easy_bangumi_cm.plugin.api.component.MediaComponent
-import com.heyanle.easy_bangumi_cm.repository.cartoon.CartoonCover
+import com.heyanle.easy_bangumi_cm.model.cartoon.CartoonCover
 
 
 /**

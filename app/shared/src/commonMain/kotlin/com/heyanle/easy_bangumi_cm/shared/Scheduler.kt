@@ -1,6 +1,10 @@
 package com.heyanle.easy_bangumi_cm.shared
 
-import com.heyanle.easy_bangumi_cm.shared.cartoon.CartoonModule
+
+import com.heyanle.easy_bangumi_cm.common.plugin.PluginModule
+import com.heyanle.easy_bangumi_cm.repository.cartoon.CartoonRepositoryModule
+import com.heyanle.easy_bangumi_cm.shared.plugin.PluginConfigProvider
+import com.heyanle.lib.inject.api.addSingletonFactory
 import com.heyanle.lib.inject.core.Inject
 
 /**
@@ -12,7 +16,12 @@ object Scheduler {
 
     fun onInit() {
         SharedModule().registerWith(Inject)
-        CartoonModule().registerWith(Inject)
+        CartoonRepositoryModule().registerWith(Inject)
+
+        Inject.addSingletonFactory {
+            PluginConfigProvider()
+        }
+        PluginModule(true)
     }
 
     fun onSplashPageLaunch(){

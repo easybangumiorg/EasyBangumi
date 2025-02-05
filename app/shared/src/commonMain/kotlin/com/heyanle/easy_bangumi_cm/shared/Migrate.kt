@@ -16,11 +16,6 @@ import java.net.URI
  */
 object Migrate {
 
-    // Room Migrate
-    val cartoonDatabaseMigration = listOf<Migration>(
-
-    )
-
     private val _isMigration = MutableStateFlow<Boolean>(true)
     val isMigration = _isMigration.asStateFlow()
 

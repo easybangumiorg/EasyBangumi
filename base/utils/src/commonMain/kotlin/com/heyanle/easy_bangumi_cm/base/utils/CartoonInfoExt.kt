@@ -1,6 +1,6 @@
 package com.heyanle.easy_bangumi_cm.base.utils
 
-import com.heyanle.easy_bangumi_cm.repository.cartoon.CartoonInfo
+import com.heyanle.easy_bangumi_cm.model.cartoon.CartoonInfo
 import com.heyanle.easy_bangumi_cm.base.utils.string.getMatchReg
 
 /**
