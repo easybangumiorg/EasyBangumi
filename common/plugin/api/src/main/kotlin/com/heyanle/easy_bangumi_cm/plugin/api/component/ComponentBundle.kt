@@ -13,8 +13,8 @@ interface ComponentBundle {
 
     fun getSource(): Source
 
-    fun <T: Component> getComponent(clazz: KClass<T>): T? = getComponent(clazz.java)
+    fun <T: Component> getComponent(clazz: KClass<T>): T?
 
-    fun <T: Component> getComponent(clazz: Class<T>): T?
+
 
 }

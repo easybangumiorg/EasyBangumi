@@ -14,11 +14,14 @@ java {
 dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.io)
+    implementation(libs.kotlin.reflect)
 
     implementation(libs.zip4j)
 
     implementation(projects.repository.cartoon)
+
     implementation(projects.common.plugin.api)
+    implementation(projects.common.plugin.utils)
 
     implementation(projects.lib.unifile)
     implementation(projects.lib.inject)
