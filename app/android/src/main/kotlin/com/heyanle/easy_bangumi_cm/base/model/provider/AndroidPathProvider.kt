@@ -1,6 +1,7 @@
 package com.heyanle.easy_bangumi_cm.base.model.provider
 
 import android.content.Context
+import com.heyanle.easy_bangumi_cm.base.service.provider.IPathProvider
 import java.io.File
 
 

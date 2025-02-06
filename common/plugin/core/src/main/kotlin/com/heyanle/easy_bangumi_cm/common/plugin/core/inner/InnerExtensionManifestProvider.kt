@@ -1,6 +1,6 @@
 package com.heyanle.easy_bangumi_cm.common.plugin.core.inner
 
-import com.heyanle.easy_bangumi_cm.base.model.provider.IPathProvider
+import com.heyanle.easy_bangumi_cm.base.service.provider.IPathProvider
 import com.heyanle.easy_bangumi_cm.plugin.entity.ExtensionManifest
 
 

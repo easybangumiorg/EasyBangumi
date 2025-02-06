@@ -1,8 +1,8 @@
 package com.heyanle.easy_bangumi_cm.shared
 
-import com.heyanle.easy_bangumi_cm.base.model.provider.IPathProvider
-import com.heyanle.easy_bangumi_cm.base.model.system.ILogger
-import com.heyanle.easy_bangumi_cm.base.model.system.IPlatformInformation
+import com.heyanle.easy_bangumi_cm.base.service.provider.IPathProvider
+import com.heyanle.easy_bangumi_cm.base.service.system.ILogger
+import com.heyanle.easy_bangumi_cm.base.service.system.IPlatformInformation
 import com.heyanle.easy_bangumi_cm.base.utils.moshi.MoshiArrayListJsonAdapter
 import com.heyanle.lib.inject.api.InjectModule
 import com.heyanle.lib.inject.api.InjectScope

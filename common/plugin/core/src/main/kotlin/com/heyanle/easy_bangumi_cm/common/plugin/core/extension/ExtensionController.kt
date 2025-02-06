@@ -1,6 +1,6 @@
 package com.heyanle.easy_bangumi_cm.common.plugin.core.extension
 
-import com.heyanle.easy_bangumi_cm.base.model.provider.IPathProvider
+import com.heyanle.easy_bangumi_cm.base.service.provider.IPathProvider
 import com.heyanle.easy_bangumi_cm.base.utils.CoroutineProvider
 import com.heyanle.easy_bangumi_cm.common.plugin.core.entity.ExtensionInfo
 import com.heyanle.easy_bangumi_cm.common.plugin.core.extension.provider.JSFileExtensionProvider

@@ -56,16 +56,13 @@ includeModule(":common:plugin:utils", "common/plugin/utils")
 includeModule(":common:theme", "common/theme")
 includeModule(":common:i18n", "common/i18n")
 
-// ----------repository----------
-includeModule(":repository:cartoon", "repository/cartoon")
+includeModule(":common:database", "common/database")
 
 // ----------base----------
 includeModule(":base:compose", "base/compose")
 includeModule(":base:model", "base/model")
+includeModule(":base:service", "base/service")
 includeModule(":base:utils", "base/utils")
-
-// ----------model----------
-includeModule(":model:cartoon", "model/cartoon")
 
 // ----------lib----------
 includeModule(":lib:inject", "lib/inject")

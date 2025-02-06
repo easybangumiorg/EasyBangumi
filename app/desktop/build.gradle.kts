@@ -26,7 +26,7 @@ dependencies {
     implementation(projects.app.shared)
     implementation(projects.lib.inject)
 
-    implementation(projects.base.model)
+    implementation(projects.base.service)
 
 
 }

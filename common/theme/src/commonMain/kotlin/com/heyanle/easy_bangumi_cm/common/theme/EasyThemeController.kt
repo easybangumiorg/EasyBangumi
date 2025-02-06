@@ -3,7 +3,7 @@ package com.heyanle.easy_bangumi_cm.common.theme
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
-import com.heyanle.easy_bangumi_cm.base.model.system.IPlatformInformation
+import com.heyanle.easy_bangumi_cm.base.service.system.IPlatformInformation
 import com.heyanle.easy_bangumi_cm.base.utils.CoroutineProvider
 import com.heyanle.easy_bangumi_cm.base.utils.preference.PreferenceStore
 import com.heyanle.easy_bangumi_cm.base.utils.preference.getEnum

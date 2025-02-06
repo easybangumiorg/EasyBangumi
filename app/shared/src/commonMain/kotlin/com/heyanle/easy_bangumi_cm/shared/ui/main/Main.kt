@@ -21,9 +21,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
-import com.heyanle.easy_bangumi_cm.base.model.provider.IPathProvider
-import com.heyanle.easy_bangumi_cm.base.model.system.ILogger
-import com.heyanle.easy_bangumi_cm.base.model.system.IPlatformInformation
+import com.heyanle.easy_bangumi_cm.base.service.provider.IPathProvider
+import com.heyanle.easy_bangumi_cm.base.service.system.ILogger
+import com.heyanle.easy_bangumi_cm.base.service.system.IPlatformInformation
 import com.heyanle.easy_bangumi_cm.shared.ui.main.home.Home
 import com.heyanle.lib.inject.api.get
 import com.heyanle.lib.inject.core.Inject

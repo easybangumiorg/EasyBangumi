@@ -2,11 +2,11 @@ package com.heyanle.easy_bangumi_cm.base
 
 import android.app.Application
 import com.heyanle.easy_bangumi_cm.base.model.provider.AndroidPathProvider
-import com.heyanle.easy_bangumi_cm.base.model.provider.IPathProvider
+import com.heyanle.easy_bangumi_cm.base.service.provider.IPathProvider
 import com.heyanle.easy_bangumi_cm.base.model.system.AndroidLogger
 import com.heyanle.easy_bangumi_cm.base.model.system.AndroidPlatformInformation
-import com.heyanle.easy_bangumi_cm.base.model.system.ILogger
-import com.heyanle.easy_bangumi_cm.base.model.system.IPlatformInformation
+import com.heyanle.easy_bangumi_cm.base.service.system.ILogger
+import com.heyanle.easy_bangumi_cm.base.service.system.IPlatformInformation
 import com.heyanle.lib.inject.api.InjectModule
 import com.heyanle.lib.inject.api.InjectScope
 import com.heyanle.lib.inject.api.addAlias

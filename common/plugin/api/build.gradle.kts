@@ -13,6 +13,6 @@ java {
 
 dependencies {
     implementation(projects.lib.inject)
-    implementation(projects.model.cartoon)
+    implementation(projects.base.model)
     implementation(libs.kotlinx.coroutines.core)
 }

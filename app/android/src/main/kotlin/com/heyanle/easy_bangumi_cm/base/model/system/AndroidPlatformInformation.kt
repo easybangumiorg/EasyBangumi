@@ -2,6 +2,7 @@ package com.heyanle.easy_bangumi_cm.base.model.system
 
 import android.content.Context
 import com.heyanle.easy_bangumi_cm.BuildConfig
+import com.heyanle.easy_bangumi_cm.base.service.system.IPlatformInformation
 
 
 /**

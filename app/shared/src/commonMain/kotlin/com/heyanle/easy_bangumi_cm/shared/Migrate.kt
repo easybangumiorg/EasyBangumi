@@ -1,8 +1,8 @@
 package com.heyanle.easy_bangumi_cm.shared
 
 import androidx.room.migration.Migration
-import com.heyanle.easy_bangumi_cm.base.model.provider.IPathProvider
-import com.heyanle.easy_bangumi_cm.base.model.system.IPlatformInformation
+import com.heyanle.easy_bangumi_cm.base.service.provider.IPathProvider
+import com.heyanle.easy_bangumi_cm.base.service.system.IPlatformInformation
 import com.heyanle.lib.inject.api.get
 import com.heyanle.lib.inject.core.Inject
 import com.heyanle.lib.unifile.UniFileFactory

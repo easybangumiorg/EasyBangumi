@@ -39,7 +39,7 @@ kotlin {
 
             implementation(projects.common.i18n)
 
-            implementation(projects.base.model)
+            implementation(projects.base.service)
             implementation(projects.base.utils)
 
             implementation(projects.lib.inject)

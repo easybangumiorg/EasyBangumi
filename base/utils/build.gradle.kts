@@ -29,11 +29,11 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.moshi)
             implementation(libs.kotlinx.coroutines.core)
-            implementation(projects.base.model)
-
-            implementation(projects.model.cartoon)
+            implementation(projects.base.service)
 
             implementation(projects.base.model)
+
+            implementation(projects.base.service)
 
             implementation(projects.lib.inject)
             implementation(projects.lib.unifile)

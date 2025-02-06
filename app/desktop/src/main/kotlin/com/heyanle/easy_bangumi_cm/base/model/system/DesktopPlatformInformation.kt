@@ -1,5 +1,7 @@
 package com.heyanle.easy_bangumi_cm.base.model.system
 
+import com.heyanle.easy_bangumi_cm.base.service.system.IPlatformInformation
+
 
 /**
  * Created by HeYanLe on 2025/2/4 17:50.

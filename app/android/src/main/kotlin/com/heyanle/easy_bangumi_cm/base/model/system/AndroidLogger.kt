@@ -1,6 +1,7 @@
 package com.heyanle.easy_bangumi_cm.base.model.system
 
 import android.util.Log
+import com.heyanle.easy_bangumi_cm.base.service.system.ILogger
 
 
 /**

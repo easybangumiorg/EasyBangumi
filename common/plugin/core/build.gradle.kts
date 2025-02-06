@@ -18,7 +18,7 @@ dependencies {
 
     implementation(libs.zip4j)
 
-    implementation(projects.model.cartoon)
+    implementation(projects.base.model)
 
     implementation(projects.common.plugin.api)
     implementation(projects.common.plugin.utils)
@@ -29,5 +29,5 @@ dependencies {
     implementation(projects.lib.inject)
 
     implementation(projects.base.utils)
-    implementation(projects.base.model)
+    implementation(projects.base.service)
 }

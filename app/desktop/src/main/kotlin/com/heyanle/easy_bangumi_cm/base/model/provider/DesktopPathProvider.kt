@@ -1,6 +1,7 @@
 package com.heyanle.easy_bangumi_cm.base.model.provider
 
-import com.heyanle.easy_bangumi_cm.base.model.system.ILogger
+import com.heyanle.easy_bangumi_cm.base.service.system.ILogger
+import com.heyanle.easy_bangumi_cm.base.service.provider.IPathProvider
 import com.heyanle.lib.inject.core.injectLazy
 import kotlin.io.path.Path
 import kotlin.io.path.pathString

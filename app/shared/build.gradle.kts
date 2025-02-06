@@ -50,9 +50,9 @@ kotlin {
             implementation(projects.lib.inject)
             implementation(projects.lib.unifile)
 
-            implementation(projects.model.cartoon)
-
             implementation(projects.base.model)
+
+            implementation(projects.base.service)
             implementation(projects.base.utils)
             implementation(projects.base.compose)
 
@@ -60,7 +60,7 @@ kotlin {
             implementation(projects.common.plugin.core)
             implementation(projects.common.plugin.utils)
 
-            implementation(projects.repository.cartoon)
+            implementation(projects.common.database)
 
             implementation(projects.common.i18n)
         }
