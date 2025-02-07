@@ -62,7 +62,7 @@ kotlin {
 
             implementation(projects.common.database)
 
-            implementation(projects.common.i18n)
+            implementation(projects.common.resources)
         }
         desktopMain.dependencies {
             implementation(libs.moshi)

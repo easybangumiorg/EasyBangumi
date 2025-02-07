@@ -23,7 +23,7 @@ dependencies {
     implementation(projects.common.plugin.api)
     implementation(projects.common.plugin.utils)
 
-    implementation(projects.common.i18n)
+    implementation(projects.common.resources)
 
     implementation(projects.lib.unifile)
     implementation(projects.lib.inject)

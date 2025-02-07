@@ -1,7 +1,7 @@
 package com.heyanle.easy_bangumi_cm.common.plugin.core.entity
 
-import com.heyanle.easy_bangumi_cm.plugin.entity.ExtensionManifest
-import com.heyanle.easy_bangumi_cm.plugin.entity.SourceManifest
+import com.heyanle.easy_bangumi_cm.plugin.api.extension.ExtensionManifest
+import com.heyanle.easy_bangumi_cm.plugin.api.source.SourceManifest
 
 /**
  * Created by heyanlin on 2024/12/13.

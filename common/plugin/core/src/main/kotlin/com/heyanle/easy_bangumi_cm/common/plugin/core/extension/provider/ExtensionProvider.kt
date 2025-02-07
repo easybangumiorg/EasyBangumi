@@ -1,7 +1,7 @@
 package com.heyanle.easy_bangumi_cm.common.plugin.core.extension.provider
 
 import com.heyanle.easy_bangumi_cm.base.utils.DataState
-import com.heyanle.easy_bangumi_cm.plugin.entity.ExtensionManifest
+import com.heyanle.easy_bangumi_cm.plugin.api.extension.ExtensionManifest
 import kotlinx.coroutines.flow.StateFlow
 import java.io.File
 

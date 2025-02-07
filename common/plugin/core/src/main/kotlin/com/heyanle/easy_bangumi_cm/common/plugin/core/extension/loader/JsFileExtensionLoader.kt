@@ -3,8 +3,8 @@ package com.heyanle.easy_bangumi_cm.common.plugin.core.extension.loader
 import com.heyanle.easy_bangumi_cm.plugin.api.source.Source
 import com.heyanle.easy_bangumi_cm.common.plugin.core.entity.ExtensionInfo
 import com.heyanle.easy_bangumi_cm.common.plugin.core.utils.JsHelper
-import com.heyanle.easy_bangumi_cm.plugin.entity.ExtensionManifest
-import com.heyanle.easy_bangumi_cm.plugin.entity.SourceManifest
+import com.heyanle.easy_bangumi_cm.plugin.api.extension.ExtensionManifest
+import com.heyanle.easy_bangumi_cm.plugin.api.source.SourceManifest
 import java.io.File
 
 /**
@@ -35,10 +35,11 @@ class JsFileExtensionLoader: ExtensionLoader {
             }
             isCry to manifest
         }
+        val label = manifest["label"] ?: return null
         return SourceManifest(
             id = manifest["id"] ?: return null,
             type = manifest["type"] ?: Source.TYPE_MEDIA,
-            label = manifest["label"] ?: return null,
+            label = { label },
             version = manifest["version"]?.toIntOrNull() ?: 0,
             extensionManifest = extensionManifest,
             author = manifest["author"] ?: "",

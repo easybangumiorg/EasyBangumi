@@ -4,7 +4,7 @@ import com.heyanle.easy_bangumi_cm.base.utils.CoroutineProvider
 import com.heyanle.easy_bangumi_cm.base.utils.DataState
 import com.heyanle.easy_bangumi_cm.base.utils.file_helper.JsonlFileHelper
 import com.heyanle.easy_bangumi_cm.common.plugin.core.utils.FolderIndex
-import com.heyanle.easy_bangumi_cm.plugin.entity.ExtensionManifest
+import com.heyanle.easy_bangumi_cm.plugin.api.extension.ExtensionManifest
 import com.heyanle.lib.unifile.UniFileFactory
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.update

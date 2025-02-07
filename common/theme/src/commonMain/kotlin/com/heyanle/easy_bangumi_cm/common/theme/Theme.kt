@@ -7,10 +7,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import com.heyanle.easy_bangumi_cm.common.i18n.Res
-import com.heyanle.easy_bangumi_cm.common.i18n.*
+import com.heyanle.easy_bangumi_cm.base.utils.resources.ResourceOr
+import com.heyanle.easy_bangumi_cm.common.resources.Res
+import com.heyanle.easy_bangumi_cm.common.resources.*
 import com.heyanle.easy_bangumi_cm.common.theme.colors.*
-import org.jetbrains.compose.resources.StringResource
 
 
 /**
@@ -34,7 +34,7 @@ fun EasyThemeMode.getColorScheme(isDark: Boolean): ColorScheme {
 enum class EasyThemeMode(
     val darkColorScheme: ColorScheme,
     val lightColorScheme: ColorScheme,
-    val titleResId: StringResource,
+    val titleResId: ResourceOr,
     val darkElevationOverlay: Color = Color.Unspecified,
     val lightElevationOverlay: Color = Color.Unspecified,
 ) {
@@ -42,19 +42,19 @@ enum class EasyThemeMode(
     Default(
         DefaultColor.Dark.colorScheme,
         DefaultColor.Light.colorScheme,
-        Res.string.theme_default
+        Res.strings.theme_default
     ),
 
     Greenapple(
         GreenappleColor.Dark.colorScheme,
         GreenappleColor.Light.colorScheme,
-        Res.string.theme_greenapple
+        Res.strings.theme_greenapple
     ),
 
     Midnightdusk(
         MidnightduskColor.Dark.colorScheme,
         MidnightduskColor.Light.colorScheme,
-        Res.string.theme_midnightdusk,
+        Res.strings.theme_midnightdusk,
         MidnightduskColor.Dark.elevationOverlay,
         MidnightduskColor.Light.elevationOverlay,
     ),
@@ -62,7 +62,7 @@ enum class EasyThemeMode(
     Strawberry(
         StrawberryColor.Dark.colorScheme,
         StrawberryColor.Light.colorScheme,
-        Res.string.theme_strawberry,
+        Res.strings.theme_strawberry,
     ),
 
 
@@ -70,7 +70,7 @@ enum class EasyThemeMode(
     Tako(
         TakoColor.Dark.colorScheme,
         TakoColor.Light.colorScheme,
-        Res.string.theme_tako,
+        Res.strings.theme_tako,
         TakoColor.Dark.elevationOverlay,
         TakoColor.Light.elevationOverlay
     ),
@@ -78,7 +78,7 @@ enum class EasyThemeMode(
     Tealturqoise(
         TealturqoiseColor.Dark.colorScheme,
         TealturqoiseColor.Light.colorScheme,
-        Res.string.theme_tealturqoise,
+        Res.strings.theme_tealturqoise,
         TealturqoiseColor.Dark.elevationOverlay,
         TealturqoiseColor.Light.elevationOverlay
     )

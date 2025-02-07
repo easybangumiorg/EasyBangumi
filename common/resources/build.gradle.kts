@@ -4,8 +4,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(builds.plugins.kotlinMultiplatform)
     alias(builds.plugins.androidLibrary)
-    alias(builds.plugins.kotlinCompose)
-    alias(builds.plugins.compose)
+    alias(libs.plugins.mokoResources)
 }
 
 kotlin {
@@ -29,8 +28,7 @@ kotlin {
         androidMain.dependencies {
         }
         commonMain.dependencies {
-            implementation(compose.runtime)
-            implementation(compose.components.resources)
+            api(libs.moko.resources)
         }
         desktopMain.dependencies {
 
@@ -39,8 +37,13 @@ kotlin {
     }
 }
 
+multiplatformResources {
+    resourcesPackage.set(AppConfig.namespace + ".common.resources") // required
+    resourcesClassName.set("Res") // optional, default MR
+}
+
 android {
-    namespace = AppConfig.namespace + ".common.i18n"
+    namespace = AppConfig.namespace + ".common.resources"
     compileSdk = 35
     defaultConfig {
         minSdk = 21
@@ -51,8 +54,8 @@ android {
     }
 }
 
-compose.resources {
-    publicResClass = true
-    packageOfResClass = AppConfig.namespace + ".common.i18n"
-    generateResClass = always
-}
+//compose.resources {
+//    publicResClass = true
+//    packageOfResClass = AppConfig.namespace + ".common.resources"
+//    generateResClass = always
+//}

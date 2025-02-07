@@ -8,7 +8,7 @@ import com.heyanle.easy_bangumi_cm.common.plugin.core.helper.WebViewHelperImpl
 import com.heyanle.easy_bangumi_cm.common.plugin.core.inner.InnerExtensionManifestProvider
 import com.heyanle.easy_bangumi_cm.common.plugin.core.source.SourceConfigController
 import com.heyanle.easy_bangumi_cm.common.plugin.core.source.SourceController
-import com.heyanle.easy_bangumi_cm.plugin.entity.SourceManifest
+import com.heyanle.easy_bangumi_cm.plugin.api.source.SourceManifest
 import com.heyanle.easy_bangumi_cm.plugin.utils.PreferenceHelper
 import com.heyanle.easy_bangumi_cm.plugin.utils.StringHelper
 import com.heyanle.easy_bangumi_cm.plugin.utils.WebViewHelper

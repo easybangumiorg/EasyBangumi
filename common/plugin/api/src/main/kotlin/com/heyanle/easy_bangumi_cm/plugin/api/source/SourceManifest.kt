@@ -1,4 +1,7 @@
-package com.heyanle.easy_bangumi_cm.plugin.entity
+package com.heyanle.easy_bangumi_cm.plugin.api.source
+
+import com.heyanle.easy_bangumi_cm.base.utils.resources.ResourceOr
+import com.heyanle.easy_bangumi_cm.plugin.api.extension.ExtensionManifest
 
 
 /**
@@ -10,14 +13,14 @@ package com.heyanle.easy_bangumi_cm.plugin.entity
 data class SourceManifest (
     val id: String,
     val type: String,
-    val label: String,
+    val label: ResourceOr,
     val version: Int,
     val extensionManifest: ExtensionManifest,
 
     val author: String? = null,
     val description: String? = null,
-    // base64/url/assets
-    val icon: Any? = null,
+    // base64/url/assets/DrawableResources
+    val icon: ResourceOr? = null,
     val website: String? = null,
     val map: Map<String, String> = emptyMap(),
 

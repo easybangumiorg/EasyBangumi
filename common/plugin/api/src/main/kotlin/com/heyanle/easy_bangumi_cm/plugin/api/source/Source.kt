@@ -1,7 +1,5 @@
 package com.heyanle.easy_bangumi_cm.plugin.api.source
 
-import com.heyanle.easy_bangumi_cm.plugin.entity.SourceManifest
-
 
 /**
  * Created by HeYanLe on 2024/12/8 21:00.

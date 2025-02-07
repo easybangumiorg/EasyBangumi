@@ -2,7 +2,7 @@ package com.heyanle.easy_bangumi_cm.common.plugin.core.source.loader
 
 import com.heyanle.easy_bangumi_cm.common.plugin.core.entity.SourceConfig
 import com.heyanle.easy_bangumi_cm.common.plugin.core.entity.SourceInfo
-import com.heyanle.easy_bangumi_cm.plugin.entity.SourceManifest
+import com.heyanle.easy_bangumi_cm.plugin.api.source.SourceManifest
 
 /**
  * Created by heyanlin on 2024/12/20.

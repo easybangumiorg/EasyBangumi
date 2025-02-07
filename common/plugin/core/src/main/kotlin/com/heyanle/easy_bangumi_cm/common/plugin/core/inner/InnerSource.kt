@@ -1,8 +1,9 @@
 package com.heyanle.easy_bangumi_cm.common.plugin.core.inner
 
+import com.heyanle.easy_bangumi_cm.base.utils.resources.ResourceOr
 import com.heyanle.easy_bangumi_cm.plugin.api.component.Component
 import com.heyanle.easy_bangumi_cm.plugin.api.source.Source
-import com.heyanle.easy_bangumi_cm.plugin.entity.SourceManifest
+import com.heyanle.easy_bangumi_cm.plugin.api.source.SourceManifest
 import com.heyanle.lib.inject.core.Inject
 import kotlin.reflect.KClass
 
@@ -14,8 +15,8 @@ abstract class InnerSource: Source {
     private val innerExtensionManifestProvider: InnerExtensionManifestProvider by Inject.injectLazy()
 
     abstract val id: String
-    abstract val label: String
-    abstract val icon: Any?
+    abstract val label: ResourceOr
+    abstract val icon: ResourceOr?
     abstract val version: Int
 
     open val type = Source.TYPE_MEDIA
@@ -23,7 +24,7 @@ abstract class InnerSource: Source {
     open val website: String? = null
     open val author: String = "HeYanLe"
 
-    abstract val componentClazz: List<KClass<Component>>
+    abstract val componentClazz: List<KClass<out Component>>
 
     override val manifest: SourceManifest = SourceManifest(
         id = id,

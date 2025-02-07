@@ -5,7 +5,7 @@ import com.heyanle.easy_bangumi_cm.base.utils.CoroutineProvider
 import com.heyanle.easy_bangumi_cm.common.plugin.core.entity.ExtensionInfo
 import com.heyanle.easy_bangumi_cm.common.plugin.core.extension.provider.JSFileExtensionProvider
 import com.heyanle.easy_bangumi_cm.common.plugin.core.extension.provider.PkgExtensionProvider
-import com.heyanle.easy_bangumi_cm.plugin.entity.ExtensionManifest
+import com.heyanle.easy_bangumi_cm.plugin.api.extension.ExtensionManifest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.*

@@ -44,6 +44,7 @@ fun includeModule(moduleName: String, dir: String? = null) {
     }
 }
 
+// ----------app----------
 includeModule(":app:android", "app/android")
 includeModule(":app:desktop", "app/desktop")
 includeModule(":app:shared", "app/shared")
@@ -52,9 +53,10 @@ includeModule(":app:shared", "app/shared")
 includeModule(":common:plugin:api", "common/plugin/api")
 includeModule(":common:plugin:core", "common/plugin/core")
 includeModule(":common:plugin:utils", "common/plugin/utils")
+includeModule(":common:plugin:inner", "common/plugin/inner")
 
 includeModule(":common:theme", "common/theme")
-includeModule(":common:i18n", "common/i18n")
+includeModule(":common:resources", "common/resources")
 
 includeModule(":common:database", "common/database")
 

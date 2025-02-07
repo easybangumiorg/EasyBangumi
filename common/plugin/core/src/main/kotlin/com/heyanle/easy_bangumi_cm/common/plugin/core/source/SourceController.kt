@@ -2,7 +2,6 @@ package com.heyanle.easy_bangumi_cm.common.plugin.core.source
 
 import com.heyanle.easy_bangumi_cm.base.utils.CoroutineProvider
 import com.heyanle.easy_bangumi_cm.common.plugin.core.EasyPluginConfigProvider
-import com.heyanle.easy_bangumi_cm.common.plugin.core.InnerSourceProvider
 import com.heyanle.easy_bangumi_cm.common.plugin.core.entity.ExtensionInfo
 import com.heyanle.easy_bangumi_cm.common.plugin.core.entity.SourceConfig
 import com.heyanle.easy_bangumi_cm.common.plugin.core.entity.SourceInfo
@@ -11,7 +10,7 @@ import com.heyanle.easy_bangumi_cm.common.plugin.core.inner.InnerSource
 import com.heyanle.easy_bangumi_cm.common.plugin.core.source.loader.InnerSourceLoader
 import com.heyanle.easy_bangumi_cm.common.plugin.core.source.loader.JSCryLoader
 import com.heyanle.easy_bangumi_cm.common.plugin.core.source.loader.JSSourceLoader
-import com.heyanle.easy_bangumi_cm.plugin.entity.SourceManifest
+import com.heyanle.easy_bangumi_cm.plugin.api.source.SourceManifest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async

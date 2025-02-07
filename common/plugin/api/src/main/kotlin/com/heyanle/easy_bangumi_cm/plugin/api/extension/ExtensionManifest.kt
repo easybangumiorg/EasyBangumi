@@ -1,4 +1,6 @@
-package com.heyanle.easy_bangumi_cm.plugin.entity
+package com.heyanle.easy_bangumi_cm.plugin.api.extension
+
+import com.heyanle.easy_bangumi_cm.base.utils.resources.ResourceOr
 
 /**
  * 拓展清单信息，拓展加载的材料
@@ -11,9 +13,9 @@ data class ExtensionManifest (
     val errorMsg: String? = null,   // 错误信息
 
     // 元数据
-    val label: String = "",
-    val readme: String? = null,
-    val author: String? = null,
+    val label: ResourceOr = "",
+    val readme: ResourceOr? = null,
+    val author: ResourceOr? = null,
     val icon: Any? = null,
     val versionCode: Long = 0,
     val libVersion: Int = 0,        // 纯纯看番拓展引擎版本

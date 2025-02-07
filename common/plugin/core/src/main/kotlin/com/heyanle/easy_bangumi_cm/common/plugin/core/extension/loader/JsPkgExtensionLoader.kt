@@ -1,7 +1,7 @@
 package com.heyanle.easy_bangumi_cm.common.plugin.core.extension.loader
 
 import com.heyanle.easy_bangumi_cm.common.plugin.core.entity.ExtensionInfo
-import com.heyanle.easy_bangumi_cm.plugin.entity.ExtensionManifest
+import com.heyanle.easy_bangumi_cm.plugin.api.extension.ExtensionManifest
 import java.io.File
 
 /**

@@ -1,7 +1,7 @@
 package com.heyanle.easy_bangumi_cm.common.plugin.core.helper
 
 import com.heyanle.easy_bangumi_cm.base.utils.HeKV
-import com.heyanle.easy_bangumi_cm.plugin.entity.SourceManifest
+import com.heyanle.easy_bangumi_cm.plugin.api.source.SourceManifest
 import com.heyanle.easy_bangumi_cm.plugin.utils.PreferenceHelper
 import kotlin.io.path.Path
 import kotlin.io.path.absolutePathString

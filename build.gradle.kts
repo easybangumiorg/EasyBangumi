@@ -11,3 +11,13 @@ plugins {
     alias(builds.plugins.kotlinJvm) apply false
     alias(libs.plugins.kotlinxSerialization) apply false
 }
+
+buildscript {
+    repositories {
+        gradlePluginPortal()
+    }
+
+    dependencies {
+        classpath(libs.moko.resources.generator)
+    }
+}

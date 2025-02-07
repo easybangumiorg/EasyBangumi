@@ -31,13 +31,12 @@ kotlin {
             implementation(libs.androidx.core.ktx)
         }
         commonMain.dependencies {
-            implementation(compose.components.resources)
             implementation(compose.ui)
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)
 
-            implementation(projects.common.i18n)
+            implementation(projects.common.resources)
 
             implementation(projects.base.service)
             implementation(projects.base.utils)
