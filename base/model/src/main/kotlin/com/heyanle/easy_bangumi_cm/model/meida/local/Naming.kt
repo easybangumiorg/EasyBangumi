@@ -1,6 +1,7 @@
 package com.heyanle.easy_bangumi_cm.model.meida.local
 
 import com.heyanle.easy_bangumi_cm.model.meida.local.entities.ResolutionTypeRule
+import com.heyanle.easy_bangumi_cm.model.meida.local.entities.StackedFileRule
 import com.heyanle.easy_bangumi_cm.model.meida.local.entities.StubType
 import com.heyanle.easy_bangumi_cm.model.meida.local.entities.StubTypeRule
 
@@ -290,4 +291,8 @@ var resolutionType = arrayOf(
         width = 2048,
         height = 1080
     ),
+)
+
+val videoStackedFileRules = arrayOf(
+    StackedFileRule("^(?<filename>.*?)(?:(?<=[\\]\\)\\}])|[ _.-]+)[\\(\\[]?(?<parttype>cd|dvd|part|pt|dis[ck])[ _.-]*(?<number>[0-9]+)[\\)\\]]?(?:\\.[^.]+)?$")
 )
