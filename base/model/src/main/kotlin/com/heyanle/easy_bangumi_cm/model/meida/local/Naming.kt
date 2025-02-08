@@ -225,7 +225,6 @@ var stubTypes = arrayOf(
         type = StubType.TV,
         token = "DSR"
     ),
-    // TODO: web相关的存档
     StubTypeRule(
         type = StubType.WEB,
         token = "WEB"
