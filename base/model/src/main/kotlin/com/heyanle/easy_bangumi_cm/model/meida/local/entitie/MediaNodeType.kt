@@ -5,4 +5,5 @@ enum class MediaNodeType {
     PROJECT,
     SUBPROJECT,
     RESOURCE,
+    EMPTY
 }

@@ -3,7 +3,7 @@ package com.heyanle.easy_bangumi_cm.model.meida.local.model
 import java.time.DateTimeException
 
 
-/// 文件系统节点，记录来自文件系统的关于库的原始信息
+/// 文件系统节点，记录来自文件系统的关于库的原始信息，不参与构建媒体库节点树，但是作为构建媒体库节点树的依据
 data class FileSystemNode(
     val exist: Boolean,
     val name: String,

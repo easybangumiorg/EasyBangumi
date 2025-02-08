@@ -6,9 +6,10 @@ import com.heyanle.easy_bangumi_cm.model.meida.local.entitie.MediaFileNodeType
 open class MediaFileNode(
     val path: String,
     val name: String,
-    val type: MediaFileNodeType,
+    val type: MediaFileNodeType = MediaFileNodeType.UNKNOWN,
 ) {
     override fun toString(): String {
         return "MediaFileNode(path='$path', type=$type, name='$name')"
     }
+
 }
