@@ -1,9 +1,9 @@
 package com.heyanle.easy_bangumi_cm.model.meida.local
 
-import com.heyanle.easy_bangumi_cm.model.meida.local.entities.ResolutionTypeRule
-import com.heyanle.easy_bangumi_cm.model.meida.local.entities.StackedFileRule
-import com.heyanle.easy_bangumi_cm.model.meida.local.entities.StubType
-import com.heyanle.easy_bangumi_cm.model.meida.local.entities.StubTypeRule
+import com.heyanle.easy_bangumi_cm.model.meida.local.entitie.ResolutionRule
+import com.heyanle.easy_bangumi_cm.model.meida.local.entitie.StackedFileRule
+import com.heyanle.easy_bangumi_cm.model.meida.local.entitie.StubType
+import com.heyanle.easy_bangumi_cm.model.meida.local.entitie.StubTypeRule
 
 // 此处来自 Emby.Naming.NamingOptions
 
@@ -241,52 +241,52 @@ var stubTypes = arrayOf(
 )
 
 var resolutionType = arrayOf(
-    ResolutionTypeRule(
+    ResolutionRule(
         token = "1080p",
         width = 1920,
         height = 1080
     ),
-    ResolutionTypeRule(
+    ResolutionRule(
         token = "720p",
         width = 1280,
         height = 720
     ),
-    ResolutionTypeRule(
+    ResolutionRule(
         token = "480p",
         width = 854,
         height = 480
     ),
-    ResolutionTypeRule(
+    ResolutionRule(
         token = "360p",
         width = 640,
         height = 360
     ),
-    ResolutionTypeRule(
+    ResolutionRule(
         token = "240p",
         width = 426,
         height = 240
     ),
-    ResolutionTypeRule(
+    ResolutionRule(
         token = "2160p",
         width = 3840,
         height = 2160
     ),
-    ResolutionTypeRule(
+    ResolutionRule(
         token = "1440p",
         width = 2560,
         height = 1440
     ),
-    ResolutionTypeRule(
+    ResolutionRule(
         token = "4k",
         width = 3840,
         height = 2160
     ),
-    ResolutionTypeRule(
+    ResolutionRule(
         token = "8k",
         width = 7680,
         height = 4320
     ),
-    ResolutionTypeRule(
+    ResolutionRule(
         token = "2k",
         width = 2048,
         height = 1080

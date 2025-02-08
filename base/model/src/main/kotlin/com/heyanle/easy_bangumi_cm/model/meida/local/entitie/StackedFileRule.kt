@@ -1,4 +1,4 @@
-package com.heyanle.easy_bangumi_cm.model.meida.local.entities
+package com.heyanle.easy_bangumi_cm.model.meida.local.entitie
 
 class StackedFileRule(
     val token: String,

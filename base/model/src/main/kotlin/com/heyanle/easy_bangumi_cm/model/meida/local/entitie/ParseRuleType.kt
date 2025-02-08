@@ -1,4 +1,4 @@
-package com.heyanle.easy_bangumi_cm.model.meida.local.entities
+package com.heyanle.easy_bangumi_cm.model.meida.local.entitie
 
 /// 解析规则类型
 enum class ParseRuleType {
