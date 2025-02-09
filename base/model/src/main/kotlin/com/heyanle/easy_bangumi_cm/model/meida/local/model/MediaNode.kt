@@ -1,13 +1,14 @@
 package com.heyanle.easy_bangumi_cm.model.meida.local.model
 
 import com.heyanle.easy_bangumi_cm.model.meida.local.entitie.MediaNodeType
+import java.nio.file.Path
+import kotlin.properties.Delegates
 
-/// 媒体节点，用于表达媒体库中间节点
-class MediaNode(
-    val path: String,
-    val name: String,
-    val block: (MediaNode.() -> Unit)? = null
-) {
+/// 媒体节点
+class MediaNode {
+    var path: Path by Delegates.notNull()
+    var name: String by Delegates.notNull()
+    var isRoot: Boolean = false
     var type: MediaNodeType = MediaNodeType.UNKNOWN
 
     val children: MutableList<MediaNode> = mutableListOf()
@@ -21,10 +22,6 @@ class MediaNode(
     val isDirectory: Boolean
         get() = hasResources and !hasChildren // 有资源但没有子节点
 
-    init {
-        block?.invoke(this)
-    }
-
     fun printTree(depth: Int = 0) {
         print("    ".repeat(depth))
         println("MediaNode(name='$name', path='$path', type=$type, isDirectory=$isDirectory)")
@@ -34,6 +31,12 @@ class MediaNode(
         resources.forEach {
             print("    ".repeat(depth + 1))
             println(it)
+        }
+    }
+
+    companion object {
+        inline operator fun invoke(block: MediaNode.() -> Unit): MediaNode {
+            return MediaNode().apply(block)
         }
     }
 }

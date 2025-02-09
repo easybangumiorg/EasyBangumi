@@ -35,6 +35,7 @@ quickjs-kt = "1.0.0-alpha13"
 zip4j = "2.11.5"
 
 moko-resources = "0.24.5"
+jetbrainsKotlinJvm = "1.9.24"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidx-core-ktx" }
@@ -88,3 +89,4 @@ moko-resources-generator = { group = "dev.icerock.moko", name = "resources-gener
 [plugins]
 kotlinxSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin-serialization-plugin" }
 mokoResources = { id = "dev.icerock.mobile.multiplatform-resources" }
+jetbrainsKotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrainsKotlinJvm" }

@@ -73,3 +73,4 @@ includeModule(":lib:javascript", "lib/javascript")
 
 
 
+include(":base:test")
