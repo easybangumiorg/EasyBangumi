@@ -20,10 +20,10 @@ class MediaNode {
         get() = resources.isNotEmpty()
 
     val isDirectory: Boolean
-        get() = hasResources or hasChildren // 有资源或有子节点
+        get() = hasResources or hasChildren
 
     val isEmpty: Boolean
-        get() = !hasResources and !hasChildren // 无资源且无子节点
+        get() = !hasResources and !hasChildren
 
     fun printTree(depth: Int = 0) {
         print("    ".repeat(depth))

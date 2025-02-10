@@ -1,14 +1,7 @@
 package org.easybangumi.next.testing
 
-import com.heyanle.easy_bangumi_cm.model.meida.local.entitie.MediaNodeType
-import com.heyanle.easy_bangumi_cm.model.meida.local.model.AudioFileNode
-import com.heyanle.easy_bangumi_cm.model.meida.local.model.EbookFileNode
-import com.heyanle.easy_bangumi_cm.model.meida.local.model.ImageFileNode
-import com.heyanle.easy_bangumi_cm.model.meida.local.model.MediaNode
-import com.heyanle.easy_bangumi_cm.model.meida.local.model.SubtitleFileNode
-import com.heyanle.easy_bangumi_cm.model.meida.local.model.VideoFileNode
+import com.heyanle.easy_bangumi_cm.model.meida.local.Naming
 import com.heyanle.easy_bangumi_cm.model.meida.local.resolver.RepoResolver
-import com.heyanle.easy_bangumi_cm.model.meida.local.videoStackedFileRules
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -19,16 +12,16 @@ fun main() = runBlocking {
     val scope = CoroutineScope(Dispatchers.IO)
 
 
-    val fs_node = TestFileSystemResolver.resolve("C:\\Users\\Ayala\\Desktop\\Bangumi")
-    val media_tree = RepoResolver().resolve(fs_node)
-    media_tree.printTree()
+    val fsNode = TestFileSystemResolver.resolve("C:\\Users\\Ayala\\Desktop\\Bangumi")
+    val mediaTree = RepoResolver(Naming).resolve(fsNode)
+    mediaTree.printTree()
 
 
 
     testStackedFileRule()
 }
 
-fun testStackedFileRule() = videoStackedFileRules.forEach { rule ->
+fun testStackedFileRule() = Naming.videoStackedFileRules.forEach { rule ->
     rule.match("Bad Boys (2006) part1.mkv")?.let {
         check(it.stackName == "Bad Boys (2006)")
         check(it.partType == "part")
