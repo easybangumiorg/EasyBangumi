@@ -19,9 +19,9 @@ fun main() = runBlocking {
     val scope = CoroutineScope(Dispatchers.IO)
 
 
-    val fs_node = TestFileSystemResolver.resolve("F:\\Bangumi")
+    val fs_node = TestFileSystemResolver.resolve("C:\\Users\\Ayala\\Desktop\\Bangumi")
     val media_tree = RepoResolver().resolve(fs_node)
-    println(media_tree)
+    media_tree.printTree()
 
 
 

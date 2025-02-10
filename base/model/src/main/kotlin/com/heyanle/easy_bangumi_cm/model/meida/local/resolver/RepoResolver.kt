@@ -7,6 +7,9 @@ import com.heyanle.easy_bangumi_cm.model.meida.local.model.MediaNode
 
 class RepoResolver {
 
+    val projectResolver = ProjectResolver()
+    val mediaFileResolver = MediaFileResolver()
+
     @Throws(RepoCanNotBeFileError::class)
     fun resolve(node: FileSystemNode): MediaNode = MediaNode {
         path = node.path
@@ -16,6 +19,12 @@ class RepoResolver {
         type = MediaNodeType.ROOT
         isRoot = true
 
+        resources = node.children.filter { !it.isDir }.map {
+            mediaFileResolver.resolve(it)
+        }.toMutableList()
 
+        children = node.children.filter { it.isDir }.map {
+            projectResolver.resolve(it, this)
+        }.toMutableList()
     }
 }

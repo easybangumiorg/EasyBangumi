@@ -11,26 +11,29 @@ class MediaNode {
     var isRoot: Boolean = false
     var type: MediaNodeType = MediaNodeType.UNKNOWN
 
-    val children: MutableList<MediaNode> = mutableListOf()
+    var children: MutableList<MediaNode> by Delegates.notNull()
     val hasChildren: Boolean
         get() = children.isNotEmpty()
 
-    val resources: MutableList<MediaFileNode> = mutableListOf()
+    var resources: MutableList<MediaFileNode> by Delegates.notNull()
     val hasResources: Boolean
         get() = resources.isNotEmpty()
 
     val isDirectory: Boolean
-        get() = hasResources and !hasChildren // 有资源但没有子节点
+        get() = hasResources or hasChildren // 有资源或有子节点
+
+    val isEmpty: Boolean
+        get() = !hasResources and !hasChildren // 无资源且无子节点
 
     fun printTree(depth: Int = 0) {
         print("    ".repeat(depth))
         println("MediaNode(name='$name', path='$path', type=$type, isDirectory=$isDirectory)")
-        children.forEach {
-            it.printTree(depth + 1)
-        }
         resources.forEach {
             print("    ".repeat(depth + 1))
             println(it)
+        }
+        children.forEach {
+            it.printTree(depth + 1)
         }
     }
 
