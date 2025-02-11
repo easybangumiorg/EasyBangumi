@@ -5,7 +5,7 @@ import com.heyanle.easy_bangumi_cm.model.meida.local.model.FileSystemNode
 import com.heyanle.easy_bangumi_cm.model.meida.local.model.VideoFileNode
 
 /// 视频文件名解析器
-class VideoFileResolver(naming: NamingOptions) {
+class VideoFileResolver(private val naming: NamingOptions) {
 
     fun resolve(node: FileSystemNode): VideoFileNode {
         return VideoFileNode(node.path.toString(), node.name).apply {
