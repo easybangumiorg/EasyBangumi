@@ -5,6 +5,6 @@ enum class MediaFileNodeType {
     SUBTITLE,
     VIDEO,
     AUDIO,
-    BOOK,
+    EBOOK,
     IMAGE,
 }

@@ -7,7 +7,6 @@ import com.heyanle.easy_bangumi_cm.model.meida.local.entitie.StubType
 class VideoFileNode(
     path: String,
     name: String,
-    block: (VideoFileNode.() -> Unit)? = null,
 ) : MediaFileNode(path, name, MediaFileNodeType.VIDEO) {
     var year: String? = null
     var container: String? = null // 容器, 如 mkv, mp4  取自Naming.videoFileExtensions
@@ -15,9 +14,5 @@ class VideoFileNode(
 
     override fun toString(): String {
         return "VideoFileNode(path='$path', name='$name', year=$year, container=$container, stub=$stub)"
-    }
-
-    init {
-        block?.invoke(this)
     }
 }
