@@ -60,6 +60,7 @@ class SourceController(
     // ============== Loader ==============
 
     private val innerLoader = InnerSourceLoader()
+
     private val jsLoader = JSSourceLoader()
     private val jsCryLoader = JSCryLoader(jsLoader)
     private val loaderMap = mapOf(
@@ -153,6 +154,8 @@ class SourceController(
         sourceConfig: SourceConfig,
     ): SourceInfo{
         if (!sourceConfig.enable) {
+            // 已关闭的源清除一下缓存
+            innerLoader.removeCache(innerSource.key)
             return SourceInfo.Unable(innerSource.manifest, sourceConfig)
         }
         return innerLoader.load(innerSource, sourceConfig)

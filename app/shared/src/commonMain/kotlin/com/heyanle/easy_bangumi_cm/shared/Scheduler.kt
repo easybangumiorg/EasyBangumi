@@ -16,6 +16,7 @@ object Scheduler {
 
     fun onInit() {
         SharedModule().registerWith(Inject)
+
         DatabaseModule().registerWith(Inject)
 
         Inject.addSingletonFactory {

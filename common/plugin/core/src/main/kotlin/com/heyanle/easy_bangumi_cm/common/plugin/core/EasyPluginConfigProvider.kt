@@ -24,7 +24,6 @@ interface EasyPluginConfigProvider {
         fun onMethodStart(method: Method, vararg args: Any)
         fun onMethodEnd(method: Method, vararg args: Any)
     }
-
     // 如果为 null 则不 hook
     val componentProxy: ComponentProxy?
 

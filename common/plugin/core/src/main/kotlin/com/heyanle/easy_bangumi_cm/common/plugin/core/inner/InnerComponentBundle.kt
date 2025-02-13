@@ -75,7 +75,7 @@ class InnerComponentBundle(
         return componentMap[clazz] as? T
     }
 
-    suspend fun load() {
+    fun load() {
         if (init.compareAndSet(false, true)) {
             val source = getSource()
             put(StringHelper::class, Inject.get(source.manifest))
