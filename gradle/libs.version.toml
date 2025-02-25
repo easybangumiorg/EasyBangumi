@@ -37,6 +37,8 @@ zip4j = "2.11.5"
 moko-resources = "0.24.5"
 jetbrainsKotlinJvm = "1.9.24"
 
+pagingMultiplatform = "3.3.0-alpha02-0.5.1"
+
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidx-core-ktx" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidx-appcompat" }
@@ -85,6 +87,10 @@ md3-window-size = { group = "org.jetbrains.compose.material3", name = "material3
 moko-resources = { group = "dev.icerock.moko", name = "resources", version.ref = "moko-resources" }
 moko-resources-compose = { group = "dev.icerock.moko", name = "resources-compose", version.ref = "moko-resources" }
 moko-resources-generator = { group = "dev.icerock.moko", name = "resources-generator", version.ref = "moko-resources" }
+
+paging-multiform-common = { group = "app.cash.paging", name = "paging-common", version.ref = "pagingMultiplatform" }
+paging-multiform-compose = { group = "app.cash.paging", name = "paging-compose-common", version.ref = "pagingMultiplatform" }
+
 
 [plugins]
 kotlinxSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin-serialization-plugin" }

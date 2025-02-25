@@ -63,6 +63,9 @@ kotlin {
             implementation(projects.common.database)
 
             implementation(projects.common.resources)
+
+//            implementation(libs.paging.multiplatform.common)
+//            implementation(libs.paging.multiplatform.compose)
         }
         desktopMain.dependencies {
             implementation(libs.moshi)
