@@ -60,8 +60,12 @@ includeModule(":common:resources", "common/resources")
 
 includeModule(":common:database", "common/database")
 
+includeModule(":common:compose", "common/compose")
+
+includeModule(":base:test", "base/test")
+
 // ----------base----------
-includeModule(":base:compose", "base/compose")
+// includeModule(":base:compose", "base/compose")
 includeModule(":base:model", "base/model")
 includeModule(":base:service", "base/service")
 includeModule(":base:utils", "base/utils")
@@ -73,4 +77,4 @@ includeModule(":lib:javascript", "lib/javascript")
 
 
 
-include(":base:test")
+

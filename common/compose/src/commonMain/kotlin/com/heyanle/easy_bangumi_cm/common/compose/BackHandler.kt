@@ -1,4 +1,4 @@
-package com.heyanle.easy_bangumi_cm.compose_base.back_handler
+package com.heyanle.easy_bangumi_cm.common.compose
 
 import androidx.compose.runtime.Composable
 

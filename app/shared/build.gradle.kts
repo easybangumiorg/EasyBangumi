@@ -54,7 +54,7 @@ kotlin {
 
             implementation(projects.base.service)
             implementation(projects.base.utils)
-            implementation(projects.base.compose)
+            // implementation(projects.base.compose)
 
             implementation(projects.common.plugin.api)
             implementation(projects.common.plugin.core)
@@ -64,8 +64,6 @@ kotlin {
 
             implementation(projects.common.resources)
 
-//            implementation(libs.paging.multiplatform.common)
-//            implementation(libs.paging.multiplatform.compose)
         }
         desktopMain.dependencies {
             implementation(libs.moshi)

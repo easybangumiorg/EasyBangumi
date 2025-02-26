@@ -29,20 +29,36 @@ kotlin {
 
         androidMain.dependencies {
             implementation(libs.moshi)
+
+            implementation(libs.ktor.client.adroid)
+            implementation(libs.coil.gif.android)
         }
         commonMain.dependencies {
-            implementation(compose.components.resources)
             implementation(compose.ui)
+
+            implementation(compose.material3)
+
+            implementation(projects.base.utils)
+
+            implementation(projects.common.resources)
+            implementation(projects.lib.inject)
+            implementation(projects.lib.unifile)
 
             implementation(libs.moshi)
             implementation(libs.navigation.compose)
 
-            implementation(projects.lib.inject)
-            implementation(projects.lib.unifile)
+            implementation(libs.paging.multiplatform.common)
+            implementation(libs.moko.resources.compose)
+
+            implementation(libs.coil.compose)
+            implementation(libs.coil.ktor3)
+
         }
         desktopMain.dependencies {
             implementation(libs.moshi)
             implementation(compose.desktop.currentOs)
+
+            implementation(libs.ktor.client.java)
         }
         iosMain.dependencies {
 
@@ -51,7 +67,7 @@ kotlin {
 }
 
 android {
-    namespace = AppConfig.namespace + ".base.compose"
+    namespace = AppConfig.namespace + ".common.compose"
     compileSdk = 35
     defaultConfig {
         minSdk = 21
