@@ -38,19 +38,13 @@ actual fun createImageLoader(): ImageLoader {
             }
             networkCachePolicy(CachePolicy.ENABLED)
             components {
+                add(KtorNetworkFetcherFactory())
                 add(ImageResourceMapper())
                 add(MokoAssetResourceFetcher.AssetFactory())
 
                 add(SvgDecoder.Factory())
-                add(
-                    KtorNetworkFetcherFactory()
-                )
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                    add(AnimatedImageDecoder.Factory())
-                } else {
-                    add(GifDecoder.Factory())
-                }
+
             }
         }.build()
 }

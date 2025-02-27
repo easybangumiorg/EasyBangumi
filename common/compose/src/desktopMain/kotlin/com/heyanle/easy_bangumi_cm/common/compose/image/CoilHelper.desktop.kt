@@ -34,8 +34,9 @@ actual fun createImageLoader(): ImageLoader {
         components {
             add(MokoAssetResourceFetcher.AssetFactory())
             add(MokoImageResourceFetcher.ImageFactory())
-            add(SvgDecoder.Factory())
             add(KtorNetworkFetcherFactory())
+            add(SvgDecoder.Factory())
+
         }
     }.build()
 }
@@ -46,7 +47,7 @@ private class MokoAssetResourceFetcher(
 ): Fetcher {
 
     @OptIn(InternalCoilApi::class)
-    override suspend fun fetch(): FetchResult? {
+    override suspend fun fetch(): FetchResult {
         val inputStream =  checkNotNull(model.resourcesClassLoader.getResourceAsStream(model.filePath)) { "Asset not found: ${model.filePath}" }
         return SourceFetchResult(
             source = ImageSource(inputStream.source().buffer(), options.fileSystem),
@@ -56,8 +57,8 @@ private class MokoAssetResourceFetcher(
     }
 
     class AssetFactory: Fetcher.Factory<AssetResource> {
-        override fun create(model: AssetResource, options: Options, imageLoader: ImageLoader): Fetcher {
-            return MokoAssetResourceFetcher(model, options)
+        override fun create(data: AssetResource, options: Options, imageLoader: ImageLoader): Fetcher {
+            return MokoAssetResourceFetcher(data, options)
         }
     }
 
@@ -70,7 +71,6 @@ private class MokoImageResourceFetcher(
 
     @OptIn(InternalCoilApi::class)
     override suspend fun fetch(): FetchResult {
-        model.image
         val inputStream =  checkNotNull(model.resourcesClassLoader.getResourceAsStream(model.filePath)) { "Asset not found: ${model.filePath}" }
         return SourceFetchResult(
             source = ImageSource(inputStream.source().buffer(), options.fileSystem),

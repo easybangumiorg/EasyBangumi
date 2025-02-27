@@ -11,6 +11,7 @@ import coil3.compose.AsyncImagePainter
 import com.heyanle.easy_bangumi_cm.base.utils.resources.ResourceOr
 
 /**
+ * gif
  * Created by heyanlin on 2025/2/27.
  */
 @Composable
