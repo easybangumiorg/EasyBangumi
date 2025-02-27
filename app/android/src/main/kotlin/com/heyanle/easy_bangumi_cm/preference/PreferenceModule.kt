@@ -1,4 +1,4 @@
-package com.heyanle.easy_bangumi_cm.shared
+package com.heyanle.easy_bangumi_cm.preference
 
 import com.heyanle.easy_bangumi_cm.base.service.provider.IPathProvider
 import com.heyanle.easy_bangumi_cm.base.utils.HeKV
@@ -9,7 +9,9 @@ import com.heyanle.lib.inject.api.*
 /**
  * Created by heyanlin on 2025/2/27.
  */
-class PreferenceModule: InjectModule {
+class PreferenceModule(
+    private val application: EasyApplication
+) : InjectModule {
 
     override fun InjectScope.registerInjectables() {
         addSingletonFactory {
@@ -17,8 +19,8 @@ class PreferenceModule: InjectModule {
         }
 
         addSingletonFactory {
-            HeKVPreferenceStore(get())
+            AndroidPreferenceStore(application)
         }
-        addAlias<HeKVPreferenceStore, PreferenceStore>()
+        addAlias<AndroidPreferenceStore, PreferenceStore>()
     }
 }

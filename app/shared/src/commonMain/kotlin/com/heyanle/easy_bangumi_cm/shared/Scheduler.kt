@@ -13,12 +13,9 @@ import com.heyanle.lib.inject.core.Inject
  * Created by heyanlin on 2024/12/3.
  */
 
-expect fun initHook()
-
 object Scheduler {
 
     fun onInit() {
-        initHook()
         SharedModule().registerWith(Inject)
         DatabaseModule().registerWith(Inject)
         ThemeModule().registerWith(Inject)

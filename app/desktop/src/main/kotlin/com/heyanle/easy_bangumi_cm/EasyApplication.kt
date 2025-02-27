@@ -1,6 +1,7 @@
 package com.heyanle.easy_bangumi_cm
 
 import com.heyanle.easy_bangumi_cm.base.BaseModule
+import com.heyanle.easy_bangumi_cm.preferences.PreferenceModule
 import com.heyanle.easy_bangumi_cm.shared.Scheduler
 import com.heyanle.lib.inject.core.Inject
 
@@ -22,6 +23,7 @@ class EasyApplication {
 
     private fun initBase(){
         BaseModule().registerWith(Inject)
+        PreferenceModule().registerWith(Inject)
     }
 
     init {

@@ -2,6 +2,7 @@ package com.heyanle.easy_bangumi_cm
 
 import android.app.Application
 import com.heyanle.easy_bangumi_cm.base.BaseModule
+import com.heyanle.easy_bangumi_cm.preference.PreferenceModule
 import com.heyanle.easy_bangumi_cm.shared.Global
 import com.heyanle.easy_bangumi_cm.shared.Scheduler
 import com.heyanle.lib.inject.core.Inject
@@ -33,6 +34,7 @@ class EasyApplication: Application() {
 
     private fun initBase(){
         BaseModule(this).registerWith(Inject)
+        PreferenceModule(this).registerWith(Inject)
     }
 
     private fun initJavascript(){

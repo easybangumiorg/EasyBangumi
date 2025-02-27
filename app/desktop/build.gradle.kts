@@ -27,6 +27,7 @@ dependencies {
     implementation(projects.lib.inject)
 
     implementation(projects.base.service)
+    implementation(projects.base.utils)
 
     implementation(projects.common.theme)
 }
