@@ -57,6 +57,7 @@ kotlin {
             implementation(projects.common.plugin.api)
             implementation(projects.common.plugin.core)
             implementation(projects.common.plugin.utils)
+            implementation(projects.common.plugin.inner)
 
             implementation(projects.common.database)
 
@@ -66,6 +67,8 @@ kotlin {
             implementation(projects.common.theme)
 
             implementation(projects.common.compose)
+
+            implementation(libs.coil.compose)
 
         }
         desktopMain.dependencies {

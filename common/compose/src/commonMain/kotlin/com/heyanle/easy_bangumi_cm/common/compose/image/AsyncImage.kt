@@ -1,5 +1,7 @@
 package com.heyanle.easy_bangumi_cm.common.compose.image
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,6 +36,7 @@ fun AsyncImage(
     filterQuality: FilterQuality = FilterQuality.None,
     clipToBounds: Boolean = true,
 ){
+
     return coil3.compose.AsyncImage(
         model = model,
         contentDescription = contentDescription,

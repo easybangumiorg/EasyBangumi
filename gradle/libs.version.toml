@@ -94,6 +94,7 @@ moko-resources-generator = { group = "dev.icerock.moko", name = "resources-gener
 paging-multiplatform-common = { group = "app.cash.paging", name = "paging-common", version.ref = "paging_multiplatform" }
 paging-multiplatform-compose = { group = "app.cash.paging", name = "paging-compose-common", version.ref = "paging_multiplatform" }
 
+coil = { group = "io.coil-kt.coil3", name = "coil", version.ref = "coil" }
 coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
 coil-ktor3 = { group = "io.coil-kt.coil3", name = "coil-network-ktor3", version.ref = "coil" }
 coil-gif-android = { group = "io.coil-kt.coil3", name = "coil-gif", version.ref = "coil" }

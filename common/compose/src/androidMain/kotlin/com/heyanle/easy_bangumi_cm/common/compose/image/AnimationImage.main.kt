@@ -36,17 +36,12 @@ actual fun AnimationImage(
     colorFilter: ColorFilter?,
     clipToBounds: Boolean,
 ){
-    val path = when(model){
-        is AssetResource -> model.originalPath
-        is String -> model
-        else -> ""
-    }
 
     coil3.compose.AsyncImage(
         model = ImageRequest
             .Builder(LocalContext.current)
             .apply {
-                data(path)
+                data(model)
                 decoderFactory(
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
                         AnimatedImageDecoder.Factory()

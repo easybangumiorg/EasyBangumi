@@ -1,5 +1,6 @@
 package com.heyanle.easy_bangumi_cm.preference
 
+import com.heyanle.easy_bangumi_cm.EasyApplication
 import com.heyanle.easy_bangumi_cm.base.service.provider.IPathProvider
 import com.heyanle.easy_bangumi_cm.base.utils.HeKV
 import com.heyanle.easy_bangumi_cm.base.utils.preference.PreferenceStore

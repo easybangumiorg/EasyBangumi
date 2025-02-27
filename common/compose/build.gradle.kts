@@ -30,8 +30,8 @@ kotlin {
 
         androidMain.dependencies {
             implementation(libs.moshi)
-
             implementation(libs.ktor.client.adroid)
+            implementation(libs.coil)
             implementation(libs.coil.gif.android)
         }
         commonMain.dependencies {
@@ -51,6 +51,7 @@ kotlin {
 
             implementation(libs.paging.multiplatform.common)
             implementation(libs.moko.resources.compose)
+
 
             implementation(libs.coil.compose)
             implementation(libs.coil.ktor3)
