@@ -28,7 +28,7 @@ dependencies {
 
     implementation(projects.base.service)
 
-
+    implementation(projects.common.theme)
 }
 
 kotlin {

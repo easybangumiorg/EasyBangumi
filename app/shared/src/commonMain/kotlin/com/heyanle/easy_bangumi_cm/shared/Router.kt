@@ -12,6 +12,8 @@ import androidx.navigation.*
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.heyanle.easy_bangumi_cm.shared.ui.debug.Debug
+import com.heyanle.easy_bangumi_cm.shared.ui.main.Main
 import java.lang.ref.WeakReference
 
 /**
@@ -26,6 +28,8 @@ var navControllerRef: WeakReference<NavHostController>? = null
 
 
 const val MAIN = "main"
+
+const val DEBUG = "debug"
 
 const val DEFAULT = MAIN
 
@@ -50,8 +54,14 @@ fun Nav() {
         ) {
 
             composableWithHook(MAIN) {
-
+                Main()
             }
+
+            composable(DEBUG) {
+                Debug()
+            }
+
+
 
         }
     }

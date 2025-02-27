@@ -1,3 +1,4 @@
+import org.jetbrains.compose.ExperimentalComposeLibrary
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -39,6 +40,7 @@ kotlin {
             implementation(compose.material3)
 
             implementation(projects.base.utils)
+            implementation(projects.base.service)
 
             implementation(projects.common.resources)
             implementation(projects.lib.inject)
@@ -52,6 +54,7 @@ kotlin {
 
             implementation(libs.coil.compose)
             implementation(libs.coil.ktor3)
+            implementation(libs.coil.svg)
 
         }
         desktopMain.dependencies {
@@ -59,6 +62,10 @@ kotlin {
             implementation(compose.desktop.currentOs)
 
             implementation(libs.ktor.client.java)
+
+            @OptIn(ExperimentalComposeLibrary::class)
+            implementation(compose.desktop.components.animatedImage)
+            // implementation(compose.components.)
         }
         iosMain.dependencies {
 

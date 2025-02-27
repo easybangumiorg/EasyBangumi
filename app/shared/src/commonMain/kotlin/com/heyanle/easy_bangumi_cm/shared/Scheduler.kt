@@ -2,6 +2,7 @@ package com.heyanle.easy_bangumi_cm.shared
 
 
 import com.heyanle.easy_bangumi_cm.common.plugin.PluginModule
+import com.heyanle.easy_bangumi_cm.common.theme.ThemeModule
 import com.heyanle.easy_bangumi_cm.database.DatabaseModule
 import com.heyanle.easy_bangumi_cm.shared.plugin.PluginConfigProvider
 import com.heyanle.lib.inject.api.addSingletonFactory
@@ -12,12 +13,15 @@ import com.heyanle.lib.inject.core.Inject
  * Created by heyanlin on 2024/12/3.
  */
 
+expect fun initHook()
+
 object Scheduler {
 
     fun onInit() {
+        initHook()
         SharedModule().registerWith(Inject)
-
         DatabaseModule().registerWith(Inject)
+        ThemeModule().registerWith(Inject)
 
         Inject.addSingletonFactory {
             PluginConfigProvider()

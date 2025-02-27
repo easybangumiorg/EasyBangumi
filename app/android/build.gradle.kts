@@ -84,6 +84,7 @@ dependencies {
     implementation(projects.lib.inject)
     implementation(projects.lib.javascript)
 
+    implementation(projects.common.theme)
 
 
 }

@@ -29,6 +29,7 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.moshi)
             implementation(libs.kotlinx.coroutines.core)
+
             implementation(projects.base.service)
 
             implementation(projects.base.model)
@@ -39,7 +40,7 @@ kotlin {
             implementation(projects.lib.unifile)
         }
         desktopMain.dependencies {
-
+            implementation(libs.kotlinx.coroutines.swing)
         }
 
     }

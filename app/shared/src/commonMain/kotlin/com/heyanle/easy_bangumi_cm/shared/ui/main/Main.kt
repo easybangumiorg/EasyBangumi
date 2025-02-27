@@ -1,5 +1,6 @@
 package com.heyanle.easy_bangumi_cm.shared.ui.main
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.pager.VerticalPager
@@ -20,17 +21,19 @@ import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import com.heyanle.easy_bangumi_cm.base.service.provider.IPathProvider
 import com.heyanle.easy_bangumi_cm.base.service.system.ILogger
 import com.heyanle.easy_bangumi_cm.base.service.system.IPlatformInformation
+import com.heyanle.easy_bangumi_cm.common.resources.Res
+import com.heyanle.easy_bangumi_cm.shared.DEBUG
+import com.heyanle.easy_bangumi_cm.shared.LocalNavController
 import com.heyanle.easy_bangumi_cm.shared.ui.main.home.Home
 import com.heyanle.lib.inject.api.get
 import com.heyanle.lib.inject.core.Inject
-import easybangumi.app.shared.generated.resources.Res
-import easybangumi.app.shared.generated.resources.home
+import dev.icerock.moko.resources.compose.stringResource
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 
@@ -48,12 +51,12 @@ sealed class MainPage(
     data object Home : MainPage(
         route = "home",
         tabLabel = {
-            Text(text = stringResource(Res.string.home))
+            Text(text = stringResource(Res.strings.home))
         },
         icon = {
             Icon(
                 if (it) Icons.Filled.Home else Icons.Outlined.Home,
-                contentDescription = stringResource(Res.string.home)
+                contentDescription = stringResource(Res.strings.home)
             )
         },
         content = {
@@ -119,7 +122,13 @@ expect fun MainHook()
 @Composable
 fun Main() {
     MainHook()
-    val pagerState = rememberPagerState(0) { MainPageItems.size }
+    val navController = LocalNavController.current
+
+
+    val needDebug = remember {
+        ! Inject.get<IPlatformInformation>().isRelease
+    }
+    val pagerState = rememberPagerState(0) { MainPageItems.size + if (needDebug) 1 else 0 }
     val scope = rememberCoroutineScope()
 
     val fileProvider = Inject.get<IPathProvider>()
@@ -131,33 +140,57 @@ fun Main() {
 
     // val windowSizeClass = calculateWindowSizeClass()
 
-    MaterialTheme {
-        Row {
-            NavigationRail {
-                MainPageItems.forEachIndexed { index, page ->
-                    val selected = pagerState.currentPage == index
-                    NavigationRailItem(
-                        selected = selected,
-                        onClick = {
-                            scope.launch {
-                                pagerState.animateScrollToPage(index)
+    Row {
+        NavigationRail {
+            MainPageItems.forEachIndexed { index, page ->
+                val selected = pagerState.currentPage == index
+                NavigationRailItem(
+                    selected = selected,
+                    onClick = {
+                        scope.launch {
+                            pagerState.animateScrollToPage(index)
+                            if (needDebug && index == MainPageItems.size) {
+                                navController.navigate(DEBUG)
+                            } else {
+
                             }
-                        },
-                        icon = {
-                            page.icon(selected)
-                        },
-                        label = {
-                            page.tabLabel()
                         }
-                    )
-                }
+                    },
+                    icon = {
+                        page.icon(selected)
+                    },
+                    label = {
+                        page.tabLabel()
+                    }
+                )
             }
-            Column {
-                VerticalPager(state = pagerState) {
-                    MainPageItems[it].content()
-                }
+
+            if (needDebug) {
+                NavigationRailItem(
+                    selected = false,
+                    onClick = {
+                        scope.launch {
+                            navController.navigate(DEBUG)
+                        }
+                    },
+                    icon = {
+                        Icon(
+                            Icons.Filled.Settings,
+                            contentDescription = "debug"
+                        )
+                    },
+                    label = {
+                        Text("Debug")
+                    }
+                )
+            }
+
+
+        }
+        Column {
+            VerticalPager(state = pagerState) {
+                MainPageItems[it].content()
             }
         }
-
     }
 }
