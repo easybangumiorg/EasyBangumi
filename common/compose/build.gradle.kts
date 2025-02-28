@@ -50,6 +50,7 @@ kotlin {
             implementation(libs.navigation.compose)
 
             implementation(libs.paging.multiplatform.common)
+            implementation(libs.paging.multiplatform.compose)
             implementation(libs.moko.resources.compose)
 
 

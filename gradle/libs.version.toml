@@ -38,7 +38,6 @@ moko-resources = "0.24.5"
 jetbrains_kotlin_jvm = "1.9.24"
 
 paging_multiplatform = "3.3.0-alpha02-0.5.1"
-
 coil = "3.1.0"
 ktor = "3.1.0"
 
@@ -54,6 +53,8 @@ kotlinx-coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-co
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinx-datetime" }
 kotlinx-io = { group = "org.jetbrains.kotlinx", name = "kotlinx-io-core", version.ref = "kotlinx-io" }
+
+
 
 kotlin-reflect = {group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin-reflect"}
 
