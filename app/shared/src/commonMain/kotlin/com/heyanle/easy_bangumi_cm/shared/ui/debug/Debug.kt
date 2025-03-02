@@ -19,7 +19,7 @@ fun Debug() {
 
     Column (Modifier.fillMaxSize()) {
         AnimationImage(
-            Res.assets.loading_ryo_gif, "",
+            Res.assets.loading_anon_gif, "",
             Modifier.size(200.dp))
         AsyncImage(Res.images.logo, "logo",
             Modifier.size(200.dp))
