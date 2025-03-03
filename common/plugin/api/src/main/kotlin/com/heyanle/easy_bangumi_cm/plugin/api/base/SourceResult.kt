@@ -1,5 +1,6 @@
 package com.heyanle.easy_bangumi_cm.plugin.api.base
 
+import com.heyanle.easy_bangumi_cm.base.utils.DataState
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 
@@ -25,6 +26,13 @@ sealed class SourceResult<T> {
 
     data class Error<T>(val msg: String?, val error: Throwable?) : SourceResult<T>()
 
+}
+
+fun <T> SourceResult<T>.toDataState(): DataState<T> {
+    return when (this) {
+        is SourceResult.Ok -> DataState.ok(data)
+        is SourceResult.Error -> DataState.error(msg ?: "", error)
+    }
 }
 
 suspend fun <T : Any, R> T.withResult(context: CoroutineContext? = null, block: suspend T.() -> R): SourceResult<R> {

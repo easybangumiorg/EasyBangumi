@@ -1,6 +1,7 @@
 package com.heyanle.easy_bangumi_cm.common.plugin.core.inner
 
 import com.heyanle.easy_bangumi_cm.common.plugin.core.EasyPluginConfigProvider
+import com.heyanle.easy_bangumi_cm.common.plugin.core.component.ComponentClazz
 import com.heyanle.easy_bangumi_cm.common.plugin.core.component.ComponentHelper
 import com.heyanle.easy_bangumi_cm.plugin.api.base.SourceException
 import com.heyanle.easy_bangumi_cm.plugin.api.component.Component
@@ -31,34 +32,6 @@ class InnerComponentBundle(
     private val innerSource: InnerSource
 ): ComponentBundle {
 
-    companion object {
-
-        // Source 里的接口
-        val sourceClazz: Set<KClass<*>> = setOf(
-            Source::class,
-            MetaSource::class,
-            MediaSource::class,
-            InnerSource::class,
-        )
-
-        // 工具类接口
-        val utilsClazz: Set<KClass<*>> = setOf(
-            PreferenceHelper::class,
-            WebViewHelper::class,
-            StringHelper::class,
-        )
-
-        // Component 接口
-        val componentClazz: Set<KClass<*>> = setOf(
-            DetailedComponent::class,
-            MediaEventComponent::class,
-            PlayComponent::class,
-            SearchComponent::class,
-            HomeComponent::class,
-            PrefComponent::class,
-        )
-    }
-
     private val registerClazz = innerSource.componentClazz.toSet()
 
 
@@ -82,7 +55,7 @@ class InnerComponentBundle(
             put(PreferenceHelper::class, Inject.get(source.manifest))
             put(WebViewHelper::class, Inject.get(source.manifest))
 
-            sourceClazz.forEach {
+            ComponentClazz.sourceClazz.forEach {
                 if (it.isInstance(source)) {
                     putAnyway(it, source)
                 }
@@ -110,10 +83,10 @@ class InnerComponentBundle(
         }
 
         // 不允许注入除 工具，Component 以及 source 里 register 以外的类
-        if (!utilsClazz.contains(clazz) &&
-            !componentClazz.contains(clazz) &&
+        if (!ComponentClazz.utilsClazz.contains(clazz) &&
+            !ComponentClazz.componentClazz.contains(clazz) &&
             !registerClazz.contains(clazz) &&
-            !sourceClazz.contains(clazz)
+            !ComponentClazz.sourceClazz.contains(clazz)
         ) {
             throw SourceException("尝试非法注入： ${clazz.simpleName}")
         }
@@ -157,7 +130,7 @@ class InnerComponentBundle(
         }
 
         // 不允许实现 utils 接口
-        utilsClazz.forEach {
+        ComponentClazz.utilsClazz.forEach {
             if (it.isInstance(instance)) {
                 throw SourceException("${clazz.simpleName} 实现了 utils 中的接口")
             }
@@ -167,7 +140,7 @@ class InnerComponentBundle(
         if (instance is Component) {
             val dComponent = decoComponent(instance)
             componentMap[clazz] = dComponent
-            componentClazz.forEach {
+            ComponentClazz.componentClazz.forEach {
                 if (it.isInstance(dComponent)) {
                     componentMap[it] = dComponent
                 }
@@ -176,7 +149,7 @@ class InnerComponentBundle(
 
         // BundleMap 里为原对象
         bundleMap[clazz] = instance
-        componentClazz.forEach {
+        ComponentClazz.componentClazz.forEach {
             if (it.isInstance(instance)) {
                 bundleMap[it] = instance
             }

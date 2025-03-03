@@ -1,6 +1,8 @@
 package com.heyanle.easy_bangumi_cm.common.plugin.core.source
 
 import com.heyanle.easy_bangumi_cm.base.utils.CoroutineProvider
+import com.heyanle.easy_bangumi_cm.base.utils.DataState
+import com.heyanle.easy_bangumi_cm.base.utils.map
 import com.heyanle.easy_bangumi_cm.common.plugin.core.EasyPluginConfigProvider
 import com.heyanle.easy_bangumi_cm.common.plugin.core.entity.ExtensionInfo
 import com.heyanle.easy_bangumi_cm.common.plugin.core.entity.SourceConfig
@@ -35,20 +37,12 @@ class SourceController(
     // ============== flow 定义 ==============
 
     // 源
-    data class SourceInfoState(
-        val loading: Boolean = true,
-        val sourceInfo: List<SourceInfo> = emptyList()
-    )
-    private val _sourceInfoFlow = MutableStateFlow(SourceInfoState())
-
+    private val _sourceInfoFlow = MutableStateFlow<DataState<List<SourceInfo>>>(DataState.loading())
+    val sourceInfoFlow = _sourceInfoFlow.asStateFlow()
 
     // 源中的 Component 包
-    data class SourceBundleState(
-        val sourceBundle: SourceBundle? = null
-    ) {
-        val loading = sourceBundle == null
-    }
-    private val _sourceBundleFlow = MutableStateFlow(SourceBundleState())
+    private val _sourceBundleFlow = MutableStateFlow<DataState<SourceBundle>>(DataState.none())
+    val sourceBundleFlow = _sourceBundleFlow.asStateFlow()
 
     // 本地 Source
     private val innerSourceProvider = configProvider.innerSourceProvider
@@ -104,11 +98,14 @@ class SourceController(
 
                 false to (res + innerRes)
             }.collectLatest { res ->
-                _sourceInfoFlow.update {
-                    it.copy(
-                        loading = res.first,
-                        sourceInfo = res.second
-                    )
+                if (res.first) {
+                    _sourceInfoFlow.update {
+                        DataState.loading()
+                    }
+                } else {
+                    _sourceInfoFlow.update {
+                        DataState.ok(res.second)
+                    }
                 }
             }
         }
@@ -116,20 +113,13 @@ class SourceController(
         // SourceInfo -> SourceBundle
         scope.launch {
             _sourceInfoFlow.collectLatest { sourceInfoState ->
-                if (sourceInfoState.loading) {
-                    return@collectLatest
-                }
-                val bundleMap = sourceInfoState.sourceInfo.filterIsInstance<SourceInfo.Loaded>()
-                    .map {
-                        it.componentBundle
-                    }.associateBy { it.getSource().key }
-                val sourceBundle = SourceBundle(bundleMap)
                 _sourceBundleFlow.update {
-                    SourceBundleState(sourceBundle)
+                    sourceInfoState.map {
+                        SourceBundle(it.filterIsInstance<SourceInfo.Loaded>())
+                    }
                 }
             }
         }
-
     }
 
     private suspend fun innerLoad(

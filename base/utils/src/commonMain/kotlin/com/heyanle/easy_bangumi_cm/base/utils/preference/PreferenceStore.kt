@@ -30,6 +30,39 @@ interface PreferenceStore {
 
 }
 
+fun PreferenceStore.lazyString(key: String, default: String = ""): Lazy<Preference<String>> {
+    return lazy { getString(key, default) }
+}
+
+fun PreferenceStore.lazyInt(key: String, default: Int = 0): Lazy<Preference<Int>> {
+    return lazy { getInt(key, default) }
+}
+
+fun PreferenceStore.lazyLong(key: String, default: Long = 0L): Lazy<Preference<Long>> {
+    return lazy { getLong(key, default) }
+}
+
+fun PreferenceStore.lazyFloat(key: String, default: Float = 0f): Lazy<Preference<Float>> {
+    return lazy { getFloat(key, default) }
+}
+
+fun PreferenceStore.lazyBoolean(key: String, default: Boolean = false): Lazy<Preference<Boolean>> {
+    return lazy { getBoolean(key, default) }
+}
+
+fun PreferenceStore.lazyStringSet(key: String, defaultValue: Set<String> = emptySet()): Lazy<Preference<Set<String>>> {
+    return lazy { getStringSet(key, defaultValue) }
+}
+
+fun <T> PreferenceStore.lazyObject(
+    key: String,
+    defaultValue: T,
+    serializer: (T) -> String,
+    deserializer: (String) -> T,
+): Lazy<Preference<T>> {
+    return lazy { getObject(key, defaultValue, serializer, deserializer) }
+}
+
 inline fun <reified T : Enum<T>> PreferenceStore.getEnum(
     key: String,
     defaultValue: T,

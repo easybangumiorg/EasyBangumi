@@ -43,6 +43,8 @@ kotlin {
             implementation(projects.base.service)
 
             implementation(projects.common.resources)
+            implementation(projects.common.plugin.api)
+
             implementation(projects.lib.inject)
             implementation(projects.lib.unifile)
 

@@ -6,6 +6,8 @@ package com.heyanle.easy_bangumi_cm.base.utils
  */
 sealed class DataState<T> {
 
+    class None<T> : DataState<T>()
+
     class Loading<T> : DataState<T>()
 
     data class Ok<T>(
@@ -18,6 +20,11 @@ sealed class DataState<T> {
     ) : DataState<T>()
 
     companion object {
+
+        fun <T> none() = None<T>()
+
+        fun <T> loading() = Loading<T>()
+
         fun <T> ok(data: T) = Ok(data)
 
         fun <T> error(throwable: Throwable) =
@@ -29,6 +36,14 @@ sealed class DataState<T> {
 
     fun isOk() : Boolean {
         return this is Ok
+    }
+
+    fun isError() : Boolean {
+        return this is Error
+    }
+
+    fun isLoading() : Boolean {
+        return this is Loading
     }
 
     fun okOrNull () : T? {
@@ -96,6 +111,8 @@ public inline fun <T, R> DataState<T>.map(transform: (value: T) -> R): DataState
             DataState.error<R>(errorMsg = errorMsg, throwable)
         }
         is DataState.Loading -> {
-            DataState.Loading()
+            DataState.loading()
         }
+
+        is DataState.None -> DataState.none<R>()
     }

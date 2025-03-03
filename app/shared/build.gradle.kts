@@ -8,19 +8,24 @@ plugins {
     alias(builds.plugins.compose)
     alias(builds.plugins.ksp)
 }
-
 kotlin {
     androidTarget {
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_17)
+            freeCompilerArgs.add(
+                "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
+            )
         }
     }
 
     jvm("desktop") {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_17)
+            freeCompilerArgs.add(
+                "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
+            )
         }
+
     }
 
     sourceSets {
