@@ -1,4 +1,4 @@
-package com.heyanle.easy_bangumi_cm.common.compose.elements
+package com.heyanle.easy_bangumi_cm.common.foundation.elements
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -11,8 +11,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import com.heyanle.easy_bangumi_cm.base.utils.resources.ResourceOr
-import com.heyanle.easy_bangumi_cm.common.compose.image.AnimationImage
-import com.heyanle.easy_bangumi_cm.common.compose.image.AsyncImage
+import com.heyanle.easy_bangumi_cm.common.foundation.image.AnimationImage
+import com.heyanle.easy_bangumi_cm.common.foundation.image.AsyncImage
 import com.heyanle.easy_bangumi_cm.common.resources.Res
 import dev.icerock.moko.resources.compose.stringResource
 

@@ -1,4 +1,4 @@
-package com.heyanle.easy_bangumi_cm.common.compose.image
+package com.heyanle.easy_bangumi_cm.common.foundation.image
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -7,7 +7,6 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.DefaultAlpha
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
-import coil3.compose.AsyncImagePainter
 import com.heyanle.easy_bangumi_cm.base.utils.resources.ResourceOr
 
 /**

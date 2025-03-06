@@ -1,4 +1,4 @@
-package com.heyanle.easy_bangumi_cm.common.compose.plugin.home
+package com.heyanle.easy_bangumi_cm.common.foundation.plugin.home
 
 import androidx.compose.runtime.Composable
 import com.heyanle.easy_bangumi_cm.plugin.api.component.media.home.HomeContent

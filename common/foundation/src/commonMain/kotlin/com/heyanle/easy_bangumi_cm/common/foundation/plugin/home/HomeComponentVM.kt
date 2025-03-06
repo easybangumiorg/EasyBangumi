@@ -1,4 +1,4 @@
-package com.heyanle.easy_bangumi_cm.common.compose.plugin.home
+package com.heyanle.easy_bangumi_cm.common.foundation.plugin.home
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -10,8 +10,8 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
 import com.heyanle.easy_bangumi_cm.base.utils.DataState
-import com.heyanle.easy_bangumi_cm.common.compose.view_model.ViewModelOwnerMap
-import com.heyanle.easy_bangumi_cm.common.compose.paging.SingleHomePagePagingSource
+import com.heyanle.easy_bangumi_cm.common.foundation.view_model.ViewModelOwnerMap
+import com.heyanle.easy_bangumi_cm.common.foundation.paging.SingleHomePagePagingSource
 import com.heyanle.easy_bangumi_cm.model.cartoon.CartoonCover
 import com.heyanle.easy_bangumi_cm.plugin.api.base.toDataState
 import com.heyanle.easy_bangumi_cm.plugin.api.component.media.home.HomePage

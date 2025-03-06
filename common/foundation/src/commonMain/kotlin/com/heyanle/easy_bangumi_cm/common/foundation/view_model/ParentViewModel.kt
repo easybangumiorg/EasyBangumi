@@ -1,4 +1,4 @@
-package com.heyanle.easy_bangumi_cm.common.compose.view_model
+package com.heyanle.easy_bangumi_cm.common.foundation.view_model
 
 import androidx.lifecycle.ViewModel
 

@@ -10,9 +10,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.heyanle.easy_bangumi_cm.common.compose.stringRes
+import com.heyanle.easy_bangumi_cm.common.foundation.stringRes
 import com.heyanle.easy_bangumi_cm.shared.LocalNavController
-import dev.icerock.moko.resources.compose.stringResource
 
 
 /**

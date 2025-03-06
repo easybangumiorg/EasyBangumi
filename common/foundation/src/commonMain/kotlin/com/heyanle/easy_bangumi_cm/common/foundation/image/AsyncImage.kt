@@ -1,7 +1,5 @@
-package com.heyanle.easy_bangumi_cm.common.compose.image
+package com.heyanle.easy_bangumi_cm.common.foundation.image
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier

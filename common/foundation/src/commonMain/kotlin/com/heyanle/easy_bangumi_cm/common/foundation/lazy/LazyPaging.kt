@@ -1,4 +1,4 @@
-package com.heyanle.easy_bangumi_cm.common.compose.lazy
+package com.heyanle.easy_bangumi_cm.common.foundation.lazy
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListScope
@@ -7,16 +7,14 @@ import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
-import com.heyanle.easy_bangumi_cm.common.compose.elements.EmptyElements
-import com.heyanle.easy_bangumi_cm.common.compose.elements.ErrorElements
-import com.heyanle.easy_bangumi_cm.common.compose.elements.LoadingElements
-import com.heyanle.easy_bangumi_cm.common.compose.image.AnimationImage
+import com.heyanle.easy_bangumi_cm.common.foundation.elements.EmptyElements
+import com.heyanle.easy_bangumi_cm.common.foundation.elements.ErrorElements
+import com.heyanle.easy_bangumi_cm.common.foundation.elements.LoadingElements
 import com.heyanle.easy_bangumi_cm.common.resources.Res
 import dev.icerock.moko.resources.compose.stringResource
 

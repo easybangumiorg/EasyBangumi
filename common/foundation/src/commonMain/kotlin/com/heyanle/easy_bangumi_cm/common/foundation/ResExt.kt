@@ -1,4 +1,4 @@
-package com.heyanle.easy_bangumi_cm.common.compose
+package com.heyanle.easy_bangumi_cm.common.foundation
 
 import androidx.compose.runtime.Composable
 import com.heyanle.easy_bangumi_cm.base.utils.resources.ResourceOr

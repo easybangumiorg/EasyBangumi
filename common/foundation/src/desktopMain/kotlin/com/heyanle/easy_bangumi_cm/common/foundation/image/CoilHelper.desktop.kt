@@ -1,4 +1,4 @@
-package com.heyanle.easy_bangumi_cm.common.compose.image
+package com.heyanle.easy_bangumi_cm.common.foundation.image
 
 import androidx.compose.runtime.Composable
 import coil3.ImageLoader

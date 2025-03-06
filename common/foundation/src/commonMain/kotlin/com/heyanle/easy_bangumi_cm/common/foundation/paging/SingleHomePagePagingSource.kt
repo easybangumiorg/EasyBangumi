@@ -1,4 +1,4 @@
-package com.heyanle.easy_bangumi_cm.common.compose.paging
+package com.heyanle.easy_bangumi_cm.common.foundation.paging
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
