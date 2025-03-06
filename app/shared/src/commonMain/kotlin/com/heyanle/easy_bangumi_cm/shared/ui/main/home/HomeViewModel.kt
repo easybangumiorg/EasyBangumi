@@ -12,6 +12,7 @@ import com.heyanle.easy_bangumi_cm.common.plugin.core.source.SourceBundle
 import com.heyanle.easy_bangumi_cm.common.plugin.core.source.SourceController
 import com.heyanle.easy_bangumi_cm.plugin.api.base.toDataState
 import com.heyanle.easy_bangumi_cm.plugin.api.component.media.home.HomeComponent
+import com.heyanle.easy_bangumi_cm.plugin.api.component.media.home.HomeContent
 import com.heyanle.easy_bangumi_cm.plugin.api.component.media.home.HomePage
 import com.heyanle.easy_bangumi_cm.plugin.api.component.media.home.homeComponent
 import com.heyanle.lib.inject.core.Inject
@@ -38,7 +39,7 @@ class HomeViewModel: ViewModel() {
         val sourceBundleState : DataState<SourceBundle> = DataState.Loading(),
 
         // step.2
-        val pageData: DataState<List<HomePage>> = DataState.None(),
+        val pageData: DataState<HomeContent> = DataState.None(),
 
         // special
         val isSourcePanelShow: Boolean = false

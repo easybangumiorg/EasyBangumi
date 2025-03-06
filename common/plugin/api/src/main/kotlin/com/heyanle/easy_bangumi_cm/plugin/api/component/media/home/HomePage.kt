@@ -15,12 +15,12 @@ sealed class HomeContent {
     // 单页面，没有 title
     class SinglePage(
         val singlePage: HomePage.SingleCartoonPage
-    )
+    ): HomeContent()
 
     // 带一级 Tab
     class MultiplePage(
         val pageList: List<HomePage>
-    )
+    ): HomeContent()
 
 }
 

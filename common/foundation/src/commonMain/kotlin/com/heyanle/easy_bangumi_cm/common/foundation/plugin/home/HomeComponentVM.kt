@@ -12,6 +12,7 @@ import androidx.paging.cachedIn
 import com.heyanle.easy_bangumi_cm.base.utils.DataState
 import com.heyanle.easy_bangumi_cm.common.foundation.view_model.ViewModelOwnerMap
 import com.heyanle.easy_bangumi_cm.common.foundation.paging.SingleHomePagePagingSource
+import com.heyanle.easy_bangumi_cm.common.foundation.view_model.ParentViewModel
 import com.heyanle.easy_bangumi_cm.model.cartoon.CartoonCover
 import com.heyanle.easy_bangumi_cm.plugin.api.base.toDataState
 import com.heyanle.easy_bangumi_cm.plugin.api.component.media.home.HomePage
@@ -28,13 +29,12 @@ import kotlin.reflect.KClass
 // ================== CartoonHomePageGroupViewModel ==================
 class GroupHomePageViewModel(
     private val group: HomePage.Group,
-): ViewModel() {
+): ParentViewModel<HomePage.SingleCartoonPage>() {
 
     private val _pageListFlow: MutableStateFlow<DataState<List<HomePage.SingleCartoonPage>>> = MutableStateFlow(
         DataState.none())
     val pageListFlow = _pageListFlow.asStateFlow()
 
-    private val viewModelOwnerMap = ViewModelOwnerMap<HomePage.SingleCartoonPage>()
 
     init {
         refresh()
@@ -46,16 +46,6 @@ class GroupHomePageViewModel(
             val res = group.loadPage()
             _pageListFlow.update { res.toDataState() }
         }
-    }
-
-    fun getViewModelOwner(page: HomePage.SingleCartoonPage): ViewModelStoreOwner {
-        return viewModelOwnerMap.getViewModelStoreOwner(page)
-    }
-
-
-    override fun onCleared() {
-        super.onCleared()
-        viewModelOwnerMap.clear()
     }
 
 
@@ -82,10 +72,10 @@ class SingleHomePageViewModel(
     private val singleCartoonPage: HomePage.SingleCartoonPage
 ) : ViewModel() {
 
-    val page = mutableStateOf(getPager().flow.cachedIn(viewModelScope))
+    val pager = mutableStateOf(getPager().flow.cachedIn(viewModelScope))
 
     fun refresh() {
-        page.value = getPager().flow.cachedIn(viewModelScope)
+        pager.value = getPager().flow.cachedIn(viewModelScope)
     }
 
     private fun getPager(): Pager<Int, CartoonCover> {

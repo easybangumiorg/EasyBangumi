@@ -7,6 +7,7 @@ import com.heyanle.easy_bangumi_cm.plugin.api.base.SourceResult
 import com.heyanle.easy_bangumi_cm.plugin.api.base.withResult
 import com.heyanle.easy_bangumi_cm.plugin.api.component.ComponentWrapper
 import com.heyanle.easy_bangumi_cm.plugin.api.component.media.home.HomeComponent
+import com.heyanle.easy_bangumi_cm.plugin.api.component.media.home.HomeContent
 import com.heyanle.easy_bangumi_cm.plugin.api.component.media.home.HomePage
 import com.heyanle.easy_bangumi_cm.plugin.api.source.Source
 import com.heyanle.easy_bangumi_cm.plugin.utils.StringHelper
@@ -19,32 +20,35 @@ class DebugHomeComponent(
     private val stringHelper: StringHelper,
 ): HomeComponent, ComponentWrapper() {
 
-    override suspend fun home(): SourceResult<List<HomePage>> {
+    override suspend fun home(): SourceResult<HomeContent> {
         return withResult(CoroutineProvider.io) {
-            listOf(
-                HomePage.Group(
-                    "debug 1",
-                    loadPage = {
-                        withResult (CoroutineProvider.io){
-                            listOf(
-                                pageWithCover("page 1"),
-                                pageWithoutCover("page 2"),
-                            )
+            HomeContent.MultiplePage(
+                pageList = listOf(
+                    HomePage.Group(
+                        "debug 1",
+                        loadPage = {
+                            withResult (CoroutineProvider.io){
+                                listOf(
+                                    pageWithCover("page 1"),
+                                    pageWithoutCover("page 2"),
+                                )
+                            }
                         }
-                    }
-                ),
-                HomePage.Group(
-                    "debug 2",
-                    loadPage = {
-                        withResult (CoroutineProvider.io){
-                            listOf(
-                                pageWithCover("page 3"),
-                                pageWithoutCover("page 4"),
-                            )
+                    ),
+                    HomePage.Group(
+                        "debug 2",
+                        loadPage = {
+                            withResult (CoroutineProvider.io){
+                                listOf(
+                                    pageWithCover("page 3"),
+                                    pageWithoutCover("page 4"),
+                                )
+                            }
                         }
-                    }
-                ),
+                    ),
+                )
             )
+
         }
     }
 
