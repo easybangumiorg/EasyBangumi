@@ -1,6 +1,7 @@
 package com.heyanle.easy_bangumi_cm.plugin.api.base
 
 import com.heyanle.easy_bangumi_cm.base.utils.DataState
+import com.heyanle.easy_bangumi_cm.base.utils.DataState.*
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 
@@ -25,6 +26,37 @@ sealed class SourceResult<T> {
     data class Ok<T>(val data: T) : SourceResult<T>()
 
     data class Error<T>(val msg: String?, val error: Throwable?) : SourceResult<T>()
+
+
+    fun isOk() : Boolean {
+        return this is Ok
+    }
+
+    fun isError() : Boolean {
+        return this is Error
+    }
+
+
+    fun okOrNull () : T? {
+        return when (this) {
+            is Ok -> data
+            else -> null
+        }
+    }
+
+    inline fun onOK(block: (T) -> Unit): SourceResult<T> {
+        if (this is Ok) {
+            block(data)
+        }
+        return this
+    }
+
+    inline fun onError(block: (Error<T>) -> Unit): SourceResult<T> {
+        if (this is Error) {
+            block(this)
+        }
+        return this
+    }
 
 }
 

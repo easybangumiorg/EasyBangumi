@@ -60,7 +60,7 @@ includeModule(":common:resources", "common/resources")
 
 includeModule(":common:database", "common/database")
 
-includeModule(":common:compose", "common/compose")
+includeModule(":common:foundation", "common/foundation")
 
 includeModule(":base:test", "base/test")
 

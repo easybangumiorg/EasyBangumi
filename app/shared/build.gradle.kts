@@ -71,7 +71,7 @@ kotlin {
 
             implementation(projects.common.theme)
 
-            implementation(projects.common.compose)
+            implementation(projects.common.foundation)
 
             implementation(libs.coil.compose)
 

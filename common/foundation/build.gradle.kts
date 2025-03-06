@@ -39,6 +39,7 @@ kotlin {
 
             implementation(compose.material3)
 
+            implementation(projects.base.model)
             implementation(projects.base.utils)
             implementation(projects.base.service)
 

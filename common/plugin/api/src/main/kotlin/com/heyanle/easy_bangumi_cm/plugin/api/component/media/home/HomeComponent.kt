@@ -12,12 +12,7 @@ import com.heyanle.easy_bangumi_cm.plugin.api.component.MediaComponent
 
 interface HomeComponent : MediaComponent {
 
-    class NonLabelSingleHomePage(
-        private val page: HomePage
-    ) : List<HomePage> by listOf(page)
-
-    suspend fun home(): SourceResult<List<HomePage>>
-
+    suspend fun home(): SourceResult<HomeContent>
 
 }
 

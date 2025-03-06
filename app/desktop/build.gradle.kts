@@ -30,7 +30,7 @@ dependencies {
     implementation(projects.base.utils)
 
     implementation(projects.common.theme)
-    implementation(projects.common.compose)
+    implementation(projects.common.foundation)
 }
 
 kotlin {

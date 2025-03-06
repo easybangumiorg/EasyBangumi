@@ -9,10 +9,23 @@ import com.heyanle.easy_bangumi_cm.model.cartoon.CartoonCover
  * https://github.com/heyanLE
  */
 
-/**
- * Created by HeYanLe on 2023/2/27 21:29.
- * https://github.com/heyanLE
- */
+// 首页展示内容
+sealed class HomeContent {
+
+    // 单页面，没有 title
+    class SinglePage(
+        val singlePage: HomePage.SingleCartoonPage
+    )
+
+    // 带一级 Tab
+    class MultiplePage(
+        val pageList: List<HomePage>
+    )
+
+}
+
+
+
 sealed class HomePage {
 
     abstract val label: String
@@ -24,15 +37,6 @@ sealed class HomePage {
         override val label: String,
         val loadPage: suspend ()-> SourceResult<List<SingleCartoonPage>>,
     ): HomePage()
-
-    /**
-     * 异步单页面
-     */
-    class SingleAsyncPage(
-        override val label: String,
-        val load: suspend () -> SourceResult<SingleCartoonPage>
-    ): HomePage()
-
 
 
     /**

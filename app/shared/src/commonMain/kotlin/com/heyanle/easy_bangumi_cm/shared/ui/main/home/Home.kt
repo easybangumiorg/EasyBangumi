@@ -47,6 +47,7 @@ fun HomeContent(
                     homeViewModel.toggleSourcePanel()
                 }) {
                     Icon(Icons.Filled.Recycling, contentDescription = "change source panel")
+
                 }
             },
             title = {
