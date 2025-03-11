@@ -111,6 +111,11 @@ class ExtensionController(
 
     }
 
+    fun refreshExtension(){
+        jsFileExtensionProvider.refresh()
+        pkgExtensionProvider.refresh()
+    }
+
 
 
 }

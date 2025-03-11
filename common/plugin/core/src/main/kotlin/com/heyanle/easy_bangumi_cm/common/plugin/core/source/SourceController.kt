@@ -151,5 +151,9 @@ class SourceController(
         return innerLoader.load(innerSource, sourceConfig)
     }
 
+    fun refresh(){
+        extensionController.refreshExtension()
+    }
+
 
 }

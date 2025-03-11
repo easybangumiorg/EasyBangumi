@@ -1,5 +1,6 @@
 package com.heyanle.easy_bangumi_cm.shared.ui.main.home
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heyanle.easy_bangumi_cm.base.utils.DataState
@@ -13,7 +14,6 @@ import com.heyanle.easy_bangumi_cm.common.plugin.core.source.SourceController
 import com.heyanle.easy_bangumi_cm.plugin.api.base.toDataState
 import com.heyanle.easy_bangumi_cm.plugin.api.component.media.home.HomeComponent
 import com.heyanle.easy_bangumi_cm.plugin.api.component.media.home.HomeContent
-import com.heyanle.easy_bangumi_cm.plugin.api.component.media.home.HomePage
 import com.heyanle.easy_bangumi_cm.plugin.api.component.media.home.homeComponent
 import com.heyanle.lib.inject.core.Inject
 import kotlinx.coroutines.flow.*
@@ -25,7 +25,7 @@ import kotlinx.coroutines.launch
  * https://github.com/heyanLE
  */
 
-class HomeViewModel: ViewModel() {
+class HomeViewModel : ViewModel() {
 
     private val preferenceStore: PreferenceStore by Inject.injectLazy()
     private val selectionKeyPref: Preference<String> by preferenceStore.lazyString("home_selection_key", "")
@@ -33,24 +33,57 @@ class HomeViewModel: ViewModel() {
 
     private val sourceController: SourceController by Inject.injectLazy()
 
-    data class State (
+
+    sealed class SourceUIState {
+        data object Loading : SourceUIState()
+        data object Empty : SourceUIState()
+        data class Error(
+            val errorMsg: String,
+            val throwable: Throwable?,
+        ) : SourceUIState()
+        data class Success(
+            val sourceHomeList: List<Pair<String, ResourceOr>>,  // key to label
+            val selectionKey: String,
+            val topAppLabel: ResourceOr,
+            val isSourcePanelShow: Boolean,
+        ) : SourceUIState()
+    }
+    sealed class HomeContentUIState {
+        data object Loading : HomeContentUIState()
+        data class Error(
+            val errorMsg: String,
+            val throwable: Throwable?,
+        ) : HomeContentUIState()
+
+        data class Success(
+            val homeContent: HomeContent,
+        ) : HomeContentUIState()
+    }
+    data class UIState(
+        // 番源状态 - 番源列表 当前选中番源 番源面板是否展开
+        val sourceUIState: SourceUIState = SourceUIState.Loading,
+        // 内容状态 - 选中番源的 HomeContent 加载状态
+        val homeContentUIState: HomeContentUIState = HomeContentUIState.Loading,
+    )
+    val uiState = mutableStateOf<UIState>(UIState())
+
+    data class State(
         // step.1
         val selectionKey: String = "",
-        val sourceBundleState : DataState<SourceBundle> = DataState.Loading(),
+        val sourceBundleState: DataState<SourceBundle> = DataState.Loading(),
 
         // step.2
         val homeContent: DataState<HomeContent> = DataState.None(),
 
-        // step.3
-        val selectionHomePage: HomePage? = null,
-
-
         // special
         val isSourcePanelShow: Boolean = false
     ) {
+        val realSelectKey: String? by lazy {
+            if (sourceBundleState.okOrNull()?.homeComponentInfo(selectionKey) != null) selectionKey else null
+        }
         val selectedInfo: SourceInfo.Loaded? by lazy {
-            sourceBundleState.okOrNull()?.homeComponentInfo(selectionKey) ?:
-            sourceBundleState.okOrNull()?.homeComponentInfoList()?.firstOrNull()
+            sourceBundleState.okOrNull()?.homeComponentInfo(selectionKey) ?: sourceBundleState.okOrNull()
+                ?.homeComponentInfoList()?.firstOrNull()
         }
         val selectedHomeComponent: HomeComponent? by lazy {
             selectedInfo?.componentBundle?.homeComponent()
@@ -60,11 +93,12 @@ class HomeViewModel: ViewModel() {
         }
 
     }
+
     private val _stateFlow = MutableStateFlow(State())
     val stateFlow = _stateFlow.asStateFlow()
 
     init {
-        // step.1 决定加载哪一个页面
+        // step.1 番源加载 & 当前选中 Key 读取
         viewModelScope.launch {
             combine(
                 sourceController.sourceBundleFlow,
@@ -91,25 +125,77 @@ class HomeViewModel: ViewModel() {
                     _stateFlow.update { it.copy(homeContent = res.toDataState()) }
                 }
         }
+
+        // state -> uiState
+        viewModelScope.launch {
+            stateFlow.collectLatest {
+                val sourceUIState = when (it.sourceBundleState) {
+                    is DataState.Error -> SourceUIState.Error(
+                        it.sourceBundleState.errorMsg,
+                        it.sourceBundleState.throwable
+                    )
+                    is DataState.None -> SourceUIState.Loading
+                    is DataState.Loading -> SourceUIState.Loading
+                    is DataState.Ok -> {
+                        val sourceHomeList = arrayListOf<Pair<String, ResourceOr>>()
+                        sourceHomeList.addAll(
+                            it.sourceBundleState.data.homeComponentInfoList()
+                                .map { it.manifest.key to it.manifest.label })
+                        if (sourceHomeList.isEmpty())
+                            SourceUIState.Empty
+                        else
+                            SourceUIState.Success(
+                                sourceHomeList,
+                                it.realSelectKey ?: "",
+                                it.topAppLabel ?: "",
+                                it.isSourcePanelShow
+                            )
+                    }
+                }
+                val homeContentUIState = when (it.homeContent) {
+                    is DataState.Error -> HomeContentUIState.Error(it.homeContent.errorMsg, it.homeContent.throwable)
+                    is DataState.None -> HomeContentUIState.Loading
+                    is DataState.Loading -> HomeContentUIState.Loading
+                    is DataState.Ok -> HomeContentUIState.Success(it.homeContent.data)
+                }
+                uiState.value = UIState(sourceUIState, homeContentUIState)
+            }
+        }
+    }
+
+    // 刷新番源引擎
+    fun refreshSource() {
+        sourceController.refresh()
+    }
+
+    // 刷新主页内容
+    fun refreshHomeContent() {
+        sourceController.sourceBundleFlow
+        viewModelScope.launch {
+            val current = stateFlow.value.selectedHomeComponent ?: return@launch
+            // loading
+            _stateFlow.update { it.copy(homeContent = DataState.Loading()) }
+            val res = current.home()
+            _stateFlow.update { it.copy(homeContent = res.toDataState()) }
+        }
     }
 
     // source panel
 
-    fun showSourcePanel(){
+    fun showSourcePanel() {
         _stateFlow.update { it.copy(isSourcePanelShow = true) }
     }
 
-    fun hideSourcePanel(){
+    fun hideSourcePanel() {
         _stateFlow.update { it.copy(isSourcePanelShow = false) }
     }
 
-    fun toggleSourcePanel(){
+    fun toggleSourcePanel() {
         _stateFlow.update { it.copy(isSourcePanelShow = !it.isSourcePanelShow) }
     }
 
-    fun changeSelectionKey(key: String){
+    fun changeSelectionKey(key: String) {
         selectionKeyPref.set(key)
     }
-
 
 }

@@ -24,10 +24,11 @@ import com.heyanle.easy_bangumi_cm.shared.LocalNavController
 @Composable
 fun Home() {
     val homeViewModel = viewModel<HomeViewModel>()
-    val state = homeViewModel.stateFlow.collectAsState().value
+    val state = homeViewModel.uiState.value
 
     val navController = LocalNavController.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+
 
     HomeContent(homeViewModel, state, scrollBehavior)
 }
@@ -36,31 +37,31 @@ fun Home() {
 @Composable
 fun HomeContent(
     homeViewModel: HomeViewModel,
-    state: HomeViewModel.State,
+    state: HomeViewModel.UIState,
     scrollBehavior: TopAppBarScrollBehavior,
 ) {
-    Column {
-        TopAppBar(
-            navigationIcon = {
-                IconButton(onClick = {
-                    homeViewModel.toggleSourcePanel()
-                }) {
-                    Icon(Icons.Filled.Recycling, contentDescription = "change source panel")
-
-                }
-            },
-            title = {
-                val label = state.topAppLabel
-                if (label != null) {
-                    Text(stringRes(label))
-                }
-            },
-            scrollBehavior = scrollBehavior
-        )
-        Box(
-            modifier = Modifier.fillMaxWidth().weight(1f)
-        ) {
-
-        }
-    }
+//    Column {
+//        TopAppBar(
+//            navigationIcon = {
+//                IconButton(onClick = {
+//                    homeViewModel.toggleSourcePanel()
+//                }) {
+//                    Icon(Icons.Filled.Recycling, contentDescription = "change source panel")
+//
+//                }
+//            },
+//            title = {
+//                val label = state.sourceUIState.topAppLabel
+//                if (label != null) {
+//                    Text(stringRes(label))
+//                }
+//            },
+//            scrollBehavior = scrollBehavior
+//        )
+//        Box(
+//            modifier = Modifier.fillMaxWidth().weight(1f)
+//        ) {
+//            when(state.homeContent)
+//        }
+//    }
 }

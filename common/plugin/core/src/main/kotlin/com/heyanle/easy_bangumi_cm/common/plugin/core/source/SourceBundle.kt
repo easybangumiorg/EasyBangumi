@@ -44,7 +44,7 @@ class SourceBundle(
     fun componentBundle(key: String) = map[key]?.componentBundle
 
     // 查询 Component 数据
-    fun homeComponentInfoList() = clazzInBundle[HomeComponent::class]
+    fun homeComponentInfoList() = clazzInBundle[HomeComponent::class] ?: emptyList()
     fun homeComponentInfo(key: String) = if (homeComponent(key) == null) null else map[key]
     fun homeComponent(key: String) = map[key]?.componentBundle?.getComponent(HomeComponent::class)
 
