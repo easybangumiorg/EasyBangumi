@@ -3,23 +3,23 @@ package com.heyanle.easy_bangumi_cm.common.foundation.paging
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.heyanle.easy_bangumi_cm.model.cartoon.CartoonCover
-import com.heyanle.easy_bangumi_cm.plugin.api.component.media.home.HomePage
+import com.heyanle.easy_bangumi_cm.plugin.api.component.media.home.CartoonPage
 
 /**
  * Created by heyanlin on 2025/3/5.
  */
-class SingleHomePagePagingSource(
-    private val homePage: HomePage.SingleCartoonPage
+class CartoonPagePagingSource(
+    private val cartoonPage: CartoonPage,
 ) : PagingSource<Int, CartoonCover>() {
 
     override fun getRefreshKey(state: PagingState<Int, CartoonCover>): Int {
-        return homePage.firstKey()
+        return cartoonPage.firstKey()
     }
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, CartoonCover> {
         val key = params.key ?: return LoadResult.Error(NullPointerException())
         kotlin.runCatching {
-            homePage.load(key)
+            cartoonPage.load(key)
                 .onOK {
                     return LoadResult.Page(
                         data = it.second,

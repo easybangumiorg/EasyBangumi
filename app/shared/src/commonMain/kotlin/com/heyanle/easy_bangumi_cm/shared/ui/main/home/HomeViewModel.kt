@@ -39,7 +39,11 @@ class HomeViewModel: ViewModel() {
         val sourceBundleState : DataState<SourceBundle> = DataState.Loading(),
 
         // step.2
-        val pageData: DataState<HomeContent> = DataState.None(),
+        val homeContent: DataState<HomeContent> = DataState.None(),
+
+        // step.3
+        val selectionHomePage: HomePage? = null,
+
 
         // special
         val isSourcePanelShow: Boolean = false
@@ -82,9 +86,9 @@ class HomeViewModel: ViewModel() {
             stateFlow.map { it.selectedHomeComponent }.filterNotNull().distinctUntilChanged()
                 .collectLatest {
                     // loading
-                    _stateFlow.update { it.copy(pageData = DataState.Loading()) }
+                    _stateFlow.update { it.copy(homeContent = DataState.Loading()) }
                     val res = it.home()
-                    _stateFlow.update { it.copy(pageData = res.toDataState()) }
+                    _stateFlow.update { it.copy(homeContent = res.toDataState()) }
                 }
         }
     }

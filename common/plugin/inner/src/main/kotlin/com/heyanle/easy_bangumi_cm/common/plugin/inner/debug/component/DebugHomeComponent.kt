@@ -6,6 +6,7 @@ import com.heyanle.easy_bangumi_cm.model.cartoon.CartoonCover
 import com.heyanle.easy_bangumi_cm.plugin.api.base.SourceResult
 import com.heyanle.easy_bangumi_cm.plugin.api.base.withResult
 import com.heyanle.easy_bangumi_cm.plugin.api.component.ComponentWrapper
+import com.heyanle.easy_bangumi_cm.plugin.api.component.media.home.CartoonPage
 import com.heyanle.easy_bangumi_cm.plugin.api.component.media.home.HomeComponent
 import com.heyanle.easy_bangumi_cm.plugin.api.component.media.home.HomeContent
 import com.heyanle.easy_bangumi_cm.plugin.api.component.media.home.HomePage
@@ -22,26 +23,24 @@ class DebugHomeComponent(
 
     override suspend fun home(): SourceResult<HomeContent> {
         return withResult(CoroutineProvider.io) {
-            HomeContent.MultiplePage(
+            HomeContent.Multiple(
                 pageList = listOf(
-                    HomePage.Group(
-                        "debug 1",
-                        loadPage = {
+                    "debug 1" to HomePage.Group(
+                        load = {
                             withResult (CoroutineProvider.io){
                                 listOf(
-                                    pageWithCover("page 1"),
-                                    pageWithoutCover("page 2"),
+                                    "page 1" to pageWithCover(),
+                                    "page 2" to pageWithoutCover("page 2"),
                                 )
                             }
                         }
                     ),
-                    HomePage.Group(
-                        "debug 2",
-                        loadPage = {
+                    "debug 2" to HomePage.Group(
+                        load = {
                             withResult (CoroutineProvider.io){
                                 listOf(
-                                    pageWithCover("page 3"),
-                                    pageWithoutCover("page 4"),
+                                    "page3" to pageWithCover(),
+                                    "page 4" to pageWithoutCover("page 4"),
                                 )
                             }
                         }
@@ -53,10 +52,8 @@ class DebugHomeComponent(
     }
 
     private fun pageWithCover(
-        label: String,
-    ): HomePage.SingleCartoonPage.WithCover {
-        return HomePage.SingleCartoonPage.WithCover(
-            label = label,
+    ): CartoonPage.WithCover {
+        return CartoonPage.WithCover(
             firstKey = {
                 1
             },
@@ -67,7 +64,7 @@ class DebugHomeComponent(
                     }
                     val res = MutableList(10) {
                         CartoonCover(
-                            id = "test ${label} ${key * 10 + it}",
+                            id = "test ${key * 10 + it}",
                             mediaSource = debugInnerSource.id,
 
                             name = "test ${key * 10 + it}",
@@ -84,9 +81,8 @@ class DebugHomeComponent(
 
     private fun pageWithoutCover(
         label: String,
-    ): HomePage.SingleCartoonPage.WithoutCover {
-        return HomePage.SingleCartoonPage.WithoutCover(
-            label = label,
+    ): CartoonPage.WithoutCover {
+        return CartoonPage.WithoutCover(
             firstKey = {
                 1
             },

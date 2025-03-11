@@ -5,6 +5,7 @@ import com.heyanle.easy_bangumi_cm.model.cartoon.CartoonCover
 
 
 /**
+ * 一级 tab，二级 tab，首页内容
  * Created by HeYanLe on 2024/12/8 21:59.
  * https://github.com/heyanLE
  */
@@ -13,63 +14,54 @@ import com.heyanle.easy_bangumi_cm.model.cartoon.CartoonCover
 sealed class HomeContent {
 
     // 单页面，没有 title
-    class SinglePage(
-        val singlePage: HomePage.SingleCartoonPage
+    class Single(
+        val single: HomePage
     ): HomeContent()
 
-    // 带一级 Tab
-    class MultiplePage(
-        val pageList: List<HomePage>
+    // 带一级 Tab，一级 tab 不允许异步
+    // label to HomePage
+    class Multiple(
+        val pageList: List<Pair<String, HomePage>>
     ): HomeContent()
 
 }
 
-
-
 sealed class HomePage {
 
-    abstract val label: String
-
-    /**
-     * 页面组，异步加载多个
-     */
-    class Group(
-        override val label: String,
-        val loadPage: suspend ()-> SourceResult<List<SingleCartoonPage>>,
+    class Single (
+        val load: suspend () -> SourceResult<CartoonPage>
     ): HomePage()
 
+    // 二级 tab 支持异步加载
+    class Group (
+        val load: suspend () -> SourceResult<List<Pair<String, CartoonPage>>>
+    ): HomePage()
+
+}
+
+sealed class CartoonPage {
+    // 获取首页 key
+    abstract var firstKey: () -> Int
+
+    // 加载某一页数据
+    // 返回下一页的 key 和数据
+    abstract var load: suspend (Int) -> SourceResult<Pair<Int?, List<CartoonCover>>>
 
     /**
-     * 单个页面
+     * 带有番剧缩略图
+     * 将会展示 CartoonCover 里的 coverUrl 和 title
      */
-    sealed class SingleCartoonPage: HomePage() {
+    class WithCover(
+        override var firstKey: () -> Int,
+        override var load: suspend (Int) -> SourceResult<Pair<Int?, List<CartoonCover>>>,
+    ): CartoonPage()
 
-        // 获取首页 key
-        abstract var firstKey: () -> Int
-
-        // 加载某一页数据
-        abstract var load: suspend (Int) -> SourceResult<Pair<Int?, List<CartoonCover>>>
-
-        /**
-         * 带有番剧缩略图
-         * 将会展示 CartoonCover 里的 coverUrl 和 title
-         */
-        class WithCover(
-            override var label: String,
-            override var firstKey: () -> Int,
-            override var load: suspend (Int) -> SourceResult<Pair<Int?, List<CartoonCover>>>,
-        ): SingleCartoonPage()
-
-        /**
-         * 不带缩略图
-         * 将会展示 CartoonCover 里的 intro（如果有）和 title
-         */
-        class WithoutCover(
-            override var label: String,
-            override var firstKey: () -> Int,
-            override var load: suspend (Int) -> SourceResult<Pair<Int?, List<CartoonCover>>>,
-        ): SingleCartoonPage()
-
-    }
-
+    /**
+     * 不带缩略图
+     * 将会展示 CartoonCover 里的 intro（如果有）和 title
+     */
+    class WithoutCover(
+        override var firstKey: () -> Int,
+        override var load: suspend (Int) -> SourceResult<Pair<Int?, List<CartoonCover>>>,
+    ): CartoonPage()
 }
