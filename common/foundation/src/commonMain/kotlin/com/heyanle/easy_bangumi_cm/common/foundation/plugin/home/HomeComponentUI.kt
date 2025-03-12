@@ -70,9 +70,9 @@ fun HomeComponentContent(
                 }
                 HorizontalDivider(modifier = Modifier.fillMaxWidth())
             }
-            Box (
+            Box(
                 modifier = Modifier.fillMaxWidth().weight(1f)
-            ){
+            ) {
                 homeContentViewModel.child(page) {
                     HomeComponentPage(
                         homePage = page,
@@ -82,7 +82,6 @@ fun HomeComponentContent(
                     )
                 }
             }
-
         }
     }
 }
@@ -183,11 +182,7 @@ fun HomeComponentPage(
                         }
                     }
                 }
-
-
             }
         }
     }
-
-
 }
