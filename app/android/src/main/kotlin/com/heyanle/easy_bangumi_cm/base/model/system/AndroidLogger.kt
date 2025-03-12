@@ -2,6 +2,7 @@ package com.heyanle.easy_bangumi_cm.base.model.system
 
 import android.util.Log
 import com.heyanle.easy_bangumi_cm.base.service.system.ILogger
+import com.heyanle.easy_bangumi_cm.base.service.system.logger
 
 
 /**
@@ -10,6 +11,9 @@ import com.heyanle.easy_bangumi_cm.base.service.system.ILogger
  */
 
 class AndroidLogger: ILogger {
+    init {
+        logger = this
+    }
 
     override fun d(tag: String, msg: String) {
         Log.d(tag, msg)

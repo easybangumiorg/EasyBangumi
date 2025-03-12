@@ -57,7 +57,7 @@ class JSFileExtensionProvider(
 
     private val workIndexHelper: JsonlFileHelper<JsExtensionIndexItem> by lazy {
         JsonlFileHelper.from<JsExtensionIndexItem>(
-            folder = UniFileFactory.fromFile(workIndexFile),
+            folder = UniFileFactory.fromFile(workFolderFile),
             name = INDEX_FILE_NAME,
         )
     }

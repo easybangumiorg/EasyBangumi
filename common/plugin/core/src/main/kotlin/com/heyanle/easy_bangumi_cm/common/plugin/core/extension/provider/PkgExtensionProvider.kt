@@ -102,7 +102,7 @@ class PkgExtensionProvider(
 
     private val workIndexHelper: JsonlFileHelper<PkgExtensionIndexItem> by lazy {
         JsonlFileHelper.from<PkgExtensionIndexItem>(
-            folder = UniFileFactory.fromFile(workIndexFile),
+            folder = UniFileFactory.fromFile(workFolderFile),
             name = INDEX_FILE_NAME,
         )
     }

@@ -26,20 +26,22 @@ abstract class InnerSource: Source {
 
     abstract val componentClazz: List<KClass<out Component>>
 
-    override val manifest: SourceManifest = SourceManifest(
-        id = id,
-        type = type,
-        label = label,
-        icon = icon,
-        version = version,
-        author = author,
-        description = description,
-        website = website,
-        map = emptyMap(),
-        lastModified = System.currentTimeMillis(),
-        loadType = SourceManifest.LOAD_TYPE_INNER,
-        sourceUri = "",
-        extensionManifest = innerExtensionManifestProvider.extensionManifest
-    )
+    override val manifest: SourceManifest by lazy {
+        SourceManifest(
+            id = id,
+            type = type,
+            label = label,
+            icon = icon,
+            version = version,
+            author = author,
+            description = description,
+            website = website,
+            map = emptyMap(),
+            lastModified = System.currentTimeMillis(),
+            loadType = SourceManifest.LOAD_TYPE_INNER,
+            sourceUri = "",
+            extensionManifest = innerExtensionManifestProvider.extensionManifest
+        )
+    }
 
 }

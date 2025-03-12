@@ -41,6 +41,7 @@ open class ParentViewModel<T>: ViewModel() {
                     removeChildOwner(key)
                 }
             }
+            content()
         }
     }
 

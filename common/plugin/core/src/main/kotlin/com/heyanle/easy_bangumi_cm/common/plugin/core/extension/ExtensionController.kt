@@ -1,6 +1,7 @@
 package com.heyanle.easy_bangumi_cm.common.plugin.core.extension
 
 import com.heyanle.easy_bangumi_cm.base.service.provider.IPathProvider
+import com.heyanle.easy_bangumi_cm.base.service.system.logger
 import com.heyanle.easy_bangumi_cm.base.utils.CoroutineProvider
 import com.heyanle.easy_bangumi_cm.common.plugin.core.entity.ExtensionInfo
 import com.heyanle.easy_bangumi_cm.common.plugin.core.extension.provider.JSFileExtensionProvider
@@ -21,6 +22,10 @@ import java.io.File
 class ExtensionController(
     private val pathProvider: IPathProvider
 ) {
+
+    companion object {
+        const val TAG = "ExtensionController"
+    }
 
     // == ExtensionInfo Flow ================================================================================
 
@@ -103,6 +108,27 @@ class ExtensionController(
                 _manifestState.update { i }
             }
 
+        }
+
+        scope.launch {
+            manifestState.collectLatest {
+                logger.i(TAG, "manifestState: $it")
+                if (it.loading) {
+                    _infoState.update { it.copy(loading = true) }
+                    return@collectLatest
+                }
+                val map = it.extensionManifest
+                if (map.isEmpty()) {
+                    _infoState.update { it.copy(loading = false, extensionInfoInfoMap = emptyMap()) }
+                } else {
+                    // TODO load extension info
+                }
+            }
+        }
+
+        scope.launch {
+            jsFileExtensionProvider.refresh()
+            pkgExtensionProvider.refresh()
         }
 
     }

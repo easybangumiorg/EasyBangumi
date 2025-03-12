@@ -3,6 +3,8 @@ package com.heyanle.easy_bangumi_cm.base.service.system
  * ILogger is an interface that defines a set of logging methods for different log levels.
  * Implementations of this interface should provide the actual logging mechanism for each log level.
  */
+lateinit var logger: ILogger
+
 interface ILogger {
     fun d(tag: String, msg: String)
 

@@ -2,9 +2,11 @@ package com.heyanle.easy_bangumi_cm.shared
 
 
 import com.heyanle.easy_bangumi_cm.common.plugin.PluginModule
+import com.heyanle.easy_bangumi_cm.common.plugin.core.EasyPluginConfigProvider
 import com.heyanle.easy_bangumi_cm.common.theme.ThemeModule
 import com.heyanle.easy_bangumi_cm.database.DatabaseModule
 import com.heyanle.easy_bangumi_cm.shared.plugin.PluginConfigProvider
+import com.heyanle.lib.inject.api.addAlias
 import com.heyanle.lib.inject.api.addSingletonFactory
 import com.heyanle.lib.inject.core.Inject
 
@@ -23,7 +25,8 @@ object Scheduler {
         Inject.addSingletonFactory {
             PluginConfigProvider()
         }
-        PluginModule(true)
+        Inject.addAlias<PluginConfigProvider, EasyPluginConfigProvider>()
+        PluginModule(true).registerWith(Inject)
     }
 
     fun onSplashPageLaunch(){

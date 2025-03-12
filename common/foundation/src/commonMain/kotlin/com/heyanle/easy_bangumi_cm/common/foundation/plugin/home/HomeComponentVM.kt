@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
+import com.heyanle.easy_bangumi_cm.base.service.system.logger
 import com.heyanle.easy_bangumi_cm.base.utils.DataState
 import com.heyanle.easy_bangumi_cm.common.foundation.paging.CartoonPagePagingSource
 import com.heyanle.easy_bangumi_cm.common.foundation.plugin.home.HomePageViewModel.UIState
@@ -88,6 +89,10 @@ class HomeContentViewModel(
 class HomePageViewModel(
     private val homePage: HomePage,
 ) : ParentViewModel<CartoonPage>() {
+
+    companion object {
+        const val TAG = "HomePageViewModel"
+    }
 
     // ================== UI State ==================
 
@@ -177,6 +182,7 @@ class HomePageViewModel(
                         }
                     }
                 }
+                logger.i(TAG, "uiState: $uiState")
             }
         }
         refresh()

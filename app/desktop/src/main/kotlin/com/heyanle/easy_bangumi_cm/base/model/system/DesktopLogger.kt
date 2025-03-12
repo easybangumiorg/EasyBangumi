@@ -1,6 +1,7 @@
 package com.heyanle.easy_bangumi_cm.base.model.system
 
 import com.heyanle.easy_bangumi_cm.base.service.system.ILogger
+import com.heyanle.easy_bangumi_cm.base.service.system.logger
 
 
 /**
@@ -9,6 +10,11 @@ import com.heyanle.easy_bangumi_cm.base.service.system.ILogger
  */
 
 class DesktopLogger: ILogger {
+
+    init {
+        logger = this
+    }
+
     override fun d(tag: String, msg: String) {
         println("[$tag] $msg")
     }
