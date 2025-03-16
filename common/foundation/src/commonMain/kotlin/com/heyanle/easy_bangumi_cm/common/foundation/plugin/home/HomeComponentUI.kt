@@ -17,10 +17,13 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import app.cash.paging.compose.collectAsLazyPagingItems
 import com.heyanle.easy_bangumi_cm.base.service.system.logger
+import com.heyanle.easy_bangumi_cm.common.foundation.cartoon.CartoonCardWithCover
 import com.heyanle.easy_bangumi_cm.common.foundation.elements.EmptyElements
 import com.heyanle.easy_bangumi_cm.common.foundation.elements.ErrorElements
 import com.heyanle.easy_bangumi_cm.common.foundation.elements.LoadingElements
+import com.heyanle.easy_bangumi_cm.common.foundation.lazy.pagingCommon
 import com.heyanle.easy_bangumi_cm.common.foundation.view_model.easyVM
 import com.heyanle.easy_bangumi_cm.common.resources.Res
 import com.heyanle.easy_bangumi_cm.plugin.api.component.media.home.HomeContent
@@ -133,56 +136,85 @@ fun HomeComponentPage(
 
         is HomePageViewModel.UIState.Success -> {
             val tabState = uiState.tabState
-            // Page
-            LazyVerticalGrid(
-                modifier = Modifier.fillMaxSize().let {
-                    if (scrollBehavior == null) {
-                        it
-                    } else {
-                        it.nestedScroll(scrollBehavior.nestedScrollConnection)
-                    }
-                },
-                columns = columns,
-                state = lazyGridState,
-            ) {
+            val page = uiState.cartoonPage
+            homePageViewModel.child(page) {
 
-                // tab
-                if (tabState != null) {
-                    item(
-                        span = { GridItemSpan(maxLineSpan) },
-                    ) {
-                        LazyRow(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center,
-                            state = rememberLazyListState()
+                val cartoonPageViewModel = easyVM<CartoonPageViewModel>(page)
+                val lazyPagingState = cartoonPageViewModel.pageState.value.collectAsLazyPagingItems()
+
+                // Page
+                LazyVerticalGrid(
+                    modifier = Modifier.fillMaxSize().let {
+                        if (scrollBehavior == null) {
+                            it
+                        } else {
+                            it.nestedScroll(scrollBehavior.nestedScrollConnection)
+                        }
+                    },
+                    columns = columns,
+                    state = lazyGridState,
+                ) {
+
+                    // tab
+                    if (tabState != null) {
+                        item(
+                            span = { GridItemSpan(maxLineSpan) },
                         ) {
-                            itemsIndexed(tabState.first) { index, item ->
-                                val selected = index == tabState.second
-                                Surface(
-                                    shape = CircleShape,
-                                    modifier =
-                                        Modifier
-                                            .padding(2.dp, 8.dp),
-                                    color = if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
-                                ) {
-                                    Text(
-                                        modifier = Modifier
-                                            .clip(CircleShape)
-                                            .clickable {
-                                                homePageViewModel.select(index)
-                                            }
-                                            .padding(8.dp, 0.dp),
-                                        color = if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onBackground,
-                                        fontWeight = FontWeight.W900,
-                                        text = item,
-                                        fontSize = 12.sp,
-                                    )
+                            LazyRow(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center,
+                                state = rememberLazyListState()
+                            ) {
+                                itemsIndexed(tabState.first) { index, item ->
+                                    val selected = index == tabState.second
+                                    Surface(
+                                        shape = CircleShape,
+                                        modifier =
+                                            Modifier
+                                                .padding(2.dp, 8.dp),
+                                        color = if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
+                                    ) {
+                                        Text(
+                                            modifier = Modifier
+                                                .clip(CircleShape)
+                                                .clickable {
+                                                    homePageViewModel.select(index)
+                                                }
+                                                .padding(8.dp, 0.dp),
+                                            color = if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onBackground,
+                                            fontWeight = FontWeight.W900,
+                                            text = item,
+                                            fontSize = 12.sp,
+                                        )
+                                    }
                                 }
                             }
                         }
+
+                        items(lazyPagingState.itemCount) {
+                            val item = lazyPagingState[it]
+                            if (item != null) {
+                                CartoonCardWithCover(
+                                    cartoonCover = item,
+                                    onClick = {
+                                        logger.i("CartoonCardWithCover", "click: $it")
+                                    }
+                                )
+                            }
+
+                        }
+
+                        pagingCommon(lazyPagingState)
+
+
+
                     }
+
+
                 }
+
             }
+
         }
     }
 }

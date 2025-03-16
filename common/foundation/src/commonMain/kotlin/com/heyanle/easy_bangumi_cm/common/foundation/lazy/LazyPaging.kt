@@ -21,7 +21,6 @@ import dev.icerock.moko.resources.compose.stringResource
 /**
  * Created by heyanlin on 2025/2/28.
  */
-@Composable
 fun <T : Any> LazyGridScope.pagingCommon(
     pagingItems: LazyPagingItems<T>,
     isShowLoading: Boolean = true,

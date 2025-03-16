@@ -36,11 +36,6 @@ open class ParentViewModel<T>: ViewModel() {
         CompositionLocalProvider(
             LocalViewModelStoreOwner provides owner,
         ) {
-            DisposableEffect(Unit) {
-                onDispose {
-                    removeChildOwner(key)
-                }
-            }
             content()
         }
     }

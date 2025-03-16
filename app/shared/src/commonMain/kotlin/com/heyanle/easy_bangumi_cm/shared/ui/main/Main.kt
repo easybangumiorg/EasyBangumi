@@ -128,7 +128,7 @@ fun Main() {
     val needDebug = remember {
         ! Inject.get<IPlatformInformation>().isRelease
     }
-    val pagerState = rememberPagerState(0) { MainPageItems.size + if (needDebug) 1 else 0 }
+    val pagerState = rememberPagerState(0) { MainPageItems.size }
     val scope = rememberCoroutineScope()
 
     val fileProvider = Inject.get<IPathProvider>()
