@@ -1,5 +1,6 @@
 package com.heyanle.easy_bangumi_cm.common.foundation.plugin.home
 
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,6 +9,8 @@ import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
 import com.heyanle.easy_bangumi_cm.base.service.system.logger
 import com.heyanle.easy_bangumi_cm.base.utils.DataState
+import com.heyanle.easy_bangumi_cm.base.utils.map
+import com.heyanle.easy_bangumi_cm.common.foundation.ScrollableHeaderState
 import com.heyanle.easy_bangumi_cm.common.foundation.paging.CartoonPagePagingSource
 import com.heyanle.easy_bangumi_cm.common.foundation.plugin.home.HomePageViewModel.UIState
 import com.heyanle.easy_bangumi_cm.common.foundation.view_model.ParentViewModel
@@ -29,16 +32,15 @@ class HomeContentViewModel(
     homeContent: HomeContent,
 ) : ParentViewModel<HomePage>() {
 
-    data class UIState (
-        val isLoading: Boolean = true,
-        val tabState: Pair<List<String>, Int>? = null,
-        val homePage: HomePage? = null,
-    ) {
-        fun isEmpty(): Boolean {
-            return tabState?.first?.isNotEmpty() != true && homePage == null && !isLoading
-        }
+    companion object {
+        const val TAG = "HomeContentViewModel"
     }
-    val uiState = mutableStateOf(UIState())
+
+    data class UIState (
+        val tabState: Pair<List<String>, Int>? = null,
+        val homePage: HomePage,
+    )
+    val uiState = mutableStateOf<DataState<UIState>>(DataState.loading<UIState>())
 
 
     data class State (
@@ -52,24 +54,23 @@ class HomeContentViewModel(
         viewModelScope.launch {
             // state -> uiState
             _stateFlow.collectLatest {
-                uiState.value = when (homeContent) {
+                uiState.value = when (it.homeContent) {
                     is HomeContent.Single -> {
-                        UIState(
-                            isLoading = false,
-                            tabState = null,
-                            homePage = homeContent.single,
-                        )
+                        DataState.ok(UIState(tabState = null, homePage = it.homeContent.single,))
                     }
                     is HomeContent.Multiple -> {
-                        val pageList = homeContent.pageList
+                        val pageList = it.homeContent.pageList
                         val tabList = pageList.map { it.first }
-                        val selectIndex = it.selectionIndex
+                        var selectIndex = it.selectionIndex
+                        if (selectIndex < 0 || selectIndex >= tabList.size) {
+                            selectIndex = 0
+                        }
                         val homePage = pageList.getOrNull(selectIndex)?.second
-                        UIState(
-                            isLoading = false,
-                            tabState = if (homePage == null) null else tabList to selectIndex,
-                            homePage = homePage,
-                        )
+                        if (homePage == null) {
+                            DataState.empty<UIState>()
+                        } else {
+                            DataState.ok(UIState(tabState = if (homePage == null) null else tabList to selectIndex, homePage = homePage))
+                        }
                     }
                 }
             }
@@ -94,24 +95,35 @@ class HomePageViewModel(
         const val TAG = "HomePageViewModel"
     }
 
+    data class ScrollState(
+        val lazyGridState: LazyGridState = LazyGridState(),
+        val scrollableHeaderState: ScrollableHeaderState? = null,
+    )
+
+
+
+
+
+    private val scrollableHeaderStateTemp = hashMapOf<CartoonPage, ScrollableHeaderState>()
+    private val cartoonPageLazyGridStateTemp = hashMapOf<CartoonPage, LazyGridState>()
+
+    fun getLazyGridState(cartoonPage: CartoonPage): LazyGridState {
+        return cartoonPageLazyGridStateTemp.getOrPut(cartoonPage) { LazyGridState() }
+    }
+
+    fun getScrollableHeaderState(cartoonPage: CartoonPage): ScrollableHeaderState {
+        return scrollableHeaderStateTemp.getOrPut(cartoonPage) { ScrollableHeaderState(0f, 0f, 0f) }
+    }
+
     // ================== UI State ==================
 
-    sealed class UIState {
-        data object Loading : UIState()
-        data class Error(
-            val errorMsg: String,
-            val throwable: Throwable?,
-        ) : UIState()
+    data class UIState(
+        val tabState: Pair<List<String>, Int>?,
+        val cartoonPage: CartoonPage,
+    )
 
-        data class Success(
-            val tabState: Pair<List<String>, Int>?,
-            val cartoonPage: CartoonPage,
-        ) : UIState()
 
-        data object Empty: UIState()
-
-    }
-    val uiState = mutableStateOf<UIState>(UIState.Loading)
+    val uiState = mutableStateOf<DataState<UIState>>(DataState.loading())
 
     // ================== LogicState ==================
     sealed class State {
@@ -147,24 +159,14 @@ class HomePageViewModel(
             _stateFlow.collectLatest {
                 uiState.value = when (it) {
                     is State.Single -> {
-                        when (it.cartoonPage) {
-                            is DataState.Loading -> UIState.Loading
-                            is DataState.None -> UIState.Loading
-                            is DataState.Error -> UIState.Error(it.cartoonPage.errorMsg, it.cartoonPage.throwable)
-                            is DataState.Ok -> {
-                                UIState.Success(null, it.cartoonPage.data)
-                            }
-                        }
+                        it.cartoonPage.map { UIState(null, it) }
                     }
 
                     is State.Group -> {
                         when (it.cartoonPageList) {
-                            is DataState.Loading -> UIState.Loading
-                            is DataState.None -> UIState.Loading
-                            is DataState.Error -> UIState.Error(
-                                it.cartoonPageList.errorMsg,
-                                it.cartoonPageList.throwable
-                            )
+                            is DataState.Loading -> DataState.loading()
+                            is DataState.None -> DataState.none()
+                            is DataState.Error -> DataState.error(it.cartoonPageList.errorMsg, it.cartoonPageList.throwable)
                             is DataState.Ok -> {
                                 val list = it.cartoonPageList.data
                                 val tabList = list.map { it.first }
@@ -174,9 +176,10 @@ class HomePageViewModel(
                                 }
                                 val page = list.getOrNull(selectIndex)?.second
                                 if (page == null) {
-                                    UIState.Empty
+                                    DataState.empty<UIState>()
                                 } else {
-                                    UIState.Success(tabList to selectIndex, page)
+                                    DataState.ok<UIState>(UIState(tabList to selectIndex, page))
+
                                 }
                             }
                         }
@@ -194,6 +197,8 @@ class HomePageViewModel(
         viewModelScope.launch {
             _stateFlow.update { State.from(homePage) }
             cleanChildren()
+            scrollableHeaderStateTemp.clear()
+            cartoonPageLazyGridStateTemp.clear()
             when (homePage) {
                 is HomePage.Group -> {
                     val res = homePage.load()

@@ -38,9 +38,9 @@ fun Home() {
     val state = homeViewModel.uiState.value
 
     val navController = LocalNavController.current
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val havior = TopAppBarDefaults.pinnedScrollBehavior()
 
-    HomeContent(homeViewModel, state, scrollBehavior)
+    HomeContent(homeViewModel, state, havior)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -136,8 +136,7 @@ fun HomeContent(
                     // success
                     HomeComponentContent(
                         content = contentState.homeContent,
-                        scrollBehavior = scrollBehavior,
-                        lazyGridState = lazyGridState,
+                        nestedScrollConnection = scrollBehavior.nestedScrollConnection,
                         columns = GridCells.Adaptive(100.dp)
                     )
                 }

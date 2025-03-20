@@ -188,7 +188,7 @@ fun Main() {
 
         }
         Column {
-            VerticalPager(state = pagerState) {
+            VerticalPager(state = pagerState, userScrollEnabled = false) {
                 MainPageItems[it].content()
             }
         }

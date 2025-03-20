@@ -9,26 +9,28 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.cash.paging.compose.collectAsLazyPagingItems
 import com.heyanle.easy_bangumi_cm.base.service.system.logger
+import com.heyanle.easy_bangumi_cm.common.foundation.ScrollableHeaderBehavior
+import com.heyanle.easy_bangumi_cm.common.foundation.ScrollableHeaderScaffold
 import com.heyanle.easy_bangumi_cm.common.foundation.cartoon.CartoonCardWithCover
-import com.heyanle.easy_bangumi_cm.common.foundation.elements.EmptyElements
-import com.heyanle.easy_bangumi_cm.common.foundation.elements.ErrorElements
-import com.heyanle.easy_bangumi_cm.common.foundation.elements.LoadingElements
+import com.heyanle.easy_bangumi_cm.common.foundation.elements.LoadScaffold
+import com.heyanle.easy_bangumi_cm.common.foundation.lazy.PagingCommon
 import com.heyanle.easy_bangumi_cm.common.foundation.lazy.pagingCommon
 import com.heyanle.easy_bangumi_cm.common.foundation.view_model.easyVM
-import com.heyanle.easy_bangumi_cm.common.resources.Res
+import com.heyanle.easy_bangumi_cm.plugin.api.component.media.home.CartoonPage
 import com.heyanle.easy_bangumi_cm.plugin.api.component.media.home.HomeContent
 import com.heyanle.easy_bangumi_cm.plugin.api.component.media.home.HomePage
-import dev.icerock.moko.resources.compose.stringResource
 
 /**
  * Created by heyanlin on 2025/3/3.
@@ -37,27 +39,18 @@ import dev.icerock.moko.resources.compose.stringResource
 @Composable
 fun HomeComponentContent(
     content: HomeContent,
-    scrollBehavior: TopAppBarScrollBehavior,
-    lazyGridState: LazyGridState,
+    nestedScrollConnection: NestedScrollConnection? = null,
     columns: GridCells,
 ) {
     val homeContentViewModel = easyVM<HomeContentViewModel>(content)
     val uiState = homeContentViewModel.uiState.value
-    val page = uiState.homePage
-    if (uiState.isLoading) {
-        LoadingElements(
-            modifier = Modifier.fillMaxSize(),
-            isRow = false
-        )
-    } else if (uiState.isEmpty() || page == null) {
-        EmptyElements(
-            modifier = Modifier.fillMaxSize(),
-            isRow = false
-        )
-    } else {
+    LoadScaffold(
+        modifier = Modifier.fillMaxSize(),
+        data = uiState
+    ) {
         Column {
-            // Tab
-            val tabState = uiState.tabState
+            val tabState = it.data.tabState
+            val page = it.data.homePage
             if (tabState != null) {
                 LazyRow {
                     itemsIndexed(tabState.first) { index, item ->
@@ -76,16 +69,16 @@ fun HomeComponentContent(
             Box(
                 modifier = Modifier.fillMaxWidth().weight(1f)
             ) {
-                homeContentViewModel.child(page) {
+                homeContentViewModel.child(it.data.homePage) {
                     HomeComponentPage(
                         homePage = page,
-                        scrollBehavior = if (content is HomeContent.Single) scrollBehavior else null,
-                        lazyGridState = lazyGridState,
+                        nestedScrollConnection = if (content is HomeContent.Single) nestedScrollConnection else null,
                         columns = columns
                     )
                 }
             }
         }
+
     }
 }
 
@@ -93,128 +86,114 @@ fun HomeComponentContent(
 @Composable
 fun HomeComponentPage(
     homePage: HomePage,
-    scrollBehavior: TopAppBarScrollBehavior? = null,
-    lazyGridState: LazyGridState,
+    nestedScrollConnection: NestedScrollConnection? = null,
     columns: GridCells,
 ) {
     val homePageViewModel = easyVM<HomePageViewModel>(homePage)
-    when (
-        val uiState = homePageViewModel.uiState.value
+    val uiState = homePageViewModel.uiState.value
+    LoadScaffold(
+        Modifier.fillMaxSize(),
+        data = uiState
     ) {
-        HomePageViewModel.UIState.Loading -> {
-            LoadingElements(
-                modifier = Modifier.fillMaxSize(),
-                isRow = false
-            )
+        val tabState = it.data.tabState
+        val headerBehavior = if (tabState == null)
+            null
+        else ScrollableHeaderBehavior.enterAlwaysScrollBehavior(state = homePageViewModel.getScrollableHeaderState(it.data.cartoonPage))
+
+        LaunchedEffect(it.data.cartoonPage) {
+            headerBehavior?.state?.offset = 0f
         }
 
-        HomePageViewModel.UIState.Empty -> {
-            EmptyElements(
-                modifier = Modifier.fillMaxSize(),
-                isRow = false
-            )
-        }
+        ScrollableHeaderScaffold(
+            modifier = Modifier.fillMaxSize().clipToBounds()
+                .let { if (nestedScrollConnection == null) it else it.nestedScroll(nestedScrollConnection) },
+            behavior = headerBehavior,
+            headerIfBehavior = {
+                if (tabState != null) {
+                    LazyRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        state = rememberLazyListState()
+                    ) {
 
-        is HomePageViewModel.UIState.Error -> {
-            ErrorElements(
-                modifier = Modifier.fillMaxSize(),
-                isRow = false,
-                errorMsg = uiState.errorMsg,
-                onClick = {
-                    homePageViewModel.refresh()
-                },
-                other = {
-                    Spacer(Modifier.size(12.dp))
-                    Text(
-                        text = stringResource(Res.strings.retry),
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-                        fontStyle = FontStyle.Italic
-                    )
-                }
-            )
-        }
-
-        is HomePageViewModel.UIState.Success -> {
-            val tabState = uiState.tabState
-            val page = uiState.cartoonPage
-            homePageViewModel.child(page) {
-
-                val cartoonPageViewModel = easyVM<CartoonPageViewModel>(page)
-                val lazyPagingState = cartoonPageViewModel.pageState.value.collectAsLazyPagingItems()
-
-                // Page
-                LazyVerticalGrid(
-                    modifier = Modifier.fillMaxSize().let {
-                        if (scrollBehavior == null) {
-                            it
-                        } else {
-                            it.nestedScroll(scrollBehavior.nestedScrollConnection)
-                        }
-                    },
-                    columns = columns,
-                    state = lazyGridState,
-                ) {
-
-                    // tab
-                    if (tabState != null) {
-                        item(
-                            span = { GridItemSpan(maxLineSpan) },
-                        ) {
-                            LazyRow(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.Center,
-                                state = rememberLazyListState()
+                        itemsIndexed(tabState.first) { index, item ->
+                            val selected = index == tabState.second
+                            Surface(
+                                shape = CircleShape,
+                                modifier =
+                                    Modifier
+                                        .padding(2.dp, 8.dp),
+                                color = if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
                             ) {
-                                itemsIndexed(tabState.first) { index, item ->
-                                    val selected = index == tabState.second
-                                    Surface(
-                                        shape = CircleShape,
-                                        modifier =
-                                            Modifier
-                                                .padding(2.dp, 8.dp),
-                                        color = if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
-                                    ) {
-                                        Text(
-                                            modifier = Modifier
-                                                .clip(CircleShape)
-                                                .clickable {
-                                                    homePageViewModel.select(index)
-                                                }
-                                                .padding(8.dp, 0.dp),
-                                            color = if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onBackground,
-                                            fontWeight = FontWeight.W900,
-                                            text = item,
-                                            fontSize = 12.sp,
-                                        )
-                                    }
-                                }
-                            }
-                        }
-
-                        items(lazyPagingState.itemCount) {
-                            val item = lazyPagingState[it]
-                            if (item != null) {
-                                CartoonCardWithCover(
-                                    cartoonCover = item,
-                                    onClick = {
-                                        logger.i("CartoonCardWithCover", "click: $it")
-                                    }
+                                Text(
+                                    modifier = Modifier
+                                        .clip(CircleShape)
+                                        .clickable {
+                                            homePageViewModel.select(index)
+                                        }
+                                        .padding(8.dp, 0.dp),
+                                    color = if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onBackground,
+                                    fontWeight = FontWeight.W900,
+                                    text = item,
+                                    fontSize = 12.sp,
                                 )
                             }
-
                         }
-
-                        pagingCommon(lazyPagingState)
-
-
-
                     }
-
-
                 }
+            },
+            content = { contentPadding ->
+                val cartoonPage = it.data.cartoonPage
+                val lazyGridState = homePageViewModel.getLazyGridState(cartoonPage)
+                homePageViewModel.child(cartoonPage) {
+                    HomeCartoonPage(
+                        cartoonPage,
+                        lazyGridState,
+                        contentPadding,
+                        columns
+                    )
+                }
+            }
+        )
 
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun HomeCartoonPage(
+    cartoonPage: CartoonPage,
+    lazyGridState: LazyGridState,
+    contentPaddingValues: PaddingValues,
+    columns: GridCells,
+) {
+
+    val cartoonPageViewModel = easyVM<CartoonPageViewModel>(cartoonPage)
+    val pagingFlow = cartoonPageViewModel.pageState
+    val lazyPageItem = pagingFlow.value.collectAsLazyPagingItems()
+
+    LazyVerticalGrid(
+        state = lazyGridState,
+        columns = columns,
+        contentPadding = contentPaddingValues,
+    ) {
+        items(lazyPageItem.itemCount) {
+            val item = lazyPageItem[it]
+            if (item != null) {
+                CartoonCardWithCover(
+                    cartoonCover = item,
+                    onClick = {
+                        logger.i("HomeComponentUI", "click ${it.name}")
+                    }
+                )
             }
 
         }
+        pagingCommon(lazyPageItem)
     }
+
+    Box(modifier = Modifier.padding(contentPaddingValues)) {
+        PagingCommon(lazyPageItem)
+    }
+
 }

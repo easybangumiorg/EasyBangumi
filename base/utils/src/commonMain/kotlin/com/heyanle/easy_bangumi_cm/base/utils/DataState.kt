@@ -8,7 +8,9 @@ sealed class DataState<T> {
 
     class None<T> : DataState<T>()
 
-    class Loading<T> : DataState<T>()
+    class Loading<T>(
+        val loadingMsg: String = ""
+    ) : DataState<T>()
 
     data class Ok<T>(
         val data: T
@@ -17,6 +19,7 @@ sealed class DataState<T> {
     data class Error<T>(
         val errorMsg: String,
         val throwable: Throwable?,
+        val isEmpty: Boolean = false,
     ) : DataState<T>()
 
     companion object {
@@ -32,6 +35,9 @@ sealed class DataState<T> {
 
         fun <T> error(errorMsg: String, throwable: Throwable? = null) =
             Error<T>(errorMsg, throwable)
+
+        fun <T> empty(errorMsg: String = "") =
+            Error<T>(errorMsg, null, true)
     }
 
     fun isOk() : Boolean {
