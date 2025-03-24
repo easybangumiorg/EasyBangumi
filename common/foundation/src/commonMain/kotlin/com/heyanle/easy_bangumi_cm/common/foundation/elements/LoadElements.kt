@@ -97,7 +97,8 @@ fun ImageElements(
     if (isRow) {
         Row(
             modifier = modifier,
-            horizontalArrangement = Arrangement.Center
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             if (isAnimation) {
                 AnimationImage(
@@ -112,14 +113,15 @@ fun ImageElements(
                     contentDescription = contentDescription,
                 )
             }
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.size(12.dp))
             Text(text = message, color = msgColor, fontStyle = FontStyle.Italic)
             other()
         }
     } else {
         Column(
             modifier = modifier,
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
         ) {
             if (isAnimation) {
                 AnimationImage(
@@ -134,7 +136,7 @@ fun ImageElements(
                     contentDescription = contentDescription,
                 )
             }
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.size(12.dp))
             Text(text = message, color = msgColor, fontStyle = FontStyle.Italic)
             other()
         }

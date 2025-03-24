@@ -1,28 +1,27 @@
 package com.heyanle.easy_bangumi_cm.shared.ui.main.home
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Recycling
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.heyanle.easy_bangumi_cm.common.foundation.elements.EmptyElements
-import com.heyanle.easy_bangumi_cm.common.foundation.elements.ErrorElements
-import com.heyanle.easy_bangumi_cm.common.foundation.elements.LoadingElements
+import androidx.compose.ui.window.Popup
+import com.heyanle.easy_bangumi_cm.base.utils.DataState
+import com.heyanle.easy_bangumi_cm.common.foundation.elements.LoadScaffold
+import com.heyanle.easy_bangumi_cm.common.foundation.image.AsyncImage
 import com.heyanle.easy_bangumi_cm.common.foundation.plugin.home.HomeComponentContent
 import com.heyanle.easy_bangumi_cm.common.foundation.stringRes
 import com.heyanle.easy_bangumi_cm.common.foundation.view_model.easyVM
-import com.heyanle.easy_bangumi_cm.plugin.api.component.media.home.HomeContent
+import com.heyanle.easy_bangumi_cm.common.resources.Res
 import com.heyanle.easy_bangumi_cm.shared.LocalNavController
+import kotlinx.coroutines.launch
 
 
 /**
@@ -38,9 +37,9 @@ fun Home() {
     val state = homeViewModel.uiState.value
 
     val navController = LocalNavController.current
-    val havior = TopAppBarDefaults.pinnedScrollBehavior()
+    val behavior = TopAppBarDefaults.pinnedScrollBehavior()
 
-    HomeContent(homeViewModel, state, havior)
+    HomeContent(homeViewModel, state, behavior)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -51,41 +50,14 @@ fun HomeContent(
     scrollBehavior: TopAppBarScrollBehavior,
 ) {
 
-    when (val sourceState = state.sourceUIState) {
-        is HomeViewModel.SourceUIState.Loading -> {
-            // loading
-            LoadingElements(
-                modifier = Modifier.fillMaxSize(),
-                isRow = false
-            )
-        }
-        is HomeViewModel.SourceUIState.Empty -> {
-            // empty
-            EmptyElements(
-                modifier = Modifier.fillMaxSize(),
-                isRow = false
-            )
-        }
-        is HomeViewModel.SourceUIState.Error -> {
-            // error
-            ErrorElements(
-                modifier = Modifier.fillMaxSize(),
-                isRow = false,
-                errorMsg = sourceState.errorMsg,
-                onClick = {
-                    homeViewModel.refreshSource()
-                }
-            )
-        }
-        is HomeViewModel.SourceUIState.Success -> {
-            // success
-            HomeContent(
-                homeViewModel = homeViewModel,
-                sourceState = sourceState,
-                contentState = state.homeContentUIState,
-                scrollBehavior = scrollBehavior
-            )
-        }
+    LoadScaffold(modifier = Modifier.fillMaxSize(), data = state.sourceUIState) { sourceUIState ->
+        // success
+        HomeContent(
+            homeViewModel = homeViewModel,
+            sourceState = sourceUIState.data,
+            contentDataState = state.homeContentUIState,
+            scrollBehavior = scrollBehavior
+        )
     }
 }
 
@@ -93,8 +65,8 @@ fun HomeContent(
 @Composable
 fun HomeContent(
     homeViewModel: HomeViewModel,
-    sourceState: HomeViewModel.SourceUIState.Success,
-    contentState: HomeViewModel.HomeContentUIState,
+    sourceState: HomeViewModel.SourceUIState,
+    contentDataState: DataState<HomeViewModel.HomeContentUIState>,
     scrollBehavior: TopAppBarScrollBehavior,
 ) {
 
@@ -108,40 +80,62 @@ fun HomeContent(
                     homeViewModel.showSourcePanel()
                 }) {
                     Icon(Icons.Default.Refresh, contentDescription = "showSourcePanel")
+
+                    if (sourceState.isSourcePanelShow) {
+                        Popup(
+                            alignment = Alignment.BottomStart,
+                            onDismissRequest = {
+                                homeViewModel.hideSourcePanel()
+                            }
+                        ) {
+                            Column {
+                                ListItem(
+                                    headlineContent = {
+                                        Text(stringRes(Res.strings.choose_source))
+                                    }
+                                )
+                                HorizontalDivider()
+                                sourceState.sourceHomeList.forEach {
+                                    ListItem(
+                                        leadingContent = {
+                                            AsyncImage(model = it.icon, contentDescription = stringRes(it.label))
+                                        },
+                                        headlineContent = {
+                                            Text(stringRes(it.label))
+                                        },
+                                        trailingContent = {
+                                            RadioButton(
+                                                selected = it.key == sourceState.selectionKey,
+                                                onClick = {
+                                                    homeViewModel.changeSelectionKey(it.key)
+                                                })
+                                        }
+                                    )
+                                }
+
+                            }
+                        }
+                    }
                 }
             },
             scrollBehavior = scrollBehavior
         )
-        Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
-            when (contentState) {
-                is HomeViewModel.HomeContentUIState.Loading -> {
-                    // loading
-                    LoadingElements(
-                        modifier = Modifier.fillMaxSize(),
-                        isRow = false
-                    )
-                }
-                is HomeViewModel.HomeContentUIState.Error -> {
-                    // error
-                    ErrorElements(
-                        modifier = Modifier.fillMaxSize(),
-                        isRow = false,
-                        errorMsg = contentState.errorMsg,
-                        onClick = {
-                            homeViewModel.refreshHomeContent()
-                        }
-                    )
-                }
-                is HomeViewModel.HomeContentUIState.Success -> {
-                    // success
-                    HomeComponentContent(
-                        content = contentState.homeContent,
-                        nestedScrollConnection = scrollBehavior.nestedScrollConnection,
-                        columns = GridCells.Adaptive(100.dp)
-                    )
-                }
+
+        LoadScaffold(
+            modifier = Modifier.fillMaxWidth().weight(1f),
+            data = contentDataState,
+            errorRetry = {
+                homeViewModel.refreshHomeContent()
             }
+        ) {
+            // success
+            HomeComponentContent(
+                content = it.data.homeContent,
+                nestedScrollConnection = scrollBehavior.nestedScrollConnection,
+                columns = GridCells.Adaptive(100.dp)
+            )
         }
     }
 
 }
+

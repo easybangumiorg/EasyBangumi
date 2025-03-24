@@ -15,6 +15,7 @@ import com.heyanle.easy_bangumi_cm.plugin.api.base.toDataState
 import com.heyanle.easy_bangumi_cm.plugin.api.component.media.home.HomeComponent
 import com.heyanle.easy_bangumi_cm.plugin.api.component.media.home.HomeContent
 import com.heyanle.easy_bangumi_cm.plugin.api.component.media.home.homeComponent
+import com.heyanle.easy_bangumi_cm.plugin.api.source.SourceManifest
 import com.heyanle.lib.inject.core.Inject
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -33,37 +34,22 @@ class HomeViewModel : ViewModel() {
 
     private val sourceController: SourceController by Inject.injectLazy()
 
+    data class SourceUIState (
+        val sourceHomeList: List<SourceManifest>,  // key to label
+        val selectionKey: String,
+        val topAppLabel: ResourceOr,
+        val isSourcePanelShow: Boolean,
+    )
 
-    sealed class SourceUIState {
-        data object Loading : SourceUIState()
-        data object Empty : SourceUIState()
-        data class Error(
-            val errorMsg: String,
-            val throwable: Throwable?,
-        ) : SourceUIState()
-        data class Success(
-            val sourceHomeList: List<Pair<String, ResourceOr>>,  // key to label
-            val selectionKey: String,
-            val topAppLabel: ResourceOr,
-            val isSourcePanelShow: Boolean,
-        ) : SourceUIState()
-    }
-    sealed class HomeContentUIState {
-        data object Loading : HomeContentUIState()
-        data class Error(
-            val errorMsg: String,
-            val throwable: Throwable?,
-        ) : HomeContentUIState()
+    data class HomeContentUIState (
+        val homeContent: HomeContent,
+    )
 
-        data class Success(
-            val homeContent: HomeContent,
-        ) : HomeContentUIState()
-    }
     data class UIState(
         // 番源状态 - 番源列表 当前选中番源 番源面板是否展开
-        val sourceUIState: SourceUIState = SourceUIState.Loading,
+        val sourceUIState: DataState<SourceUIState> = DataState.loading(),
         // 内容状态 - 选中番源的 HomeContent 加载状态
-        val homeContentUIState: HomeContentUIState = HomeContentUIState.Loading,
+        val homeContentUIState: DataState<HomeContentUIState> = DataState.loading(),
     )
     val uiState = mutableStateOf<UIState>(UIState())
 
@@ -130,33 +116,33 @@ class HomeViewModel : ViewModel() {
         viewModelScope.launch {
             stateFlow.collectLatest {
                 val sourceUIState = when (it.sourceBundleState) {
-                    is DataState.Error -> SourceUIState.Error(
+                    is DataState.Error -> DataState.error(
                         it.sourceBundleState.errorMsg,
                         it.sourceBundleState.throwable
                     )
-                    is DataState.None -> SourceUIState.Loading
-                    is DataState.Loading -> SourceUIState.Loading
+                    is DataState.None -> DataState.loading()
+                    is DataState.Loading -> DataState.loading()
                     is DataState.Ok -> {
-                        val sourceHomeList = arrayListOf<Pair<String, ResourceOr>>()
+                        val sourceHomeList = arrayListOf<SourceManifest>()
                         sourceHomeList.addAll(
                             it.sourceBundleState.data.homeComponentInfoList()
-                                .map { it.manifest.key to it.manifest.label })
+                                .map { it.manifest })
                         if (sourceHomeList.isEmpty())
-                            SourceUIState.Empty
+                            DataState.empty()
                         else
-                            SourceUIState.Success(
+                            DataState.ok(SourceUIState(
                                 sourceHomeList,
                                 it.realSelectKey ?: "",
                                 it.topAppLabel ?: "",
                                 it.isSourcePanelShow
-                            )
+                            ))
                     }
                 }
                 val homeContentUIState = when (it.homeContent) {
-                    is DataState.Error -> HomeContentUIState.Error(it.homeContent.errorMsg, it.homeContent.throwable)
-                    is DataState.None -> HomeContentUIState.Loading
-                    is DataState.Loading -> HomeContentUIState.Loading
-                    is DataState.Ok -> HomeContentUIState.Success(it.homeContent.data)
+                    is DataState.Error -> DataState.error(it.homeContent.errorMsg, it.homeContent.throwable)
+                    is DataState.None -> DataState.loading()
+                    is DataState.Loading -> DataState.loading()
+                    is DataState.Ok -> DataState.ok(HomeContentUIState(it.homeContent.data))
                 }
                 uiState.value = UIState(sourceUIState, homeContentUIState)
             }
