@@ -10,9 +10,11 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
 import com.heyanle.easy_bangumi_cm.base.utils.DataState
 import com.heyanle.easy_bangumi_cm.common.foundation.elements.LoadScaffold
 import com.heyanle.easy_bangumi_cm.common.foundation.image.AsyncImage
@@ -61,7 +63,7 @@ fun HomeContent(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun HomeContent(
     homeViewModel: HomeViewModel,
@@ -84,6 +86,12 @@ fun HomeContent(
                     if (sourceState.isSourcePanelShow) {
                         Popup(
                             alignment = Alignment.BottomStart,
+                            properties = PopupProperties(
+                                usePlatformDefaultWidth = true,
+                                focusable = true,
+                                dismissOnClickOutside = true,
+                                dismissOnBackPress = true
+                            ),
                             onDismissRequest = {
                                 homeViewModel.hideSourcePanel()
                             }

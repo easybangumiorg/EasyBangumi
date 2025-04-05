@@ -1,13 +1,9 @@
 package com.heyanle.easy_bangumi_cm.base.utils
 
 
+import com.heyanle.easy_bangumi_cm.base.service.system.logger
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.conflate
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.*
 import java.io.File
 import java.net.URLDecoder
 import java.net.URLEncoder
@@ -31,19 +27,19 @@ class HeKV(
 ) {
 
     companion object {
+
+        private const val TAG = "HeKV"
+
         // 当写入记录条数为 map 数据条数多少倍时触发合并
         const val LOAD_FACTORY = 1.5f
     }
 
-    private val map = HashMap<String, String>()
+    private val flow = MutableStateFlow<Map<String, String>>(mapOf())
     private val readWriteLock = ReentrantReadWriteLock()
 
     private val directoryFile = File(path)
     private val journalFile = File(path, "${name}.journal")
     private val bkbFile = File(path, "${name}.journal.bkb")
-
-    private val keyFlow = MutableSharedFlow<String>()
-
 
     private val dispatcher = Executors.newSingleThreadScheduledExecutor().asCoroutineDispatcher()
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
@@ -61,33 +57,38 @@ class HeKV(
     }
 
     fun put(key: String, value: String){
-        //logi("${key}, ${value}")
-        readWriteLock.write {
+        logger.i(TAG + name, "${key}, ${value}")
+        scope.launch {
+            var m: Map<String, String>? = null
             if(value.isEmpty()){
-                map.remove(key)
+                flow.update {
+                    it.toMutableMap().apply {
+                        remove(key)
+                        m = this
+                    }
+                }
             }else{
-                map[key] = value
+                flow.update {
+                    it.toMutableMap().apply {
+                        put(key, value)
+                        m = this
+                    }
+                }
             }
-            scope.launch {
-                readWriteLock.write {
-                    var lines = 0
-                    runCatching {
-                        lines = append(key, value, journalFile)
-                    }.onFailure {
-                        it.printStackTrace()
+            readWriteLock.write {
+                var lines = 0
+                val mm = m ?: flow.value
+                runCatching {
+                    lines = append(key, value, journalFile)
+                }.onFailure {
+                    it.printStackTrace()
+                }
+                runCatching {
+                    if(lines > mm.size* LOAD_FACTORY){
+                        saveToFile(mm)
                     }
-                    runCatching {
-                        keyFlow.emit(key)
-                    }.onFailure {
-                        it.printStackTrace()
-                    }
-                    runCatching {
-                        if(lines > map.size* LOAD_FACTORY){
-                            saveToFile()
-                        }
-                    }.onFailure {
-                        it.printStackTrace()
-                    }
+                }.onFailure {
+                    it.printStackTrace()
                 }
             }
         }
@@ -100,45 +101,39 @@ class HeKV(
 
     fun get(key: String, def: String): String{
         init.await(500L, TimeUnit.MINUTES)
-        return readWriteLock.read {
-            map[key]?:def
-        }
+        return flow.value.getOrDefault(key, def)
     }
 
     fun keys(): Set<String>{
         init.await(500L, TimeUnit.MINUTES)
-        return map.keys
+        return flow.value.keys
     }
 
     fun map(): Map<String, String>{
         init.await(500L, TimeUnit.MINUTES)
-        return map.toMap()
+        return flow.value.toMap()
     }
 
     // 如果被删除，视为存入空字符串
     fun flow(key: String, def: String): Flow<String> {
         init.await(500L, TimeUnit.MINUTES)
-        return keyFlow
-            .filter { it == key }
-            .onStart { emit("ignition") }
-            .map {
-                get(key, def)
-            }.conflate()
+        return flow.map { it.getOrDefault(key, def) }
     }
 
-    private fun saveToFile(){
-        runCatching {
-            bkbFile.delete()
-            bkbFile.createNewFile()
-            map.iterator().forEach {
-                append(it.key, it.value, bkbFile)
+    private fun saveToFile(map: Map<String, String>){
+        readWriteLock.write {
+            runCatching {
+                bkbFile.delete()
+                bkbFile.createNewFile()
+                map.iterator().forEach {
+                    append(it.key, it.value, bkbFile)
+                }
+                journalFile.delete()
+                bkbFile.renameTo(journalFile)
+            }.onFailure {
+                it.printStackTrace()
             }
-            journalFile.delete()
-            bkbFile.renameTo(journalFile)
-        }.onFailure {
-            it.printStackTrace()
         }
-
     }
 
     private fun append(key: String, value: String, file: File): Int{
@@ -153,20 +148,18 @@ class HeKV(
     }
 
     private fun initLoad(){
-        readWriteLock.write {
-            if(journalFile.exists()){
-                loadFromFile(journalFile)
-            }else if(bkbFile.exists()){
-                bkbFile.renameTo(journalFile)
-                loadFromFile(journalFile)
-            }
-            init.countDown()
+        if(journalFile.exists()){
+            loadFromFile(journalFile)
+        }else if(bkbFile.exists()){
+            bkbFile.renameTo(journalFile)
+            loadFromFile(journalFile)
         }
+        init.countDown()
     }
     // 从文件中读数据到 map
     private fun loadFromFile(file: File){
-        readWriteLock.write {
-            map.clear()
+        readWriteLock.read {
+            val map = mutableMapOf<String, String>()
             file.readLines().forEach { line ->
                 // 一行完整的数据应该是 |key|value|
                 // 被 | 分割成 4 部分，中间两部分是 key 和 value
@@ -177,7 +170,9 @@ class HeKV(
                     map[key] = value
                 }
             }
-
+            flow.update {
+                map
+            }
         }
     }
 

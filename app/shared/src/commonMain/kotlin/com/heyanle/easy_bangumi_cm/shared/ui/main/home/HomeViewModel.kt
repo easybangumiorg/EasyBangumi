@@ -3,6 +3,7 @@ package com.heyanle.easy_bangumi_cm.shared.ui.main.home
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.heyanle.easy_bangumi_cm.base.service.system.logger
 import com.heyanle.easy_bangumi_cm.base.utils.DataState
 import com.heyanle.easy_bangumi_cm.base.utils.preference.Preference
 import com.heyanle.easy_bangumi_cm.base.utils.preference.PreferenceStore
@@ -27,6 +28,10 @@ import kotlinx.coroutines.launch
  */
 
 class HomeViewModel : ViewModel() {
+
+    companion object {
+        const val TAG = "HomeViewModel"
+    }
 
     private val preferenceStore: PreferenceStore by Inject.injectLazy()
     private val selectionKeyPref: Preference<String> by preferenceStore.lazyString("home_selection_key", "")
@@ -92,6 +97,7 @@ class HomeViewModel : ViewModel() {
             ) { bundleState, key ->
                 bundleState to key
             }.collectLatest { sta ->
+                logger.i(TAG, "step 1 ${sta.first}")
                 _stateFlow.update {
                     it.copy(
                         sourceBundleState = sta.first,
@@ -181,6 +187,7 @@ class HomeViewModel : ViewModel() {
     }
 
     fun changeSelectionKey(key: String) {
+        logger.i(TAG, "changeSelectionKey: $key")
         selectionKeyPref.set(key)
     }
 
