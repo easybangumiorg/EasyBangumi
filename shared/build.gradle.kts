@@ -1,0 +1,118 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
+plugins {
+    alias(builds.plugins.kotlinMultiplatform)
+    alias(builds.plugins.androidLibrary)
+    alias(builds.plugins.kotlinCompose)
+    alias(builds.plugins.compose)
+}
+kotlin {
+    androidTarget {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_17)
+            freeCompilerArgs.add(
+                "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
+            )
+        }
+    }
+
+    jvm("desktop") {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_17)
+            freeCompilerArgs.add(
+                "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
+            )
+        }
+
+    }
+
+    // 提前预埋保证 commonMain 是纯 kotlin 环境
+    listOf(
+        iosX64(),
+        iosArm64(),
+        iosSimulatorArm64()
+    ).forEach { iosTarget ->
+        iosTarget.binaries.framework {
+            baseName = "ComposeApp"
+            isStatic = true
+        }
+    }
+
+    sourceSets {
+
+        val desktopMain by getting
+
+        androidMain.dependencies {
+            implementation(compose.preview)
+            implementation(libs.androidx.activity.compose)
+        }
+        commonMain.dependencies {
+            implementation(compose.runtime)
+            implementation(compose.foundation)
+            implementation(compose.materialIconsExtended) // 此依赖需要在生产环境中进行剪枝，非常巨大
+            implementation(compose.ui)
+            implementation(compose.material3)
+            implementation(compose.components.uiToolingPreview)
+            implementation(libs.navigation.compose)
+            implementation(libs.androidx.room.runtime)
+            implementation(libs.sqlite.bundled)
+
+
+            implementation(libs.moko.resources.compose)
+
+            implementation(libs.coil.compose)
+
+//            implementation(projects.lib.inject)
+//            implementation(projects.lib.unifile)
+//
+//            implementation(projects.base.model)
+//
+//            implementation(projects.base.service)
+//            implementation(projects.base.utils)
+//            // implementation(projects.base.compose)
+//
+//            implementation(projects.common.plugin.api)
+//            implementation(projects.common.plugin.core)
+//            implementation(projects.common.plugin.utils)
+//            implementation(projects.common.plugin.inner)
+//
+//            implementation(projects.common.database)
+//
+//            implementation(projects.common.resources)
+//
+//            implementation(projects.common.theme)
+//
+//            implementation(projects.common.foundation)
+
+
+
+        }
+        desktopMain.dependencies {
+            implementation(compose.desktop.currentOs)
+        }
+        iosMain.dependencies {
+
+        }
+    }
+}
+
+android {
+    namespace = AppConfig.namespace + ".shared"
+    compileSdk = 35
+    defaultConfig {
+        minSdk = 21
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+}
+
+
+
+
+dependencies {
+
+}
+
+

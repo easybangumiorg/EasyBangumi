@@ -23,14 +23,7 @@ dependencies {
 
     implementation(compose.desktop.currentOs)
 
-    implementation(projects.app.shared)
-    implementation(projects.lib.inject)
-
-    implementation(projects.base.service)
-    implementation(projects.base.utils)
-
-    implementation(projects.common.theme)
-    implementation(projects.common.foundation)
+    implementation(projects.shared)
 }
 
 kotlin {

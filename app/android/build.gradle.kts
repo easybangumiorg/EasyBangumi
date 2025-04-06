@@ -77,15 +77,7 @@ dependencies {
     implementation(libs.koin.android)
 
 
-    implementation(projects.app.shared)
-    implementation(projects.base.utils)
-    implementation(projects.base.service)
-
-    implementation(projects.lib.inject)
-    implementation(projects.lib.javascript)
-
-    implementation(projects.common.foundation)
-    implementation(projects.common.theme)
+    implementation(projects.shared)
 
 
 }

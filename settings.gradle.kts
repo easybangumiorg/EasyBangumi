@@ -44,36 +44,18 @@ fun includeModule(moduleName: String, dir: String? = null) {
     }
 }
 
-// ----------app----------
+// ------------- app -------------
 includeModule(":app:android", "app/android")
 includeModule(":app:desktop", "app/desktop")
-includeModule(":app:shared", "app/shared")
 
-// ----------common----------
-includeModule(":common:plugin:api", "common/plugin/api")
-includeModule(":common:plugin:core", "common/plugin/core")
-includeModule(":common:plugin:utils", "common/plugin/utils")
-includeModule(":common:plugin:inner", "common/plugin/inner")
+// ------------- shared -------------
+includeModule(":shared", "shared")
+includeModule(":shared:platform", "shared/platform")
+includeModule(":shared:resources", "shared/resources")
+includeModule(":shared:foundation", "shared/foundation")
 
-includeModule(":common:theme", "common/theme")
-includeModule(":common:resources", "common/resources")
-
-includeModule(":common:database", "common/database")
-
-includeModule(":common:foundation", "common/foundation")
-
-includeModule(":base:test", "base/test")
-
-// ----------base----------
-// includeModule(":base:compose", "base/compose")
-includeModule(":base:model", "base/model")
-includeModule(":base:service", "base/service")
-includeModule(":base:utils", "base/utils")
-
-// ----------lib----------
-includeModule(":lib:inject", "lib/inject")
-includeModule(":lib:unifile", "lib/unifile")
-includeModule(":lib:javascript", "lib/javascript")
+// ------------- lib -------------
+includeModule(":lib:logger", "lib/logger")
 
 
 
