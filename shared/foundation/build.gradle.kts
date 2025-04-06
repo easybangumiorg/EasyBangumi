@@ -63,6 +63,7 @@ kotlin {
 
             implementation(projects.lib.logger)
             implementation(projects.shared.resources)
+            implementation(projects.lib.utils)
 
         }
         desktopMain.dependencies {

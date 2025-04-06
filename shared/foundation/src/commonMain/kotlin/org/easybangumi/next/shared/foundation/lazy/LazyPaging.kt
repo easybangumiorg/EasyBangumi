@@ -16,7 +16,7 @@ import org.easybangumi.next.shared.foundation.elements.EmptyElements
 import org.easybangumi.next.shared.foundation.elements.ErrorElements
 import org.easybangumi.next.shared.foundation.elements.LoadingElements
 import dev.icerock.moko.resources.compose.stringResource
-import org.easybangumi.next.common.resources.Res
+import org.easybangumi.next.shared.resources.Res
 
 /**
  * Created by heyanlin on 2025/2/28.

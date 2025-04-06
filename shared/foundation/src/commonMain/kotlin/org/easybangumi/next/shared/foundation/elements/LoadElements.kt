@@ -14,7 +14,7 @@ import org.easybangumi.next.shared.resources.ResourceOr
 import org.easybangumi.next.shared.foundation.image.AnimationImage
 import org.easybangumi.next.shared.foundation.image.AsyncImage
 import dev.icerock.moko.resources.compose.stringResource
-import org.easybangumi.next.common.resources.Res
+import org.easybangumi.next.shared.resources.Res
 
 
 /**
