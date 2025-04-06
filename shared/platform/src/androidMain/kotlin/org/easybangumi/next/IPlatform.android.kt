@@ -1,6 +1,5 @@
 package org.easybangumi.next
 
-import org.easybangumi.next.shared.BuildConfig
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi

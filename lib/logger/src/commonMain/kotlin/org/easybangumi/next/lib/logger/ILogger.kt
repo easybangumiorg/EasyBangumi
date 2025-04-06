@@ -12,21 +12,21 @@ package org.easybangumi.next.lib.logger
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
-expect interface Logger {
+interface Logger {
     fun isTraceEnabled(): Boolean
-    fun trace(message: String?, throwable: Throwable?)
+    fun trace(message: String?, throwable: Throwable? = null)
 
     fun isDebugEnabled(): Boolean
-    fun debug(message: String?, throwable: Throwable?)
+    fun debug(message: String?, throwable: Throwable? = null)
 
     fun isInfoEnabled(): Boolean
-    fun info(message: String?, throwable: Throwable?)
+    fun info(message: String?, throwable: Throwable? = null)
 
     fun isWarnEnabled(): Boolean
-    fun warn(message: String?, throwable: Throwable?)
+    fun warn(message: String?, throwable: Throwable? = null)
 
     fun isErrorEnabled(): Boolean
-    fun error(message: String?, throwable: Throwable?)
+    fun error(message: String?, throwable: Throwable? = null)
 }
 
 expect fun logger(tag: String): Logger

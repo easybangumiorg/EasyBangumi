@@ -1,0 +1,45 @@
+//package org.easybangumi.next.shared.foundation.paging
+//
+//import androidx.paging.PagingSource
+//import androidx.paging.PagingState
+//import com.heyanle.easy_bangumi_cm.model.cartoon.CartoonCover
+//import com.heyanle.easy_bangumi_cm.plugin.api.component.media.home.CartoonPage
+//
+///**
+// * Created by heyanlin on 2025/3/5.
+// */
+//class CartoonPagePagingSource(
+//    private val cartoonPage: CartoonPage,
+//) : PagingSource<Int, CartoonCover>() {
+//
+//    override fun getRefreshKey(state: PagingState<Int, CartoonCover>): Int {
+//        return cartoonPage.firstKey()
+//    }
+//
+//    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, CartoonCover> {
+//        val key = params.key ?: return LoadResult.Error(NullPointerException())
+//        kotlin.runCatching {
+//            cartoonPage.load(key)
+//                .onOK {
+//                    return LoadResult.Page(
+//                        data = it.second,
+//                        prevKey = null,
+//                        nextKey = it.first
+//                    )
+//                }
+//                .onError {
+//                    val err = it.error
+//                    return if (err != null) {
+//                        LoadResult.Error(err)
+//                    } else {
+//                        LoadResult.Error(Exception(it.msg ?: "load error"))
+//                    }
+//                }
+//        }.onFailure {
+//            it.printStackTrace()
+//        }
+//
+//        return LoadResult.Error(IllegalAccessException())
+//
+//    }
+//}
