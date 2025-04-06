@@ -1,7 +1,7 @@
 纯纯看番 KMP 项目，初步计划支持 Android, Desktop
 
 * app 顶层壳模块，平台特化，依赖 shared 根模块 和 lib 模块
-* shared 共享模块，主要业务逻辑所在，树形结构
+* shared 共享模块，主要业务逻辑所在，树形结构，分为根模块和子模块
 * lib 底层库模块，比较独立的工具
 
 其中 shared 为树形结构，并且 shared 子模块只能被其他 shared 子模块或者 shared 根模块依赖
