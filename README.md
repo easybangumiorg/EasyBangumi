@@ -1,19 +1,10 @@
 纯纯看番 KMP 项目，初步计划支持 Android, Desktop
 
-This is a Kotlin Multiplatform project targeting Android, iOS, Desktop.
+* app 顶层壳模块，平台特化，依赖 shared 根模块 和 lib 模块
+* shared 共享模块，主要业务逻辑所在，树形结构
+* lib 底层库模块，比较独立的工具
 
-* `/composeApp` is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-    - `commonMain` is for code that’s common for all targets.
-    - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-      For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-      `iosMain` would be the right folder for such calls.
-
-* `/iosApp` contains iOS applications. Even if you’re sharing your UI with Compose Multiplatform,
-  you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
-
-
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
+其中 shared 为树形结构，并且 shared 子模块只能被其他 shared 子模块或者 shared 根模块依赖
 
 ## 功能框图
 
