@@ -13,31 +13,22 @@ package org.easybangumi.next.lib.logger
  */
 
 interface Logger {
-    fun isTraceEnabled(): Boolean
+
     fun trace(message: String?, throwable: Throwable? = null)
-
-    fun isDebugEnabled(): Boolean
     fun debug(message: String?, throwable: Throwable? = null)
-
-    fun isInfoEnabled(): Boolean
     fun info(message: String?, throwable: Throwable? = null)
-
-    fun isWarnEnabled(): Boolean
     fun warn(message: String?, throwable: Throwable? = null)
-
-    fun isErrorEnabled(): Boolean
     fun error(message: String?, throwable: Throwable? = null)
+
+    fun isTraceEnabled(): Boolean
+    fun isDebugEnabled(): Boolean
+    fun isInfoEnabled(): Boolean
+    fun isWarnEnabled(): Boolean
+    fun isErrorEnabled(): Boolean
+
 }
 
 expect fun logger(tag: String): Logger
 
 expect fun Any.logger(): Logger
 
-
-enum class LogLevel {
-    TRACE,
-    DEBUG,
-    INFO,
-    WARN,
-    ERROR,
-}

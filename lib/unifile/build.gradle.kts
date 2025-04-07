@@ -11,7 +11,7 @@ kotlin {
         }
     }
 
-    jvm {
+    jvm() {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_17)
         }
@@ -34,33 +34,34 @@ kotlin {
 
         val jvmMain by getting
 
+
         commonMain.dependencies {
-
-
+            implementation(libs.kotlinx.io)
+            implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.datetime)
+            implementation(libs.okio)
         }
-
-        androidMain{
+        androidMain {
             dependsOn(jvmMain)
             dependencies {
-                api(libs.slf4j.api)
-                api(libs.logback.android)
+
             }
+        }
+        androidMain.dependencies {
+            //dependOn(jvmMain.get())
         }
 
         jvmMain.dependencies {
-            api(libs.slf4j.api)
-            api(libs.log4j.core)
+            implementation(libs.kotlinx.coroutines.swing)
         }
-
-
-        iosMain {
+        iosMain.dependencies {
 
         }
     }
 }
 
 android {
-    namespace = AppConfig.namespace + ".lib.logger"
+    namespace = AppConfig.namespace + ".lib.unifile"
     compileSdk = 35
     defaultConfig {
         minSdk = 21

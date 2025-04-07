@@ -57,6 +57,8 @@ includeModule(":shared:foundation", "shared/foundation")
 // ------------- lib -------------
 includeModule(":lib:logger", "lib/logger")
 includeModule(":lib:utils", "lib/utils")
+includeModule(":lib:store", "lib/store")
+includeModule(":lib:unifile", "lib/unifile")
 
 
 
