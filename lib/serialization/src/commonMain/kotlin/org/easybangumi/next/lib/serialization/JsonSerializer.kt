@@ -20,7 +20,6 @@ expect fun <T: Any> JsonSerializer.serialize(data: T): String
 
 expect fun <T: Any> JsonSerializer.deserialize(data: String, clazz: KClass<T>, defaultValue: T?): T?
 
-
 inline fun <reified T: Any> JsonSerializer.deserialize(data: String, defaultValue: T?): T? {
     return deserialize(data, T::class, defaultValue)
 }
