@@ -13,6 +13,6 @@ package org.easybangumi.next.lib.global
  */
 object Global {
 
-    val coroutineProvider = CoroutineProvider
+    fun coroutineProvider() = CoroutineProvider
 
 }

@@ -39,8 +39,6 @@ abstract class AbsFileHelper<T : Any>(
         const val FINAL_MARK = "$\$final$$"
     }
 
-    protected val logger = logger()
-
     private var temp: T? = null
 
 

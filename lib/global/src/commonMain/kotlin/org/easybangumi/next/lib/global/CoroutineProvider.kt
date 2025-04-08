@@ -1,5 +1,6 @@
 package org.easybangumi.next.lib.global
 
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 
 /**
@@ -15,10 +16,10 @@ import kotlinx.coroutines.Dispatchers
  */
 object CoroutineProvider
 
-expect fun CoroutineProvider.io(): Dispatchers
+expect fun CoroutineProvider.io(): CoroutineDispatcher
 
-expect fun CoroutineProvider.main(): Dispatchers
+expect fun CoroutineProvider.main(): CoroutineDispatcher
 
-expect fun CoroutineProvider.single(): Dispatchers
+expect fun CoroutineProvider.single(): CoroutineDispatcher
 
-expect fun CoroutineProvider.newSinge(name: String): Dispatchers
+expect fun CoroutineProvider.newSinge(name: String): CoroutineDispatcher
