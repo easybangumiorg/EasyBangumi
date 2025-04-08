@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
-import kotlinx.serialization.serializer
 import okio.buffer
 import okio.use
 import org.easybangumi.next.lib.logger.logger

@@ -64,10 +64,7 @@ kotlin {
 
 
         commonMain.dependencies {
-            implementation(libs.kotlinx.io)
-            implementation(libs.kotlinx.coroutines.core)
-            implementation(libs.kotlinx.datetime)
-            implementation(libs.okio)
+            implementation(projects.lib.global)
         }
         androidMain.dependencies {
 
@@ -75,7 +72,6 @@ kotlin {
 
 
         desktopMain.dependencies {
-            implementation(libs.kotlinx.coroutines.swing)
         }
     }
 }

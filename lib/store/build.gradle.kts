@@ -88,7 +88,7 @@ kotlin {
 }
 
 android {
-    namespace = AppConfig.namespace + ".lib.utils"
+    namespace = AppConfig.namespace + ".lib.store"
     compileSdk = 35
     defaultConfig {
         minSdk = 21

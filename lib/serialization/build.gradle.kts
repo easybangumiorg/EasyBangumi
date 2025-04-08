@@ -83,7 +83,7 @@ kotlin {
 }
 
 android {
-    namespace = AppConfig.namespace + ".lib"
+    namespace = AppConfig.namespace + ".lib.serialization"
     compileSdk = 35
     defaultConfig {
         minSdk = 21
