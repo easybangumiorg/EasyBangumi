@@ -11,7 +11,7 @@ kotlin {
         }
     }
 
-    jvm {
+    jvm("desktop") {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_17)
         }
@@ -32,19 +32,45 @@ kotlin {
 
     sourceSets {
 
-        val jvmMain by getting
+        val commonMain by getting
+
+        val jvmMain = create("jvmMain") {
+            dependsOn(commonMain)
+        }
+
+        val desktopMain by getting {
+            dependsOn(jvmMain)
+        }
+
+        val androidMain by getting {
+            dependsOn(jvmMain)
+        }
+
+        val iosMain = create("iosMain") {
+            dependsOn(commonMain)
+        }
+
+
+        val iosX64Main by getting {
+            dependsOn(iosMain)
+        }
+        val iosArm64Main by getting {
+            dependsOn(iosMain)
+        }
+        val iosSimulatorArm64Main by getting {
+            dependsOn(iosMain)
+        }
+
+
 
         commonMain.dependencies {
 
 
         }
 
-        androidMain{
-            dependsOn(jvmMain)
-            dependencies {
-                api(libs.slf4j.api)
-                api(libs.logback.android)
-            }
+        androidMain.dependencies {
+            api(libs.slf4j.api)
+            api(libs.logback.android)
         }
 
         jvmMain.dependencies {
@@ -53,7 +79,7 @@ kotlin {
         }
 
 
-        iosMain {
+        iosMain.dependencies {
 
         }
     }

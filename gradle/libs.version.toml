@@ -46,6 +46,8 @@ log4j-core = "2.20.0"
 
 okio = "3.10.2"
 
+uni_file = "1.0.0"
+
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidx-core-ktx" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidx-appcompat" }
@@ -78,7 +80,7 @@ navigation-compose = { group = "org.jetbrains.androidx.navigation", name = "navi
 preference-ktx = { module = "androidx.preference:preference-ktx", version.ref = "preference" }
 
 #kotlinx-serialization-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-core", version.ref = "kotlinx-serialization" }
-#kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 
 decompose = { group = "com.arkivanov.decompose", name = "extensions-compose", version.ref = "decompose" }
 
@@ -117,6 +119,8 @@ slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 logback-android = { module = "com.github.tony19:logback-android", version = "3.0.0" }
 
 okio = { group = "com.squareup.okio", name = "okio", version.ref = "okio" }
+
+uni_file = {module = "com.github.easybangumiorg:UniFile", version.ref = "uni_file"}
 
 [plugins]
 kotlinxSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin-serialization-plugin" }

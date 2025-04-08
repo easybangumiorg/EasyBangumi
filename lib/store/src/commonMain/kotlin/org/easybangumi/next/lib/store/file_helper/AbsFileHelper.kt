@@ -7,7 +7,15 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
-import kotlinx.io.files.Path
+import kotlinx.serialization.serializer
+import okio.buffer
+import okio.use
+import org.easybangumi.next.lib.logger.logger
+import org.easybangumi.next.lib.unifile.UFD
+import org.easybangumi.next.lib.unifile.UniFile
+import org.easybangumi.next.lib.unifile.UniFileFactory
+import org.easybangumi.next.lib.unifile.fromUFD
+import kotlin.reflect.KClass
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -20,28 +28,75 @@ import kotlinx.io.files.Path
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-class AbsFileHelper<T : Any>(
-    val folder: Path,
-    val fileName: String,
+abstract class AbsFileHelper<T : Any>(
+    private val folder: UFD,
+    private val name: String,
+    private val clazz: KClass<T>,
     private val def: T,
-    val scope: CoroutineScope,
+    private val scope: CoroutineScope
 ): FileHelper<T> {
 
-    private val setListener = CopyOnWriteArrayList<(T) -> Unit>()
-
-    private var temp: T? = null
-    private val tempFileName = "${fileName}.temp"
-
-
-    override fun set(t: T) {
-        innerSet(t)
+    companion object {
+        const val FINAL_MARK = "$\$final$$"
     }
 
+    protected val logger = logger()
+
+    private var temp: T? = null
+
+
+    private val folderFile: UniFile? by lazy {
+        UniFileFactory.fromUFD(folder)
+    }
+
+    private val dataFileName = "$name.${suffix()}"
+    private val bkFileName = "$name.bk.${suffix()}"
+
+    private val dataFile: UniFile?
+        get() = folderFile?.child(dataFileName)
+    private val bkFile: UniFile?
+        get() = folderFile?.child(bkFileName)
+
+    // TODO 并发
+    private val setListener = mutableListOf<(T) -> Unit>()
+
     override fun get(): T {
-        return temp ?: folder.findFile(fileName)?.openInputStream()?.use {
-            temp = load(it)
-            temp
+        val dataFile = dataFile
+        return temp ?: dataFile?.openSource()?.use {
+            val string = it.buffer().readByteString().utf8()
+            if (string.endsWith(FINAL_MARK)) {
+                bkFile?.delete()
+                val data = deserializer(clazz, string) ?: return@get def
+                temp = data
+                data
+            } else {
+                dataFile.delete()
+                bkFile?.delete()
+                def
+            }
         } ?: def
+    }
+
+    override fun set(t: T) {
+        scope.launch {
+            temp = t
+            setListener.forEach {
+                it(t)
+            }
+        }
+
+        scope.launch {
+            bkFile?.delete()
+            val bk = bkFile
+            bk ?: return@launch
+            bk.openSink(false).buffer().use {
+                it.writeUtf8(serializer(clazz, t))
+                it.writeUtf8(FINAL_MARK)
+                it.flush()
+            }
+            dataFile?.delete()
+            bk.renameTo(dataFileName)
+        }
     }
 
     override fun def(): T {
@@ -62,41 +117,11 @@ class AbsFileHelper<T : Any>(
         }.distinctUntilChanged()
     }
 
-    private fun innerSet(t: T){
-        scope.launch {
-            temp = t
-            setListener.forEach {
-                it(t)
-            }
 
-            scope.launch {
-                try {
-                    var completely = false
-                    folder.findFile(tempFileName)?.delete()
-                    val tempFile = folder.createFile(tempFileName)
-                    tempFile?.openOutputStream()?.use {
-                        save(t, it)
-                        completely = true
-                    }
-                    if (completely) {
-                        folder.findFile(fileName)?.delete()
-                        tempFile?.renameTo(fileName)
-                    } else {
-                        tempFile?.delete()
-                        folder.findFile(fileName)?.delete()
-                        folder.createFile(fileName)?.openOutputStream()?.use {
-                            save(t, it)
-                        }
-                    }
-                } catch (e: Throwable) {
-                    e.printStackTrace()
-                }
-            }
-        }
+    abstract fun suffix(): String
+    abstract fun serializer(clazz: KClass<T>, data: T): String
+    abstract fun deserializer(clazz: KClass<T>, source: String): T?
 
-    }
 
-    abstract fun load(inputStream: InputStream): T?
 
-    abstract fun save(t: T, outputStream: OutputStream): Boolean
 }

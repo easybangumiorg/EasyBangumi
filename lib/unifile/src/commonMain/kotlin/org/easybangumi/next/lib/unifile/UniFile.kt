@@ -25,17 +25,13 @@ object UniFileFactory {
     fun formPath(path: Path): UniFile {
         return OkioUniFile(path)
     }
+
+
 }
 
-expect fun UniFileFactory.fromUri(uri: String, type: String)
+expect fun UniFileFactory.fromUFD(ufd: UFD): UniFile?
 
 interface UniFile {
-
-    companion object {
-        const val TYPE_OKIO = "okio"
-        const val TYPE_JVM = "jvm"
-        const val TYPE_SAF = "saf"
-    }
 
     fun getType(): String
 

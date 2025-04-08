@@ -25,6 +25,8 @@ dependencyResolutionManagement {
             }
         }
         mavenCentral()
+        maven { url = uri("https://jitpack.io") }
+        maven { url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/") }
     }
 
     versionCatalogs {
@@ -59,6 +61,9 @@ includeModule(":lib:logger", "lib/logger")
 includeModule(":lib:utils", "lib/utils")
 includeModule(":lib:store", "lib/store")
 includeModule(":lib:unifile", "lib/unifile")
+includeModule(":lib:serialization", "lib/serialization")
+
+includeModule(":lib:global", "lib/global")
 
 
 

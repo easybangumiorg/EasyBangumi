@@ -1,6 +1,7 @@
 package org.easybangumi.next.lib.unifile.core
 
 import okio.*
+import org.easybangumi.next.lib.unifile.UFD
 import org.easybangumi.next.lib.unifile.UniFile
 
 /**
@@ -20,11 +21,11 @@ class OkioUniFile(
 ): UniFile {
 
     override fun getType(): String {
-        return UniFile.TYPE_OKIO
+        return UFD.TYPE_OKIO
     }
 
     override fun getUri(): String {
-        return "${UniFile.TYPE_OKIO}://${path}"
+        return path.toString()
     }
 
     override fun getName(): String {

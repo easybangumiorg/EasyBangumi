@@ -1,3 +1,4 @@
+import org.gradle.kotlin.dsl.implementation
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -32,16 +33,51 @@ kotlin {
 
     sourceSets {
 
+        val commonMain by getting
+
+        val jvmMain = create("jvmMain") {
+            dependsOn(commonMain)
+        }
+
+        val desktopMain by getting {
+            dependsOn(jvmMain)
+        }
+
+        val androidMain by getting {
+            dependsOn(jvmMain)
+        }
+
+        val iosMain = create("iosMain") {
+            dependsOn(commonMain)
+        }
+
+
+        val iosX64Main by getting {
+            dependsOn(iosMain)
+        }
+        val iosArm64Main by getting {
+            dependsOn(iosMain)
+        }
+        val iosSimulatorArm64Main by getting {
+            dependsOn(iosMain)
+        }
+
 
         commonMain.dependencies {
             implementation(libs.kotlinx.io)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.datetime)
+
+            implementation(libs.koin.core)
+
+            implementation(projects.lib.logger)
+            implementation(projects.lib.global)
+            implementation(projects.lib.serialization)
+            implementation(projects.lib.unifile)
         }
         androidMain.dependencies {
-
+            implementation(libs.preference.ktx)
         }
-        val desktopMain by getting
         desktopMain.dependencies {
             implementation(libs.kotlinx.coroutines.swing)
         }
