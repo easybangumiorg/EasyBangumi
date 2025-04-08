@@ -24,9 +24,78 @@ kotlin {
         }
     }
 
+    // 先预埋
+    listOf(
+        iosX64(),
+        iosArm64(),
+        iosSimulatorArm64()
+    ).forEach { iosTarget ->
+        iosTarget.binaries.framework {
+            baseName = "ComposeApp"
+            isStatic = true
+        }
+    }
+
     sourceSets {
 
-        val desktopMain by getting
+        val commonMain by getting
+
+        val jvmMain = create("jvmMain") {
+            dependsOn(commonMain)
+        }
+
+        val desktopMain by getting {
+            dependsOn(jvmMain)
+        }
+
+        val androidMain by getting {
+            dependsOn(jvmMain)
+        }
+
+        val iosMain = create("iosMain") {
+            dependsOn(commonMain)
+        }
+        val iosX64Main by getting {
+            dependsOn(iosMain)
+        }
+        val iosArm64Main by getting {
+            dependsOn(iosMain)
+        }
+        val iosSimulatorArm64Main by getting {
+            dependsOn(iosMain)
+        }
+
+        commonMain.dependencies {
+            implementation(compose.ui)
+
+            implementation(libs.moko.resources.compose)
+            implementation(libs.kotlin.reflect)
+
+            implementation(compose.material3)
+
+            implementation(libs.navigation.compose)
+
+            implementation(libs.paging.multiplatform.common)
+            implementation(libs.paging.multiplatform.compose)
+
+
+
+            implementation(libs.coil.compose)
+            implementation(libs.coil.ktor3)
+
+            implementation(projects.shared.resources)
+            implementation(projects.lib.logger)
+            implementation(projects.lib.utils)
+        }
+
+        jvmMain.dependencies {
+            implementation(libs.coil.svg)
+
+        }
+
+        iosMain.dependencies {
+
+        }
 
         androidMain.dependencies {
             implementation(libs.moshi)
@@ -34,38 +103,9 @@ kotlin {
             implementation(libs.coil)
             implementation(libs.coil.gif.android)
         }
-        commonMain.dependencies {
-            implementation(compose.ui)
-
-            implementation(compose.material3)
-
-//            implementation(projects.base.model)
-//            implementation(projects.base.utils)
-//            implementation(projects.base.service)
 
 
-//            implementation(projects.common.plugin.api)
 
-//            implementation(projects.lib.inject)
-//            implementation(projects.lib.unifile)
-
-            implementation(libs.moshi)
-            implementation(libs.navigation.compose)
-
-            implementation(libs.paging.multiplatform.common)
-            implementation(libs.paging.multiplatform.compose)
-            implementation(libs.moko.resources.compose)
-
-
-            implementation(libs.coil.compose)
-            implementation(libs.coil.ktor3)
-            implementation(libs.coil.svg)
-
-            implementation(projects.lib.logger)
-            implementation(projects.shared.resources)
-            implementation(projects.lib.utils)
-
-        }
         desktopMain.dependencies {
             implementation(libs.moshi)
             implementation(compose.desktop.currentOs)
@@ -76,9 +116,7 @@ kotlin {
             implementation(compose.desktop.components.animatedImage)
             // implementation(compose.components.)
         }
-        iosMain.dependencies {
 
-        }
     }
 }
 

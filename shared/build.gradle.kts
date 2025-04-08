@@ -57,34 +57,13 @@ kotlin {
             implementation(libs.androidx.room.runtime)
             implementation(libs.sqlite.bundled)
 
-
             implementation(libs.moko.resources.compose)
 
             implementation(libs.coil.compose)
 
-//            implementation(projects.lib.inject)
-//            implementation(projects.lib.unifile)
-//
-//            implementation(projects.base.model)
-//
-//            implementation(projects.base.service)
-//            implementation(projects.base.utils)
-//            // implementation(projects.base.compose)
-//
-//            implementation(projects.common.plugin.api)
-//            implementation(projects.common.plugin.core)
-//            implementation(projects.common.plugin.utils)
-//            implementation(projects.common.plugin.inner)
-//
-//            implementation(projects.common.database)
-//
-//            implementation(projects.common.resources)
-//
-//            implementation(projects.common.theme)
-//
-//            implementation(projects.common.foundation)
-
-
+            implementation(projects.shared.foundation)
+            implementation(projects.shared.resources)
+            implementation(projects.shared.platform)
 
         }
         desktopMain.dependencies {

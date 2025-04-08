@@ -12,8 +12,8 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import org.easybangumi.next.shared.resources.ResourceOr
 import org.easybangumi.next.shared.foundation.image.AnimationImage
-import org.easybangumi.next.shared.foundation.image.AsyncImage
 import dev.icerock.moko.resources.compose.stringResource
+import org.easybangumi.next.shared.foundation.image.AsyncImage
 import org.easybangumi.next.shared.resources.Res
 
 

@@ -21,9 +21,48 @@ kotlin {
         }
     }
 
+    // 先预埋
+    listOf(
+        iosX64(),
+        iosArm64(),
+        iosSimulatorArm64()
+    ).forEach { iosTarget ->
+        iosTarget.binaries.framework {
+            baseName = "ComposeApp"
+            isStatic = true
+        }
+    }
+
     sourceSets {
 
-        val desktopMain by getting
+        val commonMain by getting
+
+        val jvmMain = create("jvmMain") {
+            dependsOn(commonMain)
+        }
+
+        val desktopMain by getting {
+            dependsOn(jvmMain)
+        }
+
+        val androidMain by getting {
+            dependsOn(jvmMain)
+        }
+
+        val iosMain = create("iosMain") {
+            dependsOn(commonMain)
+        }
+
+
+        val iosX64Main by getting {
+            dependsOn(iosMain)
+        }
+        val iosArm64Main by getting {
+            dependsOn(iosMain)
+        }
+        val iosSimulatorArm64Main by getting {
+            dependsOn(iosMain)
+        }
 
         androidMain.dependencies {
         }

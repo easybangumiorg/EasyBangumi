@@ -12,13 +12,19 @@ import coil3.ImageLoader
 import coil3.compose.AsyncImagePainter
 import org.easybangumi.next.shared.resources.ResourceOr
 
-//import org.easybangumi.next.shared.resources.ResourceOr
-
 /**
- * Created by heyanlin on 2025/2/27.
+ *    https://github.com/easybangumiorg/EasyBangumi
+ *
+ *    Copyright 2025 easybangumi.org and contributors
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
  */
 @Composable
-fun AsyncImage(
+expect fun AsyncImage(
     model: ResourceOr?,
     contentDescription: String?,
     modifier: Modifier = Modifier,
@@ -35,26 +41,4 @@ fun AsyncImage(
     colorFilter: ColorFilter? = null,
     filterQuality: FilterQuality = FilterQuality.None,
     clipToBounds: Boolean = true,
-){
-
-    return coil3.compose.AsyncImage(
-        model = model,
-        contentDescription = contentDescription,
-        imageLoader = imageLoader,
-        modifier = modifier,
-        placeholder = placeholder,
-        error = error,
-        fallback = fallback,
-        onLoading = onLoading,
-        onSuccess = onSuccess,
-        onError = onError,
-        alignment = alignment,
-        contentScale = contentScale,
-        alpha = alpha,
-        colorFilter = colorFilter,
-        filterQuality = filterQuality,
-        clipToBounds = clipToBounds,
-    )
-
-
-}
+)
