@@ -1,9 +1,12 @@
-import org.gradle.kotlin.dsl.implementation
+
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import plugin.easy_config.EasyConfigPlugin
 
 plugins {
     alias(builds.plugins.kotlinMultiplatform)
     alias(builds.plugins.androidLibrary)
+    alias(builds.plugins.kotlinCompose)
+    alias(builds.plugins.compose)
 }
 kotlin {
     androidTarget {
@@ -62,24 +65,26 @@ kotlin {
             dependsOn(iosMain)
         }
 
-
         commonMain.dependencies {
-            implementation(libs.kotlinx.io)
-            implementation(libs.kotlinx.coroutines.core)
-            implementation(libs.kotlinx.datetime)
+            implementation(compose.ui)
+            implementation(compose.runtime)
+            implementation(compose.foundation)
+            implementation(compose.material3)
 
             implementation(libs.koin.core)
 
-            implementation(projects.lib.logger)
-            implementation(projects.lib.serialization)
-            implementation(projects.lib.unifile)
+            implementation(projects.shared.resources)
 
+            implementation(projects.lib.store)
+            implementation(projects.lib.utils)
         }
+
         androidMain.dependencies {
-            implementation(libs.preference.ktx)
+            implementation(libs.androidx.core.ktx)
         }
+
         desktopMain.dependencies {
-            implementation(libs.kotlinx.coroutines.swing)
+            implementation(compose.desktop.currentOs)
         }
         iosMain.dependencies {
 
@@ -88,7 +93,7 @@ kotlin {
 }
 
 android {
-    namespace = AppConfig.namespace + ".lib.store"
+    namespace = AppConfig.namespace + ".shared.platform"
     compileSdk = 35
     defaultConfig {
         minSdk = 21
@@ -97,9 +102,8 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
 }
-
-
 
 
 dependencies {

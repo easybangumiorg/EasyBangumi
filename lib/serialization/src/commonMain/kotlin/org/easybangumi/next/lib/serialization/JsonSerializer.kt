@@ -1,6 +1,5 @@
 package org.easybangumi.next.lib.serialization
 
-import org.easybangumi.next.lib.global.Global
 import kotlin.reflect.KClass
 
 /**
@@ -23,5 +22,3 @@ expect fun <T: Any> JsonSerializer.deserialize(data: String, clazz: KClass<T>, d
 inline fun <reified T: Any> JsonSerializer.deserialize(data: String, defaultValue: T?): T? {
     return deserialize(data, T::class, defaultValue)
 }
-
-fun Global.jsonSerializer() = JsonSerializer

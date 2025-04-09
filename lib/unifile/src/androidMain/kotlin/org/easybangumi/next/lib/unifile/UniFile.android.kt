@@ -2,9 +2,9 @@ package org.easybangumi.next.lib.unifile
 
 import android.net.Uri
 import okio.Path.Companion.toPath
-import org.easybangumi.next.lib.global.Global
-import org.easybangumi.next.lib.global.getAppContext
 import org.easybangumi.next.lib.unifile.core.OkioUniFile
+import org.easybangumi.next.lib.utils.Global
+import org.easybangumi.next.lib.utils.getAppContext
 import java.io.File
 
 

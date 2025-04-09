@@ -64,7 +64,6 @@ kotlin {
 
 
         commonMain.dependencies {
-            implementation(projects.lib.global)
         }
         androidMain.dependencies {
 

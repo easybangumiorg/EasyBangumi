@@ -68,6 +68,8 @@ kotlin {
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.datetime)
             api(libs.okio)
+
+            implementation(projects.lib.utils)
         }
         androidMain.dependencies {
             implementation(libs.uni.file)
@@ -96,7 +98,6 @@ android {
 
 
 dependencies {
-    implementation(projects.lib.global)
 }
 
 

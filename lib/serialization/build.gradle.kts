@@ -65,7 +65,7 @@ kotlin {
 
 
         commonMain.dependencies {
-            api(projects.lib.global)
+
         }
 
         jvmMain.dependencies {

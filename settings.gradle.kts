@@ -55,6 +55,7 @@ includeModule(":shared", "shared")
 includeModule(":shared:platform", "shared/platform")
 includeModule(":shared:resources", "shared/resources")
 includeModule(":shared:foundation", "shared/foundation")
+includeModule(":shared:theme", "shared/theme")
 
 // ------------- lib -------------
 includeModule(":lib:logger", "lib/logger")
@@ -62,8 +63,6 @@ includeModule(":lib:utils", "lib/utils")
 includeModule(":lib:store", "lib/store")
 includeModule(":lib:unifile", "lib/unifile")
 includeModule(":lib:serialization", "lib/serialization")
-
-includeModule(":lib:global", "lib/global")
 
 
 

@@ -15,7 +15,6 @@ kotlin {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_17)
         }
-
     }
 
     // 提前预埋保证 commonMain 是纯 kotlin 环境
@@ -63,18 +62,21 @@ kotlin {
 
 
 
+
+        commonMain.dependencies {
+            implementation(libs.kotlinx.io)
+            implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.datetime)
+            implementation(libs.okio)
+            implementation(libs.koin.core)
+        }
         androidMain.dependencies {
 
         }
-        commonMain.dependencies {
 
 
-        }
         desktopMain.dependencies {
-
-        }
-        iosMain.dependencies {
-
+            implementation(libs.kotlinx.coroutines.swing)
         }
     }
 }

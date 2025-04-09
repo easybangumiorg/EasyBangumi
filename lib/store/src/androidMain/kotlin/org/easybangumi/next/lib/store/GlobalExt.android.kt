@@ -1,7 +1,5 @@
 package org.easybangumi.next.lib.store
 
-import org.easybangumi.next.lib.global.Global
-import org.easybangumi.next.lib.global.getAppContext
 import org.easybangumi.next.lib.store.preference.AndroidPreferenceStore
 import org.easybangumi.next.lib.store.preference.PreferenceStore
 
