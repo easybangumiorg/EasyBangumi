@@ -81,7 +81,7 @@ kotlin {
 }
 
 android {
-    namespace = AppConfig.namespace + ".shared.platform"
+    namespace = AppConfig.namespace + ".shared"
     compileSdk = 35
     defaultConfig {
         minSdk = 21

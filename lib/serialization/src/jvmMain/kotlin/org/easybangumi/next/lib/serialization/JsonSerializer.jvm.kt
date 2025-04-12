@@ -17,40 +17,46 @@ import kotlin.reflect.KClass
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
+private class JsonSerializerImpl: JsonSerializer {
+    private val moshi: Moshi by lazy {
+        Moshi.Builder()
+            .add(MoshiArrayListJsonAdapter.FACTORY)
+            .addLast(KotlinJsonAdapterFactory())
+            .build()
+    }
 
-private val moshi: Moshi by lazy {
-    Moshi.Builder()
-        .add(MoshiArrayListJsonAdapter.FACTORY)
-        .addLast(KotlinJsonAdapterFactory())
-        .build()
-}
+    private fun <T : Any> Moshi.adapter(kClass: KClass<T>): JsonAdapter<T> {
+        return moshi.adapter(kClass.java)
+    }
 
-private fun <T : Any> Moshi.adapter(kClass: KClass<T>): JsonAdapter<T> {
-    return moshi.adapter(kClass.java)
-}
+    override fun <T : Any> serialize(data: T): String {
+        val adapter = moshi.adapter<T>(data.javaClass)
+        return runCatching {
+            adapter?.toJson(data) ?: ""
+        }.getOrElse {
+            ""
+        }
+    }
 
-
-actual fun <T : Any> JsonSerializer.serialize(data: T): String {
-    val adapter = moshi.adapter<T>(data.javaClass)
-    return runCatching {
-        adapter?.toJson(data) ?: ""
-    }.getOrElse {
-        ""
+    override fun <T : Any> deserialize(
+        data: String,
+        clazz: KClass<T>,
+        defaultValue: T?
+    ): T? {
+        val adapter = moshi.adapter(clazz)
+        if (data.isEmpty()) {
+            return null
+        }
+        return runCatching {
+            adapter.fromJson(data)
+        }.getOrElse {
+            defaultValue
+        }
     }
 }
 
-actual fun <T : Any> JsonSerializer.deserialize(
-    data: String,
-    clazz: KClass<T>,
-    defaultValue: T?
-): T? {
-    val adapter = moshi.adapter(clazz)
-    if (data.isEmpty()) {
-        return null
-    }
-    return runCatching {
-        adapter.fromJson(data)
-    }.getOrElse {
-       defaultValue
-    }
+
+
+actual val jsonSerializer: JsonSerializer by lazy {
+    JsonSerializerImpl()
 }

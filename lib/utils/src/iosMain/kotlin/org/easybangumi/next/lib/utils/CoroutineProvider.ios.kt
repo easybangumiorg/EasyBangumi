@@ -1,4 +1,4 @@
-package org.easybangumi.next.shared.resources
+package org.easybangumi.next.lib.utils
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -12,8 +12,5 @@ package org.easybangumi.next.shared.resources
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
-typealias ResourceOr = Any
-
-fun ResourceOr.isString(): Boolean {
-    return this is String
-}
+actual val coroutineProvider: CoroutineProvider
+    get() = TODO("Not yet implemented")

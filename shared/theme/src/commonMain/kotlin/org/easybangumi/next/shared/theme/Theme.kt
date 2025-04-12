@@ -8,8 +8,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.heyanle.easy_bangumi_cm.common.theme.colors.*
+import org.easybangumi.next.lib.utils.ResourceOr
 import org.easybangumi.next.shared.resources.Res
-import org.easybangumi.next.shared.resources.ResourceOr
 
 
 /**

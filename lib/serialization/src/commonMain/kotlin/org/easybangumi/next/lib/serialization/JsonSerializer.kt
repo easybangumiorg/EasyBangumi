@@ -13,11 +13,19 @@ import kotlin.reflect.KClass
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-object JsonSerializer
 
-expect fun <T: Any> JsonSerializer.serialize(data: T): String
+interface JsonSerializer {
+    fun <T: Any> serialize(data: T): String
+    fun <T: Any> deserialize(data: String, clazz: KClass<T>, defaultValue: T?): T?
+}
 
-expect fun <T: Any> JsonSerializer.deserialize(data: String, clazz: KClass<T>, defaultValue: T?): T?
+expect val jsonSerializer: JsonSerializer
+
+//object JsonSerializer
+//
+//expect fun <T: Any> JsonSerializer.serialize(data: T): String
+//
+//expect fun <T: Any> JsonSerializer.deserialize(data: String, clazz: KClass<T>, defaultValue: T?): T?
 
 inline fun <reified T: Any> JsonSerializer.deserialize(data: String, defaultValue: T?): T? {
     return deserialize(data, T::class, defaultValue)

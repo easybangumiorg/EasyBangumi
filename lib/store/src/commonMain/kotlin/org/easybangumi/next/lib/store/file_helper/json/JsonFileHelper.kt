@@ -1,9 +1,7 @@
 package org.easybangumi.next.lib.store.file_helper.json
 
 import kotlinx.coroutines.CoroutineScope
-import org.easybangumi.next.lib.serialization.JsonSerializer
-import org.easybangumi.next.lib.serialization.deserialize
-import org.easybangumi.next.lib.serialization.serialize
+import org.easybangumi.next.lib.serialization.jsonSerializer
 import org.easybangumi.next.lib.store.file_helper.AbsFileHelper
 import org.easybangumi.next.lib.unifile.UFD
 import kotlin.reflect.KClass
@@ -32,10 +30,10 @@ class JsonFileHelper<T: Any>(
     }
 
     override fun serializer(clazz: KClass<T>, data: T): String {
-        return JsonSerializer.serialize(data)
+        return jsonSerializer.serialize(data)
     }
 
     override fun deserializer(clazz: KClass<T>, source: String): T? {
-        return JsonSerializer.deserialize(source, clazz, null)
+        return jsonSerializer.deserialize(source, clazz, null)
     }
 }

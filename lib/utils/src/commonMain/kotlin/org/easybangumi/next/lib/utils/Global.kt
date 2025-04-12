@@ -12,4 +12,6 @@ package org.easybangumi.next.lib.utils
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
-object Global
+expect interface Global {}
+
+expect val global: Global

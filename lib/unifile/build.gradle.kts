@@ -70,6 +70,7 @@ kotlin {
             api(libs.okio)
 
             implementation(projects.lib.utils)
+            implementation(projects.lib.logger)
         }
         androidMain.dependencies {
             implementation(libs.uni.file)

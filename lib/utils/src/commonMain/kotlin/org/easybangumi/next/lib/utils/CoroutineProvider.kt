@@ -13,12 +13,11 @@ import kotlinx.coroutines.CoroutineDispatcher
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-object CoroutineProvider
+interface CoroutineProvider {
+    fun io(): CoroutineDispatcher
+    fun main(): CoroutineDispatcher
+    fun single(): CoroutineDispatcher
+    fun newSingle(name: String): CoroutineDispatcher
+}
 
-expect fun CoroutineProvider.io(): CoroutineDispatcher
-
-expect fun CoroutineProvider.main(): CoroutineDispatcher
-
-expect fun CoroutineProvider.single(): CoroutineDispatcher
-
-expect fun CoroutineProvider.newSinge(name: String): CoroutineDispatcher
+expect val coroutineProvider: CoroutineProvider

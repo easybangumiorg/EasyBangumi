@@ -5,8 +5,27 @@ import android.content.Context
 import org.koin.mp.KoinPlatform
 
 /**
- * Created by heyanlin on 2025/4/9.
+ *    https://github.com/easybangumiorg/EasyBangumi
+ *
+ *    Copyright 2025 easybangumi.org and contributors
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
  */
-fun Global.getAppContext(): Context {
-    return KoinPlatform.getKoin().get<Application>()
+
+actual interface Global {
+    val appContext: Context
 }
+
+private class GlobalImpl() : Global {
+    override val appContext: Context
+        get() =  KoinPlatform.getKoin().get<Application>()
+}
+
+actual val global: Global by lazy {
+    GlobalImpl()
+}
+
