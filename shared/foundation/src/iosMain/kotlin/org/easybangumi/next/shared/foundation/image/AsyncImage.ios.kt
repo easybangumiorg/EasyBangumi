@@ -9,7 +9,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import coil3.ImageLoader
 import coil3.compose.AsyncImagePainter
-import org.easybangumi.next.shared.resources.ResourceOr
+import org.easybangumi.next.lib.utils.ResourceOr
 
 @Composable
 actual fun AsyncImage(

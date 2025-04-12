@@ -6,7 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
-import org.easybangumi.next.shared.resources.ResourceOr
+import org.easybangumi.next.lib.utils.ResourceOr
 
 @Composable
 actual fun AnimationImage(

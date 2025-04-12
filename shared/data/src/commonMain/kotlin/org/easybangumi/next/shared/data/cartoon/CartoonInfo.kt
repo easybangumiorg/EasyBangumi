@@ -70,7 +70,7 @@ data class CartoonInfo(
     // 扩展字段，帮源缓存，这里只是用于持久化，可能会过时
     // 业务需要在 extController 中获取
     val playSourceExt: String = "",
-    val mataSourceExt: String = "",
+    val metaSourceExt: String = "",
     val createTime: Long = Clock.System.now().toEpochMilliseconds(), // 创建时间
 
 
@@ -132,8 +132,8 @@ data class CartoonInfo(
         if (lastLineId != other.lastLineId) return false
         if (lastEpisodeId != other.lastEpisodeId) return false
         if (mataId != other.mataId) return false
-        if (playSourceExt != other.playSourceExt) return false
-        if (mataSourceExt != other.mataSourceExt) return false
+//        if (playSourceExt != other.playSourceExt) return false
+//        if (metaSourceExt != other.metaSourceExt) return false
 
         return true
     }
@@ -165,8 +165,8 @@ data class CartoonInfo(
         result = 31 * result + lastLineId.hashCode()
         result = 31 * result + lastEpisodeId.hashCode()
         result = 31 * result + mataId.hashCode()
-        result = 31 * result + playSourceExt.hashCode()
-        result = 31 * result + mataSourceExt.hashCode()
+//        result = 31 * result + playSourceExt.hashCode()
+//        result = 31 * result + metaSourceExt.hashCode()
         return result
     }
 

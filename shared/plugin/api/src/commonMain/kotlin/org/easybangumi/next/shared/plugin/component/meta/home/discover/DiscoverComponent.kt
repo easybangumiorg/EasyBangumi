@@ -1,4 +1,8 @@
-package org.easybangumi.next.shared.plugin.component.meta.filter
+package org.easybangumi.next.shared.plugin.component.meta.home.discover
+
+import org.easybangumi.next.shared.data.cartoon.CartoonCover
+import org.easybangumi.next.shared.plugin.SourceResult
+import org.easybangumi.next.shared.plugin.component.meta.MetaComponent
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -10,9 +14,11 @@ package org.easybangumi.next.shared.plugin.component.meta.filter
  *    You may obtain a copy of the License at
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
- *
  */
-sealed class Filter {
+
+interface DiscoverComponent: MetaComponent {
+
+    suspend fun banner(): SourceResult<List<CartoonCover>>
 
 
 

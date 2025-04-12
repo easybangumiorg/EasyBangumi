@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
-import org.easybangumi.next.shared.resources.ResourceOr
+import org.easybangumi.next.lib.utils.ResourceOr
 import org.easybangumi.next.shared.foundation.image.AnimationImage
 import dev.icerock.moko.resources.compose.stringResource
 import org.easybangumi.next.shared.foundation.image.AsyncImage

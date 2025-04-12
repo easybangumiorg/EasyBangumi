@@ -40,7 +40,8 @@ data class ExtensionManifest (
 ){
 
     companion object {
-        const val LOAD_TYPE_JS_FILE = 2
+        const val LOAD_TYPE_JS_FILE = 1
+        const val LOAD_TYPE_JS_CRY_FILE = 2
         const val LOAD_TYPE_JS_PKG = 3
 
         const val PROVIDER_TYPE_JS_FILE = 1

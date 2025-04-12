@@ -1,4 +1,4 @@
-package org.easybangumi.next.shared.plugin.component.meta
+package org.easybangumi.next.shared.plugin.component.meta.home.filter
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -12,6 +12,8 @@ package org.easybangumi.next.shared.plugin.component.meta
  *        http://www.apache.org/licenses/LICENSE-2.0
  *
  */
+sealed class Filter {
 
-class TimeLinePageComponent {
+
+
 }

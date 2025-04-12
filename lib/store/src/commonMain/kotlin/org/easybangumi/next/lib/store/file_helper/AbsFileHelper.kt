@@ -7,6 +7,10 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
+import kotlinx.io.Source
+import okio.BufferedSink
+import okio.BufferedSource
+import okio.Sink
 import okio.buffer
 import okio.use
 import org.easybangumi.next.lib.logger.logger
@@ -30,14 +34,14 @@ import kotlin.reflect.KClass
 abstract class AbsFileHelper<T : Any>(
     private val folder: UFD,
     private val name: String,
-    private val clazz: KClass<T>,
     private val def: T,
     private val scope: CoroutineScope
 ): FileHelper<T> {
 
-    companion object {
-        const val FINAL_MARK = "$\$final$$"
-    }
+//    companion object {
+//        const val FINAL_MARK = "$\$final$$"
+//    }
+
 
     private var temp: T? = null
 
@@ -60,23 +64,17 @@ abstract class AbsFileHelper<T : Any>(
     override fun get(): T {
         val dataFile = dataFile
         return temp ?: dataFile?.openSource()?.use {
-            val string = it.buffer().readByteString().utf8()
-            if (string.endsWith(FINAL_MARK)) {
-                bkFile?.delete()
-                val data = deserializer(clazz, string) ?: return@get def
-                temp = data
-                data
-            } else {
-                dataFile.delete()
-                bkFile?.delete()
-                def
-            }
+            val string = it.buffer()
+            bkFile?.delete()
+            val data = deserializer(string) ?: return@get def
+            temp = data
+            data
         } ?: def
     }
 
     override fun set(t: T) {
+        temp = t
         scope.launch {
-            temp = t
             setListener.forEach {
                 it(t)
             }
@@ -87,8 +85,7 @@ abstract class AbsFileHelper<T : Any>(
             val bk = bkFile
             bk ?: return@launch
             bk.openSink(false).buffer().use {
-                it.writeUtf8(serializer(clazz, t))
-                it.writeUtf8(FINAL_MARK)
+                serializer(t, it)
                 it.flush()
             }
             dataFile?.delete()
@@ -116,8 +113,8 @@ abstract class AbsFileHelper<T : Any>(
 
 
     abstract fun suffix(): String
-    abstract fun serializer(clazz: KClass<T>, data: T): String
-    abstract fun deserializer(clazz: KClass<T>, source: String): T?
+    abstract fun serializer(data: T, sink: BufferedSink)
+    abstract fun deserializer(source: BufferedSource): T?
 
 
 

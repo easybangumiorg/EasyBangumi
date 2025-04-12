@@ -3,7 +3,7 @@ package org.easybangumi.next.shared.foundation
 import androidx.compose.runtime.Composable
 import dev.icerock.moko.resources.StringResource
 import dev.icerock.moko.resources.compose.stringResource
-import org.easybangumi.next.shared.resources.ResourceOr
+import org.easybangumi.next.lib.utils.ResourceOr
 
 /**
  * Created by heyanlin on 2025/3/3.

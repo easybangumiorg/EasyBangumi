@@ -21,25 +21,32 @@ import kotlin.reflect.KClass
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-class JsonFileHelper<T: Any>(
+
+class JsonlFileHelper<T: Any> (
     folder: UFD,
     name: String,
     private val clazz: KClass<T>,
-    def: T,
     scope: CoroutineScope = CoroutineScope(SupervisorJob() + coroutineProvider.io() )
-): AbsFileHelper<T>(folder, name, def, scope) {
+): AbsFileHelper<List<T>>(folder, name, emptyList(), scope) {
 
     override fun suffix(): String {
         return "json"
     }
 
-    override fun serializer(data: T, sink: BufferedSink) {
-        val json = jsonSerializer.serialize(data)
-        sink.writeUtf8(json)
+    override fun serializer(data: List<T>, sink: BufferedSink) {
+        data.forEach {
+            sink.writeUtf8(jsonSerializer.serialize(it))
+            sink.writeUtf8("\n")
+        }
     }
 
-    override fun deserializer(source: BufferedSource): T? {
-        val json = source.readByteString().utf8()
-        return jsonSerializer.deserialize(json, clazz, null)
+    override fun deserializer(source: BufferedSource): List<T>? {
+        val res = arrayListOf<T>()
+        while (true) {
+            val line = source.readUtf8Line() ?: break
+            val data = jsonSerializer.deserialize(line, clazz, null) ?: break
+            res.add(data)
+        }
+        return res
     }
 }

@@ -1,6 +1,4 @@
-package org.easybangumi.next.shared.plugin.component.meta
-
-import org.easybangumi.next.shared.plugin.component.MetaComponent
+package org.easybangumi.next.shared.plugin.extension
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -12,14 +10,7 @@ import org.easybangumi.next.shared.plugin.component.MetaComponent
  *    You may obtain a copy of the License at
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
- *
  */
-interface HomePageComponent: MetaComponent {
 
-    suspend fun getHomePageAction(): List<HomeAction>
-
-
-
-
-
+class ExtensionController {
 }

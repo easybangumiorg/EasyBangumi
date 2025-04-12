@@ -73,6 +73,7 @@ kotlin {
             implementation(projects.lib.logger)
             implementation(projects.lib.serialization)
             implementation(projects.lib.unifile)
+            implementation(projects.lib.utils)
 
         }
         androidMain.dependencies {

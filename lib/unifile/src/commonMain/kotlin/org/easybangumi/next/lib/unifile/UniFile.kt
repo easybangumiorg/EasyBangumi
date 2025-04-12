@@ -38,6 +38,10 @@ interface UniFile {
     // getter
     fun getUri(): String
 
+    fun getUFD(): UFD {
+        return UFD(getType(), getUri())
+    }
+
     fun getName(): String
 
     fun getFilePath(): String

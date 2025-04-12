@@ -11,9 +11,9 @@ import androidx.compose.ui.layout.ContentScale
 import coil3.ImageLoader
 import coil3.compose.AsyncImage
 import coil3.compose.AsyncImagePainter
-import org.easybangumi.next.shared.resources.ResourceOr
+import org.easybangumi.next.lib.utils.ResourceOr
 
-//import org.easybangumi.next.shared.resources.ResourceOr
+//import org.easybangumi.next.lib.utils.ResourceOr
 
 /**
  * Created by heyanlin on 2025/2/27.

@@ -66,6 +66,11 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.kotlinx.coroutines.core)
 
+            implementation(libs.koin.core)
+
+            implementation(projects.shared.pluginApi)
+
+            implementation(projects.lib.unifile)
             implementation(projects.lib.store)
             implementation(projects.lib.utils)
         }

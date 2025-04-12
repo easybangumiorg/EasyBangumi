@@ -12,7 +12,7 @@ import androidx.compose.ui.platform.LocalContext
 import coil3.gif.AnimatedImageDecoder
 import coil3.gif.GifDecoder
 import coil3.request.ImageRequest
-import org.easybangumi.next.shared.resources.ResourceOr
+import org.easybangumi.next.lib.utils.ResourceOr
 
 /**
  * Created by heyanlin on 2025/2/27.
