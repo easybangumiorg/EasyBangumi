@@ -17,7 +17,7 @@ import okio.source
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 class AUniFileWrapper(
-    private val uniFile: AUniFile
+    private var uniFile: AUniFile
 ): UniFile {
 
     override fun getType(): String {
@@ -52,7 +52,7 @@ class AUniFileWrapper(
         return uniFile.lastModified()
     }
 
-    override fun lenght(): Long {
+    override fun length(): Long {
         return uniFile.length()
     }
 
@@ -60,15 +60,12 @@ class AUniFileWrapper(
         return uniFile.exists()
     }
 
+
     override fun child(displayName: String): UniFile? {
-        return uniFile.findFile(displayName)?.let { AUniFileWrapper(it) }
+        return uniFile.findFile(displayName)?.let { AUniFileWrapper(it) } ?: uniFile.createFile(displayName)?.let { AUniFileWrapper(it) }
     }
 
-    override fun childIfExist(displayName: String): UniFile? {
-        val child = uniFile.findFile(displayName)?.let { AUniFileWrapper(it) } ?: return null
-        if (child.exists()) {
-            return child
-        }
+    override fun resolve(relative: String): UniFile? {
         return null
     }
 
@@ -95,6 +92,16 @@ class AUniFileWrapper(
         return uniFile.delete()
     }
 
+    override fun createDirectory(): Boolean {
+        val res = uniFile.parentFile?.createDirectory(getName())
+        if (res != null) {
+            uniFile = res
+            return true
+        }
+        return false
+    }
+
+
     override fun createDirectory(displayName: String): UniFile? {
         return uniFile.createDirectory(displayName)?.let { AUniFileWrapper(it) }
     }
@@ -104,10 +111,24 @@ class AUniFileWrapper(
     }
 
     override fun openSink(append: Boolean): Sink {
+        if (!uniFile.exists()) {
+            val parentI = uniFile.parentFile
+            if (parentI != null && !parentI.exists()) {
+                parentI.parentFile?.createDirectory(parentI.name)
+            }
+            uniFile = parentI?.createFile(getName()) ?: return uniFile.openOutputStream(append).sink()
+        }
         return uniFile.openOutputStream(append).sink()
     }
 
     override fun openSource(): Source {
+        if (!uniFile.exists()) {
+            val parentI = uniFile.parentFile
+            if (parentI != null && !parentI.exists()) {
+                parentI.parentFile?.createDirectory(parentI.name)
+            }
+            uniFile = parentI?.createFile(getName()) ?: return uniFile.openInputStream().source()
+        }
         return uniFile.openInputStream().source()
     }
 }

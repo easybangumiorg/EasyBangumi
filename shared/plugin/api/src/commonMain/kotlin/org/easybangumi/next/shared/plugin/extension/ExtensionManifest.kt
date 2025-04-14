@@ -45,7 +45,7 @@ data class ExtensionManifest (
         const val LOAD_TYPE_JS_PKG = 3
 
         const val PROVIDER_TYPE_JS_FILE = 1
-        const val PROVIDER_TYPE_PKG = 3
+        const val PROVIDER_TYPE_JS_PKG = 3
 
         const val STATUS_CAN_LOAD = 0
         const val STATUS_NEED_REINSTALL = 1

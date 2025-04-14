@@ -55,6 +55,10 @@ class JvmUniFile(
         }
     }
 
+    override fun createDirectory(): Boolean {
+        return file.mkdirs()
+    }
+
     override fun getUri(): String {
         return file.toURI().toString()
     }
@@ -80,7 +84,7 @@ class JvmUniFile(
         return file.lastModified()
     }
 
-    override fun lenght(): Long {
+    override fun length(): Long {
         return file.length()
     }
 
@@ -125,20 +129,25 @@ class JvmUniFile(
         return JvmUniFile(target)
     }
 
-    override fun childIfExist(displayName: String): UniFile? {
-        val target = File(file, displayName)
-        return if (target.exists()) {
-            JvmUniFile(target)
-        } else {
-            null
-        }
+    override fun resolve(relative: String): UniFile? {
+        val target = File(file, relative)
+        return JvmUniFile(target)
     }
 
+
     override fun openSink(append: Boolean): Sink {
+        if (!file.exists()) {
+            file.parentFile?.mkdirs()
+            FileOutputStream(file, false).close()
+        }
         return file.sink(append)
     }
 
     override fun openSource(): Source {
+        if (!file.exists()) {
+            file.parentFile?.mkdirs()
+            FileOutputStream(file, false).close()
+        }
         return file.source()
     }
 

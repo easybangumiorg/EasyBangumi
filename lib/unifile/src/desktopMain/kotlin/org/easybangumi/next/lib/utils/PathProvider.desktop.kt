@@ -30,7 +30,9 @@ private class PathProviderImpl : PathProvider {
 
     private val cachePathRoot: String by lazy {
         // 1. 先找 jvm 缓存
-        val jvmCache = System.getProperty("java.io.tmpdir")
+        val jvmCache = System.getProperty("java.io.tmpdir")?.let {
+            Path(it).parent?.resolve("easybangumi.next")?.toAbsolutePath()?.pathString
+        }
         if (!jvmCache.isNullOrEmpty()) {
             logger.info("find jvm cache path: $jvmCache")
             return@lazy jvmCache
@@ -47,7 +49,7 @@ private class PathProviderImpl : PathProvider {
 
         // 3. 找用户目录
         val userHome = System.getProperty("user.home")?.let {
-            Path(it).resolve(".cache").toAbsolutePath().pathString
+            Path(it).resolve("easybangumi.next").resolve("cache").toAbsolutePath().pathString
         }
         if (!userHome.isNullOrEmpty()) {
             logger.info("find user home cache path: $userHome")
@@ -70,7 +72,7 @@ private class PathProviderImpl : PathProvider {
 
         // 2. 找用户目录
         val userHome = System.getProperty("user.home")?.let {
-            Path(it).resolve("file").toAbsolutePath().pathString
+            Path(it).resolve("easybangumi.next").resolve("file").toAbsolutePath().pathString
         }
         if (!userHome.isNullOrEmpty()) {
             logger.info("find user home file path: $userHome")

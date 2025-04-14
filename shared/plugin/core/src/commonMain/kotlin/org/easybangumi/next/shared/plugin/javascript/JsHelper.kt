@@ -2,6 +2,7 @@ package org.easybangumi.next.shared.plugin.javascript
 
 import okio.Buffer
 import okio.BufferedSource
+import okio.ByteString
 import okio.ByteString.Companion.encodeUtf8
 import okio.Source
 import okio.buffer
@@ -39,7 +40,14 @@ object JsHelper {
     val CHUNK_SIZE = 1024
 
     // jsc 文件标记
-    val FIRST_LINE_MARK = "easy_bangumi_cm.jsc".encodeUtf8().toByteArray()
+    val FIRST_LINE_MARK = "easy_bangumi_cm.jsc".encodeUtf8()
+
+    fun isSourceCry(source: BufferedSource): Boolean {
+        return source.peek().use {
+            val mark = runCatching { it.readByteString(FIRST_LINE_MARK.size.toLong()) }.getOrElse { ByteString.EMPTY }
+            return mark == FIRST_LINE_MARK
+        }
+    }
 
 
     fun getManifestFromNormal(source: BufferedSource) : Map<String, String> {

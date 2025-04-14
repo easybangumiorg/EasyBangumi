@@ -20,13 +20,15 @@ import java.io.File
 
 
 actual fun UniFileFactory.fromUFD(ufd: UFD): UniFile? {
-    when (ufd.type) {
+    return when (ufd.type) {
         UFD.TYPE_JVM -> {
             JvmUniFile(File(ufd.uri))
         }
         UFD.TYPE_OKIO -> {
             OkioUniFile(path = ufd.uri.toPath())
         }
+        else -> {
+            null
+        }
     }
-    return null
 }

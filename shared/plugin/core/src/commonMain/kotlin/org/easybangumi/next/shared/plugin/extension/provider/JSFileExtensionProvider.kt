@@ -4,14 +4,27 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.yield
+import kotlinx.io.files.FileNotFoundException
+import okio.IOException
 import okio.buffer
 import okio.use
 import org.easybangumi.next.lib.store.file_helper.json.JsonlFileHelper
 import org.easybangumi.next.lib.unifile.UFD
 import org.easybangumi.next.lib.unifile.UniFile
+import org.easybangumi.next.lib.unifile.UniFileFactory
+import org.easybangumi.next.lib.unifile.fromUFD
 import org.easybangumi.next.lib.utils.DataState
+import org.easybangumi.next.lib.utils.copyTo
+import org.easybangumi.next.lib.utils.map
 import org.easybangumi.next.shared.plugin.extension.ExtensionManifest
 import org.easybangumi.next.shared.plugin.javascript.JsHelper
+import kotlin.invoke
+import kotlin.text.get
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -36,7 +49,6 @@ import org.easybangumi.next.shared.plugin.javascript.JsHelper
 class JSFileExtensionProvider(
     private val workerFolder: UniFile,
     val scope: CoroutineScope,
-
     // 必须为单线程调度的协程上下文
     val singleDispatcher: CoroutineDispatcher,
 ): AbsExtensionProvider() {
@@ -73,26 +85,182 @@ class JSFileExtensionProvider(
     )
 
     private var refreshJob: Job? = null
+    private var installJob: Job? = null
 
 
 
     override fun refresh() {
-
+        scope.launch(singleDispatcher) {
+            installJob?.join()
+            refreshJob?.cancelAndJoin()
+            refreshJob = scope.launch {
+                innerRefresh()
+            }
+        }
     }
 
-    override fun uninstall(extensionManifest: ExtensionManifest) {
 
+    override fun uninstall(extensionManifestList: List<ExtensionManifest>) {
+        scope.launch(singleDispatcher) {
+            installJob?.join()
+            refreshJob?.cancelAndJoin()
+            installJob = scope.launch {
+                indexHelper.update {
+                    it.filter { item -> !extensionManifestList.any { it.key == item.key } }
+                }
+                // 删文件异步
+                scope.launch {
+                    extensionManifestList.forEach {
+                        val fileName = it.key
+                        val targetFile = workerFolder.child(fileName)
+                        if (targetFile != null && targetFile.exists()) {
+                            targetFile.delete()
+                        }
+                    }
+                }
+
+            }
+        }
     }
 
-    override suspend fun install(
-        file: UFD,
-        override: Boolean
-    ): DataState<ExtensionManifest> {
+    override fun install(file: List<UFD>, override: Boolean, callback: (List<DataState<ExtensionManifest>>) -> Unit) {
+        scope.launch(singleDispatcher) {
+            installJob?.join()
+            refreshJob?.cancelAndJoin()
+            installJob = scope.launch {
+                val res = file.map {
+                    innerInstall(it, override)
+                }
+
+                val callbackRes = res.map {
+                    it.map {
+                        it.first
+                    }
+                }
+
+                val itemList = res.map {
+                    it.map {
+                        it.second
+                    }
+                }.filterIsInstance<DataState.Ok<JsExtensionIndexItem>>().map {
+                    it.data
+                }
+
+                indexHelper.update {
+                    it.filter { item -> !itemList.any { it.key == item.key } } + itemList
+                }
+
+                refresh()
+
+                callback(callbackRes)
+            }
+        }
+    }
+
+
+    private suspend fun innerInstall(file: UFD, override: Boolean): DataState<Pair<ExtensionManifest, JsExtensionIndexItem>>{
+        val uniFile = UniFileFactory.fromUFD(file)
+        if (uniFile == null) {
+            return DataState.error("UFD error", IllegalArgumentException("ufd error ${file.toString()}"))
+        }
+        if (!uniFile.exists()) {
+            return DataState.error("file not found", FileNotFoundException(uniFile.getFilePath()))
+        }
+        val bufferedSource = uniFile.openSource().buffer()
+        var isCry = false
+        val manifestMap = bufferedSource.peek().use {
+            isCry = JsHelper.isSourceCry(it)
+            if (isCry) JsHelper.getManifestFromCry(it) else JsHelper.getManifestFromNormal(it)
+
+        }
+
+        val key = manifestMap["key"]
+        if (key.isNullOrEmpty()) {
+            return DataState.error("key is null")
+        }
+
+        // 检查是否已经安装
+        if(!override && indexHelper.get().find { it.key == key } != null){
+            return DataState.error("has install without override", Throwable("${key} has install without override"))
+        }
+
+        val targetCryFile = workerFolder.child("${key}.${FILE_CRY_SUFFIX}")
+        val targetJsFile = workerFolder.child("${key}.${FILE_SUFFIX}")
+
+        targetJsFile?.delete()
+        targetCryFile?.delete()
+
+        val targetFile = if (isCry) {
+            targetCryFile
+        } else {
+            targetJsFile
+        }
+
+        if (targetFile == null) {
+            return DataState.error("target file error", IllegalStateException("target file error"))
+        }
+
+        val sink = targetFile.openSink(false).buffer()
+        sink.use {  sink ->
+            bufferedSource.use {
+                it.copyTo(sink)
+            }
+        }
+
+        if (targetFile.length() == 0L) {
+            return DataState.error("copy error", IOException("copy error"))
+        }
+
+        val item = JsExtensionIndexItem(
+            key = key,
+            type = if (isCry) JsExtensionIndexItem.TYPE_JSC else JsExtensionIndexItem.TYPE_JS,
+            lastModified = targetFile.lastModified()
+        )
+
+        // 直接解析复制后的文件，顺带做一个黑盒测试吧
+        val manifest = innerLoadItem(item)
+
+        if (manifest == null) {
+            return DataState.error("manifest parse error", IOException("install error"))
+        }
+
+
+        return DataState.ok(manifest to JsExtensionIndexItem(
+            key = key,
+            type = if (isCry) JsExtensionIndexItem.TYPE_JSC else JsExtensionIndexItem.TYPE_JS,
+            lastModified = targetFile.lastModified()
+        ))
+
+
+//        // 需不需要预加载？
+////        val finManifest = innerLoadItem(item)
+////        if(finManifest == null){
+////            callback.invoke(DataState.error("install error reboot can retry"))
+////            return
+////        }
+//
+//        indexHelper.update {
+//            it.filter { it.key != key } + item
+//        }
+//
+//        refresh()
 
     }
 
     override fun release() {
 
+    }
+
+    private suspend fun innerRefresh(){
+        val list = indexHelper.get()
+        fireLoading()
+        if (list.isEmpty()) {
+            fireData(emptyList())
+            return
+        }
+        val res = innerLoad(list)
+        yield()
+        fireData(res)
     }
 
 
@@ -101,7 +269,10 @@ class JSFileExtensionProvider(
         val indexUpdate = arrayListOf<JsExtensionIndexItem>()
         index.map {
             scope.async() { it to innerLoadItem(it) }
-        }.map { it.await() }.forEach { (item, manifest) ->
+        }.map {
+            yield()
+            it.await()
+        }.forEach { (item, manifest) ->
             if (manifest != null) {
                 result.add(manifest)
                 indexUpdate.add(item)

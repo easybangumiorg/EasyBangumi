@@ -54,14 +54,20 @@ interface UniFile {
 
     fun lastModified(): Long
 
-    fun lenght(): Long
+    fun length(): Long
 
     fun exists(): Boolean
 
+    fun createDirectory(): Boolean
+
     // children
+
+    fun createDirectory(displayName: String): UniFile?
+
     fun child(displayName: String): UniFile?
 
-    fun childIfExist(displayName: String): UniFile?
+    // saf 不支持
+    fun resolve(relative: String): UniFile?
 
     fun listFiles(filter: ((UniFile, String) -> Boolean)? = null): Array<UniFile?>
 
@@ -73,7 +79,7 @@ interface UniFile {
 
     fun delete(): Boolean
 
-    fun createDirectory(displayName: String): UniFile?
+
 
     fun renameTo(displayName: String): Boolean
 

@@ -25,12 +25,14 @@ interface ExtensionProvider {
 
     fun refresh()
 
-    fun uninstall(extensionManifest: ExtensionManifest)
+    fun uninstall(extensionManifestList: List<ExtensionManifest>)
 
-    suspend fun install(
-        file: UFD,
-        override: Boolean
-    ): DataState<ExtensionManifest>
+    // 必须运行在 io 线程
+    fun install(
+        file: List<UFD>,
+        override: Boolean,
+        callback: (List<DataState<ExtensionManifest>>) -> Unit
+    )
 
     fun release()
 

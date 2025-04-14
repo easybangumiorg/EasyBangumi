@@ -60,7 +60,7 @@ class OkioUniFile(
         }.getOrNull() ?: 0L
     }
 
-    override fun lenght(): Long {
+    override fun length(): Long {
         return kotlin.runCatching {
             system.metadataOrNull(path)?.size
         }.getOrNull() ?: 0L
@@ -78,23 +78,20 @@ class OkioUniFile(
         return OkioUniFile(childPath, system)
     }
 
-    override fun childIfExist(displayName: String): UniFile? {
-        val child = child(displayName)
-        if (child?.exists() == true) {
-            return child
-        }
-        return null
+    override fun resolve(relative: String): UniFile? {
+        val childPath = path.resolve(relative)
+        return OkioUniFile(childPath, system)
     }
 
     override fun listFiles(filter: ((UniFile, String) -> Boolean)?): Array<UniFile?> {
-        return system.listOrNull(path)?.map {
+        return system.listOrNull(path)?.mapNotNull {
             val child = OkioUniFile(it, system)
             if (filter == null || filter(child, it.name)) {
                 child
             } else {
                 null
             }
-        }?.filterNotNull()?.toTypedArray()?: emptyArray()
+        }?.toTypedArray()?: emptyArray()
     }
 
     override fun canRead(): Boolean {
@@ -112,10 +109,17 @@ class OkioUniFile(
 
     }
 
+    override fun createDirectory(): Boolean {
+        return runCatching {
+            system.createDirectories(path)
+        }.isSuccess
+    }
+
+
     override fun createDirectory(displayName: String): UniFile? {
         val childPath = path.resolve(displayName)
         kotlin.runCatching {
-            system.createDirectory(childPath)
+            system.createDirectories(childPath)
         }.onSuccess {
             return OkioUniFile(childPath, system)
         }
@@ -132,6 +136,9 @@ class OkioUniFile(
 
     override fun openSink(append: Boolean): Sink {
         return kotlin.run {
+            path.parent?.let {
+                system.createDirectories(it)
+            }
             if (append) {
                 system.appendingSink(path)
             } else {
@@ -142,6 +149,9 @@ class OkioUniFile(
 
     override fun openSource(): Source {
         return kotlin.run {
+            path.parent?.let {
+                system.createDirectories(it)
+            }
             system.source(path)
         }
     }

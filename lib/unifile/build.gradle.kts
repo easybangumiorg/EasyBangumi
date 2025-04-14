@@ -71,7 +71,13 @@ kotlin {
 
             implementation(projects.lib.utils)
             implementation(projects.lib.logger)
+            implementation(projects.lib.serialization)
         }
+
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+        }
+
         androidMain.dependencies {
             implementation(libs.uni.file)
         }
