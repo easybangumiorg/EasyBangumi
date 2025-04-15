@@ -1,5 +1,8 @@
 package org.easybangumi.next.lib.utils
 
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
+
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -49,15 +52,35 @@ sealed class DataState<T> {
             Error<T>(errorMsg, null, true)
     }
 
+    @OptIn(ExperimentalContracts::class)
+    fun isNone() : Boolean {
+        contract {
+            returns(true) implies (this@DataState is None)
+        }
+        return this is None
+    }
+
+    @OptIn(ExperimentalContracts::class)
     fun isOk() : Boolean {
+        contract {
+            returns(true) implies (this@DataState is Ok)
+        }
         return this is Ok
     }
 
+    @OptIn(ExperimentalContracts::class)
     fun isError() : Boolean {
+        contract {
+            returns(true) implies (this@DataState is Error)
+        }
         return this is Error
     }
 
+    @OptIn(ExperimentalContracts::class)
     fun isLoading() : Boolean {
+        contract {
+            returns(true) implies (this@DataState is Loading)
+        }
         return this is Loading
     }
 

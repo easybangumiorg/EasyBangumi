@@ -10,6 +10,8 @@ plugins {
 
     alias(builds.plugins.kotlinJvm) apply false
     alias(libs.plugins.kotlinxSerialization) apply false
+
+    alias(libs.plugins.kotlinxAtomicfu) apply false
 }
 
 buildscript {
@@ -19,5 +21,6 @@ buildscript {
 
     dependencies {
         classpath(libs.moko.resources.generator)
+        classpath(libs.kotlinx.atomicfu.gradle)
     }
 }

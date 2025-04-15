@@ -57,11 +57,7 @@ includeModule(":shared:resources", "shared/resources")
 includeModule(":shared:foundation", "shared/foundation")
 includeModule(":shared:theme", "shared/theme")
 includeModule(":shared:data", "shared/data")
-
-includeModule(":shared:plugin-api", "shared/plugin/api")
-includeModule(":shared:plugin-core", "shared/plugin/core")
-includeModule(":shared:plugin-utils", "shared/plugin/utils")
-includeModule(":shared:plugin-inner", "shared/plugin/inner")
+includeModule(":shared:plugin", "shared/plugin")
 
 
 // ------------- lib -------------

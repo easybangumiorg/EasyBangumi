@@ -15,6 +15,7 @@ kotlin-reflect = "1.9.24"
 kotlinx-coroutines = "1.10.1"
 kotlinx-datetime = "0.6.1"
 kotlinx-io = "0.6.0"
+kotlinx-atomicfu = "0.27.0"
 
 kotlin-serialization-plugin = "1.9.24"
 kotlinx-serialization = "1.6.3"
@@ -69,8 +70,6 @@ kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-cor
 kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinx-datetime" }
 kotlinx-io = { group = "org.jetbrains.kotlinx", name = "kotlinx-io-core", version.ref = "kotlinx-io" }
 
-
-
 kotlin-reflect = {group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin-reflect"}
 
 
@@ -89,6 +88,8 @@ preference-ktx = { module = "androidx.preference:preference-ktx", version.ref = 
 
 #kotlinx-serialization-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-core", version.ref = "kotlinx-serialization" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+
+kotlinx-atomicfu-gradle = { module = "org.jetbrains.kotlinx:atomicfu-gradle-plugin", version.ref = "kotlinx-atomicfu" }
 
 decompose = { group = "com.arkivanov.decompose", name = "extensions-compose", version.ref = "decompose" }
 
@@ -138,3 +139,4 @@ junit = { group = "junit", name = "junit", version.ref = "junit" }
 kotlinxSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin-serialization-plugin" }
 mokoResources = { id = "dev.icerock.mobile.multiplatform-resources" }
 jetbrainsKotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrains_kotlin_jvm" }
+kotlinxAtomicfu = { id = "org.jetbrains.kotlinx.atomicfu", version.ref = "kotlinx-atomicfu" }

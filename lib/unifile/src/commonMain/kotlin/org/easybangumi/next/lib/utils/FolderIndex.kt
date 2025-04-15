@@ -30,15 +30,55 @@ import org.easybangumi.next.lib.unifile.fromUFD
 
 object FolderIndex {
 
-    data class FolderIndexItem(
-        val relative: String,
-        val name: String,
-        val lastModified: Long,
-        val size: Long,
-        val tag: String? = null,
-    )
+    sealed class Item {
 
-    const val INDEX_FILE_NAME = ".folder_index.jsonl"
+        companion object {
+            fun fromLine(line: String?): Item? {
+                if (line == null) {
+                    return null
+                }
+                if (line.startsWith("f")){
+                    val name = line.substring(1)
+                    return jsonSerializer.deserialize(name, FolderItem::class, null)
+                }
+                if (line.startsWith("i")){
+                    val name = line.substring(1)
+                    return jsonSerializer.deserialize(name, IndexItem::class, null)
+                }
+                if (line == UP_LINE) {
+                    return UpItem
+                }
+                val item = jsonSerializer.deserialize(line, FileItem::class, null)
+                return item
+            }
+        }
+
+        // 返回 parent
+        object UpItem: Item()
+
+        // 进入文件夹
+        data class FolderItem (
+            val name: String,
+        ): Item()
+
+        // 检查文件
+        data class FileItem (
+            val name: String,
+            val lastModified: Long,
+            val size: Long,
+        ): Item()
+
+        // 检查索引
+        data class IndexItem (
+            val name: String,
+            val totalSize: Long,
+            val tag: String?,
+        ): Item()
+    }
+
+
+    const val UP_LINE = "..."
+    const val INDEX_FILE_NAME = ".folder.index"
 
     suspend fun check(
         ufd: UFD,
@@ -46,71 +86,94 @@ object FolderIndex {
         tag: String? = null,
     ): Boolean = withContext(coroutineProvider.io())  {
 
-        if (ufd.type != UFD.TYPE_OKIO && ufd.type != UFD.TYPE_JVM) {
-            // android saf 可能有效率问题，先不支持
-            return@withContext false
-        }
-
         val folder = UniFileFactory.fromUFD(ufd) ?: return@withContext false
-
-
         if (!folder.exists() || !folder.isDirectory()) {
             return@withContext false
         }
-
-
 
         val indexItemFile = folder.child(INDEX_FILE_NAME)
         if(indexItemFile == null || !indexItemFile.exists()){
             return@withContext false
         }
 
-        var hasIndex = false
-
-        var sizeFromIndex = 0L
-
-        var size = 0L
-
-        val relativeTemp = hashMapOf<String, UniFile>()
         indexItemFile.openSource().buffer().use {
+            val nameLine = it.readUtf8Line() ?: return@withContext false
+            if (nameLine != folder.getName()) {
+                return@withContext false
+            }
+
+            val tagLine = it.readUtf8Line()
+            if (tag != null && tag != tagLine) {
+                return@withContext false
+            }
+
+            var indexSize = 0L
+            var totalSize = 0L
+
+            var current: UniFile? = folder
+
             while (true) {
                 val line = it.readUtf8Line() ?: break
 
+                val item = Item.fromLine(line)
+                when(item) {
+                    is Item.FileItem -> {
+                        if (current == null) {
+                            return@withContext false
+                        }
+                        val child = current.child(item.name)
+                        if (child == null) {
+                            return@withContext false
+                        }
 
-                val item = jsonSerializer.deserialize(line, FolderIndexItem::class, null) ?: return@withContext false
+                        if (!child.exists() && item.size > 0) {
+                            return@withContext false
+                        }
 
-                if (item.name == INDEX_FILE_NAME && item.relative.isEmpty()) {
-                    if (hasIndex) {
-                        return@withContext false
-                    }
-                    // index 文件夹本身存储的是整个文件夹的信息
-                    sizeFromIndex = item.size
-                    if (tag != null && item.tag != tag) {
-                        return@withContext false
-                    }
-                    hasIndex = true
-                } else {
+                        if (!child.isFile() && item.size > 0) {
+                            return@withContext false
+                        }
 
-                    var file: UniFile? = folder.resolve(item.relative)
-                    file ?: return@withContext false
-                    if (!file.exists()) {
-                        return@withContext false
+                        if (child.length() != item.size) {
+                            return@withContext false
+                        }
+
+                        if (child.lastModified() != item.lastModified) {
+                            return@withContext false
+                        }
+
+                        if (child.getName() != item.name) {
+                            return@withContext false
+                        }
+
+                        totalSize += item.size
                     }
-                    if (file.lastModified() != item.lastModified) {
-                        return@withContext false
+                    is Item.FolderItem -> {
+                        current = current?.child(item.name)
+                        continue
                     }
-                    if (file.length() != item.size) {
-                        return@withContext false
+                    is Item.UpItem -> {
+                        current = current?.getParentFile()
+                        continue
                     }
-                    if (file.getName() != item.name) {
-                        return@withContext false
+                    is Item.IndexItem -> {
+                        indexSize = item.totalSize
+                        if (folder.getName() != item.name) {
+                            return@withContext false
+                        }
+                        if (tag != null && tag != item.tag) {
+                            return@withContext false
+                        }
+
                     }
-                    size += item.size
+                    else -> {
+                        continue
+                    }
                 }
             }
-        }
-        if (size != sizeFromIndex){
-            return@withContext false
+            if (totalSize != indexSize) {
+                return@withContext false
+            }
         }
         return@withContext true
     }
@@ -120,10 +183,6 @@ object FolderIndex {
         tag: String?,
     ): Boolean = withContext(coroutineProvider.io())  {
 
-        if (ufd.type != UFD.TYPE_OKIO && ufd.type != UFD.TYPE_JVM) {
-            // android saf 可能有效率问题，先不支持
-            return@withContext false
-        }
 
         val folder = UniFileFactory.fromUFD(ufd) ?: return@withContext false
 
@@ -140,129 +199,62 @@ object FolderIndex {
 
         indexItemFile.delete()
 
-        var size = 0L
-
-        val indexItems = mutableListOf<FolderIndexItem>()
-        val pathDeque = ArrayDeque<Pair<String, UniFile>>()
-
-        pathDeque.add("" to folder)
-        // bfs
-        while (pathDeque.isNotEmpty()) {
-            val cur = pathDeque.removeFirst()
-            val curPath = cur.first
-            val curFile = cur.second
-            val array = curFile.listFiles() ?: continue
-            for (file in array){
-                if (file?.isDirectory() == true) {
-                    pathDeque.add(curPath + okio.Path.DIRECTORY_SEPARATOR + file.getName() to file)
-                } else if (file?.isFile() == true) {
-                    size += file.length()
-                    indexItems.add(
-                        FolderIndexItem(
-                            relative = curPath + okio.Path.DIRECTORY_SEPARATOR + file.getName(),
-                            name = file.getName(),
-                            lastModified = file.lastModified(),
-                            size = file.length()
-                        )
-                    )
-                }
-            }
-        }
-
         indexItemFile.openSink(false).buffer().use {
-            for (item in indexItems){
-                it.writeUtf8(jsonSerializer.serialize(item))
-                it.writeUtf8("\n")
-            }
-            // index 文件本身存储的是整个文件夹的信息
-            it.writeUtf8(
-                jsonSerializer.serialize(
-                    FolderIndexItem(
-                        relative = "",
-                        name = INDEX_FILE_NAME,
-                        lastModified = Clock.System.now().toEpochMilliseconds(),
-                        tag = tag,
-                        size = size
-                    )
-                )
 
-            )
-        }
+            var totalSize = 0L
 
-        return@withContext true
-    }
-
-    fun t(
-        root: UniFile,
-        stringBuilder: StringBuilder
-    ) {
-
-        if (root.isFile()) {
-            stringBuilder.append("file:").append(root.getName())
-            stringBuilder.append("\n")
-            return
-        }
-
-        if (!root.isDirectory()) {
-            return
-        }
-
-        stringBuilder.append("folder:").append(root.getName())
-        stringBuilder.append("\n")
-
-        val array = root.listFiles()
-        array.filterNotNull().forEach {
-            t(it, stringBuilder)
-
-        }
-
-        stringBuilder.append("...")
-        stringBuilder.append("\n")
-
-        // 将以上算法改成迭代实现
-
-
-
-    }
-
-    fun tt(
-        root: UniFile,
-        stringBuilder: StringBuilder
-    ) {
-
-        val stack = arrayListOf<Pair<UniFile, Boolean>>()
-
-        stack.add(root to false)
-        stack.add(root to true)
-
-        while (stack.isNotEmpty()) {
-            val pop = stack.removeLastOrNull() ?: break
-            if (!pop.second) {
-                stringBuilder.append("...").append("\n")
-            } else {
-                if (pop.first.isFile()) {
-                    stringBuilder.append("file:").append(pop.first.getName()).append("\n")
-                    continue
-                }
-                if (pop.first.isDirectory()) {
-                    stringBuilder.append("folder:").append(pop.first.getName()).append("\n")
-                    for (file in pop.first.listFiles().filterNotNull().reversed()) {
-                        if (!file.exists()) {
-                            continue
-                        }
-                        if (file.isDirectory()) {
-                            stack += (file to false)
-                            stack += (file to true)
-                        } else if (file.isFile()) {
-                            stack += (file to true)
+            val stack = arrayListOf<Pair<UniFile, Boolean>>()
+            stack.add(folder to false)
+            stack.add(folder to true)
+            while (stack.isNotEmpty()) {
+                val pop = stack.removeLastOrNull() ?: break
+                if (!pop.second) {
+                    it.writeUtf8(UP_LINE).writeUtf8("\n")
+                } else {
+                    if (pop.first.isFile()) {
+                        val fileItem = Item.FileItem(
+                            name = pop.first.getName(),
+                            lastModified = pop.first.lastModified(),
+                            size = pop.first.length()
+                        )
+                        totalSize += fileItem.size
+                        it.writeUtf8(jsonSerializer.serialize(fileItem)).writeUtf8("\n")
+                        continue
+                    }
+                    if (pop.first.isDirectory()) {
+                        val folderItem = Item.FolderItem(
+                            name = pop.first.getName(),
+                        )
+                        it.writeUtf8("f").writeUtf8(jsonSerializer.serialize(folderItem)).writeUtf8("\n")
+                        for (file in pop.first.listFiles().filterNotNull().reversed()) {
+                            if (!file.exists()) {
+                                continue
+                            }
+                            if (file.isDirectory()) {
+                                stack += (file to false)
+                                stack += (file to true)
+                            } else if (file.isFile()) {
+                                stack += (file to true)
+                            }
                         }
                     }
+
+
                 }
-
-
             }
-        }
 
+            val indexItem = Item.IndexItem(
+                name = folder.getName(),
+                totalSize = totalSize,
+                tag = tag
+            )
+            it.writeUtf8("i").writeUtf8(jsonSerializer.serialize(indexItem)).writeUtf8("\n")
+            it.flush()
+
+
+        }
+        return@withContext indexItemFile.exists() && indexItemFile.length() > 0
     }
+
 
 }
