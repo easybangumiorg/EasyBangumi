@@ -3,7 +3,7 @@ package org.easybangumi.next.shared.plugin.core.extension.provider
 import kotlinx.coroutines.flow.StateFlow
 import org.easybangumi.next.lib.unifile.UFD
 import org.easybangumi.next.lib.utils.DataState
-import org.easybangumi.next.shared.plugin.extension.ExtensionManifest
+import org.easybangumi.next.shared.plugin.api.extension.ExtensionManifest
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi

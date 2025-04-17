@@ -4,11 +4,10 @@ import okio.buffer
 import org.easybangumi.next.lib.unifile.UniFile
 import org.easybangumi.next.lib.unifile.UniFileFactory
 import org.easybangumi.next.lib.unifile.fromUFD
-import org.easybangumi.next.shared.plugin.extension.ExtensionManifest
-import org.easybangumi.next.shared.plugin.info.ExtensionInfo
-import org.easybangumi.next.shared.plugin.javascript.JsHelper
-import org.easybangumi.next.shared.plugin.source.Source
-import org.easybangumi.next.shared.plugin.source.SourceManifest
+import org.easybangumi.next.shared.plugin.api.extension.ExtensionManifest
+import org.easybangumi.next.shared.plugin.api.source.SourceManifest
+import org.easybangumi.next.shared.plugin.core.info.ExtensionInfo
+import org.easybangumi.next.shared.plugin.core.javascript.JsHelper
 
 class JsFileExtensionLoader: ExtensionLoader {
 

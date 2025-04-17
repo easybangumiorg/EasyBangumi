@@ -1,10 +1,10 @@
 package org.easybangumi.next.shared.plugin.core.source.loader
 
-import org.easybangumi.next.shared.plugin.EasyPluginConfigProvider
-import org.easybangumi.next.shared.plugin.component.ComponentBundleImpl
-import org.easybangumi.next.shared.plugin.info.SourceConfig
-import org.easybangumi.next.shared.plugin.info.SourceInfo
-import org.easybangumi.next.shared.plugin.inner.InnerSource
+import org.easybangumi.next.shared.plugin.core.component.ComponentBundle
+import org.easybangumi.next.shared.plugin.core.info.SourceConfig
+import org.easybangumi.next.shared.plugin.core.info.SourceInfo
+import org.easybangumi.next.shared.plugin.core.inner.InnerSource
+
 
 /**
  * Created by heyanlin on 2025/1/29.
@@ -16,7 +16,6 @@ class InnerSourceLoader() {
     fun load(
         innerSource: InnerSource,
         sourceConfig: SourceConfig,
-        utilsProvider: EasyPluginConfigProvider.UtilsProvider
     ): SourceInfo {
         // 缓存
         val ca = cache[innerSource.key]
@@ -31,9 +30,8 @@ class InnerSourceLoader() {
         }
 
         // 加载
-        val bundle = ComponentBundleImpl(
+        val bundle = ComponentBundle(
             innerSource,
-            utilsProvider,
             innerSource.componentConstructor
         )
         try {
@@ -41,7 +39,7 @@ class InnerSourceLoader() {
             val info = SourceInfo.Loaded(innerSource.manifest, sourceConfig, bundle)
             cache[innerSource.key] = info
             return info
-        }catch (e: Exception){
+        } catch (e: Exception){
             return SourceInfo.Error(innerSource.manifest, sourceConfig, e.message ?: "Unknown error", e)
         }
 

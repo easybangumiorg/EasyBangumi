@@ -1,4 +1,6 @@
-package org.easybangumi.next.shared.plugin.api.component.meta.home.filter
+package org.easybangumi.next.shared.plugin.core.safe
+
+import org.easybangumi.next.shared.plugin.api.component.Component
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -10,10 +12,8 @@ package org.easybangumi.next.shared.plugin.api.component.meta.home.filter
  *    You may obtain a copy of the License at
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
- *
  */
-sealed class Filter {
 
-
-
-}
+expect fun makeComponentProxy(
+    component: Component
+): Component?

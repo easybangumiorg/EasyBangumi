@@ -5,7 +5,7 @@ import kotlinx.coroutines.CoroutineScope
 import org.easybangumi.next.lib.unifile.UFD
 import org.easybangumi.next.lib.unifile.UniFile
 import org.easybangumi.next.lib.utils.DataState
-import org.easybangumi.next.shared.plugin.extension.ExtensionManifest
+import org.easybangumi.next.shared.plugin.api.extension.ExtensionManifest
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi

@@ -1,7 +1,8 @@
 package org.easybangumi.next.shared.plugin.core.info
 
-import org.easybangumi.next.shared.plugin.extension.ExtensionManifest
-import org.easybangumi.next.shared.plugin.source.SourceManifest
+import org.easybangumi.next.shared.plugin.api.extension.ExtensionManifest
+import org.easybangumi.next.shared.plugin.api.source.SourceManifest
+
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi

@@ -10,18 +10,18 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.unifile.UFD
-import org.easybangumi.next.lib.unifile.UniFileFactory
-import org.easybangumi.next.lib.unifile.fromUFD
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.coroutineProvider
 import org.easybangumi.next.lib.utils.map
 import org.easybangumi.next.lib.utils.pathProvider
-import org.easybangumi.next.shared.plugin.extension.loader.JsFileCryExtensionLoader
-import org.easybangumi.next.shared.plugin.extension.loader.JsFileExtensionLoader
-import org.easybangumi.next.shared.plugin.extension.loader.JsPkgExtensionLoader
-import org.easybangumi.next.shared.plugin.extension.provider.ExtensionProvider
-import org.easybangumi.next.shared.plugin.extension.provider.ProviderFactory
-import org.easybangumi.next.shared.plugin.info.ExtensionInfo
+import org.easybangumi.next.shared.plugin.api.extension.ExtensionManifest
+import org.easybangumi.next.shared.plugin.core.safe.ExtensionSafeMode
+import org.easybangumi.next.shared.plugin.core.extension.loader.JsFileCryExtensionLoader
+import org.easybangumi.next.shared.plugin.core.extension.loader.JsFileExtensionLoader
+import org.easybangumi.next.shared.plugin.core.extension.loader.JsPkgExtensionLoader
+import org.easybangumi.next.shared.plugin.core.extension.provider.ExtensionProvider
+import org.easybangumi.next.shared.plugin.core.extension.provider.ProviderFactory
+import org.easybangumi.next.shared.plugin.core.info.ExtensionInfo
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -59,6 +59,15 @@ class ExtensionController {
     // == ExtensionProvider ================================================================================
 
     private val providerMap: Map<Int, ExtensionProvider> = run {
+
+        if (ExtensionSafeMode.isSafeMode()) {
+            logger.error("ExtensionSafeMode is enabled")
+            _manifestState.update {
+                DataState.Companion.error("安全模式，请排查问题插件后重启")
+            }
+            return@run emptyMap()
+        }
+
         val map = hashMapOf<Int, ExtensionProvider>()
         val result = ProviderFactory.createProvider(
             workerFile,

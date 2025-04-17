@@ -4,8 +4,12 @@ import kotlinx.atomicfu.atomic
 import org.easybangumi.next.shared.plugin.api.ConstClazz
 import org.easybangumi.next.shared.plugin.api.component.Component
 import org.easybangumi.next.shared.plugin.api.source.Source
-import org.easybangumi.next.shared.plugin.core.EasyPluginConfigProvider
+import org.easybangumi.next.shared.plugin.core.safe.makeComponentProxy
+import org.easybangumi.next.shared.plugin.utils.UtilsProvider
+import org.koin.core.Koin
+import org.koin.dsl.binds
 import org.koin.dsl.koinApplication
+import org.koin.dsl.module
 import kotlin.reflect.KClass
 
 /**
@@ -21,54 +25,57 @@ import kotlin.reflect.KClass
  */
 class ComponentBundle(
     private val source: Source,
-    private val utilsProvider: EasyPluginConfigProvider.UtilsProvider,
     private val componentConstructor: Array<() -> Component>,
 ) {
+    private var koinApp: Koin? = null
 
-    private val bundleMap: HashMap<KClass<*>, Any> = hashMapOf()
-    private val componentClazz: HashMap<KClass<*>, KClass<*>> = hashMapOf()
+    // proxy 不使用 koin 管理，保证业务内无法获取 Proxy，只能获取原始对象
+    private val componentProxy: HashMap<KClass<out Component>, Component> = hashMapOf()
 
     private val init = atomic(false)
 
     fun load(){
+
         if (init.compareAndSet(false, true)) {
-            // Load source
-            bundleMap[source::class] = source
-            ConstClazz.sourceClazz.forEach {
-                if (it.isInstance(source)) {
-                    bundleMap[it] = source
-                }
-            }
 
-            // Load utils
-            ConstClazz.utilsClazz.forEach {
-                val util = utilsProvider.get(it, source)
-                if (util != null) {
-                    bundleMap[it] = util
-                }
-            }
+            val realComponent = componentConstructor.map { it() }
 
-            // Load components
-            val componentList = componentConstructor.map { it() }
-            componentList.forEach { nc ->
-                val clazz = nc::class
-                if (bundleMap[clazz] == null) {
-                    bundleMap[clazz] = nc
-                }
-                if (componentClazz[clazz] == null) {
-                    componentClazz[clazz] = clazz
-                }
-                ConstClazz.componentClazz.forEach {
-                    if (it.isInstance(nc)) {
-                        bundleMap[it] = nc
-                        componentClazz[it] = clazz
+            koinApp = koinApplication {
+                module {
+                    // Load source
+                    single {
+                        source
+                    }.binds(ConstClazz.sourceClazz)
+
+                    // Load component
+                    realComponent.forEach { component ->
+                        single {
+                            component.apply {
+                                if (this is ComponentWrapper) {
+                                    innerSource = source
+                                    innerKoin = koin
+                                }
+                            }
+                        }.binds(
+                            ConstClazz.componentClazz.filter {
+                                it.isInstance(component)
+                            }.toTypedArray()
+                        )
                     }
+
+                    // Load utils
+                    ConstClazz.utilsClazz.forEach { clazz ->
+                        val util = UtilsProvider.get(clazz, source)
+                        if (util != null) {
+                            single {
+                                util
+                            }.binds(arrayOf(clazz))
+                        }
+                    }
+
+
                 }
-                if (nc is ComponentWrapper) {
-                    nc.innerSource = source
-                    nc.innerBundle = this
-                }
-            }
+            }.koin
         }
     }
 
@@ -78,12 +85,28 @@ class ComponentBundle(
     }
 
     fun <T : Any> get(clazz: KClass<T>): T? {
-        return bundleMap[clazz] as? T
+        if (!init.value) return null
+        return koinApp?.get(clazz)
+    }
+
+    fun <T: Component> getIfProxy(clazz: KClass<T>): T? {
+        if (!init.value) return null
+        val cache = componentProxy[clazz]
+        if (cache != null) {
+            return cache as? T
+        }
+        val component = koinApp?.get<T>(clazz) ?: return null
+        // proxy 失败直接放弃返回原对象，只尝试一次
+        val proxy = makeComponentProxy(component) ?: component
+        componentProxy[clazz] = proxy
+        return proxy as? T
     }
 
     fun release() {
-        init.getAndSet(false)
-        bundleMap.clear()
-        componentClazz.clear()
+        if (init.compareAndSet(true, false)) {
+            koinApp?.close()
+            koinApp = null
+            componentProxy.clear()
+        }
     }
 }

@@ -21,8 +21,8 @@ import org.easybangumi.next.lib.unifile.fromUFD
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.copyTo
 import org.easybangumi.next.lib.utils.map
-import org.easybangumi.next.shared.plugin.extension.ExtensionManifest
-import org.easybangumi.next.shared.plugin.javascript.JsHelper
+import org.easybangumi.next.shared.plugin.api.extension.ExtensionManifest
+import org.easybangumi.next.shared.plugin.core.javascript.JsHelper
 import kotlin.invoke
 import kotlin.text.get
 

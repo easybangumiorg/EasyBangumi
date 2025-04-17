@@ -4,13 +4,10 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Clock.System
 import org.easybangumi.next.lib.utils.ResourceOr
 import org.easybangumi.next.lib.utils.pathProvider
-import org.easybangumi.next.shared.plugin.component.Component
-import org.easybangumi.next.shared.plugin.extension.ExtensionController
-import org.easybangumi.next.shared.plugin.extension.ExtensionManifest
-import org.easybangumi.next.shared.plugin.extension.loader.JsFileExtensionLoader
-import org.easybangumi.next.shared.plugin.source.Source
-import org.easybangumi.next.shared.plugin.source.SourceBundle
-import org.easybangumi.next.shared.plugin.source.SourceManifest
+import org.easybangumi.next.shared.plugin.api.component.Component
+import org.easybangumi.next.shared.plugin.api.extension.ExtensionManifest
+import org.easybangumi.next.shared.plugin.api.source.Source
+import org.easybangumi.next.shared.plugin.api.source.SourceManifest
 import kotlin.reflect.KClass
 
 /**

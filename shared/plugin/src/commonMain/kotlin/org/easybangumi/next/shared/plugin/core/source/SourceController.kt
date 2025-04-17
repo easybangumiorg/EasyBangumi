@@ -6,9 +6,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.coroutineProvider
-import org.easybangumi.next.shared.plugin.EasyPluginConfigProvider
-import org.easybangumi.next.shared.plugin.extension.ExtensionController
-import org.easybangumi.next.shared.plugin.info.SourceInfo
+import org.easybangumi.next.shared.plugin.core.extension.ExtensionController
+import org.easybangumi.next.shared.plugin.core.info.SourceInfo
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -31,7 +30,6 @@ import org.easybangumi.next.shared.plugin.info.SourceInfo
 class SourceController(
     private val sourceConfigController: SourceConfigController,
     private val extensionController: ExtensionController,
-    private val configProvider: EasyPluginConfigProvider,
 ) {
 
     // ============== flow 定义 ==============
@@ -44,8 +42,8 @@ class SourceController(
     private val _sourceBundleFlow = MutableStateFlow<DataState<SourceBundle>>(DataState.loading())
     val sourceBundleFlow = _sourceBundleFlow.asStateFlow()
 
-    // 内置 Source
-    private val innerSourceProvider = configProvider.innerSourceProvider
+//    // 内置 Source
+//    private val innerSourceProvider = configProvider.innerSourceProvider
 
 
     // ============== 协程 定义 ==============

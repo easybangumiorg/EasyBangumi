@@ -1,6 +1,6 @@
 package org.easybangumi.next.shared.plugin.api.component
 
-import org.easybangumi.next.shared.plugin.source.SourceManifest
+import org.easybangumi.next.shared.plugin.api.source.SourceManifest
 
 
 /**

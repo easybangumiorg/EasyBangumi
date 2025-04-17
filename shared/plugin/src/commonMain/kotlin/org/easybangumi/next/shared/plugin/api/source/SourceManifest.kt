@@ -2,7 +2,7 @@ package org.easybangumi.next.shared.plugin.api.source
 
 import org.easybangumi.next.lib.unifile.UFD
 import org.easybangumi.next.lib.utils.ResourceOr
-import org.easybangumi.next.shared.plugin.extension.ExtensionManifest
+import org.easybangumi.next.shared.plugin.api.extension.ExtensionManifest
 
 
 /**

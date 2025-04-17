@@ -1,8 +1,6 @@
-package org.easybangumi.next.shared.plugin.api.component.meta.home.discover
+package org.easybangumi.next.shared.plugin.api.component.page
 
-import org.easybangumi.next.shared.data.cartoon.CartoonCover
-import org.easybangumi.next.shared.plugin.SourceResult
-import org.easybangumi.next.shared.plugin.component.meta.MetaComponent
+import org.easybangumi.next.shared.plugin.api.component.meta.MetaComponent
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -15,10 +13,7 @@ import org.easybangumi.next.shared.plugin.component.meta.MetaComponent
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-
-interface DiscoverComponent: MetaComponent {
-
-    suspend fun banner(): SourceResult<List<CartoonCover>>
+interface PageComponent : MetaComponent {
 
 
 

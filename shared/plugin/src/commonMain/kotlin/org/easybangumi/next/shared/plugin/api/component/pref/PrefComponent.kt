@@ -1,6 +1,7 @@
 package org.easybangumi.next.shared.plugin.api.component.pref
 
-import org.easybangumi.next.shared.plugin.component.Component
+import org.easybangumi.next.shared.plugin.api.component.Component
+import org.easybangumi.next.shared.plugin.core.component.ComponentBundle
 
 
 /**
@@ -12,8 +13,4 @@ interface PrefComponent : Component {
 
     suspend fun register(): List<SourcePreference>
 
-}
-
-fun ComponentBundle.prefComponent(): PrefComponent?{
-    return this.getComponent(PrefComponent::class)
 }

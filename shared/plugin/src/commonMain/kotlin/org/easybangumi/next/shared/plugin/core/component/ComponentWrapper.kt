@@ -1,7 +1,9 @@
 package org.easybangumi.next.shared.plugin.core.component
 
 import org.easybangumi.next.shared.plugin.api.component.Component
-import org.easybangumi.next.shared.plugin.source.Source
+import org.easybangumi.next.shared.plugin.api.source.Source
+import org.koin.core.Koin
+import org.koin.core.component.KoinComponent
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -14,16 +16,16 @@ import org.easybangumi.next.shared.plugin.source.Source
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-open class ComponentWrapper: Component {
+open class ComponentWrapper: Component, KoinComponent {
 
+    var innerKoin: Koin? = null
     var innerSource: Source? = null
-    var innerBundle: ComponentBundle? = null
 
     override val source: Source
         get() = innerSource!!
 
-    protected inline fun <reified T: Any> inject() = lazy {
-        innerBundle?.get(T::class) ?: error("Component not found")
+    override fun getKoin(): Koin {
+        return innerKoin!!
     }
 
 }

@@ -70,6 +70,8 @@ kotlin {
             implementation(libs.kotlin.reflect)
             implementation(libs.koin.core)
 
+            implementation(projects.shared.data)
+
             implementation(projects.lib.logger)
             implementation(projects.lib.unifile)
             implementation(projects.lib.store)

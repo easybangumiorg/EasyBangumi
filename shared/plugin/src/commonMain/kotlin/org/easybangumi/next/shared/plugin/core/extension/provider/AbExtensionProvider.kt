@@ -4,7 +4,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import org.easybangumi.next.lib.utils.DataState
-import org.easybangumi.next.shared.plugin.extension.ExtensionManifest
+import org.easybangumi.next.shared.plugin.api.extension.ExtensionManifest
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi

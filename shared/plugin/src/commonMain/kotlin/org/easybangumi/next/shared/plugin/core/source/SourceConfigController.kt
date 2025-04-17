@@ -12,7 +12,7 @@ import org.easybangumi.next.lib.store.file_helper.json.JsonlFileHelper
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.coroutineProvider
 import org.easybangumi.next.lib.utils.pathProvider
-import org.easybangumi.next.shared.plugin.info.SourceConfig
+import org.easybangumi.next.shared.plugin.core.info.SourceConfig
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi

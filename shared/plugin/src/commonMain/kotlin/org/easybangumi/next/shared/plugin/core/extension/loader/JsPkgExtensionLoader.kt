@@ -2,8 +2,8 @@ package org.easybangumi.next.shared.plugin.core.extension.loader
 
 import org.easybangumi.next.lib.unifile.UniFileFactory
 import org.easybangumi.next.lib.unifile.fromUFD
-import org.easybangumi.next.shared.plugin.extension.ExtensionManifest
-import org.easybangumi.next.shared.plugin.info.ExtensionInfo
+import org.easybangumi.next.shared.plugin.api.extension.ExtensionManifest
+import org.easybangumi.next.shared.plugin.core.info.ExtensionInfo
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi

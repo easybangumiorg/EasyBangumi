@@ -1,7 +1,7 @@
 package org.easybangumi.next.shared.plugin.core.source
 
-import org.easybangumi.next.shared.plugin.ConstClazz
-import org.easybangumi.next.shared.plugin.info.SourceInfo
+import org.easybangumi.next.shared.plugin.api.ConstClazz
+import org.easybangumi.next.shared.plugin.core.info.SourceInfo
 import kotlin.collections.set
 import kotlin.reflect.KClass
 
@@ -33,7 +33,7 @@ class SourceBundle(
         for (loaded in list) {
             map[loaded.sourceConfig.key] = loaded
             for (componentClazz in ConstClazz.componentClazz) {
-                val component = loaded.componentBundle.getComponent(componentClazz)
+                val component = loaded.componentBundle.get(componentClazz)
                 if (component != null) {
                     val bundleList = clazzInBundle[componentClazz] ?: listOf()
                     clazzInBundle[componentClazz] = bundleList + loaded
