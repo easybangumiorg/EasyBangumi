@@ -1,9 +1,13 @@
 package org.easybangumi.next.shared.plugin.core.source.loader
 
+import org.easybangumi.next.lib.unifile.UFD
+import org.easybangumi.next.lib.utils.pathProvider
 import org.easybangumi.next.shared.plugin.core.component.ComponentBundle
 import org.easybangumi.next.shared.plugin.core.info.SourceConfig
 import org.easybangumi.next.shared.plugin.core.info.SourceInfo
 import org.easybangumi.next.shared.plugin.core.inner.InnerSource
+import org.easybangumi.next.shared.plugin.core.inner.InnerSourceWrapper
+import org.easybangumi.next.shared.plugin.core.utils.PluginPathProvider
 
 
 /**
@@ -29,14 +33,22 @@ class InnerSourceLoader() {
             return SourceInfo.Unable(innerSource.manifest, sourceConfig)
         }
 
-        // 加载
-        val bundle = ComponentBundle(
-            innerSource,
-            innerSource.componentConstructor
-        )
+
         try {
+
+            val sourceWrapper = InnerSourceWrapper(
+                innerSource,
+                PluginPathProvider.getSourceWorkPath(innerSource)
+            )
+
+            // 加载
+            val bundle = ComponentBundle(
+                sourceWrapper,
+                innerSource.componentConstructor
+            )
+
             bundle.load()
-            val info = SourceInfo.Loaded(innerSource.manifest, sourceConfig, bundle)
+            val info = SourceInfo.Loaded(sourceWrapper.manifest, sourceConfig, bundle)
             cache[innerSource.key] = info
             return info
         } catch (e: Exception){

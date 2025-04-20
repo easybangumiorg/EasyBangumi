@@ -64,12 +64,22 @@ kotlin {
             dependsOn(iosMain)
         }
 
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.koin.test)
+        }
+
         commonMain.dependencies {
 
             implementation(libs.kotlinx.datetime)
 
             implementation(libs.androidx.room.runtime)
             implementation(libs.sqlite.bundled)
+
+            implementation(libs.koin.core)
+
+            implementation(projects.lib.unifile)
+            implementation(projects.lib.utils)
         }
 
         androidMain.dependencies {
@@ -99,10 +109,6 @@ android {
 }
 
 
-dependencies {
-
-}
-
 ksp {
     arg("room.schemaLocation", "${projectDir}/schemas")
 }
@@ -111,6 +117,9 @@ val kspMetaDataList = listOf(
     "kspCommonMainMetadata",
     "kspAndroid",
     "kspDesktop",
+    "kspIosSimulatorArm64",
+    "kspIosX64",
+    "kspIosArm64",
 )
 
 dependencies {

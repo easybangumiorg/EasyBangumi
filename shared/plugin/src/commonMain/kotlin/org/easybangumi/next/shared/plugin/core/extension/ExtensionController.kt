@@ -22,6 +22,7 @@ import org.easybangumi.next.shared.plugin.core.extension.loader.JsPkgExtensionLo
 import org.easybangumi.next.shared.plugin.core.extension.provider.ExtensionProvider
 import org.easybangumi.next.shared.plugin.core.extension.provider.ProviderFactory
 import org.easybangumi.next.shared.plugin.core.info.ExtensionInfo
+import org.easybangumi.next.shared.plugin.core.utils.PluginPathProvider
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -42,8 +43,8 @@ class ExtensionController {
 
     private val logger = logger()
 
-    val workerFile = pathProvider.getFilePath("extension")
-    val cacheFile = pathProvider.getCachePath("extension")
+    val workerFile = PluginPathProvider.getExtensionWorkPath()
+    val cacheFile = PluginPathProvider.getExtensionCachePath()
 
     // == 状态 =================================================================================
 

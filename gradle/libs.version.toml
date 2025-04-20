@@ -2,16 +2,16 @@
 # androidx
 androidx-activityCompose = "1.9.3"
 androidx-appcompat = "1.7.0"
-androidx-constraintlayout = "2.2.0"
-androidx-core-ktx = "1.15.0"
-androidx-lifecycle = "2.8.3"
+androidx-constraintlayout = "2.2.1"
+androidx-core-ktx = "1.16.0"
+androidx-lifecycle = "2.8.4"
 androidx-material = "1.12.0"
 
 multiplatform-material = "1.7.3"
 
 # kotlin
 kotlin = "2.1.10"
-kotlin-reflect = "1.9.24"
+kotlin-reflect = "2.1.10"
 kotlinx-coroutines = "1.10.1"
 kotlinx-datetime = "0.6.1"
 kotlinx-io = "0.6.0"
@@ -21,8 +21,8 @@ kotlin-serialization-plugin = "1.9.24"
 kotlinx-serialization = "1.6.3"
 
 # room
-sqlite = "2.5.0-beta01"
-androidx-room = "2.7.0-beta01"
+sqlite = "2.5.0"
+androidx-room = "2.7.0"
 
 koin = "4.0.0"
 
@@ -41,7 +41,7 @@ quickjs-kt = "1.0.0-alpha13"
 zip4j = "2.11.5"
 
 moko-resources = "0.24.5"
-jetbrains_kotlin_jvm = "1.9.24"
+jetbrains_kotlin_jvm = "2.1.10"
 
 paging_multiplatform = "3.3.0-alpha02-0.5.1"
 coil = "3.1.0"
@@ -56,6 +56,8 @@ okio = "3.10.2"
 uni_file = "1.0.0"
 
 junit = "4.13.2"
+
+voyager = "1.1.0-beta02"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidx-core-ktx" }
@@ -75,6 +77,7 @@ kotlin-reflect = {group = "org.jetbrains.kotlin", name = "kotlin-reflect", versi
 
 koin-core = {group = "io.insert-koin", name = "koin-core", version.ref = "koin"}
 koin-android = {group = "io.insert-koin", name = "koin-android", version.ref = "koin"}
+koin-test = {group = "io.insert-koin", name = "koin-test", version.ref = "koin"}
 
 sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "androidx-room" }
@@ -134,6 +137,13 @@ uni_file = {module = "com.github.easybangumiorg:UniFile", version.ref = "uni_fil
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+
+voyager-navigator = { module = "cafe.adriel.voyager:voyager-navigator", version.ref = "voyager" }
+voyager-screenModel = { module = "cafe.adriel.voyager:voyager-screenmodel", version.ref = "voyager" }
+voyager-bottomSheetNavigator = { module = "cafe.adriel.voyager:voyager-bottom-sheet-navigator", version.ref = "voyager" }
+voyager-tabNavigator = { module = "cafe.adriel.voyager:voyager-tab-navigator", version.ref = "voyager" }
+voyager-transitions = { module = "cafe.adriel.voyager:voyager-transitions", version.ref = "voyager" }
+voyager-koin = { module = "cafe.adriel.voyager:voyager-koin", version.ref = "voyager" }
 
 [plugins]
 kotlinxSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin-serialization-plugin" }

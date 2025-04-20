@@ -72,6 +72,7 @@ kotlin {
             implementation(compose.material3)
 
             implementation(libs.koin.core)
+            implementation(libs.navigation.compose)
 
             implementation(projects.shared.resources)
 

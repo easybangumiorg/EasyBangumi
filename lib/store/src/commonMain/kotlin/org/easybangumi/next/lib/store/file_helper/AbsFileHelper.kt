@@ -1,24 +1,26 @@
 package org.easybangumi.next.lib.store.file_helper
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
-import kotlinx.io.Source
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import okio.BufferedSink
 import okio.BufferedSource
-import okio.Sink
 import okio.buffer
 import okio.use
-import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.unifile.UFD
 import org.easybangumi.next.lib.unifile.UniFile
 import org.easybangumi.next.lib.unifile.UniFileFactory
 import org.easybangumi.next.lib.unifile.fromUFD
-import kotlin.reflect.KClass
+import org.easybangumi.next.lib.utils.coroutineProvider
+import kotlin.concurrent.Volatile
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -43,7 +45,8 @@ abstract class AbsFileHelper<T : Any>(
 //    }
 
 
-    private var temp: T? = null
+    @Volatile
+    private var data: T? = null
 
 
     private val folderFile: UniFile? by lazy {
@@ -61,21 +64,27 @@ abstract class AbsFileHelper<T : Any>(
     // TODO 并发
     private val setListener = mutableListOf<(T) -> Unit>()
 
-    override fun get(): T {
-        val dataFile = dataFile
-        return temp ?: dataFile?.openSource()?.use {
-            val string = it.buffer()
-            bkFile?.delete()
-            val data = deserializer(string) ?: return@get def
-            temp = data
-            data
-        } ?: def
+    private val initJob: Job by lazy {
+        innerLoad()
+    }
+
+    override fun getSync(): T {
+        runBlocking {
+            initJob.join()
+        }
+        return data ?: def
+    }
+
+    override suspend fun get(): T {
+        initJob.join()
+        return data ?: def
     }
 
     override fun set(t: T) {
-        temp = t
+        data = t
         scope.launch {
             setListener.forEach {
+                data = t
                 it(t)
             }
         }
@@ -99,6 +108,7 @@ abstract class AbsFileHelper<T : Any>(
 
     override fun flow(): Flow<T> {
         return callbackFlow<T> {
+            initJob.join()
             val listener: (T) -> Unit = { t: T ->
                 trySend(t)
             }
@@ -109,6 +119,37 @@ abstract class AbsFileHelper<T : Any>(
         }.onStart {
             emit(get())
         }.distinctUntilChanged()
+    }
+
+    private fun innerLoad(): Job {
+        return scope.launch {
+            val data = loadFromFile()
+            this@AbsFileHelper.data = data
+            setListener.forEach { it(data) }
+        }
+    }
+
+    private fun loadFromFile(): T {
+        val dataFile = dataFile ?: return def
+        val bkFile = bkFile ?: return def
+
+        var realFile = dataFile
+        if (dataFile.exists()) {
+            if (bkFile.exists()) {
+                bkFile.delete()
+            }
+        } else {
+            realFile = bkFile
+        }
+
+        if (!realFile.exists()) {
+            return def
+        }
+
+        val res = realFile.openSource().buffer().use {
+            deserializer(it) ?: def
+        }
+        return res
     }
 
 

@@ -2,6 +2,7 @@ package org.easybangumi.next.shared.plugin.core.inner
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Clock.System
+import org.easybangumi.next.lib.unifile.UFD
 import org.easybangumi.next.lib.utils.ResourceOr
 import org.easybangumi.next.lib.utils.pathProvider
 import org.easybangumi.next.shared.plugin.api.component.Component
@@ -24,6 +25,14 @@ import kotlin.reflect.KClass
 abstract class InnerSource: Source {
 
     companion object {
+
+
+        val InnerSourceList: List<InnerSource> by lazy {
+            listOf<InnerSource>(
+
+            )
+        }
+
         const val INNER_EXTENSION_KEY = "inner"
         val InnerExtensionManifest: ExtensionManifest by lazy {
             ExtensionManifest(
@@ -56,7 +65,6 @@ abstract class InnerSource: Source {
     abstract val icon: ResourceOr?
     abstract val version: Int
 
-    open val type = Source.TYPE_PLAY
     open val description: String? = null
     open val website: String? = null
     open val author: String = "Heyanle"
@@ -66,7 +74,6 @@ abstract class InnerSource: Source {
     override val manifest: SourceManifest by lazy {
         SourceManifest(
             id = id,
-            type = type,
             label = label,
             icon = icon,
             version = version,
@@ -76,9 +83,13 @@ abstract class InnerSource: Source {
             map = emptyMap(),
             lastModified = Clock.System.now().toEpochMilliseconds(),
             loadType = SourceManifest.LOAD_TYPE_INNER,
-            sourceUri = InnerExtensionManifest.sourcePath,
             extensionManifest = InnerExtensionManifest
         )
     }
+
+    override val workPath: UFD
+        get() = throw IllegalStateException("workPath not support in inner source, please use InnerSourceWrapper")
+
+
 
 }

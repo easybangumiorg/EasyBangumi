@@ -31,7 +31,6 @@ class JsFileExtensionLoader: ExtensionLoader {
         val label = manifest["label"] ?: return null
         return SourceManifest(
             id = manifest["id"] ?: return null,
-            type = manifest["type"] ?: return null,
             label = { label },
             version = manifest["version"]?.toIntOrNull() ?: 0,
             extensionManifest = extensionManifest,
@@ -41,7 +40,6 @@ class JsFileExtensionLoader: ExtensionLoader {
             website = manifest["website"],
             map = manifest,
             loadType = SourceManifest.LOAD_TYPE_JS,
-            sourceUri = file.getUFD(),
             lastModified = extensionManifest.lastModified
         )
     }

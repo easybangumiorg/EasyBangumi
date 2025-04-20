@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.stateIn
 import org.easybangumi.next.lib.store.preference.PreferenceStore
 import org.easybangumi.next.lib.store.preference.getEnum
 import org.easybangumi.next.lib.utils.CoroutineProvider
-import org.easybangumi.next.lib.utils.main
+import org.easybangumi.next.lib.utils.coroutineProvider
 import org.koin.core.component.KoinComponent
 
 /**
@@ -48,7 +48,7 @@ class ThemeController(
         Auto, Dark, Light
     }
 
-    private val scope = CoroutineScope(SupervisorJob() + CoroutineProvider.main())
+    private val scope = CoroutineScope(SupervisorJob() + coroutineProvider.main())
 
     private val darkModeStore = preferenceStore.getEnum(PREFERENCE_KEY_DARK_MODE, DarkMode.Auto)
     private val isDynamicColorStore = preferenceStore.getBoolean(PREFERENCE_KEY_IS_DYNAMIC, true)

@@ -4,15 +4,21 @@ import kotlinx.coroutines.flow.Flow
 
 interface FileHelper<T: Any> {
 
+    suspend fun get(): T
+
     fun set(t: T)
 
-    fun get(): T
+    fun getSync(): T
 
     fun def(): T
 
     fun flow(): Flow<T>
 
-    fun update(block: (T) -> T){
+    fun updateSync(block: (T) -> T){
+        set(block(getSync()))
+    }
+
+    suspend fun update(block: (T) -> T){
         set(block(get()))
     }
 }

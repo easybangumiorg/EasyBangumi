@@ -1,5 +1,9 @@
 package org.easybangumi.next.shared.data
 
+import org.easybangumi.next.shared.data.room.CartoonDatabase
+import org.easybangumi.next.shared.data.room.makeCartoonDatabase
+import org.koin.dsl.module
+
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
  *
@@ -12,5 +16,14 @@ package org.easybangumi.next.shared.data
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
-class Module {
+val dataModule = module {
+
+    single {
+        makeCartoonDatabase()
+    }
+
+    single {
+        get<CartoonDatabase>().cartoonInfoDao()
+    }
+
 }
