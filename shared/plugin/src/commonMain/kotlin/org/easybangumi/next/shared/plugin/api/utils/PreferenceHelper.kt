@@ -11,10 +11,10 @@ interface PreferenceHelper {
     /**
      * 获取所有存储的键值对（无序）
      */
-    fun map(): Map<String, String>
+    suspend fun map(): Map<String, String>
 
-    fun get(key: String, def: String): String
+    suspend fun get(key: String, def: String): String
 
-    fun put(key: String, value: String)
+    suspend fun put(key: String, value: String)
 
 }

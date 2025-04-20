@@ -2,8 +2,10 @@ package org.easybangumi.next.lib.store
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -37,7 +39,6 @@ import kotlin.concurrent.Volatile
 class JournalMapHelper(
     private val folder: UFD,
     private val name: String,
-    private val scope: CoroutineScope,
 ) {
 
     companion object {
@@ -50,8 +51,7 @@ class JournalMapHelper(
         val value: String,
     )
 
-    @Volatile
-    private var map: Map<String, String> = emptyMap()
+    private val mapFlow = MutableStateFlow<Map<String, String>>(emptyMap())
 
     private val folderFile: UniFile? by lazy {
         UniFileFactory.fromUFD(folder)
@@ -72,6 +72,7 @@ class JournalMapHelper(
         innerLoad()
     }
 
+    private var lastPutJob: Job? = null
     private var lastIOJob: Job? = null
 
     // TODO 并发
@@ -81,7 +82,7 @@ class JournalMapHelper(
         runBlocking {
             initJob.join()
         }
-        return map[key] ?: def
+        return mapFlow.value[key] ?: def
     }
 
     suspend fun get(key: String, def: String): String {
@@ -89,24 +90,34 @@ class JournalMapHelper(
         return map[key] ?: def
     }
 
-    fun set(key: String, value: String) {
-        scope.launch {
-            initJob.join()
-            scope.launch(coroutineProvider.single()) {
-                bkFile?.delete()
-                val mapSnapshot = HashMap(map)
-                mapSnapshot[key] = value
+    init {
+        StoreScope.launch {
+            mapFlow.collectLatest {
 
-                map = mapSnapshot
-                if (mapSnapshot.size > lastLineCount * LOAD_FACTORY) {
-                    combine(mapSnapshot)
-                } else {
-                    insert(key, value)
-                }
-
-                setListener.forEach { it(mapSnapshot) }
             }
         }
+    }
+
+    fun put(key: String, value: String) {
+        StoreScope.launch {
+            initJob.join()
+            mapFlow.update {
+                it + (key to value)
+            }
+        }
+    }
+
+    suspend fun map(): Map<String, String> {
+        initJob.join()
+        lastIOJob?.join()
+        return map
+    }
+
+    fun mapSync(): Map<String, String> {
+        runBlocking {
+            initJob.join()
+        }
+        return map
     }
 
     private suspend fun insert(key: String, value: String) {
@@ -141,7 +152,7 @@ class JournalMapHelper(
                 bkFile.renameTo(dataFileName)
             } else {
                 dataFile?.delete()
-                bkFile?.delete()
+                bkFile.delete()
             }
         }
     }

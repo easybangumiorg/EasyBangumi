@@ -5,8 +5,9 @@ import org.easybangumi.next.shared.plugin.api.ConstClazz
 import org.easybangumi.next.shared.plugin.api.component.Component
 import org.easybangumi.next.shared.plugin.api.source.Source
 import org.easybangumi.next.shared.plugin.core.safe.makeComponentProxy
-import org.easybangumi.next.shared.plugin.utils.UtilsProvider
+import org.easybangumi.next.shared.plugin.utils.utilsModule
 import org.koin.core.Koin
+import org.koin.core.context.loadKoinModules
 import org.koin.dsl.binds
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
@@ -36,7 +37,7 @@ class ComponentBundle(
 
     fun load(){
 
-        if (init.compareAndSet(false, true)) {
+        if (init.compareAndSet(expect = false, update = true)) {
 
             val realComponent = componentConstructor.map { it() }
 
@@ -64,15 +65,7 @@ class ComponentBundle(
                     }
 
                     // Load utils
-                    ConstClazz.utilsClazz.forEach { clazz ->
-                        val util = UtilsProvider.get(clazz, source)
-                        if (util != null) {
-                            single {
-                                util
-                            }.binds(arrayOf(clazz))
-                        }
-                    }
-
+                    loadKoinModules(utilsModule)
 
                 }
             }.koin

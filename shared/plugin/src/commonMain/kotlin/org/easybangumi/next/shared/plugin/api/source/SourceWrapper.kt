@@ -13,6 +13,6 @@ package org.easybangumi.next.shared.plugin.api.source
  */
 
 open class SourceWrapper(
-    val innerSource: Source
-): Source by innerSource {
+    val source: Source
+): Source by source {
 }

@@ -23,7 +23,6 @@ import org.easybangumi.next.shared.plugin.core.inner.InnerSource
 import org.easybangumi.next.shared.plugin.core.source.loader.InnerSourceLoader
 import org.easybangumi.next.shared.plugin.core.source.loader.JsCryLoader
 import org.easybangumi.next.shared.plugin.core.source.loader.JsSourceLoader
-import org.koin.core.component.getScopeId
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -119,7 +118,7 @@ class SourceController(
                     it.await()
                 }
 
-                val innerRes = InnerSource.InnerSourceList.map {
+                val innerRes = InnerSource.InnerSourceLists.map {
                     val config = realConfig[it.manifest.key] ?: SourceConfig(it.manifest.key, Clock.System.now().toEpochMilliseconds(), true)
                     innerLoadInner(it, config)
                 }

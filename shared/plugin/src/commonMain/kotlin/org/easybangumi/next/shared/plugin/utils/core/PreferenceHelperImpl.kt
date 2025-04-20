@@ -1,7 +1,8 @@
 package org.easybangumi.next.shared.plugin.utils.core
 
+import org.easybangumi.next.lib.store.JournalMapHelper
 import org.easybangumi.next.shared.plugin.api.source.Source
-import org.easybangumi.next.shared.plugin.utils.api.PreferenceHelper
+import org.easybangumi.next.shared.plugin.api.utils.PreferenceHelper
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -16,18 +17,24 @@ import org.easybangumi.next.shared.plugin.utils.api.PreferenceHelper
  */
 
 class PreferenceHelperImpl(
-    source: Source
+    private val source: Source
 ): PreferenceHelper {
 
+    private val jm = JournalMapHelper(
+        source.workPath,
+        "preference",
+        source.scope
+    )
+
     override fun map(): Map<String, String> {
-        TODO("Not yet implemented")
+        return jm.mapSync()
     }
 
     override fun get(key: String, def: String): String {
-        TODO("Not yet implemented")
+        return jm.getSync(key, def)
     }
 
     override fun put(key: String, value: String) {
-        TODO("Not yet implemented")
+        jm.put(key, value)
     }
 }

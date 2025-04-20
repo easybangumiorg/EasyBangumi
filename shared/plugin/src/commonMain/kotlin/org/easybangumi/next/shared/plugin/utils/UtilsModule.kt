@@ -1,6 +1,10 @@
 package org.easybangumi.next.shared.plugin.utils
 
 import org.easybangumi.next.shared.plugin.api.source.Source
+import org.easybangumi.next.shared.plugin.api.utils.PreferenceHelper
+import org.easybangumi.next.shared.plugin.utils.core.PreferenceHelperImpl
+import org.koin.dsl.bind
+import org.koin.dsl.module
 import kotlin.reflect.KClass
 
 /**
@@ -14,10 +18,8 @@ import kotlin.reflect.KClass
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-object UtilsProvider {
-
-    fun <T: Any> get(clazz: KClass<T>, source: Source): T? {
-        return null
-    }
-
+val utilsModule = module {
+    single {
+        PreferenceHelperImpl(it.get())
+    }.bind<PreferenceHelper>()
 }

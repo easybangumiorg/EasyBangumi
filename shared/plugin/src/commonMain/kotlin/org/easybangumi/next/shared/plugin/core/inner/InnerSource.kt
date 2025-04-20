@@ -1,7 +1,7 @@
 package org.easybangumi.next.shared.plugin.core.inner
 
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.datetime.Clock
-import kotlinx.datetime.Clock.System
 import org.easybangumi.next.lib.unifile.UFD
 import org.easybangumi.next.lib.utils.ResourceOr
 import org.easybangumi.next.lib.utils.pathProvider
@@ -9,7 +9,6 @@ import org.easybangumi.next.shared.plugin.api.component.Component
 import org.easybangumi.next.shared.plugin.api.extension.ExtensionManifest
 import org.easybangumi.next.shared.plugin.api.source.Source
 import org.easybangumi.next.shared.plugin.api.source.SourceManifest
-import kotlin.reflect.KClass
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -27,7 +26,7 @@ abstract class InnerSource: Source {
     companion object {
 
 
-        val InnerSourceList: List<InnerSource> by lazy {
+        val InnerSourceLists: List<InnerSource> by lazy {
             listOf<InnerSource>(
 
             )
@@ -88,8 +87,10 @@ abstract class InnerSource: Source {
     }
 
     override val workPath: UFD
-        get() = throw IllegalStateException("workPath not support in inner source, please use InnerSourceWrapper")
+        get() = throw IllegalStateException("workPath not support in inner source, please use SourceWrapper")
 
+    override val scope: CoroutineScope
+        get() = throw IllegalStateException("scope not support in inner source, please use SourceWrapper")
 
 
 }
