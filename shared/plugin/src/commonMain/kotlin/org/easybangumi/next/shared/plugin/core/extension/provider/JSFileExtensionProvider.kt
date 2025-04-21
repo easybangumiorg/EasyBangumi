@@ -5,9 +5,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import kotlinx.io.files.FileNotFoundException
 import okio.IOException
@@ -23,8 +21,6 @@ import org.easybangumi.next.lib.utils.copyTo
 import org.easybangumi.next.lib.utils.map
 import org.easybangumi.next.shared.plugin.api.extension.ExtensionManifest
 import org.easybangumi.next.shared.plugin.core.javascript.JsHelper
-import kotlin.invoke
-import kotlin.text.get
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -278,7 +274,7 @@ class JSFileExtensionProvider(
                 indexUpdate.add(item)
             }
         }
-        indexHelper.set(indexUpdate)
+        indexHelper.push(indexUpdate)
         return result
     }
 

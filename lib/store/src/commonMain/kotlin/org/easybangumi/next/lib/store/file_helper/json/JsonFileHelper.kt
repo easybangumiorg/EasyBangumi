@@ -26,8 +26,7 @@ class JsonFileHelper<T: Any>(
     name: String,
     private val clazz: KClass<T>,
     def: T,
-    scope: CoroutineScope = CoroutineScope(SupervisorJob() + coroutineProvider.io() )
-): AbsFileHelper<T>(folder, name, def, scope) {
+): AbsFileHelper<T>(folder, name, def) {
 
     override fun suffix(): String {
         return "json"

@@ -1,6 +1,7 @@
 package org.easybangumi.next.lib.store
 
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import org.easybangumi.next.lib.utils.coroutineProvider
@@ -12,11 +13,11 @@ import org.koin.dsl.module
  */
 
 val StoreScope: CoroutineScope by lazy {
-    CoroutineScope(SupervisorJob() + coroutineProvider.io())
+    CoroutineScope(SupervisorJob() + CoroutineName("libstore") + coroutineProvider.io())
 }
 
 val StoreSingleDispatcher: CoroutineDispatcher by lazy {
-    coroutineProvider.newSingle("Store")
+    coroutineProvider.newSingle()
 }
 
 val storeModule: Module

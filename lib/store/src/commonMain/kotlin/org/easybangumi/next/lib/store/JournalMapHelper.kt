@@ -1,10 +1,9 @@
 package org.easybangumi.next.lib.store
 
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -17,7 +16,6 @@ import org.easybangumi.next.lib.unifile.UFD
 import org.easybangumi.next.lib.unifile.UniFile
 import org.easybangumi.next.lib.unifile.UniFileFactory
 import org.easybangumi.next.lib.unifile.fromUFD
-import org.easybangumi.next.lib.utils.coroutineProvider
 import kotlin.concurrent.Volatile
 
 /**
@@ -72,97 +70,89 @@ class JournalMapHelper(
         innerLoad()
     }
 
-    private var lastPutJob: Job? = null
-    private var lastIOJob: Job? = null
-
-    // TODO 并发
-    private val setListener = mutableListOf<(Map<String, String>) -> Unit>()
-
-    fun getSync(key: String, def: String): String {
-        runBlocking {
-            initJob.join()
-        }
-        return mapFlow.value[key] ?: def
-    }
-
-    suspend fun get(key: String, def: String): String {
-        initJob.join()
-        return map[key] ?: def
-    }
-
-    init {
-        StoreScope.launch {
-            mapFlow.collectLatest {
-
-            }
-        }
-    }
-
-    fun put(key: String, value: String) {
-        StoreScope.launch {
-            initJob.join()
-            mapFlow.update {
-                it + (key to value)
-            }
-        }
-    }
+    // === api ===
 
     suspend fun map(): Map<String, String> {
         initJob.join()
-        lastIOJob?.join()
-        return map
+        return mapFlow.value
     }
 
-    fun mapSync(): Map<String, String> {
+    fun put(key: String, value: String) {
+        StoreScope.launch(StoreSingleDispatcher) {
+            initJob.join()
+            mapFlow.apply {
+                while (true) {
+                    val prevValue = this.value
+                    val nextValue = prevValue + (key to value)
+                        if (compareAndSet(prevValue, nextValue)) {
+                            saveOrCombine(nextValue, key to value)
+                            break
+                        }
+                }
+            }
+        }
+    }
+
+    suspend fun putAndWait(key: String, value: String) {
+        withContext(StoreSingleDispatcher) {
+            initJob.join()
+            mapFlow.apply {
+                while (true) {
+                    val prevValue = this.value
+                    val nextValue = prevValue + (key to value)
+                    if (compareAndSet(prevValue, nextValue)) {
+                        saveOrCombine(nextValue, key to value)
+                        break
+                    }
+                }
+            }
+        }
+    }
+
+    fun getSync(key: String): String {
         runBlocking {
             initJob.join()
         }
-        return map
+        return mapFlow.value[key] ?: ""
     }
 
-    private suspend fun insert(key: String, value: String) {
-        initJob.join()
-        lastIOJob?.cancelAndJoin()
-        lastIOJob = scope.launch {
-            val dataFile = dataFile ?: return@launch
-            bkFile?.delete()
-            dataFile.openSink(true).buffer().use { sink ->
-                val line = Line(key, value)
-                sink.writeUtf8(jsonSerializer.serialize(line))
-                sink.writeUtf8("\n")
-            }
-        }
+    fun flowMap(): StateFlow<Map<String, String>> {
+        return mapFlow.asStateFlow()
     }
 
-    private suspend fun combine(data: Map<String, String>) {
-        initJob.join()
-        lastIOJob?.cancelAndJoin()
-        lastIOJob = scope.launch {
-            val bkFile = bkFile ?: return@launch
-            if (data.isNotEmpty()) {
-                bkFile.delete()
-                bkFile.openSink(false).buffer().use { sink ->
-                    for (entry in data.entries) {
-                        val line = Line(entry.key, entry.value)
-                        sink.writeUtf8(jsonSerializer.serialize(line))
-                        sink.writeUtf8("\n")
-                    }
-                }
-                dataFile?.delete()
-                bkFile.renameTo(dataFileName)
-            } else {
-                dataFile?.delete()
-                bkFile.delete()
-            }
-        }
-    }
 
     private fun innerLoad(): Job {
-        return scope.launch {
-            val data = loadFromFile()
-            withContext(coroutineProvider.single()) {
-                map = data
-                setListener.forEach { it(map) }
+        return StoreScope.launch(StoreSingleDispatcher) {
+            val map = loadFromFile()
+            mapFlow.update { map }
+        }
+    }
+
+    private fun saveOrCombine(map: Map<String, String>, line: Pair<String, String>) {
+        lastLineCount ++
+        if (lastLineCount > map.size * LOAD_FACTORY) {
+            val dataFile = dataFile ?: return
+            val bkFile = bkFile ?: return
+            bkFile.delete()
+            bkFile.openSink(false).buffer().use {
+                for ((key, value) in map) {
+                    val line = Line(key, value)
+                    it.writeUtf8(jsonSerializer.serialize(line))
+                    it.writeUtf8("\n")
+                }
+                it.flush()
+            }
+            dataFile.delete()
+            bkFile.renameTo(dataFileName)
+            bkFile.delete()
+            lastLineCount = map.size
+        } else {
+            bkFile?.delete()
+            dataFile?.openSink(true)?.buffer()?.use { sink ->
+                val line = Line(line.first, line.second)
+                sink.writeUtf8(jsonSerializer.serialize(line))
+                sink.writeUtf8("\n")
+                sink.flush()
             }
         }
     }

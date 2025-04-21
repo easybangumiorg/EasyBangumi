@@ -76,6 +76,11 @@ kotlin {
             implementation(projects.lib.utils)
 
         }
+
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+        }
+
         androidMain.dependencies {
             implementation(libs.preference.ktx)
         }

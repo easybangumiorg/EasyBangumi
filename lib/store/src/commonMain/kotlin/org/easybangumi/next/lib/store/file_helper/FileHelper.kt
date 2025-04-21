@@ -1,24 +1,26 @@
 package org.easybangumi.next.lib.store.file_helper
 
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 interface FileHelper<T: Any> {
 
     suspend fun get(): T
 
-    fun set(t: T)
+    fun push(t: T)
+
+    suspend fun setAndWait(t: T)
 
     fun getSync(): T
 
     fun def(): T
 
-    fun flow(): Flow<T>
+    fun flow(): StateFlow<T>
 
     fun updateSync(block: (T) -> T){
-        set(block(getSync()))
+        push(block(getSync()))
     }
 
     suspend fun update(block: (T) -> T){
-        set(block(get()))
+        push(block(get()))
     }
 }

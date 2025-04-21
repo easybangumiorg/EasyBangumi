@@ -5,9 +5,13 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -15,10 +19,13 @@ import okio.BufferedSink
 import okio.BufferedSource
 import okio.buffer
 import okio.use
+import org.easybangumi.next.lib.store.StoreScope
+import org.easybangumi.next.lib.store.StoreSingleDispatcher
 import org.easybangumi.next.lib.unifile.UFD
 import org.easybangumi.next.lib.unifile.UniFile
 import org.easybangumi.next.lib.unifile.UniFileFactory
 import org.easybangumi.next.lib.unifile.fromUFD
+import org.easybangumi.next.lib.utils.Global
 import org.easybangumi.next.lib.utils.coroutineProvider
 import kotlin.concurrent.Volatile
 
@@ -37,16 +44,13 @@ abstract class AbsFileHelper<T : Any>(
     private val folder: UFD,
     private val name: String,
     private val def: T,
-    private val scope: CoroutineScope
 ): FileHelper<T> {
 
 //    companion object {
 //        const val FINAL_MARK = "$\$final$$"
 //    }
 
-
-    @Volatile
-    private var data: T? = null
+    private val dataFlow = MutableStateFlow<T>(def)
 
 
     private val folderFile: UniFile? by lazy {
@@ -61,9 +65,6 @@ abstract class AbsFileHelper<T : Any>(
     private val bkFile: UniFile?
         get() = folderFile?.child(bkFileName)
 
-    // TODO 并发
-    private val setListener = mutableListOf<(T) -> Unit>()
-
     private val initJob: Job by lazy {
         innerLoad()
     }
@@ -72,33 +73,27 @@ abstract class AbsFileHelper<T : Any>(
         runBlocking {
             initJob.join()
         }
-        return data ?: def
+        return dataFlow.value
     }
 
     override suspend fun get(): T {
         initJob.join()
-        return data ?: def
+        return dataFlow.value
     }
 
-    override fun set(t: T) {
-        data = t
-        scope.launch {
-            setListener.forEach {
-                data = t
-                it(t)
-            }
+    override fun push(t: T) {
+        StoreScope.launch(StoreSingleDispatcher) {
+            initJob.join()
+            dataFlow.update { t }
+            saveToFile(t)
         }
+    }
 
-        scope.launch {
-            bkFile?.delete()
-            val bk = bkFile
-            bk ?: return@launch
-            bk.openSink(false).buffer().use {
-                serializer(t, it)
-                it.flush()
-            }
-            dataFile?.delete()
-            bk.renameTo(dataFileName)
+    override suspend fun setAndWait(t: T) {
+        initJob.join()
+        dataFlow.update { t }
+        withContext(StoreSingleDispatcher) {
+            saveToFile(t)
         }
     }
 
@@ -106,26 +101,14 @@ abstract class AbsFileHelper<T : Any>(
         return def
     }
 
-    override fun flow(): Flow<T> {
-        return callbackFlow<T> {
-            initJob.join()
-            val listener: (T) -> Unit = { t: T ->
-                trySend(t)
-            }
-            setListener.add(listener)
-            awaitClose {
-                setListener.remove(listener)
-            }
-        }.onStart {
-            emit(get())
-        }.distinctUntilChanged()
+    override fun flow(): StateFlow<T> {
+        return dataFlow.asStateFlow()
     }
 
     private fun innerLoad(): Job {
-        return scope.launch {
+        return StoreScope.launch {
             val data = loadFromFile()
-            this@AbsFileHelper.data = data
-            setListener.forEach { it(data) }
+            dataFlow.update { data }
         }
     }
 
@@ -150,6 +133,18 @@ abstract class AbsFileHelper<T : Any>(
             deserializer(it) ?: def
         }
         return res
+    }
+
+    private fun saveToFile(t: T) {
+        dataFile?.delete()
+        val bk = bkFile
+        bk ?: return
+        bk.openSink(false).buffer().use {
+            serializer(t, it)
+            it.flush()
+        }
+        dataFile?.delete()
+        bk.renameTo(dataFileName)
     }
 
 

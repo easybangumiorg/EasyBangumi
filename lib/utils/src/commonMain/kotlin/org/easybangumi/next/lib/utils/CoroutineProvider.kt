@@ -17,7 +17,7 @@ interface CoroutineProvider {
     fun io(): CoroutineDispatcher
     fun main(): CoroutineDispatcher
     fun single(): CoroutineDispatcher
-    fun newSingle(name: String): CoroutineDispatcher
+    fun newSingle(): CoroutineDispatcher
 }
 
 expect val coroutineProvider: CoroutineProvider
