@@ -1,9 +1,8 @@
-package org.easybangumi.next.shared.plugin.api.component.discover
+package org.easybangumi.next.shared.plugin.api.component
 
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.plugin.api.SourceResult
-import org.easybangumi.next.shared.plugin.api.component.Component
-
+import org.easybangumi.next.shared.plugin.api.component.filter.Filter
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -16,13 +15,13 @@ import org.easybangumi.next.shared.plugin.api.component.Component
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
+interface SearchComponent : Component {
 
-interface DiscoverComponent: Component {
+    suspend fun firstKey(keyword: String): SourceResult<String>
 
-    suspend fun banner(): SourceResult<List<CartoonCover>>
-
-    suspend fun columnList(): SourceResult<List<DiscoverColum>>
-
-    suspend fun loadColumn(colum: DiscoverColum): SourceResult<List<CartoonCover>>
+    suspend fun search(
+        keyword: String,
+        key: String,
+    ): SourceResult<Pair<String?, List<CartoonCover>>>
 
 }

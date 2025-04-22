@@ -58,9 +58,11 @@ includeModule(":shared:foundation", "shared/foundation")
 includeModule(":shared:theme", "shared/theme")
 includeModule(":shared:data", "shared/data")
 includeModule(":shared:plugin", "shared/plugin")
+includeModule(":shared:plugin:bangumi", "shared/plugin-bangumi")
 
 
 // ------------- lib -------------
+includeModule(":lib", "lib")
 includeModule(":lib:logger", "lib/logger")
 includeModule(":lib:utils", "lib/utils")
 includeModule(":lib:store", "lib/store")

@@ -24,7 +24,7 @@ kotlinx-serialization = "1.6.3"
 sqlite = "2.5.0"
 androidx-room = "2.7.0"
 
-koin = "4.0.0"
+koin = "4.0.4"
 
 preference = "1.2.1"
 
@@ -77,6 +77,7 @@ kotlin-reflect = {group = "org.jetbrains.kotlin", name = "kotlin-reflect", versi
 
 koin-core = {group = "io.insert-koin", name = "koin-core", version.ref = "koin"}
 koin-android = {group = "io.insert-koin", name = "koin-android", version.ref = "koin"}
+koin-compose = {group = "io.insert-koin", name = "koin-compose", version.ref = "koin"}
 koin-test = {group = "io.insert-koin", name = "koin-test", version.ref = "koin"}
 
 sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }

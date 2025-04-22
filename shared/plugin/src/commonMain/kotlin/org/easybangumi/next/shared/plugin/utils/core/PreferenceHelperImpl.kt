@@ -23,18 +23,20 @@ class PreferenceHelperImpl(
     private val jm = JournalMapHelper(
         source.workPath,
         "preference",
-        source.scope
     )
 
-    override fun map(): Map<String, String> {
+    override suspend fun map(): Map<String, String> {
         return jm.mapSync()
     }
 
-    override fun get(key: String, def: String): String {
-        return jm.getSync(key, def)
+    override suspend fun get(key: String, def: String): String {
+        if (!jm.isSet(key)) {
+            return def
+        }
+        return jm.get(key).ifEmpty { def }
     }
 
-    override fun put(key: String, value: String) {
-        jm.put(key, value)
+    override suspend fun put(key: String, value: String) {
+        jm.putAndWait(key, value)
     }
 }

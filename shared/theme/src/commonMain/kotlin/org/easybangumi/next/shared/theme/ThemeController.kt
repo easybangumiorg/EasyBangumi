@@ -1,6 +1,7 @@
 package org.easybangumi.next.shared.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import kotlinx.coroutines.CoroutineScope
@@ -17,8 +18,18 @@ import org.koin.core.component.KoinComponent
 /**
  * Created by heyanlin on 2025/4/9.
  */
+
+interface DynamicColorAction {
+    fun support(): Boolean
+
+    @Composable
+    fun getColorScheme(isDark: Boolean): ColorScheme?
+}
+
+
 class ThemeController(
     private val preferenceStore: PreferenceStore,
+    private val dynamicColorAction: DynamicColorAction,
 ): KoinComponent {
 
     companion object {
@@ -70,7 +81,17 @@ class ThemeController(
         darkMode: DarkMode,
         isDynamicColor: Boolean,
         themeMode: EasyThemeMode
-    ) = EasyThemeState(themeMode, darkMode, isDynamicColor)
+    ) = EasyThemeState(themeMode, darkMode, isDynamicColor && dynamicColorAction.support())
 
+
+    fun isSupportDynamicColor(): Boolean {
+        return dynamicColorAction.support()
+    }
+
+
+    @Composable
+    fun getDynamicColorScheme(isDark: Boolean): ColorScheme? {
+        return dynamicColorAction.getColorScheme(isDark)
+    }
 
 }

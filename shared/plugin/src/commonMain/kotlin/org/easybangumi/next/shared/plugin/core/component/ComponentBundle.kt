@@ -95,6 +95,14 @@ class ComponentBundle(
         return proxy as? T
     }
 
+    inline fun <reified T : Any> get(): T? {
+        return get(T::class)
+    }
+
+    inline fun <reified T : Component> getIfProxy(): T? {
+        return getIfProxy(T::class)
+    }
+
     fun release() {
         if (init.compareAndSet(true, false)) {
             koinApp?.close()

@@ -1,6 +1,7 @@
 package org.easybangumi.next.shared.plugin.api.component.page
 
-import org.easybangumi.next.shared.plugin.api.component.meta.MetaComponent
+import org.easybangumi.next.shared.plugin.api.SourceResult
+import org.easybangumi.next.shared.plugin.api.component.Component
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -13,8 +14,13 @@ import org.easybangumi.next.shared.plugin.api.component.meta.MetaComponent
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-interface PageComponent : MetaComponent {
+interface PageComponent : Component {
 
+    suspend fun getCartoonPage(): SourceResult<List<CartoonPage>>
 
+    suspend fun getPageTab(page: CartoonPage): SourceResult<List<PageTab>>
+
+    suspend fun initKey(tab: PageTab): SourceResult<String>
+    suspend fun loadPage(tab: PageTab, key: String, ): SourceResult<Pair<String?, List<CartoonPage>>>
 
 }

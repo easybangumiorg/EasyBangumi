@@ -71,6 +71,7 @@ kotlin {
             implementation(libs.koin.core)
 
             implementation(projects.shared.data)
+            implementation(projects.shared.resources)
 
             implementation(projects.lib.logger)
             implementation(projects.lib.unifile)

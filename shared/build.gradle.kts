@@ -80,14 +80,20 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.material3)
             implementation(compose.components.uiToolingPreview)
+
             implementation(libs.navigation.compose)
             implementation(libs.androidx.room.runtime)
             implementation(libs.sqlite.bundled)
-
             implementation(libs.moko.resources.compose)
-
             implementation(libs.coil.compose)
+            implementation(libs.koin.core)
+            implementation(libs.koin.compose)
 
+            implementation(projects.lib)
+
+            implementation(projects.shared.data)
+            implementation(projects.shared.plugin)
+            implementation(projects.shared.theme)
             implementation(projects.shared.foundation)
             implementation(projects.shared.resources)
             implementation(projects.shared.platform)

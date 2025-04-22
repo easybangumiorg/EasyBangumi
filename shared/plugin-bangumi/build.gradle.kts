@@ -5,8 +5,6 @@ import plugin.easy_config.EasyConfigPlugin
 plugins {
     alias(builds.plugins.kotlinMultiplatform)
     alias(builds.plugins.androidLibrary)
-    alias(builds.plugins.kotlinCompose)
-    alias(builds.plugins.compose)
 }
 kotlin {
     androidTarget {
@@ -66,27 +64,15 @@ kotlin {
         }
 
         commonMain.dependencies {
-            implementation(compose.ui)
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
 
-            implementation(libs.koin.core)
-            implementation(libs.koin.compose)
-            implementation(libs.navigation.compose)
-
-            implementation(projects.shared.resources)
-
-            implementation(projects.lib.store)
-            implementation(projects.lib.utils)
         }
 
         androidMain.dependencies {
-            implementation(libs.androidx.core.ktx)
+
         }
 
         desktopMain.dependencies {
-            implementation(compose.desktop.currentOs)
+
         }
         iosMain.dependencies {
 
@@ -95,7 +81,7 @@ kotlin {
 }
 
 android {
-    namespace = AppConfig.namespace + ".shared.platform"
+    namespace = AppConfig.namespace + ".shared.plugin.bangumi"
     compileSdk = 35
     defaultConfig {
         minSdk = 21

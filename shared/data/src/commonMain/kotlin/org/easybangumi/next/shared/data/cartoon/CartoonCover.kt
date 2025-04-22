@@ -7,7 +7,7 @@ import kotlin.jvm.Transient
  */
 class CartoonCover(
     val id: String,
-    val mediaSource: String,
+    val fromSource: String,
 
     val name: String,
     val coverUrl: String,
@@ -25,7 +25,7 @@ class CartoonCover(
         other as CartoonCover
 
         if (id != other.id) return false
-        if (mediaSource != other.mediaSource) return false
+        if (fromSource != other.fromSource) return false
         if (name != other.name) return false
         if (coverUrl != other.coverUrl) return false
         if (intro != other.intro) return false
@@ -36,7 +36,7 @@ class CartoonCover(
 
     override fun hashCode(): Int {
         var result = id.hashCode()
-        result = 31 * result + mediaSource.hashCode()
+        result = 31 * result + fromSource.hashCode()
         result = 31 * result + name.hashCode()
         result = 31 * result + coverUrl.hashCode()
         result = 31 * result + intro.hashCode()

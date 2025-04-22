@@ -46,7 +46,7 @@ class JournalMapHelper(
 
     data class Line(
         val key: String,
-        val value: String,
+        val value: String?,
     )
 
     private val mapFlow = MutableStateFlow<Map<String, String>>(emptyMap())
@@ -75,6 +75,25 @@ class JournalMapHelper(
     suspend fun map(): Map<String, String> {
         initJob.join()
         return mapFlow.value
+    }
+
+    fun mapSync(): Map<String, String> {
+        runBlocking {
+            initJob.join()
+        }
+        return mapFlow.value
+    }
+
+    suspend fun isSet(key: String): Boolean {
+        initJob.join()
+        return mapFlow.value[key] != null
+    }
+
+    fun isSetSync(key: String): Boolean {
+        runBlocking {
+            initJob.join()
+        }
+        return mapFlow.value[key] != null
     }
 
     fun put(key: String, value: String) {
@@ -109,10 +128,47 @@ class JournalMapHelper(
         }
     }
 
+    fun remove(key: String) {
+        StoreScope.launch(StoreSingleDispatcher) {
+            initJob.join()
+            mapFlow.apply {
+                while (true) {
+                    val prevValue = this.value
+                    val nextValue = prevValue - key
+                    if (compareAndSet(prevValue, nextValue)) {
+                        saveOrCombine(nextValue, key to null)
+                        break
+                    }
+                }
+            }
+        }
+    }
+
+    suspend fun removeAndWait(key: String) {
+        withContext(StoreSingleDispatcher) {
+            initJob.join()
+            mapFlow.apply {
+                while (true) {
+                    val prevValue = this.value
+                    val nextValue = prevValue - key
+                    if (compareAndSet(prevValue, nextValue)) {
+                        saveOrCombine(nextValue, key to null)
+                        break
+                    }
+                }
+            }
+        }
+    }
+
     fun getSync(key: String): String {
         runBlocking {
             initJob.join()
         }
+        return mapFlow.value[key] ?: ""
+    }
+
+    suspend fun get(key: String): String {
+        initJob.join()
         return mapFlow.value[key] ?: ""
     }
 
@@ -128,7 +184,7 @@ class JournalMapHelper(
         }
     }
 
-    private fun saveOrCombine(map: Map<String, String>, line: Pair<String, String>) {
+    private fun saveOrCombine(map: Map<String, String>, line: Pair<String, String?>) {
         lastLineCount ++
         if (lastLineCount > map.size * LOAD_FACTORY) {
             val dataFile = dataFile ?: return
@@ -178,7 +234,9 @@ class JournalMapHelper(
                 val line = source.readUtf8Line() ?: break
                 val li = jsonSerializer.deserialize<Line>(line, defaultValue = null) ?: continue
                 lineCount ++
-                map[li.key] = li.value
+                li.value ?.let {
+                    map[li.key] = it
+                }
             }
             lastLineCount = lineCount
             map

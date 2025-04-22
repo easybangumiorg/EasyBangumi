@@ -2,7 +2,7 @@ package org.easybangumi.next.shared.plugin.api.component.filter
 
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.plugin.api.SourceResult
-import org.easybangumi.next.shared.plugin.api.component.meta.MetaComponent
+import org.easybangumi.next.shared.plugin.api.component.Component
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -15,7 +15,11 @@ import org.easybangumi.next.shared.plugin.api.component.meta.MetaComponent
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-interface FilterComponent: MetaComponent {
+interface FilterComponent: Component {
+
+    suspend fun paramFilter(
+        param: String
+    ): SourceResult<List<Filter>>
 
     suspend fun refreshFilter(
         origin: List<Filter>,
