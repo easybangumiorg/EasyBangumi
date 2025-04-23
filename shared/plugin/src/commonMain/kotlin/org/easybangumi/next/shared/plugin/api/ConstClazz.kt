@@ -15,21 +15,19 @@ import kotlin.reflect.KClass
 object ConstClazz {
 
     // Source 里的接口
-    val sourceClazz: Array<KClass<*>> = arrayOf(
+    val sourceClazz: Set<KClass<*>> = setOf(
         Source::class,
-        MetaSource::class,
-        PlaySource::class,
     )
 
     // 工具类接口
-    val utilsClazz: Array<KClass<*>> = arrayOf(
+    val utilsClazz: Set<KClass<*>> = setOf(
         PreferenceHelper::class,
         WebViewHelper::class,
         StringHelper::class,
     )
 
     // Component 接口，纯业务
-    val componentClazz: Array<KClass<*>> = arrayOf(
+    val componentClazz: Set<KClass<*>> = setOf(
 //        DetailedComponent::class,
 //        MediaEventComponent::class,
 //        PlayComponent::class,

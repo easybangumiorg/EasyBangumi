@@ -1,6 +1,7 @@
 package org.easybangumi.next.shared.plugin.core.source
 
 import org.easybangumi.next.shared.plugin.api.ConstClazz
+import org.easybangumi.next.shared.plugin.api.component.Component
 import org.easybangumi.next.shared.plugin.core.info.SourceInfo
 import kotlin.collections.set
 import kotlin.reflect.KClass
@@ -33,7 +34,7 @@ class SourceBundle(
         for (loaded in list) {
             map[loaded.sourceConfig.key] = loaded
             for (componentClazz in ConstClazz.componentClazz) {
-                val component = loaded.componentBundle.get(componentClazz)
+                val component = loaded.componentBundle.getBusiness(componentClazz as KClass<out Component>)
                 if (component != null) {
                     val bundleList = clazzInBundle[componentClazz] ?: listOf()
                     clazzInBundle[componentClazz] = bundleList + loaded
@@ -48,7 +49,7 @@ class SourceBundle(
     // 查询 sourceInfo 数据
     fun sourceInfo(key: String) = map[key]
     fun config(key: String) = map[key]?.sourceConfig
-    fun componentBundle(key: String) = map[key]?.componentBundle
+//    fun componentBundle(key: String) = map[key]?.componentBundle
 
 //    // 查询 Component 数据
 //    fun homeComponentInfoList() = clazzInBundle[HomeComponent::class] ?: emptyList()

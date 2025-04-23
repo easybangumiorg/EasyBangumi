@@ -3,12 +3,12 @@ package org.easybangumi.next.shared.plugin.debug
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.plugin.api.SourceResult
 import org.easybangumi.next.shared.plugin.api.component.SearchComponent
-import org.easybangumi.next.shared.plugin.api.component.discover.DiscoverColum
+import org.easybangumi.next.shared.plugin.api.component.discover.DiscoverColumn
 import org.easybangumi.next.shared.plugin.api.component.discover.DiscoverComponent
 import org.easybangumi.next.shared.plugin.api.component.filter.Filter
 import org.easybangumi.next.shared.plugin.api.component.filter.FilterComponent
 import org.easybangumi.next.shared.plugin.api.withResult
-import org.easybangumi.next.shared.plugin.core.component.ComponentWrapper
+import org.easybangumi.next.shared.plugin.core.component.BaseComponent
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -21,7 +21,7 @@ import org.easybangumi.next.shared.plugin.core.component.ComponentWrapper
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-class HomeComponent: ComponentWrapper(), DiscoverComponent, FilterComponent, SearchComponent {
+class HomeBaseComponent: BaseComponent(), DiscoverComponent, FilterComponent, SearchComponent {
 
     override suspend fun banner(): SourceResult<List<CartoonCover>> {
         return withResult {
@@ -29,7 +29,15 @@ class HomeComponent: ComponentWrapper(), DiscoverComponent, FilterComponent, Sea
         }
     }
 
-    override suspend fun column(): SourceResult<List<DiscoverColum>> {
+    override suspend fun columnList(): SourceResult<List<DiscoverColumn>> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun loadColumn(colum: DiscoverColumn): SourceResult<List<CartoonCover>> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun paramFilter(param: String): SourceResult<List<Filter>> {
         TODO("Not yet implemented")
     }
 

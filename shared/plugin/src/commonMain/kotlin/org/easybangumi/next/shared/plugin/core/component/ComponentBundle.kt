@@ -30,8 +30,7 @@ class ComponentBundle(
 ) {
     private var koinApp: Koin? = null
 
-    // proxy 不使用 koin 管理，保证业务内无法获取 Proxy，只能获取原始对象
-    private val componentProxy: HashMap<KClass<out Component>, Component> = hashMapOf()
+    private val componentBusiness: HashMap<KClass<out Component>, ComponentBusiness<out Component>> = hashMapOf()
 
     private val init = atomic(false)
 
@@ -46,13 +45,13 @@ class ComponentBundle(
                     // Load source
                     single {
                         source
-                    }.binds(ConstClazz.sourceClazz)
+                    }.binds(ConstClazz.sourceClazz.toTypedArray())
 
                     // Load component
                     realComponent.forEach { component ->
                         single {
                             component.apply {
-                                if (this is ComponentWrapper) {
+                                if (this is BaseComponent) {
                                     innerSource = source
                                     innerKoin = koin
                                 }
@@ -77,37 +76,43 @@ class ComponentBundle(
         return source
     }
 
+
+
     fun <T : Any> get(clazz: KClass<T>): T? {
         if (!init.value) return null
+        // 获取 Component 请使用 getBusiness
+        if (ConstClazz.componentClazz.contains(clazz)) {
+            return null
+        }
         return koinApp?.get(clazz)
     }
 
-    fun <T: Component> getIfProxy(clazz: KClass<T>): T? {
+    fun <T: Component> getBusiness(clazz: KClass<T>): ComponentBusiness<T>? {
         if (!init.value) return null
-        val cache = componentProxy[clazz]
+        val cache = componentBusiness[clazz]
         if (cache != null) {
-            return cache as? T
+            return cache as? ComponentBusiness<T>
         }
         val component = koinApp?.get<T>(clazz) ?: return null
-        // proxy 失败直接放弃返回原对象，只尝试一次
-        val proxy = makeComponentProxy(component) ?: component
-        componentProxy[clazz] = proxy
-        return proxy as? T
+        val business = ComponentBusiness(component)
+        componentBusiness[clazz] = business
+        return business
     }
+
 
     inline fun <reified T : Any> get(): T? {
         return get(T::class)
     }
 
-    inline fun <reified T : Component> getIfProxy(): T? {
-        return getIfProxy(T::class)
+    inline fun <reified T : Component> getBusiness(): ComponentBusiness<T>? {
+        return getBusiness(T::class)
     }
 
     fun release() {
         if (init.compareAndSet(true, false)) {
             koinApp?.close()
             koinApp = null
-            componentProxy.clear()
+            componentBusiness.clear()
         }
     }
 }

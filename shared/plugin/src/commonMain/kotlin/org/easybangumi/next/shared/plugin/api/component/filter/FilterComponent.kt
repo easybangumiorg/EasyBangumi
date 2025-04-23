@@ -23,18 +23,17 @@ interface FilterComponent: Component {
 
     suspend fun refreshFilter(
         origin: List<Filter>,
-        change: Filter?,
+        change: Filter,
     ): SourceResult<List<Filter>>
 
 
-    suspend fun firstKey(filterList: List<Filter>): SourceResult<String>
+    fun firstKey(
+        filterList: List<Filter>
+    ): String
 
     suspend fun search(
         filterList: List<Filter>,
         key: String,
     ): SourceResult<Pair<String?, List<CartoonCover>>>
-
-
-
 
 }

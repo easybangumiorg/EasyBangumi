@@ -88,6 +88,8 @@ kotlin {
             implementation(libs.coil.compose)
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
+            implementation(libs.paging.multiplatform.common)
+            implementation(libs.paging.multiplatform.compose)
 
             implementation(projects.lib)
 

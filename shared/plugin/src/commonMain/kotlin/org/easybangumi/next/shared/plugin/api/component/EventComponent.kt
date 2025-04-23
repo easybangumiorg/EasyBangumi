@@ -8,8 +8,12 @@ import org.easybangumi.next.shared.plugin.api.source.SourceManifest
  */
 interface EventComponent: Component {
 
-    fun onLoad(sourceManifest: SourceManifest){}
+    fun onLoad(
+        sourceManifest: SourceManifest
+    ){}
 
-    fun onUnload(sourceManifest: SourceManifest){}
+    fun onUnload(
+        sourceManifest: SourceManifest
+    ){}
 
 }

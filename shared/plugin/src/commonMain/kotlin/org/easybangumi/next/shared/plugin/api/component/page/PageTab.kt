@@ -20,4 +20,5 @@ data class PageTab(
     val page: CartoonPage,
     val id: String,
     val name: String,
+    val initKey: String,
 )

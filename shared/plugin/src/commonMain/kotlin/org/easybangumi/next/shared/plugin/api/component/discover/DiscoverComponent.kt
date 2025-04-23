@@ -21,8 +21,8 @@ interface DiscoverComponent: Component {
 
     suspend fun banner(): SourceResult<List<CartoonCover>>
 
-    suspend fun columnList(): SourceResult<List<DiscoverColum>>
+    suspend fun columnList(): SourceResult<List<DiscoverColumn>>
 
-    suspend fun loadColumn(colum: DiscoverColum): SourceResult<List<CartoonCover>>
+    suspend fun loadColumn(colum: DiscoverColumn): SourceResult<List<CartoonCover>>
 
 }

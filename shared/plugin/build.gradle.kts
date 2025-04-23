@@ -69,6 +69,7 @@ kotlin {
             implementation(libs.kotlinx.datetime)
             implementation(libs.kotlin.reflect)
             implementation(libs.koin.core)
+            implementation(libs.paging.multiplatform.common)
 
             implementation(projects.shared.data)
             implementation(projects.shared.resources)

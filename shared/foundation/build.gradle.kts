@@ -78,7 +78,7 @@ kotlin {
             implementation(libs.paging.multiplatform.common)
             implementation(libs.paging.multiplatform.compose)
 
-
+            implementation(libs.koin.core)
 
             implementation(libs.coil.compose)
             implementation(libs.coil.ktor3)

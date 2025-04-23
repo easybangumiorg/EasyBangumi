@@ -17,7 +17,9 @@ import org.easybangumi.next.shared.plugin.api.component.filter.Filter
  */
 interface SearchComponent : Component {
 
-    suspend fun firstKey(keyword: String): SourceResult<String>
+    fun firstKey(
+        keyword: String
+    ): String
 
     suspend fun search(
         keyword: String,

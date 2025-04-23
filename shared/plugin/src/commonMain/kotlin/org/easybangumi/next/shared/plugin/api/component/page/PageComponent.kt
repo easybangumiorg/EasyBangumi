@@ -1,5 +1,6 @@
 package org.easybangumi.next.shared.plugin.api.component.page
 
+import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.plugin.api.SourceResult
 import org.easybangumi.next.shared.plugin.api.component.Component
 
@@ -18,9 +19,14 @@ interface PageComponent : Component {
 
     suspend fun getCartoonPage(): SourceResult<List<CartoonPage>>
 
-    suspend fun getPageTab(page: CartoonPage): SourceResult<List<PageTab>>
+    suspend fun getPageTab(
+        page: CartoonPage
+    ): SourceResult<List<PageTab>>
 
-    suspend fun initKey(tab: PageTab): SourceResult<String>
-    suspend fun loadPage(tab: PageTab, key: String, ): SourceResult<Pair<String?, List<CartoonPage>>>
+
+    suspend fun loadPage(
+        tab: PageTab,
+        key: String
+    ): SourceResult<Pair<String?, List<CartoonCover>>>
 
 }

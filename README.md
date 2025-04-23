@@ -6,6 +6,7 @@
 
 其中 shared 为树形结构，并且 shared 子模块只能被其他 shared 子模块或者 shared 根模块依赖
 
+# Ayala 的奇思妙想
 ## 功能框图
 
 ```mermaid

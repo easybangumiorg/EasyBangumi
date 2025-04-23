@@ -1,9 +1,12 @@
 package org.easybangumi.next.shared.ui.shared.discover
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
+import org.easybangumi.next.shared.foundation.view_model.vm
 import org.easybangumi.next.shared.plugin.api.component.discover.DiscoverColumnJumpRouter
 import org.easybangumi.next.shared.plugin.api.component.discover.DiscoverComponent
+import org.easybangumi.next.shared.plugin.core.component.ComponentBusiness
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -25,7 +28,7 @@ import org.easybangumi.next.shared.plugin.api.component.discover.DiscoverCompone
  */
 @Composable
 fun Discover(
-    discoverComponent: DiscoverComponent,
+    discoverBusiness: ComponentBusiness<DiscoverComponent>,
 
     // 跳转详情页
     onJumpDetail: (CartoonIndex) -> Unit,
@@ -33,4 +36,5 @@ fun Discover(
     // 发现页 【查看更多】区域点击跳转
     onJumpRouter: (DiscoverColumnJumpRouter) -> Unit,
 ) {
+    val  d = vm(::DiscoverViewModel, discoverBusiness)
 }

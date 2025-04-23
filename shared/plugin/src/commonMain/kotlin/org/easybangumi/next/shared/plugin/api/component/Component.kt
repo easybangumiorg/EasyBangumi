@@ -1,6 +1,7 @@
 package org.easybangumi.next.shared.plugin.api.component
 
 import org.easybangumi.next.shared.plugin.api.source.Source
+import org.koin.core.component.KoinComponent
 
 
 /**
@@ -8,7 +9,7 @@ import org.easybangumi.next.shared.plugin.api.source.Source
  * https://github.com/heyanLE
  */
 
-interface Component {
+interface Component: KoinComponent {
 
     val source: Source
 

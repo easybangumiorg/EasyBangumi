@@ -1,9 +1,8 @@
 package org.easybangumi.next.shared.plugin.core.component
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.async
 import org.easybangumi.next.shared.plugin.api.component.Component
-import org.easybangumi.next.shared.plugin.api.source.Source
-import org.koin.core.Koin
-import org.koin.core.component.KoinComponent
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -16,16 +15,16 @@ import org.koin.core.component.KoinComponent
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-open class ComponentWrapper: Component, KoinComponent {
-
-    var innerKoin: Koin? = null
-    var innerSource: Source? = null
-
-    override val source: Source
-        get() = innerSource!!
-
-    override fun getKoin(): Koin {
-        return innerKoin!!
+class ComponentBusiness <T: Component> (
+    private val innerComponent: T,
+){
+    suspend fun <R> run(block: suspend T.(CoroutineScope) -> R): R {
+        return innerComponent.source.scope.async {
+            innerComponent.block(this)
+        }.await()
     }
 
+    fun <R> runDirect(block: T.() -> R): R {
+        return innerComponent.block()
+    }
 }

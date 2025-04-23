@@ -1,8 +1,5 @@
 package org.easybangumi.next.shared.plugin.api.component.discover
 
-import org.easybangumi.next.shared.data.cartoon.CartoonCover
-import org.easybangumi.next.shared.data.cartoon.CartoonIndex
-
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
  *
@@ -14,7 +11,7 @@ import org.easybangumi.next.shared.data.cartoon.CartoonIndex
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-data class DiscoverColum (
+data class DiscoverColumn (
     val id: String,
     val label: String,
     // 【查看更多】区域自定义文案，为空则不展示
@@ -25,8 +22,13 @@ data class DiscoverColum (
 )
 
 sealed class DiscoverColumnJumpRouter {
+    // 跳转筛选页，param 会交给 FilterComponent 解析
     data class Filter(val param: String? = null) : DiscoverColumnJumpRouter()
+
+    // 跳转到搜索页，keyword 为关键词
     data class Search(val keyword: String) : DiscoverColumnJumpRouter()
-    data class Page(val pageId: String, val tabId: String) : DiscoverColumnJumpRouter()
+
+    // 跳转到自定义页面， pageId 为页面 ID，tabId 为 Tab ID
+    data class Page(val pageId: String, val tabId: String = "") : DiscoverColumnJumpRouter()
 
 }

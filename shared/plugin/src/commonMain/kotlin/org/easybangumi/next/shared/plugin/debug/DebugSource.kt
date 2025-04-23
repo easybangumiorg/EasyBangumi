@@ -23,6 +23,6 @@ class DebugSource : InnerSource() {
     override val icon: ResourceOr? = Res.images.logo
     override val version: Int = 1
     override val componentConstructor: Array<() -> Component> = arrayOf(
-        ::HomeComponent
+        ::HomeBaseComponent
     )
 }
