@@ -1,8 +1,7 @@
-package org.easybangumi.next.shared.theme
+package org.easybangumi.next.shared.ui.main.home
 
-import org.koin.core.module.Module
-import org.koin.dsl.bind
-import org.koin.dsl.module
+import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
+import org.easybangumi.next.shared.foundation.view_model.LogicUIViewModel
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -15,12 +14,7 @@ import org.koin.dsl.module
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-val themeModule: Module
-    get() = module {
-        single {
-            getDynamicColorAction()
-        }.bind<DynamicColorAction>()
-        single {
-            ThemeController(get(), get())
-        }
-    }
+
+class HomeViewModel: BaseViewModel() {
+
+}

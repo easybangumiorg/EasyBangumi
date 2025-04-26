@@ -1,7 +1,9 @@
 package org.easybangumi.next.shared.ui.main
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
@@ -15,6 +17,7 @@ import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
 import dev.icerock.moko.resources.compose.stringResource
 import kotlinx.coroutines.launch
 import org.easybangumi.next.shared.resources.Res
@@ -137,7 +140,9 @@ fun Main() {
         }
         Column {
             VerticalPager(state = pagerState, userScrollEnabled = false) {
-                HomePageList[it].content()
+                Box(modifier = Modifier.fillMaxSize()) {
+                    HomePageList[it].content()
+                }
             }
         }
     }

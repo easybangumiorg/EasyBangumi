@@ -1,6 +1,8 @@
 package org.easybangumi.next.shared.ui.main.home
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
+import org.easybangumi.next.shared.foundation.view_model.vm
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -15,4 +17,11 @@ import androidx.compose.runtime.Composable
  */
 @Composable
 fun Home() {
+
+    val viewModel = vm(::HomeViewModel)
+
+    Column {
+
+    }
+
 }

@@ -27,12 +27,17 @@ dependencies {
 }
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(21)
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 compose.desktop {
     application {
-        mainClass = "com.heyanle.easy_bangumi_cm.MainKt"
+        mainClass = "org.easybangumi.next.MainKt"
 
         jvmArgs(
             "-DversionCode=${AppConfig.versionCode}",

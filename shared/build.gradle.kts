@@ -12,7 +12,7 @@ plugins {
 kotlin {
     androidTarget {
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_17)
+            jvmTarget.set(JvmTarget.JVM_21)
             freeCompilerArgs.add(
                 "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
             )
@@ -21,7 +21,7 @@ kotlin {
 
     jvm("desktop") {
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_17)
+            jvmTarget.set(JvmTarget.JVM_21)
             freeCompilerArgs.add(
                 "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
             )
@@ -91,6 +91,7 @@ kotlin {
             implementation(libs.coil.compose)
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
+            implementation(libs.kotlinx.datetime)
             implementation(libs.paging.multiplatform.common)
             implementation(libs.paging.multiplatform.compose)
 
@@ -127,8 +128,8 @@ android {
         minSdk = 21
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
 }
 

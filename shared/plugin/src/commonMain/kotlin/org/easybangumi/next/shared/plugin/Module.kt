@@ -29,7 +29,7 @@ val pluginModule get() = module {
     }
 
     single {
-        SourceController(it.get(), it.get())
+        SourceController(get(), get())
     }
 
 }

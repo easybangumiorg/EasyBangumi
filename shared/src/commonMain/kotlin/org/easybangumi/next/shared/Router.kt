@@ -22,6 +22,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import org.easybangumi.next.lib.utils.WeakRef
 import org.easybangumi.next.shared.ui.main.Main
 import kotlin.jvm.JvmSuppressWildcards
@@ -61,7 +62,7 @@ expect fun AnimatedContentScope.NavHook(
 
 @Composable
 fun Router() {
-    val navController = LocalNavController.current
+    val navController = rememberNavController()
     LaunchedEffect(Unit) {
         innerNavControllerRef = WeakRef(navController)
     }

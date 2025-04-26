@@ -12,6 +12,6 @@ actual fun Module.preferenceStore() {
             pathProvider.getFilePath("preference"),
             "config"
         )
-        JournalMapPreferenceStore(journalMapHelper)
-    }.bind<PreferenceStore>()
+        JournalMapPreferenceStore(journalMapHelper) as PreferenceStore
+    }.bind<PreferenceStore>().bind(PreferenceStore::class)
 }

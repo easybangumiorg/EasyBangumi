@@ -1,5 +1,15 @@
 package org.easybangumi.next.shared
 
+import org.easybangumi.next.lib.store.storeModule
+import org.easybangumi.next.shared.data.dataModule
+import org.easybangumi.next.shared.plugin.pluginModule
+import org.easybangumi.next.shared.theme.ThemeController
+import org.easybangumi.next.shared.theme.themeModule
+import org.koin.compose.getKoin
+import org.koin.core.context.startKoin
+import org.koin.core.logger.Level
+import org.koin.mp.KoinPlatformTools
+
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
  *
@@ -15,7 +25,17 @@ package org.easybangumi.next.shared
 object Scheduler {
 
     fun onInit() {
-
+        startKoin {
+            printLogger(Level.DEBUG)
+            modules(
+                listOf(
+                    pluginModule,
+                    storeModule,
+                    dataModule,
+                    themeModule,
+                )
+            )
+        }
     }
 
     fun onSplashPageLaunch() {
