@@ -80,6 +80,9 @@ class ViewModelFactoryZero<V: ViewModel>(
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: KClass<T>, extras: CreationExtras): T {
         val v = constructor()
+        check(v is BaseViewModel) {
+            "ViewModel must be a subclass of BaseViewModel"
+        }
         if (!modelClass.isInstance(v)) {
             throw IllegalArgumentException("Unknown ViewModel class")
         }
@@ -94,6 +97,9 @@ class ViewModelFactoryOne<V : ViewModel, P>(
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: KClass<T>, extras: CreationExtras): T {
         val v = constructor(params)
+        check(v is BaseViewModel) {
+            "ViewModel must be a subclass of BaseViewModel"
+        }
         if (!modelClass.isInstance(v)) {
             throw IllegalArgumentException("Unknown ViewModel class")
         }
@@ -108,6 +114,9 @@ class ViewModelFactoryTwo<V : ViewModel, P1, P2>(
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: KClass<T>, extras: CreationExtras): T {
         val v = constructor(params1, params2)
+        check(v is BaseViewModel) {
+            "ViewModel must be a subclass of BaseViewModel"
+        }
         if (!modelClass.isInstance(v)) {
             throw IllegalArgumentException("Unknown ViewModel class")
         }
@@ -122,9 +131,14 @@ class ViewModelFactoryThree<V : ViewModel, P1, P2, P3>(
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: KClass<T>, extras: CreationExtras): T {
         val v = constructor(params1, params2, params3)
+        check(v is BaseViewModel) {
+            "ViewModel must be a subclass of BaseViewModel"
+        }
         if (!modelClass.isInstance(v)) {
             throw IllegalArgumentException("Unknown ViewModel class")
         }
         return v as T
     }
 }
+
+

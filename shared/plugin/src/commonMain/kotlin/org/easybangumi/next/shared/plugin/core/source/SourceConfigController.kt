@@ -39,7 +39,6 @@ class SourceConfigController {
         workerFile,
         "source_config",
         SourceConfig::class,
-        scope
     )
 
     init {

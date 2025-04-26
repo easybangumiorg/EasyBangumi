@@ -1,5 +1,9 @@
 package org.easybangumi.next.shared.plugin
 
+import org.easybangumi.next.shared.plugin.core.extension.ExtensionController
+import org.easybangumi.next.shared.plugin.core.source.SourceConfigController
+import org.easybangumi.next.shared.plugin.core.source.SourceController
+import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
 /**
@@ -15,5 +19,17 @@ import org.koin.dsl.module
  */
 
 val pluginModule get() = module {
+
+    single {
+        ExtensionController()
+    }
+
+    single {
+        SourceConfigController()
+    }
+
+    single {
+        SourceController(it.get(), it.get())
+    }
 
 }

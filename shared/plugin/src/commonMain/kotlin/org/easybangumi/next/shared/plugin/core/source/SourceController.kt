@@ -92,14 +92,14 @@ class SourceController(
                     return@combine DataState.loading<List<SourceInfo>>()
                 }
 
-                if (extensionInfo.isError()) {
+                if (extensionInfo.isError() && extensionInfo is DataState.Error) {
                     return@combine DataState.error<List<SourceInfo>>(
-                        extensionInfo.errorMsg,
+                        errorMsg = extensionInfo.errorMsg,
                         extensionInfo.throwable
                     )
                 }
 
-                if (sourceConfig.isError()) {
+                if (sourceConfig.isError() && sourceConfig is DataState.Error) {
                     logger.error("source config error: ${sourceConfig.errorMsg}", sourceConfig.throwable)
                 }
 

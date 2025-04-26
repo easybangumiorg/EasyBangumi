@@ -22,15 +22,15 @@ import org.koin.core.component.KoinComponent
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-abstract class AbsViewModel <UI_STATE, LOGIC_STATE>: ViewModel(), KoinComponent {
+abstract class LogicUIViewModel <UI_STATE, LOGIC_STATE>: BaseViewModel(), LogicUI<UI_STATE, LOGIC_STATE> {
 
     abstract val initUiState: UI_STATE
     protected val uiState = mutableStateOf<UI_STATE>(initUiState)
-    val ui: State<UI_STATE> = uiState
+    override val ui: State<UI_STATE> = uiState
 
     abstract val initLogicState: LOGIC_STATE
     protected val logicState = MutableStateFlow<LOGIC_STATE>(initLogicState)
-    val logic: StateFlow<LOGIC_STATE> = logicState
+    override val logic: StateFlow<LOGIC_STATE> = logicState
 
     abstract suspend fun logicToUi(logicState: LOGIC_STATE): UI_STATE
 

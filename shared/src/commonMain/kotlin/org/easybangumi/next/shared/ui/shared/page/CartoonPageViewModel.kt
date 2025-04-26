@@ -1,29 +1,22 @@
 package org.easybangumi.next.shared.ui.shared.page
 
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
 import app.cash.paging.PagingData
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.map
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
-import org.easybangumi.next.shared.foundation.view_model.AbsViewModel
+import org.easybangumi.next.shared.foundation.view_model.LogicUIViewModel
 import org.easybangumi.next.shared.plugin.api.component.page.CartoonPage
 import org.easybangumi.next.shared.plugin.api.component.page.PageComponent
 import org.easybangumi.next.shared.plugin.api.component.page.PageTab
 import org.easybangumi.next.shared.plugin.api.toDataState
 import org.easybangumi.next.shared.plugin.core.component.ComponentBusiness
 import org.easybangumi.next.shared.plugin.paging.CartoonPagePagingSource
-import org.koin.core.component.KoinComponent
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -39,7 +32,7 @@ import org.koin.core.component.KoinComponent
 class CartoonPageViewModel(
     private val cartoonPage: CartoonPage,
     private val pageBusiness: ComponentBusiness<PageComponent>
-): AbsViewModel<CartoonPageViewModel.UIState, CartoonPageViewModel.LogicState>() {
+): LogicUIViewModel<CartoonPageViewModel.UIState, CartoonPageViewModel.LogicState>() {
 
     data class UIState(
         val tabList: DataState<List<PageTab>> = DataState.none(),

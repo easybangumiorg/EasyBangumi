@@ -26,6 +26,7 @@ interface DynamicColorAction {
     fun getColorScheme(isDark: Boolean): ColorScheme?
 }
 
+expect fun getDynamicColorAction(): DynamicColorAction
 
 class ThemeController(
     private val preferenceStore: PreferenceStore,

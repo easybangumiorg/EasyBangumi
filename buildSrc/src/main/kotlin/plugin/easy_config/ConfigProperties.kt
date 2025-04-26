@@ -4,6 +4,7 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.Optional
+import kotlin.reflect.KClass
 import kotlin.reflect.KType
 
 /**
@@ -21,11 +22,11 @@ data class ConfigProperties(
     val properties: List<ConfigPropertyTypes<*>>,
 ) {
 
-    sealed class ConfigPropertyTypes<T>(
+    sealed class ConfigPropertyTypes<T: Any>(
         @Input
         val name: String,
         @Internal
-        val clazz: Class<T>,
+        val clazz: KClass<T>,
         @Input
         val template: String,
         @Input
@@ -36,17 +37,17 @@ data class ConfigProperties(
         class IntPropertyType(
             name: String,
             value: Int
-        ) : ConfigPropertyTypes<Int>(name, Int::class.java, "%L", value)
+        ) : ConfigPropertyTypes<Int>(name, Int::class, "%L", value)
 
         class StringPropertyType(
             name: String,
             value: String
-        ) : ConfigPropertyTypes<String>(name, String::class.java, "%S", value)
+        ) : ConfigPropertyTypes<String>(name, String::class, "%S", value)
 
         class BooleanPropertyType(
             name: String,
             value: Boolean
-        ) : ConfigPropertyTypes<Boolean>(name, Boolean::class.java, "%L", value)
+        ) : ConfigPropertyTypes<Boolean>(name, Boolean::class, "%L", value)
 
 
         companion object {

@@ -15,7 +15,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.node.WeakReference
 import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDeepLink
@@ -23,6 +22,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import org.easybangumi.next.lib.utils.WeakRef
 import org.easybangumi.next.shared.ui.main.Main
 import kotlin.jvm.JvmSuppressWildcards
 
@@ -42,8 +42,8 @@ val LocalNavController = staticCompositionLocalOf<NavHostController> {
     error("AppNavController Not Provide")
 }
 
-private var innerNavControllerRef: WeakReference<NavHostController>? = null
-val navController: NavHostController? get() = innerNavControllerRef?.get()
+internal var innerNavControllerRef: WeakRef<NavHostController>? = null
+val navController: NavHostController? get() = innerNavControllerRef?.targetOrNull
 
 
 const val MAIN = "main"
@@ -63,7 +63,7 @@ expect fun AnimatedContentScope.NavHook(
 fun Router() {
     val navController = LocalNavController.current
     LaunchedEffect(Unit) {
-        innerNavControllerRef = WeakReference(navController)
+        innerNavControllerRef = WeakRef(navController)
     }
     CompositionLocalProvider(LocalNavController provides navController) {
         NavHost(

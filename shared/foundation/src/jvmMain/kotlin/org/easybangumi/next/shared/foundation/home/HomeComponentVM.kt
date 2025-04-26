@@ -196,8 +196,8 @@
 //        viewModelScope.launch {
 //            _stateFlow.update { State.from(homePage) }
 //            cleanChildren()
-//            scrollableHeaderStateTemp.clear()
-//            cartoonPageLazyGridStateTemp.clear()
+//            scrollableHeaderStateTemp.clearChildren()
+//            cartoonPageLazyGridStateTemp.clearChildren()
 //            when (homePage) {
 //                is HomePage.Group -> {
 //                    val res = homePage.load()

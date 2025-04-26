@@ -3,7 +3,7 @@ package org.easybangumi.next.shared.foundation.view_model
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 
-class ViewModelOwnerMap<T> {
+class ViewModelOwnerMap<T: Any> {
 
     private val viewModelOwnerStore = hashMapOf<T, ViewModelStore>()
 

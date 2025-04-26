@@ -43,16 +43,16 @@ class HomeBaseComponent: BaseComponent(), DiscoverComponent, FilterComponent, Se
 
     override suspend fun refreshFilter(
         origin: List<Filter>,
-        change: Filter?
+        change: Filter
     ): SourceResult<List<Filter>> {
         TODO("Not yet implemented")
     }
 
-    override suspend fun firstKey(filterList: List<Filter>): SourceResult<String> {
+    override fun firstKey(filterList: List<Filter>): String {
         TODO("Not yet implemented")
     }
 
-    override suspend fun firstKey(keyword: String): SourceResult<String> {
+    override fun firstKey(keyword: String): String {
         TODO("Not yet implemented")
     }
 
@@ -68,9 +68,5 @@ class HomeBaseComponent: BaseComponent(), DiscoverComponent, FilterComponent, Se
         key: String
     ): SourceResult<Pair<String?, List<CartoonCover>>> {
         TODO("Not yet implemented")
-    }
-
-    private fun newCartoonCover(){
-
     }
 }

@@ -8,6 +8,7 @@ import org.gradle.api.plugins.BasePlugin
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.options.Option
+import org.gradle.internal.declarativedsl.language.Import
 import org.gradle.kotlin.dsl.withType
 import java.io.File
 
@@ -67,6 +68,7 @@ abstract class MakeConfigTask: DefaultTask() {
         val logger = project.logger
 
         val kotlinFileBuilder = FileSpec.builder(packageName, buildConfigFileName)
+        kotlinFileBuilder.defaultImports.add("kotlin.String")
 
         val buildConfigObject = TypeSpec.objectBuilder(buildConfigFileName.substringBeforeLast(".kt"))
             .addModifiers(KModifier.PUBLIC)
@@ -95,6 +97,7 @@ abstract class MakeConfigTask: DefaultTask() {
         outputDir.get().asFile.mkdirs()
 
         logger.info("Generated BuildConfig file: write to ${outputDir.get().asFile.path}")
+
 
         // Write the generated Kotlin file to the output directory
         kotlinFile.writeTo(outputDir.get().asFile)

@@ -1,8 +1,10 @@
 package org.easybangumi.next.shared.plugin.api
 
-import org.easybangumi.next.shared.plugin.api.component.Component
-import org.easybangumi.next.shared.plugin.api.source.MetaSource
-import org.easybangumi.next.shared.plugin.api.source.PlaySource
+import org.easybangumi.next.shared.plugin.api.component.discover.DiscoverComponent
+import org.easybangumi.next.shared.plugin.api.component.filter.FilterComponent
+import org.easybangumi.next.shared.plugin.api.component.page.PageComponent
+import org.easybangumi.next.shared.plugin.api.component.play.PlayComponent
+import org.easybangumi.next.shared.plugin.api.component.pref.PrefComponent
 import org.easybangumi.next.shared.plugin.api.source.Source
 import org.easybangumi.next.shared.plugin.api.utils.PreferenceHelper
 import org.easybangumi.next.shared.plugin.api.utils.StringHelper
@@ -28,12 +30,11 @@ object ConstClazz {
 
     // Component 接口，纯业务
     val componentClazz: Set<KClass<*>> = setOf(
-//        DetailedComponent::class,
-//        MediaEventComponent::class,
-//        PlayComponent::class,
-//        SearchComponent::class,
-//        HomeComponent::class,
-//        PrefComponent::class,
+        DiscoverComponent::class,
+        FilterComponent::class,
+        PageComponent::class,
+        PlayComponent::class,
+        PrefComponent::class,
     )
 
 }

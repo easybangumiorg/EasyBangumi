@@ -9,7 +9,7 @@ import org.easybangumi.next.lib.utils.map
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.data.cartoon.CartoonInfo
 import org.easybangumi.next.shared.data.room.dao.CartoonInfoDao
-import org.easybangumi.next.shared.foundation.view_model.AbsViewModel
+import org.easybangumi.next.shared.foundation.view_model.LogicUIViewModel
 import org.easybangumi.next.shared.plugin.api.component.discover.DiscoverColumn
 import org.easybangumi.next.shared.plugin.api.component.discover.DiscoverComponent
 import org.easybangumi.next.shared.plugin.api.toDataState
@@ -29,7 +29,7 @@ import org.koin.core.component.inject
  */
 class DiscoverViewModel (
     private val discoverBusiness: ComponentBusiness<DiscoverComponent>
-): AbsViewModel<DiscoverViewModel.UIState, DiscoverViewModel.LogicState>() {
+): LogicUIViewModel<DiscoverViewModel.UIState, DiscoverViewModel.LogicState>() {
 
     companion object {
         const val HISTORY_LIMIT = 16

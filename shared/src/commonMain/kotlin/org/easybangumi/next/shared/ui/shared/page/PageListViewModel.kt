@@ -1,20 +1,15 @@
 package org.easybangumi.next.shared.ui.shared.page
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.utils.DataState
-import org.easybangumi.next.shared.foundation.view_model.ParentViewModel
+import org.easybangumi.next.shared.foundation.view_model.LogicUIViewModel
+import org.easybangumi.next.shared.foundation.view_model.parent.ParentViewModel
+import org.easybangumi.next.shared.foundation.view_model.parent.ParentViewModelDelegate
 import org.easybangumi.next.shared.plugin.api.component.page.CartoonPage
 import org.easybangumi.next.shared.plugin.api.component.page.PageComponent
 import org.easybangumi.next.shared.plugin.api.toDataState
 import org.easybangumi.next.shared.plugin.core.component.ComponentBusiness
-import org.easybangumi.next.shared.ui.home.star.Star
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -29,7 +24,9 @@ import org.easybangumi.next.shared.ui.home.star.Star
  */
 class PageListViewModel(
     private val pageBusiness: ComponentBusiness<PageComponent>
-): ParentViewModel<PageListViewModel.State, PageListViewModel.State, CartoonPage>(){
+): LogicUIViewModel<PageListViewModel.State, PageListViewModel.State>(),
+    ParentViewModel<CartoonPage> by ParentViewModelDelegate()
+{
 
     data class State(
         val pageList: DataState<List<CartoonPage>> = DataState.none()
@@ -52,6 +49,11 @@ class PageListViewModel(
             getCartoonPage().toDataState()
         }
         update { it.copy(res) }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        clearChildren()
     }
 
 }

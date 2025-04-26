@@ -78,6 +78,7 @@ kotlin {
 
             implementation(libs.koin.core)
 
+            implementation(projects.lib.store)
             implementation(projects.lib.unifile)
             implementation(projects.lib.utils)
         }

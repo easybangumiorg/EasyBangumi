@@ -54,7 +54,7 @@ class ExtensionController {
     private val _infoState = MutableStateFlow<DataState<Map<String, ExtensionInfo>>>(DataState.Companion.loading())
     val infoState: StateFlow<DataState<Map<String, ExtensionInfo>>> = _infoState
 
-    private val singleDispatcher = coroutineProvider.newSingle(this.toString())
+    private val singleDispatcher = coroutineProvider.newSingle()
     private val scope = CoroutineScope(SupervisorJob() + coroutineProvider.io())
 
     // == ExtensionProvider ================================================================================

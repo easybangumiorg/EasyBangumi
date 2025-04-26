@@ -1,10 +1,6 @@
 package org.easybangumi.next.shared.ui.shared.filter
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.CreationExtras
-import androidx.lifecycle.viewmodel.ViewModelFactoryDsl
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
@@ -14,13 +10,12 @@ import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.map
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
-import org.easybangumi.next.shared.foundation.view_model.AbsViewModel
+import org.easybangumi.next.shared.foundation.view_model.LogicUIViewModel
 import org.easybangumi.next.shared.plugin.api.component.filter.Filter
 import org.easybangumi.next.shared.plugin.api.component.filter.FilterComponent
 import org.easybangumi.next.shared.plugin.api.toDataState
 import org.easybangumi.next.shared.plugin.core.component.ComponentBusiness
 import org.easybangumi.next.shared.plugin.paging.CartoonFilterPagingSource
-import kotlin.reflect.KClass
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -36,7 +31,7 @@ import kotlin.reflect.KClass
 class FilterViewModel(
     private val param: String = "",
     private val filterBusiness: ComponentBusiness<FilterComponent>,
-): AbsViewModel<FilterViewModel.UIState, FilterViewModel.LogicState>() {
+): LogicUIViewModel<FilterViewModel.UIState, FilterViewModel.LogicState>() {
 
     companion object {
 

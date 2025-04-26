@@ -1,9 +1,9 @@
-package org.easybangumi.next.shared.foundation.view_model
+package org.easybangumi.next.shared.foundation.view_model.parent
 
-import androidx.annotation.CallSuper
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import org.easybangumi.next.shared.foundation.view_model.ViewModelOwnerMap
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -16,19 +16,15 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-abstract class ParentViewModel<UI_STATE, LOGIC_STATE, CHILD_KEY> : AbsViewModel<UI_STATE, LOGIC_STATE>() {
+class ParentViewModelDelegate<KEY: Any>: ParentViewModel<KEY> {
 
-    private val ownerMap: ViewModelOwnerMap<CHILD_KEY> by lazy {
+    override val storeMap: ViewModelOwnerMap<KEY> by lazy {
         ViewModelOwnerMap()
     }
 
-    protected fun cleanChild() {
-        ownerMap.clear()
-    }
-
     @Composable
-    fun child(key: CHILD_KEY, content: @Composable ()->Unit) {
-        val child = ownerMap.getViewModelStoreOwner(key)
+    override fun child(key: KEY, content: @Composable (() -> Unit)) {
+        val child = storeMap.getViewModelStoreOwner(key)
         CompositionLocalProvider(
             LocalViewModelStoreOwner provides child,
         ) {
@@ -36,11 +32,7 @@ abstract class ParentViewModel<UI_STATE, LOGIC_STATE, CHILD_KEY> : AbsViewModel<
         }
     }
 
-    @CallSuper
-    override fun onCleared() {
-        cleanChild()
-        super.onCleared()
+    override fun clearChildren() {
+        storeMap.clear()
     }
-
-
 }

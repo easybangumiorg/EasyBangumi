@@ -4,7 +4,6 @@ import kotlinx.atomicfu.atomic
 import org.easybangumi.next.shared.plugin.api.ConstClazz
 import org.easybangumi.next.shared.plugin.api.component.Component
 import org.easybangumi.next.shared.plugin.api.source.Source
-import org.easybangumi.next.shared.plugin.core.safe.makeComponentProxy
 import org.easybangumi.next.shared.plugin.utils.utilsModule
 import org.koin.core.Koin
 import org.koin.core.context.loadKoinModules

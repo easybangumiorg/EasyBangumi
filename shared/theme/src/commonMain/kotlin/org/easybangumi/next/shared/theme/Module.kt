@@ -1,6 +1,7 @@
 package org.easybangumi.next.shared.theme
 
 import org.koin.core.module.Module
+import org.koin.dsl.bind
 import org.koin.dsl.module
 
 /**
@@ -17,6 +18,9 @@ import org.koin.dsl.module
 val themeModule: Module
     get() = module {
         single {
-            ThemeController(it.get())
+            getDynamicColorAction()
+        }.bind<DynamicColorAction>()
+        single {
+            ThemeController(it.get(), it.get())
         }
     }
