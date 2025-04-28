@@ -5,7 +5,6 @@ import plugin.easy_config.EasyConfigPlugin
 plugins {
     alias(builds.plugins.kotlinMultiplatform)
     alias(builds.plugins.androidLibrary)
-    alias(libs.plugins.kotlinxAtomicfu)
 }
 kotlin {
     androidTarget {
@@ -65,24 +64,8 @@ kotlin {
         }
 
         commonMain.dependencies {
-            implementation(libs.kotlinx.coroutines.core)
-            implementation(libs.kotlinx.datetime)
-            implementation(libs.kotlin.reflect)
             implementation(libs.koin.core)
-            implementation(libs.paging.multiplatform.common)
-
-            implementation(projects.shared.data)
-            implementation(projects.shared.resources)
-
-            implementation(projects.lib.logger)
-            implementation(projects.lib.unifile)
             implementation(projects.lib.store)
-            implementation(projects.lib.utils)
-        }
-
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
-//            implementation(compose.uiTest)
         }
 
         androidMain.dependencies {
@@ -90,7 +73,7 @@ kotlin {
         }
 
         desktopMain.dependencies {
-            implementation(libs.kotlinx.coroutines.swing)
+
         }
         iosMain.dependencies {
 
@@ -99,7 +82,7 @@ kotlin {
 }
 
 android {
-    namespace = AppConfig.namespace + ".shared.plugin.core"
+    namespace = AppConfig.namespace + ".shared.preference"
     compileSdk = 35
     defaultConfig {
         minSdk = 21

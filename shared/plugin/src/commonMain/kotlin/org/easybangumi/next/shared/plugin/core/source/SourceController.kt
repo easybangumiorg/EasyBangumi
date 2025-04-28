@@ -14,6 +14,7 @@ import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.coroutineProvider
 import org.easybangumi.next.lib.utils.map
+import org.easybangumi.next.lib.utils.mapWithState
 import org.easybangumi.next.shared.plugin.api.source.SourceManifest
 import org.easybangumi.next.shared.plugin.core.extension.ExtensionController
 import org.easybangumi.next.shared.plugin.core.info.ExtensionInfo
@@ -134,8 +135,14 @@ class SourceController(
         scope.launch {
             _sourceInfoFlow.collectLatest { sourceInfoState ->
                 _sourceBundleFlow.update {
-                    sourceInfoState.map {
-                        SourceBundle(it.filterIsInstance<SourceInfo.Loaded>())
+                    sourceInfoState.mapWithState {
+                        val loaded = it.filterIsInstance<SourceInfo.Loaded>()
+                        if (loaded.isEmpty()) {
+                            return@mapWithState DataState.empty("source is empty")
+                        }
+                        DataState.ok(
+                            SourceBundle(loaded)
+                        )
                     }
                 }
             }

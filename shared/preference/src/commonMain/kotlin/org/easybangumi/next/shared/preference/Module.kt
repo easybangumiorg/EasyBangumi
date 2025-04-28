@@ -1,8 +1,7 @@
-package org.easybangumi.next.shared.foundation.view_model
+package org.easybangumi.next.shared.preference
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import kotlinx.coroutines.flow.StateFlow
+import org.koin.core.module.Module
+import org.koin.dsl.module
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -15,7 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-interface LogicUI<UI_STATE, LOGIC_STATE> {
-    val ui: State<UI_STATE>
-    val logic: StateFlow<LOGIC_STATE>
-}
+val preferenceModule: Module
+    get() = module {
+
+    }

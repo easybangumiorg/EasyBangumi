@@ -1,7 +1,10 @@
 package org.easybangumi.next.shared.ui.main.home
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import org.easybangumi.next.shared.foundation.plugin.SourceBundleContainer
 import org.easybangumi.next.shared.foundation.view_model.vm
 
 /**
@@ -18,10 +21,18 @@ import org.easybangumi.next.shared.foundation.view_model.vm
 @Composable
 fun Home() {
 
-    val viewModel = vm(::HomeViewModel)
+    SourceBundleContainer(Modifier.fillMaxSize()) {
+        val viewModel = vm(::HomeViewModel, it)
+
+    }
+
+
 
     Column {
 
     }
 
 }
+
+@Composable
+fun HomeTopAppBar() {}

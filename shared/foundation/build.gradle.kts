@@ -79,11 +79,14 @@ kotlin {
             implementation(libs.paging.multiplatform.compose)
 
             implementation(libs.koin.core)
+            implementation(libs.koin.compose)
 
             implementation(libs.coil.compose)
             implementation(libs.coil.ktor3)
 
+            implementation(projects.shared.plugin)
             implementation(projects.shared.resources)
+
             implementation(projects.lib.logger)
             implementation(projects.lib.utils)
         }

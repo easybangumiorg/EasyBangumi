@@ -10,9 +10,6 @@ plugins {
 group = AppConfig.namespace
 version = AppConfig.versionName
 
-val projectVersion by extra("")
-
-
 
 dependencies {
     // Note, if you develop a library, you should use compose.desktop.common.

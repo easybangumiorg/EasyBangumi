@@ -46,10 +46,12 @@ class SourceBundle(
 
     fun keys() = map.keys
 
+    fun contains(key: String) = map.containsKey(key)
+
     // 查询 sourceInfo 数据
     fun sourceInfo(key: String) = map[key]
     fun config(key: String) = map[key]?.sourceConfig
-//    fun componentBundle(key: String) = map[key]?.componentBundle
+    fun componentBundle(key: String) = map[key]?.componentBundle
 
 //    // 查询 Component 数据
 //    fun homeComponentInfoList() = clazzInBundle[HomeComponent::class] ?: emptyList()

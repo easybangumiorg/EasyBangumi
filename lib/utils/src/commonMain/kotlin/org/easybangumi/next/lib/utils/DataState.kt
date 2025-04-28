@@ -139,6 +139,22 @@ sealed class DataState<T> {
 
 }
 
+public inline fun <T, R> DataState<T>.mapWithState(transform: (value: T) -> DataState<R>): DataState<R> =
+    when (this) {
+        is DataState.Ok -> {
+            transform(data)
+        }
+
+        is DataState.Error -> {
+            DataState.error<R>(errorMsg = errorMsg, throwable)
+        }
+        is DataState.Loading -> {
+            DataState.loading()
+        }
+
+        is DataState.None -> DataState.none<R>()
+    }
+
 public inline fun <T, R> DataState<T>.map(transform: (value: T) -> R): DataState<R> =
     when (this) {
         is DataState.Ok -> {
