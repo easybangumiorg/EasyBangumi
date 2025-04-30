@@ -9,6 +9,7 @@ import org.easybangumi.next.shared.plugin.api.component.Component
 import org.easybangumi.next.shared.plugin.api.extension.ExtensionManifest
 import org.easybangumi.next.shared.plugin.api.source.Source
 import org.easybangumi.next.shared.plugin.api.source.SourceManifest
+import org.easybangumi.next.shared.plugin.debug.DebugSource
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -28,7 +29,7 @@ abstract class InnerSource: Source {
 
         val InnerSourceLists: List<InnerSource> by lazy {
             listOf<InnerSource>(
-
+                DebugSource()
             )
         }
 

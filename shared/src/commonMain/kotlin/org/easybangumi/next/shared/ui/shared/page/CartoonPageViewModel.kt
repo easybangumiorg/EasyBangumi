@@ -32,7 +32,10 @@ import org.easybangumi.next.shared.plugin.paging.CartoonPagePagingSource
 class CartoonPageViewModel(
     private val cartoonPage: CartoonPage,
     private val pageBusiness: ComponentBusiness<PageComponent>
-): LogicUIViewModel<CartoonPageViewModel.UIState, CartoonPageViewModel.LogicState>() {
+): LogicUIViewModel<CartoonPageViewModel.UIState, CartoonPageViewModel.LogicState>(
+    LogicState(),
+    UIState()
+) {
 
     data class UIState(
         val tabList: DataState<List<PageTab>> = DataState.none(),
@@ -43,11 +46,6 @@ class CartoonPageViewModel(
     data class LogicState(
         val tabList: DataState<List<PageTab>> = DataState.none(),
     )
-
-    override val initUiState: UIState
-        get() = UIState()
-    override val initLogicState: LogicState
-        get() = LogicState()
 
     override suspend fun logicToUi(logicState: LogicState): UIState {
         val pageFlow = logicState.tabList.map {
@@ -75,8 +73,8 @@ class CartoonPageViewModel(
         viewModelScope.launch {
             update { it.copy(tabList = DataState.loading()) }
             val res = pageBusiness.run {
-                getPageTab(cartoonPage).toDataState()
-            }
+                getPageTab(cartoonPage)
+            }.toDataState()
             update { it.copy(tabList = res) }
         }
     }

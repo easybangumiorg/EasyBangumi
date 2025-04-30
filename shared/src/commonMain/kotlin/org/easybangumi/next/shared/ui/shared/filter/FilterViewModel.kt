@@ -31,7 +31,10 @@ import org.easybangumi.next.shared.plugin.paging.CartoonFilterPagingSource
 class FilterViewModel(
     private val param: String = "",
     private val filterBusiness: ComponentBusiness<FilterComponent>,
-): LogicUIViewModel<FilterViewModel.UIState, FilterViewModel.LogicState>() {
+): LogicUIViewModel<FilterViewModel.UIState, FilterViewModel.LogicState>(
+    LogicState(),
+    UIState()
+) {
 
     companion object {
 
@@ -46,12 +49,6 @@ class FilterViewModel(
     data class LogicState(
         val filterList: DataState<List<Filter>> = DataState.none(),
     )
-
-    override val initUiState: UIState
-        get() = UIState()
-
-    override val initLogicState: LogicState
-        get() = LogicState()
 
     override suspend fun logicToUi(logicState: LogicState): UIState {
         val pageFlow = logicState.filterList.map {
@@ -82,8 +79,8 @@ class FilterViewModel(
                 )
             }
             val res = filterBusiness.run {
-                paramFilter(param).toDataState()
-            }
+                paramFilter(param)
+            }.toDataState()
             update {
                 it.copy(
                     filterList = res
@@ -103,8 +100,8 @@ class FilterViewModel(
                 )
             }
             val res = filterBusiness.run {
-                refreshFilter(origin, change).toDataState()
-            }
+                refreshFilter(origin, change)
+            }.toDataState()
             update {
                 it.copy(
                     filterList = res

@@ -28,7 +28,7 @@ class LoggerWrapper(
     }
 
     override fun trace(message: String?, throwable: Throwable?) {
-        logger.trace(message.withThreadName(), throwable)
+        logger.trace(message, throwable)
     }
 
     override fun isDebugEnabled(): Boolean {
@@ -36,7 +36,7 @@ class LoggerWrapper(
     }
 
     override fun debug(message: String?, throwable: Throwable?) {
-        logger.debug(message.withThreadName(), throwable)
+        logger.debug(message, throwable)
     }
 
     override fun isInfoEnabled(): Boolean {
@@ -44,7 +44,7 @@ class LoggerWrapper(
     }
 
     override fun info(message: String?, throwable: Throwable?) {
-        logger.info(message.withThreadName(), throwable)
+        logger.info(message, throwable)
     }
 
     override fun isWarnEnabled(): Boolean {
@@ -52,7 +52,7 @@ class LoggerWrapper(
     }
 
     override fun warn(message: String?, throwable: Throwable?) {
-        logger.warn(message.withThreadName(), throwable)
+        logger.warn(message, throwable)
     }
 
     override fun isErrorEnabled(): Boolean {
@@ -60,14 +60,14 @@ class LoggerWrapper(
     }
 
     override fun error(message: String?, throwable: Throwable?) {
-        logger.error(message.withThreadName(), throwable)
+        logger.error(message, throwable)
     }
 
-    // [ThreadName]message
-    private fun String?.withThreadName(): String {
-        val threadName = Thread.currentThread().name
-        return "[$threadName]$this"
-    }
+//    // [ThreadName]message
+//    private fun String?.withThreadName(): String {
+//        val threadName = Thread.currentThread().name
+//        return "[$threadName]$this"
+//    }
 }
 
 

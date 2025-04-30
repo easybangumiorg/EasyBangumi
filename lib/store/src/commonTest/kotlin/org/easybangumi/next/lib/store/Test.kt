@@ -19,6 +19,33 @@ import kotlin.test.assertEquals
  */
 class Test {
 
+    data class D(
+        val a: String,
+    )
+
+    abstract class A {
+        abstract val aa: D
+        init {
+            println(aa.a)
+        }
+    }
+
+    class B(
+        a: D,
+    ): A() {
+        override val aa: D = a
+    }
+
+    @Test
+    fun m(){
+        runCatching {
+            val b = B(D("test"))
+        }.onFailure {
+            it.printStackTrace()
+        }
+
+    }
+
 
     data class TestData(
         val name: String,

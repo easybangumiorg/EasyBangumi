@@ -1,6 +1,10 @@
 package org.easybangumi.next.shared
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import org.easybangumi.next.shared.foundation.image.LocalImageLoader
+import org.easybangumi.next.shared.foundation.image.createImageLoader
+import org.easybangumi.next.shared.foundation.plugin.LocalSourceBundle
 import org.easybangumi.next.shared.theme.EasyTheme
 import org.koin.compose.KoinContext
 
@@ -17,7 +21,11 @@ import org.koin.compose.KoinContext
  */
 @Composable
 fun ComposeApp() {
-    EasyTheme {
-        Router()
+    KoinContext() {
+        CompositionLocalProvider(LocalImageLoader provides createImageLoader()) {
+            EasyTheme {
+                Router()
+            }
+        }
     }
 }

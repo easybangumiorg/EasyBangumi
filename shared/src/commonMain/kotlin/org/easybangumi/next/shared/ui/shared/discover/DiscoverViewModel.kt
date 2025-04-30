@@ -29,7 +29,10 @@ import org.koin.core.component.inject
  */
 class DiscoverViewModel (
     private val discoverBusiness: ComponentBusiness<DiscoverComponent>
-): LogicUIViewModel<DiscoverViewModel.UIState, DiscoverViewModel.LogicState>() {
+): LogicUIViewModel<DiscoverViewModel.UIState, DiscoverViewModel.LogicState>(
+    LogicState(),
+    UIState()
+) {
 
     companion object {
         const val HISTORY_LIMIT = 16
@@ -57,12 +60,6 @@ class DiscoverViewModel (
         val discoverColumns: DataState<List<DiscoverColumn>> = DataState.none(),
         val discoverColumnDataMap: Map<DiscoverColumn, DataState<List<CartoonCover>>> = emptyMap(),
     )
-
-    override val initLogicState: LogicState
-        get() = LogicState()
-
-    override val initUiState: UIState
-        get() = UIState()
 
     override suspend fun logicToUi(logicState: LogicState): UIState {
         return UIState(
@@ -102,16 +99,16 @@ class DiscoverViewModel (
     private suspend fun loadBanner() {
         update { it.copy(banner = DataState.loading()) }
         val res = discoverBusiness.run {
-            banner().toDataState()
-        }
+            banner()
+        }.toDataState()
         update { it.copy(banner = res) }
     }
 
     private suspend fun loadColumnList() {
         update { it.copy(discoverColumns = DataState.loading()) }
         val res = discoverBusiness.run {
-            columnList().toDataState()
-        }
+            columnList()
+        }.toDataState()
         update { it.copy(discoverColumns = res) }
         res.onOK { columnList ->
             columnList.forEach {
@@ -123,8 +120,8 @@ class DiscoverViewModel (
     private suspend fun loadColumn(column: DiscoverColumn) {
         update { it.copy(discoverColumnDataMap = it.discoverColumnDataMap + (column to DataState.loading())) }
         val res = discoverBusiness.run {
-            loadColumn(column).toDataState()
-        }
+            loadColumn(column)
+        }.toDataState()
         update { it.copy(discoverColumnDataMap = it.discoverColumnDataMap + (column to res)) }
     }
 

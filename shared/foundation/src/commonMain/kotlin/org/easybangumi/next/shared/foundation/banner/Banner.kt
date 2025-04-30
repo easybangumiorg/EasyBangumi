@@ -1,6 +1,7 @@
 package org.easybangumi.next.shared.foundation.banner
 
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.material3.carousel.HorizontalUncontainedCarousel
 import androidx.compose.runtime.Composable
 
 /**

@@ -26,7 +26,7 @@ object Scheduler {
 
     fun onInit() {
         startKoin {
-            printLogger(Level.DEBUG)
+            printLogger(Level.ERROR)
             modules(
                 listOf(
                     pluginModule,

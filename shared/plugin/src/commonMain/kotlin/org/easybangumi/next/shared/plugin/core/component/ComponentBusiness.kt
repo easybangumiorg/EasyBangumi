@@ -2,6 +2,7 @@ package org.easybangumi.next.shared.plugin.core.component
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
+import org.easybangumi.next.shared.plugin.api.SourceResult
 import org.easybangumi.next.shared.plugin.api.component.Component
 
 /**
@@ -18,9 +19,17 @@ import org.easybangumi.next.shared.plugin.api.component.Component
 class ComponentBusiness <T: Component> (
     private val innerComponent: T,
 ){
-    suspend fun <R> run(block: suspend T.(CoroutineScope) -> R): R {
+    suspend fun <R> run(block: suspend T.(CoroutineScope) -> SourceResult<R>): SourceResult<R> {
         return innerComponent.source.scope.async {
-            innerComponent.block(this)
+            runCatching {
+                innerComponent.block(this)
+            }.getOrElse {
+                SourceResult.error(
+                    errorMsg = it.message?:"${it}",
+                    throwable = it,
+                )
+            }
+
         }.await()
     }
 

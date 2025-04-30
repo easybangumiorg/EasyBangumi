@@ -1,5 +1,6 @@
 package org.easybangumi.next.shared.foundation.view_model
 
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -22,15 +23,20 @@ import org.koin.core.component.KoinComponent
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-abstract class LogicUIViewModel <UI_STATE, LOGIC_STATE>: BaseViewModel(), LogicUI<UI_STATE, LOGIC_STATE> {
+abstract class LogicUIViewModel <UI_STATE, LOGIC_STATE>(
+    initLogicState: LOGIC_STATE,
+    initUiState: UI_STATE
+): BaseViewModel(), LogicUI<UI_STATE, LOGIC_STATE> {
 
-    abstract val initUiState: UI_STATE
-    protected val uiState = mutableStateOf<UI_STATE>(initUiState)
-    override val ui: State<UI_STATE> = uiState
+    protected val uiState: MutableState<UI_STATE> by lazy {
+        mutableStateOf<UI_STATE>(initUiState)
+    }
+    override val ui: State<UI_STATE> get() =  uiState
 
-    abstract val initLogicState: LOGIC_STATE
-    protected val logicState = MutableStateFlow<LOGIC_STATE>(initLogicState)
-    override val logic: StateFlow<LOGIC_STATE> = logicState
+    protected val logicState: MutableStateFlow<LOGIC_STATE> by lazy {
+        MutableStateFlow<LOGIC_STATE>(initLogicState)
+    }
+    override val logic: StateFlow<LOGIC_STATE> get() = logicState
 
     abstract suspend fun logicToUi(logicState: LOGIC_STATE): UI_STATE
 

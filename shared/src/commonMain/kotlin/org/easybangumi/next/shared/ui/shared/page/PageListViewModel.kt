@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.shared.foundation.view_model.LogicUIViewModel
+import org.easybangumi.next.shared.foundation.view_model.StateViewModel
 import org.easybangumi.next.shared.foundation.view_model.parent.ParentViewModel
 import org.easybangumi.next.shared.foundation.view_model.parent.ParentViewModelDelegate
 import org.easybangumi.next.shared.plugin.api.component.page.CartoonPage
@@ -24,7 +25,9 @@ import org.easybangumi.next.shared.plugin.core.component.ComponentBusiness
  */
 class PageListViewModel(
     private val pageBusiness: ComponentBusiness<PageComponent>
-): LogicUIViewModel<PageListViewModel.State, PageListViewModel.State>(),
+): StateViewModel<PageListViewModel.State>(
+    State(),
+),
     ParentViewModel<CartoonPage> by ParentViewModelDelegate()
 {
 
@@ -32,11 +35,6 @@ class PageListViewModel(
         val pageList: DataState<List<CartoonPage>> = DataState.none()
     )
 
-    override val initUiState: PageListViewModel.State get() = State()
-    override val initLogicState: PageListViewModel.State get() = State()
-    override suspend fun logicToUi(logicState: PageListViewModel.State): PageListViewModel.State {
-        return logicState
-    }
 
     init {
         viewModelScope.launch {
@@ -46,8 +44,8 @@ class PageListViewModel(
 
     suspend fun loadPageList() {
         val res = pageBusiness.run {
-            getCartoonPage().toDataState()
-        }
+            getCartoonPage()
+        }.toDataState()
         update { it.copy(res) }
     }
 

@@ -25,6 +25,7 @@ import org.easybangumi.next.shared.plugin.core.component.ComponentBusiness
 import org.easybangumi.next.shared.plugin.core.info.SourceInfo
 import org.easybangumi.next.shared.plugin.core.source.SourceBundle
 import org.easybangumi.next.shared.plugin.core.source.SourceController
+import org.easybangumi.next.shared.resources.Res
 import org.koin.core.component.inject
 
 /**
@@ -41,7 +42,7 @@ import org.koin.core.component.inject
 
 class HomeViewModel(
     private val sourceBundle: SourceBundle
-): StateViewModel<HomeViewModel.State>() {
+): StateViewModel<HomeViewModel.State>(State(sourceBundle)) {
 
     private val preferenceStore: PreferenceStore by inject()
     private val sourceController: SourceController by inject()
@@ -52,12 +53,26 @@ class HomeViewModel(
     sealed class TabState {
         data class Discover(
             val discoverBusiness: ComponentBusiness<DiscoverComponent>,
-        ): TabState()
+        ): TabState() {
+
+            override val label: ResourceOr by lazy {
+                Res.strings.discover
+            }
+
+        }
 
         data class Page(
             val pageBusiness: ComponentBusiness<PageComponent>,
             val cartoonPage: CartoonPage,
-        ): TabState()
+        ): TabState() {
+
+            override val label: ResourceOr by lazy {
+                cartoonPage.name
+            }
+
+        }
+
+        abstract val label: ResourceOr
     }
 
     data class PageState(
@@ -91,7 +106,7 @@ class HomeViewModel(
     sealed class Popup {
         data class SourceChange(
             val sourceBundle: SourceBundle,
-        )
+        ): Popup()
     }
 
     data class State(
@@ -113,9 +128,6 @@ class HomeViewModel(
         }
 
     }
-
-    override val initState: State
-        get() = State(sourceBundle)
 
 
     init {
@@ -179,8 +191,8 @@ class HomeViewModel(
 
 
                 val pageListState = pageBusiness.run {
-                    getCartoonPage().toDataState()
-                }
+                    getCartoonPage()
+                }.toDataState()
                 tempPage = tempPage.copy(
                     pageList = pageListState.map {
                         it.map { page ->
@@ -222,6 +234,14 @@ class HomeViewModel(
                     )
                 }
             }
+        }
+    }
+
+    fun showSourceChangePopup() {
+        update {
+            it.copy(
+                popup = Popup.SourceChange(sourceBundle)
+            )
         }
     }
 

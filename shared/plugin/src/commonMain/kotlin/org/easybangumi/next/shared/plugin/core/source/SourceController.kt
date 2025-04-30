@@ -84,7 +84,7 @@ class SourceController(
                 extensionController.infoState,
                 sourceConfigController.sourceConfigFlow,
             ) { extensionInfo, sourceConfig ->
-
+                logger.info("extension: $extensionInfo source config: $sourceConfig")
                 if (extensionInfo.isNone() || extensionInfo.isLoading()) {
                     return@combine DataState.loading<List<SourceInfo>>()
                 }

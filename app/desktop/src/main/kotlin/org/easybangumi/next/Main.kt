@@ -19,6 +19,7 @@ import org.easybangumi.next.shared.Scheduler
 
 fun main() {
 
+    Desktop.onInit()
     Scheduler.onInit()
 
     application {

@@ -1,10 +1,22 @@
 package org.easybangumi.next.shared.ui.shared.discover
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.carousel.CarouselDefaults
+import androidx.compose.material3.carousel.HorizontalMultiBrowseCarousel
+import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.dp
+import org.easybangumi.next.lib.utils.DataState
+import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.foundation.elements.LoadScaffold
+import org.easybangumi.next.shared.foundation.image.AsyncImage
 import org.easybangumi.next.shared.foundation.view_model.vm
 import org.easybangumi.next.shared.plugin.api.component.discover.DiscoverColumnJumpRouter
 import org.easybangumi.next.shared.plugin.api.component.discover.DiscoverComponent
@@ -41,6 +53,41 @@ fun Discover(
     val viewModel = vm(::DiscoverViewModel, discoverBusiness)
 
     val uiState = viewModel.ui.value
-    LoadScaffold(Modifier, data = uiState.banner) {}
+
+    Column {
+        Banner(modifier = Modifier.fillMaxWidth().height(200.dp), data = uiState.banner) {
+
+        }
+    }
+
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun Banner(
+    modifier: Modifier,
+    data: DataState<List<CartoonCover>>,
+    onClick: (CartoonCover) -> Unit,
+){
+    LoadScaffold(Modifier, data = data) {
+        val carouselState = rememberCarouselState {
+            it.data.size
+        }
+        val fling = CarouselDefaults.multiBrowseFlingBehavior(carouselState)
+        HorizontalMultiBrowseCarousel(
+            state = carouselState,
+            modifier = modifier,
+            preferredItemWidth = 400.dp,
+            flingBehavior = fling
+        ) { index ->
+            val cover = it.data[index]
+            AsyncImage(
+                cover.coverUrl,
+                modifier = Modifier.fillMaxWidth().maskClip(RoundedCornerShape(16.dp)),
+                contentDescription = cover.name,
+                contentScale = ContentScale.FillWidth
+            )
+        }
+    }
 
 }

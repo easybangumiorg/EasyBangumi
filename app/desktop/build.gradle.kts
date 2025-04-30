@@ -21,6 +21,9 @@ dependencies {
     implementation(compose.desktop.currentOs)
 
     implementation(projects.shared)
+
+    implementation(libs.log4j.core)
+    implementation(libs.log4j.slf4j.impl)
 }
 
 kotlin {

@@ -25,13 +25,13 @@ fun <T> LoadScaffold(
     onNone : @Composable () -> Unit = {  },
     onLoading: @Composable (DataState.Loading<T>) -> Unit = {
         LoadingElements(
-            Modifier.fillMaxSize(),
+            modifier,
             loadingMsg = it.loadingMsg.ifEmpty { stringResource(Res.strings.loading) })
     },
     errorRetry: ((DataState.Error<T>) -> Unit)? = null,
     onError: @Composable (DataState.Error<T>) -> Unit = { errState ->
         ErrorElements(
-            Modifier.fillMaxSize(),
+            modifier,
             errorMsg = errState.errorMsg.ifEmpty { stringResource(Res.strings.net_error) },
             onClick = errorRetry?.let { { it.invoke(errState) } },
             other = {
@@ -48,7 +48,7 @@ fun <T> LoadScaffold(
     },
     onEmptyIfCheck: @Composable (DataState.Error<T>) -> Unit = { errState ->
         EmptyElements(
-            Modifier.fillMaxSize(),
+            modifier,
             emptyMsg = errState.errorMsg.ifEmpty { stringResource(Res.strings.is_empty) },
             onClick = errorRetry?.let { { it.invoke(errState) } },
             other = {

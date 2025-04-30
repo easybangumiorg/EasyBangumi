@@ -1,5 +1,6 @@
 package org.easybangumi.next.shared.foundation.view_model
 
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
@@ -19,16 +20,21 @@ import kotlinx.coroutines.launch
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-abstract class StateViewModel<STATE : Any> : BaseViewModel(), LogicUI<STATE, STATE> {
+abstract class StateViewModel<STATE : Any>(
+    initState: STATE
+) : BaseViewModel(), LogicUI<STATE, STATE> {
 
-    private val _ui = mutableStateOf(initState)
-    override val ui: State<STATE> = _ui
+    private val _ui: MutableState<STATE> by lazy {
+        mutableStateOf(initState)
+    }
+    override val ui: State<STATE> get() = _ui
 
     override val logic: StateFlow<STATE>
         get() = state
 
-    abstract val initState: STATE
-    protected val state = MutableStateFlow<STATE>(initState)
+    protected val state: MutableStateFlow<STATE> by lazy {
+        MutableStateFlow<STATE>(initState)
+    }
 
     init {
         viewModelScope.launch {

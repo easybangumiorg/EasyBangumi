@@ -153,8 +153,8 @@ class ExtensionController {
                     }
                 }
                 return@combine DataState.Companion.ok(res.toMap())
-            }.collectLatest {
-                _manifestState.update { it }
+            }.collectLatest { state ->
+                _manifestState.update { state }
             }
         }
 

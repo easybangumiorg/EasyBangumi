@@ -1,6 +1,7 @@
 package org.easybangumi.next.shared.plugin.core.component
 
 import kotlinx.atomicfu.atomic
+import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.shared.plugin.api.ConstClazz
 import org.easybangumi.next.shared.plugin.api.component.Component
 import org.easybangumi.next.shared.plugin.api.source.Source
@@ -10,6 +11,7 @@ import org.koin.core.context.loadKoinModules
 import org.koin.dsl.binds
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
+import kotlin.concurrent.Volatile
 import kotlin.reflect.KClass
 
 /**
@@ -27,6 +29,9 @@ class ComponentBundle(
     private val source: Source,
     private val componentConstructor: Array<() -> Component>,
 ) {
+    private val logger = logger()
+
+    @Volatile
     private var koinApp: Koin? = null
 
     private val componentBusiness: HashMap<KClass<out Component>, ComponentBusiness<out Component>> = hashMapOf()
@@ -40,7 +45,7 @@ class ComponentBundle(
             val realComponent = componentConstructor.map { it() }
 
             koinApp = koinApplication {
-                module {
+                val component = module {
                     // Load source
                     single {
                         source
@@ -51,21 +56,23 @@ class ComponentBundle(
                         single {
                             component.apply {
                                 if (this is BaseComponent) {
-                                    innerSource = source
+                                    innerSource = this@ComponentBundle.source
                                     innerKoin = koin
                                 }
                             }
                         }.binds(
                             ConstClazz.componentClazz.filter {
                                 it.isInstance(component)
-                            }.toTypedArray()
+                            }.toTypedArray().apply {
+                                logger.info("load component: ${component::class.simpleName} -> ${this.joinToString(",")}")
+                            }
                         )
                     }
 
-                    // Load utils
-                    loadKoinModules(utilsModule)
 
                 }
+                modules(component, utilsModule)
+
             }.koin
         }
     }
@@ -92,7 +99,7 @@ class ComponentBundle(
         if (cache != null) {
             return cache as? ComponentBusiness<T>
         }
-        val component = koinApp?.get<T>(clazz) ?: return null
+        val component = koinApp?.getOrNull<T>(clazz) ?: return null
         val business = ComponentBusiness(component)
         componentBusiness[clazz] = business
         return business
