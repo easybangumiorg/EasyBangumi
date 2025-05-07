@@ -5,7 +5,7 @@ import kotlin.jvm.Transient
 /**
  * Created by heyanlin on 2024/12/5.
  */
-class CartoonCover(
+data class CartoonCover(
     val id: String,
     val fromSource: String,
 

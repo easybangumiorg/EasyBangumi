@@ -25,7 +25,14 @@ class HomeBaseComponent: BaseComponent(), DiscoverComponent, FilterComponent, Se
 
     override suspend fun banner(): SourceResult<List<CartoonCover>> {
         return withResult {
-            DebugConst.cartoonCoverTest.toList()
+            val arrayList = arrayListOf<CartoonCover>()
+            repeat(5) {
+                DebugConst.cartoonCoverTest.forEach {
+                    arrayList.add(it.copy())
+                }
+            }
+            arrayList
+
         }
     }
 

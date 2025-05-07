@@ -1,7 +1,8 @@
-package org.easybangumi.next.shared.preference
+package org.easybangumi.next.shared.foundation
 
-import org.koin.core.module.Module
-import org.koin.dsl.module
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -14,10 +15,6 @@ import org.koin.dsl.module
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-val preferenceModule: Module
-    get() = module {
-        single {
-            MainPreference(get())
-        }
 
-    }
+@Composable
+fun Dp.toPx() = with(LocalDensity.current) { toPx() }

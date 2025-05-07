@@ -1,8 +1,8 @@
-package org.easybangumi.next.shared.foundation.banner
+package org.easybangumi.next.shared.store
 
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.material3.carousel.HorizontalUncontainedCarousel
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import org.easybangumi.next.lib.store.preference.Preference
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -15,7 +15,6 @@ import androidx.compose.runtime.Composable
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-@Composable
-fun Banner(){
 
-}
+@Composable
+fun <T> Preference<T>.collectAsState() = flow().collectAsState(get())

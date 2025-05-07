@@ -94,6 +94,7 @@ kotlin {
             implementation(libs.kotlinx.datetime)
             implementation(libs.paging.multiplatform.common)
             implementation(libs.paging.multiplatform.compose)
+            implementation(libs.md3.window.size)
 
             implementation(projects.lib)
 
@@ -103,6 +104,7 @@ kotlin {
             implementation(projects.shared.foundation)
             implementation(projects.shared.resources)
             implementation(projects.shared.platform)
+            implementation(projects.shared.preference)
 
         }
 

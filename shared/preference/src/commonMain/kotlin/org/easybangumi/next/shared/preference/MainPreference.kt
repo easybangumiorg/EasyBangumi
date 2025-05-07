@@ -1,6 +1,7 @@
 package org.easybangumi.next.shared.preference
 
 import org.easybangumi.next.lib.store.preference.PreferenceStore
+import org.easybangumi.next.lib.store.preference.getEnum
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -16,4 +17,20 @@ import org.easybangumi.next.lib.store.preference.PreferenceStore
 class MainPreference(
     private val preferenceStore: PreferenceStore
 ) {
+
+    // 大尺寸配置模式配置
+    enum class TabletMode {
+        AUTO, ENABLE, DISABLE
+    }
+    val tabletMode = preferenceStore.getEnum<TabletMode>("mobile_pad_mode", TabletMode.AUTO)
+
+
+    // 输入模式配置
+    // 目前不支持综合，但是鼠标可以满足所有 TOUCH 模式的需求
+    enum class InputModel {
+        AUTO, MOUSE, TOUCH
+    }
+    val inputModel = preferenceStore.getEnum<InputModel>("input_model", InputModel.AUTO)
+
+
 }
