@@ -11,6 +11,6 @@ import androidx.compose.runtime.remember
 actual fun isTabletModeWhenAuto(): Boolean {
     val windowClass = calculateWindowSizeClass()
     return remember(windowClass.widthSizeClass) {
-        windowClass.widthSizeClass == WindowWidthSizeClass.Expanded
+        windowClass.widthSizeClass >= WindowWidthSizeClass.Medium
     }
 }

@@ -73,9 +73,12 @@ kotlin {
             api(libs.logback.android)
         }
 
+        desktopMain.dependencies {
+            api(libs.log4j.core)
+        }
+
         jvmMain.dependencies {
             api(libs.slf4j.api)
-            api(libs.log4j.core)
         }
 
 

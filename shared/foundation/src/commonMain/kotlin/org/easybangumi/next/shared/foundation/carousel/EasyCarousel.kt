@@ -18,7 +18,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.carousel.CarouselDefaults
 import androidx.compose.material3.carousel.CarouselItemScope
+import androidx.compose.material3.carousel.CarouselState
 import androidx.compose.material3.carousel.HorizontalMultiBrowseCarousel
+import androidx.compose.material3.carousel.HorizontalUncontainedCarousel
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,12 +59,13 @@ private val logger = logger("EasyCarousel")
 fun EasyHorizontalMultiBrowseCarousel(
     easyCarouselState: EasyCarouselState,
     scope: CoroutineScope = rememberCoroutineScope(),
-    preferredItemWidth: Dp = 200.dp,
+    preferredItemWidth: Dp = 154.dp,
     itemSpacing: Dp = 8.dp,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     lingBehavior: TargetedFlingBehavior = CarouselDefaults.multiBrowseFlingBehavior(easyCarouselState.carouselState),
     modifier: Modifier,
     showArc: Boolean,
+    userScrollEnabled: Boolean = true,
     period: Duration = 5.seconds,
     content: @Composable CarouselItemScope.(itemIndex: Int) -> Unit
 ) {
@@ -77,9 +80,9 @@ fun EasyHorizontalMultiBrowseCarousel(
             flingBehavior = lingBehavior,
             contentPadding = contentPadding,
             itemSpacing = itemSpacing,
+            userScrollEnabled = userScrollEnabled,
             content = content
         )
-        val width = preferredItemWidth.toPx()
         if (showArc) {
 
             AnimatedVisibility(easyCarouselState.canScrollBackward(),
@@ -94,7 +97,7 @@ fun EasyHorizontalMultiBrowseCarousel(
                     ),
                     onClick = {
                         scope.launch {
-                            easyCarouselState.scrollLast()
+                            easyCarouselState.scrollBackward(false)
                         }
                     }) {
 
@@ -117,7 +120,7 @@ fun EasyHorizontalMultiBrowseCarousel(
                     onClick = {
                         scope.launch {
                             //easyCarouselState.carouselState.animateScrollBy(width)
-                            easyCarouselState.scrollNext()
+                            easyCarouselState.scrollForward(false)
                         }
                     }
                 ) {
@@ -133,6 +136,78 @@ fun EasyHorizontalMultiBrowseCarousel(
         easyCarouselState = easyCarouselState,
     )
 
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EasyHorizontalUncontainedCarousel(
+    easyCarouselState: EasyCarouselState,
+    scope: CoroutineScope = rememberCoroutineScope(),
+    itemWidth: Dp,
+    modifier: Modifier = Modifier,
+    itemSpacing: Dp = 0.dp,
+    flingBehavior: TargetedFlingBehavior = CarouselDefaults.noSnapFlingBehavior(),
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    showArc: Boolean,
+    userScrollEnabled: Boolean = true,
+    content: @Composable CarouselItemScope.(itemIndex: Int) -> Unit
+){
+    Box(modifier) {
+        HorizontalUncontainedCarousel(
+            state = easyCarouselState.carouselState,
+            itemWidth = itemWidth,
+            flingBehavior = flingBehavior,
+            contentPadding = contentPadding,
+            itemSpacing = itemSpacing,
+            userScrollEnabled = userScrollEnabled,
+            content = content
+        )
+        if (showArc) {
+
+            AnimatedVisibility(easyCarouselState.canScrollBackward(),
+                modifier = Modifier.align(Alignment.CenterStart),
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                IconButton(
+                    colors = IconButtonDefaults.iconButtonColors().copy(
+                        containerColor = Color.Black.copy(0.6f),
+                        contentColor = Color.White
+                    ),
+                    onClick = {
+                        scope.launch {
+                            easyCarouselState.scrollBackward(false)
+                        }
+                    }) {
+
+                    Icon(Icons.Filled.KeyboardArrowLeft, contentDescription = "")
+                }
+            }
+
+
+
+            AnimatedVisibility(easyCarouselState.canScrollForward(),
+                modifier = Modifier.align(Alignment.CenterEnd),
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                IconButton(
+                    colors = IconButtonDefaults.iconButtonColors().copy(
+                        containerColor = Color.Black.copy(0.6f),
+                        contentColor = Color.White
+                    ),
+                    onClick = {
+                        scope.launch {
+                            //easyCarouselState.carouselState.animateScrollBy(width)
+                            easyCarouselState.scrollForward(false)
+                        }
+                    }
+                ) {
+                    Icon(Icons.Filled.KeyboardArrowRight, contentDescription = "")
+                }
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -160,7 +235,7 @@ fun EasyCarouselEffect(
             }
             while (active && isActive) {
                 if (!easyCarouselState.carouselState.isScrollInProgress) {
-                    easyCarouselState.scrollNext()
+                    easyCarouselState.scrollForward(true)
                 }
                 delay(period)
             }

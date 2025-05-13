@@ -27,7 +27,6 @@ private class PathProviderImpl : PathProvider {
     // data/data/org.easybangumi.next/files
     // cachePathRoot
     override fun getFilePath(path: String): UFD {
-
         return global.appContext.getExternalFilesDir(path) ?.absolutePath?.let {
             UFD(UFD.TYPE_JVM, it)
         } ?: global.appContext.filesDir?.let {

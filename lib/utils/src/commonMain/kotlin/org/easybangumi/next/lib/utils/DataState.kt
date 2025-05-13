@@ -98,6 +98,13 @@ sealed class DataState<T> {
         return this
     }
 
+    inline fun onLoading(block: (Loading<T>) -> Unit): DataState<T> {
+        if (this is Loading) {
+            block(this)
+        }
+        return this
+    }
+
     inline fun onError(block: (Error<T>) -> Unit): DataState<T> {
         if (this is Error) {
             block(this)

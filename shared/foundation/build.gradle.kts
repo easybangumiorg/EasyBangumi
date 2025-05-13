@@ -84,6 +84,7 @@ kotlin {
             implementation(libs.coil.compose)
             implementation(libs.coil.ktor3)
 
+            implementation(projects.shared.data)
             implementation(projects.shared.plugin)
             implementation(projects.shared.resources)
 

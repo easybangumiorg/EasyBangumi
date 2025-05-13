@@ -3,7 +3,10 @@ package org.easybangumi.next.shared.ui.main
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
@@ -12,6 +15,8 @@ import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Text
@@ -21,6 +26,7 @@ import androidx.compose.ui.Modifier
 import dev.icerock.moko.resources.compose.stringResource
 import kotlinx.coroutines.launch
 import org.easybangumi.next.shared.resources.Res
+import org.easybangumi.next.shared.ui.UI
 import org.easybangumi.next.shared.ui.home.history.History
 import org.easybangumi.next.shared.ui.home.more.More
 import org.easybangumi.next.shared.ui.home.star.Star
@@ -118,30 +124,69 @@ fun Main() {
 
     val pagerState = rememberPagerState(0) { HomePageList.size }
     val scope = rememberCoroutineScope()
-    Row {
-        NavigationRail {
-            HomePageList.forEachIndexed { index, page ->
-                val selected = pagerState.currentPage == index
-                NavigationRailItem(
-                    selected = selected,
-                    onClick = {
-                        scope.launch {
-                            pagerState.animateScrollToPage(index)
+    if (UI.isTabletMode()) {
+        Row {
+            NavigationRail(
+                modifier = Modifier.fillMaxHeight()
+            ) {
+                HomePageList.forEachIndexed { index, page ->
+                    val selected = pagerState.currentPage == index
+                    NavigationRailItem(
+                        selected = selected,
+                        onClick = {
+                            scope.launch {
+                                pagerState.animateScrollToPage(index)
+                            }
+                        },
+                        icon = {
+                            page.icon(selected)
+                        },
+                        label = {
+                            page.tabLabel()
                         }
-                    },
-                    icon = {
-                        page.icon(selected)
-                    },
-                    label = {
-                        page.tabLabel()
-                    }
-                )
+                    )
+                }
             }
-        }
-        Column {
-            VerticalPager(state = pagerState, userScrollEnabled = false) {
+            VerticalPager(
+                modifier = Modifier.fillMaxHeight().weight(1f),
+                state = pagerState,
+                userScrollEnabled = false
+            ) {
                 Box(modifier = Modifier.fillMaxSize()) {
                     HomePageList[it].content()
+                }
+            }
+        }
+    } else {
+        Column {
+            HorizontalPager(
+                modifier = Modifier.fillMaxWidth().weight(1f),
+                state = pagerState,
+                userScrollEnabled = false
+            ) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    HomePageList[it].content()
+                }
+            }
+            NavigationBar(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                HomePageList.forEachIndexed { index, page ->
+                    val selected = pagerState.currentPage == index
+                    NavigationBarItem(
+                        selected = selected,
+                        onClick = {
+                            scope.launch {
+                                pagerState.animateScrollToPage(index)
+                            }
+                        },
+                        icon = {
+                            page.icon(selected)
+                        },
+                        label = {
+                            page.tabLabel()
+                        }
+                    )
                 }
             }
         }

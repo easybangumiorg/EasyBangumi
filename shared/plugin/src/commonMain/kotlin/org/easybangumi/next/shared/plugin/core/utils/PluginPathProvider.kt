@@ -1,5 +1,6 @@
 package org.easybangumi.next.shared.plugin.core.utils
 
+import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.unifile.UFD
 import org.easybangumi.next.lib.unifile.UniFileFactory
 import org.easybangumi.next.lib.unifile.fromUFD
@@ -20,8 +21,12 @@ import org.easybangumi.next.shared.plugin.api.source.Source
 
 object PluginPathProvider {
 
+    private val logger = logger()
+
     fun getExtensionWorkPath(): UFD {
-        return pathProvider.getFilePath("extension")
+        return pathProvider.getFilePath("extension").apply {
+            logger.info(this.toString())
+        }
     }
 
     fun getExtensionCachePath(): UFD {

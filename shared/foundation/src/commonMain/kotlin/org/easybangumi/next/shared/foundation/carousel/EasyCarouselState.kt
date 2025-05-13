@@ -1,20 +1,13 @@
 package org.easybangumi.next.shared.foundation.carousel
 
 import androidx.annotation.FloatRange
-import androidx.compose.foundation.gestures.TargetedFlingBehavior
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.carousel.CarouselDefaults
 import androidx.compose.material3.carousel.CarouselState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import org.easybangumi.next.lib.logger.logger
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -33,7 +26,7 @@ class EasyCarouselState(
     private val currentItem: Int = 0,
     @FloatRange(from = -0.5, to = 0.5) currentItemOffsetFraction: Float = 0f,
     itemCount: () -> Int,
-    
+
 ) {
 
     val logger = logger()
@@ -44,7 +37,9 @@ class EasyCarouselState(
     fun canScrollForward() = pagerState.canScrollForward
     fun canScrollBackward() = pagerState.canScrollBackward
 
-    suspend fun scrollNext(){
+    suspend fun scrollForward(
+        loop: Boolean = false
+    ){
         if (carouselState.isScrollInProgress) {
             return
         }
@@ -54,14 +49,19 @@ class EasyCarouselState(
             pagerState.animateScrollToPage(
                 (carouselState.pagerState.currentPage + 1) % (carouselState.pagerState.pageCount),
             )
-        } else {
+        } else if (loop) {
             pagerState.animateScrollToPage(0)
         }
 
     }
 
-    suspend fun scrollLast(){
+    suspend fun scrollBackward(
+        loop: Boolean = false
+    ){
         if (carouselState.isScrollInProgress) {
+            return
+        }
+        if (!pagerState.canScrollBackward && !loop) {
             return
         }
         var index = carouselState.pagerState.currentPage - 1
@@ -69,6 +69,9 @@ class EasyCarouselState(
             index = pagerState.pageCount - 1
         }
         if (index < 0) {
+            if (! loop) {
+                return
+            }
             index = currentItem
         }
         pagerState.animateScrollToPage(

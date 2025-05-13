@@ -50,10 +50,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_21
     }
     kotlin {
-        jvmToolchain(17)
+        jvmToolchain(21)
     }
     kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = "21"
         freeCompilerArgs += listOf(
             "-Xjvm-default=all",
         )
@@ -75,6 +75,8 @@ dependencies {
 
     implementation(libs.koin.core)
     implementation(libs.koin.android)
+
+    implementation(libs.logback.android)
 
 
     implementation(projects.shared)

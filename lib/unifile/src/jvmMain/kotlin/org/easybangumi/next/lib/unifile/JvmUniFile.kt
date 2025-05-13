@@ -48,7 +48,8 @@ class JvmUniFile(
         }
 
         val target: File = File(file, displayName)
-        return if (target.isDirectory || target.mkdirs()) {
+        target.mkdirs()
+        return if (target.isDirectory) {
             JvmUniFile(target)
         } else {
             null

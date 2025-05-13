@@ -48,7 +48,7 @@ object UI {
     fun isTouchMode(): Boolean {
         val inputModelPref = koinInject<MainPreference>().inputModel
         val inputModel = inputModelPref.collectAsState()
-        return when(val model = inputModel.value) {
+        return when(inputModel.value) {
             MainPreference.InputModel.AUTO -> {
                 // 默认模式直接按照平台区分，特殊情况（如触控桌面端）让用户手动选择
                 platformInformation.isAndroid || platformInformation.isIos

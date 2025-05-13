@@ -125,5 +125,30 @@ class DiscoverViewModel (
         update { it.copy(discoverColumnDataMap = it.discoverColumnDataMap + (column to res)) }
     }
 
+    fun refreshColumnList() {
+        viewModelScope.launch {
+            update { it.copy(discoverColumns = DataState.loading()) }
+            val res = discoverBusiness.run {
+                columnList()
+            }.toDataState()
+            update { it.copy(discoverColumns = res) }
+            res.onOK { columnList ->
+                columnList.forEach {
+                    viewModelScope.async { refreshColumn(it) }
+                }
+            }
+        }
+    }
+
+    fun refreshColumn(column: DiscoverColumn) {
+        viewModelScope.launch {
+            update { it.copy(discoverColumnDataMap = it.discoverColumnDataMap + (column to DataState.loading())) }
+            val res = discoverBusiness.run {
+                loadColumn(column)
+            }.toDataState()
+            update { it.copy(discoverColumnDataMap = it.discoverColumnDataMap + (column to res)) }
+        }
+    }
+
 
 }

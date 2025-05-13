@@ -2,6 +2,8 @@ package org.easybangumi.next.lib.utils
 
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.asCoroutineDispatcher
+import java.util.concurrent.Executors
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -16,16 +18,21 @@ import kotlinx.coroutines.Dispatchers
  */
 
 private class CoroutineProviderImpl : CoroutineProvider {
+
+    private val singleThreadExecutor: CoroutineDispatcher by lazy {
+        Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+    }
+
     override fun io(): CoroutineDispatcher {
         return Dispatchers.IO
     }
 
     override fun single(): CoroutineDispatcher {
-        TODO()
+        return singleThreadExecutor
     }
 
-    override fun newSingle(name: String): CoroutineDispatcher {
-        TODO()
+    override fun newSingle(): CoroutineDispatcher {
+        return Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     }
 
     override fun main(): CoroutineDispatcher {

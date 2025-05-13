@@ -7,8 +7,10 @@ import org.easybangumi.next.shared.preference.preferenceModule
 import org.easybangumi.next.shared.theme.ThemeController
 import org.easybangumi.next.shared.theme.themeModule
 import org.koin.compose.getKoin
+import org.koin.core.context.loadKoinModules
 import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
+import org.koin.dsl.KoinAppDeclaration
 import org.koin.mp.KoinPlatformTools
 
 /**
@@ -26,18 +28,13 @@ import org.koin.mp.KoinPlatformTools
 object Scheduler {
 
     fun onInit() {
-        startKoin {
-            printLogger(Level.ERROR)
-            modules(
-                listOf(
-                    pluginModule,
-                    storeModule,
-                    dataModule,
-                    themeModule,
-                    preferenceModule,
-                )
-            )
-        }
+        loadKoinModules(listOf(
+            pluginModule,
+            storeModule,
+            dataModule,
+            themeModule,
+            preferenceModule,
+        ))
     }
 
     fun onSplashPageLaunch() {

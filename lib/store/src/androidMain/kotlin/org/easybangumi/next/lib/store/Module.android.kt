@@ -7,6 +7,6 @@ import org.koin.dsl.bind
 
 actual fun Module.preferenceStore() {
     single {
-        AndroidPreferenceStore(get())
-    }.bind<PreferenceStore>()
+        AndroidPreferenceStore(get()) as PreferenceStore
+    }.bind<PreferenceStore>().bind(PreferenceStore::class)
 }
