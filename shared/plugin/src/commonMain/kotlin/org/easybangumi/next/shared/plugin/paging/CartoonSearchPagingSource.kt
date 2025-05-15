@@ -2,8 +2,12 @@ package org.easybangumi.next.shared.plugin.paging
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import org.easybangumi.next.lib.utils.DataState
+import org.easybangumi.next.lib.utils.EasyPagingSource
+import org.easybangumi.next.lib.utils.PagingFrame
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.plugin.api.component.SearchComponent
+import org.easybangumi.next.shared.plugin.api.toDataState
 import org.easybangumi.next.shared.plugin.core.component.ComponentBusiness
 
 /**
@@ -20,33 +24,15 @@ import org.easybangumi.next.shared.plugin.core.component.ComponentBusiness
 class CartoonSearchPagingSource(
     val keyword: String,
     val searchBusiness: ComponentBusiness<SearchComponent>
-) : PagingSource<String, CartoonCover>() {
+) : EasyPagingSource<CartoonCover> {
 
-    override fun getRefreshKey(state: PagingState<String, CartoonCover>): String? {
-        return searchBusiness.runDirect {
-            firstKey(keyword)
-        }
+    override val initKey: String = searchBusiness.runDirect {
+        firstKey(keyword)
     }
 
-    override suspend fun load(params: LoadParams<String>): LoadResult<String, CartoonCover> {
-        val key = params.key ?: return LoadResult.Error(NullPointerException())
-        searchBusiness.run {
+    override suspend fun load(key: String): DataState<PagingFrame<CartoonCover>> {
+        return searchBusiness.run {
             search(keyword, key)
-        }.onOK {
-            return LoadResult.Page(
-                data = it.second,
-                prevKey = null,
-                nextKey = it.first
-            )
-        }
-            .onError {
-                val err = it.error
-                return if (err != null) {
-                    LoadResult.Error(err)
-                } else {
-                    LoadResult.Error(Exception(it.msg ?: "load error"))
-                }
-            }
-        return LoadResult.Error(IllegalStateException())
+        }.toDataState()
     }
 }

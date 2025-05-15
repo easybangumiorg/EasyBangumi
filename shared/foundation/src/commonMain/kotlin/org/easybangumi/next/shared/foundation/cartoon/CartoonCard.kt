@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,6 +24,7 @@ import org.easybangumi.next.shared.data.cartoon.CartoonInfo
 import org.easybangumi.next.shared.foundation.image.AsyncImage
 import org.easybangumi.next.shared.foundation.stringRes
 import org.easybangumi.next.shared.resources.Res
+import org.easybangumi.next.shared.scheme.EasyScheme
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -40,8 +42,9 @@ import org.easybangumi.next.shared.resources.Res
 fun CartoonCardWithCover(
     modifier: Modifier = Modifier,
     star: Boolean = false,
-    itemSize: Dp,
+    itemSize: Dp = EasyScheme.size.cartoonCoverWidth,
     itemIsWidth : Boolean = true,
+    coverAspectRatio: Float = EasyScheme.size.cartoonCoverAspectRatio,
     cartoonCover: CartoonCover,
     onClick: (CartoonCover) -> Unit,
     onLongPress: ((CartoonCover) -> Unit)? = null,
@@ -62,6 +65,7 @@ fun CartoonCardWithCover(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.Start,
     ) {
+        MaterialTheme.colorScheme
         Box(
             modifier = Modifier
                 .run {
@@ -71,7 +75,7 @@ fun CartoonCardWithCover(
                         height(itemSize)
                     }
                 }
-                .aspectRatio(7 / 9F)
+                .aspectRatio(coverAspectRatio)
                 .clip(RoundedCornerShape(16.dp)),
         ) {
             AsyncImage(
@@ -115,8 +119,9 @@ fun CartoonCardWithCover(
     modifier: Modifier = Modifier,
     star: Boolean = false,
     cartoonInfo: CartoonInfo,
-    itemSize: Dp,
+    itemSize: Dp = EasyScheme.size.cartoonCoverWidth,
     itemIsWidth : Boolean = true,
+    coverAspectRatio: Float = EasyScheme.size.cartoonCoverAspectRatio,
     onClick: (CartoonInfo) -> Unit,
     onLongPress: ((CartoonInfo) -> Unit)? = null,
 ) {
@@ -144,7 +149,7 @@ fun CartoonCardWithCover(
                         height(itemSize)
                     }
                 }
-                .aspectRatio(7 / 9F)
+                .aspectRatio(coverAspectRatio)
                 .clip(RoundedCornerShape(16.dp)),
         ) {
             AsyncImage(

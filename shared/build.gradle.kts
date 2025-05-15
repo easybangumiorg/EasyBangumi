@@ -105,6 +105,7 @@ kotlin {
             implementation(projects.shared.resources)
             implementation(projects.shared.platform)
             implementation(projects.shared.preference)
+            implementation(projects.shared.scheme)
 
         }
 

@@ -5,15 +5,19 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.utils.DataState
+import org.easybangumi.next.lib.utils.PagingFlow
 import org.easybangumi.next.lib.utils.map
+import org.easybangumi.next.lib.utils.newPagingFlow
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.data.cartoon.CartoonInfo
 import org.easybangumi.next.shared.data.room.dao.CartoonInfoDao
-import org.easybangumi.next.shared.foundation.view_model.LogicUIViewModel
-import org.easybangumi.next.shared.plugin.api.component.discover.DiscoverColumn
+import org.easybangumi.next.shared.foundation.view_model.StateViewModel
+import org.easybangumi.next.shared.plugin.api.component.discover.BannerHeadline
 import org.easybangumi.next.shared.plugin.api.component.discover.DiscoverComponent
+import org.easybangumi.next.shared.plugin.api.component.discover.RecommendTab
 import org.easybangumi.next.shared.plugin.api.toDataState
 import org.easybangumi.next.shared.plugin.core.component.ComponentBusiness
+import org.easybangumi.next.shared.plugin.paging.CartoonRecommendPagingSource
 import org.koin.core.component.inject
 
 /**
@@ -29,9 +33,8 @@ import org.koin.core.component.inject
  */
 class DiscoverViewModel (
     private val discoverBusiness: ComponentBusiness<DiscoverComponent>
-): LogicUIViewModel<DiscoverViewModel.UIState, DiscoverViewModel.LogicState>(
-    LogicState(),
-    UIState()
+): StateViewModel<DiscoverViewModel.State>(
+    State(discoverBusiness.runDirect { bannerHeadline() }),
 ) {
 
     companion object {
@@ -40,41 +43,23 @@ class DiscoverViewModel (
 
     private val cartoonInfoDao: CartoonInfoDao by inject()
 
-    // ==== UI State ==
-    data class DiscoverColumnState (
-        val column: DiscoverColumn,
-        val cartoonCovers: DataState<List<CartoonCover>> = DataState.none(),
+    // ==== State ==
+
+    data class RecommendTabState(
+        val tab: RecommendTab,
+        val pagingFlow: PagingFlow<CartoonCover>,
     )
 
-    data class UIState (
-        val banner: DataState<List<CartoonCover>> = DataState.none(),
+    data class State (
+        val bannerHeadline: BannerHeadline,
+        val bannerData: DataState<List<CartoonCover>> = DataState.none(),
+
         val history: List<CartoonInfo> = emptyList(),
-        val discoverColumns: DataState<List<DiscoverColumnState>> = DataState.none()
+
+        // Recommend
+        val tabList: DataState<List<RecommendTabState>> = DataState.none(),
+        val selection: Int = -1,
     )
-
-    // ==== Logic State ==
-
-    data class LogicState(
-        val banner: DataState<List<CartoonCover>> = DataState.none(),
-        val history: List<CartoonInfo> = emptyList(),
-        val discoverColumns: DataState<List<DiscoverColumn>> = DataState.none(),
-        val discoverColumnDataMap: Map<DiscoverColumn, DataState<List<CartoonCover>>> = emptyMap(),
-    )
-
-    override suspend fun logicToUi(logicState: LogicState): UIState {
-        return UIState(
-            banner = logicState.banner,
-            history = logicState.history,
-            discoverColumns = logicState.discoverColumns.map { columnList ->
-                columnList.map { column ->
-                    DiscoverColumnState(
-                        column = column,
-                        cartoonCovers = logicState.discoverColumnDataMap[column] ?: DataState.none()
-                    )
-                }
-            }
-        )
-    }
 
     init {
         // 1. collect history
@@ -89,7 +74,7 @@ class DiscoverViewModel (
         // 2. Load discover
         viewModelScope.launch {
             async { loadBanner() }
-            async { loadColumnList() }
+            async { loadRecommend() }
         }
 
     }
@@ -97,57 +82,25 @@ class DiscoverViewModel (
 
 
     private suspend fun loadBanner() {
-        update { it.copy(banner = DataState.loading()) }
+        update { it.copy(bannerData = DataState.loading()) }
         val res = discoverBusiness.run {
             banner()
         }.toDataState()
-        update { it.copy(banner = res) }
+        update { it.copy(bannerData = res) }
     }
 
-    private suspend fun loadColumnList() {
-        update { it.copy(discoverColumns = DataState.loading()) }
+    private suspend fun loadRecommend() {
+        update { it.copy(tabList = DataState.loading()) }
         val res = discoverBusiness.run {
-            columnList()
-        }.toDataState()
-        update { it.copy(discoverColumns = res) }
-        res.onOK { columnList ->
-            columnList.forEach {
-                viewModelScope.async { loadColumn(it) }
+            recommendTab()
+        }.toDataState().map {
+            it.map {
+                val pagingSource = CartoonRecommendPagingSource(it, discoverBusiness)
+                val flow = pagingSource.newPagingFlow()
+                RecommendTabState(it, flow)
             }
         }
-    }
-
-    private suspend fun loadColumn(column: DiscoverColumn) {
-        update { it.copy(discoverColumnDataMap = it.discoverColumnDataMap + (column to DataState.loading())) }
-        val res = discoverBusiness.run {
-            loadColumn(column)
-        }.toDataState()
-        update { it.copy(discoverColumnDataMap = it.discoverColumnDataMap + (column to res)) }
-    }
-
-    fun refreshColumnList() {
-        viewModelScope.launch {
-            update { it.copy(discoverColumns = DataState.loading()) }
-            val res = discoverBusiness.run {
-                columnList()
-            }.toDataState()
-            update { it.copy(discoverColumns = res) }
-            res.onOK { columnList ->
-                columnList.forEach {
-                    viewModelScope.async { refreshColumn(it) }
-                }
-            }
-        }
-    }
-
-    fun refreshColumn(column: DiscoverColumn) {
-        viewModelScope.launch {
-            update { it.copy(discoverColumnDataMap = it.discoverColumnDataMap + (column to DataState.loading())) }
-            val res = discoverBusiness.run {
-                loadColumn(column)
-            }.toDataState()
-            update { it.copy(discoverColumnDataMap = it.discoverColumnDataMap + (column to res)) }
-        }
+        update { it.copy(tabList = res) }
     }
 
 

@@ -1,4 +1,6 @@
-package org.easybangumi.next.shared.plugin.api.component.page
+package org.easybangumi.next.shared.plugin.api.component.discover
+
+import org.easybangumi.next.lib.utils.ResourceOr
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -11,14 +13,9 @@ package org.easybangumi.next.shared.plugin.api.component.page
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-data class CartoonPage (
-    val id: String,
-    val name: String,
-)
 
-data class PageTab(
-    val page: CartoonPage,
+data class RecommendTab(
     val id: String,
-    val name: String,
+    val name: ResourceOr,
     val initKey: String,
 )

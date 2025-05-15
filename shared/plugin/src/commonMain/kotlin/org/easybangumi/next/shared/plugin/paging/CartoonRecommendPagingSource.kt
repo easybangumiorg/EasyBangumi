@@ -6,8 +6,8 @@ import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.EasyPagingSource
 import org.easybangumi.next.lib.utils.PagingFrame
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
-import org.easybangumi.next.shared.plugin.api.component.filter.Filter
-import org.easybangumi.next.shared.plugin.api.component.filter.FilterComponent
+import org.easybangumi.next.shared.plugin.api.component.discover.DiscoverComponent
+import org.easybangumi.next.shared.plugin.api.component.discover.RecommendTab
 import org.easybangumi.next.shared.plugin.api.toDataState
 import org.easybangumi.next.shared.plugin.core.component.ComponentBusiness
 
@@ -22,19 +22,17 @@ import org.easybangumi.next.shared.plugin.core.component.ComponentBusiness
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-class CartoonFilterPagingSource(
-    val filterList: List<Filter>,
-    val filterBusiness: ComponentBusiness<FilterComponent>
+class CartoonRecommendPagingSource(
+    val recommendTab: RecommendTab,
+    val discoverComponent: ComponentBusiness<DiscoverComponent>
 ): EasyPagingSource<CartoonCover> {
 
     override suspend fun load(key: String): DataState<PagingFrame<CartoonCover>> {
-        return filterBusiness.run {
-            search(filterList, key)
+        return discoverComponent.run {
+            loadRecommend(recommendTab, key)
         }.toDataState()
     }
 
-    override val initKey: String = filterBusiness.runDirect {
-        firstKey(filterList)
-    }
+    override val initKey: String = recommendTab.initKey
 
 }

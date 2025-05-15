@@ -1,5 +1,6 @@
 package org.easybangumi.next.shared.plugin.api.component.filter
 
+import org.easybangumi.next.lib.utils.PagingFrame
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.plugin.api.SourceResult
 import org.easybangumi.next.shared.plugin.api.component.Component
@@ -34,6 +35,6 @@ interface FilterComponent: Component {
     suspend fun search(
         filterList: List<Filter>,
         key: String,
-    ): SourceResult<Pair<String?, List<CartoonCover>>>
+    ): SourceResult<PagingFrame<CartoonCover>>
 
 }

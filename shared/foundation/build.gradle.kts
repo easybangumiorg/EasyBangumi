@@ -87,6 +87,7 @@ kotlin {
             implementation(projects.shared.data)
             implementation(projects.shared.plugin)
             implementation(projects.shared.resources)
+            implementation(projects.shared.scheme)
 
             implementation(projects.lib.logger)
             implementation(projects.lib.utils)

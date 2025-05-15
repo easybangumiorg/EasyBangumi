@@ -1,8 +1,12 @@
+
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import plugin.easy_config.EasyConfigPlugin
 
 plugins {
     alias(builds.plugins.kotlinMultiplatform)
     alias(builds.plugins.androidLibrary)
+    alias(builds.plugins.kotlinCompose)
+    alias(builds.plugins.compose)
 }
 kotlin {
     androidTarget {
@@ -15,6 +19,7 @@ kotlin {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_21)
         }
+
     }
 
     // 提前预埋保证 commonMain 是纯 kotlin 环境
@@ -60,34 +65,25 @@ kotlin {
             dependsOn(iosMain)
         }
 
-
-
-
         commonMain.dependencies {
-            implementation(libs.kotlinx.io)
-            implementation(libs.kotlinx.coroutines.core)
-            implementation(libs.kotlinx.datetime)
-            implementation(libs.okio)
-            implementation(libs.koin.core)
-            implementation(libs.paging.multiplatform.common)
-        }
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
+            implementation(compose.ui)
         }
 
         androidMain.dependencies {
 
         }
 
-
         desktopMain.dependencies {
-            implementation(libs.kotlinx.coroutines.swing)
+            implementation(compose.desktop.currentOs)
+        }
+        iosMain.dependencies {
+
         }
     }
 }
 
 android {
-    namespace = AppConfig.namespace + ".lib.utils"
+    namespace = AppConfig.namespace + ".shared.scheme"
     compileSdk = 35
     defaultConfig {
         minSdk = 21
@@ -96,9 +92,8 @@ android {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
+
 }
-
-
 
 
 dependencies {

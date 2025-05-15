@@ -16,7 +16,6 @@ import org.easybangumi.next.shared.plugin.api.component.page.PageComponent
 import org.easybangumi.next.shared.plugin.api.component.page.PageTab
 import org.easybangumi.next.shared.plugin.api.toDataState
 import org.easybangumi.next.shared.plugin.core.component.ComponentBusiness
-import org.easybangumi.next.shared.plugin.paging.CartoonPagePagingSource
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi

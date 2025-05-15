@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,17 +11,20 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Timeline
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.carousel.CarouselDefaults
-import androidx.compose.material3.carousel.HorizontalMultiBrowseCarousel
-import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -31,7 +33,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.icerock.moko.resources.compose.stringResource
@@ -50,11 +51,14 @@ import org.easybangumi.next.shared.foundation.elements.LoadingElements
 import org.easybangumi.next.shared.foundation.image.AsyncImage
 import org.easybangumi.next.shared.foundation.stringRes
 import org.easybangumi.next.shared.foundation.view_model.vm
+import org.easybangumi.next.shared.plugin.api.component.discover.BannerHeadline
 import org.easybangumi.next.shared.plugin.api.component.discover.DiscoverColumnJumpRouter
 import org.easybangumi.next.shared.plugin.api.component.discover.DiscoverComponent
 import org.easybangumi.next.shared.plugin.core.component.ComponentBusiness
 import org.easybangumi.next.shared.resources.Res
+import org.easybangumi.next.shared.scheme.EasyScheme
 import org.easybangumi.next.shared.ui.UI
+import org.easybangumi.next.shared.ui.shared.discover.DiscoverViewModel.RecommendTabState
 import kotlin.text.ifEmpty
 
 /**
@@ -81,21 +85,72 @@ fun Discover(
 
     // 跳转详情页
     onJumpDetail: (CartoonIndex) -> Unit,
-
-    // 发现页 【查看更多】区域点击跳转
-    onJumpRouter: (DiscoverColumnJumpRouter) -> Unit,
 ) {
     val viewModel = vm(::DiscoverViewModel, discoverBusiness)
 
     val uiState = viewModel.ui.value
 
-    val discoverColumnListState = viewModel.ui.value.discoverColumns
+    val discoverColumnListState = viewModel.ui.value.tabList
+
+    LazyVerticalGrid(
+        columns = GridCells.FixedSize(EasyScheme.size.cartoonCoverWidth)
+    ) {
+
+        item(
+            span = { GridItemSpan(maxLineSpan) }
+        ) {
+            BannerHeadline(
+                modifier = Modifier.fillMaxWidth(),
+                data = uiState.bannerHeadline,
+                onJumpTimeline = {
+
+                }
+            )
+        }
+
+        item(
+            span = { GridItemSpan(maxLineSpan) }
+        ) {
+            Banner(
+                modifier = Modifier.fillMaxWidth().height(EasyScheme.size.cartoonCoverHeight),
+                data = uiState.bannerData,
+                onClick = {
+
+                },
+            )
+        }
+
+        item(
+            span = { GridItemSpan(maxLineSpan) }
+        ) {
+            History(
+                modifier = Modifier.fillMaxWidth(),
+                data = uiState.history,
+                onHistoryClick = {
+
+                }
+            )
+        }
+
+
+
+
+    }
 
     LazyColumn {
         item {
+            BannerHeadline(
+                modifier = Modifier.fillMaxWidth(),
+                data = uiState.bannerHeadline,
+                onJumpTimeline = {
+
+                }
+            )
+        }
+        item {
             Banner(
                 modifier = Modifier.fillMaxWidth().height(198.dp),
-                data = uiState.banner,
+                data = uiState.bannerData,
                 onClick = {
 
                 },
@@ -154,6 +209,39 @@ fun Discover(
     }
 
 
+}
+
+@Composable
+fun BannerHeadline(
+    modifier: Modifier,
+    data: BannerHeadline,
+    onJumpTimeline: () -> Unit,
+) {
+
+    ListItem(
+        modifier = modifier,
+        headlineContent = {
+            Text(
+                text = stringRes(data.label),
+                fontSize = 16.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        },
+        trailingContent = if (data.hasTimelineEnter) {
+            {
+                TextButton(onClick = onJumpTimeline) {
+                    Icon(Icons.Default.Timeline, contentDescription = stringRes(Res.strings.anim_timeline))
+                    Text(
+                        text = stringRes(Res.strings.anim_timeline),
+                        fontSize = 12.sp,
+                    )
+                }
+            }
+        } else {
+            null
+        }
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -226,6 +314,20 @@ fun History(
         )
     }
 
+}
+
+@Composable
+fun RecommendTab(
+    modifier: Modifier,
+    data: DataState<List<RecommendTabState>>,
+    selection: Int,
+    onClick: (RecommendTabState) -> Unit,
+) {
+    CartoonCoverRow(
+        modifier = modifier,
+        data = data,
+        onClick = onClick
+    )
 }
 
 @Composable

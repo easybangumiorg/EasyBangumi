@@ -19,10 +19,16 @@ import org.easybangumi.next.shared.plugin.api.component.Component
 
 interface DiscoverComponent: Component {
 
+    // 必须直接返回，不能做其他耗时操作
+    fun bannerHeadline(): BannerHeadline
+
     suspend fun banner(): SourceResult<List<CartoonCover>>
 
-    suspend fun columnList(): SourceResult<List<DiscoverColumn>>
+    suspend fun recommendTab(): SourceResult<List<RecommendTab>>
 
-    suspend fun loadColumn(colum: DiscoverColumn): SourceResult<List<CartoonCover>>
+    suspend fun loadRecommend(
+        tab: RecommendTab,
+        key: String
+    ): SourceResult<Pair<String?, List<CartoonCover>>>
 
 }
