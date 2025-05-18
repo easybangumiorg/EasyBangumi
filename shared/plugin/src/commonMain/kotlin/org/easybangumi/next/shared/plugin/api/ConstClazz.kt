@@ -2,7 +2,6 @@ package org.easybangumi.next.shared.plugin.api
 
 import org.easybangumi.next.shared.plugin.api.component.discover.DiscoverComponent
 import org.easybangumi.next.shared.plugin.api.component.filter.FilterComponent
-import org.easybangumi.next.shared.plugin.api.component.page.PageComponent
 import org.easybangumi.next.shared.plugin.api.component.play.PlayComponent
 import org.easybangumi.next.shared.plugin.api.component.pref.PrefComponent
 import org.easybangumi.next.shared.plugin.api.source.Source
@@ -32,7 +31,6 @@ object ConstClazz {
     val componentClazz: Set<KClass<*>> = setOf(
         DiscoverComponent::class,
         FilterComponent::class,
-        PageComponent::class,
         PlayComponent::class,
         PrefComponent::class,
     )

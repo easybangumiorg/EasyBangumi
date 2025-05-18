@@ -24,7 +24,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import org.easybangumi.next.lib.utils.WeakRef
-import org.easybangumi.next.shared.ui.main.Main
+import org.easybangumi.next.shared.ui.home.Main
 import kotlin.jvm.JvmSuppressWildcards
 
 /**

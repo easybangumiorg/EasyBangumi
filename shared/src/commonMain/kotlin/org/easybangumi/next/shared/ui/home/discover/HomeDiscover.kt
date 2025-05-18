@@ -1,12 +1,9 @@
-package org.easybangumi.next.shared.ui.main.home
+package org.easybangumi.next.shared.ui.home.discover
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -16,12 +13,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import org.easybangumi.next.shared.foundation.TabPage
 import org.easybangumi.next.shared.foundation.plugin.SourceBundleContainer
 import org.easybangumi.next.shared.foundation.stringRes
 import org.easybangumi.next.shared.foundation.view_model.vm
-import org.easybangumi.next.shared.plugin.core.source.SourceBundle
 import org.easybangumi.next.shared.resources.Res
 import org.easybangumi.next.shared.ui.shared.discover.Discover
 
@@ -37,20 +31,20 @@ import org.easybangumi.next.shared.ui.shared.discover.Discover
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 @Composable
-fun Home() {
+fun HomeDiscover() {
 
     SourceBundleContainer(Modifier.fillMaxSize()) {
-        val viewModel = vm(::HomeViewModel, it)
+        val viewModel = vm(::HomeDiscoverViewModel, it)
 
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            HomeTopAppBar(
+            DiscoverTopAppBar(
                 modifier = Modifier.fillMaxWidth(),
                 state = viewModel.ui.value,
                 viewModel = viewModel
             )
-            HomeContent(
+            HomeDiscoverContent(
                 modifier = Modifier.fillMaxWidth().weight(1f),
                 state = viewModel.ui.value,
                 viewModel = viewModel
@@ -63,10 +57,10 @@ fun Home() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeTopAppBar(
+fun DiscoverTopAppBar(
     modifier: Modifier = Modifier,
-    state: HomeViewModel.State,
-    viewModel: HomeViewModel,
+    state: HomeDiscoverViewModel.State,
+    viewModel: HomeDiscoverViewModel,
 ) {
     TopAppBar(
         modifier = modifier,
@@ -97,43 +91,18 @@ fun HomeTopAppBar(
 }
 
 @Composable
-fun HomeContent(
+fun HomeDiscoverContent(
     modifier: Modifier = Modifier,
-    state: HomeViewModel.State,
-    viewModel: HomeViewModel,
+    state: HomeDiscoverViewModel.State,
+    viewModel: HomeDiscoverViewModel,
 ) {
-    val pageState = state.pageState
-    val pagerState = rememberPagerState(0) { pageState.showTabList.size }
-    Column {
-        TabPage(
-            pagerModifier = Modifier.fillMaxWidth().weight(1f),
-            pagerState = pagerState,
-            onTabSelect = {},
-            tabs = @Composable { index, selected ->
-                val tab = pageState.showTabList.getOrNull(index)
-                tab?.let {
-                    Text(stringRes(it.label))
-                }
-            },
-            contents = @Composable { index ->
-                val tab = pageState.showTabList.getOrNull(index)
-                when(tab) {
-                    is HomeViewModel.TabState.Discover -> {
-                        Discover(
-                            tab.discoverBusiness,
-                            onJumpDetail = {
+    val discoverBusiness = state.discoverBusiness
+    if (discoverBusiness != null) {
+        Discover(
+            modifier,
+            discoverBusiness,
+            onJumpDetail = {
 
-                            },
-                            onJumpRouter = {
-
-                            }
-                        )
-                    }
-                    is HomeViewModel.TabState.Page -> {
-
-                    }
-                    else -> { }
-                }
             }
         )
     }

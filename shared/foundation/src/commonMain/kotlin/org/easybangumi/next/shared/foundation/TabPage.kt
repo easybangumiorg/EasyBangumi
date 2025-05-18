@@ -1,5 +1,6 @@
 package org.easybangumi.next.shared.foundation
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -28,15 +29,50 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
+
 @Composable
-fun ColumnScope.TabPage(
+fun EasyTab(
+    modifier: Modifier,
+    containerColor: Color = MaterialTheme.colorScheme.surface,
+    contentColor: Color = MaterialTheme.colorScheme.onSurface,
+    size: Int,
+    selection: Int,
+    onSelected: (Int) -> Unit,
+    tabs: @Composable (Int, Boolean) -> Unit,
+) {
+    ScrollableTabRow(
+        modifier = modifier,
+        containerColor = containerColor,
+        contentColor = contentColor,
+        selectedTabIndex = selection,
+        indicator = {
+            if(selection in it.indices){
+                TabIndicator(currentTabPosition = it[selection])
+            }
+        },
+        edgePadding = 0.dp,
+        divider = {}
+    ) {
+        repeat(size) {
+            Tab(selected = selection == it, onClick = {
+                onSelected(it)
+            }, text = {
+                tabs(it, selection == it)
+            })
+        }
+    }
+}
+
+@Composable
+fun TabPage(
+    modifier: Modifier = Modifier,
     pagerModifier: Modifier = Modifier,
     pagerState: PagerState,
     beyondBoundsPageCount: Int = 0,
     containerColor: Color = MaterialTheme.colorScheme.surface,
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
     onTabSelect: (Int) -> Unit,
-    tabs: @Composable ColumnScope.(Int, Boolean) -> Unit,
+    tabs: @Composable (Int, Boolean) -> Unit,
     contents: @Composable PagerScope.(Int) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
@@ -46,43 +82,35 @@ fun ColumnScope.TabPage(
     CompositionLocalProvider(
         LocalContentColor provides contentColor
     ) {
-        ScrollableTabRow(
-            containerColor = containerColor,
-            contentColor = contentColor,
-            selectedTabIndex = pagerState.currentPage,
-            indicator = {
-                if(pagerState.currentPage in it.indices){
-
-                    TabIndicator(currentTabPosition = it[pagerState.currentPage])
-                }
-
-            },
-            modifier = Modifier
-                .fillMaxWidth(),
-            edgePadding = 0.dp,
-            divider = {}
+        Column(
+            modifier
         ) {
-            repeat(pagerState.pageCount) {
-                Tab(selected = pagerState.currentPage == it, onClick = {
+            EasyTab(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                containerColor = containerColor,
+                contentColor = contentColor,
+                size = pagerState.pageCount,
+                selection = pagerState.currentPage,
+                onSelected = {
                     onTabSelect(it)
                     scope.launch {
                         pagerState.animateScrollToPage(it)
                     }
-
-                }, text = {
-                    tabs(it, pagerState.currentPage == it)
-                })
+                },
+                tabs = tabs
+            )
+            HorizontalDivider()
+            HorizontalPager(
+                modifier = pagerModifier.weight(1f),
+                beyondViewportPageCount = beyondBoundsPageCount,
+                verticalAlignment = Alignment.Top,
+                state = pagerState,
+            ) {
+                contents(it)
             }
         }
-        HorizontalDivider()
-        HorizontalPager(
-            modifier = pagerModifier,
-            beyondViewportPageCount = beyondBoundsPageCount,
-            verticalAlignment = Alignment.Top,
-            state = pagerState,
-        ) {
-            contents(it)
-        }
+
     }
 
 

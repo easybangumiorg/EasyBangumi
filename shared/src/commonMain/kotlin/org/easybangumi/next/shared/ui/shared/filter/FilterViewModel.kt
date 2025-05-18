@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.map
+import org.easybangumi.next.lib.utils.newPagingFlow
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.foundation.view_model.LogicUIViewModel
 import org.easybangumi.next.shared.plugin.api.component.filter.Filter
@@ -53,16 +54,7 @@ class FilterViewModel(
     override suspend fun logicToUi(logicState: LogicState): UIState {
         val pageFlow = logicState.filterList.map {
             val pagingSource = CartoonFilterPagingSource(it, filterBusiness)
-            Pager(
-                config = PagingConfig(
-                    pageSize = 20,
-                    enablePlaceholders = false,
-                ),
-                initialKey = filterBusiness.runDirect {
-                    firstKey(it)
-                },
-                pagingSourceFactory = { pagingSource }
-            ).flow.cachedIn(viewModelScope)
+            pagingSource.newPagingFlow()
         }
         return UIState(
             filterList = logicState.filterList,

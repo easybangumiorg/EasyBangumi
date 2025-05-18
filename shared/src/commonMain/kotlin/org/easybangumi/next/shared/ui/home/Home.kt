@@ -1,4 +1,4 @@
-package org.easybangumi.next.shared.ui.main
+package org.easybangumi.next.shared.ui.home
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,7 +30,7 @@ import org.easybangumi.next.shared.ui.UI
 import org.easybangumi.next.shared.ui.home.history.History
 import org.easybangumi.next.shared.ui.home.more.More
 import org.easybangumi.next.shared.ui.home.star.Star
-import org.easybangumi.next.shared.ui.main.home.Home
+import org.easybangumi.next.shared.ui.home.discover.HomeDiscover
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -44,13 +44,13 @@ import org.easybangumi.next.shared.ui.main.home.Home
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
-sealed class MainPage(
+sealed class HomePage(
     val route: String,
     val tabLabel: @Composable (() -> Unit),
     val icon: @Composable ((Boolean) -> Unit),
     val content: @Composable (() -> Unit),
 ) {
-    data object HomePage : MainPage(
+    data object DiscoverPage : HomePage(
         route = "home",
         tabLabel = {
             Text(text = stringResource(Res.strings.home))
@@ -62,11 +62,11 @@ sealed class MainPage(
             )
         },
         content = {
-            Home()
+            HomeDiscover()
         }
     )
 
-    data object StarPage : MainPage(
+    data object StarPage : HomePage(
         route = "star",
         tabLabel = {
             Text(text = stringResource(Res.strings.star))
@@ -82,7 +82,7 @@ sealed class MainPage(
         }
     )
 
-    object HistoryPage : MainPage(
+    object HistoryPage : HomePage(
         route = "history",
         tabLabel = { Text(text = stringResource(Res.strings.history)) },
         icon = {
@@ -97,7 +97,7 @@ sealed class MainPage(
         }
     )
 
-    object MorePage : MainPage(
+    object MorePage : HomePage(
         route = "more",
         tabLabel = { Text(text = stringResource(Res.strings.more)) },
         icon = {
@@ -113,10 +113,10 @@ sealed class MainPage(
 }
 
 val HomePageList = listOf(
-    MainPage.HomePage,
-    MainPage.StarPage,
-    MainPage.HistoryPage,
-    MainPage.MorePage,
+    HomePage.DiscoverPage,
+    HomePage.StarPage,
+    HomePage.HistoryPage,
+    HomePage.MorePage,
 )
 
 @Composable

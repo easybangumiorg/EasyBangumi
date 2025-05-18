@@ -1,5 +1,6 @@
 package org.easybangumi.next.shared.ui.shared.discover
 
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.collectLatest
@@ -45,6 +46,8 @@ class DiscoverViewModel (
 
     // ==== State ==
 
+    val lazyGridState = LazyGridState(0, 0)
+
     data class RecommendTabState(
         val tab: RecommendTab,
         val pagingFlow: PagingFlow<CartoonCover>,
@@ -59,7 +62,11 @@ class DiscoverViewModel (
         // Recommend
         val tabList: DataState<List<RecommendTabState>> = DataState.none(),
         val selection: Int = -1,
-    )
+    ) {
+        val selectedTab: RecommendTabState? by lazy {
+            tabList.okOrNull()?.getOrNull(selection)
+        }
+    }
 
     init {
         // 1. collect history
@@ -77,6 +84,10 @@ class DiscoverViewModel (
             async { loadRecommend() }
         }
 
+    }
+
+    fun onTabSelected(index: Int) {
+        update { it.copy(selection = index) }
     }
 
 
@@ -100,7 +111,17 @@ class DiscoverViewModel (
                 RecommendTabState(it, flow)
             }
         }
-        update { it.copy(tabList = res) }
+        update {
+            val sel = if (res.okOrNull()?.getOrNull(it.selection) == null) {
+                0
+            } else {
+                it.selection
+            }
+            it.copy(
+                tabList = res,
+                selection = sel,
+            )
+        }
     }
 
 

@@ -10,6 +10,7 @@ import app.cash.paging.PagingData
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
+import org.easybangumi.next.lib.utils.newPagingFlow
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.data.store.StoreProvider
 import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
@@ -86,14 +87,7 @@ class SearchViewModel(
                     )
                 } else {
                     val pagingSource = CartoonSearchPagingSource(key, searchBusiness)
-                    val flow = Pager(
-                        config = PagingConfig(
-                            pageSize = 20,
-                            enablePlaceholders = false,
-                        ),
-                        initialKey = searchBusiness.runDirect { firstKey(key) },
-                        pagingSourceFactory = { pagingSource }
-                    ).flow.cachedIn(viewModelScope)
+                    val flow = pagingSource.newPagingFlow()
                     uiState.value = uiState.value.copy(
                         searchData = SearchUIState(key, flow)
                     )

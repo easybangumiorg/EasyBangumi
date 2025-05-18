@@ -9,20 +9,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Timeline
-import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -31,35 +27,32 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import dev.icerock.moko.resources.compose.stringResource
+import app.cash.paging.compose.collectAsLazyPagingItems
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.ResourceOr
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.data.cartoon.CartoonInfo
+import org.easybangumi.next.shared.foundation.EasyTab
 import org.easybangumi.next.shared.foundation.carousel.EasyHorizontalMultiBrowseCarousel
 import org.easybangumi.next.shared.foundation.carousel.EasyHorizontalUncontainedCarousel
 import org.easybangumi.next.shared.foundation.carousel.rememberEasyCarouselState
 import org.easybangumi.next.shared.foundation.cartoon.CartoonCardWithCover
-import org.easybangumi.next.shared.foundation.elements.ErrorElements
 import org.easybangumi.next.shared.foundation.elements.LoadScaffold
-import org.easybangumi.next.shared.foundation.elements.LoadingElements
 import org.easybangumi.next.shared.foundation.image.AsyncImage
+import org.easybangumi.next.shared.foundation.lazy.pagingCommon
 import org.easybangumi.next.shared.foundation.stringRes
 import org.easybangumi.next.shared.foundation.view_model.vm
 import org.easybangumi.next.shared.plugin.api.component.discover.BannerHeadline
-import org.easybangumi.next.shared.plugin.api.component.discover.DiscoverColumnJumpRouter
 import org.easybangumi.next.shared.plugin.api.component.discover.DiscoverComponent
 import org.easybangumi.next.shared.plugin.core.component.ComponentBusiness
 import org.easybangumi.next.shared.resources.Res
 import org.easybangumi.next.shared.scheme.EasyScheme
 import org.easybangumi.next.shared.ui.UI
 import org.easybangumi.next.shared.ui.shared.discover.DiscoverViewModel.RecommendTabState
-import kotlin.text.ifEmpty
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -81,6 +74,7 @@ import kotlin.text.ifEmpty
  */
 @Composable
 fun Discover(
+    modifier: Modifier = Modifier,
     discoverBusiness: ComponentBusiness<DiscoverComponent>,
 
     // 跳转详情页
@@ -90,10 +84,14 @@ fun Discover(
 
     val uiState = viewModel.ui.value
 
+    val lazyPageState =  uiState.selectedTab?.pagingFlow?.collectAsLazyPagingItems()
+
     val discoverColumnListState = viewModel.ui.value.tabList
 
     LazyVerticalGrid(
-        columns = GridCells.FixedSize(EasyScheme.size.cartoonCoverWidth)
+        modifier = modifier,
+        state = viewModel.lazyGridState,
+        columns = GridCells.Adaptive(EasyScheme.size.cartoonCoverWidth)
     ) {
 
         item(
@@ -133,81 +131,50 @@ fun Discover(
         }
 
 
-
-
-    }
-
-    LazyColumn {
-        item {
-            BannerHeadline(
+        stickyHeader {
+            RecommendTab(
                 modifier = Modifier.fillMaxWidth(),
-                data = uiState.bannerHeadline,
-                onJumpTimeline = {
-
-                }
-            )
-        }
-        item {
-            Banner(
-                modifier = Modifier.fillMaxWidth().height(198.dp),
-                data = uiState.bannerData,
-                onClick = {
-
+                data = uiState.tabList,
+                selection = uiState.selection,
+                onSelected = {
+                    viewModel.onTabSelected(it)
                 },
-            )
-        }
-        item {
-            History(
-                modifier = Modifier.fillMaxWidth(),
-                data = uiState.history,
-                onHistoryClick = {
+                onRetry = {
 
                 }
             )
         }
 
-        discoverColumnListState.onOK {
-            items(it) { state ->
-                CartoonColumn(
-                    modifier = Modifier.fillMaxWidth(),
-                    state = state,
-                    onCartoonClick = {
+        val lazyPageState = lazyPageState
+        if (lazyPageState != null) {
+            if (lazyPageState.itemCount > 0) {
+                items(lazyPageState.itemCount) {
+                    val item = lazyPageState[it]
+                    if (item != null) {
+                        CartoonCardWithCover(
+                            cartoonCover = item,
+                            onClick = {
 
-                    },
-                    onJumpRouter = onJumpRouter
-                )
-            }
-        }.onError {
-            item {
-                ErrorElements(
-                    Modifier.fillMaxWidth(),
-                    isRow = true,
-                    errorMsg = it.errorMsg.ifEmpty { stringResource(Res.strings.net_error) },
-                    onClick = {
-                        viewModel.refreshColumnList()
-                    },
-                    other = {
-                        Spacer(Modifier.size(12.dp))
-                        Text(
-                            text = stringResource(Res.strings.retry),
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-                            fontStyle = FontStyle.Italic
+                            },
+                            onLongPress = {
+
+                            }
                         )
                     }
-                )
-
+                }
             }
-        }.onLoading {
-            item {
-                LoadingElements(
-                    Modifier.fillMaxWidth(),
-                    isRow = true,
-                    loadingMsg = it.loadingMsg.ifEmpty { stringResource(Res.strings.loading) })
+            pagingCommon(lazyPageState)
+        } else {
+            item (
+                span = { GridItemSpan(maxLineSpan) }
+            ) {
+                Spacer(Modifier.fillMaxWidth().height(600.dp))
+
             }
         }
 
-    }
 
+    }
 
 }
 
@@ -321,45 +288,36 @@ fun RecommendTab(
     modifier: Modifier,
     data: DataState<List<RecommendTabState>>,
     selection: Int,
-    onClick: (RecommendTabState) -> Unit,
+    onSelected: (Int) -> Unit,
+    onRetry: () -> Unit,
 ) {
-    CartoonCoverRow(
+    LoadScaffold(
         modifier = modifier,
         data = data,
-        onClick = onClick
-    )
-}
-
-@Composable
-fun CartoonColumn(
-    modifier: Modifier = Modifier,
-    state: DiscoverViewModel.DiscoverColumnState,
-    onCartoonClick: (CartoonCover) -> Unit,
-    onJumpRouter: (DiscoverColumnJumpRouter) -> Unit,
-) {
-    Column(
-        modifier = modifier
+        isRow = true,
+        errorRetry = {
+            onRetry()
+        }
     ) {
-        ColumnHeadline(
-            text = state.column.label,
-            action = {
-                TextButton(onClick = {
-                    onJumpRouter(state.column.jumpRouter)
-                }) {
-                    Text(
-                        text = state.column.jumpTitle,
-                        fontSize = 12.sp,
-                    )
+        val data = it.data
+        EasyTab(
+            modifier = Modifier.fillMaxWidth(),
+            size = data.size,
+            selection = selection,
+            onSelected = {
+                if (it in data.indices) {
+                    onSelected(it)
                 }
             }
-        )
-        CartoonCoverRow(
-            data = state.cartoonCovers,
-            onClick = onCartoonClick
-        )
+        ) { index, selected ->
+            val tab = data[index]
+            Text(
+                text = stringRes(tab.tab.name),
+            )
+        }
     }
-}
 
+}
 
 @Composable
 fun ColumnHeadline(

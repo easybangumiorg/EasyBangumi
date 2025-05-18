@@ -3,9 +3,9 @@ package org.easybangumi.next.shared.plugin.debug
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.plugin.api.SourceResult
 import org.easybangumi.next.shared.plugin.api.component.SearchComponent
-import org.easybangumi.next.shared.plugin.api.component.discover.DiscoverColumn
-import org.easybangumi.next.shared.plugin.api.component.discover.DiscoverColumnJumpRouter
+import org.easybangumi.next.shared.plugin.api.component.discover.BannerHeadline
 import org.easybangumi.next.shared.plugin.api.component.discover.DiscoverComponent
+import org.easybangumi.next.shared.plugin.api.component.discover.RecommendTab
 import org.easybangumi.next.shared.plugin.api.component.filter.Filter
 import org.easybangumi.next.shared.plugin.api.component.filter.FilterComponent
 import org.easybangumi.next.shared.plugin.api.withResult
@@ -37,34 +37,43 @@ class HomeBaseComponent: BaseComponent(), DiscoverComponent, FilterComponent, Se
         }
     }
 
-    override suspend fun columnList(): SourceResult<List<DiscoverColumn>> {
+    override fun bannerHeadline(): BannerHeadline {
+        return BannerHeadline(
+            "新番推荐",
+            hasTimelineEnter = true
+        )
+    }
+
+    override suspend fun recommendTab(): SourceResult<List<RecommendTab>> {
         return withResult {
-            val arrayList = arrayListOf<DiscoverColumn>()
-            arrayList.add(DiscoverColumn(
+            val arrayList = arrayListOf<RecommendTab>()
+            arrayList.add(RecommendTab(
                 "lastest_recommend",
                 "新番推荐",
-                "查看更多",
-                DiscoverColumnJumpRouter.Page("lastest_recommend")
+                "1"
             ))
-            arrayList.add(DiscoverColumn(
-                "lastest_recommend",
+            arrayList.add(RecommendTab(
+                "lastest",
                 "近期热播",
-                "查看更多",
-                DiscoverColumnJumpRouter.Page("lastest")
+                "1"
             ))
             arrayList
         }
     }
 
-    override suspend fun loadColumn(colum: DiscoverColumn): SourceResult<List<CartoonCover>> {
+    override suspend fun loadRecommend(
+        tab: RecommendTab,
+        key: String
+    ): SourceResult<Pair<String?, List<CartoonCover>>> {
         return withResult {
+            val page = key.toIntOrNull()
             val arrayList = arrayListOf<CartoonCover>()
             repeat(5) {
                 DebugConst.cartoonCoverTest.forEach {
                     arrayList.add(it.copy())
                 }
             }
-            arrayList
+            Pair(if (page != null && page < 10) (page + 1).toString() else null, arrayList)
         }
     }
 
