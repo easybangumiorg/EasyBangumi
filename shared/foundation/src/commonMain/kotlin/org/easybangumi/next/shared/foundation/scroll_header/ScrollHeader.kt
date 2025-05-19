@@ -1,56 +1,58 @@
-package org.easybangumi.next.shared.foundation
+package org.easybangumi.next.shared.foundation.scroll_header
 
 import androidx.compose.animation.core.*
 import androidx.compose.animation.rememberSplineBasedDecay
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.ScrollableState
+import androidx.compose.foundation.gestures.rememberScrollableState
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.TopAppBarState
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.layout
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Velocity
-import org.easybangumi.next.lib.logger.logger
+import org.easybangumi.next.shared.foundation.scroll_header.ScrollableHeaderState.Companion.Saver
 import kotlin.math.abs
-import kotlin.math.roundToInt
 
 /**
- * Created by heyanlin on 2025/3/20.
+ *    https://github.com/easybangumiorg/EasyBangumi
+ *
+ *    Copyright 2025 easybangumi.org and contributors
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
  */
-
-val logger = logger("")
-
 @Composable
-fun ScrollableHeaderScaffold(
+fun <SCOPE : ScrollHeaderScope> ScrollableHeaderScaffold(
     modifier: Modifier,
-    behavior: ScrollableHeaderBehavior?,
-    headerIfBehavior: @Composable (state: ScrollableHeaderState) -> Unit,
-    // padding 为 LazyColumn 的 contentPadding 不能作为整个 content 的 Padding
-    content: @Composable (scrollContentPadding: PaddingValues) -> Unit
+    behavior: ScrollableHeaderBehavior<SCOPE>,
+    nested: Boolean = true,
+    content: @Composable SCOPE.() -> Unit
 ) {
-    if (behavior == null) {
-        Box(modifier) {
-            content(PaddingValues())
+    Box(modifier.run {
+        if (nested) {
+            nestedScroll(behavior.nestedScrollConnection)
+                .clipToBounds()
+        } else {
+            this
         }
-    } else {
-        Box(modifier.nestedScroll(behavior.nestedScrollConnection)) {
-            // content
-            behavior.ContentHost(content)
-
-            // header
-            behavior.HeaderHost(headerIfBehavior)
-        }
+    }) {
+        content.invoke(behavior.scope)
     }
-}
 
-// ============= state =============
+}
 
 @Composable
 fun rememberScrollableHeaderState(
@@ -66,7 +68,7 @@ fun rememberScrollableHeaderState(
 }
 
 @Stable
-class ScrollableHeaderState (
+class ScrollableHeaderState(
     initialOffsetLimit: Float,
     initialOffset: Float,
     initialContentScrollOffset: Float,
@@ -109,10 +111,18 @@ class ScrollableHeaderState (
     }
 }
 
-// ============= behavior =============
+interface ScrollHeaderScope {
+    val state: ScrollableHeaderState
+
+    @get:Composable
+    val contentPadding: PaddingValues
+
+    @Composable
+    fun Modifier.header(): Modifier
+}
 
 @Stable
-interface ScrollableHeaderBehavior {
+interface ScrollableHeaderBehavior<SCOPE : ScrollHeaderScope> {
 
     val state: ScrollableHeaderState
     val isPinned: Boolean
@@ -121,108 +131,30 @@ interface ScrollableHeaderBehavior {
     val flingAnimationSpec: DecayAnimationSpec<Float>?
     val nestedScrollConnection: NestedScrollConnection
 
-    @Composable
-    fun HeaderHost(header: @Composable (state: ScrollableHeaderState) -> Unit)
-
-    @Composable
-    fun ContentHost(content: @Composable (contentPadding: PaddingValues) -> Unit)
-
+    val scope: SCOPE
 
     companion object {
         @Composable
-        fun enterAlwaysScrollBehavior(
+        fun discoverScrollHeaderBehavior(
             state: ScrollableHeaderState = rememberScrollableHeaderState(),
             canScroll: () -> Boolean = { true },
             snapAnimationSpec: AnimationSpec<Float>? = spring(stiffness = Spring.StiffnessMediumLow),
-            flingAnimationSpec: DecayAnimationSpec<Float>? = rememberSplineBasedDecay()
-        ): ScrollableHeaderBehavior =
-            EnterAlwaysScrollBehavior(
+            flingAnimationSpec: DecayAnimationSpec<Float>? = rememberSplineBasedDecay(),
+            contentScrollableState: ScrollableState,
+        ): DiscoverScrollHeaderBehavior =
+            DiscoverScrollHeaderBehavior(
                 state = state,
                 snapAnimationSpec = snapAnimationSpec,
                 flingAnimationSpec = flingAnimationSpec,
-                canScroll = canScroll
+                canScroll = canScroll,
+                contentScrollableState = contentScrollableState
             )
     }
-}
 
-class EnterAlwaysScrollBehavior(
-    override val state: ScrollableHeaderState,
-    override val snapAnimationSpec: AnimationSpec<Float>?,
-    override val flingAnimationSpec: DecayAnimationSpec<Float>?,
-    val canScroll: () -> Boolean = { true }
-): ScrollableHeaderBehavior {
-
-    private var headerHeight = mutableStateOf(0f)
-
-    override val isPinned = false
-    override val nestedScrollConnection: NestedScrollConnection =
-        object : NestedScrollConnection {
-            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                logger.info("onPreScroll: available: $available")
-                // Don't intercept if scrolling down.
-                if (!canScroll()) return Offset.Zero
-                if (available.y < 0) {
-                    val oldHeightOffset = state.offset
-                    state.offset += available.y
-                    return Offset(0f, state.offset - oldHeightOffset)
-                }
-                return Offset.Zero
-            }
-
-            override fun onPostScroll(
-                consumed: Offset,
-                available: Offset,
-                source: NestedScrollSource
-            ): Offset {
-                logger.info("onPostScroll: consumed: $consumed, available: $available")
-                if (!canScroll()) return Offset.Zero
-                state.contentScrollOffset += consumed.y
-                if (available.y != 0f) {
-                    // When scrolling up, just update the state's height offset.
-                    val oldHeightOffset = state.offset
-                    state.offset += available.y
-                    return Offset(0f, state.offset - oldHeightOffset)
-                }
-                return Offset.Zero
-            }
-
-            override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-                val superConsumed = super.onPostFling(consumed, available)
-                return superConsumed +
-                        settleHeader(state, available.y, flingAnimationSpec, snapAnimationSpec)
-            }
-        }
-
-
-    @Composable
-    override fun HeaderHost(header: @Composable (state: ScrollableHeaderState) -> Unit) {
-        Box(Modifier.layout { measurable, constraints ->
-            val placeable = measurable.measure(constraints)
-            headerHeight.value = placeable.height.toFloat()
-            state.offsetLimit = - placeable.height.toFloat()
-            layout(constraints.maxWidth, constraints.maxHeight) {
-                placeable.place(0, state.offset.roundToInt())
-            }
-        }) {
-            header(state)
-        }
-    }
-
-    @Composable
-    override fun ContentHost(content: @Composable (contentPadding: PaddingValues) -> Unit) {
-        Box(Modifier.layout { measurable, constraints ->
-            val placeable = measurable.measure(constraints)
-            layout(constraints.maxWidth, constraints.maxHeight) {
-                placeable.place(0, 0)
-            }
-        }) {
-            content(PaddingValues(top = with(LocalDensity.current) { headerHeight.value.toDp() }))
-        }
-    }
 
 }
 
-private suspend fun settleHeader(
+internal suspend fun settleHeader(
     state: ScrollableHeaderState,
     velocity: Float,
     flingAnimationSpec: DecayAnimationSpec<Float>?,

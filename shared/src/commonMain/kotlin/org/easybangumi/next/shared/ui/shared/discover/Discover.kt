@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -44,6 +45,8 @@ import org.easybangumi.next.shared.foundation.cartoon.CartoonCardWithCover
 import org.easybangumi.next.shared.foundation.elements.LoadScaffold
 import org.easybangumi.next.shared.foundation.image.AsyncImage
 import org.easybangumi.next.shared.foundation.lazy.pagingCommon
+import org.easybangumi.next.shared.foundation.scroll_header.ScrollableHeaderBehavior
+import org.easybangumi.next.shared.foundation.scroll_header.ScrollableHeaderScaffold
 import org.easybangumi.next.shared.foundation.stringRes
 import org.easybangumi.next.shared.foundation.view_model.vm
 import org.easybangumi.next.shared.plugin.api.component.discover.BannerHeadline
@@ -86,16 +89,54 @@ fun Discover(
 
     val lazyPageState =  uiState.selectedTab?.pagingFlow?.collectAsLazyPagingItems()
 
-    val discoverColumnListState = viewModel.ui.value.tabList
-
-    LazyVerticalGrid(
+    val behavior = ScrollableHeaderBehavior.discoverScrollHeaderBehavior(
+        contentScrollableState = viewModel.lazyGridState
+    )
+    ScrollableHeaderScaffold(
         modifier = modifier,
-        state = viewModel.lazyGridState,
-        columns = GridCells.Adaptive(EasyScheme.size.cartoonCoverWidth)
+        behavior = behavior,
     ) {
 
-        item(
-            span = { GridItemSpan(maxLineSpan) }
+
+        LazyVerticalGrid(
+            modifier = Modifier.fillMaxWidth().fillMaxHeight(),
+            contentPadding = contentPadding,
+            state = viewModel.lazyGridState,
+            columns = GridCells.Adaptive(EasyScheme.size.cartoonCoverWidth)
+        ) {
+
+            val lazyPageState = lazyPageState
+            if (lazyPageState != null) {
+                if (lazyPageState.itemCount > 0) {
+                    items(lazyPageState.itemCount) {
+                        val item = lazyPageState[it]
+                        if (item != null) {
+                            CartoonCardWithCover(
+                                cartoonCover = item,
+                                onClick = {
+
+                                },
+                                onLongPress = {
+
+                                }
+                            )
+                        }
+                    }
+                }
+                pagingCommon(lazyPageState)
+            }
+            item (
+                span = { GridItemSpan(maxLineSpan) }
+            ) {
+                Spacer(Modifier.fillMaxWidth().height(600.dp))
+
+            }
+
+
+        }
+
+        Column(
+            modifier = Modifier.fillMaxWidth().header()
         ) {
             BannerHeadline(
                 modifier = Modifier.fillMaxWidth(),
@@ -104,11 +145,6 @@ fun Discover(
 
                 }
             )
-        }
-
-        item(
-            span = { GridItemSpan(maxLineSpan) }
-        ) {
             Banner(
                 modifier = Modifier.fillMaxWidth().height(EasyScheme.size.cartoonCoverHeight),
                 data = uiState.bannerData,
@@ -116,11 +152,6 @@ fun Discover(
 
                 },
             )
-        }
-
-        item(
-            span = { GridItemSpan(maxLineSpan) }
-        ) {
             History(
                 modifier = Modifier.fillMaxWidth(),
                 data = uiState.history,
@@ -128,10 +159,10 @@ fun Discover(
 
                 }
             )
+
         }
 
-
-        stickyHeader {
+        Box(modifier = Modifier.fillMaxWidth().pinHeader()) {
             RecommendTab(
                 modifier = Modifier.fillMaxWidth(),
                 data = uiState.tabList,
@@ -145,36 +176,12 @@ fun Discover(
             )
         }
 
-        val lazyPageState = lazyPageState
-        if (lazyPageState != null) {
-            if (lazyPageState.itemCount > 0) {
-                items(lazyPageState.itemCount) {
-                    val item = lazyPageState[it]
-                    if (item != null) {
-                        CartoonCardWithCover(
-                            cartoonCover = item,
-                            onClick = {
 
-                            },
-                            onLongPress = {
-
-                            }
-                        )
-                    }
-                }
-            }
-            pagingCommon(lazyPageState)
-        } else {
-            item (
-                span = { GridItemSpan(maxLineSpan) }
-            ) {
-                Spacer(Modifier.fillMaxWidth().height(600.dp))
-
-            }
-        }
 
 
     }
+
+
 
 }
 
