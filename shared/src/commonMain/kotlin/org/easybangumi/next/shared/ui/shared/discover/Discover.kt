@@ -2,6 +2,9 @@ package org.easybangumi.next.shared.ui.shared.discover
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.rememberScrollableState
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -14,6 +17,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Timeline
@@ -26,7 +33,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -47,6 +58,8 @@ import org.easybangumi.next.shared.foundation.image.AsyncImage
 import org.easybangumi.next.shared.foundation.lazy.pagingCommon
 import org.easybangumi.next.shared.foundation.scroll_header.ScrollableHeaderBehavior
 import org.easybangumi.next.shared.foundation.scroll_header.ScrollableHeaderScaffold
+import org.easybangumi.next.shared.foundation.scroll_header.rememberDiscoverHeaderTabState
+import org.easybangumi.next.shared.foundation.scroll_header.rememberScrollableHeaderState
 import org.easybangumi.next.shared.foundation.stringRes
 import org.easybangumi.next.shared.foundation.view_model.vm
 import org.easybangumi.next.shared.plugin.api.component.discover.BannerHeadline
@@ -87,53 +100,57 @@ fun Discover(
 
     val uiState = viewModel.ui.value
 
+    val tabList = uiState.tabList.okOrNull()
+
     val lazyPageState =  uiState.selectedTab?.pagingFlow?.collectAsLazyPagingItems()
 
+    val scrollableHeaderState = rememberScrollableHeaderState()
     val behavior = ScrollableHeaderBehavior.discoverScrollHeaderBehavior(
-        contentScrollableState = viewModel.lazyGridState
+        state = scrollableHeaderState,
+
     )
     ScrollableHeaderScaffold(
         modifier = modifier,
         behavior = behavior,
     ) {
 
+        if (tabList != null) {
+            LazyVerticalGrid(
+                modifier = Modifier.fillMaxSize(),
+                state = rememberLazyGridState(),
+                contentPadding = contentPadding,
+                columns = GridCells.Adaptive(EasyScheme.size.cartoonCoverWidth),
+                overscrollEffect = null
+            ) {
+                if (lazyPageState != null) {
+                    if (lazyPageState.itemCount > 0) {
+                        items(lazyPageState.itemCount) {
+                            val item = lazyPageState[it]
+                            if (item != null) {
+                                CartoonCardWithCover(
+                                    cartoonCover = item,
+                                    onClick = {
 
-        LazyVerticalGrid(
-            modifier = Modifier.fillMaxWidth().fillMaxHeight(),
-            contentPadding = contentPadding,
-            state = viewModel.lazyGridState,
-            columns = GridCells.Adaptive(EasyScheme.size.cartoonCoverWidth)
-        ) {
+                                    },
+                                    onLongPress = {
 
-            val lazyPageState = lazyPageState
-            if (lazyPageState != null) {
-                if (lazyPageState.itemCount > 0) {
-                    items(lazyPageState.itemCount) {
-                        val item = lazyPageState[it]
-                        if (item != null) {
-                            CartoonCardWithCover(
-                                cartoonCover = item,
-                                onClick = {
-
-                                },
-                                onLongPress = {
-
-                                }
-                            )
+                                    }
+                                )
+                            }
                         }
                     }
+                    pagingCommon(lazyPageState)
                 }
-                pagingCommon(lazyPageState)
             }
-            item (
-                span = { GridItemSpan(maxLineSpan) }
+
+            val pager = rememberPagerState(
+                uiState.selection
             ) {
-                Spacer(Modifier.fillMaxWidth().height(600.dp))
-
+                tabList.size
             }
-
 
         }
+
 
         Column(
             modifier = Modifier.fillMaxWidth().header()
@@ -162,7 +179,13 @@ fun Discover(
 
         }
 
-        Box(modifier = Modifier.fillMaxWidth().pinHeader()) {
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .pinHeader()
+//            .scrollable(rememberScrollableState {
+//
+//            }, orientation = Orientation.Vertical)
+        ) {
             RecommendTab(
                 modifier = Modifier.fillMaxWidth(),
                 data = uiState.tabList,
@@ -301,10 +324,12 @@ fun RecommendTab(
     LoadScaffold(
         modifier = modifier,
         data = data,
-        isRow = true,
+        isRow = false,
         errorRetry = {
             onRetry()
-        }
+        },
+        checkEmpty = true,
+
     ) {
         val data = it.data
         EasyTab(

@@ -46,8 +46,6 @@ class DiscoverViewModel (
 
     // ==== State ==
 
-    val lazyGridState = LazyGridState(0, 0)
-
     data class RecommendTabState(
         val tab: RecommendTab,
         val pagingFlow: PagingFlow<CartoonCover>,

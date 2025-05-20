@@ -25,7 +25,7 @@ import kotlin.math.roundToInt
  * Created by heyanlin on 2025/3/20.
  */
 
-val logger = logger("")
+private val logger = logger("ScrollableHeader")
 
 @Composable
 fun ScrollableHeaderScaffold(

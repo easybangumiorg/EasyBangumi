@@ -2,9 +2,7 @@ package org.easybangumi.next.shared.foundation.scroll_header
 
 import androidx.compose.animation.core.*
 import androidx.compose.animation.rememberSplineBasedDecay
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Box
@@ -18,6 +16,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollDispatcher
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.Velocity
 import org.easybangumi.next.shared.foundation.scroll_header.ScrollableHeaderState.Companion.Saver
@@ -43,7 +42,9 @@ fun <SCOPE : ScrollHeaderScope> ScrollableHeaderScaffold(
 ) {
     Box(modifier.run {
         if (nested) {
-            nestedScroll(behavior.nestedScrollConnection)
+            nestedScroll(
+                behavior.nestedScrollConnection,
+            )
                 .clipToBounds()
         } else {
             this
@@ -119,6 +120,9 @@ interface ScrollHeaderScope {
 
     @Composable
     fun Modifier.header(): Modifier
+
+    @Composable
+    fun Modifier.content(): Modifier
 }
 
 @Stable
@@ -137,17 +141,13 @@ interface ScrollableHeaderBehavior<SCOPE : ScrollHeaderScope> {
         @Composable
         fun discoverScrollHeaderBehavior(
             state: ScrollableHeaderState = rememberScrollableHeaderState(),
-            canScroll: () -> Boolean = { true },
             snapAnimationSpec: AnimationSpec<Float>? = spring(stiffness = Spring.StiffnessMediumLow),
-            flingAnimationSpec: DecayAnimationSpec<Float>? = rememberSplineBasedDecay(),
-            contentScrollableState: ScrollableState,
+            flingAnimationSpec: DecayAnimationSpec<Float>? = rememberSplineBasedDecay()
         ): DiscoverScrollHeaderBehavior =
             DiscoverScrollHeaderBehavior(
                 state = state,
                 snapAnimationSpec = snapAnimationSpec,
                 flingAnimationSpec = flingAnimationSpec,
-                canScroll = canScroll,
-                contentScrollableState = contentScrollableState
             )
     }
 

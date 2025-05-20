@@ -67,6 +67,7 @@ kotlin {
 
         commonMain.dependencies {
             implementation(compose.ui)
+            implementation(compose.materialIconsExtended) // 此依赖需要在生产环境中进行剪枝，非常巨大
 
             implementation(libs.moko.resources.compose)
             implementation(libs.kotlin.reflect)

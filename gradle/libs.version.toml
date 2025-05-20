@@ -1,6 +1,6 @@
 [versions]
 # androidx
-androidx-activityCompose = "1.9.3"
+androidx-activityCompose = "1.10.1"
 androidx-appcompat = "1.7.0"
 androidx-constraintlayout = "2.2.1"
 androidx-core-ktx = "1.16.0"
@@ -10,7 +10,7 @@ androidx-material = "1.12.0"
 multiplatform-material = "1.7.3"
 
 # kotlin
-kotlin = "2.1.10"
+kotlin = "2.1.20"
 kotlin-reflect = "2.1.10"
 kotlinx-coroutines = "1.10.1"
 kotlinx-datetime = "0.6.1"
@@ -21,8 +21,8 @@ kotlin-serialization-plugin = "1.9.24"
 kotlinx-serialization = "1.6.3"
 
 # room
-sqlite = "2.5.0"
-androidx-room = "2.7.0"
+sqlite = "2.5.1"
+androidx-room = "2.7.1"
 
 koin = "4.0.4"
 
@@ -41,7 +41,7 @@ quickjs-kt = "1.0.0-alpha13"
 zip4j = "2.11.5"
 
 moko-resources = "0.24.5"
-jetbrains_kotlin_jvm = "2.1.10"
+jetbrains_kotlin_jvm = "2.1.20"
 
 paging_multiplatform = "3.3.0-alpha02-0.5.1"
 coil = "3.1.0"
