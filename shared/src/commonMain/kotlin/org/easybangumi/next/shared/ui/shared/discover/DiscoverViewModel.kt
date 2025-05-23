@@ -1,7 +1,9 @@
 package org.easybangumi.next.shared.ui.shared.discover
 
 import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.lifecycle.viewModelScope
+import androidx.paging.cachedIn
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -49,6 +51,7 @@ class DiscoverViewModel (
     data class RecommendTabState(
         val tab: RecommendTab,
         val pagingFlow: PagingFlow<CartoonCover>,
+        val lazyGridState: LazyGridState = LazyGridState(0, 0),
     )
 
     data class State (
@@ -59,11 +62,9 @@ class DiscoverViewModel (
 
         // Recommend
         val tabList: DataState<List<RecommendTabState>> = DataState.none(),
-        val selection: Int = -1,
+
     ) {
-        val selectedTab: RecommendTabState? by lazy {
-            tabList.okOrNull()?.getOrNull(selection)
-        }
+
     }
 
     init {
@@ -84,9 +85,9 @@ class DiscoverViewModel (
 
     }
 
-    fun onTabSelected(index: Int) {
-        update { it.copy(selection = index) }
-    }
+//    fun onTabSelected(index: Int) {
+//        update { it.copy(selection = index) }
+//    }
 
 
 
@@ -105,19 +106,13 @@ class DiscoverViewModel (
         }.toDataState().map {
             it.map {
                 val pagingSource = CartoonRecommendPagingSource(it, discoverBusiness)
-                val flow = pagingSource.newPagingFlow()
+                val flow = pagingSource.newPagingFlow().cachedIn(viewModelScope)
                 RecommendTabState(it, flow)
             }
         }
         update {
-            val sel = if (res.okOrNull()?.getOrNull(it.selection) == null) {
-                0
-            } else {
-                it.selection
-            }
             it.copy(
                 tabList = res,
-                selection = sel,
             )
         }
     }

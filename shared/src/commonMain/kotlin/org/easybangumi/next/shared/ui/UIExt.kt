@@ -2,6 +2,8 @@ package org.easybangumi.next.shared.ui
 
 import androidx.compose.runtime.Composable
 import org.easybangumi.next.platformInformation
+import org.easybangumi.next.shared.foundation.InputMode
+import org.easybangumi.next.shared.foundation.UIMode
 import org.easybangumi.next.shared.preference.MainPreference
 import org.easybangumi.next.shared.store.collectAsState
 import org.koin.compose.koinInject
@@ -26,6 +28,16 @@ import org.koin.compose.koinInject
 object UI {
 
     @Composable
+    fun getUiMode(): UIMode {
+        val tabletMode = isTabletMode()
+        val inputMode = getInputMode()
+        return UIMode(
+            isTableMode = tabletMode,
+            inputMode = inputMode
+        )
+    }
+
+    @Composable
     fun isTabletMode(): Boolean {
         val tabletPref = koinInject<MainPreference>().tabletMode
         val tableMode = tabletPref.collectAsState()
@@ -45,23 +57,31 @@ object UI {
     }
 
     @Composable
-    fun isTouchMode(): Boolean {
+    fun getInputMode(): InputMode {
         val inputModelPref = koinInject<MainPreference>().inputModel
         val inputModel = inputModelPref.collectAsState()
         return when(inputModel.value) {
             MainPreference.InputModel.AUTO -> {
                 // 默认模式直接按照平台区分，特殊情况（如触控桌面端）让用户手动选择
-                platformInformation.isAndroid || platformInformation.isIos
+                if (platformInformation.isAndroid || platformInformation.isIos)
+                    InputMode.TOUCH
+                else
+                    InputMode.POINTER
             }
 
-            MainPreference.InputModel.MOUSE -> {
-                false
+            MainPreference.InputModel.POINTER -> {
+                InputMode.POINTER
             }
 
             MainPreference.InputModel.TOUCH -> {
-                true
+                InputMode.TOUCH
             }
         }
+    }
+
+    @Composable
+    fun isTouchMode(): Boolean {
+       return getInputMode() == InputMode.TOUCH
     }
 
 }

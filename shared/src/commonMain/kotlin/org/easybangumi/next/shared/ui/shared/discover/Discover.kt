@@ -5,8 +5,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,16 +23,23 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberOverscrollEffect
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Timeline
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -43,12 +52,17 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.cash.paging.compose.collectAsLazyPagingItems
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.ResourceOr
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.data.cartoon.CartoonInfo
 import org.easybangumi.next.shared.foundation.EasyTab
+import org.easybangumi.next.shared.foundation.InputMode
+import org.easybangumi.next.shared.foundation.LocalUIMode
 import org.easybangumi.next.shared.foundation.carousel.EasyHorizontalMultiBrowseCarousel
 import org.easybangumi.next.shared.foundation.carousel.EasyHorizontalUncontainedCarousel
 import org.easybangumi.next.shared.foundation.carousel.rememberEasyCarouselState
@@ -88,6 +102,8 @@ import org.easybangumi.next.shared.ui.shared.discover.DiscoverViewModel.Recommen
  *  【column2】from DiscoverComponent
  *  【column3】from DiscoverComponent
  */
+private val logger = logger("Discover")
+
 @Composable
 fun Discover(
     modifier: Modifier = Modifier,
@@ -102,7 +118,11 @@ fun Discover(
 
     val tabList = uiState.tabList.okOrNull()
 
-    val lazyPageState =  uiState.selectedTab?.pagingFlow?.collectAsLazyPagingItems()
+    val pagerState = rememberPagerState { tabList?.size?:0 }
+
+
+    val scope = rememberCoroutineScope()
+
 
     val scrollableHeaderState = rememberScrollableHeaderState()
     val behavior = ScrollableHeaderBehavior.discoverScrollHeaderBehavior(
@@ -113,94 +133,109 @@ fun Discover(
         modifier = modifier,
         behavior = behavior,
     ) {
-
         if (tabList != null) {
-            LazyVerticalGrid(
-                modifier = Modifier.fillMaxSize(),
-                state = rememberLazyGridState(),
+            HorizontalPager(
+                pagerState,
+                modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface),
                 contentPadding = contentPadding,
-                columns = GridCells.Adaptive(EasyScheme.size.cartoonCoverWidth),
-                overscrollEffect = null
+                userScrollEnabled = false,
             ) {
-                if (lazyPageState != null) {
-                    if (lazyPageState.itemCount > 0) {
-                        items(lazyPageState.itemCount) {
-                            val item = lazyPageState[it]
-                            if (item != null) {
-                                CartoonCardWithCover(
-                                    cartoonCover = item,
-                                    onClick = {
+                val tab = tabList.getOrNull(it)
+                LaunchedEffect(Unit) {
+                    snapshotFlow {
+                        tab?.lazyGridState?.firstVisibleItemIndex
+                    }.collectLatest {
+                        logger.info(it?.toString())
+                    }
+                }
+                if (tab != null) {
+                    val lazyPageState =  tab.pagingFlow.collectAsLazyPagingItems()
+                    LazyVerticalGrid(
+                        modifier = Modifier.fillMaxSize().contentPointerScrollOpt(LocalUIMode.current.inputMode == InputMode.POINTER),
+                        state = tab.lazyGridState,
+                        columns = GridCells.Adaptive(EasyScheme.size.cartoonCoverWidth + 4.dp),
+                        overscrollEffect = rememberOverscrollEffect(),
+                        contentPadding = PaddingValues(4.dp, 4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        if (lazyPageState.itemCount > 0) {
+                            items(lazyPageState.itemCount) {
+                                val item = lazyPageState[it]
+                                if (item != null) {
+                                    CartoonCardWithCover(
+                                        cartoonCover = item,
+                                        onClick = {
 
-                                    },
-                                    onLongPress = {
+                                        },
+                                        onLongPress = {
 
-                                    }
-                                )
+                                        }
+                                    )
+                                }
                             }
                         }
+                        pagingCommon(lazyPageState)
                     }
-                    pagingCommon(lazyPageState)
+
                 }
             }
 
-            val pager = rememberPagerState(
-                uiState.selection
+        }
+
+        key(
+            uiState.bannerHeadline, uiState.history
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth().header()
             ) {
-                tabList.size
+                BannerHeadline(
+                    modifier = Modifier.fillMaxWidth(),
+                    data = uiState.bannerHeadline,
+                    onJumpTimeline = {
+
+                    }
+                )
+                Banner(
+                    modifier = Modifier.fillMaxWidth().height(EasyScheme.size.cartoonCoverHeight),
+                    data = uiState.bannerData,
+                    onClick = {
+
+                    },
+                )
+                History(
+                    modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface),
+                    data = uiState.history,
+                    onHistoryClick = {
+
+                    }
+                )
+
             }
-
         }
 
-
-        Column(
-            modifier = Modifier.fillMaxWidth().header()
+        key(
+            uiState.tabList, pagerState.currentPage
         ) {
-            BannerHeadline(
-                modifier = Modifier.fillMaxWidth(),
-                data = uiState.bannerHeadline,
-                onJumpTimeline = {
+            Column (modifier = Modifier
+                .fillMaxWidth()
+                .pinHeader()
+            ) {
+                RecommendTab(
+                    modifier = Modifier.fillMaxWidth(),
+                    data = uiState.tabList,
+                    selection = pagerState.currentPage,
+                    onSelected = {
+                        scope.launch {
+                            pagerState.animateScrollToPage(it)
+                        }
+                    },
+                    onRetry = {
 
-                }
-            )
-            Banner(
-                modifier = Modifier.fillMaxWidth().height(EasyScheme.size.cartoonCoverHeight),
-                data = uiState.bannerData,
-                onClick = {
-
-                },
-            )
-            History(
-                modifier = Modifier.fillMaxWidth(),
-                data = uiState.history,
-                onHistoryClick = {
-
-                }
-            )
-
+                    }
+                )
+                HorizontalDivider()
+            }
         }
-
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .pinHeader()
-//            .scrollable(rememberScrollableState {
-//
-//            }, orientation = Orientation.Vertical)
-        ) {
-            RecommendTab(
-                modifier = Modifier.fillMaxWidth(),
-                data = uiState.tabList,
-                selection = uiState.selection,
-                onSelected = {
-                    viewModel.onTabSelected(it)
-                },
-                onRetry = {
-
-                }
-            )
-        }
-
-
-
 
     }
 
@@ -306,6 +341,7 @@ fun History(
             }
         )
         CartoonCoverRow(
+            modifier = Modifier.fillMaxWidth(),
             data = data,
             onClick = onHistoryClick
         )
@@ -420,7 +456,7 @@ fun CartoonCoverRow(
             DataState.Ok(data)
         }
     }
-    LoadScaffold(modifier, data = dataState) { ok ->
+    LoadScaffold(modifier, data = dataState, isRow = true) { ok ->
         val carouselState = rememberEasyCarouselState {
             ok.data.size
         }

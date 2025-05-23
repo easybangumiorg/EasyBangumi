@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -45,6 +46,7 @@ fun CartoonCardWithCover(
     itemSize: Dp = EasyScheme.size.cartoonCoverWidth,
     itemIsWidth : Boolean = true,
     coverAspectRatio: Float = EasyScheme.size.cartoonCoverAspectRatio,
+    textColor: Color = MaterialTheme.colorScheme.onSurface,
     cartoonCover: CartoonCover,
     onClick: (CartoonCover) -> Unit,
     onLongPress: ((CartoonCover) -> Unit)? = null,
@@ -52,6 +54,7 @@ fun CartoonCardWithCover(
 
     Column(
         modifier = modifier
+            .width(EasyScheme.size.cartoonCoverWidth)
             .clip(RoundedCornerShape(16.dp))
             .combinedClickable(
                 onClick = {
@@ -61,11 +64,11 @@ fun CartoonCardWithCover(
                     onLongPress?.invoke(cartoonCover)
                 }
             )
+            .width(EasyScheme.size.cartoonCoverWidth)
             .padding(4.dp),
         verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.Start,
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        MaterialTheme.colorScheme
         Box(
             modifier = Modifier
                 .run {
@@ -101,15 +104,16 @@ fun CartoonCardWithCover(
             }
         }
 
-        Spacer(modifier = Modifier.size(4.dp))
+        Spacer(modifier = Modifier.fillMaxWidth().height(4.dp))
         Text(
+            modifier = Modifier.fillMaxWidth(),
             style = MaterialTheme.typography.bodySmall,
+            color = textColor,
             text = cartoonCover.name,
             maxLines = 4,
-            textAlign = TextAlign.Start,
+            textAlign = TextAlign.Center,
             overflow = TextOverflow.Ellipsis,
         )
-        Spacer(modifier = Modifier.size(4.dp))
     }
 }
 
@@ -122,12 +126,20 @@ fun CartoonCardWithCover(
     itemSize: Dp = EasyScheme.size.cartoonCoverWidth,
     itemIsWidth : Boolean = true,
     coverAspectRatio: Float = EasyScheme.size.cartoonCoverAspectRatio,
+    textColor: Color = MaterialTheme.colorScheme.onSurface,
     onClick: (CartoonInfo) -> Unit,
     onLongPress: ((CartoonInfo) -> Unit)? = null,
 ) {
 
     Column(
         modifier = modifier
+            .run {
+                if (itemIsWidth) {
+                    width(itemSize + 8.dp)
+                } else {
+                    height(itemSize * EasyScheme.size.cartoonCoverAspectRatio + 8.dp)
+                }
+            }
             .clip(RoundedCornerShape(16.dp))
             .combinedClickable(
                 onClick = {
@@ -174,14 +186,15 @@ fun CartoonCardWithCover(
             }
         }
 
-        Spacer(modifier = Modifier.size(4.dp))
+        Spacer(modifier = Modifier.fillMaxWidth().height(4.dp))
         Text(
+            modifier = Modifier.fillMaxWidth(),
             style = MaterialTheme.typography.bodySmall,
+            color = textColor,
             text = cartoonInfo.name,
             maxLines = 4,
             textAlign = TextAlign.Start,
             overflow = TextOverflow.Ellipsis,
         )
-        Spacer(modifier = Modifier.size(4.dp))
     }
 }

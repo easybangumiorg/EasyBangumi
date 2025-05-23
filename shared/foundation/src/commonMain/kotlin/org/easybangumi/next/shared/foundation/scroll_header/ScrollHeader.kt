@@ -61,8 +61,6 @@ fun rememberScrollableHeaderState(
     initialHeightOffset: Float = 0f,
     initialContentOffset: Float = 0f,
 ): ScrollableHeaderState {
-
-
     return rememberSaveable(saver = ScrollableHeaderState.Saver) {
         ScrollableHeaderState(initialHeightOffsetLimit, initialHeightOffset, initialContentOffset)
     }
@@ -183,11 +181,9 @@ internal suspend fun settleHeader(
                 val consumed = abs(initialHeightOffset - state.offset)
                 lastValue = value
                 remainingVelocity = this.velocity
-                // avoid rounding errors and stop if anything is unconsumed
                 if (abs(delta - consumed) > 0.5f) this.cancelAnimation()
             }
     }
-    // Snap if animation specs were provided.
     if (snapAnimationSpec != null) {
         if (state.offset < 0 && state.offset > state.offsetLimit) {
             AnimationState(initialValue = state.offset).animateTo(

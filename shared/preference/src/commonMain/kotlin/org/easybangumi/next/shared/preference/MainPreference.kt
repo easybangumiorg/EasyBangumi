@@ -28,7 +28,7 @@ class MainPreference(
     // 输入模式配置
     // 目前不支持综合，但是鼠标可以满足所有 TOUCH 模式的需求
     enum class InputModel {
-        AUTO, MOUSE, TOUCH
+        AUTO, POINTER, TOUCH
     }
     val inputModel = preferenceStore.getEnum<InputModel>("input_model", InputModel.AUTO)
 

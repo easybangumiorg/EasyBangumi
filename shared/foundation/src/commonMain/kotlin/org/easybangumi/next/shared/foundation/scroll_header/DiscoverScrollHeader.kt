@@ -42,7 +42,7 @@ import kotlin.math.roundToInt
  *
  */
 
-private val logger = logger("DiscoverScrollHeader")
+internal val logger = logger("DiscoverScrollHeader")
 
 class DiscoverScrollHeaderScope(
     val discoverScrollHeaderBehavior: DiscoverScrollHeaderBehavior
@@ -58,7 +58,10 @@ class DiscoverScrollHeaderScope(
 
     @get:Composable
     override val contentPadding: PaddingValues
-        get() = PaddingValues(top = with(LocalDensity.current) {  (headerHeight.value + pinHeaderHeight.value + state.offset).toDp() })
+        get() = PaddingValues(top = with(LocalDensity.current) {
+            logger.info("headerHeight: ${headerHeight.value}, pinHeaderHeight: ${pinHeaderHeight.value}, offset: ${state.offset}")
+            (headerHeight.value + pinHeaderHeight.value + state.offset).coerceAtLeast(0f).toDp()
+        })
 
     @Composable
     override fun Modifier.header(): Modifier {
@@ -92,7 +95,18 @@ class DiscoverScrollHeaderScope(
             }
         }
     }
+
+    @Composable
+    fun Modifier.contentPointerScrollOpt(enabled: Boolean): Modifier {
+        return  contentPointerScrollOpt(enabled, this)
+    }
 }
+
+@Composable
+internal expect fun DiscoverScrollHeaderScope.contentPointerScrollOpt(
+    enabled: Boolean,
+    modifier: Modifier
+): Modifier
 
 class DiscoverScrollHeaderBehavior(
     override val state: ScrollableHeaderState,
@@ -107,7 +121,7 @@ class DiscoverScrollHeaderBehavior(
 
     override val nestedScrollConnection: NestedScrollConnection = object : NestedScrollConnection {
         override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-            logger.info("onPreScroll: available: $available")
+//            logger.info("onPreScroll: available: $available")
             if (available.y < 0) {
                 val old = state.offset
                 state.offset += available.y
@@ -119,21 +133,21 @@ class DiscoverScrollHeaderBehavior(
         }
 
         override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
-            logger.info("onPostScroll: consumed: $consumed, available: $available")
+//            logger.info("onPostScroll: consumed: $consumed, available: $available")
             val old = state.offset
             state.offset += available.y
             return Offset(0f, state.offset - old)
         }
 
         override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-            logger.info("onPostFling: consumed: $consumed, available: $available")
+//            logger.info("onPostFling: consumed: $consumed, available: $available")
             val superConsumed = super.onPostFling(consumed, available)
             return superConsumed +
                     settleHeader(state, available.y, flingAnimationSpec, snapAnimationSpec)
         }
 
         override suspend fun onPreFling(available: Velocity): Velocity {
-            logger.info("onPreFling: available: $available")
+//            logger.info("onPreFling: available: $available")
             return super.onPreFling(available)
         }
     }
