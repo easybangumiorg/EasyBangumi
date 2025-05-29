@@ -36,7 +36,6 @@ abstract class EasyConfigPlugin: Plugin<Project> {
 
         target.afterEvaluate {
             val taskToAdd = target.task("addToSourceSet") {
-
                 extension.sourceDir.get().srcDirs(buildString {
                     append(project.layout.buildDirectory.asFile.get().absolutePath)
                     appendFileSeparator

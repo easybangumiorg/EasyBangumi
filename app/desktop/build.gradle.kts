@@ -40,6 +40,7 @@ compose.desktop {
     application {
         mainClass = "org.easybangumi.next.MainKt"
 
+
         jvmArgs(
             "-DversionCode=${AppConfig.versionCode}",
             "-DversionName=${AppConfig.versionName}",
@@ -57,6 +58,12 @@ compose.desktop {
 
 
         nativeDistributions {
+
+            // 这里偷懒直接判断编译环境来设置资源目录，暂不支持交叉编译
+            val hostName = PlatformInformation.hostOs
+            val archName = PlatformInformation.hostArch
+            appResourcesRootDir.set(project.layout.projectDirectory.dir("appResources/${hostName}-${archName}"))
+
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = AppConfig.namespace
             packageVersion = AppConfig.versionName
