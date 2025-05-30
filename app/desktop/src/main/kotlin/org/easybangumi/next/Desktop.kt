@@ -5,7 +5,10 @@ import org.apache.logging.log4j.core.Filter
 import org.apache.logging.log4j.core.appender.ConsoleAppender
 import org.apache.logging.log4j.core.config.Configurator
 import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilderFactory
+import org.koin.core.context.loadKoinModules
 import org.koin.core.context.startKoin
+import org.koin.dsl.module
+import uk.co.caprica.vlcj.factory.MediaPlayerFactory
 
 
 /**
@@ -25,7 +28,11 @@ object Desktop {
 
     fun onInit() {
         startKoin {
-
+            loadKoinModules(module {
+                factory {
+                    MediaPlayerFactory()
+                }
+            })
         }
 
     }

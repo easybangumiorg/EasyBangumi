@@ -72,5 +72,13 @@ includeModule(":lib:unifile", "lib/unifile")
 includeModule(":lib:serialization", "lib/serialization")
 
 
+// ------------- player -------------
+includeModule(":player:api", "player/api")
+includeModule(":player:vlcj", "player/vlcj")
+includeModule(":player:exoplayer", "player/exoplayer")
+
+// ------------- javascript -------------
+includeModule(":javascript:rhino", "javascript/rhino")
+
 
 

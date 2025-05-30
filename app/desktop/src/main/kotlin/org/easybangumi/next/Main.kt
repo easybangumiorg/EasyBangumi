@@ -22,6 +22,7 @@ fun main() {
     Desktop.onInit()
     Scheduler.onInit()
 
+
     application {
         Window(
             onCloseRequest = ::exitApplication,

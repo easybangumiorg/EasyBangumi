@@ -25,6 +25,8 @@ dependencies {
     implementation(libs.koin.core)
     implementation(libs.log4j.core)
     implementation(libs.log4j.slf4j.impl)
+
+    implementation(libs.vlcj)
 }
 
 kotlin {
@@ -59,10 +61,7 @@ compose.desktop {
 
         nativeDistributions {
 
-            // 这里偷懒直接判断编译环境来设置资源目录，暂不支持交叉编译
-            val hostName = PlatformInformation.hostOs
-            val archName = PlatformInformation.hostArch
-            appResourcesRootDir.set(project.layout.projectDirectory.dir("appResources/${hostName}-${archName}"))
+            appResourcesRootDir.set(project.layout.projectDirectory.dir("appResources"))
 
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = AppConfig.namespace

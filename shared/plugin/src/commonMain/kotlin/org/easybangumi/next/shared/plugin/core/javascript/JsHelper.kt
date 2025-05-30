@@ -41,10 +41,8 @@ object JsHelper {
     val FIRST_LINE_MARK = "easy_bangumi_cm.jsc".encodeUtf8()
 
     fun isSourceCry(source: BufferedSource): Boolean {
-        return source.peek().use {
-            val mark = runCatching { it.readByteString(FIRST_LINE_MARK.size.toLong()) }.getOrElse { ByteString.EMPTY }
-            return mark == FIRST_LINE_MARK
-        }
+        val mark = runCatching { source.readByteString(FIRST_LINE_MARK.size.toLong()) }.getOrElse { ByteString.EMPTY }
+        return mark == FIRST_LINE_MARK
     }
 
 

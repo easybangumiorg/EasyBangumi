@@ -12,7 +12,7 @@ object PlatformInformation {
 
 
     val hostOs: String by lazy {
-        val osName = System.getProperty("os.name")
+        val osName = System.getProperty("os.name").toDefaultLowerCase()
         when {
             "mac" in osName || "os x" in osName || "darwin" in osName -> OS_MAC
             "windows" in osName -> OS_WINDOWS
@@ -22,9 +22,10 @@ object PlatformInformation {
     }
 
     val hostArch: String by lazy {
-        when (val osArch = System.getProperty("os.arch").toDefaultLowerCase()) {
-            "x86_64", "amd64" -> ARCH_X64
-            "arm64", "aarch64" -> ARCH_ARM64
+        val osArch = System.getProperty("os.arch").toDefaultLowerCase()
+        when  {
+            "x86_64" in osArch || "amd64" in osArch -> ARCH_X64
+            "arm64" in osArch || "aarch64" in osArch -> ARCH_ARM64
             else -> throw Error("Unknown arch $osArch")
         }
     }

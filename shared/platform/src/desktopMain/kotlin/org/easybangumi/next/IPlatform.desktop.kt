@@ -20,12 +20,11 @@ object PlatformInformation : IPlatformInformation {
 
     const val ARCH_X64 = "x64"
 
-    const val ARCH_ARM = "arm"
-    const val ARCH_AARCH = "aarch"
+    const val ARCH_ARM64 = "arm64"
 
 
     override val hostOs: String by lazy {
-        val osName = System.getProperty("os.name")
+        val osName = System.getProperty("os.name").lowercase()
         when {
             "mac" in osName || "os x" in osName || "darwin" in osName -> OS_MAC
             "windows" in osName -> OS_WINDOWS
@@ -35,10 +34,10 @@ object PlatformInformation : IPlatformInformation {
     }
 
     override val hostArch: String by lazy {
-        when (val osArch = System.getProperty("os.arch")) {
-            "x86_64", "amd64" -> ARCH_X64
-            "aarch64" -> ARCH_AARCH
-            "arm64" -> ARCH_ARM
+        val osArch = System.getProperty("os.arch").lowercase()
+        when  {
+            "x86_64" in osArch || "amd64" in osArch -> ARCH_X64
+            "aarch64" in osArch || "arm64" in osArch -> ARCH_ARM64
             else -> throw Error("Unknown arch $osArch")
         }
     }
