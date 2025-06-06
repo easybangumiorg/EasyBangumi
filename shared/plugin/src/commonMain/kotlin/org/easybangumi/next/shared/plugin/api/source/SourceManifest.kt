@@ -25,6 +25,7 @@ data class SourceManifest (
     val map: Map<String, String> = emptyMap(),
 
     val loadType: Int,      // 加载类型，决定用哪个 Loader 加载
+    val loaderParam: LoaderParam? = null,
 
     val lastModified: Long, // 最后修改时间，用于判断是否需要重新加载
 ) {
@@ -34,6 +35,15 @@ data class SourceManifest (
         const val LOAD_TYPE_JS = 1
         const val LOAD_TYPE_CRY_JS = 2
     }
+
+    sealed class LoaderParam {
+        data class JSLoaderParam (
+            val rawString: String? = null,
+            val ufd: UFD? = null,
+        ): LoaderParam()
+    }
+
+
 
     val key: String = "${extensionManifest.key}-${id}"
 }

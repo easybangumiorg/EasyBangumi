@@ -1,11 +1,8 @@
-package plugin.easy_config
-
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.Optional
 import kotlin.reflect.KClass
-import kotlin.reflect.KType
 
 /**
  * Represents a collection of configuration properties for a specific purpose or module.

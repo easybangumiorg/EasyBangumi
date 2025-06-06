@@ -15,7 +15,7 @@ java {
 }
 
 dependencies {
-    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
+    api(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.datetime)

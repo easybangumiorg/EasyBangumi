@@ -1,15 +1,10 @@
-package plugin.easy_config
-
 import com.squareup.kotlinpoet.*
 import org.gradle.api.DefaultTask
-import org.gradle.api.Project
 import org.gradle.api.file.SourceDirectorySet
 import org.gradle.api.plugins.BasePlugin
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.options.Option
-import org.gradle.internal.declarativedsl.language.Import
-import org.gradle.kotlin.dsl.withType
 import java.io.File
 
 /**

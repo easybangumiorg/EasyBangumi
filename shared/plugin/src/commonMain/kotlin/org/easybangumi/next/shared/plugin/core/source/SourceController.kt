@@ -13,7 +13,6 @@ import kotlinx.datetime.Clock
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.coroutineProvider
-import org.easybangumi.next.lib.utils.map
 import org.easybangumi.next.lib.utils.mapWithState
 import org.easybangumi.next.shared.plugin.api.source.SourceManifest
 import org.easybangumi.next.shared.plugin.core.extension.ExtensionController
@@ -22,8 +21,8 @@ import org.easybangumi.next.shared.plugin.core.info.SourceConfig
 import org.easybangumi.next.shared.plugin.core.info.SourceInfo
 import org.easybangumi.next.shared.plugin.core.inner.InnerSource
 import org.easybangumi.next.shared.plugin.core.source.loader.InnerSourceLoader
-import org.easybangumi.next.shared.plugin.core.source.loader.JsCryLoader
-import org.easybangumi.next.shared.plugin.core.source.loader.JsSourceLoader
+import org.easybangumi.next.shared.plugin.core.source.loader.SourceLoader
+import org.easybangumi.next.shared.plugin.core.source.loader.getSourceLoaderFactory
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -69,13 +68,6 @@ class SourceController(
     // ============== Loader ==============
 
     private val innerLoader = InnerSourceLoader()
-
-    private val jsLoader = JsSourceLoader()
-    private val jsCryLoader = JsCryLoader(jsLoader)
-    private val loaderMap = mapOf(
-        SourceManifest.LOAD_TYPE_JS to jsLoader,
-        SourceManifest.LOAD_TYPE_CRY_JS to jsCryLoader
-    )
 
     init {
         // (sourceManifest, sourceConfig) -> SourceInfo
@@ -149,6 +141,12 @@ class SourceController(
         }
     }
 
+    private fun getSourceLoader(type: Int): SourceLoader? {
+        if (type == SourceManifest.LOAD_TYPE_INNER) {
+            return null
+        }
+        return getSourceLoaderFactory().getLoader(type)
+    }
 
 
     private suspend fun innerLoad(
@@ -156,7 +154,8 @@ class SourceController(
         sourceConfig: SourceConfig
     ): SourceInfo {
 
-        val loader = loaderMap[sourceManifest.loadType]
+
+        val loader = getSourceLoader(sourceManifest.loadType)
             ?: return SourceInfo.Error(sourceManifest, sourceConfig, "loader not found")
 
         // 已关闭的源清除一下缓存

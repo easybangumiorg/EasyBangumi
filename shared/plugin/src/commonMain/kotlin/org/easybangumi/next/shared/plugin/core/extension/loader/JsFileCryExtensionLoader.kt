@@ -52,6 +52,9 @@ class JsFileCryExtensionLoader: ExtensionLoader {
             website = manifest["website"],
             map = manifest,
             loadType = SourceManifest.LOAD_TYPE_CRY_JS,
+            loaderParam = SourceManifest.LoaderParam.JSLoaderParam(
+                ufd = file.getUFD()
+            ),
             lastModified = extensionManifest.lastModified
         )
     }

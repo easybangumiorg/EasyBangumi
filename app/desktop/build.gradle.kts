@@ -1,5 +1,6 @@
 import org.gradle.kotlin.dsl.support.kotlinCompilerOptions
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.kotlin.daemon.common.FileSystem
 
 plugins {
     alias(builds.plugins.kotlinJvm)
@@ -60,8 +61,7 @@ compose.desktop {
 
 
         nativeDistributions {
-
-            appResourcesRootDir.set(project.layout.projectDirectory.dir("appResources"))
+            appResourcesRootDir.set(project.layout.projectDirectory.dir("..assets"))
 
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = AppConfig.namespace

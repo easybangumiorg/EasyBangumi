@@ -2,7 +2,6 @@ package org.easybangumi.next.shared.plugin.api.component
 
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.plugin.api.SourceResult
-import org.easybangumi.next.shared.plugin.api.component.filter.Filter
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -17,9 +16,7 @@ import org.easybangumi.next.shared.plugin.api.component.filter.Filter
  */
 interface SearchComponent : Component {
 
-    fun firstKey(
-        keyword: String
-    ): String
+    fun firstKey(): String
 
     suspend fun search(
         keyword: String,

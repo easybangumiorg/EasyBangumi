@@ -1,7 +1,5 @@
 package org.easybangumi.next.shared.plugin.paging
 
-import androidx.paging.PagingSource
-import androidx.paging.PagingState
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.EasyPagingSource
 import org.easybangumi.next.lib.utils.PagingFrame
@@ -27,7 +25,7 @@ class CartoonSearchPagingSource(
 ) : EasyPagingSource<CartoonCover> {
 
     override val initKey: String = searchBusiness.runDirect {
-        firstKey(keyword)
+        firstKey()
     }
 
     override suspend fun load(key: String): DataState<PagingFrame<CartoonCover>> {

@@ -1,7 +1,7 @@
 package org.easybangumi.next.shared.plugin.core.info
 
 import org.easybangumi.next.shared.plugin.api.source.SourceManifest
-import org.easybangumi.next.shared.plugin.core.component.ComponentBundle
+import org.easybangumi.next.shared.plugin.core.component.SimpleComponentBundle
 
 
 /**
@@ -25,7 +25,7 @@ sealed class SourceInfo {
     class Loaded(
         override val manifest: SourceManifest,
         override val sourceConfig: SourceConfig,
-        val componentBundle: ComponentBundle,
+        val componentBundle: SimpleComponentBundle,
     ) : SourceInfo()
 
     // 被阻断（用户主动关闭或者崩溃后关闭）

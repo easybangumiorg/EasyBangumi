@@ -23,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.layout
 import dev.icerock.moko.resources.compose.stringResource
 import kotlinx.coroutines.launch
 import org.easybangumi.next.shared.resources.Res

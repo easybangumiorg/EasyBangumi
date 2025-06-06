@@ -4,14 +4,14 @@ package org.easybangumi.next.rhino
  * Created by heyanle on 2024/7/30.
  * https://github.com/heyanLE
  */
-class JSRuntimeProvider(
+class RhinoRuntimeProvider(
     private val maxRuntimeCount: Int = 1
 ) {
 
-    private val runtimes: MutableList<JSRuntime> = mutableListOf()
+    private val runtimes: MutableList<RhinoRuntime> = mutableListOf()
     private var currentPoint = 0
 
-    fun getRuntime(): JSRuntime {
+    fun getRuntime(): RhinoRuntime {
         synchronized(runtimes){
             currentPoint ++
             currentPoint %= maxRuntimeCount
@@ -19,7 +19,7 @@ class JSRuntimeProvider(
             if(runtime != null){
                 return runtime
             }
-            runtime = JSRuntime()
+            runtime = RhinoRuntime()
             runtime.init()
             runtimes.add(runtime)
             return runtime

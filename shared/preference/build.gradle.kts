@@ -1,6 +1,6 @@
 
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import plugin.easy_config.EasyConfigPlugin
+
 
 plugins {
     alias(builds.plugins.kotlinMultiplatform)

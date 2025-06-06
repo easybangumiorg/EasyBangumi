@@ -1,8 +1,11 @@
+import com.android.build.gradle.tasks.MergeSourceSetFolders
+
 plugins {
     alias(builds.plugins.androidApplication)
     alias(builds.plugins.kotlinCompose)
     alias(builds.plugins.kotlinAndroid)
     alias(builds.plugins.ksp)
+    id("AndroidAppResource")
 }
 
 group = AppConfig.namespace
@@ -23,8 +26,6 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
-
-
 
 
     }
@@ -82,4 +83,9 @@ dependencies {
     implementation(projects.shared)
 
 
+}
+
+
+easyAndroidAssets {
+    assetsDir = project.layout.projectDirectory.dir("../assets")
 }

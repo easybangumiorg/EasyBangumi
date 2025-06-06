@@ -1,8 +1,9 @@
-package org.easybangumi.next.shared.plugin.core.source.loader
+package org.easybangumi.next.shared.plugin.core.javascript.rhino.source
 
 import org.easybangumi.next.shared.plugin.api.source.SourceManifest
 import org.easybangumi.next.shared.plugin.core.info.SourceConfig
 import org.easybangumi.next.shared.plugin.core.info.SourceInfo
+import org.easybangumi.next.shared.plugin.core.source.loader.SourceLoader
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -16,7 +17,7 @@ import org.easybangumi.next.shared.plugin.core.info.SourceInfo
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
-class JsSourceLoader : SourceLoader {
+class RhinoSourceLoader : SourceLoader {
 
     override fun loadType(): Int = SourceManifest.LOAD_TYPE_JS
 

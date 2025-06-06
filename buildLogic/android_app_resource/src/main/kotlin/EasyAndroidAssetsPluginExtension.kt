@@ -1,0 +1,24 @@
+
+import org.gradle.api.Project
+import org.gradle.kotlin.dsl.property
+import javax.inject.Inject
+
+/**
+ *    https://github.com/easybangumiorg/EasyBangumi
+ *
+ *    Copyright 2025 easybangumi.org and contributors
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ */
+abstract class EasyAndroidAssetsPluginExtension(project: Project) {
+
+    @Inject
+    private val objects = project.objects
+
+    val assetsDir = objects.directoryProperty()
+
+}

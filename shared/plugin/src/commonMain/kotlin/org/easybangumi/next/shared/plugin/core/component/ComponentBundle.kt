@@ -1,17 +1,7 @@
 package org.easybangumi.next.shared.plugin.core.component
 
-import kotlinx.atomicfu.atomic
-import org.easybangumi.next.lib.logger.logger
-import org.easybangumi.next.shared.plugin.api.ConstClazz
 import org.easybangumi.next.shared.plugin.api.component.Component
 import org.easybangumi.next.shared.plugin.api.source.Source
-import org.easybangumi.next.shared.plugin.utils.utilsModule
-import org.koin.core.Koin
-import org.koin.core.context.loadKoinModules
-import org.koin.dsl.binds
-import org.koin.dsl.koinApplication
-import org.koin.dsl.module
-import kotlin.concurrent.Volatile
 import kotlin.reflect.KClass
 
 /**
@@ -25,100 +15,24 @@ import kotlin.reflect.KClass
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-class ComponentBundle(
-    private val source: Source,
-    private val componentConstructor: Array<() -> Component>,
-) {
-    private val logger = logger()
+interface ComponentBundle {
 
-    @Volatile
-    private var koinApp: Koin? = null
+    fun getSource(): Source
 
-    private val componentBusiness: HashMap<KClass<out Component>, ComponentBusiness<out Component>> = hashMapOf()
+    suspend fun load()
 
-    private val init = atomic(false)
+    fun <T : Any> get(clazz: KClass<T>): T?
 
-    fun load(){
+    fun <T: Component> getBusiness(clazz: KClass<T>): ComponentBusiness<T>?
 
-        if (init.compareAndSet(expect = false, update = true)) {
+    fun release()
 
-            val realComponent = componentConstructor.map { it() }
+}
 
-            koinApp = koinApplication {
-                val component = module {
-                    // Load source
-                    single {
-                        source
-                    }.binds(ConstClazz.sourceClazz.toTypedArray())
+inline fun <reified T : Component> ComponentBundle.getBusiness(): ComponentBusiness<T>? {
+    return getBusiness(T::class)
+}
 
-                    // Load component
-                    realComponent.forEach { component ->
-                        single {
-                            component.apply {
-                                if (this is BaseComponent) {
-                                    innerSource = this@ComponentBundle.source
-                                    innerKoin = koin
-                                }
-                            }
-                        }.binds(
-                            ConstClazz.componentClazz.filter {
-                                it.isInstance(component)
-                            }.toTypedArray().apply {
-                                logger.info("load component: ${component::class.simpleName} -> ${this.joinToString(",")}")
-                            }
-                        )
-                    }
-
-
-                }
-                modules(component, utilsModule)
-
-            }.koin
-        }
-    }
-
-
-    fun getSource(): Source {
-        return source
-    }
-
-
-
-    fun <T : Any> get(clazz: KClass<T>): T? {
-        if (!init.value) return null
-        // 获取 Component 请使用 getBusiness
-        if (ConstClazz.componentClazz.contains(clazz)) {
-            return null
-        }
-        return koinApp?.get(clazz)
-    }
-
-    fun <T: Component> getBusiness(clazz: KClass<T>): ComponentBusiness<T>? {
-        if (!init.value) return null
-        val cache = componentBusiness[clazz]
-        if (cache != null) {
-            return cache as? ComponentBusiness<T>
-        }
-        val component = koinApp?.getOrNull<T>(clazz) ?: return null
-        val business = ComponentBusiness(component)
-        componentBusiness[clazz] = business
-        return business
-    }
-
-
-    inline fun <reified T : Any> get(): T? {
-        return get(T::class)
-    }
-
-    inline fun <reified T : Component> getBusiness(): ComponentBusiness<T>? {
-        return getBusiness(T::class)
-    }
-
-    fun release() {
-        if (init.compareAndSet(true, false)) {
-            koinApp?.close()
-            koinApp = null
-            componentBusiness.clear()
-        }
-    }
+inline fun <reified T : Any> ComponentBundle.get(): T? {
+    return get(T::class)
 }

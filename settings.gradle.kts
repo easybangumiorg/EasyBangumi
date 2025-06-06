@@ -1,7 +1,10 @@
+includeBuild("buildLogic")
+
 rootProject.name = "EasyBangumi"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
+
     repositories {
         google {
             mavenContent {

@@ -1,5 +1,3 @@
-package plugin.easy_config
-
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
  *

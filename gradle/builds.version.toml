@@ -11,6 +11,7 @@ kotlinPoet = "2.1.0"
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
 
+
 compose = { id = "org.jetbrains.compose", version.ref = "compose" }
 
 kotlinCompose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
@@ -22,3 +23,23 @@ ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 
 [libraries]
 kotlinPoet = { group = "com.squareup", name = "kotlinpoet", version.ref = "kotlinPoet" }
+
+
+androidGradlePlugin = { module = "com.android.tools.build:gradle", version.ref = "agp" }
+androidLibraryPlugin = { module = "com.android.library:com.android.library.gradle.plugin", version.ref = "agp" }
+androidApplicationPlugin = { module = "com.android.application:com.android.application.gradle.plugin", version.ref = "agp" }
+kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+composePlugin = { module = "org.jetbrains.compose:org.jetbrains.compose.gradle.plugin", version.ref = "compose" }
+kotlinComposePlugin = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
+
+
+
+#androidApplicationPlugin = { id = "com.android.application", version.ref = "agp" }
+#androidLibraryPlugin = { id = "com.android.library", version.ref = "agp" }
+#composePlugin = { id = "org.jetbrains.compose", version.ref = "compose" }
+#kotlinComposePlugin = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+#kotlinMultiplatformPlugin = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+#kotlinAndroidPlugin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+#kotlinJvmPlugin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+
+#ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

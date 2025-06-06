@@ -1,11 +1,10 @@
 package org.easybangumi.next.shared.plugin.core.source.loader
 
-import org.easybangumi.next.shared.plugin.core.component.ComponentBundle
+import org.easybangumi.next.shared.plugin.core.component.SimpleComponentBundle
 import org.easybangumi.next.shared.plugin.core.info.SourceConfig
 import org.easybangumi.next.shared.plugin.core.info.SourceInfo
 import org.easybangumi.next.shared.plugin.core.inner.InnerSource
 import org.easybangumi.next.shared.plugin.core.source.wrapper.SourceLibWrapper
-import org.easybangumi.next.shared.plugin.core.utils.PluginPathProvider
 
 
 /**
@@ -15,7 +14,7 @@ class InnerSourceLoader() {
 
     private val cache = mutableMapOf<String, SourceInfo>()
 
-    fun load(
+    suspend fun load(
         innerSource: InnerSource,
         sourceConfig: SourceConfig,
     ): SourceInfo {
@@ -39,7 +38,7 @@ class InnerSourceLoader() {
             )
 
             // 加载
-            val bundle = ComponentBundle(
+            val bundle = SimpleComponentBundle(
                 sourceWrapper,
                 innerSource.componentConstructor
             )

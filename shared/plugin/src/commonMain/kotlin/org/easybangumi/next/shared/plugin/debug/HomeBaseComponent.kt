@@ -92,7 +92,7 @@ class HomeBaseComponent: BaseComponent(), DiscoverComponent, FilterComponent, Se
         TODO("Not yet implemented")
     }
 
-    override fun firstKey(keyword: String): String {
+    override fun firstKey(): String {
         TODO("Not yet implemented")
     }
 

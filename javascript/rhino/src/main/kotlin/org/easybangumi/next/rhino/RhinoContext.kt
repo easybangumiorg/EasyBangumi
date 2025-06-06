@@ -10,8 +10,8 @@ import org.mozilla.javascript.NativeJavaObject
  * https://github.com/heyanLE
  */
 
-typealias JSContext = Context
-typealias JSFunction = Function
+typealias RhinoContext = Context
+typealias RhinoFunction = Function
 
 internal val logger = logger("rhino")
 

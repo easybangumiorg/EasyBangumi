@@ -1,6 +1,6 @@
 
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import plugin.easy_config.EasyConfigPlugin
+
 
 plugins {
     alias(builds.plugins.kotlinMultiplatform)
@@ -85,6 +85,10 @@ kotlin {
 //            implementation(compose.uiTest)
         }
 
+        jvmMain.dependencies {
+            implementation(projects.javascript.rhino)
+        }
+
         androidMain.dependencies {
 
         }
@@ -92,6 +96,7 @@ kotlin {
         desktopMain.dependencies {
             implementation(libs.kotlinx.coroutines.swing)
         }
+
         iosMain.dependencies {
 
         }

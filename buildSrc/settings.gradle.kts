@@ -1,4 +1,4 @@
-rootProject.name = "EasyBangumi"
+rootProject.name = "EasyBangumiBuildSrc"
 
 dependencyResolutionManagement {
 

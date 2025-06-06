@@ -30,6 +30,9 @@ object UniFileFactory {
 }
 
 expect fun UniFileFactory.fromUFD(ufd: UFD): UniFile?
+fun UniFileFactory.fromUFDOrThrow(ufd: UFD): UniFile {
+    return fromUFD(ufd) ?: throw Exception("from ufd of ${ufd} is null")
+}
 
 interface UniFile {
 
