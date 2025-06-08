@@ -19,7 +19,6 @@ class EasyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         Android.onInit(this)
-        Scheduler.onInit()
     }
 
 }

@@ -1,10 +1,6 @@
 package org.easybangumi.next.shared
 
 import androidx.compose.animation.AnimatedContentScope
-import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -15,18 +11,18 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
-import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavDeepLink
-import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
+import com.easybangumi.next.shared.debug.DebugHost
+import com.easybangumi.next.shared.debug.DebugPage
+import kotlinx.serialization.Serializable
 import org.easybangumi.next.lib.utils.WeakRef
 import org.easybangumi.next.platformInformation
 import org.easybangumi.next.shared.ui.home.Main
-import kotlin.jvm.JvmSuppressWildcards
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -47,12 +43,30 @@ val LocalNavController = staticCompositionLocalOf<NavHostController> {
 internal var innerNavControllerRef: WeakRef<NavHostController>? = null
 val navController: NavHostController? get() = innerNavControllerRef?.targetOrNull
 
+class RouterPage {
+    @Serializable
+    object Main
 
-const val MAIN = "main"
+    @Serializable
+    data class Debug(
+        val debugPageName: String,
+    ) {
+        companion object  {
+            val HOME = Debug(DebugPage.HOME.name)
+        }
 
-const val DEBUG = "debug"
+        fun toRoute(): DebugPage =  DebugPage.valueOf(debugPageName)
 
-const val DEFAULT = MAIN
+    }
+
+    companion object {
+        val DEFAULT = Main
+    }
+
+
+}
+
+
 
 
 @Composable
@@ -68,8 +82,9 @@ fun Router() {
         innerNavControllerRef = WeakRef(navController)
     }
     CompositionLocalProvider(LocalNavController provides navController) {
+        // 所有页面都尽量走 NavHook
         NavHost(
-            navController, DEFAULT,
+            navController, RouterPage.DEFAULT,
             modifier = Modifier.fillMaxSize(),
             enterTransition = { slideInHorizontally(tween()) { it } },
             exitTransition = { slideOutHorizontally(tween()) { -it } + fadeOut(tween()) },
@@ -77,56 +92,31 @@ fun Router() {
             popExitTransition = { slideOutHorizontally(tween()) { it } }
         ) {
 
-            composableWithHook(
-                route = MAIN
-            ) {
-                Main()
+            composable<RouterPage.Main> {
+                NavHook(it ) {
+                    Main()
+                }
             }
 
+            composable<RouterPage.Debug>() {
+                val debugPage = it.toRoute<RouterPage.Debug>()
+                NavHook(it) {
+                    DebugHost(
+                        debugPage.toRoute(),
+                        onNav = {
+                            // Handle navigation from debug page
+                            val debug = RouterPage.Debug(it.name)
+                            navController.navigate(debug)
+                        },
+                        onBack = {
+                            navController.popBackStack()
+                        }
+                    )
+                }
+            }
+//            if (platformInformation.isDebug) {
+//
+//            }
         }
-
     }
-
-
-}
-
-public fun NavGraphBuilder.composableWithHook(
-    route: String,
-    arguments: List<NamedNavArgument> = emptyList(),
-    deepLinks: List<NavDeepLink> = emptyList(),
-    enterTransition:
-    (@JvmSuppressWildcards
-    AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? =
-        null,
-    exitTransition:
-    (@JvmSuppressWildcards
-    AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?)? =
-        null,
-    popEnterTransition:
-    (@JvmSuppressWildcards
-    AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? =
-        enterTransition,
-    popExitTransition:
-    (@JvmSuppressWildcards
-    AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?)? =
-        exitTransition,
-    sizeTransform:
-    (@JvmSuppressWildcards
-    AnimatedContentTransitionScope<NavBackStackEntry>.() -> SizeTransform?)? =
-        null,
-    content: @Composable AnimatedContentScope.(NavBackStackEntry) -> Unit
-) {
-    composable(
-        route,
-        arguments,
-        deepLinks,
-        enterTransition,
-        exitTransition,
-        popEnterTransition,
-        popExitTransition,
-        sizeTransform
-    ) {
-        NavHook(it, content)
-    }
-
 }

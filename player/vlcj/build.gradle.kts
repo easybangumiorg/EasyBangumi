@@ -22,7 +22,7 @@ java {
 }
 
 dependencies {
-    implementation(libs.vlcj)
+    api(libs.vlcj)
     implementation(projects.player.api)
 
     implementation(libs.kotlinx.coroutines.core)

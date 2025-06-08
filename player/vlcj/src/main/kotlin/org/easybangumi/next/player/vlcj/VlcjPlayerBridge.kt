@@ -145,7 +145,7 @@ class VlcjPlayerBridge(
             displayWidth: Int,
             displayHeight: Int
         ) {
-//            println("display: ${nativeBuffers.size}, $displayWidth x $displayHeight")
+            println("display: ${nativeBuffers.size}, $displayWidth x $displayHeight")
             val time = mediaPlayer.status().time()
             val listener = frameListener
             if (listener == null) {
@@ -194,7 +194,7 @@ class VlcjPlayerBridge(
                 ColorType.RGBA_8888,
                 ColorAlphaType.PREMUL,
             )
-//            println("getBufferFormat: $sourceWidth x $sourceHeight")
+            println("getBufferFormat: $sourceWidth x $sourceHeight")
             return RV32BufferFormat(sourceWidth, sourceHeight)
         }
 

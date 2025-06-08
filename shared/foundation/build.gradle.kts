@@ -74,6 +74,9 @@ kotlin {
 
             implementation(compose.material3)
 
+            implementation(libs.androidx.lifecycle.runtime.compose)
+            implementation(libs.androidx.lifecycle.viewmodel.compose)
+
             implementation(libs.navigation.compose)
 
             implementation(libs.paging.multiplatform.common)

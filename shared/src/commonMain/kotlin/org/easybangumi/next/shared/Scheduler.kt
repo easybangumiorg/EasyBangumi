@@ -12,6 +12,8 @@ import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.mp.KoinPlatformTools
+import kotlin.concurrent.atomics.AtomicBoolean
+import kotlin.concurrent.atomics.ExperimentalAtomicApi
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -27,14 +29,22 @@ import org.koin.mp.KoinPlatformTools
 
 object Scheduler {
 
+    private var isInit = false
+
+
+    // 业务要么保证只执行一次，要么保证只在同一个线程饱和执行多次
     fun onInit() {
-        loadKoinModules(listOf(
-            pluginModule,
-            storeModule,
-            dataModule,
-            themeModule,
-            preferenceModule,
-        ))
+        if (!isInit) {
+            isInit = true
+            loadKoinModules(listOf(
+                pluginModule,
+                storeModule,
+                dataModule,
+                themeModule,
+                preferenceModule,
+            ))
+        }
+
     }
 
     fun onSplashPageLaunch() {

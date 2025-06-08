@@ -1,7 +1,5 @@
 package org.easybangumi.next
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.material.Text
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import org.easybangumi.next.lib.logger.logger
@@ -25,8 +23,7 @@ fun main() {
 
     Desktop.onInit()
     Scheduler.onInit()
-
-    logger.info(System.getProperty("compose.application.resources.dir"))
+    logger.info(System.getProperty("java.version"))
 
     application {
         Window(
@@ -34,10 +31,6 @@ fun main() {
             title = "EasyBangumi.next",
         ) {
             ComposeApp()
-            Column {
-                Text("${EasyConfig.IS_DEBUG}")
-                Text(System.getProperty("compose.application.resources.dir"))
-            }
 
         }
     }

@@ -34,7 +34,7 @@ object Desktop {
             loadKoinModules(module {
                 factory {
                     MediaPlayerFactory()
-                }
+                }.bind()
                 single {
                     DesktopPlatform
                 }.bind(Platform::class)

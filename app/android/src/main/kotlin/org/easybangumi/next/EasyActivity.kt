@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import org.easybangumi.next.shared.ActivityHost
 import org.easybangumi.next.shared.ComposeApp
+import org.easybangumi.next.shared.Scheduler
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -24,7 +25,7 @@ class EasyActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         // huawei crash
         setContentView(FrameLayout(this))
-
+        Scheduler.onInit()
         setContent {
             ActivityHost(this@EasyActivity) {
                 ComposeApp()

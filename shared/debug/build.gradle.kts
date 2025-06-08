@@ -71,6 +71,10 @@ kotlin {
             implementation(compose.materialIconsExtended) // 此依赖需要在生产环境中进行剪枝，非常巨大
             implementation(compose.ui)
             implementation(compose.material3)
+            implementation(libs.kotlinx.serialization.json)
+            implementation(libs.koin.compose)
+
+            implementation(projects.player.api)
         }
 
         androidMain.dependencies {
@@ -80,6 +84,7 @@ kotlin {
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(compose.ui)
+            implementation(projects.player.vlcj)
         }
         iosMain.dependencies {
 

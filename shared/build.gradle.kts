@@ -8,6 +8,7 @@ plugins {
     alias(builds.plugins.androidLibrary)
     alias(builds.plugins.kotlinCompose)
     alias(builds.plugins.compose)
+    alias(libs.plugins.kotlinxSerialization)
 }
 kotlin {
     androidTarget {
@@ -95,6 +96,7 @@ kotlin {
             implementation(libs.paging.multiplatform.common)
             implementation(libs.paging.multiplatform.compose)
             implementation(libs.md3.window.size)
+            implementation(libs.kotlinx.serialization.json)
 
             api(projects.lib)
 
