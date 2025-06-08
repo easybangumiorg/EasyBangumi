@@ -27,8 +27,8 @@ class AppResourceDirectoryProvider: DiscoveryDirectoryProvider {
     override fun directories(): Array<out String?>? {
         logger.info("AppResourceDirectoryProvider directories called")
         return arrayOf(
-            "C:\\Program Files\\VideoLAN\\VLC"
-            //File(System.getProperty("compose.application.resources.dir"), "lib").absolutePath
+//            "C:\\Program Files\\VideoLAN\\VLC"
+            File(System.getProperty("compose.application.resources.dir"), "lib").absolutePath
         ).apply {
             logger.info("AppResourceDirectoryProvider directories: ${this.joinToString(", ")}")
         }
