@@ -1,6 +1,8 @@
 package org.easybangumi.next.shared.ui
 
 import androidx.compose.runtime.Composable
+import org.easybangumi.next.isAndroid
+import org.easybangumi.next.isIos
 import org.easybangumi.next.platformInformation
 import org.easybangumi.next.shared.foundation.InputMode
 import org.easybangumi.next.shared.foundation.UIMode
@@ -63,7 +65,7 @@ object UI {
         return when(inputModel.value) {
             MainPreference.InputModel.AUTO -> {
                 // 默认模式直接按照平台区分，特殊情况（如触控桌面端）让用户手动选择
-                if (platformInformation.isAndroid || platformInformation.isIos)
+                if (platformInformation.isAndroid() || platformInformation.isIos())
                     InputMode.TOUCH
                 else
                     InputMode.POINTER

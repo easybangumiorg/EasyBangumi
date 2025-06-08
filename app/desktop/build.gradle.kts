@@ -6,6 +6,7 @@ plugins {
     alias(builds.plugins.kotlinJvm)
     alias(builds.plugins.kotlinCompose)
     alias(builds.plugins.compose)
+    id("EasyConfig")
 }
 
 group = AppConfig.namespace
@@ -22,16 +23,22 @@ dependencies {
     implementation(compose.desktop.currentOs)
 
     implementation(projects.shared)
+    implementation(projects.lib.logger)
 
     implementation(libs.koin.core)
     implementation(libs.log4j.core)
     implementation(libs.log4j.slf4j.impl)
 
     implementation(libs.vlcj)
+
 }
 
 kotlin {
     jvmToolchain(21)
+
+    sourceSets {
+
+    }
 }
 
 java {
@@ -39,37 +46,40 @@ java {
     targetCompatibility = JavaVersion.VERSION_21
 }
 
+
+
 compose.desktop {
+
     application {
+
         mainClass = "org.easybangumi.next.MainKt"
 
-
-        jvmArgs(
-            "-DversionCode=${AppConfig.versionCode}",
-            "-DversionName=${AppConfig.versionName}",
-            "-Dnamespace=${AppConfig.namespace}",
-        )
-
-        // 有点 trick 但没办法
-        if (project.gradle.startParameter.taskNames.contains("Release")
-            || project.gradle.startParameter.taskNames.contains("release")) {
-            jvmArgs(
-                "-Drelease=true",
-            )
+        buildTypes.release.proguard {
+            optimize.set(false)
+            obfuscate.set(false)
+            isEnabled.set(false)
         }
 
-
-
         nativeDistributions {
-            appResourcesRootDir.set(project.layout.projectDirectory.dir("..assets"))
+            appResourcesRootDir.set(project.layout.projectDirectory.dir("../assets"))
 
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = AppConfig.namespace
             packageVersion = AppConfig.versionName
 
         }
-        buildTypes.release.proguard {
-            isEnabled.set(false)
-        }
+    }
+}
+
+easyBuildConfig {
+    packageName.set(AppConfig.namespace)
+    buildConfigFileName.set("EasyConfig")
+    sourceDir.set(kotlin.sourceSets.findByName("main")!!.kotlin)
+
+
+    configProperties {
+        "NAMESPACE" with AppConfig.namespace
+        "VERSION_CODE" with AppConfig.versionCode
+        "VERSION_NAME" with AppConfig.versionName
     }
 }

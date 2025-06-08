@@ -12,60 +12,76 @@ package org.easybangumi.next
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
-object PlatformInformation : IPlatformInformation {
+//object PlatformInformation : IPlatformInformation {
+//
+//    const val OS_MAC = "macos"
+//    const val OS_WINDOWS = "windows"
+//    const val OS_LINUX = "linux"
+//
+//    const val ARCH_X64 = "x64"
+//
+//    const val ARCH_ARM64 = "arm64"
+//
+//
+//    override val hostOs: String by lazy {
+//        val osName = System.getProperty("os.name").lowercase()
+//        when {
+//            "mac" in osName || "os x" in osName || "darwin" in osName -> OS_MAC
+//            "windows" in osName -> OS_WINDOWS
+//            "linux" in osName -> OS_LINUX
+//            else -> throw Error("Unknown OS $osName")
+//        }
+//    }
+//
+//    override val hostArch: String by lazy {
+//        val osArch = System.getProperty("os.arch").lowercase()
+//        when  {
+//            "x86_64" in osArch || "amd64" in osArch -> ARCH_X64
+//            "aarch64" in osArch || "arm64" in osArch -> ARCH_ARM64
+//            else -> throw Error("Unknown arch $osArch")
+//        }
+//    }
+//
+//    override val platformName: String
+//        get() = "Desktop ${hostOs} (${hostArch})"
+//
+//    override val isAndroid: Boolean
+//        get() = false
+//
+//    override val isIos: Boolean
+//        get() = false
+//
+//    override val isDesktop: Boolean
+//        get() = true
+//
+//}
+//
 
-    const val OS_MAC = "macos"
-    const val OS_WINDOWS = "windows"
-    const val OS_LINUX = "linux"
 
-    const val ARCH_X64 = "x64"
+actual interface Platform {
+    actual val platformName: String
+    actual val platformType: PlatformType
+    actual val isDebug: Boolean
 
-    const val ARCH_ARM64 = "arm64"
+    actual val versionCode: Int
+    actual val versionName: String
 
+    val hostOs: DesktopHostOs
+    val hostArch: DesktopHostArch
 
-    override val hostOs: String by lazy {
-        val osName = System.getProperty("os.name").lowercase()
-        when {
-            "mac" in osName || "os x" in osName || "darwin" in osName -> OS_MAC
-            "windows" in osName -> OS_WINDOWS
-            "linux" in osName -> OS_LINUX
-            else -> throw Error("Unknown OS $osName")
-        }
-    }
-
-    override val hostArch: String by lazy {
-        val osArch = System.getProperty("os.arch").lowercase()
-        when  {
-            "x86_64" in osArch || "amd64" in osArch -> ARCH_X64
-            "aarch64" in osArch || "arm64" in osArch -> ARCH_ARM64
-            else -> throw Error("Unknown arch $osArch")
-        }
-    }
-
-    override val platformName: String
-        get() = "Desktop ${hostOs} (${hostArch})"
-
-    override val isAndroid: Boolean
-        get() = false
-
-    override val isIos: Boolean
-        get() = false
-
-    override val isDesktop: Boolean
-        get() = true
 }
 
-actual val platformInformation: IPlatformInformation
-    get() = PlatformInformation
+enum class DesktopHostOs(
+    name: String
+) {
+    MacOS("macos"),
+    Windows("windows"),
+    Linux("linux")
+}
 
-
-actual interface IPlatformInformation {
-    actual val platformName: String
-    actual val isAndroid: Boolean
-    actual val isDesktop: Boolean
-    actual val isIos: Boolean
-
-    val hostOs: String
-    val hostArch: String
-
+enum class DesktopHostArch(
+    name: String
+) {
+    X64("x64"),
+    ARM64("arm64")
 }

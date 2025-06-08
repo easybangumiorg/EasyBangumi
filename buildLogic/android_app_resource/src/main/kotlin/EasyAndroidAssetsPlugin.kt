@@ -26,33 +26,26 @@ class EasyAndroidAssetsPlugin : Plugin<Project> {
 
     override fun apply(target: Project) {
         val extension = target.extensions.create(EXTENSION_NAME, EasyAndroidAssetsPluginExtension::class, target)
-        val preprocessTask =
-            target.tasks.register(PREPROCESS_ASSETS, PreprocessAssetsTask::class.java) {
-                description = "preprocess assets"
-                group = "build"
-                inputDir.set(extension.assetsDir)
-                outputDir.set(target.layout.buildDirectory.dir("intermediates/preprocessed-assets"))
-            }
 
 
-        target.pluginManager.withPlugin("com.android.application") {
-            target.extensions.configure<BaseAppModuleExtension> {
-                sourceSets.named("main") {
-                    assets.srcDir(target.layout.buildDirectory.dir("intermediates/preprocessed-assets"))
+        target.afterEvaluate {
+            val commonInput = extension.assetsDir.get().dir("common").asFile
+            val androidInput = extension.assetsDir.get().dir("android").asFile
+            // 将配置路径/common 和/android 添加到 Android 的 assets 目录中
+            target.pluginManager.withPlugin("com.android.application") {
+                target.extensions.configure<BaseAppModuleExtension> {
+                    sourceSets.named("main") {
+                        assets.srcDir(commonInput)
+                        assets.srcDir(androidInput)
+                    }
                 }
             }
         }
-
-        target.tasks.matching { it.name.toDefaultLowerCase().contains("merge") && it.name.toDefaultLowerCase().contains("assets") }.configureEach {
-            dependsOn(preprocessTask)
-        }
-
     }
 
     companion object {
         // Names for the extension and the task provided by this plugin.
         const val EXTENSION_NAME = "easyAndroidAssets"
-        const val PREPROCESS_ASSETS = "preprocessAssets"
     }
 
 }

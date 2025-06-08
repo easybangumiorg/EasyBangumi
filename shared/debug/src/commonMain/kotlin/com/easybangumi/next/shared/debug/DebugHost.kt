@@ -1,4 +1,6 @@
-package org.easybangumi.next
+﻿package com.easybangumi.next.shared.debug
+
+import androidx.compose.runtime.Composable
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -11,15 +13,10 @@ package org.easybangumi.next
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-
-expect interface IPlatformInformation {
-    val platformName: String
-
-    val isAndroid: Boolean
-    val isDesktop: Boolean
-    val isIos: Boolean
+@Composable
+fun DebugHost(
+    identify: String,
+    onJump: (String) -> Unit,
+){
 
 }
-
-expect val platformInformation: IPlatformInformation
-

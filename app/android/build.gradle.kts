@@ -19,7 +19,6 @@ android {
 
         applicationId = AppConfig.namespace
         minSdk = 21
-        targetSdk = 34
         versionCode = AppConfig.versionCode
         versionName = AppConfig.versionName
 

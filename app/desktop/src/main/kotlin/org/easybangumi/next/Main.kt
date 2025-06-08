@@ -1,7 +1,10 @@
 package org.easybangumi.next
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material.Text
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.shared.ComposeApp
 import org.easybangumi.next.shared.Scheduler
 
@@ -17,11 +20,13 @@ import org.easybangumi.next.shared.Scheduler
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
+private val logger = logger("")
 fun main() {
 
     Desktop.onInit()
     Scheduler.onInit()
 
+    logger.info(System.getProperty("compose.application.resources.dir"))
 
     application {
         Window(
@@ -29,6 +34,11 @@ fun main() {
             title = "EasyBangumi.next",
         ) {
             ComposeApp()
+            Column {
+                Text("${EasyConfig.IS_DEBUG}")
+                Text(System.getProperty("compose.application.resources.dir"))
+            }
+
         }
     }
 }

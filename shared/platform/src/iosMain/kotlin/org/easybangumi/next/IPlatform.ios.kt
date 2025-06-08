@@ -1,8 +1,5 @@
 package org.easybangumi.next
 
-actual val platformInformation: IPlatformInformation
-    get() = TODO("Not yet implemented")
-
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
  *
@@ -15,7 +12,7 @@ actual val platformInformation: IPlatformInformation
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
-actual interface IPlatformInformation {
+actual interface Platform {
     actual val platformName: String
     actual val isAndroid: Boolean
     actual val isDesktop: Boolean

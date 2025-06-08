@@ -56,6 +56,15 @@ abstract class MakeConfigTask: DefaultTask() {
 
     @TaskAction
     fun executeTask() {
+        // 先生成了再说
+        apply(true)
+        apply(false)
+    }
+
+
+    private fun apply(
+        isDebug: Boolean
+    ){
         // Retrieve properties or their default values.
         val packageName = packageName.get()
         val buildConfigFileName = buildConfigFileName.orNull ?: "BuildConfig.kt"
@@ -76,6 +85,12 @@ abstract class MakeConfigTask: DefaultTask() {
             buildConfigObject.addProperty(prop)
         }
 
+        val prop = PropertySpec
+            .builder("IS_DEBUG", Boolean::class)
+            .initializer("%L", isDebug)
+            .build()
+        buildConfigObject.addProperty(prop)
+
         val  kotlinFile = kotlinFileBuilder.addType(buildConfigObject.build()).build()
 
         val directory = buildString {
@@ -84,18 +99,22 @@ abstract class MakeConfigTask: DefaultTask() {
             append("source")
             appendFileSeparator
             append("buildConfig")
+            appendFileSeparator
+            append(if(isDebug) "debug" else "release")
+
         }
 
-        val outputDir = project.layout.buildDirectory.dir(directory)
+        val debugOutputDir = project.layout.buildDirectory.dir(directory)
+
 
         // Ensure the output directory exists
-        outputDir.get().asFile.mkdirs()
+        debugOutputDir.get().asFile.mkdirs()
 
-        logger.info("Generated BuildConfig file: write to ${outputDir.get().asFile.path}")
+        logger.info("Generated BuildConfig file: write to ${debugOutputDir.get().asFile.path}")
 
 
         // Write the generated Kotlin file to the output directory
-        kotlinFile.writeTo(outputDir.get().asFile)
+        kotlinFile.writeTo(debugOutputDir.get().asFile)
     }
 
 }

@@ -5,7 +5,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(builds.plugins.kotlinMultiplatform)
     alias(builds.plugins.androidLibrary)
-//    id("EasyConfig")
+    alias(builds.plugins.kotlinCompose)
+    alias(builds.plugins.compose)
 }
 kotlin {
     androidTarget {
@@ -17,7 +18,6 @@ kotlin {
     jvm("desktop") {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_21)
-
         }
 
     }
@@ -66,9 +66,11 @@ kotlin {
         }
 
         commonMain.dependencies {
-            implementation(libs.kotlinx.io)
-            implementation(libs.kotlinx.datetime)
-            implementation(libs.koin.core)
+            implementation(compose.runtime)
+            implementation(compose.foundation)
+            implementation(compose.materialIconsExtended) // 此依赖需要在生产环境中进行剪枝，非常巨大
+            implementation(compose.ui)
+            implementation(compose.material3)
         }
 
         androidMain.dependencies {
@@ -76,7 +78,8 @@ kotlin {
         }
 
         desktopMain.dependencies {
-
+            implementation(compose.desktop.currentOs)
+            implementation(compose.ui)
         }
         iosMain.dependencies {
 
@@ -84,10 +87,8 @@ kotlin {
     }
 }
 
-
-
 android {
-    namespace = AppConfig.namespace + ".shared.platform"
+    namespace = AppConfig.namespace + ".debug"
     compileSdk = 35
     defaultConfig {
         minSdk = 21
@@ -98,6 +99,7 @@ android {
     }
 
 }
+
 
 dependencies {
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!--monitorInterval属性值（秒数）为一个非零值来让Log4j每隔指定的秒数来重新读取配置文件，可以用来动态应用Log4j配置-->
-<Configuration status="debug" monitorInterval="30">
+<Configuration status="WARN" monitorInterval="30">
     <!--用来自定义一些变量-->
     <Properties>
         <!--变量定义-->

@@ -96,16 +96,17 @@ kotlin {
             implementation(libs.paging.multiplatform.compose)
             implementation(libs.md3.window.size)
 
-            implementation(projects.lib)
+            api(projects.lib)
 
-            implementation(projects.shared.data)
-            implementation(projects.shared.plugin)
-            implementation(projects.shared.theme)
-            implementation(projects.shared.foundation)
-            implementation(projects.shared.resources)
-            implementation(projects.shared.platform)
-            implementation(projects.shared.preference)
-            implementation(projects.shared.scheme)
+            api(projects.shared.data)
+            api(projects.shared.plugin)
+            api(projects.shared.theme)
+            api(projects.shared.foundation)
+            api(projects.shared.resources)
+            api(projects.shared.platform)
+            api(projects.shared.preference)
+            api(projects.shared.scheme)
+            api(projects.shared.debug)
 
         }
 

@@ -64,6 +64,7 @@ includeModule(":shared:plugin", "shared/plugin")
 includeModule(":shared:plugin:bangumi", "shared/plugin-bangumi")
 includeModule(":shared:preference", "shared/preference")
 includeModule(":shared:scheme", "shared/scheme")
+includeModule(":shared:debug", "shared/debug")
 
 
 // ------------- lib -------------

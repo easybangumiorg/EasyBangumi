@@ -13,23 +13,24 @@ package org.easybangumi.next
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
-object PlatformInformation : IPlatformInformation {
-
-    override val platformName: String
-        get() = "Android"
-
-    override val isAndroid: Boolean
-        get() = true
-
-    override val isIos: Boolean
-        get() = false
-
-    override val isDesktop: Boolean
-        get() = false
-}
-
-actual val platformInformation: IPlatformInformation
-    get() = PlatformInformation
+//object PlatformInformation : IPlatformInformation {
+//
+//    override val platformName: String
+//        get() = "Android"
+//
+//    override val isAndroid: Boolean
+//        get() = true
+//
+//    override val isIos: Boolean
+//        get() = false
+//
+//    override val isDesktop: Boolean
+//        get() = false
+//
+//}
+//
+//actual val platformInformation: IPlatformInformation
+//    get() = PlatformInformation
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -43,12 +44,13 @@ actual val platformInformation: IPlatformInformation
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
-actual interface IPlatformInformation {
+actual interface Platform {
+    actual val platformType: PlatformType
     actual val platformName: String
-    actual val isAndroid: Boolean
-    actual val isDesktop: Boolean
-    actual val isIos: Boolean
+    actual val isDebug: Boolean
+    actual val versionCode: Int
+    actual val versionName: String
     val sdkCode : Int
-        get() = android.os.Build.VERSION.SDK_INT
+
 
 }

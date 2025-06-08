@@ -5,7 +5,9 @@ package org.easybangumi.next.rhino
  * https://github.com/heyanLE
  */
 class RhinoRuntimeProvider(
-    private val maxRuntimeCount: Int = 1
+    private val maxRuntimeCount: Int = 1,
+    // Android 只能运行翻译模式，Desktop 可以尝试优化
+    private val optimizationLevel: Int = -1
 ) {
 
     private val runtimes: MutableList<RhinoRuntime> = mutableListOf()
@@ -19,7 +21,7 @@ class RhinoRuntimeProvider(
             if(runtime != null){
                 return runtime
             }
-            runtime = RhinoRuntime()
+            runtime = RhinoRuntime(optimizationLevel)
             runtime.init()
             runtimes.add(runtime)
             return runtime

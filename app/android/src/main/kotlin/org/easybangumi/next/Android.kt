@@ -1,8 +1,10 @@
 package org.easybangumi.next
 
+import org.easybangumi.next.platform.AndroidPlatform
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.loadKoinModules
 import org.koin.core.context.startKoin
+import org.koin.dsl.bind
 import org.koin.dsl.module
 
 /**
@@ -22,6 +24,12 @@ object Android {
     fun onInit(application: EasyApplication) {
         startKoin {
             androidContext(application)
+
+            loadKoinModules(module {
+                single {
+                    AndroidPlatform
+                }.bind(Platform::class)
+            })
         }
     }
 
