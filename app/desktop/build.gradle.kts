@@ -30,6 +30,7 @@ dependencies {
     implementation(libs.log4j.slf4j.impl)
 
     implementation(libs.vlcj)
+    implementation(projects.player.vlcj)
 
 }
 

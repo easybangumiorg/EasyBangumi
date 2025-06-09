@@ -1,16 +1,17 @@
 package org.easybangumi.next
 
-import androidx.compose.ui.platform.isDebugInspectorInfoEnabled
-import org.apache.logging.log4j.Level
-import org.apache.logging.log4j.core.Filter
-import org.apache.logging.log4j.core.appender.ConsoleAppender
-import org.apache.logging.log4j.core.config.Configurator
-import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilderFactory
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
+import org.easybangumi.next.lib.utils.CoroutineProvider
+import org.easybangumi.next.lib.utils.coroutineProvider
 import org.easybangumi.next.platform.DesktopPlatform
+import org.easybangumi.next.player.vlcj.VlcjBridgeManager
 import org.koin.core.context.loadKoinModules
 import org.koin.core.context.startKoin
 import org.koin.dsl.bind
 import org.koin.dsl.module
+import org.koin.mp.KoinPlatform
 import uk.co.caprica.vlcj.factory.MediaPlayerFactory
 
 
@@ -38,8 +39,18 @@ object Desktop {
                 single {
                     DesktopPlatform
                 }.bind(Platform::class)
+
+                single {
+                    VlcjBridgeManager()
+                }
             })
         }
+
+        GlobalScope.launch( coroutineProvider.io()) {
+            // 预加载 vlcj
+            KoinPlatform.getKoin().get<VlcjBridgeManager>().preloadVlc()
+        }
+
 
     }
 

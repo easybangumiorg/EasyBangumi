@@ -73,8 +73,10 @@ kotlin {
             implementation(compose.material3)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.koin.compose)
+            implementation(libs.androidx.lifecycle.runtime.compose)
 
             implementation(projects.player.api)
+            implementation(projects.lib)
         }
 
         androidMain.dependencies {

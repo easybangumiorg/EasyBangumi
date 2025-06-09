@@ -2,12 +2,23 @@
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.currentStateAsState
+import androidx.lifecycle.eventFlow
+import androidx.lifecycle.withResumed
 import com.easybangumi.next.shared.debug.DebugScope
+import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.player.api.MediaItem
+import org.easybangumi.next.player.vlcj.VlcjBridgeManager
 import org.easybangumi.next.player.vlcj.VlcjPlayerBridge
 import org.easybangumi.next.player.vlcj.VlcjPlayerFrame
+import org.easybangumi.next.player.vlcj.rememberVlcjPlayerFrameState
 import org.koin.compose.koinInject
 import org.koin.mp.KoinPlatform
 import uk.co.caprica.vlcj.factory.MediaPlayerFactory
@@ -25,21 +36,66 @@ import uk.co.caprica.vlcj.factory.MediaPlayerFactory
  */
 
 val url = "http://vjs.zencdn.net/v/oceans.mp4"
-
+private val logger = logger("PlayerDebug")
 @Composable
 actual fun DebugScope.PlayerDebug() {
 
-    val bridge = remember {
-        VlcjPlayerBridge(KoinPlatform.getKoin().get(), null).apply {
-            prepare(MediaItem(uri = url))
-            setPlayWhenReady(true)
-        }
-
+    val manager = koinInject<VlcjBridgeManager>()
+    val tag = remember {
+        "debug-player-${System.currentTimeMillis()}"
     }
+    val frameState = rememberVlcjPlayerFrameState()
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    val lifecycleState = lifecycle.currentStateAsState()
+    val bridge = remember {
+        manager.getOrCreateBridge(tag, null)
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            logger.info("PlayerDebug disposing bridge: $tag")
+            // 销毁时释放资源
+            frameState.unbindBridge()
+            manager.release(tag)
+        }
+    }
+    LaunchedEffect(Unit) {
+        val mediaItem = MediaItem(uri = url)
+        bridge.prepare(mediaItem)
+        snapshotFlow {
+            lifecycleState.value
+        }.collect {
+            logger.info("PlayerDebug lifecycle state: $it")
+            when (it) {
+                // 最小化
+                Lifecycle.State.CREATED -> {
+                    bridge.setPlayWhenReady(false)
+                }
+                // 没有焦点
+                Lifecycle.State.STARTED -> {
+                    // 创建时绑定桥接
+                    frameState.bindBridge(bridge)
+                }
+                // 有焦点
+                Lifecycle.State.RESUMED -> {
+                    bridge.setPlayWhenReady(true)
+                }
+
+                Lifecycle.State.INITIALIZED -> {
+                    // 接收不到，因为此时 Compose 还没有创建
+                }
+                Lifecycle.State.DESTROYED -> {
+                    // 接收不到，因为这时 Compose 已经销毁了
+                }
+            }
+        }
+    }
+
+
 
     VlcjPlayerFrame(
         modifier = Modifier.fillMaxSize(),
-        bridge = bridge,
+        state = frameState,
     )
 
 

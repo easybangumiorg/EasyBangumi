@@ -39,6 +39,8 @@ interface PlayerBridge: AutoCloseable {
 
     fun <A: Action> action(): A?
 
+
+
 }
 
 inline fun <A: Action, R> PlayerBridge.action(check: Boolean = true, block: A.()->Unit,) {

@@ -33,42 +33,32 @@ import kotlin.reflect.KClass
  * Created by heyanlin on 2025/5/27.
  */
 class VlcjPlayerBridge(
-    mediaPlayerFactory: MediaPlayerFactory,
+    private val mediaPlayer: MediaPlayer,
     customFrameScope: CoroutineScope?,
 ) : AbsPlayerBridge() {
-    
-    private val reentrantLock = ReentrantLock()
 
     override val impl: Any
         get() = mediaPlayer
 
-    private val mediaPlayerLazy = lazy {
-        val mp = reentrantLock.withLock {
-            mediaPlayerFactory.mediaPlayers().newMediaPlayer()
-        }
-        callbackVideoSurface.attach(mp)
-        mp.events().addMediaPlayerEventListener(mediaPlayerEventListener)
-        mp
-    }
-    private val mediaPlayer: MediaPlayer by mediaPlayerLazy
+//    private val mediaPlayerLazy = lazy {
+//        val mp = reentrantLock.withLock {
+//            mediaPlayerFactory.mediaPlayers().newMediaPlayer()
+//        }
+//        callbackVideoSurface.attach(mp)
+//        mp.events().addMediaPlayerEventListener(mediaPlayerEventListener)
+//        mp
+//    }
+//    private val mediaPlayer: MediaPlayer by mediaPlayerLazy
 
     override val positionMs: Long
-        get() = if (mediaPlayerLazy.isInitialized()) {
-            mediaPlayer.status().time()
-        } else {
-            C.TIME_UNSET
-        }
+        get() = mediaPlayer.status().time()
 
     // unsupported
     override val bufferedPositionMs: Long
         get() = C.TIME_UNSET
 
     override val durationMs: Long
-        get() = if (mediaPlayerLazy.isInitialized()) {
-            mediaPlayer.status().length()
-        } else {
-            C.TIME_UNSET
-        }
+        get() = mediaPlayer.status().length()
 
     override fun prepare(mediaItem: MediaItem) {
         if (innerPlayWhenReadyFlow.value) {
@@ -79,7 +69,7 @@ class VlcjPlayerBridge(
     }
 
     override fun setPlayWhenReady(playWhenReady: Boolean) {
-        mediaPlayer.controls().setPause(playWhenReady)
+        mediaPlayer.controls().setPause(!playWhenReady)
         if (playWhenReady) {
             mediaPlayer.controls().play()
         }
@@ -145,21 +135,20 @@ class VlcjPlayerBridge(
             displayWidth: Int,
             displayHeight: Int
         ) {
-            println("display: ${nativeBuffers.size}, $displayWidth x $displayHeight")
+//            println("display: ${nativeBuffers.size}, $displayWidth x $displayHeight")
             val time = mediaPlayer.status().time()
             val listener = frameListener
             if (listener == null) {
                 return
             }
             fun fireFrame(){
-                nativeBuffers[0].rewind()
                 val i = imageInfo ?: return
                 val buffer = nativeBuffers.getOrNull(0) ?: return
-                val array = getBufferArray(buffer.remaining())
                 buffer.rewind()
+                val array = getBufferArray(buffer.remaining())
                 buffer.get(array)
                 bitmap.setImageInfo(i)
-                // RV32 format 单像素占 4 字节
+                // RV32 format 单像素占 4 字节  BGR_888X
                 bitmap.installPixels(i, array, bufferFormat.width * 4)
                 listener.onFrame(bitmap, time)
             }
@@ -191,8 +180,9 @@ class VlcjPlayerBridge(
             imageInfo = ImageInfo(
                 sourceWidth,
                 sourceHeight,
-                ColorType.RGBA_8888,
-                ColorAlphaType.PREMUL,
+                // 忽略 alpha 通道后实际上是 BGR_888X
+                ColorType.BGRA_8888,
+                ColorAlphaType.OPAQUE,
             )
             println("getBufferFormat: $sourceWidth x $sourceHeight")
             return RV32BufferFormat(sourceWidth, sourceHeight)
@@ -221,7 +211,7 @@ class VlcjPlayerBridge(
             println("allocatedBuffers: ${buffers.size}")
 
             buffers.firstOrNull()?.remaining()?.let {
-                // 提前申请堆内存
+                // 提前申请堆内存优化一下效率
                 getBufferArray(it)
             }
         }
@@ -394,6 +384,12 @@ class VlcjPlayerBridge(
     fun removeFrameListener() {
         this.frameListener = null
     }
+
+    init {
+        callbackVideoSurface.attach(mediaPlayer)
+        mediaPlayer.events().addMediaPlayerEventListener(mediaPlayerEventListener)
+    }
+
 
 
 }

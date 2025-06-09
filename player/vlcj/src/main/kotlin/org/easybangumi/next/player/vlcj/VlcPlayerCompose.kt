@@ -23,23 +23,37 @@ import kotlin.math.roundToInt
 @Composable
 fun VlcjPlayerFrame(
     modifier: Modifier,
-    bridge: VlcjPlayerBridge,
+    state: VlcPlayerFrameState,
 ){
-    val state = remember {
-        VlcPlayerFrameState(
-            bridge = bridge,
-        )
-    }
     state.frameCanvas(
         modifier = modifier,
     )
 }
 
-class VlcPlayerFrameState(
-    private val bridge: VlcjPlayerBridge,
-): VlcjPlayerBridge.OnFrameListener {
+@Composable
+fun rememberVlcjPlayerFrameState(
+): VlcPlayerFrameState {
+    return remember() {
+        VlcPlayerFrameState()
+    }
+}
+
+class VlcPlayerFrameState(): VlcjPlayerBridge.OnFrameListener {
 
 
+    fun bindBridge(bridge: VlcjPlayerBridge) {
+        if (this.bridge == bridge) return
+        this.bridge?.removeFrameListener()
+        this.bridge = bridge
+        bridge.setFrameListener(this)
+    }
+
+    fun unbindBridge() {
+        bridge?.removeFrameListener()
+        bridge = null
+    }
+
+    private var bridge by mutableStateOf<VlcjPlayerBridge?>(null)
     private val frameSizeCalculator = VlcFrameSizeCalculator()
     var time by mutableStateOf(0L)
     var composeBitmap by mutableStateOf<ImageBitmap?>(null)
@@ -58,38 +72,42 @@ class VlcPlayerFrameState(
     fun frameCanvas(
         modifier: Modifier,
     ) {
-        val scaleType by bridge.scaleTypeFlow.collectAsState()
-        val videoSize by bridge.videoSizeFlow.collectAsState()
+        val bridge = bridge
+        if (bridge != null) {
+            val scaleType by bridge.scaleTypeFlow.collectAsState()
+            val videoSize by bridge.videoSizeFlow.collectAsState()
 
-        LaunchedEffect(scaleType, videoSize) {
-            frameSizeCalculator.setScaleType(scaleType)
-            frameSizeCalculator.setVideoSize(videoSize)
-        }
-
-        DisposableEffect(Unit) {
-            bridge.setFrameListener(this@VlcPlayerFrameState)
-            onDispose {
-                bridge.removeFrameListener()
-                composeBitmap = null
+            LaunchedEffect(scaleType, videoSize) {
+                frameSizeCalculator.setScaleType(scaleType)
+                frameSizeCalculator.setVideoSize(videoSize)
             }
-        }
-        val bmp = composeBitmap
 
-        Canvas(modifier) {
-            drawRect(color = Color.Black, Offset.Zero, size)
-            if (bmp != null) {
-                frameSizeCalculator.setCanvasSize(size)
-                frameSizeCalculator.calculate()
+            DisposableEffect(Unit) {
+                bridge.setFrameListener(this@VlcPlayerFrameState)
+                onDispose {
+                    bridge.removeFrameListener()
+                    composeBitmap = null
+                }
+            }
+            val bmp = composeBitmap
+
+            Canvas(modifier) {
+                drawRect(color = Color.Black, Offset.Zero, size)
+                if (bmp != null) {
+                    frameSizeCalculator.setCanvasSize(size)
+                    frameSizeCalculator.calculate()
 
 //                println(frameSizeCalculator.frameOffset.toString() + " " + frameSizeCalculator.frameSize)
-                drawImage(
-                    image = bmp,
-                    dstOffset = frameSizeCalculator.frameOffset,
-                    dstSize = frameSizeCalculator.frameSize,
-                )
-            }
+                    drawImage(
+                        image = bmp,
+                        dstOffset = frameSizeCalculator.frameOffset,
+                        dstSize = frameSizeCalculator.frameSize,
+                    )
+                }
 
+            }
         }
+
     }
 
 

@@ -1,5 +1,6 @@
 import org.gradle.internal.extensions.stdlib.toDefaultLowerCase
 
+// 暂不考虑交叉编译，编译环境直接获取平台信息
 object PlatformInformation {
 
     const val OS_MAC = "macos"
