@@ -52,7 +52,7 @@ fun DebugHost(
     onNav: (DebugPage) -> Unit,
     onBack: () -> Unit = { /* no-op */ }
 ){
-    DebugContainer(onNav, onBack) {
+    DebugContainer(debugPage, onNav, onBack) {
         remember {
             DebugScope(onNav, onBack)
         }.apply {
@@ -71,6 +71,7 @@ fun DebugHost(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DebugContainer(
+    debugPage: DebugPage,
     onNav: (DebugPage) -> Unit,
     onBack: () -> Unit = { /* no-op */ },
     content: @Composable () -> Unit,
@@ -82,7 +83,7 @@ fun DebugContainer(
         TopAppBar(
             modifier = Modifier.fillMaxWidth(),
             title = {
-                Text("Debug Container")
+                Text(debugPage.label)
             },
             navigationIcon = {
                 IconButton(

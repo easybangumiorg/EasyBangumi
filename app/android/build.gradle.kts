@@ -6,33 +6,20 @@ plugins {
     alias(builds.plugins.kotlinAndroid)
     alias(builds.plugins.ksp)
     id("AndroidAppResource")
+    id("EasyLibBuild")
 }
 
-group = AppConfig.namespace
-version = AppConfig.versionName
+
 
 android {
-    namespace =  AppConfig.namespace
-    compileSdk = 35
-
     defaultConfig {
-
-        applicationId = AppConfig.namespace
-        minSdk = 21
-        versionCode = AppConfig.versionCode
-        versionName = AppConfig.versionName
-
         vectorDrawables {
             useSupportLibrary = true
         }
-
-
     }
-
     packaging {
         resources.excludes.add("META-INF/beans.xml")
     }
-
     buildTypes {
         debug {
             isMinifyEnabled = false
@@ -45,13 +32,7 @@ android {
             proguardFiles("proguard-rules.pro")
         }
     }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
-    }
-    kotlin {
-        jvmToolchain(21)
-    }
+
     kotlinOptions {
         jvmTarget = "21"
         freeCompilerArgs += listOf(

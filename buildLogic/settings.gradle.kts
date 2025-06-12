@@ -40,3 +40,4 @@ dependencyResolutionManagement {
 
 include(":easy_config")
 include(":android_app_resource")
+include(":easy_build")

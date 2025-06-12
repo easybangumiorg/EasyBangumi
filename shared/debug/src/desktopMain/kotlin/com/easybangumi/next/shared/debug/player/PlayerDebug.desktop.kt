@@ -10,18 +10,13 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.currentStateAsState
-import androidx.lifecycle.eventFlow
-import androidx.lifecycle.withResumed
 import com.easybangumi.next.shared.debug.DebugScope
 import org.easybangumi.next.lib.logger.logger
-import org.easybangumi.next.player.api.MediaItem
-import org.easybangumi.next.player.vlcj.VlcjBridgeManager
-import org.easybangumi.next.player.vlcj.VlcjPlayerBridge
-import org.easybangumi.next.player.vlcj.VlcjPlayerFrame
-import org.easybangumi.next.player.vlcj.rememberVlcjPlayerFrameState
+import org.easybangumi.next.libplayer.api.MediaItem
+import org.easybangumi.next.libplayer.vlcj.VlcjBridgeManager
+import org.easybangumi.next.libplayer.vlcj.VlcjPlayerFrame
+import org.easybangumi.next.libplayer.vlcj.rememberVlcjPlayerFrameState
 import org.koin.compose.koinInject
-import org.koin.mp.KoinPlatform
-import uk.co.caprica.vlcj.factory.MediaPlayerFactory
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -42,7 +37,7 @@ actual fun DebugScope.PlayerDebug() {
 
     val manager = koinInject<VlcjBridgeManager>()
     val tag = remember {
-        "debug-player-${System.currentTimeMillis()}"
+        "debug-player"
     }
     val frameState = rememberVlcjPlayerFrameState()
     val lifecycle = LocalLifecycleOwner.current.lifecycle

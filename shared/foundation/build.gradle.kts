@@ -8,62 +8,20 @@ plugins {
     alias(builds.plugins.androidLibrary)
     alias(builds.plugins.kotlinCompose)
     alias(builds.plugins.compose)
+    id("EasyLibBuild")
 }
 
 kotlin {
-    androidTarget {
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_21)
-        }
-    }
-
-    jvm("desktop"){
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_21)
-        }
-    }
-
-    // 先预埋
-    listOf(
-        iosX64(),
-        iosArm64(),
-        iosSimulatorArm64()
-    ).forEach { iosTarget ->
-        iosTarget.binaries.framework {
-            baseName = "ComposeApp"
-            isStatic = true
-        }
-    }
-
     sourceSets {
 
         val commonMain by getting
-
-        val jvmMain = create("jvmMain") {
-            dependsOn(commonMain)
-        }
-
-        val desktopMain by getting {
-            dependsOn(jvmMain)
-        }
-
-        val androidMain by getting {
-            dependsOn(jvmMain)
-        }
-
-        val iosMain = create("iosMain") {
-            dependsOn(commonMain)
-        }
-        val iosX64Main by getting {
-            dependsOn(iosMain)
-        }
-        val iosArm64Main by getting {
-            dependsOn(iosMain)
-        }
-        val iosSimulatorArm64Main by getting {
-            dependsOn(iosMain)
-        }
+        val jvmMain by getting
+        val desktopMain by getting
+        val androidMain by getting
+        val iosMain by getting
+        val iosX64Main by getting
+        val iosArm64Main by getting
+        val iosSimulatorArm64Main by getting
 
         commonMain.dependencies {
             implementation(compose.ui)
@@ -93,7 +51,7 @@ kotlin {
             implementation(projects.shared.resources)
             implementation(projects.shared.scheme)
 
-            implementation(projects.lib.logger)
+            implementation(projects.logger)
             implementation(projects.lib.utils)
         }
 
@@ -128,20 +86,6 @@ kotlin {
 
     }
 }
-
-android {
-    namespace = AppConfig.namespace + ".shared.foundation"
-    compileSdk = 35
-    defaultConfig {
-        minSdk = 21
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
-    }
-}
-
-
 
 
 dependencies {

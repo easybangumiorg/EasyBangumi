@@ -42,11 +42,14 @@ dependencyResolutionManagement {
     }
 }
 
-fun includeModule(moduleName: String, dir: String? = null) {
-    include(moduleName)
+fun includeModule(modulePath: String, dir: String? = null) {
+    include(modulePath)
     if (dir != null) {
-        project(moduleName).projectDir = file(dir)
+        project(modulePath).apply {
+            projectDir = file(dir)
+        }
     }
+
 }
 
 // ------------- app -------------
@@ -65,24 +68,29 @@ includeModule(":shared:plugin:bangumi", "shared/plugin-bangumi")
 includeModule(":shared:preference", "shared/preference")
 includeModule(":shared:scheme", "shared/scheme")
 includeModule(":shared:debug", "shared/debug")
+includeModule(":shared:player", "shared/player")
 
 
 // ------------- lib -------------
 includeModule(":lib", "lib")
-includeModule(":lib:logger", "lib/logger")
 includeModule(":lib:utils", "lib/utils")
 includeModule(":lib:store", "lib/store")
 includeModule(":lib:unifile", "lib/unifile")
 includeModule(":lib:serialization", "lib/serialization")
 
 
+// -- 以下为独立代码层级 ---
+
 // ------------- player -------------
-includeModule(":player:api", "player/api")
-includeModule(":player:vlcj", "player/vlcj")
-includeModule(":player:exoplayer", "player/exoplayer")
+includeModule(":libplayer:api", "libplayer/api")
+includeModule(":libplayer:vlcj", "libplayer/vlcj")
+includeModule(":libplayer:exoplayer", "libplayer/exoplayer")
 
 // ------------- javascript -------------
 includeModule(":javascript:rhino", "javascript/rhino")
+
+// ------------- logger -------------
+includeModule(":logger", "logger")
 
 
 

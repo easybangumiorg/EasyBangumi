@@ -1,12 +1,10 @@
 package org.easybangumi.next
 
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.launch
-import org.easybangumi.next.lib.utils.CoroutineProvider
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import org.easybangumi.next.lib.utils.coroutineProvider
 import org.easybangumi.next.platform.DesktopPlatform
-import org.easybangumi.next.player.vlcj.VlcjBridgeManager
+import org.easybangumi.next.libplayer.vlcj.VlcjBridgeManager
 import org.koin.core.context.loadKoinModules
 import org.koin.core.context.startKoin
 import org.koin.dsl.bind
@@ -30,7 +28,7 @@ import uk.co.caprica.vlcj.factory.MediaPlayerFactory
  */
 object Desktop {
 
-    fun onInit() {
+    suspend fun onInit() {
         startKoin {
             loadKoinModules(module {
                 factory {
@@ -46,11 +44,12 @@ object Desktop {
             })
         }
 
-        GlobalScope.launch( coroutineProvider.io()) {
-            // 预加载 vlcj
-            KoinPlatform.getKoin().get<VlcjBridgeManager>().preloadVlc()
+        coroutineScope() {
+            async(coroutineProvider.io()) {
+                // 预加载 vlcj
+                KoinPlatform.getKoin().get<VlcjBridgeManager>().preloadVlc()
+            }
         }
-
 
     }
 

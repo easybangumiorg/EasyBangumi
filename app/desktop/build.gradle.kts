@@ -7,10 +7,15 @@ plugins {
     alias(builds.plugins.kotlinCompose)
     alias(builds.plugins.compose)
     id("EasyConfig")
+    id("EasyLibBuild")
 }
 
-group = AppConfig.namespace
-version = AppConfig.versionName
+
+
+// 暂时先这样解决吧，EasyLibBuild Plugin 会将数据放到 extra 中
+val namespace = extra.get("easy.build.namespace").toString()
+val versionCode = extra.get("easy.build.versionCode").toString().toInt()
+val versionName = extra.get("easy.build.versionName").toString()
 
 
 dependencies {
@@ -23,31 +28,16 @@ dependencies {
     implementation(compose.desktop.currentOs)
 
     implementation(projects.shared)
-    implementation(projects.lib.logger)
+    implementation(projects.logger)
 
     implementation(libs.koin.core)
     implementation(libs.log4j.core)
     implementation(libs.log4j.slf4j.impl)
 
     implementation(libs.vlcj)
-    implementation(projects.player.vlcj)
+    implementation(projects.libplayer.vlcj)
 
 }
-
-kotlin {
-    jvmToolchain(21)
-
-    sourceSets {
-
-    }
-}
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
-}
-
-
 
 compose.desktop {
 
@@ -65,22 +55,22 @@ compose.desktop {
             appResourcesRootDir.set(project.layout.projectDirectory.dir("../assets"))
 
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = AppConfig.namespace
-            packageVersion = AppConfig.versionName
+            packageName = namespace
+            packageVersion = versionName
 
         }
     }
 }
 
-easyBuildConfig {
-    packageName.set(AppConfig.namespace)
+easyConfig {
+    packageName.set(namespace)
     buildConfigFileName.set("EasyConfig")
-    sourceDir.set(kotlin.sourceSets.findByName("main")!!.kotlin)
+    sourceDir.set(kotlin.sourceSets.findByName("main")?.kotlin)
 
 
     configProperties {
-        "NAMESPACE" with AppConfig.namespace
-        "VERSION_CODE" with AppConfig.versionCode
-        "VERSION_NAME" with AppConfig.versionName
+        "NAMESPACE" with namespace
+        "VERSION_CODE" with versionCode
+        "VERSION_NAME" with versionName
     }
 }

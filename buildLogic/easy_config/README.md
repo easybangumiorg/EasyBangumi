@@ -11,7 +11,7 @@ plugins {
     id("EasyConfig")
 }
 
-easyBuildConfig {
+easyConfig {
     packageName.set(AppConfig.namespace)
     buildConfigFileName.set("EasyConfig")
     // 纯 kotlin 项目为 main 

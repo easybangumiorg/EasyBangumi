@@ -1,17 +1,7 @@
 package org.easybangumi.next.rhino
 
-import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.async
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.yield
-import org.easybangumi.next.lib.utils.coroutineProvider
+import kotlinx.coroutines.*
 import org.mozilla.javascript.ImporterTopLevel
-import org.mozilla.javascript.Scriptable
 import org.mozilla.javascript.ScriptableObject
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -29,7 +19,7 @@ class RhinoRuntime(
         val JSTopScopeLocal = ThreadLocal<ScriptableObject> ()
     }
 
-    private val singleDispatcher =  coroutineProvider.newSingle()
+    private val singleDispatcher = RhinoService.service.getSingletonDispatcher()
     private val scope: CoroutineScope by lazy {
         CoroutineScope(SupervisorJob() + singleDispatcher + CoroutineName("$this"))
     }

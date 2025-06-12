@@ -19,19 +19,26 @@ import org.easybangumi.next.shared.Scheduler
  */
 
 private val logger = logger("")
-fun main() {
+suspend fun main() {
 
-    Desktop.onInit()
-    Scheduler.onInit()
-    logger.info(System.getProperty("java.version"))
+    try {
+        Desktop.onInit()
+        Scheduler.onInit()
 
-    application {
-        Window(
-            onCloseRequest = ::exitApplication,
-            title = "EasyBangumi.next",
-        ) {
-            ComposeApp()
+        application {
+            Window(
+                onCloseRequest = ::exitApplication,
+                title = "EasyBangumi.next",
+            ) {
+                ComposeApp()
 
+            }
         }
+    } catch (e: Throwable) {
+        logger.error("Application failed to start", e)
+        throw e
+    } finally {
     }
+
+
 }

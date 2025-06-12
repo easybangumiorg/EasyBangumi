@@ -27,7 +27,7 @@ abstract class EasyConfigPlugin: Plugin<Project> {
 
         val task =
             target.tasks.register(MAKE_EASY_BUILD_CONFIG, MakeConfigTask::class.java) {
-                group = "easyBuildConfig" // Set the task group for organization.
+                group = "easyConfig" // Set the task group for organization.
                 description = "Generates BuildConfig files for the project." // Set the task description.
 
                 packageName.set(extension.packageName) // Set the package name from the extension.
@@ -43,7 +43,7 @@ abstract class EasyConfigPlugin: Plugin<Project> {
                 it.startsWith("packageRelease") || it.startsWith("assembleRelease")
             }
             val taskToAdd = target.tasks.register<Task>("addToSourceSet") {
-                group = "easyBuildConfig"
+                group = "easyConfig"
                 description = "Adds the generated source directory to the source set for ${if (isRelease) "release" else "debug"} build type."
                 extension.sourceDir.get().srcDirs(getGeneratedPath(target, if (isRelease) "release" else "debug"))
             }
@@ -66,8 +66,8 @@ abstract class EasyConfigPlugin: Plugin<Project> {
 
     companion object {
         // Names for the extension and the task provided by this plugin.
-        const val EXTENSION_NAME = "easyBuildConfig"
-        const val MAKE_EASY_BUILD_CONFIG = "makeEasyBuildConfig"
+        const val EXTENSION_NAME = "easyConfig"
+        const val MAKE_EASY_BUILD_CONFIG = "makeEasyConfig"
 
 
         fun getGeneratedPath(
