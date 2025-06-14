@@ -16,6 +16,7 @@ import org.easybangumi.next.libplayer.api.MediaItem
 import org.easybangumi.next.libplayer.vlcj.VlcjBridgeManager
 import org.easybangumi.next.libplayer.vlcj.VlcjPlayerFrame
 import org.easybangumi.next.libplayer.vlcj.rememberVlcjPlayerFrameState
+import org.easybangumi.next.player.controller.DesktopPlayer
 import org.koin.compose.koinInject
 
 /**
@@ -93,5 +94,9 @@ actual fun DebugScope.PlayerDebug() {
         state = frameState,
     )
 
+    DesktopPlayer(
+        modifier = Modifier.fillMaxSize(),
+        bridge = bridge,
+    )
 
 }

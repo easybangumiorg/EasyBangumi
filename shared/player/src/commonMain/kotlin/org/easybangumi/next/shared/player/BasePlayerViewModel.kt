@@ -33,7 +33,7 @@ import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 open class BasePlayerViewModel(
-    private val bridge: PlayerBridge,
+    protected val bridge: PlayerBridge,
 ) : BaseViewModel() {
 
     companion object {

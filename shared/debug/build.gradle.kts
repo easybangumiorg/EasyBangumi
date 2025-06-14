@@ -34,6 +34,7 @@ kotlin {
 
             implementation(projects.libplayer.api)
             implementation(projects.lib)
+            implementation(projects.shared.player)
         }
 
         androidMain.dependencies {
