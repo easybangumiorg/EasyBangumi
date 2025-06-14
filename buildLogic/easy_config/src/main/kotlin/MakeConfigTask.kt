@@ -113,8 +113,14 @@ abstract class MakeConfigTask: DefaultTask() {
         logger.info("Generated BuildConfig file: write to ${debugOutputDir.get().asFile.path}")
 
 
-        // Write the generated Kotlin file to the output directory
-        kotlinFile.writeTo(debugOutputDir.get().asFile)
+        try {
+            // Write the generated Kotlin file to the output directory
+            kotlinFile.writeTo(debugOutputDir.get().asFile)
+        } catch (e: Throwable) {
+            e.printStackTrace()
+            throw e
+        }
+
     }
 
 }

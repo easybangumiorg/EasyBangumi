@@ -13,6 +13,7 @@ plugins {
 
 
 // 暂时先这样解决吧，EasyLibBuild Plugin 会将数据放到 extra 中
+val showNamespace = extra.get("easy.build.showNamespace").toString()
 val namespace = extra.get("easy.build.namespace").toString()
 val versionCode = extra.get("easy.build.versionCode").toString().toInt()
 val versionName = extra.get("easy.build.versionName").toString()
@@ -63,7 +64,7 @@ compose.desktop {
 }
 
 easyConfig {
-    packageName.set(namespace)
+    packageName.set(showNamespace)
     buildConfigFileName.set("EasyConfig")
     sourceDir.set(kotlin.sourceSets.findByName("main")?.kotlin)
 

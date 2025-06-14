@@ -22,6 +22,6 @@ gradlePlugin {
 dependencies {
     api(gradleApi())
     api(gradleKotlinDsl())
-    implementation(builds.kotlinPoet)
+    api(builds.kotlinPoet)
     implementation(builds.androidGradlePlugin)
 }

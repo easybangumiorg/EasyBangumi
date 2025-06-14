@@ -1,10 +1,10 @@
 [versions]
-agp = "8.6.1"
+agp = "8.9.0"
 compose = "1.8.1"
-kotlin = "2.1.20"
-ksp = "2.1.20-2.0.0"
+kotlin = "2.1.21"
+ksp = "2.1.21-2.0.2"
 
-kotlinPoet = "2.1.0"
+kotlinPoet = "2.2.0"
 
 
 [plugins]
