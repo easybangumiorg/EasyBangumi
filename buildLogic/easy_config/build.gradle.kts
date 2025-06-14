@@ -23,5 +23,6 @@ dependencies {
     api(gradleApi())
     api(gradleKotlinDsl())
     api(builds.kotlinPoet)
+    compileClasspath(builds.kotlinPoet)
     implementation(builds.androidGradlePlugin)
 }

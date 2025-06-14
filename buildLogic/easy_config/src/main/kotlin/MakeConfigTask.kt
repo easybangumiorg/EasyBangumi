@@ -6,6 +6,10 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.options.Option
 import java.io.File
+import kotlin.io.path.Path
+import kotlin.io.path.createDirectories
+import kotlin.io.path.outputStream
+import kotlin.reflect.full.functions
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -113,9 +117,14 @@ abstract class MakeConfigTask: DefaultTask() {
         logger.info("Generated BuildConfig file: write to ${debugOutputDir.get().asFile.path}")
 
 
+
         try {
-            // Write the generated Kotlin file to the output directory
-            kotlinFile.writeTo(debugOutputDir.get().asFile)
+            val f = debugOutputDir.get().asFile
+            f.parentFile.mkdirs()
+            f.createNewFile()
+            debugOutputDir.get().asFile.outputStream().bufferedWriter().use {
+                kotlinFile.writeTo(it)
+            }
         } catch (e: Throwable) {
             e.printStackTrace()
             throw e

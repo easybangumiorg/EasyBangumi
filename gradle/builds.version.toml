@@ -4,7 +4,7 @@ compose = "1.8.1"
 kotlin = "2.1.21"
 ksp = "2.1.21-2.0.2"
 
-kotlinPoet = "2.2.0"
+kotlinPoet = "2.1.0"
 
 
 [plugins]

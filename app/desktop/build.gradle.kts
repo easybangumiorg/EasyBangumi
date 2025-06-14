@@ -38,6 +38,7 @@ dependencies {
     implementation(libs.vlcj)
     implementation(projects.libplayer.vlcj)
 
+    implementation(builds.kotlinPoet)
 }
 
 compose.desktop {

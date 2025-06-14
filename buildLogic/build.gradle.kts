@@ -22,5 +22,6 @@ buildscript {
     dependencies {
         classpath(libs.moko.resources.generator)
         classpath(libs.kotlinx.atomicfu.gradle)
+        classpath(builds.kotlinPoet)
     }
 }
