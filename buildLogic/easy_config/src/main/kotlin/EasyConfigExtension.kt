@@ -22,7 +22,7 @@ abstract class EasyConfigExtension(project: Project) {
     @Inject
     private val objects = project.objects
 
-    val buildConfigFileName = objects.property(String::class)
+    val buildConfigName = objects.property(String::class)
 
     // Property for specifying the package name to be used in the generated BuildConfig file.
     val packageName = objects.property(String::class)

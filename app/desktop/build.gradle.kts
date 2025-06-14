@@ -66,7 +66,7 @@ compose.desktop {
 
 easyConfig {
     packageName.set(showNamespace)
-    buildConfigFileName.set("EasyConfig")
+    buildConfigName.set("EasyConfig")
     sourceDir.set(kotlin.sourceSets.findByName("main")?.kotlin)
 
 

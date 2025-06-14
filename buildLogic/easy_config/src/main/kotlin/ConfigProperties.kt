@@ -34,17 +34,20 @@ data class ConfigProperties(
         class IntPropertyType(
             name: String,
             value: Int
-        ) : ConfigPropertyTypes<Int>(name, Int::class, "%L", value)
+        ) : ConfigPropertyTypes<Int>(name, Int::class, "%v", value)
 
         class StringPropertyType(
             name: String,
             value: String
-        ) : ConfigPropertyTypes<String>(name, String::class, "%S", value)
+        ) : ConfigPropertyTypes<String>(name, String::class, "\"%v\"", value)
 
         class BooleanPropertyType(
             name: String,
             value: Boolean
-        ) : ConfigPropertyTypes<Boolean>(name, Boolean::class, "%L", value)
+        ) : ConfigPropertyTypes<Boolean>(name, Boolean::class, "%v", value)
+
+
+        fun toLine() = "const val $name: ${clazz.simpleName} = ${template.replace("%v", value.toString())}"
 
 
         companion object {

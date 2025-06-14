@@ -1,15 +1,9 @@
-import com.squareup.kotlinpoet.*
 import org.gradle.api.DefaultTask
-import org.gradle.api.file.SourceDirectorySet
 import org.gradle.api.plugins.BasePlugin
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.options.Option
 import java.io.File
-import kotlin.io.path.Path
-import kotlin.io.path.createDirectories
-import kotlin.io.path.outputStream
-import kotlin.reflect.full.functions
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -30,6 +24,7 @@ abstract class MakeConfigTask: DefaultTask() {
         group = BasePlugin.BUILD_GROUP
     }
 
+
     // Package name for the generated BuildConfig file.
     @get:Input
     @get:Option(
@@ -43,20 +38,17 @@ abstract class MakeConfigTask: DefaultTask() {
     @get:Optional
     @get:Option(
         option = "buildConfigFileName",
-        description = "The name of the build config file to create. Defaults to BuildConfig.kt."
+        description = "The name of the build config object to create. Defaults to BuildConfig."
     )
-    abstract val buildConfigFileName: Property<String?>
+    abstract val buildConfigName: Property<String?>
 
-
-    @get:Input
-    @get:Option(
-        option = "sourceSet",
-        description = "The source set to generate the BuildConfig file in. Defaults to commonMain."
-    )
-    abstract val sourceSet: Property<SourceDirectorySet>
 
     @get:Nested
     lateinit var config: ConfigProperties
+
+
+//    @get:OutputDirectory
+//    abstract val outputDir: DirectoryProperty
 
     @TaskAction
     fun executeTask() {
@@ -71,64 +63,52 @@ abstract class MakeConfigTask: DefaultTask() {
     ){
         // Retrieve properties or their default values.
         val packageName = packageName.get()
-        val buildConfigFileName = buildConfigFileName.orNull ?: "BuildConfig.kt"
+        val buildConfigName = this@MakeConfigTask.buildConfigName.orNull ?: "BuildConfig"
 
         val logger = project.logger
 
-        val kotlinFileBuilder = FileSpec.builder(packageName, buildConfigFileName)
-        kotlinFileBuilder.defaultImports.add("kotlin.String")
 
-        val buildConfigObject = TypeSpec.objectBuilder(buildConfigFileName.substringBeforeLast(".kt"))
-            .addModifiers(KModifier.PUBLIC)
+
+        val stringBuilder = StringBuilder("package $packageName")
+        stringBuilder.appendLine()
+
+        val importSet = mutableSetOf<String?>()
+        config.properties.forEach {
+            importSet.add(it.clazz.qualifiedName)
+        }
+
+        importSet.forEach {
+            if (it != null) {
+                stringBuilder.appendLine("import $it")
+            }
+        }
+
+        stringBuilder.appendLine()
+        stringBuilder.appendLine("object ${buildConfigName} {")
+
 
         config.properties.forEach {
-            val prop = PropertySpec
-                .builder(it.name, it.clazz)
-                .initializer(it.template, it.value)
-                .build()
-            buildConfigObject.addProperty(prop)
+            stringBuilder.appendLine("\t" + it.toLine())
         }
 
-        val prop = PropertySpec
-            .builder("IS_DEBUG", Boolean::class)
-            .initializer("%L", isDebug)
-            .build()
-        buildConfigObject.addProperty(prop)
 
-        val  kotlinFile = kotlinFileBuilder.addType(buildConfigObject.build()).build()
-
-        val directory = buildString {
-            append("generated")
-            appendFileSeparator
-            append("source")
-            appendFileSeparator
-            append("buildConfig")
-            appendFileSeparator
-            append(if(isDebug) "debug" else "release")
-
-        }
-
-        val debugOutputDir = project.layout.buildDirectory.dir(directory)
-
-
-        // Ensure the output directory exists
-        debugOutputDir.get().asFile.mkdirs()
-
-        logger.info("Generated BuildConfig file: write to ${debugOutputDir.get().asFile.path}")
+        stringBuilder.appendLine("\tconst val IS_DEBUG = $isDebug")
+        stringBuilder.appendLine("}")
 
 
 
-        try {
-            val f = debugOutputDir.get().asFile
-            f.parentFile.mkdirs()
-            f.createNewFile()
-            debugOutputDir.get().asFile.outputStream().bufferedWriter().use {
-                kotlinFile.writeTo(it)
-            }
-        } catch (e: Throwable) {
-            e.printStackTrace()
-            throw e
-        }
+        val root = EasyConfigPlugin.getGeneratedPath(
+            project,
+            if (isDebug) "debug" else "release"
+        )
+        val dir = File(root, packageName)
+        val f = File(dir, "$buildConfigName.kt")
+        dir.mkdirs()
+        f.delete()
+        f.createNewFile()
+        f.writeText(stringBuilder.toString())
+
+        println("Generated BuildConfig file at: ${f.absolutePath}")
 
     }
 
