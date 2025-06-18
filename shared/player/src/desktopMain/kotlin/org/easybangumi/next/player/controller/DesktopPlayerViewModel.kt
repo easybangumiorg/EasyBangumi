@@ -35,12 +35,10 @@ class DesktopPlayerViewModel(
 
     var isLoading by mutableStateOf(false)
 
-    // 负数表示非滑动状态
-    var seekPosition by mutableLongStateOf(-1L)
-
-    var isShowController by mutableStateOf(false)
+    var isShowController by mutableStateOf(true)
 
     var isLocked by mutableStateOf(false)
+
 
     fun lock() {
         isLocked = true
@@ -60,26 +58,20 @@ class DesktopPlayerViewModel(
         }
     }
 
-    fun startSeek() {
-        seekPosition = position
-        endHideDelayJob()
-    }
 
-    fun changeSeekPosition(position: Long) {
-        seekPosition = position
-        endHideDelayJob()
-    }
-
-    fun endSeek() {
+    fun onSeekEnd(seekPosition: Long) {
         bridge.seekTo(seekPosition)
-        seekPosition = -1
         restartHideDelayJob()
     }
 
 
-    fun showController() {
+    fun showController(needHideDelay : Boolean = true) {
         isShowController = true
-        restartHideDelayJob()
+        if (needHideDelay) {
+            restartHideDelayJob()
+        } else {
+            endHideDelayJob()
+        }
     }
 
     fun hideController() {
@@ -98,7 +90,7 @@ class DesktopPlayerViewModel(
         hideDelayJob?.cancel()
         hideDelayJob = viewModelScope.launch {
             delay(CONTROL_HIDE_DELAY)
-            if (isActive && isShowController && seekPosition < 0) {
+            if (isActive && isShowController) {
                 hideController()
             }
         }

@@ -15,11 +15,15 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -78,20 +82,12 @@ fun DesktopPlayer(
 
 @Composable
 fun DesktopPlayerScope.ControllerContent() {
-    ControllerBottomBar()
     if (! vm.isLocked) {
         ControllerBottomBar()
     }
 }
 
-@Composable
-fun DesktopPlayerScope.ControllerBottomBar() {
-    Column(
-        modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth(),
-    ) {
 
-    }
-}
 
 @Composable
 fun DesktopPlayerScope.Loading() {
@@ -166,3 +162,4 @@ private fun ToolIcon(
         )
     }
 }
+
