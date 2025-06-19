@@ -1,7 +1,6 @@
-package org.easybangumi.next.player.controller
+package org.easybangumi.next.shared.playcon.pointer
 
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
@@ -10,7 +9,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.easybangumi.next.libplayer.api.PlayerBridge
-import org.easybangumi.next.shared.player.BasePlayerViewModel
+import org.easybangumi.next.shared.playcon.BasePlayerViewModel
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -22,8 +21,10 @@ import org.easybangumi.next.shared.player.BasePlayerViewModel
  *    You may obtain a copy of the License at
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    鼠标模式播放器 UI
  */
-class DesktopPlayerViewModel(
+class PointerPlayerViewModel(
     bridge: PlayerBridge,
 ) : BasePlayerViewModel(bridge) {
 
@@ -35,10 +36,9 @@ class DesktopPlayerViewModel(
 
     var isLoading by mutableStateOf(false)
 
-    var isShowController by mutableStateOf(true)
+    var isShowController by mutableStateOf(false)
 
     var isLocked by mutableStateOf(false)
-
 
     fun lock() {
         isLocked = true
@@ -100,7 +100,5 @@ class DesktopPlayerViewModel(
         hideDelayJob?.cancel()
         hideDelayJob = null
     }
-
-
 
 }

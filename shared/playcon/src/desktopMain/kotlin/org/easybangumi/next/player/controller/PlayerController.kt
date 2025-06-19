@@ -1,6 +1,7 @@
 package org.easybangumi.next.player.controller
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -49,6 +50,7 @@ class DesktopPlayerScope(
     val bridge: PlayerBridge,
     val vm: DesktopPlayerViewModel,
     val boxScope: BoxScope,
+    val interactionSource: MutableInteractionSource
 ): BoxScope by boxScope
 
 @Composable
@@ -57,6 +59,9 @@ fun DesktopPlayer(
     bridge: PlayerBridge,
 ) {
     val vm = vm(::DesktopPlayerViewModel, bridge)
+    val mutableInteractionSource = remember {
+        MutableInteractionSource()
+    }
 
     LaunchedEffect(Unit) {
         vm.needLoop()
@@ -70,7 +75,7 @@ fun DesktopPlayer(
 
     Box(modifier) {
         val scope = remember(bridge, vm, this) {
-            DesktopPlayerScope(bridge, vm, this)
+            DesktopPlayerScope(bridge, vm, this, mutableInteractionSource)
         }
         if (vm.isShowController) {
             scope.ControllerContent()

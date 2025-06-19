@@ -128,3 +128,4 @@ private fun Modifier.sliderTapModifier(
     } else {
         this
     }
+
