@@ -21,6 +21,8 @@ class EasyBuildConfigProvider(
         const val KEY_NAMESPACE = "easy.build.namespace"
         const val KEY_VERSION_NAME = "easy.build.versionName"
         const val KEY_VERSION_CODE = "easy.build.versionCode"
+
+        const val KEY_OPT_MD3_API = "easy.build.optMd3Api"
     }
 
 
@@ -30,11 +32,13 @@ class EasyBuildConfigProvider(
     val versionCode: Int = findProperty(KEY_VERSION_CODE, project).toIntOrNull()
         ?: throw IllegalArgumentException("Property '${KEY_VERSION_CODE}' must be an integer.")
 
+    val optMd3Api: Boolean = project.findProperty(KEY_OPT_MD3_API)?.toString()?.toBoolean() ?: false
     init {
 
         project.extra.set(KEY_NAMESPACE, namespace)
         project.extra.set(KEY_VERSION_NAME, versionName)
         project.extra.set(KEY_VERSION_CODE, versionCode)
+        project.extra.set(KEY_SHOW_NAMESPACE, showNamespace)
     }
 
     fun findProperty(key: String, project: Project): String {

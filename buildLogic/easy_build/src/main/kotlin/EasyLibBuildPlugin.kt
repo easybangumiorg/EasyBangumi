@@ -29,7 +29,7 @@ class EasyLibBuildPlugin : Plugin<Project> {
 
         target.group = provider.namespace
         if (target.pluginManager.hasPlugin("org.jetbrains.kotlin.multiplatform")) {
-            ApplyHelper.applyKmp(target)
+            ApplyHelper.applyKmp(target, provider)
         }
 
         // 这两种是互斥
@@ -41,7 +41,7 @@ class EasyLibBuildPlugin : Plugin<Project> {
 
 
         if (target.pluginManager.hasPlugin("org.jetbrains.kotlin.jvm")) {
-            ApplyHelper.applyKotlinJar(target)
+            ApplyHelper.applyKotlinJar(target, provider)
         }
 
     }

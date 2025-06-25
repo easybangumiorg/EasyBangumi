@@ -8,6 +8,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.libplayer.api.PlayerBridge
 import org.easybangumi.next.shared.playcon.BasePlayerViewModel
 
@@ -32,13 +33,21 @@ class PointerPlayerViewModel(
         const val CONTROL_HIDE_DELAY = 4000L
     }
 
+    private val logger = logger()
+
     var hideDelayJob: Job? = null
 
-    var isLoading by mutableStateOf(false)
+//    var isLoading by mutableStateOf(false)
 
     var isShowController by mutableStateOf(false)
 
     var isLocked by mutableStateOf(false)
+
+    init {
+        viewModelScope.launch {
+
+        }
+    }
 
     fun lock() {
         isLocked = true
@@ -59,6 +68,11 @@ class PointerPlayerViewModel(
     }
 
 
+    fun seekTo(position: Long) {
+        bridge.seekTo(position)
+//        restartHideDelayJob()
+    }
+
     fun onSeekEnd(seekPosition: Long) {
         bridge.seekTo(seekPosition)
         restartHideDelayJob()
@@ -66,6 +80,7 @@ class PointerPlayerViewModel(
 
 
     fun showController(needHideDelay : Boolean = true) {
+//        logger.info("PointerPlayerViewModel: show controller $needHideDelay")
         isShowController = true
         if (needHideDelay) {
             restartHideDelayJob()
@@ -89,7 +104,9 @@ class PointerPlayerViewModel(
     fun restartHideDelayJob(){
         hideDelayJob?.cancel()
         hideDelayJob = viewModelScope.launch {
+//            logger.info("PointerPlayerViewModel: hide controller delay start")
             delay(CONTROL_HIDE_DELAY)
+//            logger.info("PointerPlayerViewModel: hide controller after delay")
             if (isActive && isShowController) {
                 hideController()
             }

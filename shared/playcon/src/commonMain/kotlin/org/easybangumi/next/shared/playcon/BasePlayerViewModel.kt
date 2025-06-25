@@ -8,11 +8,13 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
+import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.libplayer.api.C
 import org.easybangumi.next.libplayer.api.PlayerBridge
 import org.easybangumi.next.libplayer.api.VideoSize
@@ -33,6 +35,8 @@ import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
 open class BasePlayerViewModel(
     protected val bridge: PlayerBridge,
 ) : BaseViewModel() {
+
+    private val logger = logger()
 
     companion object {
         const val POSITION_LOOP_DELAY = 1000L
@@ -72,8 +76,11 @@ open class BasePlayerViewModel(
         needLoop.update { true }
     }
 
-    fun stopLoop() {
+    fun noNeedLoop() {
         needLoop.update { false }
+    }
+
+    fun stopLoop() {
         lopperJob?.cancel()
         lopperJob = null
     }
@@ -84,6 +91,8 @@ open class BasePlayerViewModel(
                 bridge.playStateFlow,
                 needLoop
             ) { state, needLoop ->
+//                logger.info("loop job start playStateFlow: $state, needLoop: $needLoop, state.isMediaSet: ${state.isMediaSet()}")
+                _playerState = state
                 if (needLoop && state.isMediaSet() ) {
                     lopperJob?.cancel()
                     lopperJob = viewModelScope.launch {
@@ -92,15 +101,52 @@ open class BasePlayerViewModel(
                             _position = bridge.positionMs
                             _bufferedPosition = bridge.bufferedPositionMs
                             _duration = bridge.durationMs
+//                            logger.info("loop job position: $_position, bufferedPosition: $_bufferedPosition, duration: $_duration")
                             delay(POSITION_LOOP_DELAY)
                         }
                     }
-                } else {
+                }
+                else {
                    stopLoop()
                 }
 
             }.collect()
         }
+
+        viewModelScope.launch {
+            bridge.playWhenReadyFlow.collectLatest {
+                if (_playWhenReady != it) {
+                    _playWhenReady = it
+                    logger.info("PlayWhenReady changed: $_playWhenReady")
+                }
+            }
+        }
+
+        viewModelScope.launch {
+            bridge.videoSizeFlow.collectLatest {
+                if (_videoSize != it) {
+                    _videoSize = it
+                    logger.info("VideoSize changed: $_videoSize")
+                }
+            }
+        }
+
+        viewModelScope.launch {
+            bridge.playStateFlow.collectLatest {
+                if (_playerState != it) {
+                    _playerState = it
+                    logger.info("PlayerState changed: $_playerState")
+                }
+            }
+        }
+
+    }
+
+    fun setPlayWhenReady(playWhenReady: Boolean) {
+        if (_playWhenReady != playWhenReady) {
+            _playWhenReady = playWhenReady
+        }
+        bridge.setPlayWhenReady(playWhenReady)
     }
 
 }

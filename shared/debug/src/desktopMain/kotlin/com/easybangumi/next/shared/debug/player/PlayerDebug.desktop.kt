@@ -16,7 +16,7 @@ import org.easybangumi.next.libplayer.api.MediaItem
 import org.easybangumi.next.libplayer.vlcj.VlcjBridgeManager
 import org.easybangumi.next.libplayer.vlcj.VlcjPlayerFrame
 import org.easybangumi.next.libplayer.vlcj.rememberVlcjPlayerFrameState
-import org.easybangumi.next.player.controller.DesktopPlayer
+import org.easybangumi.next.shared.playcon.pointer.PointerPlaycon
 import org.koin.compose.koinInject
 
 /**
@@ -65,7 +65,7 @@ actual fun DebugScope.PlayerDebug() {
             when (it) {
                 // 最小化
                 Lifecycle.State.CREATED -> {
-                    bridge.setPlayWhenReady(false)
+//                    bridge.setPlayWhenReady(false)
                 }
                 // 没有焦点
                 Lifecycle.State.STARTED -> {
@@ -74,7 +74,7 @@ actual fun DebugScope.PlayerDebug() {
                 }
                 // 有焦点
                 Lifecycle.State.RESUMED -> {
-                    bridge.setPlayWhenReady(true)
+//                    bridge.setPlayWhenReady(true)
                 }
 
                 Lifecycle.State.INITIALIZED -> {
@@ -94,9 +94,10 @@ actual fun DebugScope.PlayerDebug() {
         state = frameState,
     )
 
-    DesktopPlayer(
+    PointerPlaycon(
         modifier = Modifier.fillMaxSize(),
         bridge = bridge,
     )
+
 
 }

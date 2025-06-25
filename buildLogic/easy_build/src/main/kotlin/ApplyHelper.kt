@@ -31,8 +31,11 @@ object ApplyHelper {
 
     fun applyKmp(
         target: Project,
+        provider: EasyBuildConfigProvider,
     ) {
         target.extensions.configure<KotlinMultiplatformExtension> {
+
+
             androidTarget {
                 compilerOptions {
                     jvmTarget.set(JAVA_TARGET)
@@ -84,6 +87,15 @@ object ApplyHelper {
                 }
                 iosSimulatorArm64Main.configure {
                     dependsOn(iosMain)
+                }
+            }
+
+            if (provider.optMd3Api) {
+                sourceSets.all {
+                    languageSettings.apply {
+                        // 为所有 Material3 实验性 API 启用
+                        optIn("androidx.compose.material3.ExperimentalMaterial3Api")
+                    }
                 }
             }
         }
@@ -144,8 +156,8 @@ object ApplyHelper {
 
     fun applyKotlinJar(
         project: Project,
-
-        ) {
+        provider: EasyBuildConfigProvider
+    ) {
         project.extensions.configure<JavaPluginExtension>() {
             sourceCompatibility = JAVA_VERSION
             targetCompatibility = JAVA_VERSION
@@ -153,7 +165,18 @@ object ApplyHelper {
 
         project.extensions.configure<KotlinProjectExtension>() {
             jvmToolchain(JAVA_VERSION_INT)
+
+            if (provider.optMd3Api) {
+                sourceSets.all {
+                    languageSettings.apply {
+                        // 为所有 Material3 实验性 API 启用
+                        optIn("androidx.compose.material3.ExperimentalMaterial3Api")
+                    }
+                }
+            }
         }
+
+
 
     }
 
