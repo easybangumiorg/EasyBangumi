@@ -63,12 +63,13 @@ includeModule(":shared:resources", "shared/resources")
 includeModule(":shared:foundation", "shared/foundation")
 includeModule(":shared:theme", "shared/theme")
 includeModule(":shared:data", "shared/data")
-includeModule(":shared:plugin", "shared/plugin")
-includeModule(":shared:plugin:bangumi", "shared/plugin-bangumi")
 includeModule(":shared:preference", "shared/preference")
 includeModule(":shared:scheme", "shared/scheme")
 includeModule(":shared:debug", "shared/debug")
 includeModule(":shared:playcon", "shared/playcon")
+
+includeModule(":shared:plugin", "shared/plugin")
+includeModule(":shared:plugin:bangumi", "shared/plugin/bangumi")
 
 
 // ------------- lib -------------

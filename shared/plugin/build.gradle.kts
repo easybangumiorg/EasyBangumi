@@ -31,6 +31,8 @@ kotlin {
             implementation(projects.shared.data)
             implementation(projects.shared.resources)
 
+            implementation(projects.shared.plugin.bangumi)
+
             implementation(projects.logger)
             implementation(projects.lib.unifile)
             implementation(projects.lib.store)
