@@ -67,6 +67,7 @@ includeModule(":shared:preference", "shared/preference")
 includeModule(":shared:scheme", "shared/scheme")
 includeModule(":shared:debug", "shared/debug")
 includeModule(":shared:playcon", "shared/playcon")
+includeModule(":shared:ktor", "shared/ktor")
 
 includeModule(":shared:plugin", "shared/plugin")
 includeModule(":shared:plugin:bangumi", "shared/plugin/bangumi")

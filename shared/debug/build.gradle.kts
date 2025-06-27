@@ -1,7 +1,3 @@
-
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
-
 plugins {
     alias(builds.plugins.kotlinMultiplatform)
     alias(builds.plugins.androidLibrary)
@@ -46,6 +42,7 @@ kotlin {
             implementation(compose.ui)
             implementation(projects.libplayer.vlcj)
         }
+
         iosMain.dependencies {
 
         }

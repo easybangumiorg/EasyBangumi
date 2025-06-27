@@ -2,6 +2,7 @@ plugins {
     alias(builds.plugins.kotlinMultiplatform)
     alias(builds.plugins.androidLibrary)
     id("EasyLibBuild")
+    id("EasyConfig")
 }
 kotlin {
     sourceSets {
@@ -15,7 +16,8 @@ kotlin {
         val iosSimulatorArm64Main by getting
 
         commonMain.dependencies {
-
+            implementation(libs.coil.ktor3)
+            implementation(libs.koin.core)
         }
 
         androidMain.dependencies {
@@ -35,4 +37,14 @@ dependencies {
 
 }
 
+val showNamespace = extra.get("easy.build.showNamespace").toString()
+easyConfig {
+    packageName.set(showNamespace)
+    buildConfigName.set("BangumiConfig")
+    sourceDir.set(kotlin.sourceSets.findByName("commonMain")?.kotlin)
+
+    configProperties {
+        "BANGUMI_ACCESS_TOKEN" with getEasyProperty("bangumi.access.token")
+    }
+}
 

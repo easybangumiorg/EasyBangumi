@@ -1,7 +1,4 @@
 
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
-
 plugins {
     alias(builds.plugins.kotlinMultiplatform)
     alias(builds.plugins.androidLibrary)
@@ -39,10 +36,6 @@ kotlin {
             implementation(projects.lib.utils)
         }
 
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
-//            implementation(compose.uiTest)
-        }
 
         jvmMain.dependencies {
             implementation(projects.javascript.rhino)

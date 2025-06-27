@@ -45,7 +45,7 @@ jetbrains_kotlin_jvm = "2.1.20"
 
 paging_multiplatform = "3.3.0-alpha02-0.5.1"
 coil = "3.1.0"
-ktor = "3.1.0"
+ktor = "3.2.0"
 
 # logger
 slf4j = "2.0.16"
@@ -127,9 +127,17 @@ coil-ktor3 = { group = "io.coil-kt.coil3", name = "coil-network-ktor3", version.
 coil-gif-android = { group = "io.coil-kt.coil3", name = "coil-gif", version.ref = "coil" }
 coil-svg = { group = "io.coil-kt.coil3", name = "coil-svg", version.ref = "coil" }
 
-ktor-client-adroid = { group = "io.ktor", name = "ktor-client-android", version.ref = "ktor" }
+ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
+ktor-client-android = { group = "io.ktor", name = "ktor-client-android", version.ref = "ktor" }
 ktor-client-java = { group = "io.ktor", name = "ktor-client-java", version.ref = "ktor" }
+ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktor" }
 
+
+ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-serialization-kotlinx-xml = { group = "io.ktor", name = "ktor-serialization-kotlinx-xml", version.ref = "ktor" }
+ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
+
+ktor-client-plugins-cookies = { group = "io.ktor", name = "ktor-client-cookies", version.ref = "ktor" }
 # Logging
 log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "slf4j-log4j2" }
 log4j-slf4j-impl = { module = "org.apache.logging.log4j:log4j-slf4j2-impl", version.ref = "slf4j-log4j2" }

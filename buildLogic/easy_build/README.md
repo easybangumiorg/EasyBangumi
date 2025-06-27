@@ -17,8 +17,7 @@ jdk 版本在 `ApplyHelper` 中配置，先暂时硬编码
 读取顺序
 
 1. `System.getenv()`
-2. `local.properties`
-3. `gradle.properties`
+2. `gradle.properties`
 
 
 一般而言 Plugin 会自动装配这些参数，但如果需要在 Build.gradle 中使用配置，可通过 ext 对象读取.

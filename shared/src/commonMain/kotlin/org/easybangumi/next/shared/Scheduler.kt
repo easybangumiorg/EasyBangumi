@@ -2,18 +2,11 @@ package org.easybangumi.next.shared
 
 import org.easybangumi.next.lib.store.storeModule
 import org.easybangumi.next.shared.data.dataModule
+import org.easybangumi.next.shared.ktor.ktorModule
 import org.easybangumi.next.shared.plugin.pluginModule
 import org.easybangumi.next.shared.preference.preferenceModule
-import org.easybangumi.next.shared.theme.ThemeController
 import org.easybangumi.next.shared.theme.themeModule
-import org.koin.compose.getKoin
 import org.koin.core.context.loadKoinModules
-import org.koin.core.context.startKoin
-import org.koin.core.logger.Level
-import org.koin.dsl.KoinAppDeclaration
-import org.koin.mp.KoinPlatformTools
-import kotlin.concurrent.atomics.AtomicBoolean
-import kotlin.concurrent.atomics.ExperimentalAtomicApi
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -42,6 +35,7 @@ object Scheduler {
                 dataModule,
                 themeModule,
                 preferenceModule,
+                ktorModule,
             ))
         }
 

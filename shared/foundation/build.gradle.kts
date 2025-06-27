@@ -66,7 +66,7 @@ kotlin {
 
         androidMain.dependencies {
             implementation(libs.moshi)
-            implementation(libs.ktor.client.adroid)
+            implementation(libs.ktor.client.android)
             implementation(libs.coil)
             implementation(libs.coil.gif.android)
         }

@@ -14,6 +14,7 @@ plugins {
     alias(libs.plugins.kotlinxAtomicfu) apply false
 }
 
+
 buildscript {
     repositories {
         gradlePluginPortal()

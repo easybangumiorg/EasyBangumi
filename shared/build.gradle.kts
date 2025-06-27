@@ -1,7 +1,6 @@
 @file:OptIn(ExperimentalComposeLibrary::class)
 
 import org.jetbrains.compose.ExperimentalComposeLibrary
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(builds.plugins.kotlinMultiplatform)
@@ -59,13 +58,15 @@ kotlin {
             api(projects.shared.preference)
             api(projects.shared.scheme)
             api(projects.shared.debug)
+            api(projects.shared.playcon)
+            api(projects.shared.ktor)
 
         }
 
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
-            implementation(compose.uiTest)
-        }
+//        commonTest.dependencies {
+//            implementation(libs.kotlin.test)
+//            implementation(compose.uiTest)
+//        }
 
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
