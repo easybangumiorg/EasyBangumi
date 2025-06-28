@@ -35,7 +35,7 @@ kotlin {
 
             implementation(projects.logger)
 
-            implementation(projects.libplayer.api)
+            implementation(projects.libplayer.libplayerApi)
         }
         androidMain.dependencies {
 

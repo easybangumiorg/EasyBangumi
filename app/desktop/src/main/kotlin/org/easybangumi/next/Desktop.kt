@@ -39,7 +39,8 @@ object Desktop {
                 }.bind(Platform::class)
 
                 single {
-                    VlcjBridgeManager()
+                    VlcjBridgeManager(listOf("-vvv", "--file-caching=2000",
+                        "--network-caching=2000",))
                 }
             })
         }

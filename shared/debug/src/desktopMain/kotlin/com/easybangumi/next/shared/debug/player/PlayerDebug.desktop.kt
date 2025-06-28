@@ -31,7 +31,7 @@ import org.koin.compose.koinInject
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
-val url = "http://vjs.zencdn.net/v/oceans.mp4"
+val url = "https://media.w3.org/2010/05/sintel/trailer.mp4"
 private val logger = logger("PlayerDebug")
 @Composable
 actual fun DebugScope.PlayerDebug() {

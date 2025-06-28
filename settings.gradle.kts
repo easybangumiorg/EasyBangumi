@@ -52,6 +52,8 @@ fun includeModule(modulePath: String, dir: String? = null) {
 
 }
 
+// 要注意 modulePath 最后一段不能重名
+
 // ------------- app -------------
 includeModule(":app:android", "app/android")
 includeModule(":app:desktop", "app/desktop")
@@ -70,8 +72,8 @@ includeModule(":shared:playcon", "shared/playcon")
 includeModule(":shared:ktor", "shared/ktor")
 
 includeModule(":shared:plugin", "shared/plugin")
-includeModule(":shared:plugin:api", "shared/plugin/api")
-includeModule(":shared:plugin:bangumi", "shared/plugin/bangumi")
+includeModule(":shared:plugin:plugin_api", "shared/plugin/api")
+includeModule(":shared:plugin:plugin_bangumi", "shared/plugin/bangumi")
 
 
 // ------------- lib -------------
@@ -85,9 +87,9 @@ includeModule(":lib:serialization", "lib/serialization")
 // -- 以下为独立代码层级 ---
 
 // ------------- player -------------
-includeModule(":libplayer:api", "libplayer/api")
-includeModule(":libplayer:vlcj", "libplayer/vlcj")
-includeModule(":libplayer:exoplayer", "libplayer/exoplayer")
+includeModule(":libplayer:libplayer_api", "libplayer/api")
+includeModule(":libplayer:libplayer_vlcj", "libplayer/vlcj")
+includeModule(":libplayer:libplayer_exoplayer", "libplayer/exoplayer")
 
 // ------------- javascript -------------
 includeModule(":javascript:rhino", "javascript/rhino")

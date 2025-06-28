@@ -50,17 +50,17 @@ android {
 
 dependencies {
 
-    implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.activity.compose)
-    implementation(libs.preference.ktx)
+    api(libs.androidx.appcompat)
+    api(libs.androidx.activity.compose)
+    api(libs.preference.ktx)
 
-    implementation(libs.koin.core)
-    implementation(libs.koin.android)
+    api(libs.koin.core)
+    api(libs.koin.android)
 
-    implementation(libs.logback.android)
+    api(libs.logback.android)
 
 
-    implementation(projects.shared)
+    api(projects.shared)
 
 
 }

@@ -28,7 +28,7 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.androidx.lifecycle.runtime.compose)
 
-            implementation(projects.libplayer.api)
+            implementation(projects.libplayer.libplayerApi)
             implementation(projects.lib)
             implementation(projects.shared.playcon)
         }
@@ -40,7 +40,8 @@ kotlin {
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(compose.ui)
-            implementation(projects.libplayer.vlcj)
+            implementation(projects.libplayer.libplayerApi)
+            implementation(projects.libplayer.libplayerVlcj)
         }
 
         iosMain.dependencies {

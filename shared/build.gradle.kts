@@ -50,7 +50,6 @@ kotlin {
             api(projects.lib)
 
             api(projects.shared.plugin)
-            api(projects.shared.plugin.api)
 
             api(projects.shared.data)
             api(projects.shared.theme)
@@ -82,7 +81,6 @@ kotlin {
 
 
 dependencies {
-
 }
 
 

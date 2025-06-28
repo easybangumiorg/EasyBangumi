@@ -28,10 +28,8 @@ kotlin {
             implementation(projects.shared.data)
             implementation(projects.shared.resources)
 
-            implementation(projects.shared.plugin.bangumi)
-
-            api(projects.shared.plugin.api)
-            api(projects.shared.plugin.bangumi)
+            api(projects.shared.plugin.pluginApi)
+            api(projects.shared.plugin.pluginBangumi)
 
             implementation(projects.logger)
             implementation(projects.lib.unifile)
@@ -60,7 +58,6 @@ kotlin {
 
 
 dependencies {
-
 }
 
 

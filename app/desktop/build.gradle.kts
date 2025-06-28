@@ -20,19 +20,21 @@ val versionName = extra.get("easy.build.versionName").toString()
 
 
 dependencies {
-    implementation(compose.desktop.currentOs)
+    api(compose.desktop.currentOs)
 
-    implementation(projects.shared)
-    implementation(projects.logger)
+    api(projects.shared)
+    api(projects.logger)
+    api(projects.lib)
 
-    implementation(libs.koin.core)
-    implementation(libs.log4j.core)
-    implementation(libs.log4j.slf4j.impl)
 
-    implementation(libs.vlcj)
-    implementation(projects.libplayer.vlcj)
+    api(libs.koin.core)
+    api(libs.log4j.core)
+    api(libs.log4j.slf4j.impl)
 
-    implementation(builds.kotlinPoet)
+    api(libs.vlcj)
+    api(projects.libplayer.libplayerVlcj)
+
+    api(builds.kotlinPoet)
 }
 
 compose.desktop {

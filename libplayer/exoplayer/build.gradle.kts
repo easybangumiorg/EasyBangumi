@@ -8,7 +8,7 @@ plugins {
 }
 dependencies {
     implementation(libs.media3.exoplayer)
-    implementation(projects.libplayer.api)
+    implementation(projects.libplayer.libplayerApi)
 
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.datetime)

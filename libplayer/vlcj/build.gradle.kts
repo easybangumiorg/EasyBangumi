@@ -21,7 +21,7 @@ dependencies {
     implementation(compose.foundation)
     implementation(compose.desktop.currentOs)
 
-    implementation(projects.libplayer.api)
-    implementation(projects.logger)
+    api(projects.libplayer.libplayerApi)
+    api(projects.logger)
 
 }

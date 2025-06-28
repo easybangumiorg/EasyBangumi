@@ -18,7 +18,7 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.coil.ktor3)
             implementation(libs.koin.core)
-            implementation(projects.shared.plugin.api)
+            implementation(projects.shared.plugin.pluginApi)
         }
 
         androidMain.dependencies {

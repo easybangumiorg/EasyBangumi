@@ -19,6 +19,7 @@ import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventListener
 import uk.co.caprica.vlcj.player.embedded.videosurface.CallbackVideoSurface
 import uk.co.caprica.vlcj.player.embedded.videosurface.VideoSurfaceAdapter
+import uk.co.caprica.vlcj.player.embedded.videosurface.VideoSurfaceAdapters
 import uk.co.caprica.vlcj.player.embedded.videosurface.callback.BufferFormat
 import uk.co.caprica.vlcj.player.embedded.videosurface.callback.BufferFormatCallback
 import uk.co.caprica.vlcj.player.embedded.videosurface.callback.RenderCallback
@@ -136,6 +137,7 @@ class VlcjPlayerBridge(
             displayWidth: Int,
             displayHeight: Int
         ) {
+            var current = System.nanoTime()
 //            println("display: ${nativeBuffers.size}, $displayWidth x $displayHeight")
             val time = mediaPlayer.status().time()
             val listener = frameListener
@@ -159,6 +161,9 @@ class VlcjPlayerBridge(
             } ?: SwingUtilities.invokeLater {
                 fireFrame()
             }
+
+            current = System.nanoTime() - current
+            logger.info("displayTime ${current}")
         }
 
         override fun unlock(mediaPlayer: MediaPlayer?) {
@@ -367,13 +372,12 @@ class VlcjPlayerBridge(
     }
 
 
-    private val videoSurfaceAdapter: VideoSurfaceAdapter = VideoSurfaceAdapter { mediaPlayer, componentId -> }
 
     val callbackVideoSurface = CallbackVideoSurface(
         bufferFormatCallback,
         renderCallback,
         true,
-        videoSurfaceAdapter
+        VideoSurfaceAdapters.getVideoSurfaceAdapter()
     )
 
     fun setFrameListener(frameListener: OnFrameListener) {
