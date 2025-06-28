@@ -9,7 +9,7 @@ import org.koin.core.module.Module
 import org.koin.dsl.module
 
 /**
- * Created by heyanlin on 2025/4/9.
+ * Created by heyanle on 2025/4/9.
  */
 
 val StoreScope: CoroutineScope by lazy {

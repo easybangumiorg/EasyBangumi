@@ -1,9 +1,6 @@
 package org.easybangumi.next.shared.ui.shared.filter
 
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
-import androidx.paging.cachedIn
 import app.cash.paging.PagingData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
@@ -15,7 +12,7 @@ import org.easybangumi.next.shared.foundation.view_model.LogicUIViewModel
 import org.easybangumi.next.shared.plugin.api.component.filter.Filter
 import org.easybangumi.next.shared.plugin.api.component.filter.FilterComponent
 import org.easybangumi.next.shared.plugin.api.toDataState
-import org.easybangumi.next.shared.plugin.core.component.ComponentBusiness
+import org.easybangumi.next.shared.plugin.api.component.ComponentBusiness
 import org.easybangumi.next.shared.plugin.paging.CartoonFilterPagingSource
 
 /**

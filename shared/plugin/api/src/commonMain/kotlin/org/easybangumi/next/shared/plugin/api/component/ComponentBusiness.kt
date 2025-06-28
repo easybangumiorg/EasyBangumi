@@ -1,9 +1,8 @@
-package org.easybangumi.next.shared.plugin.core.component
+package org.easybangumi.next.shared.plugin.api.component
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import org.easybangumi.next.shared.plugin.api.SourceResult
-import org.easybangumi.next.shared.plugin.api.component.Component
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi

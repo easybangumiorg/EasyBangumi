@@ -70,6 +70,7 @@ includeModule(":shared:playcon", "shared/playcon")
 includeModule(":shared:ktor", "shared/ktor")
 
 includeModule(":shared:plugin", "shared/plugin")
+includeModule(":shared:plugin:api", "shared/plugin/api")
 includeModule(":shared:plugin:bangumi", "shared/plugin/bangumi")
 
 

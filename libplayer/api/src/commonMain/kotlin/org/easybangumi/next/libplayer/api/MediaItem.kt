@@ -1,7 +1,7 @@
 package org.easybangumi.next.libplayer.api
 
 /**
- * Created by heyanlin on 2025/5/27.
+ * Created by heyanle on 2025/5/27.
  */
 data class MediaItem(
     val id: String = C.DEFAULT_ID,

@@ -5,7 +5,7 @@ import androidx.compose.runtime.compositionLocalOf
 import coil3.ImageLoader
 
 /**
- * Created by heyanlin on 2025/2/27.
+ * Created by heyanle on 2025/2/27.
  */
 val LocalImageLoader = compositionLocalOf<ImageLoader> {
     error("No ImageLoader provided")

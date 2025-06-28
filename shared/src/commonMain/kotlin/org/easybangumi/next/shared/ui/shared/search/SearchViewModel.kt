@@ -3,9 +3,6 @@ package org.easybangumi.next.shared.ui.shared.search
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
-import androidx.paging.cachedIn
 import app.cash.paging.PagingData
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -16,7 +13,7 @@ import org.easybangumi.next.shared.data.store.StoreProvider
 import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
 import org.easybangumi.next.shared.foundation.view_model.LogicUI
 import org.easybangumi.next.shared.plugin.api.component.SearchComponent
-import org.easybangumi.next.shared.plugin.core.component.ComponentBusiness
+import org.easybangumi.next.shared.plugin.api.component.ComponentBusiness
 import org.easybangumi.next.shared.plugin.paging.CartoonSearchPagingSource
 
 /**

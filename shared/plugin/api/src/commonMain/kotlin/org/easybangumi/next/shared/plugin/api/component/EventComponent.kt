@@ -4,7 +4,7 @@ import org.easybangumi.next.shared.plugin.api.source.SourceManifest
 
 
 /**
- * Created by heyanlin on 2024/12/13.
+ * Created by heyanle on 2024/12/13.
  */
 interface EventComponent: Component {
 

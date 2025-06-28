@@ -30,6 +30,9 @@ kotlin {
 
             implementation(projects.shared.plugin.bangumi)
 
+            api(projects.shared.plugin.api)
+            api(projects.shared.plugin.bangumi)
+
             implementation(projects.logger)
             implementation(projects.lib.unifile)
             implementation(projects.lib.store)

@@ -15,7 +15,7 @@ import coil3.request.ImageRequest
 import org.easybangumi.next.lib.utils.ResourceOr
 
 /**
- * Created by heyanlin on 2025/2/27.
+ * Created by heyanle on 2025/2/27.
  */
 @Composable
 actual fun AnimationImage(

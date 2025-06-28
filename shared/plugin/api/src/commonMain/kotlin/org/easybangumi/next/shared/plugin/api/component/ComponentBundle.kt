@@ -1,6 +1,5 @@
-package org.easybangumi.next.shared.plugin.core.component
+package org.easybangumi.next.shared.plugin.api.component
 
-import org.easybangumi.next.shared.plugin.api.component.Component
 import org.easybangumi.next.shared.plugin.api.source.Source
 import kotlin.reflect.KClass
 

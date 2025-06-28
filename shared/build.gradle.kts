@@ -49,8 +49,10 @@ kotlin {
 
             api(projects.lib)
 
-            api(projects.shared.data)
             api(projects.shared.plugin)
+            api(projects.shared.plugin.api)
+
+            api(projects.shared.data)
             api(projects.shared.theme)
             api(projects.shared.foundation)
             api(projects.shared.resources)

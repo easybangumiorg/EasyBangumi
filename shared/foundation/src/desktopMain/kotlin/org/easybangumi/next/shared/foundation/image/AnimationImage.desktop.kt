@@ -16,7 +16,7 @@ import org.jetbrains.compose.animatedimage.loadAnimatedImage
 import org.jetbrains.compose.animatedimage.loadResourceAnimatedImage
 
 /**
- * Created by heyanlin on 2025/2/27.
+ * Created by heyanle on 2025/2/27.
  */
 
 private sealed class AnimationDesktopLoadState {

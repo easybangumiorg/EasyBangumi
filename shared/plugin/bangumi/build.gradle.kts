@@ -18,6 +18,7 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.coil.ktor3)
             implementation(libs.koin.core)
+            implementation(projects.shared.plugin.api)
         }
 
         androidMain.dependencies {
@@ -44,7 +45,7 @@ easyConfig {
     sourceDir.set(kotlin.sourceSets.findByName("commonMain")?.kotlin)
 
     configProperties {
-        "BANGUMI_ACCESS_TOKEN" with getEasyProperty("bangumi.access.token")
+        "BANGUMI_ACCESS_TOKEN" with easyConfigProvider.findProperty("bangumi.access.token")
     }
 }
 

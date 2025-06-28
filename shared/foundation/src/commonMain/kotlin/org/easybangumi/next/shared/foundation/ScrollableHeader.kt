@@ -22,7 +22,7 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /**
- * Created by heyanlin on 2025/3/20.
+ * Created by heyanle on 2025/3/20.
  */
 
 private val logger = logger("ScrollableHeader")

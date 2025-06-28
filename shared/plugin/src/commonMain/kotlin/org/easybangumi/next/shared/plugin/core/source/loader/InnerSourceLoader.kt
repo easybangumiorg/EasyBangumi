@@ -8,7 +8,7 @@ import org.easybangumi.next.shared.plugin.core.source.wrapper.SourceLibWrapper
 
 
 /**
- * Created by heyanlin on 2025/1/29.
+ * Created by heyanle on 2025/1/29.
  */
 class InnerSourceLoader() {
 

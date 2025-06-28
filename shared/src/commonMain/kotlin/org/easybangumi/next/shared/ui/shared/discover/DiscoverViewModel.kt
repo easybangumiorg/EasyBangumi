@@ -1,7 +1,6 @@
 package org.easybangumi.next.shared.ui.shared.discover
 
 import androidx.compose.foundation.lazy.grid.LazyGridState
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
 import kotlinx.coroutines.async
@@ -19,7 +18,7 @@ import org.easybangumi.next.shared.plugin.api.component.discover.BannerHeadline
 import org.easybangumi.next.shared.plugin.api.component.discover.DiscoverComponent
 import org.easybangumi.next.shared.plugin.api.component.discover.RecommendTab
 import org.easybangumi.next.shared.plugin.api.toDataState
-import org.easybangumi.next.shared.plugin.core.component.ComponentBusiness
+import org.easybangumi.next.shared.plugin.api.component.ComponentBusiness
 import org.easybangumi.next.shared.plugin.paging.CartoonRecommendPagingSource
 import org.koin.core.component.inject
 

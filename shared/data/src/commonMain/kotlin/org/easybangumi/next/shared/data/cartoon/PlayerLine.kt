@@ -1,7 +1,7 @@
 package org.easybangumi.next.shared.data.cartoon
 
 /**
- * Created by heyanlin on 2024/12/5.
+ * Created by heyanle on 2024/12/5.
  */
 class PlayerLine (
     val id: String,

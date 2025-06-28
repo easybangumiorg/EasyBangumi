@@ -15,7 +15,7 @@ import org.easybangumi.next.lib.utils.coroutineProvider
 import org.easybangumi.next.lib.utils.pathProvider
 
 /**
- * Created by heyanlin on 2025/6/26.
+ * Created by heyanle on 2025/6/26.
  */
 class EasyCookiesStorage : CookiesStorage {
 

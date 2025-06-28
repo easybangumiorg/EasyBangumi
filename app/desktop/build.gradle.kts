@@ -20,12 +20,6 @@ val versionName = extra.get("easy.build.versionName").toString()
 
 
 dependencies {
-    // Note, if you develop a library, you should use compose.desktop.common.
-    // compose.desktop.currentOs should be used in launcher-sourceSet
-    // (in a separate module for demo project and in testMain).
-    // With compose.desktop.common you will also lose @Preview funx tionality
-
-
     implementation(compose.desktop.currentOs)
 
     implementation(projects.shared)
@@ -68,7 +62,7 @@ easyConfig {
     packageName.set(showNamespace)
     buildConfigName.set("EasyConfig")
     sourceDir.set(kotlin.sourceSets.findByName("main")?.kotlin)
-
+    debugProperties.set(true)
 
     configProperties {
         "NAMESPACE" with namespace

@@ -6,7 +6,7 @@ import org.easybangumi.next.lib.utils.ResourceOr
 
 /**
  * 拓展清单信息，拓展加载的材料
- * Created by heyanlin on 2024/12/13.
+ * Created by heyanle on 2024/12/13.
  */
 data class ExtensionManifest (
     // 基础信息

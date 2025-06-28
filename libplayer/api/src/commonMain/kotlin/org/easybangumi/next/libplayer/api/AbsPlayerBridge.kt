@@ -8,7 +8,7 @@ import kotlin.concurrent.atomics.ExperimentalAtomicApi
 import kotlin.reflect.KClass
 
 /**
- * Created by heyanlin on 2025/5/27.
+ * Created by heyanle on 2025/5/27.
  */
 abstract class AbsPlayerBridge : PlayerBridge {
 

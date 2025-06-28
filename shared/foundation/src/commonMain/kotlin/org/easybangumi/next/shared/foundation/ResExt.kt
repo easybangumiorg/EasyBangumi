@@ -6,7 +6,7 @@ import dev.icerock.moko.resources.compose.stringResource
 import org.easybangumi.next.lib.utils.ResourceOr
 
 /**
- * Created by heyanlin on 2025/3/3.
+ * Created by heyanle on 2025/3/3.
  */
 @Composable
 fun stringRes(resource: ResourceOr): String {

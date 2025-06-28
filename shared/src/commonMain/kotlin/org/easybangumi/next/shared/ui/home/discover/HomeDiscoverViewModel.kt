@@ -9,7 +9,7 @@ import org.easybangumi.next.lib.store.preference.PreferenceStore
 import org.easybangumi.next.shared.foundation.view_model.StateViewModel
 import org.easybangumi.next.shared.plugin.api.component.discover.DiscoverComponent
 import org.easybangumi.next.shared.plugin.core.component.SimpleComponentBundle
-import org.easybangumi.next.shared.plugin.core.component.ComponentBusiness
+import org.easybangumi.next.shared.plugin.api.component.ComponentBusiness
 import org.easybangumi.next.shared.plugin.core.info.SourceInfo
 import org.easybangumi.next.shared.plugin.core.source.SourceBundle
 import org.easybangumi.next.shared.plugin.core.source.SourceController

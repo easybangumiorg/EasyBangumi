@@ -105,8 +105,8 @@ object ApplyHelper {
         target: Project,
         provider: EasyBuildConfigProvider
     ) {
-        val androidCompileSdk = provider.findProperty("easy.build.androidCompileSdk", target).toIntOrNull()
-        val androidMinSdk = provider.findProperty("easy.build.androidMinSdk", target).toIntOrNull()
+        val androidCompileSdk = provider.findProperty("easy.build.androidCompileSdk").toIntOrNull()
+        val androidMinSdk = provider.findProperty("easy.build.androidMinSdk").toIntOrNull()
 
 
         val name = target.path.replace(":", ".").removePrefix(".")
@@ -133,8 +133,8 @@ object ApplyHelper {
         target: Project,
         provider: EasyBuildConfigProvider
     ) {
-        val androidCompileSdk = provider.findProperty("easy.build.androidCompileSdk", target).toIntOrNull()
-        val androidMinSdk = provider.findProperty("easy.build.androidMinSdk", target).toIntOrNull()
+        val androidCompileSdk = provider.findProperty("easy.build.androidCompileSdk").toIntOrNull()
+        val androidMinSdk = provider.findProperty("easy.build.androidMinSdk").toIntOrNull()
 
         target.extensions.configure<BaseAppModuleExtension> {
             namespace =  provider.namespace

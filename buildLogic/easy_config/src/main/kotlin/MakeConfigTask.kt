@@ -42,6 +42,14 @@ abstract class MakeConfigTask: DefaultTask() {
     )
     abstract val buildConfigName: Property<String?>
 
+    @get:Input
+    @get:Optional
+    @get:Option(
+        option = "needDebugProperties",
+        description = "Generated IS_DEBUG property in BuildConfig.kt, default is false."
+    )
+    abstract val needDebugProperties: Property<Boolean>
+
 
     @get:Nested
     lateinit var config: ConfigProperties
@@ -92,7 +100,9 @@ abstract class MakeConfigTask: DefaultTask() {
         }
 
 
-        stringBuilder.appendLine("\tconst val IS_DEBUG = $isDebug")
+        if (needDebugProperties.get()) {
+            stringBuilder.appendLine("\tconst val IS_DEBUG = $isDebug")
+        }
         stringBuilder.appendLine("}")
 
 

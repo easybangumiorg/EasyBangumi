@@ -11,7 +11,7 @@ import org.easybangumi.next.shared.plugin.api.utils.WebViewHelper
 import kotlin.reflect.KClass
 
 /**
- * Created by heyanlin on 2025/3/3.
+ * Created by heyanle on 2025/3/3.
  */
 object ConstClazz {
 

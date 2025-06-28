@@ -30,6 +30,7 @@ abstract class EasyConfigExtension(project: Project) {
     // Property for specifying the source set to generate the BuildConfig file in.
     val sourceDir = objects.property(SourceDirectorySet::class)
 
+    val debugProperties = objects.property<Boolean>()
 
     @Internal
     lateinit var config: ConfigProperties

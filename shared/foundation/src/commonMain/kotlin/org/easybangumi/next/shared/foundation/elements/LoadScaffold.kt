@@ -15,7 +15,7 @@ import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.shared.resources.Res
 
 /**
- * Created by heyanlin on 2025/3/20.
+ * Created by heyanle on 2025/3/20.
  */
 @Composable
 fun <T> LoadScaffold(

@@ -6,7 +6,7 @@ import org.easybangumi.next.libplayer.api.action.Action
 /**
  * 播放器桥接接口，用于在 Common 层中与播放器进行交互
  * 各平台需要自己实现
- * Created by heyanlin on 2025/5/27.
+ * Created by heyanle on 2025/5/27.
  */
 interface PlayerBridge: AutoCloseable {
 

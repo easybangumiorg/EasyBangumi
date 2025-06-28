@@ -1,7 +1,5 @@
 package org.easybangumi.next.shared.plugin.paging
 
-import androidx.paging.PagingSource
-import androidx.paging.PagingState
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.EasyPagingSource
 import org.easybangumi.next.lib.utils.PagingFrame
@@ -9,7 +7,7 @@ import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.plugin.api.component.discover.DiscoverComponent
 import org.easybangumi.next.shared.plugin.api.component.discover.RecommendTab
 import org.easybangumi.next.shared.plugin.api.toDataState
-import org.easybangumi.next.shared.plugin.core.component.ComponentBusiness
+import org.easybangumi.next.shared.plugin.api.component.ComponentBusiness
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi

@@ -3,7 +3,7 @@ package org.easybangumi.next.shared.data.cartoon
 import kotlin.jvm.Transient
 
 /**
- * Created by heyanlin on 2024/12/5.
+ * Created by heyanle on 2024/12/5.
  */
 data class CartoonCover(
     val id: String,

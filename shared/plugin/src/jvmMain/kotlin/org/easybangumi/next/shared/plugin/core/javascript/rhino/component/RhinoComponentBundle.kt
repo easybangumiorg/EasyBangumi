@@ -14,8 +14,8 @@ import org.easybangumi.next.shared.plugin.api.SourceException
 import org.easybangumi.next.shared.plugin.api.component.Component
 import org.easybangumi.next.shared.plugin.api.source.Source
 import org.easybangumi.next.shared.plugin.api.source.SourceManifest
-import org.easybangumi.next.shared.plugin.core.component.ComponentBundle
-import org.easybangumi.next.shared.plugin.core.component.ComponentBusiness
+import org.easybangumi.next.shared.plugin.api.component.ComponentBundle
+import org.easybangumi.next.shared.plugin.api.component.ComponentBusiness
 import org.easybangumi.next.shared.plugin.core.javascript.rhino.RhinoConstClazz
 import org.easybangumi.next.shared.plugin.utils.utilsModule
 import org.koin.core.Koin
@@ -98,8 +98,9 @@ class RhinoComponentBundle(
                 )
 
                 // 2. rhino 加载插件文件
-                if (param.ufd != null) {
-                    val file = UniFileFactory.fromUFDOrThrow(param.ufd)
+                val ufd = param.ufd
+                if (ufd != null) {
+                    val file = UniFileFactory.fromUFDOrThrow(ufd)
                     ctx.evaluateReader(
                         scriptable,
                         file.openSource().buffer().inputStream().reader(),

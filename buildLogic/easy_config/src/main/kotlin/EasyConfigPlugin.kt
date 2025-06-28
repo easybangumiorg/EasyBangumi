@@ -29,31 +29,10 @@ abstract class EasyConfigPlugin: Plugin<Project> {
             target.tasks.register(MAKE_EASY_BUILD_CONFIG, MakeConfigTask::class.java) {
                 group = "easyConfig" // Set the task group for organization.
                 description = "Generates BuildConfig files for the project." // Set the task description.
-//
-//                outputDir.set(
-//                    target.layout.buildDirectory.dir(
-//                        "/generated/source/easyConfig"
-//                    )
-//                )
-
-
                 packageName.set(extension.packageName.get()) // Set the package name from the extension.
                 buildConfigName.set(extension.buildConfigName.get()) // Set the build config file name from the extension, if specified.
                 config = extension.config // Set the config object from the extension.
-
-//                outputs.dir(
-//                    File(
-//                        buildString {
-//                            append(target.layout.buildDirectory.asFile.get().absolutePath)
-//                            appendFileSeparator
-//                            append("generated")
-//                            appendFileSeparator
-//                            append("source")
-//                            appendFileSeparator
-//                            append("easyConfig")
-//                        }
-//                    )
-//                )
+                needDebugProperties.set(extension.debugProperties.orNull ?: false)
             }
 
         setupGradleSync(target)

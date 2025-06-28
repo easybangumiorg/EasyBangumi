@@ -19,7 +19,7 @@ import org.easybangumi.next.shared.foundation.elements.LoadingElements
 import org.easybangumi.next.shared.resources.Res
 
 /**
- * Created by heyanlin on 2025/2/28.
+ * Created by heyanle on 2025/2/28.
  */
 fun <T : Any> LazyGridScope.pagingCommon(
     pagingItems: LazyPagingItems<T>,

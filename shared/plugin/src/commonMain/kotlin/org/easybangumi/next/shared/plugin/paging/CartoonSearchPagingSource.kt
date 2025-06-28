@@ -6,7 +6,7 @@ import org.easybangumi.next.lib.utils.PagingFrame
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.plugin.api.component.SearchComponent
 import org.easybangumi.next.shared.plugin.api.toDataState
-import org.easybangumi.next.shared.plugin.core.component.ComponentBusiness
+import org.easybangumi.next.shared.plugin.api.component.ComponentBusiness
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi

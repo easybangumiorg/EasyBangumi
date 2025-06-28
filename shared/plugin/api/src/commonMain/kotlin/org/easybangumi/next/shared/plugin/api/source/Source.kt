@@ -2,7 +2,6 @@ package org.easybangumi.next.shared.plugin.api.source
 
 import kotlinx.coroutines.CoroutineScope
 import org.easybangumi.next.lib.unifile.UFD
-import org.easybangumi.next.lib.utils.pathProvider
 
 
 /**
