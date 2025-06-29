@@ -8,19 +8,26 @@ import io.ktor.client.plugins.cookies.HttpCookies
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.serialization.kotlinx.xml.xml
 import org.koin.core.module.Module
+import org.koin.dsl.binds
 import org.koin.dsl.module
 
 actual val ktorModule: Module
     get() = module {
         single {
-            HttpClient(Android) {
-                install(ContentNegotiation) {
-                    json()
-                    xml()
-                }
-                install(HttpCookies) {
-                    storage = EasyCookiesStorage()
-                }
+            AndroidKtorFactory()
+        }.binds(arrayOf(KtorFactory::class))
+    }
+
+
+private class AndroidKtorFactory : KtorFactory {
+
+    override fun create(vararg config: KtorConfig): HttpClient {
+        return HttpClient(Android) {
+            // Global 配置
+            GlobalKtorConfig.apply(this)
+            config.forEach {
+                it.apply(this)
             }
         }
     }
+}

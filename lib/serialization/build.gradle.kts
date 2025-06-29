@@ -4,7 +4,7 @@ plugins {
     alias(builds.plugins.kotlinMultiplatform)
     alias(builds.plugins.androidLibrary)
     id("EasyLibBuild")
-    // alias(libs.plugins.kotlinxSerialization)
+    alias(libs.plugins.kotlinxSerialization)
 }
 kotlin {
 
@@ -22,7 +22,7 @@ kotlin {
 
 
         commonMain.dependencies {
-
+            implementation(libs.kotlinx.serialization.json)
         }
 
         jvmMain.dependencies {

@@ -1,5 +1,9 @@
 package org.easybangumi.next.lib.serialization
 
+import kotlinx.serialization.InternalSerializationApi
+import kotlinx.serialization.SerializationStrategy
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.serializer
 import kotlin.reflect.KClass
 
 /**
@@ -17,15 +21,36 @@ import kotlin.reflect.KClass
 interface JsonSerializer {
     fun <T: Any> serialize(data: T): String
     fun <T: Any> deserialize(data: String, clazz: KClass<T>, defaultValue: T?): T?
+
+
 }
 
-expect val jsonSerializer: JsonSerializer
+class JsonSerializerImpl: JsonSerializer {
+    private val json: Json by lazy {
+        Json {  }
+    }
 
-//object JsonSerializer
-//
-//expect fun <T: Any> JsonSerializer.serialize(data: T): String
-//
-//expect fun <T: Any> JsonSerializer.deserialize(data: String, clazz: KClass<T>, defaultValue: T?): T?
+    @OptIn(InternalSerializationApi::class)
+    override fun <T : Any> serialize(data: T): String {
+        return json.encodeToString<T>(data::class.serializer() as SerializationStrategy<T>, data)
+    }
+
+    @OptIn(InternalSerializationApi::class)
+    override fun <T : Any> deserialize(
+        data: String,
+        clazz: KClass<T>,
+        defaultValue: T?
+    ): T? {
+        return runCatching {
+            Json.decodeFromString(clazz.serializer(), data)
+        }.getOrElse {
+            it.printStackTrace()
+            defaultValue
+        }
+    }
+}
+
+val jsonSerializer: JsonSerializer = JsonSerializerImpl()
 
 inline fun <reified T: Any> JsonSerializer.deserialize(data: String, defaultValue: T?): T? {
     return deserialize(data, T::class, defaultValue)

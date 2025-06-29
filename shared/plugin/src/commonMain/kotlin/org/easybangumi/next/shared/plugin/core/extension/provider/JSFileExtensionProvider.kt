@@ -36,9 +36,9 @@ import org.easybangumi.next.shared.plugin.core.javascript.JsHelper
  *  不支持 assets，直接单文件存储即可
  *  直接使用 lastModified 判断是否需要重新加载
  *  workFolder 工作路径
- *   |- index.jsonl              -> 记录所有的 key 和 lastModified
- *   |- key1.js                  -> 拓展文件
- *   |- key2.jsc                 -> 加密的拓展文件
+ *   |- index.jsonl -> 记录所有的 key 和 lastModified
+ *   |- key1.js -> 拓展文件
+ *   |- key2.jsc -> 加密的拓展文件
  *   |- ...
  */
 

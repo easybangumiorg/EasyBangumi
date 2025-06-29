@@ -30,6 +30,7 @@ expect interface Platform {
     val versionCode: Int
     val versionName: String
 
+
 }
 
 fun Platform.isAndroid(): Boolean = platformType == PlatformType.Android
@@ -38,4 +39,5 @@ fun Platform.isDesktop(): Boolean = platformType == PlatformType.Desktop
 
 val platformInformation: Platform
     get() = KoinPlatform.getKoin().get<Platform>()
+
 

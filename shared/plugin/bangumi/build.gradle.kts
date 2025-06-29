@@ -1,8 +1,9 @@
 plugins {
     alias(builds.plugins.kotlinMultiplatform)
     alias(builds.plugins.androidLibrary)
+    alias(libs.plugins.kotlinxSerialization)
     id("EasyLibBuild")
-    id("EasyConfig")
+//    id("EasyConfig")
 }
 kotlin {
     sourceSets {
@@ -18,7 +19,14 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.coil.ktor3)
             implementation(libs.koin.core)
+            implementation(libs.kotlinx.serialization.json)
+
+            implementation(projects.shared.platform)
             implementation(projects.shared.plugin.pluginApi)
+            implementation(projects.shared.ktor)
+            implementation(projects.logger)
+
+            implementation(projects.lib.utils)
         }
 
         androidMain.dependencies {
@@ -31,6 +39,12 @@ kotlin {
         iosMain.dependencies {
 
         }
+
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.ktor.client.mock)
+
+        }
     }
 }
 
@@ -38,14 +52,14 @@ dependencies {
 
 }
 
-val showNamespace = extra.get("easy.build.showNamespace").toString()
-easyConfig {
-    packageName.set(showNamespace)
-    buildConfigName.set("BangumiConfig")
-    sourceDir.set(kotlin.sourceSets.findByName("commonMain")?.kotlin)
-
-    configProperties {
-        "BANGUMI_ACCESS_TOKEN" with easyConfigProvider.findProperty("bangumi.access.token")
-    }
-}
-
+//val showNamespace = extra.get("easy.build.showNamespace").toString()
+//easyConfig {
+//    packageName.set(showNamespace)
+//    buildConfigName.set("BangumiConfig")
+//    sourceDir.set(kotlin.sourceSets.findByName("commonMain")?.kotlin)
+//
+//    configProperties {
+//        "BANGUMI_ACCESS_TOKEN" with easyConfigProvider.findProperty("bangumi.access.token")
+//    }
+//}
+//
