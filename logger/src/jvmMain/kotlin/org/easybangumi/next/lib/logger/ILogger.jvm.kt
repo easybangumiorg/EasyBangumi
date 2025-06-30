@@ -77,7 +77,7 @@ actual fun Any.logger(): Logger {
 }
 
 actual fun logger(tag: String): Logger {
-    return LoggerWrapper(tag)
+    return debugLoggerProxy?.getLogger(tag)?:LoggerWrapper(tag)
 }
 
 actual interface Logger {

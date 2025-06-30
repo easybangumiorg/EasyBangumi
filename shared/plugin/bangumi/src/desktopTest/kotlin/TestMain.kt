@@ -1,22 +1,21 @@
-﻿import io.ktor.client.HttpClient
-import io.ktor.client.engine.mock.MockEngine
-import io.ktor.client.engine.mock.respond
-import io.ktor.client.plugins.HttpRequestTimeoutException
+﻿import io.ktor.client.*
+import io.ktor.client.engine.java.*
+import io.ktor.client.engine.mock.*
+import io.ktor.client.plugins.*
+import io.ktor.client.plugins.logging.DEFAULT
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
+import io.ktor.client.plugins.logging.Logging
 import kotlinx.coroutines.runBlocking
-import org.easybangumi.next.DesktopHostArch
-import org.easybangumi.next.DesktopHostOs
-import org.easybangumi.next.Platform
-import org.easybangumi.next.PlatformType
 import org.easybangumi.next.shared.ktor.KtorConfig
 import org.easybangumi.next.shared.ktor.KtorFactory
+import org.easybangumi.next.test.platform
 import org.easybangumi.shared.plugin.bangumi.business.BangumiBusiness
 import org.easybangumi.shared.plugin.bangumi.model.BgmRsp
 import org.easybangumi.shared.plugin.bangumi.model.Subject
 import org.koin.core.context.GlobalContext.startKoin
-import org.koin.dsl.binds
-import org.koin.dsl.module
+import org.koin.test.KoinTest
 import kotlin.test.Test
-import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
@@ -30,31 +29,16 @@ import kotlin.test.assertTrue
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-class TestMain {
+class TestMain: KoinTest {
 
-    fun injectPlatform() {
+    init {
         startKoin {
-            modules(module {
-                single {
-                    object: Platform {
-                        override val platformType: PlatformType
-                            get() = PlatformType.Desktop
-                        override val platformName: String
-                            get() = PlatformType.Desktop.name
-                        override val isDebug: Boolean = true
-                        override val versionCode: Int = 1
-                        override val versionName: String = "1.0.0"
-                        override val hostOs: DesktopHostOs = DesktopHostOs.Windows
-                        override val hostArch: DesktopHostArch = DesktopHostArch.X64
-                    }
-                }.binds(arrayOf(Platform::class))
-            })
+            modules(platform)
         }
     }
 
     @Test
     fun getSubject() {
-        injectPlatform()
         val hookUrl404 = "https://404"
         val hookUrl200 = "https://200"
         val hookUrlTimeout = "https://timeout"
@@ -93,6 +77,10 @@ class TestMain {
                         config.forEach {
                             it.apply(this)
                         }
+                        install(Logging) {
+                            logger = Logger.DEFAULT
+                            level = LogLevel.ALL
+                        }
                     }
                 }
             }
@@ -125,6 +113,36 @@ class TestMain {
 
         }
 
+    }
+
+    @Test
+    fun getTrends() {
+        runBlocking {
+            val ktorFactory = object: KtorFactory {
+                override fun create(vararg config: KtorConfig): HttpClient {
+                    return HttpClient(Java) {
+                        config.forEach {
+                            it.apply(this)
+                        }
+                        install(Logging) {
+                            logger = Logger.DEFAULT
+                            level = LogLevel.ALL
+                        }
+                    }
+                }
+            }
+            val bangumiBusiness = BangumiBusiness(
+                ktorFactory,
+            )
+            val resp = bangumiBusiness.api.getTrends(1).await()
+            println(resp)
+            resp.throwIfError()
+
+            assertTrue {
+                resp is BgmRsp.Success<List<Subject>> && resp.code == 200 && resp.data.isNotEmpty()
+            }
+
+        }
     }
 
 

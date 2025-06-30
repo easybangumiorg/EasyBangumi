@@ -97,5 +97,8 @@ includeModule(":javascript:rhino", "javascript/rhino")
 // ------------- logger -------------
 includeModule(":logger", "logger")
 
+// ------------- test -------------
+includeModule(":test", "test")
+
 
 

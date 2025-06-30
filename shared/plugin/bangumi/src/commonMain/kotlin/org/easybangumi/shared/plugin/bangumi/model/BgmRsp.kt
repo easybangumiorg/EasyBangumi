@@ -34,6 +34,12 @@ sealed class BgmRsp<T> {
             return code == INNER_ERROR_CODE && (throwable is SocketTimeoutException || throwable is ConnectTimeoutException || throwable?.message?.contains("timeout") == true)
         }
     }
+
+    fun throwIfError() {
+        (this as? Error<*>)?.throwable?.let {
+            throw it
+        }
+    }
 }
 
 class BgmNetException(

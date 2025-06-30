@@ -36,7 +36,8 @@ import kotlin.reflect.KTypeProjection
 
 class BangumiBusiness(
     ktorFactory: KtorFactory,
-    private val bangumiBaseUrl: String = "https://api.bgm.tv/v0/",
+    private val bangumiApiHost: String = "api.bgm.tv",
+    private val bangumiHtmlHost: String = "chii.in",
 ): BangumiApiImpl.BangumiCaller {
 
     private val logger = logger()
@@ -47,6 +48,7 @@ class BangumiBusiness(
     private val scope = CoroutineScope(SupervisorJob() + dispatcher + CoroutineName("BangumiHttp"))
     private val userAgen = "org.easybangumi/EasyBangumi/${platformInformation.versionName} (${platformInformation.platformName}) (https://github.com/easybangumiorg/EasyBangumi)"
 
+    private val proxy = BangumiHtmlProxy(bangumiHtmlHost)
     @OptIn(InternalSerializationApi::class)
     private val ktorBangumiPlugin by lazy {
         createClientPlugin("bangumi") {
@@ -56,7 +58,10 @@ class BangumiBusiness(
             transformResponseBody { response: HttpResponse,
                                     content: ByteReadChannel,
                                     requestedType: TypeInfo ->
-
+//                val proxyPath = response.request.attributes.getOrNull(BangumiHtmlProxy.proxyRespAttrKey)
+//                if (proxyPath.isNotEmpty()) {
+//                    return@transformResponseBody null
+//                }
                 val ktype = requestedType.kotlinType ?: return@transformResponseBody null
                 if (ktype.classifier != BgmRsp::class) {
                     return@transformResponseBody null
@@ -90,6 +95,7 @@ class BangumiBusiness(
     private val ktorConfig: KtorConfig by lazy {
         object : KtorConfig {
             override fun apply(config: HttpClientConfig<*>) {
+                config.install(proxy.bangumHtmlProxyPlugin)
                 config.install(ktorBangumiPlugin)
                 config.HttpResponseValidator {
                     handleResponseException { cause, _ ->
@@ -115,7 +121,7 @@ class BangumiBusiness(
     }
 
     val api: BangumiApi by lazy {
-        BangumiApiImpl(this, bangumiBaseUrl)
+        BangumiApiImpl(this, bangumiApiHost)
     }
 
 

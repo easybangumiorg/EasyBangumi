@@ -27,6 +27,8 @@ kotlin {
             implementation(projects.logger)
 
             implementation(projects.lib.utils)
+
+            implementation(libs.ksoup)
         }
 
         androidMain.dependencies {
@@ -34,7 +36,8 @@ kotlin {
         }
 
         desktopMain.dependencies {
-
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.java)
         }
         iosMain.dependencies {
 
@@ -43,7 +46,9 @@ kotlin {
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.ktor.client.mock)
-
+            implementation(libs.ktor.client.logging)
+            implementation(projects.test)
+            implementation(libs.koin.test)
         }
     }
 }

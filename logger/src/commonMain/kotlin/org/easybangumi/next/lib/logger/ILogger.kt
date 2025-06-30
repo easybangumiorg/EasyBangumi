@@ -12,6 +12,11 @@ package org.easybangumi.next.lib.logger
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
+interface DebugLoggerProxy {
+    fun getLogger(tag: String): Logger
+}
+var debugLoggerProxy: DebugLoggerProxy? = null
+
 expect interface Logger {
 
     fun trace(message: String?, throwable: Throwable? = null)

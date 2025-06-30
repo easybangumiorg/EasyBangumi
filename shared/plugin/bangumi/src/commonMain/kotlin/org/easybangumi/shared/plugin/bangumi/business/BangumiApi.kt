@@ -21,5 +21,9 @@ interface BangumiApi {
     // get subjects/{subjectId}
     fun getSubject(subjectId: String): Deferred<BgmRsp<Subject>>
 
+    // get calendar
     fun calendar(): Deferred<BgmRsp<List<CalendarItem>>>
+
+    // get bangumi.proxy/trends?page={page}
+    fun getTrends(page: Int): Deferred<BgmRsp<List<Subject>>>
 }
