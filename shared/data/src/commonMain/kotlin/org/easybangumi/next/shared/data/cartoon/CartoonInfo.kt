@@ -50,26 +50,16 @@ import kotlinx.datetime.Clock
 @Entity(tableName = "CartoonInfo", primaryKeys = ["fromId", "fromSourceKey"])
 data class CartoonInfo(
 
-
-
+    // ================ from source ================
     // finder
     val fromId: String,              // 标识，由源自己支持，用于区分番剧
     // 来源 Source Key
     val fromSourceKey: String,
 
-    // playSource
-    // 播放源中该番的 id
-    val playSourceId: String,
-    // 播放源 key
-    val playSourceKey: String,
-
     // cartoonCover
     val name: String,
     val coverUrl: String,
     val detailedUrl: String,
-
-    val isUpdate: Boolean = false,
-    val lastUpdateTime: Long = 0L, // 最后更新的时间
 
     // preferences
     val isShowLine: Boolean = false,
@@ -89,8 +79,6 @@ data class CartoonInfo(
     val lastPlaySourceKey: String = "", // 最后一次播放的源 key
 
     val lastHistoryTime: Long = 0, // 如果为 0 则代表没有历史记录
-
-    val lastHistoryPlayerSourceKey: String = "",
     val lastHistoryPlayLineListJson: String = "",
 
     val lastLineId: String = "",
@@ -136,76 +124,6 @@ data class CartoonInfo(
 
     fun match(identify: String): Boolean {
         return this.toIdentify() == identify
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
-
-        other as CartoonInfo
-
-        if (isUpdate != other.isUpdate) return false
-        if (lastUpdateTime != other.lastUpdateTime) return false
-        if (isShowLine != other.isShowLine) return false
-        if (reversal != other.reversal) return false
-        if (starTime != other.starTime) return false
-        if (pinTime != other.pinTime) return false
-        if (lastHistoryTime != other.lastHistoryTime) return false
-        if (lastLineIndex != other.lastLineIndex) return false
-        if (lastEpisodeIndex != other.lastEpisodeIndex) return false
-        if (lastEpisodeOrder != other.lastEpisodeOrder) return false
-        if (lastEpisodeNum != other.lastEpisodeNum) return false
-        if (createTime != other.createTime) return false
-        if (fromId != other.fromId) return false
-        if (fromSourceKey != other.fromSourceKey) return false
-        if (name != other.name) return false
-        if (coverUrl != other.coverUrl) return false
-        if (detailedUrl != other.detailedUrl) return false
-        if (sourceName != other.sourceName) return false
-        if (sortByKey != other.sortByKey) return false
-        if (playLineString != other.playLineString) return false
-        if (tagsIdListString != other.tagsIdListString) return false
-        if (lastHistoryPlayerSourceKey != other.lastHistoryPlayerSourceKey) return false
-        if (lastHistoryPlayLineListJson != other.lastHistoryPlayLineListJson) return false
-        if (lastLineId != other.lastLineId) return false
-        if (lastEpisodeId != other.lastEpisodeId) return false
-        if (mataId != other.mataId) return false
-//        if (playSourceExt != other.playSourceExt) return false
-//        if (metaSourceExt != other.metaSourceExt) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = isUpdate.hashCode()
-        result = 31 * result + lastUpdateTime.hashCode()
-        result = 31 * result + isShowLine.hashCode()
-        result = 31 * result + reversal.hashCode()
-        result = 31 * result + starTime.hashCode()
-        result = 31 * result + pinTime.hashCode()
-        result = 31 * result + lastHistoryTime.hashCode()
-        result = 31 * result + lastLineIndex
-        result = 31 * result + lastEpisodeIndex
-        result = 31 * result + lastEpisodeOrder
-        result = 31 * result + lastEpisodeNum
-        result = 31 * result + createTime.hashCode()
-        result = 31 * result + fromId.hashCode()
-        result = 31 * result + fromSourceKey.hashCode()
-        result = 31 * result + name.hashCode()
-        result = 31 * result + coverUrl.hashCode()
-        result = 31 * result + detailedUrl.hashCode()
-        result = 31 * result + sourceName.hashCode()
-        result = 31 * result + sortByKey.hashCode()
-        result = 31 * result + playLineString.hashCode()
-        result = 31 * result + tagsIdListString.hashCode()
-        result = 31 * result + lastHistoryPlayerSourceKey.hashCode()
-        result = 31 * result + lastHistoryPlayLineListJson.hashCode()
-        result = 31 * result + lastLineId.hashCode()
-        result = 31 * result + lastEpisodeId.hashCode()
-        result = 31 * result + mataId.hashCode()
-//        result = 31 * result + playSourceExt.hashCode()
-//        result = 31 * result + metaSourceExt.hashCode()
-        return result
     }
 
 

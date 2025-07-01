@@ -3,6 +3,7 @@ package org.easybangumi.next.shared.plugin.core.component
 import kotlinx.atomicfu.atomic
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.shared.plugin.api.ConstClazz
+import org.easybangumi.next.shared.plugin.api.component.BaseComponent
 import org.easybangumi.next.shared.plugin.api.component.Component
 import org.easybangumi.next.shared.plugin.api.component.ComponentBundle
 import org.easybangumi.next.shared.plugin.api.component.ComponentBusiness
@@ -72,7 +73,13 @@ class SimpleComponentBundle(
 
 
                 }
+
                 modules(component, utilsModule)
+
+                // Load source module if exists
+                source.module ?.let {
+                    modules(it)
+                }
 
             }.koin
         }

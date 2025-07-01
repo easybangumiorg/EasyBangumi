@@ -9,7 +9,7 @@ import org.easybangumi.next.shared.data.cartoon.PlayerLine
 import org.easybangumi.next.shared.plugin.api.SourceResult
 import org.easybangumi.next.shared.plugin.api.component.play.PlayComponent
 import org.easybangumi.next.shared.plugin.api.withResult
-import org.easybangumi.next.shared.plugin.core.component.BaseComponent
+import org.easybangumi.next.shared.plugin.api.component.BaseComponent
 import kotlin.reflect.KClass
 
 /**
@@ -26,7 +26,7 @@ import kotlin.reflect.KClass
 class RhinoPlayComponentWrapper(
     private val rhinoScope: RhinoScope,
     private val playFunction: RhinoFunction
-) : BaseComponent(), PlayComponent, RhinoComponentWrapper {
+) : BaseComponent(), RhinoComponentWrapper {
 
     companion object {
         private const val COMPONENT_NAME_PLAY = "PlayComponent"
@@ -44,20 +44,20 @@ class RhinoPlayComponentWrapper(
         }
     }
 
-    override suspend fun play(
-        cartoonIndex: CartoonIndex,
-        playerLine: PlayerLine,
-        episode: Episode
-    ): SourceResult<PlayInfo> {
-        return withResult {
-            rhinoScope.callFunction<PlayInfo>(
-                playFunction,
-                cartoonIndex,
-                playerLine,
-                episode
-            )
-        }
-    }
+//    override suspend fun play(
+//        cartoonIndex: CartoonIndex,
+//        playerLine: PlayerLine,
+//        episode: Episode
+//    ): SourceResult<PlayInfo> {
+//        return withResult {
+//            rhinoScope.callFunction<PlayInfo>(
+//                playFunction,
+//                cartoonIndex,
+//                playerLine,
+//                episode
+//            )
+//        }
+//    }
 
     override fun getComponentClazz(): Array<KClass<*>> {
         return arrayOf(PlayComponent::class)

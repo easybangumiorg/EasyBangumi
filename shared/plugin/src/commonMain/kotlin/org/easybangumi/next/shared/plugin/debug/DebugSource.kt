@@ -2,7 +2,7 @@ package org.easybangumi.next.shared.plugin.debug
 
 import org.easybangumi.next.lib.utils.ResourceOr
 import org.easybangumi.next.shared.plugin.api.component.Component
-import org.easybangumi.next.shared.plugin.core.inner.InnerSource
+import org.easybangumi.next.shared.plugin.api.inner.InnerSource
 import org.easybangumi.next.shared.resources.Res
 
 /**

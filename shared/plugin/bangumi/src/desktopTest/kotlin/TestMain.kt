@@ -87,13 +87,13 @@ class TestMain: KoinTest {
             val bangumiBusiness = BangumiBusiness(
                 ktorFactory,
             )
-            bangumiBusiness.hookDebugUrl = hookUrl200
+            bangumiBusiness.debugHookUrl = hookUrl200
             val resp200 = bangumiBusiness.api.getSubject("526816").await()
 
-            bangumiBusiness.hookDebugUrl = hookUrl404
+            bangumiBusiness.debugHookUrl = hookUrl404
             val resp404 = bangumiBusiness.api.getSubject("404").await()
 
-            bangumiBusiness.hookDebugUrl = hookUrlTimeout
+            bangumiBusiness.debugHookUrl = hookUrlTimeout
            val respTimeout = bangumiBusiness.api.getSubject("timeout").await()
 
             println(resp200)

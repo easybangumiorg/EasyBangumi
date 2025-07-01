@@ -9,7 +9,7 @@ import org.easybangumi.next.shared.plugin.api.component.discover.RecommendTab
 import org.easybangumi.next.shared.plugin.api.component.filter.Filter
 import org.easybangumi.next.shared.plugin.api.component.filter.FilterComponent
 import org.easybangumi.next.shared.plugin.api.withResult
-import org.easybangumi.next.shared.plugin.core.component.BaseComponent
+import org.easybangumi.next.shared.plugin.api.component.BaseComponent
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi

@@ -1,4 +1,4 @@
-package org.easybangumi.next.shared.ui.shared.search
+package org.easybangumi.next.shared.ui.search
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf

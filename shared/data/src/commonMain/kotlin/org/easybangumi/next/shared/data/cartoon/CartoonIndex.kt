@@ -7,7 +7,7 @@ import kotlin.jvm.Transient
  */
 class CartoonIndex(
     val id: String,
-    val fromSource: String,
+    val source: String,
 ): Extractor {
 
     @Transient
@@ -16,7 +16,7 @@ class CartoonIndex(
 
     override fun hashCode(): Int {
         var result = id.hashCode()
-        result = 31 * result + fromSource.hashCode()
+        result = 31 * result + source.hashCode()
         return result
     }
 
@@ -27,7 +27,7 @@ class CartoonIndex(
         other as CartoonIndex
 
         if (id != other.id) return false
-        if (fromSource != other.fromSource) return false
+        if (source != other.source) return false
         if (ext != other.ext) return false
 
         return true

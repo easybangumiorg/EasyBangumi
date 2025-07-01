@@ -1,6 +1,5 @@
 package org.easybangumi.next.shared.ui.home.discover
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,7 +16,7 @@ import org.easybangumi.next.shared.foundation.plugin.SourceBundleContainer
 import org.easybangumi.next.shared.foundation.stringRes
 import org.easybangumi.next.shared.foundation.view_model.vm
 import org.easybangumi.next.shared.resources.Res
-import org.easybangumi.next.shared.ui.shared.discover.Discover
+import org.easybangumi.next.shared.ui.discover.Discover
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi

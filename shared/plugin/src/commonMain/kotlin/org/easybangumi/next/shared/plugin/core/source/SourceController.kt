@@ -19,7 +19,7 @@ import org.easybangumi.next.shared.plugin.core.extension.ExtensionController
 import org.easybangumi.next.shared.plugin.core.info.ExtensionInfo
 import org.easybangumi.next.shared.plugin.core.info.SourceConfig
 import org.easybangumi.next.shared.plugin.core.info.SourceInfo
-import org.easybangumi.next.shared.plugin.core.inner.InnerSource
+import org.easybangumi.next.shared.plugin.api.inner.InnerSource
 import org.easybangumi.next.shared.plugin.core.source.loader.InnerSourceLoader
 import org.easybangumi.next.shared.plugin.core.source.loader.SourceLoader
 import org.easybangumi.next.shared.plugin.core.source.loader.getSourceLoaderFactory
@@ -111,7 +111,7 @@ class SourceController(
                     it.await()
                 }
 
-                val innerRes = InnerSource.InnerSourceLists.map {
+                val innerRes = InnerSourceProvider.InnerSourceLists.map {
                     val config = realConfig[it.manifest.key] ?: SourceConfig(it.manifest.key, Clock.System.now().toEpochMilliseconds(), true)
                     innerLoadInner(it, config)
                 }

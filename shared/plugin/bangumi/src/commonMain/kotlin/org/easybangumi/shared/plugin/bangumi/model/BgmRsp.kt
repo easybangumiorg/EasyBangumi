@@ -40,6 +40,8 @@ sealed class BgmRsp<T> {
             throw it
         }
     }
+
+
 }
 
 class BgmNetException(

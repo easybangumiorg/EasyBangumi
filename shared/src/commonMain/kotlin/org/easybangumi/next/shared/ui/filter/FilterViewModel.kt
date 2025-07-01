@@ -1,4 +1,4 @@
-package org.easybangumi.next.shared.ui.shared.filter
+package org.easybangumi.next.shared.ui.filter
 
 import androidx.lifecycle.viewModelScope
 import app.cash.paging.PagingData

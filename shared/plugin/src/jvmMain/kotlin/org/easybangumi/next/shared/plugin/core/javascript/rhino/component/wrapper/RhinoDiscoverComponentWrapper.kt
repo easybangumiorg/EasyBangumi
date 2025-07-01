@@ -8,7 +8,7 @@ import org.easybangumi.next.shared.plugin.api.component.discover.BannerHeadline
 import org.easybangumi.next.shared.plugin.api.component.discover.DiscoverComponent
 import org.easybangumi.next.shared.plugin.api.component.discover.RecommendTab
 import org.easybangumi.next.shared.plugin.api.withResult
-import org.easybangumi.next.shared.plugin.core.component.BaseComponent
+import org.easybangumi.next.shared.plugin.api.component.BaseComponent
 import kotlin.reflect.KClass
 
 /**

@@ -2,6 +2,8 @@ package org.easybangumi.shared.plugin.bangumi.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.easybangumi.next.shared.data.cartoon.CartoonCover
+import org.easybangumi.shared.plugin.bangumi.plugin.BangumiInnerSource
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -26,4 +28,16 @@ data class TrendsSubject(
     @SerialName("rank") val rank: Int? = null,
     @SerialName("score") val score: Int? = null,
     @SerialName("score_total") val scoreTotal: Int? = null,
+    @SerialName("jump_url") val jumpUrl: String? = null,
 )
+
+fun TrendsSubject.toCartoonCover(): CartoonCover? {
+    return CartoonCover(
+        id = id?.toString() ?: return null,
+        source = BangumiInnerSource.SOURCE_ID,
+        name = nameCn ?: name ?: "",
+        coverUrl = image ?: "",
+        intro = info.joinToString("/"),
+        webUrl = jumpUrl ?: "",
+    )
+}

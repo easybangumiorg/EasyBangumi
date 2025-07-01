@@ -1,4 +1,4 @@
-package org.easybangumi.next.shared.plugin.core.inner
+package org.easybangumi.next.shared.plugin.api.inner
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.datetime.Clock
@@ -9,7 +9,7 @@ import org.easybangumi.next.shared.plugin.api.component.Component
 import org.easybangumi.next.shared.plugin.api.extension.ExtensionManifest
 import org.easybangumi.next.shared.plugin.api.source.Source
 import org.easybangumi.next.shared.plugin.api.source.SourceManifest
-import org.easybangumi.next.shared.plugin.debug.DebugSource
+import org.koin.core.module.Module
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -26,12 +26,6 @@ abstract class InnerSource: Source {
 
     companion object {
 
-
-        val InnerSourceLists: List<InnerSource> by lazy {
-            listOf<InnerSource>(
-                DebugSource()
-            )
-        }
 
         const val INNER_EXTENSION_KEY = "inner"
         val InnerExtensionManifest: ExtensionManifest by lazy {
@@ -70,6 +64,7 @@ abstract class InnerSource: Source {
     open val author: String = "Heyanle"
 
     abstract val componentConstructor: Array<()-> Component>
+
 
     override val manifest: SourceManifest by lazy {
         SourceManifest(

@@ -1,4 +1,4 @@
-package org.easybangumi.next.shared.ui.shared.discover
+package org.easybangumi.next.shared.ui.discover
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -68,7 +68,7 @@ import org.easybangumi.next.shared.plugin.api.component.ComponentBusiness
 import org.easybangumi.next.shared.resources.Res
 import org.easybangumi.next.shared.scheme.EasyScheme
 import org.easybangumi.next.shared.ui.UI
-import org.easybangumi.next.shared.ui.shared.discover.DiscoverViewModel.RecommendTabState
+import org.easybangumi.next.shared.ui.discover.DiscoverViewModel.RecommendTabState
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi

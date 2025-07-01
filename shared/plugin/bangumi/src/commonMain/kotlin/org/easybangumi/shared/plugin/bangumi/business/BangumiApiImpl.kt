@@ -4,13 +4,13 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.get
-import io.ktor.client.request.url
 import io.ktor.http.URLBuilder
 import io.ktor.http.path
 import kotlinx.coroutines.Deferred
 import org.easybangumi.shared.plugin.bangumi.model.BgmRsp
 import org.easybangumi.shared.plugin.bangumi.model.CalendarItem
 import org.easybangumi.shared.plugin.bangumi.model.Subject
+import org.easybangumi.shared.plugin.bangumi.model.TrendsSubject
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -26,26 +26,27 @@ import org.easybangumi.shared.plugin.bangumi.model.Subject
 
 class BangumiApiImpl (
    private val caller: BangumiCaller,
-   private val bangumiApiBaseHost: String = "api.bgm.tv",
-   private val bangumiProxyBaseHost: String = BangumiHtmlProxy.PROXY_HOST,
+   private val bangumiApiBaseHost: String,
+   private val bangumiProxyBaseHost: String,
 ): BangumiApi {
 
    interface BangumiCaller {
-      var hookDebugUrl: String?
+      var debugHookUrl: String?
       fun <T> request(block: suspend HttpClient.() -> BgmRsp<T>): Deferred<BgmRsp<T>>
    }
 
-
+   // api host
    private fun HttpRequestBuilder.bgmUrl(block: URLBuilder.() -> Unit) {
       url {
-         host = bangumiApiBaseHost
+         host = caller.debugHookUrl ?: bangumiApiBaseHost
          block(this)
       }
    }
 
+   // 嵌入代理 host
    private fun HttpRequestBuilder.proxyUrl(block: URLBuilder.() -> Unit) {
       url {
-         host = caller.hookDebugUrl ?: bangumiProxyBaseHost
+         host = caller.debugHookUrl ?: bangumiProxyBaseHost
          block(this)
       }
    }
@@ -72,12 +73,23 @@ class BangumiApiImpl (
       }
    }
 
-   override fun getTrends(page: Int): Deferred<BgmRsp<List<Subject>>> {
+   override fun getTrends(page: Int, from: BangumiApi.TrendsFrom): Deferred<BgmRsp<List<TrendsSubject>>> {
       return caller.request {
          get {
             proxyUrl {
                path("trends")
                parameters.append("page", page.toString())
+               parameters.append("from", from.path)
+            }
+         }.body()
+      }
+   }
+
+   override fun getBanners(): Deferred<BgmRsp<List<TrendsSubject>>> {
+      return caller.request {
+         get {
+            proxyUrl {
+               path("banners")
             }
          }.body()
       }

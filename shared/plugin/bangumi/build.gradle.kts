@@ -24,6 +24,7 @@ kotlin {
             implementation(projects.shared.platform)
             implementation(projects.shared.plugin.pluginApi)
             implementation(projects.shared.ktor)
+            implementation(projects.shared.data)
             implementation(projects.logger)
 
             implementation(projects.lib.utils)

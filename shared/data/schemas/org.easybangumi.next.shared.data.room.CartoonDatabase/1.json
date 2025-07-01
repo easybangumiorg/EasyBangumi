@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "5eb57a86f03364eb43ba6ecb14ac0d2e",
+    "identityHash": "99cc753965160b4994b2dfd3825455f1",
     "entities": [
       {
         "tableName": "CartoonInfo",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`fromId` TEXT NOT NULL, `fromSourceKey` TEXT NOT NULL, `playSourceId` TEXT NOT NULL, `playSourceKey` TEXT NOT NULL, `name` TEXT NOT NULL, `coverUrl` TEXT NOT NULL, `detailedUrl` TEXT NOT NULL, `isUpdate` INTEGER NOT NULL, `lastUpdateTime` INTEGER NOT NULL, `isShowLine` INTEGER NOT NULL, `sourceName` TEXT NOT NULL, `reversal` INTEGER NOT NULL, `sortByKey` TEXT NOT NULL, `playLineString` TEXT NOT NULL, `tagsIdListString` TEXT NOT NULL, `starTime` INTEGER NOT NULL, `pinTime` INTEGER NOT NULL, `lastPlaySourceId` TEXT NOT NULL, `lastPlaySourceKey` TEXT NOT NULL, `lastHistoryTime` INTEGER NOT NULL, `lastHistoryPlayerSourceKey` TEXT NOT NULL, `lastHistoryPlayLineListJson` TEXT NOT NULL, `lastLineId` TEXT NOT NULL, `lastLineIndex` INTEGER NOT NULL, `lastEpisodeId` TEXT NOT NULL, `lastEpisodeIndex` INTEGER NOT NULL, `lastEpisodeOrder` INTEGER NOT NULL, `lastEpisodeNum` INTEGER NOT NULL, `mataId` TEXT NOT NULL, `fromSourceExt` TEXT NOT NULL, `playSourceExt` TEXT NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY(`fromId`, `fromSourceKey`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`fromId` TEXT NOT NULL, `fromSourceKey` TEXT NOT NULL, `name` TEXT NOT NULL, `coverUrl` TEXT NOT NULL, `detailedUrl` TEXT NOT NULL, `isShowLine` INTEGER NOT NULL, `sourceName` TEXT NOT NULL, `reversal` INTEGER NOT NULL, `sortByKey` TEXT NOT NULL, `playLineString` TEXT NOT NULL, `tagsIdListString` TEXT NOT NULL, `starTime` INTEGER NOT NULL, `pinTime` INTEGER NOT NULL, `lastPlaySourceId` TEXT NOT NULL, `lastPlaySourceKey` TEXT NOT NULL, `lastHistoryTime` INTEGER NOT NULL, `lastHistoryPlayLineListJson` TEXT NOT NULL, `lastLineId` TEXT NOT NULL, `lastLineIndex` INTEGER NOT NULL, `lastEpisodeId` TEXT NOT NULL, `lastEpisodeIndex` INTEGER NOT NULL, `lastEpisodeOrder` INTEGER NOT NULL, `lastEpisodeNum` INTEGER NOT NULL, `mataId` TEXT NOT NULL, `fromSourceExt` TEXT NOT NULL, `playSourceExt` TEXT NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY(`fromId`, `fromSourceKey`))",
         "fields": [
           {
             "fieldPath": "fromId",
@@ -17,18 +17,6 @@
           {
             "fieldPath": "fromSourceKey",
             "columnName": "fromSourceKey",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "playSourceId",
-            "columnName": "playSourceId",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "playSourceKey",
-            "columnName": "playSourceKey",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -48,18 +36,6 @@
             "fieldPath": "detailedUrl",
             "columnName": "detailedUrl",
             "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "isUpdate",
-            "columnName": "isUpdate",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "lastUpdateTime",
-            "columnName": "lastUpdateTime",
-            "affinity": "INTEGER",
             "notNull": true
           },
           {
@@ -126,12 +102,6 @@
             "fieldPath": "lastHistoryTime",
             "columnName": "lastHistoryTime",
             "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "lastHistoryPlayerSourceKey",
-            "columnName": "lastHistoryPlayerSourceKey",
-            "affinity": "TEXT",
             "notNull": true
           },
           {
@@ -212,7 +182,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5eb57a86f03364eb43ba6ecb14ac0d2e')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '99cc753965160b4994b2dfd3825455f1')"
     ]
   }
 }

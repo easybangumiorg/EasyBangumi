@@ -3,7 +3,7 @@ package org.easybangumi.next.shared.plugin.core.source.loader
 import org.easybangumi.next.shared.plugin.core.component.SimpleComponentBundle
 import org.easybangumi.next.shared.plugin.core.info.SourceConfig
 import org.easybangumi.next.shared.plugin.core.info.SourceInfo
-import org.easybangumi.next.shared.plugin.core.inner.InnerSource
+import org.easybangumi.next.shared.plugin.api.inner.InnerSource
 import org.easybangumi.next.shared.plugin.core.source.wrapper.SourceLibWrapper
 
 

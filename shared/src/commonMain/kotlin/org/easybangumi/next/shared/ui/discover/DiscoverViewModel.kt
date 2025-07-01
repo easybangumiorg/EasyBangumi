@@ -1,4 +1,4 @@
-package org.easybangumi.next.shared.ui.shared.discover
+package org.easybangumi.next.shared.ui.discover
 
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.lifecycle.viewModelScope

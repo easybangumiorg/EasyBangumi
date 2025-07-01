@@ -6,7 +6,7 @@ import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.plugin.api.SourceResult
 import org.easybangumi.next.shared.plugin.api.component.SearchComponent
 import org.easybangumi.next.shared.plugin.api.withResult
-import org.easybangumi.next.shared.plugin.core.component.BaseComponent
+import org.easybangumi.next.shared.plugin.api.component.BaseComponent
 import kotlin.reflect.KClass
 
 /**

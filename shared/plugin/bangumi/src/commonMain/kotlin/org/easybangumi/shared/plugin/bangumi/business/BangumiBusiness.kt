@@ -16,6 +16,7 @@ import org.easybangumi.next.lib.utils.coroutineProvider
 import org.easybangumi.next.platformInformation
 import org.easybangumi.next.shared.ktor.KtorConfig
 import org.easybangumi.next.shared.ktor.KtorFactory
+import org.easybangumi.shared.plugin.bangumi.business.embed.BangumiEmbedProxy
 import org.easybangumi.shared.plugin.bangumi.model.BgmNetException
 import org.easybangumi.shared.plugin.bangumi.model.BgmRsp
 import kotlin.reflect.KClass
@@ -36,19 +37,31 @@ import kotlin.reflect.KTypeProjection
 
 class BangumiBusiness(
     ktorFactory: KtorFactory,
-    private val bangumiApiHost: String = "api.bgm.tv",
-    private val bangumiHtmlHost: String = "chii.in",
-): BangumiApiImpl.BangumiCaller {
+    private val bangumiApiHost: String = DEFAULT_BANGUMI_API_HOST,
+    private val bangumiHtmlHost: String = DEFAULT_BANGUMI_HTML_HOST,
+) {
+
+    companion object {
+        const val DEFAULT_BANGUMI_API_HOST = "api.bgm.tv"
+        const val DEFAULT_BANGUMI_HTML_HOST = "chii.in"
+        const val BANGUMI_EMBED_PROXY_HOST = "bangumi.embed.proxy"
+    }
 
     private val logger = logger()
 
-    override var hookDebugUrl: String? = null
+    // 不为空时所有请求都会改成这个 url
+    var debugHookUrl: String?
+        get() = bangumiCaller.debugHookUrl
+        set(value) {
+            bangumiCaller.debugHookUrl = value
+        }
 
     private val dispatcher = coroutineProvider.io()
     private val scope = CoroutineScope(SupervisorJob() + dispatcher + CoroutineName("BangumiHttp"))
     private val userAgen = "org.easybangumi/EasyBangumi/${platformInformation.versionName} (${platformInformation.platformName}) (https://github.com/easybangumiorg/EasyBangumi)"
 
-    private val proxy = BangumiHtmlProxy(bangumiHtmlHost)
+    private val proxy = BangumiEmbedProxy(bangumiHtmlHost, BANGUMI_EMBED_PROXY_HOST)
+
     @OptIn(InternalSerializationApi::class)
     private val ktorBangumiPlugin by lazy {
         createClientPlugin("bangumi") {
@@ -58,12 +71,8 @@ class BangumiBusiness(
             transformResponseBody { response: HttpResponse,
                                     content: ByteReadChannel,
                                     requestedType: TypeInfo ->
-//                val proxyPath = response.request.attributes.getOrNull(BangumiHtmlProxy.proxyRespAttrKey)
-//                if (proxyPath.isNotEmpty()) {
-//                    return@transformResponseBody null
-//                }
-                val ktype = requestedType.kotlinType ?: return@transformResponseBody null
-                if (ktype.classifier != BgmRsp::class) {
+                val type = requestedType.kotlinType ?: return@transformResponseBody null
+                if (type.classifier != BgmRsp::class) {
                     return@transformResponseBody null
                 }
                 val code = response.status.value
@@ -109,19 +118,23 @@ class BangumiBusiness(
         ktorFactory.create(ktorConfig)
     }
 
+    private val bangumiCaller = object: BangumiApiImpl.BangumiCaller {
+        override var debugHookUrl: String? = null
 
-    override fun <T> request(block: suspend HttpClient.() -> BgmRsp<T>): Deferred<BgmRsp<T>> {
-        return scope.async {
-            try {
-                httpClient.block()
-            } catch (e: BgmNetException) {
-                e.rsp as BgmRsp<T>
+        override fun <T> request(block: suspend HttpClient.() -> BgmRsp<T>): Deferred<BgmRsp<T>> {
+            return scope.async {
+                try {
+                    httpClient.block()
+                } catch (e: BgmNetException) {
+                    e.rsp as BgmRsp<T>
+                }
             }
         }
     }
 
+
     val api: BangumiApi by lazy {
-        BangumiApiImpl(this, bangumiApiHost)
+        BangumiApiImpl(bangumiCaller, bangumiApiHost, BANGUMI_EMBED_PROXY_HOST)
     }
 
 

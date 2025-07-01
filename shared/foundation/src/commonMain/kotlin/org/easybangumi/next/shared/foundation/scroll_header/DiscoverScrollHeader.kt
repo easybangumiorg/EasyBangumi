@@ -59,7 +59,7 @@ class DiscoverScrollHeaderScope(
     @get:Composable
     override val contentPadding: PaddingValues
         get() = PaddingValues(top = with(LocalDensity.current) {
-            logger.info("headerHeight: ${headerHeight.value}, pinHeaderHeight: ${pinHeaderHeight.value}, offset: ${state.offset}")
+//            logger.info("headerHeight: ${headerHeight.value}, pinHeaderHeight: ${pinHeaderHeight.value}, offset: ${state.offset}")
             (headerHeight.value + pinHeaderHeight.value + state.offset).coerceAtLeast(0f).toDp()
         })
 

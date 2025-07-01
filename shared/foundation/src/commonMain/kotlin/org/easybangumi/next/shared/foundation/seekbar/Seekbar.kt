@@ -110,12 +110,12 @@ fun Seekbar(
             val trackOffsetY = (sliderHeight - trackPlaceable.height) / 2
             val thumbOffsetY = (sliderHeight - thumbPlaceable.height) / 2
 
-            logger.info("Seekbar measurePolicy: " +
-                    "trackPlaceable=${trackPlaceable.height}, " +
-                    "thumbPlaceable=${thumbPlaceable.height}, " +
-                    "sliderWidth=$sliderWidth, sliderHeight=$sliderHeight, " +
-                    "trackOffsetX=$trackOffsetX, trackOffsetY=$trackOffsetY, " +
-                    "thumbOffsetX=$thumbOffsetX, thumbOffsetY=$thumbOffsetY")
+//            logger.info("Seekbar measurePolicy: " +
+//                    "trackPlaceable=${trackPlaceable.height}, " +
+//                    "thumbPlaceable=${thumbPlaceable.height}, " +
+//                    "sliderWidth=$sliderWidth, sliderHeight=$sliderHeight, " +
+//                    "trackOffsetX=$trackOffsetX, trackOffsetY=$trackOffsetY, " +
+//                    "thumbOffsetX=$thumbOffsetX, thumbOffsetY=$thumbOffsetY")
 
             layout(sliderWidth, sliderHeight) {
                 trackPlaceable.placeRelative(trackOffsetX, trackOffsetY)
