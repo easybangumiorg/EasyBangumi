@@ -29,6 +29,7 @@ import org.easybangumi.next.lib.logger.logger
  * @see org.easybangumi.shared.plugin.bangumi.business.BangumiApi
  */
 class BangumiEmbedProxy(
+    private val bangumiApiHost: String,
     private val bangumiHtmlHost : String,
     private val bangumiEmbedProxyHost: String,
 ) {
@@ -41,7 +42,7 @@ class BangumiEmbedProxy(
 
     private val handlerList = listOf<EmbedProxyHandler>(
         // 排行榜相关代理
-        BangumiRankingEmbedProxyHandler(bangumiHtmlHost)
+        BangumiRankingEmbedProxyHandler(bangumiHtmlHost, bangumiApiHost)
     )
 
     val bangumHtmlProxyPlugin = createClientPlugin("bangumi_html_proxy") {

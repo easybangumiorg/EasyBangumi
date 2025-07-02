@@ -60,7 +60,7 @@ class BangumiBusiness(
     private val scope = CoroutineScope(SupervisorJob() + dispatcher + CoroutineName("BangumiHttp"))
     private val userAgen = "org.easybangumi/EasyBangumi/${platformInformation.versionName} (${platformInformation.platformName}) (https://github.com/easybangumiorg/EasyBangumi)"
 
-    private val proxy = BangumiEmbedProxy(bangumiHtmlHost, BANGUMI_EMBED_PROXY_HOST)
+    private val proxy = BangumiEmbedProxy(bangumiApiHost, bangumiHtmlHost, BANGUMI_EMBED_PROXY_HOST)
 
     @OptIn(InternalSerializationApi::class)
     private val ktorBangumiPlugin by lazy {
@@ -108,7 +108,7 @@ class BangumiBusiness(
                 config.install(ktorBangumiPlugin)
                 config.HttpResponseValidator {
                     handleResponseException { cause, _ ->
-                        throw BgmNetException(code = BgmRsp.Error.INNER_ERROR_CODE, cause = cause)
+                        throw BgmNetException(code = BgmRsp.Error.INNER_ERROR_CODE, netCause = cause)
                     }
                 }
             }
@@ -127,6 +127,13 @@ class BangumiBusiness(
                     httpClient.block()
                 } catch (e: BgmNetException) {
                     e.rsp as BgmRsp<T>
+                } catch (e: Exception) {
+                    BgmRsp.Error<T>(
+                        code = BgmRsp.Error.INNER_ERROR_CODE,
+                        title = "网络错误",
+                        description = e.message ?: "未知错误",
+                        throwable = e
+                    ) as BgmRsp<T>
                 }
             }
         }

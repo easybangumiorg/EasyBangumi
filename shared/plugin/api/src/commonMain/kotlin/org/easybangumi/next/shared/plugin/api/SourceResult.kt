@@ -76,8 +76,10 @@ suspend fun <T : Any, R> T.withResult(context: CoroutineContext? = null, block: 
             SourceResult.ok(block())
         }
     } catch (e: SourceException) {
+        e.printStackTrace()
         SourceResult.error(e.msg, e)
     } catch (e: Throwable) {
+        e.printStackTrace()
         SourceResult.error(e)
     }
 }

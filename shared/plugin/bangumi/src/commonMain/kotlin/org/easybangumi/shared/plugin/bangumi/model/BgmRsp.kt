@@ -49,10 +49,10 @@ class BgmNetException(
     val title: String? = null,
     val description: String? = null,
     val details: String? = null,
-    override val cause: Throwable? = null,
+    val netCause: Throwable? = null,
 ) : Exception(
     "BgmNetException(code=$code, title=$title, description=$description, details=$details)",
-    cause
+    netCause
 ) {
 
     val rsp = BgmRsp.Error<Any>(
@@ -60,7 +60,7 @@ class BgmNetException(
         title = title,
         description = description,
         details = details,
-        throwable = cause
+        throwable = netCause
     )
     override fun toString(): String {
         return "BgmNetException(code=$code, title=$title, description=$description, details=$details, cause=${cause?.message})"

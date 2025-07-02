@@ -6,6 +6,7 @@ import io.ktor.client.plugins.api.TransformResponseBodyContext
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
+import io.ktor.http.URLBuilder
 import io.ktor.http.path
 import io.ktor.util.reflect.TypeInfo
 import io.ktor.utils.io.ByteReadChannel
@@ -33,6 +34,7 @@ private val logger = logger("BangumiRankingHandler")
 
 class BangumiRankingEmbedProxyHandler(
     private val bangumiHtmlHost: String,
+    private val bangumiApiHost: String
 ): EmbedProxyHandler {
 
 
@@ -133,6 +135,13 @@ class BangumiRankingEmbedProxyHandler(
 
             if (imageUrl?.contains("/pic/cover/c") == true) {
                 imageUrl = imageUrl.replace("/pic/cover/c", "/r/400/pic/cover/l")
+            }
+            imageUrl = URLBuilder().run {
+                host = bangumiApiHost
+                path("v0", "subjects", id.toString(), "image")
+                parameters.set("subject_id", id.toString())
+                parameters.set("type", "large")
+                toString()
             }
             logger.info("imageUrl: $imageUrl")
 

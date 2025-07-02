@@ -62,17 +62,17 @@ data class Collection(
 )
 
 @Serializable
-data class Count (
-    @SerialName("1"  ) val i  : Int? = null,
-    @SerialName("2"  ) val ii  : Int? = null,
-    @SerialName("3"  ) val iii  : Int? = null,
-    @SerialName("4"  ) val iv  : Int? = null,
-    @SerialName("5"  ) val v  : Int? = null,
-    @SerialName("6"  ) val vi  : Int? = null,
-    @SerialName("7"  ) val vii  : Int? = null,
-    @SerialName("8"  ) val iix  : Int? = null,
-    @SerialName("9"  ) val ix  : Int? = null,
-    @SerialName("10" ) val x : Int? = null
+data class Count(
+    @SerialName("1") val i: Int? = null,
+    @SerialName("2") val ii: Int? = null,
+    @SerialName("3") val iii: Int? = null,
+    @SerialName("4") val iv: Int? = null,
+    @SerialName("5") val v: Int? = null,
+    @SerialName("6") val vi: Int? = null,
+    @SerialName("7") val vii: Int? = null,
+    @SerialName("8") val iix: Int? = null,
+    @SerialName("9") val ix: Int? = null,
+    @SerialName("10") val x: Int? = null
 )
 
 
@@ -97,7 +97,7 @@ data class Infobox(
 sealed class InfoBoxValue {
     data class Str(val value: String) : InfoBoxValue()
     data class ListMap(val value: List<Map<String, String>>) : InfoBoxValue()
-    object InfoBoxValueSerializer: KSerializer<InfoBoxValue?> {
+    object InfoBoxValueSerializer : KSerializer<InfoBoxValue?> {
         override val descriptor: SerialDescriptor = buildClassSerialDescriptor("InfoBoxValue")
         override fun serialize(encoder: Encoder, value: InfoBoxValue?) {
             require(encoder is JsonEncoder)
@@ -107,9 +107,11 @@ sealed class InfoBoxValue {
                     ListSerializer(MapSerializer(String.serializer(), String.serializer())),
                     value.value
                 )
+
                 null -> encoder.encodeNull()
             }
         }
+
         override fun deserialize(decoder: Decoder): InfoBoxValue? {
             require(decoder is JsonDecoder)
             val element = decoder.decodeJsonElement()
@@ -120,6 +122,7 @@ sealed class InfoBoxValue {
                         (jsonElement as? JsonObject)?.mapValues { it.value.jsonPrimitive.content }
                     }.filterNotNull()
                 )
+
                 else -> null
             }
         }

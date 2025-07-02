@@ -26,7 +26,7 @@ actual fun makeCartoonDatabase(): CartoonDatabase {
         name = dbPath,
     ).setDriver(BundledSQLiteDriver())
         .addMigrations(* Migrate.cartoonDatabaseMigration.toTypedArray())
-        // .fallbackToDestructiveMigrationOnDowngrade(true)
+        .fallbackToDestructiveMigration(true)
         .setQueryCoroutineContext(coroutineProvider.io())
         .build()
 }
