@@ -2,7 +2,7 @@ package org.easybangumi.next.shared.plugin.core.source
 
 import org.easybangumi.next.shared.plugin.api.inner.InnerSource
 import org.easybangumi.next.shared.plugin.debug.DebugSource
-import org.easybangumi.shared.plugin.bangumi.plugin.BangumiInnerSource
+import org.easybangumi.ext.shared.plugin.bangumi.plugin.BangumiInnerSource
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi

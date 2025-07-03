@@ -1,4 +1,4 @@
-package org.easybangumi.shared.plugin.bangumi.business.embed
+package org.easybangumi.ext.shared.plugin.bangumi.business.embed
 
 import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.client.statement.HttpResponse
@@ -6,6 +6,7 @@ import io.ktor.client.statement.request
 import io.ktor.util.AttributeKey
 import io.ktor.util.reflect.TypeInfo
 import io.ktor.utils.io.ByteReadChannel
+import org.easybangumi.ext.shared.plugin.bangumi.business.BangumiConfig
 import org.easybangumi.next.lib.logger.logger
 
 /**
@@ -26,13 +27,12 @@ import org.easybangumi.next.lib.logger.logger
  * 例如：
  * 普通 api 业务：api.bgm.tv/calendar -> bangumi ktor client -> json 解析 -> BgmRsp
  * 嵌入代理业务：bangumi.proxy/banners -> bangumi ktor client -> bangumi embed proxy -> chii.in/anime/browser/tv/?sort=trends -> html 解析 -> BgmRsp
- * @see org.easybangumi.shared.plugin.bangumi.business.BangumiApi
+ * @see org.easybangumi.ext.shared.plugin.bangumi.business.BangumiApi
  */
 class BangumiEmbedProxy(
-    private val bangumiApiHost: String,
-    private val bangumiHtmlHost : String,
-    private val bangumiEmbedProxyHost: String,
+    private val config: BangumiConfig,
 ) {
+
 
     companion object {
         val embedProxyHandlerAttrKey = AttributeKey<EmbedProxyHandler>("proxyHandler")
@@ -42,12 +42,14 @@ class BangumiEmbedProxy(
 
     private val handlerList = listOf<EmbedProxyHandler>(
         // 排行榜相关代理
-        BangumiRankingEmbedProxyHandler(bangumiHtmlHost, bangumiApiHost)
+        BangumiRankingEmbedProxyHandler(config),
+        // 评论代理
+        BangumiReviewsEmbedProxyHandler(config),
     )
 
     val bangumHtmlProxyPlugin = createClientPlugin("bangumi_html_proxy") {
         onRequest { req, _ ->
-            if (req.url.host.equals(bangumiEmbedProxyHost)) {
+            if (req.url.host.equals(config.bangumiEmbedProxyHost)) {
                 val path = req.url.pathSegments.firstOrNull()
                 logger.info(path)
                 if (path.isNullOrEmpty()) {
@@ -56,9 +58,10 @@ class BangumiEmbedProxy(
                 for (handler in handlerList) {
                     if (handler.onReq(req)) {
                         req.attributes.put(embedProxyHandlerAttrKey, handler)
-                        break
+                        return@onRequest
                     }
                 }
+                throw IllegalArgumentException("BangumiEmbedProxy: no handler found for path: $path")
             }
         }
         transformResponseBody { response: HttpResponse,

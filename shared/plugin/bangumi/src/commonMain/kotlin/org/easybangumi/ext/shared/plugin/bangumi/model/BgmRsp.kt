@@ -1,4 +1,4 @@
-﻿package org.easybangumi.shared.plugin.bangumi.model
+﻿package org.easybangumi.ext.shared.plugin.bangumi.model
 
 import io.ktor.client.network.sockets.ConnectTimeoutException
 import io.ktor.client.network.sockets.SocketTimeoutException
@@ -17,7 +17,15 @@ import kotlinx.serialization.Serializable
  */
 
 sealed class BgmRsp<T> {
-    data class Success<T>(val code: Int, val data: T, val raw: String? = null) : BgmRsp<T>()
+    data class Success<T>(
+        val code: Int,
+        val data: T,
+        val raw: String? = null
+    ) : BgmRsp<T>() {
+        override fun toString(): String {
+            return "Success(code=$code, data=$data)"
+        }
+    }
     data class Error<T>(
         val code: Int,
         val title: String? = null,
@@ -33,6 +41,12 @@ sealed class BgmRsp<T> {
         fun isTimeout(): Boolean {
             return code == INNER_ERROR_CODE && (throwable is SocketTimeoutException || throwable is ConnectTimeoutException || throwable?.message?.contains("timeout") == true)
         }
+
+        override fun toString(): String {
+            return "Error(code=$code, title=$title, description=$description, details=$details, throwable=$throwable)"
+        }
+
+
     }
 
     fun throwIfError() {

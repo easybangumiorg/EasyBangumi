@@ -1,9 +1,9 @@
-package org.easybangumi.shared.plugin.bangumi.model
+package org.easybangumi.ext.shared.plugin.bangumi.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
-import org.easybangumi.shared.plugin.bangumi.plugin.BangumiInnerSource
+import org.easybangumi.ext.shared.plugin.bangumi.plugin.BangumiInnerSource
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi

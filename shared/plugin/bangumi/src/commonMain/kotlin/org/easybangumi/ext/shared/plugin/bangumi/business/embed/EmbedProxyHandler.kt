@@ -1,4 +1,4 @@
-package org.easybangumi.shared.plugin.bangumi.business.embed
+package org.easybangumi.ext.shared.plugin.bangumi.business.embed
 
 import io.ktor.client.plugins.api.TransformResponseBodyContext
 import io.ktor.client.request.HttpRequestBuilder

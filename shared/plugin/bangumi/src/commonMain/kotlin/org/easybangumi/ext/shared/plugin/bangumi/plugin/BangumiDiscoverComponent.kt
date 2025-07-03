@@ -1,4 +1,4 @@
-package org.easybangumi.shared.plugin.bangumi.plugin
+package org.easybangumi.ext.shared.plugin.bangumi.plugin
 
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
@@ -9,12 +9,12 @@ import org.easybangumi.next.shared.plugin.api.component.discover.BannerHeadline
 import org.easybangumi.next.shared.plugin.api.component.discover.DiscoverComponent
 import org.easybangumi.next.shared.plugin.api.component.discover.RecommendTab
 import org.easybangumi.next.shared.plugin.api.withResult
-import org.easybangumi.shared.plugin.bangumi.business.BangumiApi
-import org.easybangumi.shared.plugin.bangumi.business.BangumiBusiness
-import org.easybangumi.shared.plugin.bangumi.business.embed.BangumiRankingEmbedProxyHandler
-import org.easybangumi.shared.plugin.bangumi.model.BgmRsp
-import org.easybangumi.shared.plugin.bangumi.model.BgmRsp.Success
-import org.easybangumi.shared.plugin.bangumi.model.toCartoonCover
+import org.easybangumi.ext.shared.plugin.bangumi.business.BangumiApi
+import org.easybangumi.ext.shared.plugin.bangumi.business.BangumiBusiness
+import org.easybangumi.ext.shared.plugin.bangumi.business.embed.BangumiRankingEmbedProxyHandler
+import org.easybangumi.ext.shared.plugin.bangumi.model.BgmRsp
+import org.easybangumi.ext.shared.plugin.bangumi.model.BgmRsp.Success
+import org.easybangumi.ext.shared.plugin.bangumi.model.toCartoonCover
 import org.koin.core.component.inject
 
 /**

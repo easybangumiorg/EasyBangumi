@@ -7,12 +7,15 @@ import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import kotlinx.coroutines.runBlocking
+import org.easybangumi.ext.shared.plugin.bangumi.business.BangumiApi
 import org.easybangumi.next.shared.ktor.KtorConfig
 import org.easybangumi.next.shared.ktor.KtorFactory
 import org.easybangumi.next.test.platform
-import org.easybangumi.shared.plugin.bangumi.business.BangumiBusiness
-import org.easybangumi.shared.plugin.bangumi.model.BgmRsp
-import org.easybangumi.shared.plugin.bangumi.model.Subject
+import org.easybangumi.ext.shared.plugin.bangumi.business.BangumiBusiness
+import org.easybangumi.ext.shared.plugin.bangumi.model.BgmRsp
+import org.easybangumi.ext.shared.plugin.bangumi.model.Reviews
+import org.easybangumi.ext.shared.plugin.bangumi.model.Subject
+import org.easybangumi.ext.shared.plugin.bangumi.model.TrendsSubject
 import org.koin.core.context.GlobalContext.startKoin
 import org.koin.test.KoinTest
 import kotlin.test.Test
@@ -134,17 +137,46 @@ class TestMain: KoinTest {
             val bangumiBusiness = BangumiBusiness(
                 ktorFactory,
             )
-            val resp = bangumiBusiness.api.getTrends(1).await()
+            val resp = bangumiBusiness.api.getTrends(1, BangumiApi.TrendsFrom.ORIGINAL).await()
             println(resp)
             resp.throwIfError()
 
             assertTrue {
-                resp is BgmRsp.Success<List<Subject>> && resp.code == 200 && resp.data.isNotEmpty()
+                resp is BgmRsp.Success<List<TrendsSubject>> && resp.code == 200 && resp.data.isNotEmpty()
             }
 
         }
     }
 
+    @Test
+    fun testGetComments() {
+        runBlocking {
+            val ktorFactory = object: KtorFactory {
+                override fun create(vararg config: KtorConfig): HttpClient {
+                    return HttpClient(Java) {
+                        config.forEach {
+                            it.apply(this)
+                        }
+                        install(Logging) {
+                            logger = Logger.DEFAULT
+                            level = LogLevel.ALL
+                        }
+                    }
+                }
+            }
+            val bangumiBusiness = BangumiBusiness(
+                ktorFactory,
+            )
+            val resp = bangumiBusiness.api.getComments("526816", 1).await()
+            println(resp)
+            resp.throwIfError()
+
+            assertTrue {
+                resp is BgmRsp.Success<List<Reviews>> && resp.code == 200 && resp.data.isNotEmpty()
+            }
+
+        }
+    }
 
 
 

@@ -1,4 +1,4 @@
-﻿package org.easybangumi.shared.plugin.bangumi.business
+﻿package org.easybangumi.ext.shared.plugin.bangumi.business
 
 import io.ktor.client.*
 import io.ktor.client.plugins.*
@@ -16,9 +16,9 @@ import org.easybangumi.next.lib.utils.coroutineProvider
 import org.easybangumi.next.platformInformation
 import org.easybangumi.next.shared.ktor.KtorConfig
 import org.easybangumi.next.shared.ktor.KtorFactory
-import org.easybangumi.shared.plugin.bangumi.business.embed.BangumiEmbedProxy
-import org.easybangumi.shared.plugin.bangumi.model.BgmNetException
-import org.easybangumi.shared.plugin.bangumi.model.BgmRsp
+import org.easybangumi.ext.shared.plugin.bangumi.business.embed.BangumiEmbedProxy
+import org.easybangumi.ext.shared.plugin.bangumi.model.BgmNetException
+import org.easybangumi.ext.shared.plugin.bangumi.model.BgmRsp
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.KTypeProjection
@@ -37,15 +37,9 @@ import kotlin.reflect.KTypeProjection
 
 class BangumiBusiness(
     ktorFactory: KtorFactory,
-    private val bangumiApiHost: String = DEFAULT_BANGUMI_API_HOST,
-    private val bangumiHtmlHost: String = DEFAULT_BANGUMI_HTML_HOST,
+    private val bangumiConfig: BangumiConfig = BangumiConfig(),
 ) {
 
-    companion object {
-        const val DEFAULT_BANGUMI_API_HOST = "api.bgm.tv"
-        const val DEFAULT_BANGUMI_HTML_HOST = "chii.in"
-        const val BANGUMI_EMBED_PROXY_HOST = "bangumi.embed.proxy"
-    }
 
     private val logger = logger()
 
@@ -58,15 +52,17 @@ class BangumiBusiness(
 
     private val dispatcher = coroutineProvider.io()
     private val scope = CoroutineScope(SupervisorJob() + dispatcher + CoroutineName("BangumiHttp"))
-    private val userAgen = "org.easybangumi/EasyBangumi/${platformInformation.versionName} (${platformInformation.platformName}) (https://github.com/easybangumiorg/EasyBangumi)"
+    private val defaultUserAgent = "org.easybangumi/EasyBangumi/${platformInformation.versionName} (${platformInformation.platformName}) (https://github.com/easybangumiorg/EasyBangumi)"
 
-    private val proxy = BangumiEmbedProxy(bangumiApiHost, bangumiHtmlHost, BANGUMI_EMBED_PROXY_HOST)
+    private val proxy = BangumiEmbedProxy(config = bangumiConfig)
 
     @OptIn(InternalSerializationApi::class)
     private val ktorBangumiPlugin by lazy {
         createClientPlugin("bangumi") {
             onRequest {  req, _ ->
-                req.headers["User-Agent"] = userAgen
+                if (!req.headers.contains("User-Agent")) {
+                    req.headers["User-Agent"] = defaultUserAgent
+                }
             }
             transformResponseBody { response: HttpResponse,
                                     content: ByteReadChannel,
@@ -141,7 +137,7 @@ class BangumiBusiness(
 
 
     val api: BangumiApi by lazy {
-        BangumiApiImpl(bangumiCaller, bangumiApiHost, BANGUMI_EMBED_PROXY_HOST)
+        BangumiApiImpl(bangumiCaller, bangumiConfig)
     }
 
 

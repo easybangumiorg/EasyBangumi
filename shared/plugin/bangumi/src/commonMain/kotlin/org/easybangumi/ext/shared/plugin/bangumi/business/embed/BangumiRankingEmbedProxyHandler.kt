@@ -1,4 +1,4 @@
-package org.easybangumi.shared.plugin.bangumi.business.embed
+package org.easybangumi.ext.shared.plugin.bangumi.business.embed
 
 import com.fleeksoft.ksoup.Ksoup
 import com.fleeksoft.ksoup.nodes.Document
@@ -10,9 +10,10 @@ import io.ktor.http.URLBuilder
 import io.ktor.http.path
 import io.ktor.util.reflect.TypeInfo
 import io.ktor.utils.io.ByteReadChannel
+import org.easybangumi.ext.shared.plugin.bangumi.business.BangumiConfig
 import org.easybangumi.next.lib.logger.logger
-import org.easybangumi.shared.plugin.bangumi.model.BgmRsp
-import org.easybangumi.shared.plugin.bangumi.model.TrendsSubject
+import org.easybangumi.ext.shared.plugin.bangumi.model.BgmRsp
+import org.easybangumi.ext.shared.plugin.bangumi.model.TrendsSubject
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -33,11 +34,8 @@ import org.easybangumi.shared.plugin.bangumi.model.TrendsSubject
 private val logger = logger("BangumiRankingHandler")
 
 class BangumiRankingEmbedProxyHandler(
-    private val bangumiHtmlHost: String,
-    private val bangumiApiHost: String
+    private val bangumiConfig: BangumiConfig,
 ): EmbedProxyHandler {
-
-
 
     override fun onReq(builder: HttpRequestBuilder): Boolean {
         val path = builder.url.pathSegments.firstOrNull()
@@ -47,7 +45,7 @@ class BangumiRankingEmbedProxyHandler(
             val page = builder.url.parameters.get("page")
             val from = builder.url.parameters.get("from")
             builder.url {
-                host = bangumiHtmlHost
+                host = bangumiConfig.bangumiHtmlHost
                 if (from != null) {
                     path("anime", "browser", from)
                 } else {
@@ -61,7 +59,7 @@ class BangumiRankingEmbedProxyHandler(
             // 轮播图（tv 热度排行）
             // 转到网页 https://chii.in/anime/browser/tv/?sort=trends
             builder.url {
-                host = bangumiHtmlHost
+                host = bangumiConfig.bangumiHtmlHost
                 path("anime", "browser", "tv")
                 parameters.set("sort", "trends")
             }
@@ -126,18 +124,18 @@ class BangumiRankingEmbedProxyHandler(
             val nameCN = a.text()
             val name = small?.text()
             val image = li.select("img.cover").firstOrNull()
-            var imageUrl = image?.attr("src")
-            if (imageUrl?.startsWith("//") == true) {
-                imageUrl = "https:$imageUrl"
-            } else if (imageUrl?.startsWith("/") == true) {
-                imageUrl = "https://$bangumiHtmlHost$imageUrl"
-            }
-
-            if (imageUrl?.contains("/pic/cover/c") == true) {
-                imageUrl = imageUrl.replace("/pic/cover/c", "/r/400/pic/cover/l")
-            }
-            imageUrl = URLBuilder().run {
-                host = bangumiApiHost
+//            var imageUrl = image?.attr("src")
+//            if (imageUrl?.startsWith("//") == true) {
+//                imageUrl = "https:$imageUrl"
+//            } else if (imageUrl?.startsWith("/") == true) {
+//                imageUrl = "https://$bangumiHtmlHost$imageUrl"
+//            }
+//
+//            if (imageUrl?.contains("/pic/cover/c") == true) {
+//                imageUrl = imageUrl.replace("/pic/cover/c", "/r/400/pic/cover/l")
+//            }
+            val imageUrl = URLBuilder().run {
+                host = bangumiConfig.bangumiApiHost
                 path("v0", "subjects", id.toString(), "image")
                 parameters.set("subject_id", id.toString())
                 parameters.set("type", "large")
@@ -146,12 +144,7 @@ class BangumiRankingEmbedProxyHandler(
             logger.info("imageUrl: $imageUrl")
 
 
-            var jumpUrl = href
-            if (jumpUrl.startsWith("//")) {
-                jumpUrl = "https:$jumpUrl"
-            } else if (jumpUrl.startsWith("/")) {
-                jumpUrl = "https://$bangumiHtmlHost$jumpUrl"
-            }
+            val jumpUrl = bangumiConfig.makeUrl(href)
 
             val rankSpan = inner.select("span.rank").firstOrNull()
             val rank = rankSpan?.text()?.replace("Rank", "")?.trim()?.toIntOrNull()
