@@ -59,6 +59,13 @@ sealed class SourceResult<T> {
 
 }
 
+fun <T, R> SourceResult<T>.map(block: (T) -> R): SourceResult<R> {
+    return when (this) {
+        is SourceResult.Ok -> SourceResult.ok(block(data))
+        is SourceResult.Error -> SourceResult.error(msg ?: "", error)
+    }
+}
+
 fun <T> SourceResult<T>.toDataState(): DataState<T> {
     return when (this) {
         is SourceResult.Ok -> DataState.ok(data)

@@ -1,6 +1,9 @@
-package org.easybangumi.next.shared.plugin.api.component.mate
+﻿package org.easybangumi.next.shared.ui.detail.bangumi
 
-import org.easybangumi.next.shared.plugin.api.component.Component
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.runtime.Composable
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -13,8 +16,15 @@ import org.easybangumi.next.shared.plugin.api.component.Component
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-interface MateComponent <T: MateManager>: Component {
+@Composable
+fun BangumiDetailHeader(
+    viewModel: BangumiDetailViewModel
+) {
+    Column {
 
-    fun getMateManager(): T
+        Row {
 
+        }
+
+    }
 }

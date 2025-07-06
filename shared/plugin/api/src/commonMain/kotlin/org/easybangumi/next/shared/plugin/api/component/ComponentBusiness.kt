@@ -1,6 +1,7 @@
 package org.easybangumi.next.shared.plugin.api.component
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import org.easybangumi.next.shared.plugin.api.SourceResult
 
@@ -18,6 +19,19 @@ import org.easybangumi.next.shared.plugin.api.SourceResult
 class ComponentBusiness <T: Component> (
     private val innerComponent: T,
 ){
+    suspend fun <R> async(block: suspend T.(CoroutineScope) -> SourceResult<R>): Deferred<SourceResult<R>> {
+        return innerComponent.source.scope.async {
+            runCatching {
+                innerComponent.block(this)
+            }.getOrElse {
+                SourceResult.error(
+                    errorMsg = it.message?:"${it}",
+                    throwable = it,
+                )
+            }
+
+        }
+    }
     suspend fun <R> run(block: suspend T.(CoroutineScope) -> SourceResult<R>): SourceResult<R> {
         return innerComponent.source.scope.async {
             runCatching {

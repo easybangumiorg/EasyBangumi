@@ -3,6 +3,7 @@
 import io.ktor.client.network.sockets.ConnectTimeoutException
 import io.ktor.client.network.sockets.SocketTimeoutException
 import kotlinx.serialization.Serializable
+import org.easybangumi.next.shared.plugin.api.SourceResult
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -52,6 +53,14 @@ sealed class BgmRsp<T> {
     fun throwIfError() {
         (this as? Error<*>)?.throwable?.let {
             throw it
+        }
+    }
+
+    fun toSourceResult(): SourceResult<T> {
+        return when (this) {
+            is Success -> SourceResult.Ok(data)
+            is Error -> SourceResult.Error(
+                ("code:${code} msg: ${title} ${description} ${details}") , throwable)
         }
     }
 

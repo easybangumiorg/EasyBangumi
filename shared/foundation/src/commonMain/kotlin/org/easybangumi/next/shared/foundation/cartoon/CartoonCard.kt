@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
@@ -46,75 +47,28 @@ fun CartoonCardWithCover(
     itemSize: Dp = EasyScheme.size.cartoonCoverWidth,
     itemIsWidth : Boolean = true,
     coverAspectRatio: Float = EasyScheme.size.cartoonCoverAspectRatio,
-    textColor: Color = MaterialTheme.colorScheme.onSurface,
+    textColor: Color = Color.White,
     cartoonCover: CartoonCover,
     onClick: (CartoonCover) -> Unit,
     onLongPress: ((CartoonCover) -> Unit)? = null,
 ) {
-
-    Column(
-        modifier = modifier
-            .width(EasyScheme.size.cartoonCoverWidth)
-            .clip(RoundedCornerShape(16.dp))
-            .combinedClickable(
-                onClick = {
-                    onClick(cartoonCover)
-                },
-                onLongClick = {
-                    onLongPress?.invoke(cartoonCover)
-                }
-            )
-            .width(EasyScheme.size.cartoonCoverWidth)
-            .padding(4.dp),
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Box(
-            modifier = Modifier
-                .run {
-                    if (itemIsWidth) {
-                        width(itemSize)
-                    } else {
-                        height(itemSize)
-                    }
-                }
-                .aspectRatio(coverAspectRatio)
-                .clip(RoundedCornerShape(16.dp)),
-        ) {
-            AsyncImage(
-                modifier = Modifier.fillMaxSize(),
-                model = cartoonCover.coverUrl ?: "",
-                contentDescription = cartoonCover.name,
-                contentScale = ContentScale.FillBounds,
-                // TODO placeholder
-                error = painterResource(Res.images.empty_soyolin),
-            )
-            if (star) {
-                Text(
-                    fontSize = 13.sp,
-                    text = stringRes(Res.strings.stared_min),
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier
-                        .background(
-                            MaterialTheme.colorScheme.primary,
-                            RoundedCornerShape(0.dp, 0.dp, 16.dp, 0.dp)
-                        )
-                        .padding(4.dp, 0.dp)
-                )
-            }
+    CartoonCoverCard(
+        modifier,
+        mark = if (star) stringRes(Res.strings.stared_min) else null,
+        model = cartoonCover.coverUrl ?: "",
+        name = cartoonCover.name,
+        cardBackgroundColor = null,
+        itemSize = itemSize,
+        itemIsWidth = itemIsWidth,
+        coverAspectRatio = coverAspectRatio,
+        textColor = textColor,
+        onClick = {
+            onClick(cartoonCover)
+        },
+        onLongPress = {
+            onLongPress?.invoke(cartoonCover)
         }
-
-        Spacer(modifier = Modifier.fillMaxWidth().height(4.dp))
-        Text(
-            modifier = Modifier.fillMaxWidth(),
-            style = MaterialTheme.typography.bodySmall,
-            color = textColor,
-            text = cartoonCover.name,
-            maxLines = 4,
-            textAlign = TextAlign.Center,
-            overflow = TextOverflow.Ellipsis,
-        )
-    }
+    )
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -126,75 +80,110 @@ fun CartoonCardWithCover(
     itemSize: Dp = EasyScheme.size.cartoonCoverWidth,
     itemIsWidth : Boolean = true,
     coverAspectRatio: Float = EasyScheme.size.cartoonCoverAspectRatio,
-    textColor: Color = MaterialTheme.colorScheme.onSurface,
+    textColor: Color = Color.White,
     onClick: (CartoonInfo) -> Unit,
     onLongPress: ((CartoonInfo) -> Unit)? = null,
 ) {
+    CartoonCoverCard(
+        modifier,
+        mark = if (star) stringRes(Res.strings.stared_min) else null,
+        model = cartoonInfo.coverUrl ?: "",
+        name = cartoonInfo.name,
+        cardBackgroundColor = null,
+        itemSize = itemSize,
+        itemIsWidth = itemIsWidth,
+        coverAspectRatio = coverAspectRatio,
+        textColor = textColor,
+        onClick = {
+            onClick(cartoonInfo)
+        },
+        onLongPress = {
+            onLongPress?.invoke(cartoonInfo)
+        }
+    )
+}
 
-    Column(
+@Composable
+fun CartoonCoverCard(
+    modifier: Modifier,
+    mark: String? = null,
+    model: String,
+    name: String,
+    cardBackgroundColor: Color? = null,
+    itemSize: Dp = EasyScheme.size.cartoonCoverWidth,
+    itemIsWidth : Boolean = true,
+    coverAspectRatio: Float = EasyScheme.size.cartoonCoverAspectRatio,
+    textColor: Color = MaterialTheme.colorScheme.onSurface,
+    onClick: () -> Unit,
+    onLongPress: (() -> Unit)? = null,
+) {
+    Box(
         modifier = modifier
             .run {
                 if (itemIsWidth) {
-                    width(itemSize + 8.dp)
+                    width(itemSize)
+                        .height(itemSize / coverAspectRatio)
                 } else {
-                    height(itemSize * EasyScheme.size.cartoonCoverAspectRatio + 8.dp)
+                    height(itemSize)
+                        .width(itemSize * coverAspectRatio)
                 }
             }
+//            .aspectRatio(coverAspectRatio)
             .clip(RoundedCornerShape(16.dp))
             .combinedClickable(
                 onClick = {
-                    onClick(cartoonInfo)
+                    onClick()
                 },
                 onLongClick = {
-                    onLongPress?.invoke(cartoonInfo)
+                    onLongPress?.invoke()
                 }
-            )
-            .padding(4.dp),
-        horizontalAlignment = Alignment.Start,
+            ).run {
+                if (cardBackgroundColor != null) {
+                    background(cardBackgroundColor)
+                } else {
+                    this
+                }
+            },
+//        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        AsyncImage(
+            modifier = Modifier.fillMaxSize(),
+            model = model,
+            contentDescription = name,
+            contentScale = ContentScale.Crop,
+            error = painterResource(Res.images.empty_soyolin),
+        )
+
+
         Box(
-            modifier = Modifier
-                .run {
-                    if (itemIsWidth) {
-                        width(itemSize)
-                    } else {
-                        height(itemSize)
-                    }
-                }
-                .aspectRatio(coverAspectRatio)
-                .clip(RoundedCornerShape(16.dp)),
+            modifier.fillMaxSize().background(brush = Brush.linearGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.8f)))),
+            contentAlignment = Alignment.BottomCenter
         ) {
-            AsyncImage(
-                modifier = Modifier.fillMaxSize(),
-                model = cartoonInfo.coverUrl ?: "",
-                contentDescription = cartoonInfo.name,
-                // TODO placeholder
-                error = painterResource(Res.images.empty_soyolin),
+            Text(
+                modifier = Modifier.padding(16.dp),
+                style = MaterialTheme.typography.bodyLarge,
+                color = textColor,
+                text = name,
+                maxLines = 2,
+                textAlign = TextAlign.Center,
+                overflow = TextOverflow.Ellipsis,
             )
-            if (star) {
-                Text(
-                    fontSize = 13.sp,
-                    text = stringRes(Res.strings.stared_min),
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier
-                        .background(
-                            MaterialTheme.colorScheme.primary,
-                            RoundedCornerShape(0.dp, 0.dp, 16.dp, 0.dp)
-                        )
-                        .padding(4.dp, 0.dp)
-                )
-            }
+
         }
 
-        Spacer(modifier = Modifier.fillMaxWidth().height(4.dp))
-        Text(
-            modifier = Modifier.fillMaxWidth(),
-            style = MaterialTheme.typography.bodySmall,
-            color = textColor,
-            text = cartoonInfo.name,
-            maxLines = 4,
-            textAlign = TextAlign.Start,
-            overflow = TextOverflow.Ellipsis,
-        )
+        if (mark != null) {
+            Text(
+                fontSize = 13.sp,
+                text = mark,
+                color = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier
+                    .background(
+                        MaterialTheme.colorScheme.primary,
+                        RoundedCornerShape(0.dp, 0.dp, 16.dp, 0.dp)
+                    )
+                    .padding(16.dp, 0.dp)
+            )
+        }
+
     }
 }

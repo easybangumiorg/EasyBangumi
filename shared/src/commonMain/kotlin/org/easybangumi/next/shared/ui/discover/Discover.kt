@@ -54,6 +54,7 @@ import org.easybangumi.next.shared.foundation.carousel.EasyHorizontalMultiBrowse
 import org.easybangumi.next.shared.foundation.carousel.EasyHorizontalUncontainedCarousel
 import org.easybangumi.next.shared.foundation.carousel.rememberEasyCarouselState
 import org.easybangumi.next.shared.foundation.cartoon.CartoonCardWithCover
+import org.easybangumi.next.shared.foundation.cartoon.CartoonCoverCard
 import org.easybangumi.next.shared.foundation.elements.LoadScaffold
 import org.easybangumi.next.shared.foundation.image.AsyncImage
 import org.easybangumi.next.shared.foundation.lazy.pagingCommon
@@ -139,24 +140,30 @@ fun Discover(
                     LazyVerticalGrid(
                         modifier = Modifier.fillMaxSize().contentPointerScrollOpt(LocalUIMode.current.inputMode == InputMode.POINTER),
                         state = tab.lazyGridState,
-                        columns = GridCells.Adaptive(EasyScheme.size.cartoonCoverWidth + 4.dp),
+                        columns = GridCells.Adaptive(EasyScheme.size.cartoonCoverWidth),
                         overscrollEffect = rememberOverscrollEffect(),
-                        contentPadding = PaddingValues(4.dp, 4.dp),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        contentPadding = PaddingValues(8.dp, 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         if (lazyPageState.itemCount > 0) {
                             items(lazyPageState.itemCount) {
                                 val item = lazyPageState[it]
                                 if (item != null) {
-                                    CartoonCardWithCover(
-                                        cartoonCover = item,
-                                        onClick = {
+                                    Box(
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        CartoonCardWithCover(
+                                            cartoonCover = item,
+                                            onClick = {
 
-                                        },
-                                        onLongPress = {
+                                            },
+                                            onLongPress = {
 
-                                        }
-                                    )
+                                            }
+                                        )
+                                    }
+
                                 }
                             }
                         }
@@ -280,28 +287,43 @@ fun Banner(
             userScrollEnabled = true,
         ) { index ->
             val cover = ok.data[index]
-            Box(
+
+            CartoonCardWithCover(
                 modifier = Modifier.fillMaxWidth().maskClip(RoundedCornerShape(16.dp)).clickable {
                     onClick(cover)
-                }
-            ) {
-                AsyncImage(
-                    cover.coverUrl,
-                    modifier = Modifier.fillMaxSize(),
-                    contentDescription = cover.name,
-                    contentScale = ContentScale.FillWidth
-                )
+                },
+                onClick = {
+                    onClick(cover)
+                },
+                onLongPress = {
 
-                Text(
-                    cover.name,
-                    modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter).background(Color.Black.copy(0.6f))
-                        .padding(16.dp, 0.dp),
-                    color = Color.White,
-                    fontSize = 12.sp,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
+                },
+                cartoonCover = cover
+            )
+//            Box(
+//                modifier = Modifier.fillMaxWidth().maskClip(RoundedCornerShape(16.dp)).clickable {
+//                    onClick(cover)
+//                }
+//            ) {
+//
+//
+////                AsyncImage(
+////                    cover.coverUrl,
+////                    modifier = Modifier.fillMaxSize(),
+////                    contentDescription = cover.name,
+////                    contentScale = ContentScale.FillWidth
+////                )
+////
+////                Text(
+////                    cover.name,
+////                    modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter).background(Color.Black.copy(0.6f))
+////                        .padding(16.dp, 0.dp),
+////                    color = Color.White,
+////                    fontSize = 12.sp,
+////                    maxLines = 2,
+////                    overflow = TextOverflow.Ellipsis
+////                )
+//            }
 
         }
     }
@@ -391,41 +413,6 @@ fun ColumnHeadline(
         },
         trailingContent = action,
     )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun CartoonCoverRow(
-    modifier: Modifier = Modifier,
-    data: DataState<List<CartoonCover>>,
-    onClick: (CartoonCover) -> Unit,
-) {
-    LoadScaffold(modifier, data = data) { ok ->
-        val carouselState = rememberEasyCarouselState {
-            ok.data.size
-        }
-        EasyHorizontalUncontainedCarousel(
-            easyCarouselState = carouselState,
-            itemWidth = 154.dp,
-            modifier = Modifier.fillMaxWidth(),
-            showArc = !UI.isTouchMode(),
-            userScrollEnabled = UI.isTouchMode(),
-        ) { index ->
-            val cover = ok.data[index]
-            CartoonCardWithCover(
-                modifier = Modifier.fillMaxWidth(),
-                cartoonCover = cover,
-                itemSize = 154.dp,
-                itemIsWidth = true,
-                onClick = {
-                    onClick(cover)
-                },
-                onLongPress = {
-
-                }
-            )
-        }
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -1,6 +1,4 @@
-package org.easybangumi.next.shared.plugin.api.component.mate
-
-import org.easybangumi.next.shared.plugin.api.component.Component
+﻿package org.easybangumi.next.shared.ui.detail.bangumi
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -13,8 +11,6 @@ import org.easybangumi.next.shared.plugin.api.component.Component
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-interface MateComponent <T: MateManager>: Component {
 
-    fun getMateManager(): T
-
+class BangumiDetailEpisode {
 }
