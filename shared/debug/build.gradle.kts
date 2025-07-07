@@ -31,6 +31,9 @@ kotlin {
             implementation(projects.libplayer.libplayerApi)
             implementation(projects.lib)
             implementation(projects.shared.playcon)
+            implementation(projects.shared.foundation)
+            implementation(projects.shared.resources)
+            implementation(projects.shared.scheme)
         }
 
         androidMain.dependencies {

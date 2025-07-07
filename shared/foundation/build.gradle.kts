@@ -31,6 +31,8 @@ kotlin {
             implementation(libs.kotlin.reflect)
 
             implementation(compose.material3)
+            implementation(compose.animation)
+            implementation(compose.animationGraphics)
 
             implementation(libs.androidx.lifecycle.runtime.compose)
             implementation(libs.androidx.lifecycle.viewmodel.compose)
@@ -44,7 +46,7 @@ kotlin {
             implementation(libs.koin.compose)
 
             implementation(libs.coil.compose)
-            implementation(libs.coil.ktor3)
+            api(libs.coil.ktor3)
 
             implementation(projects.shared.data)
             implementation(projects.shared.plugin)

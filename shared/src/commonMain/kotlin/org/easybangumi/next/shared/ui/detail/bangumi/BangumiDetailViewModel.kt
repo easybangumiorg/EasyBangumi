@@ -1,6 +1,7 @@
 ﻿package org.easybangumi.next.shared.ui.detail.bangumi
 
 import androidx.lifecycle.viewModelScope
+import androidx.paging.cachedIn
 import kotlinx.coroutines.launch
 import org.easybangumi.ext.shared.plugin.bangumi.model.*
 import org.easybangumi.ext.shared.plugin.bangumi.plugin.BangumiMetaManager
@@ -39,14 +40,9 @@ class BangumiDetailViewModel(
     )
 
     init {
-        // subject 数据最先请求
         refreshSubject()
         refreshComment()
         refreshEpisodeList()
-    }
-
-    fun loadAll() {
-
     }
 
     private fun getCommentPagingFlow(): PagingFlow<Reviews> {
@@ -66,14 +62,16 @@ class BangumiDetailViewModel(
     }
 
     fun refreshComment() {
+        val pagingFlow = getCommentPagingFlow().cachedIn(viewModelScope)
         update {
-            it.copy(commentPaging = getCommentPagingFlow())
+            it.copy(commentPaging = pagingFlow)
         }
     }
 
     fun refreshEpisodeList() {
+        val pagingFlow = getEpisodePagingFlow().cachedIn(viewModelScope)
         update {
-            it.copy(episodePaging = getEpisodePagingFlow())
+            it.copy(episodePaging = pagingFlow)
         }
     }
 

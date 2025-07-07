@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.easybangumi.next.shared.debug.player.PlayerDebug
+import com.easybangumi.next.shared.debug.shimmer.ShimmerDebug
 import kotlinx.serialization.Serializable
 
 /**
@@ -39,6 +40,7 @@ enum class DebugPage(
 ) {
     HOME("Debug Home"),
     PLAYER("Player Debug"),
+    SHIMMER("Shimmer Debug"),
 }
 
 class DebugScope (
@@ -59,6 +61,9 @@ fun DebugHost(
             when (debugPage) {
                 DebugPage.HOME -> DebugHome()
                 DebugPage.PLAYER -> { PlayerDebug() }
+                DebugPage.SHIMMER -> {
+                    ShimmerDebug()
+                }
             }
         }
 

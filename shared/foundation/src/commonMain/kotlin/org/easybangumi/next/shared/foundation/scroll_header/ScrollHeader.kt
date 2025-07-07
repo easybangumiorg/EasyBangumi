@@ -142,11 +142,13 @@ interface ScrollableHeaderBehavior<SCOPE : ScrollHeaderScope> {
             snapAnimationSpec: AnimationSpec<Float>? = spring(stiffness = Spring.StiffnessMediumLow),
             flingAnimationSpec: DecayAnimationSpec<Float>? = rememberSplineBasedDecay()
         ): DiscoverScrollHeaderBehavior =
-            DiscoverScrollHeaderBehavior(
-                state = state,
-                snapAnimationSpec = snapAnimationSpec,
-                flingAnimationSpec = flingAnimationSpec,
-            )
+            remember(state, snapAnimationSpec, flingAnimationSpec) {
+                DiscoverScrollHeaderBehavior(
+                    state = state,
+                    snapAnimationSpec = snapAnimationSpec,
+                    flingAnimationSpec = flingAnimationSpec,
+                )
+            }
     }
 
 

@@ -4,6 +4,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import org.easybangumi.ext.shared.plugin.bangumi.model.Subject
+import org.easybangumi.next.lib.utils.DataState
+import org.easybangumi.next.shared.foundation.cartoon.CartoonCoverCard
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -18,8 +22,13 @@ import androidx.compose.runtime.Composable
  */
 @Composable
 fun BangumiDetailHeader(
-    viewModel: BangumiDetailViewModel
+    viewModel: BangumiDetailViewModel,
+    subjectState: DataState<Subject>,
+    modifier: Modifier,
 ) {
+
+
+
     Column {
 
         Row {
@@ -27,4 +36,20 @@ fun BangumiDetailHeader(
         }
 
     }
+}
+
+@Composable
+fun BangumiDetailHeaderContent(
+    modifier: Modifier,
+    viewModel: BangumiDetailViewModel,
+    subjectState: DataState.Ok<Subject>,
+) {
+
+}
+
+@Composable
+fun BangumiDetailHeaderLoading(
+    modifier: Modifier,
+) {
+
 }
