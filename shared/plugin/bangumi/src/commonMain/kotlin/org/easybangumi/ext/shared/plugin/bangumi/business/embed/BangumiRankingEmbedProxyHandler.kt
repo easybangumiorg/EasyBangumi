@@ -54,6 +54,7 @@ class BangumiRankingEmbedProxyHandler(
                 parameters.set("page", page ?: "1")
                 parameters.set("sort", "trends")
             }
+            logger.info("trends url: ${builder.url}")
             return true
         } else if (path == "banners") {
             // 轮播图（tv 热度排行）
@@ -63,6 +64,7 @@ class BangumiRankingEmbedProxyHandler(
                 path("anime", "browser", "tv")
                 parameters.set("sort", "trends")
             }
+            logger.info("trends url: ${builder.url}")
             return true
         }
         return false

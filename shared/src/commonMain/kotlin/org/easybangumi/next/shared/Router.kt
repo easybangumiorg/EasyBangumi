@@ -13,15 +13,22 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import androidx.savedstate.SavedState
+import androidx.savedstate.write
 import com.easybangumi.next.shared.debug.DebugHost
 import com.easybangumi.next.shared.debug.DebugPage
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.internal.writeJson
 import org.easybangumi.next.lib.utils.WeakRef
 import org.easybangumi.next.platformInformation
+import org.easybangumi.next.shared.data.cartoon.CartoonIndex
+import org.easybangumi.next.shared.ui.detail.Detail
+import org.easybangumi.next.shared.ui.detail.DetailPage
 import org.easybangumi.next.shared.ui.home.Main
 
 /**
@@ -43,6 +50,7 @@ val LocalNavController = staticCompositionLocalOf<NavHostController> {
 internal var innerNavControllerRef: WeakRef<NavHostController>? = null
 val navController: NavHostController? get() = innerNavControllerRef?.targetOrNull
 
+
 class RouterPage {
     @Serializable
     object Main
@@ -57,6 +65,31 @@ class RouterPage {
 
         fun toRoute(): DebugPage =  DebugPage.valueOf(debugPageName)
 
+    }
+
+    @Serializable
+    data class Detail(
+        val id: String,
+        val source: String,
+        val ext: String,
+    ) {
+        companion object {
+            fun fromCartoonIndex(cartoonIndex: CartoonIndex): Detail {
+                return Detail(
+                    id = cartoonIndex.id,
+                    source = cartoonIndex.source,
+                    ext = cartoonIndex.ext
+                )
+            }
+        }
+
+        val cartoonIndex: CartoonIndex
+            get() = CartoonIndex(
+                id = id,
+                source = source,
+            ).apply {
+                ext = this@Detail.ext
+            }
     }
 
     companion object {
@@ -114,9 +147,13 @@ fun Router() {
                     )
                 }
             }
-//            if (platformInformation.isDebug) {
-//
-//            }
+
+            composable<RouterPage.Detail> {
+                val cartoonIndex = it.toRoute<RouterPage.Detail>().cartoonIndex
+                NavHook(it) {
+                    DetailPage(cartoonIndex)
+                }
+            }
         }
     }
 }

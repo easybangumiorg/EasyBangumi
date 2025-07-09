@@ -1,16 +1,18 @@
 package org.easybangumi.next.shared.data.cartoon
 
+import kotlinx.serialization.Serializable
 import kotlin.jvm.Transient
 
 /**
  * Created by heyanle on 2024/12/5.
  */
-class CartoonIndex(
+@Serializable
+data class CartoonIndex(
     val id: String,
     val source: String,
 ): Extractor {
 
-    @Transient
+//    @Transient
     override var ext: String = ""
 
 
@@ -28,7 +30,7 @@ class CartoonIndex(
 
         if (id != other.id) return false
         if (source != other.source) return false
-        if (ext != other.ext) return false
+//        if (ext != other.ext) return false
 
         return true
     }

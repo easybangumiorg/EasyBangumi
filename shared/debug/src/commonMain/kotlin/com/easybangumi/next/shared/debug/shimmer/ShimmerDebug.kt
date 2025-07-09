@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
@@ -15,12 +16,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.dp
 import com.easybangumi.next.shared.debug.DebugScope
+import org.easybangumi.next.shared.foundation.image.AnimationImage
 import org.easybangumi.next.shared.foundation.image.AsyncImage
 import org.easybangumi.next.shared.foundation.shimmer.ShimmerHost
-import org.easybangumi.next.shared.foundation.shimmer.dismissWhenShimmerVisible
-import org.easybangumi.next.shared.foundation.shimmer.drawRectWhenShimmerVisible
-import org.easybangumi.next.shared.foundation.shimmer.onShimmerVisible
 import org.easybangumi.next.shared.resources.Res
 import org.easybangumi.next.shared.scheme.EasyScheme
 
@@ -59,6 +59,19 @@ fun DebugScope.ShimmerDebug() {
         ShimmerHost(
             modifier = Modifier.fillMaxWidth().weight(1f),
             visible = isLoading,
+            floatContent = {
+                if (it.isVisible) {
+                    AnimationImage(
+                        modifier = Modifier
+                            .rectContentKey("img")
+                            .padding(32.dp),
+                        model = Res.assets.loading_ryo_gif,
+                        contentScale = ContentScale.Crop,
+                        contentDescription = "Shimmer Image",
+                    )
+                }
+
+            }
         ) {
             Column(
                 modifier = Modifier.fillMaxSize()
@@ -69,6 +82,7 @@ fun DebugScope.ShimmerDebug() {
                         modifier = Modifier
                             .width(EasyScheme.size.cartoonCoverWidth)
                             .height(EasyScheme.size.cartoonCoverHeight)
+                            .mark("img")
                             .drawRectWhenShimmerVisible(),
                         model = Res.images.empty_soyolin,
                         contentScale = ContentScale.Crop,

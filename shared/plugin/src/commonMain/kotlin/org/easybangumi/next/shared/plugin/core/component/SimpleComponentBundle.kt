@@ -7,6 +7,7 @@ import org.easybangumi.next.shared.plugin.api.component.BaseComponent
 import org.easybangumi.next.shared.plugin.api.component.Component
 import org.easybangumi.next.shared.plugin.api.component.ComponentBundle
 import org.easybangumi.next.shared.plugin.api.component.ComponentBusiness
+import org.easybangumi.next.shared.plugin.api.component.meta.MetaComponent
 import org.easybangumi.next.shared.plugin.api.source.Source
 import org.easybangumi.next.shared.plugin.utils.utilsModule
 import org.koin.core.Koin

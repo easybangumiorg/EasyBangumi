@@ -29,7 +29,7 @@ class JsonlFileHelper<T: Any> (
 ): AbsFileHelper<List<T>>(folder, name, emptyList()) {
 
     override fun suffix(): String {
-        return "json"
+        return "jsonl"
     }
 
     override fun serializer(data: List<T>, sink: BufferedSink) {

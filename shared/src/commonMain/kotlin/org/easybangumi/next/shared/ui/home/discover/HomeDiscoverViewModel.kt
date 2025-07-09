@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.store.preference.PreferenceStore
 import org.easybangumi.next.shared.foundation.view_model.StateViewModel
+import org.easybangumi.next.shared.plugin.api.component.ComponentBundle
 import org.easybangumi.next.shared.plugin.api.component.discover.DiscoverComponent
 import org.easybangumi.next.shared.plugin.core.component.SimpleComponentBundle
 import org.easybangumi.next.shared.plugin.api.component.ComponentBusiness
@@ -53,7 +54,7 @@ class HomeDiscoverViewModel(
             if (sourceBundle.contains(selectionSourceKey)) selectionSourceKey else sourceBundle.keys().firstOrNull()
         }
 
-        val componentBundle: SimpleComponentBundle? by lazy {
+        val componentBundle: ComponentBundle? by lazy {
             realSelectionKey?.let { sourceBundle.componentBundle(it) }
         }
 

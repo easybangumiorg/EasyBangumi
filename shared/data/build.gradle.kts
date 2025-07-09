@@ -6,6 +6,7 @@ plugins {
     alias(builds.plugins.kotlinMultiplatform)
     alias(builds.plugins.androidLibrary)
     alias(builds.plugins.ksp)
+    alias(libs.plugins.kotlinxSerialization)
     id("EasyLibBuild")
 }
 kotlin {
@@ -28,6 +29,7 @@ kotlin {
         commonMain.dependencies {
 
             implementation(libs.kotlinx.datetime)
+            implementation(libs.kotlinx.serialization.json)
 
             implementation(libs.androidx.room.runtime)
             implementation(libs.sqlite.bundled)

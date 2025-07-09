@@ -50,7 +50,11 @@ data class Subject(
     @SerialName("locked") val locked: Boolean? = null,
     @SerialName("nsfw") val nsfw: Boolean? = null,
     @SerialName("type") val type: Int? = null
-)
+) {
+    val displayAirDate: String? by lazy {
+        date?.replaceFirst("-", "年")?.replaceFirst("-", "月")
+    }
+}
 
 @Serializable
 data class Collection(

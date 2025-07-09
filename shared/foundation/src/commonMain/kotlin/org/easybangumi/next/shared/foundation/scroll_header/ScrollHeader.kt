@@ -18,7 +18,11 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollDispatcher
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.Velocity
+import androidx.compose.ui.unit.dp
+import org.easybangumi.next.shared.foundation.LocalUIMode
+import org.easybangumi.next.shared.foundation.UIMode
 import org.easybangumi.next.shared.foundation.scroll_header.ScrollableHeaderState.Companion.Saver
 import kotlin.math.abs
 
@@ -117,7 +121,9 @@ interface ScrollHeaderScope {
     val contentPadding: PaddingValues
 
     @Composable
-    fun Modifier.header(): Modifier
+    fun Modifier.header(
+        minHeight: Dp = 0.dp,
+    ): Modifier
 
     @Composable
     fun Modifier.content(): Modifier
@@ -140,15 +146,17 @@ interface ScrollableHeaderBehavior<SCOPE : ScrollHeaderScope> {
         fun discoverScrollHeaderBehavior(
             state: ScrollableHeaderState = rememberScrollableHeaderState(),
             snapAnimationSpec: AnimationSpec<Float>? = spring(stiffness = Spring.StiffnessMediumLow),
-            flingAnimationSpec: DecayAnimationSpec<Float>? = rememberSplineBasedDecay()
-        ): DiscoverScrollHeaderBehavior =
-            remember(state, snapAnimationSpec, flingAnimationSpec) {
-                DiscoverScrollHeaderBehavior(
-                    state = state,
-                    snapAnimationSpec = snapAnimationSpec,
-                    flingAnimationSpec = flingAnimationSpec,
-                )
-            }
+            flingAnimationSpec: DecayAnimationSpec<Float>? = rememberSplineBasedDecay(),
+            uiMode: UIMode = LocalUIMode.current
+        ): DiscoverScrollHeaderBehavior = remember(state, snapAnimationSpec, flingAnimationSpec) {
+            DiscoverScrollHeaderBehavior(
+                state = state,
+                snapAnimationSpec = snapAnimationSpec,
+                flingAnimationSpec = flingAnimationSpec,
+                uiMode = uiMode
+            )
+        }
+
     }
 
 

@@ -8,6 +8,10 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -28,16 +32,19 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PaintingStyle
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.rotateRad
 import androidx.compose.ui.graphics.withSaveLayer
 import androidx.compose.ui.layout.LayoutModifier
 import androidx.compose.ui.layout.Measurable
 import androidx.compose.ui.layout.MeasureResult
 import androidx.compose.ui.layout.MeasureScope
 import androidx.compose.ui.layout.onPlaced
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionInRoot
-import androidx.compose.ui.layout.positionOnScreen
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.IntOffset
+import org.easybangumi.next.shared.foundation.PositionTracker
 import kotlin.math.PI
 import kotlin.math.tan
 
@@ -53,14 +60,24 @@ import kotlin.math.tan
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
-private val LocalShimmerState = staticCompositionLocalOf<ShimmerLocalState> {
+private val LocalShimmerState = staticCompositionLocalOf<ShimmerState> {
     error("Modifier.shimmerItem should be used inside ShimmerHost")
 }
 
-data class ShimmerLocalState(
+data class ShimmerState(
     val isVisible: Boolean,
     val config: ShimmerConfig,
 )
+
+@Composable
+fun rememberShimmerState(
+    visible: Boolean,
+    config: ShimmerConfig = ShimmerConfig(),
+): ShimmerState {
+    return remember(visible, config) {
+        ShimmerState(visible, config)
+    }
+}
 
 enum class ShimmerDirection {
     LeftToRight,
@@ -69,30 +86,112 @@ enum class ShimmerDirection {
     BottomToTop
 }
 
+
 class ShimmerFloatScope(
     internal val positionTracker: PositionTracker,
-) {
+    val state: ShimmerState,
+    val boxScope: BoxScope,
+): BoxScope by boxScope {
 
     @Composable
-    fun Modifier.floatWithContentChildren(
+    fun Modifier.rectContentKey(
         key: String,
-    ) {
-        val hostPosition = positionTracker.getPosition("shimmer_host")
-        val position = positionTracker.getPosition(key)
+    ) = composed {
+        val notDrawModifier = this.then(ShimmerItemModifierWhenVisible(false))
+        val position = positionTracker.getRelativePosition(key, "shimmer_host") ?: return@composed notDrawModifier
+        val size = positionTracker.getSize(key) ?: return@composed notDrawModifier
+        offset {
+            IntOffset(position.x.toInt(), position.y.toInt())
+        }.size(
+            with(LocalDensity.current) { DpSize( size.width.toDp(), size.height.toDp())}
+        )
     }
+
+
+    @Composable
+    fun Modifier.onShimmerVisible(
+        modifierWhenShimmerVisible: Modifier.() -> Modifier = { this },
+    ): Modifier {
+//        val state = LocalShimmerState.current
+        if (state.isVisible) {
+            // Ensure that the modifier is applied only when shimmer is visible
+            return modifierWhenShimmerVisible(this)
+        }
+        return this
+    }
+
+    @Composable
+    fun Modifier.onShimmerInvisible(
+        modifierWhenShimmerInvisible: Modifier.() -> Modifier = { this },
+    ): Modifier {
+//        val state = LocalShimmerState.current
+        if (!state.isVisible) {
+            // Ensure that the modifier is applied only when shimmer is invisible
+            return modifierWhenShimmerInvisible(this)
+        }
+        return this
+    }
+
 
 
 }
 
 class ShimmerContentScope(
     internal val positionTracker: PositionTracker,
+    val state: ShimmerState,
 ) {
     @Composable
-    fun Modifier.markPosition(
+    fun Modifier.mark(
         key: String,
     ): Modifier = onPlaced {
         positionTracker.setPosition(key, it.positionInRoot())
+    }.onSizeChanged {
+        positionTracker.setSize(key, it)
     }
+
+
+    @Composable
+    fun Modifier.onShimmerVisible(
+        modifierWhenShimmerVisible: Modifier.() -> Modifier = { this },
+    ): Modifier {
+        return onShimmerVisible(state, modifierWhenShimmerVisible)
+    }
+
+    @Composable
+    fun Modifier.onShimmerInvisible(
+        modifierWhenShimmerInvisible: Modifier.() -> Modifier = { this },
+    ): Modifier {
+        return onShimmerInvisible(state, modifierWhenShimmerInvisible)
+    }
+
+    @Composable
+    fun Modifier.drawRectWhenShimmerVisible(
+        enable: Boolean = true,
+    ): Modifier {
+        return drawRectWhenShimmerVisible(state, enable)
+    }
+
+    @Composable
+    fun Modifier.dismissWhenShimmerVisible(
+        enable: Boolean = true,
+    ): Modifier {
+        return dismissWhenShimmerVisible(state, enable)
+    }
+
+    @Composable
+    fun Modifier.shimmerItem(
+        showWhenShimmerVisible: Boolean = true,
+        modifierWhenShimmerVisible: Modifier.() -> Modifier = { this },
+        customDraw: (ContentDrawScope.(ShimmerConfig) -> Unit)? = null,
+    ): Modifier {
+        return shimmerItem(
+            state = state,
+            showWhenShimmerVisible = showWhenShimmerVisible,
+            modifierWhenShimmerVisible = modifierWhenShimmerVisible,
+            customDraw = customDraw
+        )
+    }
+
 }
 
 @Composable
@@ -103,31 +202,34 @@ fun ShimmerHost(
         PositionTracker()
     },
     config: ShimmerConfig = ShimmerConfig(),
-    floatContent: @Composable ShimmerFloatScope.() -> Unit = {},
-    content: @Composable ShimmerContentScope.() -> Unit,
+    floatContent: @Composable ShimmerFloatScope.(ShimmerState) -> Unit = {},
+    content: @Composable ShimmerContentScope.(ShimmerState) -> Unit,
 ) {
 
     val state = remember(visible, config) {
-        ShimmerLocalState(visible, config)
+        ShimmerState(visible, config)
     }
     CompositionLocalProvider(LocalShimmerState provides state){
         Box(
             modifier = modifier.onPlaced {
-                positionTracker.setPosition("root", it.positionInRoot())
+                positionTracker.setPosition("shimmer_host", it.positionInRoot())
+            }.onSizeChanged {
+                positionTracker.setSize("shimmer_host", it)
             }
         ) {
             val contentScope = remember(positionTracker) {
-                ShimmerContentScope(positionTracker)
+                ShimmerContentScope(positionTracker, state)
             }
 
-            val floatScope = remember(positionTracker) {
-                ShimmerFloatScope(positionTracker)
-            }
-            Box(Modifier.shimmer(state)) {
-                contentScope.content()
+
+            Box(Modifier.fillMaxSize().shimmer(state)) {
+                contentScope.content(state)
             }
             Box {
-                floatScope.floatContent()
+                val floatScope = remember(positionTracker) {
+                    ShimmerFloatScope(positionTracker, state, this)
+                }
+                floatScope.floatContent(state)
             }
 
         }
@@ -135,8 +237,8 @@ fun ShimmerHost(
 }
 
 @Composable
-private fun Modifier.shimmer(
-    state: ShimmerLocalState
+fun Modifier.shimmer(
+    state: ShimmerState
 ): Modifier = composed {
     // make sure we are using the LocalShimmerState
     var progress: Float by remember { mutableStateOf(0f) }
@@ -163,10 +265,10 @@ data class ShimmerConfig(
     // 未高亮部分颜色
     val contentColor: Color = Color.LightGray.copy(alpha = 0.3f),
     // 高亮部分颜色
-    val higLightColor: Color = Color.LightGray.copy(alpha = 0.9f),
+    val higLightColor: Color = Color.Black.copy(alpha = 0.9f),
     // 渐变部分宽度
     @FloatRange(from = 0.0, to = 1.0)
-    val dropOff: Float = 0.5f,
+    val dropOff: Float = 0.2f,
     // 高亮部分宽度
     @FloatRange(from = 0.0, to = 1.0)
     val intensity: Float = 0.2f,
@@ -188,77 +290,10 @@ val SHIMMER_ITEM_RECT_ON_DRAW: (ContentDrawScope.(ShimmerConfig) -> Unit) = { co
     )
 }
 
-@Composable
-fun Modifier.onShimmerVisible(
-    modifierWhenShimmerVisible: Modifier.() -> Modifier = { this },
-): Modifier {
-    val state = LocalShimmerState.current
-    if (state.isVisible) {
-        // Ensure that the modifier is applied only when shimmer is visible
-        return modifierWhenShimmerVisible(this)
-    }
-    return this
-}
-
-@Composable
-fun Modifier.onShimmerInvisible(
-    modifierWhenShimmerInvisible: Modifier.() -> Modifier = { this },
-): Modifier {
-    val state = LocalShimmerState.current
-    if (!state.isVisible) {
-        // Ensure that the modifier is applied only when shimmer is invisible
-        return modifierWhenShimmerInvisible(this)
-    }
-    return this
-}
-
-@Composable
-fun Modifier.drawRectWhenShimmerVisible(
-    enable: Boolean = true,
-): Modifier {
-    if (!enable) {
-        return this
-    }
-    return shimmerItem(true, {this}, SHIMMER_ITEM_RECT_ON_DRAW)
-}
-
-@Composable
-fun Modifier.dismissWhenShimmerVisible(
-    enable: Boolean = true,
-): Modifier {
-    if (!enable) {
-        return this
-    }
-    return shimmerItem(false, {this}, null)
-}
-
-@Composable
-fun Modifier.shimmerItem(
-    showWhenShimmerVisible: Boolean = true,
-    modifierWhenShimmerVisible: Modifier.() -> Modifier = { this },
-    customDraw: (ContentDrawScope.(ShimmerConfig) -> Unit)? = null,
-): Modifier {
-    return composed {
-
-        val shimmerState = LocalShimmerState.current
-        val ss = shimmerState
-        if (ss == null || !ss.isVisible) {
-            return@composed this
-        }
-        modifierWhenShimmerVisible(this).then(
-            ShimmerItemModifierWhenVisible(
-                canDraw = ss.isVisible && showWhenShimmerVisible,
-                customDraw = customDraw,
-                config = ss.config
-            )
-        )
-    }
-
-}
 
 
 class ShimmerModifier(
-    private val state: ShimmerLocalState,
+    private val state: ShimmerState,
     private val progress: Float,
 ) : DrawModifier, LayoutModifier {
 
@@ -319,7 +354,6 @@ class ShimmerModifier(
 
                     }
                     it.save()
-//                    it.rotateRad(-config.angle, size.width / 2f, size.height / 2f)
                     it.translate(dx, dy)
                     it.drawRect(Rect(0f, 0f, size.width, size.height), paint = paint)
                     it.restore()
@@ -364,13 +398,13 @@ class ShimmerModifier(
 class ShimmerItemModifierWhenVisible(
     private val canDraw: Boolean,
     private val customDraw: (ContentDrawScope.(ShimmerConfig) -> Unit)? = null,
-    private val config: ShimmerConfig,
+    private val config: ShimmerConfig? = null,
 ) : DrawModifier {
     override fun ContentDrawScope.draw() {
         if (canDraw) {
             if (customDraw == null) {
                 drawContent()
-            } else {
+            } else if (config != null) {
                 customDraw(config)
             }
         } else {
@@ -380,3 +414,78 @@ class ShimmerItemModifierWhenVisible(
 
 
 }
+
+
+@Composable
+fun Modifier.onShimmerVisible(
+    state: ShimmerState,
+    modifierWhenShimmerVisible: Modifier.() -> Modifier = { this },
+): Modifier {
+//        val state = LocalShimmerState.current
+    if (state.isVisible) {
+        // Ensure that the modifier is applied only when shimmer is visible
+        return modifierWhenShimmerVisible(this)
+    }
+    return this
+}
+
+@Composable
+fun Modifier.onShimmerInvisible(
+    state: ShimmerState,
+    modifierWhenShimmerInvisible: Modifier.() -> Modifier = { this },
+): Modifier {
+//        val state = LocalShimmerState.current
+    if (!state.isVisible) {
+        // Ensure that the modifier is applied only when shimmer is invisible
+        return modifierWhenShimmerInvisible(this)
+    }
+    return this
+}
+
+@Composable
+fun Modifier.drawRectWhenShimmerVisible(
+    state: ShimmerState,
+    enable: Boolean = true,
+): Modifier {
+    if (!enable) {
+        return this
+    }
+    return shimmerItem(state, true, {this}, SHIMMER_ITEM_RECT_ON_DRAW)
+}
+
+@Composable
+fun Modifier.dismissWhenShimmerVisible(
+    state: ShimmerState,
+    enable: Boolean = true,
+): Modifier {
+    if (!enable) {
+        return this
+    }
+    return shimmerItem(state, false, {this}, null)
+}
+
+@Composable
+fun Modifier.shimmerItem(
+    state: ShimmerState,
+    showWhenShimmerVisible: Boolean = true,
+    modifierWhenShimmerVisible: Modifier.() -> Modifier = { this },
+    customDraw: (ContentDrawScope.(ShimmerConfig) -> Unit)? = null,
+): Modifier {
+    return composed {
+
+//        val shimmerState = LocalShimmerState.current
+        val ss = state
+        if (ss == null || !ss.isVisible) {
+            return@composed this
+        }
+        modifierWhenShimmerVisible(this).then(
+            ShimmerItemModifierWhenVisible(
+                canDraw = ss.isVisible && showWhenShimmerVisible,
+                customDraw = customDraw,
+                config = ss.config
+            )
+        )
+    }
+
+}
+

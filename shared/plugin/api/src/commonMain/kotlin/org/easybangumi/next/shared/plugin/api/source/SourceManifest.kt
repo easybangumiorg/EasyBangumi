@@ -45,5 +45,5 @@ data class SourceManifest (
 
 
 
-    val key: String = "${extensionManifest.key}-${id}"
+    val key: String = id
 }

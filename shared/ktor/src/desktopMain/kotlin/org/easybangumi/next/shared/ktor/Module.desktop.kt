@@ -24,11 +24,11 @@ private class DesktopKtorFactory : KtorFactory {
 
     override fun create(vararg config: KtorConfig): HttpClient {
         return HttpClient(Java) {
-            // Global 配置
-            GlobalKtorConfig.apply(this)
             config.forEach {
                 it.apply(this)
             }
+            // Global 配置
+            GlobalKtorConfig.apply(this)
         }
     }
 }

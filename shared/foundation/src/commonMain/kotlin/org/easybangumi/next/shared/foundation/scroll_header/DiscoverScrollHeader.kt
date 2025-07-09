@@ -20,13 +20,19 @@ import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.Velocity
+import androidx.compose.ui.unit.dp
 import org.easybangumi.next.lib.logger.logger
+import org.easybangumi.next.shared.foundation.InputMode
+import org.easybangumi.next.shared.foundation.LocalUIMode
+import org.easybangumi.next.shared.foundation.UIMode
 import kotlin.math.roundToInt
 
 /**
@@ -64,11 +70,14 @@ class DiscoverScrollHeaderScope(
         })
 
     @Composable
-    override fun Modifier.header(): Modifier {
+    override fun Modifier.header(
+        minHeight: Dp,
+    ): Modifier {
+        val minHeightPx = with(LocalDensity.current) { minHeight.roundToPx() }
         return layout { measurable, constraints ->
             val placeable = measurable.measure(constraints)
             headerHeight.value = placeable.height.toFloat()
-            state.offsetLimit = -placeable.height.toFloat()
+            state.offsetLimit = -placeable.height.toFloat() + minHeightPx
             layout(constraints.maxWidth, constraints.maxHeight) {
                 placeable.place(0, state.offset.roundToInt())
             }
@@ -98,7 +107,7 @@ class DiscoverScrollHeaderScope(
 
     @Composable
     fun Modifier.contentPointerScrollOpt(enabled: Boolean): Modifier {
-        return  contentPointerScrollOpt(enabled, this)
+        return contentPointerScrollOpt(enabled, this)
     }
 }
 
@@ -112,6 +121,7 @@ class DiscoverScrollHeaderBehavior(
     override val state: ScrollableHeaderState,
     override val snapAnimationSpec: AnimationSpec<Float>?,
     override val flingAnimationSpec: DecayAnimationSpec<Float>?,
+    val uiMode: UIMode,
 ) : ScrollableHeaderBehavior<DiscoverScrollHeaderScope> {
 
 
@@ -142,8 +152,13 @@ class DiscoverScrollHeaderBehavior(
         override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
 //            logger.info("onPostFling: consumed: $consumed, available: $available")
             val superConsumed = super.onPostFling(consumed, available)
-            return superConsumed +
-                    settleHeader(state, available.y, flingAnimationSpec, snapAnimationSpec)
+            if (uiMode.inputMode == InputMode.TOUCH) {
+                return superConsumed +
+                        settleHeader(state, available.y, flingAnimationSpec, snapAnimationSpec)
+            } else {
+                // 鼠标模式不用自动吸附
+                return superConsumed
+            }
         }
 
         override suspend fun onPreFling(available: Velocity): Velocity {
@@ -189,7 +204,13 @@ class DiscoverScrollHeaderTabState(
         /** The default [Saver] implementation for [TopAppBarState]. */
         val Saver: Saver<DiscoverScrollHeaderTabState, *> =
             listSaver(
-                save = { listOf(it.lazyGridState.firstVisibleItemIndex, it.lazyGridState.firstVisibleItemScrollOffset, it.contentOffset) },
+                save = {
+                    listOf(
+                        it.lazyGridState.firstVisibleItemIndex,
+                        it.lazyGridState.firstVisibleItemScrollOffset,
+                        it.contentOffset
+                    )
+                },
                 restore = {
                     DiscoverScrollHeaderTabState(
                         it[0].toInt(),

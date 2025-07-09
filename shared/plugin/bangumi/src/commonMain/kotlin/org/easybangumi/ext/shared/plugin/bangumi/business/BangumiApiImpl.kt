@@ -151,4 +151,17 @@ class BangumiApiImpl(
             }.body()
         }
     }
+
+    override fun coverUrl(
+        subjectId: String,
+        type: String
+    ): String {
+        return URLBuilder().run {
+            host = bangumiConfig.bangumiApiHost
+            path("v0", "subjects", subjectId, "image")
+            parameters.append("subject_id", subjectId)
+            parameters.append("type", type)
+            buildString()
+        }
+    }
 }

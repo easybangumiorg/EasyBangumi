@@ -29,6 +29,7 @@ sealed class BgmRsp<T> {
     }
     data class Error<T>(
         val code: Int,
+        val url: String? = null,
         val title: String? = null,
         val description: String? = null,
         val details: String? = null,
@@ -69,23 +70,25 @@ sealed class BgmRsp<T> {
 
 class BgmNetException(
     val code: Int,
+    val url: String? = null,
     val title: String? = null,
     val description: String? = null,
     val details: String? = null,
     val netCause: Throwable? = null,
 ) : Exception(
-    "BgmNetException(code=$code, title=$title, description=$description, details=$details)",
+    "BgmNetException(code=$code, url=${url} title=$title, description=$description, details=$details)",
     netCause
 ) {
 
     val rsp = BgmRsp.Error<Any>(
         code = code,
+        url = url,
         title = title,
         description = description,
         details = details,
         throwable = netCause
     )
     override fun toString(): String {
-        return "BgmNetException(code=$code, title=$title, description=$description, details=$details, cause=${cause?.message})"
+        return "BgmNetException(code=$code, url=${url}, title=$title, description=$description, details=$details, cause=${cause?.message})"
     }
 }

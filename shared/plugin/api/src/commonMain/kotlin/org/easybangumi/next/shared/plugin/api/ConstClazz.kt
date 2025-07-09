@@ -2,6 +2,7 @@ package org.easybangumi.next.shared.plugin.api
 
 import org.easybangumi.next.shared.plugin.api.component.discover.DiscoverComponent
 import org.easybangumi.next.shared.plugin.api.component.filter.FilterComponent
+import org.easybangumi.next.shared.plugin.api.component.meta.MetaComponent
 import org.easybangumi.next.shared.plugin.api.component.play.PlayComponent
 import org.easybangumi.next.shared.plugin.api.component.pref.PrefComponent
 import org.easybangumi.next.shared.plugin.api.source.Source
@@ -33,6 +34,7 @@ object ConstClazz {
         FilterComponent::class,
         PlayComponent::class,
         PrefComponent::class,
+        MetaComponent::class, // 需要在插件中实现
     )
 
 }

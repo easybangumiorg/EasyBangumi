@@ -12,6 +12,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import org.easybangumi.next.shared.LocalNavController
+import org.easybangumi.next.shared.RouterPage
 import org.easybangumi.next.shared.foundation.plugin.SourceBundleContainer
 import org.easybangumi.next.shared.foundation.stringRes
 import org.easybangumi.next.shared.foundation.view_model.vm
@@ -95,13 +97,14 @@ fun HomeDiscoverContent(
     state: HomeDiscoverViewModel.State,
     viewModel: HomeDiscoverViewModel,
 ) {
+    val navController = LocalNavController.current
     val discoverBusiness = state.discoverBusiness
     if (discoverBusiness != null) {
         Discover(
             modifier,
             discoverBusiness,
             onJumpDetail = {
-
+                navController.navigate(RouterPage.Detail(it.id, it.source, it.ext))
             }
         )
     }

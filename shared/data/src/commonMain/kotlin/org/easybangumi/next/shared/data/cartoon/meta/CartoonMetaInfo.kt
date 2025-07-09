@@ -1,5 +1,7 @@
 ﻿package org.easybangumi.next.shared.data.cartoon.meta
 
+import kotlinx.serialization.Serializable
+
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
  *
@@ -11,7 +13,7 @@
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-// TODO 通用元数据源
+@Serializable
 data class CartoonMetaInfo(
     val id: String,
 
@@ -23,6 +25,7 @@ data class CartoonMetaInfo(
     val name: String,
     val originalName: String,
 
+    // yyyy-MM-dd
     val originalAirDate: String,
 
     val totalEpisodes: Int,
@@ -31,11 +34,34 @@ data class CartoonMetaInfo(
     val ranting: Ranting,
 
     // xx 人收藏，xx 人在看
-    val collectionDesc: String,
+    val collectionList: List<CollectionDesc>,
+
+    val description: String,
+
+    val tag: List<Tag>,
+
+
 )
 
+@Serializable
 data class Ranting(
     val score: String,
     val ranking: String,
     val count: String,
 )
+
+@Serializable
+data class CollectionDesc(
+    val label: String,
+    val count: Int,
+)
+
+@Serializable
+data class Tag(
+    val name: String,
+    val count: Int,
+) {
+    override fun toString(): String {
+        return "$name($count)"
+    }
+}

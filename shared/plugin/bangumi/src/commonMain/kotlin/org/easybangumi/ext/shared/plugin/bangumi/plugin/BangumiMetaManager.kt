@@ -12,7 +12,7 @@ import org.easybangumi.next.lib.utils.PagingFrame
 import org.easybangumi.next.lib.utils.map
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.plugin.api.SourceResult
-import org.easybangumi.next.shared.plugin.api.component.mate.MateManager
+import org.easybangumi.next.shared.plugin.api.component.meta.MetaManager
 import org.easybangumi.next.shared.plugin.api.toDataState
 
 /**
@@ -29,7 +29,7 @@ import org.easybangumi.next.shared.plugin.api.toDataState
 
 class BangumiMetaManager(
     private val bangumiApi: BangumiApi
-): MateManager {
+): MetaManager {
     override val fromSourceKey: String = BangumiInnerSource.SOURCE_ID
 
     suspend fun getSubject(
@@ -116,6 +116,17 @@ class BangumiMetaManager(
         }
         return CommentListPagingSource(bangumiApi, cartoonIndex)
     }
+
+    fun coverUrl(
+        cartoonIndex: CartoonIndex,
+        type: String = "large",
+    ): String {
+        if (cartoonIndex.source != BangumiInnerSource.SOURCE_ID) {
+            throw IllegalArgumentException("BangumiMateManager only supports BangumiInnerSource")
+        }
+        return bangumiApi.coverUrl(cartoonIndex.id, type)
+    }
+
 
 
 }

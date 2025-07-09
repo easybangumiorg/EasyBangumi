@@ -90,7 +90,7 @@ class BangumiDiscoverComponent: DiscoverComponent, BaseComponent() {
     private fun <T> BgmRsp<T>.getOrThrow(): T {
         return when (this) {
             is Success -> data
-            is BgmRsp.Error -> throw SourceException("业务错误：${code} ${throwable?.message ?: throwable?.let { it::class.simpleName }}", throwable)
+            is BgmRsp.Error -> throw SourceException("业务错误：${code} ${url} ${throwable?.message ?: throwable?.let { it::class.simpleName }}", throwable)
         }
     }
 }

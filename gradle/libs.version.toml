@@ -66,6 +66,9 @@ media3 = "1.6.1"
 
 ksoup = "0.2.4"
 
+constraintlayout = "2.2.1"
+constraintlayout-compose = "1.0.1"
+
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidx-core-ktx" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidx-appcompat" }

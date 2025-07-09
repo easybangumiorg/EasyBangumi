@@ -3,6 +3,7 @@ package org.easybangumi.next.shared.foundation
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.layout.Layout
 import androidx.core.graphics.transform
 
 /**
@@ -11,8 +12,10 @@ import androidx.core.graphics.transform
  */
 @Composable
 actual fun InnerBackHandler(enabled: Boolean, onBack: () -> Unit) {
-    Paint().shader?.transform {
+    Layout { m, p ->
+        layout(p.maxHeight, p.maxWidth) {
 
+        }
     }
     BackHandler(enabled, onBack)
 }

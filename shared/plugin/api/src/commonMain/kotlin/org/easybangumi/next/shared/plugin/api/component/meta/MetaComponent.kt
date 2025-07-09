@@ -1,4 +1,6 @@
-﻿package org.easybangumi.next.shared.plugin.api.component.mate
+package org.easybangumi.next.shared.plugin.api.component.meta
+
+import org.easybangumi.next.shared.plugin.api.component.Component
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -11,9 +13,8 @@
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
+interface MetaComponent <T: MetaManager>: Component {
 
-interface MateManager {
-
-    val fromSourceKey: String
+    fun getMateManager(): T
 
 }

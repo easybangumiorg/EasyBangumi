@@ -19,6 +19,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import com.easybangumi.next.shared.debug.color.ColorDebug
 import com.easybangumi.next.shared.debug.player.PlayerDebug
 import com.easybangumi.next.shared.debug.shimmer.ShimmerDebug
 import kotlinx.serialization.Serializable
@@ -41,6 +42,7 @@ enum class DebugPage(
     HOME("Debug Home"),
     PLAYER("Player Debug"),
     SHIMMER("Shimmer Debug"),
+    COLOR("Color Debug");
 }
 
 class DebugScope (
@@ -63,6 +65,9 @@ fun DebugHost(
                 DebugPage.PLAYER -> { PlayerDebug() }
                 DebugPage.SHIMMER -> {
                     ShimmerDebug()
+                }
+                DebugPage.COLOR -> {
+                    ColorDebug()
                 }
             }
         }

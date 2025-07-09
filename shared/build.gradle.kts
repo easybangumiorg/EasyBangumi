@@ -62,6 +62,9 @@ kotlin {
             api(projects.shared.playcon)
             api(projects.shared.ktor)
 
+            api(projects.shared.plugin)
+            api(projects.shared.plugin.pluginBangumi)
+
         }
 
 //        commonTest.dependencies {

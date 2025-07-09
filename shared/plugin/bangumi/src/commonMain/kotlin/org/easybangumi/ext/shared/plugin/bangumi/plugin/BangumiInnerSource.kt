@@ -32,6 +32,7 @@ class BangumiInnerSource: InnerSource() {
     override val version: Int = 1
     override val componentConstructor: Array<() -> Component> = arrayOf(
         ::BangumiDiscoverComponent,
+        ::BangumiMetaComponent,
     )
 
     override val module: Module? = module {

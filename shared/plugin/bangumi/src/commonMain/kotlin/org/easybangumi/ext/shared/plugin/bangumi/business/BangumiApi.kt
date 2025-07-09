@@ -76,5 +76,10 @@ interface BangumiApi {
         page: Int,
     ): Deferred<BgmRsp<List<Reviews>>>
 
+    fun coverUrl(
+        subjectId: String,
+        type: String = "large",
+    ): String
+
 
 }

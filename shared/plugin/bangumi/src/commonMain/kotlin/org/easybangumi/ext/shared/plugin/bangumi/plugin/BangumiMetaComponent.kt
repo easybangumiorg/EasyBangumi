@@ -2,7 +2,7 @@
 
 import org.easybangumi.ext.shared.plugin.bangumi.business.BangumiApi
 import org.easybangumi.next.shared.plugin.api.component.BaseComponent
-import org.easybangumi.next.shared.plugin.api.component.mate.MateComponent
+import org.easybangumi.next.shared.plugin.api.component.meta.MetaComponent
 import org.koin.core.component.inject
 
 /**
@@ -17,7 +17,7 @@ import org.koin.core.component.inject
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
-class BangumiMateComponent: MateComponent<BangumiMetaManager>, BaseComponent() {
+class BangumiMetaComponent: MetaComponent<BangumiMetaManager>, BaseComponent() {
 
     private val api: BangumiApi by inject()
     private val innerMateManager: BangumiMetaManager by lazy {

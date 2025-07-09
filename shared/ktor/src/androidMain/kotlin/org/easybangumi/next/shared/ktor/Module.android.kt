@@ -23,11 +23,12 @@ private class AndroidKtorFactory : KtorFactory {
 
     override fun create(vararg config: KtorConfig): HttpClient {
         return HttpClient(Android) {
-            // Global 配置
-            GlobalKtorConfig.apply(this)
             config.forEach {
                 it.apply(this)
             }
+            // Global 配置
+            GlobalKtorConfig.apply(this)
+
         }
     }
 }

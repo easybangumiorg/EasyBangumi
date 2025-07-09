@@ -105,10 +105,10 @@ fun CartoonCardWithCover(
 
 @Composable
 fun CartoonCoverCard(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     mark: String? = null,
     model: String,
-    name: String,
+    name: String? = null,
     cardBackgroundColor: Color? = null,
     itemSize: Dp = EasyScheme.size.cartoonCoverWidth,
     itemIsWidth : Boolean = true,
@@ -155,20 +155,29 @@ fun CartoonCoverCard(
         )
 
 
-        Box(
-            modifier.fillMaxSize().background(brush = Brush.linearGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.8f)))),
-            contentAlignment = Alignment.BottomCenter
-        ) {
-            Text(
-                modifier = Modifier.padding(16.dp),
-                style = MaterialTheme.typography.bodyLarge,
-                color = textColor,
-                text = name,
-                maxLines = 2,
-                textAlign = TextAlign.Center,
-                overflow = TextOverflow.Ellipsis,
-            )
+        if (name != null) {
+            Box(
+                modifier.fillMaxSize().background(
+                    brush = Brush.linearGradient(
+                        listOf(
+                            Color.Transparent,
+                            Color.Black.copy(alpha = 0.8f)
+                        )
+                    )
+                ),
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                Text(
+                    modifier = Modifier.padding(16.dp),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = textColor,
+                    text = name,
+                    maxLines = 2,
+                    textAlign = TextAlign.Center,
+                    overflow = TextOverflow.Ellipsis,
+                )
 
+            }
         }
 
         if (mark != null) {

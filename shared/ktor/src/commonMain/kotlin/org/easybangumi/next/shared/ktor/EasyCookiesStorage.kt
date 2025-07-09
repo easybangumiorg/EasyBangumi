@@ -20,7 +20,7 @@ import org.easybangumi.next.lib.utils.pathProvider
 class EasyCookiesStorage : CookiesStorage {
 
     private val folder = pathProvider.getFilePath("ktor")
-    private val jsonlFileHelper = JsonlFileHelper<Cookie>(folder, "cookies.jsonl", Cookie::class)
+    private val jsonlFileHelper = JsonlFileHelper<Cookie>(folder, "cookies", Cookie::class)
 
     override suspend fun addCookie(requestUrl: Url, cookie: Cookie) {
         jsonlFileHelper.update {
@@ -32,10 +32,17 @@ class EasyCookiesStorage : CookiesStorage {
     }
 
     override suspend fun get(requestUrl: Url): List<Cookie> {
-        return jsonlFileHelper.getSync().filter {
-            val data = it.expires
-            it.matches(requestUrl) && (data == null || data.timestamp > Clock.System.now().toEpochMilliseconds())
+        // 重名只发送最后（新）一个，因为 addCookie 是添加到队尾
+        val map = linkedMapOf<String, Cookie>()
+        jsonlFileHelper.getSync().forEach {
+            if (it.matches(requestUrl)) {
+                val data = it.expires
+                if (data == null || data.timestamp > Clock.System.now().toEpochMilliseconds()) {
+                    map[it.name] = it
+                }
+            }
         }
+        return map.values.toList()
     }
 
     override fun close() {

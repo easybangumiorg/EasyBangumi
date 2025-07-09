@@ -4,6 +4,8 @@ import io.ktor.client.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.api.*
 import io.ktor.client.statement.*
+import io.ktor.http.URLBuilder
+import io.ktor.http.path
 import io.ktor.util.reflect.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
@@ -19,6 +21,7 @@ import org.easybangumi.next.shared.ktor.KtorFactory
 import org.easybangumi.ext.shared.plugin.bangumi.business.embed.BangumiEmbedProxy
 import org.easybangumi.ext.shared.plugin.bangumi.model.BgmNetException
 import org.easybangumi.ext.shared.plugin.bangumi.model.BgmRsp
+import org.easybangumi.ext.shared.plugin.bangumi.model.InfoBoxValue
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.KTypeProjection
@@ -52,8 +55,11 @@ class BangumiBusiness(
 
     private val dispatcher = coroutineProvider.io()
     private val scope = CoroutineScope(SupervisorJob() + dispatcher + CoroutineName("BangumiHttp"))
-    private val defaultUserAgent = "org.easybangumi/EasyBangumi/${platformInformation.versionName} (${platformInformation.platformName}) (https://github.com/easybangumiorg/EasyBangumi)"
+    private val defaultUserAgent = "EasyBangumi/${platformInformation.versionName} (${platformInformation.platformName}) (https://github.com/easybangumiorg/EasyBangumi)"
 
+    init {
+        logger.info("BangumiBusiness initialized with config: $bangumiConfig userAgent: $defaultUserAgent")
+    }
     private val proxy = BangumiEmbedProxy(config = bangumiConfig)
 
     @OptIn(InternalSerializationApi::class)
@@ -103,8 +109,9 @@ class BangumiBusiness(
                 config.install(proxy.bangumHtmlProxyPlugin)
                 config.install(ktorBangumiPlugin)
                 config.HttpResponseValidator {
-                    handleResponseException { cause, _ ->
-                        throw BgmNetException(code = BgmRsp.Error.INNER_ERROR_CODE, netCause = cause)
+                    handleResponseException { cause, req ->
+                        cause.printStackTrace()
+                        throw BgmNetException(code = BgmRsp.Error.INNER_ERROR_CODE, url = req.url.toString(), netCause = cause)
                     }
                 }
             }
@@ -138,6 +145,19 @@ class BangumiBusiness(
 
     val api: BangumiApi by lazy {
         BangumiApiImpl(bangumiCaller, bangumiConfig)
+    }
+
+    fun coverUrl(
+        subjectId: String,
+        type: String = "large",
+    ): String {
+        return URLBuilder().run {
+            host = bangumiConfig.bangumiApiHost
+            path("v0", "subjects", subjectId, "image")
+            parameters.set("subject_id", subjectId)
+            parameters.set("type", type)
+            toString()
+        }
     }
 
 

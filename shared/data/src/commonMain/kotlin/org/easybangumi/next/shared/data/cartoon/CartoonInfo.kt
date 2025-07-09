@@ -90,8 +90,6 @@ data class CartoonInfo(
 
     val lastEpisodeNum: Int = 0, // 最后一次观看时的总集数
 
-    val mataId: String = "", // 对应元数据库数据的 id，具体数据交给另一个模块
-
     // other data
     // 扩展字段，帮源缓存，这里只是用于持久化，可能会过时
     // 业务需要在 extController 中获取
@@ -120,6 +118,15 @@ data class CartoonInfo(
 
     fun toIdentify(): String {
         return "${fromId},${fromSourceKey}"
+    }
+
+    fun toCartoonIndex(): CartoonIndex {
+        return CartoonIndex(
+            id = fromId,
+            source = fromSourceKey,
+        ).apply {
+            ext = this@CartoonInfo.fromSourceExt
+        }
     }
 
     fun match(identify: String): Boolean {
