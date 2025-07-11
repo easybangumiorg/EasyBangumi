@@ -22,6 +22,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -124,7 +125,7 @@ fun Discover(
         if (tabList != null) {
             HorizontalPager(
                 pagerState,
-                modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface),
+                modifier = Modifier.fillMaxSize(),
                 contentPadding = contentPadding,
                 userScrollEnabled = false,
             ) {
@@ -197,7 +198,7 @@ fun Discover(
                     },
                 )
                 History(
-                    modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface),
+                    modifier = Modifier.fillMaxWidth(),
                     data = uiState.history,
                     onHistoryClick = {
                         onJumpDetail(it.toCartoonIndex())
@@ -246,12 +247,16 @@ fun BannerHeadline(
 
     ListItem(
         modifier = modifier,
+        colors = ListItemDefaults.colors(
+            containerColor = Color.Transparent
+        ),
         headlineContent = {
             Text(
                 text = stringRes(data.label),
                 fontSize = 16.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.titleLarge
             )
         },
         trailingContent = if (data.hasTimelineEnter) {
@@ -381,6 +386,7 @@ fun RecommendTab(
             modifier = Modifier.fillMaxWidth(),
             size = data.size,
             selection = selection,
+            containerColor = Color.Transparent,
             onSelected = {
                 if (it in data.indices) {
                     onSelected(it)
@@ -404,12 +410,16 @@ fun ColumnHeadline(
 ) {
     ListItem(
         modifier = modifier,
+        colors = ListItemDefaults.colors(
+            containerColor = Color.Transparent
+        ),
         headlineContent = {
             Text(
                 text = stringRes(text),
                 fontSize = 16.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.titleLarge
             )
         },
         trailingContent = action,
@@ -430,7 +440,14 @@ fun CartoonCoverRow(
             DataState.Ok(data)
         }
     }
-    LoadScaffold(modifier, data = dataState, isRow = true) { ok ->
+    LoadScaffold(
+        modifier,
+        data = dataState,
+        isRow = true,
+        onEmptyIfCheck = {
+            Text("历史记录为空")
+        }
+    ) { ok ->
         val carouselState = rememberEasyCarouselState {
             ok.data.size
         }

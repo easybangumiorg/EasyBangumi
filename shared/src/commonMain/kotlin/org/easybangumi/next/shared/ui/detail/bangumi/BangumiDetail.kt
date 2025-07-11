@@ -137,7 +137,7 @@ fun BangumiDetail(
         ) {
             BangumiDetailHeader(
                 vm,
-                modifier = Modifier.header(contentPaddingTop),
+                modifier = Modifier.header(contentPaddingTop).background(MaterialTheme.colorScheme.surfaceContainerLowest),
                 contentPaddingTop = contentPaddingTop,
                 subject = subjectState,
                 subjectShimmerState = subjectShimmerState,
@@ -149,6 +149,7 @@ fun BangumiDetail(
             Column (modifier = Modifier
                 .fillMaxWidth()
                 .pinHeader()
+                .background(MaterialTheme.colorScheme.surfaceContainerLowest)
             ) {
                 EasyTab(
                     modifier = Modifier.fillMaxWidth(),
@@ -180,7 +181,7 @@ fun BangumiDetailHeader(
     subject: DataState<Subject>,
     subjectShimmerState: ShimmerState,
 ) {
-    Column (modifier.padding(16.dp, 0.dp)) {
+    Column (modifier.padding(32.dp, 0.dp)) {
         Spacer(modifier = Modifier.size(contentPaddingTop))
         Column {
             Row(
@@ -188,8 +189,10 @@ fun BangumiDetailHeader(
             ) {
                 CartoonCoverCard(
                     model = vm.coverUrl,
+                    itemSize = 206.dp,
                     onClick = { }
                 )
+                Spacer(modifier = Modifier.size(16.dp))
                 Column(
                     modifier = Modifier.weight(1f).fillMaxHeight()
                         .shimmer(subjectShimmerState)
