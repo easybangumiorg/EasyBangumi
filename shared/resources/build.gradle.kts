@@ -32,7 +32,7 @@ kotlin {
 
     }
 }
-val namespace = extra.get("easy.build.showNamespace").toString()
+val namespace = extra.get("easy.build.namespace").toString()
 
 multiplatformResources {
     resourcesPackage.set("$namespace.shared.resources") // required

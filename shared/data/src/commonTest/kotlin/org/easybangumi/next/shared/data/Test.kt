@@ -56,6 +56,6 @@ class Test : KoinTest {
     private fun newTestCartoonInfo(
         int: Int
     ) = CartoonInfo(
-        "$int", "$int", "$int", "$int", "$int", "$int", "$int"
+        "$int", "$int", "$int", "$int", "$int", false, "$int"
     )
 }

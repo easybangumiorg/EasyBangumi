@@ -1,6 +1,4 @@
-import org.gradle.kotlin.dsl.support.kotlinCompilerOptions
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-import org.jetbrains.kotlin.daemon.common.FileSystem
 
 plugins {
     alias(builds.plugins.kotlinJvm)
@@ -13,8 +11,8 @@ plugins {
 
 
 // 暂时先这样解决吧，EasyLibBuild Plugin 会将数据放到 extra 中
-val showNamespace = extra.get("easy.build.showNamespace").toString()
 val namespace = extra.get("easy.build.namespace").toString()
+val applicationId = extra.get("easy.build.applicationId").toString()
 val versionCode = extra.get("easy.build.versionCode").toString().toInt()
 val versionName = extra.get("easy.build.versionName").toString()
 
@@ -63,7 +61,7 @@ compose.desktop {
             appResourcesRootDir.set(project.layout.projectDirectory.dir("../assets"))
 
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = namespace
+            packageName = applicationId
             packageVersion = versionName
 
         }
@@ -71,13 +69,13 @@ compose.desktop {
 }
 
 easyConfig {
-    packageName.set(showNamespace)
+    packageName.set(namespace)
     buildConfigName.set("EasyConfig")
     sourceDir.set(kotlin.sourceSets.findByName("main")?.kotlin)
     debugProperties.set(true)
 
     configProperties {
-        "NAMESPACE" with namespace
+        "NAMESPACE" with applicationId
         "VERSION_CODE" with versionCode
         "VERSION_NAME" with versionName
     }

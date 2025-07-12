@@ -1,12 +1,9 @@
 import com.android.build.gradle.LibraryExtension
 import com.android.build.gradle.internal.dsl.BaseAppModuleExtension
-import com.android.tools.r8.naming.MappingComposeException
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginExtension
-import org.gradle.internal.impldep.org.yaml.snakeyaml.composer.ComposerException
 import org.gradle.kotlin.dsl.configure
-import org.gradle.tooling.model.ProjectModel
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
@@ -116,8 +113,9 @@ object ApplyHelper {
         }
         target.pluginManager.withPlugin("com.android.library") {
             target.extensions.configure<LibraryExtension> {
-                namespace = "${provider.namespace}.$name"
+                namespace = "${provider.applicationId}.$name"
                 compileSdk = androidCompileSdk
+
                 defaultConfig {
                     minSdk = androidMinSdk
                 }
@@ -140,7 +138,7 @@ object ApplyHelper {
             namespace =  provider.namespace
             compileSdk = androidCompileSdk
             defaultConfig {
-                applicationId = provider.namespace
+                applicationId = provider.applicationId
                 minSdk = androidMinSdk
                 versionCode = provider.versionCode
                 versionName = provider.versionName

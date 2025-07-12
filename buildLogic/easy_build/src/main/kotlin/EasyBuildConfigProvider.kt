@@ -20,8 +20,8 @@ class EasyBuildConfigProvider(
 ) {
 
     companion object {
-        const val KEY_SHOW_NAMESPACE = "easy.build.showNamespace"
         const val KEY_NAMESPACE = "easy.build.namespace"
+        const val KEY_APPLICATION_ID = "easy.build.applicationId"
         const val KEY_VERSION_NAME = "easy.build.versionName"
         const val KEY_VERSION_CODE = "easy.build.versionCode"
 
@@ -42,8 +42,8 @@ class EasyBuildConfigProvider(
     }
 
 
-    val namespace: String = findProperty(KEY_NAMESPACE)
-    val showNamespace: String =  project.findProperty(KEY_SHOW_NAMESPACE)?.toString()?: namespace
+    val applicationId: String = findProperty(KEY_APPLICATION_ID)
+    val namespace: String =  project.findProperty(KEY_NAMESPACE)?.toString()?: applicationId
     val versionName: String = findProperty(KEY_VERSION_NAME)
     val versionCode: Int = findProperty(KEY_VERSION_CODE).toIntOrNull()
         ?: throw IllegalArgumentException("Property '${KEY_VERSION_CODE}' must be an integer.")
@@ -51,10 +51,10 @@ class EasyBuildConfigProvider(
     val optMd3Api: Boolean = project.findProperty(KEY_OPT_MD3_API)?.toString()?.toBoolean() ?: false
     init {
 
-        project.extra.set(KEY_NAMESPACE, namespace)
+        project.extra.set(KEY_APPLICATION_ID, applicationId)
         project.extra.set(KEY_VERSION_NAME, versionName)
         project.extra.set(KEY_VERSION_CODE, versionCode)
-        project.extra.set(KEY_SHOW_NAMESPACE, showNamespace)
+        project.extra.set(KEY_NAMESPACE, namespace)
     }
 
     fun findProperty(key: String): String {
