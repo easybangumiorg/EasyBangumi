@@ -1,6 +1,6 @@
 ﻿package org.easybangumi.ext.shared.plugin.bangumi.plugin
 
-import org.easybangumi.ext.shared.plugin.bangumi.business.BangumiApi
+import org.easybangumi.next.shared.source.bangumi.business.BangumiApi
 import org.easybangumi.next.shared.plugin.api.component.BaseComponent
 import org.easybangumi.next.shared.plugin.api.component.meta.MetaComponent
 import org.koin.core.component.inject

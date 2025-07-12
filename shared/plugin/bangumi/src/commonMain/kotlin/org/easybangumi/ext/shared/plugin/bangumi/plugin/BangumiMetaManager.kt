@@ -1,11 +1,11 @@
 ﻿package org.easybangumi.ext.shared.plugin.bangumi.plugin
 
-import org.easybangumi.ext.shared.plugin.bangumi.business.BangumiApi
-import org.easybangumi.ext.shared.plugin.bangumi.model.Character
-import org.easybangumi.ext.shared.plugin.bangumi.model.Episode
-import org.easybangumi.ext.shared.plugin.bangumi.model.Person
-import org.easybangumi.ext.shared.plugin.bangumi.model.Reviews
-import org.easybangumi.ext.shared.plugin.bangumi.model.Subject
+import org.easybangumi.next.shared.source.bangumi.business.BangumiApi
+import org.easybangumi.next.shared.source.bangumi.model.Character
+import org.easybangumi.next.shared.source.bangumi.model.Episode
+import org.easybangumi.next.shared.source.bangumi.model.Person
+import org.easybangumi.next.shared.source.bangumi.model.Reviews
+import org.easybangumi.next.shared.source.bangumi.model.Subject
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.EasyPagingSource
 import org.easybangumi.next.lib.utils.PagingFrame

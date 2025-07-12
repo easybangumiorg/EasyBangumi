@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import org.easybangumi.ext.shared.plugin.bangumi.model.Subject
+import org.easybangumi.next.shared.source.bangumi.model.Subject
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.shared.foundation.cartoon.CartoonCoverCard
 
@@ -20,36 +20,36 @@ import org.easybangumi.next.shared.foundation.cartoon.CartoonCoverCard
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-@Composable
-fun BangumiDetailHeader(
-    viewModel: BangumiDetailViewModel,
-    subjectState: DataState<Subject>,
-    modifier: Modifier,
-) {
-
-
-
-    Column {
-
-        Row {
-
-        }
-
-    }
-}
-
-@Composable
-fun BangumiDetailHeaderContent(
-    modifier: Modifier,
-    viewModel: BangumiDetailViewModel,
-    subjectState: DataState.Ok<Subject>,
-) {
-
-}
-
-@Composable
-fun BangumiDetailHeaderLoading(
-    modifier: Modifier,
-) {
-
-}
+//@Composable
+//fun BangumiDetailHeader(
+//    viewModel: BangumiDetailViewModel,
+//    subjectState: DataState<Subject>,
+//    modifier: Modifier,
+//) {
+//
+//
+//
+//    Column {
+//
+//        Row {
+//
+//        }
+//
+//    }
+//}
+//
+//@Composable
+//fun BangumiDetailHeaderContent(
+//    modifier: Modifier,
+//    viewModel: BangumiDetailViewModel,
+//    subjectState: DataState.Ok<Subject>,
+//) {
+//
+//}
+//
+//@Composable
+//fun BangumiDetailHeaderLoading(
+//    modifier: Modifier,
+//) {
+//
+//}

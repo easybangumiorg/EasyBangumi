@@ -4,8 +4,8 @@ import org.easybangumi.next.lib.utils.ResourceOr
 import org.easybangumi.next.shared.ktor.ktorModule
 import org.easybangumi.next.shared.plugin.api.component.Component
 import org.easybangumi.next.shared.plugin.api.inner.InnerSource
-import org.easybangumi.ext.shared.plugin.bangumi.business.BangumiApi
-import org.easybangumi.ext.shared.plugin.bangumi.business.BangumiBusiness
+import org.easybangumi.next.shared.source.bangumi.business.BangumiApi
+import org.easybangumi.next.shared.source.bangumi.business.BangumiBusiness
 import org.koin.core.module.Module
 import org.koin.dsl.binds
 import org.koin.dsl.module

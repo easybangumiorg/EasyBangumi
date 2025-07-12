@@ -3,7 +3,7 @@ package org.easybangumi.next.shared.plugin.api.component
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
-import org.easybangumi.next.shared.plugin.api.SourceResult
+import org.easybangumi.next.lib.utils.DataState
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -19,26 +19,26 @@ import org.easybangumi.next.shared.plugin.api.SourceResult
 class ComponentBusiness <T: Component> (
     private val innerComponent: T,
 ){
-    suspend fun <R> async(block: suspend T.(CoroutineScope) -> SourceResult<R>): Deferred<SourceResult<R>> {
+    suspend fun <R> async(block: suspend T.(CoroutineScope) -> DataState<R>): Deferred<DataState<R>> {
         return innerComponent.source.scope.async {
             runCatching {
                 innerComponent.block(this)
             }.getOrElse {
-                SourceResult.error(
-                    errorMsg = it.message?:"${it}",
+                DataState.error(
+                    errorMsg = it.message?:"$it",
                     throwable = it,
                 )
             }
 
         }
     }
-    suspend fun <R> run(block: suspend T.(CoroutineScope) -> SourceResult<R>): SourceResult<R> {
+    suspend fun <R> run(block: suspend T.(CoroutineScope) -> DataState<R>): DataState<R> {
         return innerComponent.source.scope.async {
             runCatching {
                 innerComponent.block(this)
             }.getOrElse {
-                SourceResult.error(
-                    errorMsg = it.message?:"${it}",
+                DataState.error(
+                    errorMsg = it.message?:"$it",
                     throwable = it,
                 )
             }

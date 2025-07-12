@@ -2,13 +2,7 @@ package org.easybangumi.next.shared.plugin.core.javascript.rhino.component.wrapp
 
 import org.easybangumi.next.rhino.RhinoFunction
 import org.easybangumi.next.rhino.RhinoScope
-import org.easybangumi.next.shared.data.cartoon.CartoonIndex
-import org.easybangumi.next.shared.data.cartoon.Episode
-import org.easybangumi.next.shared.data.cartoon.PlayInfo
-import org.easybangumi.next.shared.data.cartoon.PlayerLine
-import org.easybangumi.next.shared.plugin.api.SourceResult
 import org.easybangumi.next.shared.plugin.api.component.play.PlayComponent
-import org.easybangumi.next.shared.plugin.api.withResult
 import org.easybangumi.next.shared.plugin.api.component.BaseComponent
 import kotlin.reflect.KClass
 

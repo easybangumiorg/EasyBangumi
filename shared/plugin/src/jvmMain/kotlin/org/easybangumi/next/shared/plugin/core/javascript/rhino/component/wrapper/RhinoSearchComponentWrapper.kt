@@ -1,11 +1,11 @@
 package org.easybangumi.next.shared.plugin.core.javascript.rhino.component.wrapper
 
+import org.easybangumi.next.lib.utils.DataState
+import org.easybangumi.next.lib.utils.withResult
 import org.easybangumi.next.rhino.RhinoFunction
 import org.easybangumi.next.rhino.RhinoScope
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
-import org.easybangumi.next.shared.plugin.api.SourceResult
 import org.easybangumi.next.shared.plugin.api.component.SearchComponent
-import org.easybangumi.next.shared.plugin.api.withResult
 import org.easybangumi.next.shared.plugin.api.component.BaseComponent
 import kotlin.reflect.KClass
 
@@ -70,7 +70,7 @@ class RhinoSearchComponentWrapper(
     override suspend fun search(
         keyword: String,
         key: String
-    ): SourceResult<Pair<String?, List<CartoonCover>>> {
+    ): DataState<Pair<String?, List<CartoonCover>>> {
         return withResult {
             rhinoScope.callFunction<Pair<String?, List<CartoonCover>>>(
                 searchFunction,

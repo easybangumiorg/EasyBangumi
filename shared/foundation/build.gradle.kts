@@ -49,7 +49,7 @@ kotlin {
             api(libs.coil.ktor3)
 
             implementation(projects.shared.data)
-            implementation(projects.shared.plugin)
+//            implementation(projects.shared.plugin)
             implementation(projects.shared.resources)
             implementation(projects.shared.scheme)
 

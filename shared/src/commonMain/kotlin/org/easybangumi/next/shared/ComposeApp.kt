@@ -5,7 +5,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import org.easybangumi.next.shared.foundation.LocalUIMode
 import org.easybangumi.next.shared.foundation.image.LocalImageLoader
 import org.easybangumi.next.shared.foundation.image.createImageLoader
-import org.easybangumi.next.shared.foundation.plugin.LocalSourceBundle
 import org.easybangumi.next.shared.theme.EasyTheme
 import org.easybangumi.next.shared.ui.UI
 import org.koin.compose.KoinContext

@@ -71,9 +71,15 @@ includeModule(":shared:debug", "shared/debug")
 includeModule(":shared:playcon", "shared/playcon")
 includeModule(":shared:ktor", "shared/ktor")
 
-includeModule(":shared:plugin", "shared/plugin")
-includeModule(":shared:plugin:plugin_api", "shared/plugin/api")
-includeModule(":shared:plugin:plugin_bangumi", "shared/plugin/bangumi")
+includeModule(":shared:source", "shared/source")
+includeModule(":shared:source_api", "shared/source/api")
+includeModule(":shared:source_bangumi", "shared/source/bangumi")
+//includeModule(":shared:source_core", "shared/source/core")
+
+//includeModule(":shared:business", "shared/business")
+//includeModule(":shared:plugin", "shared/plugin")
+//includeModule(":shared:plugin:plugin_api", "shared/plugin/api")
+//includeModule(":shared:plugin:plugin_bangumi", "shared/plugin/bangumi")
 
 
 // ------------- lib -------------

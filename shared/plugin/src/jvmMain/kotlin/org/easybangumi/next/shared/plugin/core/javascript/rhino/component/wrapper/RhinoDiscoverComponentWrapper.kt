@@ -4,9 +4,9 @@ import org.easybangumi.next.rhino.RhinoFunction
 import org.easybangumi.next.rhino.RhinoScope
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.plugin.api.SourceResult
-import org.easybangumi.next.shared.plugin.api.component.discover.BannerHeadline
+import org.easybangumi.next.shared.plugin.api.component.discover.common.BannerHeadline
 import org.easybangumi.next.shared.plugin.api.component.discover.DiscoverComponent
-import org.easybangumi.next.shared.plugin.api.component.discover.RecommendTab
+import org.easybangumi.next.shared.plugin.api.component.discover.common.RecommendTab
 import org.easybangumi.next.shared.plugin.api.withResult
 import org.easybangumi.next.shared.plugin.api.component.BaseComponent
 import kotlin.reflect.KClass

@@ -48,8 +48,12 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
 
             api(projects.lib)
+//
+//            api(projects.shared.plugin)
+//            api(projects.shared.plugin.pluginBangumi)
 
-            api(projects.shared.plugin)
+            api(projects.shared.source)
+
 
             api(projects.shared.data)
             api(projects.shared.theme)
@@ -62,8 +66,6 @@ kotlin {
             api(projects.shared.playcon)
             api(projects.shared.ktor)
 
-            api(projects.shared.plugin)
-            api(projects.shared.plugin.pluginBangumi)
 
         }
 

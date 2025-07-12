@@ -1,7 +1,7 @@
 package org.easybangumi.next.shared.plugin.api.component
 
+import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
-import org.easybangumi.next.shared.plugin.api.SourceResult
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -21,6 +21,6 @@ interface SearchComponent : Component {
     suspend fun search(
         keyword: String,
         key: String,
-    ): SourceResult<Pair<String?, List<CartoonCover>>>
+    ): DataState<Pair<String?, List<CartoonCover>>>
 
 }

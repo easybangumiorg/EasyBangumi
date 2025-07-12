@@ -13,23 +13,17 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import androidx.savedstate.SavedState
-import androidx.savedstate.write
 import com.easybangumi.next.shared.debug.DebugHost
 import com.easybangumi.next.shared.debug.DebugPage
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.internal.writeJson
 import org.easybangumi.next.lib.utils.WeakRef
-import org.easybangumi.next.platformInformation
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
-import org.easybangumi.next.shared.ui.detail.Detail
 import org.easybangumi.next.shared.ui.detail.DetailPage
-import org.easybangumi.next.shared.ui.home.Main
+import org.easybangumi.next.shared.ui.home.Home
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -127,7 +121,7 @@ fun Router() {
 
             composable<RouterPage.Main> {
                 NavHook(it ) {
-                    Main()
+                    Home()
                 }
             }
 

@@ -1,7 +1,5 @@
 package org.easybangumi.next.shared.plugin.api.component.discover
 
-import org.easybangumi.next.shared.data.cartoon.CartoonCover
-import org.easybangumi.next.shared.plugin.api.SourceResult
 import org.easybangumi.next.shared.plugin.api.component.Component
 
 
@@ -17,18 +15,8 @@ import org.easybangumi.next.shared.plugin.api.component.Component
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
-interface DiscoverComponent: Component {
+interface DiscoverComponent <T: DiscoverManager>: Component {
 
-    // 必须直接返回，不能做其他耗时操作
-    fun bannerHeadline(): BannerHeadline
-
-    suspend fun banner(): SourceResult<List<CartoonCover>>
-
-    suspend fun recommendTab(): SourceResult<List<RecommendTab>>
-
-    suspend fun loadRecommend(
-        tab: RecommendTab,
-        key: String
-    ): SourceResult<Pair<String?, List<CartoonCover>>>
+    fun getManager(): T
 
 }

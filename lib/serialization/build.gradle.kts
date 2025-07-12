@@ -3,8 +3,9 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(builds.plugins.kotlinMultiplatform)
     alias(builds.plugins.androidLibrary)
-    id("EasyLibBuild")
     alias(libs.plugins.kotlinxSerialization)
+    id("EasyLibBuild")
+
 }
 kotlin {
 

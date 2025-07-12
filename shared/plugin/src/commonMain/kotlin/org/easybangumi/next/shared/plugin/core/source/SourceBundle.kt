@@ -28,7 +28,6 @@ class SourceBundle(
     // 查询存在某个 Component 的 SourceInfo.Loaded
     private val clazzInBundle: HashMap<KClass<*>, List<SourceInfo.Loaded>> = hashMapOf()
 
-
     init {
         // 排序
         val list = loadedInfoList.sortedBy { it.sourceConfig.order }
@@ -44,7 +43,6 @@ class SourceBundle(
         }
     }
 
-
     fun keys() = map.keys
 
     fun contains(key: String) = map.containsKey(key)
@@ -55,12 +53,5 @@ class SourceBundle(
     fun componentBundle(key: String): ComponentBundle? = map[key]?.componentBundle
 
 
-//    // 查询 Component 数据
-//    fun homeComponentInfoList() = clazzInBundle[HomeComponent::class] ?: emptyList()
-//    fun homeComponentInfo(key: String) = if (homeComponent(key) == null) null else map[key]
-//    fun homeComponent(key: String) = map[key]?.componentBundle?.getComponent(HomeComponent::class)
-//
-//
-//
 
 }

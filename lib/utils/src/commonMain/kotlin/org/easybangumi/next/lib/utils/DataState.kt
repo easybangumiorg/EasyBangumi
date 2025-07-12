@@ -1,7 +1,9 @@
 package org.easybangumi.next.lib.utils
 
+import kotlinx.coroutines.withContext
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
+import kotlin.coroutines.CoroutineContext
 
 
 /**
@@ -177,3 +179,35 @@ public inline fun <T, R> DataState<T>.map(transform: (value: T) -> R): DataState
 
         is DataState.None -> DataState.none<R>()
     }
+
+
+suspend fun <T : Any, R> T.withResult(context: CoroutineContext? = null, block: suspend T.() -> R): DataState<R> {
+    return try {
+        if (context != null)
+            withContext(context) {
+                DataState.ok(block())
+            }
+        else {
+            DataState.ok(block())
+        }
+    } catch (e: DataStateException) {
+        e.printStackTrace()
+        if (e.isEmpty) {
+            DataState.empty(e.errorMsg)
+        } else {
+            DataState.error(e.errorMsg, e.throwable)
+        }
+    } catch (e: Throwable) {
+        e.printStackTrace()
+        DataState.error(e.message ?: e.toString(), e)
+    }
+}
+
+/**
+ * 可预见的错误
+ */
+class DataStateException(
+    val errorMsg: String,
+    val throwable: Throwable?,
+    val isEmpty: Boolean = false,
+) : Exception(errorMsg, throwable)

@@ -1,12 +1,12 @@
 package org.easybangumi.next.shared.plugin.api.component.play
 
+import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.data.cartoon.CartoonPlayCover
 import org.easybangumi.next.shared.data.cartoon.Episode
 import org.easybangumi.next.shared.data.cartoon.PlayInfo
 import org.easybangumi.next.shared.data.cartoon.PlayerLine
-import org.easybangumi.next.shared.plugin.api.SourceResult
 import org.easybangumi.next.shared.plugin.api.component.Component
 
 
@@ -35,13 +35,13 @@ interface PlayComponent: Component {
     // 搜索播放线路
     suspend fun searchPlayLines(
         param: PlayLineSearchParam,
-    ): SourceResult<List<PlayLineSearchResultItem>>
+    ): DataState<List<PlayLineSearchResultItem>>
 
 
     suspend fun getPlayInfo(
         cartoonPlayCover: CartoonPlayCover,
         playerLine: PlayerLine,
         episode: Episode,
-    ): SourceResult<PlayInfo>
+    ): DataState<PlayInfo>
 
 }

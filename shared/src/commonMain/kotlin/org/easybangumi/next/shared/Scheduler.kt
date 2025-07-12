@@ -3,8 +3,8 @@ package org.easybangumi.next.shared
 import org.easybangumi.next.lib.store.storeModule
 import org.easybangumi.next.shared.data.dataModule
 import org.easybangumi.next.shared.ktor.ktorModule
-import org.easybangumi.next.shared.plugin.pluginModule
 import org.easybangumi.next.shared.preference.preferenceModule
+import org.easybangumi.next.shared.source.sourceModule
 import org.easybangumi.next.shared.theme.themeModule
 import org.koin.core.context.loadKoinModules
 
@@ -30,7 +30,8 @@ object Scheduler {
         if (!isInit) {
             isInit = true
             loadKoinModules(listOf(
-                pluginModule,
+//                pluginModule,
+                sourceModule,
                 storeModule,
                 dataModule,
                 themeModule,

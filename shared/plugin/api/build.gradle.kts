@@ -1,6 +1,7 @@
 plugins {
     alias(builds.plugins.kotlinMultiplatform)
     alias(builds.plugins.androidLibrary)
+    alias(libs.plugins.kotlinxSerialization)
     id("EasyLibBuild")
 }
 kotlin {
@@ -18,6 +19,7 @@ kotlin {
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.koin.core)
             implementation(libs.kotlinx.datetime)
+            implementation(libs.kotlinx.serialization.json)
 
             implementation(projects.logger)
 
