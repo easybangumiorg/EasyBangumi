@@ -194,6 +194,7 @@ class ShimmerContentScope(
 
 }
 
+
 @Composable
 fun ShimmerHost(
     modifier: Modifier = Modifier,
@@ -265,10 +266,10 @@ data class ShimmerConfig(
     // 未高亮部分颜色
     val contentColor: Color = Color.LightGray.copy(alpha = 0.3f),
     // 高亮部分颜色
-    val higLightColor: Color = Color.Black.copy(alpha = 0.9f),
+    val higLightColor: Color = Color.LightGray.copy(alpha = 0.9f),
     // 渐变部分宽度
     @FloatRange(from = 0.0, to = 1.0)
-    val dropOff: Float = 0.2f,
+    val dropOff: Float = 0.5f,
     // 高亮部分宽度
     @FloatRange(from = 0.0, to = 1.0)
     val intensity: Float = 0.2f,

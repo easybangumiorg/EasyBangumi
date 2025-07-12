@@ -1,19 +1,28 @@
 ﻿package org.easybangumi.next.shared.ui.discover.bangumi
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberOverscrollEffect
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Timeline
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.key
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -21,15 +30,32 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.cash.paging.compose.collectAsLazyPagingItems
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.ResourceOr
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.foundation.EasyTab
+import org.easybangumi.next.shared.foundation.InputMode
+import org.easybangumi.next.shared.foundation.LocalUIMode
 import org.easybangumi.next.shared.foundation.carousel.EasyHorizontalMultiBrowseCarousel
 import org.easybangumi.next.shared.foundation.carousel.rememberEasyCarouselState
 import org.easybangumi.next.shared.foundation.cartoon.CartoonCardWithCover
+import org.easybangumi.next.shared.foundation.cartoon.CartoonCoverCardRect
 import org.easybangumi.next.shared.foundation.elements.LoadScaffold
+import org.easybangumi.next.shared.foundation.lazy.PagingCommon
 import org.easybangumi.next.shared.foundation.lazy.pagingCommon
+import org.easybangumi.next.shared.foundation.paging.isAppendLoading
+import org.easybangumi.next.shared.foundation.paging.isLoading
+import org.easybangumi.next.shared.foundation.scroll_header.DiscoverScrollHeaderBehavior
+import org.easybangumi.next.shared.foundation.scroll_header.ScrollableHeaderBehavior
+import org.easybangumi.next.shared.foundation.scroll_header.ScrollableHeaderScaffold
+import org.easybangumi.next.shared.foundation.scroll_header.ScrollableHeaderState
+import org.easybangumi.next.shared.foundation.scroll_header.rememberScrollableHeaderState
+import org.easybangumi.next.shared.foundation.shimmer.ShimmerHost
+import org.easybangumi.next.shared.foundation.shimmer.drawRectWhenShimmerVisible
+import org.easybangumi.next.shared.foundation.shimmer.shimmerItem
 import org.easybangumi.next.shared.foundation.stringRes
 import org.easybangumi.next.shared.resources.Res
 import org.easybangumi.next.shared.scheme.EasyScheme
@@ -46,111 +72,160 @@ import org.easybangumi.next.shared.ui.UI
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
+private val logger = logger("BangumiDiscover")
 @Composable
 fun BangumiDiscover(
     modifier: Modifier,
     vm: BangumiDiscoverViewModel,
-    nestedScrollConnection: NestedScrollConnection? = null,
+    scrollHeaderBehavior: DiscoverScrollHeaderBehavior = ScrollableHeaderBehavior.discoverScrollHeaderBehavior(
+        state = rememberScrollableHeaderState()),
+    headerContainerColor: Color? = null,
+    pinHeaderContainerColor: Color? = null,
+    contentContainerColor: Color? = null,
+    clipContent: Boolean = true,
     onCoverClick: (CartoonCover) -> Unit,
     onTimelineClick: () -> Unit,
 ) {
 
     val uiState = vm.ui.value
     val ui = uiState
-    val lazyGridState = rememberLazyGridState()
 
-    val lazyPageState = ui.currentTab?.pagingFlow?.collectAsLazyPagingItems()
 
-    LazyVerticalGrid(
-        modifier = modifier.fillMaxWidth().run {
-            if (nestedScrollConnection != null) {
-                this.nestedScroll(nestedScrollConnection)
-            } else {
-                this
-            }
-        },
-        state = lazyGridState,
-        columns = GridCells.Adaptive(EasyScheme.size.cartoonCoverWidth),
-        overscrollEffect = rememberOverscrollEffect(),
-        contentPadding = PaddingValues(8.dp, 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+    val tabList = uiState.tabList.okOrNull()
+    val pagerState = rememberPagerState { tabList?.size?:0 }
+
+
+    val scope = rememberCoroutineScope()
+
+
+    ScrollableHeaderScaffold(
+        modifier = modifier,
+        behavior = scrollHeaderBehavior,
     ) {
+        if (tabList != null) {
+            HorizontalPager(
+                pagerState,
+                modifier = Modifier.fillMaxSize().run {
+                    if (contentContainerColor != null) {
+                        background(contentContainerColor)
+                    } else {
+                        this
+                    }
+                },
+                contentPadding = contentPadding,
+                userScrollEnabled = false,
+            ) {
+                val tab = tabList.getOrNull(it)
+                if (tab != null) {
 
-        item(
-            span = {
-                GridItemSpan(maxLineSpan)
-            },
-            key = Unit
-        ) {
-            BannerHeadline(
-                modifier = Modifier.fillMaxWidth(),
-                title = "最热番剧",
-                onTimelineClick = onTimelineClick,
-            )
+                    val lazyPageState =  tab.pagingFlow.collectAsLazyPagingItems()
+                    logger.info(lazyPageState.loadState.toString())
+                    val cartoonHeight = EasyScheme.size.cartoonCoverHeight
+                    val pagingCommonModifier = remember {
+                        Modifier.height(cartoonHeight).fillMaxWidth()
+                    }
+                    LazyVerticalGrid(
+                        modifier = Modifier.fillMaxSize().contentPointerScrollOpt(LocalUIMode.current.inputMode == InputMode.POINTER).run {
+                            if (clipContent) {
+                                clip(RoundedCornerShape(16.dp))
+                            } else {
+                                this
+                            }
+                        },
+                        state = tab.lazyGridState,
+                        columns = GridCells.Adaptive(EasyScheme.size.cartoonCoverWidth),
+                        overscrollEffect = rememberOverscrollEffect(),
+                        contentPadding = PaddingValues(8.dp, 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        if (lazyPageState.itemCount > 0) {
+                            items(lazyPageState.itemCount) {
+                                val item = lazyPageState[it]
+                                if (item != null) {
+                                    Box(
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        CartoonCardWithCover(
+                                            cartoonCover = item,
+                                            onClick = onCoverClick,
+                                            onLongPress = {
+
+                                            }
+                                        )
+                                    }
+
+                                }
+                            }
+                        }
+
+
+                        pagingCommon(height = 200.dp,lazyPageState)
+                    }
+                }
+            }
+
         }
 
-        item(
-            span = {
-                GridItemSpan(maxLineSpan)
-            },
-            key = ui.bannerData
+
+
+        key(
+            uiState.bannerData,
         ) {
-            Banner(
-                modifier = Modifier.fillMaxWidth(),
-                data = ui.bannerData,
-                onClick = onCoverClick
-            )
+            Column(
+                modifier = Modifier.fillMaxWidth().header().run {
+                    if (headerContainerColor != null) {
+                        background(headerContainerColor)
+                    } else {
+                        this
+                    }
+                }
+            ) {
+                BannerHeadline(
+                    modifier = Modifier.fillMaxWidth(),
+                    title = "最热番剧",
+                    onTimelineClick = onTimelineClick,
+                )
+                Banner(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp, 16.dp),
+                    data = ui.bannerData,
+                    onClick = onCoverClick
+                )
+
+            }
         }
 
-        item(
-            span = {
-                GridItemSpan(maxLineSpan)
-            },
-            key = uiState.tabList to uiState.currentIndex
-        ) {
+        key(uiState.tabList, uiState.currentIndex) {
             Column (modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxWidth().pinHeader().run {
+                    if (pinHeaderContainerColor != null) {
+                        background(pinHeaderContainerColor)
+                    } else {
+                        this
+                    }
+                }
             ) {
                 RecommendTab(
                     modifier = Modifier.fillMaxWidth(),
                     data = uiState.tabList,
                     selection = ui.currentIndex,
                     onSelected = {
-                       vm.changeCurrentIndex(it)
+                        vm.changeCurrentIndex(it)
+                        scope.launch {
+                            pagerState.animateScrollToPage(it)
+                        }
                     },
                     onRetry = {
 
                     }
                 )
-                HorizontalDivider()
+//                HorizontalDivider()
             }
         }
-
-
-        if (lazyPageState != null && lazyPageState.itemCount > 0) {
-            items(lazyPageState.itemCount) {
-                val item = lazyPageState[it]
-                if (item != null) {
-                    Box(
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CartoonCardWithCover(
-                            cartoonCover = item,
-                            onClick = onCoverClick,
-                            onLongPress = {
-
-                            }
-                        )
-                    }
-
-                }
-            }
-            pagingCommon(lazyPageState)
-        }
-
 
     }
+
+
 }
 
 @Composable
@@ -194,13 +269,35 @@ fun Banner(
     data: DataState<List<CartoonCover>>,
     onClick: (CartoonCover) -> Unit,
 ) {
-    LoadScaffold(Modifier, data = data) { ok ->
+    LoadScaffold(
+        modifier,
+        data = data,
+        onLoading = {
+            ShimmerHost(
+                modifier = Modifier.fillMaxWidth().height(EasyScheme.size.cartoonCoverHeight),
+                visible = true,
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    repeat(3) {
+                        CartoonCoverCardRect(
+                            modifier = Modifier.drawRectWhenShimmerVisible(),
+//                            cardBackgroundColor = Color.Black
+                        )
+                    }
+                }
+            }
+
+        }
+    ) { ok ->
         val carouselState = rememberEasyCarouselState {
             ok.data.size
         }
         EasyHorizontalMultiBrowseCarousel(
             easyCarouselState = carouselState,
-            modifier = modifier,
+            modifier = Modifier,
             showArc = !UI.isTouchMode(),
             userScrollEnabled = true,
         ) { index ->

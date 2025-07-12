@@ -44,6 +44,8 @@ import org.easybangumi.next.shared.scheme.EasyScheme
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
+
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CartoonCardWithCover(
@@ -105,6 +107,39 @@ fun CartoonCardWithCover(
         onLongPress = {
             onLongPress?.invoke(cartoonInfo)
         }
+    )
+}
+
+@Composable
+fun CartoonCoverCardRect(
+    modifier: Modifier = Modifier,
+    itemSize: Dp = EasyScheme.size.cartoonCoverWidth,
+    itemIsWidth : Boolean = true,
+    cardBackgroundColor: Color? = null,
+    coverAspectRatio: Float = EasyScheme.size.cartoonCoverAspectRatio,
+) {
+
+    val size = remember(
+        itemIsWidth, itemSize
+    ) {
+        if (itemIsWidth) {
+            DpSize(itemSize, itemSize / coverAspectRatio)
+        } else {
+            DpSize(itemSize * coverAspectRatio, itemSize)
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .size(size)
+            .clip(RoundedCornerShape(16.dp))
+            .run {
+                if (cardBackgroundColor != null) {
+                    background(cardBackgroundColor)
+                } else {
+                    this
+                }
+            }.then(modifier),
     )
 }
 

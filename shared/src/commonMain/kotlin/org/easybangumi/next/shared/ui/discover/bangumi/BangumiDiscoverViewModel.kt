@@ -1,5 +1,6 @@
 ﻿package org.easybangumi.next.shared.ui.discover.bangumi
 
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
 import kotlinx.coroutines.async
@@ -33,6 +34,7 @@ class BangumiDiscoverViewModel: StateViewModel<BangumiDiscoverViewModel.State>(S
         val label: ResourceOr,
         val trendsFrom: BangumiApi.TrendsFrom,
         val pagingFlow: PagingFlow<CartoonCover>,
+        val lazyGridState: LazyGridState = LazyGridState(0, 0),
     )
 
 

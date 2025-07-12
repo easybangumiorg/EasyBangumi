@@ -75,6 +75,9 @@ class ScrollableHeaderState(
     initialOffset: Float = 0f,
 ) {
 
+    val headerHeight = mutableStateOf(0f)
+    val pinHeaderHeight = mutableStateOf(0f)
+
     var offsetLimit by mutableFloatStateOf(initialOffsetLimit)
 
     private var _offset = mutableFloatStateOf(initialOffset)

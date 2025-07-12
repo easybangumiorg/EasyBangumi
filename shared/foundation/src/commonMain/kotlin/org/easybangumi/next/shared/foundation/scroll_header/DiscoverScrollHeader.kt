@@ -77,6 +77,7 @@ class DiscoverScrollHeaderScope(
         return layout { measurable, constraints ->
             val placeable = measurable.measure(constraints)
             headerHeight.value = placeable.height.toFloat()
+            state.headerHeight.value = placeable.height.toFloat()
             state.offsetLimit = -placeable.height.toFloat() + minHeightPx
             layout(constraints.maxWidth, constraints.maxHeight) {
                 placeable.place(0, state.offset.roundToInt())
@@ -89,6 +90,7 @@ class DiscoverScrollHeaderScope(
         return layout { measurable, constraints ->
             val placeable = measurable.measure(constraints)
             pinHeaderHeight.value = placeable.height.toFloat()
+            state.pinHeaderHeight.value = placeable.height.toFloat()
             layout(constraints.maxWidth, constraints.maxHeight) {
                 placeable.place(0, (headerHeight.value + state.offset).roundToInt())
             }

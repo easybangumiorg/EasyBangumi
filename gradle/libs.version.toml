@@ -45,7 +45,7 @@ jetbrains_kotlin_jvm = "2.1.20"
 
 paging_multiplatform = "3.3.0-alpha02-0.5.1"
 coil = "3.1.0"
-ktor = "3.2.0"
+ktor = "3.2.1"
 
 # logger
 slf4j = "2.0.16"

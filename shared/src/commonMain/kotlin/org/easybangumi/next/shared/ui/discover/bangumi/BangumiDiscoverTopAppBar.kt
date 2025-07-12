@@ -38,9 +38,9 @@ fun BangumiDiscoverTopAppBar(
         title = {
             Text(stringRes(Res.strings.discover))
         },
-//        colors = TopAppBarDefaults.topAppBarColors().copy(
-//            containerColor = Color.Transparent,
-//        ),
+        colors = TopAppBarDefaults.topAppBarColors().copy(
+            containerColor = Color.Transparent,
+        ),
         scrollBehavior = scrollBehavior,
         actions = {
             TextButton(
