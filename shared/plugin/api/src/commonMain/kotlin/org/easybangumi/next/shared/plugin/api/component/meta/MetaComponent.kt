@@ -15,6 +15,7 @@ import org.easybangumi.next.shared.plugin.api.component.Component
  */
 interface MetaComponent <T: MetaManager>: Component {
 
+    // 业务可能多次调用，这里需要自己做懒加载
     fun getMateManager(): T
 
 }

@@ -1,6 +1,7 @@
 package org.easybangumi.next.shared.foundation.image
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.annotation.InternalCoilApi
@@ -22,23 +23,25 @@ import okio.source
 
 @Composable
 actual fun createImageLoader(): ImageLoader {
-    return ImageLoader.Builder(PlatformContext.INSTANCE).apply {
-        diskCachePolicy(CachePolicy.ENABLED)
-        memoryCachePolicy(CachePolicy.ENABLED)
-        memoryCache {
-            MemoryCache.Builder().apply {
-                maxSizeBytes(10 * 1024 * 1024)
-            }.build()
-        }
-        networkCachePolicy(CachePolicy.ENABLED)
-        components {
-            add(MokoAssetResourceFetcher.AssetFactory())
-            add(MokoImageResourceFetcher.ImageFactory())
-            add(KtorNetworkFetcherFactory())
-            add(SvgDecoder.Factory())
+    return remember {
+        ImageLoader.Builder(PlatformContext.INSTANCE).apply {
+            diskCachePolicy(CachePolicy.ENABLED)
+            memoryCachePolicy(CachePolicy.ENABLED)
+            memoryCache {
+                MemoryCache.Builder().apply {
+                    maxSizeBytes(10 * 1024 * 1024)
+                }.build()
+            }
+            networkCachePolicy(CachePolicy.ENABLED)
+            components {
+                add(MokoAssetResourceFetcher.AssetFactory())
+                add(MokoImageResourceFetcher.ImageFactory())
+                add(KtorNetworkFetcherFactory())
+                add(SvgDecoder.Factory())
 
-        }
-    }.build()
+            }
+        }.build()
+    }
 }
 
 private class MokoAssetResourceFetcher(

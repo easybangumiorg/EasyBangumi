@@ -1,6 +1,7 @@
 package org.easybangumi.next.shared.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import org.easybangumi.next.isAndroid
 import org.easybangumi.next.isIos
 import org.easybangumi.next.platformInformation
@@ -43,17 +44,20 @@ object UI {
     fun isTabletMode(): Boolean {
         val tabletPref = koinInject<MainPreference>().tabletMode
         val tableMode = tabletPref.collectAsState()
-        return when(val mode = tableMode.value) {
-            MainPreference.TabletMode.AUTO -> {
-                isTabletModeWhenAuto()
-            }
+        val isTabletModeWhenAuto = isTabletModeWhenAuto()
+        return remember(isTabletModeWhenAuto, tableMode.value) {
+            when(val mode = tableMode.value) {
+                MainPreference.TabletMode.AUTO -> {
+                    isTabletModeWhenAuto
+                }
 
-            MainPreference.TabletMode.ENABLE -> {
-                true
-            }
+                MainPreference.TabletMode.ENABLE -> {
+                    true
+                }
 
-            MainPreference.TabletMode.DISABLE -> {
-                false
+                MainPreference.TabletMode.DISABLE -> {
+                    false
+                }
             }
         }
     }

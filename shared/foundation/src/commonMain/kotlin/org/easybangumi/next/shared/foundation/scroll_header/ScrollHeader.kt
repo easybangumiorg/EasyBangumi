@@ -63,18 +63,16 @@ fun <SCOPE : ScrollHeaderScope> ScrollableHeaderScaffold(
 fun rememberScrollableHeaderState(
     initialHeightOffsetLimit: Float = -Float.MAX_VALUE,
     initialHeightOffset: Float = 0f,
-    initialContentOffset: Float = 0f,
 ): ScrollableHeaderState {
     return rememberSaveable(saver = ScrollableHeaderState.Saver) {
-        ScrollableHeaderState(initialHeightOffsetLimit, initialHeightOffset, initialContentOffset)
+        ScrollableHeaderState(initialHeightOffsetLimit, initialHeightOffset)
     }
 }
 
 @Stable
 class ScrollableHeaderState(
-    initialOffsetLimit: Float,
-    initialOffset: Float,
-    initialContentScrollOffset: Float,
+    initialOffsetLimit: Float = -Float.MAX_VALUE,
+    initialOffset: Float = 0f,
 ) {
 
     var offsetLimit by mutableFloatStateOf(initialOffsetLimit)
@@ -88,8 +86,6 @@ class ScrollableHeaderState(
         }
 
 
-    var contentScrollOffset by mutableFloatStateOf(initialContentScrollOffset)
-
     val collapsedFraction: Float
         get() =
             if (offsetLimit != 0f) {
@@ -102,12 +98,11 @@ class ScrollableHeaderState(
         /** The default [Saver] implementation for [TopAppBarState]. */
         val Saver: Saver<ScrollableHeaderState, *> =
             listSaver(
-                save = { listOf(it.offsetLimit, it.offset, it.contentScrollOffset) },
+                save = { listOf(it.offsetLimit, it.offset) },
                 restore = {
                     ScrollableHeaderState(
                         initialOffsetLimit = it[0],
                         initialOffset = it[1],
-                        initialContentScrollOffset = it[2],
                     )
                 }
             )

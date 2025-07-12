@@ -49,6 +49,16 @@ compose.desktop {
             isEnabled.set(false)
         }
 
+
+        jvmArgs.addAll(
+            listOf(
+//                "-Dsun.java2d.uiScale=1.0",
+                "-Dawt.useSystemAAFontSettings=lcd",
+                "-Dswing.aatext=true",
+                "-Dsun.java2d.metal=true",
+            )
+        )
+
         nativeDistributions {
             appResourcesRootDir.set(project.layout.projectDirectory.dir("../assets"))
 

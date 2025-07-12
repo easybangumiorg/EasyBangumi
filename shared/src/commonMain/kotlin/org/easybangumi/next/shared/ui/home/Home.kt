@@ -1,5 +1,6 @@
 package org.easybangumi.next.shared.ui.home
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,12 +11,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationRail
@@ -25,12 +29,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.layout
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import dev.icerock.moko.resources.compose.stringResource
 import kotlinx.coroutines.launch
 import org.easybangumi.next.platformInformation
 import org.easybangumi.next.shared.LocalNavController
 import org.easybangumi.next.shared.RouterPage
+import org.easybangumi.next.shared.foundation.stringRes
 import org.easybangumi.next.shared.resources.Res
 import org.easybangumi.next.shared.ui.UI
 import org.easybangumi.next.shared.ui.home.history.History
@@ -57,9 +64,9 @@ sealed class HomePage(
     val content: @Composable (() -> Unit),
 ) {
     data object DiscoverPage : HomePage(
-        route = "home",
+        route = "discover",
         tabLabel = {
-            Text(text = stringResource(Res.strings.home))
+            Text(text = stringResource(Res.strings.discover))
         },
         icon = {
             Icon(
@@ -126,7 +133,7 @@ val HomePageList = listOf(
 )
 
 @Composable
-fun Main() {
+fun Home() {
 
     val navController = LocalNavController.current
     val pagerState = rememberPagerState(0) { HomePageList.size }
@@ -135,9 +142,22 @@ fun Main() {
         modifier = Modifier.fillMaxSize()
     ) {
         if (UI.isTabletMode()) {
-            Row {
+            Row(
+                modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+            ) {
                 NavigationRail(
-                    modifier = Modifier.fillMaxHeight()
+                    modifier = Modifier.fillMaxHeight(),
+                    contentColor = Color.Transparent,
+                    header = {
+                        IconButton(onClick = {
+
+                        }) {
+                            Icon(
+                                Icons.Default.Search,
+                                contentDescription = stringRes(Res.strings.search)
+                            )
+                        }
+                    }
                 ) {
                     HomePageList.forEachIndexed { index, page ->
                         val selected = pagerState.currentPage == index
@@ -158,7 +178,7 @@ fun Main() {
                     }
                 }
                 VerticalPager(
-                    modifier = Modifier.fillMaxHeight().weight(1f),
+                    modifier = Modifier.fillMaxHeight().weight(1f).clip(RoundedCornerShape(16.dp)),
                     state = pagerState,
                     userScrollEnabled = false
                 ) {

@@ -9,6 +9,7 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -19,9 +20,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.icerock.moko.resources.compose.painterResource
+import io.ktor.client.request.invoke
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.data.cartoon.CartoonInfo
 import org.easybangumi.next.shared.foundation.image.AsyncImage
@@ -118,17 +122,20 @@ fun CartoonCoverCard(
     onClick: () -> Unit,
     onLongPress: (() -> Unit)? = null,
 ) {
+
+    val size = remember(
+        itemIsWidth, itemSize
+    ) {
+        if (itemIsWidth) {
+            DpSize(itemSize, itemSize / coverAspectRatio)
+        } else {
+            DpSize(itemSize * coverAspectRatio, itemSize)
+        }
+    }
+
     Box(
         modifier = modifier
-            .run {
-                if (itemIsWidth) {
-                    width(itemSize)
-                        .height(itemSize / coverAspectRatio)
-                } else {
-                    height(itemSize)
-                        .width(itemSize * coverAspectRatio)
-                }
-            }
+            .size(size)
 //            .aspectRatio(coverAspectRatio)
             .clip(RoundedCornerShape(16.dp))
             .combinedClickable(
@@ -158,13 +165,13 @@ fun CartoonCoverCard(
 
         if (name != null) {
             Box(
-                modifier.fillMaxSize().background(
+                Modifier.fillMaxWidth().height(size.height/2f).align(Alignment.BottomCenter).background(
                     brush = Brush.linearGradient(
                         listOf(
                             Color.Transparent,
-                            Color.Black.copy(alpha = 0.2f)
+                            Color.Black.copy(alpha = 0.8f)
                         ),
-//                        end = Offset(0f, Float.MAX_VALUE)
+                        end = Offset.Infinite.copy(0f)
                     )
                 ),
                 contentAlignment = Alignment.BottomCenter
