@@ -276,7 +276,7 @@ data class ShimmerConfig(
     //骨架屏动画方向
     val direction: ShimmerDirection = ShimmerDirection.LeftToRight,
     //动画旋转角度
-    val angle: Float = 20f,
+    val angle: Float = 45f,
     //动画时长
     val duration: Float = 1000f,
     //两次动画间隔

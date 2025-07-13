@@ -7,14 +7,15 @@ import io.ktor.client.request.get
 import io.ktor.http.URLBuilder
 import io.ktor.http.path
 import kotlinx.coroutines.Deferred
+import org.easybangumi.next.shared.source.bangumi.BangumiConfig
 import org.easybangumi.next.shared.source.bangumi.model.BgmRsp
-import org.easybangumi.next.shared.source.bangumi.model.CalendarItem
-import org.easybangumi.next.shared.source.bangumi.model.Character
-import org.easybangumi.next.shared.source.bangumi.model.EpisodeRsp
-import org.easybangumi.next.shared.source.bangumi.model.Person
-import org.easybangumi.next.shared.source.bangumi.model.Reviews
-import org.easybangumi.next.shared.source.bangumi.model.Subject
-import org.easybangumi.next.shared.source.bangumi.model.TrendsSubject
+import org.easybangumi.next.shared.source.bangumi.model.BgmCalendarItem
+import org.easybangumi.next.shared.source.bangumi.model.BgmCharacter
+import org.easybangumi.next.shared.source.bangumi.model.BgmEpisodeRsp
+import org.easybangumi.next.shared.source.bangumi.model.BgmPerson
+import org.easybangumi.next.shared.source.bangumi.model.BgmReviews
+import org.easybangumi.next.shared.source.bangumi.model.BgmSubject
+import org.easybangumi.next.shared.source.bangumi.model.BgmTrendsSubject
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -55,7 +56,7 @@ class BangumiApiImpl(
     }
 
     // get subjects/{subjectId}
-    override fun getSubject(subjectId: String): Deferred<BgmRsp<Subject>> {
+    override fun getSubject(subjectId: String): Deferred<BgmRsp<BgmSubject>> {
         return caller.request {
             get {
                 bgmUrl {
@@ -66,7 +67,7 @@ class BangumiApiImpl(
     }
 
     // get calendar
-    override fun calendar(): Deferred<BgmRsp<List<CalendarItem>>> {
+    override fun calendar(): Deferred<BgmRsp<List<BgmCalendarItem>>> {
         return caller.request {
             get {
                 bgmUrl {
@@ -80,7 +81,7 @@ class BangumiApiImpl(
         subjectId: String,
         offset: Int,
         limit: Int
-    ): Deferred<BgmRsp<EpisodeRsp>> {
+    ): Deferred<BgmRsp<BgmEpisodeRsp>> {
         return caller.request {
             get {
                 bgmUrl {
@@ -93,7 +94,7 @@ class BangumiApiImpl(
         }
     }
 
-    override fun getPersonList(subjectId: String): Deferred<BgmRsp<List<Person>>> {
+    override fun getPersonList(subjectId: String): Deferred<BgmRsp<List<BgmPerson>>> {
         return caller.request {
             get {
                 bgmUrl {
@@ -104,7 +105,7 @@ class BangumiApiImpl(
         }
     }
 
-    override fun getCharacterList(subjectId: String): Deferred<BgmRsp<List<Character>>> {
+    override fun getCharacterList(subjectId: String): Deferred<BgmRsp<List<BgmCharacter>>> {
         return caller.request {
             get {
                 bgmUrl {
@@ -115,7 +116,7 @@ class BangumiApiImpl(
         }
     }
 
-    override fun getTrends(page: Int, from: BangumiApi.TrendsFrom): Deferred<BgmRsp<List<TrendsSubject>>> {
+    override fun getTrends(page: Int, from: BangumiApi.TrendsFrom): Deferred<BgmRsp<List<BgmTrendsSubject>>> {
         return caller.request {
             get {
                 proxyUrl {
@@ -127,7 +128,7 @@ class BangumiApiImpl(
         }
     }
 
-    override fun getBanners(): Deferred<BgmRsp<List<TrendsSubject>>> {
+    override fun getBanners(): Deferred<BgmRsp<List<BgmTrendsSubject>>> {
         return caller.request {
             get {
                 proxyUrl {
@@ -140,7 +141,7 @@ class BangumiApiImpl(
     override fun getComments(
         subjectId: String,
         page: Int
-    ): Deferred<BgmRsp<List<Reviews>>> {
+    ): Deferred<BgmRsp<List<BgmReviews>>> {
         return caller.request {
             get {
                 proxyUrl {

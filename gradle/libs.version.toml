@@ -69,6 +69,8 @@ ksoup = "0.2.4"
 constraintlayout = "2.2.1"
 constraintlayout-compose = "1.0.1"
 
+kache = "2.1.1"
+
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidx-core-ktx" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidx-appcompat" }
@@ -171,6 +173,9 @@ media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", versi
 media3-exoplayer-hls = { group = "androidx.media3", name = "media3-exoplayer-hls", version.ref = "media3" }
 
 ksoup = { group = "com.fleeksoft.ksoup", name = "ksoup", version.ref = "ksoup" }
+
+kache = { group = "com.mayakapps.kache", name = "kache", version.ref = "kache" }
+kache-file = { group = "com.mayakapps.kache", name = "file-kache", version.ref = "kache" }
 
 [plugins]
 kotlinxSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin-serialization-plugin" }

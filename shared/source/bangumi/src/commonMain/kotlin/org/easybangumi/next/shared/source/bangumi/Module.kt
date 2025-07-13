@@ -17,10 +17,17 @@ import org.koin.dsl.module
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-
-internal val bangumiModule = module {
+val bangumiModule = module {
     single {
-        BangumiBusiness(get())
+        BangumiConfig()
+    }
+}
+internal val bangumiSourceModule = module {
+    single {
+        BangumiConfig()
+    }
+    single {
+        BangumiBusiness(get(), get())
     }
     single {
         get<BangumiBusiness>().api

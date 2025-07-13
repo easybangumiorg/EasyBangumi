@@ -1,4 +1,4 @@
-package org.easybangumi.next.shared.data.room
+package org.easybangumi.next.shared.data.room.cartoon
 
 import androidx.room.Room
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
@@ -7,6 +7,7 @@ import org.easybangumi.next.lib.unifile.fromUFD
 import org.easybangumi.next.lib.utils.coroutineProvider
 import org.easybangumi.next.lib.utils.global
 import org.easybangumi.next.lib.utils.pathProvider
+import org.easybangumi.next.shared.data.room.Migrate
 
 
 actual fun makeCartoonDatabase(): CartoonDatabase {

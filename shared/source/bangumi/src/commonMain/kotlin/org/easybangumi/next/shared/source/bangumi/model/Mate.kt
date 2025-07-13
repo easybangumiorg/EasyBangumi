@@ -15,15 +15,15 @@ import kotlinx.serialization.Serializable
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 @Serializable
-data class EpisodeRsp(
-    @SerialName("data") val data: List<Episode> = emptyList(),
+data class BgmEpisodeRsp(
+    @SerialName("data") val data: List<BgmEpisode> = emptyList(),
     @SerialName("total") val total: Long? = null,
     @SerialName("limit") val limit: Long? = null,
     @SerialName("offset") val offset: Long? = null
 )
 
 @Serializable
-data class Episode (
+data class BgmEpisode (
     @SerialName("airdate") val airdate: String? = null,
     @SerialName("name") val name: String? = null,
     @SerialName("name_cn") val nameCN: String? = null,
@@ -40,8 +40,8 @@ data class Episode (
 )
 
 @Serializable
-data class Person (
-    @SerialName("images") val images: Images? = Images(),
+data class BgmPerson (
+    @SerialName("images") val images: BgmImages? = BgmImages(),
     @SerialName("name") val name: String? = null,
     @SerialName("relation") val relation: String? = null,
     @SerialName("career") val career: List<String> = listOf<String>(),
@@ -51,18 +51,18 @@ data class Person (
 )
 
 @Serializable
-data class Character (
-    @SerialName("images") val images: Images? = Images(),
+data class BgmCharacter (
+    @SerialName("images") val images: BgmImages? = BgmImages(),
     @SerialName("name")  val name: String? = null,
     @SerialName("relation") val relation: String? = null,
-    @SerialName("actors") val actors: List<Actor> = emptyList<Actor>(),
+    @SerialName("actors") val actors: List<BgmActor> = emptyList<BgmActor>(),
     @SerialName("type") val type: Long? = null,
     @SerialName("id") val id: Long? = null,
 )
 
 @Serializable
-data class Actor (
-    @SerialName("images") val images: Images? = Images(),
+data class BgmActor (
+    @SerialName("images") val images: BgmImages? = BgmImages(),
     @SerialName("name") val name: String? = null,
     @SerialName("short_summary") val shortSummary: String? = null,
     @SerialName("career") val career: List<String> = emptyList<String>(),

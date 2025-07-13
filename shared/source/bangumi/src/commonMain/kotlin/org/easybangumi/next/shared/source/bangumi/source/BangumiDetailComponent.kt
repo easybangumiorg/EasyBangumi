@@ -1,5 +1,6 @@
-﻿package org.easybangumi.next.shared.source.bangumi.component
+﻿package org.easybangumi.next.shared.source.bangumi.source
 
+import org.easybangumi.next.lib.utils.DataRepository
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.EasyPagingSource
 import org.easybangumi.next.lib.utils.PagingFrame
@@ -7,14 +8,17 @@ import org.easybangumi.next.lib.utils.map
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.source.api.component.BaseComponent
 import org.easybangumi.next.shared.source.api.component.detail.DetailComponent
+import org.easybangumi.next.shared.source.bangumi.BangumiConfig
 import org.easybangumi.next.shared.source.bangumi.business.BangumiApi
-import org.easybangumi.next.shared.source.bangumi.model.Character
-import org.easybangumi.next.shared.source.bangumi.model.Episode
-import org.easybangumi.next.shared.source.bangumi.model.Person
-import org.easybangumi.next.shared.source.bangumi.model.Reviews
-import org.easybangumi.next.shared.source.bangumi.model.Subject
+import org.easybangumi.next.shared.source.bangumi.model.BgmCharacter
+import org.easybangumi.next.shared.source.bangumi.model.BgmEpisode
+import org.easybangumi.next.shared.source.bangumi.model.BgmPerson
+import org.easybangumi.next.shared.source.bangumi.model.BgmReviews
+import org.easybangumi.next.shared.source.bangumi.model.BgmSubject
+import org.easybangumi.next.shared.source.bangumi.source.repository.BangumiCharacterRepository
+import org.easybangumi.next.shared.source.bangumi.source.repository.BangumiPersonRepository
+import org.easybangumi.next.shared.source.bangumi.source.repository.BangumiSubjectRepository
 import org.koin.core.component.inject
-import kotlin.Pair
 import kotlin.getValue
 
 /**
@@ -31,39 +35,45 @@ import kotlin.getValue
 
 class BangumiDetailComponent: DetailComponent, BaseComponent() {
 
-
+    private val config: BangumiConfig by inject()
     private val api: BangumiApi by inject()
 
-
-    suspend fun getSubject(
+    fun createSubjectRepository(
         cartoonIndex: CartoonIndex,
-    ): DataState<Subject> {
+    ): DataRepository<BgmSubject> {
         checkCartoonIndex(cartoonIndex)
-        return api.getSubject(cartoonIndex.id).await().toDataState()
+        return BangumiSubjectRepository(
+            cartoonIndex.id, api, config, source.scope
+        )
     }
 
-    suspend fun getCharacter(
+    fun createCharacterRepository(
         cartoonIndex: CartoonIndex,
-    ): DataState<List<Character>> {
+    ): DataRepository<List<BgmCharacter>> {
         checkCartoonIndex(cartoonIndex)
-        return api.getCharacterList(cartoonIndex.id).await().toDataState()
+        return BangumiCharacterRepository(
+            cartoonIndex.id, api, config, source.scope
+        )
     }
 
-    suspend fun getPerson(
+    fun createPersonRepository(
         cartoonIndex: CartoonIndex,
-    ): DataState<List<Person>> {
+    ): DataRepository<List<BgmPerson>> {
         checkCartoonIndex(cartoonIndex)
-        return api.getPersonList(cartoonIndex.id).await().toDataState()
+        return BangumiPersonRepository(
+            cartoonIndex.id, api, config, source.scope
+        )
     }
+
 
 
     class EpisodeListPagingSource(
         private val bangumiApi: BangumiApi,
         private val cartoonIndex: CartoonIndex,
-    ) : EasyPagingSource<Episode> {
+    ) : EasyPagingSource<BgmEpisode> {
         override val initKey: String = "1"
 
-        override suspend fun load(key: String): DataState<PagingFrame<Episode>> {
+        override suspend fun load(key: String): DataState<PagingFrame<BgmEpisode>> {
             val page = key.toIntOrNull() ?: 1
             val rsp = bangumiApi.getEpisodeList(cartoonIndex.id, (page-1)*100, 100).await()
             return rsp.toDataState().map {
@@ -83,10 +93,10 @@ class BangumiDetailComponent: DetailComponent, BaseComponent() {
     class CommentListPagingSource(
         private val bangumiApi: BangumiApi,
         private val cartoonIndex: CartoonIndex,
-    ) : EasyPagingSource<Reviews> {
+    ) : EasyPagingSource<BgmReviews> {
         override val initKey: String = "1"
 
-        override suspend fun load(key: String): DataState<PagingFrame<Reviews>> {
+        override suspend fun load(key: String): DataState<PagingFrame<BgmReviews>> {
             val page = key.toIntOrNull() ?: 1
             val rsp = bangumiApi.getComments(cartoonIndex.id, page).await()
             return rsp.toDataState().map {

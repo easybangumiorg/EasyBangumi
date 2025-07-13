@@ -30,18 +30,18 @@ import kotlinx.serialization.json.jsonPrimitive
  */
 
 @Serializable
-data class Subject(
+data class BgmSubject(
     @SerialName("date") val date: String? = null,
     @SerialName("platform") val platform: String? = null,
-    @SerialName("images") val images: Images? = Images(),
+    @SerialName("images") val images: BgmImages? = BgmImages(),
     @SerialName("summary") val summary: String? = null,
     @SerialName("name") val name: String? = null,
     @SerialName("name_cn") val nameCn: String? = null,
-    @SerialName("tags") val tags: List<Tags> = listOf(),
-    @SerialName("infobox") val infobox: List<Infobox> = listOf(),
-    @SerialName("rating") val rating: Rating? = Rating(),
+    @SerialName("tags") val tags: List<BgmTags> = listOf(),
+    @SerialName("infobox") val infobox: List<BgmInfobox> = listOf(),
+    @SerialName("rating") val rating: BgmRating? = BgmRating(),
     @SerialName("total_episodes") val totalEpisodes: Int? = null,
-    @SerialName("collection") val collection: Collection? = Collection(),
+    @SerialName("collection") val collection: BgmCollection? = BgmCollection(),
     @SerialName("id") val id: Int? = null,
     @SerialName("eps") val eps: Int? = null,
     @SerialName("meta_tags") val metaTags: List<String> = listOf(),
@@ -51,13 +51,21 @@ data class Subject(
     @SerialName("nsfw") val nsfw: Boolean? = null,
     @SerialName("type") val type: Int? = null
 ) {
-    val displayAirDate: String? by lazy {
-        date?.replaceFirst("-", "年")?.replaceFirst("-", "月")
+
+    val displayEpisode: String? by lazy {
+        totalEpisodes ?: return@lazy null
+        eps ?: return@lazy null
+        if (totalEpisodes == eps) {
+            "已完结 · 全 $totalEpisodes 话"
+        } else {
+            "更新至 ${eps} · 全 $totalEpisodes 话"
+        }
     }
+
 }
 
 @Serializable
-data class Collection(
+data class BgmCollection(
     @SerialName("on_hold") val onHold: Int? = null,
     @SerialName("dropped") val dropped: Int? = null,
     @SerialName("wish") val wish: Int? = null,
@@ -66,7 +74,7 @@ data class Collection(
 )
 
 @Serializable
-data class Count(
+data class BgmCount(
     @SerialName("1") val i: Int? = null,
     @SerialName("2") val ii: Int? = null,
     @SerialName("3") val iii: Int? = null,
@@ -81,7 +89,7 @@ data class Count(
 
 
 @Serializable
-data class Images(
+data class BgmImages(
     @SerialName("small") val small: String? = null,
     @SerialName("grid") val grid: String? = null,
     @SerialName("large") val large: String? = null,
@@ -90,20 +98,20 @@ data class Images(
 )
 
 @Serializable
-data class Infobox(
+data class BgmInfobox(
     @SerialName("key")
     val key: String? = null,
     @SerialName("value")
-    @Serializable(with = InfoBoxValue.InfoBoxValueSerializer::class)
-    val value: InfoBoxValue? = null
+    @Serializable(with = BgmInfoBoxValue.InfoBoxValueSerializer::class)
+    val value: BgmInfoBoxValue? = null
 )
 
-sealed class InfoBoxValue {
-    data class Str(val value: String) : InfoBoxValue()
-    data class ListMap(val value: List<Map<String, String>>) : InfoBoxValue()
-    object InfoBoxValueSerializer : KSerializer<InfoBoxValue?> {
+sealed class BgmInfoBoxValue {
+    data class Str(val value: String) : BgmInfoBoxValue()
+    data class ListMap(val value: List<Map<String, String>>) : BgmInfoBoxValue()
+    object InfoBoxValueSerializer : KSerializer<BgmInfoBoxValue?> {
         override val descriptor: SerialDescriptor = buildClassSerialDescriptor("InfoBoxValue")
-        override fun serialize(encoder: Encoder, value: InfoBoxValue?) {
+        override fun serialize(encoder: Encoder, value: BgmInfoBoxValue?) {
             require(encoder is JsonEncoder)
             when (value) {
                 is Str -> encoder.encodeString(value.value)
@@ -116,12 +124,12 @@ sealed class InfoBoxValue {
             }
         }
 
-        override fun deserialize(decoder: Decoder): InfoBoxValue? {
+        override fun deserialize(decoder: Decoder): BgmInfoBoxValue? {
             require(decoder is JsonDecoder)
             val element = decoder.decodeJsonElement()
             return when (element) {
-                is JsonPrimitive -> InfoBoxValue.Str(element.content)
-                is JsonArray -> InfoBoxValue.ListMap(
+                is JsonPrimitive -> BgmInfoBoxValue.Str(element.content)
+                is JsonArray -> BgmInfoBoxValue.ListMap(
                     element.mapIndexed { index, jsonElement ->
                         (jsonElement as? JsonObject)?.mapValues { it.value.jsonPrimitive.content }
                     }.filterNotNull()
@@ -134,15 +142,15 @@ sealed class InfoBoxValue {
 }
 
 @Serializable
-data class Rating(
+data class BgmRating(
     @SerialName("rank") val rank: Int? = null,
     @SerialName("total") val total: Int? = null,
-    @SerialName("count") val count: Count? = Count(),
+    @SerialName("count") val count: BgmCount? = BgmCount(),
     @SerialName("score") val score: Double? = null
 )
 
 @Serializable
-data class Tags(
+data class BgmTags(
     @SerialName("name") val name: String? = null,
     @SerialName("count") val count: Int? = null,
     @SerialName("total_cont") val totalCont: Int? = null

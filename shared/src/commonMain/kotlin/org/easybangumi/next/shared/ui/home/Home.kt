@@ -147,7 +147,7 @@ fun Home() {
             ) {
                 NavigationRail(
                     modifier = Modifier.fillMaxHeight(),
-                    contentColor = Color.Transparent,
+//                    contentColor = Color.Transparent,
                     header = {
                         IconButton(onClick = {
 

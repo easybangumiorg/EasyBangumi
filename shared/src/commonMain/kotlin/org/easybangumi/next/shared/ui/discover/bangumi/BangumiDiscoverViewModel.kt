@@ -42,11 +42,8 @@ class BangumiDiscoverViewModel: StateViewModel<BangumiDiscoverViewModel.State>(S
         val bannerData: DataState<List<CartoonCover>> = DataState.loading(),
         // Recommend
         val tabList: DataState<List<RecommendTabState>> = DataState.loading(),
-        val currentIndex: Int = 0,
     ) {
-        val currentTab: RecommendTabState? by lazy {
-            tabList.okOrNull()?.getOrNull(currentIndex)
-        }
+
     }
 
     private val discoverSourceCase: DiscoverSourceCase by inject()
@@ -60,9 +57,6 @@ class BangumiDiscoverViewModel: StateViewModel<BangumiDiscoverViewModel.State>(S
 
     }
 
-    fun changeCurrentIndex(index: Int) {
-        update { it.copy(currentIndex = index) }
-    }
 
 
     private suspend fun loadBanner() {
@@ -75,7 +69,7 @@ class BangumiDiscoverViewModel: StateViewModel<BangumiDiscoverViewModel.State>(S
 
     private suspend fun loadRecommendTabs() {
         update { it.copy(tabList = DataState.loading()) }
-        val from =  discoverSourceCase.getBangumiDiscoverBusiness().runDirect {
+        val from =  discoverSourceCase.getBangumiDiscoverBusiness().runSuspendDirect {
             BangumiApi.TrendsFrom.entries.map {
                 it to createTrendsPagingSource(it)
             }
@@ -89,7 +83,6 @@ class BangumiDiscoverViewModel: StateViewModel<BangumiDiscoverViewModel.State>(S
         update {
             it.copy(
                 tabList = DataState.ok(from),
-                currentIndex = if (from.isEmpty()) 0 else it.currentIndex.coerceIn(from.indices),
             )
         }
     }

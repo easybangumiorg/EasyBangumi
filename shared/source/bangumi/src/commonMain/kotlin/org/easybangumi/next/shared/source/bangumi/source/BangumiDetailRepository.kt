@@ -1,6 +1,4 @@
-﻿package org.easybangumi.next.shared.data.room
-
-import androidx.room.migration.Migration
+﻿package org.easybangumi.next.shared.source.bangumi.source
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -14,14 +12,10 @@ import androidx.room.migration.Migration
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
+class BangumiDetailRepository {
 
-object Migrate {
+ init {
 
-
-    // Room Migrates
-    val cartoonDatabaseMigration = listOf<Migration>(
-
-    )
-
+ }
 
 }

@@ -22,6 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import org.easybangumi.next.shared.LocalNavController
+import org.easybangumi.next.shared.RouterPage
 import org.easybangumi.next.shared.foundation.scroll_header.DiscoverScrollHeaderBehavior
 import org.easybangumi.next.shared.foundation.scroll_header.ScrollableHeaderBehavior
 import org.easybangumi.next.shared.foundation.scroll_header.ScrollableHeaderState
@@ -48,6 +50,7 @@ fun HomeDiscover() {
     val vm = vm(::BangumiDiscoverViewModel)
 //    val behavior = TopAppBarDefaults.pinnedScrollBehavior()
 
+    val nav = LocalNavController.current
     val scrollableHeaderState: ScrollableHeaderState = rememberScrollableHeaderState()
     val scrollHeaderBehavior: DiscoverScrollHeaderBehavior = ScrollableHeaderBehavior.discoverScrollHeaderBehavior(
         state = scrollableHeaderState
@@ -65,12 +68,12 @@ fun HomeDiscover() {
 
     val topAppBarBackgroundColor by animateColorAsState(
         targetValue = if (scrollableHeaderState.offset != 0f)
-            MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.surfaceContainerLowest,
+            MaterialTheme.colorScheme.surfaceContainer else MaterialTheme.colorScheme.surfaceContainerLowest,
         label = "background color")
 
     val backgroundColor by animateColorAsState(
         targetValue = if (isHeaderPinned)
-            MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.surfaceContainerLowest,
+            MaterialTheme.colorScheme.surfaceContainer else MaterialTheme.colorScheme.surfaceContainerLowest,
         label = "background color")
     Column(
         modifier = Modifier.fillMaxSize()
@@ -91,7 +94,10 @@ fun HomeDiscover() {
             headerContainerColor = backgroundColor,
             pinHeaderContainerColor = backgroundColor,
             contentContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-            onCoverClick = {},
+            onCoverClick = {
+                val page = RouterPage.Detail.fromCartoonIndex(it.toCartoonIndex())
+                nav.navigate(page)
+            },
             onTimelineClick = {}
         )
     }

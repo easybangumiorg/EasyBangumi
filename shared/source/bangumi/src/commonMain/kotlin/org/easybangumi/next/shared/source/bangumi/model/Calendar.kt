@@ -16,13 +16,13 @@ import kotlinx.serialization.Serializable
  */
 
 @Serializable
-data class CalendarItem(
-    @SerialName("weekday") var weekday: Weekday? = Weekday(),
-    @SerialName("items") var items: ArrayList<CalendarSubject> = arrayListOf()
+data class BgmCalendarItem(
+    @SerialName("weekday") var weekday: BgmWeekday? = BgmWeekday(),
+    @SerialName("items") var items: ArrayList<BgmCalendarSubject> = arrayListOf()
 )
 
 @Serializable
-data class CalendarSubject(
+data class BgmCalendarSubject(
     @SerialName("id") var id: Int? = null,
     @SerialName("url") var url: String? = null,
     @SerialName("type") var type: Int? = null,
@@ -31,14 +31,14 @@ data class CalendarSubject(
     @SerialName("summary") var summary: String? = null,
     @SerialName("air_date") var airDate: String? = null,
     @SerialName("air_weekday") var airWeekday: Int? = null,
-    @SerialName("rating") var rating: Rating? = Rating(),
+    @SerialName("rating") var rating: BgmRating? = BgmRating(),
     @SerialName("rank") var rank: Int? = null,
-    @SerialName("images") var images: Images? = Images(),
-    @SerialName("collection") var collection: Collection? = Collection()
+    @SerialName("images") var images: BgmImages? = BgmImages(),
+    @SerialName("collection") var bgmCollection: BgmCollection? = BgmCollection()
 )
 
 @Serializable
-data class Weekday(
+data class BgmWeekday(
     @SerialName("en") var en: String? = null,
     @SerialName("cn") var cn: String? = null,
     @SerialName("ja") var ja: String? = null,

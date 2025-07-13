@@ -6,7 +6,7 @@ import io.ktor.client.statement.request
 import io.ktor.util.AttributeKey
 import io.ktor.util.reflect.TypeInfo
 import io.ktor.utils.io.ByteReadChannel
-import org.easybangumi.next.shared.source.bangumi.business.BangumiConfig
+import org.easybangumi.next.shared.source.bangumi.BangumiConfig
 import org.easybangumi.next.lib.logger.logger
 
 /**

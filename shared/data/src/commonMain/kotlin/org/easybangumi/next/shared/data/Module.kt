@@ -1,7 +1,7 @@
 package org.easybangumi.next.shared.data
 
-import org.easybangumi.next.shared.data.room.CartoonDatabase
-import org.easybangumi.next.shared.data.room.makeCartoonDatabase
+import org.easybangumi.next.shared.data.room.cartoon.CartoonDatabase
+import org.easybangumi.next.shared.data.room.cartoon.makeCartoonDatabase
 import org.koin.dsl.module
 
 /**

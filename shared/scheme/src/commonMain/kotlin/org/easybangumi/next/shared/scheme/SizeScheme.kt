@@ -1,6 +1,7 @@
 package org.easybangumi.next.shared.scheme
 
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -16,7 +17,9 @@ import androidx.compose.ui.unit.dp
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-internal val LocalSizeScheme = staticCompositionLocalOf { SizeScheme() }
+val LocalSizeScheme  = compositionLocalOf<SizeScheme> {
+    throw IllegalStateException("SizeScheme Not Provide")
+}
 
 
 
@@ -30,7 +33,10 @@ internal val LocalSizeScheme = staticCompositionLocalOf { SizeScheme() }
 @Immutable
 data class SizeScheme (
     val cartoonCoverWidth: Dp = 154.dp,
-    val cartoonCoverAspectRatio: Float = 7f/9f
+    val cartoonCoverAspectRatio: Float = 7f/9f,
+    val topAppBarHeight: Dp = 64.dp,
+    val tabWidth: Dp = 88.dp,
+    val statusBarHeight: Dp,
 ) {
     val cartoonCoverHeight: Dp by lazy {
         cartoonCoverWidth / cartoonCoverAspectRatio

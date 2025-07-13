@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerScope
 import androidx.compose.foundation.pager.PagerState
@@ -16,6 +17,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabPosition
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.Composable
@@ -26,8 +28,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import org.easybangumi.next.shared.scheme.EasyScheme
 
 
 @Composable
@@ -37,10 +41,11 @@ fun EasyTab(
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
     size: Int,
     selection: Int,
+    tabWidth: Dp = EasyScheme.size.tabWidth,
     onSelected: (Int) -> Unit,
     tabs: @Composable (Int, Boolean) -> Unit,
 ) {
-    ScrollableTabRow(
+    TabRow(
         modifier = modifier,
         containerColor = containerColor,
         contentColor = contentColor,
@@ -50,11 +55,13 @@ fun EasyTab(
                 TabIndicator(currentTabPosition = it[selection])
             }
         },
-        edgePadding = 0.dp,
+//        edgePadding = 0.dp,
         divider = {}
     ) {
         repeat(size) {
-            Tab(selected = selection == it, onClick = {
+            Tab(
+                modifier = Modifier.widthIn(tabWidth),
+                selected = selection == it, onClick = {
                 onSelected(it)
             }, text = {
                 tabs(it, selection == it)

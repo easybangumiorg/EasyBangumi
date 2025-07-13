@@ -46,7 +46,11 @@ class ComponentBusiness <T: Component> (
         }.await()
     }
 
-    suspend fun <R> runDirect( block:suspend T.() -> R): R {
+    suspend fun <R> runSuspendDirect(block:suspend T.() -> R): R {
+        return innerComponent.block()
+    }
+
+    fun <R> runDirect( block: T.() -> R): R {
         return innerComponent.block()
     }
 }

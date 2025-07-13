@@ -18,10 +18,10 @@ import org.easybangumi.next.lib.utils.coroutineProvider
 import org.easybangumi.next.platformInformation
 import org.easybangumi.next.shared.ktor.KtorConfig
 import org.easybangumi.next.shared.ktor.KtorFactory
+import org.easybangumi.next.shared.source.bangumi.BangumiConfig
 import org.easybangumi.next.shared.source.bangumi.business.embed.BangumiEmbedProxy
 import org.easybangumi.next.shared.source.bangumi.model.BgmNetException
 import org.easybangumi.next.shared.source.bangumi.model.BgmRsp
-import org.easybangumi.next.shared.source.bangumi.model.InfoBoxValue
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.KTypeProjection

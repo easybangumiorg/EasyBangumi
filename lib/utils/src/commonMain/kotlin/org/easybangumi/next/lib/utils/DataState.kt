@@ -27,7 +27,8 @@ sealed class DataState<T> {
     ) : DataState<T>()
 
     data class Ok<T>(
-        val data: T
+        val data: T,
+        val isCache: Boolean = false,
     ) : DataState<T>()
 
     data class Error<T>(
@@ -42,7 +43,7 @@ sealed class DataState<T> {
 
         fun <T> loading() = Loading<T>()
 
-        fun <T> ok(data: T) = Ok(data)
+        fun <T> ok(data: T, isCache: Boolean = false) = Ok(data, isCache)
 
         fun <T> error(throwable: Throwable) =
             Error<T>(throwable.message ?: "", throwable)

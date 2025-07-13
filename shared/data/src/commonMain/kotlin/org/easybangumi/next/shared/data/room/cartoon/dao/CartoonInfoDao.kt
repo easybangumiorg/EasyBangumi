@@ -1,4 +1,4 @@
-package org.easybangumi.next.shared.data.room.dao
+package org.easybangumi.next.shared.data.room.cartoon.dao
 
 import androidx.room.Dao
 import androidx.room.Insert

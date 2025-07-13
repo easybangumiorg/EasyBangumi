@@ -1,11 +1,11 @@
-package org.easybangumi.next.shared.data.room
+package org.easybangumi.next.shared.data.room.cartoon
 
 import androidx.room.ConstructedBy
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
 import org.easybangumi.next.shared.data.cartoon.CartoonInfo
-import org.easybangumi.next.shared.data.room.dao.CartoonInfoDao
+import org.easybangumi.next.shared.data.room.cartoon.dao.CartoonInfoDao
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi

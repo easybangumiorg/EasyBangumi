@@ -1,4 +1,7 @@
-﻿package org.easybangumi.next.shared.ui.detail.bangumi
+﻿package org.easybangumi.next.lib.utils
+
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -12,5 +15,10 @@
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
-class BangumiDetailEpisode {
+interface DataRepository <T: Any> {
+
+    val flow: StateFlow<DataState<T>>
+
+    fun refresh(): Boolean = false
+
 }

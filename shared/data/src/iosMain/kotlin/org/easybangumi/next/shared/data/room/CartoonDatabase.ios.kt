@@ -1,5 +1,7 @@
 package org.easybangumi.next.shared.data.room
 
-actual fun makeCartoonDatabase(): org.easybangumi.next.shared.data.room.CartoonDatabase {
+import org.easybangumi.next.shared.data.room.cartoon.CartoonDatabase
+
+actual fun makeCartoonDatabase(): CartoonDatabase {
     TODO("Not yet implemented")
 }

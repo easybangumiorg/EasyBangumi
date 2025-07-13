@@ -6,8 +6,7 @@ import org.easybangumi.next.lib.unifile.UniFileFactory
 import org.easybangumi.next.lib.unifile.fromUFD
 import org.easybangumi.next.lib.utils.pathProvider
 import org.easybangumi.next.shared.data.cartoon.CartoonInfo
-import org.easybangumi.next.shared.data.room.CartoonDatabase
-import org.easybangumi.next.shared.data.room.dao.CartoonInfoDao
+import org.easybangumi.next.shared.data.room.cartoon.dao.CartoonInfoDao
 import org.koin.core.component.inject
 import org.koin.core.context.loadKoinModules
 import org.koin.core.context.startKoin

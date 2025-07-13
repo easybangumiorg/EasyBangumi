@@ -1,5 +1,25 @@
 ﻿package org.easybangumi.next.shared.ui.detail.bangumi
 
+import androidx.lifecycle.viewModelScope
+import androidx.paging.cachedIn
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.launch
+import org.easybangumi.next.lib.utils.DataState
+import org.easybangumi.next.lib.utils.PagingFlow
+import org.easybangumi.next.lib.utils.ResourceOr
+import org.easybangumi.next.lib.utils.newPagingFlow
+import org.easybangumi.next.shared.data.cartoon.CartoonIndex
+import org.easybangumi.next.shared.foundation.view_model.StateViewModel
+import org.easybangumi.next.shared.resources.Res
+import org.easybangumi.next.shared.source.bangumi.model.BgmCharacter
+import org.easybangumi.next.shared.source.bangumi.model.BgmEpisode
+import org.easybangumi.next.shared.source.bangumi.model.BgmPerson
+import org.easybangumi.next.shared.source.bangumi.model.BgmReviews
+import org.easybangumi.next.shared.source.bangumi.model.BgmSubject
+import org.easybangumi.next.shared.source.case.DetailSourceCase
+import org.koin.core.component.inject
+
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
  *
@@ -12,116 +32,100 @@
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
-//class BangumiDetailViewModel(
-//    val cartoonIndex: CartoonIndex,
-//    val metaBusiness: ComponentBusiness<BangumiMetaComponent>,
-//): StateViewModel<BangumiDetailViewModel.State>(State()) {
-//
-//    enum class DetailTab (
-//        val index: Int,
-//        val title: ResourceOr ,
-//    ) {
-//        DETAIL(0, Res.strings.detailed),
-//        COMMENT(1, Res.strings.comment),
-//        EPISODE(2, Res.strings.episode),
-//    }
-//
-//    val detailTabList = DetailTab.entries.toList()
-//
-//    data class State(
-//        val currentTab: DetailTab = DetailTab.DETAIL,
-//        val subjectState: DataState<org.easybangumi.next.shared.source.bangumi.model.Subject> = DataState.none(),
-//        val commentPaging: PagingFlow<org.easybangumi.next.shared.source.bangumi.model.Reviews>? = null,
-//        val episodePaging: PagingFlow<org.easybangumi.next.shared.source.bangumi.model.Episode>? = null,
-//        val characterState: DataState<List<org.easybangumi.next.shared.source.bangumi.model.Character>> = DataState.none(),
-//        val personState: DataState<List<org.easybangumi.next.shared.source.bangumi.model.Person>> = DataState.none(),
-//    )
-//
-//
-//    val coverUrl  = metaBusiness.runDirect {
-//        getMateManager().coverUrl(cartoonIndex)
-//    }
-//
-//    init {
-//        refreshSubject()
+class BangumiDetailViewModel(
+    val cartoonIndex: CartoonIndex,
+): StateViewModel<BangumiDetailViewModel.State>(State()) {
+
+    enum class DetailTab (
+        val index: Int,
+        val title: ResourceOr,
+    ) {
+        DETAIL(0, Res.strings.detailed),
+        EPISODE(1, Res.strings.episode),
+        COMMENT(2, Res.strings.comment),
+    }
+
+    val detailSourceCase: DetailSourceCase by inject()
+    val bangumiDetailBusiness = detailSourceCase.getBangumiDetailBusiness()
+
+    val subjectRepository = bangumiDetailBusiness.runDirect { createSubjectRepository(cartoonIndex) }
+    val characterRepository = bangumiDetailBusiness.runDirect { createCharacterRepository(cartoonIndex) }
+    val personRepository = bangumiDetailBusiness.runDirect { createPersonRepository(cartoonIndex) }
+
+    val detailTabList = DetailTab.entries.toList()
+
+    data class State(
+        val currentTab: DetailTab = DetailTab.DETAIL,
+        val subjectState: DataState<BgmSubject> = DataState.none(),
+        val characterState: DataState<List<BgmCharacter>> = DataState.none(),
+        val personState: DataState<List<BgmPerson>> = DataState.none(),
+
+
+        val commentPaging: PagingFlow<BgmReviews>? = null,
+        val episodePaging: PagingFlow<BgmEpisode>? = null,
+    )
+
+
+    val coverUrl  = bangumiDetailBusiness.runDirect {
+       coverUrl(cartoonIndex)
+    }
+
+    init {
+        viewModelScope.launch {
+            combine(
+                subjectRepository.flow,
+                characterRepository.flow,
+                personRepository.flow,
+            ) { subject, character, person ->
+                update {
+                    it.copy(
+                        subjectState = subject,
+                        characterState = character,
+                        personState = person
+                    )
+                }
+            }.collect()
+        }
+
+        subjectRepository.refresh()
+        characterRepository.refresh()
+        personRepository.refresh()
+
+
 //        refreshComment()
 //        refreshEpisodeList()
-//    }
-//
-//    private fun getCommentPagingFlow(): PagingFlow<org.easybangumi.next.shared.source.bangumi.model.Reviews> {
-//        return metaBusiness.runDirect {
-//            val manager = getMateManager()
-//            val pagingSource = manager.createCommentPagingSource(cartoonIndex)
-//            pagingSource.newPagingFlow()
-//        }
-//    }
-//
-//    private fun getEpisodePagingFlow(): PagingFlow<org.easybangumi.next.shared.source.bangumi.model.Episode> {
-//        return metaBusiness.runDirect {
-//            val manager = getMateManager()
-//            val pagingSource = manager.createEpisodePagingSource(cartoonIndex)
-//            pagingSource.newPagingFlow()
-//        }
-//    }
-//
-//    fun refreshComment() {
-//        val pagingFlow = getCommentPagingFlow().cachedIn(viewModelScope)
-//        update {
-//            it.copy(commentPaging = pagingFlow)
-//        }
-//    }
-//
-//    fun refreshEpisodeList() {
-//        val pagingFlow = getEpisodePagingFlow().cachedIn(viewModelScope)
-//        update {
-//            it.copy(episodePaging = pagingFlow)
-//        }
-//    }
-//
-//    fun refreshDetail() {
-//        update {
-//            it.copy(
-//                characterState = DataState.loading(),
-//                personState = DataState.loading()
-//            )
-//        }
-//        viewModelScope.launch {
-//            val characterRespDeferred = metaBusiness.async {
-//                val manager = getMateManager()
-//                manager.getCharacter(cartoonIndex)
-//            }
-//            val personRespDeferred = metaBusiness.async {
-//                val manager = getMateManager()
-//                manager.getPerson(cartoonIndex)
-//            }
-//            val personResp = personRespDeferred.await()
-//            val characterResp = characterRespDeferred.await()
-//            update {
-//                it.copy(
-//                    characterState = characterResp.toDataState(),
-//                    personState = personResp.toDataState()
-//                )
-//            }
-//        }
-//    }
-//
-//
-//    fun refreshSubject() {
-//        update {
-//            it.copy(subjectState = DataState.loading())
-//        }
-//        viewModelScope.launch {
-//            val resp = metaBusiness.run {
-//                val manager = getMateManager()
-//                manager.getSubject(cartoonIndex)
-//            }
-//            update {
-//                it.copy(subjectState = resp.toDataState())
-//            }
-//        }
-//    }
-//
-//
-//
-//
-//}
+    }
+
+    private fun getCommentPagingFlow(): PagingFlow<BgmReviews> {
+        return bangumiDetailBusiness.runDirect {
+            val pagingSource = createCommentPagingSource(cartoonIndex)
+            pagingSource.newPagingFlow()
+        }
+    }
+
+    private fun getEpisodePagingFlow(): PagingFlow<org.easybangumi.next.shared.source.bangumi.model.BgmEpisode> {
+        return bangumiDetailBusiness.runDirect {
+            val pagingSource = createEpisodePagingSource(cartoonIndex)
+            pagingSource.newPagingFlow()
+        }
+    }
+
+    fun refreshComment() {
+        val pagingFlow = getCommentPagingFlow().cachedIn(viewModelScope)
+        update {
+            it.copy(commentPaging = pagingFlow)
+        }
+    }
+
+    fun refreshEpisodeList() {
+        val pagingFlow = getEpisodePagingFlow().cachedIn(viewModelScope)
+        update {
+            it.copy(episodePaging = pagingFlow)
+        }
+    }
+
+
+
+
+
+}

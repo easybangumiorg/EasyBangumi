@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(builds.plugins.kotlinMultiplatform)
     alias(builds.plugins.androidLibrary)
+    alias(libs.plugins.kotlinxSerialization)
     id("EasyLibBuild")
 }
 kotlin {
@@ -26,10 +27,12 @@ kotlin {
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.datetime)
             api(libs.okio)
+            implementation(libs.kotlinx.serialization.json)
 
             implementation(projects.lib.utils)
             implementation(projects.logger)
             implementation(projects.lib.serialization)
+
         }
 
         commonTest.dependencies {

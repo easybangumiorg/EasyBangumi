@@ -2,7 +2,7 @@
 
 import org.easybangumi.next.shared.source.api.component.ComponentBusiness
 import org.easybangumi.next.shared.source.api.component.discover.DiscoverComponent
-import org.easybangumi.next.shared.source.bangumi.component.BangumiDiscoverComponent
+import org.easybangumi.next.shared.source.bangumi.source.BangumiDiscoverComponent
 import org.easybangumi.next.shared.source.core.inner.InnerSourceController
 
 /**

@@ -1,10 +1,8 @@
 ﻿package org.easybangumi.next.shared.source.core.inner
 
-import org.easybangumi.next.shared.source.api.source.InnerSource
-import org.easybangumi.next.shared.source.api.source.Source
 import org.easybangumi.next.shared.source.api.source.SourceConfig
 import org.easybangumi.next.shared.source.api.source.SourceInfo
-import org.easybangumi.next.shared.source.bangumi.component.BangumiInnerSource
+import org.easybangumi.next.shared.source.bangumi.source.BangumiInnerSource
 import org.koin.core.component.KoinComponent
 
 /**

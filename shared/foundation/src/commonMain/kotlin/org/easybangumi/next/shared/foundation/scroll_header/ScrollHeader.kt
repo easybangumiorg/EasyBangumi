@@ -131,7 +131,6 @@ interface ScrollHeaderScope {
 interface ScrollableHeaderBehavior<SCOPE : ScrollHeaderScope> {
 
     val state: ScrollableHeaderState
-    val isPinned: Boolean
 
     val snapAnimationSpec: AnimationSpec<Float>?
     val flingAnimationSpec: DecayAnimationSpec<Float>?

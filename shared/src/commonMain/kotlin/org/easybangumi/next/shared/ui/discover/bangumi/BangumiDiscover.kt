@@ -29,6 +29,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.times
 import app.cash.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -135,8 +136,8 @@ fun BangumiDiscover(
                         state = tab.lazyGridState,
                         columns = GridCells.Adaptive(EasyScheme.size.cartoonCoverWidth),
                         overscrollEffect = rememberOverscrollEffect(),
-                        contentPadding = PaddingValues(8.dp, 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(16.dp, 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp, alignment = Alignment.CenterHorizontally),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         if (lazyPageState.itemCount > 0) {
@@ -147,6 +148,10 @@ fun BangumiDiscover(
                                         contentAlignment = Alignment.Center
                                     ) {
                                         CartoonCardWithCover(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            coverAspectRatio = null,
+                                            itemSize = EasyScheme.size.cartoonCoverHeight,
+                                            itemIsWidth = false,
                                             cartoonCover = item,
                                             onClick = onCoverClick,
                                             onLongPress = {
@@ -194,33 +199,29 @@ fun BangumiDiscover(
 
             }
         }
-
-        key(uiState.tabList, uiState.currentIndex) {
-            Column (modifier = Modifier
-                .fillMaxWidth().pinHeader().run {
-                    if (pinHeaderContainerColor != null) {
-                        background(pinHeaderContainerColor)
-                    } else {
-                        this
-                    }
+        Column (modifier = Modifier
+            .fillMaxWidth().pinHeader().run {
+                if (pinHeaderContainerColor != null) {
+                    background(pinHeaderContainerColor)
+                } else {
+                    this
                 }
-            ) {
-                RecommendTab(
-                    modifier = Modifier.fillMaxWidth(),
-                    data = uiState.tabList,
-                    selection = ui.currentIndex,
-                    onSelected = {
-                        vm.changeCurrentIndex(it)
-                        scope.launch {
-                            pagerState.animateScrollToPage(it)
-                        }
-                    },
-                    onRetry = {
-
-                    }
-                )
-//                HorizontalDivider()
             }
+        ) {
+            RecommendTab(
+                modifier = Modifier.fillMaxWidth(),
+                data = uiState.tabList,
+                selection = pagerState.currentPage,
+                onSelected = {
+                    scope.launch {
+                        pagerState.animateScrollToPage(it)
+                    }
+                },
+                onRetry = {
+
+                }
+            )
+//                HorizontalDivider()
         }
 
     }
@@ -340,21 +341,23 @@ fun RecommendTab(
 
         ) {
         val data = it.data
-        EasyTab(
-            modifier = Modifier.fillMaxWidth(),
-            size = data.size,
-            selection = selection,
-            containerColor = Color.Transparent,
-            onSelected = {
-                if (it in data.indices) {
-                    onSelected(it)
+        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
+            EasyTab(
+                modifier = Modifier.width(it.data.size * EasyScheme.size.tabWidth),
+                size = data.size,
+                selection = selection,
+                containerColor = Color.Transparent,
+                onSelected = {
+                    if (it in data.indices) {
+                        onSelected(it)
+                    }
                 }
+            ) { index, selected ->
+                val tab = data[index]
+                Text(
+                    text = stringRes(tab.label),
+                )
             }
-        ) { index, selected ->
-            val tab = data[index]
-            Text(
-                text = stringRes(tab.label),
-            )
         }
     }
 

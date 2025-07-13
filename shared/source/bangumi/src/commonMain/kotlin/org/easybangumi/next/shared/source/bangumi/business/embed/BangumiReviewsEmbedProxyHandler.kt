@@ -9,10 +9,10 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.path
 import io.ktor.util.reflect.TypeInfo
 import io.ktor.utils.io.ByteReadChannel
-import org.easybangumi.next.shared.source.bangumi.business.BangumiConfig
+import org.easybangumi.next.shared.source.bangumi.BangumiConfig
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.shared.source.bangumi.model.BgmRsp
-import org.easybangumi.next.shared.source.bangumi.model.Reviews
+import org.easybangumi.next.shared.source.bangumi.model.BgmReviews
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -75,7 +75,7 @@ class BangumiReviewsEmbedProxyHandler(
             val doc = Ksoup.parse(body)
             val list = doc.toCommendsList()
             logger.info("trends subject list size: ${list.size}")
-            return BgmRsp.Success<List<Reviews>>(
+            return BgmRsp.Success<List<BgmReviews>>(
                 code = code,
                 data = list,
                 raw = body
@@ -83,8 +83,8 @@ class BangumiReviewsEmbedProxyHandler(
         }
     }
 
-    private fun Document.toCommendsList(): List<Reviews> {
-        val res = arrayListOf<Reviews>()
+    private fun Document.toCommendsList(): List<BgmReviews> {
+        val res = arrayListOf<BgmReviews>()
         val entryList = select("div#entry_list").firstOrNull() ?: return emptyList()
         val entryListChildren = entryList.children()
         for (i in entryListChildren.indices) {
@@ -114,7 +114,7 @@ class BangumiReviewsEmbedProxyHandler(
             var divContent = entry?.select("div.content")?.firstOrNull()?.text()?.trim()
             divContent = divContent?.removeSuffix("(more)")
 
-            val review = Reviews(
+            val review = BgmReviews(
                 id = id,
                 title = title,
                 authorId = authorId,

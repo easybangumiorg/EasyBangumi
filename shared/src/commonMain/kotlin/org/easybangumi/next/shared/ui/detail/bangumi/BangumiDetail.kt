@@ -1,11 +1,15 @@
 ﻿package org.easybangumi.next.shared.ui.detail.bangumi
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -14,45 +18,54 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.StarHalf
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material.icons.rounded.StarOutline
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.key
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.painter.BrushPainter
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import org.easybangumi.next.shared.source.bangumi.model.Character
-import org.easybangumi.next.shared.source.bangumi.model.Person
-import org.easybangumi.next.shared.source.bangumi.model.Subject
-import org.easybangumi.next.shared.source.bangumi.model.Tags
+import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.DataState
-import org.easybangumi.next.shared.foundation.EasyTab
-import org.easybangumi.next.shared.foundation.InputMode
-import org.easybangumi.next.shared.foundation.LocalUIMode
+import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.foundation.cartoon.CartoonCoverCard
+import org.easybangumi.next.shared.foundation.elements.LoadScaffold
+import org.easybangumi.next.shared.foundation.image.AsyncImage
 import org.easybangumi.next.shared.foundation.scroll_header.ScrollableHeaderBehavior
 import org.easybangumi.next.shared.foundation.scroll_header.ScrollableHeaderScaffold
 import org.easybangumi.next.shared.foundation.scroll_header.rememberScrollableHeaderState
-import org.easybangumi.next.shared.foundation.shimmer.ShimmerState
-import org.easybangumi.next.shared.foundation.shimmer.drawRectWhenShimmerVisible
-import org.easybangumi.next.shared.foundation.shimmer.onShimmerVisible
+import org.easybangumi.next.shared.foundation.shimmer.ShimmerHost
 import org.easybangumi.next.shared.foundation.shimmer.rememberShimmerState
-import org.easybangumi.next.shared.foundation.shimmer.shimmer
-import org.easybangumi.next.shared.foundation.stringRes
+import org.easybangumi.next.shared.foundation.view_model.vm
+import org.easybangumi.next.shared.scheme.EasyScheme
+import org.easybangumi.next.shared.source.bangumi.model.BgmRating
+import org.easybangumi.next.shared.source.bangumi.model.BgmSubject
+import kotlin.math.absoluteValue
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -65,235 +78,394 @@ import org.easybangumi.next.shared.foundation.stringRes
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-//@Composable
-//fun BangumiDetail(
-//    modifier: Modifier = Modifier,
-//    vm: BangumiDetailViewModel,
-//    nestedScrollConnection: NestedScrollConnection? = null,
-//    contentPaddingTop: Dp = 0.dp,
-//) {
-//
-//    val scope = rememberCoroutineScope()
-//    val scrollableHeaderState = rememberScrollableHeaderState()
-//    val behavior = ScrollableHeaderBehavior.discoverScrollHeaderBehavior(
-//        state = scrollableHeaderState,
-//    )
-//
-//    val currentTab = vm.ui.value.currentTab
-//
-//    val subjectState = vm.ui.value.subjectState
-//    val subjectShimmerState = rememberShimmerState(
-//        subjectState.isLoading()
-//    )
-//
-//    val characterState = vm.ui.value.characterState
-//    val personState = vm.ui.value.personState
-//
-//    val pagerState = rememberPagerState { vm.detailTabList.size }
-//
-//
-//
-//    ScrollableHeaderScaffold(
-//        modifier = modifier.fillMaxSize().run {
-//            if (nestedScrollConnection != null) {
-//                nestedScroll(nestedScrollConnection)
-//            } else {
-//                this
-//            }
-//        },
-//        behavior = behavior,
-//    ){
-//
-//        HorizontalPager(
-//            pagerState,
-//            modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface),
-//            contentPadding = contentPadding,
-//            userScrollEnabled = false,
-//        ) {
-//            val tab = vm.detailTabList.getOrNull(it) ?: return@HorizontalPager
-//            when (tab) {
-//                BangumiDetailViewModel.DetailTab.DETAIL -> {
-//                    BangumiSubPageDetail(
-//                        vm = vm,
-//                        modifier = Modifier.fillMaxSize().contentPointerScrollOpt(LocalUIMode.current.inputMode == InputMode.POINTER),
-//                        subjectState = subjectState,
-//                        subjectShimmerState = subjectShimmerState,
-//                        characterState = characterState,
-//                        personState = personState,
-//                    )
-//                }
-//                BangumiDetailViewModel.DetailTab.COMMENT -> {
-//
-//                }
-//                BangumiDetailViewModel.DetailTab.EPISODE -> {
-//
-//                }
-//            }
-//        }
-//
-//
-//        key(
-//            subjectState, subjectShimmerState, contentPaddingTop
-//        ) {
-//            BangumiDetailHeader(
-//                vm,
-//                modifier = Modifier.header(contentPaddingTop).background(MaterialTheme.colorScheme.surfaceContainerLowest),
-//                contentPaddingTop = contentPaddingTop,
-//                subject = subjectState,
-//                subjectShimmerState = subjectShimmerState,
-//            )
-//        }
-//
-//
-//        key(currentTab) {
-//            Column (modifier = Modifier
-//                .fillMaxWidth()
-//                .pinHeader()
-//                .background(MaterialTheme.colorScheme.surfaceContainerLowest)
-//            ) {
-//                EasyTab(
-//                    modifier = Modifier.fillMaxWidth(),
-//                    size = vm.detailTabList.size,
-//                    selection = currentTab?.index ?: 0,
-//                    onSelected = {
-//                        scope.launch {
-//                            pagerState.animateScrollToPage(it)
-//                        }
-//                    }
-//                ) { index, selected ->
-//                    val tab = vm.detailTabList[index]
-//                    Text(
-//                        text = stringRes(tab.title),
-//                    )
-//                }
-//                HorizontalDivider()
-//            }
-//        }
-//    }
-//
-//}
-//
-//@Composable
-//fun BangumiDetailHeader(
-//    vm: BangumiDetailViewModel,
-//    modifier: Modifier,
-//    contentPaddingTop: Dp,
-//    subject: DataState<Subject>,
-//    subjectShimmerState: ShimmerState,
-//) {
-//    Column (modifier.padding(32.dp, 0.dp)) {
-//        Spacer(modifier = Modifier.size(contentPaddingTop))
-//        Column {
-//            Row(
-//                modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)
-//            ) {
-//                CartoonCoverCard(
-//                    model = vm.coverUrl,
-//                    itemSize = 206.dp,
-//                    onClick = { }
-//                )
-//                Spacer(modifier = Modifier.size(16.dp))
-//                Column(
-//                    modifier = Modifier.weight(1f).fillMaxHeight()
-//                        .shimmer(subjectShimmerState)
-//                ) {
-//                    Text(
-//                        text = subject.okOrNull()?.nameCn ?: "",
-//                        modifier = Modifier.drawRectWhenShimmerVisible(subjectShimmerState),
-//                        style = MaterialTheme.typography.bodyLarge,
-//                        maxLines = 2,
-//                        overflow = TextOverflow.Ellipsis
-//                    )
-//                    val displayAirDate = subject.okOrNull()?.displayAirDate
-//                    if (displayAirDate != null) {
-//                        Text(
-//                            text = displayAirDate,
-//                            modifier = Modifier.border(1.dp, MaterialTheme.colorScheme.primaryContainer, shape = RoundedCornerShape(16.dp)).padding(16.dp, 8.dp),
-//                            style = MaterialTheme.typography.bodyMedium,
-//                            maxLines = 1,
-//                            overflow = TextOverflow.Ellipsis,
-//                            color = MaterialTheme.colorScheme.primaryContainer
-//                        )
-//                    }
-//                }
-//            }
-//        }
-//    }
-//}
-//
-//@Composable
-//fun BangumiSubPageDetail(
-//    vm: BangumiDetailViewModel,
-//    modifier: Modifier = Modifier,
-//    subjectState: DataState<Subject>,
-//    subjectShimmerState: ShimmerState,
-//    characterState: DataState<List<Character>>,
-//    personState: DataState<List<Person>>,
-//){
-//
-//    val subject = subjectState.okOrNull()
-//
-//    LazyColumn(
-//        modifier = modifier.shimmer(subjectShimmerState),
-//    ) {
-//        item {
-//            Column(
-//                modifier = Modifier.fillMaxWidth().shimmer(subjectShimmerState)
-//            ) {
-//                if (subject == null) {
-//                    Text(modifier = Modifier.onShimmerVisible(subjectShimmerState) {
-//                        weight(1f)
-//                    },text = "", maxLines = 1)
-//                    Text(modifier = Modifier.onShimmerVisible(subjectShimmerState) {
-//                        weight(1f)
-//                    },text = "", maxLines = 1)
-//                    Text(modifier = Modifier.onShimmerVisible(subjectShimmerState) {
-//                        weight(1f)
-//                    },text = "", maxLines = 1)
-//
-//                    Row {
-//                        DetailTag(Modifier.drawRectWhenShimmerVisible(subjectShimmerState), nomeTags)
-//                        DetailTag(Modifier.drawRectWhenShimmerVisible(subjectShimmerState), nomeTags)
-//                        DetailTag(Modifier.drawRectWhenShimmerVisible(subjectShimmerState), nomeTags)
-//                    }
-//                } else {
-//                    Text(
-//                        text = subject.summary ?: "",
-//                        style = MaterialTheme.typography.bodySmall
-//                    )
-//                    FlowRow(modifier = Modifier.fillMaxWidth()) {
-//                        subject.tags.forEach { tag ->
-//                            DetailTag(
-//                                modifier = Modifier,
-//                                tags = tag,
-//                                onClick = {
-////                                vm.onTagClick(it)
-//                                }
-//                            )
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
-//
-//}
-//
-//val nomeTags = Tags("")
-//
-//@Composable
-//fun DetailTag(
-//    modifier: Modifier = Modifier,
-//    tags: Tags,
-//    onClick: (Tags) -> Unit = {},
-//){
-//    val name = tags.name
-//    if (name != null) {
-//        FilterChip(false, modifier = modifier, onClick = {
-//            onClick(tags)
-//        }, label = {
-//            Text("$name ${tags.count}")
-//        })
-//    }
-//
-//}
+private val logger = logger("BangumiDetail")
+@Composable
+fun BangumiDetail(
+    modifier: Modifier = Modifier,
+    cartoonIndex: CartoonIndex,
+    contentPaddingTop: Dp = 0.dp,
+    onBack: (() -> Unit)? = null,
+) {
+    val vm = vm(::BangumiDetailViewModel, cartoonIndex)
+    val scope = rememberCoroutineScope()
+    val scrollableHeaderState = rememberScrollableHeaderState()
+    val scrollHeaderBehavior = ScrollableHeaderBehavior.discoverScrollHeaderBehavior(
+        state = scrollableHeaderState,
+    )
+
+    val currentTab = vm.ui.value.currentTab
+
+    val subjectState = vm.ui.value.subjectState
+    val subjectShimmerState = rememberShimmerState(
+        subjectState.isLoading()
+    )
+
+    val characterState = vm.ui.value.characterState
+    val personState = vm.ui.value.personState
+
+    val pagerState = rememberPagerState { vm.detailTabList.size }
+
+    val isTopAppBarPin = remember( scrollableHeaderState.offset) {
+        scrollableHeaderState.offset.absoluteValue > 20
+    }
+    val density = LocalDensity.current
+    val topAppBarHeight = EasyScheme.size.topAppBarHeight
+    val isPinHeaderPin = remember(
+        scrollableHeaderState.offset, scrollableHeaderState.offsetLimit
+    ) {
+        scrollableHeaderState.offset.absoluteValue >= (scrollableHeaderState.offsetLimit.absoluteValue - 20)
+    }
+
+    Box(modifier) {
+        ScrollableHeaderScaffold(
+            modifier = modifier,
+            behavior = scrollHeaderBehavior,
+        ) {
+
+//        BangumiDetailHeader(
+//            modifier = Modifier.header(64.dp)
+//        )
+
+            CompositionLocalProvider(
+                LocalContentColor provides MaterialTheme.colorScheme.onSurface
+            ) {
+                BangumiContent(
+                    modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceContainerLow),
+                    pagerState = pagerState,
+                    vm = vm,
+                    contentPadding = contentPadding
+                )
+            }
+
+
+            BangumiDetailHeader(
+                modifier = Modifier.height(
+                    EasyScheme.size.cartoonCoverHeight + topAppBarHeight + contentPaddingTop + 20.dp,
+                    ).header(topAppBarHeight + contentPaddingTop),
+                coverUrl = vm.coverUrl,
+                contentPaddingTop = topAppBarHeight + contentPaddingTop,
+                isHeaderPin = isPinHeaderPin,
+                subjectState = subjectState,
+            )
+
+            BangumiDetailTab(
+                modifier = Modifier.fillMaxWidth().pinHeader(),
+                isPin = isPinHeaderPin,
+                vm = vm,
+                currentIndex = pagerState.currentPage,
+                onSelected = {
+                    scope.launch {
+                        logger.info("onSelected: $it, currentPage: ${pagerState.currentPage}")
+                        pagerState.animateScrollToPage(it)
+                    }
+                }
+            )
+
+        }
+        BangumiTopAppBar(
+            modifier = Modifier.fillMaxWidth(),
+            isPin = isTopAppBarPin,
+            subjectState = subjectState,
+            onBack = onBack,
+        )
+
+    }
+
+
+
+
+
+}
+
+@Composable
+fun BangumiTopAppBar(
+    modifier: Modifier,
+    isPin: Boolean,
+    subjectState: DataState<BgmSubject>,
+    onBack: (() -> Unit)?
+) {
+    val title = remember(subjectState) {
+        subjectState.okOrNull()?.nameCn
+    }
+    TopAppBar(
+        modifier = modifier,
+        title = {
+            if (isPin && title != null) {
+                Text(
+                    text = title,
+                    maxLines = 1,
+                )
+            }
+        },
+        navigationIcon = {
+            IconButton(onClick = {
+                onBack?.invoke()
+            }) {
+                Icon(Icons.Filled.ArrowBack, "")
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors().copy(
+            containerColor = if (isPin) MaterialTheme.colorScheme.surfaceContainer else Color.Transparent
+        )
+    )
+}
+
+@Composable
+fun BangumiDetailHeader(
+    modifier: Modifier,
+    coverUrl: String,
+    contentPaddingTop: Dp,
+    isHeaderPin: Boolean = false,
+    subjectState: DataState<BgmSubject>,
+){
+    val surfaceLowestColor = MaterialTheme.colorScheme.surfaceContainerLowest
+    val backgroundColor = MaterialTheme.colorScheme.surfaceContainer
+    val backgroundPainter = remember(backgroundColor) {
+        BrushPainter(SolidColor(backgroundColor))
+    }
+    Box(modifier) {
+
+        Crossfade(subjectState.isOk()) {
+            if (it && !isHeaderPin) {
+                AsyncImage(
+                    modifier = Modifier.fillMaxSize().blur(32.dp),
+                    model = coverUrl,
+                    contentScale = ContentScale.FillWidth,
+                    contentDescription = "cartoon cover background",
+                    fallback = backgroundPainter,
+                    placeholder = backgroundPainter,
+                )
+
+
+            }
+
+
+            Box(
+                modifier = Modifier.fillMaxSize()
+                    .run {
+                        if (isHeaderPin) {
+                            background(MaterialTheme.colorScheme.surfaceContainer)
+                        } else {
+                            background(
+                                remember(
+                                    surfaceLowestColor, backgroundColor,
+                                ) {
+                                    if (surfaceLowestColor.luminance() < 0.5f) {
+                                        Brush.verticalGradient(
+                                            0f to backgroundColor.copy(alpha = 0xA2.toFloat() / 0xFF),
+                                            0.4f to backgroundColor.copy(alpha = 0xA2.toFloat() / 0xFF),
+                                            1.00f to surfaceLowestColor,
+                                        )
+                                    } else {
+                                        Brush.verticalGradient(
+                                            0f to Color(0xA2FAFAFA),
+                                            0.4f to Color(0xA2FAFAFA),
+                                            1.00f to surfaceLowestColor,
+                                        )
+                                    }
+                                }
+                            )
+                        }
+                    },
+            )
+        }
+
+
+
+            Column(
+                modifier = Modifier.padding(16.dp, 0.dp)
+            ) {
+                Spacer(modifier = Modifier.size(contentPaddingTop))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth().height(EasyScheme.size.cartoonCoverHeight)
+                ) {
+
+                    CartoonCoverCard(
+                        model = coverUrl,
+                    )
+
+                    Spacer(modifier = Modifier.size(16.dp))
+
+                    AnimatedContent(
+                        subjectState,
+                        transitionSpec = {
+                            (fadeIn(animationSpec = tween(220, delayMillis = 90)))
+                                .togetherWith(fadeOut(animationSpec = tween(90)))
+                        },
+                    ) {
+                        val subjectState = it
+                        LoadScaffold(
+                            modifier = Modifier.weight(1f).fillMaxHeight(),
+                            data = subjectState,
+                            onLoading = {
+                                ShimmerHost(
+                                    visible = true
+                                ) {
+                                    Column {
+                                        Text(
+                                            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).drawRectWhenShimmerVisible(),
+                                            text = "",
+                                            style = MaterialTheme.typography.titleLarge,
+                                        )
+                                        Spacer(modifier = Modifier.size(8.dp))
+                                        Text(
+                                            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).drawRectWhenShimmerVisible(),
+                                            text = "",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                        )
+                                        Spacer(modifier = Modifier.size(8.dp))
+                                        Text(
+                                            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).drawRectWhenShimmerVisible(),
+                                            text = "",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                        )
+                                    }
+                                }
+
+                            },
+                        ) {
+                            Column {
+                                Text(
+                                    text = it.data.nameCn ?: "",
+                                    style = MaterialTheme.typography.titleLarge,
+                                )
+                                Spacer(modifier = Modifier.size(8.dp))
+                                Text(
+                                    modifier = Modifier,
+                                    text = it.data.date ?: "",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                )
+                                Spacer(modifier = Modifier.size(8.dp))
+                                Text(
+                                    modifier = Modifier,
+                                    text = it.data.displayEpisode ?: "",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                )
+                                Spacer(modifier = Modifier.weight(1f))
+                                it.data.rating?.let {
+                                    HeaderRanking(Modifier, it)
+                                }
+
+
+                            }
+                        }
+                    }
+
+
+                }
+            }
+        }
+
+}
+
+@Composable
+fun HeaderRanking(
+    modifier: Modifier,
+    rating: BgmRating,
+    color: Color = MaterialTheme.colorScheme.primary,
+){
+
+    Row (
+        verticalAlignment = Alignment.CenterVertically,
+
+    ){
+
+        Column(modifier) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                FiveRatingStars(score = rating.score?.toInt()?:0, color = color)
+                Text(
+                    rating.score?.toString()?:"",
+                    color = color,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+
+            Text(
+                "${rating.total} 人评丨#${rating.rank}",
+                Modifier.padding(end = 2.dp),
+                style = MaterialTheme.typography.labelMedium,
+                maxLines = 1,
+                softWrap = false,
+                color = color
+            )
+        }
+
+    }
+
+
+
+}
+
+@Composable
+fun FiveRatingStars(
+    score: Int, // range 0..10
+    starSize: Dp = 22.dp,
+    color: Color = MaterialTheme.colorScheme.primary,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier,
+        horizontalArrangement = Arrangement.spacedBy((-1).dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        CompositionLocalProvider(LocalContentColor provides color) {
+
+            Icon(
+                when {
+                    score >= 2 -> Icons.Rounded.Star
+                    score == 1 -> Icons.AutoMirrored.Rounded.StarHalf
+                    else -> Icons.Rounded.StarOutline
+                },
+                contentDescription = null,
+                modifier = Modifier.size(starSize),
+                tint = color,
+
+            )
+            Icon(
+                when {
+                    score >= 4 -> Icons.Rounded.Star
+                    score == 3 -> Icons.AutoMirrored.Rounded.StarHalf
+                    else -> Icons.Rounded.StarOutline
+                },
+                contentDescription = null,
+                modifier = Modifier.size(starSize),
+                tint = color,
+            )
+            Icon(
+                when {
+                    score >= 6 -> Icons.Rounded.Star
+                    score == 5 -> Icons.AutoMirrored.Rounded.StarHalf
+                    else -> Icons.Rounded.StarOutline
+                },
+                contentDescription = null,
+                modifier = Modifier.size(starSize),
+                tint = color,
+            )
+            Icon(
+                when {
+                    score >= 8 -> Icons.Rounded.Star
+                    score == 7 -> Icons.AutoMirrored.Rounded.StarHalf
+                    else -> Icons.Rounded.StarOutline
+                },
+                contentDescription = null,
+                modifier = Modifier.size(starSize),
+                tint = color,
+            )
+            Icon(
+                when {
+                    score >= 10 -> Icons.Rounded.Star
+                    score == 9 -> Icons.AutoMirrored.Rounded.StarHalf
+                    else -> Icons.Rounded.StarOutline
+                },
+                contentDescription = null,
+                modifier = Modifier.size(starSize),
+                tint = color,
+            )
+        }
+    }
+}
+
+

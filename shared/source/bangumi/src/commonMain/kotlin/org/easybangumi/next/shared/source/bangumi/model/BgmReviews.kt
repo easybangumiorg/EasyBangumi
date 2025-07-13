@@ -15,7 +15,7 @@ import kotlinx.serialization.Serializable
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 @Serializable
-data class Reviews(
+data class BgmReviews(
     @SerialName("id") val id: String? = null,
     @SerialName("title") val title: String? = null,
     @SerialName("author") val author: String? = null,

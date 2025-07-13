@@ -3,7 +3,7 @@ package org.easybangumi.next.shared.source.bangumi.model
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
-import org.easybangumi.next.shared.source.bangumi.component.BangumiInnerSource
+import org.easybangumi.next.shared.source.bangumi.source.BangumiInnerSource
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -17,7 +17,7 @@ import org.easybangumi.next.shared.source.bangumi.component.BangumiInnerSource
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 @Serializable
-data class TrendsSubject(
+data class BgmTrendsSubject(
     @SerialName("id") val id: Int? = null,
     @SerialName("name") val name: String? = null,
     @SerialName("name_cn") val nameCn: String? = null,
@@ -31,7 +31,7 @@ data class TrendsSubject(
     @SerialName("jump_url") val jumpUrl: String? = null,
 )
 
-fun TrendsSubject.toCartoonCover(): CartoonCover? {
+fun BgmTrendsSubject.toCartoonCover(): CartoonCover? {
     return CartoonCover(
         id = id?.toString() ?: return null,
         source = BangumiInnerSource.SOURCE_KEY,

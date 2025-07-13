@@ -10,10 +10,10 @@ import io.ktor.http.URLBuilder
 import io.ktor.http.path
 import io.ktor.util.reflect.TypeInfo
 import io.ktor.utils.io.ByteReadChannel
-import org.easybangumi.next.shared.source.bangumi.business.BangumiConfig
+import org.easybangumi.next.shared.source.bangumi.BangumiConfig
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.shared.source.bangumi.model.BgmRsp
-import org.easybangumi.next.shared.source.bangumi.model.TrendsSubject
+import org.easybangumi.next.shared.source.bangumi.model.BgmTrendsSubject
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -97,7 +97,7 @@ class BangumiRankingEmbedProxyHandler(
             val doc = Ksoup.parse(body)
             val list = doc.toTrendsSubjectList()
             logger.info("trends subject list size: ${list.size}")
-            return BgmRsp.Success<List<TrendsSubject>>(
+            return BgmRsp.Success<List<BgmTrendsSubject>>(
                 code = code,
                 data = list,
                 raw = body,
@@ -105,7 +105,7 @@ class BangumiRankingEmbedProxyHandler(
         }
     }
 
-    private fun Document.toTrendsSubjectList(): List<TrendsSubject> {
+    private fun Document.toTrendsSubjectList(): List<BgmTrendsSubject> {
         val ul = select("div.section ul#browserItemList").firstOrNull()
         if (ul == null) {
             return emptyList()
@@ -114,7 +114,7 @@ class BangumiRankingEmbedProxyHandler(
         if (ulList.isEmpty()) {
             return emptyList()
         }
-        val subjectList = arrayListOf<TrendsSubject>()
+        val subjectList = arrayListOf<BgmTrendsSubject>()
         for (index in ulList.indices) {
             val li = ulList.getOrNull(index) ?: continue
             val inner = li.select("div.inner").firstOrNull() ?: continue
@@ -158,7 +158,7 @@ class BangumiRankingEmbedProxyHandler(
 
             val tipJSpan = inner.select("span.tip_j").firstOrNull()
             val scoreTotal = tipJSpan?.text()?.trim()?.replace("(", "")?.replace("人评分)", "")?.trim()?.toIntOrNull()
-            val trendsSubject = TrendsSubject(
+            val bgmTrendsSubject = BgmTrendsSubject(
                 id = id,
                 name = name,
                 nameCn = nameCN,
@@ -169,7 +169,7 @@ class BangumiRankingEmbedProxyHandler(
                 scoreTotal = scoreTotal,
                 jumpUrl = jumpUrl
             )
-            subjectList.add(trendsSubject)
+            subjectList.add(bgmTrendsSubject)
         }
         return subjectList.toList()
     }

@@ -1,5 +1,7 @@
 package org.easybangumi.next.lib.unifile
 
+import kotlinx.serialization.Serializable
+
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
  *
@@ -11,6 +13,7 @@ package org.easybangumi.next.lib.unifile
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
+@Serializable
 data class UFD(
     val type: String,
     // 语义随着 type 不同有不同的诠释

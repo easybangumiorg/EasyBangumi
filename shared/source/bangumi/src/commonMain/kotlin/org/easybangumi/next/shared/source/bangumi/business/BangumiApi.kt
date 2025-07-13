@@ -1,16 +1,14 @@
 ﻿package org.easybangumi.next.shared.source.bangumi.business
 
 import kotlinx.coroutines.Deferred
-import org.easybangumi.next.shared.source.bangumi.business.embed.BangumiEmbedProxy
-import org.easybangumi.next.shared.source.bangumi.business.embed.BangumiRankingEmbedProxyHandler
 import org.easybangumi.next.shared.source.bangumi.model.BgmRsp
-import org.easybangumi.next.shared.source.bangumi.model.CalendarItem
-import org.easybangumi.next.shared.source.bangumi.model.Character
-import org.easybangumi.next.shared.source.bangumi.model.EpisodeRsp
-import org.easybangumi.next.shared.source.bangumi.model.Person
-import org.easybangumi.next.shared.source.bangumi.model.Reviews
-import org.easybangumi.next.shared.source.bangumi.model.Subject
-import org.easybangumi.next.shared.source.bangumi.model.TrendsSubject
+import org.easybangumi.next.shared.source.bangumi.model.BgmCalendarItem
+import org.easybangumi.next.shared.source.bangumi.model.BgmCharacter
+import org.easybangumi.next.shared.source.bangumi.model.BgmEpisodeRsp
+import org.easybangumi.next.shared.source.bangumi.model.BgmPerson
+import org.easybangumi.next.shared.source.bangumi.model.BgmReviews
+import org.easybangumi.next.shared.source.bangumi.model.BgmSubject
+import org.easybangumi.next.shared.source.bangumi.model.BgmTrendsSubject
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -28,27 +26,27 @@ interface BangumiApi {
     // ====== Bangumi api v0 =====
 
     // get v0/subjects/{subjectId}
-    fun getSubject(subjectId: String): Deferred<BgmRsp<Subject>>
+    fun getSubject(subjectId: String): Deferred<BgmRsp<BgmSubject>>
 
     // get calendar
-    fun calendar(): Deferred<BgmRsp<List<CalendarItem>>>
+    fun calendar(): Deferred<BgmRsp<List<BgmCalendarItem>>>
 
     // get v0/episodes?subject_id={subjectId}&offset={offset}&limit={limit}
     fun getEpisodeList(
         subjectId: String,
         offset: Int = 0,
         limit: Int = 100,
-    ): Deferred<BgmRsp<EpisodeRsp>>
+    ): Deferred<BgmRsp<BgmEpisodeRsp>>
 
     // get v0/subjects/{subjectId}/persons?subject_id={subjectId}
     fun getPersonList(
         subjectId: String,
-    ): Deferred<BgmRsp<List<Person>>>
+    ): Deferred<BgmRsp<List<BgmPerson>>>
 
     // get v0/subjects/{subjectId}/characters?subject_id={subjectId}
     fun getCharacterList(
         subjectId: String,
-    ): Deferred<BgmRsp<List<Character>>>
+    ): Deferred<BgmRsp<List<BgmCharacter>>>
 
 
     // ====== embed proxy api =====
@@ -65,16 +63,16 @@ interface BangumiApi {
     fun getTrends(
         page: Int,
         from: TrendsFrom,
-    ): Deferred<BgmRsp<List<TrendsSubject>>>
+    ): Deferred<BgmRsp<List<BgmTrendsSubject>>>
 
     // get bangumi.proxy/banners
-    fun getBanners(): Deferred<BgmRsp<List<TrendsSubject>>>
+    fun getBanners(): Deferred<BgmRsp<List<BgmTrendsSubject>>>
 
     // get bangumi.proxy/comments?subject_id={subjectId}&page={page}
     fun getComments(
         subjectId: String,
         page: Int,
-    ): Deferred<BgmRsp<List<Reviews>>>
+    ): Deferred<BgmRsp<List<BgmReviews>>>
 
     fun coverUrl(
         subjectId: String,

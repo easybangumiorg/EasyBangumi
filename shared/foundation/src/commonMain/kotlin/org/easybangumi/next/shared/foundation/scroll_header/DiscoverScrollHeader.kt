@@ -129,8 +129,6 @@ class DiscoverScrollHeaderBehavior(
 
     override val scope: DiscoverScrollHeaderScope = DiscoverScrollHeaderScope(this)
 
-    override val isPinned: Boolean = false
-
     override val nestedScrollConnection: NestedScrollConnection = object : NestedScrollConnection {
         override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
 //            logger.info("onPreScroll: available: $available")

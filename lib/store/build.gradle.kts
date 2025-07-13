@@ -26,6 +26,8 @@ kotlin {
             implementation(libs.kotlinx.datetime)
 
             implementation(libs.koin.core)
+            api(libs.kache)
+            api(libs.kache.file)
 
             implementation(projects.logger)
             implementation(projects.lib.serialization)

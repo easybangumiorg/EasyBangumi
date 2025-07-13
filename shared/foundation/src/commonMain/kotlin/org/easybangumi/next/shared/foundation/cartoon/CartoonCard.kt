@@ -2,6 +2,7 @@ package org.easybangumi.next.shared.foundation.cartoon
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -53,7 +54,7 @@ fun CartoonCardWithCover(
     star: Boolean = false,
     itemSize: Dp = EasyScheme.size.cartoonCoverWidth,
     itemIsWidth : Boolean = true,
-    coverAspectRatio: Float = EasyScheme.size.cartoonCoverAspectRatio,
+    coverAspectRatio: Float? = EasyScheme.size.cartoonCoverAspectRatio,
     textColor: Color = Color.White,
     cartoonCover: CartoonCover,
     onClick: (CartoonCover) -> Unit,
@@ -86,7 +87,7 @@ fun CartoonCardWithCover(
     cartoonInfo: CartoonInfo,
     itemSize: Dp = EasyScheme.size.cartoonCoverWidth,
     itemIsWidth : Boolean = true,
-    coverAspectRatio: Float = EasyScheme.size.cartoonCoverAspectRatio,
+    coverAspectRatio: Float? = EasyScheme.size.cartoonCoverAspectRatio,
     textColor: Color = Color.White,
     onClick: (CartoonInfo) -> Unit,
     onLongPress: ((CartoonInfo) -> Unit)? = null,
@@ -116,16 +117,16 @@ fun CartoonCoverCardRect(
     itemSize: Dp = EasyScheme.size.cartoonCoverWidth,
     itemIsWidth : Boolean = true,
     cardBackgroundColor: Color? = null,
-    coverAspectRatio: Float = EasyScheme.size.cartoonCoverAspectRatio,
+    coverAspectRatio: Float? = EasyScheme.size.cartoonCoverAspectRatio,
 ) {
 
     val size = remember(
         itemIsWidth, itemSize
     ) {
         if (itemIsWidth) {
-            DpSize(itemSize, itemSize / coverAspectRatio)
+            DpSize(itemSize, if (coverAspectRatio == null) Dp.Unspecified else itemSize / coverAspectRatio)
         } else {
-            DpSize(itemSize * coverAspectRatio, itemSize)
+            DpSize(if (coverAspectRatio == null) Dp.Unspecified else itemSize * coverAspectRatio, itemSize)
         }
     }
 
@@ -152,9 +153,9 @@ fun CartoonCoverCard(
     cardBackgroundColor: Color? = null,
     itemSize: Dp = EasyScheme.size.cartoonCoverWidth,
     itemIsWidth : Boolean = true,
-    coverAspectRatio: Float = EasyScheme.size.cartoonCoverAspectRatio,
+    coverAspectRatio: Float? = EasyScheme.size.cartoonCoverAspectRatio,
     textColor: Color = MaterialTheme.colorScheme.onSurface,
-    onClick: () -> Unit,
+    onClick: (() -> Unit)? = null,
     onLongPress: (() -> Unit)? = null,
 ) {
 
@@ -162,9 +163,9 @@ fun CartoonCoverCard(
         itemIsWidth, itemSize
     ) {
         if (itemIsWidth) {
-            DpSize(itemSize, itemSize / coverAspectRatio)
+            DpSize(itemSize, if (coverAspectRatio == null) Dp.Unspecified else itemSize / coverAspectRatio)
         } else {
-            DpSize(itemSize * coverAspectRatio, itemSize)
+            DpSize(if (coverAspectRatio == null) Dp.Unspecified else itemSize * coverAspectRatio, itemSize)
         }
     }
 
@@ -173,14 +174,24 @@ fun CartoonCoverCard(
             .size(size)
 //            .aspectRatio(coverAspectRatio)
             .clip(RoundedCornerShape(16.dp))
-            .combinedClickable(
-                onClick = {
-                    onClick()
-                },
-                onLongClick = {
-                    onLongPress?.invoke()
+            .run {
+                if (onLongPress != null) {
+                    this.combinedClickable(
+                        onClick = {
+                            onClick?.invoke()
+                        },
+                        onLongClick = {
+                            onLongPress?.invoke()
+                        }
+                    )
+                } else if (onClick != null) {
+                    this.clickable {
+                        onClick()
+                    }
+                } else {
+                    this
                 }
-            ).run {
+            }.run {
                 if (cardBackgroundColor != null) {
                     background(cardBackgroundColor)
                 } else {

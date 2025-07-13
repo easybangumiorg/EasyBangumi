@@ -22,7 +22,7 @@ import com.easybangumi.next.shared.debug.DebugPage
 import kotlinx.serialization.Serializable
 import org.easybangumi.next.lib.utils.WeakRef
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
-import org.easybangumi.next.shared.ui.detail.DetailPage
+import org.easybangumi.next.shared.ui.detail.Detail
 import org.easybangumi.next.shared.ui.home.Home
 
 /**
@@ -145,7 +145,7 @@ fun Router() {
             composable<RouterPage.Detail> {
                 val cartoonIndex = it.toRoute<RouterPage.Detail>().cartoonIndex
                 NavHook(it) {
-                    DetailPage(cartoonIndex)
+                    Detail(cartoonIndex)
                 }
             }
         }

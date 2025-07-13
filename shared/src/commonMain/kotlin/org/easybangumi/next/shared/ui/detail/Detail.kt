@@ -3,7 +3,11 @@
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import org.easybangumi.next.shared.LocalNavController
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
+import org.easybangumi.next.shared.scheme.LocalSizeScheme
+import org.easybangumi.next.shared.source.bangumi.source.BangumiInnerSource
+import org.easybangumi.next.shared.ui.detail.bangumi.BangumiDetail
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -18,17 +22,16 @@ import org.easybangumi.next.shared.data.cartoon.CartoonIndex
  */
 @Composable
 fun Detail(cartoonIndex: CartoonIndex) {
-//    when (cartoonIndex.id) {
-//        BangumiInnerSource.SOURCE_ID -> {
-//            SourceBundleContainer(
-//                modifier = Modifier.fillMaxSize()
-//            ) {
-//                val bundle = it.componentBundle(cartoonIndex.id)
-//                val business = bundle?.getBusiness(MetaComponent::class) as?  ComponentBusiness<MetaComponent<BangumiMetaManager>>
-//                if (business != null) {
-////                    BangumiDetail(cartoonIndex, business)
-//                }
-//            }
-//        }
-//    }
+    val nav = LocalNavController.current
+    when (cartoonIndex.source) {
+        BangumiInnerSource.SOURCE_KEY -> {
+            BangumiDetail(
+                cartoonIndex = cartoonIndex,
+                contentPaddingTop = LocalSizeScheme.current.statusBarHeight,
+                onBack = {
+                    nav.popBackStack()
+                }
+            )
+        }
+    }
 }

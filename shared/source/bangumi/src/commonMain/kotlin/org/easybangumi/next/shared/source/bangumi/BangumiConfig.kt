@@ -1,4 +1,7 @@
-package org.easybangumi.next.shared.source.bangumi.business
+﻿package org.easybangumi.next.shared.source.bangumi
+
+import org.easybangumi.next.lib.unifile.UFD
+import org.easybangumi.next.lib.utils.pathProvider
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -15,6 +18,7 @@ data class BangumiConfig(
     val bangumiApiHost: String = DEFAULT_BANGUMI_API_HOST,
     val bangumiHtmlHost: String = DEFAULT_BANGUMI_HTML_HOST,
     val bangumiEmbedProxyHost: String = BANGUMI_EMBED_PROXY_HOST,
+    val bangumiCachePath: UFD = pathProvider.getCachePath("bangumi")
 ) {
 
     companion object {

@@ -34,7 +34,8 @@ class JsonlFileHelper<T: Any> (
 
     override fun serializer(data: List<T>, sink: BufferedSink) {
         data.forEach {
-            sink.writeUtf8(jsonSerializer.serialize(it))
+            val s = if (it is String) it else jsonSerializer.serialize(it)
+            sink.writeUtf8(s)
             sink.writeUtf8("\n")
         }
     }
@@ -43,8 +44,13 @@ class JsonlFileHelper<T: Any> (
         val res = arrayListOf<T>()
         while (true) {
             val line = source.readUtf8Line() ?: break
-            val data = jsonSerializer.deserialize(line, clazz, null) ?: break
-            res.add(data)
+            val ls = line as? T
+            if (clazz == String::class && ls != null){
+                res.add(ls)
+            } else {
+                val data = jsonSerializer.deserialize(line, clazz, null) ?: break
+                res.add(data)
+            }
         }
         return res
     }

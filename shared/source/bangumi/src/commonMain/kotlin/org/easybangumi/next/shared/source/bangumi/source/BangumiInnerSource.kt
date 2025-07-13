@@ -1,9 +1,9 @@
-﻿package org.easybangumi.next.shared.source.bangumi.component
+﻿package org.easybangumi.next.shared.source.bangumi.source
 
 import org.easybangumi.next.lib.utils.ResourceOr
 import org.easybangumi.next.shared.source.api.component.Component
 import org.easybangumi.next.shared.source.api.source.InnerSource
-import org.easybangumi.next.shared.source.bangumi.bangumiModule
+import org.easybangumi.next.shared.source.bangumi.bangumiSourceModule
 import org.koin.core.module.Module
 
 /**
@@ -30,9 +30,10 @@ class BangumiInnerSource: InnerSource() {
     override val version: Int = 1
 
     override val componentConstructor: Array<() -> Component> = arrayOf(
-        ::BangumiDiscoverComponent
+        ::BangumiDiscoverComponent,
+        ::BangumiDetailComponent
     )
 
     override val module: Module?
-        get() = bangumiModule
+        get() = bangumiSourceModule
 }
