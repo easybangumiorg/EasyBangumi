@@ -27,6 +27,7 @@ kotlin {
 
 
         desktopMain.dependencies {
+            api(projects.lib.webviewJcef)
         }
     }
 }

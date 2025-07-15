@@ -75,9 +75,7 @@ includeModule(":shared:ktor", "shared/ktor")
 includeModule(":shared:source", "shared/source")
 includeModule(":shared:source_api", "shared/source/api")
 includeModule(":shared:source_bangumi", "shared/source/bangumi")
-//includeModule(":shared:source_plugin", "shared/source/plugin")
-//includeModule(":shared:source_config", "shared/source/config")
-
+includeModule(":shared:source_webview_helper_jcef", "shared/source/webview_helper_jcef")
 
 // ------------- lib -------------
 includeModule(":lib", "lib")
@@ -86,6 +84,8 @@ includeModule(":lib:store", "lib/store")
 includeModule(":lib:unifile", "lib/unifile")
 includeModule(":lib:serialization", "lib/serialization")
 
+includeModule(":lib:webview", "lib/webview")
+includeModule(":lib:webview_jcef", "lib/webview/jcef")
 
 // -- 以下为独立代码层级 ---
 
@@ -104,7 +104,7 @@ includeModule(":logger", "logger")
 includeModule(":test", "test")
 
 //includeModule(":jcef", "jcef")
-includeModule(":kcef", "kcef")
+//includeModule(":kcef", "kcef")
 
 
 

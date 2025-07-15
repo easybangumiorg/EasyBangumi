@@ -16,9 +16,9 @@ import org.easybangumi.next.lib.unifile.UFD
 
 expect interface PathProvider {
 
-    fun getFilePath(path: String): UFD
+    fun getFilePath(type: String): UFD
 
-    fun getCachePath(path: String): UFD
+    fun getCachePath(type: String): UFD
 
 }
 

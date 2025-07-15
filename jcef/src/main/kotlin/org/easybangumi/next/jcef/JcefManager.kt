@@ -1,15 +1,14 @@
 ﻿package org.easybangumi.next.jcef
 
+import com.jetbrains.cef.JCefAppConfig
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
-import me.friwi.jcefmaven.CefAppBuilder
 import org.cef.CefApp
+import org.cef.misc.CefLog
 import org.slf4j.Logger
 import java.awt.EventQueue
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.coroutines.Continuation
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -27,6 +26,8 @@ object JcefManager {
     private val CefAppLocal = ThreadLocal<CefApp>()
     private val logger: Logger by JcefService.logger("JcefManager")
     private val init = AtomicBoolean(false)
+    @Volatile
+    private var isInitialized = false
     private val scope: CoroutineScope by lazy {
         CoroutineScope(SupervisorJob() + JcefService.service.getSingletonDispatcher() + CoroutineName("Jcef"))
     }
@@ -37,15 +38,15 @@ object JcefManager {
         EventQueue.invokeLater {
             logger.info("Running block on JCEF context")
             val app = innerGetCefApp()
+            if (!isInitialized) {
+
+            }
             try {
                 block(app)
             } catch (e: Throwable) {
                 logger.error("Error running block on JCEF context", e)
             }
         }
-//        scope.launch {
-//
-//        }
     }
 
     private fun innerGetCefApp(): CefApp {
@@ -60,10 +61,26 @@ object JcefManager {
 
     private fun initCefApp(): CefApp {
         if (init.compareAndSet(false, true)) {
-            var builder = CefAppBuilder()
-            builder = JcefService.service.onJcefInit(builder)
-            val app = builder.build()
-            return app
+            var config = JCefAppConfig.getInstance()
+
+            config = JcefService.service.onJcefInit(config)
+            try {
+                CefLog.init(config.cefSettings)
+                CefApp.startup(config.appArgs)
+                val app = CefApp.getInstance(config.appArgs, config.cefSettings)
+                app.onInitialization {
+                    if (it == CefApp.CefAppState.INITIALIZED) {
+                        logger.info("JCEF initialized successfully.")
+                        isInitialized = true
+                    } else {
+                        logger.error("JCEF initialization failed.")
+                    }
+                }
+                return app
+            } catch (e: Exception) {
+                logger.error("Failed to initialize JCEF", e)
+                throw e
+            }
         }
         throw IllegalStateException("JCEF is already initialized.")
     }

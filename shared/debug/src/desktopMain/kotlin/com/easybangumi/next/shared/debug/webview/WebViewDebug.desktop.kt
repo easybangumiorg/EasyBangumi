@@ -2,7 +2,6 @@
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Button
@@ -14,25 +13,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.SwingPanel
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.dp
 import com.easybangumi.next.shared.debug.DebugScope
-import com.multiplatform.webview.web.WebView
-import com.multiplatform.webview.web.WebViewFactoryParam
-import com.multiplatform.webview.web.rememberWebViewState
 import dev.datlag.kcef.KCEFBrowser
 import dev.datlag.kcef.KCEFClient
-import kotlinx.coroutines.flow.MutableStateFlow
 import org.cef.browser.CefBrowser
 import org.cef.browser.CefFrame
 import org.cef.browser.CefRendering
+import org.cef.browser.CefRequestContext
 import org.cef.callback.CefAuthCallback
 import org.cef.callback.CefCallback
 import org.cef.callback.CefDragData
-import org.cef.handler.CefLoadHandler
-import org.cef.handler.CefRenderHandler
-import org.cef.handler.CefRequestHandler
-import org.cef.handler.CefResourceRequestHandler
-import org.cef.handler.CefScreenInfo
+import org.cef.handler.*
 import org.cef.misc.BoolRef
 import org.cef.network.CefRequest
 import org.cef.security.CefSSLInfo
@@ -43,7 +34,6 @@ import java.awt.Dimension
 import java.awt.Point
 import java.awt.Rectangle
 import java.nio.ByteBuffer
-import javax.swing.JPanel
 
 private val logger = logger("WebViewDebug")
 
@@ -149,8 +139,37 @@ actual fun DebugScope.WebViewDebug() {
                 })
                 val browser = it.createBrowser(
                     "https://anime.girigirilove.com/playGV26662-1-1/",
-                    rendering = CefRendering.OFFSCREEN,
+                    rendering = CefRendering.DEFAULT,
+                    true,
+                    CefRequestContext.createContext { _, _, _, _, _, _, _ ->
+                        object : CefResourceRequestHandlerAdapter() {
+                            override fun onBeforeResourceLoad(
+                                browser: CefBrowser?,
+                                frame: CefFrame?,
+                                request: CefRequest?
+                            ): Boolean {
+                                if (request != null && browser != null) {
+                                    if (handleUrl(request, browser)) {
+                                        return true
+                                    }
+                                }
+                                return super.onBeforeResourceLoad(browser, frame, request)
+                            }
+
+                            /**
+                             * @return `true` to intercept
+                             */
+                            private fun handleUrl(
+                                request: CefRequest,
+                                browser: CefBrowser
+                            ): Boolean = synchronized(this) {
+                                logger.info("Handling URL: ${request.url}")
+                                return false
+                            }
+                        }
+                    },
                 )
+                browser.createImmediately()
             browser.wasResized(1080, 1080)
 //        browser.loadURL("https://anime.girigirilove.com/playGV26662-1-1/")
                 browser.loadURL("https://anime.girigirilove.com/playGV26662-1-1/")
@@ -160,10 +179,10 @@ actual fun DebugScope.WebViewDebug() {
 
                 browser.renderHandler.getViewRect(browser).setRect(0.0, 0.0, 1080.0, 1080.0)
 //                uicomponent.value = browser.uiComponent
-                browser.uiComponent?.size = Dimension(1080, 1080)
-                browser.uiComponent?.isVisible = true
+//                browser.uiComponent?.size = Dimension(1080, 1080)
+//                browser.uiComponent?.isVisible = true
 //                JPanel().add(browser.uiComponent)
-////        browser.wasResized(1080, 1080)
+                browser.wasResized(1080, 1080)
                 logger.info("Browser created: ${browser.url}")
             }
 

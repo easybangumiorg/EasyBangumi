@@ -6,7 +6,12 @@ plugins {
 dependencies {
     api(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
-    implementation(libs.slf4j.api)
+    implementation(projects.lib.unifile)
+    implementation(projects.lib.utils)
+    implementation(projects.lib.webviewJcef)
+    implementation(projects.shared.sourceApi)
+
+    implementation(projects.logger)
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.datetime)
     implementation(libs.kotlinx.coroutines.swing)

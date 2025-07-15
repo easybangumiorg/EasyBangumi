@@ -2,6 +2,7 @@ package org.easybangumi.next.lib.utils
 
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.unifile.UFD
+import java.io.File
 import kotlin.io.path.Path
 import kotlin.io.path.pathString
 
@@ -19,9 +20,13 @@ import kotlin.io.path.pathString
 
 actual interface PathProvider {
 
-    actual fun getFilePath(path: String): UFD
+    actual fun getFilePath(type: String): UFD
 
-    actual fun getCachePath(path: String): UFD
+    actual fun getCachePath(type: String): UFD
+
+    fun getCacheJvmPath(type: String): String
+
+    fun getFileJvmPath(type: String): String
 }
 
 private class PathProviderImpl : PathProvider {
@@ -82,14 +87,22 @@ private class PathProviderImpl : PathProvider {
         throw Exception("Desktop can not find cache path")
     }
 
-    override fun getFilePath(path: String): UFD {
-        val filePath = Path(filePathRoot).resolve(path).toAbsolutePath().pathString
+    override fun getFilePath(type: String): UFD {
+        val filePath = Path(filePathRoot).resolve(type).toAbsolutePath().pathString
         return UFD(UFD.TYPE_JVM, filePath)
     }
 
-    override fun getCachePath(path: String): UFD {
-        val filePath = Path(cachePathRoot).resolve(path).toAbsolutePath().pathString
+    override fun getCachePath(type: String): UFD {
+        val filePath = Path(cachePathRoot).resolve(type).toAbsolutePath().pathString
         return UFD(UFD.TYPE_JVM, filePath)
+    }
+
+    override fun getCacheJvmPath(type: String): String {
+        return File(cachePathRoot, type).absolutePath
+    }
+
+    override fun getFileJvmPath(type: String): String {
+        return File(filePathRoot, type).absolutePath
     }
 }
 

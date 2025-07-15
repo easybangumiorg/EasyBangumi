@@ -24,6 +24,7 @@ kotlin {
             api(projects.lib.unifile)
             api(projects.lib.utils)
             api(projects.lib.store)
+            api(projects.lib.webview)
 
 
         }

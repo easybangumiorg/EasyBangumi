@@ -10,4 +10,5 @@ actual fun AnimatedContentScope.NavHook(
     entity: NavBackStackEntry,
     content: @Composable (AnimatedContentScope.(NavBackStackEntry) -> Unit)
 ) {
+    content(entity)
 }

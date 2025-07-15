@@ -26,6 +26,8 @@ kotlin {
             implementation(libs.koin.core)
             implementation(libs.kotlinx.serialization.json)
 
+            implementation(libs.ksoup)
+
             implementation(projects.shared.platform)
             implementation(projects.shared.ktor)
             implementation(projects.shared.data)
@@ -35,7 +37,6 @@ kotlin {
             api(projects.shared.sourceBangumi)
             implementation(projects.lib)
 
-            implementation(libs.ksoup)
         }
 
         jvmMain.dependencies {
@@ -49,7 +50,7 @@ kotlin {
         desktopMain.dependencies {
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.java)
-            implementation(libs.jcef)
+//            implementation(libs.jcef)
 //
 //            implementation("me.friwi:jcef-natives-linux-amd64:jcef-ca49ada+cef-135.0.20+ge7de5c3+chromium-135.0.7049.85")
 //            implementation("me.friwi:jcef-natives-macosx-amd64:jcef-ca49ada+cef-135.0.20+ge7de5c3+chromium-135.0.7049.85")

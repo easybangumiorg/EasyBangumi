@@ -41,7 +41,6 @@ suspend fun main() {
 
         application {
             val windowState = rememberWindowState()
-//            WindowStateD
             Window(
                 onCloseRequest = ::exitApplication,
                 title = "EasyBangumi.next",
@@ -49,7 +48,6 @@ suspend fun main() {
                 state = windowState
             ) {
                 ComposeApp()
-
             }
         }
     } catch (e: Throwable) {

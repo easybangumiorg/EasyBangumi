@@ -28,6 +28,7 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.androidx.lifecycle.runtime.compose)
 
+            implementation(projects.lib.webview)
             implementation(projects.libplayer.libplayerApi)
             implementation(projects.lib)
             implementation(projects.shared.playcon)
@@ -48,7 +49,7 @@ kotlin {
             implementation(projects.libplayer.libplayerVlcj)
 
 //            implementation(libs.jcef)
-            implementation(projects.kcef)
+
             implementation(libs.compose.webview.multiplatform)
         }
 

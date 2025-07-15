@@ -1,9 +1,8 @@
 ﻿package org.easybangumi.next.jcef
 
+import com.jetbrains.cef.JCefAppConfig
 import kotlinx.coroutines.CoroutineDispatcher
-import me.friwi.jcefmaven.CefAppBuilder
 import org.slf4j.Logger
-import java.io.File
 import java.util.ServiceLoader
 
 /**
@@ -43,7 +42,7 @@ interface JcefService {
         }
     }
 
-    fun onJcefInit(builder: CefAppBuilder): CefAppBuilder
+    fun onJcefInit(config: JCefAppConfig): JCefAppConfig
 
     fun getSingletonDispatcher(): CoroutineDispatcher
 

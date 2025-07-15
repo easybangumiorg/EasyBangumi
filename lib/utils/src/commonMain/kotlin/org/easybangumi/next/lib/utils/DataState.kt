@@ -209,6 +209,6 @@ suspend fun <T : Any, R> T.withResult(context: CoroutineContext? = null, block: 
  */
 class DataStateException(
     val errorMsg: String,
-    val throwable: Throwable?,
+    val throwable: Throwable? = null,
     val isEmpty: Boolean = false,
 ) : Exception(errorMsg, throwable)
