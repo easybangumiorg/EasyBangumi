@@ -16,8 +16,8 @@ import org.easybangumi.next.lib.utils.DataState
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-class ComponentBusiness <T: Component> (
-    private val innerComponent: T,
+open class ComponentBusiness <T: Component> (
+    protected val innerComponent: T,
 ){
     suspend fun <R> async(block: suspend T.(CoroutineScope) -> DataState<R>): Deferred<DataState<R>> {
         return innerComponent.source.scope.async {

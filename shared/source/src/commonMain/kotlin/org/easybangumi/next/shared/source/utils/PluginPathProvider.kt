@@ -23,14 +23,14 @@ object PluginPathProvider {
 
     private val logger = logger()
 
-    fun getExtensionWorkPath(): UFD {
-        return pathProvider.getFilePath("extension").apply {
+    fun getPluginWorkPath(): UFD {
+        return pathProvider.getFilePath("plugin").apply {
             logger.info(this.toString())
         }
     }
 
-    fun getExtensionCachePath(): UFD {
-        return pathProvider.getCachePath("extension")
+    fun getPluginCachePath(): UFD {
+        return pathProvider.getCachePath("plugin")
     }
 
     fun getSourceControllerWorkPath(): UFD {

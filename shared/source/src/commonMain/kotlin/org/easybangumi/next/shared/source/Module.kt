@@ -1,10 +1,17 @@
 ﻿package org.easybangumi.next.shared.source
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import org.easybangumi.next.lib.utils.coroutineProvider
 import org.easybangumi.next.shared.source.case.DetailSourceCase
 import org.easybangumi.next.shared.source.case.DiscoverSourceCase
-import org.easybangumi.next.shared.source.core.inner.InnerSourceController
+import org.easybangumi.next.shared.source.case.PlaySourceCase
+import org.easybangumi.next.shared.source.core.inner.InnerSourceProvider
+import org.easybangumi.next.shared.source.core.source.SourceConfigController
+import org.easybangumi.next.shared.source.plugin.PluginSourceController
+import org.koin.core.context.loadKoinModules
+import org.koin.core.module.Module
 import org.koin.dsl.module
-import kotlin.math.sin
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -17,10 +24,19 @@ import kotlin.math.sin
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-
+expect val sourceModuleCore: Module
 val sourceModule = module {
     single {
-        InnerSourceController()
+        PlaySourceCase(get())
+    }
+    single {
+        SourceConfigController()
+    }
+    single {
+        InnerSourceProvider(get())
+    }
+    single {
+        PluginSourceController(CoroutineScope(SupervisorJob() + coroutineProvider.io()) , get(), get())
     }
     single {
         DiscoverSourceCase(get())
@@ -28,4 +44,5 @@ val sourceModule = module {
     single {
         DetailSourceCase(get())
     }
+    includes(sourceModuleCore)
 }

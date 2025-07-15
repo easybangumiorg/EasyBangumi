@@ -13,7 +13,7 @@
           <option value="app:desktop:run" />
         </list>
       </option>
-      <option name="vmOptions" />
+      <option name="vmOptions" value="-Dfile.encoding=UTF-8" />
     </ExternalSystemSettings>
     <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
     <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>

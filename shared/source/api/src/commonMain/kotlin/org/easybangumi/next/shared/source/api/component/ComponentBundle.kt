@@ -18,6 +18,7 @@ interface ComponentBundle {
 
     fun getSource(): Source
 
+    @Throws(ComponentBundleException::class)
     fun load()
 
     fun <T : Any> get(clazz: KClass<T>): T?
@@ -27,6 +28,8 @@ interface ComponentBundle {
     fun release()
 
 }
+
+class ComponentBundleException(message: String) : Exception(message)
 
 inline fun <reified T : Component> ComponentBundle.getBusiness(): ComponentBusiness<T>? {
     return getBusiness(T::class)

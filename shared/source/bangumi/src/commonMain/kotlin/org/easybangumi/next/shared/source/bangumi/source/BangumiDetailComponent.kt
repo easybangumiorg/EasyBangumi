@@ -77,7 +77,13 @@ class BangumiDetailComponent: DetailComponent, BaseComponent() {
             val page = key.toIntOrNull() ?: 1
             val rsp = bangumiApi.getEpisodeList(cartoonIndex.id, (page-1)*100, 100).await()
             return rsp.toDataState().map {
-                val nextKey = if (it.data.isEmpty()) null else (page + 1).toString()
+                var nextKey: String? = (page + 1).toString()
+                val total = it.total ?: 0L
+                val offset = it.offset ?: ((page - 1) * 100L)
+                if (total <= (offset + it.data.size) || it.data.isEmpty()) {
+                    nextKey = null
+                }
+
                 PagingFrame(nextKey, it.data)
             }
         }

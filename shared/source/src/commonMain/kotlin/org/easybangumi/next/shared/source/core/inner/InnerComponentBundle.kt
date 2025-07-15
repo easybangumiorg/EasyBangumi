@@ -9,7 +9,7 @@ import org.easybangumi.next.shared.source.api.component.ComponentBundle
 import org.easybangumi.next.shared.source.api.component.ComponentBusiness
 import org.easybangumi.next.shared.source.api.source.InnerSource
 import org.easybangumi.next.shared.source.api.source.Source
-import org.easybangumi.next.shared.source.core.SourceLibWrapper
+import org.easybangumi.next.shared.source.core.source.SourceLibWrapper
 import org.easybangumi.next.shared.source.core.utils.utilsModule
 import org.koin.core.Koin
 import org.koin.dsl.binds

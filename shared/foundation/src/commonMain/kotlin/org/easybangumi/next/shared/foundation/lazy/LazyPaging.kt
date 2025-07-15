@@ -69,81 +69,32 @@ fun <T : Any> LazyGridScope.pagingCommon(
 
     }
 
-//    var append = pagingItems.loadState.append
-//    if (append is LoadState.NotLoading) {
-//        append = pagingItems.loadState.source.append
-//    }
-//    when (append) {
-//        is LoadState.Loading -> {
-//            if (isShowLoading) {
-//                item(span = { GridItemSpan(maxLineSpan) }) {
-//                    LoadingElements(
-//                        modifier = Modifier.fillMaxWidth().height(height),
-//                        isRow = true,
-//                        loadingMsg = stringResource(Res.strings.loading),
-//                    )
-//                }
-//            }
-//        }
-//
-//        is LoadState.Error -> {
-//            item(span = { GridItemSpan(maxLineSpan) }) {
-//                val errorMsg =
-//                    append.error.message ?: stringResource(Res.strings.net_error)
-//                ErrorElements(
-//                    modifier = Modifier.fillMaxWidth().height(height),
-//                    isRow = true,
-//                    errorMsg = errorMsg,
-//                    onClick = if (canRetry) {{
-//                        pagingItems.retry()
-//                    }} else null,
-//                    other = {
-//                        Spacer(Modifier.size(12.dp))
-//                        Text(
-//                            text = stringResource(Res.strings.retry),
-//                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-//                            fontStyle = FontStyle.Italic
-//                        )
-//                    }
-//                )
-//            }
-//        }
-//
-//        else -> {}
-//    }
-
 
 }
 
 fun <T : Any> LazyListScope.pagingCommon(
+    height: Dp,
     pagingItems: LazyPagingItems<T>,
     isShowLoading: Boolean = true,
     canRetry: Boolean = true,
 ) {
 
-    var append = pagingItems.loadState.append
-    if (append is LoadState.NotLoading) {
-        append = pagingItems.loadState.source.append
-    }
-    when (append) {
-        is LoadState.Loading -> {
-            if (isShowLoading) {
-                item {
-                    LoadingElements(
-                        modifier = Modifier.fillMaxWidth(),
-                        isRow = true,
-                        loadingMsg = stringResource(Res.strings.loading),
-                    )
-                }
-            }
+    if (pagingItems.isLoading() && isShowLoading) {
+        item() {
+            LoadingElements(
+                modifier = Modifier.fillMaxWidth().height(height),
+                isRow = true,
+                loadingMsg = stringResource(Res.strings.loading),
+            )
         }
-
-        is LoadState.Error -> {
-            item {
+    } else {
+        val err = pagingItems.getError()
+        if (err != null) {
+            item() {
                 val errorMsg =
-                    append.error.message ?: stringResource(Res.strings.net_error)
+                    err.error.message ?: stringResource(Res.strings.net_error)
                 ErrorElements(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().height(height),
                     isRow = true,
                     errorMsg = errorMsg,
                     onClick = if (canRetry) {{
@@ -161,7 +112,6 @@ fun <T : Any> LazyListScope.pagingCommon(
             }
         }
 
-        else -> {}
     }
 
 

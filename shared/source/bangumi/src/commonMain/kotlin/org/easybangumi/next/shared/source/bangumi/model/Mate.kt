@@ -30,14 +30,29 @@ data class BgmEpisode (
     @SerialName("duration") val duration: String? = null,
     @SerialName("desc") val desc: String? = null,
     @SerialName("ep") val ep: Long? = null,
-    @SerialName("sort") val sort: Long? = null,
+    @SerialName("sort") val sort: Float? = null,
     @SerialName("id") val id: Long? = null,
     @SerialName("subject_id") val subjectID: Long? = null,
     @SerialName("comment") val comment: Long? = null,
     @SerialName("type") val type: Long? = null,
     @SerialName("disc") val disc: Long? = null,
     @SerialName("duration_seconds") val durationSeconds: Long? = null
-)
+) {
+    val displayName: String by lazy {
+        nameCN?.ifEmpty { name } ?: name ?: ""
+    }
+
+    val displayEp: String by lazy {
+        sort ?: return@lazy ""
+        val sortI = sort.toInt()
+        if (sort - sortI == 0f) {
+            "EP.$sortI"
+        } else {
+            "EP.$sort"
+        }
+    }
+
+}
 
 @Serializable
 data class BgmPerson (

@@ -33,6 +33,11 @@ dependencies {
     api(projects.libplayer.libplayerVlcj)
 
     api(builds.kotlinPoet)
+
+//    api(projects.jcef)
+//    api(libs.jcef)
+    api(projects.kcef)
+    api(libs.kcef)
 }
 
 compose.desktop {
@@ -54,6 +59,14 @@ compose.desktop {
                 "-Dawt.useSystemAAFontSettings=lcd",
                 "-Dswing.aatext=true",
                 "-Dsun.java2d.metal=true",
+                "--add-exports=java.base/java.lang=ALL-UNNAMED",
+                "--add-exports=java.desktop/sun.awt=ALL-UNNAMED",
+                "--add-exports=java.desktop/sun.java2d=ALL-UNNAMED",
+                "--add-opens=java.desktop/java.awt.peer=ALL-UNNAMED",
+                "--add-opens=java.desktop/sun.awt=ALL-UNNAMED",
+                "-Dsun.java2d.metal=true",
+                "-Djogamp.debug.JNILibLoader=true", // JCEF 加载 native 库的日志, 方便 debug
+                "-Dcompose.interop.blending=true"
             )
         )
 

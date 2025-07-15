@@ -30,6 +30,7 @@ dependencyResolutionManagement {
         mavenCentral()
         maven { url = uri("https://jitpack.io") }
         maven { url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/") }
+        maven("https://jogamp.org/deployment/maven")
     }
 
     versionCatalogs {
@@ -74,12 +75,8 @@ includeModule(":shared:ktor", "shared/ktor")
 includeModule(":shared:source", "shared/source")
 includeModule(":shared:source_api", "shared/source/api")
 includeModule(":shared:source_bangumi", "shared/source/bangumi")
-//includeModule(":shared:source_core", "shared/source/core")
-
-//includeModule(":shared:business", "shared/business")
-//includeModule(":shared:plugin", "shared/plugin")
-//includeModule(":shared:plugin:plugin_api", "shared/plugin/api")
-//includeModule(":shared:plugin:plugin_bangumi", "shared/plugin/bangumi")
+//includeModule(":shared:source_plugin", "shared/source/plugin")
+//includeModule(":shared:source_config", "shared/source/config")
 
 
 // ------------- lib -------------
@@ -105,6 +102,9 @@ includeModule(":logger", "logger")
 
 // ------------- test -------------
 includeModule(":test", "test")
+
+//includeModule(":jcef", "jcef")
+includeModule(":kcef", "kcef")
 
 
 

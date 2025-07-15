@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import com.easybangumi.next.shared.debug.color.ColorDebug
 import com.easybangumi.next.shared.debug.player.PlayerDebug
 import com.easybangumi.next.shared.debug.shimmer.ShimmerDebug
+import com.easybangumi.next.shared.debug.webview.WebViewDebug
 import kotlinx.serialization.Serializable
 
 /**
@@ -42,7 +43,8 @@ enum class DebugPage(
     HOME("Debug Home"),
     PLAYER("Player Debug"),
     SHIMMER("Shimmer Debug"),
-    COLOR("Color Debug");
+    COLOR("Color Debug"),
+    WEB_VIEW("WebView Debug"),
 }
 
 class DebugScope (
@@ -68,6 +70,9 @@ fun DebugHost(
                 }
                 DebugPage.COLOR -> {
                     ColorDebug()
+                }
+                DebugPage.WEB_VIEW -> {
+                    WebViewDebug()
                 }
             }
         }

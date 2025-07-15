@@ -34,6 +34,7 @@ kotlin {
             implementation(projects.shared.foundation)
             implementation(projects.shared.resources)
             implementation(projects.shared.scheme)
+
         }
 
         androidMain.dependencies {
@@ -45,6 +46,10 @@ kotlin {
             implementation(compose.ui)
             implementation(projects.libplayer.libplayerApi)
             implementation(projects.libplayer.libplayerVlcj)
+
+//            implementation(libs.jcef)
+            implementation(projects.kcef)
+            implementation(libs.compose.webview.multiplatform)
         }
 
         iosMain.dependencies {

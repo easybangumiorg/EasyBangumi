@@ -1,6 +1,7 @@
 package org.easybangumi.next.shared.source.core.utils
 
 import org.easybangumi.next.shared.source.api.utils.PreferenceHelper
+import org.koin.core.module.Module
 import org.koin.dsl.bind
 import org.koin.dsl.module
 import kotlin.reflect.KClass
@@ -16,6 +17,7 @@ import kotlin.reflect.KClass
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
+expect val utilsModuleExpect: Module
 internal val utilsModule = module {
     single {
         PreferenceHelperImpl(it.get())

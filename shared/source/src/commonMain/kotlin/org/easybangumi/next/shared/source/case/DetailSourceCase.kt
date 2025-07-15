@@ -3,7 +3,7 @@
 import org.easybangumi.next.shared.source.api.component.ComponentBusiness
 import org.easybangumi.next.shared.source.api.component.detail.DetailComponent
 import org.easybangumi.next.shared.source.bangumi.source.BangumiDetailComponent
-import org.easybangumi.next.shared.source.core.inner.InnerSourceController
+import org.easybangumi.next.shared.source.core.inner.InnerSourceProvider
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -18,11 +18,11 @@ import org.easybangumi.next.shared.source.core.inner.InnerSourceController
  */
 
 class DetailSourceCase(
-    private val innerSourceController: InnerSourceController,
+    private val innerSourceProvider: InnerSourceProvider,
 ) {
 
     fun getBangumiDetailBusiness(): ComponentBusiness<BangumiDetailComponent> {
-        return innerSourceController.bangumiSourceInfo.componentBundle.getBusiness(
+        return innerSourceProvider.bangumiComponentBundle.getBusiness(
             DetailComponent::class,
         ) as? ComponentBusiness<BangumiDetailComponent> ?: throw IllegalStateException("BangumiDetailComponent not found")
     }

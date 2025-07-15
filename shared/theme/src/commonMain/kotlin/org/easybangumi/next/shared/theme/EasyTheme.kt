@@ -36,7 +36,7 @@ fun EasyTheme(content: @Composable () -> Unit) {
     }
 
     MaterialTheme(
-//        colorScheme = colorScheme,
+        colorScheme = colorScheme,
         typography = Typography,
         content = content
     )

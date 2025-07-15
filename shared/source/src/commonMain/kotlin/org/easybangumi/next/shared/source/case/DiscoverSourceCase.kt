@@ -3,7 +3,7 @@
 import org.easybangumi.next.shared.source.api.component.ComponentBusiness
 import org.easybangumi.next.shared.source.api.component.discover.DiscoverComponent
 import org.easybangumi.next.shared.source.bangumi.source.BangumiDiscoverComponent
-import org.easybangumi.next.shared.source.core.inner.InnerSourceController
+import org.easybangumi.next.shared.source.core.inner.InnerSourceProvider
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -18,11 +18,11 @@ import org.easybangumi.next.shared.source.core.inner.InnerSourceController
  */
 
 class DiscoverSourceCase (
-    private val innerSourceController: InnerSourceController,
+    private val innerSourceProvider: InnerSourceProvider,
 ){
 
     fun getBangumiDiscoverBusiness(): ComponentBusiness<BangumiDiscoverComponent> {
-        return innerSourceController.bangumiSourceInfo.componentBundle.getBusiness(DiscoverComponent::class) as? ComponentBusiness<BangumiDiscoverComponent>
+        return innerSourceProvider.bangumiComponentBundle.getBusiness(DiscoverComponent::class) as? ComponentBusiness<BangumiDiscoverComponent>
             ?: throw IllegalStateException("BangumiDiscoverComponent not found")
     }
 

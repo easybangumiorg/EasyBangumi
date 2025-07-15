@@ -38,6 +38,10 @@ kotlin {
             implementation(libs.ksoup)
         }
 
+        jvmMain.dependencies {
+            implementation(projects.javascript.rhino)
+        }
+
         androidMain.dependencies {
 
         }
@@ -45,6 +49,12 @@ kotlin {
         desktopMain.dependencies {
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.java)
+            implementation(libs.jcef)
+//
+//            implementation("me.friwi:jcef-natives-linux-amd64:jcef-ca49ada+cef-135.0.20+ge7de5c3+chromium-135.0.7049.85")
+//            implementation("me.friwi:jcef-natives-macosx-amd64:jcef-ca49ada+cef-135.0.20+ge7de5c3+chromium-135.0.7049.85")
+//            implementation("me.friwi:jcef-natives-macosx-arm64:jcef-ca49ada+cef-135.0.20+ge7de5c3+chromium-135.0.7049.85")
+//            implementation("me.friwi:jcef-natives-windows-amd64:jcef-ca49ada+cef-135.0.20+ge7de5c3+chromium-135.0.7049.85")
         }
         iosMain.dependencies {
 

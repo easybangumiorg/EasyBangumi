@@ -2,6 +2,7 @@
 
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
@@ -70,6 +71,8 @@ class BangumiDetailViewModel(
        coverUrl(cartoonIndex)
     }
 
+    private val episodeInit = atomic(false)
+
     init {
         viewModelScope.launch {
             combine(
@@ -77,6 +80,9 @@ class BangumiDetailViewModel(
                 characterRepository.flow,
                 personRepository.flow,
             ) { subject, character, person ->
+                if (subject.isOk()) {
+                    tryInitEpisode()
+                }
                 update {
                     it.copy(
                         subjectState = subject,
@@ -114,6 +120,12 @@ class BangumiDetailViewModel(
         val pagingFlow = getCommentPagingFlow().cachedIn(viewModelScope)
         update {
             it.copy(commentPaging = pagingFlow)
+        }
+    }
+
+    fun tryInitEpisode() {
+        if (episodeInit.compareAndSet(false, update = true)) {
+            refreshEpisodeList()
         }
     }
 

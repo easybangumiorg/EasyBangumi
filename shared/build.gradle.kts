@@ -8,6 +8,7 @@ plugins {
     alias(builds.plugins.kotlinCompose)
     alias(builds.plugins.compose)
     alias(libs.plugins.kotlinxSerialization)
+    alias(libs.plugins.kotlinxAtomicfu)
     id("EasyLibBuild")
 }
 kotlin {
@@ -46,6 +47,7 @@ kotlin {
             implementation(libs.paging.multiplatform.compose)
             implementation(libs.md3.window.size)
             implementation(libs.kotlinx.serialization.json)
+//            implementation(libs.kotlinx.atomicfu.gradle)
 
             api(projects.lib)
 //

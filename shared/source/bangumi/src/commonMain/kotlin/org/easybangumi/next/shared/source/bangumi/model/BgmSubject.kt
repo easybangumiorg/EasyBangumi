@@ -52,6 +52,10 @@ data class BgmSubject(
     @SerialName("type") val type: Int? = null
 ) {
 
+    val displayName: String by lazy {
+        nameCn?.ifEmpty { name } ?: name ?: ""
+    }
+
     val displayEpisode: String? by lazy {
         totalEpisodes ?: return@lazy null
         eps ?: return@lazy null

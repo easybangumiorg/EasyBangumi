@@ -19,11 +19,8 @@ import org.easybangumi.next.shared.data.cartoon.PlayerLine
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-
-interface PlayComponent: Component {
-
-
-    // 搜索播放线路
+interface IPlayComponent {
+    // 搜索播放实体
     data class PlayLineSearchParam(
         // 来源番的数据
         val cartoonCover: CartoonCover,
@@ -32,16 +29,16 @@ interface PlayComponent: Component {
         // 用户手动输入的 url，可能为空
         val webUrl: String? = null,
     )
-
-    data class PlayLineSearchResultItem(
-        val fromCartoonCover: CartoonPlayCover,
-        val playLineList: List<PlayerLine>,
-    )
+    suspend fun searchPlayCovers(
+        param: PlayLineSearchParam,
+        // 因为搜索播放一般只需要前几个结果，因此这里不用支持分页了直接指定 limit
+        limit: Int = 0,
+    ): DataState<List<CartoonPlayCover>>
 
     // 搜索播放线路
-    suspend fun searchPlayLines(
-        param: PlayLineSearchParam,
-    ): DataState<List<PlayLineSearchResultItem>>
+    suspend fun getPlayLines(
+        cartoonCover: CartoonPlayCover,
+    ): DataState<List<List<PlayerLine>>>
 
 
     suspend fun getPlayInfo(
@@ -49,5 +46,6 @@ interface PlayComponent: Component {
         playerLine: PlayerLine,
         episode: Episode,
     ): DataState<PlayInfo>
-
 }
+
+interface PlayComponent: Component, IPlayComponent

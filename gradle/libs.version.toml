@@ -71,6 +71,12 @@ constraintlayout-compose = "1.0.1"
 
 kache = "2.1.1"
 
+javafx_webview = "22.0.2"
+
+jcef = "135.0.20"
+kcef = "2025.03.23"
+compose-webview = "2.0.1"
+
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidx-core-ktx" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidx-appcompat" }
@@ -176,6 +182,14 @@ ksoup = { group = "com.fleeksoft.ksoup", name = "ksoup", version.ref = "ksoup" }
 
 kache = { group = "com.mayakapps.kache", name = "kache", version.ref = "kache" }
 kache-file = { group = "com.mayakapps.kache", name = "file-kache", version.ref = "kache" }
+
+javafx-webview = { group = "org.openjfx", name = "javafx-web", version.ref = "javafx_webview" }
+
+jcef = { group = "me.friwi", name = "jcefmaven", version.ref = "jcef" }
+
+kcef = { group = "dev.datlag", name = "kcef", version.ref = "kcef" }
+
+compose-webview-multiplatform = { group = "io.github.kevinnzou", name = "compose-webview-multiplatform", version.ref = "compose-webview" }
 
 [plugins]
 kotlinxSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin-serialization-plugin" }
