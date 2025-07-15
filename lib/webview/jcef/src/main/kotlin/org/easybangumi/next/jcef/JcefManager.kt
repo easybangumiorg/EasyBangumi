@@ -19,6 +19,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.concurrent.thread
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -114,6 +115,15 @@ object JcefManager {
 
     private fun initCefApp(): CefApp? {
         if (init.compareAndSet(false, true)) {
+            Runtime.getRuntime().addShutdownHook(
+                thread(start = false) {
+                    runOnJcefContext(false) {
+                        if (it is CefAppState.Initialized) {
+                            it.cefApp.dispose()
+                        }
+                    }
+                },
+            )
             try {
                 val config = makeJcefConfig()
                 CefLog.init(config.cefSettings)
