@@ -24,6 +24,7 @@ import org.easybangumi.next.lib.utils.WeakRef
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.ui.detail.Detail
 import org.easybangumi.next.shared.ui.home.Home
+import kotlin.reflect.KClass
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -45,14 +46,14 @@ internal var innerNavControllerRef: WeakRef<NavHostController>? = null
 val navController: NavHostController? get() = innerNavControllerRef?.targetOrNull
 
 
-class RouterPage {
+sealed class RouterPage {
     @Serializable
-    object Main
+    object Main: RouterPage()
 
     @Serializable
     data class Debug(
         val debugPageName: String,
-    ) {
+    ): RouterPage() {
         companion object  {
             val HOME = Debug(DebugPage.HOME.name)
         }
@@ -66,7 +67,7 @@ class RouterPage {
         val id: String,
         val source: String,
         val ext: String,
-    ) {
+    ): RouterPage() {
         companion object {
             fun fromCartoonIndex(cartoonIndex: CartoonIndex): Detail {
                 return Detail(
@@ -95,9 +96,9 @@ class RouterPage {
 
 
 
-
 @Composable
 expect fun AnimatedContentScope.NavHook(
+    routerPage: RouterPage,
     entity: NavBackStackEntry,
     content: @Composable AnimatedContentScope.(NavBackStackEntry) -> Unit
 )
@@ -120,14 +121,15 @@ fun Router() {
         ) {
 
             composable<RouterPage.Main> {
-                NavHook(it ) {
+                val main = it.toRoute<RouterPage.Main>()
+                NavHook(main, it) {
                     Home()
                 }
             }
 
             composable<RouterPage.Debug>() {
                 val debugPage = it.toRoute<RouterPage.Debug>()
-                NavHook(it) {
+                NavHook(debugPage, it) {
                     DebugHost(
                         debugPage.toRoute(),
                         onNav = {
@@ -143,8 +145,9 @@ fun Router() {
             }
 
             composable<RouterPage.Detail> {
-                val cartoonIndex = it.toRoute<RouterPage.Detail>().cartoonIndex
-                NavHook(it) {
+                val detail = it.toRoute<RouterPage.Detail>()
+                val cartoonIndex = detail.cartoonIndex
+                NavHook(detail, it) {
                     Detail(cartoonIndex)
                 }
             }

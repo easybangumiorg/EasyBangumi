@@ -5,10 +5,12 @@ import android.os.Bundle
 import android.view.View
 import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import org.easybangumi.next.shared.ActivityHost
 import org.easybangumi.next.shared.ComposeApp
 import org.easybangumi.next.shared.Scheduler
+import org.easybangumi.next.shared.utils.MediaUtils
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -28,11 +30,16 @@ class EasyActivity : ComponentActivity() {
         // huawei crash
         setContentView(FrameLayout(this))
         Scheduler.onInit()
-        window.decorView.systemUiVisibility =
-            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-        window.statusBarColor = Color.TRANSPARENT
+        MediaUtils.setIsDecorFitsSystemWindows(this, false)
+        MediaUtils.setStatusBarColor(this, Color.TRANSPARENT)
+        MediaUtils.setNavBarColor(this, Color.TRANSPARENT)
+//        window.decorView.systemUiVisibility =
+//            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+//        window.statusBarColor = Color.TRANSPARENT
         setContent {
+
             ActivityHost(this@EasyActivity) {
+
                 ComposeApp()
             }
         }

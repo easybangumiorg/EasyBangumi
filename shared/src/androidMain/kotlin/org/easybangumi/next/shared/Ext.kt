@@ -3,8 +3,11 @@ package org.easybangumi.next.shared
 import android.app.Activity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalContext
+import org.easybangumi.next.shared.foundation.systembar.EasySystemBarContext
+import org.easybangumi.next.shared.foundation.systembar.LocalEasySystemBar
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -25,10 +28,15 @@ fun ActivityHost(
     activity: Activity,
     content: @Composable () -> Unit
 ) {
+    val systemBar = remember(activity) {
+        EasySystemBarContext(activity)
+    }
     CompositionLocalProvider(
         LocalActivity provides activity,
-        LocalContext provides activity
+        LocalContext provides activity,
+        LocalEasySystemBar provides systemBar
     ) {
+        systemBar.Effect()
         content()
     }
 
