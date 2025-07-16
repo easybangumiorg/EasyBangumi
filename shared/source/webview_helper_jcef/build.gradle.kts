@@ -16,4 +16,8 @@ dependencies {
     implementation(libs.kotlinx.datetime)
     implementation(libs.kotlinx.coroutines.swing)
 //    implementation(libs.jcef)
+
+    testImplementation(libs.kotlin.test)
+    testImplementation(libs.log4j.core)
+    testImplementation(libs.log4j.slf4j.impl)
 }

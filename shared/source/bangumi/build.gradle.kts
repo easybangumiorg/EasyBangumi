@@ -58,8 +58,17 @@ kotlin {
             implementation(libs.kotlin.test)
             implementation(libs.ktor.client.mock)
             implementation(libs.ktor.client.logging)
-            implementation(projects.test)
+//            implementation(projects.test)
             implementation(libs.koin.test)
+        }
+
+        val desktopTest by getting
+        desktopTest.dependencies {
+            implementation(libs.ktor.client.mock)
+            implementation(libs.ktor.client.logging)
+            implementation(libs.log4j.core)
+            implementation(libs.log4j.slf4j.impl)
+            implementation(projects.shared.sourceWebviewHelperJcef)
         }
     }
 }

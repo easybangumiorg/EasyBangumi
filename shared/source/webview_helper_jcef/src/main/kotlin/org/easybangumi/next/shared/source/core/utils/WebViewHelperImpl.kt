@@ -1,6 +1,8 @@
 ﻿package org.easybangumi.next.shared.source.core.utils
 
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
+import org.cef.CefClient
 import org.cef.browser.CefBrowser
 import org.cef.browser.CefFrame
 import org.cef.browser.CefRendering
@@ -35,24 +37,30 @@ import kotlin.coroutines.suspendCoroutine
  */
 
 class WebViewHelperImpl(
-    private val source: Source
+    private val scope: CoroutineScope
 ): WebViewHelper {
 
     private val logger = logger()
 
     companion object {
-        private val blockRes: Array<String> = arrayOf(
-            ".css",
-            ".mp4", ".ts",
-            ".mp3", ".m4a",
-            ".gif", ".jpg", ".png", ".webp"
-        )
+        private val defaultBlockRe = ".*\\.(css|mp3|m4a|gif|jpg|png|webp)$"
     }
+
+    data class RenderedAction(
+        val strategy: WebViewHelper.RenderedStrategy,
+        var startTime: Long,
+
+        var client: CefClient? = null,
+        var browser: CefBrowser? = null,
+        var matchUrl: String? = null,
+        val content: String? = null,
+        var continuation: Continuation<WebViewHelper.RenderedResult>? = null,
+    )
 
     override suspend fun renderedHtml(
         strategy: WebViewHelper.RenderedStrategy
     ): WebViewHelper.RenderedResult {
-        return source.scope.async(
+        return scope.async(
             coroutineProvider.io()
         ) {
             suspendCoroutine {
@@ -66,63 +74,69 @@ class WebViewHelperImpl(
         continuation: Continuation<WebViewHelper.RenderedResult>
     ) {
         JcefManager.runOnJcefContext {
-            if (it is JcefManager.CefAppState.Initialized) {
+            when (it) {
+                is JcefManager.CefAppState.Initialized -> {
+                    logger.info("Rendering HTML with strategy: $strategy")
+                    val app = it.cefApp
+                    val client = app.createClient()
+                    val browser = client.createBrowser(
+                        strategy.url,
+                        CefRendering.DEFAULT,
+                        true,
+                        CefRequestContext.createContext { p0, p1, p2, p3, p4, p5, p6 ->
+                            EasyCefResourceRequestHandlerAdapter(
+                                strategy,
+                                JcefResourceHandler(strategy, continuation)
+                            )
+                        }
+                    )
 
-                val cefApp = it.cefApp
-                logger.info("Rendering HTML with strategy: $strategy")
-                val app = it.cefApp
-                val client = app.createClient()
-                val browser = client.createBrowser(
-                    strategy.url,
-                    CefRendering.DEFAULT,
-                    true,
-                    CefRequestContext.createContext { p0, p1, p2, p3, p4, p5, p6 ->
-                        EasyCefResourceRequestHandlerAdapter(
-                            strategy,
-                            JcefResourceHandler(strategy, continuation)
-                        )
-                    }
-                )
-                client.addLoadHandler(object: CefLoadHandler {
-                    override fun onLoadEnd(p0: CefBrowser?, p1: CefFrame?, p2: Int) {
-                        JcefManager.runOnJcefContext(false) {
-                            if (strategy.actionJs != null) {
-                                p0?.executeJavaScript(strategy.actionJs, "", 1)
-                                logger.info("Executing action JS: ${strategy.actionJs}")
-                            } else {
-                                logger.info("No action JS to execute")
+                    client.addLoadHandler(object: CefLoadHandler {
+                        override fun onLoadEnd(p0: CefBrowser?, p1: CefFrame?, p2: Int) {
+                            JcefManager.runOnJcefContext(false) {
+                                if (strategy.actionJs != null) {
+                                    p0?.executeJavaScript(strategy.actionJs, "", 1)
+                                    logger.info("Executing action JS: ${strategy.actionJs}")
+                                } else {
+                                    logger.info("No action JS to execute")
+                                }
                             }
                         }
-                    }
 
-                    override fun onLoadingStateChange(
-                        p0: CefBrowser?,
-                        p1: Boolean,
-                        p2: Boolean,
-                        p3: Boolean
-                    ) { }
+                        override fun onLoadingStateChange(
+                            p0: CefBrowser?,
+                            p1: Boolean,
+                            p2: Boolean,
+                            p3: Boolean
+                        ) { }
 
-                    override fun onLoadStart(
-                        p0: CefBrowser?,
-                        p1: CefFrame?,
-                        p2: CefRequest.TransitionType?
-                    ) { }
+                        override fun onLoadStart(
+                            p0: CefBrowser?,
+                            p1: CefFrame?,
+                            p2: CefRequest.TransitionType?
+                        ) { }
 
-                    override fun onLoadError(
-                        p0: CefBrowser?,
-                        p1: CefFrame?,
-                        p2: CefLoadHandler.ErrorCode?,
-                        p3: String?,
-                        p4: String?
-                    ) { }
-                })
+                        override fun onLoadError(
+                            p0: CefBrowser?,
+                            p1: CefFrame?,
+                            p2: CefLoadHandler.ErrorCode?,
+                            p3: String?,
+                            p4: String?
+                        ) { }
+                    })
 
-                browser.setCloseAllowed()
-                browser.createImmediately()
-            } else if (it is JcefManager.CefAppState.Error) {
-                continuation.resumeWith(Result.failure(DataStateException("JCEF initialization failed")))
-            } else {
-                continuation.resumeWith(Result.failure(DataStateException("JCEF is not initialized yet")))
+                    browser.setCloseAllowed()
+                    browser.createImmediately()
+                    browser.wasResized(1080, 1080)
+                }
+
+                is JcefManager.CefAppState.Error -> {
+                    continuation.resumeWith(Result.failure(DataStateException("JCEF initialization failed")))
+                }
+
+                else -> {
+                    continuation.resumeWith(Result.failure(DataStateException("JCEF is not initialized yet")))
+                }
             }
         }
 
@@ -163,7 +177,8 @@ class WebViewHelperImpl(
                 return true
             }
 
-            if (strategy.needInterceptResource && blockRes.any { request.url.contains(it) }) {
+
+            if (strategy.needInterceptResource && strategy.interceptResRegex.matches(request.url)) {
                 return true
             }
             return super.onBeforeResourceLoad(browser, frame, request)
@@ -188,18 +203,21 @@ class WebViewHelperImpl(
             url: String,
             browser: CefBrowser
         ): Boolean {
+            logger.info("Handling request for URL: $url")
             val targetRegex = Regex(strategy.callBackRegex)
             if (targetRegex.matches(url)) {
+                logger.info("Matched callback regex: ${strategy.callBackRegex} for URL: $url")
                 if (strategy.needContent) {
                     JcefManager.runOnJcefContext(false) {
                         browser.getSource {
                             val content = it ?: ""
-//                            logger.info("Content fetched from browser: ${content.take(100)}...") // Log first 100 chars
+                            logger.info("Content fetched from browser: ${content.take(100)}...") // Log first 100 chars
                             continuation.resumeWith(Result.success(
                                 WebViewHelper.RenderedResult(strategy, null, content, url)
                             ))
                         }
                     }
+                    return false
                 } else {
                     continuation.resumeWith(Result.success(
                         WebViewHelper.RenderedResult(strategy, null, null, url)

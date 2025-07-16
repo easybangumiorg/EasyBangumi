@@ -43,14 +43,19 @@ kotlin {
         }
 
         desktopMain.dependencies {
+
+
             implementation(compose.desktop.currentOs)
             implementation(compose.ui)
             implementation(projects.libplayer.libplayerApi)
             implementation(projects.libplayer.libplayerVlcj)
 
 //            implementation(libs.jcef)
+            implementation(projects.shared.sourceApi)
+            implementation(projects.shared.sourceWebviewHelperJcef)
 
-            implementation(libs.compose.webview.multiplatform)
+//            implementation(libs.compose.webview.multiplatform)
+            implementation(libs.kotlinx.coroutines.swing)
         }
 
         iosMain.dependencies {
