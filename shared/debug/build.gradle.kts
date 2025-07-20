@@ -36,10 +36,11 @@ kotlin {
             implementation(projects.shared.resources)
             implementation(projects.shared.scheme)
 
+            implementation(projects.lib.webviewApi)
         }
 
         androidMain.dependencies {
-
+            implementation(projects.lib.webviewWebkit)
         }
 
         desktopMain.dependencies {
@@ -53,6 +54,9 @@ kotlin {
 //            implementation(libs.jcef)
             implementation(projects.shared.sourceApi)
             implementation(projects.shared.sourceWebviewHelperJcef)
+
+            implementation(projects.lib.webviewApi)
+            implementation(projects.lib.webviewJcef)
 
 //            implementation(libs.compose.webview.multiplatform)
             implementation(libs.kotlinx.coroutines.swing)

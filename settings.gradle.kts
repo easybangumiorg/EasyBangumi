@@ -85,7 +85,9 @@ includeModule(":lib:unifile", "lib/unifile")
 includeModule(":lib:serialization", "lib/serialization")
 
 includeModule(":lib:webview", "lib/webview")
+includeModule(":lib:webview_api", "lib/webview/api")
 includeModule(":lib:webview_jcef", "lib/webview/jcef")
+includeModule(":lib:webview_webkit", "lib/webview/webkit")
 
 // -- 以下为独立代码层级 ---
 

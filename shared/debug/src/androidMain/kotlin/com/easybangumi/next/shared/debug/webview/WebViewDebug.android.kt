@@ -2,7 +2,9 @@
 
 import androidx.compose.runtime.Composable
 import com.easybangumi.next.shared.debug.DebugScope
+import org.easybangumi.next.lib.webview.IWebView
+import org.easybangumi.next.webkit.WebKitWebViewProxy
 
-@Composable
-actual fun DebugScope.WebViewDebug() {
+actual fun getWebView(): IWebView {
+    return WebKitWebViewProxy()
 }

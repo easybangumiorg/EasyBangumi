@@ -40,6 +40,9 @@ object JcefManager {
     private val logger by lazy {
         JcefManager.logger()
     }
+    private val singleScope by lazy {
+        CoroutineScope(SupervisorJob() + coroutineProvider.newSingle() + CoroutineName("JcefSingle"))
+    }
     private val ioScope by lazy {
         CoroutineScope(SupervisorJob() + coroutineProvider.io() + CoroutineName("JcefIo"))
     }
@@ -59,9 +62,9 @@ object JcefManager {
         waitingForInit: Boolean = true,
         block: (CefAppState) -> Unit
     ){
-        EventQueue.invokeLater {
-            logger.info("Running block on JCEF context")
-
+        // EventQueue.invokeLater
+        singleScope.launch {
+//            logger.info("Running block on JCEF context")
             try {
                 val app = innerGetCefApp()
                 if (isError || app == null) {
