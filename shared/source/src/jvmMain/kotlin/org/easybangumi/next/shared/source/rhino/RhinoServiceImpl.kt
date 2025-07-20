@@ -1,7 +1,6 @@
 ﻿package org.easybangumi.next.shared.source.rhino
 
 import kotlinx.coroutines.CoroutineDispatcher
-import org.apache.logging.log4j.Logger
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.coroutineProvider
 import org.easybangumi.next.rhino.RhinoService

@@ -53,7 +53,6 @@ kotlin {
 
 //            implementation(libs.jcef)
             implementation(projects.shared.sourceApi)
-            implementation(projects.shared.sourceWebviewHelperJcef)
 
             implementation(projects.lib.webviewApi)
             implementation(projects.lib.webviewJcef)

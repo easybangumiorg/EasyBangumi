@@ -71,11 +71,12 @@ includeModule(":shared:scheme", "shared/scheme")
 includeModule(":shared:debug", "shared/debug")
 includeModule(":shared:playcon", "shared/playcon")
 includeModule(":shared:ktor", "shared/ktor")
+includeModule(":shared:media_radar", "shared/media_radar")
 
 includeModule(":shared:source", "shared/source")
 includeModule(":shared:source_api", "shared/source/api")
 includeModule(":shared:source_bangumi", "shared/source/bangumi")
-includeModule(":shared:source_webview_helper_jcef", "shared/source/webview_helper_jcef")
+
 
 // ------------- lib -------------
 includeModule(":lib", "lib")

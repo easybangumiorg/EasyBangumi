@@ -20,14 +20,14 @@ kotlin {
 
 
         commonMain.dependencies {
+            api(projects.lib.webviewApi)
         }
         androidMain.dependencies {
-
+            api(projects.lib.webviewWebkit)
         }
 
 
         desktopMain.dependencies {
-            api(projects.lib.webviewApi)
             api(projects.lib.webviewJcef)
         }
     }

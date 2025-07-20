@@ -8,6 +8,8 @@ import org.cef.handler.CefLoadHandler
 import org.cef.handler.CefMessageRouterHandlerAdapter
 import org.cef.handler.CefResourceRequestHandlerAdapter
 import org.cef.network.CefRequest
+import org.easybangumi.next.lib.utils.coroutineProvider
+import org.easybangumi.next.lib.utils.safeResume
 import org.easybangumi.next.lib.webview.IWebView
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.resume
@@ -27,6 +29,7 @@ import kotlin.coroutines.suspendCoroutine
  *  这一坨逻辑有时间再来优化
  */
 class JcefWebViewProxy : IWebView {
+
 
     companion object {
         val BLOB_HOOK_JS = """
@@ -55,10 +58,21 @@ class JcefWebViewProxy : IWebView {
                 onFailure: function(error_code, error_message) { /* ... */ }
             });
         """.trimIndent()
+
+        private val singleDispatcher: CoroutineDispatcher by lazy {
+            coroutineProvider.newSingle()
+        }
     }
+
+
+    private val ioScope by lazy {
+        CoroutineScope(SupervisorJob() + coroutineProvider.io() + CoroutineName("JcefWebViewProxy-io"))
+    }
+    private val singleScope = CoroutineScope(SupervisorJob() + singleDispatcher + CoroutineName("JcefWebViewProxy-single"))
 
     @Volatile
     private var url: String? = null
+    private var interceptResRegex: Regex? = null
     @Volatile
     private var userAgent: String? = null
     @Volatile
@@ -69,8 +83,6 @@ class JcefWebViewProxy : IWebView {
     private val hasInjectBlobJs = AtomicBoolean(false)
 
 
-    @Volatile
-    private var interceptResRegex: Regex? = null
 
     @Volatile
     private var cefClient: CefClient? = null
@@ -85,16 +97,25 @@ class JcefWebViewProxy : IWebView {
     @Volatile
     private var isLoadEnd = false
 
-    @Volatile
-    private var lastWaitingForPageLoaded: CancellableContinuation<Unit>? = null
+    sealed class State {
+        abstract val continuation: CancellableContinuation<*>
+        class WaitingForPageLoaded(
+            override val continuation: CancellableContinuation<Unit>,
+        ): State()
 
-    @Volatile
-    private var resourceRegex: Regex? = null
-    @Volatile
-    private var lastWaitingForResourceLoaded: CancellableContinuation<String?>? = null
+        class WaitingForGetContent(
+            override val continuation: CancellableContinuation<String?>,
+        ): State()
 
-    @Volatile
-    private var lastGetContent: CancellableContinuation<String?>? = null
+        class WaitingForResourceLoaded(
+            val resourceRegex: Regex,
+            override val continuation: CancellableContinuation<String?>,
+        ): State()
+    }
+
+    private var state: State? = null
+
+
 
     private val messageRouterHandlerAdapter = object: CefMessageRouterHandlerAdapter() {
         override fun onQuery(
@@ -108,25 +129,23 @@ class JcefWebViewProxy : IWebView {
             request ?: return super.onQuery(browser, frame, queryId, request, persistent, callback)
             when {
                 request.startsWith("blob:") -> {
-                    if (needBlob) {
+                    singleScope.launch {
                         val blobUrl = request.removePrefix("blob:")
-                        JcefManager.runOnJcefContext(false) {
-                            resourceList.add(blobUrl)
-                            val cal = lastWaitingForResourceLoaded
-                            val regex = resourceRegex
-                            if (cal != null && regex != null) {
-                                if (regex.matches(blobUrl)) {
-                                    cal.resume(blobUrl)
-                                }
+                        resourceList.add(blobUrl)
+                        (state as? State.WaitingForResourceLoaded)?.let {
+                            if (it.resourceRegex.matches(blobUrl)) {
+                                it.continuation.safeResume(blobUrl)
                             }
                         }
-                        return true
                     }
+                    return true
                 }
                 request.startsWith("content:") -> {
-                    val content = request.removePrefix("content:")
-                    JcefManager.runOnJcefContext(false) {
-                        lastGetContent?.resume(content)
+                    singleScope.launch {
+                        (state as? State.WaitingForGetContent)?.let {
+                            val content = request.removePrefix("content:")
+                            it.continuation.safeResume(content)
+                        }
                     }
                     return true
                 }
@@ -138,7 +157,8 @@ class JcefWebViewProxy : IWebView {
     private val requestHandlerAdapter = object : CefResourceRequestHandlerAdapter() {
         override fun onBeforeResourceLoad(browser: CefBrowser?, frame: CefFrame?, request: CefRequest?): Boolean {
             request ?: return super.onBeforeResourceLoad(browser, frame, request)
-            if (request.url == url) {
+            val url = request.url ?: return super.onBeforeResourceLoad(browser, frame, request)
+            if (request.url == this@JcefWebViewProxy.url) {
                 userAgent?.let {
                     request.setHeaderByName("User-Agent", it, true)
                 }
@@ -146,13 +166,16 @@ class JcefWebViewProxy : IWebView {
                     request.setHeaderByName(key, value, true)
                 }
             } else {
-                resourceList.add(request.url)
-                val regex = interceptResRegex
-                if (regex != null && regex.matches(request.url)) {
-                    JcefManager.runOnJcefContext(false) {
-                        val cal = lastWaitingForResourceLoaded
-                        cal?.resume(request.url)
+                singleScope.launch {
+                    resourceList.add(url)
+                    (state as? State.WaitingForResourceLoaded)?.let {
+                        if (it.resourceRegex.matches(url)) {
+                            it.continuation.safeResume(url)
+                        }
                     }
+                }
+                if (interceptResRegex?.matches(url) == true) {
+                    return true // Intercept the request
                 }
             }
             return super.onBeforeResourceLoad(browser, frame, request)
@@ -186,7 +209,9 @@ class JcefWebViewProxy : IWebView {
         override fun onLoadEnd(p0: CefBrowser?, p1: CefFrame?, p2: Int) {
             JcefManager.runOnJcefContext(false) {
                 isLoadEnd = true
-                lastWaitingForPageLoaded?.resume(Unit)
+                singleScope.launch {
+                    (state as? State.WaitingForPageLoaded)?.continuation?.safeResume(Unit)
+                }
             }
         }
 
@@ -239,15 +264,15 @@ class JcefWebViewProxy : IWebView {
                             bs.wasResized(1080, 1080)
                             cefClient = ct
                             browser = bs
-                            continuation.resume(true)
+                            continuation.safeResume(true)
                         } catch (e: Exception) {
                             // there is something wrong
-                            continuation.resume(false)
+                            continuation.safeResume(false)
                         }
 
                     } else {
                         // If the CefApp is not initialized, we cannot proceed.
-                        continuation.resume(false)
+                        continuation.safeResume(false)
                     }
                 }
             }
@@ -257,34 +282,27 @@ class JcefWebViewProxy : IWebView {
 
     }
 
-    override suspend fun waitingForPageLoaded(timeout: Long) {
+    override suspend fun waitingForPageLoaded(timeout: Long): Boolean {
         if (isLoadEnd) {
-            return
+            return true
         }
-        if (lastWaitingForPageLoaded != null) {
-            throw IllegalStateException("waitingForPageLoaded is already in progress, please wait for it to complete.")
-        }
-        var continuationTemp: CancellableContinuation<Unit>? = null
-        withTimeout(timeout) {
-            suspendCancellableCoroutine<Unit> { continuation ->
-                continuationTemp = continuation
-                if (isLoadEnd) {
-                    continuation.resume(Unit)
-                    return@suspendCancellableCoroutine
-                }
-                JcefManager.runOnJcefContext(false) {
-                    if (isLoadEnd) {
-                        continuation.resume(Unit)
-                        return@runOnJcefContext
-                    } else {
-                        lastWaitingForPageLoaded = continuation
-                    }
-                }
+        state?.continuation?.cancel()
+        val winner = CompletableDeferred<Boolean>()
+        singleScope.async {
+            if (isLoadEnd) {
+                winner.complete(isLoadEnd)
+                return@async
+            }
+
+            suspendCancellableCoroutine<Unit> {
+                state = State.WaitingForPageLoaded(it)
             }
         }
-        if (lastWaitingForPageLoaded == continuationTemp) {
-            lastWaitingForPageLoaded = null
+        ioScope.async {
+            delay(timeout)
+            winner.complete(isLoadEnd)
         }
+        return winner.await()
     }
 
     override suspend fun waitingForResourceLoaded(
@@ -292,65 +310,61 @@ class JcefWebViewProxy : IWebView {
         sticky: Boolean,
         timeout: Long
     ): String? {
-        val regex = Regex(resourceRegex)
-        this.resourceRegex = regex
-        val sourceListTemp = resourceList.toList()
+
         if (sticky) {
-            val res = sourceListTemp.firstOrNull { Regex(resourceRegex).matches(it) }
+            val res = resourceList.toList().firstOrNull { Regex(resourceRegex).matches(it) }
             if (res != null) {
                 return res
             }
         }
-        if (lastWaitingForResourceLoaded != null) {
-            throw IllegalStateException("waitingForResourceLoaded is already in progress, please wait for it to complete.")
-        }
-        var continuationTemp: CancellableContinuation<String?>? = null
-        val res = withTimeoutOrNull(timeout) {
-            suspendCancellableCoroutine<String?> { continuation ->
-                continuationTemp = continuation
-                JcefManager.runOnJcefContext(false) {
-                    // double check
-                    if (sticky) {
-                        val sourceListTemp = resourceList.toList()
-                        val res = sourceListTemp.firstOrNull { Regex(resourceRegex).matches(it) }
-                        if (res != null) {
-                            continuation.resume(res)
-                            return@runOnJcefContext
-                        }
-                    }
-                    lastWaitingForResourceLoaded = continuation
+        state?.continuation?.cancel()
+        val winner = CompletableDeferred<String?>()
+        val regex = Regex(resourceRegex)
+        singleScope.launch {
+            if (sticky) {
+                val res = resourceList.toList().firstOrNull { Regex(resourceRegex).matches(it) }
+                if (res != null) {
+                    winner.complete(res)
+                    return@launch
                 }
             }
+            suspendCancellableCoroutine<String?> {
+                state = State.WaitingForResourceLoaded(regex, it)
+            }
+
         }
-        if (lastWaitingForResourceLoaded == continuationTemp) {
-            lastWaitingForResourceLoaded = null
+        ioScope.launch {
+            delay(timeout)
+            winner.complete(null)
         }
-        return res
+
+        return winner.await()
     }
 
     override suspend fun getContent(timeout: Long): String? {
-        if (lastGetContent != null) {
-            throw IllegalStateException("getContent is already in progress, please wait for it to complete.")
-        }
-        var continuationTemp: CancellableContinuation<String?>? = null
-        val content = suspendCancellableCoroutine<String?> { continuation ->
-            continuationTemp = continuation
-            JcefManager.runOnJcefContext(false) {
-                lastGetContent = continuation
-                browser?.executeJavaScript(GET_CONTENT_JS, "", 0)
+        state?.continuation?.cancel()
+        val winner = CompletableDeferred<String?>()
+        singleScope.launch {
+            val res = suspendCancellableCoroutine<String?> {
+                state = State.WaitingForGetContent(it)
+                JcefManager.runOnJcefContext(false) {
+                    browser?.executeJavaScript(GET_CONTENT_JS, "", 0)
+                }
             }
+            winner.complete(res)
         }
-        if (lastGetContent == continuationTemp) {
-            lastGetContent = null
+        ioScope.launch {
+            delay(timeout)
+            winner.complete(null)
         }
-        return content
+        return winner.await()
     }
 
     override suspend fun executeJavaScript(script: String, delay: Long) {
         suspendCoroutine<Unit> { continuation ->
             JcefManager.runOnJcefContext(false) {
                 browser?.executeJavaScript(script, "", 0)
-                continuation.resume(Unit)
+                continuation.safeResume(Unit)
             }
         }
         delay(delay)
@@ -364,11 +378,7 @@ class JcefWebViewProxy : IWebView {
             browser = null
             cefClient = null
         }
-        lastWaitingForPageLoaded?.cancel()
-        lastWaitingForResourceLoaded?.cancel()
-        lastGetContent?.cancel()
-        lastWaitingForPageLoaded = null
-        lastWaitingForResourceLoaded = null
-        lastGetContent = null
+        state?.continuation?.cancel()
+        state = null
     }
 }

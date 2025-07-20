@@ -1,6 +1,8 @@
 ﻿package org.easybangumi.next.shared.source.api.component.play
 
 import org.easybangumi.next.lib.utils.DataState
+import org.easybangumi.next.lib.utils.EasyPagingSource
+import org.easybangumi.next.lib.utils.PagingFrame
 import org.easybangumi.next.shared.source.api.component.Component
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.data.cartoon.CartoonPlayCover
@@ -26,19 +28,24 @@ interface IPlayComponent {
         val cartoonCover: CartoonCover,
         // 用户手动输入的搜索关键字，可能为空
         val keyword: String? = null,
-        // 用户手动输入的 url，可能为空
-        val webUrl: String? = null,
     )
+
+    fun getFirstKey(): String
+
     suspend fun searchPlayCovers(
         param: PlayLineSearchParam,
-        // 因为搜索播放一般只需要前几个结果，因此这里不用支持分页了直接指定 limit
-        limit: Int = 0,
-    ): DataState<List<CartoonPlayCover>>
+        key: String,
+    ): DataState<PagingFrame<CartoonPlayCover>>
+
+    fun createSearchPlayPagingSource(
+        param: PlayLineSearchParam,
+    ): EasyPagingSource<CartoonPlayCover>
 
     // 搜索播放线路
     suspend fun getPlayLines(
         cartoonCover: CartoonPlayCover,
     ): DataState<List<List<PlayerLine>>>
+
 
 
     suspend fun getPlayInfo(

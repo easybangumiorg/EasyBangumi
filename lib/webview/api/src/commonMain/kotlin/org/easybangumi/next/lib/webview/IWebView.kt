@@ -25,7 +25,7 @@ interface IWebView: AutoCloseable {
 
     suspend fun waitingForPageLoaded(
         timeout: Long = 5000L
-    )
+    ): Boolean
 
     suspend fun waitingForResourceLoaded(
         resourceRegex: String,

@@ -79,6 +79,8 @@ compose-webview = "2.0.1"
 
 androidx-webkit = "1.14.0"
 
+commons_text = "1.10.0"
+
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidx-core-ktx" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidx-appcompat" }
@@ -194,6 +196,9 @@ kcef = { group = "dev.datlag", name = "kcef", version.ref = "kcef" }
 compose-webview-multiplatform = { group = "io.github.kevinnzou", name = "compose-webview-multiplatform", version.ref = "compose-webview" }
 
 androidx-webkit = { group = "androidx.webkit", name = "webkit", version.ref = "androidx-webkit" }
+
+commons_text = { module = "org.apache.commons:commons-text", version.ref = "commons_text" }
+
 [plugins]
 kotlinxSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin-serialization-plugin" }
 mokoResources = { id = "dev.icerock.mobile.multiplatform-resources" }

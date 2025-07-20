@@ -35,7 +35,7 @@ kotlin {
             implementation(projects.logger)
             api(projects.shared.sourceApi)
             api(projects.shared.sourceBangumi)
-            implementation(projects.lib)
+            api(projects.lib)
 
         }
 

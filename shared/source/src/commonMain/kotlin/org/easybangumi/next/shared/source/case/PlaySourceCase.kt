@@ -1,5 +1,6 @@
 ﻿package org.easybangumi.next.shared.source.case
 
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -32,6 +33,10 @@ class PlaySourceCase(
     )
 
     suspend fun findPlayBusiness(): FindPlayBusinessResp {
+        return playBusinessFlow().first()
+    }
+
+    fun playBusinessFlow(): Flow<FindPlayBusinessResp> {
         return sourceController.flow.map {
             val isLoading = it.isLoading
             val res = arrayListOf<ComponentBusiness<PlayComponent>>()
@@ -44,7 +49,7 @@ class PlaySourceCase(
                 businessList = res,
                 isLoading = isLoading,
             )
-        }.first()
+        }
     }
 
 }

@@ -47,6 +47,8 @@ private suspend fun test1() {
         "https://anime.girigirilove.com/playGV26627-2-1/",
     )
     webview.waitingForPageLoaded(5000L)
+    val resource = webview.waitingForResourceLoaded(".*Player.*", true)
+    logger.info("WebView resource: ${resource}")
     val content = webview.getContent(500L)
     logger.info("WebView content: ${content}")
     webview.close()

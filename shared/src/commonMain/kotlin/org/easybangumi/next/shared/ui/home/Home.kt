@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -184,7 +185,16 @@ fun Home() {
                 ) {
                     Box(modifier = Modifier.fillMaxSize()) {
                         HomePageList[it].content()
+                        if (platformInformation.isDebug) {
+                            Text(
+                                modifier = Modifier.align(Alignment.TopStart).padding(64.dp).clickable {
+                                    navController.navigate(RouterPage.Debug.HOME)
+                                },
+                                text = "Debug Mode"
+                            )
+                        }
                     }
+
                 }
             }
         } else {
@@ -196,6 +206,14 @@ fun Home() {
                 ) {
                     Box(modifier = Modifier.fillMaxSize()) {
                         HomePageList[it].content()
+                        if (platformInformation.isDebug) {
+                            Text(
+                                modifier = Modifier.align(Alignment.TopStart).padding(64.dp).clickable {
+                                    navController.navigate(RouterPage.Debug.HOME)
+                                },
+                                text = "Debug Mode"
+                            )
+                        }
                     }
                 }
                 NavigationBar(
@@ -221,15 +239,8 @@ fun Home() {
                 }
             }
         }
-        Text(
-            modifier = Modifier.align(Alignment.TopStart).clickable {
-                navController.navigate(RouterPage.Debug.HOME)
-            },
-            text = "Debug Mode"
-        )
-        if (platformInformation.isDebug) {
 
-        }
+
     }
 
 

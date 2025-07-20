@@ -68,7 +68,6 @@ kotlin {
             implementation(libs.ktor.client.logging)
             implementation(libs.log4j.core)
             implementation(libs.log4j.slf4j.impl)
-            implementation(projects.shared.sourceWebviewHelperJcef)
         }
     }
 }

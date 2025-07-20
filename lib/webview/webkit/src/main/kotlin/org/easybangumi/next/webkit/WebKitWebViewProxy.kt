@@ -5,6 +5,7 @@ import android.webkit.*
 import kotlinx.coroutines.*
 import org.easybangumi.next.lib.utils.coroutineProvider
 import org.easybangumi.next.lib.utils.global
+import org.easybangumi.next.lib.utils.safeResume
 import org.easybangumi.next.lib.webview.IWebView
 import java.io.ByteArrayInputStream
 import java.util.concurrent.atomic.AtomicBoolean
@@ -73,15 +74,20 @@ class WebKitWebViewProxy: IWebView {
     @Volatile
     private var isLoadEnd = false
 
-    @Volatile
-    private var lastGetContent: CancellableContinuation<String?>? = null
-    @Volatile
-    private var lastWaitingForPageLoaded: CancellableContinuation<Unit>? = null
+    sealed class State {
+        abstract val continuation: CancellableContinuation<*>
+        class WaitingForPageLoaded(
+            override val continuation: CancellableContinuation<Unit>,
+        ): State()
 
-    @Volatile
-    private var resourceRegex: Regex? = null
-    @Volatile
-    private var lastWaitingForResourceLoaded: CancellableContinuation<String?>? = null
+        class WaitingForResourceLoaded(
+            val resourceRegex: Regex,
+            override val continuation: CancellableContinuation<String?>,
+        ): State()
+    }
+
+    private var state: State? = null
+
 
     private val webViewClient = object: WebViewClient() {
         override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
@@ -95,7 +101,7 @@ class WebKitWebViewProxy: IWebView {
             super.onPageFinished(view, url)
             singleScope.launch {
                 isLoadEnd = true
-                lastWaitingForPageLoaded?.resume(Unit)
+                (state as? State.WaitingForPageLoaded)?.continuation?.safeResume(Unit)
             }
         }
 
@@ -104,13 +110,16 @@ class WebKitWebViewProxy: IWebView {
             if (url != this@WebKitWebViewProxy.url) {
                 singleScope.launch {
                     resourceList.add(url)
-                    if (resourceRegex?.matches(url) == true) {
-                        lastWaitingForResourceLoaded?.resume(url)
+                    (state as? State.WaitingForResourceLoaded)?.let {
+                        if (it.resourceRegex.matches(url) == true) {
+                            it.continuation.safeResume(url)
+                        }
                     }
+
                 }
             }
 
-            if (resourceRegex?.matches(url) != true && interceptResRegex?.matches(url) == true) {
+            if (interceptResRegex?.matches(url) == true) {
                 return blockWebResourceRequest
             }
 
@@ -147,8 +156,10 @@ class WebKitWebViewProxy: IWebView {
                         fun handleWrapper(blobTextData: String) {
                             singleScope.launch {
                                 resourceList.add(blobTextData)
-                                if (resourceRegex?.matches(blobTextData) == true) {
-                                    lastWaitingForResourceLoaded?.resume(url)
+                                (state as? State.WaitingForResourceLoaded)?.let {
+                                    if (it.resourceRegex.matches(blobTextData) == true) {
+                                        it.continuation.safeResume(blobTextData)
+                                    }
                                 }
                             }
                         }
@@ -162,34 +173,27 @@ class WebKitWebViewProxy: IWebView {
         }
     }
 
-    override suspend fun waitingForPageLoaded(timeout: Long) {
+    override suspend fun waitingForPageLoaded(timeout: Long): Boolean {
         if (isLoadEnd) {
-            return
+            return true
         }
-        if (lastWaitingForPageLoaded != null) {
-            throw IllegalStateException("waitingForPageLoaded is already in progress, please wait for it to complete.")
-        }
-        var continuationTemp: CancellableContinuation<Unit>? = null
-        withTimeout(timeout) {
-            suspendCancellableCoroutine<Unit> { continuation ->
-                continuationTemp = continuation
-                if (isLoadEnd) {
-                    continuation.resume(Unit)
-                    return@suspendCancellableCoroutine
-                }
-                singleScope.launch {
-                    if (isLoadEnd) {
-                        continuation.resume(Unit)
-                    } else {
-                        lastWaitingForPageLoaded = continuation
-                    }
-                }
+        state?.continuation?.cancel()
+        val winner = CompletableDeferred<Boolean>()
+        singleScope.async {
+            if (isLoadEnd) {
+                winner.complete(isLoadEnd)
+                return@async
+            }
 
+            suspendCancellableCoroutine<Unit> {
+                state = State.WaitingForPageLoaded(it)
             }
         }
-        if (lastWaitingForPageLoaded == continuationTemp) {
-            lastWaitingForPageLoaded = null
+        mainScope.async {
+            delay(timeout)
+            winner.complete(isLoadEnd)
         }
+        return winner.await()
     }
 
     override suspend fun waitingForResourceLoaded(
@@ -197,57 +201,58 @@ class WebKitWebViewProxy: IWebView {
         sticky: Boolean,
         timeout: Long
     ): String? {
-        val regex = Regex(resourceRegex)
-        this.resourceRegex = regex
-        val sourceListTemp = resourceList.toList()
         if (sticky) {
-            val res = sourceListTemp.firstOrNull { Regex(resourceRegex).matches(it) }
+            val res = resourceList.toList().firstOrNull { Regex(resourceRegex).matches(it) }
             if (res != null) {
                 return res
             }
         }
-        if (lastWaitingForResourceLoaded != null) {
-            throw IllegalStateException("waitingForResourceLoaded is already in progress, please wait for it to complete.")
-        }
-        var continuationTemp: CancellableContinuation<String?>? = null
-        val res = withTimeoutOrNull(timeout) {
-            suspendCancellableCoroutine<String?> { continuation ->
-                continuationTemp = continuation
-                singleScope.launch {
-                    if (sticky) {
-                        val sourceListTemp = resourceList.toList()
-                        val res = sourceListTemp.firstOrNull { Regex(resourceRegex).matches(it) }
-                        if (res != null) {
-                            continuation.resume(res)
-                            return@launch
-                        } else {
-                            lastWaitingForResourceLoaded = continuation
-                        }
-                    }
+        state?.continuation?.cancel()
+        val winner = CompletableDeferred<String?>()
+        val regex = Regex(resourceRegex)
+        singleScope.launch {
+            if (sticky) {
+                val res = resourceList.toList().firstOrNull { Regex(resourceRegex).matches(it) }
+                if (res != null) {
+                    winner.complete(res)
+                    return@launch
                 }
             }
+            suspendCancellableCoroutine<String?> {
+                state = State.WaitingForResourceLoaded(regex, it)
+            }
+
         }
-        if (lastWaitingForResourceLoaded == continuationTemp) {
-            lastWaitingForResourceLoaded = null
+        mainScope.launch {
+            delay(timeout)
+            winner.complete(null)
         }
-        return res
+
+        return winner.await()
     }
 
     override suspend fun getContent(timeout: Long): String? {
         if (webView == null) {
             throw IllegalStateException("WebView is not initialized, please call loadUrl first.")
         }
-        return withTimeoutOrNull(timeout) {
-            suspendCancellableCoroutine<String?> { continuation ->
-                lastGetContent = continuation
-                lastWaitingForPageLoaded
-                webView?.evaluateJavascript(
-                    "(function() { return document.documentElement.outerHTML })()",
-                ) {
-                    continuation.resume(it)
+
+        state?.continuation?.cancel()
+        val winner = CompletableDeferred<String?>()
+        singleScope.launch {
+            val res = suspendCancellableCoroutine<String?> { continuation ->
+                mainScope.launch {
+                    webView?.evaluateJavascript("(function() { return document.documentElement.outerHTML })()") {
+                        continuation.safeResume(StringEscapeUtils.unescapeEcmaScript(it))
+                    }
                 }
             }
+            winner.complete(res)
         }
+        mainScope.launch {
+            delay(timeout)
+            winner.complete(null)
+        }
+        return winner.await()
     }
 
     override suspend fun executeJavaScript(script: String, delay: Long) {
@@ -258,12 +263,8 @@ class WebKitWebViewProxy: IWebView {
     }
 
     override fun close() {
-        lastWaitingForPageLoaded?.cancel()
-        lastWaitingForResourceLoaded?.cancel()
-        lastGetContent?.cancel()
-        lastWaitingForPageLoaded = null
-        lastWaitingForResourceLoaded = null
-        lastGetContent = null
+        state?.continuation?.cancel()
+        state = null
         webView?.let {
             webViewManager.recycle(it)
         }

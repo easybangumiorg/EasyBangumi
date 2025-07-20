@@ -22,4 +22,5 @@ internal val utilsModule = module {
     single {
         PreferenceHelperImpl(it.get())
     }.bind<PreferenceHelper>()
+    includes(utilsModuleExpect)
 }
