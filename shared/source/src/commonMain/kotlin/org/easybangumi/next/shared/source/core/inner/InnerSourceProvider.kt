@@ -57,7 +57,7 @@ class InnerSourceProvider(
 
     override val flow: Flow<DataState<List<SourceInfo>>> by lazy {
         sourceConfigController.sourceConfigFlow.map {
-            it.map {
+            it.map { map ->
                 listOf(
                     // bangumi 无法关闭和排序
                     SourceInfo.Loaded(
@@ -71,11 +71,13 @@ class InnerSourceProvider(
                     ),
                     SourceInfo.Loaded(
                         manifest = gglSource.manifest,
-                        sourceConfig = it.getOrDefault(gglSource.key, SourceConfig(
-                            key = gglSource.key,
-                            enable = true,
-                            order = 0
-                        )),
+                        sourceConfig =  map.getOrElse(gglSource.key) {
+                            SourceConfig(
+                                key = gglSource.key,
+                                enable = true,
+                                order = 0,
+                            )
+                        },
                         componentBundle = gglComponentBundle
                     )
                 )

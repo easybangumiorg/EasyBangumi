@@ -1,7 +1,6 @@
 ﻿package org.easybangumi.next.shared.source.plugin
 
 import kotlinx.atomicfu.atomic
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow

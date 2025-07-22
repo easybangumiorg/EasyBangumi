@@ -1,6 +1,7 @@
-﻿package org.easybangumi.next.shared.media_radar
+package com.easybangumi.next.shared.debug.media_radar
 
 import androidx.compose.runtime.Composable
+import com.easybangumi.next.shared.debug.DebugScope
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -14,9 +15,6 @@ import androidx.compose.runtime.Composable
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 @Composable
-fun MediaRadarPanel(
-    state: MediaRadarState,
-) {
-
+fun DebugScope.MediaRadarDebug() {
 
 }
