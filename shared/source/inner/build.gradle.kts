@@ -5,8 +5,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(builds.plugins.kotlinMultiplatform)
     alias(builds.plugins.androidLibrary)
-    alias(libs.plugins.kotlinxAtomicfu)
     alias(libs.plugins.kotlinxSerialization)
+    alias(libs.plugins.kotlinxAtomicfu)
     id("EasyLibBuild")
 }
 kotlin {
@@ -25,23 +25,21 @@ kotlin {
             implementation(libs.coil.ktor3)
             implementation(libs.koin.core)
             implementation(libs.kotlinx.serialization.json)
-
-            implementation(libs.ksoup)
+            implementation(libs.kache.file)
 
             implementation(projects.shared.platform)
             implementation(projects.shared.ktor)
             implementation(projects.shared.data)
             implementation(projects.shared.resources)
             implementation(projects.logger)
-            api(projects.shared.sourceApi)
-            api(projects.shared.sourceBangumi)
-            api(projects.shared.sourceInner)
-            api(projects.lib)
 
-        }
+            implementation(projects.lib.store)
+            implementation(projects.lib.utils)
+            implementation(projects.lib.unifile)
 
-        jvmMain.dependencies {
-            implementation(projects.javascript.rhino)
+            implementation(libs.ksoup)
+
+            implementation(projects.shared.sourceApi)
         }
 
         androidMain.dependencies {
@@ -51,16 +49,11 @@ kotlin {
         desktopMain.dependencies {
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.java)
-//            implementation(libs.jcef)
-//
-//            implementation("me.friwi:jcef-natives-linux-amd64:jcef-ca49ada+cef-135.0.20+ge7de5c3+chromium-135.0.7049.85")
-//            implementation("me.friwi:jcef-natives-macosx-amd64:jcef-ca49ada+cef-135.0.20+ge7de5c3+chromium-135.0.7049.85")
-//            implementation("me.friwi:jcef-natives-macosx-arm64:jcef-ca49ada+cef-135.0.20+ge7de5c3+chromium-135.0.7049.85")
-//            implementation("me.friwi:jcef-natives-windows-amd64:jcef-ca49ada+cef-135.0.20+ge7de5c3+chromium-135.0.7049.85")
         }
         iosMain.dependencies {
 
         }
+
     }
 }
 

@@ -9,7 +9,6 @@ class Episode (
     val id: String,
     val label: String,
     val order: Int,
-    val playInfo: PlayInfo,
 ): Extractor {
 
     @Transient

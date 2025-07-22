@@ -20,6 +20,7 @@ import kotlin.coroutines.coroutineContext
 open class ComponentBusiness <T: Component> (
     protected val innerComponent: T,
 ){
+    val source = innerComponent.source
     suspend fun <R> async(block: suspend T.(CoroutineScope) -> DataState<R>): Deferred<DataState<R>> {
         return innerComponent.source.scope.async {
             runCatching {

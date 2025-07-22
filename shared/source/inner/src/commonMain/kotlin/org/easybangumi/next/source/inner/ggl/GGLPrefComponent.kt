@@ -1,0 +1,26 @@
+package org.easybangumi.next.source.inner.ggl
+
+import org.easybangumi.next.shared.source.api.component.BaseComponent
+import org.easybangumi.next.shared.source.api.component.pref.MediaSourcePreference
+import org.easybangumi.next.shared.source.api.component.pref.PrefComponent
+import org.easybangumi.next.shared.source.api.source.Source
+
+/**
+ *    https://github.com/easybangumiorg/EasyBangumi
+ *
+ *    Copyright 2025 easybangumi.org and contributors
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ */
+class GGLPrefComponent: PrefComponent, BaseComponent() {
+
+    override suspend fun register(): List<MediaSourcePreference> = listOf(
+        MediaSourcePreference.Edit("域名", "host", "https://anime.girigirilove.com")
+    )
+
+
+}

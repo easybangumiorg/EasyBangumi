@@ -28,6 +28,18 @@ data class CartoonPlayCover(
     val webUrl: String,
 ): Extractor {
 
+    @delegate:Transient
+    val playCover: CartoonCover by lazy {
+        CartoonCover(
+            id = playId,
+            source = playSourceKey,
+            name = name,
+            coverUrl = coverUrl,
+            intro = intro,
+            webUrl = webUrl,
+        )
+    }
+
     @Transient
     override var ext: String = ""
     override fun equals(other: Any?): Boolean {

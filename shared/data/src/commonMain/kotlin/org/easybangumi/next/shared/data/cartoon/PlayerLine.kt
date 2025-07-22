@@ -6,7 +6,7 @@ package org.easybangumi.next.shared.data.cartoon
 class PlayerLine (
     val id: String,
     val label: String = LABEL_NONE,
-    val order: Int,
+    val order: Int = -1,
     val episodeList : List<Episode>
 ): Extractor {
     override var ext: String = ""

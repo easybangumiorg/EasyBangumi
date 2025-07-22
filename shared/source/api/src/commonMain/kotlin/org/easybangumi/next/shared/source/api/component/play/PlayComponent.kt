@@ -37,14 +37,11 @@ interface IPlayComponent {
         key: String,
     ): DataState<PagingFrame<CartoonPlayCover>>
 
-    fun createSearchPlayPagingSource(
-        param: PlayLineSearchParam,
-    ): EasyPagingSource<CartoonPlayCover>
 
     // 搜索播放线路
     suspend fun getPlayLines(
         cartoonCover: CartoonPlayCover,
-    ): DataState<List<List<PlayerLine>>>
+    ): DataState<List<PlayerLine>>
 
 
 

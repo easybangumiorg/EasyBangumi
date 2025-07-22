@@ -12,6 +12,7 @@ import org.easybangumi.next.shared.source.api.source.SourceInfo
 import org.easybangumi.next.shared.source.api.source.SourceType
 import org.easybangumi.next.shared.source.bangumi.source.BangumiInnerSource
 import org.easybangumi.next.shared.source.core.source.SourceConfigController
+import org.easybangumi.next.source.inner.ggl.GGLInnerSource
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -38,7 +39,20 @@ class InnerSourceProvider(
             load()
         }}
     }
+
+
+    val gglSource by lazy {
+        GGLInnerSource()
+    }
+    val gglComponentBundle: ComponentBundle by lazy {
+        InnerComponentBundle(gglSource).apply { runBlocking {
+            load()
+        }}
+    }
+
+
     override val type: SourceType = SourceType.INNER
+
 
 
     override val flow: Flow<DataState<List<SourceInfo>>> by lazy {
@@ -55,8 +69,15 @@ class InnerSourceProvider(
                         ),
                         componentBundle = bangumiComponentBundle
                     ),
-
-
+                    SourceInfo.Loaded(
+                        manifest = gglSource.manifest,
+                        sourceConfig = it.getOrDefault(gglSource.key, SourceConfig(
+                            key = gglSource.key,
+                            enable = true,
+                            order = 0
+                        )),
+                        componentBundle = gglComponentBundle
+                    )
                 )
             }
         }

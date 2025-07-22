@@ -76,6 +76,7 @@ includeModule(":shared:media_radar", "shared/media_radar")
 includeModule(":shared:source", "shared/source")
 includeModule(":shared:source_api", "shared/source/api")
 includeModule(":shared:source_bangumi", "shared/source/bangumi")
+includeModule(":shared:source_inner", "shared/source/inner")
 
 
 // ------------- lib -------------
