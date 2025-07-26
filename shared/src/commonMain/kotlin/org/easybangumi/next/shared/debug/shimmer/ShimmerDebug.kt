@@ -1,4 +1,4 @@
-package com.easybangumi.next.shared.debug.shimmer
+package org.easybangumi.next.shared.debug.shimmer
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,7 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import com.easybangumi.next.shared.debug.DebugScope
+import org.easybangumi.next.shared.debug.DebugScope
 import org.easybangumi.next.shared.foundation.image.AnimationImage
 import org.easybangumi.next.shared.foundation.image.AsyncImage
 import org.easybangumi.next.shared.foundation.shimmer.ShimmerHost

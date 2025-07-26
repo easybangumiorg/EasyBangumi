@@ -3,6 +3,7 @@ package org.easybangumi.next.webkit
 import android.graphics.Bitmap
 import android.webkit.*
 import kotlinx.coroutines.*
+import org.apache.commons.text.StringEscapeUtils
 import org.easybangumi.next.lib.utils.coroutineProvider
 import org.easybangumi.next.lib.utils.global
 import org.easybangumi.next.lib.utils.safeResume

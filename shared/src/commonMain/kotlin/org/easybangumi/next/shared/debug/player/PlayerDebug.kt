@@ -1,4 +1,7 @@
-﻿package org.easybangumi.next.shared.media_radar
+﻿package org.easybangumi.next.shared.debug.player
+
+import androidx.compose.runtime.Composable
+import org.easybangumi.next.shared.debug.DebugScope
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -12,5 +15,5 @@
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
-class MediaRadarState {
-}
+@Composable
+expect fun DebugScope.PlayerDebug()

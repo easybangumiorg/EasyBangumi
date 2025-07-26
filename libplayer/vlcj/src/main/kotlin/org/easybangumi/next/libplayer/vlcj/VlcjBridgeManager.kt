@@ -22,7 +22,7 @@ class VlcjBridgeManager(
     libvlcArgs: Collection<String> = emptyList(),
 ) {
 
-    // factory 初始化直接会加载 native 库，lazy 里加了锁，线程安全
+    // factory 初始化直接会加载 native 库（耗时），lazy 里加了锁，线程安全
     private val mediaPlayerFactory: MediaPlayerFactory by lazy {
         MediaPlayerFactory(libvlcArgs)
     }

@@ -17,14 +17,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.easybangumi.next.shared.debug.DebugHost
-import com.easybangumi.next.shared.debug.DebugPage
+import org.easybangumi.next.shared.debug.DebugHost
+import org.easybangumi.next.shared.debug.DebugPage
 import kotlinx.serialization.Serializable
 import org.easybangumi.next.lib.utils.WeakRef
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.ui.detail.Detail
 import org.easybangumi.next.shared.ui.home.Home
-import kotlin.reflect.KClass
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi

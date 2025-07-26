@@ -63,6 +63,7 @@ object JcefManager {
         block: (CefAppState) -> Unit
     ){
         // EventQueue.invokeLater
+        // deepseek 说一定要在 awt 线程，但实际上自测可以不用？先试试
         singleScope.launch {
 //            logger.info("Running block on JCEF context")
             try {

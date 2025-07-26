@@ -16,6 +16,8 @@ import kotlinx.serialization.json.JsonEncoder
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonPrimitive
+import org.easybangumi.next.shared.data.cartoon.CartoonCover
+import org.easybangumi.next.shared.source.bangumi.source.BangumiInnerSource
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -64,6 +66,17 @@ data class BgmSubject(
         } else {
             "更新至 ${eps} · 全 $totalEpisodes 话"
         }
+    }
+
+    val cartoonCover: CartoonCover by lazy {
+        CartoonCover(
+            id = id?.toString()?:"",
+            source = BangumiInnerSource.SOURCE_KEY,
+            name = displayName,
+            coverUrl = images?.common ?: "",
+            intro = displayEpisode ?: "",
+            webUrl = "https://bgm.tv/subject/$id"
+        )
     }
 
 }

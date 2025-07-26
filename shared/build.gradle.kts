@@ -64,9 +64,10 @@ kotlin {
             api(projects.shared.platform)
             api(projects.shared.preference)
             api(projects.shared.scheme)
-            api(projects.shared.debug)
+//            api(projects.shared.debug)
             api(projects.shared.playcon)
             api(projects.shared.ktor)
+//            api(projects.shared.ui)
 
 
         }

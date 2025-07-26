@@ -34,8 +34,8 @@ kotlin {
             implementation(compose.animation)
             implementation(compose.animationGraphics)
 
-            implementation(libs.androidx.lifecycle.runtime.compose)
-            implementation(libs.androidx.lifecycle.viewmodel.compose)
+            api(libs.androidx.lifecycle.runtime.compose)
+            api(libs.androidx.lifecycle.viewmodel.compose)
 
             implementation(libs.navigation.compose)
 

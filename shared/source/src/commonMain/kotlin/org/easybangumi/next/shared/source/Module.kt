@@ -8,6 +8,7 @@ import org.easybangumi.next.shared.source.case.DiscoverSourceCase
 import org.easybangumi.next.shared.source.case.PlaySourceCase
 import org.easybangumi.next.shared.source.core.inner.InnerSourceProvider
 import org.easybangumi.next.shared.source.core.source.SourceConfigController
+import org.easybangumi.next.shared.source.core.source.SourceController
 import org.easybangumi.next.shared.source.plugin.PluginSourceController
 import org.koin.core.context.loadKoinModules
 import org.koin.core.module.Module
@@ -31,6 +32,9 @@ val sourceModule = module {
     }
     single {
         SourceConfigController()
+    }
+    single {
+        SourceController(get(), get())
     }
     single {
         InnerSourceProvider(get())

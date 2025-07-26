@@ -1,6 +1,10 @@
-﻿package org.easybangumi.next.shared.media_radar
+﻿package org.easybangumi.next.shared.ui.media_radar
 
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -26,7 +30,10 @@ fun MediaRadarBottomPanel(
     if (show) {
         ModalBottomSheet(
             onDismissRequest = onDismissRequest,
-            sheetState = rememberModalBottomSheetState(true)
+            sheetState = rememberModalBottomSheetState(true),
+            contentWindowInsets = {
+                WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom + WindowInsetsSides.Top)
+            }
         ) {
             MediaRadar(
                 modifier = Modifier.fillMaxSize(),

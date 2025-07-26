@@ -6,6 +6,7 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.delay
+import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.DataStateException
 import org.easybangumi.next.lib.utils.PagingFrame
@@ -36,13 +37,15 @@ import org.koin.core.component.inject
  */
 class GGLPlayComponent: PlayComponent, BaseComponent() {
 
+    private val logger = logger()
+
     private val ktorClient: HttpClient by inject()
     private val networkHelper: NetworkHelper by inject()
     private val prefHelper: PreferenceHelper by inject()
     private val webViewHelper: WebViewHelper by inject()
 
     override fun getFirstKey(): String {
-        return "0"
+        return "1"
     }
 
     override suspend fun searchPlayCovers(
@@ -50,7 +53,8 @@ class GGLPlayComponent: PlayComponent, BaseComponent() {
         key: String
     ): DataState<PagingFrame<CartoonPlayCover>> {
         return withResult {
-            val host = prefHelper.get("host", "https://anime.girigirilove.com")
+            val host = prefHelper.get("host", "anime.girigirilove.com")
+            logger.info("GGLPlayComponent searchPlayCovers: host=$host, keyword=${param.keyword}, key=$key")
             val html = ktorClient.get {
                 url {
                     this.host = host
@@ -67,24 +71,22 @@ class GGLPlayComponent: PlayComponent, BaseComponent() {
                 val coverStyle = it.select("div.cover")[0].attr("style")
                 val coverPattern = Regex("""(?<=url\().*(?=\))""")
                 var cover = coverPattern.find(coverStyle)?.value ?: ""
-                if (cover.startsWith("//")) {
-                    cover = "http:${cover}"
-                }
+                cover = UrlUtils.parse("https://${host}", cover)
 
                 val title = it.select("div.thumb-content div.thumb-txt").first()?.text() ?: ""
                 val b = CartoonPlayCover(
-                    fromId = param.cartoonCover.id,
-                    fromSourceKey = param.cartoonCover.source,
+                    metaId = param.cartoonCover.id,
+                    metaSourceKey = param.cartoonCover.source,
                     playId = id,
                     playSourceKey = source.key,
                     name = title,
-                    coverUrl = UrlUtils.parse(host, cover),
+                    coverUrl = cover,
                     intro = "",
-                    webUrl = UrlUtils.parse(host, uu)
+                    webUrl = UrlUtils.parse("https://${host}", uu)
                 )
                 list.add(b)
             }
-            (if (list.isEmpty()) null else (key.toIntOrNull()?:0) + 1).toString() to list
+            (if (list.isEmpty()) null else (key.toIntOrNull()?:0) + 1)?.toString() to list
         }
 
 
@@ -93,7 +95,7 @@ class GGLPlayComponent: PlayComponent, BaseComponent() {
 
     override suspend fun getPlayLines(cartoonCover: CartoonPlayCover): DataState<List<PlayerLine>> {
         return withResult {
-            val host = prefHelper.get("host", "https://anime.girigirilove.com")
+            val host = prefHelper.get("host", "anime.girigirilove.com")
             val html = ktorClient.get {
                 url {
                     this.host = host
@@ -145,7 +147,7 @@ class GGLPlayComponent: PlayComponent, BaseComponent() {
                 if(cartoonPlayCover.playId.startsWith("GV"))
                     cartoonPlayCover.playId 
                 else "GV${cartoonPlayCover.playId}"}-${playerLine.id}-${episode.id}"
-            val host = prefHelper.get("host", "https://anime.girigirilove.com")
+            val host = prefHelper.get("host", "anime.girigirilove.com")
             val url = buildUrl {
                 this.host = host
                 path("play", urlPath)

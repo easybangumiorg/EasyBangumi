@@ -1,4 +1,4 @@
-﻿package com.easybangumi.next.shared.debug.webview
+﻿package org.easybangumi.next.shared.debug.webview
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -7,7 +7,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import com.easybangumi.next.shared.debug.DebugScope
+import org.easybangumi.next.shared.debug.DebugScope
 import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.webview.IWebView

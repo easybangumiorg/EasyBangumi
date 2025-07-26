@@ -1,3 +1,6 @@
+@file:OptIn(ExperimentalComposeLibrary::class)
+
+import org.jetbrains.compose.ExperimentalComposeLibrary
 
 plugins {
     alias(builds.plugins.kotlinMultiplatform)
@@ -21,6 +24,7 @@ kotlin {
         val iosSimulatorArm64Main by getting
 
         androidMain.dependencies {
+            implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
         }
         commonMain.dependencies {
@@ -29,7 +33,11 @@ kotlin {
             implementation(compose.materialIconsExtended) // 此依赖需要在生产环境中进行剪枝，非常巨大
             implementation(compose.ui)
             implementation(compose.material3)
+            implementation(compose.components.uiToolingPreview)
 
+            implementation(libs.navigation.compose)
+            implementation(libs.androidx.room.runtime)
+            implementation(libs.sqlite.bundled)
             implementation(libs.moko.resources.compose)
             implementation(libs.coil.compose)
             implementation(libs.koin.core)
@@ -39,7 +47,6 @@ kotlin {
             implementation(libs.paging.multiplatform.compose)
             implementation(libs.md3.window.size)
             implementation(libs.kotlinx.serialization.json)
-            implementation(libs.kotlinx.coroutines.core)
 //            implementation(libs.kotlinx.atomicfu.gradle)
 
             api(projects.lib)
@@ -48,14 +55,17 @@ kotlin {
 //            api(projects.shared.plugin.pluginBangumi)
 
             api(projects.shared.source)
-            api(projects.shared.sourceApi)
 
 
             api(projects.shared.data)
+            api(projects.shared.theme)
             api(projects.shared.foundation)
             api(projects.shared.resources)
             api(projects.shared.platform)
+            api(projects.shared.preference)
             api(projects.shared.scheme)
+//            api(projects.shared.debug)
+            api(projects.shared.playcon)
             api(projects.shared.ktor)
 
 
@@ -69,7 +79,6 @@ kotlin {
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(compose.ui)
-            implementation(libs.kotlinx.coroutines.swing)
         }
         iosMain.dependencies {
 
@@ -80,7 +89,5 @@ kotlin {
 
 dependencies {
 }
-
-
 
 

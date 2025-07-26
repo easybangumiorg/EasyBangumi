@@ -1,6 +1,8 @@
-﻿package org.easybangumi.next.shared.media_radar
+package org.easybangumi.next.shared.ui.play
 
+import androidx.compose.runtime.Composable
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
+import org.easybangumi.next.shared.data.cartoon.Episode
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -13,10 +15,10 @@ import org.easybangumi.next.shared.data.cartoon.CartoonCover
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
+@Composable
+fun Play (
+    cartoonCover: CartoonCover,
+    suggestEpisode: Episode? = null,
+) {
 
-data class MediaRadarParam (
-    val cover: CartoonCover,
-    val userKeyword: String = "", // use cover.name if empty
-    val subKeyword: List<String> = emptyList(),
-    val limitWhichKeyword: Int = 0, // 0 means no limit
-)
+}

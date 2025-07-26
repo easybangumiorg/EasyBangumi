@@ -23,8 +23,25 @@ class EasyCookiesStorage : CookiesStorage {
     private val jsonlFileHelper = JsonlFileHelper<Cookie>(folder, "cookies", Cookie::class)
 
     override suspend fun addCookie(requestUrl: Url, cookie: Cookie) {
+        var coo = cookie
+        if (coo.domain == null) {
+            // 如果没有 domain，则使用 requestUrl 的域名作为 domain
+            coo = Cookie(
+                name = cookie.name,
+                value = cookie.value,
+                expires = cookie.expires,
+                maxAge = cookie.maxAge,
+                path = cookie.path,
+                secure = cookie.secure,
+                httpOnly = cookie.httpOnly,
+                extensions = cookie.extensions,
+                domain = requestUrl.host,
+                encoding = cookie.encoding
+            )
+
+        }
         jsonlFileHelper.update {
-            (it + cookie).filter {
+            (it + coo).filter {
                 val data = it.expires
                 data == null || data.timestamp > Clock.System.now().toEpochMilliseconds()
             }
@@ -35,10 +52,12 @@ class EasyCookiesStorage : CookiesStorage {
         // 重名只发送最后（新）一个，因为 addCookie 是添加到队尾
         val map = linkedMapOf<String, Cookie>()
         jsonlFileHelper.getSync().forEach {
-            if (it.matches(requestUrl)) {
-                val data = it.expires
-                if (data == null || data.timestamp > Clock.System.now().toEpochMilliseconds()) {
-                    map[it.name] = it
+            runCatching {
+                if (it.matches(requestUrl)) {
+                    val data = it.expires
+                    if (data == null || data.timestamp > Clock.System.now().toEpochMilliseconds()) {
+                        map[it.name] = it
+                    }
                 }
             }
         }

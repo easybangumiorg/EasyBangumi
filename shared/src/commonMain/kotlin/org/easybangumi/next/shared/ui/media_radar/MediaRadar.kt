@@ -1,19 +1,30 @@
-﻿package org.easybangumi.next.shared.media_radar
+﻿package org.easybangumi.next.shared.ui.media_radar
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import app.cash.paging.compose.collectAsLazyPagingItems
+import kotlinx.coroutines.flow.collectLatest
 import org.easybangumi.next.shared.foundation.cartoon.CartoonCoverCard
+import org.easybangumi.next.shared.foundation.cartoon.CartoonCoverCardRect
 import org.easybangumi.next.shared.foundation.elements.LoadScaffold
 import org.easybangumi.next.shared.foundation.lazy.pagingCommon
+import org.easybangumi.next.shared.foundation.shimmer.ShimmerHost
 import org.easybangumi.next.shared.foundation.stringRes
 import org.easybangumi.next.shared.resources.Res
 import org.easybangumi.next.shared.scheme.EasyScheme
+import org.easybangumi.next.shared.source.api.component.ComponentBusiness
+import org.easybangumi.next.shared.source.api.component.play.PlayComponent
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -30,9 +41,18 @@ import org.easybangumi.next.shared.scheme.EasyScheme
 fun MediaRadar(
     modifier: Modifier,
     vm: MediaRadarViewModel,
+    onSelection: (MediaRadarViewModel.SelectionResult?) -> Unit = { _ -> }
 ) {
 
     val state = vm.ui
+
+    LaunchedEffect(Unit) {
+        snapshotFlow {
+            state.value.selectionResult
+        }.collectLatest {
+            onSelection(it)
+        }
+    }
 
     Column (
         modifier = Modifier.fillMaxWidth().then(modifier)
@@ -60,12 +80,21 @@ fun MediaRadarHeader(
     state: MediaRadarViewModel.State
 ) {
     Row(
-        modifier
+        modifier,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        TextField(
-            modifier = Modifier.fillMaxHeight().weight(1f),
+        OutlinedTextField(
+            modifier = Modifier.weight(1f),
             value = state.keyword,
             onValueChange = { vm.onFieldChange(it) },
+            singleLine = true,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color.Transparent,
+                unfocusedBorderColor = Color.Transparent,
+                errorBorderColor = Color.Transparent,
+                disabledBorderColor = Color.Transparent,
+
+            )
         )
         TextButton(onClick = {
             vm.onSearchKeywordChange()
@@ -83,32 +112,56 @@ fun MediaRadarList(
 ){
     val line = state.lineState
     LazyColumn(
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.Top
     ) {
         items(line) {
-            Column {
-                Text(
-                    stringRes(it.playBusiness.source.manifest.label),
-                    style = MaterialTheme.typography.bodyLarge
+            Column(
+                verticalArrangement = Arrangement.Top
+            ) {
+                ListItem(
+                    headlineContent = {
+                        Text(
+                            stringRes(it.playBusiness.source.manifest.label),
+//                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    },
+                    colors = ListItemDefaults.colors(
+                        containerColor = Color.Transparent
+                    )
                 )
-                Box(
-                    modifier = Modifier.fillMaxWidth()
-                        .height(EasyScheme.size.cartoonCoverHeight)
-                ) {
 
-                }
                 LoadScaffold(
                     modifier = Modifier.fillMaxWidth()
                         .height(EasyScheme.size.cartoonCoverHeight),
-                    data = it.pagingFlow
+                    data = it.pagingFlow,
+                    onLoading = {
+                        ShimmerHost(
+                            modifier = Modifier.fillMaxWidth().height(EasyScheme.size.cartoonCoverHeight),
+                            visible = true,
+                        ) {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                repeat(3) {
+                                    CartoonCoverCardRect(
+                                        modifier = Modifier.drawRectWhenShimmerVisible(),
+//                            cardBackgroundColor = Color.Black
+                                    )
+                                }
+                            }
+                        }
+                    }
                 ) {
                     val paging = it.data.collectAsLazyPagingItems()
                     val height = EasyScheme.size.cartoonCoverHeight
                     LazyRow(
                         modifier = Modifier.fillMaxWidth()
-                            .height(EasyScheme.size.cartoonCoverHeight)
+                            .height(EasyScheme.size.cartoonCoverHeight),
+                        contentPadding = PaddingValues(8.dp, 0.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-
                         if (paging.itemCount > 0) {
                             items(paging.itemCount) {
                                 val item = paging[it]

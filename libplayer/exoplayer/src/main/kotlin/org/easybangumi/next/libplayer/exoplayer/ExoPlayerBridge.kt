@@ -1,8 +1,12 @@
 package org.easybangumi.next.libplayer.exoplayer
 
+import android.app.Application
+import android.view.TextureView
+import androidx.annotation.OptIn
 import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.media3.common.VideoSize
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import kotlinx.coroutines.flow.update
 import org.easybangumi.next.libplayer.api.AbsPlayerBridge
@@ -21,15 +25,20 @@ import kotlin.reflect.KClass
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
+@OptIn(UnstableApi::class)
 class ExoPlayerBridge(
-    exoPlayerBuilder: ExoPlayer.Builder
+    application: Application,
+    exoPlayerBuilder: ExoPlayer.Builder,
 ): AbsPlayerBridge() {
+
+    private val exoMediaSourceFactory = ExoMediaSourceFactory(application)
 
     private val exoPlayerLazy = lazy {
         exoPlayerBuilder.build().apply {
             addListener(playerListener)
         }
     }
+    private var textureView: EasyTextureView? = null
     private val exoPlayer: ExoPlayer by exoPlayerLazy
 
     override val positionMs: Long
@@ -79,7 +88,11 @@ class ExoPlayerBridge(
         get() = exoPlayer
 
     override fun prepare(mediaItem: MediaItem) {
-        exoPlayer.contentPosition
+        val player = exoPlayerLazy.value
+        val exoItem = exoMediaSourceFactory.getMediaItem(mediaItem)
+        val mediaSource = exoMediaSourceFactory.getMediaSourceFactory(mediaItem)
+        player.setMediaSource(mediaSource.createMediaSource(exoItem))
+        player.prepare()
     }
 
     override fun setPlayWhenReady(playWhenReady: Boolean) {
@@ -95,7 +108,13 @@ class ExoPlayerBridge(
     }
 
     override fun close() {
-
+        if (exoPlayerLazy.isInitialized()) {
+            exoPlayer.removeListener(playerListener)
+            exoPlayer.release()
+        }
+        innerPlayWhenReadyFlow.value = false
+        innerPlayStateFlow.value = org.easybangumi.next.libplayer.api.C.State.IDLE
+        innerVideoSizeFlow.value = org.easybangumi.next.libplayer.api.VideoSize(0, 0)
     }
 
     private val playerListener: Player.Listener = object: Player.Listener {
@@ -114,14 +133,18 @@ class ExoPlayerBridge(
             }
         }
 
-        override fun onVideoSizeChanged(videoSize: VideoSize) {
+        override fun onVideoSizeChanged(videoSize: ExoVideoSize) {
             super.onVideoSizeChanged(videoSize)
             innerVideoSizeFlow.update {
-                org.easybangumi.next.libplayer.api.VideoSize(
+                LibVideoSize(
                     width = videoSize.width,
                     height = videoSize.height,
                 )
             }
+            textureView?.setVideoSize(LibVideoSize(
+                width = videoSize.width,
+                height = videoSize.height,
+            ))
         }
 
         override fun onAvailableCommandsChanged(availableCommands: Player.Commands) {
@@ -130,5 +153,17 @@ class ExoPlayerBridge(
                 innerPlayStateFlow.update { org.easybangumi.next.libplayer.api.C.State.PREPARING }
             }
         }
+    }
+
+    fun attachVideoView(videoView: EasyTextureView) {
+        exoPlayer.setVideoTextureView(videoView)
+        videoView.setVideoSize(videoSizeFlow.value)
+        textureView = videoView
+    }
+
+    fun detachVideoView(view: EasyTextureView) {
+        exoPlayer.clearVideoTextureView(view)
+        textureView = null
+//        exoPlayer.setVideoTextureView(null)
     }
 }

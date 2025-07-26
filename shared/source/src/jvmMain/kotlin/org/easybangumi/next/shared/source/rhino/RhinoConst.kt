@@ -1,7 +1,6 @@
 package org.easybangumi.next.shared.source.rhino
 
 import org.easybangumi.next.shared.source.rhino.component.RhinoComponentWrapper
-import org.easybangumi.next.shared.source.rhino.component.RhinoPlayComponentWrapper
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -18,7 +17,7 @@ object RhinoConst {
 
     // Rhino Component Factory 接口
     val rhinoComponentFactoryClazz: Set<RhinoComponentWrapper.Factory<*>> = setOf(
-        RhinoPlayComponentWrapper.Factory(),
+//        RhinoPlayComponentWrapper.Factory(),
     )
 
     internal val RHINO_IMPORT_STRING: String by lazy {

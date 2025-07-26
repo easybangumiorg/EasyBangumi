@@ -21,7 +21,7 @@ import kotlin.reflect.KClass
 expect val utilsModuleExpect: Module
 internal val utilsModule = module {
     single {
-        PreferenceHelperImpl(it.get())
+        PreferenceHelperImpl(get())
     }.bind<PreferenceHelper>()
     single {
         NetworkHelperImpl()

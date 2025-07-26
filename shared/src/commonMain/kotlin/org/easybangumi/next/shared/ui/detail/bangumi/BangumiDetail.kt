@@ -1,30 +1,15 @@
 ﻿package org.easybangumi.next.shared.ui.detail.bangumi
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.StarHalf
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.rounded.Star
-import androidx.compose.material.icons.rounded.StarOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
@@ -36,36 +21,28 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.graphics.painter.BrushPainter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import org.easybangumi.next.shared.debug.DebugPage
+import org.easybangumi.next.shared.debug.media_radar.mediaRadarDebugCover
 import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.DataState
+import org.easybangumi.next.platformInformation
+import org.easybangumi.next.shared.LocalNavController
+import org.easybangumi.next.shared.RouterPage
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.foundation.InputMode
 import org.easybangumi.next.shared.foundation.LocalUIMode
-import org.easybangumi.next.shared.foundation.cartoon.CartoonCoverCard
-import org.easybangumi.next.shared.foundation.elements.LoadScaffold
-import org.easybangumi.next.shared.foundation.image.AsyncImage
 import org.easybangumi.next.shared.foundation.scroll_header.ScrollableHeaderBehavior
 import org.easybangumi.next.shared.foundation.scroll_header.ScrollableHeaderScaffold
 import org.easybangumi.next.shared.foundation.scroll_header.rememberScrollableHeaderState
-import org.easybangumi.next.shared.foundation.shimmer.ShimmerHost
 import org.easybangumi.next.shared.foundation.shimmer.rememberShimmerState
 import org.easybangumi.next.shared.foundation.view_model.vm
 import org.easybangumi.next.shared.scheme.EasyScheme
-import org.easybangumi.next.shared.source.bangumi.model.BgmRating
 import org.easybangumi.next.shared.source.bangumi.model.BgmSubject
 import kotlin.math.absoluteValue
 
@@ -118,6 +95,7 @@ fun BangumiDetail(
         scrollableHeaderState.offset.absoluteValue >= (scrollableHeaderState.offsetLimit.absoluteValue - 20)
     }
 
+    val nav = LocalNavController.current
     Box(modifier) {
         ScrollableHeaderScaffold(
             modifier = modifier,
@@ -170,6 +148,13 @@ fun BangumiDetail(
             subjectState = subjectState,
             onBack = onBack,
         )
+
+        if (platformInformation.isDebug) {
+            Text(modifier = Modifier.padding(64.dp).clickable {
+                mediaRadarDebugCover = vm.ui.value.subjectState.okOrNull()?.cartoonCover
+                nav.navigate(RouterPage.Debug(DebugPage.MEDIA_RADAR.name))
+            },text = "debug")
+        }
 
     }
 

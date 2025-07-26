@@ -1,4 +1,6 @@
-﻿package org.easybangumi.next.shared.source.core
+﻿package org.easybangumi.next.shared.ui.media_radar
+
+import org.easybangumi.next.shared.data.cartoon.CartoonCover
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -12,5 +14,9 @@
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
-class SourceController {
-}
+data class MediaRadarParam (
+    val cover: CartoonCover,
+    val userKeyword: String = "", // use cover.name if empty
+    val subKeyword: List<String> = emptyList(),
+    val limitWhichKeyword: Int = 0, // 0 means no limit
+)

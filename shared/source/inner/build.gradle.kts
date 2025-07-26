@@ -36,6 +36,7 @@ kotlin {
             implementation(projects.lib.store)
             implementation(projects.lib.utils)
             implementation(projects.lib.unifile)
+            api(projects.lib.webviewApi)
 
             implementation(libs.ksoup)
 

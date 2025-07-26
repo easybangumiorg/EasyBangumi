@@ -35,6 +35,8 @@ kotlin {
             implementation(projects.shared.foundation)
             implementation(projects.shared.resources)
             implementation(projects.shared.scheme)
+            implementation(projects.shared.ui)
+//            implementation(projects.shared.mediaRadar)
 
             implementation(projects.lib.webviewApi)
         }

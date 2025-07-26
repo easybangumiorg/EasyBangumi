@@ -1,7 +1,6 @@
-package com.easybangumi.next.shared.debug.media_radar
+package org.easybangumi.next.libplayer.exoplayer
 
 import androidx.compose.runtime.Composable
-import com.easybangumi.next.shared.debug.DebugScope
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -15,6 +14,7 @@ import com.easybangumi.next.shared.debug.DebugScope
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 @Composable
-fun DebugScope.MediaRadarDebug() {
+fun ExoPlayerCompose(
 
+) {
 }

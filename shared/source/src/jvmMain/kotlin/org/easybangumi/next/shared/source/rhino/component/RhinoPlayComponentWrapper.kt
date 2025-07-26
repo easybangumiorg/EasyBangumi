@@ -22,76 +22,76 @@ import kotlin.reflect.KClass
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-
-class RhinoPlayComponentWrapper(
-    private val playComponent: IPlayComponent,
-): BaseComponent(),
-    RhinoComponentWrapper,
-    PlayComponent,
-    IPlayComponent by playComponent {
-
-    companion object {
-        const val COMPONENT_NAME_PLAY = "PlayComponent"
-        const val FUNCTION_NAME_SEARCH_PLAY_COVERS = "searchPlayCovers"
-        const val FUNCTION_NAME_GET_PLAY_LINES = "getPlayLines"
-        const val FUNCTION_NAME_GET_PLAY_INFO = "getPlayInfo"
-    }
-
-    class Factory: RhinoComponentWrapper.Factory<RhinoPlayComponentWrapper> {
-        override suspend fun create(rhinoScope: RhinoScope): RhinoPlayComponentWrapper? {
-            val searchPlayCoverFunction = rhinoScope.findFunction(
-                "${COMPONENT_NAME_PLAY}_${FUNCTION_NAME_SEARCH_PLAY_COVERS}",
-            ) ?: return null
-            val getPlayLinesFunction = rhinoScope.findFunction(
-                "${COMPONENT_NAME_PLAY}_${FUNCTION_NAME_GET_PLAY_LINES}",
-            ) ?: return null
-            val getPlayInfoFunction = rhinoScope.findFunction(
-                "${COMPONENT_NAME_PLAY}_${FUNCTION_NAME_GET_PLAY_INFO}",
-            ) ?: return null
-
-            val playComponentProxy = object: IPlayComponent {
-                override suspend fun searchPlayCovers(
-                    param: IPlayComponent.PlayLineSearchParam,
-                    limit: Int
-                ): DataState<List<CartoonPlayCover>> {
-                    return rhinoScope.callFunction(
-                        searchPlayCoverFunction,
-                        param,
-                        limit
-                    )
-                }
-
-                override suspend fun getPlayLines(
-                    cartoonCover: CartoonPlayCover
-                ): DataState<List<List<PlayerLine>>> {
-                    return rhinoScope.callFunction(
-                        getPlayLinesFunction,
-                        cartoonCover
-                    )
-                }
-
-                override suspend fun getPlayInfo(
-                    cartoonPlayCover: CartoonPlayCover,
-                    playerLine: PlayerLine,
-                    episode: Episode
-                ): DataState<PlayInfo> {
-                    return rhinoScope.callFunction(
-                        getPlayInfoFunction,
-                        cartoonPlayCover,
-                        playerLine,
-                        episode
-                    )
-                }
-            }
-            return RhinoPlayComponentWrapper(
-                playComponentProxy
-            )
-        }
-    }
-
-    override fun getComponentClazz(): Array<KClass<*>> {
-        return arrayOf(
-            PlayComponent::class
-        )
-    }
-}
+//
+//class RhinoPlayComponentWrapper(
+//    private val playComponent: IPlayComponent,
+//): BaseComponent(),
+//    RhinoComponentWrapper,
+//    PlayComponent,
+//    IPlayComponent by playComponent {
+//
+//    companion object {
+//        const val COMPONENT_NAME_PLAY = "PlayComponent"
+//        const val FUNCTION_NAME_SEARCH_PLAY_COVERS = "searchPlayCovers"
+//        const val FUNCTION_NAME_GET_PLAY_LINES = "getPlayLines"
+//        const val FUNCTION_NAME_GET_PLAY_INFO = "getPlayInfo"
+//    }
+//
+//    class Factory: RhinoComponentWrapper.Factory<RhinoPlayComponentWrapper> {
+//        override suspend fun create(rhinoScope: RhinoScope): RhinoPlayComponentWrapper? {
+//            val searchPlayCoverFunction = rhinoScope.findFunction(
+//                "${COMPONENT_NAME_PLAY}_${FUNCTION_NAME_SEARCH_PLAY_COVERS}",
+//            ) ?: return null
+//            val getPlayLinesFunction = rhinoScope.findFunction(
+//                "${COMPONENT_NAME_PLAY}_${FUNCTION_NAME_GET_PLAY_LINES}",
+//            ) ?: return null
+//            val getPlayInfoFunction = rhinoScope.findFunction(
+//                "${COMPONENT_NAME_PLAY}_${FUNCTION_NAME_GET_PLAY_INFO}",
+//            ) ?: return null
+//
+//            val playComponentProxy = object: IPlayComponent {
+//                override suspend fun searchPlayCovers(
+//                    param: IPlayComponent.PlayLineSearchParam,
+//                    limit: Int
+//                ): DataState<List<CartoonPlayCover>> {
+//                    return rhinoScope.callFunction(
+//                        searchPlayCoverFunction,
+//                        param,
+//                        limit
+//                    )
+//                }
+//
+//                override suspend fun getPlayLines(
+//                    cartoonCover: CartoonPlayCover
+//                ): DataState<List<List<PlayerLine>>> {
+//                    return rhinoScope.callFunction(
+//                        getPlayLinesFunction,
+//                        cartoonCover
+//                    )
+//                }
+//
+//                override suspend fun getPlayInfo(
+//                    cartoonPlayCover: CartoonPlayCover,
+//                    playerLine: PlayerLine,
+//                    episode: Episode
+//                ): DataState<PlayInfo> {
+//                    return rhinoScope.callFunction(
+//                        getPlayInfoFunction,
+//                        cartoonPlayCover,
+//                        playerLine,
+//                        episode
+//                    )
+//                }
+//            }
+//            return RhinoPlayComponentWrapper(
+//                playComponentProxy
+//            )
+//        }
+//    }
+//
+//    override fun getComponentClazz(): Array<KClass<*>> {
+//        return arrayOf(
+//            PlayComponent::class
+//        )
+//    }
+//}

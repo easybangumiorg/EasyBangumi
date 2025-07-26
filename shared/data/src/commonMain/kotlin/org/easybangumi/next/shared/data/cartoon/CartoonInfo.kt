@@ -52,9 +52,9 @@ data class CartoonInfo(
 
     // ================ from source ================
     // finder
-    val fromId: String,              // 标识，由源自己支持，用于区分番剧
+    val metaId: String,              // 标识，由源自己支持，用于区分番剧
     // 来源 Source Key
-    val fromSourceKey: String,
+    val metaSourceKey: String,
 
     // cartoonCover
     val name: String,
@@ -117,13 +117,13 @@ data class CartoonInfo(
 
 
     fun toIdentify(): String {
-        return "${fromId},${fromSourceKey}"
+        return "${metaId},${metaSourceKey}"
     }
 
     fun toCartoonIndex(): CartoonIndex {
         return CartoonIndex(
-            id = fromId,
-            source = fromSourceKey,
+            id = metaId,
+            source = metaSourceKey,
         ).apply {
             ext = this@CartoonInfo.fromSourceExt
         }

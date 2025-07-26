@@ -19,7 +19,7 @@ import org.easybangumi.next.shared.source.api.source.Source
 class GGLPrefComponent: PrefComponent, BaseComponent() {
 
     override suspend fun register(): List<MediaSourcePreference> = listOf(
-        MediaSourcePreference.Edit("域名", "host", "https://anime.girigirilove.com")
+        MediaSourcePreference.Edit("域名", "host", "anime.girigirilove.com")
     )
 
 

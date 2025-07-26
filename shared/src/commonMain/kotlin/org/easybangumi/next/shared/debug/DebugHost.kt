@@ -1,4 +1,4 @@
-﻿package com.easybangumi.next.shared.debug
+﻿package org.easybangumi.next.shared.debug
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -9,7 +9,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowLeft
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -19,10 +18,11 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import com.easybangumi.next.shared.debug.color.ColorDebug
-import com.easybangumi.next.shared.debug.player.PlayerDebug
-import com.easybangumi.next.shared.debug.shimmer.ShimmerDebug
-import com.easybangumi.next.shared.debug.webview.WebViewDebug
+import org.easybangumi.next.shared.debug.color.ColorDebug
+import org.easybangumi.next.shared.debug.media_radar.MediaRadarDebug
+import org.easybangumi.next.shared.debug.player.PlayerDebug
+import org.easybangumi.next.shared.debug.shimmer.ShimmerDebug
+import org.easybangumi.next.shared.debug.webview.WebViewDebug
 import kotlinx.serialization.Serializable
 
 /**
@@ -45,6 +45,7 @@ enum class DebugPage(
     SHIMMER("Shimmer Debug"),
     COLOR("Color Debug"),
     WEB_VIEW("WebView Debug"),
+    MEDIA_RADAR("Media Radar Debug"),
 }
 
 class DebugScope (
@@ -73,6 +74,9 @@ fun DebugHost(
                 }
                 DebugPage.WEB_VIEW -> {
                     WebViewDebug()
+                }
+                DebugPage.MEDIA_RADAR -> {
+                    MediaRadarDebug()
                 }
             }
         }

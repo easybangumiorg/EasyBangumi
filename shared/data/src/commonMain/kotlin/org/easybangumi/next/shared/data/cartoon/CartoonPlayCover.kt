@@ -14,8 +14,8 @@ import kotlin.jvm.Transient
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 data class CartoonPlayCover(
-    val fromId: String,
-    val fromSourceKey: String,
+    val metaId: String,
+    val metaSourceKey: String,
 
     val playId: String,
     val playSourceKey: String,
@@ -48,8 +48,8 @@ data class CartoonPlayCover(
 
         other as CartoonPlayCover
 
-        if (fromId != other.fromId) return false
-        if (fromSourceKey != other.fromSourceKey) return false
+        if (metaId != other.metaId) return false
+        if (metaSourceKey != other.metaSourceKey) return false
         if (playId != other.playId) return false
         if (playSourceKey != other.playSourceKey) return false
         if (name != other.name) return false
@@ -61,8 +61,8 @@ data class CartoonPlayCover(
     }
 
     override fun hashCode(): Int {
-        var result = fromId.hashCode()
-        result = 31 * result + fromSourceKey.hashCode()
+        var result = metaId.hashCode()
+        result = 31 * result + metaSourceKey.hashCode()
         result = 31 * result + playId.hashCode()
         result = 31 * result + playSourceKey.hashCode()
         result = 31 * result + name.hashCode()

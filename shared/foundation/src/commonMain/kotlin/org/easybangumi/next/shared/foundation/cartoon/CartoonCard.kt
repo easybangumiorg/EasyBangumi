@@ -154,7 +154,7 @@ fun CartoonCoverCard(
     itemSize: Dp = EasyScheme.size.cartoonCoverWidth,
     itemIsWidth : Boolean = true,
     coverAspectRatio: Float? = EasyScheme.size.cartoonCoverAspectRatio,
-    textColor: Color = MaterialTheme.colorScheme.onSurface,
+    textColor: Color = Color.White,
     onClick: (() -> Unit)? = null,
     onLongPress: (() -> Unit)? = null,
 ) {

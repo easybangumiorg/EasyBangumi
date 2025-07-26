@@ -1,4 +1,4 @@
-﻿package org.easybangumi.next.shared.media_radar
+﻿package org.easybangumi.next.shared.ui.media_radar
 
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
@@ -37,10 +37,15 @@ class MediaRadarViewModel (
     State(param.userKeyword)
 ) {
 
+    data class SelectionResult(
+        val playCover: CartoonPlayCover,
+        val playBusiness: ComponentBusiness<PlayComponent>,
+    )
+
     data class State(
         val keyword: String,
         val searchKeyword: String? = null,
-        val selectionPlayCover: CartoonPlayCover? = null,
+        val selectionResult: SelectionResult? = null,
         val playSourceLoading: Boolean = true,
         val lineState: List<LineState> = listOf(),
     )
