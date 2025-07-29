@@ -23,10 +23,6 @@ kotlin {
         val iosArm64Main by getting
         val iosSimulatorArm64Main by getting
 
-        androidMain.dependencies {
-            implementation(compose.preview)
-            implementation(libs.androidx.activity.compose)
-        }
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
@@ -69,6 +65,8 @@ kotlin {
             api(projects.shared.ktor)
 //            api(projects.shared.ui)
 
+            api(projects.libplayer.libplayerApi)
+
 
         }
 
@@ -80,7 +78,16 @@ kotlin {
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(compose.ui)
+            api(projects.libplayer.libplayerVlcj)
+
         }
+
+        androidMain.dependencies {
+            implementation(compose.preview)
+            implementation(libs.androidx.activity.compose)
+            implementation(projects.libplayer.libplayerExoplayer)
+        }
+        
         iosMain.dependencies {
 
         }

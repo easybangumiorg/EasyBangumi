@@ -38,13 +38,14 @@ kotlin {
             implementation(projects.libplayer.libplayerApi)
         }
         androidMain.dependencies {
-
+            implementation(projects.libplayer.libplayerExoplayer)
         }
 
 
         desktopMain.dependencies {
             implementation(libs.kotlinx.coroutines.swing)
             implementation(compose.desktop.currentOs)
+            implementation(projects.libplayer.libplayerVlcj)
         }
     }
 }

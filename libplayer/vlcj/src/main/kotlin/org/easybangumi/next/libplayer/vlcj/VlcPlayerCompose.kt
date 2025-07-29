@@ -25,7 +25,7 @@ fun VlcjPlayerFrame(
     modifier: Modifier,
     state: VlcPlayerFrameState,
 ){
-    state.frameCanvas(
+    state.FrameCanvas(
         modifier = modifier,
     )
 }
@@ -69,7 +69,7 @@ class VlcPlayerFrameState(): VlcjPlayerBridge.OnFrameListener {
 
 
     @Composable
-    fun frameCanvas(
+    fun FrameCanvas(
         modifier: Modifier,
     ) {
         val bridge = bridge

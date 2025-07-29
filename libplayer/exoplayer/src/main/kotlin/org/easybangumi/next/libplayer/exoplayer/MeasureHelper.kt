@@ -4,6 +4,7 @@ import android.view.View
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.toIntSize
 import org.easybangumi.next.libplayer.api.C
 import org.easybangumi.next.libplayer.api.VideoSize
 import kotlin.math.roundToInt
@@ -24,6 +25,7 @@ class MeasureHelper {
     private var videoSize = IntSize.Zero
     private var viewSize = IntSize.Zero
     private var scaleType: C.RendererScaleType = C.RendererScaleType.SCALE_ADAPT
+    
 
     var frameOffset = IntOffset.Zero
         private set
@@ -50,7 +52,8 @@ class MeasureHelper {
             calculate()
             return
         }
-
+        viewSize = IntSize(width, height)
+        calculate()
     }
 
     fun setScaleType(type: C.RendererScaleType) {
@@ -72,8 +75,8 @@ class MeasureHelper {
         when (scaleType) {
             // 原尺寸居中输出，不考虑遮挡
             C.RendererScaleType.SCALE_SOURCE -> {
-                val xx = videoSize.width - videoSize.width
-                val yy = videoSize.height - videoSize.height
+                val xx = viewSize.width - videoSize.width
+                val yy = viewSize.height - videoSize.height
                 frameOffset = IntOffset((xx / 2f).roundToInt(), (yy / 2f).roundToInt())
                 frameSize = IntSize(videoSize.width, videoSize.height)
             }
@@ -93,23 +96,23 @@ class MeasureHelper {
 
             C.RendererScaleType.SCALE_MATCH_PARENT -> {
                 frameOffset = IntOffset(0, 0)
-                frameSize = IntSize(videoSize.width, videoSize.height)
+                frameSize = IntSize(videoSize.width, viewSize.height)
 
             }
             C.RendererScaleType.SCALE_CENTER_CROP -> {
                 // 平铺，从中心裁切，保证占满屏幕
                 // 和 centerAdapt 相反
-                if (videoSize.width * videoSize.height > videoSize.height * videoSize.width) {
+                if (viewSize.width * videoSize.height > viewSize.height * videoSize.width) {
                     // 宽度为准
                     val width = viewSize.width
                     val height =( width * videoSize.height / videoSize.width)
-                    frameOffset = IntOffset(0, ((videoSize.height - height) / 2f).roundToInt())
+                    frameOffset = IntOffset(0, ((viewSize.height - height) / 2f).roundToInt())
                     frameSize = IntSize(width, height)
                 } else {
                     // 高度为准
                     val height = viewSize.height
                     val width = height * videoSize.width / videoSize.height
-                    frameOffset = IntOffset(((videoSize.width - width) / 2f).roundToInt(), 0)
+                    frameOffset = IntOffset(((viewSize.width - width) / 2f).roundToInt(), 0)
                     frameSize = IntSize(width, height)
                 }
 
@@ -118,7 +121,7 @@ class MeasureHelper {
                 // 以高度为准
                 val height = viewSize.height
                 val width = height * videoSize.width / videoSize.height
-                frameOffset = IntOffset(((videoSize.width - width) / 2f).roundToInt(), 0)
+                frameOffset = IntOffset(((viewSize.width - width) / 2f).roundToInt(), 0)
                 frameSize = IntSize(width, height)
 
             }
@@ -126,7 +129,7 @@ class MeasureHelper {
                 // 以宽度为准
                 val width = viewSize.width
                 val height = width * videoSize.height / videoSize.width
-                frameOffset = IntOffset(0, ((videoSize.height - height) / 2f).roundToInt())
+                frameOffset = IntOffset(0, ((viewSize.height - height) / 2f).roundToInt())
                 frameSize = IntSize(width, height)
             }
         }
@@ -143,12 +146,12 @@ class MeasureHelper {
             frameSize = viewSize
             frameOffset = IntOffset.Zero
         } else {
-//            println(videoSize.toString() + " " + canvasSize.toString() + " " + radio.toString())
-            if (videoSize.width * radio.second <= videoSize.height * radio.first) {
+//            println(videoSize.toString() + " " + viewSize.toString() + " " + radio.toString())
+            if (viewSize.width * radio.second <= viewSize.height * radio.first) {
                 // 宽度为准
                 val width = viewSize.width
                 val height = width * radio.second / radio.first
-                frameOffset = IntOffset(0, ((videoSize.height - height) / 2f).roundToInt())
+                frameOffset = IntOffset(0, ((viewSize.height - height) / 2f).roundToInt())
                 frameSize = IntSize(width, height)
             } else {
                 // 高度为准

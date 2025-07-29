@@ -1,6 +1,7 @@
 package org.easybangumi.next.libplayer.exoplayer
 
 import android.app.Application
+import android.content.Context
 import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
@@ -17,7 +18,7 @@ import androidx.media3.exoplayer.source.ProgressiveMediaSource
  */
 @OptIn(UnstableApi::class)
 class ExoMediaSourceFactory(
-    private val application: Application,
+    private val context: Context,
 ) {
 
     fun getMediaItem(mediaItem: LibMediaItem): ExoMediaItem {
@@ -30,20 +31,20 @@ class ExoMediaSourceFactory(
     fun getMediaSourceFactory(mediaItem: LibMediaItem): MediaSource.Factory {
         val httpDataSourceFactory = DefaultHttpDataSource.Factory()
             .setDefaultRequestProperties(mediaItem.header ?: emptyMap())
-        val dataSourceFactory = DefaultDataSource.Factory(application, httpDataSourceFactory)
+        val dataSourceFactory = DefaultDataSource.Factory(context, httpDataSourceFactory)
         // TODO 缓存
         val normalCacheDataSourceFactory = CacheDataSource.Factory()
             .setUpstreamDataSourceFactory(dataSourceFactory)
             .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
 
         return when (mediaItem.mediaType) {
-            LibMediaItem.MEDIA_TYPE_NORMAL -> ProgressiveMediaSource.Factory(normalCacheDataSourceFactory)
-            LibMediaItem.MEDIA_TYPE_HLS -> HlsMediaSource.Factory(normalCacheDataSourceFactory)
+            LibMediaItem.MEDIA_TYPE_NORMAL -> ProgressiveMediaSource.Factory(dataSourceFactory)
+            LibMediaItem.MEDIA_TYPE_HLS -> HlsMediaSource.Factory(dataSourceFactory)
             else -> {
                 if (mediaItem.uri.contains(".m3u8")) {
-                    HlsMediaSource.Factory(normalCacheDataSourceFactory)
+                    HlsMediaSource.Factory(dataSourceFactory)
                 } else {
-                    ProgressiveMediaSource.Factory(normalCacheDataSourceFactory)
+                    ProgressiveMediaSource.Factory(dataSourceFactory)
                 }
             }
         }

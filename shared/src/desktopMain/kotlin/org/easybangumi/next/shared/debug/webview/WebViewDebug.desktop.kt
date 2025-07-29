@@ -1,4 +1,4 @@
-﻿package com.easybangumi.next.shared.debug.webview
+﻿package org.easybangumi.next.shared.debug.webview
 
 import org.easybangumi.next.jcef.JcefWebViewProxy
 import org.easybangumi.next.lib.webview.IWebView

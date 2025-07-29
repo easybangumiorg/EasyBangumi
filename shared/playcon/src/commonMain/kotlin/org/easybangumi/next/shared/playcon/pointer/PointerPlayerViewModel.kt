@@ -27,7 +27,7 @@ import org.easybangumi.next.shared.playcon.BasePlayerViewModel
  */
 class PointerPlayerViewModel(
     bridge: PlayerBridge,
-) : BasePlayerViewModel(bridge) {
+) : BasePlayerViewModel<PlayerBridge>(bridge) {
 
     companion object {
         const val CONTROL_HIDE_DELAY = 4000L

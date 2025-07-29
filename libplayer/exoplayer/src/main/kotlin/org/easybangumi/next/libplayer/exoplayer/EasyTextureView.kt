@@ -7,6 +7,7 @@ import android.view.TextureView
 import android.view.ViewGroup
 import androidx.compose.ui.unit.IntSize
 import androidx.media3.exoplayer.ExoPlayer
+import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.libplayer.api.C
 import org.easybangumi.next.libplayer.api.VideoSize
 
@@ -15,9 +16,8 @@ import org.easybangumi.next.libplayer.api.VideoSize
  */
 class EasyTextureView : TextureView {
 
+    private val logger = logger()
     private val measureHelper: MeasureHelper = MeasureHelper()
-
-    var onSizeChange: ((Int, Int) ->Unit)? = null
 
     private var mainSurfaceTextureListener: SurfaceTextureListener? = null
     private var extSurfaceTextureListener: SurfaceTextureListener? = null
@@ -55,22 +55,22 @@ class EasyTextureView : TextureView {
         }
 
     fun setVideoSize(videoSize: VideoSize) {
+        logger.info("setVideoSize: $videoSize")
         measureHelper.setVideoSize(videoSize)
         requestLayout()
     }
 
-//    fun setVideoRotation(degree: Int) {
-//        measureHelper.setVideoRotation(degree)
-//        requestLayout()
-//    }
-
     fun setScaleType(scaleType:  C.RendererScaleType) {
+        logger.info("setScaleType: $scaleType")
         measureHelper.setScaleType(scaleType)
+        requestLayout()
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         measureHelper.doOnMeasure(widthMeasureSpec, heightMeasureSpec)
+
         setMeasuredDimension(measureHelper.frameSize.width, measureHelper.frameSize.height)
+        logger.info("onMeasure: widthMeasureSpec=$widthMeasureSpec, heightMeasureSpec=$heightMeasureSpec, frameSize=${measureHelper.frameSize}, frameOffset=${measureHelper.frameOffset}")
     }
 
     override fun setSurfaceTextureListener(listener: SurfaceTextureListener?) {
@@ -97,14 +97,14 @@ class EasyTextureView : TextureView {
     }
 
 
-    fun attachPlayer(player: ExoPlayerBridge) {
-        player.attachVideoView(this)
-    }
-
-    fun detachPlayer(player: ExoPlayerBridge) {
-        player.detachVideoView(this)
-
-    }
+//    fun attachPlayer(player: ExoPlayerBridge) {
+//        player.attachVideoView(this)
+//    }
+//
+//    fun detachPlayer(player: ExoPlayerBridge) {
+//        player.detachVideoView(this)
+//
+//    }
 
     constructor(context: Context) : super(context)
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)

@@ -47,7 +47,7 @@ import kotlinx.datetime.Clock
  * Created by heyanle on 2023/12/16.
  * https://github.com/heyanLE
  */
-@Entity(tableName = "CartoonInfo", primaryKeys = ["fromId", "fromSourceKey"])
+@Entity(tableName = "CartoonInfo", primaryKeys = ["metaId", "metaSourceKey"])
 data class CartoonInfo(
 
     // ================ from source ================

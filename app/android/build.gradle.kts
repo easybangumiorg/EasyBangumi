@@ -62,6 +62,9 @@ dependencies {
 
     api(projects.shared)
 
+    api(projects.libplayer.libplayerExoplayer)
+    api(libs.media3.exoplayer)
+
 
 }
 

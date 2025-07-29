@@ -1,5 +1,6 @@
 package org.easybangumi.next
 
+import androidx.media3.exoplayer.ExoPlayer
 import org.easybangumi.next.platform.AndroidPlatform
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.loadKoinModules
@@ -29,6 +30,10 @@ object Android {
                 single {
                     AndroidPlatform
                 }.bind(Platform::class)
+
+                factory {
+                    ExoPlayer.Builder(application)
+                }
             })
         }
     }

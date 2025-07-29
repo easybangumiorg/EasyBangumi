@@ -32,8 +32,8 @@ import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-open class BasePlayerViewModel(
-    protected val bridge: PlayerBridge,
+open class BasePlayerViewModel<T: PlayerBridge>(
+    protected val bridge: T,
 ) : BaseViewModel() {
 
     private val logger = logger()

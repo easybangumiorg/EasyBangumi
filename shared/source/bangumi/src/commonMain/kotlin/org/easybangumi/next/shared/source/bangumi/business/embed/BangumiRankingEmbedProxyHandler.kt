@@ -54,7 +54,7 @@ class BangumiRankingEmbedProxyHandler(
                 parameters.set("page", page ?: "1")
                 parameters.set("sort", "trends")
             }
-            logger.info("trends url: ${builder.url}")
+//            logger.info("trends url: ${builder.url}")
             return true
         } else if (path == "banners") {
             // 轮播图（tv 热度排行）
@@ -64,7 +64,7 @@ class BangumiRankingEmbedProxyHandler(
                 path("anime", "browser", "tv")
                 parameters.set("sort", "trends")
             }
-            logger.info("trends url: ${builder.url}")
+//            logger.info("trends url: ${builder.url}")
             return true
         }
         return false
@@ -96,7 +96,7 @@ class BangumiRankingEmbedProxyHandler(
         } else {
             val doc = Ksoup.parse(body)
             val list = doc.toTrendsSubjectList()
-            logger.info("trends subject list size: ${list.size}")
+//            logger.info("trends subject list size: ${list.size}")
             return BgmRsp.Success<List<BgmTrendsSubject>>(
                 code = code,
                 data = list,
@@ -143,7 +143,7 @@ class BangumiRankingEmbedProxyHandler(
                 parameters.set("type", "common")
                 toString()
             }
-            logger.info("imageUrl: $imageUrl")
+//            logger.info("imageUrl: $imageUrl")
 
 
             val jumpUrl = bangumiConfig.makeUrl(href)

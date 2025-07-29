@@ -1,4 +1,4 @@
-﻿package com.easybangumi.next.shared.debug.player
+package org.easybangumi.next.shared.debug.player
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -10,13 +10,15 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.currentStateAsState
-import com.easybangumi.next.shared.debug.DebugScope
+import androidx.media3.exoplayer.ExoPlayer
+import kotlinx.coroutines.flow.collect
 import org.easybangumi.next.lib.logger.logger
+import org.easybangumi.next.lib.utils.global
 import org.easybangumi.next.libplayer.api.MediaItem
-import org.easybangumi.next.libplayer.vlcj.VlcjBridgeManager
-import org.easybangumi.next.libplayer.vlcj.VlcjPlayerFrame
-import org.easybangumi.next.libplayer.vlcj.rememberVlcjPlayerFrameState
-import org.easybangumi.next.shared.playcon.pointer.PointerPlaycon
+import org.easybangumi.next.libplayer.exoplayer.ExoPlayerBridge
+import org.easybangumi.next.libplayer.exoplayer.ExoPlayerCompose
+import org.easybangumi.next.libplayer.exoplayer.rememberExoPlayerFrameState
+import org.easybangumi.next.shared.debug.DebugScope
 import org.koin.compose.koinInject
 
 /**
@@ -30,74 +32,55 @@ import org.koin.compose.koinInject
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-
 val url = "https://media.w3.org/2010/05/sintel/trailer.mp4"
 private val logger = logger("PlayerDebug")
+
 @Composable
 actual fun DebugScope.PlayerDebug() {
-
-    val manager = koinInject<VlcjBridgeManager>()
-    val tag = remember {
-        "debug-player"
+    val builder = koinInject<ExoPlayer.Builder>()
+    val bridge = remember {
+        ExoPlayerBridge(global.appContext, builder)
     }
-    val frameState = rememberVlcjPlayerFrameState()
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val lifecycleState = lifecycle.currentStateAsState()
-    val bridge = remember {
-        manager.getOrCreateBridge(tag, null)
-    }
 
+    val state = rememberExoPlayerFrameState()
     DisposableEffect(Unit) {
         onDispose {
-            logger.info("PlayerDebug disposing bridge: $tag")
+            logger.info("PlayerDebug disposing bridge")
             // 销毁时释放资源
-            frameState.unbindBridge()
-            manager.release(tag)
+            state.unbindBridge()
+            bridge.close()
         }
     }
     LaunchedEffect(Unit) {
         val mediaItem = MediaItem(uri = url)
         bridge.prepare(mediaItem)
+        state.bindBridge(bridge)
         snapshotFlow {
             lifecycleState.value
         }.collect {
-            logger.info("PlayerDebug lifecycle state: $it")
-            when (it) {
-                // 最小化
-                Lifecycle.State.CREATED -> {
-//                    bridge.setPlayWhenReady(false)
-                }
-                // 没有焦点
+            when(it) {
                 Lifecycle.State.STARTED -> {
-                    // 创建时绑定桥接
-                    frameState.bindBridge(bridge)
+                    logger.info("PlayerDebug lifecycle state: $it, binding bridge")
+//                    state.bindBridge(bridge)
                 }
-                // 有焦点
                 Lifecycle.State.RESUMED -> {
-//                    bridge.setPlayWhenReady(true)
-                }
-
-                Lifecycle.State.INITIALIZED -> {
-                    // 接收不到，因为此时 Compose 还没有创建
+                    logger.info("PlayerDebug lifecycle state: $it, resuming player")
+                    bridge.setPlayWhenReady(true)
                 }
                 Lifecycle.State.DESTROYED -> {
-                    // 接收不到，因为这时 Compose 已经销毁了
+                    logger.info("PlayerDebug lifecycle state: $it, unbinding bridge")
+//                    state.unbindBridge()
+                }
+                else -> {
+                    logger.info("PlayerDebug lifecycle state: $it")
                 }
             }
         }
     }
-
-
-
-    VlcjPlayerFrame(
+    ExoPlayerCompose(
         modifier = Modifier.fillMaxSize(),
-        state = frameState,
+        state = state
     )
-
-    PointerPlaycon(
-        modifier = Modifier.fillMaxSize(),
-        bridge = bridge,
-    )
-
-
 }

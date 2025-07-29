@@ -1,19 +1,28 @@
+import org.jetbrains.compose.compose
 
 plugins {
     alias(builds.plugins.androidLibrary)
-    alias(builds.plugins.compose)
+//    alias(builds.plugins.compose)
+    alias(builds.plugins.kotlinCompose)
     alias(builds.plugins.kotlinAndroid)
-
     id("EasyLibBuild")
 }
+
+android {
+    buildFeatures {
+        compose = true
+    }
+}
 dependencies {
-    implementation(libs.media3.exoplayer)
+    api(libs.media3.exoplayer)
     implementation(libs.media3.exoplayer.hls)
-    implementation(projects.libplayer.libplayerApi)
+    api(projects.libplayer.libplayerApi)
 
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.datetime)
+    implementation(projects.logger)
 
-    implementation(compose.ui)
+    implementation(compose("org.jetbrains.compose.ui:ui"))
+//    implementation(compose.ui)
 
 }

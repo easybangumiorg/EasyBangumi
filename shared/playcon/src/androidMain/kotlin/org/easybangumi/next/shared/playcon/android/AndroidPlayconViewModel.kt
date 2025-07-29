@@ -1,4 +1,8 @@
-package org.easybangumi.next.shared.playcon.touch
+package org.easybangumi.next.shared.playcon.android
+
+import org.easybangumi.next.libplayer.api.PlayerBridge
+import org.easybangumi.next.libplayer.exoplayer.ExoPlayerBridge
+import org.easybangumi.next.shared.playcon.BasePlayerViewModel
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -11,5 +15,10 @@ package org.easybangumi.next.shared.playcon.touch
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-class TouchPlayerViewModel {
+class AndroidPlayconViewModel(
+    bridge: ExoPlayerBridge,
+) : BasePlayerViewModel<ExoPlayerBridge>(bridge) {
+
+
+
 }

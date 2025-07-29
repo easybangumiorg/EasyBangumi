@@ -1,6 +1,7 @@
 package org.easybangumi.next.libplayer.exoplayer
 
 import android.app.Application
+import android.content.Context
 import android.view.TextureView
 import androidx.annotation.OptIn
 import androidx.media3.common.C
@@ -27,18 +28,18 @@ import kotlin.reflect.KClass
  */
 @OptIn(UnstableApi::class)
 class ExoPlayerBridge(
-    application: Application,
+    context: Context,
     exoPlayerBuilder: ExoPlayer.Builder,
 ): AbsPlayerBridge() {
 
-    private val exoMediaSourceFactory = ExoMediaSourceFactory(application)
+    private val exoMediaSourceFactory = ExoMediaSourceFactory(context.applicationContext ?: context)
 
     private val exoPlayerLazy = lazy {
         exoPlayerBuilder.build().apply {
             addListener(playerListener)
         }
     }
-    private var textureView: EasyTextureView? = null
+    private var textureView: TextureView? = null
     private val exoPlayer: ExoPlayer by exoPlayerLazy
 
     override val positionMs: Long
@@ -141,10 +142,10 @@ class ExoPlayerBridge(
                     height = videoSize.height,
                 )
             }
-            textureView?.setVideoSize(LibVideoSize(
-                width = videoSize.width,
-                height = videoSize.height,
-            ))
+//            textureView?.setVideoSize(LibVideoSize(
+//                width = videoSize.width,
+//                height = videoSize.height,
+//            ))
         }
 
         override fun onAvailableCommandsChanged(availableCommands: Player.Commands) {
@@ -155,15 +156,21 @@ class ExoPlayerBridge(
         }
     }
 
-    fun attachVideoView(videoView: EasyTextureView) {
-        exoPlayer.setVideoTextureView(videoView)
-        videoView.setVideoSize(videoSizeFlow.value)
-        textureView = videoView
+    fun attachTextureView(textureView: TextureView) {
+        if (textureView == this.textureView) {
+            return
+        }
+        val texture = this.textureView
+        if (texture != null) {
+            exoPlayer.clearVideoTextureView(texture)
+        }
+        this.textureView = textureView
+        exoPlayer.setVideoTextureView(textureView)
     }
 
-    fun detachVideoView(view: EasyTextureView) {
-        exoPlayer.clearVideoTextureView(view)
-        textureView = null
-//        exoPlayer.setVideoTextureView(null)
+
+    fun detachTextureView(textureView: TextureView) {
+        exoPlayer.clearVideoTextureView(textureView)
+        this.textureView = null
     }
 }
