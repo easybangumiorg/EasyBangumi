@@ -1,4 +1,4 @@
-package org.easybangumi.next.shared.ui.play
+package org.easybangumi.next.shared.ui.media
 
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.collectLatest
@@ -23,14 +23,14 @@ import org.easybangumi.next.shared.foundation.view_model.StateViewModel
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-class PlayViewModel (
+class MediaCommonViewModel (
     val cartoonCover: CartoonCover,
     var suggestEpisode: Episode? = null,
-): StateViewModel<PlayViewModel.State>(State()) {
+): StateViewModel<MediaCommonViewModel.State>(State()) {
 
     data class State (
         val detail: DetailState = DetailState(),
-        val play: PlayState = PlayState(),
+        val playIndex: PlayIndexState = PlayIndexState(),
         val popup: Popup? = null,
     )
 
@@ -38,7 +38,7 @@ class PlayViewModel (
         val playCover: CartoonPlayCover? = null,
         val showDetailFromPlay: Boolean = false,
     )
-    data class PlayState(
+    data class PlayIndexState(
         val playerLineList: DataState<List<PlayerLine>> = DataState.none(),
         val currentPlayerLine: Int = 0,
         val currentEpisode: Int = 0,

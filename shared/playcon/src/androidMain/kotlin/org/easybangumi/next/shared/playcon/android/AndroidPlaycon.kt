@@ -1,8 +1,7 @@
-package org.easybangumi.next.shared.ui.play
+package org.easybangumi.next.shared.playcon.android
 
 import androidx.compose.runtime.Composable
-import org.easybangumi.next.shared.data.cartoon.CartoonCover
-import org.easybangumi.next.shared.data.cartoon.Episode
+import androidx.compose.ui.Modifier
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -16,9 +15,8 @@ import org.easybangumi.next.shared.data.cartoon.Episode
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 @Composable
-fun Play (
-    cartoonCover: CartoonCover,
-    suggestEpisode: Episode? = null,
+fun AndroidPlaycon(
+    modifier: Modifier,
+    viewModel: AndroidPlayconViewModel
 ) {
-
 }

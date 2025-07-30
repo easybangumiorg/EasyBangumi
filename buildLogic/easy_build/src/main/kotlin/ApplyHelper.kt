@@ -42,6 +42,9 @@ object ApplyHelper {
             jvm("desktop") {
                 compilerOptions {
                     jvmTarget.set(JAVA_TARGET)
+                    freeCompilerArgs.add(
+                        "-Xcontext-parameters"
+                    )
                 }
 
             }
@@ -87,14 +90,16 @@ object ApplyHelper {
                 }
             }
 
-            if (provider.optMd3Api) {
-                sourceSets.all {
-                    languageSettings.apply {
+            sourceSets.all {
+                languageSettings.apply {
+                    if (provider.optMd3Api) {
                         // 为所有 Material3 实验性 API 启用
                         optIn("androidx.compose.material3.ExperimentalMaterial3Api")
                     }
+                    optIn("kotlin.experimental.ExperimentalContextReceivers")
                 }
             }
+
         }
     }
 

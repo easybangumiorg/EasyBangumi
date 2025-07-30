@@ -1,5 +1,8 @@
 package org.easybangumi.next.shared.playcon.android
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import org.easybangumi.next.libplayer.api.PlayerBridge
 import org.easybangumi.next.libplayer.exoplayer.ExoPlayerBridge
 import org.easybangumi.next.shared.playcon.BasePlayerViewModel
@@ -19,6 +22,13 @@ class AndroidPlayconViewModel(
     bridge: ExoPlayerBridge,
 ) : BasePlayerViewModel<ExoPlayerBridge>(bridge) {
 
+
+    enum class ScreenMode {
+        NORMAL, FULLSCREEN
+    }
+
+
+    var screenMode: ScreenMode by mutableStateOf<ScreenMode>(ScreenMode.NORMAL)
 
 
 }

@@ -30,22 +30,24 @@ import kotlin.reflect.KClass
 @Composable
 inline fun <reified VM : ViewModel> vm(
     noinline constructor: () -> VM,
+    key: String? = null,
     viewModelStoreOwner: ViewModelStoreOwner = checkNotNull(LocalViewModelStoreOwner.current) {
         "No ViewModelStoreOwner was provided via LocalViewModelStoreOwner"
     },
 ): VM {
-    return viewModel(viewModelStoreOwner = viewModelStoreOwner, factory = ViewModelFactoryZero(constructor))
+    return viewModel(viewModelStoreOwner = viewModelStoreOwner, key = key, factory = ViewModelFactoryZero(constructor))
 }
 
 @Composable
 inline fun <reified VM : ViewModel, P> vm(
     noinline constructor: (P) -> VM,
     params: P,
+    key: String? = null,
     viewModelStoreOwner: ViewModelStoreOwner = checkNotNull(LocalViewModelStoreOwner.current) {
         "No ViewModelStoreOwner was provided via LocalViewModelStoreOwner"
     },
 ): VM {
-    return viewModel(viewModelStoreOwner = viewModelStoreOwner, factory = ViewModelFactoryOne(constructor, params))
+    return viewModel(viewModelStoreOwner = viewModelStoreOwner, key = key, factory = ViewModelFactoryOne(constructor, params))
 }
 
 
@@ -68,11 +70,12 @@ inline fun <reified VM : ViewModel, P1, P2, P3> vm(
     params1: P1,
     params2: P2,
     params3: P3,
+    key: String? = null,
     viewModelStoreOwner: ViewModelStoreOwner = checkNotNull(LocalViewModelStoreOwner.current) {
         "No ViewModelStoreOwner was provided via LocalViewModelStoreOwner"
     },
 ): VM {
-    return viewModel(viewModelStoreOwner = viewModelStoreOwner, factory = ViewModelFactoryThree(constructor, params1, params2, params3))
+    return viewModel(viewModelStoreOwner = viewModelStoreOwner, key = key, factory = ViewModelFactoryThree(constructor, params1, params2, params3))
 }
 
 class ViewModelFactoryZero<V: ViewModel>(

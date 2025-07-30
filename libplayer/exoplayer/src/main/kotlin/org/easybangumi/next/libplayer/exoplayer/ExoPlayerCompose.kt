@@ -41,7 +41,7 @@ fun rememberExoPlayerFrameState(
 }
 
 
-class ExoPlayerFrameState() {
+class ExoPlayerFrameState(): AutoCloseable {
     private var bridge by mutableStateOf<ExoPlayerBridge?>(null)
     private var textureView: EasyTextureView? by mutableStateOf(null)
 
@@ -93,5 +93,8 @@ class ExoPlayerFrameState() {
         )
     }
 
+    override fun close() {
+        unbindBridge()
+    }
 
 }

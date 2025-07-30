@@ -38,31 +38,42 @@ class BangumiDetailComponent: DetailComponent, BaseComponent() {
     private val config: BangumiConfig by inject()
     private val api: BangumiApi by inject()
 
-    fun createSubjectRepository(
+    private val subjectRepositoryMap = mutableMapOf<String, BangumiSubjectRepository>()
+    private val personRepositoryMap = mutableMapOf<String, BangumiPersonRepository>()
+    private val characterRepositoryMap = mutableMapOf<String, BangumiCharacterRepository>()
+
+
+    fun getOrCreateSubjectRepository(
         cartoonIndex: CartoonIndex,
     ): DataRepository<BgmSubject> {
         checkCartoonIndex(cartoonIndex)
-        return BangumiSubjectRepository(
-            cartoonIndex.id, api, config, source.scope
-        )
+        return subjectRepositoryMap.getOrPut(cartoonIndex.id) {
+            BangumiSubjectRepository(
+                cartoonIndex.id, api, config, source.scope
+            )
+        }
     }
 
-    fun createCharacterRepository(
+    fun getOrCreateCharacterRepository(
         cartoonIndex: CartoonIndex,
     ): DataRepository<List<BgmCharacter>> {
         checkCartoonIndex(cartoonIndex)
-        return BangumiCharacterRepository(
-            cartoonIndex.id, api, config, source.scope
-        )
+        return characterRepositoryMap.getOrPut(cartoonIndex.id) {
+            BangumiCharacterRepository(
+                cartoonIndex.id, api, config, source.scope
+            )
+        }
     }
 
-    fun createPersonRepository(
+    fun getOrCreatePersonRepository(
         cartoonIndex: CartoonIndex,
     ): DataRepository<List<BgmPerson>> {
         checkCartoonIndex(cartoonIndex)
-        return BangumiPersonRepository(
-            cartoonIndex.id, api, config, source.scope
-        )
+        return personRepositoryMap.getOrPut(cartoonIndex.id) {
+            BangumiPersonRepository(
+                cartoonIndex.id, api, config, source.scope
+            )
+        }
     }
 
 

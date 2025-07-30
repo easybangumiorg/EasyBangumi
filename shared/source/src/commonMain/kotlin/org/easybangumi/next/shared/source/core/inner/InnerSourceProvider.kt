@@ -30,7 +30,7 @@ class InnerSourceProvider(
     private val sourceConfigController: SourceConfigController,
 ): SourceProvider {
 
-    // 业务如果确保只需要特定 Inner 源 （例如 Bangumi 首页）可直接在这里读取，如果从 SourceController 读取则需要等待其他源加载完毕
+    // 业务如果确保只需要特定 Inner 源 （例如 Bangumi 首页）可直接在这里读取，如果从 SourceController 读取则需要等待所有源加载完毕
     val bangumiSource by lazy {
         BangumiInnerSource()
     }

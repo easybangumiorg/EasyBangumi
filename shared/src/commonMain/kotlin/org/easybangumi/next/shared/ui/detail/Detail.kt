@@ -35,3 +35,16 @@ fun Detail(cartoonIndex: CartoonIndex) {
         }
     }
 }
+
+@Composable
+fun DetailPreview(modifier: Modifier = Modifier, cartoonIndex: CartoonIndex) {
+    when(cartoonIndex.source) {
+        BangumiInnerSource.SOURCE_KEY -> {
+            BangumiDetail(
+                modifier = modifier,
+                cartoonIndex = cartoonIndex,
+//                contentPaddingTop = 0.dp,
+            )
+        }
+    }
+}

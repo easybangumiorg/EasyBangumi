@@ -49,9 +49,9 @@ class BangumiDetailViewModel(
     val detailSourceCase: DetailSourceCase by inject()
     val bangumiDetailBusiness = detailSourceCase.getBangumiDetailBusiness()
 
-    val subjectRepository = bangumiDetailBusiness.runDirect { createSubjectRepository(cartoonIndex) }
-    val characterRepository = bangumiDetailBusiness.runDirect { createCharacterRepository(cartoonIndex) }
-    val personRepository = bangumiDetailBusiness.runDirect { createPersonRepository(cartoonIndex) }
+    val subjectRepository = bangumiDetailBusiness.runDirect { getOrCreateSubjectRepository(cartoonIndex) }
+    val characterRepository = bangumiDetailBusiness.runDirect { getOrCreateCharacterRepository(cartoonIndex) }
+    val personRepository = bangumiDetailBusiness.runDirect { getOrCreatePersonRepository(cartoonIndex) }
 
     val detailTabList = DetailTab.entries.toList()
 

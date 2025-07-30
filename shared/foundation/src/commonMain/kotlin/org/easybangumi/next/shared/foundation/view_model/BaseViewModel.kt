@@ -18,11 +18,24 @@ import org.koin.core.component.KoinComponent
  */
 abstract class BaseViewModel: ViewModel(), KoinComponent {
 
+    private val children: MutableList<BaseViewModel> = mutableListOf()
+
+    protected fun<T: BaseViewModel> childViewModel(
+        block: () -> T
+    ): Lazy<T> {
+        return lazy {
+            val child = block()
+            children.add(child)
+            child
+        }
+    }
+
     @CallSuper
     override fun onCleared() {
         if (this is ParentViewModel<*>) {
             clearChildren()
         }
+        children.forEach { it.onCleared() }
         super.onCleared()
     }
 

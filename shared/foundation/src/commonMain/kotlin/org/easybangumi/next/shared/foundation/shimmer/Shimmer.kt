@@ -198,7 +198,7 @@ class ShimmerContentScope(
 @Composable
 fun ShimmerHost(
     modifier: Modifier = Modifier,
-    visible: Boolean,
+    visible: Boolean = true,
     positionTracker: PositionTracker = remember {
         PositionTracker()
     },

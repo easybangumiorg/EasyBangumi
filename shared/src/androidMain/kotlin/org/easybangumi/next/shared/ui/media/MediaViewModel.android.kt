@@ -1,0 +1,53 @@
+package org.easybangumi.next.shared.ui.media
+
+import androidx.media3.exoplayer.ExoPlayer
+import org.easybangumi.next.lib.utils.global
+import org.easybangumi.next.libplayer.exoplayer.ExoPlayerBridge
+import org.easybangumi.next.libplayer.exoplayer.ExoPlayerFrameState
+import org.easybangumi.next.shared.data.cartoon.CartoonCover
+import org.easybangumi.next.shared.data.cartoon.Episode
+import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
+import org.easybangumi.next.shared.playcon.android.AndroidPlayconViewModel
+import org.koin.core.component.inject
+
+/**
+ *    https://github.com/easybangumiorg/EasyBangumi
+ *
+ *    Copyright 2025 easybangumi.org and contributors
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ */
+class MediaViewModel(
+    cartoonCover: CartoonCover,
+    suggestEpisode: Episode? = null,
+): BaseViewModel() {
+
+    companion object {
+        const val MEDIA_COMPONENT_ASPECT = 16f / 9f
+    }
+
+    val mediaCommonVM: MediaCommonViewModel by childViewModel {
+        MediaCommonViewModel(cartoonCover, suggestEpisode)
+    }
+
+    val exoBuilder: ExoPlayer.Builder by inject()
+    val exoBridge = ExoPlayerBridge(global.appContext, exoBuilder)
+    val playconVM: AndroidPlayconViewModel by childViewModel {
+        AndroidPlayconViewModel(exoBridge)
+    }
+    val exoPlayerFrameState = ExoPlayerFrameState()
+
+    init {
+        exoPlayerFrameState.bindBridge(exoBridge)
+        addCloseable(exoPlayerFrameState)
+    }
+
+
+
+
+
+}
