@@ -11,6 +11,9 @@ import org.easybangumi.next.shared.data.cartoon.CartoonPlayCover
 import org.easybangumi.next.shared.data.cartoon.Episode
 import org.easybangumi.next.shared.data.cartoon.PlayerLine
 import org.easybangumi.next.shared.foundation.view_model.StateViewModel
+import org.easybangumi.next.shared.source.case.PlaySourceCase
+import org.easybangumi.next.shared.ui.media_radar.MediaRadarViewModel
+import org.koin.core.component.inject
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -27,6 +30,8 @@ class MediaCommonViewModel (
     val cartoonCover: CartoonCover,
     var suggestEpisode: Episode? = null,
 ): StateViewModel<MediaCommonViewModel.State>(State()) {
+
+    private val playSourceCase: PlaySourceCase by inject()
 
     data class State (
         val detail: DetailState = DetailState(),
@@ -54,13 +59,36 @@ class MediaCommonViewModel (
         ): Popup()
     }
 
-    fun onPlayCoverSelected(playCover: CartoonPlayCover) {
+    fun onMediaRadarResult(result: MediaRadarViewModel.SelectionResult) {
+        dismissPopup()
         update {
             it.copy(
                 detail = it.detail.copy(
-                    playCover = playCover,
+                    playCover = result.playCover
                 ),
             )
+        }
+        viewModelScope.launch {
+            update {
+                it.copy(
+                    playIndex = it.playIndex.copy(
+                        playerLineList = DataState.loading()
+                    )
+                )
+            }
+            val res = result.playBusiness.run {
+                getPlayLines(result.playCover)
+            }
+            res.onOK {
+
+            }
+            update {
+                it.copy(
+                    playIndex = it.playIndex.copy(
+                        playerLineList = res,
+                    )
+                )
+            }
         }
     }
 
