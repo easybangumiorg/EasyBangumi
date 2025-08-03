@@ -67,7 +67,18 @@ class JSComponentBundle(
 
 
         jsSource.jsScope.runWithScope { context, scriptable ->
-            // 2. import
+
+
+
+            // 2. 注入工具给 JS
+            bundle.forEach { (k, v) ->
+                val simpleName = k.simpleName ?: return@forEach
+                val name = "Inject_${simpleName}"
+                name.logi("JsImport")
+                scriptable.put(name, scriptable, v)
+            }
+
+            // 3. import
             context.evaluateString(
                 scriptable,
                 JsSource.JS_IMPORT,
@@ -75,14 +86,6 @@ class JSComponentBundle(
                 1,
                 null
             )
-
-            // 3. 注入工具给 JS
-            bundle.forEach { (k, v) ->
-                val simpleName = k.simpleName ?: return@forEach
-                val name = "Inject_${simpleName}"
-                name.logi("JsImport")
-                scriptable.put(name, scriptable, v)
-            }
 
             // 4. 加载插件源代码
             if (jsFile == null) {

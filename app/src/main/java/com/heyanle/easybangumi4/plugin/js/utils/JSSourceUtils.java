@@ -3,6 +3,8 @@ package com.heyanle.easybangumi4.plugin.js.utils;
 
 import com.heyanle.easybangumi4.source_api.utils.core.SourceUtils;
 
+import org.jsoup.Jsoup;
+
 import kotlin.text.Regex;
 
 /**

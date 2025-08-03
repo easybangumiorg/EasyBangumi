@@ -190,7 +190,11 @@ class JSPageComponent(
                     if (data.isNotEmpty() && data.first() !is CartoonCover) {
                         throw ParserException("js parse error")
                     }
-                    return@requestRunWithScope nextKey to data.filterIsInstance<CartoonCover>()
+                    return@requestRunWithScope nextKey to data.filterIsInstance<CartoonCover>().apply {
+                        this.forEach {
+//                            it.coverUrl.logi("JsPageComponent")
+                        }
+                    }
                 }
             }.apply {
                 this.logi("JSPageComponent")

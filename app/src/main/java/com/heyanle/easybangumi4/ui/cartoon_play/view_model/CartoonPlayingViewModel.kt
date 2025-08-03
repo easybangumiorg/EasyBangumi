@@ -418,6 +418,7 @@ class CartoonPlayingViewModel(
         val epi = playingEpisode ?: return
         val cartoon = cartoonPlayingState?.cartoonSummary ?: return
         scope.launch {
+            val process = if (ps >= 0) ps else exoPlayer.currentPosition
             cartoonInfoDao.transaction {
                 val old = cartoonInfoDao.getByCartoonSummary(cartoon.id, cartoon.source)
                 if (old != null) {
@@ -428,7 +429,8 @@ class CartoonPlayingViewModel(
                                 lineIndex,
                                 line,
                                 epi,
-                                if (ps >= 0) ps else exoPlayer.currentPosition
+                                process
+
                             )
                         )
                     }

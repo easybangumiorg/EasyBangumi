@@ -10,9 +10,11 @@ import com.heyanle.easybangumi4.plugin.source.utils.network.interceptor.UserAgen
 import com.heyanle.easybangumi4.source_api.utils.api.NetworkHelper
 import com.heyanle.easybangumi4.source_api.utils.api.OkhttpHelper
 import com.heyanle.easybangumi4.source_api.utils.api.WebViewHelper
+import com.heyanle.easybangumi4.source_api.utils.core.network.GET
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import org.jsoup.Jsoup
 import java.io.File
 import java.security.SecureRandom
 import java.security.cert.CertificateException
@@ -80,6 +82,9 @@ class OkhttpHelperImpl(
         get() = _cloudflareClient
     override val cloudflareWebViewClient: OkHttpClient
         get() = _cloudflareWebViewClient
+
+    init {
+    }
 
     private fun createSSLSocketFactory(): SSLSocketFactory {
         return runCatching {

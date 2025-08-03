@@ -167,6 +167,7 @@ class WebViewHelperV2Impl: WebViewHelperV2 {
                         ignoreTimeoutExt = false
                     )
                 } catch (e: CancellationException) {
+                    e.printStackTrace()
                     recyclerWebView(webview)
                     return@withContext WebViewHelperV2.RenderedResult(
                         strategy,

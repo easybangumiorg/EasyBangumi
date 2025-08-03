@@ -1,420 +1,310 @@
-// @key heyanle.catwcy
-// @label 喵物次元
+// @key heyanle.xifan
+// @label 稀饭动漫
 // @versionName 1.0
 // @versionCode 1
 // @libVersion 11
-// @cover https://www.catwcy.com/upload/site/20241103-1/eec404ebd39ac2f18800d8c0d914457e.png
+// @cover https://dm.xifanacg.com/template/dsn2/static/img/fav.png
 
 // Inject
 var networkHelper = Inject_NetworkHelper;
 var preferenceHelper = Inject_PreferenceHelper;
 var webViewHelperV2 = Inject_WebViewHelperV2;
-
+var okhttpHelper = Inject_OkhttpHelper;
 // Hook PreferenceComponent ========================================
 function PreferenceComponent_getPreference() {
     var res = new ArrayList();
-    var host = new SourcePreference.Edit("网页", "Host", "https://www.catwcy.com");
-    var playerUrl = new SourcePreference.Edit("播放器网页正则", "PlayerReg", "https://player.catw.moe/player/ec.php.*");
+    var host = new SourcePreference.Edit("网页", "Host", "https://dm.xifanacg.com");
+    var playerUrl = new SourcePreference.Edit("播放器网页正则", "PlayerReg", "https://player.moedot.net/player/index.php?.*");
+    var timeout = new SourcePreference.Edit("超时时间", "Timeout", "20000");
     res.add(host);
     res.add(playerUrl);
+    res.add(timeout);
     return res;
 }
 
 // Hook PageComment  ========================================
-var weekLabel = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
 
 function PageComponent_getMainTabs() {
     var res = new ArrayList();
-    res.add(new MainTab("首页", MainTab.MAIN_TAB_GROUP));
-    res.add(new MainTab("排期", MainTab.MAIN_TAB_GROUP));
+    res.add(new MainTab("连载新番", MainTab.MAIN_TAB_WITH_COVER));
+    res.add(new MainTab("完结旧番", MainTab.MAIN_TAB_WITH_COVER));
+    res.add(new MainTab("剧场版", MainTab.MAIN_TAB_WITH_COVER));
     return res;
 }
 
 function PageComponent_getSubTabs(mainTab) {
     var res = new ArrayList();
-    if (mainTab.label == "首页") {
-        res.add(new SubTab("首页", true));
-        res.add(new SubTab("TV番剧", true));
-        res.add(new SubTab("剧场电影", true));
-    } else if (mainTab.label == "排期") {
-        for (var i = 0 ; i < weekLabel.length ; i ++){
-            res.add(new SubTab(weekLabel[i], true, i));
-        }
-    }
     return res;
 }
 
 function PageComponent_getContent(mainTab, subTab, key) {
-    var doc = getMainHomeDocument();
-    if (mainTab.label == "首页") {
-        if (subTab.label == "首页") {
-            return new Pair(null, coverHomeMainCartoonCover(doc));
-        }
-    } else if (mainTab.label == "排期") {
-        var timeLine = coverTimeLine(doc);
-        if (timeLine.size() != 7) {
+//    var doc = getMainHomeDocument();
+    if (mainTab.label == "连载新番") {
+        var res = getContent(1, key + 1);
+        if (res == null || res.size() == 0) {
             return new Pair(null, new ArrayList());
         }
-        return new Pair(null, timeLine.get(subTab.ext));
+        return new Pair(key + 1, res);
+    } else if (mainTab.label == "完结旧番") {
+        var res = getContent(2, key + 1);
+        if (res == null || res.size() == 0) {
+            return new Pair(null, new ArrayList());
+        }
+        return new Pair(key + 1, res);
+    } else if (mainTab.label == "剧场版") {
+        var res = getContent(3, key + 1);
+        if (res == null || res.size() == 0) {
+            return new Pair(null, new ArrayList());
+        }
+        return new Pair(key + 1, res);
     }
     return new Pair(null, new ArrayList());
 }
 
+function getContent(type, page) {
+    var url = SourceUtils.urlParser(getRootUrl(), "/index.php/ds_api/vod");
+    var map = new HashMap();
+    map.put("type", type);
+    map.put("page", page);
+    map.put("level", 0);
+    map.put("by", "time");
+    var req = okhttpHelper.cloudflareWebViewClient.newCall(
+        OkhttpUtils.postFromBody(url, map)
+    );
+    var string = req.execute().body().string();
+    try {
+
+        var object = new JSONObject(string);
+        var list = object.getJSONArray("list");
+        var res = new ArrayList();
+        for (var i = 0; i < list.length(); i++) {
+            var item = list.getJSONObject(i);
+            var id = item.getString("vod_id");
+            var title = item.getString("vod_name");
+            var cover = item.getString("vod_pic");
+            cover = SourceUtils.urlParser(getRootUrl(), cover);
+            var url = SourceUtils.urlParser(getRootUrl(), item.getString("url"));
+            var intro = item.getString("vod_blurb");
+            if (intro == null) {
+                intro = "";
+            }
+            res.add(makeCartoonCover({
+                id: id,
+                title: title,
+                url: url,
+                intro: intro,
+                cover: SourceUtils.urlParser(getRootUrl(), cover),
+                source: source.key,
+            }));
+        }
+        return res;
+    } catch(e) {
+        Log.e("GiriGiriLove", "getContent: " + e);
+        return new ArrayList();
+    }
+}
 // Hook DetailedComponent ========================================
 
  function DetailedComponent_getDetailed(summary) {
-    var doc = getDetailDocument(summary);
+    var u = SourceUtils.urlParser(getRootUrl(), "/bangumi/" + summary.id + ".html");
+    var doc = getDoc(u);
     JSLogUtils.d("doc", doc);
-    var cartoon = coverDetailCartoon(summary, summary.url, doc);
-    var playLine = coverPlayLine(summary, summary.url, doc);
-
+    var cartoon = detailed(doc, summary);
+    var playLine = playline(doc, summary);
     return new Pair(cartoon, playLine);
  }
 
+ function detailed(doc, summary) {
+    var title = doc.select("div.detail-info h3.slide-info-title").text()
+//        var genre = doc.select("div.detail-info div.slide-info span").map { it.text() }.joinToString { ", " }
+    var coverEle = doc.select("div.wow div.detail-pic img").first();
+    var cover =  "";
+    if (coverEle != null) {
+        cover = coverEle.attr("data-src");
+    }
+    var descEle = doc.select("div.switch-box div.check div.text").first();
+    var desc = "";
+    if (descEle != null) {
+        desc = descEle.text();
+    }
+    return makeCartoon({
+        id: summary.id,
+        url: SourceUtils.urlParser(getRootUrl(), summary.id),
+        source: summary.source,
+        title: title,
+        cover: SourceUtils.urlParser(getRootUrl(), cover),
+        intro: "",
+        description: desc,
+        genre: null,
+        status: Cartoon.STATUS_UNKNOWN,
+        updateStrategy: Cartoon.UPDATE_STRATEGY_ALWAYS,
+    });
+ }
+function playline(doc, summary) {
+    var tabs =
+        doc.select("div.anthology.wow div.anthology-tab div.swiper-wrapper a.swiper-slide")
+            .iterator()
+    var epRoot = doc.select("div.anthology-list-box div ul.anthology-list-play").iterator()
+    var playLines = new ArrayList()
+    var ii = 1
+    while (tabs.hasNext() && epRoot.hasNext()) {
+        var tab = tabs.next()
+        var ul = epRoot.next()
+
+        var es = new ArrayList()
+        var ulc = ul.children()
+
+        for (var index = 0; index < ulc.size(); index++) {
+            var element = ulc.get(index)
+            var label = "";
+            if (element != null) {
+                label = element.text();
+            }
+            es.add(
+                new Episode(
+                    id = (index + 1).toString(),
+                    label = label,
+                    order = index
+                )
+            )
+        }
+        playLines.add(
+            new PlayLine(
+                id = ii.toString(),
+                label = tab.text(),
+                episode = es
+            )
+        )
+        ii++
+    }
+    return playLines
+}
+//
+//
  // Hook SearchComponent ========================================
  function SearchComponent_search(page, keyword) {
 
-    var url = getHost() + "/search/page/" + page + "/wd/" + URLEncoder.encode(keyword, "utf-8") +".html";
-    var ua = networkHelper.randomUA;
-    var doc = Jsoup.connect(url).userAgent(ua).get();
+    var url = SourceUtils.urlParser(
+        getRootUrl(),
+        "/search/wd/" + URLEncoder.encode(keyword, "utf-8")+"/page/" + (page+1) + ".html"
+    )
+    var doc = getDoc(url);
     var res = new ArrayList();
+    var elements = doc.select("div div.vod-detail.search-list");
+    for (var i = 0; i < elements.size(); i++) {
+        var par = elements.get(i);
+        var it = par.child(0);
+        var uu = it.child(1).child(0).attr("href")
+        var id = uu.subSequence(9, uu.length() - 6).toString()
 
-    var children = doc.select("body div.box-width div.wrap div.public-list-box.search-box");
-    for (var i = 0 ; i < children.size() ; i ++) {
-        var child = children.get(i);
-        if (child == null) {
-            continue;
+        var imgEle = it.select("img.gen-movie-img").first();
+        var coverUrl = "";
+        if (imgEle != null) {
+            coverUrl = imgEle.attr("data-src");
         }
-
-        var title = child.select("div.thumb-content div.thumb-txt").text();
-        var cover = child.select("a img").attr("data-src");
-        var url = JSSourceUtils.urlParser(getHost(), child.select("a").first().attr("href"));
-        var id = url2id(url);
-        var intro = child.select("a div.public-list-prb").text();
-
-        res.add(makeCartoonCover({
+        var cover = coverUrl;
+        if (cover.startsWith("//")) {
+            cover = "http:${cover}"
+        }
+        var titleEle = it.select("h3.slide-info-title").first();
+        var title = "";
+        if (titleEle != null) {
+            title = titleEle.text();
+        }
+        var intro = "";
+        var introEle = it.select("span.slide-info-remarks").first();
+        if (introEle != null) {
+            intro = introEle.text();
+        }
+        var b = makeCartoonCover({
             id: id,
-            url: url,
             title: title,
-            cover: cover,
+            url: SourceUtils.urlParser(getRootUrl(), uu),
             intro: intro,
-        }));
+            cover: SourceUtils.urlParser(getRootUrl(), cover),
+            source: source.key,
+        })
+        res.add(b)
     }
     if (res.size() == 0) {
         return new Pair(null, new ArrayList());
     }
-
-
-
-
     return new Pair(page + 1, res);
 
  }
-
+//
  // Hook PlayComponent ========================================
 function PlayComponent_getPlayInfo(summary, playLine, episode) {
-    var url = JSSourceUtils.urlParser(getHost(), episode.id);
+
+    var url = JSSourceUtils.urlParser(getRootUrl(), "/watch/" + summary.id + "/" + playLine.id + "/" + episode.id + ".html");
     var strategy = new WebViewHelperV2.RenderedStrategy(
         url,
-        preferenceHelper.get("PlayerReg", "https://player.catw.moe/player/ec.php.*"),
+        preferenceHelper.get("PlayerReg", "https://player.moedot.net/player/index.php?.*"),
         "utf-8",
-        networkHelper.randomUA,
+        networkHelper.defaultLinuxUA,
         null,
         null,
         false,
-        5000
+        Long.parseLong(preferenceHelper.get("Timeout", "20000"))
     );
     var result = webViewHelperV2.renderHtmlFromJs(strategy);
     if (result == null) {
         throw new ParserException("解析错误 1");
     }
-    var playerUrl = result.interceptResource;
-    if (playerUrl == null || playerUrl.length() == 0) {
-        throw new ParserException("解析错误 2");
-    }
+    Log.i("result", result);
+    var doc = Jsoup.parse(result.content);
 
-    JSLogUtils.d("playerUrl", playerUrl);
-    var urlIndex = playerUrl.indexOf("url=") + 4;
-    var contentUrl = playerUrl.substring(urlIndex);
-    if (contentUrl.startsWith("http")) {
-        var type = PlayerInfo.DECODE_TYPE_OTHER;
-        if (contentUrl.endsWith(".m3u8")) {
-            type = PlayerInfo.DECODE_TYPE_HLS;
-        } else if (contentUrl.endsWith(".mp4")) {
-            type = PlayerInfo.DECODE_TYPE_OTHER;
+
+    var src = "";
+    var iframe = doc.select("tbody td iframe").first();
+    if (iframe != null) {
+        src = iframe.attr("src")
+    }
+    Log.i("GiriGiriLove", "PlayComponent_getPlayInfo: src: " + src);
+    var res = "";
+    var split = src.split("\\?");
+    if (split.length > 0) {
+        var last = split[split.length - 1];
+        var ls = last.split("\\&");
+        for (var i = 0; i < ls.length; i++) {
+            var it = ls[i];
+            if (it.startsWith("url=")) {
+                res = it.subSequence(4, it.length()).toString();
+                break;
+            }
         }
-
-        return new PlayerInfo(type, contentUrl);
     }
 
-
-    var strategy = new WebViewHelperV2.RenderedStrategy(
-        playerUrl,
-        ".*(\.mp4|\.m3u8).*",
-        "utf-8",
-        networkHelper.randomUA,
-        null,
-        null,
-        false,
-        5000
-    );
-    result = webViewHelperV2.renderHtmlFromJs(strategy);
-    if (result == null) {
-        throw new ParserException("解析错误 3");
+    if(res.length == 0) {
+        throw ParserException("url 解析失败")
     }
-    contentUrl = result.interceptResource;
+
     var type = PlayerInfo.DECODE_TYPE_OTHER;
-    if (contentUrl.endsWith(".m3u8")) {
+    if (res.endsWith(".m3u8")) {
         type = PlayerInfo.DECODE_TYPE_HLS;
-    } else if (contentUrl.endsWith(".mp4")) {
-        type = PlayerInfo.DECODE_TYPE_OTHER;
     }
-
-    return new PlayerInfo(type, contentUrl);
-
+    return new PlayerInfo(
+        type, res
+    )
 
 
 }
 
 
 // business ========================================
-var rootHost = "https://www.catwcy.com"
-function getHost() {
-    return preferenceHelper.get("Host", rootHost);
-}
 
 // main
-
-var lastDoc = null;
-var lastDocTime = 0;
-function getMainHomeDocument() {
-    var now = System.currentTimeMillis();
-    // 10s 缓存
-    if (lastDoc == null || now - lastDocTime > 1000 * 10) {
-        var ua = networkHelper.randomUA
-        lastDoc = Jsoup.connect(getHost()).userAgent(ua).get();
-        lastDocTime = now;
-    }
-    return lastDoc;
-}
-
-var lastTimeLineDoc = null;
-var lastTimeLine = null;
-// return Pair<Null, ArrayList<CartoonCover>>
-function coverHomeMainCartoonCover(doc){
-    // 按照 doc 缓存
-    if (lastTimeLineDoc == doc && lastTimeLine != null) {
-        return lastTimeLine;
-    }
-
-    var homeCenter = doc.select("div.slide-a.slide-c.rel div.slide-time-list.mySwiper div.swiper-wrapper").first();
-    if (homeCenter == null) {
-        throw new ParserException("解析错误");
-    }
-    var res = new ArrayList();
-    var children = homeCenter.children();
-    for (var i = 0; i < children.size(); i++) {
-        var item = children.get(i);
-        if (item == null) {
-            continue;
-        }
-        var title = item.select("a div h3").text();
-        var url =  JSSourceUtils.urlParser(getHost(), item.select("a").attr("href"));
-        var id = url2id(url);
-
-        var coverStyle = item.select("a div.slide-time-img3").attr("style");
-        var cover = coverStyle;
-        var start = coverStyle.indexOf("url(");
-        if(start != -1){
-            var end = coverStyle.indexOf(")", start);
-            if(end != -1){
-                cover = coverStyle.substring(start+4, end);
-                if(cover.startsWith("'") || cover.startsWith("\"")){
-                    cover = cover.substring(1, cover.length()-1);
-                }
-            }
-        }
-        res.add(makeCartoonCover({
-            id: id,
-            url: url,
-            title: title,
-            cover: cover,
-            intro: "",
-        }));
-
-    }
-    lastTimeLineDoc = doc;
-    lastTimeLine = res;
-    return res;
-}
-
-// return ArrayList<ArrayList<CartoonCover>>
-function coverTimeLine(doc){
-    var weekContainer = doc.select("div#week-module-box").first();
-    if (weekContainer == null) {
-        throw new ParserException("解析错误");
-    }
-    var hasData = false;
-    var res = new ArrayList();
-    for (var i = 1 ; i <= 7 ; i ++) {
-        var dayContainer = weekContainer.select("div#week-module-" + i).first();
-        if (dayContainer == null) {
-            res.add(new ArrayList());
-            continue;
-        }
-        var bangumiItemList = dayContainer.select("div.public-list-box");
-        var dayRes = new ArrayList();
-        for (var j = 0 ; j < bangumiItemList.size() ; j ++ ){
-            var bangumiContainer = bangumiItemList.get(j);
-            if (bangumiContainer == null) {
-                continue;
-            }
-            // title url id cover
-            var a = bangumiContainer.select("div.public-list-button a").first();
-            if (a == null) {
-                continue;
-            }
-            var sourceUrl = a.attr("href");
-            var title = a.text();
-            var url = JSSourceUtils.urlParser(getHost(), sourceUrl);
-            var id = url2id(url);
-            var cover = "";
-            var imgContainer = bangumiContainer.select("a img").first();
-            if (imgContainer != null) {
-                cover = imgContainer.attr("data-src");
-            }
-            var intro = "";
-
-            var subTitleContainer = bangumiContainer.select("div.public-list-button div.public-list-subtitle").first();
-            if (subTitleContainer != null) {
-                intro = subTitleContainer.text();
-            }
-            dayRes.add(
-                makeCartoonCover({
-                    id: id,
-                    url: url,
-                    title: title,
-                    cover: cover,
-                    intro: intro,
-                })
-            )
-            hasData = true;
-        }
-        res.add(dayRes);
-    }
-    return res;
-}
-
-function getDetailDocument(summary) {
-    var url = getHost() + "/bangumi/" + summary.id + ".html";
-    var ua = networkHelper.randomUA;
-    JSLogUtils.d("url", url);
-    return Jsoup.connect(url).userAgent(ua).get();
-}
-
-// detail
-
-// return CartoonImpl
-function coverDetailCartoon(summary, url, doc) {
-    // id, source, url, title, genre, coverUrl, intro, description, updateStrategy, isUpdate, status
-    var descContainer = doc.select("div#height_limit").first();
-    var desc = "";
-    if (descContainer != null) {
-        desc = descContainer.text().replace(" &nbsp", " ");
-    }
-    var title = doc.select("body  div.vod-detail div.box-width.flex div.left.flex div.detail-info  h3").first();
-    var titleStr = "";
-    if (title != null) {
-        titleStr = title.text();
-    }
-    var coverContainer = doc.select("body div.vod-detail div img").first();
-    var cover = "";
-    if (coverContainer != null) {
-        cover = coverContainer.attr("data-src");
-    }
-    JSLogUtils.d("cover", cover);
-    var intro = "";
-    var genreList = new ArrayList();
-    var genreSet = new HashSet();
-    var genreContainer = doc.select("body div.vod-detail.style-detail.rel.box.cor1 div.box-width.flex.between.rel div.left.flex div.detail-info.rel.wow a.deployment span");
-    if (genreContainer != null) {
-        for (var i = 0 ; i < genreContainer.size() ; i ++) {
-            var genreItem = genreContainer.get(i).text();
-            JSLogUtils.d("genreItem", genreItem);
-            if (genreItem == null || genreItem.length == 0 || genreItem.equals(".") || genreItem.equals("·")) {
-                continue;
-            }
-            var sp = genreItem.split(" ");
-            for (var j = 0 ; j < sp.length ; j ++) {
-                var item = sp[j];
-                if (item.length == 0) {
-                    continue;
-                }
-                if (genreSet.contains(item)) {
-                    continue;
-                }
-                genreSet.add(item);
-                genreList.add(item);
-            }
-            genreList.add(genreItem);
-        }
-    }
-
-
-    var status = Cartoon.STATUS_UNKNOWN;
-    var updateStrategy = Cartoon.UPDATE_STRATEGY_ALWAYS;
-    return makeCartoon(
-        {
-            id: summary.id,
-            url: url,
-            title: titleStr,
-            genreList: genreList,
-            cover: cover,
-            intro: intro,
-            description: desc,
-            updateStrategy: updateStrategy,
-            isUpdate: false,
-            status: status,
-        }
+function getDoc(url) {
+    var u = SourceUtils.urlParser(getRootUrl(), url);
+    var req = okhttpHelper.cloudflareWebViewClient.newCall(
+        OkhttpUtils.get(u)
     );
-
-
+    var string = req.execute().body().string();
+    Log.i("GiriGiriLove", "getDoc: " + string);
+    var doc = Jsoup.parse(string);
+    return doc;
 }
 
-// return ArrayList<PlayLine>
-function coverPlayLine(summary, url, doc) {
-    var res = new ArrayList();
-    var playLineContainer = doc.select("div div.anthology-tab").first();
-    var episodeContainer = doc.select("div.anthology-list.select-a div.anthology-list-box.none ul.anthology-list-play");
-
-    var playLineItems = playLineContainer.select("a.swiper-slide");
-    for (var i = 0 ; i < playLineItems.size() ; i ++) {
-        var playLineItem = playLineItems.get(i);
-        var title = playLineItem.text();
-        var playLine = new PlayLine(title, title, new ArrayList());
-
-
-        var episodeItems = episodeContainer.get(i).select("li");
-        for (var j = 0 ; j < episodeItems.size() ; j ++) {
-            var episodeItem = episodeItems.get(j);
-            var episodeTitle = episodeItem.text();
-            var episodeUrl = episodeItem.select("a").attr("href");
-            playLine.episode.add(new Episode(episodeUrl, episodeTitle, j));
-        }
-        res.add(playLine);
-    }
-    return res;
+function getRootUrl() {
+    return preferenceHelper.get("Host", "https://dm.xifanacg.com");
 }
-
-
-// utils
-function url2id(url) {
-    var array = url.split("/");
-    var lastIndex = array.length - 1;
-    var id = array[lastIndex];
-    if (id.endsWith(".html")) {
-        id = id.substring(0, id.length() - 5);
-    }
-    return id;
-}
-

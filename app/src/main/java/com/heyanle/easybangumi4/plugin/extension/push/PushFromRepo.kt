@@ -62,11 +62,13 @@ class PushFromRepo(
         // 2. 解析 jsonl
         val taskList = repoJsonlFile.bufferedReader().use {
             it.readLines().map {
-                JSONObject(it)
+                runCatching {
+                    JSONObject(it)
+                }.getOrNull()
             }.mapNotNull {
-                val url = it.optString("url")
-                val key = it.optString("key")
-                if (url.isEmpty() || key.isEmpty()) {
+                val url = it?.optString("url")
+                val key = it?.optString("key")
+                if (url?.isEmpty() != false || key?.isEmpty() != false) {
                     return@mapNotNull null
                 }
                 key to url

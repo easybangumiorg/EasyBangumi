@@ -41,10 +41,14 @@ class JsSource(
             importPackage(Packages.java.net);
             
             importPackage(Packages.org.jsoup);
+            importPackage(Packages.org.json);
             importPackage(Packages.okhttp3);
+           
            
             
             var Log = JSLogUtils;
+            var SourceUtils = JSSourceUtils;
+            var source = Inject_Source;
          
             
             function makeCartoonCover(map) {
