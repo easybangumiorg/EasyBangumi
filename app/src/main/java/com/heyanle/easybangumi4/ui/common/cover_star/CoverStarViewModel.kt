@@ -68,49 +68,55 @@ class CoverStarViewModel : ViewModel() {
 
     fun dispatchStar(cartoonCover: CartoonCover) {
         viewModelScope.launch {
-            val old = cartoonInfoDao.getByCartoonSummary(cartoonCover.id, cartoonCover.source)
-            if (old != null && old.starTime > 0) {
-                cartoonInfoDao.modify(old.copy(starTime = 0, tags = "", upTime = 0))
-            }
-            val tl = cartoonStarController.cartoonTagFlow.first().tagList
-            if (tl.find { !it.isInner && !it.isDefault } != null) {
-                MoeDialogData.Compose {
-                    CoverStarDialog(
-                        true,
-                        cartoonCover,
-                        tl.filter { !it.isInner }.sortedBy { it.order },
-                        {
-                            it.dismiss()
-                        }
-                    ) { cartoonCover, tagList ->
-                        realStar(cartoonCover, tagList)
+            cartoonInfoDao.transaction {
+                val old = cartoonInfoDao.getByCartoonSummary(cartoonCover.id, cartoonCover.source)
+                if (old != null && old.starTime > 0) {
+                    cartoonInfoDao.modify(old.copy(starTime = 0, tags = "", upTime = 0))
+                }
+                val tl = cartoonStarController.cartoonTagFlow.first().tagList
+                if (tl.find { !it.isInner && !it.isDefault } != null) {
+                    MoeDialogData.Compose {
+                        CoverStarDialog(
+                            true,
+                            cartoonCover,
+                            tl.filter { !it.isInner }.sortedBy { it.order },
+                            {
+                                it.dismiss()
+                            }
+                        ) { cartoonCover, tagList ->
+                            realStar(cartoonCover, tagList)
 
-                    }
-                }.show()
-            } else {
-                realStar(cartoonCover)
+                        }
+                    }.show()
+                } else {
+                    realStar(cartoonCover)
+                }
             }
+
         }
     }
 
     fun realStar(cartoonCover: CartoonCover, tagList: List<CartoonTag>? = null) {
         viewModelScope.launch {
-            val old = cartoonInfoDao.getByCartoonSummary(cartoonCover.id, cartoonCover.source)
-            if (old == null) {
-                cartoonInfoDao.insert(
-                    CartoonInfo.fromCartoonCover(cartoonCover, tagList)
-                        .copy(starTime = System.currentTimeMillis())
-                )
-            } else {
-                if (old.starTime > 0) {
-                    cartoonInfoDao.modify(old.copy(starTime = 0, tags = "", upTime = 0))
+            cartoonInfoDao.transaction {
+                val old = cartoonInfoDao.getByCartoonSummary(cartoonCover.id, cartoonCover.source)
+                if (old == null) {
+                    cartoonInfoDao.insert(
+                        CartoonInfo.fromCartoonCover(cartoonCover, tagList)
+                            .copy(starTime = System.currentTimeMillis())
+                    )
                 } else {
-                    cartoonInfoDao.modify(
-                        old.copy(
-                            starTime = System.currentTimeMillis(),
-                            tags = tagList?.joinToString(", ") { it.label } ?: ""))
+                    if (old.starTime > 0) {
+                        cartoonInfoDao.modify(old.copy(starTime = 0, tags = "", upTime = 0))
+                    } else {
+                        cartoonInfoDao.modify(
+                            old.copy(
+                                starTime = System.currentTimeMillis(),
+                                tags = tagList?.joinToString(", ") { it.label } ?: ""))
+                    }
                 }
             }
+
         }
     }
 

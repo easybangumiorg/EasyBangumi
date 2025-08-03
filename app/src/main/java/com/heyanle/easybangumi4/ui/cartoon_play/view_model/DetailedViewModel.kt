@@ -132,34 +132,42 @@ class DetailedViewModel(
             return
         }
         viewModelScope.launch {
-            if (star) {
-                val tl = cartoonStarController.cartoonTagFlow.first().tagList
-                if (tl.find { !it.isInner && !it.isDefault } != null) {
-                    _stateFlow.update {
-                        it.copy(
-                            starDialogState = StarDialogState(cartoon, tl.filter { !it.isInner }.sortedBy { it.order })
+            cartoonInfoDao.transaction {
+                val old = cartoonInfoDao.getByCartoonSummary(
+                    cartoonSummary.id,
+                    cartoonSummary.source,
+                )
+                val cartoon = old?:cartoon
+                if (star) {
+                    val tl = cartoonStarController.cartoonTagFlow.first().tagList
+                    if (tl.find { !it.isInner && !it.isDefault } != null) {
+                        _stateFlow.update {
+                            it.copy(
+                                starDialogState = StarDialogState(cartoon, tl.filter { !it.isInner }.sortedBy { it.order })
+                            )
+                        }
+                    } else {
+                        cartoonInfoDao.modify(
+                            cartoon.copy(
+                                starTime = System.currentTimeMillis(),
+                                tags = "",
+                                isUpdate = false,
+                            )
                         )
+                        refreshFromDB()
                     }
                 } else {
                     cartoonInfoDao.modify(
                         cartoon.copy(
-                            starTime = System.currentTimeMillis(),
+                            starTime = 0,
                             tags = "",
                             isUpdate = false,
                         )
                     )
                     refreshFromDB()
                 }
-            } else {
-                cartoonInfoDao.modify(
-                    cartoon.copy(
-                        starTime = 0,
-                        tags = "",
-                        isUpdate = false,
-                    )
-                )
-                refreshFromDB()
             }
+
         }
     }
 
@@ -190,12 +198,19 @@ class DetailedViewModel(
             return
         }
         viewModelScope.launch {
-            val cartoonInfo = cartoon.copy(
-                sortByKey = sortByKey,
-                reversal = isReverse,
-            )
-            cartoonInfoDao.modify(cartoonInfo)
-            refreshFromDB()
+            cartoonInfoDao.transaction {
+                val old = cartoonInfoDao.getByCartoonSummary(
+                    cartoonSummary.id,
+                    cartoonSummary.source,
+                )
+                val cartoonInfo = (old?:cartoon).copy(
+                    sortByKey = sortByKey,
+                    reversal = isReverse,
+                )
+                cartoonInfoDao.modify(cartoonInfo)
+                refreshFromDB()
+            }
+
         }
     }
 

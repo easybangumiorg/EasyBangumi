@@ -418,20 +418,22 @@ class CartoonPlayingViewModel(
         val epi = playingEpisode ?: return
         val cartoon = cartoonPlayingState?.cartoonSummary ?: return
         scope.launch {
-            val old = cartoonInfoDao.getByCartoonSummary(cartoon.id, cartoon.source)
-            if (old != null) {
-                val lineIndex = old.playLine.indexOf(line)
-                if (lineIndex >= 0) {
-                    cartoonInfoDao.modify(
-                        old.copyHistory(
-                            lineIndex,
-                            line,
-                            epi,
-                            if (ps >= 0) ps else exoPlayer.currentPosition
+            cartoonInfoDao.transaction {
+                val old = cartoonInfoDao.getByCartoonSummary(cartoon.id, cartoon.source)
+                if (old != null) {
+                    val lineIndex = old.playLine.indexOf(line)
+                    if (lineIndex >= 0) {
+                        cartoonInfoDao.modify(
+                            old.copyHistory(
+                                lineIndex,
+                                line,
+                                epi,
+                                if (ps >= 0) ps else exoPlayer.currentPosition
+                            )
                         )
-                    )
-                }
+                    }
 
+                }
             }
         }
     }

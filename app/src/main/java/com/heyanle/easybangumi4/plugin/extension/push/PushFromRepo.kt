@@ -63,14 +63,15 @@ class PushFromRepo(
         val taskList = repoJsonlFile.bufferedReader().use {
             it.readLines().map {
                 JSONObject(it)
-            }.map {
+            }.mapNotNull {
                 val url = it.optString("url")
                 val key = it.optString("key")
                 if (url.isEmpty() || key.isEmpty()) {
-                    return@map null
+                    return@mapNotNull null
                 }
                 key to url
             }
+        }.apply {
         }.filterIsInstance<Pair<String, String>>().map {
             File(cacheFolder, it.first) to it.second
         }.toList()

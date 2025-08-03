@@ -39,26 +39,29 @@ class CartoonRepository(
 
             // 异步缓存
             launch(Dispatchers.IO) {
-                if (netResult is DataResult.Ok) {
-                    val sourceName =
-                        sourceStateCase.awaitBundle().source(source)?.label
-                            ?: ""
-                    if (local != null) {
-                        cartoonInfoDao.modify(
-                            local.copyFromCartoon(
-                                netResult.data.first,
-                                sourceName,
-                                netResult.data.second
+                cartoonInfoDao.transaction {
+                    val old = cartoonInfoDao.getByCartoonSummary(id, source)
+                    if (netResult is DataResult.Ok) {
+                        val sourceName =
+                            sourceStateCase.awaitBundle().source(source)?.label
+                                ?: ""
+                        if (local != null) {
+                            cartoonInfoDao.modify(
+                                local.copyFromCartoon(
+                                    netResult.data.first,
+                                    sourceName,
+                                    netResult.data.second
+                                )
                             )
-                        )
-                    } else {
-                        cartoonInfoDao.modify(
-                            CartoonInfo.fromCartoon(
-                                netResult.data.first,
-                                sourceName,
-                                netResult.data.second
+                        } else {
+                            cartoonInfoDao.modify(
+                                CartoonInfo.fromCartoon(
+                                    netResult.data.first,
+                                    sourceName,
+                                    netResult.data.second
+                                )
                             )
-                        )
+                        }
                     }
                 }
             }

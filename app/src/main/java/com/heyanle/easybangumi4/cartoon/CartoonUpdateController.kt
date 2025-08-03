@@ -39,7 +39,10 @@ class CartoonUpdateController(
 
     fun updateAll() {
         scope.launch {
-            innerUpdate(cartoonInfoDao.flowAllStar().first(), false)
+            // 开个事务确保一致性
+            cartoonInfoDao.transaction {
+                innerUpdate(cartoonInfoDao.flowAllStar().first(), false)
+            }
         }
     }
 
@@ -60,7 +63,7 @@ class CartoonUpdateController(
                     else -> false
                 }
             }.toList()
-            .map {
+            .mapNotNull {
                 val detailed = bundle.detailed(it.source)
                 if( detailed == null){
                     null

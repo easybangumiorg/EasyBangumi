@@ -7,8 +7,10 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
+import com.heyanle.easybangumi4.utils.CoroutineProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
 
 /**
  * Created by heyanle on 2023/12/16.
@@ -44,6 +46,12 @@ interface CartoonInfoDao {
 
     @Query("DELETE FROM CartoonInfoV2 WHERE 1=1")
     suspend fun clearAll()
+
+    @Transaction
+    suspend fun transaction(block: suspend () -> Unit) {
+        block()
+    }
+
 
     @Transaction
     suspend fun modify(cartoonInfo: CartoonInfo) {
@@ -98,6 +106,7 @@ interface CartoonInfoDao {
     @Query("SELECT * FROM CartoonInfoV2 WHERE starTime>0")
     fun flowAllStar(): Flow<List<CartoonInfo>>
 
+    @Transaction
     suspend fun renameTag(oldTag: String, newTag: String) {
         modify(flowAllStar().first().map {
             it.renameTag(oldTag, newTag)
@@ -106,7 +115,8 @@ interface CartoonInfoDao {
 
     @Transaction
     suspend fun deleteStar(cartoonInfo: CartoonInfo){
-        modify(cartoonInfo.copy(starTime = 0, tags = "", upTime = 0))
+        val old = getByCartoonSummary(cartoonInfo.id, cartoonInfo.source)
+        modify((old?:cartoonInfo).copy(starTime = 0, tags = "", upTime = 0))
     }
 
     @Transaction
