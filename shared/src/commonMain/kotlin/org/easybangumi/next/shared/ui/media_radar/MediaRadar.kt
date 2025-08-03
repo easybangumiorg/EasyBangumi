@@ -46,13 +46,6 @@ fun MediaRadar(
 
     val state = vm.ui
 
-    LaunchedEffect(Unit) {
-        snapshotFlow {
-            state.value.selectionResult
-        }.collectLatest {
-            onSelection(it)
-        }
-    }
 
     Column (
         modifier = Modifier.fillMaxWidth().then(modifier)
@@ -67,6 +60,7 @@ fun MediaRadar(
             Modifier.fillMaxWidth().weight(1f),
             vm,
             state.value,
+            onSelection,
         )
 
     }
@@ -109,20 +103,21 @@ fun MediaRadarList(
     modifier: Modifier,
     vm: MediaRadarViewModel,
     state: MediaRadarViewModel.State,
+    onSelection: (MediaRadarViewModel.SelectionResult?) -> Unit,
 ){
     val line = state.lineState
     LazyColumn(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.Top
     ) {
-        items(line) {
+        items(line) { line ->
             Column(
                 verticalArrangement = Arrangement.Top
             ) {
                 ListItem(
                     headlineContent = {
                         Text(
-                            stringRes(it.playBusiness.source.manifest.label),
+                            stringRes(line.playBusiness.source.manifest.label),
 //                            style = MaterialTheme.typography.bodyLarge
                         )
                     },
@@ -134,7 +129,7 @@ fun MediaRadarList(
                 LoadScaffold(
                     modifier = Modifier.fillMaxWidth()
                         .height(EasyScheme.size.cartoonCoverHeight),
-                    data = it.pagingFlow,
+                    data = line.pagingFlow,
                     onLoading = {
                         ShimmerHost(
                             modifier = Modifier.fillMaxWidth().height(EasyScheme.size.cartoonCoverHeight),
@@ -171,7 +166,12 @@ fun MediaRadarList(
                                         model = item.coverUrl,
                                         name = item.name,
                                         onClick = {
-//                                            vm.onCartoonCoverClick(item)
+                                            onSelection.invoke(
+                                                MediaRadarViewModel.SelectionResult(
+                                                    playCover = item,
+                                                    playBusiness = line.playBusiness
+                                                )
+                                            )
                                         }
                                     )
                                 }

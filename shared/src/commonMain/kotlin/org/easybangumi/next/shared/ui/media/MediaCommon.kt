@@ -8,6 +8,10 @@ import androidx.compose.ui.Modifier
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.data.cartoon.Episode
 import org.easybangumi.next.shared.ui.detail.DetailPreview
+import org.easybangumi.next.shared.ui.media_radar.MediaRadar
+import org.easybangumi.next.shared.ui.media_radar.MediaRadarBottomPanel
+import org.easybangumi.next.shared.ui.media_radar.MediaRadarState
+import org.easybangumi.next.shared.ui.media_radar.MediaRadarViewModel
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -47,6 +51,26 @@ fun MediaDetailPreview(
         }
     }
 
+}
+
+@Composable
+fun MediaRadarPopup(
+    vm: MediaCommonViewModel
+) {
+    val radar = vm.ui.value.popup as? MediaCommonViewModel.Popup.MediaRadar
+    MediaRadarBottomPanel(
+        vm = vm.mediaRadarViewModel,
+        show = radar != null,
+        onDismissRequest = {
+            vm.dismissPopup()
+        },
+        onSelection = {
+            if (it != null) {
+                vm.dismissPopup()
+                vm.onMediaRadarResult(it)
+            }
+        }
+    )
 }
 
 @Composable

@@ -26,6 +26,7 @@ fun MediaRadarBottomPanel(
     vm: MediaRadarViewModel,
     show: Boolean,
     onDismissRequest: () -> Unit,
+    onSelection: (MediaRadarViewModel.SelectionResult?) -> Unit = { _ -> }
 ) {
     if (show) {
         ModalBottomSheet(
@@ -38,6 +39,7 @@ fun MediaRadarBottomPanel(
             MediaRadar(
                 modifier = Modifier.fillMaxSize(),
                 vm = vm,
+                onSelection = onSelection
             )
         }
     }

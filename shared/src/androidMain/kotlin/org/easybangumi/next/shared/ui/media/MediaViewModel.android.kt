@@ -1,6 +1,10 @@
 package org.easybangumi.next.shared.ui.media
 
+import androidx.lifecycle.viewModelScope
 import androidx.media3.exoplayer.ExoPlayer
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.utils.global
 import org.easybangumi.next.libplayer.exoplayer.ExoPlayerBridge
 import org.easybangumi.next.libplayer.exoplayer.ExoPlayerFrameState
@@ -8,6 +12,7 @@ import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.data.cartoon.Episode
 import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
 import org.easybangumi.next.shared.playcon.android.AndroidPlayconViewModel
+import org.easybangumi.next.shared.ui.media_radar.MediaRadarParam
 import org.koin.core.component.inject
 
 /**
@@ -24,26 +29,41 @@ import org.koin.core.component.inject
 class MediaViewModel(
     cartoonCover: CartoonCover,
     suggestEpisode: Episode? = null,
+    val mediaRadarParam: MediaRadarParam? = null
 ): BaseViewModel() {
 
     companion object {
         const val MEDIA_COMPONENT_ASPECT = 16f / 9f
     }
 
+    // 媒体通用
     val mediaCommonVM: MediaCommonViewModel by childViewModel {
-        MediaCommonViewModel(cartoonCover, suggestEpisode)
+        MediaCommonViewModel(cartoonCover, mediaRadarParam, suggestEpisode)
     }
 
+    // 视频播放
     val exoBuilder: ExoPlayer.Builder by inject()
     val exoBridge = ExoPlayerBridge(global.appContext, exoBuilder)
+    val exoPlayerFrameState = ExoPlayerFrameState()
+
+    // 播放控制
     val playconVM: AndroidPlayconViewModel by childViewModel {
         AndroidPlayconViewModel(exoBridge)
     }
-    val exoPlayerFrameState = ExoPlayerFrameState()
+
+
 
     init {
         exoPlayerFrameState.bindBridge(exoBridge)
         addCloseable(exoPlayerFrameState)
+
+        viewModelScope.launch {
+            // 没选定播放片源时强制竖屏 + 展示雷达
+            mediaCommonVM.logic.filter { it.detail.playCover == null }.collectLatest {
+                playconVM.screenMode = AndroidPlayconViewModel.ScreenMode.NORMAL
+                mediaCommonVM.showMediaRadar()
+            }
+        }
     }
 
 

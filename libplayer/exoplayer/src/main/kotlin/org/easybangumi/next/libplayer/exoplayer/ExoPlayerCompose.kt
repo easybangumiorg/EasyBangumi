@@ -47,11 +47,7 @@ class ExoPlayerFrameState(): AutoCloseable {
 
 
     fun bindBridge(bridge: ExoPlayerBridge) {
-//        if (this.bridge == bridge) return
         this.bridge = bridge
-//        textureView?.let {
-//            bridge.attachTextureView(it)
-//        }
     }
 
     fun unbindBridge() {

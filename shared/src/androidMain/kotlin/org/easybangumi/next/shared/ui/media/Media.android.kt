@@ -13,6 +13,7 @@ import org.easybangumi.next.shared.data.cartoon.Episode
 import org.easybangumi.next.shared.foundation.view_model.vm
 import org.easybangumi.next.shared.playcon.android.AndroidPlaycon
 import org.easybangumi.next.shared.playcon.android.AndroidPlayconViewModel
+import org.easybangumi.next.shared.ui.media_radar.MediaRadarParam
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -29,11 +30,13 @@ import org.easybangumi.next.shared.playcon.android.AndroidPlayconViewModel
 fun Media(
     cartoonCover: CartoonCover,
     suggestEpisode: Episode? = null,
+    mediaRadarParam: MediaRadarParam? = null,
 ) {
 
-    val vm = vm(::MediaViewModel, cartoonCover, suggestEpisode)
+    val vm = vm(::MediaViewModel, cartoonCover, suggestEpisode, mediaRadarParam)
 
     val screenMode = vm.playconVM.screenMode
+//    val isFullScreen = (screenMode == AndroidPlayconViewModel.ScreenMode.FULLSCREEN) && vm.
     when (screenMode) {
         AndroidPlayconViewModel.ScreenMode.NORMAL -> {
             MediaNormal(vm)
@@ -42,6 +45,8 @@ fun Media(
 
         }
     }
+
+    MediaRadarPopup(vm.mediaCommonVM)
 }
 
 @Composable
@@ -50,7 +55,6 @@ fun MediaNormal(
 ){
     Column {
         PlayerNormal(viewModel)
-
     }
 }
 
@@ -71,4 +75,5 @@ fun ColumnScope.PlayerNormal(
         )
     }
 }
+
 

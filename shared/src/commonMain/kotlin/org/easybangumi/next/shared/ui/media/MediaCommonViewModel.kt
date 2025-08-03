@@ -12,6 +12,7 @@ import org.easybangumi.next.shared.data.cartoon.Episode
 import org.easybangumi.next.shared.data.cartoon.PlayerLine
 import org.easybangumi.next.shared.foundation.view_model.StateViewModel
 import org.easybangumi.next.shared.source.case.PlaySourceCase
+import org.easybangumi.next.shared.ui.media_radar.MediaRadarParam
 import org.easybangumi.next.shared.ui.media_radar.MediaRadarViewModel
 import org.koin.core.component.inject
 
@@ -25,13 +26,26 @@ import org.koin.core.component.inject
  *    You may obtain a copy of the License at
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  媒体页通用逻辑，作为各平台媒体 ViewModel 的子 ViewModel
+ *  1. 媒体雷达
+ *  2. 播放线路和集数
+ *  3. 详情面板
  */
 class MediaCommonViewModel (
     val cartoonCover: CartoonCover,
+    val mediaRadarParam: MediaRadarParam? = null,
     var suggestEpisode: Episode? = null,
 ): StateViewModel<MediaCommonViewModel.State>(State()) {
 
     private val playSourceCase: PlaySourceCase by inject()
+    val mediaRadarViewModel: MediaRadarViewModel by childViewModel {
+        MediaRadarViewModel(
+            mediaRadarParam ?: MediaRadarParam(
+                cover = cartoonCover,
+            )
+        )
+    }
 
     data class State (
         val detail: DetailState = DetailState(),
@@ -47,7 +61,14 @@ class MediaCommonViewModel (
         val playerLineList: DataState<List<PlayerLine>> = DataState.none(),
         val currentPlayerLine: Int = 0,
         val currentEpisode: Int = 0,
-    )
+    ) {
+        val playLineOrNull: PlayerLine? by lazy {
+            playerLineList.okOrNull()?.getOrNull(currentPlayerLine)
+        }
+        val currentEpisodeOrNull: Episode? by lazy {
+            playLineOrNull?.episodeList?.getOrNull(currentEpisode)
+        }
+    }
     sealed class Popup {
         data class MediaRadar(
             val cartoonCover: CartoonCover,
@@ -79,14 +100,48 @@ class MediaCommonViewModel (
             val res = result.playBusiness.run {
                 getPlayLines(result.playCover)
             }
+            var targetPlaylineIndex: Int = state.value.playIndex.currentPlayerLine
+            var targetEpisodeIndex: Int = state.value.playIndex.currentEpisode
             res.onOK {
-
+                if (targetPlaylineIndex !in it.indices) {
+                    targetPlaylineIndex = 0
+                }
+                val playLine = it.getOrNull(targetPlaylineIndex)
+                if (playLine != null) {
+                   val suggestIndex = playLine.episodeList.indexOfFirst { it.order == suggestEpisode?.order }
+                    if (suggestIndex in playLine.episodeList.indices) {
+                        targetEpisodeIndex = suggestIndex
+                    }
+                } else {
+                    targetPlaylineIndex = 0
+                    targetEpisodeIndex = 0
+                }
+                // 只生效一次
+                suggestEpisode = null
             }
+
             update {
                 it.copy(
                     playIndex = it.playIndex.copy(
                         playerLineList = res,
+                        currentPlayerLine = targetPlaylineIndex,
+                        currentEpisode = targetEpisodeIndex,
                     )
+                )
+            }
+        }
+    }
+
+    fun showMediaRadar(keyword: String? = null) {
+        if (state.value.detail.playCover == null) {
+            update {
+                val popup = (it.popup as? Popup.MediaRadar)?.copy(keyword = keyword)
+                    ?: Popup.MediaRadar(
+                        cartoonCover = cartoonCover,
+                        keyword = keyword
+                    )
+                it.copy(
+                    popup = popup
                 )
             }
         }
