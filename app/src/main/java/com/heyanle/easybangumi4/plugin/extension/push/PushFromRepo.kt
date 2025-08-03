@@ -5,6 +5,7 @@ import com.heyanle.easybangumi4.plugin.extension.ExtensionController
 import com.heyanle.easybangumi4.plugin.extension.provider.JsExtensionProvider
 import com.heyanle.easybangumi4.plugin.js.extension.JSExtensionCryLoader
 import com.heyanle.easybangumi4.utils.downloadTo
+import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.stringRes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.yield
@@ -63,6 +64,7 @@ class PushFromRepo(
         val taskList = repoJsonlFile.bufferedReader().use {
             it.readLines().map {
                 runCatching {
+                    it.logi("PushFromRepo")
                     JSONObject(it)
                 }.getOrNull()
             }.mapNotNull {
