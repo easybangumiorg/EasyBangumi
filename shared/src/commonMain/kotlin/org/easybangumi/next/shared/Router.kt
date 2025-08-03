@@ -20,10 +20,13 @@ import androidx.navigation.toRoute
 import org.easybangumi.next.shared.debug.DebugHost
 import org.easybangumi.next.shared.debug.DebugPage
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import org.easybangumi.next.lib.utils.WeakRef
+import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.ui.detail.Detail
 import org.easybangumi.next.shared.ui.home.Home
+import org.easybangumi.next.shared.ui.media_radar.MediaRadarParam
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -86,9 +89,42 @@ sealed class RouterPage {
             }
     }
 
+    @Serializable
+    data class Media(
+        val cartoonCoverJson: String,
+        val suggestEpisode: Int? = null,
+        val mediaRadarParamJson: String? = null, // JSON string of MediaRadarParam
+    ): RouterPage() {
+
+        companion object {
+            fun from(
+                cartoonCover: CartoonCover,
+                suggestEpisode: Int? = null,
+                mediaRadarParam: MediaRadarParam? = null
+            ): Media {
+                return Media(
+                    cartoonCoverJson = Json.encodeToString(cartoonCover),
+                    suggestEpisode = suggestEpisode,
+                    mediaRadarParamJson = mediaRadarParam?.let { Json.encodeToString(it) }
+                )
+            }
+        }
+
+
+        val cartoonCover: CartoonCover? by lazy {
+            Json.decodeFromString(cartoonCoverJson)
+        }
+
+        val mediaRadarParam: MediaRadarParam? by lazy {
+            mediaRadarParamJson?.let { Json.decodeFromString(it) }
+        }
+    }
+
     companion object {
         val DEFAULT = Main
     }
+
+
 
 
 }
@@ -149,6 +185,21 @@ fun Router() {
                 NavHook(detail, it) {
                     Detail(cartoonIndex)
                 }
+            }
+
+            composable<RouterPage.Media>(){
+                val media = it.toRoute<RouterPage.Media>()
+                NavHook(media, it) {
+                    val cartoonCover = media.cartoonCover ?: return@NavHook
+                    val suggestEpisode = media.suggestEpisode
+                    val mediaRadarParam = media.mediaRadarParam
+                    org.easybangumi.next.shared.ui.media.Media(
+                        cartoonCover = cartoonCover,
+                        suggestEpisode = suggestEpisode,
+                        mediaRadarParam = mediaRadarParam
+                    )
+                }
+
             }
         }
     }

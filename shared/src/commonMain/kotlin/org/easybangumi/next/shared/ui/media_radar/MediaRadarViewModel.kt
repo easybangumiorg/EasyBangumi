@@ -34,7 +34,7 @@ import org.koin.core.component.inject
 class MediaRadarViewModel (
     private val param: MediaRadarParam,
 ): StateViewModel<MediaRadarViewModel.State>(
-    State(param.userKeyword)
+    State(param.userKeyword.ifEmpty { param.cover.name})
 ) {
 
     data class SelectionResult(

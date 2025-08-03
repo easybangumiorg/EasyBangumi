@@ -16,28 +16,24 @@ import kotlin.math.roundToInt
  */
 
 var Context.systemVolume: Float
-    get() = getSystemVolume()
-    set(value) {
-        setSystemVolume(value)
+    get() {
+        val mAudioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        val mMaxVolume = mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+        val mCurrentVolume = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
+        return mCurrentVolume.toFloat() / mMaxVolume
     }
-fun Context.getSystemVolume(): Float {
-    val mAudioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-    val mMaxVolume = mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-    val mCurrentVolume = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
-    return mCurrentVolume.toFloat() / mMaxVolume
-}
+    set(value) {
+        "set volume $value".loge("volume")
+        val mAudioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        val mMaxVolume = mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+        val coerceValue = value.coerceIn(0f, 1f)
+        mAudioManager.setStreamVolume(
+            AudioManager.STREAM_MUSIC,
+            (coerceValue * mMaxVolume).roundToInt(),
+            AudioManager.FLAG_SHOW_UI
+        )
+    }
 
-fun Context.setSystemVolume(value: Float) {
-    "set volume $value".loge("volume")
-    val mAudioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-    val mMaxVolume = mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-    val coerceValue = value.coerceIn(0f, 1f)
-    mAudioManager.setStreamVolume(
-        AudioManager.STREAM_MUSIC,
-        (coerceValue * mMaxVolume).roundToInt(),
-        AudioManager.FLAG_SHOW_UI
-    )
-}
 
 
 var Activity.windowBrightness: Float
@@ -50,7 +46,7 @@ var Window.windowBrightness: Float
     get() {
         val brightness = attributes.screenBrightness
         if (brightness != BRIGHTNESS_OVERRIDE_NONE) return brightness
-        else return with(context) { getScreenBrightness() }
+        else return with(context) { screenBrightness }
     }
     set(value) {
         "set brightness $value".loge("brightness")
@@ -74,12 +70,11 @@ var Window.isKeepScreenOn: Boolean
     }
 
 val Context.screenBrightness: Float
-    get() = getScreenBrightness()
-fun Context.getScreenBrightness(): Float {
-    val contentResolver = contentResolver
-    val raw = Settings.System.getInt(contentResolver, Settings.System.SCREEN_BRIGHTNESS, 125)
-    return raw / 255f
-}
+    get() {
+        val contentResolver = contentResolver
+        val raw = Settings.System.getInt(contentResolver, Settings.System.SCREEN_BRIGHTNESS, 125)
+        return raw / 255f
+    }
 
 fun <T> T.loge(tag: String = ""): T = apply {
     if (toString().length > 4000) {

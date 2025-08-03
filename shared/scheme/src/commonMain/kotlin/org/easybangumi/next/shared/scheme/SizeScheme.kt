@@ -35,6 +35,7 @@ val LocalSizeScheme  = compositionLocalOf<SizeScheme> {
 data class SizeScheme (
     val cartoonCoverWidth: Dp = 154.dp,
     val cartoonCoverAspectRatio: Float = 7f/9f,
+    val cartoonPreviewAspectRatio: Float = 14f/9f,
     val topAppBarHeight: Dp = 64.dp,
     val tabWidth: Dp = 88.dp,
     val statusBarHeight: Dp,

@@ -47,14 +47,16 @@ fun BangumiDetailPreview(
     val vm = vm(::BangumiDetailPreviewViewModel, cartoonIndex, key = cartoonIndex.toString())
     val state = vm.ui.value
     Row (
-        modifier = modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().then(modifier),
         verticalAlignment = Alignment.Top
     ) {
         CartoonCoverCard(
             model = vm.coverUrl,
+            coverAspectRatio = EasyScheme.size.cartoonPreviewAspectRatio
+
         )
 
-        Spacer(modifier = Modifier.size(4.dp))
+        Spacer(modifier = Modifier.size(8.dp))
         LoadScaffold(
             Modifier.fillMaxWidth().weight(1f),
             state,
@@ -63,13 +65,13 @@ fun BangumiDetailPreview(
                 ShimmerHost(Modifier, visible = true) {
                     Column {
                         Text("", modifier = Modifier.fillMaxWidth().drawRectWhenShimmerVisible(), maxLines = 2, style = MaterialTheme.typography.bodyLarge)
-                        Spacer(modifier = Modifier.size(4.dp))
+                        Spacer(modifier = Modifier.size(8.dp))
                         FlowRow(
                             modifier = Modifier.fillMaxWidth(),
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            repeat(6) {
+                            repeat(3) {
                                 Row(
                                     modifier = Modifier
                                         .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(6.dp))
@@ -92,13 +94,14 @@ fun BangumiDetailPreview(
         ) {
             Column {
                 Text(it.data.displayName, maxLines = 2, style = MaterialTheme.typography.bodyLarge)
-                Spacer(modifier = Modifier.size(4.dp))
+                Spacer(modifier = Modifier.size(8.dp))
                 FlowRow(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    maxLines = 2
                 ) {
-                    for (i in 0..5.coerceAtMost(it.data.tags.size)) {
+                    for (i in 0..3.coerceAtMost(it.data.tags.size)) {
                         val tag = it.data.tags.getOrNull(i) ?: continue
                         Row(modifier = Modifier
                             .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(6.dp))
@@ -119,13 +122,13 @@ fun BangumiDetailPreview(
 
                 }
             }
-            Row (
-                modifier = Modifier.fillMaxWidth().height(EasyScheme.size.cartoonCoverHeight)
-            ) {
-                CartoonCoverCard(
-                    model = vm.coverUrl
-                )
-            }
+//            Row (
+//                modifier = Modifier.fillMaxWidth().height(EasyScheme.size.cartoonCoverHeight)
+//            ) {
+//                CartoonCoverCard(
+//                    model = vm.coverUrl
+//                )
+//            }
         }
 
     }

@@ -1,6 +1,9 @@
 ﻿package org.easybangumi.next.shared.ui.detail.bangumi
 
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
 import androidx.paging.cachedIn
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.flow.collect
@@ -10,6 +13,7 @@ import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.PagingFlow
 import org.easybangumi.next.lib.utils.ResourceOr
 import org.easybangumi.next.lib.utils.newPagingFlow
+import org.easybangumi.next.shared.RouterPage
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.foundation.view_model.StateViewModel
 import org.easybangumi.next.shared.resources.Res
@@ -45,6 +49,9 @@ class BangumiDetailViewModel(
         EPISODE(1, Res.strings.episode),
         COMMENT(2, Res.strings.comment),
     }
+
+    val isDetailShowAll =  mutableStateOf(false)
+    val isTabShowAll = mutableStateOf(false)
 
     val detailSourceCase: DetailSourceCase by inject()
     val bangumiDetailBusiness = detailSourceCase.getBangumiDetailBusiness()
@@ -136,6 +143,21 @@ class BangumiDetailViewModel(
         }
     }
 
+
+    fun onEpisodeClick(
+        episode: BgmEpisode,
+        navController: NavController,
+    ) {
+        val sub = state.value.subjectState.okOrNull() ?: return
+
+        navController.navigate(
+            RouterPage.Media.from(
+                sub.cartoonCover,
+                episode.ep?.toInt()
+            )
+        )
+
+    }
 
 
 

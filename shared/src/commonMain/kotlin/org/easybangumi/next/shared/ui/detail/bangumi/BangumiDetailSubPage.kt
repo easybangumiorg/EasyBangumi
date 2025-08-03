@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.times
 import app.cash.paging.compose.collectAsLazyPagingItems
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.DataState
+import org.easybangumi.next.shared.LocalNavController
 import org.easybangumi.next.shared.foundation.EasyTab
 import org.easybangumi.next.shared.foundation.elements.ErrorElements
 import org.easybangumi.next.shared.foundation.elements.LoadScaffold
@@ -112,7 +113,7 @@ fun BangumiContent(
         userScrollEnabled = false,
         contentPadding = contentPadding
     ){
-        Box(Modifier.background(Color.Red))
+//        Box(Modifier.background(Color.Red))
         val tab = vm.detailTabList.getOrNull(it)
         if (tab == null) {
             Text(
@@ -154,12 +155,9 @@ fun BangumiDetailSubDetailPage(
     vm: BangumiDetailViewModel,
     subjectState: DataState<BgmSubject>,
 ) {
-    val isDetailShowAll = remember {
-        mutableStateOf(false)
-    }
-    val isTabShowAll = remember {
-        mutableStateOf(false)
-    }
+
+
+
     LoadScaffold(
         modifier, data = subjectState
     ) {
@@ -175,17 +173,17 @@ fun BangumiDetailSubDetailPage(
             ) {
                 Column(
                     modifier = Modifier.fillMaxWidth().clickable {
-                        isDetailShowAll.value = !isDetailShowAll.value
+                        vm.isDetailShowAll.value = !vm.isDetailShowAll.value
                     },
 //                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
                         text = it.data.summary?:"",
                         style = MaterialTheme.typography.bodyMedium,
-                        maxLines = if (isDetailShowAll.value) Int.MAX_VALUE else 5,
+                        maxLines = if (vm.isDetailShowAll.value) Int.MAX_VALUE else 5,
                         lineHeight = 26.sp
                     )
-                    if (!isDetailShowAll.value) {
+                    if (!vm.isDetailShowAll.value) {
                         Text(
                             text = "...",
                             style = MaterialTheme.typography.bodyMedium,
@@ -202,8 +200,8 @@ fun BangumiDetailSubDetailPage(
             }
 
             item {
-                val maxSize = remember(isTabShowAll.value) {
-                    if (isTabShowAll.value) Int.MAX_VALUE else 12
+                val maxSize = remember(vm.isTabShowAll.value) {
+                    if (vm.isTabShowAll.value) Int.MAX_VALUE else 12
                 }
                 Column {
                     FlowRow(
@@ -236,11 +234,11 @@ fun BangumiDetailSubDetailPage(
                     TextButton(
                         modifier = Modifier.align(Alignment.End),
                         onClick = {
-                            isTabShowAll.value = !isTabShowAll.value
+                            vm.isTabShowAll.value = !vm.isTabShowAll.value
                         }
                     ) {
                         Text(
-                            text = if (isTabShowAll.value) stringRes(Res.strings.show_less) else stringRes(Res.strings.show_more),
+                            text = if (vm.isTabShowAll.value) stringRes(Res.strings.show_less) else stringRes(Res.strings.show_more),
                             style = MaterialTheme.typography.bodySmall
                         )
                     }
@@ -266,6 +264,7 @@ fun BangumiDetailSubEpisodePage(
             vm.tryInitEpisode()
         }
     }
+    val navController = LocalNavController.current
     val lazyPagingItems = pagingFlow?.collectAsLazyPagingItems()
     LazyColumn(
         modifier = modifier.fillMaxSize(),
@@ -280,6 +279,9 @@ fun BangumiDetailSubEpisodePage(
                             BangumiEpisodeItem(
                                 modifier = Modifier.fillMaxWidth(),
                                 bgmEpisode = item,
+                                onClick = {
+                                    vm.onEpisodeClick(it, navController)
+                                }
                             )
                             HorizontalDivider()
                         }
@@ -301,8 +303,12 @@ fun BangumiDetailSubEpisodePage(
 fun BangumiEpisodeItem(
     modifier: Modifier,
     bgmEpisode: BgmEpisode,
+    onClick: ((BgmEpisode) -> Unit)? = null
 ){
     ListItem(
+        modifier = modifier.clickable() {
+            onClick?.invoke(bgmEpisode)
+        },
         colors = ListItemDefaults.colors(
             containerColor = Color.Transparent
         ),

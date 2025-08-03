@@ -1,4 +1,4 @@
-﻿package org.easybangumi.next.shared.ui.detail.bangumi
+﻿package org.easybangumi.next.shared.ui.media
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -12,5 +12,3 @@
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
-class BangumiDetailEpisode {
-}

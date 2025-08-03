@@ -1,5 +1,6 @@
 ﻿package org.easybangumi.next.shared.ui.media_radar
 
+import kotlinx.serialization.Serializable
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 
 /**
@@ -13,7 +14,7 @@ import org.easybangumi.next.shared.data.cartoon.CartoonCover
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-
+@Serializable
 data class MediaRadarParam (
     val cover: CartoonCover,
     val userKeyword: String = "", // use cover.name if empty

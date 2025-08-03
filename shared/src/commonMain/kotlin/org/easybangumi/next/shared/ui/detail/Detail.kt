@@ -1,13 +1,16 @@
 ﻿package org.easybangumi.next.shared.ui.detail
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import org.easybangumi.next.shared.LocalNavController
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.scheme.LocalSizeScheme
 import org.easybangumi.next.shared.source.bangumi.source.BangumiInnerSource
 import org.easybangumi.next.shared.ui.detail.bangumi.BangumiDetail
+import org.easybangumi.next.shared.ui.detail.preview.BangumiDetailPreview
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -40,8 +43,8 @@ fun Detail(cartoonIndex: CartoonIndex) {
 fun DetailPreview(modifier: Modifier = Modifier, cartoonIndex: CartoonIndex) {
     when(cartoonIndex.source) {
         BangumiInnerSource.SOURCE_KEY -> {
-            BangumiDetail(
-                modifier = modifier,
+            BangumiDetailPreview(
+                modifier = modifier.padding(16.dp),
                 cartoonIndex = cartoonIndex,
 //                contentPaddingTop = 0.dp,
             )

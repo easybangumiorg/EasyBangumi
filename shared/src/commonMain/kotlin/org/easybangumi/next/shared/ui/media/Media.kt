@@ -1,7 +1,8 @@
-package org.easybangumi.next.test
+﻿package org.easybangumi.next.shared.ui.media
 
-import org.koin.core.module.Module
-import org.koin.test.KoinTest
+import androidx.compose.runtime.Composable
+import org.easybangumi.next.shared.data.cartoon.CartoonCover
+import org.easybangumi.next.shared.ui.media_radar.MediaRadarParam
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -15,4 +16,9 @@ import org.koin.test.KoinTest
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
-expect val platform: Module
+@Composable
+expect fun Media(
+    cartoonCover: CartoonCover,
+    suggestEpisode: Int? = null,
+    mediaRadarParam: MediaRadarParam? = null,
+)

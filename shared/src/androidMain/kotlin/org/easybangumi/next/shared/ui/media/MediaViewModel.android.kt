@@ -28,7 +28,7 @@ import org.koin.core.component.inject
  */
 class MediaViewModel(
     cartoonCover: CartoonCover,
-    suggestEpisode: Episode? = null,
+    suggestEpisode: Int? = null,
     val mediaRadarParam: MediaRadarParam? = null
 ): BaseViewModel() {
 
@@ -59,7 +59,7 @@ class MediaViewModel(
 
         viewModelScope.launch {
             // 没选定播放片源时强制竖屏 + 展示雷达
-            mediaCommonVM.logic.filter { it.detail.playCover == null }.collectLatest {
+            mediaCommonVM.logic.filter { it.detail.radarResult == null }.collectLatest {
                 playconVM.screenMode = AndroidPlayconViewModel.ScreenMode.NORMAL
                 mediaCommonVM.showMediaRadar()
             }

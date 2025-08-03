@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.data.cartoon.CartoonPlayCover
@@ -35,8 +36,10 @@ import org.koin.core.component.inject
 class MediaCommonViewModel (
     val cartoonCover: CartoonCover,
     val mediaRadarParam: MediaRadarParam? = null,
-    var suggestEpisode: Episode? = null,
+    var suggestEpisode: Int? = null,
 ): StateViewModel<MediaCommonViewModel.State>(State()) {
+
+    private val logger = logger()
 
     private val playSourceCase: PlaySourceCase by inject()
     val mediaRadarViewModel: MediaRadarViewModel by childViewModel {
@@ -54,8 +57,9 @@ class MediaCommonViewModel (
     )
 
     data class DetailState(
-        val playCover: CartoonPlayCover? = null,
-        val showDetailFromPlay: Boolean = false,
+        val radarResult: MediaRadarViewModel.SelectionResult? = null,
+//        val playCover: CartoonPlayCover? = null,
+        val showDetailFromPlay: Boolean = true,
     )
     data class PlayIndexState(
         val playerLineList: DataState<List<PlayerLine>> = DataState.none(),
@@ -85,7 +89,7 @@ class MediaCommonViewModel (
         update {
             it.copy(
                 detail = it.detail.copy(
-                    playCover = result.playCover
+                    radarResult = result
                 ),
             )
         }
@@ -108,7 +112,7 @@ class MediaCommonViewModel (
                 }
                 val playLine = it.getOrNull(targetPlaylineIndex)
                 if (playLine != null) {
-                   val suggestIndex = playLine.episodeList.indexOfFirst { it.order == suggestEpisode?.order }
+                   val suggestIndex = playLine.episodeList.indexOfFirst { it.order == suggestEpisode }
                     if (suggestIndex in playLine.episodeList.indices) {
                         targetEpisodeIndex = suggestIndex
                     }
@@ -132,22 +136,42 @@ class MediaCommonViewModel (
         }
     }
 
-    fun showMediaRadar(keyword: String? = null) {
-        if (state.value.detail.playCover == null) {
-            update {
-                val popup = (it.popup as? Popup.MediaRadar)?.copy(keyword = keyword)
-                    ?: Popup.MediaRadar(
-                        cartoonCover = cartoonCover,
-                        keyword = keyword
-                    )
-                it.copy(
-                    popup = popup
-                )
+
+    fun onPlayLineSelected(
+        index: Int,
+    ) {
+        update {
+            val playLine = it.playIndex.playerLineList.okOrNull()?.getOrNull(index)
+            var currentEpisode = it.playIndex.currentEpisode
+            if (playLine != null && currentEpisode !in playLine.episodeList.indices) {
+                // 如果当前集数不在选中的线路中，则重置集数为 0
+                currentEpisode = 0
             }
+            it.copy(
+                playIndex = it.playIndex.copy(
+                    currentPlayerLine = index,
+                    currentEpisode = currentEpisode,
+                )
+            )
+        }
+    }
+
+    fun showMediaRadar(keyword: String? = null) {
+        logger.info("showMediaRadar")
+        update {
+            val popup = (it.popup as? Popup.MediaRadar)?.copy(keyword = keyword)
+                ?: Popup.MediaRadar(
+                    cartoonCover = cartoonCover,
+                    keyword = keyword
+                )
+            it.copy(
+                popup = popup
+            )
         }
     }
 
     fun dismissPopup() {
+        logger.info("dismissPopup")
         update {
             it.copy(
                 popup = null,
@@ -156,20 +180,20 @@ class MediaCommonViewModel (
     }
 
     init {
-        viewModelScope.launch {
-            state.map { it.detail.playCover }.distinctUntilChanged().collectLatest { playCover ->
-                if (playCover == null) {
-                    update {
-                        it.copy(
-                            popup = Popup.MediaRadar(
-                                cartoonCover = cartoonCover,
-                                keyword = null
-                            )
-                        )
-                    }
-                }
-            }
-        }
+//        viewModelScope.launch {
+//            state.map { it.detail.radarResult }.distinctUntilChanged().collectLatest { result ->
+//                if (result == null) {
+//                    update {
+//                        it.copy(
+//                            popup = Popup.MediaRadar(
+//                                cartoonCover = cartoonCover,
+//                                keyword = null
+//                            )
+//                        )
+//                    }
+//                }
+//            }
+//        }
     }
 
 }

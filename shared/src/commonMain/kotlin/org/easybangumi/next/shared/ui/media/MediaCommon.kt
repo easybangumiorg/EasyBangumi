@@ -1,12 +1,29 @@
 package org.easybangumi.next.shared.ui.media
 
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.dp
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.data.cartoon.Episode
+import org.easybangumi.next.shared.foundation.cartoon.CartoonCoverCard
+import org.easybangumi.next.shared.scheme.EasyScheme
 import org.easybangumi.next.shared.ui.detail.DetailPreview
 import org.easybangumi.next.shared.ui.media_radar.MediaRadar
 import org.easybangumi.next.shared.ui.media_radar.MediaRadarBottomPanel
@@ -40,7 +57,11 @@ fun MediaDetailPreview(
     Box(modifier) {
         val showPlayDetail = vm.ui.value.detail.showDetailFromPlay
         if (showPlayDetail) {
-
+            MediaPlayPreview(
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                vm = vm,
+                introMaxLine = 3,
+            )
         } else {
             DetailPreview(
                 modifier = Modifier.fillMaxWidth(),
@@ -48,6 +69,34 @@ fun MediaDetailPreview(
                     vm.cartoonCover.toCartoonIndex()
                 },
             )
+        }
+    }
+
+}
+
+@Composable
+fun MediaPlayPreview(
+    modifier: Modifier,
+    vm: MediaCommonViewModel,
+    introMaxLine: Int,
+){
+    val playCover = vm.ui.value.detail.radarResult?.playCover
+    if (playCover != null) {
+        Row (
+            modifier = Modifier.fillMaxWidth().then(modifier),
+            verticalAlignment = Alignment.Top
+        ) {
+            CartoonCoverCard(
+                model = playCover.coverUrl,
+                coverAspectRatio = EasyScheme.size.cartoonPreviewAspectRatio
+
+            )
+            Spacer(modifier = Modifier.size(4.dp))
+            Column {
+                Text(playCover.name, maxLines = 2, style = MaterialTheme.typography.bodyLarge)
+                Spacer(modifier = Modifier.size(4.dp))
+                Text(playCover.intro, maxLines = introMaxLine, style = MaterialTheme.typography.bodySmall)
+            }
         }
     }
 

@@ -72,7 +72,7 @@ fun ErrorElements(
     other: @Composable () -> Unit = { },
 ) {
     ImageElements(
-        modifier.let { if (onClick != null) it.clickable(onClick = onClick) else it },
+        Modifier.let { if (onClick != null) it.clickable(onClick = onClick) else it }.then(modifier),
         Res.assets.error_tomorin_gif,
         "error",
         isRow,
