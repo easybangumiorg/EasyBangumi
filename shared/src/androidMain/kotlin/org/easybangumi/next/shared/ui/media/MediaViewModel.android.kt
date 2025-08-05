@@ -52,16 +52,21 @@ class MediaViewModel(
     }
 
 
+    private var hasShowRadarFirst = false
 
     init {
         exoPlayerFrameState.bindBridge(exoBridge)
         addCloseable(exoPlayerFrameState)
 
         viewModelScope.launch {
-            // 没选定播放片源时强制竖屏 + 展示雷达
+            // 没选定播放片源时强制竖屏
             mediaCommonVM.logic.filter { it.detail.radarResult == null }.collectLatest {
                 playconVM.screenMode = AndroidPlayconViewModel.ScreenMode.NORMAL
-                mediaCommonVM.showMediaRadar()
+                if (!hasShowRadarFirst) {
+                    hasShowRadarFirst = true
+                    mediaCommonVM.showMediaRadar()
+                }
+//                mediaCommonVM.showMediaRadar()
             }
         }
     }

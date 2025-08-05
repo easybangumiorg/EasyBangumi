@@ -8,7 +8,9 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import org.easybangumi.next.lib.logger.logger
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -21,6 +23,7 @@ import androidx.compose.ui.Modifier
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
+private val logger = logger("MediaRadarBottomPanel")
 @Composable
 fun MediaRadarBottomPanel(
     vm: MediaRadarViewModel,
@@ -28,10 +31,19 @@ fun MediaRadarBottomPanel(
     onDismissRequest: () -> Unit,
     onSelection: (MediaRadarViewModel.SelectionResult?) -> Unit = { _ -> }
 ) {
+    val bottomSheet = rememberModalBottomSheetState(false)
+    LaunchedEffect(show, bottomSheet.isVisible) {
+        logger.info("MediaRadarBottomPanel LaunchedEffect show: $show")
+        if (show && !bottomSheet.isVisible) {
+            bottomSheet.show()
+        } else if (!show) {
+            bottomSheet.hide()
+        }
+    }
     if (show) {
         ModalBottomSheet(
             onDismissRequest = onDismissRequest,
-            sheetState = rememberModalBottomSheetState(true),
+            sheetState = bottomSheet,
             contentWindowInsets = {
                 WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom + WindowInsetsSides.Top)
             }
@@ -43,7 +55,5 @@ fun MediaRadarBottomPanel(
             )
         }
     }
-
-
 
 }

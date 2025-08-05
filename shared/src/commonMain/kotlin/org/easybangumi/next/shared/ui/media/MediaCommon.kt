@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,6 +22,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.navigation.compose.DialogHost
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.data.cartoon.Episode
 import org.easybangumi.next.shared.foundation.cartoon.CartoonCoverCard
@@ -88,7 +92,9 @@ fun MediaPlayPreview(
         ) {
             CartoonCoverCard(
                 model = playCover.coverUrl,
-                coverAspectRatio = EasyScheme.size.cartoonPreviewAspectRatio
+                coverAspectRatio = EasyScheme.size.cartoonPreviewAspectRatio,
+                itemSize = EasyScheme.size.cartoonPreviewWidth,
+                itemIsWidth = true,
 
             )
             Spacer(modifier = Modifier.size(4.dp))
@@ -99,32 +105,5 @@ fun MediaPlayPreview(
             }
         }
     }
-
-}
-
-@Composable
-fun MediaRadarPopup(
-    vm: MediaCommonViewModel
-) {
-    val radar = vm.ui.value.popup as? MediaCommonViewModel.Popup.MediaRadar
-    MediaRadarBottomPanel(
-        vm = vm.mediaRadarViewModel,
-        show = radar != null,
-        onDismissRequest = {
-            vm.dismissPopup()
-        },
-        onSelection = {
-            if (it != null) {
-                vm.dismissPopup()
-                vm.onMediaRadarResult(it)
-            }
-        }
-    )
-}
-
-@Composable
-fun MediaEpisodeList(
-    vm: MediaCommonViewModel
-) {
 
 }

@@ -74,10 +74,9 @@ class MediaCommonViewModel (
         }
     }
     sealed class Popup {
-        data class MediaRadar(
-            val cartoonCover: CartoonCover,
-            val keyword: String? = null,
-        ): Popup()
+        data object MediaRadar: Popup()
+
+        data object PlayLineList: Popup()
 
         data class MetaSourceDetail(
             val cartoonCover: CartoonCover,
@@ -156,16 +155,20 @@ class MediaCommonViewModel (
         }
     }
 
-    fun showMediaRadar(keyword: String? = null) {
+    fun showMediaRadar() {
         logger.info("showMediaRadar")
         update {
-            val popup = (it.popup as? Popup.MediaRadar)?.copy(keyword = keyword)
-                ?: Popup.MediaRadar(
-                    cartoonCover = cartoonCover,
-                    keyword = keyword
-                )
             it.copy(
-                popup = popup
+                popup = Popup.MediaRadar
+            )
+        }
+    }
+
+    fun showPlayLineList() {
+        logger.info("showPlayLineList")
+        update {
+            it.copy(
+                popup = Popup.PlayLineList
             )
         }
     }

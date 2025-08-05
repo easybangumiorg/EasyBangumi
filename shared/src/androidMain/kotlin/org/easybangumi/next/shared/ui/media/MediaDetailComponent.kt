@@ -1,6 +1,5 @@
 ﻿package org.easybangumi.next.shared.ui.media
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,15 +7,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.shared.foundation.EasyTab
 import org.easybangumi.next.shared.foundation.elements.ErrorElements
 import org.easybangumi.next.shared.foundation.elements.LoadScaffold
@@ -102,31 +97,40 @@ fun MediaDetailContentPage(
                 vm = vm.mediaCommonVM,
             )
         }
-        item {
-            LoadScaffold(
-                modifier = Modifier.fillMaxWidth().height(200.dp),
-                data = playLineState
-            ) { }
+        if (!playLineState.isOk()) {
+            item {
+                LoadScaffold(
+                    modifier = Modifier.fillMaxWidth().height(200.dp),
+                    data = playLineState
+                ) { }
+            }
         }
-        val playLine = playLineState.okOrNull()
-        if (playLine != null) {
+
+        val playLineList = playLineState.okOrNull()
+        val currentPlayLine = playLineList?.getOrNull(playIndexState.currentPlayerLine)
+        if (playLineList != null) {
             item {
                 EasyTab(
                     modifier = Modifier.fillMaxWidth(),
                     selection = playIndexState.currentPlayerLine,
-                    size = playLine.size,
+                    size = playLineList.size,
                     onSelected = {
                         vm.mediaCommonVM.onPlayLineSelected(it)
                     },
                 ) { index, selected ->
-                    val tab = playLine[index]
+                    val tab = playLineList[index]
                     Text(
                         text = stringRes(tab.label),
                     )
                 }
             }
-            items(playLine.size) {
+            if (currentPlayLine != null) {
+                items(
+                    currentPlayLine.episodeList.size
+                ) {
+                    val episode = currentPlayLine.episodeList[it]
 
+                }
             }
         }
 

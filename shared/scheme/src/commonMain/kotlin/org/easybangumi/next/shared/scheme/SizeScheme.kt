@@ -22,9 +22,6 @@ val LocalSizeScheme  = compositionLocalOf<SizeScheme> {
     throw IllegalStateException("SizeScheme Not Provide")
 }
 
-
-
-
 /**
  * 尺寸方案
  *
@@ -35,7 +32,13 @@ val LocalSizeScheme  = compositionLocalOf<SizeScheme> {
 data class SizeScheme (
     val cartoonCoverWidth: Dp = 154.dp,
     val cartoonCoverAspectRatio: Float = 7f/9f,
-    val cartoonPreviewAspectRatio: Float = 14f/9f,
+
+    var cartoonCoverSmallWidth: Dp = 120.dp,
+    val cartoonCoverSmallAspectRatio: Float = 7f/9f,
+
+    val cartoonPreviewWidth: Dp = 120.dp,
+    val cartoonPreviewAspectRatio: Float = 14f/10f,
+
     val topAppBarHeight: Dp = 64.dp,
     val tabWidth: Dp = 88.dp,
     val statusBarHeight: Dp,

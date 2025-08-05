@@ -52,6 +52,8 @@ fun BangumiDetailPreview(
     ) {
         CartoonCoverCard(
             model = vm.coverUrl,
+            itemSize = EasyScheme.size.cartoonPreviewWidth,
+            itemIsWidth = true,
             coverAspectRatio = EasyScheme.size.cartoonPreviewAspectRatio
 
         )

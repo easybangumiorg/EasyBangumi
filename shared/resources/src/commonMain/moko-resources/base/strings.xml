@@ -651,5 +651,6 @@
     <string name="show_more">展开</string>
     <string name="show_less">收起</string>
 
+    <string name="choose_playline">选择播放线路</string>
 
 </resources>

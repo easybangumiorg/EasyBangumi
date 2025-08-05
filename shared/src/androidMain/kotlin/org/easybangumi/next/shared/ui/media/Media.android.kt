@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -23,6 +24,7 @@ import org.easybangumi.next.shared.data.cartoon.Episode
 import org.easybangumi.next.shared.foundation.view_model.vm
 import org.easybangumi.next.shared.playcon.android.AndroidPlaycon
 import org.easybangumi.next.shared.playcon.android.AndroidPlayconViewModel
+import org.easybangumi.next.shared.ui.media_radar.MediaRadarBottomPanel
 import org.easybangumi.next.shared.ui.media_radar.MediaRadarParam
 
 /**
@@ -60,6 +62,7 @@ actual fun Media(
     }
 
     MediaRadarPopup(vm.mediaCommonVM)
+    MediaPlayListPopup(vm.mediaCommonVM)
 }
 
 @Composable
@@ -95,5 +98,7 @@ fun ColumnScope.PlayerNormal(
         )
     }
 }
+
+
 
 
