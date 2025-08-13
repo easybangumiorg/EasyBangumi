@@ -102,7 +102,7 @@ class CartoonRecordedModel(
     // 渲染器
     val textureView: EasyTextureView = EasyTextureView(ctx)
         .apply {
-            setScaleType(MeasureHelper.SCREEN_SCALE_FOR_HEIGHT)
+            setScaleType(MeasureHelper.SCREEN_SCALE_ADAPT)
             setExtSurfaceTextureListener(this@CartoonRecordedModel)
         }
 

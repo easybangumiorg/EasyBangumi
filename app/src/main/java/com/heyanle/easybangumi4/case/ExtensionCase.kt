@@ -3,6 +3,7 @@ package com.heyanle.easybangumi4.case
 
 import com.heyanle.easybangumi4.plugin.extension.ExtensionController
 import com.heyanle.easybangumi4.plugin.extension.ExtensionInfo
+import com.heyanle.easybangumi4.plugin.extension.IExtensionController
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filter
@@ -16,7 +17,7 @@ class ExtensionCase(
     private val extensionController: ExtensionController
 ) {
 
-    fun flowExtensionState(): StateFlow<ExtensionController.ExtensionState> {
+    fun flowExtensionState(): StateFlow<IExtensionController.ExtensionState> {
         return extensionController.state
     }
 

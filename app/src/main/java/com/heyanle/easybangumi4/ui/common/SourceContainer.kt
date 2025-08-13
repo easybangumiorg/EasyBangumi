@@ -13,6 +13,7 @@ import androidx.compose.ui.res.stringResource
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.case.SourceStateCase
+import com.heyanle.easybangumi4.plugin.source.ISourceController
 import com.heyanle.easybangumi4.plugin.source.LocalSourceBundleController
 import com.heyanle.easybangumi4.plugin.source.SourceController
 import com.heyanle.easybangumi4.plugin.source.bundle.SourceBundle
@@ -56,14 +57,14 @@ fun SourceContainerBase(
             .then(modifier)
     ) {
         when(state){
-            is SourceController.SourceInfoState.Loading -> {
+            is ISourceController.SourceInfoState.Loading -> {
                 LoadingPage(
                     modifier = Modifier
                         .fillMaxSize(),
                     loadingMsg = stringResource(id = R.string.source_loading)
                 )
             }
-            is SourceController.SourceInfoState.Info -> {
+            is ISourceController.SourceInfoState.Info -> {
                 if (!hasSource(anim)) {
                     val nav = LocalNavController.current
                     ErrorPage(

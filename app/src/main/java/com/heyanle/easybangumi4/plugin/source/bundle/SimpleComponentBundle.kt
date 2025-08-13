@@ -73,7 +73,7 @@ class SimpleComponentBundle(
         bundle[clazz] = instance
     }
 
-    override suspend fun init() {
+    fun initSync() {
         if (init.compareAndSet(false, true)) {
             registerClazz.forEach {
                 if (innerGet(it) == null) {
@@ -112,6 +112,10 @@ class SimpleComponentBundle(
                 }
             }
         }
+    }
+
+    override suspend fun init() {
+       initSync()
     }
 
     private fun innerGet(clazz: KClass<*>, road: ArrayList<KClass<*>> = arrayListOf()): Any? {

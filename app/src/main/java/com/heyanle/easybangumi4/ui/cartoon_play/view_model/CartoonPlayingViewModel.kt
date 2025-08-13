@@ -418,6 +418,8 @@ class CartoonPlayingViewModel(
         val epi = playingEpisode ?: return
         val cartoon = cartoonPlayingState?.cartoonSummary ?: return
         scope.launch {
+            "${exoPlayer.playbackState} ${exoPlayer.currentPosition} ${exoPlayer.duration}".logi(TAG)
+//            if (exoPlayer.playbackState == ExoPlayer.STATE_ENDED)
             val process = if (ps >= 0) ps else exoPlayer.currentPosition
             cartoonInfoDao.transaction {
                 val old = cartoonInfoDao.getByCartoonSummary(cartoon.id, cartoon.source)
@@ -442,7 +444,7 @@ class CartoonPlayingViewModel(
 
     // onDispose
     fun onExit() {
-        if (_playingState.value.isPlaying && !exoPlayer.playWhenReady && exoPlayer.isMedia()) {
+        if (_playingState.value.isPlaying && exoPlayer.isMedia()) {
             trySaveHistory()
         }
         lastJob?.cancel()

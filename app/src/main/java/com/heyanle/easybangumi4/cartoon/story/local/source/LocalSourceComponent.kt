@@ -8,6 +8,8 @@ import com.heyanle.easybangumi4.plugin.source.SourceException
 import com.heyanle.easybangumi4.source_api.SourceResult
 import com.heyanle.easybangumi4.source_api.component.ComponentWrapper
 import com.heyanle.easybangumi4.source_api.component.detailed.DetailedComponent
+import com.heyanle.easybangumi4.source_api.component.page.PageComponent
+import com.heyanle.easybangumi4.source_api.component.page.SourcePage
 import com.heyanle.easybangumi4.source_api.component.play.PlayComponent
 import com.heyanle.easybangumi4.source_api.component.search.SearchComponent
 import com.heyanle.easybangumi4.source_api.entity.Cartoon
@@ -28,7 +30,7 @@ import kotlinx.coroutines.flow.map
  * Created by heyanle on 2024/7/7.
  * https://github.com/heyanLE
  */
-class LocalSourceComponent : ComponentWrapper(), PlayComponent, DetailedComponent {
+class LocalSourceComponent : ComponentWrapper(), PlayComponent, DetailedComponent, PageComponent {
 
     val cartoonStoryController: CartoonStoryController by Inject.injectLazy()
 
@@ -156,6 +158,29 @@ class LocalSourceComponent : ComponentWrapper(), PlayComponent, DetailedComponen
             }
 
         }
+    }
+
+    override fun getPages(): List<SourcePage> {
+        return PageComponent.NonLabelSinglePage(
+            SourcePage.SingleCartoonPage.WithCover(
+                label = "",
+                firstKey = {1},
+                load = {
+                    val result = cartoonStoryController.storyItemList.firstOrNull { it !is DataResult.Loading }
+                    if (result is DataResult.Ok) {
+                        return@WithCover SourceResult.Complete(null to result.data.map {
+                            it.cartoonLocalItem.cartoonCover
+                        })
+
+                    } else if (result is DataResult.Error) {
+                        return@WithCover SourceResult.Error<Pair<Int?, List<CartoonCover>>>(result.throwable ?: SourceException(result.errorMsg))
+                    } else {
+                       throw IllegalStateException("unexpected result type: $result")
+                    }
+
+                }
+            )
+        )
     }
 
 }

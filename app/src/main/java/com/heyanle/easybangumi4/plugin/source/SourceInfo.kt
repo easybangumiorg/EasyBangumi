@@ -29,6 +29,11 @@ sealed class SourceInfo {
         val msg: String,
         val exception: Exception? = null,
     ): SourceInfo()
+
+    // 被禁用
+    class Disabled(
+        override val source: Source,
+    ): SourceInfo()
 }
 
 class ConfigSource(

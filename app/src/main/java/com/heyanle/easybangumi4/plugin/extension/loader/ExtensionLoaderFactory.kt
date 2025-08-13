@@ -62,4 +62,22 @@ object ExtensionLoaderFactory {
         }
     }
 
+    fun getFileJsExtensionLoader(
+        file: File,
+        jsRuntime: JSRuntimeProvider
+    ): ExtensionLoader? {
+        return try {
+            if (file.name.endsWith(JsExtensionProvider.EXTENSION_CRY_SUFFIX)) {
+                logi("load js file: ${file.name}")
+                JSExtensionCryLoader(file, jsRuntime)
+            } else {
+                logi("load js file: ${file.name}")
+                JSExtensionLoader(file, jsRuntime)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
 }

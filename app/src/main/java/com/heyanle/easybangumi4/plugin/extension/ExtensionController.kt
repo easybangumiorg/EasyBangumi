@@ -35,7 +35,7 @@ class ExtensionController(
     val jsExtensionFolder: String,
     private val cacheFolder: String,
     //private val extensionLoader: ExtensionLoader
-) {
+): IExtensionController {
 
     companion object {
         private const val TAG = "ExtensionController"
@@ -46,14 +46,11 @@ class ExtensionController(
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
 
 
-    data class ExtensionState(
-        val loading: Boolean = true,
-        val extensionInfoMap: Map<String, ExtensionInfo> = emptyMap()
+
+    private val _state = MutableStateFlow<IExtensionController.ExtensionState>(
+        IExtensionController.ExtensionState()
     )
-    private val _state = MutableStateFlow<ExtensionState>(
-        ExtensionState()
-    )
-    val state = _state.asStateFlow()
+    override val state = _state.asStateFlow()
 
     private var firstLoad = true
 
@@ -106,7 +103,7 @@ class ExtensionController(
                 // 首次必须所有 Provider 都加载完才算加载完
                 if (firstLoad &&
                     (installedAppExtensionProviderState.loading || fileApkExtensionProviderState.loading || fileJsExtensionProviderState.loading)) {
-                    return@combine ExtensionState(
+                    return@combine IExtensionController.ExtensionState(
                         loading = true,
                         extensionInfoMap = emptyMap()
                     )
@@ -122,7 +119,7 @@ class ExtensionController(
                 fileJsExtensionProviderState.extensionMap.forEach {
                     map[it.key] = it.value
                 }
-                ExtensionState(
+                IExtensionController.ExtensionState(
                     loading = installedAppExtensionProviderState.loading && fileApkExtensionProviderState.loading && fileJsExtensionProviderState.loading,
                     extensionInfoMap = map
                 )

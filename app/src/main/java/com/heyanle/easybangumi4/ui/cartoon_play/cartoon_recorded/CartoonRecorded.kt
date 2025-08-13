@@ -244,14 +244,15 @@ private fun BoxScope.CartoonRecordedContent(
         )
         Box(
             modifier = Modifier
-                .weight(1f),
+                .weight(1f)
+                .fillMaxWidth(),
             contentAlignment = Alignment.Center
         ) {
             AndroidView(
                 factory = {
                     cartoonRecordedModel.textureView.apply {
                         (parent as? ViewGroup)?.removeView(this)
-                        layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+                        layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
                     }
                 },
                 modifier = Modifier.onPlaced {

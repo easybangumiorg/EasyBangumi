@@ -1,5 +1,6 @@
 package com.heyanle.easybangumi4.case
 
+import com.heyanle.easybangumi4.plugin.source.ISourceController
 import com.heyanle.easybangumi4.plugin.source.SourceController
 import com.heyanle.easybangumi4.plugin.source.bundle.SourceBundle
 import kotlinx.coroutines.flow.Flow
@@ -23,7 +24,7 @@ class SourceStateCase(
         return sourceController.sourceBundle.filterIsInstance()
     }
 
-    fun flowState(): StateFlow<SourceController.SourceInfoState> {
+    fun flowState(): StateFlow<ISourceController.SourceInfoState> {
         return sourceController.sourceInfo
     }
 
