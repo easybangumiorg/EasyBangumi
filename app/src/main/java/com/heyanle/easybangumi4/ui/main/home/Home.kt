@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -51,11 +52,13 @@ import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.navigationSearch
 import com.heyanle.easybangumi4.plugin.js.source.getIconWithAsyncOrDrawable
 import com.heyanle.easybangumi4.plugin.source.LocalSourceBundleController
+import com.heyanle.easybangumi4.ui.common.EmptyPage
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.common.page.CartoonPageListTab
 import com.heyanle.easybangumi4.ui.common.page.CartoonPageUI
 import com.heyanle.easybangumi4.ui.main.MainViewModel
 import kotlinx.coroutines.launch
+import com.heyanle.easy_i18n.R
 
 /**
  * Created by HeYanLe on 2023/3/25 15:47.
@@ -112,11 +115,19 @@ fun Home() {
             title = state.topAppBarTitle,
             onChangeClick = {
                 scope.launch {
+
                     showChangeSheet.value = true
                 }
             },
             onSearchClick = { nav.navigationSearch(state.selectionKey) }
         )
+
+        if (state.pages.isEmpty()) {
+            EmptyPage(
+                modifier = Modifier.fillMaxSize(),
+                emptyMsg = stringResource(R.string.no_source)
+            )
+        }
 
         if (state.isShowLabel) {
             CartoonPageListTab(
