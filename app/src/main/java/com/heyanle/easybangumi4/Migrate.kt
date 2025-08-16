@@ -426,7 +426,7 @@ object Migrate {
                 }
 
 
-                if (lastVersionCode < 101) {
+                if (lastVersionCode < 102) {
                     val extensionJSPath = context.getFilePath("extension-js")
                     val extensionJsV2Path = context.getFilePath("extension_v2")
                     val folder = File(extensionJSPath)
