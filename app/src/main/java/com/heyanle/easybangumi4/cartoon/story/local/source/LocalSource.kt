@@ -4,8 +4,10 @@ import android.graphics.drawable.Drawable
 import androidx.core.content.res.ResourcesCompat
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.R
+import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.extension_api.ExtensionIconSource
+import com.heyanle.inject.core.Inject
 import kotlin.reflect.KClass
 
 /**
@@ -35,9 +37,13 @@ object LocalSource: ExtensionIconSource {
         get() = 0
 
     override fun register(): List<KClass<*>> {
-        return listOf(
-            LocalSourceComponent::class
-        )
+        val mmkv: SettingMMKVPreferences by Inject.injectLazy()
+        val res = arrayListOf<KClass<*>>()
+        res.add(LocalSourceComponent::class)
+        if (mmkv.localExtensionTemp) {
+            res.add(LocalPageComponent::class)
+        }
+        return res
     }
 
 

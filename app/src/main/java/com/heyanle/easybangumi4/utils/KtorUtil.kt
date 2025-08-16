@@ -1,5 +1,6 @@
 package com.heyanle.easybangumi4.utils
 
+import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.prepareGet
@@ -19,30 +20,37 @@ object KtorUtil {
 }
 
 suspend fun String.downloadTo(path: String) {
-    val targetFileTemp = File("${path}.temp")
-    val targetFile = File(path)
-    targetFile.parentFile?.mkdirs()
+    try {
+        val targetFileTemp = File("${path}.temp")
+        val targetFile = File(path)
+        targetFile.parentFile?.mkdirs()
 
-    if(targetFileTemp.exists()){
-        targetFileTemp.delete()
-    }
-    KtorUtil.client.prepareGet (this).execute { httpResponse ->
-        val channel: ByteReadChannel = httpResponse.body()
-        while (!channel.isClosedForRead) {
-            val packet = channel.readRemaining(DEFAULT_BUFFER_SIZE.toLong())
-            while (!packet.isEmpty) {
-                val bytes = packet.readBytes()
-                if(!targetFileTemp.exists()){
-                    targetFileTemp.createNewFile()
-                }
-                targetFileTemp.appendBytes(bytes)
-            }
+        if(targetFileTemp.exists()){
+            targetFileTemp.delete()
         }
+        KtorUtil.client.prepareGet (this)
+            .execute { httpResponse ->
+                val channel: ByteReadChannel = httpResponse.body()
+                while (!channel.isClosedForRead) {
+                    val packet = channel.readRemaining(DEFAULT_BUFFER_SIZE.toLong())
+                    while (!packet.isEmpty) {
+                        val bytes = packet.readBytes()
+                        if(!targetFileTemp.exists()){
+                            targetFileTemp.createNewFile()
+                        }
+                        targetFileTemp.appendBytes(bytes)
+                    }
+                }
+            }
+        if (targetFileTemp.exists() && targetFileTemp.length() > 0){
+            targetFile.delete()
+            targetFileTemp.renameTo(targetFile)
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+        e.message?.moeSnackBar()
     }
-    if (targetFileTemp.exists() && targetFileTemp.length() > 0){
-        targetFile.delete()
-        targetFileTemp.renameTo(targetFile)
-    }
+
 
 }
 

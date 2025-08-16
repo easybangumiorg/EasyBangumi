@@ -1,6 +1,5 @@
 package com.heyanle.easybangumi4.plugin.extension.remote
 
-import com.heyanle.easybangumi4.base.DataResult
 import com.heyanle.easybangumi4.base.json.JsonFileProvider
 import com.heyanle.easybangumi4.utils.downloadTo
 import com.heyanle.easybangumi4.utils.jsonTo
@@ -11,11 +10,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
@@ -30,10 +26,14 @@ class ExtensionRemoteController(
     private val cachePath: String,
 ) {
 
+    data class Repository(
+        val url: String,
+        val order: Int,
+    )
     private val dispatcher = Dispatchers.IO
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
 
-    private val repository = jsonFileProvider.extensionRepository
+    private val repositoryHelper = jsonFileProvider.extensionRepository
 
     data class RemoteInfoState(
         val loading: Boolean = true,
@@ -44,33 +44,44 @@ class ExtensionRemoteController(
     private val _remote = MutableStateFlow(RemoteInfoState())
     val remote = _remote.asStateFlow()
 
-
-    val repositoryState = repository.flow.map {
-        it.okOrNull()?:emptyList()
-    }.stateIn(scope, SharingStarted.Lazily, emptyList())
+    val repositoryState = repositoryHelper.flow
 
     private val remoteInfoTemp = ConcurrentHashMap<String, List<RemoteInfo>>()
 
     fun refresh() {
         remoteInfoTemp.clear()
         scope.launch {
-            load(repositoryState.value)
+            load(repositoryState.value.okOrNull()?: return@launch)
         }
     }
 
     init {
         scope.launch {
             repositoryState.collectLatest {
-                load(it)
+
+                load(it.okOrNull() ?: return@collectLatest)
             }
         }
     }
 
-    fun updateRepository(list: List<String>) {
-        repository.set(list)
+    fun updateRepository(list: List<Repository>) {
+        repositoryHelper.set(list)
+
     }
 
-    private suspend fun load(repository: List<String>) {
+    fun addRepository(url: String) {
+        repositoryHelper.update {
+            it + listOf(Repository(url, it.size))
+        }
+    }
+
+    fun deleteRepository(repository: Repository) {
+        repositoryHelper.update {
+            it.filterNot { it.url == repository.url }
+        }
+    }
+
+    private suspend fun load(repository: List<Repository>) {
         val map = hashMapOf<String, RemoteInfo>()
         val res = repository.map {
             getRemote(it)
@@ -88,14 +99,15 @@ class ExtensionRemoteController(
         }
     }
 
-    private suspend fun getRemote(repository: String): Deferred<List<RemoteInfo>> {
+    private suspend fun getRemote(repository: Repository): Deferred<List<RemoteInfo>> {
         return scope.async {
-            val temp = remoteInfoTemp[repository]
+            val temp = remoteInfoTemp[repository.url]
             if (temp != null) {
                 return@async temp
             }
             val jsonlFile = File(cachePath, "remote_extension/${System.currentTimeMillis()}.jsonl")
-            repository.downloadTo(jsonlFile.absolutePath)
+            repository.url.downloadTo(jsonlFile.absolutePath)
+            jsonlFile.deleteOnExit()
             if (jsonlFile.exists()) {
                 val res = arrayListOf<RemoteInfo>()
                 jsonlFile.bufferedReader().use {

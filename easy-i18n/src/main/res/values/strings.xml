@@ -17,6 +17,7 @@
 
     <string name="is_empty">内容为空</string>
     <string name="loading">加载中</string>
+    <string name="extension_repository_loading">仓库番源加载中</string>
     <string name="parsing">解析中</string>
 
     <string name="waiting">等待中</string>
@@ -41,6 +42,13 @@
 
     <string name="download_setting">下载设置</string>
     <string name="extension_setting">番源设置</string>
+    <string name="local_extension_setting">本地番源设置</string>
+
+    <string name="extension_v2">番源引擎 2.0</string>
+    <string name="extension_v2_msg">全新番源引擎，支持指定仓库更新，仅支持 JS 源。需重启生效，当前开启状态：</string>
+
+    <string name="local_extension_page">本地番源主页</string>
+    <string name="local_extension_page_msg">是否在主页展示本地番源。需重启生效</string>
     
     <string name="use_external_player">默认使用外置播放器</string>
     <string name="player_bottom_nav_padding">平板模式播放器底部抬高</string>
@@ -382,7 +390,7 @@
 
     <string name="click_to_view">点击查看</string>
 
-    <string name="click_install">点击安装</string>
+    <string name="click_install">点击下载</string>
     <string name="download_completely">下载完成</string>
     <string name="finished">已完成</string>
 
@@ -610,6 +618,9 @@
 
     <string name="save_to_media_ready">是否要保存%1$s个视频到相册？</string>
 
+    <string name="extension_repository">拓展仓库（V2引擎）</string>
+
+    <string name="extension_repository_manager">添加拓展</string>
     <string name="extension_push">添加 JS 拓展</string>
     <string name="extension_push_from_file">选择文件 (JS)</string>
     <string name="extension_push_completely">拓展添加完成</string>
@@ -619,6 +630,8 @@
     <string name="js_file_url">JS 文件 URL</string>
     <string name="js_code">JS 代码</string>
     <string name="js_repo">JS 仓库</string>
+
+    <string name="new_js_repo">添加新仓库</string>
 
     <string name="js_file_url_desc">请输入 JS 文件 URL （一行一个）</string>
     <string name="js_code_desc">请直接输入 JS 代码</string>

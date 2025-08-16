@@ -6,6 +6,9 @@ import android.content.Context
 import android.os.Build
 import android.os.Looper
 import android.os.Process
+import com.google.firebase.initialize
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.ktx.initialize
 import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
 import com.heyanle.inject.core.Inject
 
@@ -61,6 +64,7 @@ class App : Application() {
         super.onCreate()
         APP = this
         if (isMainProcess()) {
+            Firebase.initialize(this)
             Scheduler.runOnAppCreate(this)
         }
 

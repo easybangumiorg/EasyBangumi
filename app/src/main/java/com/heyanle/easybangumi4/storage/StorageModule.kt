@@ -21,11 +21,11 @@ class StorageModule(
         }
 
         addSingletonFactory {
-            BackupController(get(), get(), get(), get())
+            BackupController(get(), get(), get(), get(), get())
         }
 
         addSingletonFactory {
-            RestoreController(get(), get(), get(), get(), get())
+            RestoreController(get(), get(), get(), get(), get(), get())
         }
     }
 }

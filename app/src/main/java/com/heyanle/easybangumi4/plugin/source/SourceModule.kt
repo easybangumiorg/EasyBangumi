@@ -10,6 +10,7 @@ import com.heyanle.easybangumi4.plugin.source.utils.network.NetworkHelperImpl
 import com.heyanle.easybangumi4.plugin.source.utils.network.OkhttpHelperImpl
 import com.heyanle.easybangumi4.plugin.source.utils.network.WebViewHelperImpl
 import com.heyanle.easybangumi4.plugin.source.utils.network.WebViewHelperV2Impl
+import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
 
 import com.heyanle.easybangumi4.source_api.utils.api.CaptchaHelper
 import com.heyanle.easybangumi4.source_api.utils.api.NetworkHelper
@@ -38,8 +39,20 @@ class SourceModule(
             NativeHelperImpl(application)
         }
 
+        addSingletonFactory<ISourceController> {
+            val mmkvSetting = get<SettingMMKVPreferences>()
+            if (mmkvSetting.extensionV2Temp) {
+                get<SourceControllerV2>()
+            } else {
+                get<SourceController>()
+            }
+        }
+
         addSingletonFactory {
             SourceController(get(), get(), get())
+        }
+        addSingletonFactory {
+            SourceControllerV2(get(), get())
         }
 
 

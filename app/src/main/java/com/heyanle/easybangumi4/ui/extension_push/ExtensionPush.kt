@@ -94,7 +94,9 @@ val extensionPushTypeList = listOf(
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun ExtensionPush() {
+fun ExtensionPush(
+    showTopAppBar: Boolean = true,
+) {
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val nav = LocalNavController.current
@@ -112,22 +114,25 @@ fun ExtensionPush() {
         contentColor = MaterialTheme.colorScheme.onBackground
     ) {
         Column {
-            TopAppBar(
-                title = {
-                    Text(stringResource(R.string.extension_push))
-                },
-                navigationIcon = {
-                    IconButton(onClick = {
-                        nav.popBackStack()
-                    }) {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowBack,
-                            stringResource(id = R.string.back)
-                        )
-                    }
-                },
-                scrollBehavior = scrollBehavior
-            )
+            if (showTopAppBar) {
+                TopAppBar(
+                    title = {
+                        Text(stringResource(R.string.extension_push))
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = {
+                            nav.popBackStack()
+                        }) {
+                            Icon(
+                                imageVector = Icons.Filled.ArrowBack,
+                                stringResource(id = R.string.back)
+                            )
+                        }
+                    },
+                    scrollBehavior = scrollBehavior
+                )
+            }
+
 
             LazyColumn(
                 modifier = Modifier

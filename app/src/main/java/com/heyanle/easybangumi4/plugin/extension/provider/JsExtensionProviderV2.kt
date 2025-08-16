@@ -2,6 +2,7 @@ package com.heyanle.easybangumi4.plugin.extension.provider
 
 import com.heyanle.easybangumi4.base.DataResult
 import com.heyanle.easybangumi4.base.json.JsonFileProvider
+import com.heyanle.easybangumi4.base.map
 import com.heyanle.easybangumi4.plugin.extension.ExtensionInfo
 import com.heyanle.easybangumi4.plugin.extension.loader.ExtensionLoader
 import com.heyanle.easybangumi4.plugin.extension.loader.ExtensionLoaderFactory
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import okhttp3.internal.wait
 import java.io.File
 import java.io.InputStream
 import java.util.concurrent.ConcurrentHashMap
@@ -136,20 +138,49 @@ class JsExtensionProviderV2(
     }
 
     suspend fun appendOrUpdate(
+        file: List<File>
+    ): List<DataResult<Unit>> {
+        val update = hashMapOf<String, IndexItem>()
+        val res = file.map {
+            appendOrUpdate(it, false)
+        }.map {
+            when (it) {
+                is DataResult.Ok -> {
+                    update[it.data.key] = it.data
+                }
+                else -> {}
+            }
+            it.map { Unit }
+        }
+
+        if (update.isNotEmpty()) {
+            indexHelper.update {
+                it.map {
+                    val n = update.remove(it.key)
+                    n ?: it
+                }
+                it + update.values.toList()
+            }
+        }
+        return res
+    }
+
+    suspend fun appendOrUpdate(
         file: File,
-    ): DataResult<Unit> {
+        update: Boolean = true,
+    ): DataResult<IndexItem> {
         return scope.async {
             val loader = loaderFromFile(file)
             if (loader == null || !loader.canLoad()) {
-                return@async DataResult.error<Unit>("loader can not load")
+                return@async DataResult.error<IndexItem>("loader can not load")
             }
 
             val info = loader.load()
             if (info == null) {
-                return@async DataResult.error<Unit>("loader load null")
+                return@async DataResult.error<IndexItem>("loader load null")
             }
             if (info is ExtensionInfo.InstallError) {
-                return@async DataResult.error<Unit>("loader load error: ${info.errMsg}", info.exception)
+                return@async DataResult.error<IndexItem>("loader load error: ${info.errMsg}", info.exception)
             }
             val key = info.key
             val suffix = when  {
@@ -158,15 +189,48 @@ class JsExtensionProviderV2(
             }
             val target = File(extensionFolder, "${key}.${suffix}")
             target.parentFile?.mkdirs()
-            val finallyFile = file.copyTo(target)
+            val finallyFile = file.copyTo(target, true)
             val indexItem = IndexItem(
                 key = key,
                 fileName = finallyFile.name,
             )
-            indexHelper.update {
-                it + indexItem
-            }
+            if (update) {
+                indexHelper.update {
+                    var needAppend = true
+                    it.map {
+                        if (it.key == key) {
+                            needAppend = false
+                            return@map indexItem
+                        }
+                        return@map it
+                    }
+                    if (needAppend) {
+                        it + indexItem
+                    } else {
+                        it
+                    }
+                }
 
+            }
+            DataResult.Ok(indexItem)
+        }.await()
+    }
+
+    suspend fun delete(
+        key: String
+    ): DataResult<Unit> {
+        return scope.async {
+            val item = _flow.value.extensionMap[key] ?: return@async DataResult.error<Unit>("not found")
+            val file = File(extensionFolder, item.fileName)
+            if (file.exists()) {
+                if (!file.delete()) {
+                    return@async DataResult.error<Unit>("delete file failed")
+                }
+            }
+            indexHelper.update {
+                it.filterNot { it.key == key }
+            }
+            temp.remove(key)
             DataResult.Ok(Unit)
         }.await()
     }

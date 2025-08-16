@@ -5,6 +5,8 @@ import com.heyanle.easybangumi4.plugin.extension.ExtensionController
 import com.heyanle.easybangumi4.utils.stringRes
 import kotlinx.coroutines.CoroutineScope
 import com.heyanle.easy_i18n.R
+import com.heyanle.easybangumi4.plugin.extension.ExtensionControllerV2
+import com.heyanle.easybangumi4.plugin.extension.IExtensionController
 import com.heyanle.easybangumi4.plugin.extension.provider.JsExtensionProvider
 import com.heyanle.easybangumi4.plugin.js.extension.JSExtensionCryLoader
 import com.heyanle.easybangumi4.utils.getCachePath
@@ -16,7 +18,7 @@ import java.io.File
  */
 class PushFromCode(
     private val cacheFolder: String,
-    private val extensionController: ExtensionController,
+    private val extensionController: IExtensionController,
 ) : ExtensionPushTask {
 
     companion object {
@@ -53,14 +55,24 @@ class PushFromCode(
             file.delete()
             file.createNewFile()
             file.writeText(code)
-            val e = extensionController.appendExtensionFile(file)
-            yield()
-            if (e == null) {
-                container.dispatchCompletely(stringRes(R.string.succeed))
-            } else {
-                e.printStackTrace()
-                container.dispatchError(e?.message?.toString() ?: stringRes(R.string.load_fail))
+            if (extensionController is ExtensionController) {
+                val e = extensionController.appendExtensionFile(file)
+                yield()
+                if (e == null) {
+                    container.dispatchCompletely(stringRes(R.string.succeed))
+                } else {
+                    e.printStackTrace()
+                    container.dispatchError(e?.message?.toString() ?: stringRes(R.string.load_fail))
+                }
+            } else if (extensionController is ExtensionControllerV2) {
+                val res = extensionController.appendOrUpdateExtension(file)
+                res.onOK {
+                    container.dispatchCompletely(stringRes(R.string.succeed))
+                }.onError {
+                    container.dispatchError(it.throwable?.message?.toString() ?: it.errorMsg ?: stringRes(R.string.load_fail))
+                }
             }
+
         } catch (e: Throwable) {
             e.printStackTrace()
             container.dispatchError(e?.message?.toString() ?: stringRes(R.string.load_fail))

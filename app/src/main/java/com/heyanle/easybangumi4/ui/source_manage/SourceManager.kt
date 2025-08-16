@@ -18,11 +18,16 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
 import com.heyanle.easybangumi4.ui.common.TabIndicator
 import com.heyanle.easybangumi4.ui.source_manage.extension.Extension
 import com.heyanle.easybangumi4.ui.source_manage.extension.ExtensionTopAppBar
+import com.heyanle.easybangumi4.ui.source_manage.extension.ExtensionV2
+import com.heyanle.easybangumi4.ui.source_manage.extension.ExtensionV2TopAppBar
 import com.heyanle.easybangumi4.ui.source_manage.source.Source
 import com.heyanle.easybangumi4.ui.source_manage.source.SourceTopAppBar
+import com.heyanle.inject.api.get
+import com.heyanle.inject.core.Inject
 import com.heyanle.okkv2.core.okkv
 import kotlinx.coroutines.launch
 
@@ -61,12 +66,34 @@ sealed class ExplorePage constructor(
         },
     )
 
+
+    data object ExtensionV2Page : ExplorePage(
+        tabLabel = {
+            Text(stringResource(id = com.heyanle.easy_i18n.R.string.extension))
+        },
+        topAppBar = {
+            ExtensionV2TopAppBar(it)
+        },
+        content = {
+            ExtensionV2()
+        }
+    )
+
 }
 
-val ExplorePageItems = listOf(
-    ExplorePage.SourcePage,
-    ExplorePage.ExtensionPage
-)
+val ExplorePageItems: List<ExplorePage> by lazy {
+    if (Inject.get<SettingMMKVPreferences>().extensionV2Temp) {
+        listOf(
+            ExplorePage.SourcePage,
+            ExplorePage.ExtensionV2Page
+        )
+    } else {
+        listOf(
+            ExplorePage.SourcePage,
+            ExplorePage.ExtensionPage
+        )
+    }
+}
 
 var explorePageIndex by okkv("explorePageInitPageIndex", 0)
 

@@ -3,6 +3,7 @@ package com.heyanle.easybangumi4
 import android.content.Context
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.heyanle.easybangumi4.base.json.JsonFileProvider
 import com.heyanle.easybangumi4.base.preferences.android.AndroidPreferenceStore
 import com.heyanle.easybangumi4.base.preferences.hekv.HeKVPreferenceStore
 import com.heyanle.easybangumi4.base.preferences.mmkv.MMKVPreferenceStore
@@ -19,7 +20,9 @@ import com.heyanle.easybangumi4.cartoon.old.repository.db.CacheDatabase
 import com.heyanle.easybangumi4.cartoon.repository.db.CartoonDatabase
 import com.heyanle.easybangumi4.cartoon.star.CartoonStarController
 import com.heyanle.easybangumi4.plugin.extension.ExtensionInfo
+import com.heyanle.easybangumi4.plugin.extension.loader.ExtensionLoaderFactory
 import com.heyanle.easybangumi4.plugin.extension.provider.JsExtensionProvider
+import com.heyanle.easybangumi4.plugin.extension.provider.JsExtensionProviderV2
 import com.heyanle.easybangumi4.plugin.js.extension.JSExtensionCryLoader
 import com.heyanle.easybangumi4.plugin.js.extension.JSExtensionLoader
 import com.heyanle.easybangumi4.plugin.js.runtime.JSRuntimeProvider
@@ -422,7 +425,42 @@ object Migrate {
                     jsRuntimeProvider.release()
                 }
 
+
+                if (lastVersionCode < 101) {
+                    val extensionJSPath = context.getFilePath("extension-js")
+                    val extensionJsV2Path = context.getFilePath("extension_v2")
+                    val folder = File(extensionJSPath)
+                    val extension = arrayListOf<Pair<String, File>>()
+
+                    val list = folder.listFiles()?.filter {
+                        it.isFile && it.name.endsWith(JsExtensionProviderV2.EXTENSION_SUFFIX) || it.name.endsWith(JsExtensionProviderV2.EXTENSION_CRY_SUFFIX)
+                    } ?: emptyList()
+                    val jsRuntimeProvider = JSRuntimeProvider(1)
+                    val loaders = ExtensionLoaderFactory.getFileJsExtensionLoaders(list, jsRuntimeProvider)
+                    val res = loaders.mapNotNull {
+                        it.load()?.let {
+                            it.key to it.sourcePath
+                        }
+                    }
+                    val indexItem = arrayListOf<JsExtensionProviderV2.IndexItem>()
+                    res.forEach {
+                        val targetFile = File(extensionJSPath, "${it.first}.${if (it.second.endsWith(JsExtensionProviderV2.EXTENSION_CRY_SUFFIX)) JsExtensionProviderV2.EXTENSION_CRY_SUFFIX else JsExtensionProviderV2.EXTENSION_SUFFIX}")
+                        val realTarget = File(it.second).copyTo(targetFile, true)
+                        indexItem.add(
+                            JsExtensionProviderV2.IndexItem(
+                                key = it.first,
+                                fileName = realTarget.name,
+                            )
+                        )
+                    }
+                    Inject.get<JsonFileProvider>().extensionIndex.update {
+                        indexItem
+                    }
+
+
+                }
                 // 在这里添加新的迁移代码
+
 
                 androidPreferenceStore.getInt("last_version_code", 0).set(curVersionCode)
                 _isMigrating.update {

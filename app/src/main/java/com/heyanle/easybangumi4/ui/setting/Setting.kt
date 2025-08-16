@@ -83,6 +83,11 @@ sealed class SettingPage(
         DevelopersSetting(nestedScrollConnection = it)
     })
 
+    data object LocalExtension : SettingPage("local_extension", {
+        Text(text = stringResource(id = R.string.local_extension_setting))
+    }, {
+        LocalExtensionSetting(nestedScrollConnection = it)
+    })
 
 }
 
@@ -92,7 +97,8 @@ val settingPages = mapOf(
     SettingPage.Download.router to SettingPage.Download,
     SettingPage.First.router to SettingPage.First,
     SettingPage.Extension.router to SettingPage.Extension,
-    SettingPage.Developers.router to SettingPage.Developers
+    SettingPage.Developers.router to SettingPage.Developers,
+    SettingPage.LocalExtension.router to SettingPage.LocalExtension
 )
 
 @OptIn(ExperimentalMaterial3Api::class)

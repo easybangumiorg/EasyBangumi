@@ -5,9 +5,14 @@ import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.BuildConfig
 import com.heyanle.easybangumi4.base.hekv.HeKV
+import com.heyanle.easybangumi4.base.json.JsonFileProvider
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
 import com.heyanle.easybangumi4.plugin.extension.ExtensionController
+import com.heyanle.easybangumi4.plugin.extension.ExtensionControllerV2
+import com.heyanle.easybangumi4.plugin.extension.IExtensionController
+import com.heyanle.easybangumi4.plugin.extension.provider.JsExtensionProviderV2
+import com.heyanle.easybangumi4.plugin.extension.remote.ExtensionRemoteController
 import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.source_api.utils.api.PreferenceHelper
@@ -27,14 +32,17 @@ import net.lingala.zip4j.ZipFile
 import org.json.JSONObject
 import java.io.File
 import java.util.zip.GZIPInputStream
+import kotlin.reflect.javaType
+import kotlin.reflect.jvm.javaType
+import kotlin.reflect.typeOf
 
 /**
  * Created by heyanle on 2024/7/26.
  * https://github.com/heyanLE
  */
 class RestoreController(
-    private val extensionController: ExtensionController,
-
+    private val extensionController: IExtensionController,
+    private val jsonFileProvider: JsonFileProvider,
     private val cartoonInfoDao: CartoonInfoDao,
 
     private val settingMMKVPreferences: SettingMMKVPreferences,
@@ -103,6 +111,9 @@ class RestoreController(
                     },
                     async {
                         restoreSourcePreference(File(targetFolder, BackupController.SourcePrefFolderName))
+                    },
+                    async {
+                        restoreExtensionRepository(File(targetFolder, BackupController.ExtensionRepositoryFileName))
                     }
                 ).forEach {
                     it.await()
@@ -249,14 +260,23 @@ class RestoreController(
             if (!folder.exists()){
                 return false
             }
-            folder.listFiles()?.forEach {
-                if (it.isFile && it.canRead()){
-                    extensionController.appendExtensionPath(it.absolutePath){
-                        it?.printStackTrace()
+            if (extensionController is ExtensionController) {
+                folder.listFiles()?.forEach {
+                    if (it.isFile && it.canRead()){
+                        extensionController.appendExtensionPath(it.absolutePath){
+                            it?.printStackTrace()
+                        }
+
                     }
                 }
+                return true
+            } else if (extensionController is ExtensionControllerV2) {
+                extensionController.appendOrUpdateExtension(folder.listFiles()?.filterNotNull()?:emptyList())
+                return true
+            } else {
+                return false
             }
-            return true
+
         } catch (e: Exception) {
             e.printStackTrace()
             return false
@@ -276,6 +296,24 @@ class RestoreController(
                     preferenceHelper.put(it, sourceData.optString(it))
                 }
             }
+        }
+    }
+
+    private suspend fun restoreExtensionRepository(jsonFile: File) {
+        if (!jsonFile.exists()) {
+            return
+        }
+        val list = jsonFile.inputStream().use {
+            it.bufferedReader().lineSequence().map {
+                it.jsonTo<ExtensionRemoteController.Repository>(typeOf<ExtensionRemoteController.Repository>().javaType)
+            }.filterNotNull().toList()
+        }.toMutableList()
+        jsonFileProvider.extensionRepository.update {
+            val map = it.associateBy { it.url}.toMutableMap()
+            list.forEach {
+                map[it.url] = it
+            }
+            map.values.toList()
         }
     }
 }

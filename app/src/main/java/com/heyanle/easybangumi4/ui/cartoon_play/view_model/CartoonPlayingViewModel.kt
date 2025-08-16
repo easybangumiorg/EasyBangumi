@@ -10,6 +10,7 @@ import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
@@ -319,6 +320,7 @@ class CartoonPlayingViewModel(
         adviceProcess: Long,
     ) {
 
+
         exoPlayer.pause()
         _playingState.update {
             it.copy(
@@ -402,6 +404,7 @@ class CartoonPlayingViewModel(
                 cartoonMediaSourceFactory.getWithCache(playerInfo)
         exoPlayer.setMediaSource(media, adviceProcess)
         exoPlayer.prepare()
+        duringTemp = -1L
         exoPlayer.playWhenReady = true
         _playingState.update {
             it.copy(
@@ -411,16 +414,30 @@ class CartoonPlayingViewModel(
             )
         }
     }
-
-
+    var duringTemp = -1L
     fun trySaveHistory(ps: Long = -1) {
+
+        "save1".logi(TAG)
         val line = playingPlayLine ?: return
         val epi = playingEpisode ?: return
         val cartoon = cartoonPlayingState?.cartoonSummary ?: return
-        scope.launch {
-            "${exoPlayer.playbackState} ${exoPlayer.currentPosition} ${exoPlayer.duration}".logi(TAG)
+        CoroutineProvider.globalMainScope.launch {
+            var po = if (ps >= 0) ps else exoPlayer.currentPosition
+            when (exoPlayer.playbackState) {
+                Player.STATE_BUFFERING, Player.STATE_READY -> {
+                    po = exoPlayer.currentPosition
+                }
+                Player.STATE_ENDED -> {
+                    if (duringTemp > 0) {
+                        po = duringTemp
+                    } else {
+                        return@launch
+                    }
+                }
+            }
+            "save $po".logi(TAG)
 //            if (exoPlayer.playbackState == ExoPlayer.STATE_ENDED)
-            val process = if (ps >= 0) ps else exoPlayer.currentPosition
+            val process = po
             cartoonInfoDao.transaction {
                 val old = cartoonInfoDao.getByCartoonSummary(cartoon.id, cartoon.source)
                 if (old != null) {
@@ -444,9 +461,7 @@ class CartoonPlayingViewModel(
 
     // onDispose
     fun onExit() {
-        if (_playingState.value.isPlaying && exoPlayer.isMedia()) {
-            trySaveHistory()
-        }
+        trySaveHistory()
         lastJob?.cancel()
         exoPlayer.pause()
     }
@@ -455,9 +470,14 @@ class CartoonPlayingViewModel(
 
     override fun onPlaybackStateChanged(playbackState: Int) {
         super.onPlaybackStateChanged(playbackState)
+        if (playbackState == Player.STATE_READY) {
+            exoPlayer.duration.logi(TAG)
+            duringTemp = exoPlayer.duration
+        }
         if (_playingState.value.isPlaying && !exoPlayer.playWhenReady && exoPlayer.isMedia()) {
             trySaveHistory()
         }
+
 
     }
 
@@ -473,6 +493,12 @@ class CartoonPlayingViewModel(
     override fun onCleared() {
         super.onCleared()
         lastJob?.cancel()
+        try {
+            trySaveHistory()
+        }catch (e: Throwable) {
+            e.printStackTrace()
+        }
+
         scope.cancel()
         exoPlayer.release()
     }

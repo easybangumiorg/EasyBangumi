@@ -23,4 +23,6 @@ interface IExtensionController {
     )
 
     val state: StateFlow<ExtensionState>
+
+    fun init()
 }

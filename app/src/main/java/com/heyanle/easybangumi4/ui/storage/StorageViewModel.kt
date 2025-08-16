@@ -7,8 +7,10 @@ import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.LauncherBus
 import com.heyanle.easybangumi4.cartoon.repository.db.CartoonDatabase
+import com.heyanle.easybangumi4.case.ExtensionCase
 import com.heyanle.easybangumi4.plugin.extension.ExtensionController
 import com.heyanle.easybangumi4.plugin.extension.ExtensionInfo
+import com.heyanle.easybangumi4.plugin.extension.IExtensionController
 import com.heyanle.easybangumi4.storage.BackupController
 import com.heyanle.easybangumi4.storage.RestoreController
 import com.heyanle.easybangumi4.ui.common.moeDialogAlert
@@ -34,6 +36,7 @@ class StorageViewModel : ViewModel() {
         val cartoonCount: Int = -1,
         val needBackupPreferenceData: Boolean = false,
         val needBackupExtension: Boolean = false,
+        val needBackupRepository: Boolean = false,
         val needExtensionPackageInfo: Set<ExtensionInfo> = setOf(),
 
         val needBackupSourcePref: Boolean = false,
@@ -49,7 +52,7 @@ class StorageViewModel : ViewModel() {
     private val _state = MutableStateFlow(State())
     val state = _state.asStateFlow()
 
-    private val extensionController: ExtensionController by Inject.injectLazy()
+    private val extensionController: ExtensionCase by Inject.injectLazy()
 
     private val cartoonDatabase: CartoonDatabase by Inject.injectLazy()
 
@@ -60,14 +63,14 @@ class StorageViewModel : ViewModel() {
         cartoonDatabase.cartoonInfo.flowAll().map { it.size }
         viewModelScope.launch {
             combine(
-                extensionController.state,
+                extensionController.flowExtension(),
                 cartoonDatabase.cartoonInfo.flowAll().distinctUntilChanged().map { it.count { (it.starTime > 0L || it.lastHistoryTime > 0L) && !it.isLocal } }
             ) { extension, count ->
                 extension to count
             }.collectLatest { pair ->
                 _state.update {
                     it.copy(
-                        extensionInfoList = pair.first.extensionInfoMap.values.toList(),
+                        extensionInfoList = pair.first.toList(),
                         cartoonCount = pair.second
                     )
                 }
@@ -92,6 +95,12 @@ class StorageViewModel : ViewModel() {
     fun setNeedBackupExtension(need: Boolean) {
         _state.update {
             it.copy(needBackupExtension = need)
+        }
+    }
+
+    fun setNeedBackupExtensionRepository(need: Boolean) {
+        _state.update {
+            it.copy(needBackupRepository = need)
         }
     }
 
@@ -157,6 +166,7 @@ class StorageViewModel : ViewModel() {
                         starCartoon = cur.needBackupCartoonData,
                         historyCartoon = cur.needBackupCartoonData,
                         preference = cur.needBackupPreferenceData,
+                        extensionRepository = cur.needBackupRepository,
                         sourcePreferencesSource = emptySet(),
                         extensionList = if (cur.needBackupExtension) cur.needExtensionPackageInfo else emptySet(),
                     ),

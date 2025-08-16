@@ -226,6 +226,33 @@ fun Storage() {
                         }
 
 
+                        item {
+                            ListItem(
+                                modifier = Modifier.clickable {
+                                    vm.setNeedBackupExtensionRepository(!sta.needBackupRepository)
+                                },
+                                headlineContent = {
+                                    Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.extension_repository))
+                                },
+                                leadingContent = {
+                                    Icon(
+                                        Icons.Filled.Extension,
+                                        modifier = Modifier.size(40.dp),
+                                        contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.extension_repository)
+                                    )
+                                },
+                                supportingContent = {
+                                    Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.extension_repository))
+                                },
+                                trailingContent = {
+                                    Switch(checked = sta.needBackupRepository, onCheckedChange = {
+                                        vm.setNeedBackupExtensionRepository(it)
+                                    })
+                                }
+                            )
+
+                        }
+
 
                         item {
                             ListItem(

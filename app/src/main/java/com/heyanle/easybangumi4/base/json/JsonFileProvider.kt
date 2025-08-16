@@ -5,6 +5,7 @@ import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadReq
 import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
 import com.heyanle.easybangumi4.plugin.extension.provider.JsExtensionProviderV2
+import com.heyanle.easybangumi4.plugin.extension.remote.ExtensionRemoteController
 import com.heyanle.easybangumi4.plugin.source.SourceConfig
 import com.heyanle.easybangumi4.utils.CoroutineProvider
 import com.heyanle.easybangumi4.utils.getFilePath
@@ -60,11 +61,11 @@ class JsonFileProvider {
     )
 
     // /storage/emulated/0/Android/data/com.heyanle.easybangumi4/files/extension_v2/repository.jsonl
-    val extensionRepository: JsonlFileHelper<String> = JsonlFileHelper(
+    val extensionRepository: JsonlFileHelper<ExtensionRemoteController.Repository> = JsonlFileHelper(
         folder = UniFile.fromFile(File(APP.getFilePath("extension_v2")))!!,
         name = "repository.jsonl",
         scope = scope,
-        type = typeOf<String>().javaType
+        type = typeOf<ExtensionRemoteController.Repository>().javaType
     )
 
 }

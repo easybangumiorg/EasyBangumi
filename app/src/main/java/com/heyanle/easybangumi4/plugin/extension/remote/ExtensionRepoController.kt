@@ -1,7 +1,10 @@
 package com.heyanle.easybangumi4.plugin.extension.remote
 
 import com.heyanle.easybangumi4.base.DataResult
+import com.heyanle.easybangumi4.base.map
 import com.heyanle.easybangumi4.case.ExtensionCase
+import com.heyanle.easybangumi4.plugin.extension.ExtensionControllerV2
+import com.heyanle.easybangumi4.plugin.extension.ExtensionInfo
 import com.heyanle.easybangumi4.plugin.extension.provider.JsExtensionProvider
 import com.heyanle.easybangumi4.plugin.extension.provider.JsExtensionProviderV2
 import com.heyanle.easybangumi4.plugin.js.extension.JSExtensionCryLoader
@@ -24,6 +27,7 @@ import java.io.File
  */
 class ExtensionRepoController(
     private val extensionCase: ExtensionCase,
+    private val extensionControllerV2: ExtensionControllerV2,
     private val remoteController: ExtensionRemoteController,
     private val cache: String
 ) {
@@ -35,6 +39,7 @@ class ExtensionRepoController(
 
     data class State(
         val loading: Boolean = true,
+        val remoteLoading: Boolean = true,
         val remoteLocalInfo: Map<String, ExtensionRemoteLocalInfo> = emptyMap(),
     )
     private val _state = MutableStateFlow<State> (State())
@@ -49,7 +54,8 @@ class ExtensionRepoController(
                 if (local.loading) {
                     _state.update {
                         it.copy(
-                            loading = true
+                            loading = true,
+                            remoteLoading = remote.loading,
                         )
                     }
                 } else {
@@ -67,7 +73,8 @@ class ExtensionRepoController(
                     _state.update {
                         it.copy(
                             loading = false,
-                            remoteLocalInfo = map
+                            remoteLocalInfo = map,
+                            remoteLoading = remote.loading,
                         )
                     }
 
@@ -100,8 +107,14 @@ class ExtensionRepoController(
                 File(cache, remoteInfo.key + ".${JsExtensionProviderV2.EXTENSION_SUFFIX}")
             }
             file.renameTo(targetFile)
-            return@async extensionCase.appendOrUpdate(targetFile)
+            return@async extensionControllerV2.appendOrUpdateExtension(targetFile).map { Unit }
         }.await()
+
+
+    }
+
+    suspend fun delete(key: String): DataResult<Unit> {
+        return extensionControllerV2.deleteExtension(key)
     }
 
 }

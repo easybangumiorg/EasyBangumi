@@ -9,6 +9,7 @@ import com.heyanle.easybangumi4.case.CaseModule
 import com.heyanle.easybangumi4.crash.SourceCrashController
 import com.heyanle.easybangumi4.dlna.DlnaModule
 import com.heyanle.easybangumi4.plugin.extension.ExtensionModule
+import com.heyanle.easybangumi4.plugin.extension.IExtensionController
 import com.heyanle.easybangumi4.setting.SettingModule
 import com.heyanle.easybangumi4.plugin.source.SourceModule
 import com.heyanle.easybangumi4.plugin.source.utils.NativeHelperImpl
@@ -101,7 +102,7 @@ object Scheduler {
      */
     fun runOnMainActivityCreate(activity: MainActivity, isFirst: Boolean) {
         Migrate.update(activity)
-        val extensionController: com.heyanle.easybangumi4.plugin.extension.ExtensionController by Inject.injectLazy()
+        val extensionController: IExtensionController by Inject.injectLazy()
         val extensionIconFactory: IconFactory by Inject.injectLazy()
         iconFactory = extensionIconFactory
         extensionController.init()

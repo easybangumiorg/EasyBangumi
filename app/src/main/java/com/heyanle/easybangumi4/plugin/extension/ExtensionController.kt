@@ -87,7 +87,7 @@ class ExtensionController(
 
 
 
-    fun init() {
+    override fun init() {
         SourceCrashController.onExtensionStart()
         installedAppExtensionProvider.init()
         fileApkExtensionProvider.init()

@@ -5,6 +5,7 @@ import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.BuildConfig
 import com.heyanle.easybangumi4.base.hekv.HeKV
+import com.heyanle.easybangumi4.base.json.JsonFileProvider
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
 import com.heyanle.easybangumi4.plugin.extension.ExtensionInfo
 import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
@@ -36,6 +37,7 @@ class BackupController(
     private val cartoonInfoDao: CartoonInfoDao,
     private val settingMMKVPreferences: SettingMMKVPreferences,
     private val settingPreferences: SettingPreferences,
+    private val jsonFileProvider: JsonFileProvider,
     private val globalHekv: HeKV
 ) {
 
@@ -52,6 +54,8 @@ class BackupController(
         const val ExtensionFolderName = "extension"
 
         const val SourcePrefFolderName = "source_pref"
+
+        const val ExtensionRepositoryFileName = "extension_repository.jsonl"
     }
 
     private val cacheRoot = File(APP.getCachePath(), "backup")
@@ -65,6 +69,8 @@ class BackupController(
 
         // app 设置
         val preference: Boolean = true,
+
+        val extensionRepository: Boolean = true,
 
         // 拓展
         val extensionList: Set<ExtensionInfo> = setOf(),
@@ -97,6 +103,10 @@ class BackupController(
                     async {
                         if (param.preference)
                             backupPreference(File(cacheFolder, PreferenceFolderName))
+                    },
+                    async {
+                        if (param.extensionRepository)
+                            backupExtensionRepository(cacheFolder)
                     },
                     async {
                         if (param.extensionList.isNotEmpty())
@@ -208,6 +218,20 @@ class BackupController(
         spFile.writeText(spO.toString())
         hekvFile.writeText(hekvO.toString())
 
+    }
+
+    private suspend fun backupExtensionRepository(folder: File) = withContext(Dispatchers.IO) {
+        val list = jsonFileProvider.extensionRepository.getOrNull() ?: emptyList()
+        val file = File(folder, ExtensionRepositoryFileName)
+        file.delete()
+        file.createNewFile()
+        file.bufferedWriter().use { writer ->
+            list.forEach {
+                writer.write(it.toJson())
+                writer.newLine()
+            }
+            writer.flush()
+        }
     }
     private suspend fun backupExtension(folder: File, list: Set<ExtensionInfo>) = withContext(Dispatchers.IO) {
         folder.deleteRecursively()

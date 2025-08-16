@@ -2,6 +2,8 @@ package com.heyanle.easybangumi4.plugin.extension.push
 
 import android.content.Context
 import com.heyanle.easybangumi4.plugin.extension.ExtensionController
+import com.heyanle.easybangumi4.plugin.extension.IExtensionController
+import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
 import com.heyanle.easybangumi4.utils.getCachePath
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -18,7 +20,8 @@ import kotlinx.coroutines.launch
  */
 class ExtensionPushController(
     private val context: Context,
-    private val extensionController: ExtensionController
+    private val extensionController: IExtensionController,
+    private val mmkvSettingMMKVPreferences: SettingMMKVPreferences,
 ) {
 
     interface ExtensionPushTaskContainer {
@@ -52,12 +55,20 @@ class ExtensionPushController(
 
     private val pushFromFileUrl = PushFromFileUrl(cacheFolder, extensionController)
     private val pushFromCode = PushFromCode(cacheFolder, extensionController)
-    private val pushFromRepo = PushFromRepo(cacheFolder, extensionController)
-    private val taskMap = mapOf(
-        pushFromFileUrl.identify() to pushFromFileUrl,
-        pushFromCode.identify() to pushFromCode,
-        pushFromRepo.identify() to pushFromRepo,
-    )
+    private val taskMap: Map<String, ExtensionPushTask> by lazy {
+        val map = mutableMapOf<String, ExtensionPushTask>()
+        map[pushFromFileUrl.identify()] = pushFromFileUrl
+        map[pushFromCode.identify()] = pushFromCode
+
+        if (!mmkvSettingMMKVPreferences.extensionV2Temp && extensionController is ExtensionController) {
+            val pushFromRepo = PushFromRepo(
+                cacheFolder,
+                extensionController as ExtensionController
+            )
+            map[pushFromRepo.identify()] = pushFromRepo
+        }
+        map
+    }
 
     data class State (
         val isDoing: Boolean = false,

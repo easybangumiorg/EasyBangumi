@@ -2,6 +2,7 @@ package com.heyanle.easybangumi4.base.json
 
 import com.heyanle.easybangumi4.base.DataResult
 import com.heyanle.easybangumi4.utils.jsonTo
+import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.toJson
 import com.hippo.unifile.UniFile
 import kotlinx.coroutines.CoroutineScope
@@ -31,6 +32,10 @@ class JsonlFileHelper <T : Any>(
     val type: Type,
 ) {
 
+    companion object {
+        private const val TAG = "JsonlFileHelper"
+    }
+
 
     private val _flow = MutableStateFlow<DataResult<List<T>>>(DataResult.Loading())
     val flow = _flow.asStateFlow()
@@ -48,21 +53,10 @@ class JsonlFileHelper <T : Any>(
                 return@launch
             }
             var data = jsonFile.openInputStream().use {
-                it.bufferedReader().lineSequence()
-            }.map {
-                it.jsonTo<T>(type)
-            }.filterNotNull().toList()
-//            if (data == null){
-//                val tempFile = folder.findFile(tempFileName)
-//                data = if (tempFile != null && tempFile.canRead()){
-//                    val tempString = tempFile.openInputStream().use {
-//                        it.bufferedReader().readText()
-//                    }
-//                    tempString.jsonTo<T>(type) ?: def
-//                } else {
-//                    def
-//                }
-//            }
+                it.bufferedReader().lineSequence().map {
+                    it.jsonTo<T>(type)
+                }.filterNotNull().toList()
+            }
             _flow.update {
                 DataResult.ok(data)
             }
@@ -131,7 +125,9 @@ class JsonlFileHelper <T : Any>(
         block:(List<T>) -> List<T>
     ){
         val data = getOrDef()
-        set( block(data))
+        set( block(data).apply {
+            "$data -> $this".logi(TAG)
+        })
     }
 
 

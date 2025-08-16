@@ -1,5 +1,8 @@
 package com.heyanle.easybangumi4.utils
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
 import java.util.concurrent.Executors
 import java.util.concurrent.LinkedBlockingQueue
@@ -7,6 +10,12 @@ import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 
 object CoroutineProvider {
+
+    val globalMainScope
+        get() = MainScope()
+
+    val globalSingleScope
+        get() = CoroutineScope(SupervisorJob() + SINGLE)
 
     val SINGLE = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
 
