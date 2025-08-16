@@ -426,10 +426,13 @@ object Migrate {
                 }
 
 
-                if (lastVersionCode < 102) {
+                if (lastVersionCode < 103) {
                     val extensionJSPath = context.getFilePath("extension-js")
                     val extensionJsV2Path = context.getFilePath("extension_v2")
                     val folder = File(extensionJSPath)
+                    folder.mkdirs()
+                    File(extensionJsV2Path).mkdirs()
+
                     val extension = arrayListOf<Pair<String, File>>()
 
                     val list = folder.listFiles()?.filter {
@@ -444,7 +447,7 @@ object Migrate {
                     }
                     val indexItem = arrayListOf<JsExtensionProviderV2.IndexItem>()
                     res.forEach {
-                        val targetFile = File(extensionJSPath, "${it.first}.${if (it.second.endsWith(JsExtensionProviderV2.EXTENSION_CRY_SUFFIX)) JsExtensionProviderV2.EXTENSION_CRY_SUFFIX else JsExtensionProviderV2.EXTENSION_SUFFIX}")
+                        val targetFile = File(extensionJsV2Path ,"${it.first}.${if (it.second.endsWith(JsExtensionProviderV2.EXTENSION_CRY_SUFFIX)) JsExtensionProviderV2.EXTENSION_CRY_SUFFIX else JsExtensionProviderV2.EXTENSION_SUFFIX}")
                         val realTarget = File(it.second).copyTo(targetFile, true)
                         indexItem.add(
                             JsExtensionProviderV2.IndexItem(

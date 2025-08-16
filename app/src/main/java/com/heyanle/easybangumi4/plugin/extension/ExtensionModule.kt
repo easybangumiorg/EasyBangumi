@@ -31,6 +31,8 @@ class ExtensionModule(
 
     private val extensionJSPathV2 = application.getFilePath("extension_v2")
     private val extensionCachePathV2 = application.getCachePath("extension_v2")
+
+
     override fun InjectScope.registerInjectables() {
         addSingletonFactory<IExtensionController> {
             val mmkvSetting = get<SettingMMKVPreferences>()

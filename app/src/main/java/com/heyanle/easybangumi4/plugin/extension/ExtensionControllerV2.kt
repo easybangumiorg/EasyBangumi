@@ -44,6 +44,10 @@ class ExtensionControllerV2(
         private const val TAG = "ExtensionControllerV2"
     }
 
+    init {
+        File(jsExtensionCacheFolder).mkdirs()
+        File(jsExtensionFolder).mkdirs()
+    }
     private val dispatcher = Dispatchers.IO
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
 
