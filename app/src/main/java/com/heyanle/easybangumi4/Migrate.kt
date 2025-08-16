@@ -158,7 +158,7 @@ object Migrate {
 
 
 
-        if (lastVersionCode < curVersionCode) {
+        if (lastVersionCode < curVersionCode || BuildConfig.DEBUG) {
 
             scope.launch(Dispatchers.IO) {
 
@@ -456,10 +456,11 @@ object Migrate {
                             )
                         )
                     }
-                    Inject.get<JsonFileProvider>().extensionIndex.update {
+                    val helper = Inject.get<JsonFileProvider>().extensionIndex
+                    helper.initJob.join()
+                    helper.update {
                         indexItem
                     }
-
 
                 }
                 // 在这里添加新的迁移代码

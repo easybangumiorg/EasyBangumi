@@ -43,25 +43,24 @@ class JsonlFileHelper <T : Any>(
 
     private val tempFileName = "${name}.temp"
 
-    init {
-        scope.launch {
-            val jsonFile = folder.createFile(name)
-            if (jsonFile == null || !jsonFile.canRead()){
-                _flow.update {
-                    DataResult.error("json file create failed or can't read")
-                }
-                return@launch
-            }
-            var data = jsonFile.openInputStream().use {
-                it.bufferedReader().lineSequence().map {
-                    it.jsonTo<T>(type)
-                }.filterNotNull().toList()
-            }
+    val initJob = scope.launch {
+        val jsonFile = folder.createFile(name)
+        if (jsonFile == null || !jsonFile.canRead()){
             _flow.update {
-                DataResult.ok(data)
+                DataResult.error("json file create failed or can't read")
             }
+            return@launch
+        }
+        var data = jsonFile.openInputStream().use {
+            it.bufferedReader().lineSequence().map {
+                it.jsonTo<T>(type)
+            }.filterNotNull().toList()
+        }
+        _flow.update {
+            DataResult.ok(data)
         }
     }
+
 
     fun trySave (){
         scope.launch {
