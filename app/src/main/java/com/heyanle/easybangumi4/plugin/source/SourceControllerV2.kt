@@ -8,9 +8,13 @@ import com.heyanle.easybangumi4.plugin.source.bundle.ComponentBundle
 import com.heyanle.easybangumi4.plugin.source.bundle.SimpleComponentBundle
 import com.heyanle.easybangumi4.plugin.source.bundle.SourceBundle
 import com.heyanle.easybangumi4.source_api.Source
+import com.heyanle.easybangumi4.utils.CoroutineProvider
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
@@ -69,9 +73,12 @@ class SourceControllerV2(
                         .flatMap {
                             it.sources
                         }.map {
-                            val config = configs[it.key]
-                            innerLoad(it, config)
-                        }.toMutableList()
+                            scope.async(Dispatchers.IO) {
+                                val config = configs[it.key]
+                                innerLoad(it, config)
+                            }
+
+                        }.awaitAll().toMutableList()
                     infoList.add(
                         InnerSourceMaster.localConfigSource
                     )
