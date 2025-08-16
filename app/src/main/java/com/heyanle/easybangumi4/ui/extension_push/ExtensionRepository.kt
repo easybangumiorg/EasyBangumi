@@ -83,10 +83,10 @@ fun ExtensionRepository() {
                     .fillMaxSize()
                     .reorderable(state)
             ) {
-                items(vm.repository, key = { it.url }) { tag ->
+                items(vm.repository, ) { tag ->
                     ReorderableItem(
                         reorderableState = state,
-                        key = tag.url,
+                        key = tag,
                         modifier = Modifier
                             .fillMaxWidth()
                     ) {
@@ -185,6 +185,8 @@ fun ExtensionRepository() {
                     TextButton(onClick = {
                         if (label.isEmpty()) {
                             stringRes(R.string.is_empty).moeSnackBar()
+                        } else if (vm.repository.any { it.url == label }) {
+                            "重复添加".moeSnackBar()
                         } else {
                             vm.onCreate(label)
                             vm.dialogDismiss()
