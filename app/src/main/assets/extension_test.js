@@ -2,7 +2,7 @@
 // @label 稀饭动漫
 // @versionName 1.0
 // @versionCode 1
-// @libVersion 11
+// @libVersion 12
 // @cover https://dm.xifanacg.com/template/dsn2/static/img/fav.png
 
 // Inject
@@ -195,7 +195,8 @@ function playline(doc, summary) {
         var par = elements.get(i);
         var it = par.child(0);
         var uu = it.child(1).child(0).attr("href")
-        var id = uu.subSequence(9, uu.length() - 6).toString()
+        var id = uu.subSequence(9, uu.length() - 5).toString()
+        Log.i("search id", id);
 
         var imgEle = it.select("img.gen-movie-img").first();
         var coverUrl = "";

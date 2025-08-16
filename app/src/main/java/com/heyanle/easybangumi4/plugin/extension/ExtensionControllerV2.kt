@@ -5,11 +5,14 @@ import com.heyanle.easybangumi4.base.DataResult
 import com.heyanle.easybangumi4.base.json.JsonFileProvider
 import com.heyanle.easybangumi4.crash.SourceCrashController
 import com.heyanle.easybangumi4.plugin.extension.provider.JsExtensionProviderV2
+import com.heyanle.easybangumi4.plugin.js.extension.JSExtensionCryLoader
 import com.heyanle.easybangumi4.plugin.js.runtime.JSRuntimeProvider
 import com.heyanle.easybangumi4.utils.logi
+import com.hippo.unifile.UniFile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -33,6 +36,7 @@ import java.io.File
  */
 class ExtensionControllerV2(
     val jsExtensionFolder: String,
+    val jsExtensionCacheFolder: String,
     private val jsonFileProvider: JsonFileProvider,
 ): IExtensionController {
 
@@ -72,6 +76,39 @@ class ExtensionControllerV2(
                 }
             }
         }
+    }
+
+    suspend fun appendOrUpdateExtension(
+        uniFile: UniFile
+    ): DataResult<JsExtensionProviderV2.IndexItem> {
+        return scope.async {
+            val file = File(jsExtensionCacheFolder, uniFile.name?:"")
+            file.delete()
+            file.createNewFile()
+            uniFile.openInputStream().copyTo(file.outputStream())
+            if (!file.exists()) {
+                return@async DataResult.error(
+                    "Failed to copy UniFile to local file: ${file.absolutePath}"
+                )
+            }
+
+            // 根据 Mask 判断是否是加密
+            val buffer = ByteArray(JSExtensionCryLoader.FIRST_LINE_MARK.size)
+
+            val size = file.inputStream().use {
+                it.read(buffer)
+            }
+            val suffix = if (size == JSExtensionCryLoader.FIRST_LINE_MARK.size && buffer.contentEquals(JSExtensionCryLoader.FIRST_LINE_MARK)) {
+                JsExtensionProviderV2.EXTENSION_CRY_SUFFIX
+            } else {
+                JsExtensionProviderV2.EXTENSION_SUFFIX
+            }
+            // 添加后缀
+            val targetFile = File(jsExtensionCacheFolder, "${file.name}.$suffix")
+            file.renameTo(targetFile)
+            return@async jsExtensionProviderV2.appendOrUpdate(targetFile, true)
+        }.await()
+
     }
 
     suspend fun appendOrUpdateExtension(

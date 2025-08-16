@@ -2,15 +2,19 @@ package com.heyanle.easybangumi4.ui.extension_push
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.LauncherBus
 import com.heyanle.easybangumi4.plugin.extension.ExtensionController
+import com.heyanle.easybangumi4.plugin.extension.ExtensionControllerV2
 import com.heyanle.easybangumi4.plugin.extension.ExtensionInfo
+import com.heyanle.easybangumi4.plugin.extension.IExtensionController
 import com.heyanle.easybangumi4.plugin.extension.push.ExtensionPushController
 import com.heyanle.easybangumi4.plugin.extension.push.ExtensionPushTask
 import com.heyanle.easybangumi4.ui.common.moeDialogAlert
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.inject.core.Inject
+import com.hippo.unifile.UniFile
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -29,7 +33,7 @@ class ExtensionPushViewModel: ViewModel() {
 
     }
 
-    private val extensionController: ExtensionController by Inject.injectLazy()
+    private val extensionController: IExtensionController by Inject.injectLazy()
     private val extensionPushController: ExtensionPushController by Inject.injectLazy()
 
     data class State (
@@ -104,14 +108,32 @@ class ExtensionPushViewModel: ViewModel() {
             }
 
             viewModelScope.launch {
-                val ex = extensionController.appendExtensionUri(uri, ExtensionInfo.TYPE_JS_FILE)
-                if (ex == null) {
-                    stringRes(com.heyanle.easy_i18n.R.string.extension_push_completely).moeSnackBar()
-                } else {
-                    (ex.message?: stringRes(com.heyanle.easy_i18n.R.string.load_error)).moeDialogAlert(
-                        title = stringRes(com.heyanle.easy_i18n.R.string.extension_push_error)
-                    )
+                val extensionController = extensionController
+                if (extensionController is ExtensionController) {
+                    val ex = extensionController.appendExtensionUri(uri, ExtensionInfo.TYPE_JS_FILE)
+                    if (ex == null) {
+                        stringRes(com.heyanle.easy_i18n.R.string.extension_push_completely).moeSnackBar()
+                    } else {
+                        (ex.message?: stringRes(com.heyanle.easy_i18n.R.string.load_error)).moeDialogAlert(
+                            title = stringRes(com.heyanle.easy_i18n.R.string.extension_push_error)
+                        )
+                    }
+                } else if (extensionController is ExtensionControllerV2) {
+                    val uniFile = UniFile.fromUri(APP, uri)
+                    if (uniFile == null) {
+                        stringRes(com.heyanle.easy_i18n.R.string.no_document).moeDialogAlert()
+                        return@launch
+                    }
+                    val res = extensionController.appendOrUpdateExtension(uniFile)
+                    res.onOK {
+                        stringRes(com.heyanle.easy_i18n.R.string.extension_push_completely).moeSnackBar()
+                    }.onError {
+                        it.errorMsg.moeDialogAlert(
+                            title = stringRes(com.heyanle.easy_i18n.R.string.extension_push_error)
+                        )
+                    }
                 }
+
             }
         }
     }

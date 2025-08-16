@@ -422,40 +422,44 @@ class CartoonPlayingViewModel(
         val epi = playingEpisode ?: return
         val cartoon = cartoonPlayingState?.cartoonSummary ?: return
         CoroutineProvider.globalMainScope.launch {
-            var po = if (ps >= 0) ps else exoPlayer.currentPosition
-            when (exoPlayer.playbackState) {
-                Player.STATE_BUFFERING, Player.STATE_READY -> {
-                    po = exoPlayer.currentPosition
-                }
-                Player.STATE_ENDED -> {
-                    if (duringTemp > 0) {
-                        po = duringTemp
-                    } else {
-                        return@launch
+
+            runCatching {
+                var po = if (ps >= 0) ps else exoPlayer.currentPosition
+                when (exoPlayer.playbackState) {
+                    Player.STATE_BUFFERING, Player.STATE_READY -> {
+                        po = exoPlayer.currentPosition
+                    }
+                    Player.STATE_ENDED -> {
+                        if (duringTemp > 0) {
+                            po = duringTemp
+                        } else {
+                            return@launch
+                        }
                     }
                 }
-            }
-            "save $po".logi(TAG)
+                "save $po".logi(TAG)
 //            if (exoPlayer.playbackState == ExoPlayer.STATE_ENDED)
-            val process = po
-            cartoonInfoDao.transaction {
-                val old = cartoonInfoDao.getByCartoonSummary(cartoon.id, cartoon.source)
-                if (old != null) {
-                    val lineIndex = old.playLine.indexOf(line)
-                    if (lineIndex >= 0) {
-                        cartoonInfoDao.modify(
-                            old.copyHistory(
-                                lineIndex,
-                                line,
-                                epi,
-                                process
+                val process = po
+                cartoonInfoDao.transaction {
+                    val old = cartoonInfoDao.getByCartoonSummary(cartoon.id, cartoon.source)
+                    if (old != null) {
+                        val lineIndex = old.playLine.indexOf(line)
+                        if (lineIndex >= 0) {
+                            cartoonInfoDao.modify(
+                                old.copyHistory(
+                                    lineIndex,
+                                    line,
+                                    epi,
+                                    process
 
+                                )
                             )
-                        )
-                    }
+                        }
 
+                    }
                 }
             }
+
         }
     }
 

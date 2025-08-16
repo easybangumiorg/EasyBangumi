@@ -51,8 +51,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.plugin.extension.push.ExtensionPushTask
+import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
+import com.heyanle.easybangumi4.ui.source_manage.ExplorePage
 import com.heyanle.easybangumi4.utils.stringRes
+import com.heyanle.inject.api.get
+import com.heyanle.inject.core.Inject
 
 /**
  * Created by HeYanLe on 2024/10/27 14:14.
@@ -86,11 +90,21 @@ sealed class ExtensionPushType(
 
 }
 
-val extensionPushTypeList = listOf(
-    ExtensionPushType.FromFileUrl,
-    ExtensionPushType.FromCode,
-    ExtensionPushType.FromRepo
-)
+
+val extensionPushTypeList: List<ExtensionPushType> by lazy {
+    if (Inject.get<SettingMMKVPreferences>().extensionV2Temp) {
+        listOf(
+            ExtensionPushType.FromFileUrl,
+            ExtensionPushType.FromCode,
+        )
+    } else {
+        listOf(
+            ExtensionPushType.FromFileUrl,
+            ExtensionPushType.FromCode,
+            ExtensionPushType.FromRepo
+        )
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable

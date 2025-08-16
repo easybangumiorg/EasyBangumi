@@ -139,7 +139,7 @@ fun ExtensionV2TopAppBar(behavior: TopAppBarScrollBehavior) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         OkImage(modifier = Modifier.size(32.dp), image = Uri.parse("file:///android_asset/loading_ryo.gif"), isGif = true,contentDescription = "loading")
-                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.extension_repository_loading))
+                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.downloading) + sta.dialog.remoteInfo.label)
                     }
                 },
                 confirmButton = {},

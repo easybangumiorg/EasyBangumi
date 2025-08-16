@@ -1,5 +1,6 @@
 package com.heyanle.easybangumi4.plugin.extension.provider
 
+import coil.decode.DataSource
 import com.heyanle.easybangumi4.base.DataResult
 import com.heyanle.easybangumi4.base.json.JsonFileProvider
 import com.heyanle.easybangumi4.base.map
@@ -7,6 +8,7 @@ import com.heyanle.easybangumi4.plugin.extension.ExtensionInfo
 import com.heyanle.easybangumi4.plugin.extension.loader.ExtensionLoader
 import com.heyanle.easybangumi4.plugin.extension.loader.ExtensionLoaderFactory
 import com.heyanle.easybangumi4.plugin.js.runtime.JSRuntimeProvider
+import com.hippo.unifile.UniFile
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -93,6 +95,7 @@ class JsExtensionProviderV2(
                             loadFromIndex(it)
                         }
                         val map = info.filterNotNull().associateBy { it.key }
+
                         _flow.update {
                             it.copy(loading = false, extensionMap = map)
                         }
@@ -172,7 +175,7 @@ class JsExtensionProviderV2(
         return scope.async {
             val loader = loaderFromFile(file)
             if (loader == null || !loader.canLoad()) {
-                return@async DataResult.error<IndexItem>("loader can not load")
+                return@async DataResult.error<IndexItem>("loader can not load $file")
             }
 
             val info = loader.load()
