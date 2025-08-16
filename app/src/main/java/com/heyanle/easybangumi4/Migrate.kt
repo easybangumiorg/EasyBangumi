@@ -426,7 +426,7 @@ object Migrate {
                 }
 
 
-                if (lastVersionCode < 103) {
+                if (lastVersionCode < 104) {
                     val extensionJSPath = context.getFilePath("extension-js")
                     val extensionJsV2Path = context.getFilePath("extension_v2")
                     val folder = File(extensionJSPath)
@@ -436,7 +436,7 @@ object Migrate {
                     val extension = arrayListOf<Pair<String, File>>()
 
                     val list = folder.listFiles()?.filter {
-                        it.isFile && it.name.endsWith(JsExtensionProviderV2.EXTENSION_SUFFIX) || it.name.endsWith(JsExtensionProviderV2.EXTENSION_CRY_SUFFIX)
+                        it.isFile && (it.name.endsWith(JsExtensionProviderV2.EXTENSION_SUFFIX) || it.name.endsWith(JsExtensionProviderV2.EXTENSION_CRY_SUFFIX))
                     } ?: emptyList()
                     val jsRuntimeProvider = JSRuntimeProvider(1)
                     val loaders = ExtensionLoaderFactory.getFileJsExtensionLoaders(list, jsRuntimeProvider)
