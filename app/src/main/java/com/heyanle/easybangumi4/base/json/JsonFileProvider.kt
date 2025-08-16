@@ -59,4 +59,12 @@ class JsonFileProvider {
         type = typeOf<JsExtensionProviderV2.IndexItem>().javaType
     )
 
+    // /storage/emulated/0/Android/data/com.heyanle.easybangumi4/files/extension_v2/repository.jsonl
+    val extensionRepository: JsonlFileHelper<String> = JsonlFileHelper(
+        folder = UniFile.fromFile(File(APP.getFilePath("extension_v2")))!!,
+        name = "repository.jsonl",
+        scope = scope,
+        type = typeOf<String>().javaType
+    )
+
 }
