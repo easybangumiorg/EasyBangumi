@@ -1,9 +1,9 @@
-// @key heyanle.xifan
-// @label 稀饭动漫
+// @key heyanle.mxfan
+// @label MX动漫
 // @versionName 1.0
 // @versionCode 1
 // @libVersion 12
-// @cover https://dm.xifanacg.com/template/dsn2/static/img/fav.png
+// @cover https://www.mxdm.xyz/mxstatic/picture/logo.png
 
 // Inject
 var networkHelper = Inject_NetworkHelper;
@@ -13,7 +13,7 @@ var okhttpHelper = Inject_OkhttpHelper;
 // Hook PreferenceComponent ========================================
 function PreferenceComponent_getPreference() {
     var res = new ArrayList();
-    var host = new SourcePreference.Edit("网页", "Host", "https://dm.xifanacg.com");
+    var host = new SourcePreference.Edit("网页", "Host", "https://www.mxdm.tv");
     var playerUrl = new SourcePreference.Edit("播放器网页正则", "PlayerReg", "https://player.moedot.net/player/index.php?.*");
     var timeout = new SourcePreference.Edit("超时时间", "Timeout", "20000");
     res.add(host);
@@ -26,83 +26,157 @@ function PreferenceComponent_getPreference() {
 
 function PageComponent_getMainTabs() {
     var res = new ArrayList();
-    res.add(new MainTab("连载新番", MainTab.MAIN_TAB_WITH_COVER));
-    res.add(new MainTab("完结旧番", MainTab.MAIN_TAB_WITH_COVER));
-    res.add(new MainTab("剧场版", MainTab.MAIN_TAB_WITH_COVER));
+    res.add(new MainTab("首页", MainTab.MAIN_TAB_GROUP));
+    res.add(new MainTab("更新时间表", MainTab.MAIN_TAB_WITHOUT_COVER));
+    res.add(new MainTab("日本动漫", MainTab.MAIN_TAB_WITH_COVER));
+    res.add(new MainTab("国产动漫", MainTab.MAIN_TAB_WITH_COVER));
+    res.add(new MainTab("动漫电影", MainTab.MAIN_TAB_WITH_COVER));
+    res.add(new MainTab("欧美电影", MainTab.MAIN_TAB_WITH_COVER));
     return res;
 }
 
 function PageComponent_getSubTabs(mainTab) {
     var res = new ArrayList();
+    if (mainTab.label == "首页") {
+        var url = SourceUtils.urlParser(getRootUrl(), "/");
+        var doc = getDoc(url);
+        var contents = doc.select(".content .module .module-list>.module-items").iterator();
+        var titles = doc.select(".content .module .module-title").iterator();
+        while (titles.hasNext() && contents.hasNext()) {
+            var contentEl = contents.next();
+            var titleEl = titles.next();
+            var title = titleEl.text().trim();
+            var videos = contentEl.select(".module-item")
+            if (videos.isEmpty()) {
+                continue
+            }
+            if (videos.get(0).classNames().size() > 1) {
+                continue
+            }
+            res.add(new SubTab(title, true, contentEl));
+        }
+    } else if (mainTab.label == "更新时间表") {
+        var url = SourceUtils.urlParser(getRootUrl(), "/");
+        var doc = getDoc(url);
+        var tabs = document.selectFirst(".mxoneweek-tabs");
+        if (tabs == null) {
+            return res;
+        }
+        var activeTabIndex = 0;
+
+        var tabNames = new ArrayList();
+        var tabsChildren = tabs.children();
+        for (var i = 0; i < tabsChildren.size(); i++) {
+            var el = tabsChildren.get(i);
+            if (el.hasClass("active")) {
+                activeTabIndex = index
+            }
+            tabNames.add(el.text().trim());
+        }
+
+        var videoGroups = new ArrayList();
+        var listSele = document.select(".mxoneweek-list");
+        for (var i = 0; i < listSele.size(); i++) {
+            var el = listSele.get(i);
+            var a = el.getElementsByTag("a");
+            var cartoonList = new ArrayList();
+            for (var j = 0; j < a.size(); j++) {
+                var link = a.get(j);
+                var title = "";
+                if (link.childrenSize() > 0) {
+                    title = link.child(0).text().trim();
+                } else {
+                    title = link.text().trim();
+                }
+                var episodeText = "";
+                if (link.childrenSize() > 1) {
+                    episodeText = link.child(1).text().trim();
+                }
+                var url = link.absUrl("href");
+                var videoId = url.substring(url.lastIndexOf('/') + 1, url.lastIndexOf('.'));
+                cartoonList.add(makeCartoonCover({
+                    id: videoId,
+                    title: title,
+                    url: getRootUrl() + "/dongman/" + videoId + ".html",
+                    intro: episodeText,
+                    source: source.key,
+                }));
+            }
+            videoGroups.add(cartoonList);
+        }
+        var minSize = tabNames.size();
+        if (videoGroups.size() < minSize) {
+            minSize = videoGroups.size();
+        }
+        for (var i = activeTabIndex ;  i < videoGroups; i ++) {
+            res.add(new SubTab(tabNames.get(i), false, videoGroups.get(i)));
+        }
+        for (var i = 0; i < activeTabIndex; i++) {
+            res.add(new SubTab(tabNames.get(i), false, videoGroups.get(i)));
+        }
+    }
     return res;
 }
 
 function PageComponent_getContent(mainTab, subTab, key) {
 //    var doc = getMainHomeDocument();
-    if (mainTab.label == "连载新番") {
-        var res = getContent(1, key + 1);
-        if (res == null || res.size() == 0) {
+    if (mainTab.label == "首页") {
+        var contentEl = subTab.ext;
+        if (contentEl == null) {
             return new Pair(null, new ArrayList());
         }
-        return new Pair(key + 1, res);
-    } else if (mainTab.label == "完结旧番") {
-        var res = getContent(2, key + 1);
-        if (res == null || res.size() == 0) {
+        var videos = contentEl.select(".module-item")
+        if (videos.isEmpty()) {
+           return new Pair(null, new ArrayList());
+        }
+        if (videos.get(0).classNames().size() > 1) {
             return new Pair(null, new ArrayList());
         }
-        return new Pair(key + 1, res);
-    } else if (mainTab.label == "剧场版") {
-        var res = getContent(3, key + 1);
-        if (res == null || res.size() == 0) {
-            return new Pair(null, new ArrayList());
+
+        var cartoonList = new ArrayList();
+        for (var i = 0; i < videos.size(); i++) {
+            var videoEl = videos.get(i);
+            cartoonList.add(parseToCartoonCover(videoEl));
         }
-        return new Pair(key + 1, res);
+        return new Pair(null, cartoonList);
+    } else if (mainTab.label == "更新时间表") {
+        var res = subTab.ext;
+        if (res == null) {
+            return new Pair(null, new ArrayList());
+        } else {
+             return new Pair(null, res);
+        }
+    } else if (mainTab.label == "日本动漫") {
+        return getContent("riman", key)
+    } else if (mainTab.label == "国产动漫") {
+        return getContent("guoman", key)
+    } else if (mainTab.label == "动漫电影") {
+        return getContent("dmdianying", key)
+    } else if (mainTab.label == "欧美电影") {
+        return getContent("oman", key)
     }
     return new Pair(null, new ArrayList());
 }
 
-function getContent(type, page) {
-    var url = SourceUtils.urlParser(getRootUrl(), "/index.php/ds_api/vod");
-    var map = new HashMap();
-    map.put("type", type);
-    map.put("page", page);
-    map.put("level", 0);
-    map.put("by", "time");
-    var req = okhttpHelper.cloudflareWebViewClient.newCall(
-        OkhttpUtils.postFromBody(url, map)
-    );
-    var string = req.execute().body().string();
-    try {
+function getContent(type, page){
+    var url = SourceUtils.urlParser(getRootUrl(), "/show/" + type + "--------" + (page + 1) + "---.html");
+    var doc = getDoc(url);
 
-        var object = new JSONObject(string);
-        var list = object.getJSONArray("list");
-        var res = new ArrayList();
-        for (var i = 0; i < list.length(); i++) {
-            var item = list.getJSONObject(i);
-            var id = item.getString("vod_id");
-            var title = item.getString("vod_name");
-            var cover = item.getString("vod_pic");
-            cover = SourceUtils.urlParser(getRootUrl(), cover);
-            var url = SourceUtils.urlParser(getRootUrl(), item.getString("url"));
-            var intro = item.getString("vod_blurb");
-            if (intro == null) {
-                intro = "";
-            }
-            res.add(makeCartoonCover({
-                id: id,
-                title: title,
-                url: url,
-                intro: intro,
-                cover: SourceUtils.urlParser(getRootUrl(), cover),
-                source: source.key,
-            }));
-        }
-        return res;
-    } catch(e) {
-        Log.e("GiriGiriLove", "getContent: " + e);
-        return new ArrayList();
+    var videoSelect = doc.select(".content .module .module-item");
+    var res = new ArrayList();
+    for (var i = 0; i < videoSelect.size(); i++) {
+        var item = videoSelect.get(i);
+        res.add(parseToCartoonCover(item));
     }
+    var hasNext = hasNextPage(doc);
+    var next = null;
+    if (hasNext && !res.isEmpty()) {
+        next = page + 1;
+    }
+    return new Pair(next, res);
 }
+
+
 // Hook DetailedComponent ========================================
 
  function DetailedComponent_getDetailed(summary) {
@@ -293,6 +367,84 @@ function PlayComponent_getPlayInfo(summary, playLine, episode) {
 
 
 // business ========================================
+
+function hasNextPage(document) {
+    var page = document.getElementById("page")
+    if (page == null) {
+        return false;
+    }
+    var currentPageIndex = 0;
+    var children = page.children();
+    for (var i = 0; i < children.size(); i++) {
+        var child = children.get(i);
+        if (child.hasClass("page-current")) {
+            currentPageIndex = i;
+            break;
+        }
+    }
+    return currentPageIndex != -1 && currentPageIndex < page.childrenSize() - 3
+}
+
+function extractImageSrc(imageElement) {
+     var img = imageElement.dataset().get("src");
+        if (img == null) {
+            img = "";
+        }
+        if (img.isEmpty() && imageElement.hasAttr("src")) {
+            img = imageElement.attr("src");
+        }
+        
+        return img;
+}
+
+function parseToCartoonCover(element) {
+    var imgEle = element.selectFirst("img");
+    var coverUrl = extractImageSrc(imgEle);
+    var linkEl = element.selectFirst("a");
+    var url = linkEl.absUrl("href");
+    var id = url.substring(url.lastIndexOf('/') + 1, url.lastIndexOf('.'));
+    var videoTitle = element.selectFirst(".video-name").text().trim();
+    var tags = new LinkedHashSet();
+
+    var episode = "";
+    var first = element.selectFirst(".module-item-text");
+    if (first != null) {
+        episode = first.text().trim();
+    }
+    if (!episode.isEmpty()) {
+        tags.add(episode)
+    }
+    var childrenEle = element.selectFirst(".module-item-caption");
+    if (childrenEle != null) {
+        var children = childrenEle.children();
+        for (var index = 0; index < children.size(); index++) {
+            var child = children.get(index);
+            var tag = child.text().trim();
+            if (!tag.isEmpty()) {
+                tags.add(tag);
+            }
+        }
+    }
+
+    var stringBuilder = new stringBuilder();
+    for (var i = 0 ; i < tags.size(); i++) {
+        var tag = tags.get(i);
+        // Do something with each tag if needed
+        stringBuilder.append(tag);
+        if (i < tags.size() - 1) {
+            stringBuilder.append(" | ");
+        }
+    }
+
+    return makeCartoonCover({
+        id: id,
+        title: videoTitle,
+        url: SourceUtils.urlParser(getRootUrl(), url),
+        intro: stringBuilder.toString(),
+        cover: coverUrl,
+        source: source.key,
+    });
+}
 
 // main
 function getDoc(url) {

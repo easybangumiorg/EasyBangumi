@@ -45,7 +45,7 @@
     <string name="local_extension_setting">本地番源设置</string>
 
     <string name="extension_v2">番源引擎 2.0</string>
-    <string name="extension_v2_msg">全新番源引擎，支持指定仓库更新，仅支持 JS 源。需重启生效，当前开启状态：</string>
+    <string name="extension_v2_msg">全新番源引擎，支持指定仓库更新，仅支持 JS 源和 apk 源。需重启生效，当前开启状态：</string>
 
     <string name="local_extension_page">本地番源主页</string>
     <string name="local_extension_page_msg">是否在主页展示本地番源。需重启生效</string>

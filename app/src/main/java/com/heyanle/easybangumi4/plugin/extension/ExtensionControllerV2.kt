@@ -4,6 +4,7 @@ import android.content.Context
 import com.heyanle.easybangumi4.base.DataResult
 import com.heyanle.easybangumi4.base.json.JsonFileProvider
 import com.heyanle.easybangumi4.crash.SourceCrashController
+import com.heyanle.easybangumi4.plugin.extension.provider.InstalledAppExtensionProvider
 import com.heyanle.easybangumi4.plugin.extension.provider.JsExtensionProviderV2
 import com.heyanle.easybangumi4.plugin.js.extension.JSExtensionCryLoader
 import com.heyanle.easybangumi4.plugin.js.runtime.JSRuntimeProvider
@@ -15,7 +16,9 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
@@ -35,6 +38,7 @@ import java.io.File
  *  2. 去除 file observer 相关的一系列逻辑，改为纯监听 index 文件列表
  */
 class ExtensionControllerV2(
+    val context: Context,
     val jsExtensionFolder: String,
     val jsExtensionCacheFolder: String,
     private val jsonFileProvider: JsonFileProvider,
@@ -65,19 +69,35 @@ class ExtensionControllerV2(
             jsRuntimeProvider,
         )
 
+    private val apkExtensionProvider: InstalledAppExtensionProvider =
+        InstalledAppExtensionProvider(
+            context,
+            dispatcher,
+        )
+
     override fun init() {
         SourceCrashController.onExtensionStart()
         jsExtensionProviderV2.init()
+        apkExtensionProvider.init()
         SourceCrashController.onExtensionEnd()
         scope.launch {
-            jsExtensionProviderV2.flow.collectLatest { state ->
+            combine(
+                jsExtensionProviderV2.flow,
+                apkExtensionProvider.flow
+            ) { js, apk ->
                 state.logi(TAG)
+                val map = hashMapOf<String, ExtensionInfo>()
+                map.putAll(apk.extensionMap)
+                map.putAll(js.extensionMap)
                 _state.update {
                     it.copy(
-                        loading = state.loading,
-                        extensionInfoMap = state.extensionMap
+                        loading = js.loading || apk.loading,
+                        extensionInfoMap = map
                     )
                 }
+            }.collect()
+            jsExtensionProviderV2.flow.collectLatest { state ->
+
             }
         }
     }

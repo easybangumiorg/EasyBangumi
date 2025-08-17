@@ -149,7 +149,9 @@ class ExtensionV2ViewModel : ViewModel() {
                 )
             }
         } else if (remoteLocalInfo.localInfo != null) {
-            if (remoteLocalInfo.localInfo is ExtensionInfo.Installed) {
+            if (remoteLocalInfo.localInfo.loadType == ExtensionInfo.TYPE_APK_INSTALL) {
+                IntentHelper.openAppDetailed(remoteLocalInfo.localInfo.pkgName, APP)
+            } else if (remoteLocalInfo.localInfo is ExtensionInfo.Installed) {
                 stringRes(com.heyanle.easy_i18n.R.string.long_press_to_delete).moeSnackBar()
             }
 

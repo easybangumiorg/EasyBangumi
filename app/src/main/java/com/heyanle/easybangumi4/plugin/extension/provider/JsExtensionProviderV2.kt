@@ -190,7 +190,7 @@ class JsExtensionProviderV2(
                 file.name.endsWith(JsExtensionProvider.Companion.EXTENSION_CRY_SUFFIX) -> JsExtensionProvider.Companion.EXTENSION_CRY_SUFFIX
                 else -> JsExtensionProvider.Companion.EXTENSION_SUFFIX
             }
-            val target = File(extensionFolder, "${key}.${suffix}")
+            val target = File(extensionFolder, "${key}${info.versionName}.${suffix}")
             target.parentFile?.mkdirs()
             val finallyFile = file.copyTo(target, true)
             val indexItem = IndexItem(

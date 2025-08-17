@@ -52,6 +52,7 @@ class ExtensionModule(
         }
         addSingletonFactory {
             ExtensionControllerV2(
+                context = application,
                 extensionJSPathV2,
                 extensionCachePathV2,
                 get()

@@ -4,6 +4,9 @@ package com.heyanle.easybangumi4.plugin.js.utils;
 import com.heyanle.easybangumi4.source_api.utils.core.SourceUtils;
 
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
+
+import java.util.ArrayList;
 
 import kotlin.text.Regex;
 
@@ -16,6 +19,8 @@ public class JSSourceUtils {
 
 
     public static String urlParser(String rootURL, String source) {
+
         return SourceUtils.INSTANCE.urlParser(rootURL, source);
     }
+
 }

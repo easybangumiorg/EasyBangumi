@@ -336,12 +336,34 @@ fun ExtensionInfoV2Item(
                         text = local.versionName,
                         fontSize = 12.sp
                     )
+                    // 加载方式
+                    Text(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.secondaryContainer)
+                            .clickable {
+                            }
+                            .padding(8.dp, 4.dp),
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        fontWeight = FontWeight.W900,
+                        text = when(info.localInfo.loadType){
+                            ExtensionInfo.TYPE_APK_INSTALL -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_installed)}
+                            ExtensionInfo.TYPE_APK_FILE -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_file_apk)}
+                            ExtensionInfo.TYPE_JS_FILE -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_file_js)}
+                            else -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_installed)}
+                        },
+                        fontSize = 12.sp
+                    )
                 }
             },
             trailingContent = {
                 when (local) {
                     is ExtensionInfo.Installed -> {
-                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.long_touch_to_delete))
+                        if (local.loadType == ExtensionInfo.TYPE_APK_INSTALL) {
+                            Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.detailed))
+                        } else {
+                            Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.long_touch_to_delete))
+                        }
                     }
 
                     is ExtensionInfo.InstallError -> {
@@ -471,6 +493,24 @@ fun ExtensionInfoV2Item(
                         color = MaterialTheme.colorScheme.onSecondaryContainer,
                         fontWeight = FontWeight.W900,
                         text = local.versionName,
+                        fontSize = 12.sp
+                    )
+                    // 加载方式
+                    Text(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.secondaryContainer)
+                            .clickable {
+                            }
+                            .padding(8.dp, 4.dp),
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        fontWeight = FontWeight.W900,
+                        text = when(info.localInfo.loadType){
+                            ExtensionInfo.TYPE_APK_INSTALL -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_installed)}
+                            ExtensionInfo.TYPE_APK_FILE -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_file_apk)}
+                            ExtensionInfo.TYPE_JS_FILE -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_file_js)}
+                            else -> {stringResource(id = com.heyanle.easy_i18n.R.string.load_type_installed)}
+                        },
                         fontSize = 12.sp
                     )
                     Text(
