@@ -142,7 +142,7 @@ class ExtensionV2ViewModel : ViewModel() {
                 )
             }
         } else if (remoteLocalInfo.hasUpdate &&
-            remoteLocalInfo.onlyLocal && remoteLocalInfo.remoteInfo != null) {
+            remoteLocalInfo.remoteInfo != null) {
             _stateFlow.update {
                 it.copy(
                     dialog = Dialog.ReadyToDownload(remoteLocalInfo.remoteInfo)

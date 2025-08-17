@@ -11,8 +11,10 @@ import com.heyanle.easybangumi4.plugin.js.runtime.JSRuntimeProvider
 import com.hippo.unifile.UniFile
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -92,8 +94,11 @@ class JsExtensionProviderV2(
                     is DataResult.Ok -> {
                         val d = it.data
                         val info = d.map {
-                            loadFromIndex(it)
-                        }
+                            scope.async(Dispatchers.IO) {
+                                loadFromIndex(it)
+                            }
+
+                        }.awaitAll()
                         val map = info.filterNotNull().associateBy { it.key }
 
                         _flow.update {
@@ -119,7 +124,7 @@ class JsExtensionProviderV2(
         return ExtensionLoaderFactory.getFileJsExtensionLoader(file, jsRuntime)
     }
 
-    private fun loadFromIndex(indexItem: IndexItem): ExtensionInfo? {
+    private suspend fun loadFromIndex(indexItem: IndexItem): ExtensionInfo? {
         val file = File(extensionFolder, indexItem.fileName)
         if (!file.exists()) {
             return null
