@@ -6,9 +6,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -87,7 +90,7 @@ fun MediaPlayPreview(
     val playCover = vm.ui.value.detail.radarResult?.playCover
     if (playCover != null) {
         Row (
-            modifier = Modifier.fillMaxWidth().then(modifier),
+            modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min).then(modifier),
             verticalAlignment = Alignment.Top
         ) {
             CartoonCoverCard(
@@ -98,9 +101,11 @@ fun MediaPlayPreview(
 
             )
             Spacer(modifier = Modifier.size(4.dp))
-            Column {
+            Column(
+                modifier = Modifier.fillMaxHeight()
+            ) {
                 Text(playCover.name, maxLines = 2, style = MaterialTheme.typography.bodyLarge)
-                Spacer(modifier = Modifier.size(4.dp))
+                Spacer(modifier = Modifier.weight(1f))
                 Text(playCover.intro, maxLines = introMaxLine, style = MaterialTheme.typography.bodySmall)
             }
         }

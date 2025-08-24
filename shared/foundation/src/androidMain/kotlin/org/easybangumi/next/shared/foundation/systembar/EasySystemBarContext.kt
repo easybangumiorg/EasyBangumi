@@ -46,14 +46,14 @@ class EasySystemBarContext(
         config: SystemBarConfig
     ) {
         logger.info("pushConfig: $config")
-        configArray.value = configArray.value + config
+        configArray.value += config
     }
 
     fun removeConfig(
         config: SystemBarConfig
     ) {
         logger.info("removeConfig: $config")
-        configArray.value = configArray.value - config
+        configArray.value -= config
     }
 
     @Composable

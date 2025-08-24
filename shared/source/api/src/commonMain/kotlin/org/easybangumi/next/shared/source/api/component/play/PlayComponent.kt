@@ -22,31 +22,16 @@ import org.easybangumi.next.shared.data.cartoon.PlayerLine
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 interface IPlayComponent {
-    // 搜索播放实体
-    data class PlayLineSearchParam(
-        // 来源番的数据
-        val cartoonCover: CartoonCover,
-        // 用户手动输入的搜索关键字，可能为空
-        val keyword: String? = null,
-    )
-
-    fun getFirstKey(): String
-
-    suspend fun searchPlayCovers(
-        param: PlayLineSearchParam,
-        key: String,
-    ): DataState<PagingFrame<CartoonPlayCover>>
-
 
     // 搜索播放线路
     suspend fun getPlayLines(
-        cartoonCover: CartoonPlayCover,
+        cartoonCover: CartoonCover,
     ): DataState<List<PlayerLine>>
 
 
 
     suspend fun getPlayInfo(
-        cartoonPlayCover: CartoonPlayCover,
+        cartoonPlayCover: CartoonCover,
         playerLine: PlayerLine,
         episode: Episode,
     ): DataState<PlayInfo>

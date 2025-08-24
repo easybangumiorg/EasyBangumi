@@ -1,5 +1,7 @@
 package org.easybangumi.next.shared.ui.media
 
+import androidx.compose.foundation.pager.PagerState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.lifecycle.viewModelScope
 import androidx.media3.exoplayer.ExoPlayer
 import kotlinx.coroutines.flow.collectLatest

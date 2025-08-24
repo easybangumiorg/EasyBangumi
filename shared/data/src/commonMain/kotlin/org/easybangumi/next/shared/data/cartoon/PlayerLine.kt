@@ -15,4 +15,6 @@ class PlayerLine (
         // 无
         const val LABEL_NONE = "##none##"
     }
+
+
 }

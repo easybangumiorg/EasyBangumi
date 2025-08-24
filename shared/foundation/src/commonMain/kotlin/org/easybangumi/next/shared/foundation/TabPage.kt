@@ -39,35 +39,63 @@ fun EasyTab(
     modifier: Modifier,
     containerColor: Color = MaterialTheme.colorScheme.surface,
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
+    scrollable: Boolean = false,
     size: Int,
     selection: Int,
     tabWidth: Dp = EasyScheme.size.tabWidth,
     onSelected: (Int) -> Unit,
     tabs: @Composable (Int, Boolean) -> Unit,
 ) {
-    TabRow(
-        modifier = modifier,
-        containerColor = containerColor,
-        contentColor = contentColor,
-        selectedTabIndex = selection,
-        indicator = {
-            if(selection in it.indices){
-                TabIndicator(currentTabPosition = it[selection])
+    if (scrollable) {
+        ScrollableTabRow(
+            modifier = modifier,
+            containerColor = containerColor,
+            contentColor = contentColor,
+            selectedTabIndex = selection,
+            indicator = {
+                if(selection in it.indices){
+                    TabIndicator(currentTabPosition = it[selection])
+                }
+            },
+            edgePadding = 0.dp,
+            divider = {}
+        ) {
+            repeat(size) {
+                Tab(
+                    modifier = Modifier.widthIn(tabWidth),
+                    selected = selection == it, onClick = {
+                        onSelected(it)
+                    }, text = {
+                        tabs(it, selection == it)
+                    })
             }
-        },
+        }
+    } else {
+        TabRow(
+            modifier = modifier,
+            containerColor = containerColor,
+            contentColor = contentColor,
+            selectedTabIndex = selection,
+            indicator = {
+                if(selection in it.indices){
+                    TabIndicator(currentTabPosition = it[selection])
+                }
+            },
 //        edgePadding = 0.dp,
-        divider = {}
-    ) {
-        repeat(size) {
-            Tab(
-                modifier = Modifier.widthIn(tabWidth),
-                selected = selection == it, onClick = {
-                onSelected(it)
-            }, text = {
-                tabs(it, selection == it)
-            })
+            divider = {}
+        ) {
+            repeat(size) {
+                Tab(
+                    modifier = Modifier.widthIn(tabWidth),
+                    selected = selection == it, onClick = {
+                        onSelected(it)
+                    }, text = {
+                        tabs(it, selection == it)
+                    })
+            }
         }
     }
+
 }
 
 @Composable

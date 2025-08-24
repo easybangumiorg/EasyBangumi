@@ -1,12 +1,19 @@
 package org.easybangumi.next.shared.ui.media
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.IconToggleButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import org.easybangumi.next.shared.foundation.elements.LoadScaffold
 import org.easybangumi.next.shared.foundation.stringRes
 import org.easybangumi.next.shared.resources.Res
@@ -65,17 +72,26 @@ fun MediaPlayListPopup(
                     data = playLineListState) {
                     val playLineList = it.data
 
-                    FlowRow {
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
                         playLineList.forEachIndexed { index, it ->
-                            IconToggleButton(
-                                checked = currentIndex == index,
-                                onCheckedChange = {
-                                    if (it) {
-                                        vm.onPlayLineSelected(index)
+                            OutlinedButton(
+                                shape = RoundedCornerShape(8.dp),
+                                onClick = {
+                                vm.onPlayLineSelected(index)
+                            }) {
+                                Text(
+                                    text = it.label,
+//                                    modifier = Modifier.fillMaxWidth(),
+                                    maxLines = 1,
+                                    color = if (currentIndex == index) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurface
                                     }
-                                }
-                            ){
-                                Text(it.label)
+                                )
                             }
                         }
                     }

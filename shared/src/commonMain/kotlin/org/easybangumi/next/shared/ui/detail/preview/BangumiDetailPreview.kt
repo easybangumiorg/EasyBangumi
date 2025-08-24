@@ -5,8 +5,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -47,7 +49,7 @@ fun BangumiDetailPreview(
     val vm = vm(::BangumiDetailPreviewViewModel, cartoonIndex, key = cartoonIndex.toString())
     val state = vm.ui.value
     Row (
-        modifier = Modifier.fillMaxWidth().then(modifier),
+        modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min).then(modifier),
         verticalAlignment = Alignment.Top
     ) {
         CartoonCoverCard(
@@ -60,7 +62,7 @@ fun BangumiDetailPreview(
 
         Spacer(modifier = Modifier.size(8.dp))
         LoadScaffold(
-            Modifier.fillMaxWidth().weight(1f),
+            Modifier.fillMaxWidth().fillMaxHeight().weight(1f),
             state,
             isRow = false,
             onLoading = {
@@ -71,7 +73,8 @@ fun BangumiDetailPreview(
                         FlowRow(
                             modifier = Modifier.fillMaxWidth(),
                             verticalArrangement = Arrangement.spacedBy(8.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            maxLines = 1
                         ) {
                             repeat(3) {
                                 Row(
@@ -96,12 +99,12 @@ fun BangumiDetailPreview(
         ) {
             Column {
                 Text(it.data.displayName, maxLines = 2, style = MaterialTheme.typography.bodyLarge)
-                Spacer(modifier = Modifier.size(8.dp))
+                Spacer(modifier = Modifier.weight(1f))
                 FlowRow(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    maxLines = 2
+                    maxLines = 1
                 ) {
                     for (i in 0..3.coerceAtMost(it.data.tags.size)) {
                         val tag = it.data.tags.getOrNull(i) ?: continue

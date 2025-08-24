@@ -30,6 +30,7 @@ data class CartoonCover(
     }
 
 
+    @kotlinx.serialization.Transient
     @Transient
     override var ext: String = ""
     override fun equals(other: Any?): Boolean {

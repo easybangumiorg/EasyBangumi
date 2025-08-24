@@ -54,7 +54,7 @@ actual fun AnimatedContentScope.NavHook(
         is RouterPage.Media -> {
             val config = remember() {
                 EasySystemBarContext.SystemBarConfig(
-                    isStatusBarAppearanceLight = true,
+                    isStatusBarAppearanceLight = false,
                     isNavBarAppearanceLight = true,
                 )
             }

@@ -2,6 +2,7 @@
 
 import androidx.compose.runtime.Composable
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
+import org.easybangumi.next.shared.source.bangumi.source.BangumiInnerSource
 import org.easybangumi.next.shared.ui.media_radar.MediaRadarParam
 
 /**
@@ -14,11 +15,38 @@ import org.easybangumi.next.shared.ui.media_radar.MediaRadarParam
  *    You may obtain a copy of the License at
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  来自特殊 Meta 源的番的播放页带有搜索播放源功能
+ *  并且 Meta 源只能为 Inner 源并且其页面单独实现
+ *  来自普通 Player 源的番的播放页只允许自己作为播放源
  */
 
+data class MediaParam(
+    val cartoonCover: CartoonCover,
+    val suggestEpisode: Int? = null,
+    val mediaRadarParam: MediaRadarParam? = null,
+)
+
 @Composable
-expect fun Media(
-    cartoonCover: CartoonCover,
-    suggestEpisode: Int? = null,
-    mediaRadarParam: MediaRadarParam? = null,
+fun Media(
+    param: MediaParam,
+) {
+    when (param.cartoonCover.source) {
+        BangumiInnerSource.SOURCE_KEY -> {
+            BangumiMedia(param)
+        }
+        else -> {
+            NormalMedia(param)
+        }
+    }
+}
+
+@Composable
+expect fun BangumiMedia (
+    mediaParam: MediaParam
+)
+
+@Composable
+expect fun NormalMedia (
+    mediaParam: MediaParam
 )
