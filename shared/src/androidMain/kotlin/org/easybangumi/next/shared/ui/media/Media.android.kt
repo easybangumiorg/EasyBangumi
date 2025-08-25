@@ -12,10 +12,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsTopHeight
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -28,14 +26,12 @@ import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.ResourceOr
 import org.easybangumi.next.libplayer.exoplayer.ExoPlayerCompose
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
-import org.easybangumi.next.shared.data.cartoon.Episode
 import org.easybangumi.next.shared.foundation.EasyTab
 import org.easybangumi.next.shared.foundation.stringRes
 import org.easybangumi.next.shared.foundation.view_model.vm
 import org.easybangumi.next.shared.playcon.android.AndroidPlaycon
 import org.easybangumi.next.shared.playcon.android.AndroidPlayconViewModel
 import org.easybangumi.next.shared.resources.Res
-import org.easybangumi.next.shared.ui.media_radar.MediaRadarBottomPanel
 import org.easybangumi.next.shared.ui.media_radar.MediaRadarParam
 
 /**
@@ -58,7 +54,7 @@ actual fun Media(
     mediaRadarParam: MediaRadarParam?
 ) {
 
-    val vm = vm(::MediaViewModel, cartoonCover, suggestEpisode, mediaRadarParam)
+    val vm = vm(::AndroidMediaViewModel, cartoonCover, suggestEpisode, mediaRadarParam)
 
     val radarResult = vm.mediaCommonVM.ui.value.detail.radarResult
     val screenMode = vm.playconVM.screenMode
@@ -77,7 +73,7 @@ actual fun Media(
 
 sealed class MediaNormalSubPage(
     val label: ResourceOr,
-    val content: @Composable (viewModel: MediaViewModel) -> Unit
+    val content: @Composable (viewModel: AndroidMediaViewModel) -> Unit
 ) {
 
     class Detail: MediaNormalSubPage(
@@ -106,7 +102,7 @@ val MediaNormalSubPageList = listOf(
 
 @Composable
 fun MediaNormal(
-    viewModel: MediaViewModel
+    viewModel: AndroidMediaViewModel
 ){
     val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState { MediaNormalSubPageList.size }
@@ -151,22 +147,23 @@ fun MediaNormal(
 
 @Composable
 fun ColumnScope.PlayerNormal(
-    viewModel: MediaViewModel
+    viewModel: AndroidMediaViewModel
 ) {
     Box(
-        modifier = Modifier.fillMaxWidth().aspectRatio(MediaViewModel.MEDIA_COMPONENT_ASPECT).background(Color.Black)
+        modifier = Modifier.fillMaxWidth().aspectRatio(AndroidMediaViewModel.MEDIA_COMPONENT_ASPECT).background(Color.Black)
     ) {
         ExoPlayerCompose(
-            modifier = Modifier.fillMaxWidth().aspectRatio(MediaViewModel.MEDIA_COMPONENT_ASPECT),
+            modifier = Modifier.fillMaxWidth().aspectRatio(AndroidMediaViewModel.MEDIA_COMPONENT_ASPECT),
             state = viewModel.exoPlayerFrameState
         )
         AndroidPlaycon(
-            modifier = Modifier.fillMaxWidth().aspectRatio(MediaViewModel.MEDIA_COMPONENT_ASPECT),
+            modifier = Modifier.fillMaxWidth().aspectRatio(AndroidMediaViewModel.MEDIA_COMPONENT_ASPECT),
             viewModel = viewModel.playconVM
         )
     }
 }
 
 
-
-
+@androidx.compose.runtime.Composable
+actual fun BangumiMedia(mediaParam: MediaParam) {
+}

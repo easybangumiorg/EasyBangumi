@@ -1,7 +1,5 @@
 package org.easybangumi.next.shared.ui.media
 
-import androidx.compose.foundation.pager.PagerState
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.lifecycle.viewModelScope
 import androidx.media3.exoplayer.ExoPlayer
 import kotlinx.coroutines.flow.collectLatest
@@ -11,7 +9,6 @@ import org.easybangumi.next.lib.utils.global
 import org.easybangumi.next.libplayer.exoplayer.ExoPlayerBridge
 import org.easybangumi.next.libplayer.exoplayer.ExoPlayerFrameState
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
-import org.easybangumi.next.shared.data.cartoon.Episode
 import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
 import org.easybangumi.next.shared.playcon.android.AndroidPlayconViewModel
 import org.easybangumi.next.shared.ui.media_radar.MediaRadarParam
@@ -28,7 +25,7 @@ import org.koin.core.component.inject
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-class MediaViewModel(
+class AndroidMediaViewModel(
     cartoonCover: CartoonCover,
     suggestEpisode: Int? = null,
     val mediaRadarParam: MediaRadarParam? = null

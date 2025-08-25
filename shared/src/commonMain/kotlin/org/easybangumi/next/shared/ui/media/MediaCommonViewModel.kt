@@ -1,14 +1,10 @@
 package org.easybangumi.next.shared.ui.media
 
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
-import org.easybangumi.next.shared.data.cartoon.CartoonPlayCover
 import org.easybangumi.next.shared.data.cartoon.Episode
 import org.easybangumi.next.shared.data.cartoon.PlayerLine
 import org.easybangumi.next.shared.foundation.view_model.StateViewModel

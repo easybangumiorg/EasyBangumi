@@ -8,8 +8,10 @@ import org.easybangumi.next.shared.source.api.component.Component
  * https://github.com/heyanLE
  */
 
-interface PrefComponent : Component {
+interface IPrefComponent {
 
     suspend fun register(): List<MediaSourcePreference>
 
 }
+
+interface PrefComponent: Component, IPrefComponent

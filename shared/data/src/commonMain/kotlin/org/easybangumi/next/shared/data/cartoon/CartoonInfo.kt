@@ -47,14 +47,14 @@ import kotlinx.datetime.Clock
  * Created by heyanle on 2023/12/16.
  * https://github.com/heyanLE
  */
-@Entity(tableName = "CartoonInfo", primaryKeys = ["metaId", "metaSourceKey"])
+@Entity(tableName = "CartoonInfo", primaryKeys = ["fromId", "fromSourceKey"])
 data class CartoonInfo(
 
     // ================ from source ================
     // finder
-    val metaId: String,              // 标识，由源自己支持，用于区分番剧
+    val fromId: String,              // 标识，由源自己支持，用于区分番剧
     // 来源 Source Key
-    val metaSourceKey: String,
+    val fromSourceKey: String,
 
     // cartoonCover
     val name: String,
@@ -117,13 +117,13 @@ data class CartoonInfo(
 
 
     fun toIdentify(): String {
-        return "${metaId},${metaSourceKey}"
+        return "${fromId},${fromSourceKey}"
     }
 
     fun toCartoonIndex(): CartoonIndex {
         return CartoonIndex(
-            id = metaId,
-            source = metaSourceKey,
+            id = fromId,
+            source = fromSourceKey,
         ).apply {
             ext = this@CartoonInfo.fromSourceExt
         }

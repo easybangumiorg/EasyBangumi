@@ -2,7 +2,9 @@
 
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.EasyPagingSource
+import org.easybangumi.next.lib.utils.PagingFrame
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
+import org.easybangumi.next.shared.source.api.component.Component
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -16,17 +18,15 @@ import org.easybangumi.next.shared.data.cartoon.CartoonCover
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
-interface SearchComponent {
-
-    fun createPagingSource(
-        keyword: String,
-    ): EasyPagingSource<CartoonCover>
+interface ISearchComponent {
 
     fun firstKey(): String
 
     suspend fun search(
         keyword: String,
         key: String,
-    ): DataState<Pair<String?, List<CartoonCover>>>
+    ): DataState<PagingFrame<CartoonCover>>
 
 }
+
+interface SearchComponent: Component, ISearchComponent

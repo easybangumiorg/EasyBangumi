@@ -10,12 +10,13 @@ import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.PagingFlow
 import org.easybangumi.next.lib.utils.newPagingFlow
-import org.easybangumi.next.shared.data.cartoon.CartoonPlayCover
+import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.foundation.view_model.StateViewModel
 import org.easybangumi.next.shared.source.api.component.ComponentBusiness
-import org.easybangumi.next.shared.source.api.component.play.IPlayComponent
+import org.easybangumi.next.shared.source.api.component.ComponentBusinessPair
 import org.easybangumi.next.shared.source.api.component.play.PlayComponent
-import org.easybangumi.next.shared.source.api.component.play.createSearchPlayPagingSource
+import org.easybangumi.next.shared.source.api.component.search.SearchComponent
+import org.easybangumi.next.shared.source.api.component.search.createPagingSource
 import org.easybangumi.next.shared.source.case.PlaySourceCase
 import org.koin.core.component.inject
 
@@ -38,9 +39,14 @@ class MediaRadarViewModel (
 ) {
 
     data class SelectionResult(
-        val playCover: CartoonPlayCover,
-        val playBusiness: ComponentBusiness<PlayComponent>,
-    )
+        val playCover: CartoonCover,
+        val businessPair: ComponentBusinessPair<SearchComponent, PlayComponent>,
+    ) {
+
+        val searchBusiness = businessPair.first
+        val playBusiness = businessPair.second
+
+    }
 
     data class State(
         val keyword: String,
@@ -51,19 +57,19 @@ class MediaRadarViewModel (
     )
 
     data class LineState(
-        val playBusiness: ComponentBusiness<PlayComponent>,
-        val pagingFlow: DataState<PagingFlow<CartoonPlayCover>> = DataState.none(),
+        val playBusiness: ComponentBusinessPair<SearchComponent, PlayComponent>,
+        val pagingFlow: DataState<PagingFlow<CartoonCover>> = DataState.none(),
     )
 
     private val playSourceCase: PlaySourceCase by inject()
 
-    private var pagingTemp: Pair<String, Map<String, PagingFlow<CartoonPlayCover>>>? = null
+    private var pagingTemp: Pair<String, Map<String, PagingFlow<CartoonCover>>>? = null
 
     init {
         viewModelScope.launch {
             combine(
                 state.map { it.searchKeyword }.distinctUntilChanged(),
-                playSourceCase.playBusinessFlow().distinctUntilChanged()
+                playSourceCase.searchBusinessWithPlayFlow().distinctUntilChanged()
             ) { keyword, playBusiness ->
 
                 if (playBusiness.isLoading) {
@@ -78,25 +84,20 @@ class MediaRadarViewModel (
                         )
                     }
                 } else {
-                    val map = hashMapOf<String, PagingFlow<CartoonPlayCover>>()
+                    val map = hashMapOf<String, PagingFlow<CartoonCover>>()
                     val temp = pagingTemp
                     if (temp != null && temp.first == keyword) {
                         map.putAll(temp.second)
                     }
-                    val res = playBusiness.businessList.map {
-                        val t = map[it.source.key]
+                    val res = playBusiness.business.map {
+                        val t = map[it.first.source.key]
                         if (t != null) {
                             LineState(it, DataState.ok(t))
                         } else {
-                            val pagingSource = it.runSuspendDirect {
-                                val param = IPlayComponent.PlayLineSearchParam(
-                                    cartoonCover = param.cover,
-                                    keyword = keyword
-                                )
-                                createSearchPlayPagingSource(param)
-                            }
+                            val pagingSource =   it.first.createPagingSource(param.userKeyword.ifEmpty { param.cover.name })
+
                             val pagingFlow = pagingSource.newPagingFlow().cachedIn(viewModelScope)
-                            map[it.source.key] = pagingFlow
+                            map[it.first.source.key] = pagingFlow
                             LineState(it, DataState.ok(pagingFlow))
                         }
                     }

@@ -1,6 +1,8 @@
-﻿package org.easybangumi.next.shared.source.api.component.event
+﻿package org.easybangumi.next.shared.ui.media
 
-import org.easybangumi.next.shared.source.api.component.Component
+import org.easybangumi.next.shared.data.cartoon.CartoonIndex
+import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
+
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -14,12 +16,8 @@ import org.easybangumi.next.shared.source.api.component.Component
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
-interface IEventComponent {
-
-    val event: Array<String>
-
-    fun onEvent(event: String, vararg args: Any)
-
+class PlayLineIndexViewModel(
+    private val cartoonIndex: CartoonIndex,
+    var suggestEpisode: Int? = null,
+): BaseViewModel() {
 }
-
-interface EventComponent: IEventComponent, Component

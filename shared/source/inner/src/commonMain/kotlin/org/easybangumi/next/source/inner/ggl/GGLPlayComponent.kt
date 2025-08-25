@@ -12,6 +12,8 @@ import org.easybangumi.next.lib.utils.DataStateException
 import org.easybangumi.next.lib.utils.PagingFrame
 import org.easybangumi.next.lib.utils.UrlUtils
 import org.easybangumi.next.lib.utils.withResult
+import org.easybangumi.next.shared.data.cartoon.CartoonCover
+import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.data.cartoon.CartoonPlayCover
 import org.easybangumi.next.shared.data.cartoon.Episode
 import org.easybangumi.next.shared.data.cartoon.PlayInfo
@@ -44,62 +46,14 @@ class GGLPlayComponent: PlayComponent, BaseComponent() {
     private val prefHelper: PreferenceHelper by inject()
     private val webViewHelper: WebViewHelper by inject()
 
-    override fun getFirstKey(): String {
-        return "1"
-    }
 
-    override suspend fun searchPlayCovers(
-        param: IPlayComponent.PlayLineSearchParam,
-        key: String
-    ): DataState<PagingFrame<CartoonPlayCover>> {
-        return withResult {
-            val host = prefHelper.get("host", "anime.girigirilove.com")
-            logger.info("GGLPlayComponent searchPlayCovers: host=$host, keyword=${param.keyword}, key=$key")
-            val html = ktorClient.get {
-                url {
-                    this.host = host
-                    path("search", "${param.keyword ?: param.cartoonCover.name}----------${key}---" )
-                }
-            }.bodyAsText()
-            val doc = Ksoup.parse(html)
-            val list = arrayListOf<CartoonPlayCover>()
-
-            doc.select("div div.public-list-box.search-box").forEach {
-                val uu = it.child(1).child(0).attr("href")
-                val id = uu.subSequence(1, uu.length - 1).toString()
-
-                val coverStyle = it.select("div.cover")[0].attr("style")
-                val coverPattern = Regex("""(?<=url\().*(?=\))""")
-                var cover = coverPattern.find(coverStyle)?.value ?: ""
-                cover = UrlUtils.parse("https://${host}", cover)
-
-                val title = it.select("div.thumb-content div.thumb-txt").first()?.text() ?: ""
-                val b = CartoonPlayCover(
-                    metaId = param.cartoonCover.id,
-                    metaSourceKey = param.cartoonCover.source,
-                    playId = id,
-                    playSourceKey = source.key,
-                    name = title,
-                    coverUrl = cover,
-                    intro = "",
-                    webUrl = UrlUtils.parse("https://${host}", uu)
-                )
-                list.add(b)
-            }
-            (if (list.isEmpty()) null else (key.toIntOrNull()?:0) + 1)?.toString() to list
-        }
-
-
-    }
-
-
-    override suspend fun getPlayLines(cartoonCover: CartoonPlayCover): DataState<List<PlayerLine>> {
+    override suspend fun getPlayLines(cartoonIndex: CartoonIndex): DataState<List<PlayerLine>> {
         return withResult {
             val host = prefHelper.get("host", "anime.girigirilove.com")
             val html = ktorClient.get {
                 url {
                     this.host = host
-                    path(cartoonCover.playId)
+                    path(cartoonIndex.id)
                 }
             }.bodyAsText()
             val doc = Ksoup.parse(html)
@@ -138,15 +92,15 @@ class GGLPlayComponent: PlayComponent, BaseComponent() {
     }
 
     override suspend fun getPlayInfo(
-        cartoonPlayCover: CartoonPlayCover,
+        cartoonIndex: CartoonIndex,
         playerLine: PlayerLine,
         episode: Episode
     ): DataState<PlayInfo> {
         return withResult {
             val urlPath = "${
-                if(cartoonPlayCover.playId.startsWith("GV"))
-                    cartoonPlayCover.playId 
-                else "GV${cartoonPlayCover.playId}"}-${playerLine.id}-${episode.id}"
+                if(cartoonIndex.id.startsWith("GV"))
+                    cartoonIndex.id
+                else "GV${cartoonIndex.id}"}-${playerLine.id}-${episode.id}"
             val host = prefHelper.get("host", "anime.girigirilove.com")
             val url = buildUrl {
                 this.host = host

@@ -1,15 +1,14 @@
 ﻿package org.easybangumi.next.shared.source.case
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import org.easybangumi.next.shared.source.api.component.ComponentBusiness
+import org.easybangumi.next.shared.source.api.component.ComponentBusinessPair
 import org.easybangumi.next.shared.source.api.component.play.PlayComponent
+import org.easybangumi.next.shared.source.api.component.search.SearchComponent
 import org.easybangumi.next.shared.source.api.source.SourceInfo
-import org.easybangumi.next.shared.source.core.inner.InnerSourceProvider
 import org.easybangumi.next.shared.source.core.source.SourceController
-import org.easybangumi.next.shared.source.plugin.PluginSourceController
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -51,5 +50,36 @@ class PlaySourceCase(
             )
         }
     }
+
+    data class FindSearchBusinessResp(
+        val business: List<ComponentBusinessPair<SearchComponent, PlayComponent>>,
+        val isLoading: Boolean,
+    )
+
+    suspend fun findSearchBusiness(): FindSearchBusinessResp {
+        return searchBusinessWithPlayFlow().first()
+    }
+
+    fun searchBusinessWithPlayFlow(): Flow<FindSearchBusinessResp> {
+        return sourceController.flow.map {
+            val isLoading = it.isLoading
+            val res = arrayListOf<ComponentBusinessPair<SearchComponent, PlayComponent>>()
+            it.sourceInfoList.filterIsInstance<SourceInfo.Loaded>().forEach {
+                val playComponent = it.componentBundle.getBusiness(PlayComponent::class)
+                if (playComponent != null) {
+                    it.componentBundle.getBusiness(SearchComponent::class)?.let {
+                        res.add(it to playComponent)
+                    }
+                }
+
+            }
+            FindSearchBusinessResp(
+                business = res,
+                isLoading = isLoading,
+            )
+        }
+    }
+
+
 
 }

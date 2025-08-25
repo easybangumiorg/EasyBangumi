@@ -2,6 +2,7 @@
 
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.EasyPagingSource
+import org.easybangumi.next.lib.utils.PagingFrame
 import org.easybangumi.next.shared.source.api.component.Component
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 
@@ -18,9 +19,9 @@ import org.easybangumi.next.shared.data.cartoon.CartoonCover
  */
 
 
-interface FilterComponent: Component {
+interface IFilterComponent {
 
-    suspend fun paramFilter(
+    suspend fun parseFilter(
         param: String
     ): DataState<List<Filter>>
 
@@ -29,8 +30,14 @@ interface FilterComponent: Component {
         change: Filter,
     ): DataState<List<Filter>>
 
-    fun createFilterPagingSource(
+
+    fun getFirstKey(): String
+
+    suspend fun getFilterContent(
         filterList: List<Filter>,
-    ): EasyPagingSource<CartoonCover>
+        key: String,
+    ): DataState<PagingFrame<CartoonCover>>
 
 }
+
+interface FilterComponent: IFilterComponent, Component

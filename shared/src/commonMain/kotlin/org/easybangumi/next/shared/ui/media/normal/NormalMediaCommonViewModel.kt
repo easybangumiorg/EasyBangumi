@@ -1,6 +1,5 @@
-﻿package org.easybangumi.next.shared.source.api.component.event
+﻿package org.easybangumi.next.shared.ui.media.normal
 
-import org.easybangumi.next.shared.source.api.component.Component
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -14,12 +13,5 @@ import org.easybangumi.next.shared.source.api.component.Component
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
-interface IEventComponent {
-
-    val event: Array<String>
-
-    fun onEvent(event: String, vararg args: Any)
-
+class NormalMediaCommonViewModel {
 }
-
-interface EventComponent: IEventComponent, Component

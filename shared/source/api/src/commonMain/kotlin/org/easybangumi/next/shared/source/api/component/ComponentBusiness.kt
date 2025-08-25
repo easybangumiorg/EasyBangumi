@@ -17,6 +17,8 @@ import kotlin.coroutines.coroutineContext
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
+typealias ComponentBusinessPair<X, Y> = Pair<ComponentBusiness<X>, ComponentBusiness<Y>>
+
 open class ComponentBusiness <T: Component> (
     protected val innerComponent: T,
 ){

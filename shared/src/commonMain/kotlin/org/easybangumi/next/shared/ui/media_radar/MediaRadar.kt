@@ -7,14 +7,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import app.cash.paging.compose.collectAsLazyPagingItems
-import kotlinx.coroutines.flow.collectLatest
 import org.easybangumi.next.shared.foundation.cartoon.CartoonCoverCard
 import org.easybangumi.next.shared.foundation.cartoon.CartoonCoverCardRect
 import org.easybangumi.next.shared.foundation.elements.LoadScaffold
@@ -23,8 +20,6 @@ import org.easybangumi.next.shared.foundation.shimmer.ShimmerHost
 import org.easybangumi.next.shared.foundation.stringRes
 import org.easybangumi.next.shared.resources.Res
 import org.easybangumi.next.shared.scheme.EasyScheme
-import org.easybangumi.next.shared.source.api.component.ComponentBusiness
-import org.easybangumi.next.shared.source.api.component.play.PlayComponent
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -117,7 +112,7 @@ fun MediaRadarList(
                 ListItem(
                     headlineContent = {
                         Text(
-                            stringRes(line.playBusiness.source.manifest.label),
+                            stringRes(line.playBusiness.first.source.manifest.label),
 //                            style = MaterialTheme.typography.bodyLarge
                         )
                     },
@@ -169,7 +164,7 @@ fun MediaRadarList(
                                             onSelection.invoke(
                                                 MediaRadarViewModel.SelectionResult(
                                                     playCover = item,
-                                                    playBusiness = line.playBusiness
+                                                    searchBusiness = line.playBusiness
                                                 )
                                             )
                                         }

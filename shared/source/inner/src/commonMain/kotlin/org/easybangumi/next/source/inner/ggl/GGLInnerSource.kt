@@ -29,15 +29,16 @@ class GGLInnerSource: InnerSource() {
 
     override val key: String = SOURCE_KEY
     override val label: ResourceOr = "GiriGiriLove"
-    override val icon: ResourceOr? = "https://anime.girigirilove.com/upload/site/20231121-1/fdd2694db66628a9deadd86e50aedd43.png"
+    override val icon: ResourceOr = "https://anime.girigirilove.com/upload/site/20231121-1/fdd2694db66628a9deadd86e50aedd43.png"
     override val version: Int = 1
 
     override val componentConstructor: Array<() -> Component> = arrayOf(
         ::GGLPlayComponent,
-        ::GGLPrefComponent
+        ::GGLPrefComponent,
+        ::GGLSearchComponent,
     )
 
-    override val module: Module?
+    override val module: Module
         get() = module {
             includes(ktorModule)
             single {
