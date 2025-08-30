@@ -101,6 +101,7 @@ includeModule(":libplayer:libplayer_exoplayer", "libplayer/exoplayer")
 
 // ------------- javascript -------------
 includeModule(":javascript:rhino", "javascript/rhino")
+//includeModule(":javascript:quickjs_kt", "javascript/quickjskt")
 
 // ------------- logger -------------
 includeModule(":logger", "logger")

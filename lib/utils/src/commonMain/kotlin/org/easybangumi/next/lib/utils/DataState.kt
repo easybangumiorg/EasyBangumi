@@ -1,10 +1,10 @@
 package org.easybangumi.next.lib.utils
 
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.Clock
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
-
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -20,22 +20,50 @@ import kotlin.coroutines.CoroutineContext
 
 sealed class DataState<T> {
 
-    class None<T> : DataState<T>()
+    abstract val  timestamp: Long
+    abstract val cacheData: T?
+
+    class None<T>(
+        override val cacheData: T? = null,
+        override val timestamp: Long = Clock.System.now().toEpochMilliseconds()
+    ) : DataState<T>() {
+        override fun toString(): String {
+            return "None(timestamp=$timestamp)"
+        }
+    }
 
     class Loading<T>(
-        val loadingMsg: String = ""
-    ) : DataState<T>()
+        val loadingMsg: String = "",
+        override val cacheData: T? = null,
+        override val timestamp: Long = Clock.System.now().toEpochMilliseconds()
+    ) : DataState<T>() {
+        override fun toString(): String {
+            return "Loading(loadingMsg='$loadingMsg', timestamp=$timestamp)"
+        }
+    }
 
-    data class Ok<T>(
+    class Ok<T>(
         val data: T,
         val isCache: Boolean = false,
-    ) : DataState<T>()
+        override val cacheData: T? = data,
+        override val timestamp: Long = Clock.System.now().toEpochMilliseconds()
+    ) : DataState<T>() {
+        override fun toString(): String {
+            return "Ok(data=$data, isCache=$isCache, timestamp=$timestamp)"
+        }
+    }
 
-    data class Error<T>(
+    class Error<T>(
         val errorMsg: String,
         val throwable: Throwable?,
         val isEmpty: Boolean = false,
-    ) : DataState<T>()
+        override val cacheData: T? = null,
+        override val timestamp: Long = Clock.System.now().toEpochMilliseconds()
+    ) : DataState<T>() {
+        override fun toString(): String {
+            return "Error(errorMsg='$errorMsg', throwable=$throwable, isEmpty=$isEmpty, timestamp=$timestamp)"
+        }
+    }
 
     companion object {
 
@@ -43,13 +71,23 @@ sealed class DataState<T> {
 
         fun <T> loading() = Loading<T>()
 
-        fun <T> ok(data: T, isCache: Boolean = false) = Ok(data, isCache)
+        fun <T> loading(
+            loadingMsg: String = "",
+            cacheData: T? = null,
+            timestamp: Long = Clock.System.now().toEpochMilliseconds()
+        ) = Loading(loadingMsg, cacheData, timestamp)
+
+        fun <T> ok(
+            data: T,
+            isCache: Boolean = false,
+            timestamp: Long = Clock.System.now().toEpochMilliseconds()
+        ) = Ok(data, isCache, timestamp = timestamp)
 
         fun <T> error(throwable: Throwable) =
             Error<T>(throwable.message ?: "", throwable)
 
-        fun <T> error(errorMsg: String, throwable: Throwable? = null) =
-            Error<T>(errorMsg, throwable)
+        fun <T> error(errorMsg: String, throwable: Throwable? = null, dataCache: T? = null, timestamp: Long = Clock.System.now().toEpochMilliseconds()) =
+            Error<T>(errorMsg, throwable, false, dataCache, timestamp)
 
         fun <T> empty(errorMsg: String = "") =
             Error<T>(errorMsg, null, true)

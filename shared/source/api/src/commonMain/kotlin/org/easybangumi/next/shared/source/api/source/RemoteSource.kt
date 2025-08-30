@@ -1,8 +1,5 @@
 ﻿package org.easybangumi.next.shared.source.api.source
 
-import org.easybangumi.next.lib.utils.DataRepository
-import org.easybangumi.next.lib.utils.ResourceOr
-
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
  *

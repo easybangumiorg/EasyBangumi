@@ -655,5 +655,8 @@
     <string name="change_line">切换线路</string>
 
     <string name="play_from">播放源</string>
+    <string name="no_play_from_tips">未指定</string>
+    <string name="click_to_search_play_from">点击搜索</string>
+    <string name="click_to_change_play_from">点击切换</string>
 
 </resources>

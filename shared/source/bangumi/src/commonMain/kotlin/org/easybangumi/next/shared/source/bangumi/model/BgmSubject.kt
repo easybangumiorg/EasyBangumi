@@ -17,6 +17,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonPrimitive
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
+import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.source.bangumi.source.BangumiInnerSource
 
 /**
@@ -66,6 +67,13 @@ data class BgmSubject(
         } else {
             "更新至 ${eps} · 全 $totalEpisodes 话"
         }
+    }
+
+    val cartoonIndex: CartoonIndex by lazy {
+        CartoonIndex(
+            id = id?.toString()?:"",
+            source = BangumiInnerSource.SOURCE_KEY,
+        )
     }
 
     val cartoonCover: CartoonCover by lazy {
@@ -126,6 +134,7 @@ data class BgmInfobox(
 sealed class BgmInfoBoxValue {
     data class Str(val value: String) : BgmInfoBoxValue()
     data class ListMap(val value: List<Map<String, String>>) : BgmInfoBoxValue()
+
     object InfoBoxValueSerializer : KSerializer<BgmInfoBoxValue?> {
         override val descriptor: SerialDescriptor = buildClassSerialDescriptor("InfoBoxValue")
         override fun serialize(encoder: Encoder, value: BgmInfoBoxValue?) {

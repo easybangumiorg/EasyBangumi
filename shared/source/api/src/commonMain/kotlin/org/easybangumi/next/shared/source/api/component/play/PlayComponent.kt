@@ -2,7 +2,6 @@
 
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.shared.source.api.component.Component
-import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.data.cartoon.CartoonPlayCover
 import org.easybangumi.next.shared.data.cartoon.Episode

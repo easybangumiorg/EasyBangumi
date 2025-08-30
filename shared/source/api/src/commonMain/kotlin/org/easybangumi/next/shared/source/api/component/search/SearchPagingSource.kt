@@ -4,9 +4,8 @@ import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.EasyPagingSource
 import org.easybangumi.next.lib.utils.PagingFrame
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
+import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.source.api.component.ComponentBusiness
-import org.easybangumi.next.shared.source.api.component.play.IPlayComponent
-import org.easybangumi.next.shared.source.api.component.play.PlayComponent
 
 
 /**

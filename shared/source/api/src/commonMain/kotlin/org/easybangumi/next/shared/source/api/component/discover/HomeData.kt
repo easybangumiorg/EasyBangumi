@@ -2,7 +2,7 @@
 
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.PagingFrame
-import org.easybangumi.next.shared.data.cartoon.CartoonCover
+import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.data.cartoon.Extractor
 import org.easybangumi.next.shared.source.api.component.discover.HomeMainTab.SingleMainTab
 
@@ -111,7 +111,7 @@ sealed class HomePage {
     abstract var firstKey: () -> Int
 
     // 加载某一页数据
-    abstract var load: suspend (Int) -> DataState<PagingFrame<CartoonCover>>
+    abstract var load: suspend (Int) -> DataState<PagingFrame<CartoonIndex>>
 
     /**
      * 带有番剧缩略图
@@ -119,7 +119,7 @@ sealed class HomePage {
      */
     class WithCover(
         override var firstKey: () -> Int,
-        override var load: suspend (Int) -> DataState<PagingFrame<CartoonCover>>,
+        override var load: suspend (Int) -> DataState<PagingFrame<CartoonIndex>>,
     ): HomePage()
 
     /**
@@ -128,6 +128,6 @@ sealed class HomePage {
      */
     class WithoutCover(
         override var firstKey: () -> Int,
-        override var load: suspend (Int) -> DataState<PagingFrame<CartoonCover>>,
+        override var load: suspend (Int) -> DataState<PagingFrame<CartoonIndex>>,
     ): HomePage()
 }

@@ -1,5 +1,6 @@
 ﻿package org.easybangumi.next.shared.source.bangumi.source
 
+import kotlinx.coroutines.async
 import org.easybangumi.next.lib.utils.DataRepository
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.EasyPagingSource
@@ -15,9 +16,6 @@ import org.easybangumi.next.shared.source.bangumi.model.BgmEpisode
 import org.easybangumi.next.shared.source.bangumi.model.BgmPerson
 import org.easybangumi.next.shared.source.bangumi.model.BgmReviews
 import org.easybangumi.next.shared.source.bangumi.model.BgmSubject
-import org.easybangumi.next.shared.source.bangumi.source.repository.BangumiCharacterRepository
-import org.easybangumi.next.shared.source.bangumi.source.repository.BangumiPersonRepository
-import org.easybangumi.next.shared.source.bangumi.source.repository.BangumiSubjectRepository
 import org.koin.core.component.inject
 import kotlin.getValue
 
@@ -38,44 +36,29 @@ class BangumiDetailComponent: DetailComponent, BaseComponent() {
     private val config: BangumiConfig by inject()
     private val api: BangumiApi by inject()
 
-    private val subjectRepositoryMap = mutableMapOf<String, BangumiSubjectRepository>()
-    private val personRepositoryMap = mutableMapOf<String, BangumiPersonRepository>()
-    private val characterRepositoryMap = mutableMapOf<String, BangumiCharacterRepository>()
-
-
-    fun getOrCreateSubjectRepository(
-        cartoonIndex: CartoonIndex,
-    ): DataRepository<BgmSubject> {
-        checkCartoonIndex(cartoonIndex)
-        return subjectRepositoryMap.getOrPut(cartoonIndex.id) {
-            BangumiSubjectRepository(
-                cartoonIndex.id, api, config, source.scope
-            )
-        }
+    suspend fun getSubject(
+        cartoonIndex: CartoonIndex
+    ): DataState<BgmSubject> {
+        return source.scope.async {
+            api.getSubject(cartoonIndex.id).await().toDataState()
+        }.await()
     }
 
-    fun getOrCreateCharacterRepository(
-        cartoonIndex: CartoonIndex,
-    ): DataRepository<List<BgmCharacter>> {
-        checkCartoonIndex(cartoonIndex)
-        return characterRepositoryMap.getOrPut(cartoonIndex.id) {
-            BangumiCharacterRepository(
-                cartoonIndex.id, api, config, source.scope
-            )
-        }
+    suspend fun getPersonList(
+        cartoonIndex: CartoonIndex
+    ): DataState<List<BgmPerson>> {
+        return source.scope.async {
+            api.getPersonList(cartoonIndex.id).await().toDataState()
+        }.await()
     }
 
-    fun getOrCreatePersonRepository(
-        cartoonIndex: CartoonIndex,
-    ): DataRepository<List<BgmPerson>> {
-        checkCartoonIndex(cartoonIndex)
-        return personRepositoryMap.getOrPut(cartoonIndex.id) {
-            BangumiPersonRepository(
-                cartoonIndex.id, api, config, source.scope
-            )
-        }
+    suspend fun getCharacterList(
+        cartoonIndex: CartoonIndex
+    ): DataState<List<BgmCharacter>> {
+        return source.scope.async {
+            api.getCharacterList(cartoonIndex.id).await().toDataState()
+        }.await()
     }
-
 
 
     class EpisodeListPagingSource(

@@ -22,11 +22,13 @@ import org.easybangumi.next.shared.debug.DebugPage
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.easybangumi.next.lib.utils.WeakRef
-import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
-import org.easybangumi.next.shared.ui.detail.Detail
-import org.easybangumi.next.shared.ui.home.Home
-import org.easybangumi.next.shared.ui.media_radar.MediaRadarParam
+import org.easybangumi.next.shared.compose.detail.Detail
+import org.easybangumi.next.shared.compose.home.Home
+import org.easybangumi.next.shared.compose.media.Media
+import org.easybangumi.next.shared.compose.media.MediaParam
+import org.easybangumi.next.shared.compose.media_radar.MediaRadarParam
+import org.easybangumi.next.shared.data.cartoon.CartoonCover
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -66,64 +68,46 @@ sealed class RouterPage {
 
     @Serializable
     data class Detail(
-        val id: String,
-        val source: String,
-        val ext: String,
+        val cartoonIndex: CartoonIndex,
     ): RouterPage() {
         companion object {
             fun fromCartoonIndex(cartoonIndex: CartoonIndex): Detail {
                 return Detail(
-                    id = cartoonIndex.id,
-                    source = cartoonIndex.source,
-                    ext = cartoonIndex.ext
+                    cartoonIndex
                 )
             }
         }
-
-        val cartoonIndex: CartoonIndex
-            get() = CartoonIndex(
-                id = id,
-                source = source,
-            ).apply {
-                ext = this@Detail.ext
-            }
     }
 
     @Serializable
     data class Media(
-        val cartoonCoverJson: String,
+        val cartoonIndex: CartoonIndex,
+        val cartoonCover: CartoonCover? = null,
         val suggestEpisode: Int? = null,
-        val mediaRadarParamJson: String? = null, // JSON string of MediaRadarParam
+        val suggestMediaRadarParam: MediaRadarParam? = null,
     ): RouterPage() {
 
         companion object {
             fun from(
-                cartoonCover: CartoonCover,
+                cartoonIndex: CartoonIndex,
+                cartoonCover: CartoonCover? = null,
                 suggestEpisode: Int? = null,
-                mediaRadarParam: MediaRadarParam? = null
+                suggestMediaRadarParam: MediaRadarParam? = null,
             ): Media {
                 return Media(
-                    cartoonCoverJson = Json.encodeToString(cartoonCover),
-                    suggestEpisode = suggestEpisode,
-                    mediaRadarParamJson = mediaRadarParam?.let { Json.encodeToString(it) }
+                    cartoonIndex,
+                    cartoonCover,
+                    suggestEpisode,
+                    suggestMediaRadarParam
                 )
             }
         }
 
-
-        val cartoonCover: CartoonCover? by lazy {
-            Json.decodeFromString(cartoonCoverJson)
-        }
-
-        val mediaRadarParam: MediaRadarParam? by lazy {
-            mediaRadarParamJson?.let { Json.decodeFromString(it) }
-        }
     }
 
     companion object {
         val DEFAULT = Main
     }
-
 
 
 
@@ -152,17 +136,22 @@ fun Router() {
             enterTransition = { slideInHorizontally(tween()) { it } },
             exitTransition = { slideOutHorizontally(tween()) { -it } + fadeOut(tween()) },
             popEnterTransition = { slideInHorizontally(tween()) { -it } },
-            popExitTransition = { slideOutHorizontally(tween()) { it } }
+            popExitTransition = { slideOutHorizontally(tween()) { it } },
+            typeMap = NavTypeMap
         ) {
 
-            composable<RouterPage.Main> {
+            composable<RouterPage.Main>(
+                typeMap = NavTypeMap
+            ) {
                 val main = it.toRoute<RouterPage.Main>()
                 NavHook(main, it) {
                     Home()
                 }
             }
 
-            composable<RouterPage.Debug>() {
+            composable<RouterPage.Debug>(
+                typeMap = NavTypeMap
+            ) {
                 val debugPage = it.toRoute<RouterPage.Debug>()
                 NavHook(debugPage, it) {
                     DebugHost(
@@ -179,7 +168,9 @@ fun Router() {
                 }
             }
 
-            composable<RouterPage.Detail> {
+            composable<RouterPage.Detail>(
+                typeMap = NavTypeMap
+            ) {
                 val detail = it.toRoute<RouterPage.Detail>()
                 val cartoonIndex = detail.cartoonIndex
                 NavHook(detail, it) {
@@ -187,17 +178,20 @@ fun Router() {
                 }
             }
 
-            composable<RouterPage.Media>(){
+            composable<RouterPage.Media>(
+                typeMap = NavTypeMap
+            ){
                 val media = it.toRoute<RouterPage.Media>()
                 NavHook(media, it) {
-                    val cartoonCover = media.cartoonCover ?: return@NavHook
-                    val suggestEpisode = media.suggestEpisode
-                    val mediaRadarParam = media.mediaRadarParam
-                    org.easybangumi.next.shared.ui.media.Media(
-                        cartoonCover = cartoonCover,
-                        suggestEpisode = suggestEpisode,
-                        mediaRadarParam = mediaRadarParam
-                    )
+                    val param = media.let { param ->
+                        MediaParam(
+                            cartoonIndex = param.cartoonIndex,
+                            cartoonCover = param.cartoonCover,
+                            suggestEpisode = param.suggestEpisode,
+                            suggestMediaRadarParam = param.suggestMediaRadarParam
+                        )
+                    }
+                    Media(param)
                 }
 
             }

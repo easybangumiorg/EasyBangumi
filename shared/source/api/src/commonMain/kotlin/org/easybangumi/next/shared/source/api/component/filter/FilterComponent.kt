@@ -1,10 +1,9 @@
 ﻿package org.easybangumi.next.shared.source.api.component.filter
 
 import org.easybangumi.next.lib.utils.DataState
-import org.easybangumi.next.lib.utils.EasyPagingSource
 import org.easybangumi.next.lib.utils.PagingFrame
 import org.easybangumi.next.shared.source.api.component.Component
-import org.easybangumi.next.shared.data.cartoon.CartoonCover
+import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -36,7 +35,7 @@ interface IFilterComponent {
     suspend fun getFilterContent(
         filterList: List<Filter>,
         key: String,
-    ): DataState<PagingFrame<CartoonCover>>
+    ): DataState<PagingFrame<CartoonIndex>>
 
 }
 

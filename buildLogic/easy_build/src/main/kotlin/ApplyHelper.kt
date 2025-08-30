@@ -37,6 +37,7 @@ object ApplyHelper {
                 compilerOptions {
                     jvmTarget.set(JAVA_TARGET)
                 }
+
             }
 
             jvm("desktop") {
@@ -128,6 +129,17 @@ object ApplyHelper {
                     sourceCompatibility = JAVA_VERSION
                     targetCompatibility = JAVA_VERSION
                 }
+
+                buildTypes {
+                    debug {
+                        isMinifyEnabled = false
+                        isShrinkResources = false
+                    }
+                    release {
+                        isMinifyEnabled = false
+                        isShrinkResources = false
+                    }
+                }
             }
         }
     }
@@ -152,6 +164,17 @@ object ApplyHelper {
             compileOptions {
                 sourceCompatibility = JAVA_VERSION
                 targetCompatibility = JAVA_VERSION
+            }
+
+            buildTypes {
+                debug {
+                    isMinifyEnabled = false
+                    isShrinkResources = false
+                }
+                release {
+                    isMinifyEnabled = false
+                    isShrinkResources = false
+                }
             }
 
         }

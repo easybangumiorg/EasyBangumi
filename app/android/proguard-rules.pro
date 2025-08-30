@@ -1,1 +1,2 @@
 -keep class androidx.test.platform.app.InstrumentationRegistry { *; }
+-keep class org.easybangumi.next.** { *; }

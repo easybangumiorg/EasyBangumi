@@ -2,7 +2,6 @@ package org.easybangumi.next.shared.foundation.elements
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -70,21 +69,28 @@ fun <T> LoadScaffold(
     container: @Composable (modifier: Modifier, content: @Composable ()->Unit) -> Unit = { m, c ->
         Box(m) { c() }
     },
-    onOk: @Composable (DataState.Ok<T>) -> Unit
+    onCacheOrData: (@Composable (DataState<T>, T) -> Unit)? = null,
+    onOk: @Composable (DataState.Ok<T>) -> Unit,
 ) {
     val content = @Composable {
-        when (data) {
-            is DataState.None -> { onNone() }
-            is DataState.Loading -> onLoading(data)
-            is DataState.Ok -> onOk(data)
-            is DataState.Error -> {
-                if (checkEmpty && data.isEmpty) {
-                    onEmptyIfCheck(data)
-                } else {
-                    onError(data)
+        val cacheData = data.cacheData
+        if (cacheData != null && onCacheOrData != null) {
+            onCacheOrData(data, cacheData)
+        } else {
+            when (data) {
+                is DataState.None -> { onNone() }
+                is DataState.Loading -> onLoading(data)
+                is DataState.Ok -> onOk(data)
+                is DataState.Error -> {
+                    if (checkEmpty && data.isEmpty) {
+                        onEmptyIfCheck(data)
+                    } else {
+                        onError(data)
+                    }
                 }
             }
         }
+
     }
     container.invoke(modifier, content)
 }

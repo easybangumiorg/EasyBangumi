@@ -46,4 +46,8 @@ data class SizeScheme (
     val cartoonCoverHeight: Dp by lazy {
         cartoonCoverWidth / cartoonCoverAspectRatio
     }
+
+    val cartoonCoverSmallHeight: Dp by lazy {
+        cartoonCoverSmallWidth / cartoonCoverSmallAspectRatio
+    }
 }

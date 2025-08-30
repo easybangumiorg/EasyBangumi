@@ -7,13 +7,12 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.path
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.DataState
-import org.easybangumi.next.lib.utils.EasyPagingSource
+import org.easybangumi.next.lib.utils.PagingFrame
 import org.easybangumi.next.lib.utils.UrlUtils
 import org.easybangumi.next.lib.utils.withResult
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
-import org.easybangumi.next.shared.data.cartoon.CartoonPlayCover
+import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.source.api.component.BaseComponent
-import org.easybangumi.next.shared.source.api.component.play.PlayComponent
 import org.easybangumi.next.shared.source.api.component.search.SearchComponent
 import org.easybangumi.next.shared.source.api.utils.NetworkHelper
 import org.easybangumi.next.shared.source.api.utils.PreferenceHelper
@@ -43,7 +42,7 @@ class GGLSearchComponent: SearchComponent, BaseComponent() {
     override suspend fun search(
         keyword: String,
         key: String
-    ): DataState<Pair<String?, List<CartoonCover>>> {
+    ): DataState<PagingFrame<CartoonCover>> {
         return withResult {
             val host = prefHelper.get("host", "anime.girigirilove.com")
             logger.info("GGLPlayComponent searchPlayCovers: host=$host, keyword=${keyword}, key=$key")

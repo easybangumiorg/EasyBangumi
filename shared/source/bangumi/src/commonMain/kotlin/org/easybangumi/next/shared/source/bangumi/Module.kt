@@ -17,11 +17,6 @@ import org.koin.dsl.module
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-val bangumiModule = module {
-    single {
-        BangumiConfig()
-    }
-}
 internal val bangumiSourceModule = module {
     single {
         BangumiConfig()

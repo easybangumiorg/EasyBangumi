@@ -1,7 +1,9 @@
 package org.easybangumi.next.shared
 
 import org.easybangumi.next.lib.store.storeModule
+import org.easybangumi.next.shared.case.caseModule
 import org.easybangumi.next.shared.data.dataModule
+import org.easybangumi.next.shared.data.shareDataModule
 import org.easybangumi.next.shared.ktor.ktorModule
 import org.easybangumi.next.shared.preference.preferenceModule
 import org.easybangumi.next.shared.source.sourceModule
@@ -37,6 +39,8 @@ object Scheduler {
                 themeModule,
                 preferenceModule,
                 ktorModule,
+                caseModule,
+                shareDataModule,
             ))
         }
 

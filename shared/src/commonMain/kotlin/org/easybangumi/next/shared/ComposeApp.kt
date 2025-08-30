@@ -11,7 +11,7 @@ import org.easybangumi.next.shared.foundation.image.createImageLoader
 import org.easybangumi.next.shared.scheme.LocalSizeScheme
 import org.easybangumi.next.shared.scheme.SizeScheme
 import org.easybangumi.next.shared.theme.EasyTheme
-import org.easybangumi.next.shared.ui.UI
+import org.easybangumi.next.shared.compose.UI
 import org.koin.compose.KoinContext
 
 /**

@@ -24,5 +24,33 @@ class CartoonPlayCover(
     @kotlinx.serialization.Transient
     @Transient
     override var ext: String = ""
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+
+        other as CartoonPlayCover
+
+        if (id != other.id) return false
+        if (source != other.source) return false
+        if (name != other.name) return false
+        if (coverUrl != other.coverUrl) return false
+        if (webUrl != other.webUrl) return false
+        if (tags != other.tags) return false
+        if (desc != other.desc) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = id.hashCode()
+        result = 31 * result + source.hashCode()
+        result = 31 * result + name.hashCode()
+        result = 31 * result + coverUrl.hashCode()
+        result = 31 * result + webUrl.hashCode()
+        result = 31 * result + tags.hashCode()
+        result = 31 * result + desc.hashCode()
+        return result
+    }
+
 
 }

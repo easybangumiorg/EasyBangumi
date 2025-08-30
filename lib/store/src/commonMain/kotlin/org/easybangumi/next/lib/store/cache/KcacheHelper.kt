@@ -3,6 +3,7 @@
 import com.mayakapps.kache.ContainerKache
 import com.mayakapps.kache.FileKache
 import com.mayakapps.kache.FileKache.Configuration
+import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.unifile.UFD
 
 /**
@@ -17,12 +18,15 @@ import org.easybangumi.next.lib.unifile.UFD
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
+private val logger = logger("FileKacheHelper")
+
 suspend fun FileKache(
     ufd: UFD,
     maxSize: Long,
     configuration: Configuration.() -> Unit = {},
 ): ContainerKache<String, String>? {
     if (ufd.type == UFD.TYPE_JVM || ufd.type == UFD.TYPE_OKIO) {
+        logger.info(ufd.toString())
         return FileKache(ufd.uri, maxSize, configuration)
     }
     return null
