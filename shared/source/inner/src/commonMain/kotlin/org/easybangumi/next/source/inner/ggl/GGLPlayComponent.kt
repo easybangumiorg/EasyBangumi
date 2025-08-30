@@ -48,7 +48,9 @@ class GGLPlayComponent: PlayComponent, BaseComponent() {
             val html = ktorClient.get {
                 url {
                     this.host = host
-                    path(cartoonIndex.id)
+                    path(if(cartoonIndex.id.startsWith("GV"))
+                        cartoonIndex.id
+                    else "GV${cartoonIndex.id}")
                 }
             }.bodyAsText()
             val doc = Ksoup.parse(html)

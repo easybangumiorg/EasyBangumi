@@ -2,38 +2,52 @@ package org.easybangumi.next.shared.compose.media.bangumi
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.SyncAlt
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import org.easybangumi.next.shared.compose.media.AndroidMediaActions
+import org.easybangumi.next.shared.compose.media.androidMediaPlayLineIndex
 import org.easybangumi.next.shared.foundation.image.AnimationImage
 import org.easybangumi.next.shared.foundation.image.AsyncImage
 import org.easybangumi.next.shared.foundation.stringRes
 import org.easybangumi.next.shared.resources.Res
+import org.easybangumi.next.shared.ui.detail.preview.BangumiDetailPreview
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -52,112 +66,195 @@ fun BangumiMediaDetailSubPage(
 ) {
     val state = vm.state.collectAsState()
     val sta = state.value
+    val playLineIndexState = vm.playIndexState.collectAsState()
     Box(modifier = Modifier.fillMaxSize()) {
+
+
 
         LazyVerticalGrid(
             GridCells.Fixed(2),
             modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(0.dp, 8.dp),
         ) {
             bangumiDetailCard(vm, sta)
+            space(Modifier.height(8.dp))
+            playerAction()
+            space(Modifier.height(8.dp))
             playerSourceCard(vm, sta)
+            space(Modifier.height(8.dp))
+            divider()
+            androidMediaPlayLineIndex(vm.playLineIndexViewModel, playLineIndexState.value)
         }
 
     }
 }
 
-fun LazyGridScope.bangumiDetailCard (
+fun LazyGridScope.space(
+    modifier: Modifier = Modifier,
+){
+    item(
+        span = {
+            GridItemSpan(this.maxLineSpan)
+        }
+    ) {
+        Spacer(modifier = modifier)
+    }
+}
+
+fun LazyGridScope.divider() {
+    item(
+        span = {
+            GridItemSpan(this.maxLineSpan)
+        }
+    ) {
+        HorizontalDivider()
+    }
+}
+
+fun LazyGridScope.bangumiDetailCard(
     vm: AndroidBangumiMediaViewModel,
     sta: AndroidBangumiMediaViewModel.State,
 ) {
 
-    item {
-        Row(
-            modifier = Modifier.fillMaxWidth().clickable {
-                vm.showBangumiDetailPanel()
-            }
-        ) {
-            Text(
-                sta.detailNamePreview,
-                modifier = Modifier.weight(1f),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            IconButton(onClick = {
-                vm.showBangumiDetailPanel()
-            }) {
-                Icon(Icons.Default.MoreVert, contentDescription = "")
-            }
+    item(
+        span = {
+            GridItemSpan(this.maxLineSpan)
         }
+    ) {
+
+        BangumiDetailPreview(vm.cartoonIndex, modifier = Modifier.padding(8.dp, 0.dp))
+
+//        Row(
+//            modifier = Modifier.fillMaxWidth().clickable {
+//                vm.showBangumiDetailPanel()
+//            },
+//            verticalAlignment = Alignment.CenterVertically
+//        ) {
+//            Spacer(modifier = Modifier.width(16.dp))
+//            Text(
+//                sta.detailNamePreview,
+//                modifier = Modifier.weight(1f),
+//                maxLines = 2,
+//                overflow = TextOverflow.Ellipsis,
+//                style = MaterialTheme.typography.titleMedium
+//            )
+//            IconButton(onClick = {
+//                vm.showBangumiDetailPanel()
+//            }) {
+//                Icon(Icons.Default.MoreVert, contentDescription = "")
+//            }
+//        }
     }
 
 }
 
-fun LazyGridScope.playerSourceCard (
+fun LazyGridScope.playerAction() {
+    item(
+        span = {
+            GridItemSpan(this.maxLineSpan)
+        }
+    ) {
+        AndroidMediaActions(
+            isStar = false,
+            isDownloading = false,
+            isDeleting = false,
+            isFromRemote = false,
+            onStar = {},
+            onSearch = {},
+            onExtPlayer = {},
+            onDownload = {},
+            onDelete = {},
+        )
+    }
+
+}
+
+fun LazyGridScope.playerSourceCard(
     vm: AndroidBangumiMediaViewModel,
     sta: AndroidBangumiMediaViewModel.State,
 ) {
-    item {
+    item(
+        span = {
+            GridItemSpan(this.maxLineSpan)
+        }
+    ) {
         val radarRes = sta.radarResult
         if (radarRes == null) {
-            Row(
-                modifier = Modifier.padding(8.dp, 4.dp)
-                    .background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(8.dp))
-                    .padding(16.dp, 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                AnimationImage(
-                    modifier = Modifier.size(24.dp),
-                    model = Res.assets.error_tomorin_gif,
-                    contentDescription = "no play source"
-                )
-
-                Spacer(modifier = Modifier.size(4.dp))
-
-                Column {
-                    Text(stringRes(Res.strings.play_from))
-                    Text(stringRes(Res.strings.no_play_from_tips), style = MaterialTheme.typography.bodySmall)
-                }
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                OutlinedButton(
-                    onClick = {
+            ListItem(
+                modifier = Modifier
+                    .padding(8.dp, 0.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable {
                         vm.showMediaRadar()
                     }
-                ) {
-                    Text(stringRes(Res.strings.click_to_search_play_from))
-                }
-            }
+                    .background(MaterialTheme.colorScheme.surfaceContainerHigh, RoundedCornerShape(8.dp))
+
+                ,
+                colors = ListItemDefaults.colors(
+                    containerColor = Color.Transparent
+                ),
+                headlineContent = {
+                    Text(stringRes(Res.strings.play_from))
+                },
+                supportingContent = {
+                    Text(stringRes(Res.strings.no_play_from_tips))
+                },
+                leadingContent = {
+                    AnimationImage(
+                        modifier = Modifier.size(36.dp),
+                        model = Res.assets.error_tomorin_gif,
+                        contentDescription = "no play source"
+                    )
+                },
+                trailingContent = {
+                    TextButton(
+                        onClick = {
+                            vm.showMediaRadar()
+                        }
+                    ) {
+                        Text(stringRes(Res.strings.click_to_search_play_from))
+                    }
+                },
+            )
         } else {
-            Row(
-                modifier = Modifier.padding(8.dp, 4.dp)
-                    .background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(8.dp))
-                    .padding(16.dp, 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                AsyncImage(
-                    model = radarRes.playBusiness.source.manifest.icon,
-                    contentDescription = stringRes(radarRes.playBusiness.source.manifest.label),
-                    modifier = Modifier.size(24.dp)
-                )
 
-                Spacer(modifier = Modifier.size(4.dp))
-
-                Column {
-                    Text(stringRes(Res.strings.play_from))
-                    Text(stringRes(radarRes.playBusiness.source.manifest.label), style = MaterialTheme.typography.bodySmall)
-                }
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                OutlinedButton(
-                    onClick = {
+            ListItem(
+                modifier = Modifier
+                    .padding(8.dp, 0.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable {
                         vm.showMediaRadar()
                     }
-                ) {
-                    Text(stringRes(Res.strings.click_to_change_play_from))
-                }
-            }
+                    .background(MaterialTheme.colorScheme.surfaceContainerHigh, RoundedCornerShape(8.dp))
+                    ,
+                colors = ListItemDefaults.colors(
+                    containerColor = Color.Transparent
+                ),
+                headlineContent = {
+                    Text(stringRes(Res.strings.play_from))
+                },
+                supportingContent = {
+                    Text(
+                        stringRes(radarRes.playBusiness.source.manifest.label),
+                    )
+                },
+                leadingContent = {
+                    AsyncImage(
+                        model = radarRes.playBusiness.source.manifest.icon,
+                        contentDescription = stringRes(radarRes.playBusiness.source.manifest.label),
+                        modifier = Modifier.size(36.dp)
+                    )
+                },
+                trailingContent = {
+                    TextButton(
+                        onClick = {
+                            vm.showMediaRadar()
+                        }
+                    ) {
+                        Text(stringRes(Res.strings.click_to_change_play_from))
+                    }
+                },
+            )
         }
 
     }

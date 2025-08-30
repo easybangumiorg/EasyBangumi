@@ -68,7 +68,7 @@ fun BangumiDetail(
 ) {
     val vm = vm(::BangumiDetailViewModel, cartoonIndex)
     LaunchedEffect(Unit) {
-        vm.loadSubject()
+        vm.loadSubjectIfFirst()
     }
     val scope = rememberCoroutineScope()
     val scrollableHeaderState = rememberScrollableHeaderState()

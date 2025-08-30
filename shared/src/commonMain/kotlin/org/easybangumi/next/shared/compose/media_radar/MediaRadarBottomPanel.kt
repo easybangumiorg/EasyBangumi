@@ -27,7 +27,7 @@ private val logger = logger("MediaRadarBottomPanel")
 @Composable
 fun MediaRadarBottomPanel(
     vm: MediaRadarViewModel,
-    show: Boolean,
+    show: Boolean = true,
     onDismissRequest: () -> Unit,
     onSelection: (MediaRadarViewModel.SelectionResult?) -> Unit = { _ -> }
 ) {

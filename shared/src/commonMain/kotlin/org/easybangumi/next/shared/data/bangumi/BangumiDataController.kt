@@ -9,6 +9,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.runBlocking
 import okio.ByteString.Companion.encodeUtf8
+import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.store.cache.FileKache
 import org.easybangumi.next.lib.utils.CoroutineProvider
 import org.easybangumi.next.lib.utils.coroutineProvider
@@ -31,6 +32,8 @@ class BangumiDataController(
     private val detailSourceCase: DetailSourceCase
 ) {
 
+    private val logger = logger()
+
     val detailComponent by lazy {
         detailSourceCase.getBangumiDetailBusiness()
     }
@@ -46,27 +49,44 @@ class BangumiDataController(
     }
 
     private val subjectKache: ContainerKache<String, String>? by lazy {
-        runBlocking {
-            FileKache(pathProvider.getCachePath("bangumi_subject"), 3 * 1024 * 1024) {
-                keyTransformer = this@BangumiDataController.keyTransformer
+        runCatching {
+            runBlocking {
+                FileKache(pathProvider.getCachePath("bangumi_subject"), 3 * 1024 * 1024) {
+                    keyTransformer = this@BangumiDataController.keyTransformer
+                }
             }
+        }.getOrElse {
+            logger.error(message = "subjectKacheError", throwable = it)
+            null
         }
     }
 
 
     private val personListKache: ContainerKache<String, String>? by lazy {
-        runBlocking {
-            FileKache(pathProvider.getCachePath("bangumi_person_list"), 1 * 1024 * 1024) {
-                keyTransformer = this@BangumiDataController.keyTransformer
+        runCatching {
+            runBlocking {
+                FileKache(pathProvider.getCachePath("bangumi_person_list"), 1 * 1024 * 1024) {
+                    keyTransformer = this@BangumiDataController.keyTransformer
+                }
             }
+        }.getOrElse {
+            logger.error(message = "personListKache", throwable = it)
+            null
         }
+
     }
     private val characterListKache: ContainerKache<String, String>? by lazy {
-        runBlocking {
-            FileKache(pathProvider.getCachePath("bangumi_character_list"), 1 * 1024 * 1024){
-                keyTransformer = this@BangumiDataController.keyTransformer
+        runCatching {
+            runBlocking {
+                FileKache(pathProvider.getCachePath("bangumi_character_list"), 1 * 1024 * 1024){
+                    keyTransformer = this@BangumiDataController.keyTransformer
+                }
             }
+        }.getOrElse {
+            logger.error(message = "characterListKache", throwable = it)
+            null
         }
+
     }
 
     private val subjectRepositoryMap = hashMapOf<String, BangumiSubjectRepository>()

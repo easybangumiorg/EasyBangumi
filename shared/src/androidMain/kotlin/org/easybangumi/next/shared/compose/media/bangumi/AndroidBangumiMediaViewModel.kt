@@ -59,9 +59,9 @@ class AndroidBangumiMediaViewModel(
     val popupState = _popupState.asStateFlow()
 
     // == 播放线路状态 =============================
-    private val playLineIndexViewModel: PlayLineIndexViewModel by childViewModel {
+    val playLineIndexViewModel: PlayLineIndexViewModel by childViewModel {
         PlayLineIndexViewModel(
-            cartoonIndex = cartoonIndex.toCartoonIndex(),
+//            cartoonIndex = cartoonIndex.toCartoonIndex(),
             suggestEpisode = suggestEpisode,
         )
     }
@@ -76,7 +76,9 @@ class AndroidBangumiMediaViewModel(
     // == 视频雷达状态 =============================
     val mediaRadarViewModel: MediaRadarViewModel by childViewModel {
         MediaRadarViewModel(
-            param.suggestMediaRadarParam ?: MediaRadarParam()
+            param.suggestMediaRadarParam ?: MediaRadarParam(
+                defaultKeyword = param.cartoonCover?.name?:""
+            )
         )
     }
 
@@ -90,7 +92,7 @@ class AndroidBangumiMediaViewModel(
         viewModelScope.launch {
             state.map { it.radarResult }.distinctUntilChanged().collectLatest {
                 if (it != null) {
-                    playLineIndexViewModel.loadPlayLine(it.playBusiness)
+                    playLineIndexViewModel.loadPlayLine(it.playCover.toCartoonIndex(), it.playBusiness)
                 }
             }
         }
@@ -141,4 +143,11 @@ class AndroidBangumiMediaViewModel(
     }
 
 
+    fun onMediaRadarSelect(result: MediaRadarViewModel.SelectionResult?) {
+        _state.update {
+            it.copy(
+                radarResult = result
+            )
+        }
+    }
 }

@@ -124,8 +124,13 @@ class BangumiDetailViewModel(
         } else {
             subjectRepository.refreshIfNoneOrExpired(cacheAvailableMs)
         }
+    }
 
-
+    private val firstLoad = atomic(false)
+    fun loadSubjectIfFirst() {
+        if (firstLoad.compareAndSet(false, true)) {
+            loadSubject()
+        }
     }
 
     fun loadCharacter() {

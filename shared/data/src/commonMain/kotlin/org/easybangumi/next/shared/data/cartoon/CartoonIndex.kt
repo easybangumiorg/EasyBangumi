@@ -14,15 +14,6 @@ data class CartoonIndex(
 ): Extractor {
 
 
-    fun toCartoonIndex(): CartoonIndex {
-        return CartoonIndex(
-            id = id,
-            source = source,
-        ).apply {
-            ext = this@CartoonIndex.ext
-        }
-    }
-
 
     @kotlinx.serialization.Transient
     @Transient

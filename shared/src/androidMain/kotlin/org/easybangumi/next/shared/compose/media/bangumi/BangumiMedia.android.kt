@@ -20,6 +20,7 @@ import org.easybangumi.next.shared.compose.media.AndroidPlayerViewModel
 import org.easybangumi.next.shared.foundation.view_model.vm
 import org.easybangumi.next.shared.compose.media.MediaParam
 import org.easybangumi.next.shared.compose.media.MediaPlayer
+import org.easybangumi.next.shared.compose.media_radar.MediaRadarBottomPanel
 import org.easybangumi.next.shared.foundation.EasyTab
 import org.easybangumi.next.shared.foundation.stringRes
 import org.easybangumi.next.shared.resources.Res
@@ -74,18 +75,21 @@ actual fun BangumiMedia(mediaParam: MediaParam) {
         bangumiMediaSubPageList.size
     }
 
+    BangumiPopup(vm)
+
     if (sta.fullscreen) {
 
     } else {
         Column {
             MediaPlayer(
-                modifier = Modifier.fillMaxWidth().aspectRatio(AndroidPlayerViewModel.MEDIA_COMPONENT_ASPECT),
+                modifier = Modifier.fillMaxWidth().aspectRatio(AndroidPlayerViewModel.MEDIA_COMPONENT_ASPECT).background(
+                    androidx.compose.ui.graphics.Color.Black),
                 vm = vm.player
             )
             EasyTab(
                 modifier = Modifier.fillMaxWidth(),
                 scrollable = true,
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                containerColor = MaterialTheme.colorScheme.surfaceContainer,
                 contentColor = MaterialTheme.colorScheme.onSurface,
                 size = bangumiMediaSubPageList.size,
                 selection = pagerState.currentPage,
@@ -106,7 +110,7 @@ actual fun BangumiMedia(mediaParam: MediaParam) {
             ) {
                 val tab = bangumiMediaSubPageList[it]
                 Box(
-                    modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface)
+                    modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceContainerLow)
                 ) {
                     tab.content(vm)
                 }
@@ -120,4 +124,27 @@ actual fun BangumiMedia(mediaParam: MediaParam) {
 @Composable
 fun BangumiPopup(
     vm: AndroidBangumiMediaViewModel,
-){}
+){
+    val state = vm.popupState.collectAsState()
+    val popup = state.value
+    when (val po = popup) {
+        is AndroidBangumiMediaViewModel.Popup.BangumiDetailPanel -> {
+
+        }
+        is AndroidBangumiMediaViewModel.Popup.MediaRadarPanel -> {
+            logger.info("show media radar panel")
+            MediaRadarBottomPanel(
+                vm = vm.mediaRadarViewModel,
+                onDismissRequest = {
+                    vm.dismissPopup()
+                },
+                onSelection = {
+                    vm.onMediaRadarSelect(it)
+                    vm.dismissPopup()
+                }
+            )
+
+        }
+        else -> {}
+    }
+}

@@ -154,7 +154,7 @@ fun BangumiDetailHeader(
                         modifier = Modifier.weight(1f).fillMaxHeight(),
                         data = subjectState,
                         onCacheOrData = { state, cache ->
-
+                            HeaderContent(cache)
                         },
                         onLoading = {
                             ShimmerHost(
@@ -183,32 +183,7 @@ fun BangumiDetailHeader(
 
                         },
                     ) {
-                        Column {
-                            Text(
-                                text = it.data.displayName ?: "",
-                                style = MaterialTheme.typography.titleLarge,
-                                maxLines = 3,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                            Spacer(modifier = Modifier.size(8.dp))
-                            Text(
-                                modifier = Modifier,
-                                text = it.data.date ?: "",
-                                style = MaterialTheme.typography.bodyMedium,
-                            )
-                            Spacer(modifier = Modifier.size(8.dp))
-                            Text(
-                                modifier = Modifier,
-                                text = it.data.displayEpisode ?: "",
-                                style = MaterialTheme.typography.bodyMedium,
-                            )
-                            Spacer(modifier = Modifier.weight(1f))
-                            it.data.rating?.let {
-                                HeaderRanking(Modifier, it)
-                            }
-
-
-                        }
+                        HeaderContent(it.data)
                     }
                 }
 
@@ -217,6 +192,38 @@ fun BangumiDetailHeader(
         }
     }
 
+}
+
+@Composable
+fun HeaderContent(
+    it: BgmSubject
+) {
+    Column {
+        Text(
+            text = it.displayName ?: "",
+            style = MaterialTheme.typography.titleLarge,
+            maxLines = 3,
+            overflow = TextOverflow.Ellipsis
+        )
+        Spacer(modifier = Modifier.size(8.dp))
+        Text(
+            modifier = Modifier,
+            text = it.date ?: "",
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        Spacer(modifier = Modifier.size(8.dp))
+        Text(
+            modifier = Modifier,
+            text = it.displayEpisode ?: "",
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        it.rating?.let {
+            HeaderRanking(Modifier, it)
+        }
+
+
+    }
 }
 
 @Composable

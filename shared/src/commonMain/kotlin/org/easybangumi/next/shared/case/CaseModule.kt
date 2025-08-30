@@ -15,6 +15,6 @@ import org.koin.dsl.module
  */
 val caseModule = module {
     single {
-        BangumiCase(get())
+        BangumiCase(get(), get())
     }
 }

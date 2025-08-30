@@ -2,6 +2,7 @@
 
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
+import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.data.cartoon.Episode
@@ -24,9 +25,10 @@ import org.easybangumi.next.shared.source.api.component.play.PlayComponent
  */
 
 class PlayLineIndexViewModel(
-    private val cartoonIndex: CartoonIndex,
     var suggestEpisode: Int? = null,
 ): StateViewModel<PlayLineIndexViewModel.State>(State()) {
+
+    private val logger = logger()
 
     data class State(
         val playerLineList: DataState<List<PlayerLine>> = DataState.none(),
@@ -59,6 +61,7 @@ class PlayLineIndexViewModel(
     }
 
     fun loadPlayLine(
+        cartoonIndex: CartoonIndex,
         business: ComponentBusiness<PlayComponent>,
     ) {
         viewModelScope.launch {
@@ -89,6 +92,7 @@ class PlayLineIndexViewModel(
                 // 只生效一次
                 suggestEpisode = null
             }
+            logger.info("loadPlayLine: $res, targetPlaylineIndex=$targetPlaylineIndex, targetEpisodeIndex=$targetEpisodeIndex")
 
             update {
                 it.copy(
