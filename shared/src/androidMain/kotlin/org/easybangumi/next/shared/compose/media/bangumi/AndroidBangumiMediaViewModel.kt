@@ -69,7 +69,7 @@ class AndroidBangumiMediaViewModel(
 
 
     // == 播放状态 =============================
-    val player: AndroidPlayerViewModel by childViewModel {
+    val playerViewModel: AndroidPlayerViewModel by childViewModel {
         AndroidPlayerViewModel()
     }
 
@@ -94,6 +94,13 @@ class AndroidBangumiMediaViewModel(
                 if (it != null) {
                     playLineIndexViewModel.loadPlayLine(it.playCover.toCartoonIndex(), it.playBusiness)
                 }
+            }
+        }
+
+        // 播放链接变化 -> 播放器
+        viewModelScope.launch {
+            playIndexState.map { it.playInfo }.collectLatest {
+                playerViewModel.onPlayInfoChange(it)
             }
         }
         // 这里只是为了更新番剧名称，用最弱的刷新方式

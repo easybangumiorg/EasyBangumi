@@ -158,7 +158,7 @@ class WebKitWebViewProxy: IWebView {
                             singleScope.launch {
                                 resourceList.add(blobTextData)
                                 (state as? State.WaitingForResourceLoaded)?.let {
-                                    if (it.resourceRegex.matches(blobTextData) == true) {
+                                    if (it.resourceRegex.matches(blobTextData)) {
                                         it.continuation.safeResume(blobTextData)
                                     }
                                 }

@@ -3,8 +3,12 @@ package org.easybangumi.next.shared.compose.media.bangumi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.HorizontalDivider
@@ -14,12 +18,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.shared.compose.media.AndroidPlayerViewModel
 import org.easybangumi.next.shared.foundation.view_model.vm
 import org.easybangumi.next.shared.compose.media.MediaParam
-import org.easybangumi.next.shared.compose.media.MediaPlayer
+import org.easybangumi.next.shared.compose.media.MediaPlayerNormal
 import org.easybangumi.next.shared.compose.media_radar.MediaRadarBottomPanel
 import org.easybangumi.next.shared.foundation.EasyTab
 import org.easybangumi.next.shared.foundation.stringRes
@@ -81,10 +87,13 @@ actual fun BangumiMedia(mediaParam: MediaParam) {
 
     } else {
         Column {
-            MediaPlayer(
+            Box(modifier = Modifier.background(Color.Black).height(with(LocalDensity.current) {
+                WindowInsets.statusBars.getTop(LocalDensity.current).toDp()
+            }))
+            MediaPlayerNormal(
                 modifier = Modifier.fillMaxWidth().aspectRatio(AndroidPlayerViewModel.MEDIA_COMPONENT_ASPECT).background(
                     androidx.compose.ui.graphics.Color.Black),
-                vm = vm.player
+                vm = vm.playerViewModel
             )
             EasyTab(
                 modifier = Modifier.fillMaxWidth(),

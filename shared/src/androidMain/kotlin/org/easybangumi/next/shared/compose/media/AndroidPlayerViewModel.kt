@@ -1,9 +1,13 @@
 package org.easybangumi.next.shared.compose.media
 
 import androidx.media3.exoplayer.ExoPlayer
+import org.easybangumi.next.lib.utils.DataState
+import org.easybangumi.next.lib.utils.Global
 import org.easybangumi.next.lib.utils.global
+import org.easybangumi.next.libplayer.exoplayer.EasyTextureView
 import org.easybangumi.next.libplayer.exoplayer.ExoPlayerBridge
 import org.easybangumi.next.libplayer.exoplayer.ExoPlayerFrameState
+import org.easybangumi.next.shared.data.cartoon.PlayInfo
 import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
 import org.easybangumi.next.shared.playcon.android.AndroidPlayconViewModel
 import org.koin.core.component.inject
@@ -26,6 +30,8 @@ class AndroidPlayerViewModel: BaseViewModel() {
         const val MEDIA_COMPONENT_ASPECT = 16f / 9f
     }
 
+    val textureView = EasyTextureView(global.appContext)
+
     // 视频播放
     val exoBuilder: ExoPlayer.Builder by inject()
     val exoBridge = ExoPlayerBridge(global.appContext, exoBuilder)
@@ -38,6 +44,12 @@ class AndroidPlayerViewModel: BaseViewModel() {
 
     init {
         exoPlayerFrameState.bindBridge(exoBridge)
+        exoBridge.attachTextureView(textureView)
         addCloseable(exoPlayerFrameState)
+    }
+
+
+    fun onPlayInfoChange(playerInfoState: DataState<PlayInfo>) {
+
     }
 }

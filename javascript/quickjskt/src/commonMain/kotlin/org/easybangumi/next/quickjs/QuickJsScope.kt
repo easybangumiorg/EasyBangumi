@@ -25,8 +25,6 @@ class QuickJsScope(
     }
 
     fun init() {
-
-        }
     }
 
     fun newObjectBinding(name: String, binding: ObjectBinding) {

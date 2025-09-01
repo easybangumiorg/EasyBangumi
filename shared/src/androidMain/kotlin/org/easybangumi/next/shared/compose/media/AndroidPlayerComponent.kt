@@ -1,8 +1,12 @@
 package org.easybangumi.next.shared.compose.media
 
+import android.view.ViewGroup
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.UiComposable
+import androidx.compose.ui.viewinterop.AndroidView
+import org.easybangumi.next.shared.playcon.android.AndroidPlaycon
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -16,13 +20,24 @@ import androidx.compose.ui.Modifier
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 @Composable
-fun MediaPlayer(
+fun MediaPlayerNormal(
     modifier: Modifier,
     vm: AndroidPlayerViewModel,
 ){
     Box(
         modifier = modifier
     ) {
+        AndroidView(factory = {
+            val texture = vm.textureView
+            val parent = texture.parent as? ViewGroup
+            parent?.removeView(texture)
+            texture
+        }) {
 
+        }
+        AndroidPlaycon(
+            modifier = Modifier.matchParentSize(),
+            viewModel = vm.playconVM,
+        )
     }
 }

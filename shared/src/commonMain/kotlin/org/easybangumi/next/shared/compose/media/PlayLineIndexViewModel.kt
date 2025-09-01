@@ -1,11 +1,17 @@
 ﻿package org.easybangumi.next.shared.compose.media
 
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.data.cartoon.Episode
+import org.easybangumi.next.shared.data.cartoon.PlayInfo
 import org.easybangumi.next.shared.data.cartoon.PlayerLine
 import org.easybangumi.next.shared.foundation.view_model.StateViewModel
 import org.easybangumi.next.shared.source.api.component.ComponentBusiness
@@ -31,15 +37,62 @@ class PlayLineIndexViewModel(
     private val logger = logger()
 
     data class State(
+        val cartoonIndex: CartoonIndex? = null,
         val playerLineList: DataState<List<PlayerLine>> = DataState.none(),
         val currentPlayerLine: Int = 0,
         val currentEpisode: Int = 0,
+        val business: ComponentBusiness<PlayComponent>? = null,
+        val playInfo: DataState<PlayInfo> = DataState.none(),
     ) {
         val playLineOrNull: PlayerLine? by lazy {
             playerLineList.okOrNull()?.getOrNull(currentPlayerLine)
         }
         val currentEpisodeOrNull: Episode? by lazy {
             playLineOrNull?.episodeList?.getOrNull(currentEpisode)
+        }
+    }
+
+    init {
+        viewModelScope.launch {
+            combine(
+                state.map { Triple(it.cartoonIndex, it.playLineOrNull , it.currentEpisodeOrNull) }.filterNotNull().distinctUntilChanged(),
+                state.map { it.business }.distinctUntilChanged()
+            ) { pair, business ->
+                val (cartoonIndex, playLine, episode) = pair
+                val biz = business
+                cartoonIndex ?: return@combine
+                playLine ?: return@combine
+                episode ?: return@combine
+                biz ?: return@combine
+                update {
+                    it.copy(
+                        playInfo = DataState.loading()
+                    )
+                }
+                val res = biz.run {
+                    getPlayInfo(
+                        cartoonIndex = cartoonIndex,
+                        playerLine = playLine,
+                        episode = episode,
+                    )
+                }
+                logger.info("loadPlayInfo: $res")
+                update {
+                    it.copy(
+                        playInfo = res
+                    )
+                }
+            }.collect()
+        }
+    }
+
+    fun onEpisodeSelected(
+        index: Int,
+    ) {
+        update {
+            it.copy(
+                currentEpisode = index,
+            )
         }
     }
 
@@ -61,12 +114,14 @@ class PlayLineIndexViewModel(
     }
 
     fun loadPlayLine(
+        // playerIndex
         cartoonIndex: CartoonIndex,
         business: ComponentBusiness<PlayComponent>,
     ) {
         viewModelScope.launch {
             update {
                 it.copy(
+                    cartoonIndex = cartoonIndex,
                     playerLineList = DataState.loading()
                 )
             }
@@ -96,9 +151,11 @@ class PlayLineIndexViewModel(
 
             update {
                 it.copy(
+                    cartoonIndex = cartoonIndex,
                     playerLineList = res,
                     currentPlayerLine = targetPlaylineIndex,
                     currentEpisode = targetEpisodeIndex,
+                    business = business,
                 )
             }
         }

@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -107,9 +108,9 @@ fun LazyGridScope.androidMediaPlayLineIndex(
             items(currentPlayLine.episodeList.size) {
                 val item = currentPlayLine.episodeList[it]
                 FilterChip(
-                    selected = false,
+                    selected = it == state.currentEpisode,
                     onClick = {
-//                        vm.onEpisodeSelected(it)
+                        vm.onEpisodeSelected(it)
                     },
                     label = {
                         Text(item.label)
