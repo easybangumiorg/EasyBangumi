@@ -3,9 +3,15 @@ package org.easybangumi.next.shared.playcon.android
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import org.easybangumi.next.libplayer.api.PlayerBridge
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.libplayer.exoplayer.ExoPlayerBridge
 import org.easybangumi.next.shared.playcon.BasePlayerViewModel
+import org.easybangumi.next.shared.playcon.pointer.PointerPlayconViewModel
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -22,13 +28,97 @@ class AndroidPlayconViewModel(
     bridge: ExoPlayerBridge,
 ) : BasePlayerViewModel<ExoPlayerBridge>(bridge) {
 
+    companion object {
+        const val CONTROL_HIDE_DELAY = 4000L
+    }
+
+    private val logger = logger()
+
+    var hideDelayJob: Job? = null
+
+//    var isLoading by mutableStateOf(false)
+
+    var isShowController by mutableStateOf(false)
+
+    var isLocked by mutableStateOf(false)
+
 
     enum class ScreenMode {
         NORMAL, FULLSCREEN
     }
 
-
     var screenMode: ScreenMode by mutableStateOf<ScreenMode>(ScreenMode.NORMAL)
+
+    var isLoadingShow by mutableStateOf(false)
+
+    fun lock() {
+        isLocked = true
+        restartHideDelayJob()
+    }
+
+    fun unlock() {
+        isLocked = false
+        restartHideDelayJob()
+    }
+
+    fun toggleLock() {
+        if (isLocked) {
+            unlock()
+        } else {
+            lock()
+        }
+    }
+
+
+    fun seekTo(position: Long) {
+        bridge.seekTo(position)
+//        restartHideDelayJob()
+    }
+
+    fun onSeekEnd(seekPosition: Long) {
+        bridge.seekTo(seekPosition)
+        restartHideDelayJob()
+    }
+
+
+    fun showController(needHideDelay : Boolean = true) {
+//        logger.info("PointerPlayerViewModel: show controller $needHideDelay")
+        isShowController = true
+        if (needHideDelay) {
+            restartHideDelayJob()
+        } else {
+            endHideDelayJob()
+        }
+    }
+
+    fun hideController() {
+        isShowController = false
+    }
+
+    fun toggleController() {
+        if (isShowController) {
+            hideController()
+        } else {
+            showController()
+        }
+    }
+
+    fun restartHideDelayJob(){
+        hideDelayJob?.cancel()
+        hideDelayJob = viewModelScope.launch {
+//            logger.info("PointerPlayerViewModel: hide controller delay start")
+            delay(CONTROL_HIDE_DELAY)
+//            logger.info("PointerPlayerViewModel: hide controller after delay")
+            if (isActive && isShowController) {
+                hideController()
+            }
+        }
+    }
+
+    fun endHideDelayJob() {
+        hideDelayJob?.cancel()
+        hideDelayJob = null
+    }
 
 
 }

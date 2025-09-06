@@ -68,92 +68,54 @@ fun BangumiMediaDetailSubPage(
     val sta = state.value
     val playLineIndexState = vm.playIndexState.collectAsState()
     Box(modifier = Modifier.fillMaxSize()) {
-
-
-
-        LazyVerticalGrid(
-            GridCells.Fixed(2),
+        LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(0.dp, 8.dp),
         ) {
+            // Bangumi 详情卡片
             bangumiDetailCard(vm, sta)
             space(Modifier.height(8.dp))
+            // 操作按钮
             playerAction()
             space(Modifier.height(8.dp))
+            // 播放源卡片
             playerSourceCard(vm, sta)
             space(Modifier.height(8.dp))
             divider()
-            androidMediaPlayLineIndex(vm.playLineIndexViewModel, playLineIndexState.value)
+            // 播放线路和集数选择
+            androidMediaPlayLineIndex(vm.playLineIndexViewModel, vm.playLineIndexViewModel.ui.value, 2)
         }
 
     }
 }
 
-fun LazyGridScope.space(
+fun LazyListScope.space(
     modifier: Modifier = Modifier,
 ){
-    item(
-        span = {
-            GridItemSpan(this.maxLineSpan)
-        }
-    ) {
+    item {
         Spacer(modifier = modifier)
     }
 }
 
-fun LazyGridScope.divider() {
-    item(
-        span = {
-            GridItemSpan(this.maxLineSpan)
-        }
-    ) {
+fun LazyListScope.divider() {
+    item{
         HorizontalDivider()
     }
 }
 
-fun LazyGridScope.bangumiDetailCard(
+fun LazyListScope.bangumiDetailCard(
     vm: AndroidBangumiMediaViewModel,
     sta: AndroidBangumiMediaViewModel.State,
 ) {
 
-    item(
-        span = {
-            GridItemSpan(this.maxLineSpan)
-        }
-    ) {
-
+    item {
         BangumiDetailPreview(vm.cartoonIndex, modifier = Modifier.padding(8.dp, 0.dp))
-
-//        Row(
-//            modifier = Modifier.fillMaxWidth().clickable {
-//                vm.showBangumiDetailPanel()
-//            },
-//            verticalAlignment = Alignment.CenterVertically
-//        ) {
-//            Spacer(modifier = Modifier.width(16.dp))
-//            Text(
-//                sta.detailNamePreview,
-//                modifier = Modifier.weight(1f),
-//                maxLines = 2,
-//                overflow = TextOverflow.Ellipsis,
-//                style = MaterialTheme.typography.titleMedium
-//            )
-//            IconButton(onClick = {
-//                vm.showBangumiDetailPanel()
-//            }) {
-//                Icon(Icons.Default.MoreVert, contentDescription = "")
-//            }
-//        }
     }
 
 }
 
-fun LazyGridScope.playerAction() {
-    item(
-        span = {
-            GridItemSpan(this.maxLineSpan)
-        }
-    ) {
+fun LazyListScope.playerAction() {
+    item {
         AndroidMediaActions(
             isStar = false,
             isDownloading = false,
@@ -169,15 +131,11 @@ fun LazyGridScope.playerAction() {
 
 }
 
-fun LazyGridScope.playerSourceCard(
+fun LazyListScope.playerSourceCard(
     vm: AndroidBangumiMediaViewModel,
     sta: AndroidBangumiMediaViewModel.State,
 ) {
-    item(
-        span = {
-            GridItemSpan(this.maxLineSpan)
-        }
-    ) {
+    item {
         val radarRes = sta.radarResult
         if (radarRes == null) {
             ListItem(

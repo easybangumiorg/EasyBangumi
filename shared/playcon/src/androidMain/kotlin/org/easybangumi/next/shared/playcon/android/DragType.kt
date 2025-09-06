@@ -106,7 +106,7 @@ fun BrightVolumeUi(icon: ImageVector, contentDescription: String, percent: Int) 
             Spacer(modifier = Modifier.size(16.dp))
             LinearProgressIndicator(
                 modifier = Modifier.width(100.dp),
-                progress = percent / 100F
+                progress = { percent / 100F }
             )
         }
     }

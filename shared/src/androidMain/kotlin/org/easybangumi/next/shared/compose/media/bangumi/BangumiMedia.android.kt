@@ -87,9 +87,9 @@ actual fun BangumiMedia(mediaParam: MediaParam) {
 
     } else {
         Column {
-            Box(modifier = Modifier.background(Color.Black).height(with(LocalDensity.current) {
+            Box(modifier = Modifier.background(Color.Black).fillMaxWidth().height(with(LocalDensity.current) {
                 WindowInsets.statusBars.getTop(LocalDensity.current).toDp()
-            }))
+            }).background(Color.Black))
             MediaPlayerNormal(
                 modifier = Modifier.fillMaxWidth().aspectRatio(AndroidPlayerViewModel.MEDIA_COMPONENT_ASPECT).background(
                     androidx.compose.ui.graphics.Color.Black),

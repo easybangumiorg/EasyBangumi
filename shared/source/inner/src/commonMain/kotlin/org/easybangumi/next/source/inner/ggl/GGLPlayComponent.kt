@@ -101,7 +101,7 @@ class GGLPlayComponent: PlayComponent, BaseComponent() {
             val host = prefHelper.get("host", "anime.girigirilove.com")
             val url = buildUrl {
                 this.host = host
-                path("play", urlPath)
+                path("play${urlPath}" )
             }.toString()
             val html = webViewHelper.use {
                 loadUrl(url, userAgent = networkHelper.defaultLinuxUA)

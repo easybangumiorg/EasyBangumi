@@ -8,6 +8,8 @@ data class PlayInfo(
     val type: String,
 ){
 
+    var header: Map<String, String>? = null
+
     companion object {
         const val TYPE_HLS = "video-hls"
         const val TYPE_NORMAL = "video-normal"

@@ -1,9 +1,11 @@
 ﻿package org.easybangumi.next.shared.compose.media
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
@@ -11,17 +13,22 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Filter
 import androidx.compose.material.icons.filled.Sort
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.dp
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.shared.foundation.elements.ErrorElements
 import org.easybangumi.next.shared.foundation.elements.LoadingElements
+import org.easybangumi.next.shared.foundation.lazy.itemsFromGrid
 
 
 /**
@@ -42,17 +49,14 @@ fun AndroidMediaPlayLineIndex(
 
 }
 
-fun LazyGridScope.androidMediaPlayLineIndex(
+fun LazyListScope.androidMediaPlayLineIndex(
     vm: PlayLineIndexViewModel,
     state: PlayLineIndexViewModel.State,
+    gridCount: Int = 2,
 ){
     val data = state.playerLineList.okOrNull()
     if (state.playerLineList.isLoading()) {
-        item(
-            span = {
-                GridItemSpan(this.maxLineSpan)
-            }
-        ) {
+        item {
             LoadingElements(
                 modifier = Modifier.fillMaxWidth().height(200.dp).padding(8.dp, 0.dp),
                 isRow = true
@@ -60,11 +64,7 @@ fun LazyGridScope.androidMediaPlayLineIndex(
         }
     } else if (state.playerLineList is DataState.Error) {
         val errorMsg = state.playerLineList.errorMsg
-        item(
-            span = {
-                GridItemSpan(this.maxLineSpan)
-            }
-        ) {
+        item{
             ErrorElements(
                 modifier = Modifier.fillMaxWidth().height(200.dp).padding(8.dp, 0.dp),
                 errorMsg = errorMsg,
@@ -72,16 +72,13 @@ fun LazyGridScope.androidMediaPlayLineIndex(
             )
         }
     } else if(data != null) {
-        item(
-            span = {
-                GridItemSpan(this.maxLineSpan)
-            }
-        ) {
+        item{
             Row(
                 modifier = Modifier.padding(8.dp, 0.dp)
             ) {
                 LazyRow(
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     val list = data
                     items(list.size) {
@@ -105,18 +102,22 @@ fun LazyGridScope.androidMediaPlayLineIndex(
         }
         val currentPlayLine = state.playLineOrNull
         if (currentPlayLine != null) {
-            items(currentPlayLine.episodeList.size) {
+            itemsFromGrid(
+                itemsCount = currentPlayLine.episodeList.size,
+                girdCount = gridCount,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                rowModifier = Modifier.padding(8.dp, 0.dp)
+            ) {
                 val item = currentPlayLine.episodeList[it]
-                FilterChip(
-                    selected = it == state.currentEpisode,
-                    onClick = {
-                        vm.onEpisodeSelected(it)
-                    },
-                    label = {
-                        Text(item.label)
-                    },
-                    modifier = Modifier
-                )
+                Card(
+                    modifier = Modifier.fillMaxWidth().padding(0.dp, 4.dp),
+                    colors = CardDefaults.cardColors().copy(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        contentColor = MaterialTheme.colorScheme.onSurface,
+                    ),
+                ) {
+                    Text(text = item.label, modifier = Modifier.padding(8.dp, 8.dp, 0.dp, 24.dp))
+                }
             }
         }
     }
