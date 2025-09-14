@@ -173,4 +173,8 @@ class ExoPlayerBridge(
         exoPlayer.clearVideoTextureView(textureView)
         this.textureView = null
     }
+
+    fun isMedia(): Boolean {
+        return exoPlayer.playbackState == Player.STATE_BUFFERING || exoPlayer.playbackState == Player.STATE_READY
+    }
 }

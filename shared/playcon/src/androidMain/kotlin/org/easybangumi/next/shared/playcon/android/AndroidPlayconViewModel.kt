@@ -1,17 +1,20 @@
 package org.easybangumi.next.shared.playcon.android
 
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.libplayer.exoplayer.ExoPlayerBridge
+import org.easybangumi.next.libplayer.exoplayer.LibC
 import org.easybangumi.next.shared.playcon.BasePlayerViewModel
-import org.easybangumi.next.shared.playcon.pointer.PointerPlayconViewModel
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -50,6 +53,24 @@ class AndroidPlayconViewModel(
     var screenMode: ScreenMode by mutableStateOf<ScreenMode>(ScreenMode.NORMAL)
 
     var isLoadingShow by mutableStateOf(false)
+
+    var isPositionScrolling: Boolean by mutableStateOf(false)
+    var scrollingPosition: Long by mutableStateOf(0L)
+
+    val showBrightVolumeUi: MutableState<Boolean> = mutableStateOf(false)
+    val brightVolumeType: MutableState<DragType> = mutableStateOf(DragType.VOLUME)
+    val brightVolumePercent: MutableState<Int> = mutableStateOf(0)
+
+    init {
+        viewModelScope.launch {
+            snapshotFlow {
+                playerState
+            }.collectLatest {
+                isLoadingShow = (it == org.easybangumi.next.libplayer.api.C.State.PREPARING || it == org.easybangumi.next.libplayer.api.C.State.BUFFERING)
+            }
+        }
+
+    }
 
     fun lock() {
         isLocked = true
@@ -120,5 +141,42 @@ class AndroidPlayconViewModel(
         hideDelayJob = null
     }
 
+
+    fun onSingleClick() {
+        if (!isLocked) {
+            toggleController()
+        }
+    }
+
+    fun onPlayPause(playWhenReady: Boolean) {}
+
+    fun fastRewind() {}
+
+    fun fastForward() {}
+
+
+    fun onLongPress() {}
+
+    fun onActionUP() {
+        viewModelScope.launch {
+            if (isPositionScrolling) {
+                seekTo(scrollingPosition)
+                isPositionScrolling = false
+            }
+            restartHideDelayJob()
+        }
+    }
+
+    fun onGesturePositionChange(position: Long) {}
+
+    fun onSeekBarPositionChange(position: Long) {
+        logger.info("onSeekBarPositionChange: $position, duration: $duration, isMedia = ${bridge.isMedia()}")
+        if (!bridge.isMedia()) {
+            return
+        }
+        scrollingPosition = position.coerceIn(0L, duration.coerceAtLeast(Long.MAX_VALUE))
+        isPositionScrolling = true
+
+    }
 
 }

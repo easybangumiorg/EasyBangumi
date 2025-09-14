@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.HorizontalDivider
@@ -25,7 +24,7 @@ import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.shared.compose.media.AndroidPlayerViewModel
 import org.easybangumi.next.shared.foundation.view_model.vm
 import org.easybangumi.next.shared.compose.media.MediaParam
-import org.easybangumi.next.shared.compose.media.MediaPlayerNormal
+import org.easybangumi.next.shared.compose.media.MediaPlayer
 import org.easybangumi.next.shared.compose.media_radar.MediaRadarBottomPanel
 import org.easybangumi.next.shared.foundation.EasyTab
 import org.easybangumi.next.shared.foundation.stringRes
@@ -90,7 +89,7 @@ actual fun BangumiMedia(mediaParam: MediaParam) {
             Box(modifier = Modifier.background(Color.Black).fillMaxWidth().height(with(LocalDensity.current) {
                 WindowInsets.statusBars.getTop(LocalDensity.current).toDp()
             }).background(Color.Black))
-            MediaPlayerNormal(
+            MediaPlayer(
                 modifier = Modifier.fillMaxWidth().aspectRatio(AndroidPlayerViewModel.MEDIA_COMPONENT_ASPECT).background(
                     androidx.compose.ui.graphics.Color.Black),
                 vm = vm.playerViewModel

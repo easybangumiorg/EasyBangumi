@@ -7,8 +7,12 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,11 +51,29 @@ fun AndroidPlaycon(
         )
     }
 
+    DisposableEffect(Unit) {
+        viewModel.needLoop()
+        onDispose {
+            viewModel.noNeedLoop()
+        }
+    }
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
-        scope.ControllerContent(Modifier)
+
+        AndroidGestureController(
+            viewModel,
+            modifier = Modifier.fillMaxSize()
+        ) {
+
+        }
+        scope.ControllerContent(Modifier.fillMaxSize())
+        if (viewModel.isLoadingShow) {
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.Center)
+            )
+        }
     }
 }
 
@@ -66,7 +88,7 @@ fun AndroidPlayconScope.ControllerContent(
     AnimatedContent(
         isLock to isShowController,
         transitionSpec = {
-            (fadeIn(animationSpec = tween(220, delayMillis = 90)))
+            (fadeIn(animationSpec = tween(90)))
                 .togetherWith(fadeOut(animationSpec = tween(90)))
         },
     ) {

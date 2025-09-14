@@ -4,7 +4,6 @@ import android.view.ViewGroup
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.UiComposable
 import androidx.compose.ui.viewinterop.AndroidView
 import org.easybangumi.next.shared.playcon.android.AndroidPlaycon
 
@@ -20,7 +19,7 @@ import org.easybangumi.next.shared.playcon.android.AndroidPlaycon
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 @Composable
-fun MediaPlayerNormal(
+fun MediaPlayer(
     modifier: Modifier,
     vm: AndroidPlayerViewModel,
 ){

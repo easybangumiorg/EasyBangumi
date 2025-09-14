@@ -1,12 +1,15 @@
 package org.easybangumi.next.shared.playcon.android
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
@@ -19,10 +22,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import org.easybangumi.next.shared.foundation.seekbar.AndroidSeekBar
 import org.easybangumi.next.shared.foundation.seekbar.Seekbar
 import org.easybangumi.next.shared.foundation.seekbar.SeekbarState
 import org.easybangumi.next.shared.playcon.TimeUtils
@@ -44,34 +49,32 @@ import org.easybangumi.next.shared.playcon.TimeUtils
 fun AndroidPlayconScope.AndroidPlayconBottomBar(
     modifier: Modifier
 ) {
-    val seekbarState = remember(
-        vm.duration
-    ) {
-        val position = vm.position.coerceAtLeast(0)
-        val duration = vm.duration.coerceAtLeast(position)
-        SeekbarState(position, duration).apply {
-            onValueChangeFinished = {
-                logger.info("PointerPlayconBottomBar seekbar onValueChangeFinished: $value")
-                // 进度条 -> 播放器
-                vm.seekTo(value)
-            }
+
+
+    val position = remember(vm.isPositionScrolling, vm.scrollingPosition, vm.position) {
+        // 正在拖动进度条时，使用进度条的值
+        if (vm.isPositionScrolling) {
+            vm.scrollingPosition
+        } else {
+            vm.position
         }
     }
 
-    LaunchedEffect(vm) {
-        snapshotFlow {
-            seekbarState.isDragging to vm.position
-        }.collect {
-            if (!it.first) {
-                if (it.second <= seekbarState.maxValue && it.second >= 0) {
-                    // 播放器 -> 进度条
-                    seekbarState.value = it.second
-                }
-            }
-        }
-    }
 
-    Column (
+//    LaunchedEffect(vm) {
+//        snapshotFlow {
+//            seekbarState.isDragging to vm.position
+//        }.collect {
+//            if (!it.first) {
+//                if (it.second <= seekbarState.maxValue && it.second >= 0) {
+//                    // 播放器 -> 进度条
+//                    seekbarState.value = it.second
+//                }
+//            }
+//        }
+//    }
+
+    Row (
         modifier.fillMaxWidth()
             .background(
                 brush = Brush.verticalGradient(
@@ -79,14 +82,18 @@ fun AndroidPlayconScope.AndroidPlayconBottomBar(
                 )
             ).padding(
                 16.dp, 4.dp
-            ),
-        verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterVertically)
+            ).height(40.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterHorizontally),
     ) {
+        val playWhenReady = vm.playWhenReady
+        val icon = if (playWhenReady) {
+            Icons.Filled.Pause
+        } else {
+            Icons.Filled.PlayArrow
+        }
 
-        Seekbar(
-            seekbarState,
-            modifier = Modifier
-        )
+
 
         Row (
             Modifier.fillMaxWidth(),
@@ -98,17 +105,17 @@ fun AndroidPlayconScope.AndroidPlayconBottomBar(
             } else {
                 Icons.Filled.PlayArrow
             }
-            IconButton(
-                modifier = Modifier,
-                onClick = {
-                    vm.setPlayWhenReady(!playWhenReady)
-                }) {
-                Icon(
-                    imageVector = icon,
-                    tint = Color.White,
-                    contentDescription = if (playWhenReady) "Pause" else "Play",
-                )
-            }
+            Icon(
+                icon,
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .clickable {
+                        vm.setPlayWhenReady(!playWhenReady)
+                    }
+                    .padding(4.dp),
+                tint = Color.White,
+                contentDescription = null
+            )
 
             val duringText = remember(
                 vm.duration,
@@ -122,33 +129,33 @@ fun AndroidPlayconScope.AndroidPlayconBottomBar(
                 TimeUtils.toString(vm.position.coerceAtLeast(0))
             }
 
-            Row (
-                modifier = Modifier.width(132.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ){
-                Text(
-                    modifier = Modifier.width(64.dp),
-                    text = positionText,
-                    color = Color.White,
-                    textAlign = TextAlign.Center
-                )
+            Text(
+                modifier = Modifier.width(64.dp),
+                text = positionText,
+                color = Color.White,
+                textAlign = TextAlign.Center
+            )
 
-                Text(
-                    modifier = Modifier,
-                    text = "/",
-                    color = Color.White,
-                    textAlign = TextAlign.Center
-                )
+            AndroidSeekBar(
+                modifier = Modifier.weight(1f),
+                during = vm.duration.coerceAtLeast(vm.position).toInt(),
+                position = position.toInt(),
+                secondary = vm.bufferedPosition.coerceAtLeast(0).toInt(),
+                onValueChange = {
+                    vm.onSeekBarPositionChange(it.toLong())
+                },
+                onValueChangeFinish = {
+                    vm.onActionUP()
+                }
 
+            )
 
-                Text(
-                    modifier = Modifier.width(64.dp),
-                    text = duringText,
-                    color = Color.White,
-                    textAlign = TextAlign.Center
-                )
-            }
+            Text(
+                modifier = Modifier.width(64.dp),
+                text = duringText,
+                color = Color.White,
+                textAlign = TextAlign.Center
+            )
         }
     }
 }

@@ -93,4 +93,9 @@ class AndroidPlayerViewModel: BaseViewModel() {
     fun onPlayInfoChange(playerInfoState: DataState<PlayInfo>) {
         playInfo.value = playerInfoState
     }
+
+    override fun onCleared() {
+        super.onCleared()
+        exoBridge.close()
+    }
 }

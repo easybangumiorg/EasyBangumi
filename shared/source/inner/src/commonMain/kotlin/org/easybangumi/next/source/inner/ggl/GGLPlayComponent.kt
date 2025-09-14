@@ -104,8 +104,9 @@ class GGLPlayComponent: PlayComponent, BaseComponent() {
                 path("play${urlPath}" )
             }.toString()
             val html = webViewHelper.use {
-                loadUrl(url, userAgent = networkHelper.defaultLinuxUA)
+                loadUrl(url, userAgent = networkHelper.defaultLinuxUA, interceptResRegex = null)
                 waitingForResourceLoaded(".*play.*", true, 2000L)
+                waitingForResourceLoaded(".*aplayer*", true, 2000L)
                 delay(500L)
                 getContent(2000L)
             } ?: throw DataStateException("获取播放信息失败，可能是网络异常或页面加载超时")
