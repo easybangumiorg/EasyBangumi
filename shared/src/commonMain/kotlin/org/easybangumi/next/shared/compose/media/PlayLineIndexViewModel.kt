@@ -39,11 +39,15 @@ class PlayLineIndexViewModel(
     data class State(
         val cartoonIndex: CartoonIndex? = null,
         val playerLineList: DataState<List<PlayerLine>> = DataState.none(),
+        val currentShowingPlayerLine: Int = 0,
         val currentPlayerLine: Int = 0,
         val currentEpisode: Int = 0,
         val business: ComponentBusiness<PlayComponent>? = null,
         val playInfo: DataState<PlayInfo> = DataState.none(),
     ) {
+        val showingPlayerLine: PlayerLine? by lazy {
+            playerLineList.okOrNull()?.getOrNull(currentShowingPlayerLine)
+        }
         val playLineOrNull: PlayerLine? by lazy {
             playerLineList.okOrNull()?.getOrNull(currentPlayerLine)
         }
@@ -87,11 +91,30 @@ class PlayLineIndexViewModel(
     }
 
     fun onEpisodeSelected(
+        targetPlayLineIndex: Int,
+        episodeIndex: Int,
+    ) {
+        update {
+            val playLine = it.playerLineList.okOrNull()?.getOrNull(targetPlayLineIndex)
+            var finalEpisode = episodeIndex
+            if (playLine != null && finalEpisode !in playLine.episodeList.indices) {
+                // 如果当前集数不在选中的线路中，则重置集数为 0
+                finalEpisode = 0
+            }
+            it.copy(
+                currentPlayerLine = targetPlayLineIndex,
+                currentEpisode = finalEpisode,
+            )
+        }
+
+    }
+
+    fun onShowingPlayLineSelected(
         index: Int,
     ) {
         update {
             it.copy(
-                currentEpisode = index,
+                currentShowingPlayerLine = index,
             )
         }
     }

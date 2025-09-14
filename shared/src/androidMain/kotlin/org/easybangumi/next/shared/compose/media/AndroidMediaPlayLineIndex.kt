@@ -1,14 +1,20 @@
 ﻿package org.easybangumi.next.shared.compose.media
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Filter
@@ -22,7 +28,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.dp
 import org.easybangumi.next.lib.utils.DataState
@@ -84,12 +92,21 @@ fun LazyListScope.androidMediaPlayLineIndex(
                     items(list.size) {
                         val item = list[it]
                         FilterChip(
-                            selected = it == state.currentPlayerLine,
+                            selected = it == state.currentShowingPlayerLine,
                             onClick = {
-                                vm.onPlayLineSelected(it)
+                                vm.onShowingPlayLineSelected(it)
                             },
                             label = {
-                                Text(item.label)
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    if (item == state.playLineOrNull) {
+                                        Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary))
+                                        Spacer(Modifier.size(4.dp))
+                                    }
+                                    Text(item.label)
+                                }
+
                             },
                             modifier = Modifier
                         )
@@ -100,7 +117,7 @@ fun LazyListScope.androidMediaPlayLineIndex(
                 }
             }
         }
-        val currentPlayLine = state.playLineOrNull
+        val currentPlayLine = state.showingPlayerLine
         if (currentPlayLine != null) {
             itemsFromGrid(
                 itemsCount = currentPlayLine.episodeList.size,
@@ -110,10 +127,12 @@ fun LazyListScope.androidMediaPlayLineIndex(
             ) {
                 val item = currentPlayLine.episodeList[it]
                 Card(
-                    modifier = Modifier.fillMaxWidth().padding(0.dp, 4.dp),
+                    modifier = Modifier.fillMaxWidth().padding(0.dp, 4.dp).clip(CardDefaults.shape).clickable {
+                        vm.onEpisodeSelected(state.currentShowingPlayerLine, it)
+                    },
                     colors = CardDefaults.cardColors().copy(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                        contentColor = MaterialTheme.colorScheme.onSurface,
+                        containerColor = if(item == state.currentEpisodeOrNull) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh,
+                        contentColor = if(item == state.currentEpisodeOrNull) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
                     ),
                 ) {
                     Text(text = item.label, modifier = Modifier.padding(8.dp, 8.dp, 0.dp, 24.dp))

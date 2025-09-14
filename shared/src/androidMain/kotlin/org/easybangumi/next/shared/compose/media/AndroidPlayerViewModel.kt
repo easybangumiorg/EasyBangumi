@@ -69,8 +69,12 @@ class AndroidPlayerViewModel: BaseViewModel() {
 
         viewModelScope.launch {
             snapshotFlow {
-                playInfo.value.okOrNull()
+                playInfo.value
             }.collectLatest {
+                if (it.isLoading()) {
+                    exoBridge.setPlayWhenReady(false)
+                }
+                val it = playInfo.value.okOrNull()
                 if (it != null) {
                     val mediaItem = MediaItem(
                         mediaType = when(it.type) {
