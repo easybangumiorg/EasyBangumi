@@ -41,4 +41,3 @@ fun ActivityHost(
     }
 
 }
-

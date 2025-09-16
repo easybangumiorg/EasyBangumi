@@ -1,7 +1,4 @@
-package org.easybangumi.next.shared.preference
-
-import org.koin.core.module.Module
-import org.koin.dsl.module
+package org.easybangumi.next.quickjs
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -14,12 +11,8 @@ import org.koin.dsl.module
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-expect val expectModule: Module
-val preferenceModule: Module
-    get() = module {
-        single {
-            MainPreference(get())
-        }
-        includes(expectModule)
+interface QuickRuntimeProvider {
 
-    }
+    fun getRuntime(): QuickRuntime
+
+}

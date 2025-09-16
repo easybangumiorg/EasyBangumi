@@ -12,12 +12,15 @@ import com.dokar.quickjs.binding.JsObject
  *    You may obtain a copy of the License at
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *
+ *  js -> native
  */
 interface QuickBridge {
 
-    class Factory(
-        val create: suspend () -> List<QuickBridge>
-    )
+    interface Factory {
+        suspend fun create(): List<QuickBridge>
+    }
 
     val name: String
     val action: List<String>
@@ -31,7 +34,7 @@ interface QuickBridge {
                 """
                 $act: function(param) {
                     return new Promise((resolve) => {
-                        sendMessage("$name", "$act", param).then((res) => {
+                        Native_SendMessage("$name", "$act", param).then((res) => {
                             resolve(res);
                         });
                     });

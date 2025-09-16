@@ -2,6 +2,7 @@ package org.easybangumi.next
 
 import androidx.media3.exoplayer.ExoPlayer
 import org.easybangumi.next.platform.AndroidPlatform
+import org.easybangumi.next.shared.foundation.ActivityController
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.loadKoinModules
 import org.koin.core.context.startKoin
@@ -33,6 +34,10 @@ object Android {
 
                 factory {
                     ExoPlayer.Builder(application)
+                }
+
+                single {
+                    ActivityController()
                 }
             })
         }

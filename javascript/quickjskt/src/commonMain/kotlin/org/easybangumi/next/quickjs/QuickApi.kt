@@ -1,7 +1,4 @@
-package org.easybangumi.next.shared.preference
-
-import org.koin.core.module.Module
-import org.koin.dsl.module
+package org.easybangumi.next.quickjs
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -13,13 +10,18 @@ import org.koin.dsl.module
  *    You may obtain a copy of the License at
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  native -> js
  */
-expect val expectModule: Module
-val preferenceModule: Module
-    get() = module {
-        single {
-            MainPreference(get())
-        }
-        includes(expectModule)
+interface QuickApi {
 
+    interface Factory {
+        suspend fun create(): List<QuickApi>
     }
+
+    val name: String
+    val action: List<String>
+
+
+
+}

@@ -1,6 +1,7 @@
 plugins {
     alias(builds.plugins.kotlinMultiplatform)
     alias(builds.plugins.androidLibrary)
+    alias(libs.plugins.kotlinxAtomicfu)
     id("EasyLibBuild")
 }
 

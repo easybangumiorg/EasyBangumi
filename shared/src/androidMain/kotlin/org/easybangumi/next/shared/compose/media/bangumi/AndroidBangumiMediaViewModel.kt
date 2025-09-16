@@ -1,5 +1,6 @@
 package org.easybangumi.next.shared.compose.media.bangumi
 
+import android.app.Activity
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -156,5 +157,14 @@ class AndroidBangumiMediaViewModel(
                 radarResult = result
             )
         }
+    }
+
+    // fullscreen change ============================
+    fun onFullScreen(fullScreen: Boolean, reverse: Boolean = false, ctx: Activity) {
+
+    }
+
+    fun onOrientation(orientation: Int, act: Activity) {
+
     }
 }

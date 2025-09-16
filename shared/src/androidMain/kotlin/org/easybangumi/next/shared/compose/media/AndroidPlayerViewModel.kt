@@ -58,6 +58,7 @@ class AndroidPlayerViewModel: BaseViewModel() {
         exoPlayerFrameState.bindBridge(exoBridge)
         exoBridge.attachTextureView(textureView)
         addCloseable(exoPlayerFrameState)
+        addCloseable(exoBridge)
 
         viewModelScope.launch {
             snapshotFlow {
@@ -100,6 +101,5 @@ class AndroidPlayerViewModel: BaseViewModel() {
 
     override fun onCleared() {
         super.onCleared()
-        exoBridge.close()
     }
 }

@@ -10,7 +10,9 @@ import androidx.activity.compose.setContent
 import org.easybangumi.next.shared.ActivityHost
 import org.easybangumi.next.shared.ComposeApp
 import org.easybangumi.next.shared.Scheduler
+import org.easybangumi.next.shared.foundation.ActivityController
 import org.easybangumi.next.shared.utils.MediaUtils
+import org.koin.android.ext.android.inject
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -25,11 +27,14 @@ import org.easybangumi.next.shared.utils.MediaUtils
  */
 class EasyActivity : ComponentActivity() {
 
+    val activityController: ActivityController by inject()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // huawei crash
         setContentView(FrameLayout(this))
         Scheduler.onInit()
+        activityController.onCreate(this)
         MediaUtils.setIsDecorFitsSystemWindows(this, false)
         MediaUtils.setStatusBarColor(this, Color.TRANSPARENT)
         MediaUtils.setNavBarColor(this, Color.TRANSPARENT)
@@ -37,12 +42,19 @@ class EasyActivity : ComponentActivity() {
 //            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
 //        window.statusBarColor = Color.TRANSPARENT
         setContent {
-
             ActivityHost(this@EasyActivity) {
-
                 ComposeApp()
             }
         }
     }
 
+    override fun onDestroy() {
+        activityController.onDestroy(this)
+        super.onDestroy()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        activityController.onResume(this)
+    }
 }
