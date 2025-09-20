@@ -92,7 +92,7 @@ class BangumiDetailViewModel(
                 characterRepository.flow,
                 personRepository.flow,
             ) { subject, character, person ->
-                logger.info("combine state: $subject | $character | $person")
+//                logger.info("combine state: $subject | $character | $person")
                 if (subject.isOk()) {
                     viewModelScope.launch {
                         tryInitLowPriorityData()

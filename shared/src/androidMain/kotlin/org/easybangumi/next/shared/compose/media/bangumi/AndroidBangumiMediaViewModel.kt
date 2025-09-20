@@ -1,6 +1,5 @@
 package org.easybangumi.next.shared.compose.media.bangumi
 
-import android.app.Activity
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -12,7 +11,7 @@ import kotlinx.coroutines.launch
 import org.easybangumi.next.shared.compose.detail.bangumi.BangumiDetailViewModel
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
-import org.easybangumi.next.shared.compose.media.AndroidPlayerViewModel
+import org.easybangumi.next.shared.playcon.android.AndroidPlayerViewModel
 import org.easybangumi.next.shared.compose.media.MediaParam
 import org.easybangumi.next.shared.compose.media.PlayLineIndexViewModel
 import org.easybangumi.next.shared.compose.media_radar.MediaRadarParam
@@ -41,7 +40,8 @@ class AndroidBangumiMediaViewModel(
         val detailNamePreview: String = "",
         val radarResult: MediaRadarViewModel.SelectionResult? = null,
         val showDetailFromPlay: Boolean = true,
-        val fullscreen: Boolean = false,
+        val isFullscreen: Boolean = false,
+        val isTableMode: Boolean = false,
     )
 
     private val _state = MutableStateFlow(State(
@@ -67,7 +67,6 @@ class AndroidBangumiMediaViewModel(
         )
     }
     val playIndexState = playLineIndexViewModel.logic
-
 
     // == 播放状态 =============================
     val playerViewModel: AndroidPlayerViewModel by childViewModel {
@@ -104,8 +103,9 @@ class AndroidBangumiMediaViewModel(
                 playerViewModel.onPlayInfoChange(it)
             }
         }
-        // 这里只是为了更新番剧名称，用最弱的刷新方式
-        bangumiDetailViewModel.subjectRepository.refreshIfNone()
+
+
+        // bangumi 番剧信息 -> state
         viewModelScope.launch {
             bangumiDetailViewModel.subjectRepository.flow.collectLatest {
                 val name = it.okOrNull()?.displayName
@@ -118,6 +118,20 @@ class AndroidBangumiMediaViewModel(
                 }
             }
         }
+
+        viewModelScope.launch {
+            playerViewModel.screenModeViewModel.logic.collectLatest { screenViewState ->
+                _state.update {
+                    it.copy(
+                        isFullscreen = screenViewState.isFullScreen,
+                        isTableMode = screenViewState.isTabletMod
+                    )
+                }
+            }
+        }
+
+        // 这里只是为了更新番剧名称，用最弱的刷新方式
+        bangumiDetailViewModel.subjectRepository.refreshIfNone()
     }
 
     // state change ============================
@@ -129,13 +143,6 @@ class AndroidBangumiMediaViewModel(
         }
     }
 
-    fun setFullscreen(fullscreen: Boolean){
-        _state.update {
-            it.copy(
-                fullscreen = fullscreen
-            )
-        }
-    }
 
     // popup =============================
 
@@ -159,12 +166,4 @@ class AndroidBangumiMediaViewModel(
         }
     }
 
-    // fullscreen change ============================
-    fun onFullScreen(fullScreen: Boolean, reverse: Boolean = false, ctx: Activity) {
-
-    }
-
-    fun onOrientation(orientation: Int, act: Activity) {
-
-    }
 }

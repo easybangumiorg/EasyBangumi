@@ -36,6 +36,12 @@ kotlin {
             implementation(projects.logger)
 
             implementation(projects.libplayer.libplayerApi)
+
+            implementation(projects.shared.preference)
+            implementation(projects.shared.data)
+            implementation(projects.shared.foundation)
+            implementation(projects.lib.utils)
+            implementation(projects.logger)
         }
         androidMain.dependencies {
             implementation(projects.libplayer.libplayerExoplayer)

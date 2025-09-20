@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.CircularProgressIndicator
@@ -33,19 +34,32 @@ import org.easybangumi.next.shared.playcon.pointer.PointerPlayconScope
  */
 internal val logger = logger("AndroidPlaycon")
 
-class AndroidPlayconScope(
-    val vm: AndroidPlayconViewModel,
+interface AndroidPlayconScope {
+    val vm: AndroidPlayconViewModel
     val interactionSource: MutableInteractionSource
-)
+}
+
+class AndroidPlayconScopeImpl(
+    override val vm: AndroidPlayconViewModel,
+    override val interactionSource: MutableInteractionSource
+): AndroidPlayconScope
+
+interface AndroidPlayconContentScope: AndroidPlayconScope, BoxScope
+
+class AndroidPlayconContentScopeImpl(
+    playconScope: AndroidPlayconScope,
+    boxScope: BoxScope,
+): AndroidPlayconContentScope, AndroidPlayconScope by playconScope, BoxScope by boxScope
 
 @Composable
 fun AndroidPlaycon(
     modifier: Modifier,
-    viewModel: AndroidPlayconViewModel
+    viewModel: AndroidPlayconViewModel,
+    content: @Composable AndroidPlayconContentScope.() -> Unit = {},
 ) {
 
     val scope = remember(viewModel) {
-        AndroidPlayconScope(
+        AndroidPlayconScopeImpl(
             viewModel,
             MutableInteractionSource()
         )
@@ -61,56 +75,12 @@ fun AndroidPlaycon(
         modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
-
-        AndroidGestureController(
-            viewModel,
-            modifier = Modifier.fillMaxSize()
-        ) {
-
-        }
-        scope.ControllerContent(Modifier.fillMaxSize())
-        if (viewModel.isLoadingShow) {
-            CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.Center)
+        val scope = remember(scope, this) {
+            AndroidPlayconContentScopeImpl(
+                scope,
+                this
             )
         }
+        scope.content()
     }
-}
-
-@Composable
-fun AndroidPlayconScope.ControllerContent(
-    modifier: Modifier
-) {
-    val isFullScreen = vm.screenMode == AndroidPlayconViewModel.ScreenMode.FULLSCREEN
-    val isLock = vm.isLocked
-    val isShowController = vm.isShowController
-
-    AnimatedContent(
-        isLock to isShowController,
-        transitionSpec = {
-            (fadeIn(animationSpec = tween(90)))
-                .togetherWith(fadeOut(animationSpec = tween(90)))
-        },
-    ) {
-        val (isLock, isShowController) = it
-
-        Box(
-            modifier
-        ) {
-
-            if (!isLock && isShowController) {
-                AndroidPlayconBottomBar(
-                    modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter)
-                )
-            } else if (isLock) {
-
-            } else {
-
-            }
-
-
-        }
-
-    }
-
 }

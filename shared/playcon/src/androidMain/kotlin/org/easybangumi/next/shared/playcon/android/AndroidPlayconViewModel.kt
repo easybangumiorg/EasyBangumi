@@ -29,6 +29,7 @@ import org.easybangumi.next.shared.playcon.BasePlayerViewModel
  */
 class AndroidPlayconViewModel(
     bridge: ExoPlayerBridge,
+    private val requestFullScreenChangeListener: (isFullScreen: Boolean) -> Unit = { _ -> },
 ) : BasePlayerViewModel<ExoPlayerBridge>(bridge) {
 
     companion object {
@@ -177,6 +178,10 @@ class AndroidPlayconViewModel(
         scrollingPosition = position.coerceIn(0L, duration.coerceAtLeast(Long.MAX_VALUE))
         isPositionScrolling = true
 
+    }
+
+    fun onFullScreenChange(fullscreen: Boolean) {
+        requestFullScreenChangeListener(fullscreen)
     }
 
 }

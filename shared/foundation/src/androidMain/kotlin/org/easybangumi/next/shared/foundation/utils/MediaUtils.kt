@@ -1,4 +1,4 @@
-package org.easybangumi.next.shared.utils
+package org.easybangumi.next.shared.foundation.utils
 
 import android.app.Activity
 import android.view.View

@@ -1,16 +1,17 @@
-package org.easybangumi.next.shared.compose.media.bangumi
+package org.easybangumi.next.shared.playcon.android
 
 import android.app.Activity
+import android.graphics.Color
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
-import org.easybangumi.next.shared.compose.media.AndroidPlayerViewModel
+import org.easybangumi.next.shared.foundation.utils.MediaUtils
 import org.easybangumi.next.shared.foundation.utils.OnLifecycleEvent
 import org.easybangumi.next.shared.foundation.utils.OnOrientationEvent
-import org.easybangumi.next.shared.utils.MediaUtils
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -25,22 +26,30 @@ import org.easybangumi.next.shared.utils.MediaUtils
  */
 @Composable
 fun MediaPlayerSync(
-    vm: AndroidBangumiMediaViewModel
+    playerViewModel: AndroidPlayerViewModel,
 ) {
     val ctx = LocalContext.current as Activity
 
+    // 退出时恢复 activity 的 requestedOrientation
     DisposableEffect(Unit) {
         val old = ctx.requestedOrientation
         onDispose {
             logger.info("Player Dispose")
             ctx.requestedOrientation = old
+            // 先直接恢复显示，如果有其他页面需要自定义该状态
+            MediaUtils.setIsStatusBarsShow(ctx, true)
+            MediaUtils.setIsNavBarsShow(ctx, true)
         }
     }
 
-    LaunchedEffect(vm.state.value.fullscreen) {
-        if (vm.state.value.fullscreen) {
+    val state = playerViewModel.screenModeViewModel.logic.collectAsState()
+    // 全屏状态栏和导航栏的显示与隐藏
+    LaunchedEffect(state.value) {
+        logger.info("sync on fullscreen change" + state.value.isFullScreen)
+        if (state.value.isFullScreen) {
             MediaUtils.setSystemBarsBehavior(ctx, WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE)
-//            MediaUtils.setIsStatusBarsShow(ctx, false)
+            MediaUtils.setIsStatusBarsShow(ctx, false)
+            MediaUtils.setStatusBarColor(ctx, Color.TRANSPARENT)
             MediaUtils.setIsNavBarsShow(ctx, false)
         } else {
             MediaUtils.setIsStatusBarsShow(ctx, true)
@@ -50,18 +59,17 @@ fun MediaPlayerSync(
 
     // 根据传感器来横竖屏
     OnOrientationEvent { _, orientation ->
-
+        playerViewModel.screenModeViewModel.onOrientationEvent(orientation)
     }
-
 
 
     OnLifecycleEvent { _, event ->
         when (event) {
             Lifecycle.Event.ON_RESUME -> {
-                MediaUtils.setIsNavBarsShow(ctx, !vm.state.value.fullscreen)
-                MediaUtils.setIsStatusBarsShow(ctx, !vm.state.value.fullscreen)
+                MediaUtils.setIsNavBarsShow(ctx, !state.value.isFullScreen)
+                MediaUtils.setIsStatusBarsShow(ctx, !state.value.isFullScreen)
             }
-            Lifecycle.Event.ON_PAUSE -> vm.playerViewModel.exoBridge.setPlayWhenReady(false)
+            Lifecycle.Event.ON_PAUSE -> playerViewModel.exoBridge.setPlayWhenReady(false)
             else -> Unit
         }
     }
