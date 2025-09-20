@@ -68,7 +68,6 @@ class EasyTextureView : TextureView {
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         measureHelper.doOnMeasure(widthMeasureSpec, heightMeasureSpec)
-
         setMeasuredDimension(measureHelper.frameSize.width, measureHelper.frameSize.height)
         logger.info("onMeasure: widthMeasureSpec=$widthMeasureSpec, heightMeasureSpec=$heightMeasureSpec, frameSize=${measureHelper.frameSize}, frameOffset=${measureHelper.frameOffset}")
     }

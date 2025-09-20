@@ -29,15 +29,11 @@ import kotlin.getValue
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-class AndroidPlayerViewModel(
-    private val requestFullScreenChangeListener: (isFullScreen: Boolean) -> Unit = { _ -> }
-): BaseViewModel() {
+class AndroidPlayerViewModel(): BaseViewModel() {
 
     companion object {
         const val MEDIA_COMPONENT_ASPECT = 16f / 9f
     }
-
-    val textureView = EasyTextureView(global.appContext)
 
     // 视频播放
     val exoBuilder: ExoPlayer.Builder by inject()
@@ -48,9 +44,6 @@ class AndroidPlayerViewModel(
     val playconVM: AndroidPlayconViewModel by childViewModel {
         AndroidPlayconViewModel(
             exoBridge,
-            requestFullScreenChangeListener = {
-                this.requestFullScreenChangeListener.invoke(it)
-            }
         )
     }
 
@@ -65,7 +58,6 @@ class AndroidPlayerViewModel(
 
     init {
         exoPlayerFrameState.bindBridge(exoBridge)
-        exoBridge.attachTextureView(textureView)
         addCloseable(exoPlayerFrameState)
         addCloseable(exoBridge)
 

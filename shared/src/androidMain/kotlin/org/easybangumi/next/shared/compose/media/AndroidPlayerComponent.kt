@@ -14,7 +14,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
+import org.easybangumi.next.shared.playcon.android.AndroidGestureController
+import org.easybangumi.next.shared.playcon.android.AndroidPlaycon
 import org.easybangumi.next.shared.playcon.android.AndroidPlayconBottomBar
+import org.easybangumi.next.shared.playcon.android.AndroidPlayerViewModel
 import org.easybangumi.next.shared.playcon.android.DuringText
 import org.easybangumi.next.shared.playcon.android.FullScreenBtn
 import org.easybangumi.next.shared.playcon.android.PlayPauseBtn
@@ -35,26 +38,20 @@ import org.easybangumi.next.shared.playcon.android.TimeSeekBar
 @Composable
 fun MediaPlayer(
     modifier: Modifier,
-    playerVm: org.easybangumi.next.shared.playcon.android.AndroidPlayerViewModel,
+    playerVm: AndroidPlayerViewModel,
 ){
+
 
     Box(
         modifier = modifier
     ) {
-        AndroidView(factory = {
-            val texture = playerVm.textureView
-            val parent = texture.parent as? ViewGroup
-            parent?.removeView(texture)
-            texture
-        }) {
-
-        }
-        _root_ide_package_.org.easybangumi.next.shared.playcon.android.AndroidPlaycon(
+        playerVm.exoPlayerFrameState.FrameCanvas(Modifier.matchParentSize())
+        AndroidPlaycon(
             modifier = Modifier.matchParentSize(),
             viewModel = playerVm.playconVM,
         ) {
             // 手势层
-            _root_ide_package_.org.easybangumi.next.shared.playcon.android.AndroidGestureController(
+           AndroidGestureController(
                 vm,
                 modifier = Modifier.fillMaxSize()
             ) {

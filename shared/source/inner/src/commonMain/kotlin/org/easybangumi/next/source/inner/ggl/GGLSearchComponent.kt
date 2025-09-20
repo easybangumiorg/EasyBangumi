@@ -44,7 +44,7 @@ class GGLSearchComponent: SearchComponent, BaseComponent() {
         key: String
     ): DataState<PagingFrame<CartoonCover>> {
         return withResult {
-            val host = prefHelper.get("host", "anime.girigirilove.com")
+            val host = prefHelper.get("host", "bgm.girigirilove.com")
             logger.info("GGLPlayComponent searchPlayCovers: host=$host, keyword=${keyword}, key=$key")
             val html = ktorClient.get {
                 url {

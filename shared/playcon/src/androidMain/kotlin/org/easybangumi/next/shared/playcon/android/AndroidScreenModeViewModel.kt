@@ -129,7 +129,7 @@ class AndroidScreenModeViewModel: BaseViewModel() {
     private fun fireOrientationChange(
         orientation: Int
     ) {
-        logger.info("fireOrientationChange: $orientation")
+//        logger.info("fireOrientationChange: $orientation")
         handler.removeMessages(Event.WHAT_ORIENTATION_CHANGE)
         handler.dispatchMessage(Message.obtain().apply {
             what = Event.WHAT_ORIENTATION_CHANGE
@@ -140,7 +140,7 @@ class AndroidScreenModeViewModel: BaseViewModel() {
     private fun handleOrientationChange(
         orientation: Int
     ) {
-        logger.info("handleOrientationChange: $orientation")
+//        logger.info("handleOrientationChange: $orientation")
         val act = activityController.showingActivity() ?: return
         val curState = _logicState.value
         val tabletMod = curState.isTabletMod
@@ -175,7 +175,7 @@ class AndroidScreenModeViewModel: BaseViewModel() {
 
     private var orientationTemp: Int = -1
     fun onOrientationEvent(orientation: Int) {
-        logger.info("onOrientationEvent: $orientation")
+//        logger.info("onOrientationEvent: $orientation")
         if (orientation == OrientationEventListener.ORIENTATION_UNKNOWN) {
             return
         }
@@ -208,7 +208,7 @@ class AndroidScreenModeViewModel: BaseViewModel() {
         isTabletMod: Boolean,
         ctx: Activity
     ){
-        logger.info("changeRequestedOrientation: fullScreen=$fullScreen, reverse=$reverse, isTabletMod=$isTabletMod")
+//        logger.info("changeRequestedOrientation: fullScreen=$fullScreen, reverse=$reverse, isTabletMod=$isTabletMod")
         if (!fullScreen) {
             if (isTabletMod) {
                 // 全屏平板模式走未指定，交给系统

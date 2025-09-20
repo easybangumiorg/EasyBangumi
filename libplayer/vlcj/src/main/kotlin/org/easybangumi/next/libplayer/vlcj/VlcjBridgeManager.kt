@@ -41,7 +41,7 @@ class VlcjBridgeManager(
 
     fun getOrCreateBridge(
         tag: String,
-        customFrameScope: CoroutineScope?,
+        customFrameScope: CoroutineScope? = null,
     ): VlcjPlayerBridge {
         return map.getOrPut(tag) {
             reentrantLock.withLock {

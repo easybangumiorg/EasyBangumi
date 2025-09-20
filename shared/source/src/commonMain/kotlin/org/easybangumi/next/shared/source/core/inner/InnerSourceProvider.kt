@@ -12,6 +12,7 @@ import org.easybangumi.next.shared.source.api.source.SourceInfo
 import org.easybangumi.next.shared.source.api.source.SourceType
 import org.easybangumi.next.shared.source.bangumi.source.BangumiInnerSource
 import org.easybangumi.next.shared.source.core.source.SourceConfigController
+import org.easybangumi.next.source.inner.debug.DebugInnerSource
 import org.easybangumi.next.source.inner.ggl.GGLInnerSource
 
 /**
@@ -50,6 +51,18 @@ class InnerSourceProvider(
         }}
     }
 
+    val debugSource by lazy {
+        DebugInnerSource()
+    }
+
+    val debugComponentBundle: ComponentBundle by lazy {
+        InnerComponentBundle(debugSource).apply { runBlocking {
+            load()
+        }}
+    }
+
+
+
 
     override val type: SourceType = SourceType.INNER
 
@@ -79,7 +92,18 @@ class InnerSourceProvider(
                             )
                         },
                         componentBundle = gglComponentBundle
-                    )
+                    ),
+                    SourceInfo.Loaded(
+                        manifest = debugSource.manifest,
+                        sourceConfig =  map.getOrElse(debugSource.key) {
+                            SourceConfig(
+                                key = debugSource.key,
+                                enable = false,
+                                order = 1,
+                            )
+                        },
+                        componentBundle = debugComponentBundle
+                    ),
                 )
             }
         }
