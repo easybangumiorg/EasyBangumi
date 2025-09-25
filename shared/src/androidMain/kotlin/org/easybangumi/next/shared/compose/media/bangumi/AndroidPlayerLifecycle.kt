@@ -4,9 +4,11 @@ import android.app.Activity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
+import org.easybangumi.next.shared.LocalActivity
 import org.easybangumi.next.shared.compose.media.AndroidPlayerViewModel
 import org.easybangumi.next.shared.foundation.utils.OnLifecycleEvent
 import org.easybangumi.next.shared.foundation.utils.OnOrientationEvent
@@ -27,8 +29,9 @@ import org.easybangumi.next.shared.utils.MediaUtils
 fun MediaPlayerSync(
     vm: AndroidBangumiMediaViewModel
 ) {
-    val ctx = LocalContext.current as Activity
+    val ctx = LocalActivity.current as Activity
 
+    val state = vm.state.collectAsState()
     DisposableEffect(Unit) {
         val old = ctx.requestedOrientation
         onDispose {
@@ -37,7 +40,7 @@ fun MediaPlayerSync(
         }
     }
 
-    LaunchedEffect(vm.state.value.fullscreen) {
+    LaunchedEffect(state.value.fullscreen) {
         if (vm.state.value.fullscreen) {
             MediaUtils.setSystemBarsBehavior(ctx, WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE)
 //            MediaUtils.setIsStatusBarsShow(ctx, false)
@@ -58,8 +61,8 @@ fun MediaPlayerSync(
     OnLifecycleEvent { _, event ->
         when (event) {
             Lifecycle.Event.ON_RESUME -> {
-                MediaUtils.setIsNavBarsShow(ctx, !vm.state.value.fullscreen)
-                MediaUtils.setIsStatusBarsShow(ctx, !vm.state.value.fullscreen)
+                MediaUtils.setIsNavBarsShow(ctx, !state.value.fullscreen)
+                MediaUtils.setIsStatusBarsShow(ctx, !state.value.fullscreen)
             }
             Lifecycle.Event.ON_PAUSE -> vm.playerViewModel.exoBridge.setPlayWhenReady(false)
             else -> Unit
