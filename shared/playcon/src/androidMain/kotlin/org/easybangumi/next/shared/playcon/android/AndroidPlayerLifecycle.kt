@@ -28,9 +28,9 @@ import org.easybangumi.next.shared.foundation.utils.OnOrientationEvent
 fun MediaPlayerSync(
     playerViewModel: AndroidPlayerViewModel,
 ) {
-    val ctx = LocalActivity.current as Activity
+    val ctx = LocalContext.current as Activity
 
-    val state = vm.state.collectAsState()
+    val state = playerViewModel.screenModeViewModel.logic.collectAsState()
     // 退出时恢复 activity 的 requestedOrientation
     DisposableEffect(Unit) {
         val old = ctx.requestedOrientation
@@ -43,8 +43,8 @@ fun MediaPlayerSync(
         }
     }
 
-    LaunchedEffect(state.value.fullscreen) {
-        if (vm.state.value.fullscreen) {
+    LaunchedEffect(state.value.isFullScreen) {
+        if (state.value.isFullScreen) {
             MediaUtils.setSystemBarsBehavior(ctx, WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE)
             MediaUtils.setIsStatusBarsShow(ctx, false)
             MediaUtils.setStatusBarColor(ctx, Color.TRANSPARENT)
@@ -64,8 +64,8 @@ fun MediaPlayerSync(
     OnLifecycleEvent { _, event ->
         when (event) {
             Lifecycle.Event.ON_RESUME -> {
-                MediaUtils.setIsNavBarsShow(ctx, !state.value.fullscreen)
-                MediaUtils.setIsStatusBarsShow(ctx, !state.value.fullscreen)
+                MediaUtils.setIsNavBarsShow(ctx, !state.value.isFullScreen)
+                MediaUtils.setIsStatusBarsShow(ctx, !state.value.isFullScreen)
             }
             Lifecycle.Event.ON_PAUSE -> playerViewModel.exoBridge.setPlayWhenReady(false)
             else -> Unit
