@@ -11,11 +11,12 @@ import kotlinx.coroutines.launch
 import org.easybangumi.next.shared.compose.detail.bangumi.BangumiDetailViewModel
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
-import org.easybangumi.next.shared.playcon.android.AndroidPlayerViewModel
 import org.easybangumi.next.shared.compose.media.MediaParam
 import org.easybangumi.next.shared.compose.media.PlayLineIndexViewModel
 import org.easybangumi.next.shared.compose.media_radar.MediaRadarParam
 import org.easybangumi.next.shared.compose.media_radar.MediaRadarViewModel
+import org.easybangumi.next.shared.playcon.desktop.DesktopPlayerViewModel
+import org.easybangumi.next.shared.playcon.pointer.PointerPlayconViewModel
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -28,7 +29,7 @@ import org.easybangumi.next.shared.compose.media_radar.MediaRadarViewModel
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-class AndroidBangumiMediaViewModel(
+class DesktopBangumiMediaViewModel(
     val param: MediaParam,
 ): BaseViewModel() {
 
@@ -69,8 +70,8 @@ class AndroidBangumiMediaViewModel(
     val playIndexState = playLineIndexViewModel.logic
 
     // == 播放状态 =============================
-    val playerViewModel: AndroidPlayerViewModel by childViewModel {
-        AndroidPlayerViewModel()
+    val playerViewModel: DesktopPlayerViewModel by childViewModel {
+        DesktopPlayerViewModel()
     }
 
     // == 视频雷达状态 =============================
@@ -115,17 +116,6 @@ class AndroidBangumiMediaViewModel(
                             detailNamePreview = name
                         )
                     }
-                }
-            }
-        }
-
-        viewModelScope.launch {
-            playerViewModel.screenModeViewModel.logic.collectLatest { screenViewState ->
-                _state.update {
-                    it.copy(
-                        isFullscreen = screenViewState.isFullScreen,
-                        isTableMode = screenViewState.isTabletMod
-                    )
                 }
             }
         }

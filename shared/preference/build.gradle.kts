@@ -22,7 +22,7 @@ kotlin {
 
         commonMain.dependencies {
             implementation(libs.koin.core)
-            implementation(projects.lib.store)
+            api(projects.lib.store)
         }
 
         androidMain.dependencies {

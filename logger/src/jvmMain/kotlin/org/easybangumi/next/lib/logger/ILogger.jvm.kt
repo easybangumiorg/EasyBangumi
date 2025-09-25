@@ -72,7 +72,7 @@ class LoggerWrapper(
 
 
 actual fun Any.logger(): Logger {
-    val tag = this::class.java.canonicalName?.removePrefix("org.easybangumi.next.")?:""
+    val tag = this::class.java.simpleName ?: this::class.java.canonicalName?.removePrefix("org.easybangumi.next.")?:""
     return logger(tag)
 }
 

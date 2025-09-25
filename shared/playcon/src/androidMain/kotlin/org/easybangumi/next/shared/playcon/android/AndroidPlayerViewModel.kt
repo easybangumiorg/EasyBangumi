@@ -1,4 +1,4 @@
-package org.easybangumi.next.shared.compose.media
+package org.easybangumi.next.shared.playcon.android
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshotFlow
@@ -7,17 +7,14 @@ import androidx.media3.exoplayer.ExoPlayer
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.utils.DataState
-import org.easybangumi.next.lib.utils.Global
 import org.easybangumi.next.lib.utils.global
 import org.easybangumi.next.libplayer.api.C
 import org.easybangumi.next.libplayer.api.MediaItem
 import org.easybangumi.next.libplayer.exoplayer.EasyTextureView
 import org.easybangumi.next.libplayer.exoplayer.ExoPlayerBridge
 import org.easybangumi.next.libplayer.exoplayer.ExoPlayerFrameState
-import org.easybangumi.next.libplayer.exoplayer.LibC
 import org.easybangumi.next.shared.data.cartoon.PlayInfo
 import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
-import org.easybangumi.next.shared.playcon.android.AndroidPlayconViewModel
 import org.koin.core.component.inject
 import kotlin.getValue
 
@@ -32,13 +29,11 @@ import kotlin.getValue
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-class AndroidPlayerViewModel: BaseViewModel() {
+class AndroidPlayerViewModel(): BaseViewModel() {
 
     companion object {
         const val MEDIA_COMPONENT_ASPECT = 16f / 9f
     }
-
-    val textureView = EasyTextureView(global.appContext)
 
     // 视频播放
     val exoBuilder: ExoPlayer.Builder by inject()
@@ -47,7 +42,14 @@ class AndroidPlayerViewModel: BaseViewModel() {
 
     // 播放控制
     val playconVM: AndroidPlayconViewModel by childViewModel {
-        AndroidPlayconViewModel(exoBridge)
+        AndroidPlayconViewModel(
+            exoBridge,
+        )
+    }
+
+    // 横竖屏切换
+    val screenModeViewModel: AndroidScreenModeViewModel by childViewModel {
+        AndroidScreenModeViewModel()
     }
 
 
@@ -56,9 +58,19 @@ class AndroidPlayerViewModel: BaseViewModel() {
 
     init {
         exoPlayerFrameState.bindBridge(exoBridge)
-        exoBridge.attachTextureView(textureView)
         addCloseable(exoPlayerFrameState)
         addCloseable(exoBridge)
+
+
+        viewModelScope.launch {
+            screenModeViewModel.logic.collectLatest {
+                playconVM.screenMode = if (it.isFullScreen) {
+                    AndroidPlayconViewModel.ScreenMode.FULLSCREEN
+                } else {
+                    AndroidPlayconViewModel.ScreenMode.NORMAL
+                }
+            }
+        }
 
         viewModelScope.launch {
             snapshotFlow {
@@ -98,6 +110,8 @@ class AndroidPlayerViewModel: BaseViewModel() {
     fun onPlayInfoChange(playerInfoState: DataState<PlayInfo>) {
         playInfo.value = playerInfoState
     }
+
+
 
     override fun onCleared() {
         super.onCleared()

@@ -13,8 +13,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.libplayer.exoplayer.ExoPlayerBridge
-import org.easybangumi.next.libplayer.exoplayer.LibC
-import org.easybangumi.next.shared.playcon.BasePlayerViewModel
+import org.easybangumi.next.shared.playcon.BasePlayconViewModel
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -29,7 +28,7 @@ import org.easybangumi.next.shared.playcon.BasePlayerViewModel
  */
 class AndroidPlayconViewModel(
     bridge: ExoPlayerBridge,
-) : BasePlayerViewModel<ExoPlayerBridge>(bridge) {
+) : BasePlayconViewModel<ExoPlayerBridge>(bridge) {
 
     companion object {
         const val CONTROL_HIDE_DELAY = 4000L
@@ -178,5 +177,6 @@ class AndroidPlayconViewModel(
         isPositionScrolling = true
 
     }
+
 
 }

@@ -1,4 +1,4 @@
-package org.easybangumi.next.shared.compose.media
+package org.easybangumi.next.shared.playcon.android
 
 import android.app.Activity
 import android.content.pm.ActivityInfo
@@ -8,16 +8,10 @@ import android.os.Message
 import android.provider.Settings
 import android.view.OrientationEventListener
 import androidx.annotation.UiThread
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
-import org.easybangumi.next.lib.utils.global
+import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.shared.foundation.ActivityController
 import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
 import org.easybangumi.next.shared.preference.AndroidPlayerPreference
@@ -37,6 +31,8 @@ import org.koin.core.component.inject
  *  全屏/非全屏切换
  */
 class AndroidScreenModeViewModel: BaseViewModel() {
+
+    private val logger = logger()
 
     private val activityController: ActivityController by inject()
     private val playerPreference: AndroidPlayerPreference by inject()
@@ -72,13 +68,6 @@ class AndroidScreenModeViewModel: BaseViewModel() {
     private val _logicState = MutableStateFlow(LogicState())
     val logic = _logicState.asStateFlow()
 
-    // UI state 只影响布局
-    data class UIState (
-        val isFullScreen: Boolean = false,
-        val isTabletMod: Boolean = false,
-    )
-    private val _uiState = mutableStateOf(UIState())
-    val ui: State<UIState> = _uiState
 
 
     sealed class Event(
@@ -99,22 +88,11 @@ class AndroidScreenModeViewModel: BaseViewModel() {
         ): Event(WHAT_ORIENTATION_CHANGE)
     }
 
-    init {
-        viewModelScope.launch {
-
-            _logicState.collect {
-                _uiState.value = _uiState.value.copy(
-                    isFullScreen = it.isFullScreen,
-                    isTabletMod = it.isTabletMod
-                )
-            }
-        }
-    }
-
     // 发送用户点击切换全屏事件
     fun fireUserFullScreenChange(
         isFullScreen: Boolean
     ) {
+        logger.info("fireUserFullScreenChange: $isFullScreen")
         // 用户点击必须优先处理，处理中会读取单次传感器数据
         handler.removeMessages(Event.WHAT_ORIENTATION_CHANGE)
         handler.dispatchMessage(Message.obtain().apply {
@@ -127,6 +105,7 @@ class AndroidScreenModeViewModel: BaseViewModel() {
     private fun handleUserFullScreenChange(
         isFullScreen: Boolean
     ) {
+        logger.info("handleUserFullScreenChange: $isFullScreen")
         val act = activityController.showingActivity() ?: return
         val curState = _logicState.value
         val tabletMod = curState.isTabletMod
@@ -150,6 +129,7 @@ class AndroidScreenModeViewModel: BaseViewModel() {
     private fun fireOrientationChange(
         orientation: Int
     ) {
+//        logger.info("fireOrientationChange: $orientation")
         handler.removeMessages(Event.WHAT_ORIENTATION_CHANGE)
         handler.dispatchMessage(Message.obtain().apply {
             what = Event.WHAT_ORIENTATION_CHANGE
@@ -160,6 +140,7 @@ class AndroidScreenModeViewModel: BaseViewModel() {
     private fun handleOrientationChange(
         orientation: Int
     ) {
+//        logger.info("handleOrientationChange: $orientation")
         val act = activityController.showingActivity() ?: return
         val curState = _logicState.value
         val tabletMod = curState.isTabletMod
@@ -194,6 +175,7 @@ class AndroidScreenModeViewModel: BaseViewModel() {
 
     private var orientationTemp: Int = -1
     fun onOrientationEvent(orientation: Int) {
+//        logger.info("onOrientationEvent: $orientation")
         if (orientation == OrientationEventListener.ORIENTATION_UNKNOWN) {
             return
         }
@@ -217,7 +199,7 @@ class AndroidScreenModeViewModel: BaseViewModel() {
         if (orientationEventBlock) {
             return
         }
-        fireOrientationChange(orientation)
+        fireOrientationChange(targetOrientation)
     }
 
     private fun changeRequestedOrientation(
@@ -226,6 +208,7 @@ class AndroidScreenModeViewModel: BaseViewModel() {
         isTabletMod: Boolean,
         ctx: Activity
     ){
+//        logger.info("changeRequestedOrientation: fullScreen=$fullScreen, reverse=$reverse, isTabletMod=$isTabletMod")
         if (!fullScreen) {
             if (isTabletMod) {
                 // 全屏平板模式走未指定，交给系统
@@ -233,9 +216,9 @@ class AndroidScreenModeViewModel: BaseViewModel() {
             } else {
                 // 非全屏手机模式
                 if (reverse) {
-                    ctx.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                    ctx.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT
                 } else {
-                    ctx.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE
+                    ctx.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
                 }
             }
         } else {

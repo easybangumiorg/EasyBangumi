@@ -44,7 +44,7 @@ class GGLPlayComponent: PlayComponent, BaseComponent() {
 
     override suspend fun getPlayLines(cartoonIndex: CartoonIndex): DataState<List<PlayerLine>> {
         return withResult {
-            val host = prefHelper.get("host", "anime.girigirilove.com")
+            val host = prefHelper.get("host", "bgm.girigirilove.com")
             val html = ktorClient.get {
                 url {
                     this.host = host
@@ -98,7 +98,7 @@ class GGLPlayComponent: PlayComponent, BaseComponent() {
                 if(cartoonIndex.id.startsWith("GV"))
                     cartoonIndex.id
                 else "GV${cartoonIndex.id}"}-${playerLine.id}-${episode.id}"
-            val host = prefHelper.get("host", "anime.girigirilove.com")
+            val host = prefHelper.get("host", "bgm.girigirilove.com")
             val url = buildUrl {
                 this.host = host
                 path("play${urlPath}" )

@@ -21,12 +21,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.foundation.cartoon.CartoonCoverCard
 import org.easybangumi.next.shared.foundation.elements.LoadScaffold
 import org.easybangumi.next.shared.foundation.shimmer.ShimmerHost
-import org.easybangumi.next.shared.foundation.shimmer.drawRectWhenShimmerVisible
 import org.easybangumi.next.shared.foundation.view_model.vm
 import org.easybangumi.next.shared.scheme.EasyScheme
 

@@ -11,7 +11,7 @@ import org.easybangumi.next.shared.ActivityHost
 import org.easybangumi.next.shared.ComposeApp
 import org.easybangumi.next.shared.Scheduler
 import org.easybangumi.next.shared.foundation.ActivityController
-import org.easybangumi.next.shared.utils.MediaUtils
+import org.easybangumi.next.shared.foundation.utils.MediaUtils
 import org.koin.android.ext.android.inject
 
 /**

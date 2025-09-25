@@ -50,12 +50,6 @@ import org.easybangumi.next.shared.foundation.lazy.itemsFromGrid
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-@Composable
-fun AndroidMediaPlayLineIndex(
-    vm: PlayLineIndexViewModel
-) {
-
-}
 
 fun LazyListScope.androidMediaPlayLineIndex(
     vm: PlayLineIndexViewModel,

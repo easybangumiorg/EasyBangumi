@@ -23,10 +23,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.logger.logger
-import org.easybangumi.next.shared.compose.media.AndroidPlayerViewModel
+import org.easybangumi.next.shared.playcon.android.AndroidPlayerViewModel
 import org.easybangumi.next.shared.foundation.view_model.vm
 import org.easybangumi.next.shared.compose.media.MediaParam
 import org.easybangumi.next.shared.compose.media.MediaPlayer
+import org.easybangumi.next.shared.playcon.android.MediaPlayerSync
 import org.easybangumi.next.shared.compose.media_radar.MediaRadarBottomPanel
 import org.easybangumi.next.shared.foundation.EasyTab
 import org.easybangumi.next.shared.foundation.stringRes
@@ -85,13 +86,13 @@ actual fun BangumiMedia(mediaParam: MediaParam) {
     BangumiPopup(vm)
 
     Column {
-        if (!sta.fullscreen) {
+        if (!sta.isFullscreen) {
             Box(modifier = Modifier.background(Color.Black).fillMaxWidth().height(with(LocalDensity.current) {
                 WindowInsets.statusBars.getTop(LocalDensity.current).toDp()
             }).background(Color.Black))
         }
-        val playerModifier = remember(sta.fullscreen) {
-            if (sta.fullscreen) {
+        val playerModifier = remember(sta.isFullscreen) {
+            if (sta.isFullscreen) {
                 Modifier
                     .fillMaxSize()
                     .background(Color.Black)
@@ -102,11 +103,12 @@ actual fun BangumiMedia(mediaParam: MediaParam) {
                     .background(Color.Black)
             }
         }
+        MediaPlayerSync(vm.playerViewModel)
         MediaPlayer(
             modifier = playerModifier,
-            vm = vm.playerViewModel
+            playerVm = vm.playerViewModel
         )
-        if (!sta.fullscreen) {
+        if (!sta.isFullscreen) {
             EasyTab(
                 modifier = Modifier.fillMaxWidth(),
                 scrollable = true,

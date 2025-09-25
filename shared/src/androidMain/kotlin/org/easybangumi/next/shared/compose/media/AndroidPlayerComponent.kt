@@ -1,11 +1,28 @@
 package org.easybangumi.next.shared.compose.media
 
 import android.view.ViewGroup
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
+import org.easybangumi.next.shared.playcon.android.AndroidGestureController
 import org.easybangumi.next.shared.playcon.android.AndroidPlaycon
+import org.easybangumi.next.shared.playcon.android.AndroidPlayconBottomBar
+import org.easybangumi.next.shared.playcon.android.AndroidPlayerViewModel
+import org.easybangumi.next.shared.playcon.android.DuringText
+import org.easybangumi.next.shared.playcon.android.FullScreenBtn
+import org.easybangumi.next.shared.playcon.android.PlayPauseBtn
+import org.easybangumi.next.shared.playcon.android.PositionText
+import org.easybangumi.next.shared.playcon.android.TimeSeekBar
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -21,22 +38,87 @@ import org.easybangumi.next.shared.playcon.android.AndroidPlaycon
 @Composable
 fun MediaPlayer(
     modifier: Modifier,
-    vm: AndroidPlayerViewModel,
+    playerVm: AndroidPlayerViewModel,
 ){
+
+
     Box(
         modifier = modifier
     ) {
-        AndroidView(factory = {
-            val texture = vm.textureView
-            val parent = texture.parent as? ViewGroup
-            parent?.removeView(texture)
-            texture
-        }) {
-
-        }
+        playerVm.exoPlayerFrameState.FrameCanvas(Modifier.matchParentSize())
         AndroidPlaycon(
             modifier = Modifier.matchParentSize(),
-            viewModel = vm.playconVM,
-        )
+            viewModel = playerVm.playconVM,
+        ) {
+            // 手势层
+           AndroidGestureController(
+                vm,
+                modifier = Modifier.fillMaxSize()
+            ) {
+
+            }
+
+            // 控制器层
+            ControllerContent(modifier = Modifier.fillMaxSize(), onFullScreenChange = {
+                playerVm.screenModeViewModel.fireUserFullScreenChange(it)
+            })
+
+            if (vm.isLoadingShow) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
+
+
+        }
     }
+}
+
+@Composable
+fun org.easybangumi.next.shared.playcon.android.AndroidPlayconContentScope.ControllerContent(
+    modifier: Modifier,
+    onFullScreenChange: (isFullScreen: Boolean) -> Unit = { _ -> }
+) {
+    val isFullScreen = vm.screenMode == _root_ide_package_.org.easybangumi.next.shared.playcon.android.AndroidPlayconViewModel.ScreenMode.FULLSCREEN
+    val isLock = vm.isLocked
+    val isShowController = vm.isShowController
+
+    AnimatedContent(
+        isLock to isShowController,
+        transitionSpec = {
+            (fadeIn(animationSpec = tween(90)))
+                .togetherWith(fadeOut(animationSpec = tween(90)))
+        },
+    ) {
+        val (isLock, isShowController) = it
+
+        Box(
+            modifier
+        ) {
+
+            if (!isLock && isShowController) {
+                this@ControllerContent.AndroidPlayconBottomBar(
+                    modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter)
+                ) {
+                    PlayPauseBtn()
+                    PositionText()
+                    TimeSeekBar()
+                    DuringText()
+                    FullScreenBtn(onFullScreenChange = {
+                        onFullScreenChange(it)
+                    })
+                }
+
+
+            } else if (isLock) {
+
+            } else {
+
+            }
+
+
+        }
+
+    }
+
 }

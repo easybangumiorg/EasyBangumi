@@ -203,19 +203,22 @@ fun HeaderContent(
             text = it.displayName ?: "",
             style = MaterialTheme.typography.titleLarge,
             maxLines = 3,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
+            color = MaterialTheme.colorScheme.onSurface
         )
         Spacer(modifier = Modifier.size(8.dp))
         Text(
             modifier = Modifier,
             text = it.date ?: "",
             style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface
         )
         Spacer(modifier = Modifier.size(8.dp))
         Text(
             modifier = Modifier,
             text = it.displayEpisode ?: "",
             style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface
         )
         Spacer(modifier = Modifier.weight(1f))
         it.rating?.let {

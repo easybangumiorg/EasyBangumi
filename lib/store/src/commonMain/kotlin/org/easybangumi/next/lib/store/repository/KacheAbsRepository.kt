@@ -90,10 +90,10 @@ abstract class KacheAbsRepository<T: Any>(
                 DataState.Companion.loading(cacheData = it.okOrNull())
             }
             val remote = fetchRemoteData()
-            logger.info("remote data state: $remote")
+//            logger.info("remote data state: $remote")
             when (remote) {
                 is DataState.Ok -> {
-                    logger.info("remote data state update: $remote")
+//                    logger.info("remote data state update: $remote")
                     _flow.update {
                         remote
                     }
@@ -103,7 +103,7 @@ abstract class KacheAbsRepository<T: Any>(
                         try {
                             subjectKache?.put(cacheKey) {
                                 return@put try {
-                                    logger.info("cache data to kache: $cacheKey -> $it")
+//                                    logger.info("cache data to kache: $cacheKey -> $it")
                                     val uni = UniFileFactory.formPath(it.toPath())
 //                                    uni.getParentFile()?.createDirectory()
 //                                    uni.delete()

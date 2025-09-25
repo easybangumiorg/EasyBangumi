@@ -10,7 +10,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.libplayer.api.PlayerBridge
-import org.easybangumi.next.shared.playcon.BasePlayerViewModel
+import org.easybangumi.next.shared.playcon.BasePlayconViewModel
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -27,7 +27,7 @@ import org.easybangumi.next.shared.playcon.BasePlayerViewModel
  */
 class PointerPlayconViewModel(
     bridge: PlayerBridge,
-) : BasePlayerViewModel<PlayerBridge>(bridge) {
+) : BasePlayconViewModel<PlayerBridge>(bridge) {
 
     companion object {
         const val CONTROL_HIDE_DELAY = 4000L
