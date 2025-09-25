@@ -1,6 +1,7 @@
 package org.easybangumi.next.shared.compose.media.bangumi
 
 import androidx.compose.runtime.Composable
+import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.shared.compose.media.MediaParam
 
 /**
@@ -14,6 +15,7 @@ import org.easybangumi.next.shared.compose.media.MediaParam
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
+internal val logger = logger("BangumiMedia")
 
 @Composable
 expect fun BangumiMedia (

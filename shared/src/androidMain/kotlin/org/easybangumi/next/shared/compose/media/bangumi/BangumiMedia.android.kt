@@ -27,8 +27,10 @@ import org.easybangumi.next.shared.playcon.android.AndroidPlayerViewModel
 import org.easybangumi.next.shared.foundation.view_model.vm
 import org.easybangumi.next.shared.compose.media.MediaParam
 import org.easybangumi.next.shared.compose.media.MediaPlayer
+import org.easybangumi.next.shared.compose.media.bangumi.page.BangumiMediaCommentSubPage
+import org.easybangumi.next.shared.compose.media.bangumi.page.BangumiMediaDetailSubPage
+import org.easybangumi.next.shared.compose.media.bangumi.page.BangumiMediaPage
 import org.easybangumi.next.shared.playcon.android.MediaPlayerSync
-import org.easybangumi.next.shared.compose.media_radar.MediaRadarBottomPanel
 import org.easybangumi.next.shared.foundation.EasyTab
 import org.easybangumi.next.shared.foundation.stringRes
 import org.easybangumi.next.shared.resources.Res
@@ -46,29 +48,6 @@ import org.easybangumi.next.shared.resources.Res
  */
 internal val logger = logger("BangumiMediaAndroid")
 
-sealed class BangumiMediaSubPage(
-    val label: @Composable () -> Unit,
-    val content: @Composable (AndroidBangumiMediaViewModel) -> Unit,
-) {
-    data object Detail: BangumiMediaSubPage (
-        label = { Text(stringRes(Res.strings.detailed)) },
-        content = {
-            BangumiMediaDetailSubPage(it)
-        }
-    )
-
-    data object Comment: BangumiMediaSubPage (
-        label = { Text(stringRes(Res.strings.comment) )},
-        content = {
-            BangumiMediaCommentSubPage(it)
-        }
-    )
-}
-
-private val bangumiMediaSubPageList = listOf(
-    BangumiMediaSubPage.Detail,
-    BangumiMediaSubPage.Comment
-)
 
 
 @Composable
@@ -76,14 +55,12 @@ actual fun BangumiMedia(mediaParam: MediaParam) {
     val vm = vm(::AndroidBangumiMediaViewModel, mediaParam)
 
     val scope = rememberCoroutineScope()
-    val state = vm.state.collectAsState()
+    val state = vm.commonVM.state.collectAsState()
     val sta = state.value
 
-    val pagerState = rememberPagerState {
-        bangumiMediaSubPageList.size
-    }
 
-    BangumiPopup(vm)
+
+    BangumiPopup(vm.commonVM)
 
     Column {
         if (!sta.isFullscreen) {
@@ -109,65 +86,13 @@ actual fun BangumiMedia(mediaParam: MediaParam) {
             playerVm = vm.playerViewModel
         )
         if (!sta.isFullscreen) {
-            EasyTab(
-                modifier = Modifier.fillMaxWidth(),
-                scrollable = true,
-                containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                contentColor = MaterialTheme.colorScheme.onSurface,
-                size = bangumiMediaSubPageList.size,
-                selection = pagerState.currentPage,
-                onSelected = {
-                    scope.launch {
-                        pagerState.animateScrollToPage(it)
-                    }
-                },
-                tabs = { index, selected ->
-                    val tab = bangumiMediaSubPageList[index]
-                    tab.label.invoke()
-                }
+            BangumiMediaPage(
+                vm.commonVM,
+                Modifier.fillMaxWidth().weight(1f)
             )
-            HorizontalDivider(modifier = Modifier.fillMaxWidth())
-            HorizontalPager(
-                pagerState,
-                modifier = Modifier.fillMaxWidth().weight(1f)
-            ) {
-                val tab = bangumiMediaSubPageList[it]
-                Box(
-                    modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceContainerLow)
-                ) {
-                    tab.content(vm)
-                }
-            }
         }
     }
 
 
 }
 
-@Composable
-fun BangumiPopup(
-    vm: AndroidBangumiMediaViewModel,
-){
-    val state = vm.popupState.collectAsState()
-    val popup = state.value
-    when (val po = popup) {
-        is AndroidBangumiMediaViewModel.Popup.BangumiDetailPanel -> {
-
-        }
-        is AndroidBangumiMediaViewModel.Popup.MediaRadarPanel -> {
-            logger.info("show media radar panel")
-            MediaRadarBottomPanel(
-                vm = vm.mediaRadarViewModel,
-                onDismissRequest = {
-                    vm.dismissPopup()
-                },
-                onSelection = {
-                    vm.onMediaRadarSelect(it)
-                    vm.dismissPopup()
-                }
-            )
-
-        }
-        else -> {}
-    }
-}

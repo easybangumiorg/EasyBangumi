@@ -1,4 +1,4 @@
-package org.easybangumi.next.shared.compose.media.bangumi
+package org.easybangumi.next.shared.compose.media.bangumi.page
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,8 +24,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import org.easybangumi.next.shared.compose.media.AndroidMediaActions
-import org.easybangumi.next.shared.compose.media.androidMediaPlayLineIndex
+import org.easybangumi.next.shared.compose.media.bangumi.BangumiMediaActions
+import org.easybangumi.next.shared.compose.media.bangumi.BangumiMediaCommonVM
+import org.easybangumi.next.shared.compose.media.mediaPlayLineIndex
 import org.easybangumi.next.shared.foundation.image.AnimationImage
 import org.easybangumi.next.shared.foundation.image.AsyncImage
 import org.easybangumi.next.shared.foundation.stringRes
@@ -45,7 +46,7 @@ import org.easybangumi.next.shared.ui.detail.preview.BangumiDetailPreview
  */
 @Composable
 fun BangumiMediaDetailSubPage(
-    vm: AndroidBangumiMediaViewModel
+    vm: BangumiMediaCommonVM
 ) {
     val state = vm.state.collectAsState()
     val sta = state.value
@@ -66,7 +67,7 @@ fun BangumiMediaDetailSubPage(
             space(Modifier.height(8.dp))
             divider()
             // 播放线路和集数选择
-            androidMediaPlayLineIndex(vm.playLineIndexViewModel, vm.playLineIndexViewModel.ui.value, 2)
+            mediaPlayLineIndex(vm.playLineIndexViewModel, vm.playLineIndexViewModel.ui.value, 2)
         }
 
     }
@@ -87,8 +88,8 @@ fun LazyListScope.divider() {
 }
 
 fun LazyListScope.bangumiDetailCard(
-    vm: AndroidBangumiMediaViewModel,
-    sta: AndroidBangumiMediaViewModel.State,
+    vm: BangumiMediaCommonVM,
+    sta: BangumiMediaCommonVM.State,
 ) {
 
     item {
@@ -99,7 +100,7 @@ fun LazyListScope.bangumiDetailCard(
 
 fun LazyListScope.playerAction() {
     item {
-        AndroidMediaActions(
+        BangumiMediaActions(
             isStar = false,
             isDownloading = false,
             isDeleting = false,
@@ -115,8 +116,8 @@ fun LazyListScope.playerAction() {
 }
 
 fun LazyListScope.playerSourceCard(
-    vm: AndroidBangumiMediaViewModel,
-    sta: AndroidBangumiMediaViewModel.State,
+    vm: BangumiMediaCommonVM,
+    sta: BangumiMediaCommonVM.State,
 ) {
     item {
         val radarRes = sta.radarResult

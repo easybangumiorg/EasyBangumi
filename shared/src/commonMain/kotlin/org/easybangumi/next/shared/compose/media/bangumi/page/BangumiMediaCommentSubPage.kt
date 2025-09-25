@@ -1,6 +1,7 @@
-package org.easybangumi.next.shared.compose.media.bangumi
+package org.easybangumi.next.shared.compose.media.bangumi.page
 
 import androidx.compose.runtime.Composable
+import org.easybangumi.next.shared.compose.media.bangumi.BangumiMediaCommonVM
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -15,5 +16,5 @@ import androidx.compose.runtime.Composable
  */
 @Composable
 fun BangumiMediaCommentSubPage(
-    vm: AndroidBangumiMediaViewModel
+    vm: BangumiMediaCommonVM
 ) {}

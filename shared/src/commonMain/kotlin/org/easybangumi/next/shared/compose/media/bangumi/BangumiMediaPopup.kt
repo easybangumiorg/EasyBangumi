@@ -1,0 +1,46 @@
+﻿package org.easybangumi.next.shared.compose.media.bangumi
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import org.easybangumi.next.shared.compose.media_radar.MediaRadarBottomPanel
+
+
+/**
+ *    https://github.com/easybangumiorg/EasyBangumi
+ *
+ *    Copyright 2025 easybangumi.org and contributors
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ */
+
+@Composable
+fun BangumiPopup(
+    vm: BangumiMediaCommonVM,
+){
+    val state = vm.popupState.collectAsState()
+    val popup = state.value
+    when (val po = popup) {
+        is BangumiMediaCommonVM.Popup.BangumiDetailPanel -> {
+
+        }
+        is BangumiMediaCommonVM.Popup.MediaRadarPanel -> {
+            logger.info("show media radar panel")
+            MediaRadarBottomPanel(
+                vm = vm.mediaRadarViewModel,
+                onDismissRequest = {
+                    vm.dismissPopup()
+                },
+                onSelection = {
+                    vm.onMediaRadarSelect(it)
+                    vm.dismissPopup()
+                }
+            )
+
+        }
+        else -> {}
+    }
+}

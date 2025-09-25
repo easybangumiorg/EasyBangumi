@@ -12,12 +12,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Sort
-import androidx.compose.material.icons.filled.Filter
 import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -25,13 +21,10 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.dp
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.shared.foundation.elements.ErrorElements
@@ -51,7 +44,7 @@ import org.easybangumi.next.shared.foundation.lazy.itemsFromGrid
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
-fun LazyListScope.androidMediaPlayLineIndex(
+fun LazyListScope.mediaPlayLineIndex(
     vm: PlayLineIndexViewModel,
     state: PlayLineIndexViewModel.State,
     gridCount: Int = 2,

@@ -1,4 +1,4 @@
-package org.easybangumi.next.shared.compose.media.bangumi
+﻿package org.easybangumi.next.shared.compose.media.bangumi
 
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -9,13 +9,14 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.easybangumi.next.shared.compose.detail.bangumi.BangumiDetailViewModel
-import org.easybangumi.next.shared.data.cartoon.CartoonIndex
-import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
-import org.easybangumi.next.shared.playcon.android.AndroidPlayerViewModel
 import org.easybangumi.next.shared.compose.media.MediaParam
 import org.easybangumi.next.shared.compose.media.PlayLineIndexViewModel
 import org.easybangumi.next.shared.compose.media_radar.MediaRadarParam
 import org.easybangumi.next.shared.compose.media_radar.MediaRadarViewModel
+import org.easybangumi.next.shared.data.cartoon.CartoonIndex
+import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
+import kotlin.getValue
+
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -28,7 +29,8 @@ import org.easybangumi.next.shared.compose.media_radar.MediaRadarViewModel
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-class AndroidBangumiMediaViewModel(
+
+class BangumiMediaCommonVM (
     val param: MediaParam,
 ): BaseViewModel() {
 
@@ -44,11 +46,11 @@ class AndroidBangumiMediaViewModel(
         val isTableMode: Boolean = false,
     )
 
-    private val _state = MutableStateFlow(State(
+    internal val sta = MutableStateFlow(State(
         // 先使用 cartoonCover 中的 name
         detailNamePreview = param.cartoonCover?.name?:""
     ))
-    val state = _state.asStateFlow()
+    val state = sta.asStateFlow()
 
     // == 弹窗状态 =============================
     sealed class Popup {
@@ -68,10 +70,6 @@ class AndroidBangumiMediaViewModel(
     }
     val playIndexState = playLineIndexViewModel.logic
 
-    // == 播放状态 =============================
-    val playerViewModel: AndroidPlayerViewModel by childViewModel {
-        AndroidPlayerViewModel()
-    }
 
     // == 视频雷达状态 =============================
     val mediaRadarViewModel: MediaRadarViewModel by childViewModel {
@@ -97,35 +95,17 @@ class AndroidBangumiMediaViewModel(
             }
         }
 
-        // 播放链接变化 -> 播放器
-        viewModelScope.launch {
-            playIndexState.map { it.playInfo }.collectLatest {
-                playerViewModel.onPlayInfoChange(it)
-            }
-        }
-
 
         // bangumi 番剧信息 -> state
         viewModelScope.launch {
             bangumiDetailViewModel.subjectRepository.flow.collectLatest {
                 val name = it.okOrNull()?.displayName
                 if (name != null) {
-                    _state.update { s->
+                    sta.update { s->
                         s.copy(
                             detailNamePreview = name
                         )
                     }
-                }
-            }
-        }
-
-        viewModelScope.launch {
-            playerViewModel.screenModeViewModel.logic.collectLatest { screenViewState ->
-                _state.update {
-                    it.copy(
-                        isFullscreen = screenViewState.isFullScreen,
-                        isTableMode = screenViewState.isTabletMod
-                    )
                 }
             }
         }
@@ -136,7 +116,7 @@ class AndroidBangumiMediaViewModel(
 
     // state change ============================
     fun setShowDetailFromPlay(show: Boolean) {
-        _state.update {
+        sta.update {
             it.copy(
                 showDetailFromPlay = show,
             )
@@ -159,7 +139,7 @@ class AndroidBangumiMediaViewModel(
 
 
     fun onMediaRadarSelect(result: MediaRadarViewModel.SelectionResult?) {
-        _state.update {
+        sta.update {
             it.copy(
                 radarResult = result
             )
