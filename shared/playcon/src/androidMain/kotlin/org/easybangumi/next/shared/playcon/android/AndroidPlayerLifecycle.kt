@@ -26,7 +26,7 @@ import org.easybangumi.next.shared.foundation.utils.OnOrientationEvent
  */
 @Composable
 fun MediaPlayerSync(
-    playerViewModel: AndroidPlayerViewModel,
+    playerViewModel: AndroidPlayerVM,
 ) {
     val ctx = LocalContext.current as Activity
 

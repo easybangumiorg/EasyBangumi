@@ -66,7 +66,7 @@ fun BangumiDetail(
     contentPaddingTop: Dp = 0.dp,
     onBack: (() -> Unit)? = null,
 ) {
-    val vm = vm(::BangumiDetailViewModel, cartoonIndex)
+    val vm = vm(::BangumiDetailVM, cartoonIndex)
     LaunchedEffect(Unit) {
         vm.loadSubjectIfFirst()
     }

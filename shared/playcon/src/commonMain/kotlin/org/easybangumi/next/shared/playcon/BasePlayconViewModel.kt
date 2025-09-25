@@ -42,6 +42,13 @@ open class BasePlayconViewModel<T: PlayerBridge>(
         const val POSITION_LOOP_DELAY = 1000L
     }
 
+    enum class ScreenMode {
+        NORMAL, FULLSCREEN
+    }
+
+    var screenMode: ScreenMode by mutableStateOf<ScreenMode>(ScreenMode.NORMAL)
+
+
     protected var _playerState: C.State by mutableStateOf<C.State>(bridge.playStateFlow.value)
     val playerState: C.State
         get() = _playerState

@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
-import org.easybangumi.next.shared.playcon.android.AndroidPlayerViewModel
+import org.easybangumi.next.shared.playcon.android.AndroidPlayerVM
 import org.easybangumi.next.shared.compose.media.MediaParam
 
 /**
@@ -30,8 +30,8 @@ class AndroidBangumiMediaViewModel(
     }
 
     // == 播放状态 =============================
-    val playerViewModel: AndroidPlayerViewModel by childViewModel {
-        AndroidPlayerViewModel()
+    val playerVM: AndroidPlayerVM by childViewModel {
+        AndroidPlayerVM()
     }
 
 
@@ -39,12 +39,12 @@ class AndroidBangumiMediaViewModel(
         // 播放链接变化 -> 播放器
         viewModelScope.launch {
             commonVM.playIndexState.map { it.playInfo }.collectLatest {
-                playerViewModel.onPlayInfoChange(it)
+                playerVM.onPlayInfoChange(it)
             }
         }
 
         viewModelScope.launch {
-            playerViewModel.screenModeViewModel.logic.collectLatest { screenViewState ->
+            playerVM.screenModeViewModel.logic.collectLatest { screenViewState ->
                 commonVM.sta.update {
                     it.copy(
                         isFullscreen = screenViewState.isFullScreen,

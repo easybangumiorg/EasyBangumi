@@ -1,6 +1,5 @@
 package org.easybangumi.next.shared.compose.media
 
-import android.view.ViewGroup
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -13,11 +12,10 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.viewinterop.AndroidView
 import org.easybangumi.next.shared.playcon.android.AndroidGestureController
 import org.easybangumi.next.shared.playcon.android.AndroidPlaycon
-import org.easybangumi.next.shared.playcon.android.AndroidPlayconBottomBar
-import org.easybangumi.next.shared.playcon.android.AndroidPlayerViewModel
+import org.easybangumi.next.shared.playcon.android.PlayconBottomBar
+import org.easybangumi.next.shared.playcon.android.AndroidPlayerVM
 import org.easybangumi.next.shared.playcon.android.DuringText
 import org.easybangumi.next.shared.playcon.android.FullScreenBtn
 import org.easybangumi.next.shared.playcon.android.PlayPauseBtn
@@ -38,7 +36,7 @@ import org.easybangumi.next.shared.playcon.android.TimeSeekBar
 @Composable
 fun MediaPlayer(
     modifier: Modifier,
-    playerVm: AndroidPlayerViewModel,
+    playerVm: AndroidPlayerVM,
 ){
 
 
@@ -79,7 +77,7 @@ fun org.easybangumi.next.shared.playcon.android.AndroidPlayconContentScope.Contr
     modifier: Modifier,
     onFullScreenChange: (isFullScreen: Boolean) -> Unit = { _ -> }
 ) {
-    val isFullScreen = vm.screenMode == _root_ide_package_.org.easybangumi.next.shared.playcon.android.AndroidPlayconViewModel.ScreenMode.FULLSCREEN
+    val isFullScreen = vm.screenMode == _root_ide_package_.org.easybangumi.next.shared.playcon.android.AndroidPlayconVM.ScreenMode.FULLSCREEN
     val isLock = vm.isLocked
     val isShowController = vm.isShowController
 
@@ -97,7 +95,7 @@ fun org.easybangumi.next.shared.playcon.android.AndroidPlayconContentScope.Contr
         ) {
 
             if (!isLock && isShowController) {
-                this@ControllerContent.AndroidPlayconBottomBar(
+                this@ControllerContent.PlayconBottomBar(
                     modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter)
                 ) {
                     PlayPauseBtn()

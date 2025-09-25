@@ -1,8 +1,9 @@
-package org.easybangumi.next.shared.playcon.android
+package org.easybangumi.next.shared.playcon.pointer
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,9 +17,12 @@ import androidx.compose.material.icons.filled.FullscreenExit
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,7 +30,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import org.easybangumi.next.shared.foundation.seekbar.AndroidSeekBar
+import org.easybangumi.next.lib.logger.logger
+import org.easybangumi.next.shared.foundation.seekbar.Seekbar
+import org.easybangumi.next.shared.foundation.seekbar.SeekbarState
 import org.easybangumi.next.shared.playcon.BasePlayconViewModel
 import org.easybangumi.next.shared.playcon.TimeUtils
 
@@ -40,21 +46,18 @@ import org.easybangumi.next.shared.playcon.TimeUtils
  *    You may obtain a copy of the License at
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *  虽然跟 PointerPlayconBottomBar 差不多，但还是分开写把
  */
+interface PointerPlayconRowBarScope: PointerPlayconScope, RowScope
 
-interface AndroidPlayconRowBarScope: AndroidPlayconScope, RowScope
-
-class AndroidPlayconRowBarScopeImpl(
-    playconScope: AndroidPlayconScope,
+class PointerPlayconRowBarScopeImpl(
+    playconScope: PointerPlayconScope,
     rowScope: RowScope,
-): AndroidPlayconRowBarScope, AndroidPlayconScope by playconScope, RowScope by rowScope
+): PointerPlayconRowBarScope, PointerPlayconScope by playconScope, RowScope by rowScope
 
 @Composable
-fun AndroidPlayconContentScope.PlayconBottomBar(
+fun PointerPlayconContentScope.PlayconBottomBar(
     modifier: Modifier,
-    content: @Composable AndroidPlayconRowBarScope.() -> Unit = {},
+    content: @Composable PointerPlayconRowBarScope.() -> Unit = {},
 ) {
     Row (
         modifier.fillMaxWidth()
@@ -69,7 +72,7 @@ fun AndroidPlayconContentScope.PlayconBottomBar(
         horizontalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterHorizontally),
     ) {
         val scope = remember(this, this@PlayconBottomBar.vm) {
-            AndroidPlayconRowBarScopeImpl(
+            PointerPlayconRowBarScopeImpl(
                 this@PlayconBottomBar,
                 this
             )
@@ -80,9 +83,9 @@ fun AndroidPlayconContentScope.PlayconBottomBar(
 }
 
 @Composable
-fun AndroidPlayconContentScope.PlayconTopBar(
+fun PointerPlayconContentScope.PlayconTopBar(
     modifier: Modifier,
-    content: @Composable AndroidPlayconRowBarScope.() -> Unit = {},
+    content: @Composable PointerPlayconRowBarScope.() -> Unit = {},
 ) {
     Row (
         modifier.fillMaxWidth()
@@ -97,7 +100,7 @@ fun AndroidPlayconContentScope.PlayconTopBar(
         horizontalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterHorizontally),
     ) {
         val scope = remember(this, this@PlayconTopBar.vm) {
-            AndroidPlayconRowBarScopeImpl(
+            PointerPlayconRowBarScopeImpl(
                 this@PlayconTopBar,
                 this
             )
@@ -108,7 +111,7 @@ fun AndroidPlayconContentScope.PlayconTopBar(
 }
 
 @Composable
-fun AndroidPlayconRowBarScope.PlayPauseBtn() {
+fun PointerPlayconRowBarScope.PlayPauseBtn() {
     val playWhenReady = vm.playWhenReady
     val icon = if (playWhenReady) {
         Icons.Filled.Pause
@@ -129,7 +132,7 @@ fun AndroidPlayconRowBarScope.PlayPauseBtn() {
 }
 
 @Composable
-fun AndroidPlayconRowBarScope.PositionText() {
+fun PointerPlayconRowBarScope.PositionText() {
     val positionText = remember(
         vm.position
     ) {
@@ -144,32 +147,25 @@ fun AndroidPlayconRowBarScope.PositionText() {
 }
 
 @Composable
-fun AndroidPlayconRowBarScope.TimeSeekBar() {
-    val position = remember(vm.isPositionScrolling, vm.scrollingPosition, vm.position) {
-        // 正在拖动进度条时，使用进度条的值
-        if (vm.isPositionScrolling) {
-            vm.scrollingPosition
-        } else {
-            vm.position
+fun PointerPlayconRowBarScope.TimeSeekBar() {
+    val seekbarState = remember(
+        vm.duration
+    ) {
+        val position = vm.position.coerceAtLeast(0)
+        val duration = vm.duration.coerceAtLeast(position)
+        SeekbarState(position, duration).apply {
+            onValueChangeFinished = {
+                // 进度条 -> 播放器
+                vm.seekTo(value)
+            }
         }
     }
-    AndroidSeekBar(
-        modifier = Modifier.weight(1f),
-        during = vm.duration.coerceAtLeast(vm.position).toInt(),
-        position = position.toInt(),
-        secondary = vm.bufferedPosition.coerceAtLeast(0).toInt(),
-        onValueChange = {
-            vm.onSeekBarPositionChange(it.toLong())
-        },
-        onValueChangeFinish = {
-            vm.onActionUP()
-        }
+    Seekbar(seekbarState)
 
-    )
 }
 
 @Composable
-fun AndroidPlayconRowBarScope.DuringText() {
+fun PointerPlayconRowBarScope.DuringText() {
     val duringText = remember(
         vm.duration,
     ) {
@@ -184,7 +180,7 @@ fun AndroidPlayconRowBarScope.DuringText() {
 }
 
 @Composable
-fun AndroidPlayconRowBarScope.FullScreenBtn(
+fun PointerPlayconRowBarScope.FullScreenBtn(
     onFullScreenChange: ((Boolean) -> Unit)? = null
 ) {
     val isFullScreen = vm.screenMode == BasePlayconViewModel.ScreenMode.FULLSCREEN

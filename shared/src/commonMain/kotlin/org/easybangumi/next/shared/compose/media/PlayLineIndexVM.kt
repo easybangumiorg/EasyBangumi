@@ -30,9 +30,9 @@ import org.easybangumi.next.shared.source.api.component.play.PlayComponent
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
-class PlayLineIndexViewModel(
+class PlayLineIndexVM(
     var suggestEpisode: Int? = null,
-): StateViewModel<PlayLineIndexViewModel.State>(State()) {
+): StateViewModel<PlayLineIndexVM.State>(State()) {
 
     private val logger = logger()
 

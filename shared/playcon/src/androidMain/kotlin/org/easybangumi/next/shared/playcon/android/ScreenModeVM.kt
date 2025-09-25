@@ -30,7 +30,7 @@ import org.koin.core.component.inject
  *
  *  全屏/非全屏切换
  */
-class AndroidScreenModeViewModel: BaseViewModel() {
+class ScreenModeVM: BaseViewModel() {
 
     private val logger = logger()
 

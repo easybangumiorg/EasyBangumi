@@ -11,7 +11,7 @@ import org.easybangumi.next.libplayer.vlcj.VlcjBridgeManager
 import org.easybangumi.next.libplayer.vlcj.VlcjPlayerBridge
 import org.easybangumi.next.shared.data.cartoon.PlayInfo
 import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
-import org.easybangumi.next.shared.playcon.pointer.PointerPlayconViewModel
+import org.easybangumi.next.shared.playcon.pointer.PointerPlayconVM
 import org.koin.core.component.inject
 
 /**
@@ -25,7 +25,7 @@ import org.koin.core.component.inject
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-class DesktopPlayerViewModel: BaseViewModel() {
+class DesktopPlayerVM: BaseViewModel() {
 
     val vlcjManager: VlcjBridgeManager by inject()
     val vlcjPlayerBridge: VlcjPlayerBridge by lazy {
@@ -35,8 +35,8 @@ class DesktopPlayerViewModel: BaseViewModel() {
     val playInfo = mutableStateOf<DataState<PlayInfo>>(DataState.none())
     val isFinalLoading = mutableStateOf(false)
 
-    val playconVM: PointerPlayconViewModel by childViewModel {
-        PointerPlayconViewModel(
+    val playconVM: PointerPlayconVM by childViewModel {
+        PointerPlayconVM(
             vlcjPlayerBridge,
         )
     }

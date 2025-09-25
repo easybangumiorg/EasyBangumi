@@ -68,7 +68,7 @@ private val logger = logger("BangumiDetailContent")
 fun BangumiDetailTab(
     modifier: Modifier,
     isPin: Boolean,
-    vm: BangumiDetailViewModel,
+    vm: BangumiDetailVM,
     currentIndex: Int,
     onSelected: (Int) -> Unit,
 ){
@@ -102,7 +102,7 @@ fun BangumiDetailTab(
 fun BangumiContent(
     modifier: Modifier,
     pagerState: PagerState,
-    vm: BangumiDetailViewModel,
+    vm: BangumiDetailVM,
     contentPadding: PaddingValues,
 ){
     val subjectState = vm.ui.value.subjectState
@@ -122,20 +122,20 @@ fun BangumiContent(
             )
         } else {
             when (tab) {
-                BangumiDetailViewModel.DetailTab.DETAIL -> {
+                BangumiDetailVM.DetailTab.DETAIL -> {
                     BangumiDetailSubDetailPage(
                         modifier = Modifier.fillMaxSize(),
                         vm = vm,
                         subjectState = subjectState,
                     )
                 }
-                BangumiDetailViewModel.DetailTab.EPISODE -> {
+                BangumiDetailVM.DetailTab.EPISODE -> {
                     BangumiDetailSubEpisodePage(
                         modifier = Modifier.fillMaxSize(),
                         vm = vm,
                     )
                 }
-                BangumiDetailViewModel.DetailTab.COMMENT -> {
+                BangumiDetailVM.DetailTab.COMMENT -> {
                     ErrorElements(
                         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
                         isRow = false,
@@ -151,7 +151,7 @@ fun BangumiContent(
 @Composable
 fun BangumiDetailSubDetailPage(
     modifier: Modifier = Modifier,
-    vm: BangumiDetailViewModel,
+    vm: BangumiDetailVM,
     subjectState: DataState<BgmSubject>,
 ) {
 
@@ -252,7 +252,7 @@ fun BangumiDetailSubDetailPage(
 @Composable
 fun BangumiDetailSubEpisodePage(
     modifier: Modifier = Modifier,
-    vm: BangumiDetailViewModel,
+    vm: BangumiDetailVM,
 ) {
 
 

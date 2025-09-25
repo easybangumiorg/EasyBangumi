@@ -7,7 +7,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
@@ -18,8 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import org.easybangumi.next.libplayer.api.C
-import org.easybangumi.next.libplayer.api.PlayerBridge
-import org.easybangumi.next.shared.foundation.view_model.vm
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -32,23 +30,37 @@ import org.easybangumi.next.shared.foundation.view_model.vm
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-
-class PointerPlayconScope(
-    val vm: PointerPlayconViewModel,
+interface PointerPlayconScope {
+    val vm: PointerPlayconVM
     val interactionSource: MutableInteractionSource
-)
+}
+
+class PointerPlayconScopeImpl(
+    override val vm: PointerPlayconVM,
+    override val interactionSource: MutableInteractionSource
+): PointerPlayconScope
+
+interface PointerPlayconContentScope: PointerPlayconScope, BoxScope
+
+class PointerPlayconContentScopeImpl(
+    playconScope: PointerPlayconScope,
+    boxScope: BoxScope,
+): PointerPlayconContentScope, PointerPlayconScope by playconScope, BoxScope by boxScope
+
 
 @Composable
 fun PointerPlaycon(
     modifier: Modifier,
-    bridge: PlayerBridge,
+    vm: PointerPlayconVM,
+    content: @Composable PointerPlayconScope.() -> Unit = { }
 ) {
 
-    val vm = vm(::PointerPlayconViewModel, bridge)
-    val mutableInteractionSource = remember {
-        MutableInteractionSource()
+    val scope = remember(vm) {
+        PointerPlayconScopeImpl(
+            vm,
+            MutableInteractionSource()
+        )
     }
-
     DisposableEffect(Unit) {
         vm.needLoop()
         onDispose {
@@ -56,10 +68,6 @@ fun PointerPlaycon(
         }
     }
 
-
-    val scope = remember(vm, mutableInteractionSource) {
-        PointerPlayconScope(vm, mutableInteractionSource)
-    }
     Box(modifier.pointerInput(Unit) {
         awaitPointerEventScope {
             while (true) {
@@ -71,16 +79,22 @@ fun PointerPlaycon(
             }
         }
     }) {
-        scope.ControllerContent(Modifier.fillMaxSize())
-        scope.Buffering(Modifier.align(Alignment.Center))
+        val scope = remember(scope, this) {
+            PointerPlayconContentScopeImpl(
+                scope,
+                this
+            )
+        }
+        scope.content()
     }
 
 
 }
 
 @Composable
-fun PointerPlayconScope.ControllerContent(
-    modifier: Modifier
+fun BoxScope.ControllerContent(
+    modifier: Modifier,
+    vm: PointerPlayconVM,
 ) {
     val isLock = vm.isLocked
     val isShowController = vm.isShowController
@@ -117,8 +131,9 @@ fun PointerPlayconScope.ControllerContent(
 
 
 @Composable
-fun PointerPlayconScope.Buffering(
-    modifier: Modifier
+fun BoxScope.Buffering(
+    modifier: Modifier,
+    vm: PointerPlayconVM,
 ) {
 
     if (vm.playerState == C.State.BUFFERING) {

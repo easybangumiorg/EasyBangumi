@@ -10,7 +10,6 @@ import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.global
 import org.easybangumi.next.libplayer.api.C
 import org.easybangumi.next.libplayer.api.MediaItem
-import org.easybangumi.next.libplayer.exoplayer.EasyTextureView
 import org.easybangumi.next.libplayer.exoplayer.ExoPlayerBridge
 import org.easybangumi.next.libplayer.exoplayer.ExoPlayerFrameState
 import org.easybangumi.next.shared.data.cartoon.PlayInfo
@@ -29,7 +28,7 @@ import kotlin.getValue
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-class AndroidPlayerViewModel(): BaseViewModel() {
+class AndroidPlayerVM(): BaseViewModel() {
 
     companion object {
         const val MEDIA_COMPONENT_ASPECT = 16f / 9f
@@ -41,15 +40,15 @@ class AndroidPlayerViewModel(): BaseViewModel() {
     val exoPlayerFrameState = ExoPlayerFrameState()
 
     // 播放控制
-    val playconVM: AndroidPlayconViewModel by childViewModel {
-        AndroidPlayconViewModel(
+    val playconVM: AndroidPlayconVM by childViewModel {
+        AndroidPlayconVM(
             exoBridge,
         )
     }
 
     // 横竖屏切换
-    val screenModeViewModel: AndroidScreenModeViewModel by childViewModel {
-        AndroidScreenModeViewModel()
+    val screenModeViewModel: ScreenModeVM by childViewModel {
+        ScreenModeVM()
     }
 
 
@@ -65,9 +64,9 @@ class AndroidPlayerViewModel(): BaseViewModel() {
         viewModelScope.launch {
             screenModeViewModel.logic.collectLatest {
                 playconVM.screenMode = if (it.isFullScreen) {
-                    AndroidPlayconViewModel.ScreenMode.FULLSCREEN
+                    AndroidPlayconVM.ScreenMode.FULLSCREEN
                 } else {
-                    AndroidPlayconViewModel.ScreenMode.NORMAL
+                    AndroidPlayconVM.ScreenMode.NORMAL
                 }
             }
         }

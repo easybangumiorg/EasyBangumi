@@ -45,8 +45,8 @@ import org.easybangumi.next.shared.foundation.lazy.itemsFromGrid
  */
 
 fun LazyListScope.mediaPlayLineIndex(
-    vm: PlayLineIndexViewModel,
-    state: PlayLineIndexViewModel.State,
+    vm: PlayLineIndexVM,
+    state: PlayLineIndexVM.State,
     gridCount: Int = 2,
 ){
     val data = state.playerLineList.okOrNull()

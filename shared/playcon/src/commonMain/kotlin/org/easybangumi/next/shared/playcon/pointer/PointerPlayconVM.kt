@@ -25,7 +25,7 @@ import org.easybangumi.next.shared.playcon.BasePlayconViewModel
  *
  *    鼠标模式播放器 UI
  */
-class PointerPlayconViewModel(
+class PointerPlayconVM(
     bridge: PlayerBridge,
 ) : BasePlayconViewModel<PlayerBridge>(bridge) {
 

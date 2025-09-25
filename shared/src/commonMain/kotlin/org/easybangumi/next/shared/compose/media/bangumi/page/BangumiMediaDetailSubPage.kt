@@ -67,7 +67,7 @@ fun BangumiMediaDetailSubPage(
             space(Modifier.height(8.dp))
             divider()
             // 播放线路和集数选择
-            mediaPlayLineIndex(vm.playLineIndexViewModel, vm.playLineIndexViewModel.ui.value, 2)
+            mediaPlayLineIndex(vm.playLineIndexVM, vm.playLineIndexVM.ui.value, 2)
         }
 
     }

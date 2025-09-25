@@ -8,11 +8,11 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.easybangumi.next.shared.compose.detail.bangumi.BangumiDetailViewModel
+import org.easybangumi.next.shared.compose.detail.bangumi.BangumiDetailVM
 import org.easybangumi.next.shared.compose.media.MediaParam
-import org.easybangumi.next.shared.compose.media.PlayLineIndexViewModel
+import org.easybangumi.next.shared.compose.media.PlayLineIndexVM
 import org.easybangumi.next.shared.compose.media_radar.MediaRadarParam
-import org.easybangumi.next.shared.compose.media_radar.MediaRadarViewModel
+import org.easybangumi.next.shared.compose.media_radar.MediaRadarVM
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
 import kotlin.getValue
@@ -40,7 +40,7 @@ class BangumiMediaCommonVM (
     // == 数据状态 =============================
     data class State(
         val detailNamePreview: String = "",
-        val radarResult: MediaRadarViewModel.SelectionResult? = null,
+        val radarResult: MediaRadarVM.SelectionResult? = null,
         val showDetailFromPlay: Boolean = true,
         val isFullscreen: Boolean = false,
         val isTableMode: Boolean = false,
@@ -62,18 +62,18 @@ class BangumiMediaCommonVM (
     val popupState = _popupState.asStateFlow()
 
     // == 播放线路状态 =============================
-    val playLineIndexViewModel: PlayLineIndexViewModel by childViewModel {
-        PlayLineIndexViewModel(
+    val playLineIndexVM: PlayLineIndexVM by childViewModel {
+        PlayLineIndexVM(
 //            cartoonIndex = cartoonIndex.toCartoonIndex(),
             suggestEpisode = suggestEpisode,
         )
     }
-    val playIndexState = playLineIndexViewModel.logic
+    val playIndexState = playLineIndexVM.logic
 
 
     // == 视频雷达状态 =============================
-    val mediaRadarViewModel: MediaRadarViewModel by childViewModel {
-        MediaRadarViewModel(
+    val mediaRadarVM: MediaRadarVM by childViewModel {
+        MediaRadarVM(
             param.suggestMediaRadarParam ?: MediaRadarParam(
                 defaultKeyword = param.cartoonCover?.name?:""
             )
@@ -81,8 +81,8 @@ class BangumiMediaCommonVM (
     }
 
     // == Bangumi 番剧详情面板状态 =============================
-    val bangumiDetailViewModel: BangumiDetailViewModel by childViewModel {
-        BangumiDetailViewModel(cartoonIndex = cartoonIndex,)
+    val bangumiDetailVM: BangumiDetailVM by childViewModel {
+        BangumiDetailVM(cartoonIndex = cartoonIndex,)
     }
 
     init {
@@ -90,7 +90,7 @@ class BangumiMediaCommonVM (
         viewModelScope.launch {
             state.map { it.radarResult }.distinctUntilChanged().collectLatest {
                 if (it != null) {
-                    playLineIndexViewModel.loadPlayLine(it.playCover.toCartoonIndex(), it.playBusiness)
+                    playLineIndexVM.loadPlayLine(it.playCover.toCartoonIndex(), it.playBusiness)
                 }
             }
         }
@@ -98,7 +98,7 @@ class BangumiMediaCommonVM (
 
         // bangumi 番剧信息 -> state
         viewModelScope.launch {
-            bangumiDetailViewModel.subjectRepository.flow.collectLatest {
+            bangumiDetailVM.subjectRepository.flow.collectLatest {
                 val name = it.okOrNull()?.displayName
                 if (name != null) {
                     sta.update { s->
@@ -111,7 +111,7 @@ class BangumiMediaCommonVM (
         }
 
         // 这里只是为了更新番剧名称，用最弱的刷新方式
-        bangumiDetailViewModel.subjectRepository.refreshIfNone()
+        bangumiDetailVM.subjectRepository.refreshIfNone()
     }
 
     // state change ============================
@@ -138,7 +138,7 @@ class BangumiMediaCommonVM (
     }
 
 
-    fun onMediaRadarSelect(result: MediaRadarViewModel.SelectionResult?) {
+    fun onMediaRadarSelect(result: MediaRadarVM.SelectionResult?) {
         sta.update {
             it.copy(
                 radarResult = result

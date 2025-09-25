@@ -26,7 +26,7 @@ import org.easybangumi.next.shared.playcon.BasePlayconViewModel
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-class AndroidPlayconViewModel(
+class AndroidPlayconVM(
     bridge: ExoPlayerBridge,
 ) : BasePlayconViewModel<ExoPlayerBridge>(bridge) {
 
@@ -44,12 +44,6 @@ class AndroidPlayconViewModel(
 
     var isLocked by mutableStateOf(false)
 
-
-    enum class ScreenMode {
-        NORMAL, FULLSCREEN
-    }
-
-    var screenMode: ScreenMode by mutableStateOf<ScreenMode>(ScreenMode.NORMAL)
 
     var isLoadingShow by mutableStateOf(false)
 

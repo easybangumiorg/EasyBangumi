@@ -35,8 +35,8 @@ import org.easybangumi.next.shared.scheme.EasyScheme
 @Composable
 fun MediaRadar(
     modifier: Modifier,
-    vm: MediaRadarViewModel,
-    onSelection: (MediaRadarViewModel.SelectionResult?) -> Unit = { _ -> }
+    vm: MediaRadarVM,
+    onSelection: (MediaRadarVM.SelectionResult?) -> Unit = { _ -> }
 ) {
 
     val state = vm.ui
@@ -65,8 +65,8 @@ fun MediaRadar(
 @Composable
 fun MediaRadarHeader(
     modifier: Modifier,
-    vm: MediaRadarViewModel,
-    state: MediaRadarViewModel.State
+    vm: MediaRadarVM,
+    state: MediaRadarVM.State
 ) {
     Row(
         modifier,
@@ -96,9 +96,9 @@ fun MediaRadarHeader(
 @Composable
 fun MediaRadarList(
     modifier: Modifier,
-    vm: MediaRadarViewModel,
-    state: MediaRadarViewModel.State,
-    onSelection: (MediaRadarViewModel.SelectionResult?) -> Unit,
+    vm: MediaRadarVM,
+    state: MediaRadarVM.State,
+    onSelection: (MediaRadarVM.SelectionResult?) -> Unit,
 ){
     val line = state.lineState
     LazyColumn(
@@ -166,7 +166,7 @@ fun MediaRadarList(
                                         coverAspectRatio = EasyScheme.size.cartoonCoverSmallAspectRatio,
                                         onClick = {
                                             onSelection.invoke(
-                                                MediaRadarViewModel.SelectionResult(
+                                                MediaRadarVM.SelectionResult(
                                                     playCover = item,
                                                     businessPair = line.business
                                                 )

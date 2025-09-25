@@ -26,10 +26,10 @@ import org.easybangumi.next.lib.logger.logger
 private val logger = logger("MediaRadarBottomPanel")
 @Composable
 fun MediaRadarBottomPanel(
-    vm: MediaRadarViewModel,
+    vm: MediaRadarVM,
     show: Boolean = true,
     onDismissRequest: () -> Unit,
-    onSelection: (MediaRadarViewModel.SelectionResult?) -> Unit = { _ -> }
+    onSelection: (MediaRadarVM.SelectionResult?) -> Unit = { _ -> }
 ) {
     val bottomSheet = rememberModalBottomSheetState(false)
     LaunchedEffect(show, bottomSheet.isVisible) {

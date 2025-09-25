@@ -34,17 +34,17 @@ import androidx.compose.ui.unit.IntSize
  */
 class AndroidGestureControllerScope(
     boxScope: BoxScope,
-    val vm: AndroidPlayconViewModel,
+    val vm: AndroidPlayconVM,
 ) : BoxScope by boxScope
 
 @Composable
 fun AndroidGestureController(
-    vm: AndroidPlayconViewModel,
+    vm: AndroidPlayconVM,
     modifier: Modifier = Modifier,
     slideFullTime: Long = 300000,
     supportFast: Boolean = false,
     fastWeight: Float = 0.2f,
-    content: @Composable AndroidGestureControllerScope.(AndroidPlayconViewModel) -> Unit,
+    content: @Composable AndroidGestureControllerScope.(AndroidPlayconVM) -> Unit,
 ) {
     val ctx = LocalContext.current as Activity
     var viewSize by remember { mutableStateOf(IntSize.Zero) }
@@ -52,7 +52,7 @@ fun AndroidGestureController(
 
     val enableGuest by remember {
         derivedStateOf {
-            vm.screenMode == AndroidPlayconViewModel.ScreenMode.FULLSCREEN && !vm.isLocked
+            vm.screenMode == AndroidPlayconVM.ScreenMode.FULLSCREEN && !vm.isLocked
         }
     }
 

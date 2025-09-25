@@ -30,7 +30,7 @@ fun BangumiPopup(
         is BangumiMediaCommonVM.Popup.MediaRadarPanel -> {
             logger.info("show media radar panel")
             MediaRadarBottomPanel(
-                vm = vm.mediaRadarViewModel,
+                vm = vm.mediaRadarVM,
                 onDismissRequest = {
                     vm.dismissPopup()
                 },

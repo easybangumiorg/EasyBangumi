@@ -11,7 +11,6 @@ import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.PagingFlow
 import org.easybangumi.next.lib.utils.newPagingFlow
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
-import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.foundation.view_model.StateViewModel
 import org.easybangumi.next.shared.source.api.component.ComponentBusinessPair
 import org.easybangumi.next.shared.source.api.component.play.PlayComponent
@@ -32,9 +31,9 @@ import org.koin.core.component.inject
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
-class MediaRadarViewModel (
+class MediaRadarVM (
     private val param: MediaRadarParam,
-): StateViewModel<MediaRadarViewModel.State>(
+): StateViewModel<MediaRadarVM.State>(
     State(param.defaultKeyword)
 ) {
 

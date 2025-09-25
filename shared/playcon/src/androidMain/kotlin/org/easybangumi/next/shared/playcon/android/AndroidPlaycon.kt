@@ -1,25 +1,14 @@
 package org.easybangumi.next.shared.playcon.android
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import org.easybangumi.next.lib.logger.logger
-import org.easybangumi.next.shared.playcon.pointer.PointerPlayconBottomBar
-import org.easybangumi.next.shared.playcon.pointer.PointerPlayconScope
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -35,12 +24,12 @@ import org.easybangumi.next.shared.playcon.pointer.PointerPlayconScope
 internal val logger = logger("AndroidPlaycon")
 
 interface AndroidPlayconScope {
-    val vm: AndroidPlayconViewModel
+    val vm: AndroidPlayconVM
     val interactionSource: MutableInteractionSource
 }
 
 class AndroidPlayconScopeImpl(
-    override val vm: AndroidPlayconViewModel,
+    override val vm: AndroidPlayconVM,
     override val interactionSource: MutableInteractionSource
 ): AndroidPlayconScope
 
@@ -54,7 +43,7 @@ class AndroidPlayconContentScopeImpl(
 @Composable
 fun AndroidPlaycon(
     modifier: Modifier,
-    viewModel: AndroidPlayconViewModel,
+    viewModel: AndroidPlayconVM,
     content: @Composable AndroidPlayconContentScope.() -> Unit = {},
 ) {
 

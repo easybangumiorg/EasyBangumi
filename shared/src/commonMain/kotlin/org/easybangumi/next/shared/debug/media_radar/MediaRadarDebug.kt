@@ -3,11 +3,10 @@ package org.easybangumi.next.shared.debug.media_radar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import org.easybangumi.next.shared.debug.DebugScope
-import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.foundation.view_model.vm
 import org.easybangumi.next.shared.compose.media_radar.MediaRadarBottomPanel
 import org.easybangumi.next.shared.compose.media_radar.MediaRadarParam
-import org.easybangumi.next.shared.compose.media_radar.MediaRadarViewModel
+import org.easybangumi.next.shared.compose.media_radar.MediaRadarVM
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 
 /**
@@ -34,7 +33,7 @@ fun DebugScope.MediaRadarDebug() {
                 limitWhichKeyword = 0, // 0 means no limit
             )
         }
-        val vm = vm(::MediaRadarViewModel, param)
+        val vm = vm(::MediaRadarVM, param)
         MediaRadarBottomPanel(
             vm = vm,
             show = true,

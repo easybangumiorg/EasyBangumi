@@ -38,10 +38,10 @@ import org.koin.core.component.inject
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
-class BangumiDetailViewModel(
+class BangumiDetailVM(
     val cartoonIndex: CartoonIndex,
     val panelMode: Boolean = false,
-): StateViewModel<BangumiDetailViewModel.State>(State()) {
+): StateViewModel<BangumiDetailVM.State>(State()) {
 
     enum class DetailTab (
         val index: Int,
