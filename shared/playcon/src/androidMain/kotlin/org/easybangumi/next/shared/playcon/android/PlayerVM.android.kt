@@ -14,6 +14,7 @@ import org.easybangumi.next.libplayer.exoplayer.ExoPlayerBridge
 import org.easybangumi.next.libplayer.exoplayer.ExoPlayerFrameState
 import org.easybangumi.next.shared.data.cartoon.PlayInfo
 import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
+import org.easybangumi.next.shared.playcon.BasePlayconViewModel
 import org.koin.core.component.inject
 import kotlin.getValue
 
@@ -64,9 +65,9 @@ class AndroidPlayerVM(): BaseViewModel() {
         viewModelScope.launch {
             screenModeViewModel.logic.collectLatest {
                 playconVM.screenMode = if (it.isFullScreen) {
-                    AndroidPlayconVM.ScreenMode.FULLSCREEN
+                    BasePlayconViewModel.ScreenMode.FULLSCREEN
                 } else {
-                    AndroidPlayconVM.ScreenMode.NORMAL
+                    BasePlayconViewModel.ScreenMode.NORMAL
                 }
             }
         }

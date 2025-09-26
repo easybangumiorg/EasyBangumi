@@ -147,7 +147,9 @@ fun PointerPlayconRowBarScope.PositionText() {
 }
 
 @Composable
-fun PointerPlayconRowBarScope.TimeSeekBar() {
+fun PointerPlayconRowBarScope.TimeSeekBar(
+    modifier: Modifier,
+) {
     val seekbarState = remember(
         vm.duration
     ) {
@@ -160,7 +162,7 @@ fun PointerPlayconRowBarScope.TimeSeekBar() {
             }
         }
     }
-    Seekbar(seekbarState)
+    Seekbar(seekbarState, modifier)
 
 }
 

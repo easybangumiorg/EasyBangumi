@@ -38,7 +38,7 @@ fun rememberVlcjPlayerFrameState(
     }
 }
 
-class VlcPlayerFrameState(): VlcjPlayerBridge.OnFrameListener {
+class VlcPlayerFrameState(): VlcjPlayerBridge.OnFrameListener, AutoCloseable {
 
 
     fun bindBridge(bridge: VlcjPlayerBridge) {
@@ -51,6 +51,10 @@ class VlcPlayerFrameState(): VlcjPlayerBridge.OnFrameListener {
     fun unbindBridge() {
         bridge?.removeFrameListener()
         bridge = null
+    }
+
+    override fun close() {
+        unbindBridge()
     }
 
     private var bridge by mutableStateOf<VlcjPlayerBridge?>(null)

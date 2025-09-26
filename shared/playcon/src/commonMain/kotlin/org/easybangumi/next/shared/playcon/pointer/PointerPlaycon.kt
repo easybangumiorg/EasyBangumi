@@ -52,7 +52,7 @@ class PointerPlayconContentScopeImpl(
 fun PointerPlaycon(
     modifier: Modifier,
     vm: PointerPlayconVM,
-    content: @Composable PointerPlayconScope.() -> Unit = { }
+    content: @Composable PointerPlayconContentScope.() -> Unit = { }
 ) {
 
     val scope = remember(vm) {
@@ -91,43 +91,43 @@ fun PointerPlaycon(
 
 }
 
-@Composable
-fun BoxScope.ControllerContent(
-    modifier: Modifier,
-    vm: PointerPlayconVM,
-) {
-    val isLock = vm.isLocked
-    val isShowController = vm.isShowController
-
-    AnimatedContent(
-        isLock to isShowController,
-        transitionSpec = {
-        (fadeIn(animationSpec = tween(220, delayMillis = 90)))
-            .togetherWith(fadeOut(animationSpec = tween(90)))
-    },
-    ) {
-        val (isLock, isShowController) = it
-
-        Box(
-            modifier
-        ) {
-
-            if (!isLock && isShowController) {
-                PointerPlayconBottomBar(
-                    modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter)
-                )
-            } else if (isLock) {
-
-            } else {
-
-            }
-
-
-        }
-
-    }
-
-}
+//@Composable
+//fun BoxScope.ControllerContent(
+//    modifier: Modifier,
+//    vm: PointerPlayconVM,
+//) {
+//    val isLock = vm.isLocked
+//    val isShowController = vm.isShowController
+//
+//    AnimatedContent(
+//        isLock to isShowController,
+//        transitionSpec = {
+//        (fadeIn(animationSpec = tween(220, delayMillis = 90)))
+//            .togetherWith(fadeOut(animationSpec = tween(90)))
+//    },
+//    ) {
+//        val (isLock, isShowController) = it
+//
+//        Box(
+//            modifier
+//        ) {
+//
+//            if (!isLock && isShowController) {
+//                PointerPlayconBottomBar(
+//                    modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter)
+//                )
+//            } else if (isLock) {
+//
+//            } else {
+//
+//            }
+//
+//
+//        }
+//
+//    }
+//
+//}
 
 
 @Composable

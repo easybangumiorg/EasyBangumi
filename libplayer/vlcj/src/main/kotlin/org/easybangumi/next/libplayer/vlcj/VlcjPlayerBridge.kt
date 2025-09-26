@@ -32,11 +32,15 @@ import kotlin.reflect.KClass
  * Created by heyanle on 2025/5/27.
  */
 class VlcjPlayerBridge(
-    private val mediaPlayer: MediaPlayer,
+    private val manager: VlcjBridgeManager,
     customFrameScope: CoroutineScope?,
-) : AbsPlayerBridge() {
+) : AbsPlayerBridge(), AutoCloseable {
 
     private val logger = logger()
+
+    private val mediaPlayer: MediaPlayer by lazy {
+        manager.createMediaPlayer()
+    }
 
     override val impl: Any
         get() = mediaPlayer

@@ -19,6 +19,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntSize
+import org.easybangumi.next.shared.playcon.BasePlayconViewModel
 
 
 /**
@@ -52,7 +53,7 @@ fun AndroidGestureController(
 
     val enableGuest by remember {
         derivedStateOf {
-            vm.screenMode == AndroidPlayconVM.ScreenMode.FULLSCREEN && !vm.isLocked
+            vm.screenMode == BasePlayconViewModel.ScreenMode.FULLSCREEN && !vm.isLocked
         }
     }
 

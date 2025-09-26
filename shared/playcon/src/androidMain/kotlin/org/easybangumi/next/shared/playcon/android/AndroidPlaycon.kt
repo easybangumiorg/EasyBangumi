@@ -43,21 +43,21 @@ class AndroidPlayconContentScopeImpl(
 @Composable
 fun AndroidPlaycon(
     modifier: Modifier,
-    viewModel: AndroidPlayconVM,
+    vm: AndroidPlayconVM,
     content: @Composable AndroidPlayconContentScope.() -> Unit = {},
 ) {
 
-    val scope = remember(viewModel) {
+    val scope = remember(vm) {
         AndroidPlayconScopeImpl(
-            viewModel,
+            vm,
             MutableInteractionSource()
         )
     }
 
     DisposableEffect(Unit) {
-        viewModel.needLoop()
+        vm.needLoop()
         onDispose {
-            viewModel.noNeedLoop()
+            vm.noNeedLoop()
         }
     }
     Box(

@@ -45,12 +45,16 @@ class VlcjBridgeManager(
     ): VlcjPlayerBridge {
         return map.getOrPut(tag) {
             reentrantLock.withLock {
-                val player = mediaPlayerFactory.mediaPlayers().newMediaPlayer()
-                VlcjPlayerBridge(player, customFrameScope)
+                VlcjPlayerBridge(this, customFrameScope)
             }
         }
 
     }
+
+    internal fun createMediaPlayer() =
+        reentrantLock.withLock {
+            mediaPlayerFactory.mediaPlayers().newMediaPlayer()
+        }
 
     fun release(tag: String) {
         map.remove(tag)?.close()

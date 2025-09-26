@@ -7,8 +7,10 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.libplayer.api.MediaItem
+import org.easybangumi.next.libplayer.vlcj.VlcPlayerFrameState
 import org.easybangumi.next.libplayer.vlcj.VlcjBridgeManager
 import org.easybangumi.next.libplayer.vlcj.VlcjPlayerBridge
+import org.easybangumi.next.libplayer.vlcj.VlcjPlayerFrame
 import org.easybangumi.next.shared.data.cartoon.PlayInfo
 import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
 import org.easybangumi.next.shared.playcon.pointer.PointerPlayconVM
@@ -27,20 +29,34 @@ import org.koin.core.component.inject
  */
 class DesktopPlayerVM: BaseViewModel() {
 
+    companion object {
+        const val MEDIA_COMPONENT_ASPECT = 16f / 9f
+    }
+
+
     val vlcjManager: VlcjBridgeManager by inject()
     val vlcjPlayerBridge: VlcjPlayerBridge by lazy {
         vlcjManager.getOrCreateBridge(this.toString())
     }
-
-    val playInfo = mutableStateOf<DataState<PlayInfo>>(DataState.none())
-    val isFinalLoading = mutableStateOf(false)
+    val vlcPlayerFrameState = VlcPlayerFrameState()
 
     val playconVM: PointerPlayconVM by childViewModel {
         PointerPlayconVM(
             vlcjPlayerBridge,
         )
     }
+
+    val playInfo = mutableStateOf<DataState<PlayInfo>>(DataState.none())
+    val isFinalLoading = mutableStateOf(false)
+
+
+
     init {
+
+        vlcPlayerFrameState.bindBridge(vlcjPlayerBridge)
+        addCloseable(vlcPlayerFrameState)
+        addCloseable(vlcjPlayerBridge)
+
         viewModelScope.launch {
             snapshotFlow {
                 playInfo.value

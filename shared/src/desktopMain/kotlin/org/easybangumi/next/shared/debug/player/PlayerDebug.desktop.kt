@@ -94,10 +94,10 @@ actual fun DebugScope.PlayerDebug() {
         state = frameState,
     )
 
-    PointerPlaycon(
-        modifier = Modifier.fillMaxSize(),
-        bridge = bridge,
-    )
+//    PointerPlaycon(
+//        modifier = Modifier.fillMaxSize(),
+//        bridge = bridge,
+//    )
 
 
 }

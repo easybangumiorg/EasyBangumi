@@ -12,8 +12,10 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import org.easybangumi.next.shared.playcon.BasePlayconViewModel
 import org.easybangumi.next.shared.playcon.android.AndroidGestureController
 import org.easybangumi.next.shared.playcon.android.AndroidPlaycon
+import org.easybangumi.next.shared.playcon.android.AndroidPlayconContentScope
 import org.easybangumi.next.shared.playcon.android.PlayconBottomBar
 import org.easybangumi.next.shared.playcon.android.AndroidPlayerVM
 import org.easybangumi.next.shared.playcon.android.DuringText
@@ -46,7 +48,7 @@ fun MediaPlayer(
         playerVm.exoPlayerFrameState.FrameCanvas(Modifier.matchParentSize())
         AndroidPlaycon(
             modifier = Modifier.matchParentSize(),
-            viewModel = playerVm.playconVM,
+            vm = playerVm.playconVM,
         ) {
             // 手势层
            AndroidGestureController(
@@ -73,11 +75,11 @@ fun MediaPlayer(
 }
 
 @Composable
-fun org.easybangumi.next.shared.playcon.android.AndroidPlayconContentScope.ControllerContent(
+fun AndroidPlayconContentScope.ControllerContent(
     modifier: Modifier,
     onFullScreenChange: (isFullScreen: Boolean) -> Unit = { _ -> }
 ) {
-    val isFullScreen = vm.screenMode == _root_ide_package_.org.easybangumi.next.shared.playcon.android.AndroidPlayconVM.ScreenMode.FULLSCREEN
+    val isFullScreen = vm.screenMode == BasePlayconViewModel.ScreenMode.FULLSCREEN
     val isLock = vm.isLocked
     val isShowController = vm.isShowController
 
