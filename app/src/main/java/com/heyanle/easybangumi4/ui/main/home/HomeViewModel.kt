@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.case.SourceStateCase
 import com.heyanle.easybangumi4.source_api.component.page.PageComponent
 import com.heyanle.easybangumi4.source_api.component.page.SourcePage
+import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.inject.core.Inject
 import com.heyanle.okkv2.core.okkv
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,6 +34,7 @@ class HomeViewModel : ViewModel() {
 
     data class HomeState(
         val isLoading: Boolean = true,
+        val hasPageComponent: Boolean = false,
         val pages: List<SourcePage> = emptyList(),
         val selectionIndex: Int = 0,
         //val selectionPage: SourcePage? = null,
@@ -53,12 +55,14 @@ class HomeViewModel : ViewModel() {
                     null
                 } else sourceBundle.page(s) ?: pages[0]
             }.collectLatest { pa ->
+                pa.logi("HomeViewModel")
                 if (pa == null) {
                     _stateFlow.update {
                         it.copy(
                             isLoading = false,
                             pages = emptyList(),
-                            topAppBarTitle = ""
+                            topAppBarTitle = "",
+                            hasPageComponent = false
                         )
                     }
                 } else {
@@ -81,7 +85,8 @@ class HomeViewModel : ViewModel() {
                             selectionKey = pa.source.key,
                             isShowLabel = pages !is PageComponent.NonLabelSinglePage,
                             topAppBarTitle = pa.source.label,
-                            selectionIndex = realIndex
+                            selectionIndex = realIndex,
+                            hasPageComponent = true
                         )
                     }
                 }

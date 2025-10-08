@@ -37,7 +37,7 @@ class ExtensionRepositoryViewModel : ViewModel() {
     init {
         viewModelScope.launch {
             extensionRemoteController.repositoryState.collectLatest {
-                this@ExtensionRepositoryViewModel.repository = it.okOrNull() ?: emptyList()
+                this@ExtensionRepositoryViewModel.repository = (it.okOrNull() ?: emptyList()) + ExtensionRemoteController.officeReposotory
             }
         }
     }

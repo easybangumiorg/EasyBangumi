@@ -30,7 +30,9 @@ import kotlin.coroutines.suspendCoroutine
 /**
  * Created by heyanlin on 2024/6/4.
  */
-class WebViewHelperV2Impl: WebViewHelperV2 {
+class WebViewHelperV2Impl(
+    private val webViewManager: WebViewManager
+): WebViewHelperV2 {
 
     companion object {
 
@@ -61,8 +63,6 @@ class WebViewHelperV2Impl: WebViewHelperV2 {
 
 
     private val scope = MainScope()
-    private val cookieManager: CookieManager = CookieManager.getInstance()
-    private val webViewManager = WebViewManager(cookieManager)
 
     override fun getGlobalWebView(): WebView {
         return webViewManager.getWebViewOrNull() ?: throw WebViewCreatedException()

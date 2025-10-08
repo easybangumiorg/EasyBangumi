@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.collections.map
+import kotlin.collections.plus
 
 /**
  * Created by heyanlin on 2025/8/14.
@@ -25,6 +26,13 @@ class ExtensionRemoteController(
     jsonFileProvider: JsonFileProvider,
     private val cachePath: String,
 ) {
+
+    companion object {
+        val officeReposotory = Repository(
+            "https://easybangumi.org/repository/v2/index.jsonl",
+            -1
+        )
+    }
 
     data class Repository(
         val url: String,
@@ -51,15 +59,14 @@ class ExtensionRemoteController(
     fun refresh() {
         remoteInfoTemp.clear()
         scope.launch {
-            load(repositoryState.value.okOrNull()?: return@launch)
+            load((repositoryState.value.okOrNull()?:emptyList()) + officeReposotory)
         }
     }
 
     init {
         scope.launch {
             repositoryState.collectLatest {
-
-                load(it.okOrNull() ?: return@collectLatest)
+                load((it.okOrNull()?:emptyList()) + officeReposotory)
             }
         }
     }
@@ -83,6 +90,9 @@ class ExtensionRemoteController(
 
     private suspend fun load(repository: List<Repository>) {
         val map = hashMapOf<String, RemoteInfo>()
+        _remote.update {
+            it.copy(loading = true)
+        }
         val res = repository.map {
             getRemote(it)
         }.awaitAll()

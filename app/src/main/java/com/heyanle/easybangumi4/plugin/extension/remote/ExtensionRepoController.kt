@@ -113,6 +113,10 @@ class ExtensionRepoController(
 
     }
 
+    fun refreshRemote() {
+        remoteController.refresh()
+    }
+
     suspend fun delete(key: String): DataResult<Unit> {
         return extensionControllerV2.deleteExtension(key)
     }

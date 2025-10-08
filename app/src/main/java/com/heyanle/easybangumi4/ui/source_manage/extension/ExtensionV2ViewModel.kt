@@ -127,7 +127,8 @@ class ExtensionV2ViewModel : ViewModel() {
     }
 
 
-    fun refresh() {
+    fun refreshRemote() {
+        extensionRemoteController.refreshRemote()
 
     }
 

@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
+import com.heyanle.easybangumi4.plugin.extension.remote.ExtensionRemoteController
 import com.heyanle.easybangumi4.ui.common.EasyDeleteDialog
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.stringRes
@@ -128,18 +129,18 @@ fun ExtensionRepository() {
                                 color = if (it) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSecondary
                             )
 
-
-
-                            IconButton(onClick = {
-                                vm.dialogDelete(tag)
-                            }) {
-                                Icon(
-                                    Icons.Filled.Close,
-                                    contentDescription = stringResource(
-                                        id = R.string.delete_tag
-                                    ),
-                                    tint = if (it) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSecondary
-                                )
+                            if (tag != ExtensionRemoteController.officeReposotory) {
+                                IconButton(onClick = {
+                                    vm.dialogDelete(tag)
+                                }) {
+                                    Icon(
+                                        Icons.Filled.Close,
+                                        contentDescription = stringResource(
+                                            id = R.string.delete_tag
+                                        ),
+                                        tint = if (it) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSecondary
+                                    )
+                                }
                             }
                         }
                     }

@@ -3,6 +3,8 @@ package com.heyanle.easybangumi4.plugin.js.component
 import com.heyanle.easybangumi4.plugin.js.runtime.JSScope
 import com.heyanle.easybangumi4.plugin.js.utils.JSFunction
 import com.heyanle.easybangumi4.plugin.js.utils.jsUnwrap
+import com.heyanle.easybangumi4.plugin.source.utils.network.web.WebProxyManager
+import com.heyanle.easybangumi4.plugin.source.utils.network.web.WebProxyProvider
 import com.heyanle.easybangumi4.source_api.ParserException
 import com.heyanle.easybangumi4.source_api.SourceResult
 import com.heyanle.easybangumi4.source_api.component.ComponentWrapper
@@ -54,7 +56,15 @@ class JSDetailedComponent(
                 }
                 return@requestRunWithScope cartoon to playLineList.filterIsInstance<PlayLine>()
             }
+        }.apply {
+            webProxyManager?.close()
         }
+    }
+
+    private var webProxyManager: WebProxyManager? = null
+
+    override fun setWebProxyManager(webProxyManager: WebProxyManager) {
+        this.webProxyManager = webProxyManager
     }
 
     override suspend fun getDetailed(summary: CartoonSummary): SourceResult<Cartoon> {

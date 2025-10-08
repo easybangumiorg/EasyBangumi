@@ -654,5 +654,7 @@
 
     <string name="js_extension_push">添加拓展</string>
 
+    <string name="go_to_manage_source">跳转到拓展管理</string>
+
 
 </resources>

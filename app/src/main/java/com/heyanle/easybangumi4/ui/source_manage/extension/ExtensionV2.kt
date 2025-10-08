@@ -8,6 +8,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -21,12 +22,16 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Javascript
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -42,6 +47,7 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,6 +63,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.EXTENSION_PUSH
@@ -68,6 +75,9 @@ import com.heyanle.easybangumi4.ui.common.EasyDeleteDialog
 import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.OkImage
+import com.heyanle.easybangumi4.ui.common.MD3PullRefreshIndicator
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
  * Created by heyanle on 2025/8/16
@@ -237,6 +247,7 @@ fun ExtensionV2TopAppBar(behavior: TopAppBarScrollBehavior) {
     )
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ExtensionV2() {
     val vm = viewModel<ExtensionV2ViewModel>()
@@ -245,44 +256,72 @@ fun ExtensionV2() {
     val sta = state.value
     val haptic = LocalHapticFeedback.current
     val ctx = LocalContext.current
+
+    val refreshing = remember {
+        mutableStateOf(false)
+    }
+    val refreshState = rememberPullRefreshState(refreshing.value, onRefresh = {
+        vm.viewModelScope.launch {
+            refreshing.value = true
+            vm.refreshRemote()
+            delay(500)
+            refreshing.value = false
+        }
+
+    })
+
     if (sta.isLoading) {
         LoadingPage(modifier = Modifier.fillMaxSize())
     } else {
-        LazyColumn(
+        Box(
             modifier = Modifier
-                .fillMaxSize(),
-            contentPadding = PaddingValues(0.dp, 0.dp, 0.dp, 60.dp),
-            state = listState
-        ) {
-            if (sta.isRemoteLoading) {
-                item {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        OkImage(modifier = Modifier.size(32.dp), image = Uri.parse("file:///android_asset/loading_ryo.gif"), isGif = true,contentDescription = "loading")
-                        Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.extension_repository_loading))
+                .fillMaxSize().pullRefresh(refreshState)
+        ){
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize(),
+                contentPadding = PaddingValues(0.dp, 0.dp, 0.dp, 60.dp),
+                state = listState
+            ) {
+                if (sta.isRemoteLoading) {
+                    item {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            OkImage(modifier = Modifier.size(32.dp), image = Uri.parse("file:///android_asset/loading_ryo.gif"), isGif = true,contentDescription = "loading")
+                            Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.extension_repository_loading))
+                        }
                     }
                 }
-            }
-            items(sta.showList) {
-                ExtensionInfoV2Item(it,
-                    onClick = {
-                        (ctx as? Activity)?.let { act ->
-                            vm.onItemClick(it, act)
-                        }
+                items(sta.showList) {
+                    ExtensionInfoV2Item(it,
+                        onClick = {
+                            (ctx as? Activity)?.let { act ->
+                                vm.onItemClick(it, act)
+                            }
 
-                    }, onLongPress = {
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        vm.onItemLongPress(it)
-                    })
+                        }, onLongPress = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            vm.onItemLongPress(it)
+                        })
+                }
             }
+
+            PullRefreshIndicator(
+                refreshing.value,
+                refreshState,
+                Modifier.align(Alignment.TopCenter),
+                backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
+                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+            )
+
+            FastScrollToTopFab(listState = listState)
         }
 
-        FastScrollToTopFab(listState = listState)
     }
 }
 

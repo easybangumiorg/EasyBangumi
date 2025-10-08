@@ -196,10 +196,9 @@ fun SourceItem(
 
                 }
                 is SourceInfo.Disabled -> {
-                    Text(
-                        text = stringResource(id = R.string.close),
-                        color = MaterialTheme.colorScheme.error
-                    )
+                    Switch(checked = false, onCheckedChange = {
+                        onCheckedChange(configSource, it)
+                    })
                 }
             }
 

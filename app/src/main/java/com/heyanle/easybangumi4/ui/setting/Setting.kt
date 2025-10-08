@@ -113,11 +113,13 @@ fun Setting(
 
     settingPages[router]?.let { settingPage ->
         Surface(
-            modifier = Modifier.fillMaxSize().navigationBarsPadding(),
+            modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background,
             contentColor = MaterialTheme.colorScheme.onBackground
         ) {
-            Column {
+            Column(
+                modifier = Modifier.fillMaxSize().navigationBarsPadding()
+            ) {
                 TopAppBar(
                     title = settingPage.title,
                     navigationIcon = {

@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.first
  * Created by heyanlin on 2023/10/2.
  */
 class SourceStateCase(
-    private val sourceController: SourceController,
+    private val sourceController: ISourceController,
 ) {
 
     // 等到下一个番剧源就绪状态

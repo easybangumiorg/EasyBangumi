@@ -4,6 +4,7 @@ import com.heyanle.easybangumi4.plugin.js.runtime.JSScope
 import com.heyanle.easybangumi4.plugin.js.runtime.JSScopeException
 import com.heyanle.easybangumi4.plugin.js.utils.JSFunction
 import com.heyanle.easybangumi4.plugin.js.utils.jsUnwrap
+import com.heyanle.easybangumi4.plugin.source.utils.network.web.WebProxyManager
 import com.heyanle.easybangumi4.source_api.ParserException
 import com.heyanle.easybangumi4.source_api.component.ComponentWrapper
 import com.heyanle.easybangumi4.source_api.component.preference.PreferenceComponent
@@ -59,7 +60,11 @@ class JSPreferenceComponent(
         }
 
     }
+    private var webProxyManager: WebProxyManager? = null
 
+    override fun setWebProxyManager(webProxyManager: WebProxyManager) {
+        this.webProxyManager = webProxyManager
+    }
 
 
     override fun register(): List<SourcePreference> {

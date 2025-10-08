@@ -70,7 +70,7 @@ fun CartoonRecorded(
             color = Color.Black,
             contentColor = Color.White
         ) {
-            Box(modifier = Modifier.fillMaxSize()) {
+            Box(modifier = Modifier.fillMaxSize().padding(32.dp, 0.dp)) {
                 CartoonRecordedContent(
                     cartoonRecordedModel = cartoonRecordedModel,
                     controlViewModel = controlViewModel,
@@ -96,25 +96,6 @@ private fun BoxScope.CartoonRecordedContent(
 
     LaunchedEffect(Unit) {
         cartoonRecordedModel.onLaunch()
-//        launch {
-//            snapshotFlow {
-//                cartoonRecordedModel.videoSize to (cartoonRecordedModel.renderContainerWidth to cartoonRecordedModel.renderContainerHeight)
-//            }.collectLatest {
-//                cartoonRecordedModel.measureHelper.setScreenScale(MeasureHelper.SCREEN_SCALE_ADAPT)
-//                cartoonRecordedModel.measureHelper.setVideoSize(it.first.width, it.first.height)
-//                val res = cartoonRecordedModel.measureHelper.doMeasure(
-//                    it.second.first, it.second.second
-//                )
-//                cartoonRecordedModel.renderWidth = res[0]
-//                cartoonRecordedModel.renderHeight = res[1]
-//
-//                cartoonRecordedModel.clipLeft = 0f
-//                cartoonRecordedModel.clipTop = 0f
-//
-//                cartoonRecordedModel.clipRight = cartoonRecordedModel.renderWidth.toFloat()
-//                cartoonRecordedModel.clipBottom = cartoonRecordedModel.renderHeight.toFloat()
-//            }
-//        }
     }
 
     DisposableEffect(Unit) {

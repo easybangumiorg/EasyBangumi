@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.plugin.source.ConfigSource
+import com.heyanle.easybangumi4.plugin.source.ISourceController
 import com.heyanle.easybangumi4.plugin.source.SourceConfig
 import com.heyanle.easybangumi4.plugin.source.SourceController
 import com.heyanle.easybangumi4.plugin.source.SourcePreferences
@@ -23,7 +24,7 @@ class SourceViewModel : ViewModel() {
     var configSourceList by mutableStateOf<List<ConfigSource>>(emptyList())
         private set
 
-    private val sourceController: SourceController by Inject.injectLazy()
+    private val sourceController: ISourceController by Inject.injectLazy()
     private val sourcePreferences: SourcePreferences by Inject.injectLazy()
 
     init {
@@ -54,25 +55,31 @@ class SourceViewModel : ViewModel() {
 
 
     fun enable(sourceConfig: ConfigSource) {
-        val map = sourcePreferences.configs.getOrNull()?.toMutableMap() ?: mutableMapOf()
-        val config = map[sourceConfig.sourceInfo.source.key]?.copy(enable = true) ?: SourceConfig(
-            sourceConfig.sourceInfo.source.key,
-            Int.MAX_VALUE,
-            true
-        )
-        map[sourceConfig.sourceInfo.source.key] = config
-        sourcePreferences.configs.set(map)
+        viewModelScope.launch {
+            val map = sourcePreferences.configs.getOrNull()?.toMutableMap() ?: mutableMapOf()
+            val config = map[sourceConfig.sourceInfo.source.key]?.copy(enable = true) ?: SourceConfig(
+                sourceConfig.sourceInfo.source.key,
+                Int.MAX_VALUE,
+                true
+            )
+            map[sourceConfig.sourceInfo.source.key] = config
+            sourcePreferences.configs.set(map)
+        }
+
     }
 
     fun disable(sourceConfig: ConfigSource) {
-        val map = sourcePreferences.configs.getOrNull()?.toMutableMap() ?: mutableMapOf()
-        val config = map[sourceConfig.sourceInfo.source.key]?.copy(enable = false) ?: SourceConfig(
-            sourceConfig.sourceInfo.source.key,
-            Int.MAX_VALUE,
-            false
-        )
-        map[sourceConfig.sourceInfo.source.key] = config
-        sourcePreferences.configs.set(map)
+        viewModelScope.launch {
+            val map = sourcePreferences.configs.getOrNull()?.toMutableMap() ?: mutableMapOf()
+            val config =
+                map[sourceConfig.sourceInfo.source.key]?.copy(enable = false) ?: SourceConfig(
+                    sourceConfig.sourceInfo.source.key,
+                    Int.MAX_VALUE,
+                    false
+                )
+            map[sourceConfig.sourceInfo.source.key] = config
+            sourcePreferences.configs.set(map)
+        }
     }
 
 }

@@ -1,9 +1,9 @@
-// @key heyanle.mxfan
-// @label MX动漫
+// @key heyanle.88dm
+// @label 樱花动漫
 // @versionName 1.0
 // @versionCode 1
 // @libVersion 12
-// @cover https://www.mxdm.xyz/mxstatic/picture/logo.png
+// @cover https://www.857yhw.com/favicon.ico
 
 // Inject
 var networkHelper = Inject_NetworkHelper;
@@ -13,8 +13,8 @@ var okhttpHelper = Inject_OkhttpHelper;
 // Hook PreferenceComponent ========================================
 function PreferenceComponent_getPreference() {
     var res = new ArrayList();
-    var host = new SourcePreference.Edit("网页", "Host", "https://www.mxdm.tv");
-    var playerUrl = new SourcePreference.Edit("播放器网页正则", "PlayerReg", "https://player.moedot.net/player/index.php?.*");
+    var host = new SourcePreference.Edit("网页", "Host", "https://www.857yhw.com");
+    var playerUrl = new SourcePreference.Edit("播放器网页正则", "PlayerReg", "https://danmu.yhdmjx.com/m3u8.php?.*");
     var timeout = new SourcePreference.Edit("超时时间", "Timeout", "20000");
     res.add(host);
     res.add(playerUrl);
@@ -26,93 +26,53 @@ function PreferenceComponent_getPreference() {
 
 function PageComponent_getMainTabs() {
     var res = new ArrayList();
-    res.add(new MainTab("首页", MainTab.MAIN_TAB_GROUP));
-    res.add(new MainTab("更新时间表", MainTab.MAIN_TAB_WITHOUT_COVER));
     res.add(new MainTab("日本动漫", MainTab.MAIN_TAB_WITH_COVER));
     res.add(new MainTab("国产动漫", MainTab.MAIN_TAB_WITH_COVER));
-    res.add(new MainTab("动漫电影", MainTab.MAIN_TAB_WITH_COVER));
-    res.add(new MainTab("欧美电影", MainTab.MAIN_TAB_WITH_COVER));
+    res.add(new MainTab("更新时刻表", MainTab.MAIN_TAB_GROUP));
+    res.add(new MainTab("日本动漫电影", MainTab.MAIN_TAB_WITH_COVER));
+    res.add(new MainTab("欧美动漫电影", MainTab.MAIN_TAB_WITH_COVER));
     return res;
 }
 
 function PageComponent_getSubTabs(mainTab) {
     var res = new ArrayList();
-    if (mainTab.label == "首页") {
-        var url = SourceUtils.urlParser(getRootUrl(), "/");
+    if (mainTab.label == "更新时刻表") {
+        var url = SourceUtils.urlParser(getRootUrl(), "");
         var doc = getDoc(url);
-        var contents = doc.select(".content .module .module-list>.module-items").iterator();
-        var titles = doc.select(".content .module .module-title").iterator();
+
+        var titles = doc.select("div.container > div > div > div > div > div.col-lg-wide-3.col-md-wide-25 > ul.stui-vodlist__text title > li").iterator();
+        var contents = doc.select("div#content div.mod").iterator();
         while (titles.hasNext() && contents.hasNext()) {
-            var contentEl = contents.next();
-            var titleEl = titles.next();
-            var title = titleEl.text().trim();
-            var videos = contentEl.select(".module-item")
-            if (videos.isEmpty()) {
-                continue
-            }
-            if (videos.get(0).classNames().size() > 1) {
-                continue
-            }
-            res.add(new SubTab(title, true, contentEl));
-        }
-    } else if (mainTab.label == "更新时间表") {
-        var url = SourceUtils.urlParser(getRootUrl(), "/");
-        var doc = getDoc(url);
-        var tabs = document.selectFirst(".mxoneweek-tabs");
-        if (tabs == null) {
-            return res;
-        }
-        var activeTabIndex = 0;
+            var title = titles.next();
+            var content = contents.next();
+            var label = title.text();
+            var liList = content.select("ul.new_anime_page li");
+            var r = new ArrayList();
+            for (var i = 0; i < liList.size(); i++) {
+                var it = liList.get(i);
 
-        var tabNames = new ArrayList();
-        var tabsChildren = tabs.children();
-        for (var i = 0; i < tabsChildren.size(); i++) {
-            var el = tabsChildren.get(i);
-            if (el.hasClass("active")) {
-                activeTabIndex = index
-            }
-            tabNames.add(el.text().trim());
-        }
-
-        var videoGroups = new ArrayList();
-        var listSele = document.select(".mxoneweek-list");
-        for (var i = 0; i < listSele.size(); i++) {
-            var el = listSele.get(i);
-            var a = el.getElementsByTag("a");
-            var cartoonList = new ArrayList();
-            for (var j = 0; j < a.size(); j++) {
-                var link = a.get(j);
-                var title = "";
-                if (link.childrenSize() > 0) {
-                    title = link.child(0).text().trim();
-                } else {
-                    title = link.text().trim();
+                var a = it.select("a").first();
+                var span = it.select("span").first();
+                var uu = a.attr("href");
+                var url = SourceUtils.urlParser(getRootUrl(), uu);
+                var title = a.text();
+                var intro = "";
+                if (span != null) {
+                    intro = span.text();
                 }
-                var episodeText = "";
-                if (link.childrenSize() > 1) {
-                    episodeText = link.child(1).text().trim();
+                if (uu.length() < 13) {
+                    continue;
                 }
-                var url = link.absUrl("href");
-                var videoId = url.substring(url.lastIndexOf('/') + 1, url.lastIndexOf('.'));
-                cartoonList.add(makeCartoonCover({
-                    id: videoId,
+                var id = uu.subSequence(7, uu.length() - 5).toString();
+                r.add(makeCartoonCover({
+                    id: id,
                     title: title,
-                    url: getRootUrl() + "/dongman/" + videoId + ".html",
-                    intro: episodeText,
-                    source: source.key,
+                    url: url,
+                    intro: intro,
+                    cover: "",
                 }));
             }
-            videoGroups.add(cartoonList);
-        }
-        var minSize = tabNames.size();
-        if (videoGroups.size() < minSize) {
-            minSize = videoGroups.size();
-        }
-        for (var i = activeTabIndex ;  i < videoGroups; i ++) {
-            res.add(new SubTab(tabNames.get(i), false, videoGroups.get(i)));
-        }
-        for (var i = 0; i < activeTabIndex; i++) {
-            res.add(new SubTab(tabNames.get(i), false, videoGroups.get(i)));
+            res.add(new SubTab(title, false, r));
         }
     }
     return res;
@@ -120,91 +80,90 @@ function PageComponent_getSubTabs(mainTab) {
 
 function PageComponent_getContent(mainTab, subTab, key) {
 //    var doc = getMainHomeDocument();
-    if (mainTab.label == "首页") {
-        var contentEl = subTab.ext;
-        if (contentEl == null) {
+    if (mainTab.label == "日本动漫") {
+        var res = getContent("ribendongman", key + 1);
+        if (res == null || res.size() == 0) {
             return new Pair(null, new ArrayList());
         }
-        var videos = contentEl.select(".module-item")
-        if (videos.isEmpty()) {
-           return new Pair(null, new ArrayList());
-        }
-        if (videos.get(0).classNames().size() > 1) {
-            return new Pair(null, new ArrayList());
-        }
-
-        var cartoonList = new ArrayList();
-        for (var i = 0; i < videos.size(); i++) {
-            var videoEl = videos.get(i);
-            cartoonList.add(parseToCartoonCover(videoEl));
-        }
-        return new Pair(null, cartoonList);
-    } else if (mainTab.label == "更新时间表") {
-        var res = subTab.ext;
-        if (res == null) {
-            return new Pair(null, new ArrayList());
-        } else {
-             return new Pair(null, res);
-        }
-    } else if (mainTab.label == "日本动漫") {
-        return getContent("riman", key)
+        return new Pair(key + 1, res);
     } else if (mainTab.label == "国产动漫") {
-        return getContent("guoman", key)
-    } else if (mainTab.label == "动漫电影") {
-        return getContent("dmdianying", key)
-    } else if (mainTab.label == "欧美电影") {
-        return getContent("oman", key)
+        var res = getContent("guochandongman", key + 1);
+        if (res == null || res.size() == 0) {
+            return new Pair(null, new ArrayList());
+        }
+        return new Pair(key + 1, res);
+    } else if (mainTab.label == "日本动漫电影") {
+        var res = getContent("dongmandianying", key + 1);
+        if (res == null || res.size() == 0) {
+            return new Pair(null, new ArrayList());
+        }
+        return new Pair(key + 1, res);
+    } else if (mainTab.label == "欧美动漫电影") {
+        var res = getContent("oumeidongman", key + 1);
+        if (res == null || res.size() == 0) {
+            return new Pair(null, new ArrayList());
+        }
+    } else if (mainTab.label == "更新时刻表") {
+        var res = subTab.ext;
+        return new Pair(null, res);
     }
     return new Pair(null, new ArrayList());
 }
 
-function getContent(type, page){
-    var url = SourceUtils.urlParser(getRootUrl(), "/show/" + type + "--------" + (page + 1) + "---.html");
+function getContent(type, page) {
+    var url = SourceUtils.urlParser(getRootUrl(), "show/"+ type + "--------" + page + "---.html");
     var doc = getDoc(url);
-
-    var videoSelect = doc.select(".content .module .module-item");
     var res = new ArrayList();
-    for (var i = 0; i < videoSelect.size(); i++) {
-        var item = videoSelect.get(i);
-        res.add(parseToCartoonCover(item));
+    var elements = doc.select("div.container div div.myui-panel ul.myui-vodlist li");
+    for (var i = 0; i < elements.size(); i++) {
+        var it = elements.get(i);
+        var a = it.select("a").first();
+        var uu = a.attr("href");
+        var url = SourceUtils.urlParser(getRootUrl(), uu);
+        var cover = a.attr("data-original");
+        if (uu.length() < 13) {
+            continue;
+        }
+        var id = uu.subSequence(7, uu.length() - 5).toString();
+        var title = a.attr("title");
+        res.add(makeCartoonCover({
+            id: id,
+            title: title,
+            url: url,
+            intro: "",
+            cover: SourceUtils.urlParser(getRootUrl(), cover),
+            source: source.key,
+        }));
     }
-    var hasNext = hasNextPage(doc);
-    var next = null;
-    if (hasNext && !res.isEmpty()) {
-        next = page + 1;
-    }
-    return new Pair(next, res);
+    return res;
 }
-
 
 // Hook DetailedComponent ========================================
 
  function DetailedComponent_getDetailed(summary) {
-    var u = SourceUtils.urlParser(getRootUrl(), "/bangumi/" + summary.id + ".html");
+    var u = SourceUtils.urlParser(getRootUrl(), "/video/" + summary.id + ".html");
     var doc = getDoc(u);
-    JSLogUtils.d("doc", doc);
     var cartoon = detailed(doc, summary);
     var playLine = playline(doc, summary);
     return new Pair(cartoon, playLine);
  }
 
  function detailed(doc, summary) {
-    var title = doc.select("div.detail-info h3.slide-info-title").text()
+    var title = doc.select("body > div.container > div > div.col-md-wide-7.col-xs-1.padding-0 > div:nth-child(1) > div > div:nth-child(2) > div.myui-content__detail > h1").text()
 //        var genre = doc.select("div.detail-info div.slide-info span").map { it.text() }.joinToString { ", " }
-    var coverEle = doc.select("div.wow div.detail-pic img").first();
+    var coverEle = doc.select("body > div.container > div > div.col-md-wide-7.col-xs-1.padding-0 > div:nth-child(1) > div > div:nth-child(2) > div.myui-content__thumb > a > img").first();
     var cover =  "";
     if (coverEle != null) {
-        cover = coverEle.attr("data-src");
+        cover = coverEle.attr("data-original");
     }
-    var descEle = doc.select("div.switch-box div.check div.text").first();
+    var descEle = doc.select("body > div.container > div > div.col-md-wide-7.col-xs-1.padding-0 > div:nth-child(1) > div > div:nth-child(2) > div.myui-content__detail > p.data.hidden-xs").first();
     var desc = "";
     if (descEle != null) {
-        desc = descEle.text();
+        desc = descEle.ownText();
     }
     return makeCartoon({
         id: summary.id,
-        url: SourceUtils.urlParser(getRootUrl(), summary.id),
-        source: summary.source,
+        url: SourceUtils.urlParser(getRootUrl(), "/video/" + summary.id + ".html"),
         title: title,
         cover: SourceUtils.urlParser(getRootUrl(), cover),
         intro: "",
@@ -216,20 +175,20 @@ function getContent(type, page){
  }
 function playline(doc, summary) {
     var tabs =
-        doc.select("div.anthology.wow div.anthology-tab div.swiper-wrapper a.swiper-slide")
-            .iterator()
-    var epRoot = doc.select("div.anthology-list-box div ul.anthology-list-play").iterator()
-    var playLines = new ArrayList()
-    var ii = 1
+        doc.select("body > div.container > div > div.col-md-wide-7.col-xs-1.padding-0 > div:nth-child(4) > div > div.myui-panel_hd > div > ul li")
+            .iterator();
+    var epRoot = doc.select("body > div.container > div > div.col-md-wide-7.col-xs-1.padding-0 > div:nth-child(4) > div > div.tab-content.myui-panel_bd div").iterator();
+    var playLines = new ArrayList();
+    var ii = 1;
     while (tabs.hasNext() && epRoot.hasNext()) {
-        var tab = tabs.next()
-        var ul = epRoot.next()
+        var tab = tabs.next();
+        var ul = epRoot.next();
 
-        var es = new ArrayList()
-        var ulc = ul.children()
+        var es = new ArrayList();
+        var ulc = ul.select("li");
 
         for (var index = 0; index < ulc.size(); index++) {
-            var element = ulc.get(index)
+            var element = ulc.get(index);
             var label = "";
             if (element != null) {
                 label = element.text();
@@ -240,7 +199,7 @@ function playline(doc, summary) {
                     label = label,
                     order = index
                 )
-            )
+            );
         }
         playLines.add(
             new PlayLine(
@@ -248,10 +207,10 @@ function playline(doc, summary) {
                 label = tab.text(),
                 episode = es
             )
-        )
-        ii++
+        );
+        ii++;
     }
-    return playLines
+    return playLines;
 }
 //
 //
@@ -270,7 +229,6 @@ function playline(doc, summary) {
         var it = par.child(0);
         var uu = it.child(1).child(0).attr("href")
         var id = uu.subSequence(9, uu.length() - 5).toString()
-        Log.i("search id", id);
 
         var imgEle = it.select("img.gen-movie-img").first();
         var coverUrl = "";
@@ -311,16 +269,17 @@ function playline(doc, summary) {
  // Hook PlayComponent ========================================
 function PlayComponent_getPlayInfo(summary, playLine, episode) {
 
-    var url = JSSourceUtils.urlParser(getRootUrl(), "/watch/" + summary.id + "/" + playLine.id + "/" + episode.id + ".html");
+    var url = JSSourceUtils.urlParser(getRootUrl(), "/play/" + summary.id + "-" + playLine.id + "-" + episode.id + ".html");
     var strategy = new WebViewHelperV2.RenderedStrategy(
         url,
-        preferenceHelper.get("PlayerReg", "https://player.moedot.net/player/index.php?.*"),
+        // 确保不会命中
+        "何言55fesfs5ef456sf4es",
         "utf-8",
         networkHelper.defaultLinuxUA,
         null,
         null,
         false,
-        Long.parseLong(preferenceHelper.get("Timeout", "20000"))
+        Long.parseLong(preferenceHelper.get("Timeout", "5000"))
     );
     var result = webViewHelperV2.renderHtmlFromJs(strategy);
     if (result == null) {
@@ -331,33 +290,33 @@ function PlayComponent_getPlayInfo(summary, playLine, episode) {
 
 
     var src = "";
-    var iframe = doc.select("tbody td iframe").first();
-    if (iframe != null) {
-        src = iframe.attr("src")
+    var video = doc.select("#lelevideo").first();
+    if (video != null) {
+        src = video.attr("src")
     }
-    Log.i("GiriGiriLove", "PlayComponent_getPlayInfo: src: " + src);
-    var res = "";
-    var split = src.split("\\?");
-    if (split.length > 0) {
-        var last = split[split.length - 1];
-        var ls = last.split("\\&");
-        for (var i = 0; i < ls.length; i++) {
-            var it = ls[i];
-            if (it.startsWith("url=")) {
-                res = it.subSequence(4, it.length()).toString();
-                break;
-            }
-        }
-    }
+    Log.i("88dm", "PlayComponent_getPlayInfo: src: " + src);
+    var res = src;
+//    var split = src.split("\\?");
+//    if (split.length > 0) {
+//        var last = split[split.length - 1];
+//        var ls = last.split("\\&");
+//        for (var i = 0; i < ls.length; i++) {
+//            var it = ls[i];
+//            if (it.startsWith("url=")) {
+//                res = it.subSequence(4, it.length()).toString();
+//                break;
+//            }
+//        }
+//    }
 
     if(res.length == 0) {
         throw ParserException("url 解析失败")
     }
 
-    var type = PlayerInfo.DECODE_TYPE_OTHER;
-    if (res.endsWith(".m3u8")) {
-        type = PlayerInfo.DECODE_TYPE_HLS;
-    }
+    var type = PlayerInfo.DECODE_TYPE_HLS;
+//    if (res.endsWith(".mp4")) {
+//        type = PlayerInfo.N;
+//    }
     return new PlayerInfo(
         type, res
     )
@@ -367,85 +326,6 @@ function PlayComponent_getPlayInfo(summary, playLine, episode) {
 
 
 // business ========================================
-
-function hasNextPage(document) {
-    var page = document.getElementById("page")
-    if (page == null) {
-        return false;
-    }
-    var currentPageIndex = 0;
-    var children = page.children();
-    for (var i = 0; i < children.size(); i++) {
-        var child = children.get(i);
-        if (child.hasClass("page-current")) {
-            currentPageIndex = i;
-            break;
-        }
-    }
-    return currentPageIndex != -1 && currentPageIndex < page.childrenSize() - 3
-}
-
-function extractImageSrc(imageElement) {
-     var img = imageElement.dataset().get("src");
-        if (img == null) {
-            img = "";
-        }
-        if (img.isEmpty() && imageElement.hasAttr("src")) {
-            img = imageElement.attr("src");
-        }
-        
-        return img;
-}
-
-function parseToCartoonCover(element) {
-    var imgEle = element.selectFirst("img");
-    var coverUrl = extractImageSrc(imgEle);
-    var linkEl = element.selectFirst("a");
-    var url = linkEl.absUrl("href");
-    var id = url.substring(url.lastIndexOf('/') + 1, url.lastIndexOf('.'));
-    var videoTitle = element.selectFirst(".video-name").text().trim();
-    var tags = new LinkedHashSet();
-
-    var episode = "";
-    var first = element.selectFirst(".module-item-text");
-    if (first != null) {
-        episode = first.text().trim();
-    }
-    if (!episode.isEmpty()) {
-        tags.add(episode)
-    }
-    var childrenEle = element.selectFirst(".module-item-caption");
-    if (childrenEle != null) {
-        var children = childrenEle.children();
-        for (var index = 0; index < children.size(); index++) {
-            var child = children.get(index);
-            var tag = child.text().trim();
-            if (!tag.isEmpty()) {
-                tags.add(tag);
-            }
-        }
-    }
-
-    var stringBuilder = new stringBuilder();
-    for (var i = 0 ; i < tags.size(); i++) {
-        var tag = tags.get(i);
-        // Do something with each tag if needed
-        stringBuilder.append(tag);
-        if (i < tags.size() - 1) {
-            stringBuilder.append(" | ");
-        }
-    }
-
-    return makeCartoonCover({
-        id: id,
-        title: videoTitle,
-        url: SourceUtils.urlParser(getRootUrl(), url),
-        intro: stringBuilder.toString(),
-        cover: coverUrl,
-        source: source.key,
-    });
-}
-
 // main
 function getDoc(url) {
     var u = SourceUtils.urlParser(getRootUrl(), url);
@@ -453,11 +333,11 @@ function getDoc(url) {
         OkhttpUtils.get(u)
     );
     var string = req.execute().body().string();
-    Log.i("GiriGiriLove", "getDoc: " + string);
+    Log.i("88dm", "getDoc: " + string);
     var doc = Jsoup.parse(string);
     return doc;
 }
 
 function getRootUrl() {
-    return preferenceHelper.get("Host", "https://dm.xifanacg.com");
+    return preferenceHelper.get("Host", "https://www.857yhw.com");
 }
