@@ -2,6 +2,7 @@ package org.easybangumi.next
 
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.coroutineProvider
 import org.easybangumi.next.platform.DesktopPlatform
 import org.easybangumi.next.libplayer.vlcj.VlcjBridgeManager
@@ -28,7 +29,11 @@ import uk.co.caprica.vlcj.factory.MediaPlayerFactory
  */
 object Desktop {
 
+    val logger = logger("Desktop")
+
     suspend fun onInit() {
+        
+        logger.debug("Desktop initialization started")
         startKoin {
             loadKoinModules(module {
                 factory {
@@ -39,8 +44,12 @@ object Desktop {
                 }.bind(Platform::class)
 
                 single {
-                    VlcjBridgeManager(listOf("-vvv", "--file-caching=2000",
-                        "--network-caching=2000",))
+                    logger.debug("Creating VlcjBridgeManager with args: -vvv, --file-caching=2000, --network-caching=2000, --intf=dummy, --video-filter=canvas, --vout=any")
+                    VlcjBridgeManager(listOf(
+                        "-vvv",
+                        "--intf=dummy",
+                        "--vout=any"
+                    ))
                 }
             })
         }

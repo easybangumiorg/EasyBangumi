@@ -7,6 +7,7 @@ import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.interaction.Interaction
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -78,7 +79,7 @@ object SeekbarDefault {
             }
 
         logger.info("size: $size, interactions: $interactions")
-        Spacer(
+        Box(
             modifier
                 .size(size)
                 .hoverable(interactionSource = interactionSource)
@@ -96,19 +97,7 @@ object SeekbarDefault {
         modifier: Modifier = Modifier,
         enabled: Boolean = true,
         colors: SliderColors = colors(),
-        drawStopIndicator: (DrawScope.(Offset) -> Unit)? = {
-            val color = if (enabled) {
-                colors.activeTrackColor
-            } else {
-                colors.disabledActiveTrackColor
-            }
-            drawStopIndicator(
-                drawScope = this,
-                offset = it,
-                color = color,
-                size = TrackStopIndicatorSize
-            )
-        },
+        drawStopIndicator: (DrawScope.(Offset) -> Unit)? = null,
         drawTick: DrawScope.(Offset, Color) -> Unit = { offset, color ->
             drawStopIndicator(drawScope = this, offset = offset, color = color, size = TickSize)
         },

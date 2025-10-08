@@ -18,14 +18,15 @@ import uk.co.caprica.vlcj.media.TrackType
 import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventListener
 import uk.co.caprica.vlcj.player.embedded.videosurface.CallbackVideoSurface
-import uk.co.caprica.vlcj.player.embedded.videosurface.VideoSurfaceAdapter
 import uk.co.caprica.vlcj.player.embedded.videosurface.VideoSurfaceAdapters
 import uk.co.caprica.vlcj.player.embedded.videosurface.callback.BufferFormat
 import uk.co.caprica.vlcj.player.embedded.videosurface.callback.BufferFormatCallback
 import uk.co.caprica.vlcj.player.embedded.videosurface.callback.RenderCallback
 import uk.co.caprica.vlcj.player.embedded.videosurface.callback.format.RV32BufferFormat
+import java.awt.EventQueue
 import java.nio.ByteBuffer
 import javax.swing.SwingUtilities
+import kotlin.math.absoluteValue
 import kotlin.reflect.KClass
 
 /**
@@ -56,7 +57,7 @@ class VlcjPlayerBridge(
 //    private val mediaPlayer: MediaPlayer by mediaPlayerLazy
 
     override val positionMs: Long
-        get() = mediaPlayer.status().time()
+        get() = if (seekingTargetTime < 0) mediaPlayer.status().time() else seekingTargetTime
 
     // unsupported
     override val bufferedPositionMs: Long
@@ -66,10 +67,13 @@ class VlcjPlayerBridge(
         get() = mediaPlayer.status().length()
 
     override fun prepare(mediaItem: MediaItem) {
+        //logger.debug("Preparing media: ${mediaItem.uri}")
         if (innerPlayWhenReadyFlow.value) {
-            println(mediaPlayer.media().play(mediaItem.uri))
+            val result = mediaPlayer.media().play(mediaItem.uri)
+            //logger.debug("Media play result: $result")
         } else {
-            mediaPlayer.media().prepare(mediaItem.uri,)
+            val result = mediaPlayer.media().prepare(mediaItem.uri)
+            //logger.debug("Media prepare result: $result")
         }
     }
 
@@ -81,8 +85,14 @@ class VlcjPlayerBridge(
         innerPlayWhenReadyFlow.update { playWhenReady }
     }
 
+    @Volatile
+    private var seekingTargetTime = -1L
+
     override fun seekTo(positionMs: Long) {
-        mediaPlayer.controls().setTime(positionMs)
+        SwingUtilities.invokeLater {
+            mediaPlayer.controls().setTime(positionMs)
+            seekingTargetTime = positionMs
+        }
     }
 
 
@@ -142,15 +152,24 @@ class VlcjPlayerBridge(
             displayHeight: Int
         ) {
             var current = System.nanoTime()
-//            println("display: ${nativeBuffers.size}, $displayWidth x $displayHeight")
+            //logger.debug("display: ${nativeBuffers.size}, $displayWidth x $displayHeight")
             val time = mediaPlayer.status().time()
             val listener = frameListener
             if (listener == null) {
+                //logger.debug("No frame listener set")
                 return
             }
             fun fireFrame(){
-                val i = imageInfo ?: return
-                val buffer = nativeBuffers.getOrNull(0) ?: return
+                val i = imageInfo
+                if (i == null) {
+                    //logger.debug("imageInfo is null, skipping frame")
+                    return
+                }
+                val buffer = nativeBuffers.getOrNull(0)
+                if (buffer == null) {
+                    //logger.debug("No buffer available")
+                    return
+                }
                 buffer.rewind()
                 val array = getBufferArray(buffer.remaining())
                 buffer.get(array)
@@ -158,6 +177,7 @@ class VlcjPlayerBridge(
                 // RV32 format 单像素占 4 字节  BGR_888X
                 bitmap.installPixels(i, array, bufferFormat.width * 4)
                 listener.onFrame(bitmap, time)
+                //logger.debug("Frame sent to listener")
             }
             // 如果没有自定义协程则运行到 awt event 中
             customFrameScope?.launch {
@@ -167,7 +187,7 @@ class VlcjPlayerBridge(
             }
 
             current = System.nanoTime() - current
-            logger.info("displayTime ${current}")
+            //logger.debug("displayTime ${current}")
         }
 
         override fun unlock(mediaPlayer: MediaPlayer?) {
@@ -185,6 +205,7 @@ class VlcjPlayerBridge(
             sourceWidth: Int,
             sourceHeight: Int
         ): BufferFormat? {
+            //logger.debug("getBufferFormat called: $sourceWidth x $sourceHeight")
             imageInfo = ImageInfo(
                 sourceWidth,
                 sourceHeight,
@@ -192,7 +213,7 @@ class VlcjPlayerBridge(
                 ColorType.BGRA_8888,
                 ColorAlphaType.OPAQUE,
             )
-            logger.debug("getBufferFormat: $sourceWidth x $sourceHeight")
+            //logger.debug("imageInfo set: $imageInfo")
             return RV32BufferFormat(sourceWidth, sourceHeight)
         }
 
@@ -202,7 +223,7 @@ class VlcjPlayerBridge(
             displayWidth: Int,
             displayHeight: Int
         ) {
-            logger.debug("newFormatSize: $bufferWidth x $bufferHeight, display: $displayWidth x $displayHeight")
+            //logger.debug("newFormatSize: $bufferWidth x $bufferHeight, display: $displayWidth x $displayHeight")
             if (lastDisplayerWidth != displayWidth || lastDisplayerHeight != displayHeight) {
                 lastDisplayerWidth = displayWidth
                 lastDisplayerHeight = displayHeight
@@ -216,7 +237,7 @@ class VlcjPlayerBridge(
         }
 
         override fun allocatedBuffers(buffers: Array<out ByteBuffer>) {
-            logger.debug("allocatedBuffers: ${buffers.size}")
+            //logger.debug("allocatedBuffers: ${buffers.size}")
 
             buffers.firstOrNull()?.remaining()?.let {
                 // 提前申请堆内存优化一下效率
@@ -234,28 +255,61 @@ class VlcjPlayerBridge(
         }
 
         override fun opening(mediaPlayer: MediaPlayer?) {
-            innerPlayStateFlow.update { C.State.PREPARING }
-        }
-
-        override fun buffering(mediaPlayer: MediaPlayer?, newCache: Float) {
-            if (newCache < 1f) {
-                innerPlayStateFlow.update { C.State.BUFFERING }
-            } else {
-                innerPlayStateFlow.update { C.State.READY }
+            SwingUtilities.invokeLater {
+                //logger.debug("VLC MediaPlayer opening")
+                innerPlayStateFlow.update { C.State.PREPARING }
             }
         }
 
+        // vlc 如果 seek 超过多个关键帧，会先定位到对应关键帧走一遍 buffering，在定位到目标 走一遍 buffering
+        // 因此哪怕 newCache 为 100 但是时间不对也需要视为在加载
+        // 并且因为帧率问题最终可能不会精准定位到对应 ms，添加 1.5s 宽容度
+        override fun buffering(mediaPlayer: MediaPlayer?, newCache: Float) {
+            val time =  mediaPlayer?.status()?.time()
+            SwingUtilities.invokeLater {
+                logger.debug("buffering: $newCache seekingTargetTime: $seekingTargetTime time: ${mediaPlayer?.status()?.time()}")
+                if (newCache < 100f) {
+                    innerPlayStateFlow.update { C.State.BUFFERING }
+                } else {
+                    if (time == null || seekingTargetTime == -1L) {
+                        innerPlayStateFlow.update { C.State.READY }
+                        return@invokeLater
+                    }
+                    if ((time - seekingTargetTime).absoluteValue < 15000) {
+                        // 暂停状态需要渲染目标位置静态帧
+                        if (!innerPlayWhenReadyFlow.value) {
+                            mediaPlayer?.controls()?.nextFrame()
+                        }
+                        seekingTargetTime = -1L
+                        innerPlayStateFlow.update { C.State.READY }
+                    } else {
+                        innerPlayStateFlow.update { C.State.BUFFERING }
+                    }
+
+                }
+            }
+
+
+        }
+
         override fun playing(mediaPlayer: MediaPlayer?) {
-            innerPlayStateFlow.update { C.State.READY }
-            innerPlayWhenReadyFlow.update { true }
+            SwingUtilities.invokeLater {
+                //logger.debug("VLC MediaPlayer playing")
+                innerPlayStateFlow.update { C.State.READY }
+                innerPlayWhenReadyFlow.update { true }
+            }
         }
 
         override fun paused(mediaPlayer: MediaPlayer?) {
-            innerPlayWhenReadyFlow.update { false }
+            SwingUtilities.invokeLater {
+                innerPlayWhenReadyFlow.update { false }
+            }
         }
 
         override fun stopped(mediaPlayer: MediaPlayer?) {
-            innerPlayStateFlow.update { C.State.IDLE }
+            SwingUtilities.invokeLater {
+                innerPlayStateFlow.update { C.State.IDLE }
+            }
         }
 
         override fun forward(mediaPlayer: MediaPlayer?) {
@@ -267,7 +321,9 @@ class VlcjPlayerBridge(
         }
 
         override fun finished(mediaPlayer: MediaPlayer?) {
-            innerPlayStateFlow.update { C.State.ENDED }
+            SwingUtilities.invokeLater {
+                innerPlayStateFlow.update { C.State.ENDED }
+            }
         }
 
         override fun timeChanged(mediaPlayer: MediaPlayer?, newTime: Long) {
@@ -366,12 +422,14 @@ class VlcjPlayerBridge(
         }
 
         override fun error(mediaPlayer: MediaPlayer?) {
-
+            logger.error("VLC MediaPlayer error occurred")
+//            innerPlayStateFlow.update { C.State.ERROR }
         }
 
         override fun mediaPlayerReady(mediaPlayer: MediaPlayer?) {
-            
-            innerPlayStateFlow.update { C.State.READY }
+            SwingUtilities.invokeLater {
+                innerPlayStateFlow.update { C.State.READY }
+            }
         }
     }
 

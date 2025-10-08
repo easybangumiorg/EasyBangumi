@@ -8,12 +8,15 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import org.easybangumi.next.shared.LocalNavController
 import org.easybangumi.next.shared.compose.media.bangumi.DesktopBangumiMediaVM
 import org.easybangumi.next.shared.playcon.BasePlayconViewModel
 import org.easybangumi.next.shared.playcon.desktop.DesktopPlayerVM
+import org.easybangumi.next.shared.playcon.pointer.BackBtn
 import org.easybangumi.next.shared.playcon.pointer.DuringText
 import org.easybangumi.next.shared.playcon.pointer.FullScreenBtn
 import org.easybangumi.next.shared.playcon.pointer.PlayPauseBtn
@@ -41,6 +44,7 @@ fun MediaPlayer(
     modifier: Modifier,
     playerVm: DesktopPlayerVM,
 ){
+    val nav = LocalNavController.current
     Box(
         modifier = modifier
     ) {
@@ -52,7 +56,15 @@ fun MediaPlayer(
             // 控制器层
             ControllerContent(modifier = Modifier.fillMaxSize(), onFullScreenChange = {
 //                playerVm.screenModeViewModel.fireUserFullScreenChange(it)
+            }, onBack = {
+                nav.popBackStack()
             })
+            if (playerVm.playconVM.isLoading) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
+
+            }
 
         }
     }
@@ -62,6 +74,7 @@ fun MediaPlayer(
 fun PointerPlayconContentScope.ControllerContent(
     modifier: Modifier,
     onFullScreenChange: (Boolean) -> Unit,
+    onBack: () -> Unit,
 ) {
     val isFullScreen = vm.screenMode == BasePlayconViewModel.ScreenMode.FULLSCREEN
     val isLock = vm.isLocked
@@ -90,6 +103,9 @@ fun PointerPlayconContentScope.ControllerContent(
                     FullScreenBtn(onFullScreenChange = {
                         onFullScreenChange(it)
                     })
+                }
+                this@ControllerContent.BackBtn {
+                    onBack()
                 }
 
 

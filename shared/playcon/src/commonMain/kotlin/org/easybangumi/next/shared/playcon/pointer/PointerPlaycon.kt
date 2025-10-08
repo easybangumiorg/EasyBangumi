@@ -9,12 +9,17 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import org.easybangumi.next.libplayer.api.C
@@ -91,43 +96,15 @@ fun PointerPlaycon(
 
 }
 
-//@Composable
-//fun BoxScope.ControllerContent(
-//    modifier: Modifier,
-//    vm: PointerPlayconVM,
-//) {
-//    val isLock = vm.isLocked
-//    val isShowController = vm.isShowController
-//
-//    AnimatedContent(
-//        isLock to isShowController,
-//        transitionSpec = {
-//        (fadeIn(animationSpec = tween(220, delayMillis = 90)))
-//            .togetherWith(fadeOut(animationSpec = tween(90)))
-//    },
-//    ) {
-//        val (isLock, isShowController) = it
-//
-//        Box(
-//            modifier
-//        ) {
-//
-//            if (!isLock && isShowController) {
-//                PointerPlayconBottomBar(
-//                    modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter)
-//                )
-//            } else if (isLock) {
-//
-//            } else {
-//
-//            }
-//
-//
-//        }
-//
-//    }
-//
-//}
+
+@Composable
+fun PointerPlayconContentScope.BackBtn(
+    onBack: ()->Unit,
+) {
+    IconButton(onClick = onBack, modifier = Modifier.align(Alignment.TopStart)) {
+        Icon(Icons.Filled.ArrowBack, "back", tint = Color.White)
+    }
+}
 
 
 @Composable
