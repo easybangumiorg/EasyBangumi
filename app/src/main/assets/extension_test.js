@@ -2,7 +2,7 @@
 // @label 樱花动漫
 // @versionName 1.0
 // @versionCode 1
-// @libVersion 12
+// @libVersion 13
 // @cover https://www.857yhw.com/favicon.ico
 
 // Inject
@@ -10,6 +10,7 @@ var networkHelper = Inject_NetworkHelper;
 var preferenceHelper = Inject_PreferenceHelper;
 var webViewHelperV2 = Inject_WebViewHelperV2;
 var okhttpHelper = Inject_OkhttpHelper;
+var webProxyProvider = Inject_WebProxyProvider;
 // Hook PreferenceComponent ========================================
 function PreferenceComponent_getPreference() {
     var res = new ArrayList();
@@ -270,58 +271,64 @@ function playline(doc, summary) {
 function PlayComponent_getPlayInfo(summary, playLine, episode) {
 
     var url = JSSourceUtils.urlParser(getRootUrl(), "/play/" + summary.id + "-" + playLine.id + "-" + episode.id + ".html");
-    var strategy = new WebViewHelperV2.RenderedStrategy(
-        url,
-        // 确保不会命中
-        "何言55fesfs5ef456sf4es",
-        "utf-8",
-        networkHelper.defaultLinuxUA,
-        null,
-        null,
-        false,
-        Long.parseLong(preferenceHelper.get("Timeout", "5000"))
-    );
-    var result = webViewHelperV2.renderHtmlFromJs(strategy);
-    if (result == null) {
-        throw new ParserException("解析错误 1");
+    var webProxy = webProxyProvider.getWebProxy();
+    if (webProxy == null) {
+        throw new ParserException("解析错误 webProxy is null");
     }
-    Log.i("result", result);
-    var doc = Jsoup.parse(result.content);
+    webProxy.loadUrl(url, networkHelper.defaultLinuxUA, null, null, true);
+    webProxy.addToWindow(true);
+    webProxy.delay(10000);
+    throw new ParserException("解析错误");
 
-
-    var src = "";
-    var video = doc.select("#lelevideo").first();
-    if (video != null) {
-        src = video.attr("src")
+    var res = webProxy.waitingForResourceLoaded(preferenceHelper.get("PlayerReg", "https://danmu.yhdmjx.com/m3u8.php?.*"));
+    Log.i("88dm", "PlayComponent_getPlayInfo1: " + res);
+    if (res.length() > 0) {
+        webProxy.close();
+        webProxy = webProxyProvider.getWebProxy();
+        webProxy.loadUrl(res, networkHelper.defaultLinuxUA, null, null, true);
+        webProxy.waitingForPageLoaded();
+        webProxy.addToWindow(true);
     }
-    Log.i("88dm", "PlayComponent_getPlayInfo: src: " + src);
-    var res = src;
-//    var split = src.split("\\?");
-//    if (split.length > 0) {
-//        var last = split[split.length - 1];
-//        var ls = last.split("\\&");
-//        for (var i = 0; i < ls.length; i++) {
-//            var it = ls[i];
-//            if (it.startsWith("url=")) {
-//                res = it.subSequence(4, it.length()).toString();
-//                break;
-//            }
-//        }
-//    }
-
-    if(res.length == 0) {
-        throw ParserException("url 解析失败")
+    var tt = 0;
+    var video = null;
+    var content = "";
+    while(tt < 5) {
+       webProxy.delay(500);
+       content = webProxy.getContentWithIframe();
+       var doc = Jsoup.parse(content);
+       video = doc.select("#lelevideo").first();
+       if (video != null) {
+          break;
+       } else {
+           tt++;
+       }
     }
-
-    var type = PlayerInfo.DECODE_TYPE_HLS;
-//    if (res.endsWith(".mp4")) {
-//        type = PlayerInfo.N;
-//    }
-    return new PlayerInfo(
-        type, res
-    )
-
-
+    if (video == null) {
+        Log.i("88dm", "PlayComponent_getPlayInfo: " + content);
+        throw new ParserException("解析错误 2");
+    }
+    var src = video.attr("src");
+    if (!src.startsWith("blob:")) {
+        var type = PlayerInfo.DECODE_TYPE_HLS;
+        if (src.contains("type=video_mp4")) {
+            type = PlayerInfo.DECODE_TYPE_NORMAL;
+        }
+        return new PlayerInfo(
+            type, src
+        )
+    }
+    src = webProxy.waitingForResourceLoaded(".*\\.m3u8", true, 10000);
+    webProxy.addToWindow(true);
+    if (src != null) {
+        var type = PlayerInfo.DECODE_TYPE_HLS;
+        if (src.contains("type=video_mp4")) {
+            type = PlayerInfo.DECODE_TYPE_NORMAL;
+        }
+        return new PlayerInfo(
+            type, src
+        )
+    }
+    throw new ParserException("解析错误 3");
 }
 
 

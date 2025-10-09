@@ -1,9 +1,13 @@
 package com.heyanle.easybangumi4.plugin.source.utils.network.web
 
 import android.graphics.Bitmap
+import android.view.View
+import android.view.ViewGroup
 import android.webkit.*
+import com.heyanle.easybangumi4.ActivityManager
 import com.heyanle.easybangumi4.utils.CoroutineProvider
 import com.heyanle.easybangumi4.utils.WebViewManager
+import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.safeResume
 import kotlinx.coroutines.*
 import org.apache.commons.text.StringEscapeUtils
@@ -28,23 +32,41 @@ class WebProxyImpl(
 ): IWebProxy {
 
     companion object {
-        val BLOB_HOOK_JS = """
-            let origin = window.URL.createObjectURL
-            window.URL.createObjectURL = function (t) {
-                let blobUrl = origin(t)
-                let xhr = new XMLHttpRequest()
-                xhr.onload = function () {
-                    window.cefQuery({
-                        window.blobHook.handleWrapper(xhr.responseText)
-                    });
-                   
-                }
-                xhr.open('get', blobUrl)
-                xhr.send();
-                return blobUrl
-            }
+        val BLOB_XHR_HOOK_JS = """
+let origin = window.URL.createObjectURL;
+window.URL.createObjectURL = function (t) {
+    let blobUrl = origin(t);
+    let xhr = new XMLHttpRequest();
+    xhr.onload = function () {
+        console.log("blobt: " + xhr.responseText);
+        window.blobHook.handleWrapper(xhr.responseText);
+
+    };
+    xhr.open('get', blobUrl);
+    xhr.send();
+    return blobUrl;
+}
+
+
         """.trimIndent()
     }
+    val BLOB_FETCH_HOOK_JS = """
+        
+
+        let originalFetch = window.fetch;
+        window.fetch = function (url, options) {
+            options = options || {};
+            let method = options.method || 'GET';
+            let headers = options.headers ? JSON.stringify(options.headers) : '{}';
+            let body = options.body ? String(options.body) : null;
+
+            // 调用 Android 接口
+            //                    window.AndroidInterceptor.onFetchIntercepted(method, url, body, headers);
+            window.blobHook.handleWrapper(url)
+            console.log("blobt: " + url)
+            return originalFetch.apply(this, arguments);
+        };
+    """.trimIndent()
     private val singleScope by lazy {
         CoroutineScope(SupervisorJob() + CoroutineProvider.SINGLE + CoroutineName("WebKitWebViewProxy-single"))
     }
@@ -63,10 +85,12 @@ class WebProxyImpl(
 
     private val hasLoad = AtomicBoolean(false)
 
+    @Volatile
     private var webView: WebView? = null
 
     private val resourceList = mutableListOf<String>()
 
+    @Volatile
     private var needBlob: Boolean = false
     @Volatile
     private var isLoadEnd = false
@@ -86,15 +110,30 @@ class WebProxyImpl(
     private var state: State? = null
 
 
+    private val webChromeClient = object: WebChromeClient() {
+        override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
+            consoleMessage?.message()?.logi("WebProxyImpl")
+            return super.onConsoleMessage(consoleMessage)
+        }
+
+    }
     private val webViewClient = object: WebViewClient() {
         override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
-            super.onPageStarted(view, url, favicon)
             if (needBlob) {
-                webView?.evaluateJavascript(BLOB_HOOK_JS, null)
+                "needBlob $webView".logi("WebProxyImpl")
+                webView?.evaluateJavascript(BLOB_XHR_HOOK_JS, null)
+                webView?.evaluateJavascript(BLOB_FETCH_HOOK_JS, null)
             }
+            super.onPageStarted(view, url, favicon)
+
         }
 
         override fun onPageFinished(view: WebView?, url: String?) {
+            if (needBlob) {
+                "needBlob $webView".logi("WebProxyImpl")
+                webView?.evaluateJavascript(BLOB_XHR_HOOK_JS, null)
+                webView?.evaluateJavascript(BLOB_FETCH_HOOK_JS, null)
+            }
             super.onPageFinished(view, url)
             singleScope.launch {
                 isLoadEnd = true
@@ -102,8 +141,32 @@ class WebProxyImpl(
             }
         }
 
+        override fun shouldOverrideUrlLoading(
+            view: WebView?,
+            request: WebResourceRequest?
+        ): Boolean {
+            onUrl(url)
+            return super.shouldOverrideUrlLoading(view, request)
+        }
+
+
+        override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
+            onUrl(url)
+            return super.shouldOverrideUrlLoading(view, url)
+        }
+
+        override fun shouldInterceptRequest(view: WebView?, url: String?): WebResourceResponse? {
+            return onUrl(url) ?: super.shouldInterceptRequest(view, url)
+        }
+
         override fun shouldInterceptRequest(view: WebView?, request: WebResourceRequest?): WebResourceResponse? {
             val url = request?.url?.toString() ?: return super.shouldInterceptRequest(view, request)
+            return onUrl(url) ?: super.shouldInterceptRequest(view, request)
+        }
+
+        private fun onUrl(url: String?): WebResourceResponse?{
+            url ?: return null
+            url.logi("WebProxyImpl")
             if (url != this@WebProxyImpl.url) {
                 singleScope.launch {
                     resourceList.add(url)
@@ -119,8 +182,11 @@ class WebProxyImpl(
             if (interceptResRegex?.matches(url) == true) {
                 return blockWebResourceRequest
             }
+            return null
+        }
 
-            return super.shouldInterceptRequest(view, request)
+        override fun onLoadResource(view: WebView?, url: String?) {
+            super.onLoadResource(view, url)
         }
 
 
@@ -132,14 +198,16 @@ class WebProxyImpl(
         headers: Map<String, String>,
         interceptResRegex: String?,
         needBlob: Boolean
-    ): Boolean {
+    ) {
         if (hasLoad.compareAndSet(false, true)) {
             close()
             this@WebProxyImpl.url = url
             this@WebProxyImpl.interceptResRegex = interceptResRegex?.let { Regex(it) }
 
+
             mainScope.async {
-               val wb = webViewManager.getWebViewOrNull()
+                this@WebProxyImpl.needBlob = needBlob
+                val wb = webViewManager.getWebViewOrNull()
                 if (wb == null) {
                     return@async false
                 }
@@ -147,11 +215,14 @@ class WebProxyImpl(
                 wb.clearWeb()
                 wb.settings.userAgentString = userAgent
                 wb.webViewClient = webViewClient
+                wb.webChromeClient = webChromeClient
                 if (needBlob) {
                     wb.addJavascriptInterface(object : Any() {
                         @JavascriptInterface
                         fun handleWrapper(blobTextData: String) {
+                            "blobTextData: $blobTextData".logi("WebProxyImpl")
                             singleScope.launch {
+                                "blobTextData: $blobTextData".logi("WebProxyImpl")
                                 resourceList.add(blobTextData)
                                 (state as? State.WaitingForResourceLoaded)?.let {
                                     if (it.resourceRegex.matches(blobTextData)) {
@@ -164,7 +235,6 @@ class WebProxyImpl(
                 }
                 wb.loadUrl(url, headers)
             }
-            return false
         } else {
             throw IllegalStateException("IWebView can only be loaded once, and it has already been loaded.")
         }
@@ -222,9 +292,10 @@ class WebProxyImpl(
         }
         mainScope.launch {
             delay(timeout)
-            winner.complete(null)
-        }
+            val res = resourceList.toList().firstOrNull { Regex(resourceRegex).matches(it) }
+            winner.complete(res)
 
+        }
         return winner.await()
     }
 
@@ -252,10 +323,57 @@ class WebProxyImpl(
         return winner.await()
     }
 
-    override suspend fun executeJavaScript(script: String, delay: Long) {
+    override suspend fun getContentWithIframe(timeout: Long): String? {
+        if (webView == null) {
+            throw IllegalStateException("WebView is not initialized, please call loadUrl first.")
+        }
+
+        state?.continuation?.cancel()
+        val winner = CompletableDeferred<String?>()
+        singleScope.launch {
+            val res = suspendCancellableCoroutine<String?> { continuation ->
+                mainScope.launch {
+                    webView?.evaluateJavascript("""
+                        function getIframeContent(iframe) {
+                            try {
+                                const doc = iframe.contentDocument || iframe.contentWindow.document;
+                                return doc.documentElement.outerHTML;
+                            } catch (e) {
+                                return "<!-- 跨域iframe内容无法访问 -->";
+                            }
+                        }
+
+                        function getFullHTMLWithIframes() {
+                            let html = document.documentElement.outerHTML;
+                            const iframes = document.querySelectorAll('iframe');
+                            
+                            for (const iframe of iframes) {
+                                const iframeContent = getIframeContent(iframe);
+                                html = html.replace(iframe.outerHTML, `<iframe-wrapper>`+ iframe.outerHTML + iframeContent + `</iframe-wrapper>`);
+                            }
+                            
+                            return html;
+                        }
+                        getFullHTMLWithIframes()
+                    """.trimIndent()) {
+                        continuation.safeResume(StringEscapeUtils.unescapeEcmaScript(it))
+                    }
+                }
+            }
+            winner.complete(res)
+        }
         mainScope.launch {
-            webView?.evaluateJavascript(script, null)
+            delay(timeout)
+            winner.complete(null)
+        }
+        return winner.await()
+    }
+
+    override suspend fun executeJavaScript(script: String, delay: Long): Any {
+        return mainScope.launch {
+            val res = webView?.evaluateJavascript(script, null)
             delay(delay)
+            res
         }
     }
 
@@ -264,7 +382,27 @@ class WebProxyImpl(
         state = null
         webView?.let {
             webViewManager.recycle(it)
+            (it.parent as? ViewGroup)?.removeView(it)
         }
         webView = null
+    }
+
+    override fun addToWindow(show: Boolean) {
+        mainScope.launch {
+            val act = ActivityManager.getTopActivity() ?: return@launch
+            val wb = webView ?: return@launch
+            val viewGroup = act.window.decorView.findViewById<ViewGroup>(android.R.id.content)
+
+            if (show) {
+                viewGroup.addView(wb, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+                wb.visibility = View.VISIBLE
+                wb.bringToFront()
+            } else {
+                viewGroup.addView(wb, 0, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+                wb.visibility = View.VISIBLE
+            }
+
+
+        }
     }
 }

@@ -11,6 +11,8 @@ import com.heyanle.easybangumi4.plugin.source.utils.network.NetworkHelperImpl
 import com.heyanle.easybangumi4.plugin.source.utils.network.OkhttpHelperImpl
 import com.heyanle.easybangumi4.plugin.source.utils.network.WebViewHelperImpl
 import com.heyanle.easybangumi4.plugin.source.utils.network.WebViewHelperV2Impl
+import com.heyanle.easybangumi4.plugin.source.utils.network.web.WebProxyManager
+import com.heyanle.easybangumi4.plugin.source.utils.network.web.WebProxyProvider
 import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
 
 import com.heyanle.easybangumi4.source_api.utils.api.CaptchaHelper
@@ -36,6 +38,8 @@ class SourceModule(
 ) : InjectModule {
 
     override fun InjectScope.registerInjectables() {
+
+
 
         addSingletonFactory {
             NativeHelperImpl(application)
@@ -104,6 +108,16 @@ class SourceModule(
         addScopedPerKeyFactory<WebViewHelperV2, String> {
             get<WebViewHelperV2Impl>()
         }
+
+        // webProxy
+        addScopedPerKeyFactory<WebProxyProvider, WebProxyManager> {
+            WebProxyProvider(it, get())
+        }
+
+        addScopedPerKeyFactory<WebProxyManager, String> {
+            WebProxyManager()
+        }
+
 
     }
 }

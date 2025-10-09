@@ -65,6 +65,7 @@ class ExtensionControllerV2(
         JsExtensionProviderV2(
             jsonFileProvider,
             jsExtensionFolder,
+            jsExtensionCacheFolder,
             dispatcher,
             jsRuntimeProvider,
         )

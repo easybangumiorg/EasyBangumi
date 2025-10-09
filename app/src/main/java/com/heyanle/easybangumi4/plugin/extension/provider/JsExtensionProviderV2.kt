@@ -1,6 +1,8 @@
 package com.heyanle.easybangumi4.plugin.extension.provider
 
-import coil.decode.DataSource
+
+import com.heyanle.easybangumi4.APP
+import com.heyanle.easybangumi4.BuildConfig
 import com.heyanle.easybangumi4.base.DataResult
 import com.heyanle.easybangumi4.base.json.JsonFileProvider
 import com.heyanle.easybangumi4.base.map
@@ -8,7 +10,6 @@ import com.heyanle.easybangumi4.plugin.extension.ExtensionInfo
 import com.heyanle.easybangumi4.plugin.extension.loader.ExtensionLoader
 import com.heyanle.easybangumi4.plugin.extension.loader.ExtensionLoaderFactory
 import com.heyanle.easybangumi4.plugin.js.runtime.JSRuntimeProvider
-import com.hippo.unifile.UniFile
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,6 +26,8 @@ import okhttp3.internal.wait
 import java.io.File
 import java.io.InputStream
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.io.copyTo
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -40,6 +43,7 @@ import java.util.concurrent.ConcurrentHashMap
 class JsExtensionProviderV2(
     jsonFileProvider: JsonFileProvider,
     private val extensionFolder: String,
+    private val cacheFolder: String,
     private val dispatcher: CoroutineDispatcher,
     private val jsRuntime: JSRuntimeProvider
 ): ExtensionProvider {
@@ -82,6 +86,30 @@ class JsExtensionProviderV2(
     private val _flow = MutableStateFlow(ExtensionProvider.ExtensionProviderState(true))
     override val flow: StateFlow<ExtensionProvider.ExtensionProviderState> = _flow
 
+    private val isAssetsDebugLoaded = AtomicBoolean(false)
+    private var assetsDebugExtensionInfo: ExtensionInfo? = null
+
+    private fun getAssetsDebugExtensionInfo(): ExtensionInfo? {
+        if (isAssetsDebugLoaded.compareAndSet(false, true)) {
+            val file = APP.assets.open("extension_test.js").use {
+                File(cacheFolder).mkdirs()
+                val file = File(cacheFolder, "test.${EXTENSION_SUFFIX}")
+                file.delete()
+                file.createNewFile()
+                file.deleteOnExit()
+                file.outputStream().use { output ->
+                    it.copyTo(output)
+                }
+                file
+            }
+            val loader =  loaderFromFile(file)
+            if (loader?.canLoad() == true) {
+                assetsDebugExtensionInfo = loader.load()
+            }
+        }
+        return assetsDebugExtensionInfo
+    }
+
     override fun init() {
         scope.launch {
             indexHelper.flow.collectLatest {
@@ -93,12 +121,19 @@ class JsExtensionProviderV2(
                     }
                     is DataResult.Ok -> {
                         val d = it.data
-                        val info = d.map {
+                        var info = d.map {
                             scope.async(Dispatchers.IO) {
                                 loadFromIndex(it)
                             }
 
                         }.awaitAll()
+                        if (BuildConfig.DEBUG) {
+                            val debugInfo = getAssetsDebugExtensionInfo()
+                            if (debugInfo != null) {
+                                info = info.toMutableList()
+                                info.add(debugInfo)
+                            }
+                        }
                         val map = info.filterNotNull().associateBy { it.key }
 
                         _flow.update {

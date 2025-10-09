@@ -12,6 +12,8 @@ import com.heyanle.easybangumi4.plugin.js.component.JSSearchComponent
 import com.heyanle.easybangumi4.plugin.source.SourceException
 import com.heyanle.easybangumi4.plugin.source.bundle.ComponentBundle
 import com.heyanle.easybangumi4.plugin.source.bundle.ComponentProxy
+import com.heyanle.easybangumi4.plugin.source.utils.network.web.WebProxyManager
+import com.heyanle.easybangumi4.plugin.source.utils.network.web.WebProxyProvider
 import com.heyanle.easybangumi4.source_api.component.Component
 import com.heyanle.easybangumi4.source_api.component.detailed.DetailedComponent
 import com.heyanle.easybangumi4.source_api.component.page.PageComponent
@@ -45,6 +47,7 @@ class JSComponentBundle(
 
     @WorkerThread
     override suspend fun init() {
+        val webProxyManager: WebProxyManager = Inject.get<WebProxyManager>(jsSource.key)
         // 1. 注入工具类
         put(StringHelper::class, Inject.get(jsSource.key))
         put(NetworkHelper::class, Inject.get(jsSource.key))
@@ -53,6 +56,7 @@ class JSComponentBundle(
         put(WebViewHelper::class, Inject.get(jsSource.key))
         put(CaptchaHelper::class, Inject.get(jsSource.key))
         put(WebViewHelperV2::class, Inject.get(jsSource.key))
+        put(WebProxyProvider::class, Inject.get(webProxyManager))
 
         put(Context::class, APP)
         put(Application::class, APP)
@@ -113,6 +117,7 @@ class JSComponentBundle(
         }
 
         // 5. 检查 & 加载 Component
+
         val jsSearchComponent = JSSearchComponent.of(jsSource.jsScope)
         val jsPageComponent = JSPageComponent.of(jsSource.jsScope)
         val jsPlayComponent = JSPlayComponent.of(jsSource.jsScope)
@@ -121,26 +126,31 @@ class JSComponentBundle(
 
         if(jsSearchComponent != null){
             jsSearchComponent.innerSource = jsSource
+            jsSearchComponent.setWebProxyManager(webProxyManager)
             jsSearchComponent.init()
             put(SearchComponent::class, jsSearchComponent)
         }
         if(jsPageComponent != null){
             jsPageComponent.innerSource = jsSource
+            jsPageComponent.setWebProxyManager(webProxyManager)
             jsPageComponent.init()
             put(PageComponent::class, jsPageComponent)
         }
         if(jsPlayComponent != null){
             jsPlayComponent.innerSource = jsSource
+            jsPlayComponent.setWebProxyManager(webProxyManager)
             jsPlayComponent.init()
             put(PlayComponent::class, jsPlayComponent)
         }
         if(jsDetailedComponent != null){
             jsDetailedComponent.innerSource = jsSource
+            jsDetailedComponent.setWebProxyManager(webProxyManager)
             jsDetailedComponent.init()
             put(DetailedComponent::class, jsDetailedComponent)
         }
         if(jsPreferenceComponent != null){
             jsPreferenceComponent.innerSource = jsSource
+            jsPreferenceComponent.setWebProxyManager(webProxyManager)
             jsPreferenceComponent.init()
             put(PreferenceComponent::class, jsPreferenceComponent)
 
@@ -158,18 +168,18 @@ class JSComponentBundle(
                             if (it.selections.indexOf(it.def) == -1) {
                                 throw SourceException("PreferenceComponent 装配错误：def not fount in selections of ${it.key}")
                             }
-                            preferenceHelper.put(it.key, it.def)
+//                            preferenceHelper.put(it.key, it.def)
                         }
                     } else if (it is SourcePreference.Switch) {
                         val current = preferenceHelper.get(it.key, "")
-                        if (current != "true" && current != "false") {
-                            preferenceHelper.put(it.key, it.def)
-                        }
+//                        if (current != "true" && current != "false") {
+//                            preferenceHelper.put(it.key, it.def)
+//                        }
                     } else if (it is SourcePreference.Edit) {
                         val current = preferenceHelper.get(it.key, it.def)
-                        if (current == it.def) {
-                            preferenceHelper.put(it.key, it.def)
-                        }
+//                        if (current == it.def) {
+//                            preferenceHelper.put(it.key, it.def)
+//                        }
                     }
                     keySet.add(it.key)
                 }

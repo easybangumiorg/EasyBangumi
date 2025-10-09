@@ -40,6 +40,7 @@ import com.heyanle.easybangumi4.plugin.source.LocalSourceBundleController
 import com.heyanle.easybangumi4.plugin.source.SourceInfo
 import com.heyanle.easybangumi4.source_api.IconSource
 import com.heyanle.easybangumi4.ui.common.OkImage
+import com.heyanle.easybangumi4.ui.common.moeDialogAlert
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.ui.setting.SettingPage
 import com.heyanle.easybangumi4.utils.loge
@@ -135,6 +136,8 @@ fun Source() {
                                 nav.navigationSetting(SettingPage.LocalExtension)
                             } else if(it.sourceInfo is SourceInfo.Loaded && it.config.enable && bundle.preference(it.sourceInfo.source.key) != null){
                                 nav.navigationSourceConfig(it.sourceInfo.source.key)
+                            } else if (it.sourceInfo is SourceInfo.Error) {
+                                it.sourceInfo.msg.moeDialogAlert()
                             }
 
                         }
@@ -168,9 +171,18 @@ fun SourceItem(
             Text(text = sourceInfo.source.label)
         },
         supportingContent = {
-            Text(
-                text = sourceInfo.source.version,
-            )
+            when(sourceInfo) {
+                is SourceInfo.Loaded -> {
+                    Text(
+                        text = sourceInfo.source.version,
+                    )
+                }
+                is SourceInfo.Error -> {
+                    Text(text = sourceInfo.msg, maxLines = 1,)
+                }
+                is SourceInfo.Disabled -> {}
+            }
+
         },
         trailingContent = {
             when(sourceInfo){
@@ -192,7 +204,7 @@ fun SourceItem(
 
                 }
                 is SourceInfo.Error -> {
-                    Text(text = sourceInfo.msg)
+
 
                 }
                 is SourceInfo.Disabled -> {

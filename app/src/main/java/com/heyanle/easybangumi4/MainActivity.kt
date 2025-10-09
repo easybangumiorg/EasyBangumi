@@ -60,6 +60,7 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        ActivityManager.addActivity(this)
         // 非外网抛异常
         firebaseAnalytics = runCatching {
             Firebase.analytics
@@ -119,5 +120,11 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         LauncherBus.onResume(launcherBus)
+    }
+
+    override fun onDestroy() {
+        ActivityManager.removeActivity(this)
+        super.onDestroy()
+
     }
 }

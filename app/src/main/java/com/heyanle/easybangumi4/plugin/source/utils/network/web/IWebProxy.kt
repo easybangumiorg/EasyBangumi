@@ -20,7 +20,7 @@ interface IWebProxy: AutoCloseable {
         headers: Map<String, String> = emptyMap(),
         interceptResRegex: String? = ".*\\.(css|mp3|m4a|gif|jpg|png|webp).*",
         needBlob: Boolean = false,
-    ): Boolean
+    ): Unit
 
     suspend fun waitingForPageLoaded(
         timeout: Long = 5000L
@@ -36,9 +36,15 @@ interface IWebProxy: AutoCloseable {
         timeout: Long = 5000L
     ): String?
 
+    suspend fun getContentWithIframe(
+        timeout: Long
+    ): String?
+
     suspend fun executeJavaScript(
         script: String,
         delay: Long = 100L,
     ): Any
+
+    fun addToWindow(show: Boolean)
 
 }

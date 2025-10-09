@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.plugin.js.utils
 
 import com.heyanle.easybangumi4.plugin.source.utils.network.web.IWebProxy
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -11,24 +12,26 @@ class WebViewProxyKtWrapper(
     val webView: IWebProxy
 ) {
 
+    @JvmOverloads
     fun loadUrl(
         url: String,
         userAgent: String? = null,
-        headers: Map<String, String> = emptyMap(),
+        headers: Map<String, String>? = null,
         interceptResRegex: String? = ".*\\.(css|mp3|m4a|gif|jpg|png|webp).*",
         needBlob: Boolean = false,
-    ): Boolean {
-        return runBlocking {
+    ) {
+        runBlocking {
             webView.loadUrl(
                 url,
                 userAgent,
-                headers,
+                headers ?: emptyMap(),
                 interceptResRegex,
                 needBlob
             )
         }
     }
 
+    @JvmOverloads
     fun waitingForPageLoaded(
         timeout: Long = 5000L
     ): Boolean {
@@ -37,6 +40,7 @@ class WebViewProxyKtWrapper(
         }
     }
 
+    @JvmOverloads
     fun waitingForResourceLoaded(
         resourceRegex: String,
         sticky: Boolean = true,
@@ -51,11 +55,21 @@ class WebViewProxyKtWrapper(
         }
     }
 
+    @JvmOverloads
     fun getContent(
         timeout: Long = 5000L
     ): String? {
         return runBlocking {
             webView.getContent(timeout)
+        }
+    }
+
+    @JvmOverloads
+    fun getContentWithIframe(
+        timeout: Long = 5000L
+    ): String? {
+        return runBlocking {
+            webView.getContentWithIframe(timeout)
         }
     }
 
@@ -69,5 +83,20 @@ class WebViewProxyKtWrapper(
                 delay
             )
         }
+    }
+
+    fun delay(delay: Long) {
+        runBlocking {
+            kotlinx.coroutines.delay(delay)
+        }
+    }
+
+
+    fun close() {
+        webView.close()
+    }
+
+    fun addToWindow(show: Boolean) {
+        webView.addToWindow(show)
     }
 }
