@@ -56,11 +56,30 @@ class WebViewProxyKtWrapper(
     }
 
     @JvmOverloads
+    fun href(url: String, cleanLoaded: Boolean = true) {
+        return runBlocking {
+            webView.href(url, cleanLoaded)
+        }
+    }
+
+    @JvmOverloads
     fun getContent(
         timeout: Long = 5000L
     ): String? {
         return runBlocking {
             webView.getContent(timeout)
+        }
+    }
+
+    @JvmOverloads
+    fun waitingForBlobText(
+        urlRegex: String? = null,
+        textRegex: String? = null,
+        sticky: Boolean = true,
+        timeout: Long = 5000L
+    ): Pair<String?, String?>? {
+        return runBlocking {
+            webView.waitingForBlobText(urlRegex, textRegex, sticky, timeout)
         }
     }
 
@@ -76,7 +95,7 @@ class WebViewProxyKtWrapper(
     fun executeJavaScript(
         script: String,
         delay: Long = 100L,
-    ): Any {
+    ): String? {
         return runBlocking {
             webView.executeJavaScript(
                 script,

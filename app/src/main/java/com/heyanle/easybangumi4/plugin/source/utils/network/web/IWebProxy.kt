@@ -14,6 +14,8 @@ package com.heyanle.easybangumi4.plugin.source.utils.network.web
 @OptIn(ExperimentalStdlibApi::class)
 interface IWebProxy: AutoCloseable {
 
+    suspend fun href(url: String, cleanLoaded: Boolean)
+
     suspend fun loadUrl(
         url: String,
         userAgent: String? = null,
@@ -27,10 +29,17 @@ interface IWebProxy: AutoCloseable {
     ): Boolean
 
     suspend fun waitingForResourceLoaded(
-        resourceRegex: String,
+        urlRegex: String,
         sticky: Boolean = true,
         timeout: Long = 5000L
     ): String?
+
+    suspend fun waitingForBlobText(
+        urlRegex: String? = null,
+        textRegex: String? = null,
+        sticky: Boolean = true,
+        timeout: Long = 5000L
+    ): Pair<String?, String?>?
 
     suspend fun getContent(
         timeout: Long = 5000L
@@ -43,8 +52,10 @@ interface IWebProxy: AutoCloseable {
     suspend fun executeJavaScript(
         script: String,
         delay: Long = 100L,
-    ): Any
+    ): String?
 
     fun addToWindow(show: Boolean)
+
+
 
 }

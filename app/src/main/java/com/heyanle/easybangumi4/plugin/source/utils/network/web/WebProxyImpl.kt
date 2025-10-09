@@ -33,40 +33,41 @@ class WebProxyImpl(
 
     companion object {
         val BLOB_XHR_HOOK_JS = """
-let origin = window.URL.createObjectURL;
-window.URL.createObjectURL = function (t) {
-    let blobUrl = origin(t);
-    let xhr = new XMLHttpRequest();
-    xhr.onload = function () {
-        console.log("blobt: " + xhr.responseText);
-        window.blobHook.handleWrapper(xhr.responseText);
-
-    };
-    xhr.open('get', blobUrl);
-    xhr.send();
-    return blobUrl;
-}
+            let blobText = [];
+            let blobUrl = [];
+            let open_origin = window.URL.createObjectURL;
+            window.URL.createObjectURL = function (t) {
+                this.addEventListener("load", () => {
+                    console.log("blob xhr hook", args[1], xhr.responseText);
+                    try {
+                        
+                        blobUrl.push(args[1]);
+                        blobText.push(xhr.responseText);
+                        window.blobHook.handleWrapper(blobUrl, blobText);
+                    } catch(e) {
+                    console.log(e);
+                    }
+                });
+                return open_origin.apply(this, args);
+            }
+            
+            let text_origin = window.Response.prototype.text;
+            window.Response.prototype.text = function () {
+                return new Promise((resolve, reject) => {
+                    text_origin.call(this).then((text) => {
+                        console.log("blob text hook2", this.url, text);
+                        blobUrl.push(this.url);
+                        blobText.push(text);
+                        resolve(text);
+                        window.blobHook.handleWrapper(blobUrl, blobText);
+                    }).catch(reject);
+                });
+            }
 
 
         """.trimIndent()
+
     }
-    val BLOB_FETCH_HOOK_JS = """
-        
-
-        let originalFetch = window.fetch;
-        window.fetch = function (url, options) {
-            options = options || {};
-            let method = options.method || 'GET';
-            let headers = options.headers ? JSON.stringify(options.headers) : '{}';
-            let body = options.body ? String(options.body) : null;
-
-            // 调用 Android 接口
-            //                    window.AndroidInterceptor.onFetchIntercepted(method, url, body, headers);
-            window.blobHook.handleWrapper(url)
-            console.log("blobt: " + url)
-            return originalFetch.apply(this, arguments);
-        };
-    """.trimIndent()
     private val singleScope by lazy {
         CoroutineScope(SupervisorJob() + CoroutineProvider.SINGLE + CoroutineName("WebKitWebViewProxy-single"))
     }
@@ -89,6 +90,8 @@ window.URL.createObjectURL = function (t) {
     private var webView: WebView? = null
 
     private val resourceList = mutableListOf<String>()
+    // url to text
+    private val blobResourceList = mutableListOf<Pair<String, String>>()
 
     @Volatile
     private var needBlob: Boolean = false
@@ -104,6 +107,12 @@ window.URL.createObjectURL = function (t) {
         class WaitingForResourceLoaded(
             val resourceRegex: Regex,
             override val continuation: CancellableContinuation<String?>,
+        ): State()
+
+        class WaitingForBlobLoaded(
+            val urlRegex: Regex?,
+            val textRegex: Regex?,
+            override val continuation: CancellableContinuation<Pair<String?, String?>>,
         ): State()
     }
 
@@ -122,18 +131,16 @@ window.URL.createObjectURL = function (t) {
             if (needBlob) {
                 "needBlob $webView".logi("WebProxyImpl")
                 webView?.evaluateJavascript(BLOB_XHR_HOOK_JS, null)
-                webView?.evaluateJavascript(BLOB_FETCH_HOOK_JS, null)
             }
             super.onPageStarted(view, url, favicon)
 
         }
 
         override fun onPageFinished(view: WebView?, url: String?) {
-            if (needBlob) {
-                "needBlob $webView".logi("WebProxyImpl")
-                webView?.evaluateJavascript(BLOB_XHR_HOOK_JS, null)
-                webView?.evaluateJavascript(BLOB_FETCH_HOOK_JS, null)
-            }
+//            if (needBlob) {
+//                "needBlob $webView".logi("WebProxyImpl")
+//                webView?.evaluateJavascript(BLOB_XHR_HOOK_JS, null)
+//            }
             super.onPageFinished(view, url)
             singleScope.launch {
                 isLoadEnd = true
@@ -192,6 +199,16 @@ window.URL.createObjectURL = function (t) {
 
     }
 
+    override suspend fun href(url: String, cleanLoaded: Boolean) {
+        mainScope.launch {
+            if (cleanLoaded) {
+                isLoadEnd = false
+            }
+            webView?.evaluateJavascript("window.location.href = '$url';", null)
+        }
+    }
+
+
     override suspend fun loadUrl(
         url: String,
         userAgent: String?,
@@ -219,14 +236,27 @@ window.URL.createObjectURL = function (t) {
                 if (needBlob) {
                     wb.addJavascriptInterface(object : Any() {
                         @JavascriptInterface
-                        fun handleWrapper(blobTextData: String) {
-                            "blobTextData: $blobTextData".logi("WebProxyImpl")
+                        fun handleWrapper(blobUrl: Array<String>, blobText: Array<String>) {
                             singleScope.launch {
-                                "blobTextData: $blobTextData".logi("WebProxyImpl")
-                                resourceList.add(blobTextData)
-                                (state as? State.WaitingForResourceLoaded)?.let {
-                                    if (it.resourceRegex.matches(blobTextData)) {
-                                        it.continuation.safeResume(blobTextData)
+                                val array = arrayListOf<Pair<String, String>>()
+                                for (i in blobUrl.indices) {
+                                    if (i >= blobText.size ) {
+                                        break
+                                    }
+                                    array.add(Pair(blobUrl[i], blobText[i]))
+                                }
+                                blobResourceList.addAll(array)
+                                "handleWrapper  ${blobResourceList.joinToString("\n")}".logi("WebProxyImpl")
+
+                                (state as? State.WaitingForBlobLoaded)?.let { state ->
+                                    for (pair in blobResourceList) {
+                                        if (state.urlRegex != null && state.urlRegex.matches(pair.first)) {
+                                            state.continuation.safeResume(pair)
+                                            return@let
+                                        } else if (state.textRegex != null && state.textRegex.matches(pair.second)) {
+                                            state.continuation.safeResume(pair)
+                                            return@let
+                                        }
                                     }
                                 }
                             }
@@ -264,22 +294,22 @@ window.URL.createObjectURL = function (t) {
     }
 
     override suspend fun waitingForResourceLoaded(
-        resourceRegex: String,
+        urlRegex: String,
         sticky: Boolean,
         timeout: Long
     ): String? {
         if (sticky) {
-            val res = resourceList.toList().firstOrNull { Regex(resourceRegex).matches(it) }
+            val res = resourceList.toList().firstOrNull { Regex(urlRegex).matches(it) }
             if (res != null) {
                 return res
             }
         }
         state?.continuation?.cancel()
         val winner = CompletableDeferred<String?>()
-        val regex = Regex(resourceRegex)
+        val regex = Regex(urlRegex)
         singleScope.launch {
             if (sticky) {
-                val res = resourceList.toList().firstOrNull { Regex(resourceRegex).matches(it) }
+                val res = resourceList.toList().firstOrNull { Regex(urlRegex).matches(it) }
                 if (res != null) {
                     winner.complete(res)
                     return@launch
@@ -292,9 +322,62 @@ window.URL.createObjectURL = function (t) {
         }
         mainScope.launch {
             delay(timeout)
-            val res = resourceList.toList().firstOrNull { Regex(resourceRegex).matches(it) }
+            val res = resourceList.toList().firstOrNull { Regex(urlRegex).matches(it) }
             winner.complete(res)
 
+        }
+        return winner.await()
+    }
+
+    override suspend fun waitingForBlobText(
+        urlRegex: String?,
+        textRegex: String?,
+        sticky: Boolean,
+        timeout: Long
+    ): Pair<String?, String?>? {
+        if (!needBlob) {
+            return null
+        }
+        if (sticky) {
+            for (pair in blobResourceList) {
+                if (urlRegex != null && Regex(urlRegex).matches(pair.first)) {
+                    return pair
+                } else if (textRegex != null && Regex(textRegex).matches(pair.second)) {
+                    return pair
+                }
+            }
+        }
+        state?.continuation?.cancel()
+        val winner = CompletableDeferred<Pair<String?, String?>?>()
+        val urlR = urlRegex?.let { Regex(it) }
+        val textR = textRegex?.let { Regex(it) }
+        singleScope.launch {
+            if (sticky) {
+                for (pair in blobResourceList) {
+                    if (urlRegex != null && Regex(urlRegex).matches(pair.first)) {
+                        winner.complete(pair)
+                        return@launch
+                    } else if (textRegex != null && Regex(textRegex).matches(pair.second)) {
+                        winner.complete(pair)
+                        return@launch
+                    }
+                }
+            }
+            suspendCancellableCoroutine<Pair<String?, String?>?> {
+                state = State.WaitingForBlobLoaded(urlR, textR, it)
+            }
+        }
+        mainScope.launch {
+            delay(timeout)
+            for (pair in blobResourceList) {
+                if (urlRegex != null && Regex(urlRegex).matches(pair.first)) {
+                    winner.complete(pair)
+                    return@launch
+                } else if (textRegex != null && Regex(textRegex).matches(pair.second)) {
+                    winner.complete(pair)
+                    return@launch
+                }
+            }
         }
         return winner.await()
     }
@@ -369,12 +452,21 @@ window.URL.createObjectURL = function (t) {
         return winner.await()
     }
 
-    override suspend fun executeJavaScript(script: String, delay: Long): Any {
-        return mainScope.launch {
-            val res = webView?.evaluateJavascript(script, null)
-            delay(delay)
-            res
-        }
+    override suspend fun executeJavaScript(script: String, delay: Long): String? {
+        return mainScope.async {
+            suspendCancellableCoroutine<String?> { con ->
+                webView?.evaluateJavascript(script, object: ValueCallback<String> {
+                    override fun onReceiveValue(value: String?) {
+                        con.safeResume(value)
+                    }
+                })
+
+                mainScope.launch {
+                    delay(delay)
+                    con.safeResume(null)
+                }
+            }
+        }.await()
     }
 
     override fun close() {
@@ -392,7 +484,7 @@ window.URL.createObjectURL = function (t) {
             val act = ActivityManager.getTopActivity() ?: return@launch
             val wb = webView ?: return@launch
             val viewGroup = act.window.decorView.findViewById<ViewGroup>(android.R.id.content)
-
+            (wb.parent as? ViewGroup)?.removeView(wb)
             if (show) {
                 viewGroup.addView(wb, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
                 wb.visibility = View.VISIBLE
@@ -401,8 +493,8 @@ window.URL.createObjectURL = function (t) {
                 viewGroup.addView(wb, 0, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
                 wb.visibility = View.VISIBLE
             }
-
-
         }
     }
+
+
 }

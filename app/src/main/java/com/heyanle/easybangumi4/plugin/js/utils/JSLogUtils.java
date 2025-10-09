@@ -1,6 +1,8 @@
 package com.heyanle.easybangumi4.plugin.js.utils;
 
 
+import static com.tencent.bugly.proguard.at.i;
+
 import android.util.Log;
 
 /**
@@ -11,7 +13,22 @@ import android.util.Log;
 public class JSLogUtils {
 
     public static void i(String tag, String msg){
-        Log.i(tag, msg);
+        if (msg.startsWith("PlayComponent_getPlayInfo")) {
+            return;
+        }
+        if (msg.length() > 4000) {
+            int chunkCount = msg.length() / 4000;     // integer division
+            for (int i = 0; i <= chunkCount; i++) {
+                int max = 4000 * (i + 1);
+                if (max >= msg.length()) {
+                    Log.i(tag, msg.substring(4000 * i));
+                } else {
+                    Log.i(tag, msg.substring(4000 * i, max));
+                }
+            }
+        } else {
+            Log.i(tag, msg);
+        }
     }
 
     public static void e(String tag, String msg){

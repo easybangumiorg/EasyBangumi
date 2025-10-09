@@ -277,17 +277,12 @@ function PlayComponent_getPlayInfo(summary, playLine, episode) {
     }
     webProxy.loadUrl(url, networkHelper.defaultLinuxUA, null, null, true);
     webProxy.addToWindow(true);
-    webProxy.delay(10000);
-    throw new ParserException("解析错误");
 
     var res = webProxy.waitingForResourceLoaded(preferenceHelper.get("PlayerReg", "https://danmu.yhdmjx.com/m3u8.php?.*"));
     Log.i("88dm", "PlayComponent_getPlayInfo1: " + res);
     if (res.length() > 0) {
-        webProxy.close();
-        webProxy = webProxyProvider.getWebProxy();
-        webProxy.loadUrl(res, networkHelper.defaultLinuxUA, null, null, true);
+        webProxy.href(res);
         webProxy.waitingForPageLoaded();
-        webProxy.addToWindow(true);
     }
     var tt = 0;
     var video = null;
@@ -303,15 +298,16 @@ function PlayComponent_getPlayInfo(summary, playLine, episode) {
            tt++;
        }
     }
+    Log.i("88dm", "PlayComponent_getPlayInfo: " + content);
     if (video == null) {
-        Log.i("88dm", "PlayComponent_getPlayInfo: " + content);
         throw new ParserException("解析错误 2");
     }
     var src = video.attr("src");
+    Log.i("88dm", "PlayComponent_getPlayInfo2: " + src);
     if (!src.startsWith("blob:")) {
         var type = PlayerInfo.DECODE_TYPE_HLS;
         if (src.contains("type=video_mp4")) {
-            type = PlayerInfo.DECODE_TYPE_NORMAL;
+            type = PlayerInfo.DECODE_TYPE_OTHER;
         }
         return new PlayerInfo(
             type, src
@@ -322,7 +318,7 @@ function PlayComponent_getPlayInfo(summary, playLine, episode) {
     if (src != null) {
         var type = PlayerInfo.DECODE_TYPE_HLS;
         if (src.contains("type=video_mp4")) {
-            type = PlayerInfo.DECODE_TYPE_NORMAL;
+            type = PlayerInfo.DECODE_TYPE_OTHER;
         }
         return new PlayerInfo(
             type, src
