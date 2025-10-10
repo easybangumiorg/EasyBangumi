@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Extension
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Public
+import androidx.compose.material.icons.filled.SyncAlt
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
@@ -139,6 +140,22 @@ fun ColumnScope.ExtensionSetting(
                     contentDescription = stringResource(id = R.string.local_extension_setting)
                 )
             }
+        )
+
+        BooleanPreferenceItem(
+            title = {
+                Text(text = "自动同步番源")
+            },
+            subtitle = {
+                Text(text = "启动后自动同步仓库番源（下载与更新）")
+            },
+            icon = {
+                Icon(
+                    Icons.Filled.SyncAlt,
+                    contentDescription = stringResource(id = R.string.extension_v2)
+                )
+            },
+            preference = settingPreferences.sourceAutoSync,
         )
     }
 }

@@ -379,11 +379,19 @@ fun Nav() {
 
             }
 
-            composable(STORY) {
+            composable("${STORY}?defIndex={defIndex}",
+                arguments = listOf(
+                    navArgument("defIndex") {
+                        type = NavType.IntType
+                        defaultValue = 0
+                    }
+                )) {
+                val defSearchKey = it.arguments?.getInt("defIndex", 0) ?: 0
+
                 ScreenShowEvent()
                 NormalSystemBarColor()
                 //Download()
-                Story()
+                Story(defSearchKey)
             }
 
             composable(EXTENSION_PUSH) {

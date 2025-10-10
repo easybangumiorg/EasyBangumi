@@ -120,7 +120,7 @@ fun<T : Any> LazyPagingItems<T>.commonShow(): Boolean{
 }
 
 @Composable
-fun <T : Any> PagingCommon(items: LazyPagingItems<T>, isShowLoading: Boolean = true, headerWhenErrorEmpty: (@Composable ColumnScope.()->Unit)? = null) {
+fun <T : Any> PagingCommon(items: LazyPagingItems<T>, isShowLoading: Boolean = true, extMsg: String? = null, headerWhenErrorEmpty: (@Composable ColumnScope.()->Unit)? = null) {
     if (items.loadState.refresh is LoadState.NotLoading &&
         items.loadState.append is LoadState.NotLoading && items.itemCount == 0
     ) {
@@ -147,9 +147,9 @@ fun <T : Any> PagingCommon(items: LazyPagingItems<T>, isShowLoading: Boolean = t
 
         is LoadState.Error -> {
             val errorMsg =
-                (items.loadState.refresh as? LoadState.Error)?.error?.message ?: stringRes(
+                ((items.loadState.refresh as? LoadState.Error)?.error?.message ?: stringRes(
                     R.string.net_error
-                )
+                )) + if (extMsg != null) " $extMsg" else ""
             Column {
                 headerWhenErrorEmpty?.invoke(this)
                 ErrorPage(modifier = Modifier.fillMaxWidth().weight(1f),

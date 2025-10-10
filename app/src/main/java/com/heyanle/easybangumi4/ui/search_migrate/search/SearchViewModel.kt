@@ -36,7 +36,7 @@ class SearchViewModel(
     val searchHistory = searchHistoryDao.flowTopContent().distinctUntilChanged()
 
     // 是否是搜索聚合模式
-    private var isGatherOkkv by okkv<Boolean>("isGather", def = false)
+    private var isGatherOkkv by okkv<Boolean>("isGather", def = true)
     var isGather = mutableStateOf<Boolean>(isGatherOkkv)
         private set
 

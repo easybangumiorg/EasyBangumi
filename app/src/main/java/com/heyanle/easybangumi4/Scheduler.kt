@@ -123,6 +123,9 @@ object Scheduler {
             }
 
         }
+        // 自动同步
+        Inject.get<ExtensionRepoController>().fireAutoSync()
+        UpdateController.checkUpdate()
     }
 
     fun runOnComposeLaunch(activity: MainActivity) {
@@ -146,9 +149,7 @@ object Scheduler {
             }
         }
         first = BuildConfig.VERSION_CODE
-        // 自动同步
-        Inject.get<ExtensionRepoController>().fireAutoSync()
-        UpdateController.checkUpdate()
+
     }
 
     /**

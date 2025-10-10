@@ -114,7 +114,7 @@
 
     <string name="need_vpn">可能需要科学上网</string>
 
-    <string name="source_config_need_reboot">可能需要重启生效</string>
+    <string name="source_config_need_reboot">修改后可能需要重启生效</string>
 
     <string name="source_config">番源配置</string>
 

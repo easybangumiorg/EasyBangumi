@@ -11,6 +11,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.C
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
@@ -350,14 +351,14 @@ class CartoonPlayingViewModel(
                 playingEpisode = cartoonPlayingState.episode
                 innerPlay(it.data, adviceProcess)
             }
-            .error {
+            .error { state ->
                 yield()
                 _playingState.update {
                     it.copy(
                         isLoading = false,
                         isError = true,
-                        errorMsg = it.errorMsg,
-                        errorThrowable = it.errorThrowable
+                        errorMsg = state.throwable?.message?:"解析失败",
+                        errorThrowable = state.throwable
                     )
                 }
             }
@@ -491,6 +492,7 @@ class CartoonPlayingViewModel(
             trySaveHistory()
         }
     }
+
 
     // ViewModel clear
 

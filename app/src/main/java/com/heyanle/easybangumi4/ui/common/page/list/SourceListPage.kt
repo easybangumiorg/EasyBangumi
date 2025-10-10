@@ -53,6 +53,7 @@ import com.heyanle.easybangumi4.ui.common.PagingCommon
 import com.heyanle.easybangumi4.ui.common.commonShow
 import com.heyanle.easybangumi4.ui.common.pagingCommon
 import com.heyanle.easybangumi4.ui.common.cover_star.CoverStarViewModel
+import io.ktor.http.headersOf
 
 /**
  * Created by heyanlin on 2024/2/9 10:29.
@@ -247,7 +248,7 @@ fun SourceListPage(
     }
 
 
-    PagingCommon(items = pagingItems)
+    PagingCommon(items = pagingItems, extMsg = "\n可尝试点击左上角切换其他源")
 }
 
 @Composable

@@ -505,6 +505,12 @@ fun CartoonPlay(
                         modifier = Modifier.fillMaxSize(),
                         errorMsg = detailState.errorMsg.ifEmpty {
                             detailState.throwable?.message ?: ""
+                        }.apply {
+                            if (this.isBlank()) {
+                                "可尝试切换线路或点击搜索按钮切换源"
+                            } else {
+                                "可尝试切换线路或点击搜索按钮切换源\n" + this
+                            }
                         },
                         clickEnable = true,
                         onClick = {

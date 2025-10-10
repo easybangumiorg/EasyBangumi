@@ -62,9 +62,11 @@ val StoryPageItems = listOf<StoryPage>(
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun Story() {
+fun Story(
+    initIndex: Int = 0
+) {
     val nav = LocalNavController.current
-    val pagerState = rememberPagerState(0) { StoryPageItems.size }
+    val pagerState = rememberPagerState(initIndex) { StoryPageItems.size }
     val scope = rememberCoroutineScope()
     Surface(
         modifier = Modifier.fillMaxSize(),

@@ -3,6 +3,7 @@ package com.heyanle.easybangumi4
 import androidx.compose.material3.Text
 import com.heyanle.easybangumi4.ui.common.MoeDialogData
 import com.heyanle.easybangumi4.ui.common.moeDialogAlert
+import com.heyanle.easybangumi4.ui.common.show
 import com.heyanle.easybangumi4.utils.CoroutineProvider
 import com.heyanle.easybangumi4.utils.KtorUtil
 import com.heyanle.easybangumi4.utils.openUrl
@@ -31,7 +32,7 @@ object UpdateController {
                 val json = JSONArray(text)
                 val latest = json.getJSONObject(0)
                 val latestTag = latest.getString("tag_name")
-                if (latestTag != BuildConfig.VERSION_NAME) {
+                if (latestTag.isNotEmpty() && latestTag != BuildConfig.VERSION_NAME) {
                     MoeDialogData.AlertDialog(
                         text ={ Text(text = "检测到新版本：$latestTag") },
                         title = null,
@@ -41,8 +42,7 @@ object UpdateController {
                         },
                         dismissLabel = "取消",
                         confirmLabel = "跳转",
-                    )
-                    "".moeDialogAlert()
+                    ).show()
                 }
             } catch (e: Exception) {
                 e.printStackTrace()

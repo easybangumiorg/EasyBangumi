@@ -276,18 +276,18 @@ function PlayComponent_getPlayInfo(summary, playLine, episode) {
         throw new ParserException("解析错误 webProxy is null");
     }
     webProxy.loadUrl(url, networkHelper.defaultLinuxUA, null, null, true);
-    webProxy.addToWindow(true);
+//    webProxy.addToWindow(true);
 
     var res = webProxy.waitingForResourceLoaded(preferenceHelper.get("PlayerReg", "https://danmu.yhdmjx.com/m3u8.php?.*"));
     Log.i("88dm", "PlayComponent_getPlayInfo1: " + res);
-    if (res.length() > 0) {
+    if (res != null && res.length() > 0) {
         webProxy.href(res);
         webProxy.waitingForPageLoaded();
     }
     var tt = 0;
     var video = null;
     var content = "";
-    while(tt < 5) {
+    while(tt < 6) {
        webProxy.delay(500);
        content = webProxy.getContentWithIframe();
        var doc = Jsoup.parse(content);
@@ -314,7 +314,7 @@ function PlayComponent_getPlayInfo(summary, playLine, episode) {
         )
     }
     src = webProxy.waitingForResourceLoaded(".*\\.m3u8", true, 10000);
-    webProxy.addToWindow(true);
+//    webProxy.addToWindow(true);
     if (src != null) {
         var type = PlayerInfo.DECODE_TYPE_HLS;
         if (src.contains("type=video_mp4")) {

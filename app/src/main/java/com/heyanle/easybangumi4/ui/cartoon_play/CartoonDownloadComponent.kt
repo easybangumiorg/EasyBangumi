@@ -330,7 +330,7 @@ fun CartoonDownloadDialog(
                                 stringRes(R.string.add_download_completely).moeSnackBar(
                                     confirmLabel = stringRes(R.string.click_to_view),
                                     onConfirm = {
-                                        nav.navigate(STORY)
+                                        nav.navigate(STORY+"?defIndex=1")
                                     }
                                 )
                             }) {

@@ -63,7 +63,7 @@ class ExtensionModule(
             ExtensionRemoteController(get(), extensionCachePathV2)
         }
         addSingletonFactory {
-            ExtensionRepoController(get(), get(), get(), extensionCachePathV2)
+            ExtensionRepoController(get(), get(), get(), extensionCachePathV2, get())
         }
         addSingletonFactory {
             ExtensionIconFactoryImpl(get())

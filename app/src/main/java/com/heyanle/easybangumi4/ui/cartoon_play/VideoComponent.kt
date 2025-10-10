@@ -206,7 +206,7 @@ fun VideoFloat(
                         }
                     ),
                 loadingMsg = stringResource(id = R.string.parsing),
-                msgColor = Color.White.copy(0.6f)
+                msgColor = Color.White
             )
             IconButton(
                 modifier = Modifier.align(Alignment.TopStart),
@@ -229,11 +229,11 @@ fun VideoFloat(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color.Black),
-                errorMsg = playingState.errorMsg,
-                errorMsgColor = Color.White.copy(0.6f),
+                errorMsg = playingState.errorMsg.ifBlank { playingState.errorThrowable?.message?:"解析错误" },
+                errorMsgColor = Color.White,
                 clickEnable = true,
                 other = {
-                    Text(text = stringResource(id = R.string.click_to_retry))
+                    Text(text = stringResource(id = R.string.click_to_retry), color = Color.White)
                 },
                 onClick = {
                     cartoonPlayingViewModel.tryRefresh()
