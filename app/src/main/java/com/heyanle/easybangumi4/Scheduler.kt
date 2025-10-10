@@ -10,6 +10,7 @@ import com.heyanle.easybangumi4.crash.SourceCrashController
 import com.heyanle.easybangumi4.dlna.DlnaModule
 import com.heyanle.easybangumi4.plugin.extension.ExtensionModule
 import com.heyanle.easybangumi4.plugin.extension.IExtensionController
+import com.heyanle.easybangumi4.plugin.extension.remote.ExtensionRepoController
 import com.heyanle.easybangumi4.setting.SettingModule
 import com.heyanle.easybangumi4.plugin.source.SourceModule
 import com.heyanle.easybangumi4.plugin.source.utils.NativeHelperImpl
@@ -42,8 +43,6 @@ import javax.net.ssl.HttpsURLConnection
  * https://github.com/heyanLE
  */
 object Scheduler {
-
-
 
     /**
      * application#init
@@ -147,6 +146,9 @@ object Scheduler {
             }
         }
         first = BuildConfig.VERSION_CODE
+        // 自动同步
+        Inject.get<ExtensionRepoController>().fireAutoSync()
+        UpdateController.checkUpdate()
     }
 
     /**

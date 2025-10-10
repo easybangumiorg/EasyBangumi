@@ -23,7 +23,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.io.File
 import kotlin.collections.filter
 import kotlin.getValue
 
@@ -72,7 +71,7 @@ class ExtensionV2ViewModel : ViewModel() {
         viewModelScope.launch {
             extensionRemoteController.state.collectLatest { info ->
                 info.logi(TAG)
-                if (info.loading) {
+                if (info.localLoading) {
                     _stateFlow.update {
                         it.copy(
                             isLoading = true,

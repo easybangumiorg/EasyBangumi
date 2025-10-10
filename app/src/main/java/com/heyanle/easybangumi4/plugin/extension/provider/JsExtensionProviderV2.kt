@@ -240,17 +240,18 @@ class JsExtensionProviderV2(
             if (update) {
                 indexHelper.update {
                     var needAppend = true
-                    it.map {
+                    val n = it.map {
                         if (it.key == key) {
                             needAppend = false
-                            return@map indexItem
+                            indexItem
+                        } else {
+                            it
                         }
-                        return@map it
                     }
                     if (needAppend) {
-                        it + indexItem
+                        n + indexItem
                     } else {
-                        it
+                        n
                     }
                 }
 

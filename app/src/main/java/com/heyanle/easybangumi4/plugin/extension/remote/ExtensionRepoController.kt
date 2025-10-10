@@ -4,20 +4,24 @@ import com.heyanle.easybangumi4.base.DataResult
 import com.heyanle.easybangumi4.base.map
 import com.heyanle.easybangumi4.case.ExtensionCase
 import com.heyanle.easybangumi4.plugin.extension.ExtensionControllerV2
-import com.heyanle.easybangumi4.plugin.extension.ExtensionInfo
-import com.heyanle.easybangumi4.plugin.extension.provider.JsExtensionProvider
 import com.heyanle.easybangumi4.plugin.extension.provider.JsExtensionProviderV2
 import com.heyanle.easybangumi4.plugin.js.extension.JSExtensionCryLoader
+import com.heyanle.easybangumi4.setting.SettingPreferences
+import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.downloadTo
 import io.ktor.utils.io.errors.IOException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
@@ -29,16 +33,16 @@ class ExtensionRepoController(
     private val extensionCase: ExtensionCase,
     private val extensionControllerV2: ExtensionControllerV2,
     private val remoteController: ExtensionRemoteController,
-    private val cache: String
+    private val cache: String,
+    private val preference: SettingPreferences,
 ) {
-
 
     private val dispatcher = Dispatchers.IO
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
 
-
     data class State(
-        val loading: Boolean = true,
+        val autoSync: Boolean = false,
+        val localLoading: Boolean = true,
         val remoteLoading: Boolean = true,
         val remoteLocalInfo: Map<String, ExtensionRemoteLocalInfo> = emptyMap(),
     )
@@ -54,7 +58,7 @@ class ExtensionRepoController(
                 if (local.loading) {
                     _state.update {
                         it.copy(
-                            loading = true,
+                            localLoading = true,
                             remoteLoading = remote.loading,
                         )
                     }
@@ -72,7 +76,7 @@ class ExtensionRepoController(
                     }
                     _state.update {
                         it.copy(
-                            loading = false,
+                            localLoading = false,
                             remoteLocalInfo = map,
                             remoteLoading = remote.loading,
                         )
@@ -106,6 +110,9 @@ class ExtensionRepoController(
             } else {
                 File(cache, remoteInfo.key + ".${JsExtensionProviderV2.EXTENSION_SUFFIX}")
             }
+            if (targetFile.exists()){
+                targetFile.delete()
+            }
             file.renameTo(targetFile)
             return@async extensionControllerV2.appendOrUpdateExtension(targetFile).map { Unit }
         }.await()
@@ -121,4 +128,31 @@ class ExtensionRepoController(
         return extensionControllerV2.deleteExtension(key)
     }
 
+    // 自动同步
+    fun fireAutoSync() {
+        if (preference.sourceAutoSync.get()) {
+            scope.launch {
+                val state =_state.filter { !it.localLoading && !it.remoteLoading }.first()
+                state.remoteLocalInfo.filter { it.value.onlyRemote || it.value.hasUpdate }.map {
+                    it.value.remoteInfo?.let {
+                        scope.async {
+                            appendOrUpdate(it)
+                        }
+                    }
+                }.filterNotNull().let {
+                    if (it.isNotEmpty()) {
+                        _state.update {
+                            it.copy(autoSync = true)
+                        }
+                        "开始同步番剧源".moeSnackBar()
+                        it.awaitAll()
+                    }
+                }
+                _state.update {
+                    it.copy(autoSync = false)
+                }
+                "同步完成".moeSnackBar()
+            }
+        }
+    }
 }

@@ -43,6 +43,8 @@ class JsSource(
             importPackage(Packages.org.jsoup);
             importPackage(Packages.org.json);
             importPackage(Packages.okhttp3);
+            
+            importPackage(Packages.javax.crypto);
            
            
             
