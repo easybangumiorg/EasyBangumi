@@ -285,6 +285,8 @@ class WebProxyImpl(
             suspendCancellableCoroutine<Unit> {
                 state = State.WaitingForPageLoaded(it)
             }
+            winner.complete(isLoadEnd)
+            return@async
         }
         mainScope.async {
             delay(timeout)
@@ -317,6 +319,11 @@ class WebProxyImpl(
             }
             suspendCancellableCoroutine<String?> {
                 state = State.WaitingForResourceLoaded(regex, it)
+            }
+            val res = resourceList.toList().firstOrNull { Regex(urlRegex).matches(it) }
+            if (res != null) {
+                winner.complete(res)
+                return@launch
             }
 
         }
@@ -365,6 +372,15 @@ class WebProxyImpl(
             }
             suspendCancellableCoroutine<Pair<String?, String?>?> {
                 state = State.WaitingForBlobLoaded(urlR, textR, it)
+            }
+            for (pair in blobResourceList) {
+                if (urlRegex != null && Regex(urlRegex).matches(pair.first)) {
+                    winner.complete(pair)
+                    return@launch
+                } else if (textRegex != null && Regex(textRegex).matches(pair.second)) {
+                    winner.complete(pair)
+                    return@launch
+                }
             }
         }
         mainScope.launch {

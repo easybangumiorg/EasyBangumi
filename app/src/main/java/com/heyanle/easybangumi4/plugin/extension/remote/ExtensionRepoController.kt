@@ -146,12 +146,13 @@ class ExtensionRepoController(
                         }
                         "开始同步番剧源".moeSnackBar()
                         it.awaitAll()
+                        _state.update {
+                            it.copy(autoSync = false)
+                        }
+                        "同步完成".moeSnackBar()
                     }
                 }
-                _state.update {
-                    it.copy(autoSync = false)
-                }
-                "同步完成".moeSnackBar()
+
             }
         }
     }
