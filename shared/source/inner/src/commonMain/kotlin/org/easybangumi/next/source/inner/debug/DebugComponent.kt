@@ -88,7 +88,7 @@ class DebugComponent: BaseComponent(), SearchComponent, PlayComponent {
     ): DataState<PlayInfo> {
         return DataState.Ok(
             PlayInfo(
-                url = "https://apn.moedot.net/d/wo/2507/我们01z.mp4",
+                url = "https://apn.moedot.net/d/wo/2507/%e6%88%91%e4%bb%ac01z.mp4",
                 type = PlayInfo.TYPE_NORMAL
             )
         )

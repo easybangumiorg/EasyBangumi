@@ -22,10 +22,9 @@
     </Appenders>
     <!--定义logger，只有定义了logger并引入的appender，appender才会生效-->
     <Loggers>
-        <!-- 默认打印日志级别为 error -->
-        <Root level="INFO">
+        <!-- 设置日志级别为 DEBUG 以显示调试信息 -->
+        <Root level="DEBUG">
             <AppenderRef ref="ConsoleAppend"/>
-            <AppenderRef ref="FileAppend"/>
         </Root>
     </Loggers>
 </Configuration>

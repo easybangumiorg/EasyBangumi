@@ -3,9 +3,11 @@ package org.easybangumi.next.shared.playcon.pointer
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.logger.logger
@@ -37,7 +39,7 @@ class PointerPlayconVM(
 
     var hideDelayJob: Job? = null
 
-//    var isLoading by mutableStateOf(false)
+    var isLoading by mutableStateOf(false)
 
     var isShowController by mutableStateOf(false)
 
@@ -45,7 +47,11 @@ class PointerPlayconVM(
 
     init {
         viewModelScope.launch {
-
+            snapshotFlow {
+                playerState
+            }.collectLatest {
+                isLoading = (it == org.easybangumi.next.libplayer.api.C.State.PREPARING || it == org.easybangumi.next.libplayer.api.C.State.BUFFERING)
+            }
         }
     }
 
