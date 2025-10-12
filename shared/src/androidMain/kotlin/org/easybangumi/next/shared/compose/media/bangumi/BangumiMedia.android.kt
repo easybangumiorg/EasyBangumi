@@ -35,10 +35,6 @@ import org.easybangumi.next.shared.playcon.android.MediaPlayerSync
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-internal val logger = logger("BangumiMediaAndroid")
-
-
-
 @Composable
 actual fun BangumiMedia(mediaParam: MediaParam) {
     val vm = vm(::AndroidBangumiMediaViewModel, mediaParam)

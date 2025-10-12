@@ -3,12 +3,18 @@ package org.easybangumi.next.shared.compose.search
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
+import org.easybangumi.next.shared.compose.search.simple.SimpleSearchViewModel
 import org.easybangumi.next.shared.data.store.StoreProvider
 import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
+import org.easybangumi.next.shared.source.case.PlaySourceCase
+import org.koin.core.component.inject
+import kotlin.getValue
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -20,6 +26,11 @@ import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
  *    You may obtain a copy of the License at
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  搜索历史
+ *  分页模式 (simple)
+ *  聚合模式
+ *  Bangumi 模式（带检索）
  */
 class SearchViewModel(
     defSearchWord: String,
@@ -37,6 +48,31 @@ class SearchViewModel(
     // 搜索历史
     val searchHistory = searchHistoryHelper.flow().map {
         it.sortedByDescending { it.time }
+    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
+
+
+    private val playSourceCase: PlaySourceCase by inject()
+
+    // 搜索业务
+    val searchBusiness = playSourceCase.searchBusiness().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
+    init {
+
+    }
+
+    // 普通模式
+    val simpleVM: SimpleSearchViewModel by childViewModel {
+        SimpleSearchViewModel(
+            keywordFlow = _searchFlow,
+            searchBusiness = searchBusiness,
+        )
+    }
+
+    fun search(keyword: String) {
+        _searchFlow.update {
+            keyword
+        }
     }
 
 }

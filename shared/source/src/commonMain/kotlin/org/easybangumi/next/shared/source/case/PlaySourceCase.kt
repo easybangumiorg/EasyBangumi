@@ -80,6 +80,18 @@ class PlaySourceCase(
         }
     }
 
+    fun searchBusiness(): Flow<List<ComponentBusiness<SearchComponent>>> {
+        return sourceController.flow.map {
+            val res = arrayListOf<ComponentBusiness<SearchComponent>>()
+            it.sourceInfoList.filterIsInstance<SourceInfo.Loaded>().forEach {
+                it.componentBundle.getBusiness(SearchComponent::class)?.let {
+                    res.add(it)
+                }
+            }
+            res
+        }
+    }
+
 
 
 }

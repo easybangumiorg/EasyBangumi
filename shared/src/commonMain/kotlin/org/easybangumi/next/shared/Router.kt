@@ -29,6 +29,7 @@ import org.easybangumi.next.shared.compose.home.Home
 import org.easybangumi.next.shared.compose.media.Media
 import org.easybangumi.next.shared.compose.media.MediaParam
 import org.easybangumi.next.shared.compose.media_radar.MediaRadarParam
+import org.easybangumi.next.shared.compose.search.Search
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 
 /**
@@ -104,6 +105,22 @@ sealed class RouterPage {
             }
         }
 
+    }
+
+
+    @Serializable
+    data class Search(
+        val defSearchKeyword: String = "",
+        val defSourceKey: String? = null,
+    ): RouterPage() {
+        companion object {
+            fun from(
+                defSearchKeyword: String = "",
+                defSourceKey: String? = null,
+            ): Search {
+                return Search(defSearchKeyword, defSourceKey)
+            }
+        }
     }
 
     companion object {
@@ -195,6 +212,19 @@ fun Router() {
                     Media(param)
                 }
 
+            }
+
+            // Search
+            composable<RouterPage.Search>(
+                typeMap = NavTypeMap
+            ) {
+                val search = it.toRoute<RouterPage.Search>()
+                NavHook(search, it) {
+                    Search(
+                        defSearchKeyword = search.defSearchKeyword,
+                        defSourceKey = search.defSourceKey,
+                    )
+                }
             }
         }
     }

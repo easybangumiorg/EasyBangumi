@@ -11,8 +11,11 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import org.easybangumi.next.shared.LocalNavController
+import org.easybangumi.next.shared.RouterPage
 import org.easybangumi.next.shared.foundation.stringRes
 import org.easybangumi.next.shared.resources.Res
+import org.easybangumi.next.shared.source.bangumi.source.BangumiInnerSource
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -31,6 +34,7 @@ fun BangumiDiscoverTopAppBar(
     vm: BangumiDiscoverViewModel,
     scrollBehavior: TopAppBarScrollBehavior? = null,
 ) {
+    val nav = LocalNavController.current
 
     TopAppBar(
         modifier = modifier,
@@ -44,7 +48,7 @@ fun BangumiDiscoverTopAppBar(
         actions = {
             TextButton(
                 onClick = {
-
+                    nav.navigate(RouterPage.Search.from("", BangumiInnerSource.SOURCE_KEY))
                 }
             ) {
                 Icon(

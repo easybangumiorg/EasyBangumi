@@ -61,7 +61,7 @@ class EasyPagingWrapper<T: Any>(
 fun <T : Any> EasyPagingSource<T>.newPagingFlow(): PagingFlow<T> {
     return Pager<String, T>(
         config = PagingConfig(
-            pageSize = Int.MAX_VALUE,
+            pageSize = 10,
             enablePlaceholders = false,
         ),
         initialKey = this.initKey,
