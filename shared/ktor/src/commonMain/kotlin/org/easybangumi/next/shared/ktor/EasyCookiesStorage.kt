@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.serialization.json.internal.readJson
 import org.easybangumi.next.lib.store.file_helper.json.JsonlFileHelper
+import org.easybangumi.next.lib.unifile.UFD
 import org.easybangumi.next.lib.utils.coroutineProvider
 import org.easybangumi.next.lib.utils.pathProvider
 
@@ -19,8 +20,15 @@ import org.easybangumi.next.lib.utils.pathProvider
  */
 class EasyCookiesStorage : CookiesStorage {
 
-    private val folder = pathProvider.getFilePath("ktor")
-    private val jsonlFileHelper = JsonlFileHelper<Cookie>(folder, "cookies", Cookie::class)
+    companion object {
+        private val folder: UFD by lazy {
+            pathProvider.getFilePath("ktor")
+        }
+        private val jsonlFileHelper: JsonlFileHelper<Cookie> by lazy {
+            JsonlFileHelper<Cookie>(folder, "cookies", Cookie::class)
+        }
+    }
+
 
     override suspend fun addCookie(requestUrl: Url, cookie: Cookie) {
         var coo = cookie

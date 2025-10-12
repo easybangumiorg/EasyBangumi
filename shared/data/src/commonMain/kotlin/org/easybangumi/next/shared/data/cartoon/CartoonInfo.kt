@@ -68,6 +68,8 @@ data class CartoonInfo(
     val sortByKey: String = "", // 排序名称
     val playLineString: String = "",             // List<PlayLine> 的 jsonl 数据，可能为 ""
 
+    val lastUpdateTime: Long = 0, // 番剧更新时间，为 0 代表无更新
+
     // star
     val tagsIdListString: String = "", // 番剧分类 "1, 2, 3" 的格式
     val starTime: Long = 0, // 收藏时间，为 0 则为未收藏
