@@ -35,6 +35,7 @@ import org.easybangumi.next.shared.foundation.EasyTab
 import org.easybangumi.next.shared.foundation.cartoon.CartoonCardWithCover
 import org.easybangumi.next.shared.foundation.lazy.pagingCommon
 import org.easybangumi.next.shared.foundation.stringRes
+import org.easybangumi.next.shared.navigateToDetailOrMedia
 import org.easybangumi.next.shared.scheme.EasyScheme
 
 
@@ -182,7 +183,8 @@ fun SimpleSearch(
             },
             onCartoonClick = { cartoonCover ->
                 // 处理动漫点击事件
-                nav.navigate(RouterPage.Detail.fromCartoonIndex(cartoonCover.toCartoonIndex()))
+                nav.navigateToDetailOrMedia(cartoonCover.toCartoonIndex(), cartoonCover)
+//                nav.navigate(RouterPage.Detail.fromCartoonIndex(cartoonCover.toCartoonIndex()))
             },
             onCartoonLongPress = { cartoonCover ->
                 // 处理动漫长按事件

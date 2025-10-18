@@ -9,6 +9,7 @@ import org.easybangumi.next.lib.serialization.jsonSerializer
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.source.bangumi.source.BangumiInnerSource
 import org.easybangumi.next.shared.compose.media.bangumi.BangumiMedia
+import org.easybangumi.next.shared.compose.media.normal.NormalMedia
 import org.easybangumi.next.shared.compose.media_radar.MediaRadarParam
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 
@@ -51,7 +52,3 @@ fun Media(
 }
 
 
-@Composable
-expect fun NormalMedia (
-    mediaParam: MediaParam
-)

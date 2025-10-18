@@ -31,6 +31,7 @@ import org.easybangumi.next.shared.compose.media.MediaParam
 import org.easybangumi.next.shared.compose.media_radar.MediaRadarParam
 import org.easybangumi.next.shared.compose.search.Search
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
+import org.easybangumi.next.shared.source.bangumi.source.BangumiInnerSource
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -131,6 +132,22 @@ sealed class RouterPage {
 
 }
 
+fun NavController.navigateToDetailOrMedia(
+    cartoonIndex: CartoonIndex,
+    cartoonCover: CartoonCover? = null,
+) {
+    if (cartoonIndex.source == BangumiInnerSource.SOURCE_KEY) {
+        val detail = RouterPage.Detail.fromCartoonIndex(cartoonIndex)
+        this.navigate(detail)
+    } else {
+        val media = RouterPage.Media.from(
+            cartoonIndex = cartoonIndex,
+            cartoonCover = cartoonCover
+        )
+        this.navigate(media)
+    }
+
+}
 
 
 @Composable

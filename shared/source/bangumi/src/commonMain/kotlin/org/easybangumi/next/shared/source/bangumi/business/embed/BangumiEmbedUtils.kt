@@ -20,7 +20,7 @@ import org.easybangumi.next.shared.source.bangumi.model.BgmTrendsSubject
 fun Document.toTrendsSubjectList(
     bangumiConfig: BangumiConfig
 ): List<BgmTrendsSubject> {
-    val ul = select("div.section ul#browserItemList").firstOrNull()
+    val ul = select("div ul#browserItemList").firstOrNull()
     if (ul == null) {
         return emptyList()
     }

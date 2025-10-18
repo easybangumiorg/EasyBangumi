@@ -57,7 +57,7 @@ class SearchViewModel(
         it.sortedByDescending { it.time }
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-    val focusFirstRequest = atomic(false)
+    private val focusFirstRequest = atomic(false)
     val focusRequester: FocusRequester = FocusRequester()
 
 
