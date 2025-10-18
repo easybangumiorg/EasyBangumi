@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.CircularProgressIndicator
@@ -43,6 +44,7 @@ import org.easybangumi.next.shared.playcon.pointer.TimeSeekBar
 fun MediaPlayer(
     modifier: Modifier,
     playerVm: DesktopPlayerVM,
+    float: (@Composable BoxScope.()->Unit)? = null,
 ){
     val nav = LocalNavController.current
     Box(
@@ -67,6 +69,7 @@ fun MediaPlayer(
             }
 
         }
+        float?.invoke(this)
     }
 }
 

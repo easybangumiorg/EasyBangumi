@@ -1,6 +1,7 @@
 package org.easybangumi.next.shared.compose.media.bangumi
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
@@ -18,8 +19,11 @@ import org.easybangumi.next.shared.compose.media.MediaParam
 import org.easybangumi.next.shared.compose.media.MediaPlayer
 import org.easybangumi.next.shared.compose.media.bangumi.page.BangumiMediaPage
 import org.easybangumi.next.shared.foundation.LocalUIMode
+import org.easybangumi.next.shared.foundation.elements.LoadingElements
+import org.easybangumi.next.shared.foundation.stringRes
 import org.easybangumi.next.shared.foundation.view_model.vm
 import org.easybangumi.next.shared.playcon.desktop.DesktopPlayerVM
+import org.easybangumi.next.shared.resources.Res
 
 @Composable
 actual fun BangumiMedia(mediaParam: MediaParam) {
@@ -40,7 +44,9 @@ actual fun BangumiMedia(mediaParam: MediaParam) {
                 MediaPlayer(
                     modifier = Modifier.fillMaxHeight().weight(1f).background(Color.Black),
                     playerVm = vm.playerVM
-                )
+                ) {
+                    MediaPlayerFloat(vm)
+                }
                 BangumiMediaPage(
                     vm.commonVM,
                     Modifier.fillMaxHeight().width(384.dp)
@@ -54,7 +60,9 @@ actual fun BangumiMedia(mediaParam: MediaParam) {
                     modifier = Modifier.fillMaxWidth().aspectRatio(DesktopPlayerVM.MEDIA_COMPONENT_ASPECT)
                         .background(Color.Black),
                     playerVm = vm.playerVM
-                )
+                ){
+                    MediaPlayerFloat(vm)
+                }
                 BangumiMediaPage(
                     vm.commonVM,
                     Modifier.fillMaxWidth().weight(1f)
@@ -63,5 +71,20 @@ actual fun BangumiMedia(mediaParam: MediaParam) {
         }
     }
 
+
+}
+
+@Composable
+fun BoxScope.MediaPlayerFloat(
+    vm: DesktopBangumiMediaVM
+) {
+    val playIndexState = vm.commonVM.playIndexState.collectAsState().value
+    if (playIndexState.playInfo.isLoading()) {
+        LoadingElements(
+            modifier = Modifier.matchParentSize(),
+            isRow = false,
+            loadingMsg = stringRes(Res.strings.parsing)
+        )
+    }
 
 }

@@ -72,3 +72,4 @@ dependencies {
 easyAndroidAssets {
     assetsDir = project.layout.projectDirectory.dir("../assets")
 }
+

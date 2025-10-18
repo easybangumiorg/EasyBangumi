@@ -39,17 +39,13 @@ class BangumiMediaCommonVM (
 
     // == 数据状态 =============================
     data class State(
-        val detailNamePreview: String = "",
         val radarResult: MediaRadarVM.SelectionResult? = null,
         val showDetailFromPlay: Boolean = true,
         val isFullscreen: Boolean = false,
         val isTableMode: Boolean = false,
     )
 
-    internal val sta = MutableStateFlow(State(
-        // 先使用 cartoonCover 中的 name
-        detailNamePreview = param.cartoonCover?.name?:""
-    ))
+    internal val sta = MutableStateFlow(State())
     val state = sta.asStateFlow()
 
     // == 弹窗状态 =============================
@@ -95,33 +91,11 @@ class BangumiMediaCommonVM (
             }
         }
 
-
-        // bangumi 番剧信息 -> state
-        viewModelScope.launch {
-            bangumiDetailVM.subjectRepository.flow.collectLatest {
-                val name = it.okOrNull()?.displayName
-                if (name != null) {
-                    sta.update { s->
-                        s.copy(
-                            detailNamePreview = name
-                        )
-                    }
-                }
-            }
-        }
-
-        // 这里只是为了更新番剧名称，用最弱的刷新方式
+        // 这里只是为了展示番剧 Preview ，用最弱的刷新方式
         bangumiDetailVM.subjectRepository.refreshIfNone()
     }
 
     // state change ============================
-    fun setShowDetailFromPlay(show: Boolean) {
-        sta.update {
-            it.copy(
-                showDetailFromPlay = show,
-            )
-        }
-    }
 
 
     // popup =============================

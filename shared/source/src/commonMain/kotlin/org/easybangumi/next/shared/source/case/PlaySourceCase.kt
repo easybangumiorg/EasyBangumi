@@ -92,6 +92,19 @@ class PlaySourceCase(
         }
     }
 
+    fun playComponentFlow(
+        sourceKey: String,
+    ): Flow<ComponentBusiness<PlayComponent>?> {
+        return sourceController.flow.map {
+            var res: ComponentBusiness<PlayComponent>? = null
+            it.sourceInfoList.filterIsInstance<SourceInfo.Loaded>().forEach {
+                if (it.manifest.key == sourceKey) {
+                    res = it.componentBundle.getBusiness(PlayComponent::class)
+                }
+            }
+            res
+        }
+    }
 
 
 }

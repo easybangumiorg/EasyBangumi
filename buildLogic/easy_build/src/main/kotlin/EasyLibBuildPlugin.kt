@@ -17,9 +17,6 @@ class EasyLibBuildPlugin : Plugin<Project> {
 
     override fun apply(target: Project) {
         val provider = EasyBuildConfigProvider(target)
-
-
-
         target.group = provider.applicationId
         if (target.pluginManager.hasPlugin("org.jetbrains.kotlin.multiplatform")) {
             ApplyHelper.applyKmp(target, provider)

@@ -13,7 +13,6 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
-import app.cash.paging.CombinedLoadStates
 import app.cash.paging.compose.LazyPagingItems
 import dev.icerock.moko.resources.compose.stringResource
 import org.easybangumi.next.shared.foundation.elements.EmptyElements

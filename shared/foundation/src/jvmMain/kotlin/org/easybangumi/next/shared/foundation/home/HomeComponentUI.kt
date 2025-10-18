@@ -20,7 +20,7 @@
 //import androidx.compose.ui.text.font.FontWeight
 //import androidx.compose.ui.unit.dp
 //import androidx.compose.ui.unit.sp
-//import app.cash.paging.compose.collectAsLazyPagingItems
+//import androidx.paging.compose.collectAsLazyPagingItems
 //import org.easybangumi.next.shared.foundation.ScrollableHeaderBehavior
 //import org.easybangumi.next.shared.foundation.ScrollableHeaderScaffold
 //import org.easybangumi.next.shared.foundation.cartoon.CartoonCardWithCover

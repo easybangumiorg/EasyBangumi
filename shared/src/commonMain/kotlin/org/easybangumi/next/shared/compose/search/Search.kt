@@ -2,6 +2,7 @@
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -15,11 +16,17 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import org.easybangumi.next.shared.LocalNavController
 import org.easybangumi.next.shared.compose.search.simple.SimpleSearch
+import org.easybangumi.next.shared.foundation.stringRes
 import org.easybangumi.next.shared.foundation.view_model.vm
+import org.easybangumi.next.shared.resources.Res
 
 
 /**
@@ -38,8 +45,8 @@ import org.easybangumi.next.shared.foundation.view_model.vm
 fun Search(
     defSearchKeyword: String = "",
     defSourceKey: String? = null,
-    onBack: () -> Unit = {}
 ) {
+    val nav = LocalNavController.current
     val vm = vm(::SearchViewModel, defSearchKeyword, defSourceKey)
     val search = vm.searchFlow.collectAsState()
     val searchHistory = vm.searchHistory.collectAsState()
@@ -49,8 +56,14 @@ fun Search(
         SearchTopAppBar(
             modifier = Modifier.fillMaxWidth(),
             searchText = vm.searchBarText.value,
+            focusRequester = vm.focusRequester,
+            onFirstFocus = {
+                vm.onRequestFocusFirst()
+            },
             onSearchTextChange = { vm.searchBarText.value = it },
-            onBack = onBack,
+            onBack = {
+                nav.popBackStack()
+            },
             onSearch = { keyword ->
                 vm.search(keyword)
             },
@@ -85,6 +98,8 @@ fun Search(
 private fun SearchTopAppBar(
     modifier: Modifier = Modifier,
     searchText: String,
+    focusRequester: FocusRequester,
+    onFirstFocus: () -> Unit,
     onSearchTextChange: (String) -> Unit,
     onBack: () -> Unit,
     onSearch: (String) -> Unit,
@@ -93,10 +108,13 @@ private fun SearchTopAppBar(
     TopAppBar(
         modifier = modifier,
         title = {
+            LaunchedEffect(Unit) {
+                onFirstFocus()
+            }
             TextField(
                 value = searchText,
                 onValueChange = onSearchTextChange,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
                 singleLine = true,
                 colors = TextFieldDefaults.colors(
                     unfocusedContainerColor = Color.Transparent,
@@ -156,7 +174,7 @@ private fun SearchHistoryContent(
         modifier = modifier.padding(16.dp)
     ) {
         Text(
-            text = "搜索历史",
+            text = stringRes(Res.strings.search_history),
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(bottom = 16.dp)
         )

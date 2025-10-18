@@ -153,6 +153,18 @@ class BangumiApiImpl(
         }
     }
 
+    override fun search(keyword: String, page: Int): Deferred<BgmRsp<List<BgmTrendsSubject>>> {
+        return caller.request {
+            get {
+                proxyUrl {
+                    path("search")
+                    parameters.append("keyword", keyword)
+                    parameters.append("page", page.toString())
+                }
+            }.body()
+        }
+    }
+
     override fun coverUrl(
         subjectId: String,
         type: String

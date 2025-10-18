@@ -6,12 +6,15 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.focus.focusRequester
 import org.easybangumi.next.shared.playcon.BasePlayconViewModel
 import org.easybangumi.next.shared.playcon.android.AndroidGestureController
 import org.easybangumi.next.shared.playcon.android.AndroidPlaycon
@@ -39,11 +42,11 @@ import org.easybangumi.next.shared.playcon.android.TimeSeekBar
 fun MediaPlayer(
     modifier: Modifier,
     playerVm: AndroidPlayerVM,
+    float: (@Composable BoxScope.() -> Unit)? = null,
 ){
 
-
     Box(
-        modifier = modifier
+        modifier = modifier,
     ) {
         playerVm.exoPlayerFrameState.FrameCanvas(Modifier.matchParentSize())
         AndroidPlaycon(
@@ -71,6 +74,7 @@ fun MediaPlayer(
 
 
         }
+        float?.invoke(this)
     }
 }
 

@@ -29,4 +29,7 @@ interface CartoonInfoDao {
     @Query("select * from CartoonInfo where CartoonInfo.lastHistoryTime > 0 order by CartoonInfo.lastHistoryTime desc limit :limit")
     fun flowHistory(limit: Int): Flow<List<CartoonInfo>>
 
+    @Query("select * from CartoonInfo where CartoonInfo.starTime > 0")
+    fun flowStarLocal(): Flow<List<CartoonInfo>>
+
 }

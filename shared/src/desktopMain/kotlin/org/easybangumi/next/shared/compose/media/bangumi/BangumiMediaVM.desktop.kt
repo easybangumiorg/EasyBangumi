@@ -23,31 +23,22 @@ class DesktopBangumiMediaVM(
     val param: MediaParam,
 ): BaseViewModel() {
 
-
     val commonVM: BangumiMediaCommonVM by childViewModel {
         BangumiMediaCommonVM(param)
     }
-
 
     // == 播放状态 =============================
     val playerVM: DesktopPlayerVM by childViewModel {
         DesktopPlayerVM()
     }
 
-
-
     init {
-
-
         // 播放链接变化 -> 播放器
         viewModelScope.launch {
             commonVM.playIndexState.map { it.playInfo }.collectLatest {
                 playerVM.onPlayInfoChange(it)
             }
         }
-
-
-
     }
 
 

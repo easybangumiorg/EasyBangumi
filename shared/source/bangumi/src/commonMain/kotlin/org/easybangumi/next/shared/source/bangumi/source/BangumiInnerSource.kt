@@ -25,13 +25,14 @@ class BangumiInnerSource: InnerSource() {
     }
 
     override val key: String = SOURCE_KEY
-    override val label: ResourceOr = "番组计划"
+    override val label: ResourceOr = "Bangumi"
     override val icon: ResourceOr? = null
     override val version: Int = 1
 
     override val componentConstructor: Array<() -> Component> = arrayOf(
         ::BangumiDiscoverComponent,
-        ::BangumiDetailComponent
+        ::BangumiDetailComponent,
+        ::BangumiSearchComponent
     )
 
     override val module: Module?

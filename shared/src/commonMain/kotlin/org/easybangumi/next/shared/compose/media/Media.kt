@@ -32,6 +32,7 @@ data class MediaParam(
     val cartoonIndex: CartoonIndex,
     val cartoonCover: CartoonCover? = null,
     val suggestEpisode: Int? = null,
+    // only bangumi source have
     val suggestMediaRadarParam: MediaRadarParam? = null,
 )
 

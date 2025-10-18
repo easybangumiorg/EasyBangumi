@@ -1,12 +1,10 @@
 package org.easybangumi.next.shared.source.bangumi.business.embed
 
 import com.fleeksoft.ksoup.Ksoup
-import com.fleeksoft.ksoup.nodes.Document
 import io.ktor.client.plugins.api.TransformResponseBodyContext
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
-import io.ktor.http.URLBuilder
 import io.ktor.http.path
 import io.ktor.util.reflect.TypeInfo
 import io.ktor.utils.io.ByteReadChannel
@@ -26,9 +24,10 @@ import org.easybangumi.next.shared.source.bangumi.model.BgmTrendsSubject
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  *
- *    bangumi 排行榜页面相关
+ *    bangumi 列表页面相关
  *    1. bangumi.proxy/banners      首页 banner 使用 tv 热度排行
  *    2. bangumi.proxy/trends       首页 Tab 使用特定 类型（原创，漫画改，小说改） 的热度排行
+ *    3. bangumi.proxy/search       纯搜索
  */
 
 private val logger = logger("BangumiRankingHandler")
@@ -66,6 +65,19 @@ class BangumiRankingEmbedProxyHandler(
             }
 //            logger.info("trends url: ${builder.url}")
             return true
+        } else if (path == "search") {
+            // 搜索
+            // 转到网页 https://chii.in/subject_search/{keyword}?cat=2&page={page}
+            val keyword = builder.url.parameters.get("keyword")
+                ?: throw  IllegalArgumentException("keyword is required")
+            val page = builder.url.parameters.get("page")
+            builder.url {
+                host = bangumiConfig.bangumiHtmlHost
+                path("subject_search", keyword)
+                parameters.set("cat", "2")
+                parameters.set("page", page ?: "1")
+            }
+            return true
         }
         return false
     }
@@ -95,7 +107,7 @@ class BangumiRankingEmbedProxyHandler(
             )
         } else {
             val doc = Ksoup.parse(body)
-            val list = doc.toTrendsSubjectList()
+            val list = doc.toTrendsSubjectList(bangumiConfig)
 //            logger.info("trends subject list size: ${list.size}")
             return BgmRsp.Success<List<BgmTrendsSubject>>(
                 code = code,
@@ -105,74 +117,8 @@ class BangumiRankingEmbedProxyHandler(
         }
     }
 
-    private fun Document.toTrendsSubjectList(): List<BgmTrendsSubject> {
-        val ul = select("div.section ul#browserItemList").firstOrNull()
-        if (ul == null) {
-            return emptyList()
-        }
-        val ulList = ul.children()
-        if (ulList.isEmpty()) {
-            return emptyList()
-        }
-        val subjectList = arrayListOf<BgmTrendsSubject>()
-        for (index in ulList.indices) {
-            val li = ulList.getOrNull(index) ?: continue
-            val inner = li.select("div.inner").firstOrNull() ?: continue
-            val a = inner.select("a.l").firstOrNull() ?: continue
-            val href = a.attr("href")
-            val small = inner.select("small.grey").firstOrNull()
-
-            val id = href.split("/").lastOrNull()?.toIntOrNull() ?: continue
-            val nameCN = a.text()
-            val name = small?.text()
-            val image = li.select("img.cover").firstOrNull()
-//            var imageUrl = image?.attr("src")
-//            if (imageUrl?.startsWith("//") == true) {
-//                imageUrl = "https:$imageUrl"
-//            } else if (imageUrl?.startsWith("/") == true) {
-//                imageUrl = "https://$bangumiHtmlHost$imageUrl"
-//            }
-//
-//            if (imageUrl?.contains("/pic/cover/c") == true) {
-//                imageUrl = imageUrl.replace("/pic/cover/c", "/r/400/pic/cover/l")
-//            }
-            val imageUrl = URLBuilder().run {
-                host = bangumiConfig.bangumiApiHost
-                path("v0", "subjects", id.toString(), "image")
-                parameters.set("subject_id", id.toString())
-                parameters.set("type", "common")
-                toString()
-            }
-//            logger.info("imageUrl: $imageUrl")
 
 
-            val jumpUrl = bangumiConfig.makeUrl(href)
-
-            val rankSpan = inner.select("span.rank").firstOrNull()
-            val rank = rankSpan?.text()?.replace("Rank", "")?.trim()?.toIntOrNull()
-
-            val infoTipP = inner.select("p.info.tip").firstOrNull()
-            val infoTipText = infoTipP?.text()?.split("/")?.map { it.trim() } ?: emptyList()
-            val fadeSmall = inner.select("small.fade")?.firstOrNull()
-            val score = fadeSmall?.text()?.trim()?.toIntOrNull()
-
-            val tipJSpan = inner.select("span.tip_j").firstOrNull()
-            val scoreTotal = tipJSpan?.text()?.trim()?.replace("(", "")?.replace("人评分)", "")?.trim()?.toIntOrNull()
-            val bgmTrendsSubject = BgmTrendsSubject(
-                id = id,
-                name = name,
-                nameCn = nameCN,
-                image = imageUrl,
-                info = infoTipText,
-                rank = rank,
-                score = score,
-                scoreTotal = scoreTotal,
-                jumpUrl = jumpUrl
-            )
-            subjectList.add(bgmTrendsSubject)
-        }
-        return subjectList.toList()
-    }
 }
 
 

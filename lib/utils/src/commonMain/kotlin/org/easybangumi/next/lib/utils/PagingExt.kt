@@ -1,10 +1,10 @@
 package org.easybangumi.next.lib.utils
 
+import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import app.cash.paging.Pager
-import app.cash.paging.PagingConfig
-import app.cash.paging.PagingData
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
 import kotlinx.coroutines.flow.Flow
 
 /**

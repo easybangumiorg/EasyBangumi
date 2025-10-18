@@ -108,11 +108,8 @@ fun BangumiDiscover(
                 if (tab != null) {
 
                     val lazyPageState =  tab.pagingFlow.collectAsLazyPagingItems()
-                    logger.info(lazyPageState.loadState.toString())
+                    logger.info("ttt" + it.toString() + lazyPageState.toString())
                     val cartoonHeight = EasyScheme.size.cartoonCoverHeight
-                    val pagingCommonModifier = remember {
-                        Modifier.height(cartoonHeight).fillMaxWidth()
-                    }
                     LazyVerticalGrid(
                         modifier = Modifier.fillMaxSize().contentPointerScrollOpt(LocalUIMode.current.inputMode == InputMode.POINTER).run {
                             if (clipContent) {

@@ -1,8 +1,10 @@
 ﻿package org.easybangumi.next.shared.compose.search.simple
 
 import androidx.compose.foundation.pager.PagerState
+import androidx.compose.ui.focus.FocusRequester
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,6 +14,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.PagingFlow
 import org.easybangumi.next.lib.utils.newPagingFlow
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
@@ -37,13 +40,15 @@ import kotlin.collections.emptyList
 class SimpleSearchViewModel(
     val keywordFlow: StateFlow<String?>,
     val searchBusiness: StateFlow<List<ComponentBusiness<SearchComponent>>>,
+    val focusRequester: FocusRequester,
     var defSourceKey: String? = null
 ): BaseViewModel() {
 
+    private val logger = logger()
     private val enable: MutableStateFlow<Boolean> = MutableStateFlow(true)
 
     val pagerState = PagerState(0, ) {
-        searchItemList.value?.size ?: 0
+        (searchItemList.value?.size ?: 0)
     }
 
     data class SimpleSearchItem(
@@ -71,7 +76,7 @@ class SimpleSearchViewModel(
                         val pagingFlow = if (temp != null && temp.first == keyword) {
                             temp.second
                         } else {
-                            business.createPagingSource(keyword).newPagingFlow()
+                            business.createPagingSource(keyword).newPagingFlow().cachedIn(viewModelScope)
                         }
                         pagingSourceTemp[key] = Pair(keyword, pagingFlow)
                         SimpleSearchItem(
@@ -113,5 +118,12 @@ class SimpleSearchViewModel(
         enable.update { false }
     }
 
+    fun tryFreeFocus() {
+        try {
+            focusRequester.freeFocus()
+        }catch (e: Exception) {
+            logger.error("free focus error", e)
+        }
+    }
 
 }

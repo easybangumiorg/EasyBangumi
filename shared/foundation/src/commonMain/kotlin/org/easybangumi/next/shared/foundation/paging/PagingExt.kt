@@ -1,7 +1,7 @@
 ﻿package org.easybangumi.next.shared.foundation.paging
 
 import androidx.paging.LoadState
-import app.cash.paging.compose.LazyPagingItems
+import androidx.paging.compose.LazyPagingItems
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi

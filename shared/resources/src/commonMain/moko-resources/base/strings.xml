@@ -239,6 +239,7 @@
     <string name="auto_tiny_msg">播放中退出播放页自动进入小窗</string>
 
     <string name="history">历史记录</string>
+    <string name="search_history">搜索历史</string>
 
     <string name="delete">删除</string>
 
