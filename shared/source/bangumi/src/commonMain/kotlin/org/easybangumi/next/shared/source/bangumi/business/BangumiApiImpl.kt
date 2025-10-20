@@ -16,6 +16,7 @@ import org.easybangumi.next.shared.source.bangumi.model.BgmPerson
 import org.easybangumi.next.shared.source.bangumi.model.BgmReviews
 import org.easybangumi.next.shared.source.bangumi.model.BgmSubject
 import org.easybangumi.next.shared.source.bangumi.model.BgmTrendsSubject
+import org.easybangumi.next.shared.source.bangumi.model.User
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -111,6 +112,17 @@ class BangumiApiImpl(
                 bgmUrl {
                     path("v0", subjectId, "characters")
                     parameters.append("subject_id", subjectId)
+                }
+            }.body()
+        }
+    }
+
+    override fun getMe(token: String): Deferred<BgmRsp<User>> {
+        return caller.request {
+            get {
+                bgmUrl {
+                    path("v0", "me")
+                    headers.append("Authorization", "Bearer $token")
                 }
             }.body()
         }

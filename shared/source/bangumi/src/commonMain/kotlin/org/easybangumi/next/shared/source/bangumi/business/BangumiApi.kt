@@ -9,6 +9,7 @@ import org.easybangumi.next.shared.source.bangumi.model.BgmPerson
 import org.easybangumi.next.shared.source.bangumi.model.BgmReviews
 import org.easybangumi.next.shared.source.bangumi.model.BgmSubject
 import org.easybangumi.next.shared.source.bangumi.model.BgmTrendsSubject
+import org.easybangumi.next.shared.source.bangumi.model.User
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -48,6 +49,14 @@ interface BangumiApi {
         subjectId: String,
     ): Deferred<BgmRsp<List<BgmCharacter>>>
 
+    // get v0/me
+    // header: Authorization: Bearer {token}
+    fun getMe(
+        token: String
+    ): Deferred<BgmRsp<User>>
+
+
+
 
     // ====== embed proxy api =====
 
@@ -74,6 +83,7 @@ interface BangumiApi {
         page: Int,
     ): Deferred<BgmRsp<List<BgmReviews>>>
 
+    // get bangumi.proxy/search?keyword={keyword}&page={page}
     fun search(
         keyword: String,
         page: Int = 1,
