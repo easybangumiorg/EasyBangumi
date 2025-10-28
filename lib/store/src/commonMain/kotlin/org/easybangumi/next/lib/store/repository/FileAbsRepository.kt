@@ -1,23 +1,23 @@
 package org.easybangumi.next.lib.store.repository
 
-import com.mayakapps.kache.ContainerKache
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import okio.BufferedSink
 import okio.BufferedSource
 import okio.Path.Companion.toPath
-import okio.Sink
-import okio.Source
 import okio.buffer
 import okio.use
 import org.easybangumi.next.lib.logger.logger
+import org.easybangumi.next.lib.unifile.UFD
 import org.easybangumi.next.lib.unifile.UniFileFactory
+import org.easybangumi.next.lib.unifile.fromUFD
 import org.easybangumi.next.lib.utils.DataRepository
 import org.easybangumi.next.lib.utils.DataState
+import kotlin.getValue
+import kotlin.reflect.KClass
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -30,47 +30,48 @@ import org.easybangumi.next.lib.utils.DataState
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-abstract class KacheAbsRepository<T: Any>(
-    val cacheKey: String,
-    val subjectKache: ContainerKache<String, String>?,
+abstract class FileAbsRepository<T: Any>(
+    folder: UFD,
+    val name: String,
     val scope: CoroutineScope,
 ): DataRepository<T> {
 
     protected val logger = logger(this.toString())
 
-    abstract fun save(data: T, sink: BufferedSink)
-    abstract fun load(source: BufferedSource): T?
-
-    abstract suspend fun fetchRemoteData(): DataState<T>
-
-
     private val _flow = MutableStateFlow<DataState<T>>(DataState.Companion.none())
     override val flow: StateFlow<DataState<T>> = _flow
 
-    override fun refresh(): Boolean {
-        innerRefresh()
-        return true
+    private val folder by lazy {
+        UniFileFactory.fromUFD(folder)
     }
+    private val file by lazy {
+        this.folder?.child(name)
+    }
+    private val tempFile by lazy {
+        this.folder?.child("$name.temp")
+    }
+
+    abstract suspend fun fetchRemoteData(): DataState<T>
+
+    abstract fun save(data: T, sink: BufferedSink)
+    abstract fun load(source: BufferedSource): T?
+
 
     init {
         scope.launch {
             // 1. 先加载缓存
-            val filePath = subjectKache?.getIfAvailable(cacheKey)
-            if (filePath != null) {
+            val file = file ?: return@launch
+            if (file.exists()) {
                 try {
-                    val uni = UniFileFactory.formPath(filePath.toPath())
-                    if (uni.exists() && uni.isFile() && uni.canRead()) {
-                        uni.openSource().buffer().use {
-                            val d = load(it)
-                            logger.info("load cache data: $d")
-                            if (d != null) {
-                                _flow.update {
-                                    // cache 优先级比网络数据低
-                                    if (it is DataState.Ok && !it.isCache){
-                                        it
-                                    } else {
-                                        DataState.Companion.ok(d, true, timestamp = uni.lastModified())
-                                    }
+                    file.openSource().buffer().use {
+                        val d = load(it)
+                        logger.info("load cache data: $d")
+                        if (d != null) {
+                            _flow.update {
+                                if (it is DataState.Ok && !it.isCache){
+                                    it
+                                } else {
+                                    DataState.Companion.ok(d, true, timestamp = file.lastModified())
                                 }
                             }
                             return@launch
@@ -101,24 +102,24 @@ abstract class KacheAbsRepository<T: Any>(
                     // 异步缓存
                     scope.launch {
                         try {
-                            subjectKache?.put(cacheKey) {
-                                return@put try {
-//                                    logger.info("cache data to kache: $cacheKey -> $it")
-                                    val uni = UniFileFactory.formPath(it.toPath())
-//                                    uni.getParentFile()?.createDirectory()
-//                                    uni.delete()
-                                    uni.openSink(false).buffer().use {
-                                        save(remote.data, it)
-                                        it.flush()
-                                    }
-                                    return@put uni.exists().apply {
-                                        logger.info(this.toString())
-                                    }
-                                } catch (e: Exception) {
-                                    e.printStackTrace()
-                                    false
-                                }
+                            val tempFile = tempFile ?: return@launch
+                            val file = file ?: return@launch
+                            val folder = folder ?: return@launch
+
+                            if (!folder.exists()) {
+                                folder.createDirectory()
                             }
+                            if (tempFile.exists()) {
+                                tempFile.delete()
+                            }
+                            tempFile.openSink(false).buffer().use {
+                                save(remote.data, it)
+                                it.flush()
+                            }
+                            if (file.exists()) {
+                                file.delete()
+                            }
+                            tempFile.renameTo(name)
                         } catch (e: Exception) {
                             e.printStackTrace()
                         }
@@ -140,6 +141,5 @@ abstract class KacheAbsRepository<T: Any>(
             }
         }
     }
-
 
 }

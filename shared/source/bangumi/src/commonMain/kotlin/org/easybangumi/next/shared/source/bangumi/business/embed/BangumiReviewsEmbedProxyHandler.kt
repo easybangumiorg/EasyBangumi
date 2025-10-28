@@ -12,7 +12,7 @@ import io.ktor.utils.io.ByteReadChannel
 import org.easybangumi.next.shared.source.bangumi.BangumiConfig
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.shared.source.bangumi.model.BgmRsp
-import org.easybangumi.next.shared.source.bangumi.model.BgmReviews
+import org.easybangumi.next.shared.data.bangumi.BgmReviews
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi

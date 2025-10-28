@@ -2,11 +2,12 @@ package org.easybangumi.next.shared.case
 
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.DataRepository
-import org.easybangumi.next.shared.data.bangumi.BangumiDataController
+import org.easybangumi.next.shared.bangumi.data.BangumiDataController
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
-import org.easybangumi.next.shared.source.bangumi.model.BgmCharacter
-import org.easybangumi.next.shared.source.bangumi.model.BgmPerson
-import org.easybangumi.next.shared.source.bangumi.model.BgmSubject
+import org.easybangumi.next.shared.data.bangumi.BgmCharacter
+import org.easybangumi.next.shared.data.bangumi.BgmCollect
+import org.easybangumi.next.shared.data.bangumi.BgmPerson
+import org.easybangumi.next.shared.data.bangumi.BgmSubject
 import org.easybangumi.next.shared.source.case.DetailSourceCase
 
 /**
@@ -38,6 +39,10 @@ class BangumiCase(
 
     fun getCharacterListRepository(cartoonIndex: CartoonIndex): DataRepository<List<BgmCharacter>> {
         return bangumiDataController.getCharacterListRepository(cartoonIndex)
+    }
+
+    fun getCollectRepository(cartoonIndex: CartoonIndex): DataRepository<BgmCollect>? {
+        return bangumiDataController.getCollectRepository(cartoonIndex)
     }
 
     fun coverUrl(cartoonIndex: CartoonIndex): String{

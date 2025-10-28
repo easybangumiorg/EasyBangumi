@@ -49,8 +49,8 @@ import org.easybangumi.next.shared.foundation.elements.LoadScaffold
 import org.easybangumi.next.shared.foundation.image.AsyncImage
 import org.easybangumi.next.shared.foundation.shimmer.ShimmerHost
 import org.easybangumi.next.shared.scheme.EasyScheme
-import org.easybangumi.next.shared.source.bangumi.model.BgmRating
-import org.easybangumi.next.shared.source.bangumi.model.BgmSubject
+import org.easybangumi.next.shared.data.bangumi.BgmRating
+import org.easybangumi.next.shared.data.bangumi.BgmSubject
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi

@@ -1,6 +1,7 @@
 ﻿package org.easybangumi.next.shared.source.bangumi.source
 
 import org.easybangumi.next.lib.utils.ResourceOr
+import org.easybangumi.next.shared.data.bangumi.BangumiConst
 import org.easybangumi.next.shared.source.api.component.Component
 import org.easybangumi.next.shared.source.api.source.InnerSource
 import org.easybangumi.next.shared.source.bangumi.bangumiSourceModule
@@ -21,7 +22,7 @@ import org.koin.core.module.Module
 class BangumiInnerSource: InnerSource() {
 
     companion object {
-        const val SOURCE_KEY = "bangumi"
+        const val SOURCE_KEY = BangumiConst.BANGUMI_SOURCE_KEY
     }
 
     override val key: String = SOURCE_KEY

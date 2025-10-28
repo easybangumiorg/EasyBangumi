@@ -48,8 +48,8 @@ import org.easybangumi.next.shared.foundation.lazy.pagingCommon
 import org.easybangumi.next.shared.foundation.stringRes
 import org.easybangumi.next.shared.resources.Res
 import org.easybangumi.next.shared.scheme.EasyScheme
-import org.easybangumi.next.shared.source.bangumi.model.BgmEpisode
-import org.easybangumi.next.shared.source.bangumi.model.BgmSubject
+import org.easybangumi.next.shared.data.bangumi.BgmEpisode
+import org.easybangumi.next.shared.data.bangumi.BgmSubject
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi

@@ -11,7 +11,7 @@ import io.ktor.utils.io.ByteReadChannel
 import org.easybangumi.next.shared.source.bangumi.BangumiConfig
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.shared.source.bangumi.model.BgmRsp
-import org.easybangumi.next.shared.source.bangumi.model.BgmTrendsSubject
+import org.easybangumi.next.shared.data.bangumi.BgmTrendsSubject
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi

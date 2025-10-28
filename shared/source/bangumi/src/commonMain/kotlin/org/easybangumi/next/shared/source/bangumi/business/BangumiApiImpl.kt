@@ -9,14 +9,16 @@ import io.ktor.http.path
 import kotlinx.coroutines.Deferred
 import org.easybangumi.next.shared.source.bangumi.BangumiConfig
 import org.easybangumi.next.shared.source.bangumi.model.BgmRsp
-import org.easybangumi.next.shared.source.bangumi.model.BgmCalendarItem
-import org.easybangumi.next.shared.source.bangumi.model.BgmCharacter
-import org.easybangumi.next.shared.source.bangumi.model.BgmEpisodeRsp
-import org.easybangumi.next.shared.source.bangumi.model.BgmPerson
-import org.easybangumi.next.shared.source.bangumi.model.BgmReviews
-import org.easybangumi.next.shared.source.bangumi.model.BgmSubject
-import org.easybangumi.next.shared.source.bangumi.model.BgmTrendsSubject
-import org.easybangumi.next.shared.source.bangumi.model.User
+import org.easybangumi.next.shared.data.bangumi.BgmCalendarItem
+import org.easybangumi.next.shared.data.bangumi.BgmCharacter
+import org.easybangumi.next.shared.data.bangumi.BgmCollect
+import org.easybangumi.next.shared.data.bangumi.BgmCollectRsp
+import org.easybangumi.next.shared.data.bangumi.BgmEpisodeRsp
+import org.easybangumi.next.shared.data.bangumi.BgmPerson
+import org.easybangumi.next.shared.data.bangumi.BgmReviews
+import org.easybangumi.next.shared.data.bangumi.BgmSubject
+import org.easybangumi.next.shared.data.bangumi.BgmTrendsSubject
+import org.easybangumi.next.shared.data.bangumi.User
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -122,6 +124,41 @@ class BangumiApiImpl(
             get {
                 bgmUrl {
                     path("v0", "me")
+                    headers.append("Authorization", "Bearer $token")
+                }
+            }.body()
+        }
+    }
+
+    override fun getCollect(
+        username: String,
+        token: String,
+        subjectId: String
+    ): Deferred<BgmRsp<BgmCollect>> {
+        return caller.request {
+            get {
+                bgmUrl {
+                    path("v0", "users", username, "collections", subjectId)
+                    headers.append("Authorization", "Bearer $token")
+                }
+            }.body()
+        }
+    }
+
+    override fun getCollectList(
+        username: String,
+        token: String,
+        type: String,
+        offset: Int,
+        limit: Int
+    ): Deferred<BgmRsp<BgmCollectRsp>> {
+        return caller.request {
+            get {
+                bgmUrl {
+                    path("v0", "users", username, "collections")
+                    parameters.append("type", type)
+                    parameters.append("offset", offset.toString())
+                    parameters.append("limit", limit.toString())
                     headers.append("Authorization", "Bearer $token")
                 }
             }.body()

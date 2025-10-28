@@ -1,6 +1,7 @@
 package org.easybangumi.next.lib.unifile
 
 import kotlinx.serialization.Serializable
+import okio.Path.Companion.toPath
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -28,5 +29,17 @@ data class UFD(
         const val TYPE_ANDROID_UNI = "android_uni"
     }
 
+    fun child(display: String): UFD? {
+        when (type) {
+            TYPE_OKIO -> {
+                val child = uri.toPath().div(display)
+                return UFD(TYPE_OKIO, child.toString())
+            }
+            else -> {
+                val uni = UniFileFactory.fromUFD(this) ?: return null
+                return uni.child(display)?.getUFD()
+            }
+        }
+    }
 
 }

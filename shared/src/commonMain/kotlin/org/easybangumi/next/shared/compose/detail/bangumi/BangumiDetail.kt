@@ -44,7 +44,7 @@ import org.easybangumi.next.shared.foundation.scroll_header.rememberScrollableHe
 import org.easybangumi.next.shared.foundation.shimmer.rememberShimmerState
 import org.easybangumi.next.shared.foundation.view_model.vm
 import org.easybangumi.next.shared.scheme.EasyScheme
-import org.easybangumi.next.shared.source.bangumi.model.BgmSubject
+import org.easybangumi.next.shared.data.bangumi.BgmSubject
 import kotlin.math.absoluteValue
 
 /**

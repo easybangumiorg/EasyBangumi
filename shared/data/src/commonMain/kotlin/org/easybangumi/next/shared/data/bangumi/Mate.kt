@@ -1,4 +1,4 @@
-package org.easybangumi.next.shared.source.bangumi.model
+package org.easybangumi.next.shared.data.bangumi
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

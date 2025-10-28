@@ -1,4 +1,4 @@
-package org.easybangumi.next.shared.source.bangumi.model
+package org.easybangumi.next.shared.data.bangumi
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -18,7 +18,6 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonPrimitive
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
-import org.easybangumi.next.shared.source.bangumi.source.BangumiInnerSource
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -72,14 +71,14 @@ data class BgmSubject(
     val cartoonIndex: CartoonIndex by lazy {
         CartoonIndex(
             id = id?.toString()?:"",
-            source = BangumiInnerSource.SOURCE_KEY,
+            source = BangumiConst.BANGUMI_SOURCE_KEY,
         )
     }
 
     val cartoonCover: CartoonCover by lazy {
         CartoonCover(
             id = id?.toString()?:"",
-            source = BangumiInnerSource.SOURCE_KEY,
+            source = BangumiConst.BANGUMI_SOURCE_KEY,
             name = displayName,
             coverUrl = images?.common ?: "",
             intro = displayEpisode ?: "",
@@ -154,8 +153,8 @@ sealed class BgmInfoBoxValue {
             require(decoder is JsonDecoder)
             val element = decoder.decodeJsonElement()
             return when (element) {
-                is JsonPrimitive -> BgmInfoBoxValue.Str(element.content)
-                is JsonArray -> BgmInfoBoxValue.ListMap(
+                is JsonPrimitive -> Str(element.content)
+                is JsonArray -> ListMap(
                     element.mapIndexed { index, jsonElement ->
                         (jsonElement as? JsonObject)?.mapValues { it.value.jsonPrimitive.content }
                     }.filterNotNull()

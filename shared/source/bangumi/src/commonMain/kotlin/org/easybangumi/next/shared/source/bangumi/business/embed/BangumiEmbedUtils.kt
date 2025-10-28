@@ -4,7 +4,7 @@ import com.fleeksoft.ksoup.nodes.Document
 import io.ktor.http.URLBuilder
 import io.ktor.http.path
 import org.easybangumi.next.shared.source.bangumi.BangumiConfig
-import org.easybangumi.next.shared.source.bangumi.model.BgmTrendsSubject
+import org.easybangumi.next.shared.data.bangumi.BgmTrendsSubject
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi

@@ -1,8 +1,6 @@
-package org.easybangumi.next.shared.data
+package org.easybangumi.next.lib.utils
 
-import org.easybangumi.next.shared.bangumi.account.BangumiAccountController
-import org.easybangumi.next.shared.bangumi.data.BangumiDataController
-import org.koin.dsl.module
+import kotlinx.datetime.Clock
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -15,11 +13,12 @@ import org.koin.dsl.module
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-val shareDataModule = module {
-    single {
-        BangumiDataController(get(), get())
-    }
-    single {
-        BangumiAccountController()
-    }
+interface MutableDataRepository <T: Any>: DataRepository<T> {
+
+    suspend fun update(
+        data: T,
+        isCache: Boolean = false,
+        timestamp: Long = Clock.System.now().toEpochMilliseconds()
+    )
+
 }

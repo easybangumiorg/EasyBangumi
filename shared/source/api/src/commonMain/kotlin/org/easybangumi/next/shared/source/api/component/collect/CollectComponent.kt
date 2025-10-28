@@ -1,8 +1,6 @@
-package org.easybangumi.next.shared.data
+package org.easybangumi.next.shared.source.api.component.collect
 
-import org.easybangumi.next.shared.bangumi.account.BangumiAccountController
-import org.easybangumi.next.shared.bangumi.data.BangumiDataController
-import org.koin.dsl.module
+import org.easybangumi.next.shared.source.api.component.Component
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -15,11 +13,5 @@ import org.koin.dsl.module
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-val shareDataModule = module {
-    single {
-        BangumiDataController(get(), get())
-    }
-    single {
-        BangumiAccountController()
-    }
+interface CollectComponent: Component {
 }

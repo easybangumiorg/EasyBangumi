@@ -18,11 +18,11 @@ import org.easybangumi.next.shared.case.BangumiCase
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.foundation.view_model.StateViewModel
 import org.easybangumi.next.shared.resources.Res
-import org.easybangumi.next.shared.source.bangumi.model.BgmCharacter
-import org.easybangumi.next.shared.source.bangumi.model.BgmEpisode
-import org.easybangumi.next.shared.source.bangumi.model.BgmPerson
-import org.easybangumi.next.shared.source.bangumi.model.BgmReviews
-import org.easybangumi.next.shared.source.bangumi.model.BgmSubject
+import org.easybangumi.next.shared.data.bangumi.BgmCharacter
+import org.easybangumi.next.shared.data.bangumi.BgmEpisode
+import org.easybangumi.next.shared.data.bangumi.BgmPerson
+import org.easybangumi.next.shared.data.bangumi.BgmReviews
+import org.easybangumi.next.shared.data.bangumi.BgmSubject
 import org.easybangumi.next.shared.source.case.DetailSourceCase
 import org.koin.core.component.inject
 
@@ -150,7 +150,7 @@ class BangumiDetailVM(
         }
     }
 
-    private fun getEpisodePagingFlow(): PagingFlow<org.easybangumi.next.shared.source.bangumi.model.BgmEpisode> {
+    private fun getEpisodePagingFlow(): PagingFlow<BgmEpisode> {
         return bangumiDetailBusiness.runDirect {
             val pagingSource = createEpisodePagingSource(cartoonIndex)
             pagingSource.newPagingFlow()

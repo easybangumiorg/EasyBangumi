@@ -7,8 +7,7 @@ import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.shared.case.BangumiCase
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.foundation.view_model.StateViewModel
-import org.easybangumi.next.shared.source.bangumi.model.BgmSubject
-import org.easybangumi.next.shared.source.case.DetailSourceCase
+import org.easybangumi.next.shared.data.bangumi.BgmSubject
 import org.koin.core.component.inject
 import kotlin.getValue
 

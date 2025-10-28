@@ -1,7 +1,6 @@
 ﻿package org.easybangumi.next.shared.source.bangumi.source
 
 import kotlinx.coroutines.async
-import org.easybangumi.next.lib.utils.DataRepository
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.EasyPagingSource
 import org.easybangumi.next.lib.utils.PagingFrame
@@ -11,11 +10,11 @@ import org.easybangumi.next.shared.source.api.component.BaseComponent
 import org.easybangumi.next.shared.source.api.component.detail.DetailComponent
 import org.easybangumi.next.shared.source.bangumi.BangumiConfig
 import org.easybangumi.next.shared.source.bangumi.business.BangumiApi
-import org.easybangumi.next.shared.source.bangumi.model.BgmCharacter
-import org.easybangumi.next.shared.source.bangumi.model.BgmEpisode
-import org.easybangumi.next.shared.source.bangumi.model.BgmPerson
-import org.easybangumi.next.shared.source.bangumi.model.BgmReviews
-import org.easybangumi.next.shared.source.bangumi.model.BgmSubject
+import org.easybangumi.next.shared.data.bangumi.BgmCharacter
+import org.easybangumi.next.shared.data.bangumi.BgmEpisode
+import org.easybangumi.next.shared.data.bangumi.BgmPerson
+import org.easybangumi.next.shared.data.bangumi.BgmReviews
+import org.easybangumi.next.shared.data.bangumi.BgmSubject
 import org.koin.core.component.inject
 import kotlin.getValue
 
@@ -39,6 +38,7 @@ class BangumiDetailComponent: DetailComponent, BaseComponent() {
     suspend fun getSubject(
         cartoonIndex: CartoonIndex
     ): DataState<BgmSubject> {
+        checkCartoonIndex(cartoonIndex)
         return source.scope.async {
             api.getSubject(cartoonIndex.id).await().toDataState()
         }.await()
@@ -47,6 +47,7 @@ class BangumiDetailComponent: DetailComponent, BaseComponent() {
     suspend fun getPersonList(
         cartoonIndex: CartoonIndex
     ): DataState<List<BgmPerson>> {
+        checkCartoonIndex(cartoonIndex)
         return source.scope.async {
             api.getPersonList(cartoonIndex.id).await().toDataState()
         }.await()
@@ -55,6 +56,7 @@ class BangumiDetailComponent: DetailComponent, BaseComponent() {
     suspend fun getCharacterList(
         cartoonIndex: CartoonIndex
     ): DataState<List<BgmCharacter>> {
+        checkCartoonIndex(cartoonIndex)
         return source.scope.async {
             api.getCharacterList(cartoonIndex.id).await().toDataState()
         }.await()

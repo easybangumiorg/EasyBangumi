@@ -1,8 +1,4 @@
-package org.easybangumi.next.shared.data
-
-import org.easybangumi.next.shared.bangumi.account.BangumiAccountController
-import org.easybangumi.next.shared.bangumi.data.BangumiDataController
-import org.koin.dsl.module
+package org.easybangumi.next.shared.data.bangumi
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -15,11 +11,7 @@ import org.koin.dsl.module
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-val shareDataModule = module {
-    single {
-        BangumiDataController(get(), get())
-    }
-    single {
-        BangumiAccountController()
-    }
+object BangumiConst {
+
+    const val BANGUMI_SOURCE_KEY = "bangumi"
 }

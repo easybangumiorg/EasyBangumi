@@ -1,19 +1,15 @@
-package org.easybangumi.next.shared.data.bangumi
+package org.easybangumi.next.shared.bangumi.data.repository
 
-import com.mayakapps.kache.ContainerKache
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import okio.BufferedSink
 import okio.BufferedSource
 import org.easybangumi.next.lib.serialization.jsonSerializer
-import org.easybangumi.next.lib.store.repository.KacheAbsRepository
+import org.easybangumi.next.lib.store.repository.FileAbsRepository
+import org.easybangumi.next.lib.unifile.UFD
 import org.easybangumi.next.lib.utils.DataState
+import org.easybangumi.next.shared.data.bangumi.BgmCharacter
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.source.api.component.ComponentBusiness
-import org.easybangumi.next.shared.source.bangumi.model.BgmPerson
-import org.easybangumi.next.shared.source.bangumi.model.BgmSubject
 import org.easybangumi.next.shared.source.bangumi.source.BangumiDetailComponent
 
 /**
@@ -27,18 +23,23 @@ import org.easybangumi.next.shared.source.bangumi.source.BangumiDetailComponent
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-class BangumiPersonListRepository (
-    val cartoonIndex: CartoonIndex,
+class BangumiCharacterListRepository(
+    folder: UFD,
+    private val cartoonIndex: CartoonIndex,
     val bangumiDetailBusiness: ComponentBusiness<BangumiDetailComponent>,
-    subjectKache: ContainerKache<String, String>?,
     scope: CoroutineScope,
-): KacheAbsRepository<List<BgmPerson>>(
-    cacheKey = cartoonIndex.id,
-    subjectKache = subjectKache,
-    scope = scope,
-) {
+): FileAbsRepository<List<BgmCharacter>>(folder, "character.jsonl", scope) {
 
-    override fun save(data: List<BgmPerson>, sink: BufferedSink) {
+    override suspend fun fetchRemoteData(): DataState<List<BgmCharacter>> {
+        return bangumiDetailBusiness.run {
+            getCharacterList(cartoonIndex)
+        }
+    }
+
+    override fun save(
+        data: List<BgmCharacter>,
+        sink: BufferedSink
+    ) {
         data.forEach {
             val json = jsonSerializer.serialize(it)
             if (json.isNotEmpty()) {
@@ -48,13 +49,13 @@ class BangumiPersonListRepository (
         }
     }
 
-    override fun load(source: BufferedSource): List<BgmPerson>? {
-        val list = mutableListOf<BgmPerson>()
+    override fun load(source: BufferedSource): List<BgmCharacter>? {
+        val list = mutableListOf<BgmCharacter>()
 
         var text = source.readUtf8Line()
         while(text != null) {
             if (text.isNotEmpty()) {
-                val obj = jsonSerializer.deserialize(text, BgmPerson::class, null)
+                val obj = jsonSerializer.deserialize(text, BgmCharacter::class, null)
                 if (obj != null) {
                     list.add(obj)
                 }
@@ -65,11 +66,5 @@ class BangumiPersonListRepository (
             return null
         }
         return list
-    }
-
-    override suspend fun fetchRemoteData(): DataState<List<BgmPerson>> {
-        return bangumiDetailBusiness.run {
-            getPersonList(cartoonIndex)
-        }
     }
 }

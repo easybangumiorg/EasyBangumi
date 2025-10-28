@@ -5,11 +5,10 @@ import org.easybangumi.next.lib.utils.EasyPagingSource
 import org.easybangumi.next.lib.utils.PagingFrame
 import org.easybangumi.next.lib.utils.map
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
-import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.source.api.component.BaseComponent
 import org.easybangumi.next.shared.source.api.component.discover.DiscoverComponent
 import org.easybangumi.next.shared.source.bangumi.business.BangumiApi
-import org.easybangumi.next.shared.source.bangumi.model.toCartoonCover
+import org.easybangumi.next.shared.data.bangumi.toCartoonCover
 import org.koin.core.component.inject
 import kotlin.getValue
 
