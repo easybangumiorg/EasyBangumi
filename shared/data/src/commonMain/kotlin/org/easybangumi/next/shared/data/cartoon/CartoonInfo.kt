@@ -130,6 +130,16 @@ data class CartoonInfo(
             ext = this@CartoonInfo.fromSourceExt
         }
     }
+    fun toCartoonCover(): CartoonCover {
+        return CartoonCover(
+            id = fromId,
+            source = fromSourceKey,
+            name = name,
+            coverUrl = coverUrl,
+            intro = "",
+            webUrl = detailedUrl
+        )
+    }
 
     fun match(identify: String): Boolean {
         return this.toIdentify() == identify

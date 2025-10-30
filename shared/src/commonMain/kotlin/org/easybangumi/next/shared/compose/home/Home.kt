@@ -27,6 +27,7 @@ import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,8 +43,10 @@ import org.easybangumi.next.shared.resources.Res
 import org.easybangumi.next.shared.compose.UI
 import org.easybangumi.next.shared.compose.home.history.History
 import org.easybangumi.next.shared.compose.home.more.More
-import org.easybangumi.next.shared.compose.home.star.Star
+import org.easybangumi.next.shared.compose.home.collection.Collection
+import org.easybangumi.next.shared.compose.home.collection.TAG_COLLECTION
 import org.easybangumi.next.shared.compose.home.discover.HomeDiscover
+import org.easybangumi.next.shared.foundation.view_model.vm
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -61,7 +64,7 @@ sealed class HomePage(
     val route: String,
     val tabLabel: @Composable (() -> Unit),
     val icon: @Composable ((Boolean) -> Unit),
-    val content: @Composable (() -> Unit),
+    val content: @Composable ((HomeVM) -> Unit),
 ) {
     data object DiscoverPage : HomePage(
         route = "discover",
@@ -79,8 +82,8 @@ sealed class HomePage(
         }
     )
 
-    data object StarPage : HomePage(
-        route = "star",
+    data object CollectionPage : HomePage(
+        route = TAG_COLLECTION,
         tabLabel = {
             Text(text = stringResource(Res.strings.star))
         },
@@ -91,7 +94,7 @@ sealed class HomePage(
             )
         },
         content = {
-            Star()
+            Collection(it)
         }
     )
 
@@ -127,13 +130,15 @@ sealed class HomePage(
 
 val HomePageList = listOf(
     HomePage.DiscoverPage,
-    HomePage.StarPage,
+    HomePage.CollectionPage,
     HomePage.HistoryPage,
     HomePage.MorePage,
 )
 
 @Composable
 fun Home() {
+
+    val homeVM = vm(::HomeVM)
 
     val navController = LocalNavController.current
     val pagerState = rememberPagerState(0) { HomePageList.size }
@@ -177,24 +182,33 @@ fun Home() {
                         )
                     }
                 }
-                VerticalPager(
-                    modifier = Modifier.fillMaxHeight().weight(1f).clip(RoundedCornerShape(16.dp)),
-                    state = pagerState,
-                    userScrollEnabled = false
+                Column(
+                    modifier = Modifier.fillMaxHeight().weight(1f)
                 ) {
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        HomePageList[it].content()
-                        if (platformInformation.isDebug) {
-                            Text(
-                                modifier = Modifier.align(Alignment.TopStart).padding(64.dp).clickable {
-                                    navController.navigate(RouterPage.Debug.HOME)
-                                },
-                                text = "Debug Mode"
-                            )
+                    VerticalPager(
+                        modifier = Modifier.fillMaxWidth().weight(1f).clip(RoundedCornerShape(16.dp)),
+                        state = pagerState,
+                        userScrollEnabled = false
+                    ) {
+                        Box(modifier = Modifier.fillMaxSize()) {
+                            HomePageList[it].content(homeVM)
+                            if (platformInformation.isDebug) {
+                                Text(
+                                    modifier = Modifier.align(Alignment.TopStart).padding(64.dp).clickable {
+                                        navController.navigate(RouterPage.Debug.HOME)
+                                    },
+                                    text = "Debug Mode"
+                                )
+                            }
                         }
                     }
 
+                    val currentTag = remember(HomePageList, pagerState.targetPage) {
+                        HomePageList.getOrNull(pagerState.targetPage)?.route
+                    }
+                    homeVM.customBottomBarCompose[currentTag]?.invoke()
                 }
+
             }
         } else {
             Column {
@@ -204,7 +218,7 @@ fun Home() {
                     userScrollEnabled = false
                 ) {
                     Box(modifier = Modifier.fillMaxSize()) {
-                        HomePageList[it].content()
+                        HomePageList[it].content(homeVM)
                         if (platformInformation.isDebug) {
                             Text(
                                 modifier = Modifier.align(Alignment.TopStart).padding(64.dp).clickable {
@@ -215,30 +229,38 @@ fun Home() {
                         }
                     }
                 }
-                NavigationBar(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    HomePageList.forEachIndexed { index, page ->
-                        val selected = pagerState.currentPage == index
-                        NavigationBarItem(
-                            selected = selected,
-                            onClick = {
-                                scope.launch {
-                                    pagerState.animateScrollToPage(index)
+
+                val customBottomBar = remember(HomePageList, pagerState.targetPage, homeVM.customBottomBarCompose) {
+                    homeVM.customBottomBarCompose[ HomePageList.getOrNull(pagerState.targetPage)?.route]
+                }
+
+                if (customBottomBar != null) {
+                    customBottomBar.invoke()
+                } else {
+                    NavigationBar(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        HomePageList.forEachIndexed { index, page ->
+                            val selected = pagerState.currentPage == index
+                            NavigationBarItem(
+                                selected = selected,
+                                onClick = {
+                                    scope.launch {
+                                        pagerState.animateScrollToPage(index)
+                                    }
+                                },
+                                icon = {
+                                    page.icon(selected)
+                                },
+                                label = {
+                                    page.tabLabel()
                                 }
-                            },
-                            icon = {
-                                page.icon(selected)
-                            },
-                            label = {
-                                page.tabLabel()
-                            }
-                        )
+                            )
+                        }
                     }
                 }
             }
         }
-
 
     }
 

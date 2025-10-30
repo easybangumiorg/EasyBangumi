@@ -22,7 +22,7 @@ import kotlin.reflect.KClass
  *        http://www.apache.org/licenses/LICENSE-2.0
  *
  * 使用：
- *    val viewModel = vm(::MyViewModel, "param1", "param2")
+ *    val viewModel = vm(::MyViewModel, param1, param2)
  */
 
 

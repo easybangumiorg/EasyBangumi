@@ -59,7 +59,7 @@ fun CartoonCardWithCover(
 ) {
     CartoonCoverCard(
         modifier,
-        mark = if (star) stringRes(Res.strings.stared_min) else null,
+        markLeftTop = if (star) stringRes(Res.strings.stared_min) else null,
         model = cartoonCover.coverUrl ?: "",
         name = cartoonCover.name,
         cardBackgroundColor = null,
@@ -91,7 +91,7 @@ fun CartoonCardWithCover(
 ) {
     CartoonCoverCard(
         modifier,
-        mark = if (star) stringRes(Res.strings.stared_min) else null,
+        markLeftTop = if (star) stringRes(Res.strings.stared_min) else null,
         model = cartoonInfo.coverUrl ?: "",
         name = cartoonInfo.name,
         cardBackgroundColor = null,
@@ -144,7 +144,8 @@ fun CartoonCoverCardRect(
 @Composable
 fun CartoonCoverCard(
     modifier: Modifier = Modifier,
-    mark: String? = null,
+    markLeftTop: String? = null,
+    markRightTop: String? = null,
     model: String,
     name: String? = null,
     cardBackgroundColor: Color? = null,
@@ -232,15 +233,30 @@ fun CartoonCoverCard(
             }
         }
 
-        if (mark != null) {
+        if (markLeftTop != null) {
             Text(
                 fontSize = 13.sp,
-                text = mark,
+                text = markLeftTop,
                 color = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier
                     .background(
                         MaterialTheme.colorScheme.primary,
                         RoundedCornerShape(0.dp, 0.dp, 16.dp, 0.dp)
+                    )
+                    .padding(16.dp, 0.dp)
+            )
+        }
+
+        if (markRightTop != null) {
+            Text(
+                fontSize = 13.sp,
+                text = markRightTop,
+                color = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .background(
+                        MaterialTheme.colorScheme.primary,
+                        RoundedCornerShape(0.dp, 0.dp, 0.dp, 16.dp)
                     )
                     .padding(16.dp, 0.dp)
             )
