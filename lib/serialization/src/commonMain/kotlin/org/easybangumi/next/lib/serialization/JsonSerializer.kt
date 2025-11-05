@@ -27,7 +27,7 @@ interface JsonSerializer {
 
 class JsonSerializerImpl: JsonSerializer {
     private val json: Json by lazy {
-        Json {  }
+        Json
     }
 
     @OptIn(InternalSerializationApi::class)

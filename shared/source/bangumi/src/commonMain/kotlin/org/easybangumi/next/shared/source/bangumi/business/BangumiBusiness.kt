@@ -91,8 +91,11 @@ class BangumiBusiness(
                 } else {
                     val genericTypes: List<KTypeProjection>? = requestedType.kotlinType?.arguments
                     val firstGenericType: KType? = genericTypes?.getOrNull(0)?.type
-                    val genericClazz = firstGenericType?.classifier as? KClass<*> ?: return@transformResponseBody null
-                    val data = Json.decodeFromString(genericClazz.serializer(), body)
+
+                    val genericType = firstGenericType ?: return@transformResponseBody null
+                    val kSerializer = serializer(genericType)
+                    val data = Json.decodeFromString(kSerializer, body)
+
                     return@transformResponseBody BgmRsp.Success(
                         code = code,
                         data = data,

@@ -165,7 +165,7 @@ fun Collection(
 
         if (state.tagList.size == 1) {
             val tab = state.tagList.firstOrNull()
-            val list = state.data[tab?.label] ?: emptyList()
+            val list = state.data[tab]?.localOrNull() ?: emptyList()
             StarList(
                 nestedScrollConnection = scrollBehavior.nestedScrollConnection,
                 starCartoon = list, selectionSet = state.selection, onClick = {
@@ -193,19 +193,21 @@ fun Collection(
                 tabs = { i, _ ->
                     Row {
                         val tab = state.tagList[i]
-                        val starNum = state.data[tab.label]?.size ?: 0
+                        val starNum = state.data[tab]?.localOrNull()?.size
                         Text(text = tab.label)
-                        Badge(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                        ) {
-                            Text(text = if (starNum <= 999) "$starNum" else "999+")
+                        if (starNum != null) {
+                            Badge(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            ) {
+                                Text(text = if (starNum <= 999) "$starNum" else "999+")
+                            }
                         }
                     }
 
                 }) {
                 val tab = state.tagList[it]
-                val list = state.data[tab.label] ?: emptyList()
+                val list = state.data[tab]?.localOrNull() ?: emptyList()
                 StarList(
                     //nestedScrollConnection = scrollBehavior.nestedScrollConnection,
                     starCartoon = list, selectionSet = state.selection, onClick = {

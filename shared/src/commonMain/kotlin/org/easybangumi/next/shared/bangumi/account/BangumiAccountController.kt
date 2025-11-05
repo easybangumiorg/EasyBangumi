@@ -38,7 +38,13 @@ class BangumiAccountController {
     }
 
 
-    val flow : StateFlow<BangumiAccountInfo> by lazy {
+    val accountInfoFlow : StateFlow<BangumiAccountInfo> by lazy {
         jsonHelper.flow()
     }
+
+    fun updateAccountInfo(accountInfo: BangumiAccountInfo) {
+        jsonHelper.push(accountInfo)
+    }
+
+
 }

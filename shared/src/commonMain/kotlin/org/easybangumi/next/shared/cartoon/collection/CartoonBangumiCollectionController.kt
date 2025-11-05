@@ -1,6 +1,6 @@
-package org.easybangumi.next.shared.cartoon.star
+package org.easybangumi.next.shared.cartoon.collection
 
-import org.easybangumi.next.shared.data.room.cartoon.dao.CartoonInfoDao
+import org.easybangumi.next.shared.case.BangumiCase
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -13,8 +13,7 @@ import org.easybangumi.next.shared.data.room.cartoon.dao.CartoonInfoDao
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-class CartoonLocalStarController(
-    private val cartoonInfoDao: CartoonInfoDao
+class CartoonBangumiCollectionController(
+    detailCase: BangumiCase,
 ) {
-
 }

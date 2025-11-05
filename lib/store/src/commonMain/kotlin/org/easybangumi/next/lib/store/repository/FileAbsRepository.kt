@@ -56,6 +56,11 @@ abstract class FileAbsRepository<T: Any>(
     abstract fun save(data: T, sink: BufferedSink)
     abstract fun load(source: BufferedSource): T?
 
+    override fun refresh(): Boolean {
+        innerRefresh()
+        return true
+    }
+
 
     init {
         scope.launch {
@@ -91,10 +96,10 @@ abstract class FileAbsRepository<T: Any>(
                 DataState.Companion.loading(cacheData = it.okOrNull())
             }
             val remote = fetchRemoteData()
-//            logger.info("remote data state: $remote")
+            logger.info("remote data state: $remote")
             when (remote) {
                 is DataState.Ok -> {
-//                    logger.info("remote data state update: $remote")
+                    logger.info("remote data state update: $remote")
                     _flow.update {
                         remote
                     }

@@ -1,5 +1,6 @@
 package org.easybangumi.next.shared.case
 
+import org.easybangumi.next.shared.bangumi.account.BangumiAccountController
 import org.koin.dsl.module
 
 /**
@@ -15,6 +16,6 @@ import org.koin.dsl.module
  */
 val caseModule = module {
     single {
-        BangumiCase(get(), get())
+        BangumiCase(get(), get(), get())
     }
 }

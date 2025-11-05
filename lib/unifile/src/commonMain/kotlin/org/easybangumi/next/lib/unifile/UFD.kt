@@ -35,6 +35,10 @@ data class UFD(
                 val child = uri.toPath().div(display)
                 return UFD(TYPE_OKIO, child.toString())
             }
+            TYPE_JVM -> {
+                val child = uri.toPath().div(display)
+                return UFD(TYPE_JVM, child.toString())
+            }
             else -> {
                 val uni = UniFileFactory.fromUFD(this) ?: return null
                 return uni.child(display)?.getUFD()

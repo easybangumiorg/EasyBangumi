@@ -23,6 +23,9 @@ interface CartoonInfoDao {
     @Insert
     suspend fun insert(cartoonInfo: CartoonInfo)
 
+    @Query("select * from CartoonInfo where CartoonInfo.fromId = :fromId and CartoonInfo.fromSourceKey = :fromSource limit 1")
+    fun flowById(fromSource: String, fromId: String): Flow<CartoonInfo?>
+
     @Query("select * from CartoonInfo")
     fun flowAll(): Flow<List<CartoonInfo>>
 
@@ -30,6 +33,6 @@ interface CartoonInfoDao {
     fun flowHistory(limit: Int): Flow<List<CartoonInfo>>
 
     @Query("select * from CartoonInfo where CartoonInfo.starTime > 0")
-    fun flowStarLocal(): Flow<List<CartoonInfo>>
+    fun flowCollectionLocal(): Flow<List<CartoonInfo>>
 
 }

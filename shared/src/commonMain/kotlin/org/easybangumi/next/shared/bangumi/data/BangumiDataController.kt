@@ -5,7 +5,11 @@ import kotlinx.atomicfu.locks.reentrantLock
 import kotlinx.atomicfu.locks.withLock
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.unifile.UFD
 import org.easybangumi.next.lib.utils.coroutineProvider
@@ -36,8 +40,7 @@ class BangumiDataController(
 
     private val bangumiRootFileUfd = pathProvider.getFilePath("bangumi")
     private val bangumiFileFolderUfd = bangumiRootFileUfd.child("info")
-    private val bangumiUserFileUfd = bangumiRootFileUfd.child("user")
-    private val collectionRepositoryMap = hashMapOf<String, BangumiCollectionRepository>()
+
     private val subjectRepositoryMap = hashMapOf<String, BangumiSubjectRepository>()
     private val personListRepositoryMap = hashMapOf<String, BangumiPersonListRepository>()
     private val characterListRepositoryMap = hashMapOf<String, BangumiCharacterListRepository>()
@@ -46,29 +49,25 @@ class BangumiDataController(
         detailSourceCase.getBangumiDetailBusiness()
     }
 
-    val collectBusiness by lazy {
-        detailSourceCase.getBangumiCollectBusiness()
-    }
-
 
     private val lock: ReentrantLock = reentrantLock()
     private val dispatcher = coroutineProvider.io()
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
 
-
-    init {
-        scope.launch {
-            bangumiAccountController.flow.collectLatest { info ->
-                if (info != BangumiAccountController.BangumiAccountInfo.EMPTY) {
-                    lock.withLock {
-                        collectionRepositoryMap.forEach {
-                            it.value.updateAccount(info)
-                        }
-                    }
-                }
-            }
+    val userDataProviderFlow = bangumiAccountController.accountInfoFlow.map {
+        if (it == BangumiAccountController.BangumiAccountInfo.EMPTY) {
+            null
+        } else {
+            BangumiUserDataProvider(
+                info = it,
+                bangumiRootFileUfd = bangumiRootFileUfd,
+                detailSourceCase = detailSourceCase,
+                lock = lock,
+                scope = scope,
+            )
         }
-    }
+    }.stateIn(scope, SharingStarted.Lazily, null)
+
 
     fun getSubjectRepository(cartoonIndex: CartoonIndex): BangumiSubjectRepository {
         // 先尝试不加锁获取
@@ -124,32 +123,7 @@ class BangumiDataController(
         }
     }
 
-    fun getCollectRepository(cartoonIndex: CartoonIndex): BangumiCollectionRepository? {
-        val accountInfo = bangumiAccountController.flow.value
-        if (accountInfo == BangumiAccountController.BangumiAccountInfo.EMPTY) {
-            return null
-        }
-        return getCollectRepository(accountInfo, cartoonIndex)
-    }
 
-    private fun getCollectRepository(accountInfo: BangumiAccountController.BangumiAccountInfo, cartoonIndex: CartoonIndex): BangumiCollectionRepository? {
-        val temp = collectionRepositoryMap[cartoonIndex.id]
-        if (temp != null) {
-            temp.updateAccount(accountInfo)
-            return temp
-        }
-        lock.withLock {
-            return collectionRepositoryMap.getOrPut(cartoonIndex.id) {
-                BangumiCollectionRepository(
-                    folder = bangumiUserFileUfd ?: throw IllegalStateException("bangumi getUserFile null"),
-                    accountInfo = accountInfo,
-                    bangumiCollectBusiness = collectBusiness,
-                    cartoonIndex = cartoonIndex,
-                    scope = scope,
-                )
-            }
-        }
-    }
 
 
     private fun getSubjectFolder(cartoonIndex: CartoonIndex): UFD {

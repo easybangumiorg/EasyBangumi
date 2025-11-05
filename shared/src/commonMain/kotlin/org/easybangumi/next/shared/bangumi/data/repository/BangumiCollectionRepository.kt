@@ -219,18 +219,18 @@ class BangumiCollectionRepository(
         }
     }
 
-    fun updateAccount(accountInfo: BangumiAccountController.BangumiAccountInfo) {
-        if (this.accountInfo == accountInfo) {
-            return
-        }
-        _flow.update { DataState.None() }
-        this.accountInfo = accountInfo
-        file =  this.folder?.child(accountInfo.username)?.child(cartoonIndex.id + ".json")
-        tempFile= this.folder?.child(accountInfo.username)?.child(cartoonIndex.id + ".json.temp")
-        // 先加载缓存后拉数据
-        innerLoadCache()
-        refresh()
-    }
+//    fun updateAccount(accountInfo: BangumiAccountController.BangumiAccountInfo) {
+//        if (this.accountInfo == accountInfo) {
+//            return
+//        }
+//        _flow.update { DataState.None() }
+//        this.accountInfo = accountInfo
+//        file =  this.folder?.child(accountInfo.username)?.child(cartoonIndex.id + ".json")
+//        tempFile= this.folder?.child(accountInfo.username)?.child(cartoonIndex.id + ".json.temp")
+//        // 先加载缓存后拉数据
+//        innerLoadCache()
+//        refresh()
+//    }
 
 
 }

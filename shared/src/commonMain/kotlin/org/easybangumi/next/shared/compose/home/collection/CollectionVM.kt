@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.easybangumi.next.shared.cartoon.collection.CartoonCollectionController
 import org.easybangumi.next.shared.data.cartoon.CartoonInfo
 import org.easybangumi.next.shared.data.cartoon.CartoonTag
 import org.easybangumi.next.shared.data.room.cartoon.dao.CartoonInfoDao
@@ -25,6 +26,7 @@ import kotlin.toString
 class CollectionVM: StateViewModel<CollectionVM.State>(State()) {
 
     private val cartoonInfoDao: CartoonInfoDao by inject()
+    private val collectionController: CartoonCollectionController by inject()
 
     // TODO 接入真正的数据
     data class State(
@@ -33,7 +35,7 @@ class CollectionVM: StateViewModel<CollectionVM.State>(State()) {
         val starCount: Int = 0,
         val curTab: CartoonTag? = null,
         val tagList: List<CartoonTag> = emptyList(),
-        val data: Map<String, List<CartoonInfo>> = emptyMap(),
+        val data: Map<CartoonTag, CartoonCollectionController.CollectionData> = emptyMap(),
         val selection: Set<CartoonInfo> = setOf(),
         val hasActiveFilters: Boolean = false,
         val dialog: DialogState? = null
@@ -71,7 +73,7 @@ class CollectionVM: StateViewModel<CollectionVM.State>(State()) {
     // 全选
     fun onSelectAll() {
         update {
-            val dd = it.data[it.curTab?.label] ?: emptyList()
+            val dd = it.data[it.curTab]?.localOrNull() ?: emptyList()
             it.copy(
                 selection = it.selection.plus(dd)
             )
@@ -81,7 +83,7 @@ class CollectionVM: StateViewModel<CollectionVM.State>(State()) {
     // 反选
     fun onSelectInvert() {
         update {
-            val dd = it.data[it.curTab?.label] ?: emptyList()
+            val dd = it.data[it.curTab]?.localOrNull() ?: emptyList()
             val selection = it.selection.toMutableSet()
             dd.forEach { star ->
                 if (selection.contains(star)) {
@@ -117,7 +119,7 @@ class CollectionVM: StateViewModel<CollectionVM.State>(State()) {
         if (lastSelectCartoon != null && lastSelectTag != null && lastSelectTag == state.value.curTab) {
             update {
                 val selection = it.selection.toMutableSet()
-                val lastList = it.data[lastSelectTag?.label] ?: listOf()
+                val lastList = it.data[lastSelectTag]?.localOrNull() ?: listOf()
                 var a = lastList.indexOf(lastSelectCartoon)
                 val b = lastList.indexOf(cartoonInfo)
                 if (b > a) {

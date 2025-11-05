@@ -145,5 +145,7 @@ data class CartoonInfo(
         return this.toIdentify() == identify
     }
 
+    fun isPin() = pinTime > 0
+
 
 }

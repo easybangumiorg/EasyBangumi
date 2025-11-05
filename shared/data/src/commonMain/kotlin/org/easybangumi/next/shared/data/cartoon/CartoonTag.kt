@@ -20,45 +20,54 @@ data class CartoonTag (
     val isReverse: Boolean,
 
     val filterState: Map<String, Int>,
+
+    // 标签类型
+    val type: String = TYPE_LOCAL,
 ){
 
     companion object {
+        const val TYPE_LOCAL = "local"
+        const val TYPE_BANGUMI = "bangumi"
+
         const val ALL_TAG_LABEL = "{{all}}"
         const val DEFAULT_TAG_LABEL = "{{default}}"
 
         val innerLabel: Set<String>
             get() = setOf(ALL_TAG_LABEL, DEFAULT_TAG_LABEL)
 
-//        fun create(label: String): CartoonTag {
-//            return CartoonTag(
-//                label = label,
-//                // 默认顺序为 全部 更新 本地 自定义
-//                // 自定义默认排序从 0 开始，内部标签设置为负数能保证在用户手动排序之前内部便签在最前
-//                order = when(label){
-//                    ALL_TAG_LABEL -> -3
-//                    else -> 0
-//                 },
-//                show = when(label){
-//                    ALL_TAG_LABEL -> false
-//                    DEFAULT_TAG_LABEL -> true
-//                    else -> true
-//                },
-//                isCustomSetting = when(label){
-//                    ALL_TAG_LABEL -> true
-//                    DEFAULT_TAG_LABEL -> false
-//                    else -> false
-//                },
-//                sortId = CartoonInfoSortFilterConst.sortByStarTime.id,
-//                isReverse = false,
-//                filterState = emptyMap(),
-//            )
-//        }
+        fun create(label: String): CartoonTag {
+            return CartoonTag(
+                label = label,
+                // 默认顺序为 全部 更新 本地 自定义
+                // 自定义默认排序从 0 开始，内部标签设置为负数能保证在用户手动排序之前内部便签在最前
+                order = when(label){
+                    ALL_TAG_LABEL -> -3
+                    else -> 0
+                 },
+                show = when(label){
+                    ALL_TAG_LABEL -> false
+                    DEFAULT_TAG_LABEL -> true
+                    else -> true
+                },
+                isCustomSetting = when(label){
+                    ALL_TAG_LABEL -> true
+                    DEFAULT_TAG_LABEL -> false
+                    else -> false
+                },
+                sortId = "",
+                isReverse = false,
+                filterState = emptyMap(),
+            )
+        }
     }
 
 
 
     val isInner: Boolean
         get() = label == ALL_TAG_LABEL || label == DEFAULT_TAG_LABEL
+
+    val isLocal: Boolean
+        get() = type == TYPE_LOCAL
 
 
     val isAll: Boolean

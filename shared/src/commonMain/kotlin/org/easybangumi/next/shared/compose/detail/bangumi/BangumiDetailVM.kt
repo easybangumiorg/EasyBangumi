@@ -5,8 +5,11 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import androidx.paging.cachedIn
 import kotlinx.atomicfu.atomic
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.DataState
@@ -19,10 +22,13 @@ import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.foundation.view_model.StateViewModel
 import org.easybangumi.next.shared.resources.Res
 import org.easybangumi.next.shared.data.bangumi.BgmCharacter
+import org.easybangumi.next.shared.data.bangumi.BgmCollect
 import org.easybangumi.next.shared.data.bangumi.BgmEpisode
 import org.easybangumi.next.shared.data.bangumi.BgmPerson
 import org.easybangumi.next.shared.data.bangumi.BgmReviews
 import org.easybangumi.next.shared.data.bangumi.BgmSubject
+import org.easybangumi.next.shared.data.cartoon.CartoonInfo
+import org.easybangumi.next.shared.data.room.cartoon.dao.CartoonInfoDao
 import org.easybangumi.next.shared.source.case.DetailSourceCase
 import org.koin.core.component.inject
 
@@ -56,6 +62,7 @@ class BangumiDetailVM(
     val isDetailShowAll =  mutableStateOf(false)
     val isTabShowAll = mutableStateOf(false)
 
+    val cartoonInfoDao: CartoonInfoDao by inject()
     val bangumiCase: BangumiCase by inject()
     val detailSourceCase: DetailSourceCase by inject()
     val bangumiDetailBusiness = detailSourceCase.getBangumiDetailBusiness()
@@ -63,6 +70,9 @@ class BangumiDetailVM(
     val subjectRepository = bangumiCase.getSubjectRepository(cartoonIndex)
     val characterRepository = bangumiCase.getCharacterListRepository(cartoonIndex)
     val personRepository = bangumiCase.getPersonListRepository(cartoonIndex)
+
+    val bgmUserDataProvider = bangumiCase.flowUserDataProvider()
+
 
     val detailTabList = DetailTab.entries.toList()
 
@@ -72,9 +82,13 @@ class BangumiDetailVM(
         val characterState: DataState<List<BgmCharacter>> = DataState.none(),
         val personState: DataState<List<BgmPerson>> = DataState.none(),
 
+        val collectionState: DataState<BgmCollect> = DataState.none(),
+        val cartoonInfo: CartoonInfo? = null,
 
         val commentPaging: PagingFlow<BgmReviews>? = null,
         val episodePaging: PagingFlow<BgmEpisode>? = null,
+
+        val hasBgmAccountInfo: Boolean = false,
     )
 
 
@@ -85,16 +99,23 @@ class BangumiDetailVM(
     private val lowPriorityDataInit = atomic(false)
     private val episodeInit = atomic(false)
 
+    private var collectCollectJob: Job? = null
+
     init {
+        // 如果没有来自网络的数据则加载
+        subjectRepository.refreshIfNoneOrCache()
+
+        // bangumi 非登录态相关数据流绑定
+        // 详情 角色 声优
         viewModelScope.launch {
             combine(
                 subjectRepository.flow,
                 characterRepository.flow,
                 personRepository.flow,
             ) { subject, character, person ->
-//                logger.info("combine state: $subject | $character | $person")
                 if (subject.isOk()) {
                     viewModelScope.launch {
+                        logger.info("try init low priority data and episode data")
                         tryInitLowPriorityData()
                         tryInitEpisode()
                     }
@@ -103,19 +124,47 @@ class BangumiDetailVM(
                     it.copy(
                         subjectState = subject,
                         characterState = character,
-                        personState = person
+                        personState = person,
                     )
                 }
             }.collect()
         }
 
-//        subjectRepository.refresh()
-//        characterRepository.refresh()
-//        personRepository.refresh()
+        // bangumi 登录态相关数据流绑定
+        viewModelScope.launch {
+            bgmUserDataProvider.collectLatest { provider ->
+                // provider 为空代表没有登录，直接隐藏 bgm 收藏按钮
+                update {
+                    it.copy(
+                        hasBgmAccountInfo = provider == null
+                    )
+                }
 
+                // bangumi 收藏状态
+                val collectionRepository = provider?.getCollectRepository(cartoonIndex)
+                collectCollectJob?.cancel()
+                collectCollectJob = viewModelScope.launch {
+                    collectionRepository?.flow?.collectLatest { collectDataState ->
+                        update {
+                            it.copy(
+                                collectionState = collectDataState,
+                            )
+                        }
+                    }
+                }
+            }
+        }
 
-//        refreshComment()
-//        refreshEpisodeList()
+        // 本地收藏状态
+        viewModelScope.launch {
+            cartoonInfoDao.flowById(cartoonIndex.source, cartoonIndex.id).collectLatest { info ->
+                update {
+                    it.copy(
+                        cartoonInfo = info,
+                    )
+                }
+            }
+        }
     }
 
     fun loadSubject(cacheAvailableMs : Long = -1) {
@@ -134,11 +183,11 @@ class BangumiDetailVM(
     }
 
     fun loadCharacter() {
-        characterRepository.refresh()
+        characterRepository.refreshIfNone()
     }
 
     fun loadPerson() {
-        personRepository.refresh()
+        personRepository.refreshIfNone()
     }
 
 
@@ -172,7 +221,7 @@ class BangumiDetailVM(
     }
 
     fun tryInitEpisode() {
-        if (episodeInit.compareAndSet(false, update = true)) {
+        if (episodeInit.compareAndSet(expect = false, update = true)) {
             refreshEpisodeList()
         }
     }

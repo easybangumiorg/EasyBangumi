@@ -101,7 +101,7 @@ class BangumiApiImpl(
         return caller.request {
             get {
                 bgmUrl {
-                    path("v0", subjectId, "persons")
+                    path("v0", "subjects", subjectId, "persons")
                     parameters.append("subject_id", subjectId)
                 }
             }.body()
@@ -112,7 +112,7 @@ class BangumiApiImpl(
         return caller.request {
             get {
                 bgmUrl {
-                    path("v0", subjectId, "characters")
+                    path("v0", "subjects", subjectId, "characters")
                     parameters.append("subject_id", subjectId)
                 }
             }.body()

@@ -3,7 +3,6 @@ package org.easybangumi.next.shared.data.bangumi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
-import org.easybangumi.next.shared.source.bangumi.source.BangumiInnerSource
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -34,7 +33,7 @@ data class BgmTrendsSubject(
 fun BgmTrendsSubject.toCartoonCover(): CartoonCover? {
     return CartoonCover(
         id = id?.toString() ?: return null,
-        source = BangumiInnerSource.SOURCE_KEY,
+        source = BangumiConst.BANGUMI_SOURCE_KEY,
         name = nameCn ?: name ?: "",
         coverUrl = image ?: "",
         intro = info.joinToString("/"),

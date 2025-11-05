@@ -1,4 +1,4 @@
-package org.easybangumi.next.shared.cartoon.star
+package org.easybangumi.next.shared.cartoon.collection
 
 import org.easybangumi.next.shared.data.cartoon.CartoonInfo
 import org.easybangumi.next.shared.data.cartoon.FilterWith

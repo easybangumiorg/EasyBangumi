@@ -1,13 +1,15 @@
 package org.easybangumi.next.shared.case
 
+import kotlinx.coroutines.flow.StateFlow
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.DataRepository
+import org.easybangumi.next.shared.bangumi.account.BangumiAccountController
 import org.easybangumi.next.shared.bangumi.data.BangumiDataController
-import org.easybangumi.next.shared.data.cartoon.CartoonIndex
+import org.easybangumi.next.shared.bangumi.data.BangumiUserDataProvider
 import org.easybangumi.next.shared.data.bangumi.BgmCharacter
-import org.easybangumi.next.shared.data.bangumi.BgmCollect
 import org.easybangumi.next.shared.data.bangumi.BgmPerson
 import org.easybangumi.next.shared.data.bangumi.BgmSubject
+import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.source.case.DetailSourceCase
 
 /**
@@ -22,6 +24,7 @@ import org.easybangumi.next.shared.source.case.DetailSourceCase
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 class BangumiCase(
+    private val bangumiAccountController: BangumiAccountController,
     private val bangumiDataController: BangumiDataController,
     private val detailSourceCase: DetailSourceCase,
 ) {
@@ -41,13 +44,18 @@ class BangumiCase(
         return bangumiDataController.getCharacterListRepository(cartoonIndex)
     }
 
-    fun getCollectRepository(cartoonIndex: CartoonIndex): DataRepository<BgmCollect>? {
-        return bangumiDataController.getCollectRepository(cartoonIndex)
+    // 登录态相关数据流
+    fun flowUserDataProvider(): StateFlow<BangumiUserDataProvider?> {
+        return bangumiDataController.userDataProviderFlow
     }
 
     fun coverUrl(cartoonIndex: CartoonIndex): String{
         return detailSourceCase.getBangumiDetailBusiness().runDirect {
             coverUrl(cartoonIndex)
         }
+    }
+
+    fun updateAccountInfo(accountInfo: BangumiAccountController.BangumiAccountInfo) {
+        bangumiAccountController.updateAccountInfo(accountInfo)
     }
 }

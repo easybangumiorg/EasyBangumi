@@ -1,7 +1,10 @@
 package org.easybangumi.next.shared.data.store
 
+import org.easybangumi.next.lib.store.file_helper.json.JsonFileHelper
 import org.easybangumi.next.lib.store.file_helper.json.JsonlFileHelper
 import org.easybangumi.next.lib.utils.pathProvider
+import org.easybangumi.next.shared.data.cartoon.CartoonTag
+import kotlin.reflect.typeOf
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -28,5 +31,10 @@ object StoreProvider {
         )
     }
 
+    val cartoonTag: JsonlFileHelper<CartoonTag> = JsonlFileHelper(
+        folder = pathProvider.getFilePath("store"),
+        name = "collection_tag.jsonl",
+        clazz = CartoonTag::class,
+    )
 
 }
