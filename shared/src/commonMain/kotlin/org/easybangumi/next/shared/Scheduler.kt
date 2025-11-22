@@ -2,6 +2,7 @@ package org.easybangumi.next.shared
 
 import org.easybangumi.next.lib.store.storeModule
 import org.easybangumi.next.shared.bangumi.bangumiModule
+import org.easybangumi.next.shared.cartoon.cartoonModule
 import org.easybangumi.next.shared.case.caseModule
 import org.easybangumi.next.shared.data.dataModule
 import org.easybangumi.next.shared.data.shareDataModule
@@ -33,7 +34,6 @@ object Scheduler {
         if (!isInit) {
             isInit = true
             loadKoinModules(listOf(
-//                pluginModule,
                 sourceModule,
                 storeModule,
                 dataModule,
@@ -43,6 +43,7 @@ object Scheduler {
                 caseModule,
                 shareDataModule,
                 bangumiModule,
+                cartoonModule,
             ))
         }
 

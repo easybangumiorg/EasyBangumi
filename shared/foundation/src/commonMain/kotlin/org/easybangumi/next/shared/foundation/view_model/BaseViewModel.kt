@@ -2,7 +2,6 @@ package org.easybangumi.next.shared.foundation.view_model
 
 import androidx.annotation.CallSuper
 import androidx.lifecycle.ViewModel
-import org.easybangumi.next.shared.foundation.view_model.parent.ParentViewModel
 import org.koin.core.component.KoinComponent
 
 /**
@@ -32,9 +31,6 @@ abstract class BaseViewModel: ViewModel(), KoinComponent {
 
     @CallSuper
     override fun onCleared() {
-        if (this is ParentViewModel<*>) {
-            clearChildren()
-        }
         children.forEach { it.onCleared() }
         super.onCleared()
     }

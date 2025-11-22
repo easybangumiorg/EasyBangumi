@@ -33,6 +33,7 @@ class BangumiInnerSource: InnerSource() {
     override val componentConstructor: Array<() -> Component> = arrayOf(
         ::BangumiDiscoverComponent,
         ::BangumiDetailComponent,
+        ::BangumiCollectComponent,
         ::BangumiSearchComponent
     )
 

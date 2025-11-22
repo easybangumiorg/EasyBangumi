@@ -1,16 +1,15 @@
 package org.easybangumi.next.shared.compose.home.collection
 
+import androidx.compose.foundation.pager.PagerState
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.easybangumi.next.shared.cartoon.collection.CartoonCollectionController
+import org.easybangumi.next.shared.data.bangumi.BangumiConst
 import org.easybangumi.next.shared.data.cartoon.CartoonInfo
 import org.easybangumi.next.shared.data.cartoon.CartoonTag
-import org.easybangumi.next.shared.data.room.cartoon.dao.CartoonInfoDao
 import org.easybangumi.next.shared.foundation.view_model.StateViewModel
 import org.koin.core.component.inject
-import kotlin.toString
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -25,7 +24,6 @@ import kotlin.toString
  */
 class CollectionVM: StateViewModel<CollectionVM.State>(State()) {
 
-    private val cartoonInfoDao: CartoonInfoDao by inject()
     private val collectionController: CartoonCollectionController by inject()
 
     // TODO 接入真正的数据
@@ -33,14 +31,18 @@ class CollectionVM: StateViewModel<CollectionVM.State>(State()) {
         val isLoading: Boolean = true,
         val searchQuery: String? = null,
         val starCount: Int = 0,
-        val curTab: CartoonTag? = null,
+        val curBangumiType: BangumiConst.BangumiCollectType = BangumiConst.collectTypeList.first(),
         val tagList: List<CartoonTag> = emptyList(),
+        val pagerState: PagerState = PagerState { tagList.size },
         val data: Map<CartoonTag, CartoonCollectionController.CollectionData> = emptyMap(),
         val selection: Set<CartoonInfo> = setOf(),
         val hasActiveFilters: Boolean = false,
         val dialog: DialogState? = null
     ) {
         val isFilter = curTab?.isInFilter ?: false
+        val isLocal = curTab?.isLocal ?: false
+        val curTab: CartoonTag?
+            get() = tagList.getOrNull(pagerState.currentPage)
     }
 
     sealed class DialogState {}
@@ -58,6 +60,33 @@ class CollectionVM: StateViewModel<CollectionVM.State>(State()) {
     // 更新
     fun fireUpdate(selection: Set<CartoonInfo>) {}
 
+    init {
+        viewModelScope.launch {
+            collectionController.collectionFlow.collectLatest { cs ->
+
+                update {
+
+                    it.copy(
+                        isLoading = false,
+                        tagList = cs.tagList,
+                        data = cs.collectionDataMap,
+                        pagerState = if (it.pagerState.pageCount != cs.tagList.size) {
+                            PagerState { cs.tagList.size }
+                        } else it.pagerState,
+                        starCount = cs.collectionDataMap.values.sumOf { dd -> dd.localOrNull()?.size ?: 0 }
+                    )
+                }
+            }
+        }
+    }
+
+    fun bangumiChangeType(type: BangumiConst.BangumiCollectType) {
+        update {
+            it.copy(
+                curBangumiType = type
+            )
+        }
+    }
 
     // 多选 =============
 
@@ -158,31 +187,20 @@ class CollectionVM: StateViewModel<CollectionVM.State>(State()) {
     }
     // dialog =====
     fun dialogDeleteSelection() {
-//        _stateFlow.update {
-//            val selection = it.selection
-//            it.copy(dialog = com.heyanle.easybangumi4.ui.main.star.StarViewModel.DialogState.Delete(selection))
-//        }
+
     }
 
 
     fun dialogChangeTag() {
-//        _stateFlow.update {
-//            it.copy(dialog = com.heyanle.easybangumi4.ui.main.star.StarViewModel.DialogState.ChangeTag(it.selection, it.tagList.filter { ! it.isInner }))
-//        }
+
     }
 
     fun dialogMigrateSelect() {
-//        _stateFlow.update {
-//            it.copy(dialog = com.heyanle.easybangumi4.ui.main.star.StarViewModel.DialogState.MigrateSource(it.selection))
-//        }
+
     }
 
     fun dialogProc() {
-//        _stateFlow.update {
-//            it.copy(
-//                dialog = com.heyanle.easybangumi4.ui.main.star.StarViewModel.DialogState.Proc
-//            )
-//        }
+
     }
 
 }

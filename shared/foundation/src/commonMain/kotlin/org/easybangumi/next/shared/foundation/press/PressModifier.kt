@@ -1,7 +1,6 @@
-package org.easybangumi.next.shared.foundation.view_model.parent
+package org.easybangumi.next.shared.foundation.press
 
-import androidx.compose.runtime.Composable
-import org.easybangumi.next.shared.foundation.view_model.ViewModelOwnerMap
+import androidx.compose.ui.Modifier
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -14,13 +13,12 @@ import org.easybangumi.next.shared.foundation.view_model.ViewModelOwnerMap
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-interface ParentViewModel<KEY: Any> {
-
-    val storeMap: ViewModelOwnerMap<KEY>
-
-    @Composable
-    fun child(key: KEY, content: @Composable ()->Unit)
-
-    fun clearChildren()
-
-}
+expect fun Modifier.PressModifier(
+    onPress: () -> Unit,
+    // 长按
+    onLongPress: () -> Unit,
+    // 鼠标右键， 默认触发长按行为
+    onRightPress: () -> Unit = {
+        onLongPress()
+    },
+): Modifier

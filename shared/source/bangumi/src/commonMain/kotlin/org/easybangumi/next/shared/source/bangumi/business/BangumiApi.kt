@@ -71,11 +71,19 @@ interface BangumiApi {
     fun getCollectList(
         username: String,
         token: String,
-        type: String,
+        type: Int,
         offset: Int = 0,
         limit: Int = 100,
     ): Deferred<BgmRsp<BgmCollectRsp>>
 
+    // only change type
+    // post /v0/users/{username}/collections/{subject_id}
+    fun changeCollectType(
+        username: String,
+        token: String,
+        subjectId: String,
+        type: Int,
+    ): Deferred<BgmRsp<String?>>
 
 
     // ====== embed proxy api =====

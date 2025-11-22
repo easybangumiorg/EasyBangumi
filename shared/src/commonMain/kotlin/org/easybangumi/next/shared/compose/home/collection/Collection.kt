@@ -1,18 +1,8 @@
 package org.easybangumi.next.shared.compose.home.collection
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -24,25 +14,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.unit.dp
 import org.easybangumi.next.shared.LocalNavController
+import org.easybangumi.next.shared.cartoon.collection.CartoonCollectionController
+import org.easybangumi.next.shared.cartoon.displayName
 import org.easybangumi.next.shared.compose.home.HomeVM
-import org.easybangumi.next.shared.data.cartoon.CartoonInfo
+import org.easybangumi.next.shared.data.bangumi.BangumiConst
 import org.easybangumi.next.shared.foundation.InnerBackHandler
 import org.easybangumi.next.shared.foundation.TabPage
-import org.easybangumi.next.shared.foundation.cartoon.CartoonCoverCard
-import org.easybangumi.next.shared.foundation.elements.EmptyElements
 import org.easybangumi.next.shared.foundation.selection.SelectionTopAppBar
 import org.easybangumi.next.shared.foundation.stringRes
 import org.easybangumi.next.shared.foundation.view_model.vm
 import org.easybangumi.next.shared.navigateToDetailOrMedia
 import org.easybangumi.next.shared.resources.Res
-import kotlin.text.get
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -110,9 +94,7 @@ fun Collection(
         }
     }
 
-    val pagerState = rememberPagerState {
-        state.tagList.size
-    }
+    val pagerState = state.pagerState
 
     Column {
         AnimatedContent(targetState = state.selection.isNotEmpty(), label = "") { isSelectionMode ->
@@ -133,31 +115,25 @@ fun Collection(
                 })
             } else {
                 StarTopAppBar(
-                    //scrollBehavior = scrollBehavior,
+                    scrollBehavior = scrollBehavior,
                     focusRequester = focusRequester,
                     isSearch = state.searchQuery != null,
                     isFilter = state.isFilter,
                     text = state.searchQuery ?: "",
                     onTextChange = {
-//                        collectionVM.onSearch(it)
-
                     },
                     starNum = state.starCount,
                     onSearchClick = {
-//                        collectionVM.onSearch("")
                     },
                     onUpdate = {
-//                        collectionVM.onUpdate()
                     },
                     onSearch = {
-//                        collectionVM.onSearch(it)
 
                     },
                     onFilterClick = {
                         collectionVM.dialogProc()
                     },
                     onSearchExit = {
-//                        collectionVM.onSearch(null)
 
                     })
             }
@@ -165,21 +141,61 @@ fun Collection(
 
         if (state.tagList.size == 1) {
             val tab = state.tagList.firstOrNull()
-            val list = state.data[tab]?.localOrNull() ?: emptyList()
-            StarList(
-                nestedScrollConnection = scrollBehavior.nestedScrollConnection,
-                starCartoon = list, selectionSet = state.selection, onClick = {
-                    if (state.selection.isEmpty()) {
-//                        nav.navigationDetailed(it.id, it.url, it.source)
-                        nav.navigateToDetailOrMedia(it.toCartoonIndex(), it.toCartoonCover())
-                    } else {
-                        collectionVM.onSelectionChange(it)
+            val collectionData = tab?.let { state.data[it] }
+            when (collectionData) {
+                is CartoonCollectionController.CollectionData.BangumiCollection -> {
+                    var bangumiSelectionType by remember(tab, collectionData.typeList) {
+                        mutableStateOf(
+                            collectionData.typeList.firstOrNull() ?: BangumiConst.collectTypeList.first()
+                        )
                     }
-                }, onLongPress = {
-                    collectionVM.onSelectionLongPress(it)
-                }, onRefresh = {
-//                    collectionVM.onUpdate()
-                })
+                    LaunchedEffect(collectionData.typeList) {
+                        if (collectionData.typeList.isNotEmpty() && bangumiSelectionType !in collectionData.typeList) {
+                            bangumiSelectionType = collectionData.typeList.first()
+                        }
+                    }
+                    BangumiCollectionList(
+                        nestedScrollConnection = scrollBehavior.nestedScrollConnection,
+                        data = collectionData,
+                        selectionType = bangumiSelectionType,
+                        onTypeSelected = {
+                            bangumiSelectionType = it
+                        },
+                        selectionSet = state.selection,
+                        onRefresh = {},
+                        onClick = {
+                            if (state.selection.isEmpty()) {
+                                nav.navigateToDetailOrMedia(it.toCartoonIndex(), it.toCartoonCover())
+                            } else {
+                                collectionVM.onSelectionChange(it)
+                            }
+                        },
+                        onLongPress = {
+                            collectionVM.onSelectionLongPress(it)
+                        }
+                    )
+                }
+                else -> {
+                    val list = collectionData?.localOrNull() ?: emptyList()
+                    LocalStarList(
+                        nestedScrollConnection = scrollBehavior.nestedScrollConnection,
+                        starCartoon = list,
+                        selectionSet = state.selection,
+                        onClick = {
+                            if (state.selection.isEmpty()) {
+                                nav.navigateToDetailOrMedia(it.toCartoonIndex(), it.toCartoonCover())
+                            } else {
+                                collectionVM.onSelectionChange(it)
+                            }
+                        },
+                        onLongPress = {
+                            collectionVM.onSelectionLongPress(it)
+                        },
+                        onRefresh = {
+                        }
+                    )
+                }
+            }
         } else {
             TabPage(
                 pagerState = pagerState,
@@ -194,7 +210,7 @@ fun Collection(
                     Row {
                         val tab = state.tagList[i]
                         val starNum = state.data[tab]?.localOrNull()?.size
-                        Text(text = tab.label)
+                        Text(text = stringRes(tab.displayName()))
                         if (starNum != null) {
                             Badge(
                                 containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -207,20 +223,58 @@ fun Collection(
 
                 }) {
                 val tab = state.tagList[it]
-                val list = state.data[tab]?.localOrNull() ?: emptyList()
-                StarList(
-                    //nestedScrollConnection = scrollBehavior.nestedScrollConnection,
-                    starCartoon = list, selectionSet = state.selection, onClick = {
-                        if (state.selection.isEmpty()) {
-                            nav.navigateToDetailOrMedia(it.toCartoonIndex(), it.toCartoonCover())
-                        } else {
-                            collectionVM.onSelectionChange(it)
-                        }
-                    }, onLongPress = {
-                        collectionVM.onSelectionLongPress(it)
-                    }, onRefresh = {
+                val collectionData = state.data[tab]
+                when (collectionData) {
+                    is CartoonCollectionController.CollectionData.BangumiCollection -> {
+//                        var bangumiSelectionType by remember(tab, collectionData.typeList) {
+//                            mutableStateOf(
+//                                collectionData.typeList.firstOrNull() ?: BangumiConst.collectTypeList.first()
+//                            )
+//                        }
+//                        LaunchedEffect(collectionData.typeList) {
+//                            if (collectionData.typeList.isNotEmpty() && bangumiSelectionType !in collectionData.typeList) {
+//                                bangumiSelectionType = collectionData.typeList.first()
+//                            }
+//                        }
+                        BangumiCollectionList(
+                            data = collectionData,
+                            selectionType = state.curBangumiType,
+                            onTypeSelected = { collectionVM.bangumiChangeType(it) },
+                            selectionSet = state.selection,
+                            onRefresh = { },
+                            onClick = {
+                                if (state.selection.isEmpty()) {
+                                    nav.navigateToDetailOrMedia(it.toCartoonIndex(), it.toCartoonCover())
+                                } else {
+                                    collectionVM.onSelectionChange(it)
+                                }
+                            },
+                            onLongPress = {
+                                collectionVM.onSelectionLongPress(it)
+                            }
+                        )
+                    }
+                    else -> {
+                        val list = collectionData?.localOrNull() ?: emptyList()
+                        LocalStarList(
+                            starCartoon = list,
+                            selectionSet = state.selection,
+                            onClick = {
+                                if (state.selection.isEmpty()) {
+                                    nav.navigateToDetailOrMedia(it.toCartoonIndex(), it.toCartoonCover())
+                                } else {
+                                    collectionVM.onSelectionChange(it)
+                                }
+                            },
+                            onLongPress = {
+                                collectionVM.onSelectionLongPress(it)
+                            },
+                            onRefresh = {
 
-                    })
+                            }
+                        )
+                    }
+                }
             }
         }
 
@@ -246,7 +300,8 @@ fun StarTopAppBar(
     onSearchExit: () -> Unit,
 ) {
 
-    TopAppBar(colors = TopAppBarDefaults.topAppBarColors(scrolledContainerColor = MaterialTheme.colorScheme.surface),
+    TopAppBar(
+//        colors = TopAppBarDefaults.topAppBarColors(scrolledContainerColor = MaterialTheme.colorScheme.surface),
         scrollBehavior = scrollBehavior,
         navigationIcon = {
             if (isSearch) {
@@ -393,95 +448,3 @@ fun CollectionSelectionBottomBar(
 
 
 }
-
-@Composable
-fun StarList(
-    nestedScrollConnection: NestedScrollConnection? = null,
-    starCartoon: List<CartoonInfo>,
-    selectionSet: Set<CartoonInfo>,
-    isHapticFeedback: Boolean = true,
-    onRefresh: () -> Unit,
-    onClick: (CartoonInfo) -> Unit,
-    onLongPress: (CartoonInfo) -> Unit,
-) {
-    val lazyGridState = rememberLazyGridState()
-    val haptic = LocalHapticFeedback.current
-    val scope = rememberCoroutineScope()
-    val refreshing = remember {
-        mutableStateOf(false)
-    }
-//    val state = rememberPullRefreshState(refreshing.value, onRefresh = {
-//        scope.launch {
-//            refreshing.value = true
-//            onRefresh()
-//            delay(500)
-//            refreshing.value = false
-//        }
-//
-//    })
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-//            .pullRefresh(state)
-    ) {
-        LazyVerticalGrid(
-            modifier = Modifier
-                .fillMaxSize()
-                .run {
-                    if (nestedScrollConnection != null) {
-                        nestedScroll(nestedScrollConnection)
-                    } else {
-                        this
-                    }
-                },
-            state = lazyGridState,
-            columns = GridCells.Adaptive(100.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
-        ) {
-            if (starCartoon.isEmpty()) {
-                item(span = {
-                    // LazyGridItemSpanScope:
-                    // maxLineSpan
-                    GridItemSpan(maxLineSpan)
-                }) {
-                    EmptyElements(
-                        modifier = Modifier.height(256.dp),
-
-                    )
-                }
-            }
-            items(starCartoon) { info ->
-                CartoonCoverCard(
-                    modifier = Modifier,
-                    model = info.coverUrl,
-                    name = info.name,
-                    onClick = {
-                        onClick.invoke(info)
-                    },
-                    onLongPress = {
-                        if (isHapticFeedback) {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        }
-                        onLongPress(info)
-                    }
-                )
-            }
-        }
-//        PullRefreshIndicator(
-//            refreshing.value,
-//            state,
-//            Modifier.align(Alignment.TopCenter),
-//            backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
-//            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-//        )
-//        FastScrollToTopFab(listState = lazyGridState)
-    }
-
-
-}
-
-
-

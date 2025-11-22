@@ -26,4 +26,10 @@ val dataModule = module {
         get<CartoonDatabase>().cartoonInfoDao()
     }
 
+    single {
+        CartoonInfoCase(
+            cartoonInfoDao = get(),
+        )
+    }
+
 }

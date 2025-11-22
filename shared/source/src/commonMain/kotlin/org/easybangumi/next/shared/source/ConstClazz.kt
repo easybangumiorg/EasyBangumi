@@ -1,5 +1,6 @@
 package org.easybangumi.next.shared.source
 
+import org.easybangumi.next.shared.source.api.component.collect.CollectComponent
 import org.easybangumi.next.shared.source.api.component.detail.DetailComponent
 import org.easybangumi.next.shared.source.api.component.discover.DiscoverComponent
 import org.easybangumi.next.shared.source.api.component.event.EventComponent
@@ -40,6 +41,7 @@ object ConstClazz {
         PrefComponent::class,
         DetailComponent::class,
         EventComponent::class,
+        CollectComponent::class,
         SearchComponent::class, // 需要在插件中实现
     )
 

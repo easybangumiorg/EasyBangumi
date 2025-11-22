@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--monitorInterval属性值（秒数）为一个非零值来让Log4j每隔指定的秒数来重新读取配置文件，可以用来动态应用Log4j配置-->
+<Configuration status="WARN" monitorInterval="30">
+    <!--用来自定义一些变量-->
+    <Properties>
+        <!--变量定义-->
+        <Property name="Pattern" value="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+    </Properties>
+    <!--使用Appenders元素可以将日志事件数据写到各种目标位置-->
+    <Appenders>
+        <!-- 默认打印到控制台 -->
+        <Console name="ConsoleAppend" target="SYSTEM_OUT">
+            <!-- 默认打印格式 -->
+            <PatternLayout pattern="${Pattern}"/>
+        </Console>
+<!--        &lt;!&ndash; 打印到日志文件上 &ndash;&gt;-->
+<!--        <File name="FileAppend" fileName="${dir_url}/fileLog.log" bufferedIO="true" immediateFlush="true">-->
+<!--            <PatternLayout>-->
+<!--                <pattern>${myPattern}</pattern>-->
+<!--            </PatternLayout>-->
+<!--        </File>-->
+    </Appenders>
+    <!--定义logger，只有定义了logger并引入的appender，appender才会生效-->
+    <Loggers>
+        <!-- 设置日志级别为 DEBUG 以显示调试信息 -->
+        <Root level="DEBUG">
+            <AppenderRef ref="ConsoleAppend"/>
+        </Root>
+    </Loggers>
+</Configuration>

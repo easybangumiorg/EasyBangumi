@@ -70,6 +70,18 @@ sealed class BgmRsp<T> {
         }
     }
 
+    fun wrapDataState(): DataState<BgmRsp<T>> {
+        return when (this) {
+            is Success -> DataState.Ok(this)
+            is Error -> {
+                DataState.Error(
+                    errorMsg = "code: $code msg: ${title ?: description ?: details ?: raw?.substring(0, 100.coerceAtMost(raw.length)) ?: "Unknown error"}" ,
+                    throwable = throwable,
+                )
+            }
+        }
+    }
+
 
 }
 

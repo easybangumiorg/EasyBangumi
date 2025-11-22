@@ -1,5 +1,9 @@
 package org.easybangumi.next.shared.cartoon
 
+import org.easybangumi.next.shared.cartoon.collection.CartoonBangumiCollectionController
+import org.easybangumi.next.shared.cartoon.collection.CartoonCollectionController
+import org.koin.dsl.module
+
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
  *
@@ -11,5 +15,12 @@ package org.easybangumi.next.shared.cartoon
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-class CartoonModule {
+val cartoonModule = module {
+    single {
+        CartoonBangumiCollectionController(get())
+    }
+
+    single {
+        CartoonCollectionController(get(), get())
+    }
 }

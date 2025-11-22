@@ -6,7 +6,246 @@
 
 其中 shared 为树形结构，并且 shared 子模块只能被其他 shared 子模块或者 shared 根模块依赖
 
-# Ayala 的奇思妙想
+# 项目架构（Cursor 生成）
+
+架构分析如下：
+
+## EasyBangumi 项目架构分析
+
+### 一、整体架构概述
+
+EasyBangumi 是一个 Kotlin Multiplatform (KMP) 项目，支持 Android 和 Desktop。采用分层模块化设计。
+
+### 二、三层架构结构
+
+```
+┌─────────────────────────────────────┐
+│          app 层（平台壳）             │
+│  ┌──────────┐    ┌──────────┐      │
+│  │ Android  │    │ Desktop  │      │
+└──┼──────────┼────┼──────────┼──────┘
+   └──────────┘    └──────────┘
+         │               │
+         └───────┬───────┘
+                 │
+┌────────────────┼─────────────────────┐
+│      shared 层（业务逻辑核心）         │
+│  ┌──────────────────────────────┐  │
+│  │ shared (根模块)               │  │
+│  ├── source (播放源)             │  │
+│  ├── data (数据模型)             │  │
+│  ├── foundation (基础组件)        │  │
+│  ├── theme (主题)                │  │
+│  ├── ktor (网络)                 │  │
+│  └── ...                         │  │
+└────────────────┼─────────────────────┘
+                 │
+┌────────────────┼─────────────────────┐
+│        lib 层（底层工具库）            │
+│  ┌──────────┐  ┌──────────┐        │
+│  │ store    │  │ utils    │        │
+│  │ unifile  │  │ logger   │        │
+│  │ webview  │  │ ...      │        │
+└──┴──────────┴──┴──────────┴────────┘
+```
+
+### 三、模块详细说明
+
+#### 1. app 层（平台特化）
+
+职责：平台入口和平台特定实现
+
+模块：
+- `app/android`: Android 应用入口
+  - `EasyApplication.kt`: Application 类
+  - `EasyActivity.kt`: 主 Activity
+  - 依赖 Android 特定库（ExoPlayer 等）
+- `app/desktop`: Desktop 应用入口
+  - `Main.kt`: 主函数
+  - 依赖 Desktop 特定库（VLC 等）
+
+#### 2. shared 层（业务核心）
+
+采用树形依赖结构：shared 子模块只能被其他 shared 子模块或 shared 根模块依赖。
+
+核心模块：
+
+##### 2.1 shared (根模块)
+- 位置: `shared/src/commonMain/`
+- 职责：UI 和业务编排
+- 主要组件：
+  - `ComposeApp.kt`: Compose 应用入口
+  - `Router.kt`: 导航路由
+  - `Scheduler.kt`: 模块初始化调度器
+  - UI 组件：`compose/home`, `compose/media`, `compose/search` 等
+
+##### 2.2 shared/source (播放源)
+- 职责：播放源抽象与实现
+- 结构：
+  ```
+  source/
+  ├── api/          # 源接口定义
+  ├── bangumi/      # Bangumi 元数据源
+  ├── inner/        # 内置源实现
+  └── core/         # 源核心逻辑
+  ```
+- 源类型：
+  - Meta 源（如 Bangumi）：提供元数据、搜索、推荐
+  - 播放源：提供搜索和播放
+  - 加载方式：Inner（内置源码）或 JavaScriptPlugin（JS 插件）
+
+##### 2.3 shared/data
+- 职责：数据模型和数据库
+- 包含：Cartoon、Episode、PlayInfo 等实体
+
+##### 2.4 shared/foundation
+- 职责：基础功能组件
+- 包含：平台适配、通用工具等
+
+##### 2.5 shared/ktor
+- 职责：HTTP 客户端封装
+- 特性：统一 HttpClient 配置、Cookie 管理
+
+##### 2.6 shared/platform
+- 职责：平台信息抽象
+- 提供：`Platform` 接口（isDebug、versionCode 等）
+
+##### 2.7 其他模块
+- `shared/theme`: 主题系统
+- `shared/preference`: 偏好设置
+- `shared/playcon`: 播放控制
+- `shared/scheme`: URI Scheme
+
+#### 3. lib 层（底层工具）
+
+##### 3.1 lib/store
+- 职责：文件存储抽象
+- 特性：跨平台文件读写、序列化存储
+- 核心：`FileHelper` 接口、`AbsFileHelper` 实现
+
+##### 3.2 lib/utils
+- 职责：通用工具类
+- 提供：协程提供者、路径提供者等
+
+##### 3.3 lib/unifile
+- 职责：统一文件系统抽象
+- 特性：跨平台文件访问
+
+##### 3.4 lib/webview
+- 职责：WebView 抽象
+- 实现：JCEF (Desktop)、WebKit (iOS)、Android WebView
+
+##### 3.5 logger
+- 职责：日志系统
+- 特性：跨平台日志统一接口
+
+#### 4. libplayer（播放器抽象）
+
+```
+libplayer/
+├── api/          # 播放器接口定义
+├── exoplayer/    # Android ExoPlayer 实现
+└── vlcj/         # Desktop VLC 实现
+```
+
+#### 5. javascript（JS 运行时）
+
+```
+javascript/
+├── rhino/        # Rhino JS 引擎（JVM）
+└── quickjskt/    # QuickJS 引擎（跨平台）
+```
+
+### 四、依赖注入架构
+
+使用 Koin 进行依赖注入：
+
+#### 初始化流程：
+
+1. 平台初始化（`Android.kt` 或 `Desktop.kt`）
+   ```kotlin
+   - 启动 Koin
+   - 注册 Platform 实现
+   - 注册平台特定组件
+   ```
+
+2. 业务模块初始化（`Scheduler.onInit()`）
+   ```kotlin
+   - sourceModule      # 源管理
+   - storeModule       # 存储
+   - dataModule        # 数据
+   - themeModule       # 主题
+   - preferenceModule  # 偏好
+   - ktorModule        # 网络
+   - caseModule        # 用例
+   - bangumiModule     # Bangumi
+   - cartoonModule     # 卡通
+   ```
+
+3. 源级初始化（`InnerComponentBundle`）
+   - 每个源拥有独立的 Koin 实例
+   - 动态加载源组件
+
+### 五、核心设计模式
+
+1. 依赖倒置：通过接口抽象平台差异
+2. 模块化：清晰的模块边界和依赖规则
+3. 插件化：支持 JavaScript 插件扩展
+4. 分层架构：app → shared → lib
+5. 依赖注入：Koin 管理对象生命周期
+
+### 六、跨平台实现策略
+
+1. Expect/Actual 机制
+   - `Platform` 接口：平台信息抽象
+   - `logger`: 日志平台实现
+   - 文件系统：通过 `unifile` 统一
+
+2. 编译时配置
+   - `buildLogic/easy_config`: 自动生成 `BuildConfig`（包含 `IS_DEBUG`）
+   - 根据构建类型生成不同配置
+
+3. 条件依赖
+   - Android: ExoPlayer
+   - Desktop: VLC
+   - 通过 `build.gradle.kts` 配置平台特定依赖
+
+### 七、数据流
+
+```
+用户操作 
+  ↓
+Compose UI 
+  ↓
+ViewModel / Controller 
+  ↓
+Source (播放源) 
+  ↓
+Ktor (网络请求) / Store (本地存储)
+  ↓
+数据返回 → UI 更新
+```
+
+### 八、关键特性
+
+1. 多源支持：可同时使用多个播放源和元数据源
+2. 插件化架构：JS 插件扩展功能
+3. 统一数据模型：跨源统一数据接口
+4. 离线支持：本地缓存和存储
+5. 跨平台 UI：Compose Multiplatform
+
+### 九、构建系统
+
+- Gradle Kotlin DSL
+- 版本目录：`gradle/libs.version.toml`
+- 自定义插件：`buildLogic/` 下
+  - `EasyLibBuild`: 库构建插件
+  - `EasyConfig`: 配置生成插件
+
+整体架构清晰，模块职责明确，便于维护和扩展。
+
+
+# Ayala 的奇思妙想（纯天马行空）
 ## 功能框图
 
 ```mermaid

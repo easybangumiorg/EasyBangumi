@@ -62,6 +62,10 @@ class BangumiBusiness(
     }
     private val proxy = BangumiEmbedProxy(config = bangumiConfig)
 
+    private val json = Json {
+        ignoreUnknownKeys = !platformInformation.isDebug
+    }
+
     @OptIn(InternalSerializationApi::class)
     private val ktorBangumiPlugin by lazy {
         createClientPlugin("bangumi") {
@@ -80,7 +84,7 @@ class BangumiBusiness(
                 val code = response.status.value
                 val body = response.bodyAsText()
                 if (code !in 200..299) {
-                    val jsonObj = Json.parseToJsonElement(body)
+                    val jsonObj = json.parseToJsonElement(body)
                     return@transformResponseBody BgmRsp.Error<Any?>(
                         code = code,
                         title = runCatching { jsonObj.jsonObject["title"]?.toString() }.getOrNull(),
@@ -94,7 +98,7 @@ class BangumiBusiness(
 
                     val genericType = firstGenericType ?: return@transformResponseBody null
                     val kSerializer = serializer(genericType)
-                    val data = Json.decodeFromString(kSerializer, body)
+                    val data = json.decodeFromString(kSerializer, body)
 
                     return@transformResponseBody BgmRsp.Success(
                         code = code,
@@ -132,8 +136,10 @@ class BangumiBusiness(
                 try {
                     httpClient.block()
                 } catch (e: BgmNetException) {
+                    e.printStackTrace()
                     e.rsp as BgmRsp<T>
                 } catch (e: Exception) {
+                    e.printStackTrace()
                     BgmRsp.Error<T>(
                         code = BgmRsp.Error.INNER_ERROR_CODE,
                         title = "网络错误",

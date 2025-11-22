@@ -24,6 +24,7 @@ import org.easybangumi.next.shared.debug.player.PlayerDebug
 import org.easybangumi.next.shared.debug.shimmer.ShimmerDebug
 import org.easybangumi.next.shared.debug.webview.WebViewDebug
 import kotlinx.serialization.Serializable
+import org.easybangumi.next.shared.debug.bangumi.BangumiDebug
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -46,6 +47,7 @@ enum class DebugPage(
     COLOR("Color Debug"),
     WEB_VIEW("WebView Debug"),
     MEDIA_RADAR("Media Radar Debug"),
+    BANGUMI("Bangumi Debug"),
 }
 
 class DebugScope (
@@ -77,6 +79,9 @@ fun DebugHost(
                 }
                 DebugPage.MEDIA_RADAR -> {
                     MediaRadarDebug()
+                }
+                DebugPage.BANGUMI -> {
+                    BangumiDebug()
                 }
             }
         }

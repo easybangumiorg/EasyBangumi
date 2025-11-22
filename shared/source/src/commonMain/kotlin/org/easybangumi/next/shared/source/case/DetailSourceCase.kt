@@ -32,6 +32,6 @@ class DetailSourceCase(
     fun getBangumiCollectBusiness(): ComponentBusiness<BangumiCollectComponent> {
         return (innerSourceProvider.bangumiComponentBundle.getBusiness(
             CollectComponent::class,
-        ) as? ComponentBusiness<BangumiCollectComponent>) ?: throw IllegalStateException("BangumiDetailComponent not found")
+        ) as? ComponentBusiness<BangumiCollectComponent>) ?: throw IllegalStateException("BangumiCollectComponent not found")
     }
 }

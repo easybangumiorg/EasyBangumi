@@ -1,21 +1,17 @@
 package org.easybangumi.next.shared.source.bangumi.source
 
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.EasyPagingSource
 import org.easybangumi.next.lib.utils.PagingFrame
 import org.easybangumi.next.lib.utils.map
 import org.easybangumi.next.shared.data.bangumi.BgmCollect
-import org.easybangumi.next.shared.data.bangumi.BgmReviews
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.source.api.component.BaseComponent
 import org.easybangumi.next.shared.source.api.component.collect.CollectComponent
 import org.easybangumi.next.shared.source.bangumi.business.BangumiApi
 import org.easybangumi.next.shared.source.bangumi.model.BgmRsp
-import org.easybangumi.next.shared.source.bangumi.source.BangumiDetailComponent.EpisodeListPagingSource
 import org.koin.core.component.inject
-import kotlin.Pair
 import kotlin.getValue
 
 /**
@@ -48,7 +44,7 @@ class BangumiCollectComponent: CollectComponent, BaseComponent() {
         private val bangumiApi: BangumiApi,
         private val username: String,
         private val token: String,
-        private val type: String,
+        private val type: Int,
     ) : EasyPagingSource<BgmCollect> {
         override val initKey: String = "1"
 
@@ -71,7 +67,7 @@ class BangumiCollectComponent: CollectComponent, BaseComponent() {
     fun createEpisodePagingSource(
         username: String,
         token: String,
-        type: String,
+        type: Int,
     ): CollectionsPagingSource {
         return CollectionsPagingSource(api, username, token, type)
     }
@@ -80,6 +76,20 @@ class BangumiCollectComponent: CollectComponent, BaseComponent() {
         if (cartoonIndex.source != BangumiInnerSource.SOURCE_KEY) {
             throw IllegalArgumentException("BangumiDetailComponent only supports Bangumi CartoonIndex")
         }
+    }
+
+    suspend fun changeCollectType(
+        username: String,
+        token: String,
+        type: String,
+        subjectId: String,
+    ): DataState<BgmRsp<String?>> {
+        return source.scope.async {api.changeCollectType(
+            username = username,
+            token = token,
+            subjectId = subjectId,
+            type = type.toIntOrNull() ?: 0,
+        ).await().wrapDataState()}.await()
     }
 
 

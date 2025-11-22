@@ -4,6 +4,8 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.get
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
 import io.ktor.http.URLBuilder
 import io.ktor.http.path
 import kotlinx.coroutines.Deferred
@@ -148,7 +150,7 @@ class BangumiApiImpl(
     override fun getCollectList(
         username: String,
         token: String,
-        type: String,
+        type: Int,
         offset: Int,
         limit: Int
     ): Deferred<BgmRsp<BgmCollectRsp>> {
@@ -156,7 +158,7 @@ class BangumiApiImpl(
             get {
                 bgmUrl {
                     path("v0", "users", username, "collections")
-                    parameters.append("type", type)
+                    parameters.append("type", type.toString())
                     parameters.append("offset", offset.toString())
                     parameters.append("limit", limit.toString())
                     headers.append("Authorization", "Bearer $token")
@@ -165,6 +167,17 @@ class BangumiApiImpl(
         }
     }
 
+    override fun changeCollectType(username: String, token: String, subjectId: String, type: Int): Deferred<BgmRsp<String?>> {
+        return caller.request {
+            post {
+                bgmUrl {
+                    path("v0", "users", username, "collections", subjectId)
+                    headers.append("Authorization", "Bearer $token")
+                }
+                setBody("{\"type\": $type}")
+            }.body()
+        }
+    }
     override fun getTrends(page: Int, from: BangumiApi.TrendsFrom): Deferred<BgmRsp<List<BgmTrendsSubject>>> {
         return caller.request {
             get {

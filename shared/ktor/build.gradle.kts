@@ -34,6 +34,9 @@ kotlin {
             implementation(projects.lib.utils)
             implementation(projects.lib.store)
             implementation(projects.lib.unifile)
+
+            implementation(projects.logger)
+            implementation(libs.ktor.client.logging)
         }
 
         jvmMain.dependencies {

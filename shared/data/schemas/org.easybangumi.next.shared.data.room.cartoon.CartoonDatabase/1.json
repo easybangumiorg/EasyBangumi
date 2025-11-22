@@ -1,0 +1,200 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "49032fee8c64d53dacc7f73669262c5f",
+    "entities": [
+      {
+        "tableName": "CartoonInfo",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`fromId` TEXT NOT NULL, `fromSourceKey` TEXT NOT NULL, `name` TEXT NOT NULL, `coverUrl` TEXT NOT NULL, `detailedUrl` TEXT NOT NULL, `isShowLine` INTEGER NOT NULL, `sourceName` TEXT NOT NULL, `reversal` INTEGER NOT NULL, `sortByKey` TEXT NOT NULL, `playLineString` TEXT NOT NULL, `lastUpdateTime` INTEGER NOT NULL, `tagsIdListString` TEXT NOT NULL, `starTime` INTEGER NOT NULL, `pinTime` INTEGER NOT NULL, `lastPlaySourceId` TEXT NOT NULL, `lastPlaySourceKey` TEXT NOT NULL, `lastHistoryTime` INTEGER NOT NULL, `lastHistoryPlayLineListJson` TEXT NOT NULL, `lastLineId` TEXT NOT NULL, `lastLineIndex` INTEGER NOT NULL, `lastEpisodeId` TEXT NOT NULL, `lastEpisodeIndex` INTEGER NOT NULL, `lastEpisodeOrder` INTEGER NOT NULL, `lastEpisodeNum` INTEGER NOT NULL, `lastEpisodeLabel` TEXT NOT NULL, `lastProcessTime` INTEGER NOT NULL, `fromSourceExt` TEXT NOT NULL, `playSourceExt` TEXT NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY(`fromId`, `fromSourceKey`))",
+        "fields": [
+          {
+            "fieldPath": "fromId",
+            "columnName": "fromId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fromSourceKey",
+            "columnName": "fromSourceKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "coverUrl",
+            "columnName": "coverUrl",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "detailedUrl",
+            "columnName": "detailedUrl",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isShowLine",
+            "columnName": "isShowLine",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceName",
+            "columnName": "sourceName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reversal",
+            "columnName": "reversal",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sortByKey",
+            "columnName": "sortByKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "playLineString",
+            "columnName": "playLineString",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastUpdateTime",
+            "columnName": "lastUpdateTime",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tagsIdListString",
+            "columnName": "tagsIdListString",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "starTime",
+            "columnName": "starTime",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pinTime",
+            "columnName": "pinTime",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastPlaySourceId",
+            "columnName": "lastPlaySourceId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastPlaySourceKey",
+            "columnName": "lastPlaySourceKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastHistoryTime",
+            "columnName": "lastHistoryTime",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastHistoryPlayLineListJson",
+            "columnName": "lastHistoryPlayLineListJson",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastLineId",
+            "columnName": "lastLineId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastLineIndex",
+            "columnName": "lastLineIndex",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastEpisodeId",
+            "columnName": "lastEpisodeId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastEpisodeIndex",
+            "columnName": "lastEpisodeIndex",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastEpisodeOrder",
+            "columnName": "lastEpisodeOrder",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastEpisodeNum",
+            "columnName": "lastEpisodeNum",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastEpisodeLabel",
+            "columnName": "lastEpisodeLabel",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastProcessTime",
+            "columnName": "lastProcessTime",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fromSourceExt",
+            "columnName": "fromSourceExt",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "playSourceExt",
+            "columnName": "playSourceExt",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createTime",
+            "columnName": "createTime",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "fromId",
+            "fromSourceKey"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '49032fee8c64d53dacc7f73669262c5f')"
+    ]
+  }
+}

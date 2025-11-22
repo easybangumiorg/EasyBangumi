@@ -31,10 +31,12 @@ object StoreProvider {
         )
     }
 
-    val cartoonTag: JsonlFileHelper<CartoonTag> = JsonlFileHelper(
-        folder = pathProvider.getFilePath("store"),
-        name = "collection_tag.jsonl",
-        clazz = CartoonTag::class,
-    )
+    val cartoonTag: JsonlFileHelper<CartoonTag> by lazy {
+        JsonlFileHelper(
+            folder = pathProvider.getFilePath("store"),
+            name = "collection_tag.jsonl",
+            clazz = CartoonTag::class,
+        )
+    }
 
 }

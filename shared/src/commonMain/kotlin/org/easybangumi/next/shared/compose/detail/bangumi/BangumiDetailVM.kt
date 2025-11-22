@@ -5,11 +5,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import androidx.paging.cachedIn
 import kotlinx.atomicfu.atomic
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.DataState
@@ -18,17 +14,12 @@ import org.easybangumi.next.lib.utils.ResourceOr
 import org.easybangumi.next.lib.utils.newPagingFlow
 import org.easybangumi.next.shared.RouterPage
 import org.easybangumi.next.shared.case.BangumiCase
+import org.easybangumi.next.shared.data.CartoonInfoCase
+import org.easybangumi.next.shared.data.bangumi.*
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
+import org.easybangumi.next.shared.data.cartoon.CartoonInfo
 import org.easybangumi.next.shared.foundation.view_model.StateViewModel
 import org.easybangumi.next.shared.resources.Res
-import org.easybangumi.next.shared.data.bangumi.BgmCharacter
-import org.easybangumi.next.shared.data.bangumi.BgmCollect
-import org.easybangumi.next.shared.data.bangumi.BgmEpisode
-import org.easybangumi.next.shared.data.bangumi.BgmPerson
-import org.easybangumi.next.shared.data.bangumi.BgmReviews
-import org.easybangumi.next.shared.data.bangumi.BgmSubject
-import org.easybangumi.next.shared.data.cartoon.CartoonInfo
-import org.easybangumi.next.shared.data.room.cartoon.dao.CartoonInfoDao
 import org.easybangumi.next.shared.source.case.DetailSourceCase
 import org.koin.core.component.inject
 
@@ -62,7 +53,7 @@ class BangumiDetailVM(
     val isDetailShowAll =  mutableStateOf(false)
     val isTabShowAll = mutableStateOf(false)
 
-    val cartoonInfoDao: CartoonInfoDao by inject()
+    val cartoonInfoCase: CartoonInfoCase by inject()
     val bangumiCase: BangumiCase by inject()
     val detailSourceCase: DetailSourceCase by inject()
     val bangumiDetailBusiness = detailSourceCase.getBangumiDetailBusiness()
@@ -99,8 +90,6 @@ class BangumiDetailVM(
     private val lowPriorityDataInit = atomic(false)
     private val episodeInit = atomic(false)
 
-    private var collectCollectJob: Job? = null
-
     init {
         // 如果没有来自网络的数据则加载
         subjectRepository.refreshIfNoneOrCache()
@@ -132,32 +121,32 @@ class BangumiDetailVM(
 
         // bangumi 登录态相关数据流绑定
         viewModelScope.launch {
-            bgmUserDataProvider.collectLatest { provider ->
-                // provider 为空代表没有登录，直接隐藏 bgm 收藏按钮
-                update {
-                    it.copy(
-                        hasBgmAccountInfo = provider == null
-                    )
-                }
-
-                // bangumi 收藏状态
-                val collectionRepository = provider?.getCollectRepository(cartoonIndex)
-                collectCollectJob?.cancel()
-                collectCollectJob = viewModelScope.launch {
-                    collectionRepository?.flow?.collectLatest { collectDataState ->
-                        update {
-                            it.copy(
-                                collectionState = collectDataState,
-                            )
-                        }
+            bgmUserDataProvider
+                .flatMapLatest { provider ->
+                    // provider 为空代表没有登录，返回空的收藏状态
+                    val collectFlow = if (provider == null) {
+                        flowOf(DataState.none<BgmCollect>())
+                    } else {
+                        provider.getCollectRepository(cartoonIndex).flow
+                    }
+                    collectFlow.map { collectDataState ->
+                        provider to collectDataState
                     }
                 }
-            }
+                .collectLatest { (provider, collectDataState) ->
+                    update {
+                        it.copy(
+                            // provider 为空代表没有登录，直接隐藏 bgm 收藏按钮
+                            hasBgmAccountInfo = provider == null,
+                            collectionState = collectDataState,
+                        )
+                    }
+                }
         }
 
         // 本地收藏状态
         viewModelScope.launch {
-            cartoonInfoDao.flowById(cartoonIndex.source, cartoonIndex.id).collectLatest { info ->
+            cartoonInfoCase.flowById(cartoonIndex.source, cartoonIndex.id).collectLatest { info ->
                 update {
                     it.copy(
                         cartoonInfo = info,

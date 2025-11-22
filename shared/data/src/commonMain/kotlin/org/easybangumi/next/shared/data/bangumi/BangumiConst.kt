@@ -1,5 +1,7 @@
 package org.easybangumi.next.shared.data.bangumi
 
+import org.easybangumi.next.shared.data.cartoon.CartoonTag
+
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
  *
@@ -14,4 +16,18 @@ package org.easybangumi.next.shared.data.bangumi
 object BangumiConst {
 
     const val BANGUMI_SOURCE_KEY = "bangumi"
+
+    data class BangumiCollectType(
+        val type: Int,
+        val label: String,
+    )
+
+    val collectTypeList = listOf(
+        BangumiCollectType(1, "想看"),
+        BangumiCollectType(2, "在看"),
+        BangumiCollectType(3, "看过"),
+        BangumiCollectType(4, "搁置"),
+        BangumiCollectType(5, "抛弃"),
+    )
+
 }

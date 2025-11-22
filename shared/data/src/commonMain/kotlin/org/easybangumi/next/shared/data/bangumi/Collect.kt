@@ -23,7 +23,7 @@ data class BgmCollectRsp(
 )
 @Serializable
 data class BgmCollect (
-    @SerialName("update_at")    val updatedAt: String? = null,
+    @SerialName("updated_at")    val updatedAt: String? = null,
     @SerialName("comment")      val comment: String? = null,
     @SerialName("tags")         val tags: List<String> = emptyList(),
     @SerialName("subject")      val subject: BgmSubject? = null,

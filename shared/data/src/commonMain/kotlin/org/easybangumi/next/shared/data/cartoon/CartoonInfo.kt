@@ -2,6 +2,7 @@ package org.easybangumi.next.shared.data.cartoon
 
 import androidx.room.Entity
 import kotlinx.datetime.Clock
+import org.easybangumi.next.lib.utils.getMatchReg
 
 
 /**
@@ -91,6 +92,8 @@ data class CartoonInfo(
     val lastEpisodeOrder: Int = 0,
 
     val lastEpisodeNum: Int = 0, // 最后一次观看时的总集数
+    val lastEpisodeLabel: String = "", // 最后一次观看的集数标签
+    val lastProcessTime: Long = 0, // 最后一次观看进度时间点，单位毫秒
 
     // other data
     // 扩展字段，帮源缓存，这里只是用于持久化，可能会过时
@@ -143,6 +146,18 @@ data class CartoonInfo(
 
     fun match(identify: String): Boolean {
         return this.toIdentify() == identify
+    }
+
+    fun matches(query: String): Boolean {
+        var matched = false
+        for (match in query.split(',')) {
+            val regex = match.getMatchReg()
+            if (name.matches(regex)) {
+                matched = true
+                break
+            }
+        }
+        return matched
     }
 
     fun isPin() = pinTime > 0

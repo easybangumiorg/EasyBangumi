@@ -8,7 +8,9 @@ import org.easybangumi.next.lib.unifile.UFD
 import org.easybangumi.next.lib.utils.CoroutineProvider
 import org.easybangumi.next.shared.bangumi.account.BangumiAccountController
 import org.easybangumi.next.shared.bangumi.data.repository.BangumiCollectionRepository
+import org.easybangumi.next.shared.data.bangumi.BangumiConst
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
+import org.easybangumi.next.shared.source.bangumi.source.BangumiCollectComponent.CollectionsPagingSource
 import org.easybangumi.next.shared.source.case.DetailSourceCase
 
 /**
@@ -51,6 +53,16 @@ class BangumiUserDataProvider(
                     scope = scope,
                 )
             }
+        }
+    }
+
+    fun getCollectPagingSource(
+        type: BangumiConst.BangumiCollectType,
+    ): CollectionsPagingSource {
+        return collectBusiness.runDirect { createEpisodePagingSource(
+            type = type.type,
+            username = info.username,
+            token = info.token)
         }
     }
 }

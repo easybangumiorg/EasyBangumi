@@ -33,6 +33,7 @@ fun <T : Any> LazyGridScope.pagingCommon(
     canRetry: Boolean = true,
 ) {
 
+    val err = pagingItems.getError()
     if (pagingItems.isLoading() && isShowLoading) {
         item(span = { GridItemSpan(maxLineSpan) }) {
             LoadingElements(
@@ -41,27 +42,37 @@ fun <T : Any> LazyGridScope.pagingCommon(
                 loadingMsg = stringResource(Res.strings.loading),
             )
         }
-    } else {
-        val err = pagingItems.getError()
-        if (err != null) {
+    } else  if (err != null) {
+
+        item(span = { GridItemSpan(maxLineSpan) }) {
+            val errorMsg =
+                err.error.message ?: stringResource(Res.strings.net_error)
+            ErrorElements(
+                modifier = Modifier.fillMaxWidth().height(height),
+                isRow = true,
+                errorMsg = errorMsg,
+                onClick = if (canRetry) {{
+                    pagingItems.retry()
+                }} else null,
+                other = {
+                    Spacer(Modifier.size(12.dp))
+                    Text(
+                        text = stringResource(Res.strings.retry),
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                        fontStyle = FontStyle.Italic
+                    )
+                }
+            )
+        }
+
+    } else if (pagingItems.itemCount == 0) {
+        val prependErr = pagingItems.getPrependError()
+        if (prependErr != null) {
             item(span = { GridItemSpan(maxLineSpan) }) {
                 val errorMsg =
-                    err.error.message ?: stringResource(Res.strings.net_error)
-                ErrorElements(
+                    prependErr.error.message ?: stringResource(Res.strings.net_error)
+                EmptyElements(
                     modifier = Modifier.fillMaxWidth().height(height),
-                    isRow = true,
-                    errorMsg = errorMsg,
-                    onClick = if (canRetry) {{
-                        pagingItems.retry()
-                    }} else null,
-                    other = {
-                        Spacer(Modifier.size(12.dp))
-                        Text(
-                            text = stringResource(Res.strings.retry),
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-                            fontStyle = FontStyle.Italic
-                        )
-                    }
                 )
             }
         }

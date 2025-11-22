@@ -1,5 +1,7 @@
 ﻿package org.easybangumi.next.lib.utils
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancel
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 
@@ -21,6 +23,14 @@ fun <T> Continuation<T>.safeResume(t: T) {
     } catch (e: Throwable) {
         // Ignore the exception, it may be caused by the continuation being cancelled
         // or already resumed.
-//        e.printStackTrace()
+        e.printStackTrace()
+    }
+}
+
+fun CoroutineScope.safeCancel() {
+    try {
+        this.cancel()
+    } catch (e: Throwable) {
+        e.printStackTrace()
     }
 }

@@ -3,16 +3,18 @@ package org.easybangumi.next.shared.cartoon.collection
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import org.easybangumi.next.lib.store.file_helper.json.JsonlFileHelper
+import org.easybangumi.next.lib.utils.PagingFlow
 import org.easybangumi.next.lib.utils.coroutineProvider
-import org.easybangumi.next.shared.cartoon.collection.CartoonLocalCollectionController.LocalCollectionState
+import org.easybangumi.next.shared.data.CartoonInfoCase
+import org.easybangumi.next.shared.data.bangumi.BangumiConst
+import org.easybangumi.next.shared.data.bangumi.BgmCollect
 import org.easybangumi.next.shared.data.cartoon.CartoonInfo
 import org.easybangumi.next.shared.data.cartoon.CartoonTag
+import org.easybangumi.next.shared.data.store.StoreProvider
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -24,33 +26,107 @@ import org.easybangumi.next.shared.data.cartoon.CartoonTag
  *    You may obtain a copy of the License at
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
- *  1. 本地收藏
- *  2. Bangumi 收藏（待定）
+ *  1. 本地收藏             from cartoonInfoDao
+ *  2. bangumi 收藏        from bangumiCollectionController
  */
 class CartoonCollectionController(
-    private val localCollectionController: CartoonLocalCollectionController,
+    private val cartoonInfoCase: CartoonInfoCase,
+    private val bangumiCollectionController: CartoonBangumiCollectionController,
 ) {
+
+    private val collectionTagFileHelper: JsonlFileHelper<CartoonTag> = StoreProvider.cartoonTag
 
     private val dispatcher = coroutineProvider.newSingle()
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
-
 
     data class CollectionState(
         val tagList: List<CartoonTag> = emptyList(),
         val collectionDataMap: Map<CartoonTag, CollectionData> = emptyMap(),
     )
-    val flow = localCollectionController.cartoonTagFlow.map { localState ->
-        val tagList = localState.tagList
-        val collectionDataMap = mutableMapOf<CartoonTag, CollectionData>()
-        tagList.forEach { tag ->
-            val cartoonInfoList = localState.tag2Cartoon[tag] ?: emptyList()
-            collectionDataMap[tag] = CollectionData.LocalCollection(cartoonInfoList)
+
+    val collectionFlow = combine(
+        cartoonInfoCase.flowCollectionLocal().distinctUntilChanged(),
+        collectionTagFileHelper.flow(),
+        bangumiCollectionController.flow
+    ) { cartoonInfoList, tagListRes, bangumiCollectionState ->
+        val tagBuffer = tagListRes.toMutableList()
+
+        fun ensureTag(label: String, type: String = CartoonTag.TYPE_LOCAL): CartoonTag {
+            val exist = tagBuffer.firstOrNull { it.label == label }
+            if (exist != null) {
+                return exist
+            }
+            val created = CartoonTag.create(label, type)
+            tagBuffer += created
+            return created
         }
+
+        // 确保默认分类和 Bangumi 分类存在
+        ensureTag(CartoonTag.DEFAULT_TAG_LABEL)
+        if (bangumiCollectionState.isLogin) {
+            ensureTag(CartoonTag.BANGUMI_TAG_LABEL, CartoonTag.TYPE_BANGUMI)
+        } else {
+            // 移除 Bangumi 分类
+            tagBuffer.removeAll { it.label == CartoonTag.BANGUMI_TAG_LABEL }
+        }
+
+
+        // 确保所有 CartoonInfo 使用到的标签都存在
+        cartoonInfoList.forEach { info ->
+            if (info.tagList.isEmpty()) {
+                ensureTag(CartoonTag.DEFAULT_TAG_LABEL)
+            } else {
+                info.tagList.forEach { label ->
+                    ensureTag(label)
+                }
+            }
+        }
+
+        val tabList = tagBuffer
+            .distinctBy { it.label }
+            .sortedWith(compareBy<CartoonTag> { it.order }.thenBy { it.label })
+
+        val label2Tag = tabList.associateBy { it.label }
+        val localTag2Cartoon = HashMap<CartoonTag, MutableList<CartoonInfo>>()
+
+        fun appendToTag(tagLabel: String, info: CartoonInfo) {
+            val tag = label2Tag[tagLabel] ?: return
+            if (tag.label == CartoonTag.BANGUMI_TAG_LABEL) {
+                return
+            }
+            localTag2Cartoon.getOrPut(tag) { mutableListOf() }.add(info)
+        }
+
+        cartoonInfoList.forEach { info ->
+            val labels = if (info.tagList.isEmpty()) {
+                listOf(CartoonTag.DEFAULT_TAG_LABEL)
+            } else {
+                info.tagList
+            }
+            labels.forEach { appendToTag(it, info) }
+        }
+
+        val bangumiData = CollectionData.BangumiCollection(
+            typeList = bangumiCollectionState.typeList,
+            type2Collect = bangumiCollectionState.type2Collect
+        )
+
+        val collectionDataMap = tabList.associateWith { tag ->
+            if (tag.label == CartoonTag.BANGUMI_TAG_LABEL) {
+                bangumiData
+            } else {
+                CollectionData.LocalCollection(
+                    localTag2Cartoon[tag].orEmpty()
+                )
+            }
+        }
+
         CollectionState(
-            tagList = tagList,
+            tagList = tabList,
             collectionDataMap = collectionDataMap,
         )
     }.stateIn(scope, SharingStarted.Lazily, CollectionState())
+
 
 
     sealed class CollectionData {
@@ -58,9 +134,11 @@ class CartoonCollectionController(
             val cartoonInfoList: List<CartoonInfo>,
         ) : CollectionData()
 
+        // Bangumi 为特殊页面，分页加载 + 二级收藏类型
         data class BangumiCollection(
-            val type: String,
-        ) : CollectionData()
+            val typeList: List<BangumiConst.BangumiCollectType>,
+            val type2Collect: Map<BangumiConst.BangumiCollectType, PagingFlow<BgmCollect>>
+        ): CollectionData()
 
         fun localOrNull(): List<CartoonInfo>? {
             return when (this) {

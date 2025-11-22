@@ -26,7 +26,8 @@ class JsonFileHelper<T: Any>(
     name: String,
     private val clazz: KClass<T>,
     def: T,
-): AbsFileHelper<T>(folder, name, def) {
+    isLogger: Boolean = false,
+): AbsFileHelper<T>(folder, name, def, isLogger) {
 
     override fun suffix(): String {
         return "json"

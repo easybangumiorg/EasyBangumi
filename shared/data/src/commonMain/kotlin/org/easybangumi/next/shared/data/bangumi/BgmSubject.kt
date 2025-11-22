@@ -41,9 +41,7 @@ data class BgmSubject(
     @SerialName("name_cn") val nameCn: String? = null,
     @SerialName("tags") val tags: List<BgmTags> = listOf(),
     @SerialName("infobox") val infobox: List<BgmInfobox> = listOf(),
-    @SerialName("rating") val rating: BgmRating? = BgmRating(),
     @SerialName("total_episodes") val totalEpisodes: Int? = null,
-    @SerialName("collection") val collection: BgmCollection? = BgmCollection(),
     @SerialName("id") val id: Int? = null,
     @SerialName("eps") val eps: Int? = null,
     @SerialName("meta_tags") val metaTags: List<String> = listOf(),
@@ -51,7 +49,18 @@ data class BgmSubject(
     @SerialName("series") val series: Boolean? = null,
     @SerialName("locked") val locked: Boolean? = null,
     @SerialName("nsfw") val nsfw: Boolean? = null,
-    @SerialName("type") val type: Int? = null
+    @SerialName("type") val type: Int? = null,
+
+    // from detail api
+    @SerialName("collection") val collection: BgmCollection? = BgmCollection(),
+    @SerialName("rating") val rating: BgmRating? = BgmRating(),
+
+    // from user collection api
+    @SerialName("score") val score: Float? = null,
+    @SerialName("collection_total") val collectionTotal: Int? = null,
+    @SerialName("rank") val rank: Int? = null,
+    @SerialName("short_summary") val shortSummary: String? = null,
+
 ) {
 
     val displayName: String by lazy {

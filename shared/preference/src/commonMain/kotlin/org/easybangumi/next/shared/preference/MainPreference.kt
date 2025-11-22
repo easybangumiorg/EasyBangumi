@@ -32,5 +32,8 @@ class MainPreference(
     }
     val inputModel = preferenceStore.getEnum<InputModel>("input_model", InputModel.AUTO)
 
+    // 私密模式，开启后播放的内容不会出现在历史记录中
+    val privateMode = preferenceStore.getBoolean("private_mode", false)
+
 
 }
