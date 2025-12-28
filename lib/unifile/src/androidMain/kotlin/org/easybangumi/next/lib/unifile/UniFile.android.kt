@@ -30,6 +30,16 @@ actual fun UniFileFactory.fromUFD(ufd: UFD): UniFile? {
                 null
             }
         }
+        UFD.TYPE_ASSETS -> {
+            val context = global.appContext
+            val assetManager = context.assets ?: return null
+            val uniFile = AUniFile.fromAsset(assetManager, ufd.uri)
+            if (uniFile != null) {
+                AUniFileWrapper(uniFile)
+            } else {
+                null
+            }
+        }
         else -> null
     }
 }

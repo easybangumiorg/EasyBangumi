@@ -11,6 +11,6 @@ class RhinoServiceImpl : RhinoService {
     }
 
     override fun getLogger(tag: String): org.slf4j.Logger {
-        return logger(tag).getSlf4jLogger()
+        return logger(tag).getSlf4jLogger()?:throw IllegalStateException("Logger not found")
     }
 }

@@ -4,7 +4,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import okio.BufferedSink
 import okio.BufferedSource
+import org.easybangumi.next.lib.serialization.deserialize
 import org.easybangumi.next.lib.serialization.jsonSerializer
+import org.easybangumi.next.lib.serialization.serialize
 import org.easybangumi.next.lib.store.file_helper.AbsFileHelper
 import org.easybangumi.next.lib.unifile.UFD
 import org.easybangumi.next.lib.utils.coroutineProvider

@@ -1,6 +1,4 @@
-package org.easybangumi.next.vlcj
-
-import uk.co.caprica.vlcj.factory.MediaPlayerFactory
+package org.easybangumi.next.shared.data.bangumi
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -13,10 +11,17 @@ import uk.co.caprica.vlcj.factory.MediaPlayerFactory
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-object VlcjProvider {
+sealed class BgmCollectResp {
+    data class BgmCollectData(
+        val data: BgmCollect,
+    ): BgmCollectResp()
 
-    fun newMediaPlayerFactory(): MediaPlayerFactory {
-        return MediaPlayerFactory()
+    data object BgmCollectNone: BgmCollectResp()
+
+    fun dataOrNull(): BgmCollect? {
+        return when (this) {
+            is BgmCollectData -> this.data
+            is BgmCollectNone -> null
+        }
     }
-
 }

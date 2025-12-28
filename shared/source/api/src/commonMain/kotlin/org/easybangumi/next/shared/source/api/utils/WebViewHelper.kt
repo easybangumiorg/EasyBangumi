@@ -12,4 +12,7 @@ interface WebViewHelper {
 
     suspend fun <R> use(block: suspend IWebView.()->R): R?
 
+    // 记得关闭
+    suspend fun newWebView(): IWebView
+
 }

@@ -92,5 +92,5 @@ actual interface Logger {
     actual fun isWarnEnabled(): Boolean
     actual fun isErrorEnabled(): Boolean
 
-    fun getSlf4jLogger(): org.slf4j.Logger
+    fun getSlf4jLogger(): org.slf4j.Logger? = null
 }

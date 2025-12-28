@@ -52,6 +52,7 @@ kotlin {
 //            implementation(projects.shared.plugin)
             implementation(projects.shared.resources)
             implementation(projects.shared.scheme)
+            implementation(projects.shared.source)
 
             implementation(projects.logger)
             implementation(projects.lib.utils)

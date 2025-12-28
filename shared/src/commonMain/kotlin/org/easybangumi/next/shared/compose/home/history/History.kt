@@ -1,5 +1,6 @@
 package org.easybangumi.next.shared.compose.home.history
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -35,6 +36,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,10 +53,14 @@ import androidx.compose.ui.unit.dp
 import org.easybangumi.next.shared.LocalNavController
 import org.easybangumi.next.shared.data.cartoon.CartoonInfo
 import org.easybangumi.next.shared.foundation.FastScrollToTopFab
+import org.easybangumi.next.shared.foundation.InnerBackHandler
+import org.easybangumi.next.shared.foundation.cartoon.CartoonCoverCard
 import org.easybangumi.next.shared.foundation.elements.EmptyElements
 import org.easybangumi.next.shared.foundation.elements.LoadingElements
+import org.easybangumi.next.shared.foundation.selection.SelectionTopAppBar
 import org.easybangumi.next.shared.foundation.stringRes
 import org.easybangumi.next.shared.foundation.view_model.vm
+import org.easybangumi.next.shared.navigateToDetailOrMedia
 import org.easybangumi.next.shared.playcon.TimeUtils
 import org.easybangumi.next.shared.resources.Res
 
@@ -69,7 +76,9 @@ import org.easybangumi.next.shared.resources.Res
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 @Composable
-fun History() {
+fun History(
+    showBack: Boolean = false
+) {
 
     val vm = vm(::HistoryVM)
 
@@ -77,12 +86,86 @@ fun History() {
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
-    val state = vm.ui
-
-    
+    val state by vm.ui
 
 
+    val focusRequester = remember {
+        FocusRequester()
+    }
 
+    InnerBackHandler(
+        enabled = state.selection.isNotEmpty()
+    ) {
+        vm.onSelectionExit()
+    }
+
+    Column(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        AnimatedContent(targetState = state.selection.isNotEmpty(), label = "") { isSelectionMode ->
+            if (isSelectionMode) {
+                LaunchedEffect(key1 = Unit) {
+                    kotlin.runCatching {
+                        focusRequester.freeFocus()
+                    }
+                }
+
+                SelectionTopAppBar(
+                    selectionItemsCount = state.selection.size,
+                    onExit = {
+                        vm.onSelectionExit()
+                    },
+                    actions = {
+                        IconButton(onClick = { vm.dialogDeleteSelection() }) {
+                            Icon(
+                                Icons.Filled.Delete, contentDescription = stringRes(
+                                    Res.strings.delete
+                                )
+                            )
+                        }
+                    }
+                )
+            } else {
+                HistoryTopAppBar(
+                    scrollBehavior = scrollBehavior,
+                    isSearch = state.searchKey != null,
+                    focusRequester = focusRequester,
+                    onSearchClick = {
+                        vm.search("")
+                    },
+                    onClear = { vm.clearDialog() },
+                    onSearch = {
+                        vm.search(it)
+                    },
+                    text = state.searchKey ?: "",
+                    onTextChange = {
+                        vm.search(it)
+                    },
+                    onBack = if (showBack) {
+                        {
+                            nav.popBackStack()
+                        }
+                    } else null,
+                    onSearchExit = {
+                        vm.exitSearch()
+                    }
+                )
+            }
+        }
+
+        HistoryList(
+            scrollBehavior,
+            vm = vm,
+            state = state,
+            onItemClick = {
+                nav.navigateToDetailOrMedia(it)
+            },
+
+            onItemDelete = {
+                vm.dialogDeleteOne(it)
+            }
+        )
+    }
 }
 
 @Composable
@@ -182,80 +265,77 @@ fun HistoryItem(
     onLongPress: (CartoonInfo) -> Unit,
     onDelete: (CartoonInfo) -> Unit,
 ) {
-//    val sourceBundle = LocalSourceBundleController.current
-//    Box(modifier = Modifier
-//        .fillMaxWidth()
-//        .padding(8.dp, 4.dp)
-//        .clip(RoundedCornerShape(8.dp))
-//        .run {
-//            if (isSelect) {
-//                background(MaterialTheme.colorScheme.primary)
-//            } else {
-//                this
-//            }
-//        }
-//        .combinedClickable(
-//            onClick = {
-//                onClick(cartoonHistory)
-//            },
-//            onLongClick = {
-//                onLongPress(cartoonHistory)
-//            }
-//        )
-//
-//        .padding(8.dp)
-//        .then(modifier)) {
-//        Row(
-//            horizontalArrangement = Arrangement.spacedBy(16.dp)
-//        ) {
-//
-//            CartoonCard(
-//                cover = cartoonHistory.coverUrl,
-//                name = cartoonHistory.name,
-//                source = sourceBundle.source(cartoonHistory.source)?.label
-//                    ?: cartoonHistory.source
-//            )
-//            Column(
-//                verticalArrangement = Arrangement.spacedBy(8.dp)
-//            ) {
-//                Text(
-//                    text = cartoonHistory.name,
-//                    maxLines = 2,
-//                    color = if (isSelect) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground
-//                )
-//                Text(
-//                    text = stringRes(
-//                        Res.strings.last_episode_title,
-//                        cartoonHistory.lastEpisodeLabel
-//                    ),
-//                    maxLines = 1,
-//                    color = if (isSelect) MaterialTheme.colorScheme.onPrimary.copy(0.6f) else MaterialTheme.colorScheme.onBackground.copy(
-//                        0.6f
-//                    )
-//                )
-//                Text(
-//                    text = TimeUtils.toString(cartoonHistory.lastProcessTime).toString(),
-//                    maxLines = 1,
-//                    color = if (isSelect) MaterialTheme.colorScheme.onPrimary.copy(0.6f) else MaterialTheme.colorScheme.onBackground.copy(
-//                        0.6f
-//                    )
-//                )
-//            }
-//        }
-//        if (isShowDelete) {
-//            IconButton(
-//                modifier = Modifier.align(Alignment.BottomEnd),
-//                onClick = {
-//                    onDelete(cartoonHistory)
-//                }) {
-//                Icon(
-//                    Icons.Filled.Delete,
-//                    contentDescription = stringRes(Res.strings.delete)
-//                )
-//            }
-//        }
-//
-//    }
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .padding(8.dp, 4.dp)
+        .clip(RoundedCornerShape(8.dp))
+        .run {
+            if (isSelect) {
+                background(MaterialTheme.colorScheme.primary)
+            } else {
+                this
+            }
+        }
+        .combinedClickable(
+            onClick = {
+                onClick(cartoonHistory)
+            },
+            onLongClick = {
+                onLongPress(cartoonHistory)
+            }
+        )
+
+        .padding(8.dp)
+        .then(modifier)) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            CartoonCoverCard(
+                modifier = Modifier,
+                model = cartoonHistory.coverUrl,
+                name = cartoonHistory.name,
+            )
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = cartoonHistory.name,
+                    maxLines = 2,
+                    color = if (isSelect) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground
+                )
+                Text(
+                    text = stringRes(
+                        Res.strings.last_episode_title,
+                        cartoonHistory.lastEpisodeLabel
+                    ),
+                    maxLines = 1,
+                    color = if (isSelect) MaterialTheme.colorScheme.onPrimary.copy(0.6f) else MaterialTheme.colorScheme.onBackground.copy(
+                        0.6f
+                    )
+                )
+                Text(
+                    text = TimeUtils.toString(cartoonHistory.lastProcessTime).toString(),
+                    maxLines = 1,
+                    color = if (isSelect) MaterialTheme.colorScheme.onPrimary.copy(0.6f) else MaterialTheme.colorScheme.onBackground.copy(
+                        0.6f
+                    )
+                )
+            }
+        }
+        if (isShowDelete) {
+            IconButton(
+                modifier = Modifier.align(Alignment.BottomEnd),
+                onClick = {
+                    onDelete(cartoonHistory)
+                }) {
+                Icon(
+                    Icons.Filled.Delete,
+                    contentDescription = stringRes(Res.strings.delete)
+                )
+            }
+        }
+
+    }
 }
 
 

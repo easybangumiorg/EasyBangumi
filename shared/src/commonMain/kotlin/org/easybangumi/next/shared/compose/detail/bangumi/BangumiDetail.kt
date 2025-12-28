@@ -35,6 +35,7 @@ import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.platformInformation
 import org.easybangumi.next.shared.LocalNavController
 import org.easybangumi.next.shared.RouterPage
+import org.easybangumi.next.shared.compose.common.collect_dialog.CartoonCollectDialog
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.foundation.InputMode
 import org.easybangumi.next.shared.foundation.LocalUIMode
@@ -127,6 +128,9 @@ fun BangumiDetail(
                 contentPaddingTop = topAppBarHeight + contentPaddingTop,
                 isHeaderPin = isPinHeaderPin,
                 subjectState = subjectState,
+                onCollectClick = {
+                    vm.openCollectDialog()
+                }
             )
 
             BangumiDetailTab(
@@ -160,6 +164,17 @@ fun BangumiDetail(
     }
 
 
+    when (val dia = vm.ui.value.dialog) {
+        is BangumiDetailVM.Dialog.CollectDialog -> {
+            CartoonCollectDialog(
+                cartoonCover = dia.cartoonCover,
+                onDismissRequest = {
+                    vm.dialogDismiss()
+                }
+            )
+        }
+        else -> {}
+    }
 
 
 

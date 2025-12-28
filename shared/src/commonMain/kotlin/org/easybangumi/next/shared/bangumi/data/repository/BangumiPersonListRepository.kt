@@ -3,7 +3,9 @@ package org.easybangumi.next.shared.bangumi.data.repository
 import kotlinx.coroutines.CoroutineScope
 import okio.BufferedSink
 import okio.BufferedSource
+import org.easybangumi.next.lib.serialization.deserialize
 import org.easybangumi.next.lib.serialization.jsonSerializer
+import org.easybangumi.next.lib.serialization.serialize
 import org.easybangumi.next.lib.store.repository.FileAbsRepository
 import org.easybangumi.next.lib.unifile.UFD
 import org.easybangumi.next.lib.utils.DataState

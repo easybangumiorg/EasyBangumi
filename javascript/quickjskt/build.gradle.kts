@@ -21,7 +21,9 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.datetime)
-            implementation(libs.quickjs.kt)
+            api(libs.quickjs.kt)
+
+            implementation(projects.logger)
         }
 
         jvmMain.dependencies {

@@ -4,6 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.platform.LocalDensity
 import androidx.core.graphics.transform
 
 /**
@@ -17,5 +18,6 @@ actual fun InnerBackHandler(enabled: Boolean, onBack: () -> Unit) {
 
         }
     }
+    LocalDensity
     BackHandler(enabled, onBack)
 }

@@ -27,6 +27,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
@@ -71,6 +72,7 @@ fun BangumiDetailHeader(
     contentPaddingTop: Dp,
     isHeaderPin: Boolean = false,
     subjectState: DataState<BgmSubject>,
+    onCollectClick: () -> Unit,
 ){
     val surfaceLowestColor = MaterialTheme.colorScheme.surfaceContainerLowest
     val backgroundColor = MaterialTheme.colorScheme.surfaceContainer
@@ -79,7 +81,6 @@ fun BangumiDetailHeader(
     }
     val data = subjectState.cacheData
     Box(modifier) {
-
         Crossfade(data) {
             if (it != null && !isHeaderPin) {
                 AsyncImage(
@@ -90,10 +91,7 @@ fun BangumiDetailHeader(
                     fallback = backgroundPainter,
                     placeholder = backgroundPainter,
                 )
-
-
             }
-
 
             Box(
                 modifier = Modifier.fillMaxSize()
@@ -188,6 +186,12 @@ fun BangumiDetailHeader(
                 }
 
 
+            }
+
+            TextButton(onClick = {
+                onCollectClick()
+            }) {
+                Text("收藏 Debug")
             }
         }
     }

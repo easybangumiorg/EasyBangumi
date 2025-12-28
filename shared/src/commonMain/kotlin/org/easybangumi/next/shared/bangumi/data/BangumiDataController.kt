@@ -6,21 +6,17 @@ import kotlinx.atomicfu.locks.withLock
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.unifile.UFD
 import org.easybangumi.next.lib.utils.coroutineProvider
 import org.easybangumi.next.lib.utils.pathProvider
 import org.easybangumi.next.shared.bangumi.account.BangumiAccountController
 import org.easybangumi.next.shared.bangumi.data.repository.BangumiCharacterListRepository
-import org.easybangumi.next.shared.bangumi.data.repository.BangumiCollectionRepository
 import org.easybangumi.next.shared.bangumi.data.repository.BangumiPersonListRepository
 import org.easybangumi.next.shared.bangumi.data.repository.BangumiSubjectRepository
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
-import org.easybangumi.next.shared.source.case.DetailSourceCase
+import org.easybangumi.next.shared.source.SourceCase
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -34,7 +30,7 @@ import org.easybangumi.next.shared.source.case.DetailSourceCase
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 class BangumiDataController(
-    private val detailSourceCase: DetailSourceCase,
+    private val sourceCase: SourceCase,
     private val bangumiAccountController: BangumiAccountController,
 ) {
 
@@ -46,7 +42,7 @@ class BangumiDataController(
     private val characterListRepositoryMap = hashMapOf<String, BangumiCharacterListRepository>()
 
     val detailBusiness by lazy {
-        detailSourceCase.getBangumiDetailBusiness()
+        sourceCase.getBangumiDetailBusiness()
     }
 
 
@@ -61,7 +57,7 @@ class BangumiDataController(
             BangumiUserDataProvider(
                 info = it,
                 bangumiRootFileUfd = bangumiRootFileUfd,
-                detailSourceCase = detailSourceCase,
+                sourceCase = sourceCase,
                 lock = lock,
                 scope = scope,
             )

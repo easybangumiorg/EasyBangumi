@@ -37,11 +37,9 @@ class CartoonBangumiCollectionController(
     private val dispatcher = coroutineProvider.io()
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
 
-    val typeList: List<BangumiConst.BangumiCollectType> = BangumiConst.collectTypeList
-
     data class BangumiCollectionState(
+        val isLoading: Boolean = true,
         val isLogin: Boolean = false,
-        val typeList: List<BangumiConst.BangumiCollectType> = BangumiConst.collectTypeList,
         val pagingSource: Map<BangumiConst.BangumiCollectType, BangumiCollectComponent.CollectionsPagingSource> = mapOf(),
         val type2Collect: Map<BangumiConst.BangumiCollectType, PagingFlow<BgmCollect>> = emptyMap(),
         val type2Scope: Map<BangumiConst.BangumiCollectType, CoroutineScope> = emptyMap()
@@ -59,6 +57,7 @@ class CartoonBangumiCollectionController(
                 if (provider == null) {
                     // 未登录，清空所有状态
                     _flow.update { BangumiCollectionState(
+                        isLoading = false,
                         isLogin = false
                     ) }
                 } else {
@@ -67,7 +66,7 @@ class CartoonBangumiCollectionController(
                     val type2CollectMap = mutableMapOf<BangumiConst.BangumiCollectType, PagingFlow<BgmCollect>>()
                     val type2ScopeMap = mutableMapOf<BangumiConst.BangumiCollectType, CoroutineScope>()
 
-                    typeList.forEach { type ->
+                    BangumiConst.collectTypeList.forEach { type ->
                         val pagingSource = provider.getCollectPagingSource(type)
                         // 为每个类型创建独立的子 scope
                         val childScope = CoroutineScope(SupervisorJob() + dispatcher)
@@ -79,6 +78,7 @@ class CartoonBangumiCollectionController(
 
                     _flow.update {
                         BangumiCollectionState(
+                            isLoading = false,
                             isLogin = true,
                             pagingSource = pagingSourceMap,
                             type2Collect = type2CollectMap,
@@ -118,6 +118,7 @@ class CartoonBangumiCollectionController(
 
             _flow.update {
                 it.copy(
+                    isLoading = false,
                     type2Collect = type2CollectMap,
                     type2Scope = type2ScopeMap
                 )

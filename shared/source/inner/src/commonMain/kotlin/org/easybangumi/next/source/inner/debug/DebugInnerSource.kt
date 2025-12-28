@@ -1,15 +1,12 @@
 package org.easybangumi.next.source.inner.debug
 
-import io.ktor.client.HttpClient
+import io.ktor.client.*
 import org.easybangumi.next.lib.utils.ResourceOr
 import org.easybangumi.next.shared.ktor.KtorFactory
 import org.easybangumi.next.shared.ktor.ktorModule
 import org.easybangumi.next.shared.resources.Res
 import org.easybangumi.next.shared.source.api.component.Component
 import org.easybangumi.next.shared.source.api.source.InnerSource
-import org.easybangumi.next.source.inner.ggl.GGLPlayComponent
-import org.easybangumi.next.source.inner.ggl.GGLPrefComponent
-import org.easybangumi.next.source.inner.ggl.GGLSearchComponent
 import org.koin.core.module.Module
 import org.koin.dsl.bind
 import org.koin.dsl.module

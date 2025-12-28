@@ -8,6 +8,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.easybangumi.next.lib.logger.Logger
+import org.easybangumi.next.lib.logger.logger
+import org.easybangumi.next.shared.foundation.scroll_header.logger
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -21,8 +24,11 @@ import kotlinx.coroutines.launch
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 abstract class StateViewModel<STATE : Any>(
-    initState: STATE
+    initState: STATE,
+    private val debug: Boolean = false,
 ) : BaseViewModel(), LogicUI<STATE, STATE> {
+
+    protected val logger: Logger = logger()
 
     private val _ui: MutableState<STATE> by lazy {
         mutableStateOf(initState)
@@ -39,6 +45,11 @@ abstract class StateViewModel<STATE : Any>(
     init {
         viewModelScope.launch {
             logic.collect { state ->
+                if (debug) {
+                    logger.info(
+                        "state changed: $state"
+                    )
+                }
                 _ui.value = state
             }
         }

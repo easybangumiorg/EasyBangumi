@@ -9,7 +9,5 @@ import org.koin.dsl.module
 
 actual val sourceModuleCore: Module
     get() = module {
-        single {
-            RhinoPluginLoaderFactory()
-        }.binds(arrayOf(PluginLoader.Factory::class))
+
     }

@@ -13,18 +13,20 @@ kotlin {
     sourceSets {
 
         val commonMain by getting
+        val commonTest by getting
         val jvmMain by getting
         val desktopMain by getting
+        val desktopTest by getting
         val androidMain by getting
         val iosMain by getting
         val iosX64Main by getting
         val iosArm64Main by getting
         val iosSimulatorArm64Main by getting
-
         commonMain.dependencies {
             implementation(libs.coil.ktor3)
             implementation(libs.koin.core)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.kotlinx.datetime)
 
             implementation(libs.ksoup)
 
@@ -38,7 +40,16 @@ kotlin {
             api(projects.shared.sourceInner)
             api(projects.lib)
 
+            implementation(projects.javascript.quickjsKt)
         }
+
+        commonTest.dependencies {
+            implementation(kotlin("test"))
+            implementation(kotlin("test-annotations-common"))
+            // 断言库
+            implementation("org.jetbrains.kotlin:kotlin-test")
+        }
+
 
         jvmMain.dependencies {
             implementation(projects.javascript.rhino)
@@ -51,12 +62,10 @@ kotlin {
         desktopMain.dependencies {
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.java)
-//            implementation(libs.jcef)
-//
-//            implementation("me.friwi:jcef-natives-linux-amd64:jcef-ca49ada+cef-135.0.20+ge7de5c3+chromium-135.0.7049.85")
-//            implementation("me.friwi:jcef-natives-macosx-amd64:jcef-ca49ada+cef-135.0.20+ge7de5c3+chromium-135.0.7049.85")
-//            implementation("me.friwi:jcef-natives-macosx-arm64:jcef-ca49ada+cef-135.0.20+ge7de5c3+chromium-135.0.7049.85")
-//            implementation("me.friwi:jcef-natives-windows-amd64:jcef-ca49ada+cef-135.0.20+ge7de5c3+chromium-135.0.7049.85")
+        }
+        desktopTest.dependencies {
+            implementation(kotlin("test"))
+//            implementation(kotlin("test-junit5"))
         }
         iosMain.dependencies {
 
@@ -66,6 +75,15 @@ kotlin {
 
 dependencies {
 
+}
+
+// 配置测试任务
+tasks.register<Test>("jvmTest") {
+    useJUnitPlatform()
+}
+
+tasks.register<Test>("androidUnitTest") {
+    // Android 单元测试配置
 }
 
 

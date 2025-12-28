@@ -1,11 +1,13 @@
 package org.easybangumi.next.shared.source.bangumi.source
 
 import kotlinx.coroutines.async
+import kotlinx.datetime.Clock
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.EasyPagingSource
 import org.easybangumi.next.lib.utils.PagingFrame
 import org.easybangumi.next.lib.utils.map
 import org.easybangumi.next.shared.data.bangumi.BgmCollect
+import org.easybangumi.next.shared.data.bangumi.BgmCollectResp
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.source.api.component.BaseComponent
 import org.easybangumi.next.shared.source.api.component.collect.CollectComponent
@@ -29,14 +31,20 @@ class BangumiCollectComponent: CollectComponent, BaseComponent() {
 
     private val api: BangumiApi by inject()
 
+    // 404 表示没有收藏，也是正常返回的一种，这里做特殊处理
     suspend fun getCollection(
         username: String,
         token: String,
         cartoonIndex: CartoonIndex,
-    ): DataState<BgmCollect> {
+    ): DataState<BgmCollectResp> {
         checkCartoonIndex(cartoonIndex)
         return source.scope.async {
-            api.getCollect(username, token, cartoonIndex.id).await().toDataState()
+            val resp = api.getCollect(username, token, cartoonIndex.id).await()
+            if (resp is BgmRsp.Error<BgmCollect> && resp.code == 404) {
+                return@async DataState.ok<BgmCollectResp>(BgmCollectResp.BgmCollectNone)
+            } else {
+                return@async  resp.toDataState().map<BgmCollect, BgmCollectResp> { BgmCollectResp.BgmCollectData(it) }
+            }
         }.await()
     }
 
@@ -45,6 +53,8 @@ class BangumiCollectComponent: CollectComponent, BaseComponent() {
         private val username: String,
         private val token: String,
         private val type: Int,
+        // 让业务判断数据过期
+        val createTime: Long = Clock.System.now().toEpochMilliseconds(),
     ) : EasyPagingSource<BgmCollect> {
         override val initKey: String = "1"
 

@@ -84,12 +84,14 @@ class BangumiBusiness(
                 val code = response.status.value
                 val body = response.bodyAsText()
                 if (code !in 200..299) {
-                    val jsonObj = json.parseToJsonElement(body)
+                    val jsonObj = runCatching {
+                        json.parseToJsonElement(body)
+                    }.getOrNull()
                     return@transformResponseBody BgmRsp.Error<Any?>(
                         code = code,
-                        title = runCatching { jsonObj.jsonObject["title"]?.toString() }.getOrNull(),
-                        description = runCatching { jsonObj.jsonObject["message"]?.toString() }.getOrNull(),
-                        details = runCatching { jsonObj.jsonObject["details"]?.toString() }.getOrNull(),
+                        title = runCatching { jsonObj?.jsonObject["title"]?.toString() }.getOrNull(),
+                        description = runCatching { jsonObj?.jsonObject["message"]?.toString() }.getOrNull(),
+                        details = runCatching { jsonObj?.jsonObject["details"]?.toString() }.getOrNull(),
                         raw = body,
                     )
                 } else {
@@ -98,7 +100,9 @@ class BangumiBusiness(
 
                     val genericType = firstGenericType ?: return@transformResponseBody null
                     val kSerializer = serializer(genericType)
-                    val data = json.decodeFromString(kSerializer, body)
+                    val data = runCatching {
+                        json.decodeFromString(kSerializer, body)
+                    }.getOrNull()
 
                     return@transformResponseBody BgmRsp.Success(
                         code = code,

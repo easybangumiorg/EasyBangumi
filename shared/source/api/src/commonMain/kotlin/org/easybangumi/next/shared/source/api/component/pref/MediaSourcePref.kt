@@ -17,13 +17,21 @@ sealed class MediaSourcePreference {
         override val key: String,
         override val def: String,
         val selections: List<String>
-    ): MediaSourcePreference()
+    ): MediaSourcePreference() {
+        override fun check(): Boolean {
+            return key.isNotBlank() && label.isNotBlank() && selections.isNotEmpty() && selections.contains(def)
+        }
+    }
 
     class Edit(
         override val label: String,
         override val key: String,
         override val def: String,
-    ): MediaSourcePreference()
+    ): MediaSourcePreference() {
+        override fun check(): Boolean {
+            return key.isNotBlank() && label.isNotBlank()
+        }
+    }
 
     // 如果为开关配置，则获取到的数据为 "true" 或者 "false"
     class Switch(
@@ -32,8 +40,22 @@ sealed class MediaSourcePreference {
         private val defBoolean: Boolean,
     ): MediaSourcePreference() {
 
+
+        override fun check(): Boolean {
+            return key.isNotBlank() && label.isNotBlank()
+        }
+
         override val def: String
             get() = defBoolean.toString()
+    }
+
+    abstract fun check(): Boolean
+    fun ifAvailable(): MediaSourcePreference? {
+        return if (check()) {
+            this
+        } else {
+            null
+        }
     }
 
 }

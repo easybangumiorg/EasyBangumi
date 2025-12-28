@@ -8,6 +8,7 @@ import org.cef.handler.CefLoadHandler
 import org.cef.handler.CefMessageRouterHandlerAdapter
 import org.cef.handler.CefResourceRequestHandlerAdapter
 import org.cef.network.CefRequest
+import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.coroutineProvider
 import org.easybangumi.next.lib.utils.safeResume
 import org.easybangumi.next.lib.webview.IWebView
@@ -82,7 +83,7 @@ class JcefWebViewProxy : IWebView {
     private var needBlob: Boolean = false
     private val hasInjectBlobJs = AtomicBoolean(false)
 
-
+    private val logger = logger(this.toString())
 
     @Volatile
     private var cefClient: CefClient? = null
@@ -371,6 +372,7 @@ class JcefWebViewProxy : IWebView {
     }
 
     override fun close() {
+        logger.info("Closing JcefWebViewProxy")
         JcefManager.runOnJcefContext(false) {
             browser?.safeStopLoad()
             browser?.safeClose()

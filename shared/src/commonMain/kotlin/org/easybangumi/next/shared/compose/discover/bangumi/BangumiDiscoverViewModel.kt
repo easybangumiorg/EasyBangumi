@@ -10,12 +10,10 @@ import org.easybangumi.next.lib.utils.PagingFlow
 import org.easybangumi.next.lib.utils.ResourceOr
 import org.easybangumi.next.lib.utils.newPagingFlow
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
-import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.foundation.view_model.StateViewModel
 import org.easybangumi.next.shared.source.bangumi.business.BangumiApi
-import org.easybangumi.next.shared.source.case.DiscoverSourceCase
+import org.easybangumi.next.shared.source.SourceCase
 import org.koin.core.component.inject
-import kotlin.getValue
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -47,7 +45,7 @@ class BangumiDiscoverViewModel: StateViewModel<BangumiDiscoverViewModel.State>(S
 
     }
 
-    private val discoverSourceCase: DiscoverSourceCase by inject()
+    private val sourceCase: SourceCase by inject()
 
     init {
         //  Load discover
@@ -62,7 +60,7 @@ class BangumiDiscoverViewModel: StateViewModel<BangumiDiscoverViewModel.State>(S
 
     private suspend fun loadBanner() {
         update { it.copy(bannerData = DataState.loading()) }
-        val res = discoverSourceCase.getBangumiDiscoverBusiness().run {
+        val res = sourceCase.getBangumiDiscoverBusiness().run {
             banner()
         }
         update { it.copy(bannerData = res) }
@@ -70,7 +68,7 @@ class BangumiDiscoverViewModel: StateViewModel<BangumiDiscoverViewModel.State>(S
 
     private suspend fun loadRecommendTabs() {
         update { it.copy(tabList = DataState.loading()) }
-        val from =  discoverSourceCase.getBangumiDiscoverBusiness().runSuspendDirect {
+        val from =  sourceCase.getBangumiDiscoverBusiness().runSuspendDirect {
             BangumiApi.TrendsFrom.entries.map {
                 it to createTrendsPagingSource(it)
             }

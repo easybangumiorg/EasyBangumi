@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "49032fee8c64d53dacc7f73669262c5f",
+    "identityHash": "fbfae32d9b37feca889bdadcdc47ff89",
     "entities": [
       {
         "tableName": "CartoonInfo",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`fromId` TEXT NOT NULL, `fromSourceKey` TEXT NOT NULL, `name` TEXT NOT NULL, `coverUrl` TEXT NOT NULL, `detailedUrl` TEXT NOT NULL, `isShowLine` INTEGER NOT NULL, `sourceName` TEXT NOT NULL, `reversal` INTEGER NOT NULL, `sortByKey` TEXT NOT NULL, `playLineString` TEXT NOT NULL, `lastUpdateTime` INTEGER NOT NULL, `tagsIdListString` TEXT NOT NULL, `starTime` INTEGER NOT NULL, `pinTime` INTEGER NOT NULL, `lastPlaySourceId` TEXT NOT NULL, `lastPlaySourceKey` TEXT NOT NULL, `lastHistoryTime` INTEGER NOT NULL, `lastHistoryPlayLineListJson` TEXT NOT NULL, `lastLineId` TEXT NOT NULL, `lastLineIndex` INTEGER NOT NULL, `lastEpisodeId` TEXT NOT NULL, `lastEpisodeIndex` INTEGER NOT NULL, `lastEpisodeOrder` INTEGER NOT NULL, `lastEpisodeNum` INTEGER NOT NULL, `lastEpisodeLabel` TEXT NOT NULL, `lastProcessTime` INTEGER NOT NULL, `fromSourceExt` TEXT NOT NULL, `playSourceExt` TEXT NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY(`fromId`, `fromSourceKey`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`fromId` TEXT NOT NULL, `fromSourceKey` TEXT NOT NULL, `name` TEXT NOT NULL, `coverUrl` TEXT NOT NULL, `detailedUrl` TEXT NOT NULL, `intro` TEXT NOT NULL, `isShowLine` INTEGER NOT NULL, `sourceName` TEXT NOT NULL, `reversal` INTEGER NOT NULL, `sortByKey` TEXT NOT NULL, `playLineString` TEXT NOT NULL, `lastUpdateTime` INTEGER NOT NULL, `tagsIdListString` TEXT NOT NULL, `starTime` INTEGER NOT NULL, `pinTime` INTEGER NOT NULL, `lastPlaySourceId` TEXT NOT NULL, `lastPlaySourceKey` TEXT NOT NULL, `lastHistoryTime` INTEGER NOT NULL, `lastHistoryPlayLineListJson` TEXT NOT NULL, `lastLineId` TEXT NOT NULL, `lastLineIndex` INTEGER NOT NULL, `lastEpisodeId` TEXT NOT NULL, `lastEpisodeIndex` INTEGER NOT NULL, `lastEpisodeOrder` INTEGER NOT NULL, `lastEpisodeNum` INTEGER NOT NULL, `lastEpisodeLabel` TEXT NOT NULL, `lastProcessTime` INTEGER NOT NULL, `fromSourceExt` TEXT NOT NULL, `playSourceExt` TEXT NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY(`fromId`, `fromSourceKey`))",
         "fields": [
           {
             "fieldPath": "fromId",
@@ -35,6 +35,12 @@
           {
             "fieldPath": "detailedUrl",
             "columnName": "detailedUrl",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "intro",
+            "columnName": "intro",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -194,7 +200,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '49032fee8c64d53dacc7f73669262c5f')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fbfae32d9b37feca889bdadcdc47ff89')"
     ]
   }
 }

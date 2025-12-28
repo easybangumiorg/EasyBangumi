@@ -61,6 +61,7 @@ data class CartoonInfo(
     val name: String,
     val coverUrl: String,
     val detailedUrl: String,
+    val intro: String,
 
     // preferences
     val isShowLine: Boolean = false,
@@ -105,6 +106,21 @@ data class CartoonInfo(
 
 ) {
 
+    companion object {
+        fun fromCartoonCover(
+            cartoonCover: CartoonCover,
+        ): CartoonInfo {
+            return CartoonInfo(
+                fromId = cartoonCover.id,
+                fromSourceKey = cartoonCover.source,
+                name = cartoonCover.name,
+                coverUrl = cartoonCover.coverUrl,
+                detailedUrl = cartoonCover.webUrl,
+                intro = cartoonCover.intro,
+            )
+        }
+    }
+
     val tagList: List<String> by lazy {
         if (tagsIdListString.isEmpty()) {
             emptyList()
@@ -139,7 +155,7 @@ data class CartoonInfo(
             source = fromSourceKey,
             name = name,
             coverUrl = coverUrl,
-            intro = "",
+            intro = intro,
             webUrl = detailedUrl
         )
     }

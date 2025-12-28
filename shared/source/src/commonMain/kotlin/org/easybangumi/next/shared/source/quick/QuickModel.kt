@@ -1,6 +1,8 @@
-package org.easybangumi.next.vlcj
+package org.easybangumi.next.shared.source.quick
 
-import uk.co.caprica.vlcj.factory.MediaPlayerFactory
+import org.easybangumi.next.quickjs.QuickJsFactory
+import org.easybangumi.next.shared.source.plugin.PluginLoader
+import org.koin.dsl.module
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -13,10 +15,14 @@ import uk.co.caprica.vlcj.factory.MediaPlayerFactory
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-object VlcjProvider {
+val quickModule = module {
 
-    fun newMediaPlayerFactory(): MediaPlayerFactory {
-        return MediaPlayerFactory()
+    single<QuickJsFactory> {
+        QuickJsFactoryImpl()
+    }
+
+    single<PluginLoader.Factory> {
+        QuickPluginLoaderFactory(get())
     }
 
 }

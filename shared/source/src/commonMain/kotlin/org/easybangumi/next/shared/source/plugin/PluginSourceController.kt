@@ -46,7 +46,7 @@ class PluginSourceController(
 
     companion object {
         const val INDEX_FILE_NAME = "index"
-        const val FILE_SUFFIX = "eb.js"
+        const val FILE_SUFFIX = "js"
     }
 
     private val logger = logger()
@@ -107,20 +107,20 @@ class PluginSourceController(
                                 PluginFileHelper.getManifestFromNormal(it)
                             }
 
-                            val label = manifestMap["label"] ?: return@async null
-                            val key = manifestMap["key"] ?: return@async null
+                            val label = manifestMap[PluginConst.MANIFEST_LABEL_KEY] ?: return@async null
+                            val key = manifestMap[PluginConst.MANIFEST_KEY_KEY] ?: return@async null
                             if (key != it.key) {
                                 logger.error("Plugin key mismatch: ${it.key} != $key")
                                 return@async null
                             }
                             val manifest = SourceManifest(
-                                key = manifestMap["key"] ?: return@async null,
+                                key = manifestMap[PluginConst.MANIFEST_KEY_KEY] ?: return@async null,
                                 label = label,
-                                version = manifestMap["version"]?.toIntOrNull() ?: 0,
-                                author = manifestMap["author"] ?: "",
-                                description = manifestMap["description"] ?: "",
-                                icon = manifestMap["icon"],
-                                website = manifestMap["website"],
+                                version = manifestMap[PluginConst.MANIFEST_VERSION_KEY]?.toIntOrNull() ?: 0,
+                                author = manifestMap[PluginConst.MANIFEST_AUTHOR_KEY] ?: "",
+                                description = manifestMap[PluginConst.MANIFEST_DESCRIPTION_KEY] ?: "",
+                                icon = manifestMap[PluginConst.MANIFEST_ICON_KEY],
+                                website = manifestMap[PluginConst.MANIFEST_WEBSITE_KEY],
                                 map = manifestMap,
                                 type = SourceType.JS,
                                 lastModified = it.lastModified,

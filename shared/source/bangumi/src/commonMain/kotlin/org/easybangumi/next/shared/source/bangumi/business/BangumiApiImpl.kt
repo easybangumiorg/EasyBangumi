@@ -6,7 +6,10 @@ import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
 import io.ktor.http.URLBuilder
+import io.ktor.http.URLProtocol
+import io.ktor.http.contentType
 import io.ktor.http.path
 import kotlinx.coroutines.Deferred
 import org.easybangumi.next.shared.source.bangumi.BangumiConfig
@@ -47,6 +50,7 @@ class BangumiApiImpl(
     // api host
     private fun HttpRequestBuilder.bgmUrl(block: URLBuilder.() -> Unit) {
         url {
+            protocol = URLProtocol.HTTPS
             host = caller.debugHookUrl ?: bangumiConfig.bangumiApiHost
             block(this)
         }
@@ -171,9 +175,10 @@ class BangumiApiImpl(
         return caller.request {
             post {
                 bgmUrl {
-                    path("v0", "users", username, "collections", subjectId)
+                    path("v0", "users", "-", "collections", subjectId)
                     headers.append("Authorization", "Bearer $token")
                 }
+                contentType(ContentType.Application.Json)
                 setBody("{\"type\": $type}")
             }.body()
         }

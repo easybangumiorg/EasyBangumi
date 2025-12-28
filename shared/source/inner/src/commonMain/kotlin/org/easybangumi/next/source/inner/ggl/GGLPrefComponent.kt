@@ -1,6 +1,7 @@
 package org.easybangumi.next.source.inner.ggl
 
 import org.easybangumi.next.shared.source.api.component.BaseComponent
+import org.easybangumi.next.shared.source.api.component.pref.InnerPrefComponent
 import org.easybangumi.next.shared.source.api.component.pref.MediaSourcePreference
 import org.easybangumi.next.shared.source.api.component.pref.PrefComponent
 import org.easybangumi.next.shared.source.api.source.Source
@@ -16,9 +17,9 @@ import org.easybangumi.next.shared.source.api.source.Source
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-class GGLPrefComponent: PrefComponent, BaseComponent() {
+class GGLPrefComponent: InnerPrefComponent, BaseComponent() {
 
-    override suspend fun register(): List<MediaSourcePreference> = listOf(
+    override fun registerInner(): List<MediaSourcePreference>  = listOf(
         MediaSourcePreference.Edit("域名", "host", "bgm.girigirilove.com")
     )
 

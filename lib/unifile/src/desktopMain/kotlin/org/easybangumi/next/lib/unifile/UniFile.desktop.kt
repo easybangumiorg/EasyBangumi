@@ -3,6 +3,7 @@ package org.easybangumi.next.lib.unifile
 import okio.Path
 import okio.Path.Companion.toPath
 import org.easybangumi.next.lib.unifile.core.OkioUniFile
+import org.easybangumi.next.lib.utils.pathProvider
 import java.io.File
 
 /**
@@ -26,6 +27,9 @@ actual fun UniFileFactory.fromUFD(ufd: UFD): UniFile? {
         }
         UFD.TYPE_OKIO -> {
             OkioUniFile(path = ufd.uri.toPath())
+        }
+        UFD.TYPE_ASSETS -> {
+            JvmUniFile(File(pathProvider.getComposeResourcesPath() ,ufd.uri))
         }
         else -> {
             null

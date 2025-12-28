@@ -40,6 +40,8 @@ kotlin {
             implementation(libs.ksoup)
 
             implementation(projects.shared.sourceApi)
+
+            implementation(libs.kotlinx.datetime)
         }
 
         androidMain.dependencies {

@@ -313,6 +313,7 @@ private fun BgmCollect.toCartoonInfo(): CartoonInfo? {
         name = cover.name,
         coverUrl = cover.coverUrl,
         detailedUrl = cover.webUrl,
+        intro = cover.intro,
     )
 }
 

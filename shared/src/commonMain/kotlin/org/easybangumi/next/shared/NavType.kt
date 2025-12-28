@@ -4,7 +4,9 @@ import androidx.navigation.NavType
 import androidx.savedstate.SavedState
 import androidx.savedstate.read
 import androidx.savedstate.write
+import org.easybangumi.next.lib.serialization.deserialize
 import org.easybangumi.next.lib.serialization.jsonSerializer
+import org.easybangumi.next.lib.serialization.serialize
 import org.easybangumi.next.shared.compose.media_radar.MediaRadarParam
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex

@@ -1,25 +1,15 @@
 package org.easybangumi.next.shared.compose.media.normal
 
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.easybangumi.next.shared.compose.media.MediaParam
 import org.easybangumi.next.shared.compose.media.PlayLineIndexVM
-import org.easybangumi.next.shared.compose.media.bangumi.BangumiMediaCommonVM.State
-import org.easybangumi.next.shared.compose.media_radar.MediaRadarVM
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
 import org.easybangumi.next.shared.source.api.component.ComponentBusiness
 import org.easybangumi.next.shared.source.api.component.play.PlayComponent
-import org.easybangumi.next.shared.source.case.PlaySourceCase
+import org.easybangumi.next.shared.source.SourceCase
 import org.koin.core.component.inject
 
 /**
@@ -69,7 +59,7 @@ class NormalMediaCommonVM(
     val playIndexState = playLineIndexVM.logic
 
     // == 播放源状态 =============================
-    val sourceCase: PlaySourceCase by inject()
+    val sourceCase: SourceCase by inject()
 
     init {
         viewModelScope.launch {

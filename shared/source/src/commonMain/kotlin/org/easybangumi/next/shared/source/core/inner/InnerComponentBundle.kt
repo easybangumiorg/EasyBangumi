@@ -52,7 +52,7 @@ class InnerComponentBundle(
         return sourceWrapper
     }
 
-    override fun load() {
+    override suspend fun load() {
         if (loaded.compareAndSet(expect = false, update = true)) {
             val realComponent = innerSource.componentConstructor.map { it.invoke() }
             koinApp = koinApplication {

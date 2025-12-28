@@ -34,7 +34,7 @@ class PlayLineIndexVM(
     var suggestEpisode: Int? = null,
 ): StateViewModel<PlayLineIndexVM.State>(State()) {
 
-    private val logger = logger()
+//    private val logger = logger()
 
     data class State(
         val cartoonIndex: CartoonIndex? = null,

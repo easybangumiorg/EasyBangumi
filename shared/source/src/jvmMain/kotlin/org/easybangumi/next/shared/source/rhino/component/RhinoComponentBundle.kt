@@ -155,10 +155,8 @@ class RhinoComponentBundle(
         }
     }
 
-    override fun load() {
-       runBlocking {
-           loadAsync()
-       }
+    override suspend fun load() {
+        loadAsync()
     }
 
     override fun <T : Any> get(clazz: KClass<T>): T? {

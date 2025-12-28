@@ -1,12 +1,7 @@
 package org.easybangumi.next.shared.ktor
 
-import android.webkit.CookieManager
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.android.Android
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.plugins.cookies.HttpCookies
-import io.ktor.serialization.kotlinx.json.json
-import io.ktor.serialization.kotlinx.xml.xml
+import io.ktor.client.*
+import io.ktor.client.engine.android.*
 import org.koin.core.module.Module
 import org.koin.dsl.binds
 import org.koin.dsl.module

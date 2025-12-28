@@ -23,4 +23,8 @@ class WebViewHelperImpl: WebViewHelper {
             block.invoke(it)
         }
     }
+
+    override suspend fun newWebView(): IWebView {
+        return JcefWebViewProxy()
+    }
 }

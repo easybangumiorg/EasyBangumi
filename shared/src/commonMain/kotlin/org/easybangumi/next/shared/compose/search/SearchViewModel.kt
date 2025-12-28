@@ -3,22 +3,14 @@ package org.easybangumi.next.shared.compose.search
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.focus.FocusRequester
 import androidx.lifecycle.viewModelScope
-import kotlinx.atomicfu.AtomicBoolean
 import kotlinx.atomicfu.atomic
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.shared.compose.search.simple.SimpleSearchViewModel
 import org.easybangumi.next.shared.data.store.StoreProvider
 import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
-import org.easybangumi.next.shared.source.case.PlaySourceCase
+import org.easybangumi.next.shared.source.SourceCase
 import org.koin.core.component.inject
-import kotlin.getValue
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -61,10 +53,10 @@ class SearchViewModel(
     val focusRequester: FocusRequester = FocusRequester()
 
 
-    private val playSourceCase: PlaySourceCase by inject()
+    private val sourceCase: SourceCase by inject()
 
     // 搜索业务
-    val searchBusiness = playSourceCase.searchBusiness().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    val searchBusiness = sourceCase.searchBusiness().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     init {
 

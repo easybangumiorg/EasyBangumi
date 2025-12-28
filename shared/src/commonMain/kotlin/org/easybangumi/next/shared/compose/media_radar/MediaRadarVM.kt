@@ -16,7 +16,7 @@ import org.easybangumi.next.shared.source.api.component.ComponentBusinessPair
 import org.easybangumi.next.shared.source.api.component.play.PlayComponent
 import org.easybangumi.next.shared.source.api.component.search.SearchComponent
 import org.easybangumi.next.shared.source.api.component.search.createPagingSource
-import org.easybangumi.next.shared.source.case.PlaySourceCase
+import org.easybangumi.next.shared.source.SourceCase
 import org.koin.core.component.inject
 
 /**
@@ -60,7 +60,7 @@ class MediaRadarVM (
         val pagingFlow: DataState<PagingFlow<CartoonCover>> = DataState.none(),
     )
 
-    private val playSourceCase: PlaySourceCase by inject()
+    private val sourceCase: SourceCase by inject()
 
     private var pagingTemp: Pair<String, Map<String, PagingFlow<CartoonCover>>>? = null
 
@@ -68,7 +68,7 @@ class MediaRadarVM (
         viewModelScope.launch {
             combine(
                 state.map { it.searchKeyword }.distinctUntilChanged(),
-                playSourceCase.searchBusinessWithPlayFlow().distinctUntilChanged()
+                sourceCase.searchBusinessWithPlayFlow().distinctUntilChanged()
             ) { keyword, playBusiness ->
 
                 if (playBusiness.isLoading) {

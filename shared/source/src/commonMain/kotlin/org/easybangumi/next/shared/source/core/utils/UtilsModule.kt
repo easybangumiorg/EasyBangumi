@@ -1,5 +1,6 @@
 package org.easybangumi.next.shared.source.core.utils
 
+import org.easybangumi.next.shared.source.api.utils.HttpHelper
 import org.easybangumi.next.shared.source.api.utils.NetworkHelper
 import org.easybangumi.next.shared.source.api.utils.PreferenceHelper
 import org.koin.core.module.Module
@@ -26,5 +27,9 @@ internal val utilsModule = module {
     single {
         NetworkHelperImpl()
     }.bind<NetworkHelper>()
+
+    single {
+        HttpHelperImpl(get(), get())
+    }.bind<HttpHelper>()
     includes(utilsModuleExpect)
 }

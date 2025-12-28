@@ -25,5 +25,9 @@ class CartoonInfoCase(
 
     fun flowHistory() = cartoonInfoDao.flowHistory()
 
+    fun changeCartoonInfoTag(
+
+    ) {}
+
 
 }

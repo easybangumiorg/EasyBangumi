@@ -1,17 +1,20 @@
 package org.easybangumi.next.shared.bangumi.data
 
 import kotlinx.atomicfu.locks.ReentrantLock
-import kotlinx.atomicfu.locks.reentrantLock
 import kotlinx.atomicfu.locks.withLock
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.datetime.Clock
 import org.easybangumi.next.lib.unifile.UFD
-import org.easybangumi.next.lib.utils.CoroutineProvider
+import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.shared.bangumi.account.BangumiAccountController
 import org.easybangumi.next.shared.bangumi.data.repository.BangumiCollectionRepository
 import org.easybangumi.next.shared.data.bangumi.BangumiConst
+import org.easybangumi.next.shared.data.bangumi.BgmCollect
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.source.bangumi.source.BangumiCollectComponent.CollectionsPagingSource
-import org.easybangumi.next.shared.source.case.DetailSourceCase
+import org.easybangumi.next.shared.source.SourceCase
+import org.easybangumi.next.shared.source.bangumi.model.BgmRsp
+import kotlin.concurrent.Volatile
 
 /**
  * bangumi 登录态有关数据
@@ -20,7 +23,7 @@ import org.easybangumi.next.shared.source.case.DetailSourceCase
 class BangumiUserDataProvider(
     private val info: BangumiAccountController.BangumiAccountInfo,
     private val bangumiRootFileUfd: UFD,
-    private val detailSourceCase: DetailSourceCase,
+    private val sourceCase: SourceCase,
     private val lock: ReentrantLock,
     private val scope: CoroutineScope,
 ) {
@@ -28,11 +31,34 @@ class BangumiUserDataProvider(
     private val bangumiUserFileUfd = bangumiRootFileUfd.child("user")
     private val collectionRepositoryMap = hashMapOf<String, BangumiCollectionRepository>()
 
+    @Volatile
+    var lastCollectChangeTime = 0L
+        private set
 
     val collectBusiness by lazy {
-        detailSourceCase.getBangumiCollectBusiness()
+        sourceCase.getBangumiCollectBusiness()
     }
 
+    suspend fun changeBangumiCollectType(
+        bangumiCollectType: BangumiConst.BangumiCollectType,
+        cartoonIndex: CartoonIndex,
+        updateRepository: Boolean = true,
+    ): DataState<BgmRsp<String?>> {
+        val resp = collectBusiness.run {
+            changeCollectType(
+                info.username,
+                info.token,
+                bangumiCollectType.type.toString(),
+                cartoonIndex.id
+            )
+        }
+        lastCollectChangeTime = Clock.System.now().toEpochMilliseconds()
+        if (updateRepository && resp.isOk()) {
+            val repository = getCollectRepository(cartoonIndex)
+            repository.refresh()
+        }
+        return resp
+    }
 
     fun getCollectRepository(cartoonIndex: CartoonIndex): BangumiCollectionRepository {
         return getCollectRepository(info, cartoonIndex)

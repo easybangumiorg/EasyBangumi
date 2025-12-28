@@ -19,7 +19,7 @@ interface ComponentBundle {
     fun getSource(): Source
 
     @Throws(ComponentBundleException::class)
-    fun load()
+    suspend fun load()
 
     fun <T : Any> get(clazz: KClass<T>): T?
 

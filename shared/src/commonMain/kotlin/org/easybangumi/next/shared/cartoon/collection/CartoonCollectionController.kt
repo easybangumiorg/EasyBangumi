@@ -7,11 +7,13 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.stateIn
 import org.easybangumi.next.lib.store.file_helper.json.JsonlFileHelper
+import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.PagingFlow
 import org.easybangumi.next.lib.utils.coroutineProvider
 import org.easybangumi.next.shared.data.CartoonInfoCase
 import org.easybangumi.next.shared.data.bangumi.BangumiConst
 import org.easybangumi.next.shared.data.bangumi.BgmCollect
+import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.data.cartoon.CartoonInfo
 import org.easybangumi.next.shared.data.cartoon.CartoonTag
 import org.easybangumi.next.shared.data.store.StoreProvider
@@ -36,13 +38,17 @@ class CartoonCollectionController(
 
     private val collectionTagFileHelper: JsonlFileHelper<CartoonTag> = StoreProvider.cartoonTag
 
-    private val dispatcher = coroutineProvider.newSingle()
+    private val dispatcher = coroutineProvider.io()
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
 
     data class CollectionState(
         val tagList: List<CartoonTag> = emptyList(),
         val collectionDataMap: Map<CartoonTag, CollectionData> = emptyMap(),
+
+        val cartoonInfo2LocalTag: Map<CartoonInfo, List<CartoonTag>> = emptyMap(),
+        val bangumiCollectState: CartoonBangumiCollectionController.BangumiCollectionState = CartoonBangumiCollectionController.BangumiCollectionState()
     )
+
 
     val collectionFlow = combine(
         cartoonInfoCase.flowCollectionLocal().distinctUntilChanged(),
@@ -88,6 +94,7 @@ class CartoonCollectionController(
 
         val label2Tag = tabList.associateBy { it.label }
         val localTag2Cartoon = HashMap<CartoonTag, MutableList<CartoonInfo>>()
+        val cartoon2LocalTag = HashMap<CartoonInfo, MutableList<CartoonTag>>()
 
         fun appendToTag(tagLabel: String, info: CartoonInfo) {
             val tag = label2Tag[tagLabel] ?: return
@@ -95,6 +102,7 @@ class CartoonCollectionController(
                 return
             }
             localTag2Cartoon.getOrPut(tag) { mutableListOf() }.add(info)
+            cartoon2LocalTag.getOrPut(info) { mutableListOf() }.add(tag)
         }
 
         cartoonInfoList.forEach { info ->
@@ -107,7 +115,7 @@ class CartoonCollectionController(
         }
 
         val bangumiData = CollectionData.BangumiCollection(
-            typeList = bangumiCollectionState.typeList,
+            typeList = BangumiConst.collectTypeList,
             type2Collect = bangumiCollectionState.type2Collect
         )
 
@@ -124,6 +132,8 @@ class CartoonCollectionController(
         CollectionState(
             tagList = tabList,
             collectionDataMap = collectionDataMap,
+            cartoonInfo2LocalTag = cartoon2LocalTag,
+            bangumiCollectState = bangumiCollectionState
         )
     }.stateIn(scope, SharingStarted.Lazily, CollectionState())
 

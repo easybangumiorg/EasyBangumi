@@ -1,4 +1,8 @@
-package org.easybangumi.next.quickjs
+package org.easybangumi.next.shared.source.quick
+
+import com.dokar.quickjs.QuickJs
+import org.easybangumi.next.lib.utils.coroutineProvider
+import org.easybangumi.next.quickjs.QuickJsFactory
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -11,8 +15,9 @@ package org.easybangumi.next.quickjs
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-class QuickJsScopeFactory {
+class QuickJsFactoryImpl: QuickJsFactory {
 
-    var runtimeProvider : QuickRuntimeProvider? = null
-
+    override fun createQuickJs(): QuickJs {
+        return QuickJs.create(coroutineProvider.io())
+    }
 }

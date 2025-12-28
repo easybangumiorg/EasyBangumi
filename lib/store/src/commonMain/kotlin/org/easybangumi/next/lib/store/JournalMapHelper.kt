@@ -12,6 +12,7 @@ import okio.buffer
 import okio.use
 import org.easybangumi.next.lib.serialization.deserialize
 import org.easybangumi.next.lib.serialization.jsonSerializer
+import org.easybangumi.next.lib.serialization.serialize
 import org.easybangumi.next.lib.unifile.UFD
 import org.easybangumi.next.lib.unifile.UniFile
 import org.easybangumi.next.lib.unifile.UniFileFactory
@@ -103,10 +104,10 @@ class JournalMapHelper(
                 while (true) {
                     val prevValue = this.value
                     val nextValue = prevValue + (key to value)
-                        if (compareAndSet(prevValue, nextValue)) {
-                            saveOrCombine(nextValue, key to value)
-                            break
-                        }
+                    if (compareAndSet(prevValue, nextValue)) {
+                        saveOrCombine(nextValue, key to value)
+                        break
+                    }
                 }
             }
         }

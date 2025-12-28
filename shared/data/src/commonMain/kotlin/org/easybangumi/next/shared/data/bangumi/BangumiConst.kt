@@ -30,4 +30,8 @@ object BangumiConst {
         BangumiCollectType(5, "抛弃"),
     )
 
+    fun getTypeDataById(type: Int): BangumiConst.BangumiCollectType? {
+        return collectTypeList.getOrNull(type - 1)
+    }
+
 }

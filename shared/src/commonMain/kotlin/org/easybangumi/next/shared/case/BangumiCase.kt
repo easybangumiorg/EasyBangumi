@@ -10,7 +10,7 @@ import org.easybangumi.next.shared.data.bangumi.BgmCharacter
 import org.easybangumi.next.shared.data.bangumi.BgmPerson
 import org.easybangumi.next.shared.data.bangumi.BgmSubject
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
-import org.easybangumi.next.shared.source.case.DetailSourceCase
+import org.easybangumi.next.shared.source.SourceCase
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -26,7 +26,7 @@ import org.easybangumi.next.shared.source.case.DetailSourceCase
 class BangumiCase(
     private val bangumiAccountController: BangumiAccountController,
     private val bangumiDataController: BangumiDataController,
-    private val detailSourceCase: DetailSourceCase,
+    private val sourceCase: SourceCase,
 ) {
     private val logger = logger()
 
@@ -50,7 +50,7 @@ class BangumiCase(
     }
 
     fun coverUrl(cartoonIndex: CartoonIndex): String{
-        return detailSourceCase.getBangumiDetailBusiness().runDirect {
+        return sourceCase.getBangumiDetailBusiness().runDirect {
             coverUrl(cartoonIndex)
         }
     }

@@ -1,5 +1,7 @@
 package org.easybangumi.next.quickjs
 
+import com.dokar.quickjs.QuickJs
+
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
  *
@@ -11,8 +13,8 @@ package org.easybangumi.next.quickjs
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-interface QuickRuntimeProvider {
+interface QuickJsFactory {
 
-    fun getRuntime(): QuickRuntime
+    fun createQuickJs(): QuickJs?
 
 }

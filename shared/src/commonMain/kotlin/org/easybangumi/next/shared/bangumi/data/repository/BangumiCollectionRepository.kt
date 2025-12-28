@@ -10,7 +10,9 @@ import okio.BufferedSource
 import okio.buffer
 import okio.use
 import org.easybangumi.next.lib.logger.logger
+import org.easybangumi.next.lib.serialization.deserialize
 import org.easybangumi.next.lib.serialization.jsonSerializer
+import org.easybangumi.next.lib.serialization.serialize
 import org.easybangumi.next.lib.store.repository.FileMutableAbsRepository
 import org.easybangumi.next.lib.unifile.UFD
 import org.easybangumi.next.lib.unifile.UniFileFactory
@@ -19,6 +21,7 @@ import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.MutableDataRepository
 import org.easybangumi.next.shared.bangumi.account.BangumiAccountController
 import org.easybangumi.next.shared.data.bangumi.BgmCollect
+import org.easybangumi.next.shared.data.bangumi.BgmCollectResp
 import org.easybangumi.next.shared.data.bangumi.BgmSubject
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.source.api.component.ComponentBusiness
@@ -41,12 +44,12 @@ class BangumiCollectionRepository(
     val bangumiCollectBusiness: ComponentBusiness<BangumiCollectComponent>,
     private val cartoonIndex: CartoonIndex,
     private val scope: CoroutineScope,
-): MutableDataRepository<BgmCollect> {
+): MutableDataRepository<BgmCollectResp> {
 
     protected val logger = logger(this.toString())
 
-    private val _flow = MutableStateFlow<DataState<BgmCollect>>(DataState.Companion.none())
-    override val flow: StateFlow<DataState<BgmCollect>> = _flow
+    private val _flow = MutableStateFlow<DataState<BgmCollectResp>>(DataState.Companion.none())
+    override val flow: StateFlow<DataState<BgmCollectResp>> = _flow
 
     private val folder by lazy {
         UniFileFactory.fromUFD(folder)
@@ -60,22 +63,31 @@ class BangumiCollectionRepository(
         innerRefresh()
         return true
     }
-    suspend fun fetchRemoteData(): DataState<BgmCollect> {
+    suspend fun fetchRemoteData(): DataState<BgmCollectResp> {
         return bangumiCollectBusiness.run {
             getCollection(accountInfo.username, accountInfo.token, cartoonIndex)
         }
     }
 
-    fun save(data: BgmCollect, sink: BufferedSink) {
-        val json = jsonSerializer.serialize(data)
-        logger.info(json)
-        if (json.isNotEmpty()) {
-            sink.writeUtf8(json)
+    fun save(data: BgmCollectResp, sink: BufferedSink) {
+        if (data is BgmCollectResp.BgmCollectNone) {
+            sink.writeUtf8("None")
+            return
+        } else if (data is BgmCollectResp.BgmCollectData){
+            val json = jsonSerializer.serialize(data.data)
+            logger.info(json)
+            if (json.isNotEmpty()) {
+                sink.writeUtf8(json)
+            }
         }
+
     }
-    fun load(source: BufferedSource): BgmCollect? {
+    fun load(source: BufferedSource): BgmCollectResp? {
         val text = source.readUtf8()
-        return jsonSerializer.deserialize(text, BgmCollect::class, null)
+        if (text == "None") {
+            return BgmCollectResp.BgmCollectNone
+        }
+        return jsonSerializer.deserialize(text, BgmCollect::class, null)?.let { BgmCollectResp.BgmCollectData(it) }
     }
 
 
@@ -83,7 +95,7 @@ class BangumiCollectionRepository(
         innerLoadCache()
     }
 
-    override suspend fun update(data: BgmCollect, isCache: Boolean, timestamp: Long) {
+    override suspend fun update(data: BgmCollectResp, isCache: Boolean, timestamp: Long) {
         val data = DataState.Companion.ok(data, isCache, timestamp = timestamp)
         _flow.update {
             data

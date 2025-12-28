@@ -3,14 +3,12 @@
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import org.easybangumi.next.lib.utils.coroutineProvider
-import org.easybangumi.next.shared.source.case.DetailSourceCase
-import org.easybangumi.next.shared.source.case.DiscoverSourceCase
-import org.easybangumi.next.shared.source.case.PlaySourceCase
+import org.easybangumi.next.shared.source.SourceCase
 import org.easybangumi.next.shared.source.core.inner.InnerSourceProvider
 import org.easybangumi.next.shared.source.core.source.SourceConfigController
 import org.easybangumi.next.shared.source.core.source.SourceController
 import org.easybangumi.next.shared.source.plugin.PluginSourceController
-import org.koin.core.context.loadKoinModules
+import org.easybangumi.next.shared.source.quick.quickModule
 import org.koin.core.module.Module
 import org.koin.dsl.module
 
@@ -28,9 +26,6 @@ import org.koin.dsl.module
 expect val sourceModuleCore: Module
 val sourceModule = module {
     single {
-        PlaySourceCase(get())
-    }
-    single {
         SourceConfigController()
     }
     single {
@@ -43,10 +38,8 @@ val sourceModule = module {
         PluginSourceController(CoroutineScope(SupervisorJob() + coroutineProvider.io()) , get(), get())
     }
     single {
-        DiscoverSourceCase(get())
+        SourceCase(get(), get())
     }
-    single {
-        DetailSourceCase(get())
-    }
+    includes(quickModule)
     includes(sourceModuleCore)
 }

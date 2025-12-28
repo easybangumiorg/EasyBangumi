@@ -1,4 +1,6 @@
-package org.easybangumi.next.quickjs
+package org.easybangumi.next.shared.compose.detail.bangumi
+
+import androidx.compose.runtime.Composable
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -10,18 +12,18 @@ package org.easybangumi.next.quickjs
  *    You may obtain a copy of the License at
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *  native -> js
  */
-interface QuickApi {
+// 收藏按钮 - 聚合本地收藏与 Bangumi 收藏
+@Composable
+fun BangumiDetailCollectBtn(
+    vm: BangumiDetailVM
+) {
 
-    interface Factory {
-        suspend fun create(): List<QuickApi>
-    }
+}
 
-    val name: String
-    val action: List<String>
-
-
-
+// 播放按钮
+@Composable
+fun BangumiDetailPlayBtn(
+    vm: BangumiDetailVM
+) {
 }

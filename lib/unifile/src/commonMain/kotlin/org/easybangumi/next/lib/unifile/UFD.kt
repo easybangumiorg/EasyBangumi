@@ -27,6 +27,7 @@ data class UFD(
         const val TYPE_OKIO = "okio"
         const val TYPE_JVM = "jvm"
         const val TYPE_ANDROID_UNI = "android_uni"
+        const val TYPE_ASSETS = "assets"
     }
 
     fun child(display: String): UFD? {
@@ -38,6 +39,10 @@ data class UFD(
             TYPE_JVM -> {
                 val child = uri.toPath().div(display)
                 return UFD(TYPE_JVM, child.toString())
+            }
+            TYPE_ASSETS -> {
+                val child = uri.toPath().div(display)
+                return UFD(TYPE_ASSETS, child.toString())
             }
             else -> {
                 val uni = UniFileFactory.fromUFD(this) ?: return null

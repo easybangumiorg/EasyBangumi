@@ -1,4 +1,7 @@
-package org.easybangumi.next.quickjs
+package org.easybangumi.next.shared.source.quick.component
+
+import com.dokar.quickjs.QuickJs
+import kotlin.reflect.KClass
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -11,5 +14,15 @@ package org.easybangumi.next.quickjs
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-class QuickJsService {
+interface QuickComponentWrapper {
+
+    interface Factory<T : QuickComponentWrapper> {
+
+        suspend fun create(
+            quickJs: QuickJs
+        ): T?
+
+    }
+
+    fun getComponentClazz(): Array<KClass<*>>
 }

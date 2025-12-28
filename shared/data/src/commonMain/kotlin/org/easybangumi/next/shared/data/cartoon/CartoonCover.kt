@@ -26,14 +26,21 @@ data class CartoonCover(
     val webUrl: String,
 ): Extractor {
 
+    fun toIdentify(): String {
+        return "${id},${source}"
+    }
 
-    fun toCartoonIndex(): CartoonIndex {
-        return CartoonIndex(
+    val cartoonIndex: CartoonIndex by lazy {
+        CartoonIndex(
             id = id,
             source = source,
         ).apply {
             ext = this@CartoonCover.ext
         }
+    }
+
+    fun toCartoonIndex(): CartoonIndex {
+        return cartoonIndex
     }
 
 

@@ -1,13 +1,21 @@
-﻿package org.easybangumi.next.shared.source.case
+package org.easybangumi.next.shared.source
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import org.easybangumi.next.shared.source.api.component.ComponentBusiness
 import org.easybangumi.next.shared.source.api.component.ComponentBusinessPair
+import org.easybangumi.next.shared.source.api.component.collect.CollectComponent
+import org.easybangumi.next.shared.source.api.component.detail.DetailComponent
+import org.easybangumi.next.shared.source.api.component.discover.DiscoverComponent
 import org.easybangumi.next.shared.source.api.component.play.PlayComponent
 import org.easybangumi.next.shared.source.api.component.search.SearchComponent
 import org.easybangumi.next.shared.source.api.source.SourceInfo
+import org.easybangumi.next.shared.source.api.source.SourceManifest
+import org.easybangumi.next.shared.source.bangumi.source.BangumiCollectComponent
+import org.easybangumi.next.shared.source.bangumi.source.BangumiDetailComponent
+import org.easybangumi.next.shared.source.bangumi.source.BangumiDiscoverComponent
+import org.easybangumi.next.shared.source.core.inner.InnerSourceProvider
 import org.easybangumi.next.shared.source.core.source.SourceController
 
 /**
@@ -21,10 +29,44 @@ import org.easybangumi.next.shared.source.core.source.SourceController
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-
-class PlaySourceCase(
-    private val sourceController: SourceController
+class SourceCase(
+    private val sourceController: SourceController,
+    private val innerSourceProvider: InnerSourceProvider,
 ) {
+
+    // ======== Bangumi ============================
+
+    fun getBangumiDetailBusiness(): ComponentBusiness<BangumiDetailComponent> {
+        return (innerSourceProvider.bangumiComponentBundle.getBusiness(
+            DetailComponent::class,
+        ) as? ComponentBusiness<BangumiDetailComponent>) ?: throw IllegalStateException("BangumiDetailComponent not found")
+    }
+
+    fun getBangumiCollectBusiness(): ComponentBusiness<BangumiCollectComponent> {
+        return (innerSourceProvider.bangumiComponentBundle.getBusiness(
+            CollectComponent::class,
+        ) as? ComponentBusiness<BangumiCollectComponent>) ?: throw IllegalStateException("BangumiCollectComponent not found")
+    }
+
+    fun getBangumiDiscoverBusiness(): ComponentBusiness<BangumiDiscoverComponent> {
+        return innerSourceProvider.bangumiComponentBundle.getBusiness(DiscoverComponent::class) as? ComponentBusiness<BangumiDiscoverComponent>
+            ?: throw IllegalStateException("BangumiDiscoverComponent not found")
+    }
+
+    fun playComponentFlow(
+        sourceKey: String,
+    ): Flow<ComponentBusiness<PlayComponent>?> {
+        return sourceController.flow.map {
+            var res: ComponentBusiness<PlayComponent>? = null
+            it.sourceInfoList.filterIsInstance<SourceInfo.Loaded>().forEach {
+                if (it.manifest.key == sourceKey) {
+                    res = it.componentBundle.getBusiness(PlayComponent::class)
+                }
+            }
+            res
+        }
+    }
+
 
     data class FindPlayBusinessResp(
         val businessList: List<ComponentBusiness<PlayComponent>>,
@@ -50,6 +92,7 @@ class PlaySourceCase(
             )
         }
     }
+
 
     data class FindSearchBusinessResp(
         val business: List<ComponentBusinessPair<SearchComponent, PlayComponent>>,
@@ -92,15 +135,11 @@ class PlaySourceCase(
         }
     }
 
-    fun playComponentFlow(
-        sourceKey: String,
-    ): Flow<ComponentBusiness<PlayComponent>?> {
+    fun sourceManifestFlow(): Flow<List<SourceManifest>> {
         return sourceController.flow.map {
-            var res: ComponentBusiness<PlayComponent>? = null
-            it.sourceInfoList.filterIsInstance<SourceInfo.Loaded>().forEach {
-                if (it.manifest.key == sourceKey) {
-                    res = it.componentBundle.getBusiness(PlayComponent::class)
-                }
+            val res = arrayListOf<SourceManifest>()
+            it.sourceInfoList.forEach {
+                res.add(it.manifest)
             }
             res
         }

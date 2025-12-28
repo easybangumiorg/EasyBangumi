@@ -20,7 +20,7 @@ import kotlin.coroutines.CoroutineContext
 
 sealed class DataState<T> {
 
-    abstract val  timestamp: Long
+    abstract val timestamp: Long
     abstract val cacheData: T?
 
     class None<T>(
@@ -55,7 +55,7 @@ sealed class DataState<T> {
 
     class Error<T>(
         val errorMsg: String,
-        val throwable: Throwable?,
+        val throwable: Throwable? = null,
         val isEmpty: Boolean = false,
         override val cacheData: T? = null,
         override val timestamp: Long = Clock.System.now().toEpochMilliseconds()
@@ -130,6 +130,10 @@ sealed class DataState<T> {
             is Ok -> data
             else -> null
         }
+    }
+
+    fun okOrCache(): T? {
+        return okOrNull() ?: cacheData
     }
 
     inline fun onOK(block: (T) -> Unit): DataState<T> {

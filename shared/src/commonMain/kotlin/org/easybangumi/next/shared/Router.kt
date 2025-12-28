@@ -31,6 +31,7 @@ import org.easybangumi.next.shared.compose.media.MediaParam
 import org.easybangumi.next.shared.compose.media_radar.MediaRadarParam
 import org.easybangumi.next.shared.compose.search.Search
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
+import org.easybangumi.next.shared.data.cartoon.CartoonInfo
 import org.easybangumi.next.shared.source.bangumi.source.BangumiInnerSource
 
 /**
@@ -146,7 +147,15 @@ fun NavController.navigateToDetailOrMedia(
         )
         this.navigate(media)
     }
+}
 
+fun NavController.navigateToDetailOrMedia(
+    cartoonInfo: CartoonInfo
+) {
+    navigateToDetailOrMedia(
+        cartoonIndex = cartoonInfo.toCartoonIndex(),
+        cartoonCover = cartoonInfo.toCartoonCover()
+    )
 }
 
 

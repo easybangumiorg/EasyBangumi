@@ -6,7 +6,9 @@ import kotlinx.io.files.Path
 import okio.buffer
 import okio.use
 import org.easybangumi.next.lib.serialization.JsonSerializer
+import org.easybangumi.next.lib.serialization.deserialize
 import org.easybangumi.next.lib.serialization.jsonSerializer
+import org.easybangumi.next.lib.serialization.serialize
 import org.easybangumi.next.lib.unifile.UFD
 import org.easybangumi.next.lib.unifile.UniFile
 import org.easybangumi.next.lib.unifile.UniFileFactory

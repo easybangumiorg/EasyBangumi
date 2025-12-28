@@ -24,6 +24,8 @@ actual interface PathProvider {
 
     actual fun getCachePath(type: String): UFD
 
+    fun getComposeResourcesPath(): String?
+
     fun getCacheJvmPath(type: String): String
 
     fun getFileJvmPath(type: String): String
@@ -32,6 +34,10 @@ actual interface PathProvider {
 private class PathProviderImpl : PathProvider {
 
     val logger = logger()
+
+    private val composeResourcePath: String? by lazy {
+        System.getProperty("compose.application.resources.dir")
+    }
 
     private val cachePathRoot: String by lazy {
         // 1. 先找 jvm 缓存
@@ -44,7 +50,7 @@ private class PathProviderImpl : PathProvider {
         }
 
         // 2. 找 compose 资源目录的父目录
-        val comResCache = System.getProperty("compose.application.resources.dir")?.let {
+        val comResCache = composeResourcePath?.let {
             Path(it).parent?.resolve("cache")?.toAbsolutePath()?.pathString
         }
         if (!comResCache.isNullOrEmpty()) {
@@ -67,7 +73,7 @@ private class PathProviderImpl : PathProvider {
     private val filePathRoot: String by lazy {
 
         // 1. 找 compose 资源目录的父目录
-        val comResFile = System.getProperty("compose.application.resources.dir")?.let {
+        val comResFile = composeResourcePath?.let {
             Path(it).parent?.resolve("file")?.toAbsolutePath()?.pathString
         }
         if (!comResFile.isNullOrEmpty()) {
@@ -85,6 +91,10 @@ private class PathProviderImpl : PathProvider {
         }
 
         throw Exception("Desktop can not find cache path")
+    }
+
+    override fun getComposeResourcesPath(): String? {
+        return composeResourcePath
     }
 
     override fun getFilePath(type: String): UFD {

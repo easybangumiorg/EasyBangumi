@@ -16,11 +16,12 @@ import org.easybangumi.next.shared.RouterPage
 import org.easybangumi.next.shared.case.BangumiCase
 import org.easybangumi.next.shared.data.CartoonInfoCase
 import org.easybangumi.next.shared.data.bangumi.*
+import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.data.cartoon.CartoonInfo
 import org.easybangumi.next.shared.foundation.view_model.StateViewModel
 import org.easybangumi.next.shared.resources.Res
-import org.easybangumi.next.shared.source.case.DetailSourceCase
+import org.easybangumi.next.shared.source.SourceCase
 import org.koin.core.component.inject
 
 /**
@@ -48,15 +49,15 @@ class BangumiDetailVM(
         EPISODE(1, Res.strings.episode),
         COMMENT(2, Res.strings.comment),
     }
-    private val logger = logger()
+//    private val logger = logger()
 
     val isDetailShowAll =  mutableStateOf(false)
     val isTabShowAll = mutableStateOf(false)
 
     val cartoonInfoCase: CartoonInfoCase by inject()
     val bangumiCase: BangumiCase by inject()
-    val detailSourceCase: DetailSourceCase by inject()
-    val bangumiDetailBusiness = detailSourceCase.getBangumiDetailBusiness()
+    val sourceCase: SourceCase by inject()
+    val bangumiDetailBusiness = sourceCase.getBangumiDetailBusiness()
 
     val subjectRepository = bangumiCase.getSubjectRepository(cartoonIndex)
     val characterRepository = bangumiCase.getCharacterListRepository(cartoonIndex)
@@ -73,14 +74,38 @@ class BangumiDetailVM(
         val characterState: DataState<List<BgmCharacter>> = DataState.none(),
         val personState: DataState<List<BgmPerson>> = DataState.none(),
 
-        val collectionState: DataState<BgmCollect> = DataState.none(),
+        val collectionState: DataState<BgmCollectResp> = DataState.none(),
         val cartoonInfo: CartoonInfo? = null,
 
         val commentPaging: PagingFlow<BgmReviews>? = null,
         val episodePaging: PagingFlow<BgmEpisode>? = null,
 
         val hasBgmAccountInfo: Boolean = false,
+
+        val dialog: Dialog? = null
     )
+
+    sealed class Dialog {
+        data class CollectDialog(val cartoonCover: CartoonCover): Dialog()
+    }
+
+    fun openCollectDialog() {
+        state.value.subjectState.okOrNull()?.cartoonCover?.let { cover ->
+            update {
+                it.copy(
+                    dialog = Dialog.CollectDialog(cover)
+                )
+            }
+        }
+    }
+
+    fun dialogDismiss() {
+        update {
+            it.copy(
+                dialog = null
+            )
+        }
+    }
 
 
     val coverUrl  = bangumiDetailBusiness.runDirect {
@@ -125,7 +150,7 @@ class BangumiDetailVM(
                 .flatMapLatest { provider ->
                     // provider 为空代表没有登录，返回空的收藏状态
                     val collectFlow = if (provider == null) {
-                        flowOf(DataState.none<BgmCollect>())
+                        flowOf(DataState.none<BgmCollectResp>())
                     } else {
                         provider.getCollectRepository(cartoonIndex).flow
                     }
