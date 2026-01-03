@@ -6,6 +6,7 @@ import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.coroutineProvider
 import org.easybangumi.next.platform.DesktopPlatform
 import org.easybangumi.next.libplayer.vlcj.VlcjBridgeManager
+import org.easybangumi.next.shared.playcon.desktop.FullscreenStrategy
 import org.koin.core.context.loadKoinModules
 import org.koin.core.context.startKoin
 import org.koin.dsl.bind
@@ -50,6 +51,16 @@ object Desktop {
                         "--intf=dummy",
                         "--vout=any"
                     ))
+                }
+
+                single {
+                    WindowController()
+                }
+
+                single {
+                    FullscreenStrategy(
+                        windowState = { get<WindowController>().getFirstWindowState() ?: throw IllegalStateException() },
+                    )
                 }
             })
         }

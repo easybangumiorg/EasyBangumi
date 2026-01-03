@@ -3,6 +3,7 @@ package org.easybangumi.next.shared.playcon.desktop
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.utils.DataState
@@ -13,6 +14,7 @@ import org.easybangumi.next.libplayer.vlcj.VlcjPlayerBridge
 import org.easybangumi.next.libplayer.vlcj.VlcjPlayerFrame
 import org.easybangumi.next.shared.data.cartoon.PlayInfo
 import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
+import org.easybangumi.next.shared.playcon.BasePlayconViewModel
 import org.easybangumi.next.shared.playcon.pointer.PointerPlayconVM
 import org.koin.core.component.inject
 
@@ -33,6 +35,7 @@ class DesktopPlayerVM: BaseViewModel() {
         const val MEDIA_COMPONENT_ASPECT = 16f / 9f
     }
 
+    private val fullscreenStrategy: FullscreenStrategy by inject()
 
     val vlcjManager: VlcjBridgeManager by inject()
     val vlcjPlayerBridge: VlcjPlayerBridge by lazy {
@@ -50,12 +53,23 @@ class DesktopPlayerVM: BaseViewModel() {
     val isFinalLoading = mutableStateOf(false)
 
 
-
     init {
 
         vlcPlayerFrameState.bindBridge(vlcjPlayerBridge)
         addCloseable(vlcPlayerFrameState)
         addCloseable(vlcjPlayerBridge)
+
+        viewModelScope.launch {
+            snapshotFlow {
+                fullscreenStrategy.isFullscreen()
+            }.collectLatest {
+                playconVM.screenMode = if (it) {
+                    BasePlayconViewModel.ScreenMode.FULLSCREEN
+                } else {
+                    BasePlayconViewModel.ScreenMode.NORMAL
+                }
+            }
+        }
 
         viewModelScope.launch {
             snapshotFlow {
@@ -89,6 +103,14 @@ class DesktopPlayerVM: BaseViewModel() {
     override fun onCleared() {
         vlcjManager.release(this.toString())
         super.onCleared()
+    }
+
+    fun enterFullscreen() {
+        fullscreenStrategy.enterFullscreen()
+    }
+
+    fun exitFullscreen() {
+        fullscreenStrategy.exitFullscreen()
     }
 
 }

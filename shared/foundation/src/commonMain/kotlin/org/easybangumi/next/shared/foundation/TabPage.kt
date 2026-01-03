@@ -106,6 +106,7 @@ fun TabPage(
     beyondBoundsPageCount: Int = 0,
     containerColor: Color = MaterialTheme.colorScheme.surface,
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
+    tabScrollable: Boolean = false,
     onTabSelect: (Int) -> Unit,
     tabs: @Composable (Int, Boolean) -> Unit,
     contents: @Composable PagerScope.(Int) -> Unit,
@@ -133,6 +134,7 @@ fun TabPage(
                         pagerState.animateScrollToPage(it)
                     }
                 },
+                scrollable = tabScrollable,
                 tabs = tabs
             )
             HorizontalDivider()
@@ -156,7 +158,7 @@ fun TabIndicator(currentTabPosition: TabPosition) {
     TabRowDefaults.SecondaryIndicator(
         Modifier
             .tabIndicatorOffset(currentTabPosition)
-            .padding(horizontal = 8.dp)
+            .padding(horizontal = 32.dp)
             .clip(RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp)),
     )
 }

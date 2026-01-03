@@ -100,12 +100,12 @@ class CartoonCollectVM(
                 val realTags = localPair.first
                 val localTagList = localPair.second
 
-                // 如果没有任何标签（没有本地收藏） && 本地只有一个标签 && Bangumi 未登录，帮用户手动选择第一个标签，优化一下体验
-                // 虽然一般这种情况不会弹出收藏对话框（
-                if (realTags.isEmpty() && localTagList.size == 1 && !bangumiCollectState.isLogin) {
-                    val firstTag = localTagList.first()
-                    realTags += firstTag
-                }
+//                // 如果没有任何标签（没有本地收藏） && 本地只有一个标签 && Bangumi 未登录，帮用户手动选择第一个标签，优化一下体验
+//                // 虽然一般这种情况不会弹出收藏对话框（
+//                if (realTags.isEmpty() && localTagList.size == 1 && !bangumiCollectState.isLogin) {
+//                    val firstTag = localTagList.first()
+//                    realTags += firstTag
+//                }
 
                 val localState = LocalState(
                     isLoading = false,
@@ -255,7 +255,10 @@ class CartoonCollectVM(
                     )
                 )
             }
-            collectController.collectionFlow
+            collectController.changeCartoonTag(
+                cartoonCover,
+                state.value.localState.selection
+            )
         }
     }
 

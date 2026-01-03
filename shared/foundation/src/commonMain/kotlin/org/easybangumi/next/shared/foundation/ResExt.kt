@@ -9,7 +9,7 @@ import org.easybangumi.next.lib.utils.ResourceOr
  * Created by heyanle on 2025/3/3.
  */
 @Composable
-fun stringRes(resource: ResourceOr): String {
+fun stringRes(resource: ResourceOr): String{
     if (resource is StringResource) {
         return stringResource(resource)
     }

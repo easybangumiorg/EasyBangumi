@@ -47,6 +47,10 @@ class CollectionVM: StateViewModel<CollectionVM.State>(State()) {
 
     sealed class DialogState {}
 
+    fun onLaunchEffect() {
+        collectionController.refreshBangumiCollectionIfNeed()
+    }
+
     // 最后一个选择的，用于长按区间反选
     private var lastSelectCartoon: CartoonInfo? = null
     private var lastSelectTag: CartoonTag? = null

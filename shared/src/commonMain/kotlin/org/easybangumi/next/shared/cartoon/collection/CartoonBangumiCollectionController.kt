@@ -13,11 +13,13 @@ import org.easybangumi.next.lib.utils.PagingFlow
 import org.easybangumi.next.lib.utils.coroutineProvider
 import org.easybangumi.next.lib.utils.newPagingFlow
 import org.easybangumi.next.lib.utils.safeCancel
+import org.easybangumi.next.shared.bangumi.data.BangumiUserDataProvider.Companion.lastCollectChangeTime
 import org.easybangumi.next.shared.case.BangumiCase
 import org.easybangumi.next.shared.data.bangumi.BangumiConst
 import org.easybangumi.next.shared.data.bangumi.BgmCollect
 import org.easybangumi.next.shared.source.bangumi.source.BangumiCollectComponent
 import kotlin.reflect.typeOf
+import kotlin.time.Clock
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -42,7 +44,8 @@ class CartoonBangumiCollectionController(
         val isLogin: Boolean = false,
         val pagingSource: Map<BangumiConst.BangumiCollectType, BangumiCollectComponent.CollectionsPagingSource> = mapOf(),
         val type2Collect: Map<BangumiConst.BangumiCollectType, PagingFlow<BgmCollect>> = emptyMap(),
-        val type2Scope: Map<BangumiConst.BangumiCollectType, CoroutineScope> = emptyMap()
+        val type2Scope: Map<BangumiConst.BangumiCollectType, CoroutineScope> = emptyMap(),
+        val updateTime: Long = kotlinx.datetime.Clock.System.now().toEpochMilliseconds(),
     )
     private val _flow = MutableStateFlow<BangumiCollectionState>(BangumiCollectionState())
     val flow = _flow.asStateFlow()
@@ -90,6 +93,16 @@ class CartoonBangumiCollectionController(
         }
     }
 
+    fun refreshIfNeed() {
+        val currentState = _flow.value
+        if (currentState.pagingSource.isEmpty()) {
+            return
+        }
+        if (currentState.updateTime < lastCollectChangeTime) {
+            refresh()
+        }
+    }
+
     /**
      * 刷新所有 PagingFlow
      * 使用当前的 PagingSource 重新创建 PagingFlow
@@ -100,7 +113,6 @@ class CartoonBangumiCollectionController(
         if (currentState.pagingSource.isEmpty()) {
             return
         }
-
         scope.launch {
             // 取消之前的 scope，清理旧的 flow 数据
             currentState.type2Scope.values.forEach { it.safeCancel() }
@@ -120,7 +132,8 @@ class CartoonBangumiCollectionController(
                 it.copy(
                     isLoading = false,
                     type2Collect = type2CollectMap,
-                    type2Scope = type2ScopeMap
+                    type2Scope = type2ScopeMap,
+                    updateTime = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
                 )
             }
         }

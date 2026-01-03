@@ -24,9 +24,12 @@ sealed class DataState<T> {
     abstract val cacheData: T?
 
     class None<T>(
-        override val cacheData: T? = null,
         override val timestamp: Long = Clock.System.now().toEpochMilliseconds()
     ) : DataState<T>() {
+
+        override val cacheData: T?
+            get() = null
+
         override fun toString(): String {
             return "None(timestamp=$timestamp)"
         }

@@ -10,7 +10,7 @@ import kotlin.reflect.KClass
 /**
  * Created by heyanle on 2025/5/27.
  */
-abstract class AbsPlayerBridge : PlayerBridge {
+abstract class AbsPlayerBridge<T: Any> : PlayerBridge<T> {
 
     protected val innerPlayStateFlow = MutableStateFlow(C.State.IDLE)
     override val playStateFlow: StateFlow<C.State> = innerPlayStateFlow
@@ -28,10 +28,10 @@ abstract class AbsPlayerBridge : PlayerBridge {
 
     @OptIn(ExperimentalAtomicApi::class)
     private val actionInit = AtomicBoolean(false)
-    private val actionMap = mutableMapOf<KClass<out Action>, Action>()
+    private val actionMap = mutableMapOf<KClass<out Action<*>>, Action<*>>()
 
     @OptIn(ExperimentalAtomicApi::class)
-    override fun <A : Action> action(): A? {
+    override fun <A : Action<*>> action(): A? {
         if (!actionInit.compareAndSet(expectedValue = false, newValue = true)) {
             actionMap.putAll(prepareAction())
         }
@@ -39,7 +39,7 @@ abstract class AbsPlayerBridge : PlayerBridge {
         return actionMap[Action::class] as? A
     }
 
-    abstract fun prepareAction(): Map<KClass<out Action>, Action>
+    abstract fun prepareAction(): Map<KClass<out Action<*>>, Action<*>>
 
 
 }

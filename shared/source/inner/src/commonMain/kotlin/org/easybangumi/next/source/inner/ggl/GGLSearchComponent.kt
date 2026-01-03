@@ -55,16 +55,20 @@ class GGLSearchComponent: SearchComponent, BaseComponent() {
             val doc = Ksoup.parse(html)
             val list = arrayListOf<CartoonCover>()
 
-            doc.select("div div.public-list-box.search-box").forEach {
+            doc.select("div.box-width div.row div.search-list.vod-detail").forEach { ro ->
+                val it = ro.child(0);
                 val uu = it.child(1).child(0).attr("href")
                 val id = uu.subSequence(1, uu.length - 1).toString()
 
-                val coverStyle = it.select("div.cover")[0].attr("style")
-                val coverPattern = Regex("""(?<=url\().*(?=\))""")
-                var cover = coverPattern.find(coverStyle)?.value ?: ""
+                var cover = it.select("img.gen-movie-img")[0].attr("data-src")
                 cover = UrlUtils.parse("https://${host}", cover)
 
-                val title = it.select("div.thumb-content div.thumb-txt").first()?.text() ?: ""
+                val detailInfo = it.select("div.detail-info").first()
+                val titleEle = detailInfo?.select("h3.slide-info-title")?.first()
+                var title = "";
+                if (titleEle != null) {
+                    title = titleEle.text();
+                }
                 val b = CartoonCover(
                     id = id,
                     source = source.key,

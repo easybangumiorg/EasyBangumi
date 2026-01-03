@@ -8,13 +8,10 @@ import org.easybangumi.next.libplayer.api.action.Action
  * 各平台需要自己实现
  * Created by heyanle on 2025/5/27.
  */
-interface PlayerBridge: AutoCloseable {
+interface PlayerBridge<T: Any>: AutoCloseable {
 
-    interface Factory {
-        fun create(): PlayerBridge
-    }
-
-    val impl: Any
+    // 尽量不要使用该变量，走 action
+    val impl: T
 
     val playStateFlow: StateFlow<C.State>
 
@@ -37,19 +34,19 @@ interface PlayerBridge: AutoCloseable {
     fun setScaleType(scaleType: C.RendererScaleType)
     val scaleTypeFlow: StateFlow<C.RendererScaleType>
 
-    fun <A: Action> action(): A?
+    fun <A: Action<*>> action(): A?
 
 
 
 }
 
-inline fun <A: Action, R> PlayerBridge.action(check: Boolean = true, block: A.()->Unit,) {
+inline fun <A: Action<P>, P: Any, R> PlayerBridge<P>.action(check: Boolean = true, block: A.()->R,): R? {
     val action = action<A>()
     if (action == null) {
         if (check) {
             throw IllegalStateException("Action is null")
         }
-        return
+        return null
     }
     return action.block()
 }

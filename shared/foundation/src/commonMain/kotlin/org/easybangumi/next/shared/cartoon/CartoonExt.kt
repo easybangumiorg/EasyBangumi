@@ -17,11 +17,11 @@ import org.easybangumi.next.shared.resources.Res
  */
 fun CartoonTag.displayName(): ResourceOr {
     return when (label) {
-        CartoonTag.DEFAULT_TAG_LABEL -> {
+        CartoonTag.Companion.DEFAULT_TAG_LABEL -> {
             Res.strings.default_word
         }
-        CartoonTag.BANGUMI_TAG_LABEL -> {
-            "Bangumi"
+        CartoonTag.Companion.BANGUMI_TAG_LABEL -> {
+            Res.strings.bangumi
         }
         else -> label
     }

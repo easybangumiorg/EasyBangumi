@@ -2,6 +2,7 @@ package org.easybangumi.next.shared.data.bangumi
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -34,4 +35,9 @@ data class BgmCollect (
     @SerialName("type")         val type: Long? = null,
     @SerialName("rate")         val rate: Long? = null,
     @SerialName("private")      val private: Boolean? = null
-)
+) {
+    @Transient
+    val bangumiType: BangumiConst.BangumiCollectType? by lazy {
+        BangumiConst.getTypeDataById(this.type?.toInt() ?: 1)
+    }
+}

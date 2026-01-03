@@ -152,7 +152,9 @@ class BangumiDetailVM(
                     val collectFlow = if (provider == null) {
                         flowOf(DataState.none<BgmCollectResp>())
                     } else {
-                        provider.getCollectRepository(cartoonIndex).flow
+                        provider.getCollectRepository(cartoonIndex).apply {
+                            refreshIfNoneOrCache()
+                        }.flow
                     }
                     collectFlow.map { collectDataState ->
                         provider to collectDataState

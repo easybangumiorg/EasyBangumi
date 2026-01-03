@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.store.file_helper.json.JsonlFileHelper
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.PagingFlow
@@ -13,6 +14,7 @@ import org.easybangumi.next.lib.utils.coroutineProvider
 import org.easybangumi.next.shared.data.CartoonInfoCase
 import org.easybangumi.next.shared.data.bangumi.BangumiConst
 import org.easybangumi.next.shared.data.bangumi.BgmCollect
+import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.data.cartoon.CartoonInfo
 import org.easybangumi.next.shared.data.cartoon.CartoonTag
@@ -156,6 +158,14 @@ class CartoonCollectionController(
                 else -> null
             }
         }
+    }
+
+    fun refreshBangumiCollectionIfNeed() {
+        bangumiCollectionController.refreshIfNeed()
+    }
+
+    suspend fun changeCartoonTag(cartoonCover: CartoonCover, newTagSet: Set<CartoonTag>?) {
+        cartoonInfoCase.changeCartoonInfoTag(cartoonCover, newTagSet)
     }
 
 

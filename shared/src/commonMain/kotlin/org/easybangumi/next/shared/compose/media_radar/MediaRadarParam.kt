@@ -1,6 +1,7 @@
 ﻿package org.easybangumi.next.shared.compose.media_radar
 
 import kotlinx.serialization.Serializable
+import org.easybangumi.next.shared.bangumi.data.repository.BangumiSubjectRepository
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -16,6 +17,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class MediaRadarParam (
     val defaultKeyword: String = "", // use cover.name if empty
+    // 别名
     val defaultSubKeyword: List<String> = emptyList(),
     val limitWhichKeyword: Int = 0, // 0 means no limit
 )

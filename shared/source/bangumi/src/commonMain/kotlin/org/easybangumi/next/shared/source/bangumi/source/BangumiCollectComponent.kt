@@ -53,8 +53,6 @@ class BangumiCollectComponent: CollectComponent, BaseComponent() {
         private val username: String,
         private val token: String,
         private val type: Int,
-        // 让业务判断数据过期
-        val createTime: Long = Clock.System.now().toEpochMilliseconds(),
     ) : EasyPagingSource<BgmCollect> {
         override val initKey: String = "1"
 
@@ -74,7 +72,7 @@ class BangumiCollectComponent: CollectComponent, BaseComponent() {
         }
     }
 
-    fun createEpisodePagingSource(
+    fun createCollectionsPagingSource(
         username: String,
         token: String,
         type: Int,

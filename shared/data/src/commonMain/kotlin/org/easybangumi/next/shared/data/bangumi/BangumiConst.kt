@@ -1,5 +1,6 @@
 package org.easybangumi.next.shared.data.bangumi
 
+import org.easybangumi.next.lib.utils.ResourceOr
 import org.easybangumi.next.shared.data.cartoon.CartoonTag
 
 /**
@@ -19,7 +20,7 @@ object BangumiConst {
 
     data class BangumiCollectType(
         val type: Int,
-        val label: String,
+        val label: ResourceOr,
     )
 
     val collectTypeList = listOf(

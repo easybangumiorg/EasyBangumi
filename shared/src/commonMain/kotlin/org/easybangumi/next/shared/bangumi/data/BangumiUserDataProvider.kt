@@ -9,7 +9,6 @@ import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.shared.bangumi.account.BangumiAccountController
 import org.easybangumi.next.shared.bangumi.data.repository.BangumiCollectionRepository
 import org.easybangumi.next.shared.data.bangumi.BangumiConst
-import org.easybangumi.next.shared.data.bangumi.BgmCollect
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.source.bangumi.source.BangumiCollectComponent.CollectionsPagingSource
 import org.easybangumi.next.shared.source.SourceCase
@@ -31,9 +30,15 @@ class BangumiUserDataProvider(
     private val bangumiUserFileUfd = bangumiRootFileUfd.child("user")
     private val collectionRepositoryMap = hashMapOf<String, BangumiCollectionRepository>()
 
-    @Volatile
-    var lastCollectChangeTime = 0L
-        private set
+    companion object {
+
+        @Volatile
+        var lastCollectChangeTime = 0L
+            private set
+
+    }
+
+
 
     val collectBusiness by lazy {
         sourceCase.getBangumiCollectBusiness()
@@ -85,7 +90,7 @@ class BangumiUserDataProvider(
     fun getCollectPagingSource(
         type: BangumiConst.BangumiCollectType,
     ): CollectionsPagingSource {
-        return collectBusiness.runDirect { createEpisodePagingSource(
+        return collectBusiness.runDirect { createCollectionsPagingSource(
             type = type.type,
             username = info.username,
             token = info.token)

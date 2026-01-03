@@ -28,8 +28,8 @@ import org.easybangumi.next.shared.playcon.BasePlayconViewModel
  *    鼠标模式播放器 UI
  */
 class PointerPlayconVM(
-    bridge: PlayerBridge,
-) : BasePlayconViewModel<PlayerBridge>(bridge) {
+    bridge: PlayerBridge<*>,
+) : BasePlayconViewModel<PlayerBridge<*>>(bridge) {
 
     companion object {
         const val CONTROL_HIDE_DELAY = 4000L

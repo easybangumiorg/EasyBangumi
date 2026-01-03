@@ -30,7 +30,7 @@ import kotlin.reflect.KClass
 class ExoPlayerBridge(
     context: Context,
     exoPlayerBuilder: ExoPlayer.Builder,
-): AbsPlayerBridge() {
+): AbsPlayerBridge<ExoPlayer>() {
 
     private val exoMediaSourceFactory = ExoMediaSourceFactory(context.applicationContext ?: context)
 
@@ -79,13 +79,13 @@ class ExoPlayerBridge(
             }
         }
 
-    override fun prepareAction(): Map<KClass<out Action>, Action> {
+    override fun prepareAction(): Map<KClass<out Action<*>>, Action<*>> {
         return mapOf(
 
         )
     }
 
-    override val impl: Any
+    override val impl: ExoPlayer
         get() = exoPlayer
 
     override fun prepare(mediaItem: MediaItem) {

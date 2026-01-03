@@ -32,7 +32,7 @@ import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-open class BasePlayconViewModel<T: PlayerBridge>(
+open class BasePlayconViewModel<T: PlayerBridge<*>>(
     protected val bridge: T,
 ) : BaseViewModel() {
 

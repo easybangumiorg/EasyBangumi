@@ -79,6 +79,7 @@ fun LazyListScope.mediaPlayLineIndex(
                     items(list.size) {
                         val item = list[it]
                         FilterChip(
+                            elevation = null,
                             selected = it == state.currentShowingPlayerLine,
                             onClick = {
                                 vm.onShowingPlayLineSelected(it)

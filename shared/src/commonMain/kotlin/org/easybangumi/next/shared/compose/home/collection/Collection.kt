@@ -85,6 +85,8 @@ fun Collection(
         } else {
             homeVM?.pushBottomBarCompose(TAG_COLLECTION, selectionBottomBar)
         }
+
+        collectionVM.onLaunchEffect()
     }
 
     DisposableEffect(key1 = Unit) {
@@ -198,6 +200,7 @@ fun Collection(
             }
         } else {
             TabPage(
+                tabScrollable = true,
                 pagerState = pagerState,
                 onTabSelect = {
 //                    runCatching {

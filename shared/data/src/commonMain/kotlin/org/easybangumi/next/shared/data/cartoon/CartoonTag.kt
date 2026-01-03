@@ -74,7 +74,6 @@ data class CartoonTag (
 
 
 
-
     val isInFilter: Boolean by lazy {
         filterState.filter { it.value != FilterState.STATUS_OFF }.isNotEmpty()
     }

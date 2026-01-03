@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
 import app.cash.paging.compose.collectAsLazyPagingItems
 import org.easybangumi.next.shared.cartoon.collection.CartoonCollectionController
 import org.easybangumi.next.shared.data.bangumi.BangumiConst
@@ -47,6 +48,7 @@ import org.easybangumi.next.shared.foundation.FastScrollToTopFab
 import org.easybangumi.next.shared.foundation.scroll_header.ScrollableHeaderBehavior
 import org.easybangumi.next.shared.foundation.scroll_header.ScrollableHeaderScaffold
 import org.easybangumi.next.shared.foundation.scroll_header.rememberScrollableHeaderState
+import org.easybangumi.next.shared.foundation.stringRes
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -183,7 +185,7 @@ private fun BangumiFilterTabRow(
     ) {
         items(typeList) { type ->
             FilterClip(
-                text = type.label,
+                text = stringRes(type.label),
                 selected = type == selectionType,
                 onClick = {
                     if (type != selectionType) {
@@ -203,6 +205,7 @@ private fun FilterClip(
     modifier: Modifier = Modifier,
 ) {
     FilterChip(
+        elevation = null,
         selected = selected,
         onClick = onClick,
         label = { Text(text) },

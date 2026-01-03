@@ -185,6 +185,7 @@ private fun SearchHistoryContent(
             ) {
                 searchHistory.forEach {
                     FilterChip(
+                        elevation = null,
                         selected = false,
                         onClick = {
                             onHistoryClick(it)

@@ -10,6 +10,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -18,16 +19,23 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.StarHalf
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.StarOutline
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.StarOutline
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
@@ -45,6 +53,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import org.easybangumi.next.lib.utils.DataState
+import org.easybangumi.next.shared.data.bangumi.BgmCollectResp
 import org.easybangumi.next.shared.foundation.cartoon.CartoonCoverCard
 import org.easybangumi.next.shared.foundation.elements.LoadScaffold
 import org.easybangumi.next.shared.foundation.image.AsyncImage
@@ -52,6 +61,9 @@ import org.easybangumi.next.shared.foundation.shimmer.ShimmerHost
 import org.easybangumi.next.shared.scheme.EasyScheme
 import org.easybangumi.next.shared.data.bangumi.BgmRating
 import org.easybangumi.next.shared.data.bangumi.BgmSubject
+import org.easybangumi.next.shared.data.cartoon.CartoonInfo
+import org.easybangumi.next.shared.foundation.stringRes
+import org.easybangumi.next.shared.resources.Res
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -72,6 +84,8 @@ fun BangumiDetailHeader(
     contentPaddingTop: Dp,
     isHeaderPin: Boolean = false,
     subjectState: DataState<BgmSubject>,
+    bgmCollectionState: DataState<BgmCollectResp> = DataState.none(),
+    cartoonInfo: CartoonInfo? = null,
     onCollectClick: () -> Unit,
 ){
     val surfaceLowestColor = MaterialTheme.colorScheme.surfaceContainerLowest
@@ -80,7 +94,7 @@ fun BangumiDetailHeader(
         BrushPainter(SolidColor(backgroundColor))
     }
     val data = subjectState.cacheData
-    Box(modifier) {
+    Box(modifier.height(IntrinsicSize.Min)) {
         Crossfade(data) {
             if (it != null && !isHeaderPin) {
                 AsyncImage(
@@ -152,7 +166,11 @@ fun BangumiDetailHeader(
                         modifier = Modifier.weight(1f).fillMaxHeight(),
                         data = subjectState,
                         onCacheOrData = { state, cache ->
-                            HeaderContent(cache)
+                            HeaderContent(cache,
+                                bgmCollectionState = bgmCollectionState,
+                                cartoonInfo = cartoonInfo,
+                                onCollectClick = onCollectClick,
+                            )
                         },
                         onLoading = {
                             ShimmerHost(
@@ -181,18 +199,28 @@ fun BangumiDetailHeader(
 
                         },
                     ) {
-                        HeaderContent(it.data)
+                        HeaderContent(it.data,bgmCollectionState = bgmCollectionState,
+                            cartoonInfo = cartoonInfo,
+                            onCollectClick = onCollectClick,)
                     }
                 }
 
 
             }
 
-            TextButton(onClick = {
-                onCollectClick()
-            }) {
-                Text("收藏 Debug")
-            }
+//            Row {
+//                HeaderCollectBtn(
+//                    modifier = Modifier.weight(1f),
+//                    bgmCollectionState = bgmCollectionState,
+//                    cartoonInfo = cartoonInfo,
+//                    onCollectClick = onCollectClick,
+//                )
+//                // TODO 播放按钮
+//                Button(
+//                    modifier = Modifier.weight(1f),
+//                    onClick = {  }
+//                ) {}
+//            }
         }
     }
 
@@ -200,7 +228,10 @@ fun BangumiDetailHeader(
 
 @Composable
 fun HeaderContent(
-    it: BgmSubject
+    it: BgmSubject,
+    bgmCollectionState: DataState<BgmCollectResp> = DataState.none(),
+    cartoonInfo: CartoonInfo? = null,
+    onCollectClick: () -> Unit,
 ) {
     Column {
         Text(
@@ -224,13 +255,81 @@ fun HeaderContent(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface
         )
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.size(8.dp))
+//        Spacer(modifier = Modifier.weight(1f))
         it.rating?.let {
             HeaderRanking(Modifier, it)
         }
+        Spacer(modifier = Modifier.weight(1f))
+        HeaderCollectBtn(
+            modifier = Modifier,
+            bgmCollectionState = bgmCollectionState,
+            cartoonInfo = cartoonInfo,
+            onCollectClick = onCollectClick,
+        )
 
 
     }
+}
+
+@Composable
+fun HeaderCollectBtn(
+    modifier: Modifier,
+    bgmCollectionState: DataState<BgmCollectResp> = DataState.none(),
+    cartoonInfo: CartoonInfo? = null,
+    onCollectClick: () -> Unit,
+) {
+    val collectResp = bgmCollectionState.okOrCache()
+    Button(
+        modifier = modifier,
+        onClick = {
+        onCollectClick()
+        }
+    ) {
+
+        if (collectResp != null) {
+            val collectResp = collectResp.dataOrNull()
+            if (collectResp == null) {
+                // bgm 未收藏 - 本地未收藏 -> 点击收藏
+                if (cartoonInfo == null || cartoonInfo.starTime == 0L) {
+                    Icon(Icons.Filled.FavoriteBorder, modifier = Modifier.size(16.dp),contentDescription = null)
+                    Spacer(modifier = Modifier.size(4.dp))
+                    Text(stringRes(Res.strings.no_collect))
+                }
+                // bgm 未收藏 - 本地已收藏 -> 已本地收藏
+                else {
+                    Icon(Icons.Filled.Favorite, modifier = Modifier.size(16.dp), contentDescription = null)
+                    Spacer(modifier = Modifier.size(4.dp))
+                    Text(stringRes(Res.strings.local_collected))
+                }
+            } else {
+                // bgm 已 - 本地未收藏 -> [再看|想看 ……]
+                if (cartoonInfo == null || cartoonInfo.starTime == 0L) {
+                    Text(stringRes(collectResp.bangumiType?.label?:""))
+                } else {
+                    Text(stringRes(collectResp.bangumiType?.label?:""))
+                    Spacer(modifier = Modifier.size(4.dp))
+                    Box(modifier.width(1.dp).height(16.dp).background(LocalContentColor.current))
+                    Spacer(modifier = Modifier.size(4.dp))
+                    Text(stringRes(Res.strings.collected))
+                }
+            }
+        } else {
+            // 未登录 - 本地未收藏 -> 点击收藏
+            if (cartoonInfo == null || cartoonInfo.starTime == 0L) {
+                Icon(Icons.Filled.FavoriteBorder, modifier = Modifier.size(16.dp), contentDescription = null)
+                Spacer(modifier = Modifier.size(4.dp))
+                Text(stringRes(Res.strings.no_collect))
+            }
+            // 未登录 - 本地已收藏 -> 已收藏
+            else {
+                Icon(Icons.Filled.Favorite, modifier = Modifier.size(16.dp), contentDescription = null)
+                Spacer(modifier = Modifier.size(4.dp))
+                Text(stringRes(Res.strings.collected))
+            }
+        }
+    }
+
 }
 
 @Composable
@@ -246,17 +345,6 @@ fun HeaderRanking(
         ){
 
         Column(modifier) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                FiveRatingStars(score = rating.score?.toInt()?:0, color = color)
-                Text(
-                    rating.score?.toString()?:"",
-                    color = color,
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
-
             Text(
                 "${rating.total} 人评丨#${rating.rank}",
                 Modifier.padding(end = 2.dp),
@@ -265,6 +353,19 @@ fun HeaderRanking(
                 softWrap = false,
                 color = color
             )
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    rating.score?.toString()?:"",
+                    color = color,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                FiveRatingStars(score = rating.score?.toInt()?:0, color = color)
+
+            }
+
+
         }
 
     }

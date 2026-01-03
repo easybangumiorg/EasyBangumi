@@ -58,6 +58,11 @@ fun MediaPlayer(
             // 控制器层
             ControllerContent(modifier = Modifier.fillMaxSize(), onFullScreenChange = {
 //                playerVm.screenModeViewModel.fireUserFullScreenChange(it)
+                if (it) {
+                    playerVm.enterFullscreen()
+                } else {
+                    playerVm.exitFullscreen()
+                }
             }, onBack = {
                 nav.popBackStack()
             })

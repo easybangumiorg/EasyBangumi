@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
@@ -83,6 +84,8 @@ fun BangumiDetail(
     val subjectShimmerState = rememberShimmerState(
         subjectState.isLoading()
     )
+    val bgmCollectState = vm.ui.value.collectionState
+    val cartoonInfoState = vm.ui.value.cartoonInfo
 
     val characterState = vm.ui.value.characterState
     val personState = vm.ui.value.personState
@@ -121,13 +124,15 @@ fun BangumiDetail(
 
 
             BangumiDetailHeader(
-                modifier = Modifier.height(
-                    EasyScheme.size.cartoonCoverHeight + topAppBarHeight + contentPaddingTop + 20.dp,
-                    ).header(topAppBarHeight + contentPaddingTop),
+                modifier = Modifier.heightIn(
+                    min = EasyScheme.size.cartoonCoverHeight + topAppBarHeight + contentPaddingTop + 20.dp,)
+                    .header(topAppBarHeight + contentPaddingTop),
                 coverUrl = vm.coverUrl,
                 contentPaddingTop = topAppBarHeight + contentPaddingTop,
                 isHeaderPin = isPinHeaderPin,
                 subjectState = subjectState,
+                bgmCollectionState = bgmCollectState,
+                cartoonInfo = cartoonInfoState,
                 onCollectClick = {
                     vm.openCollectDialog()
                 }

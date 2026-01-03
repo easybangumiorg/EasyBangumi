@@ -254,6 +254,15 @@
     <string name="star">追番</string>
     <string name="started_miro">已追</string>
 
+    <string name="click_collect">点击收藏</string>
+    <string name="collected">已收藏</string>
+    <string name="local_collected">本地已收藏</string>
+    <string name="collected_min">已收藏</string>
+    <string name="no_collect">未收藏</string>
+
+    <string name="star">追番</string>
+    <string name="started_miro">已追</string>
+
     <string name="detailed_error">获取番剧详情错误</string>
 
     <string name="web_view">WebView</string>
@@ -659,5 +668,7 @@
     <string name="no_play_from_tips">未指定</string>
     <string name="click_to_search_play_from">点击搜索</string>
     <string name="click_to_change_play_from">点击切换</string>
+
+    <string name="bangumi">Bangumi</string>
 
 </resources>
