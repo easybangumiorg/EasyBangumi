@@ -4,6 +4,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import org.easybangumi.next.lib.utils.DataState
+import org.easybangumi.next.shared.source.api.component.play.PlayComponent
+import org.easybangumi.next.shared.source.api.component.search.SearchComponent
+import org.easybangumi.next.shared.source.api.source.Source
+import org.easybangumi.next.shared.source.api.source.SourceManifest
 import kotlin.coroutines.coroutineContext
 
 /**
@@ -18,6 +22,15 @@ import kotlin.coroutines.coroutineContext
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 typealias ComponentBusinessPair<X, Y> = Pair<ComponentBusiness<X>, ComponentBusiness<Y>>
+typealias FinderComponentPair = ComponentBusinessPair<SearchComponent, PlayComponent>
+
+fun FinderComponentPair.getSource(): Source {
+    return this.first.source
+}
+
+fun FinderComponentPair.getManifest(): SourceManifest {
+    return this.first.source.manifest
+}
 
 open class ComponentBusiness <T: Component> (
     protected val innerComponent: T,

@@ -148,6 +148,7 @@ fun CartoonCoverCard(
     markRightTop: String? = null,
     model: String,
     name: String? = null,
+    nameShowOutside: Boolean = false,
     cardBackgroundColor: Color? = null,
     itemSize: Dp = EasyScheme.size.cartoonCoverWidth,
     itemIsWidth : Boolean = true,
@@ -167,100 +168,183 @@ fun CartoonCoverCard(
         }
     }
 
-    Box(
-        modifier = modifier
-            .size(size)
-//            .aspectRatio(coverAspectRatio)
-            .clip(RoundedCornerShape(16.dp))
-            .run {
-                if (onLongPress != null) {
-                    this.combinedClickable(
-                        onClick = {
-                            onClick?.invoke()
-                        },
-                        onLongClick = {
-                            onLongPress?.invoke()
-                        }
-                    )
-                } else if (onClick != null) {
-                    this.clickable {
-                        onClick()
-                    }
-                } else {
-                    this
-                }
-            }.run {
-                if (cardBackgroundColor != null) {
-                    background(cardBackgroundColor)
-                } else {
-                    this
-                }
-            },
-//        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        AsyncImage(
-            modifier = Modifier.fillMaxSize(),
-            model = model,
-            contentDescription = name,
-            contentScale = ContentScale.Crop,
-            error = painterResource(Res.images.empty_soyolin),
-        )
 
 
-        if (name != null) {
+    if (nameShowOutside && name != null) {
+        Column(
+            modifier = modifier,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+
             Box(
-                Modifier.fillMaxWidth().height(size.height/2f).align(Alignment.BottomCenter).background(
-                    brush = Brush.linearGradient(
-                        listOf(
-                            Color.Transparent,
-                            Color.Black.copy(alpha = 0.8f)
-                        ),
-                        end = Offset.Infinite.copy(0f)
-                    )
-                ),
-                contentAlignment = Alignment.BottomCenter
+                modifier = Modifier
+                    .size(size)
+//            .aspectRatio(coverAspectRatio)
+                    .clip(RoundedCornerShape(16.dp))
+                    .run {
+                        if (onLongPress != null) {
+                            this.combinedClickable(
+                                onClick = {
+                                    onClick?.invoke()
+                                },
+                                onLongClick = {
+                                    onLongPress?.invoke()
+                                }
+                            )
+                        } else if (onClick != null) {
+                            this.clickable {
+                                onClick()
+                            }
+                        } else {
+                            this
+                        }
+                    }.run {
+                        if (cardBackgroundColor != null) {
+                            background(cardBackgroundColor)
+                        } else {
+                            this
+                        }
+                    },
+//        horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text(
-                    modifier = Modifier.padding(16.dp),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = textColor,
-                    text = name,
-                    maxLines = 2,
-                    textAlign = TextAlign.Center,
-                    overflow = TextOverflow.Ellipsis,
+                AsyncImage(
+                    modifier = Modifier.fillMaxSize(),
+                    model = model,
+                    contentDescription = name,
+                    contentScale = ContentScale.Crop,
+                    error = painterResource(Res.images.empty_soyolin),
                 )
 
+                if (markLeftTop != null) {
+                    Text(
+                        fontSize = 13.sp,
+                        text = markLeftTop,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier
+                            .background(
+                                MaterialTheme.colorScheme.primary,
+                                RoundedCornerShape(0.dp, 0.dp, 16.dp, 0.dp)
+                            )
+                            .padding(16.dp, 0.dp)
+                    )
+                }
+
+                if (markRightTop != null) {
+                    Text(
+                        fontSize = 13.sp,
+                        text = markRightTop,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .background(
+                                MaterialTheme.colorScheme.primary,
+                                RoundedCornerShape(0.dp, 0.dp, 0.dp, 16.dp)
+                            )
+                            .padding(16.dp, 0.dp)
+                    )
+                }
+
             }
+            Text(name, maxLines = 3)
         }
+    } else {
 
-        if (markLeftTop != null) {
-            Text(
-                fontSize = 13.sp,
-                text = markLeftTop,
-                color = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier
-                    .background(
-                        MaterialTheme.colorScheme.primary,
-                        RoundedCornerShape(0.dp, 0.dp, 16.dp, 0.dp)
-                    )
-                    .padding(16.dp, 0.dp)
+        Box(
+            modifier = modifier
+                .size(size)
+//            .aspectRatio(coverAspectRatio)
+                .clip(RoundedCornerShape(16.dp))
+                .run {
+                    if (onLongPress != null) {
+                        this.combinedClickable(
+                            onClick = {
+                                onClick?.invoke()
+                            },
+                            onLongClick = {
+                                onLongPress?.invoke()
+                            }
+                        )
+                    } else if (onClick != null) {
+                        this.clickable {
+                            onClick()
+                        }
+                    } else {
+                        this
+                    }
+                }.run {
+                    if (cardBackgroundColor != null) {
+                        background(cardBackgroundColor)
+                    } else {
+                        this
+                    }
+                },
+//        horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            AsyncImage(
+                modifier = Modifier.fillMaxSize(),
+                model = model,
+                contentDescription = name,
+                contentScale = ContentScale.Crop,
+                error = painterResource(Res.images.empty_soyolin),
             )
-        }
 
-        if (markRightTop != null) {
-            Text(
-                fontSize = 13.sp,
-                text = markRightTop,
-                color = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .background(
-                        MaterialTheme.colorScheme.primary,
-                        RoundedCornerShape(0.dp, 0.dp, 0.dp, 16.dp)
+
+            if (name != null) {
+                Box(
+                    Modifier.fillMaxWidth().height(size.height/2f).align(Alignment.BottomCenter).background(
+                        brush = Brush.linearGradient(
+                            listOf(
+                                Color.Transparent,
+                                Color.Black.copy(alpha = 0.8f)
+                            ),
+                            end = Offset.Infinite.copy(0f)
+                        )
+                    ),
+                    contentAlignment = Alignment.BottomCenter
+                ) {
+                    Text(
+                        modifier = Modifier.padding(16.dp),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = textColor,
+                        text = name,
+                        maxLines = 2,
+                        textAlign = TextAlign.Center,
+                        overflow = TextOverflow.Ellipsis,
                     )
-                    .padding(16.dp, 0.dp)
-            )
-        }
 
+                }
+            }
+
+            if (markLeftTop != null) {
+                Text(
+                    fontSize = 13.sp,
+                    text = markLeftTop,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier
+                        .background(
+                            MaterialTheme.colorScheme.primary,
+                            RoundedCornerShape(0.dp, 0.dp, 16.dp, 0.dp)
+                        )
+                        .padding(16.dp, 0.dp)
+                )
+            }
+
+            if (markRightTop != null) {
+                Text(
+                    fontSize = 13.sp,
+                    text = markRightTop,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .background(
+                            MaterialTheme.colorScheme.primary,
+                            RoundedCornerShape(0.dp, 0.dp, 0.dp, 16.dp)
+                        )
+                        .padding(16.dp, 0.dp)
+                )
+            }
+
+        }
     }
+
 }

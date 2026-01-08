@@ -1,17 +1,26 @@
-﻿package org.easybangumi.next.shared.compose.media_radar
+package org.easybangumi.next.shared.compose.media_finder_old.search
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
-import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Button
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import app.cash.paging.compose.collectAsLazyPagingItems
+import org.easybangumi.next.shared.compose.media_finder_old.MediaFinderVM
 import org.easybangumi.next.shared.foundation.cartoon.CartoonCoverCard
 import org.easybangumi.next.shared.foundation.cartoon.CartoonCoverCardRect
 import org.easybangumi.next.shared.foundation.elements.LoadScaffold
@@ -32,89 +41,56 @@ import org.easybangumi.next.shared.scheme.EasyScheme
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
+
 @Composable
-fun MediaRadar(
+fun MediaSearcher(
     modifier: Modifier,
-    vm: MediaRadarVM,
-    onSelection: (MediaRadarVM.SelectionResult?) -> Unit = { _ -> }
+    vm: MediaSearchVM,
+    state: MediaSearchVM.State,
+    onResultSelect: (result: MediaFinderVM.SelectionResult) -> Unit,
 ) {
 
-    val state = vm.ui
-
-
-    Column (
-        modifier = Modifier.fillMaxWidth().then(modifier)
-    ) {
-        MediaRadarHeader(
-            Modifier.fillMaxWidth(),
-            vm,
-            state.value,
-        )
-        HorizontalDivider()
-        MediaRadarList(
-            Modifier.fillMaxWidth().weight(1f),
-            vm,
-            state.value,
-            onSelection,
-        )
-
-    }
-
-}
-
-@Composable
-fun MediaRadarHeader(
-    modifier: Modifier,
-    vm: MediaRadarVM,
-    state: MediaRadarVM.State
-) {
-    Row(
-        modifier,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        OutlinedTextField(
-            modifier = Modifier.weight(1f),
-            value = state.keyword,
-            onValueChange = { vm.onFieldChange(it) },
-            singleLine = true,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color.Transparent,
-                unfocusedBorderColor = Color.Transparent,
-                errorBorderColor = Color.Transparent,
-                disabledBorderColor = Color.Transparent,
-
-            )
-        )
-        TextButton(onClick = {
-            vm.onSearchKeywordChange()
-        }) {
-            Text(stringRes(Res.strings.search))
-        }
-    }
-}
-
-@Composable
-fun MediaRadarList(
-    modifier: Modifier,
-    vm: MediaRadarVM,
-    state: MediaRadarVM.State,
-    onSelection: (MediaRadarVM.SelectionResult?) -> Unit,
-){
-    val line = state.lineState
     LazyColumn(
-        modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.Top
+        modifier = Modifier.fillMaxWidth().then(modifier),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        items(line) { line ->
-            Column(
-                verticalArrangement = Arrangement.Top
+        item {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
             ) {
+                OutlinedTextField(
+                    modifier = Modifier.weight(1f),
+                    value = state.fieldText,
+                    onValueChange = { vm.onFieldChange(it) },
+                    singleLine = true,
+//                    colors = OutlinedTextFieldDefaults.colors(
+//                        focusedBorderColor = Color.Transparent,
+//                        unfocusedBorderColor = Color.Transparent,
+//                        errorBorderColor = Color.Transparent,
+//                        disabledBorderColor = Color.Transparent,
+//
+//                    )
+                    label = {
+                        Text("搜索关键词")
+                    }
+                )
+            }
+        }
+
+        item {
+            Button(onClick = {
+                vm.onSearchKeywordChange()
+            }) {
+                Text(stringRes(Res.strings.search))
+            }
+        }
+
+        items(state.lineState) { line ->
+
+            Column {
                 ListItem(
                     headlineContent = {
-                        Text(
-                            stringRes(line.business.first.source.manifest.label),
-//                            style = MaterialTheme.typography.bodyLarge
-                        )
+                        Text(stringRes(line.searchBusiness.source.manifest.label))
                     },
                     colors = ListItemDefaults.colors(
                         containerColor = Color.Transparent
@@ -145,6 +121,7 @@ fun MediaRadarList(
                         }
                     }
                 ) {
+
                     val paging = it.data.collectAsLazyPagingItems()
 
                     LazyRow(
@@ -161,14 +138,15 @@ fun MediaRadarList(
                                         modifier = Modifier,
                                         model = item.coverUrl,
                                         name = item.name,
+                                        nameShowOutside = true,
                                         itemSize = height,
                                         itemIsWidth = false,
                                         coverAspectRatio = EasyScheme.size.cartoonCoverSmallAspectRatio,
                                         onClick = {
-                                            onSelection.invoke(
-                                                MediaRadarVM.SelectionResult(
+                                            onResultSelect(
+                                                MediaFinderVM.SelectionResult(
                                                     playCover = item,
-                                                    businessPair = line.business
+                                                    businessPair = line.businessPair
                                                 )
                                             )
                                         }
@@ -179,9 +157,11 @@ fun MediaRadarList(
                         pagingCommon(height, paging)
                     }
                 }
-
             }
         }
-    }
-}
 
+
+    }
+
+
+}

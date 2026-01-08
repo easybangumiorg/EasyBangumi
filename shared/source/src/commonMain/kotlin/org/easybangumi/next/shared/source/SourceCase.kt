@@ -1,6 +1,7 @@
 package org.easybangumi.next.shared.source
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import org.easybangumi.next.shared.source.api.component.ComponentBusiness
@@ -99,9 +100,10 @@ class SourceCase(
         val isLoading: Boolean,
     )
 
-    suspend fun findSearchBusiness(): FindSearchBusinessResp {
-        return searchBusinessWithPlayFlow().first()
+    suspend fun findSearchBusiness(checkLoading: Boolean = false): FindSearchBusinessResp {
+        return if (checkLoading) searchBusinessWithPlayFlow().filter { !it.isLoading }.first() else searchBusinessWithPlayFlow().first()
     }
+
 
     fun searchBusinessWithPlayFlow(): Flow<FindSearchBusinessResp> {
         return sourceController.flow.map {

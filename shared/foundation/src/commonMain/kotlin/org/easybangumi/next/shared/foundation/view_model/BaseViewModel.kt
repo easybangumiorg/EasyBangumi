@@ -2,6 +2,9 @@ package org.easybangumi.next.shared.foundation.view_model
 
 import androidx.annotation.CallSuper
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineScope
+import org.easybangumi.next.lib.utils.safeCancel
 import org.koin.core.component.KoinComponent
 
 /**
@@ -18,6 +21,8 @@ import org.koin.core.component.KoinComponent
 abstract class BaseViewModel: ViewModel(), KoinComponent {
 
     private val children: MutableList<BaseViewModel> = mutableListOf()
+    private val closeable: MutableList<AutoCloseable> = mutableListOf()
+    private val childrenScope: MutableList<CoroutineScope> = mutableListOf()
 
     protected fun<T: BaseViewModel> childViewModel(
         block: () -> T
@@ -29,9 +34,29 @@ abstract class BaseViewModel: ViewModel(), KoinComponent {
         }
     }
 
+    protected fun newChildrenScope(): CoroutineScope {
+        val scope = CoroutineScope(viewModelScope.coroutineContext)
+        childrenScope.add(scope)
+        return scope
+    }
+
+    protected fun registerCloseable(
+        closeable: AutoCloseable
+    ) {
+        this.closeable.add(closeable)
+    }
+
     @CallSuper
     override fun onCleared() {
         children.forEach { it.onCleared() }
+        children.clear()
+
+        closeable.forEach { it.close() }
+        closeable.clear()
+
+        childrenScope.forEach { it.safeCancel() }
+        childrenScope.clear()
+
         super.onCleared()
     }
 

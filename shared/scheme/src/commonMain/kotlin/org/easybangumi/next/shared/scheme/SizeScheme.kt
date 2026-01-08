@@ -33,7 +33,7 @@ data class SizeScheme (
     val cartoonCoverWidth: Dp = 154.dp,
     val cartoonCoverAspectRatio: Float = 7f/9f,
 
-    var cartoonCoverSmallWidth: Dp = 120.dp,
+    var cartoonCoverSmallWidth: Dp = 110.dp,
     val cartoonCoverSmallAspectRatio: Float = 7f/9f,
 
     val cartoonPreviewWidth: Dp = 120.dp,

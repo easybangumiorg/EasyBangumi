@@ -1,16 +1,11 @@
 ﻿package org.easybangumi.next.shared.compose.media
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavType
-import androidx.savedstate.SavedState
-import androidx.savedstate.write
 import kotlinx.serialization.Serializable
-import org.easybangumi.next.lib.serialization.jsonSerializer
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.source.bangumi.source.BangumiInnerSource
 import org.easybangumi.next.shared.compose.media.bangumi.BangumiMedia
 import org.easybangumi.next.shared.compose.media.normal.NormalMedia
-import org.easybangumi.next.shared.compose.media_radar.MediaRadarParam
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 
 /**
@@ -34,7 +29,7 @@ data class MediaParam(
     val cartoonCover: CartoonCover? = null,
     val suggestEpisode: Int? = null,
     // only bangumi source have
-    val suggestMediaRadarParam: MediaRadarParam? = null,
+    val radarKeywordSuggest: List<String> = emptyList(),
 )
 
 @Composable

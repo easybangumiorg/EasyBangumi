@@ -19,7 +19,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import org.easybangumi.next.shared.debug.color.ColorDebug
-import org.easybangumi.next.shared.debug.media_radar.MediaRadarDebug
 import org.easybangumi.next.shared.debug.player.PlayerDebug
 import org.easybangumi.next.shared.debug.shimmer.ShimmerDebug
 import org.easybangumi.next.shared.debug.webview.WebViewDebug
@@ -46,7 +45,6 @@ enum class DebugPage(
     SHIMMER("Shimmer Debug"),
     COLOR("Color Debug"),
     WEB_VIEW("WebView Debug"),
-    MEDIA_RADAR("Media Radar Debug"),
     BANGUMI("Bangumi Debug"),
 }
 
@@ -76,9 +74,6 @@ fun DebugHost(
                 }
                 DebugPage.WEB_VIEW -> {
                     WebViewDebug()
-                }
-                DebugPage.MEDIA_RADAR -> {
-                    MediaRadarDebug()
                 }
                 DebugPage.BANGUMI -> {
                     BangumiDebug()

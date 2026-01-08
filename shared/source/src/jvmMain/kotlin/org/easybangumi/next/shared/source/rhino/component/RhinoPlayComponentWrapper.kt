@@ -2,7 +2,6 @@
 
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.rhino.RhinoScope
-import org.easybangumi.next.shared.data.cartoon.CartoonPlayCover
 import org.easybangumi.next.shared.data.cartoon.Episode
 import org.easybangumi.next.shared.data.cartoon.PlayInfo
 import org.easybangumi.next.shared.data.cartoon.PlayerLine

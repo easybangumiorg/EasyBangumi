@@ -1,4 +1,6 @@
-﻿package org.easybangumi.next.shared.compose.media_radar
+package org.easybangumi.next.shared.cartoon.radar
+
+import kotlinx.coroutines.flow.Flow
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -11,6 +13,10 @@
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
+interface CartoonRadarStrategy<T> {
 
-class MediaRadarState {
+    fun start(): Flow<T>
+
+    fun cancel()
+
 }

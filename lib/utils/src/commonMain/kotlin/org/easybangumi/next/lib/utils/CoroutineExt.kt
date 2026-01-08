@@ -1,6 +1,7 @@
 ﻿package org.easybangumi.next.lib.utils
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
@@ -28,6 +29,14 @@ fun <T> Continuation<T>.safeResume(t: T) {
 }
 
 fun CoroutineScope.safeCancel() {
+    try {
+        this.cancel()
+    } catch (e: Throwable) {
+        e.printStackTrace()
+    }
+}
+
+fun Job.safeCancel() {
     try {
         this.cancel()
     } catch (e: Throwable) {

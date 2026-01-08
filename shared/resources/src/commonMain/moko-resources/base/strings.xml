@@ -666,8 +666,15 @@
 
     <string name="play_from">播放源</string>
     <string name="no_play_from_tips">未指定</string>
+
     <string name="click_to_search_play_from">点击搜索</string>
     <string name="click_to_change_play_from">点击切换</string>
+
+    <string name="no_media_res_tips">自动搜索失败</string>
+    <string name="click_to_change_search_from_user">点击手动搜索</string>
+    <string name="media_finding">自动搜索中…</string>
+
+
 
     <string name="bangumi">Bangumi</string>
 

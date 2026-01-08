@@ -2,7 +2,7 @@
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import org.easybangumi.next.shared.compose.media_radar.MediaRadarBottomPanel
+import org.easybangumi.next.shared.compose.media_finder.MediaFinderHost
 
 
 /**
@@ -27,20 +27,20 @@ fun BangumiPopup(
         is BangumiMediaCommonVM.Popup.BangumiDetailPanel -> {
 
         }
-        is BangumiMediaCommonVM.Popup.MediaRadarPanel -> {
-            logger.info("show media radar panel")
-            MediaRadarBottomPanel(
-                vm = vm.mediaRadarVM,
-                onDismissRequest = {
-                    vm.dismissPopup()
-                },
-                onSelection = {
-                    vm.onMediaRadarSelect(it)
-                    vm.dismissPopup()
-                }
-            )
-
-        }
+//        is BangumiMediaCommonVM.Popup.MediaRadarPanel -> {
+//            logger.info("show media radar panel")
+//            MediaRadarBottomPanel(
+//                vm = vm.mediaSearchVM,
+//                onDismissRequest = {
+//                    vm.dismissPopup()
+//                },
+//            )
+//
+//        }
         else -> {}
     }
+
+    MediaFinderHost(
+        vm.mediaFinderVM
+    )
 }

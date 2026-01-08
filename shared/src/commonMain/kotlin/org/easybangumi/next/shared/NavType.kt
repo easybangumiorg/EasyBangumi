@@ -7,7 +7,6 @@ import androidx.savedstate.write
 import org.easybangumi.next.lib.serialization.deserialize
 import org.easybangumi.next.lib.serialization.jsonSerializer
 import org.easybangumi.next.lib.serialization.serialize
-import org.easybangumi.next.shared.compose.media_radar.MediaRadarParam
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import kotlin.reflect.KClass
@@ -27,10 +26,8 @@ import kotlin.reflect.typeOf
 val NavTypeMap = mapOf(
     typeOf<CartoonIndex>() to JsonStringNavType(CartoonIndex::class),
     typeOf<CartoonCover>() to JsonStringNavType(CartoonCover::class),
-    typeOf<MediaRadarParam>() to JsonStringNavType(MediaRadarParam::class),
     typeOf<CartoonIndex?>() to JsonStringNullableNavType(CartoonIndex::class),
     typeOf<CartoonCover?>() to JsonStringNullableNavType(CartoonCover::class),
-    typeOf<MediaRadarParam?>() to JsonStringNullableNavType(MediaRadarParam::class),
 )
 
 class JsonStringNullableNavType<T : Any>(

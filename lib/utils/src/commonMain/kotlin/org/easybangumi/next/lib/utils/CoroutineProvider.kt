@@ -17,6 +17,7 @@ interface CoroutineProvider {
     fun io(): CoroutineDispatcher
     fun main(): CoroutineDispatcher
     fun single(): CoroutineDispatcher
+    fun singleForTag(tag: String): CoroutineDispatcher
     fun newSingle(): CoroutineDispatcher
 }
 

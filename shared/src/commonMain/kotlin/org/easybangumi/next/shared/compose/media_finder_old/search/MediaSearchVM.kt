@@ -1,4 +1,4 @@
-package org.easybangumi.next.shared.compose.media_radar.search
+package org.easybangumi.next.shared.compose.media_finder_old.search
 
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
@@ -7,10 +7,13 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import org.easybangumi.next.lib.store.file_helper.json.JsonlFileHelper
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.PagingFlow
 import org.easybangumi.next.lib.utils.newPagingFlow
+import org.easybangumi.next.lib.utils.pathProvider
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
+import org.easybangumi.next.shared.data.cartoon.PlayerLine
 import org.easybangumi.next.shared.foundation.view_model.StateViewModel
 import org.easybangumi.next.shared.source.SourceCase
 import org.easybangumi.next.shared.source.api.component.ComponentBusinessPair
@@ -29,48 +32,67 @@ import org.koin.core.component.inject
  *    You may obtain a copy of the License at
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *  搜索模式的媒体雷达
  */
-class SearchRadarVM(
-    private val keywordSuggest: List<String>,
-): StateViewModel<SearchRadarVM.State>(
-    initState = State(
-        keywordSuggest = keywordSuggest,
-        fieldText = keywordSuggest.firstOrNull() ?: "",
-        searchKeyword = keywordSuggest.firstOrNull() ?: ""
-    )
+class MediaSearchVM(
+    private var suggestKeyword: List<String>,
+) : StateViewModel<MediaSearchVM.State>(
+    initState = State()
 ) {
+
+    private val disableSourceFileHelper = JsonlFileHelper<String>(
+        pathProvider.getFilePath("radar"),
+        "disable_source",
+        String::class,
+    )
+    private val disableSourceSet by lazy {
+        disableSourceFileHelper.flow()
+    }
+
+    data class State(
+        val suggestShowAll: Boolean = false,            // 是否显示全部建议
+        val fieldText: String = "",                     // 搜索框显示的文字
+        val searchKeyword: String? = null,              // 真正搜索的关键字
+        val playSourceLoading: Boolean = true,          // 加载中
+        val disableSourceSet: Set<String> = setOf(),    // 禁用的搜索源
+        val lineState: List<LineState> = listOf(),      // 各搜索源的状态
+        val popup: Popup? = null,
+    )
+
+    sealed class Popup {
+        data class EditState(
+            val keywordList: List<String>,
+        ): Popup()
+
+    }
 
     data class SelectionResult(
         val playCover: CartoonCover,
         val businessPair: ComponentBusinessPair<SearchComponent, PlayComponent>,
     ) {
-
         val searchBusiness = businessPair.first
         val playBusiness = businessPair.second
-
     }
 
-    data class State(
-        val keywordSuggest: List<String> = listOf(),    // 搜索建议 - 别名等
-        val fieldText: String,                          // 搜索框显示的文字
-        val searchKeyword: String? = null,              // 真正搜索的关键字
-        val selectionResult: SelectionResult? = null,   // 选中结果
-        val playSourceLoading: Boolean = true,          // 加载中
-        val lineState: List<LineState> = listOf(),      // 各搜索源的状态
+    data class SearchItem(
+        val businessPair: ComponentBusinessPair<SearchComponent, PlayComponent>,
+        val cover: CartoonCover,
+        val playerLineState: DataState<List<PlayerLine>>,
     )
+
 
     data class LineState(
-        val business: ComponentBusinessPair<SearchComponent, PlayComponent>,
-        val pagingFlow: DataState<PagingFlow<CartoonCover>> = DataState.none(),
-    )
-
+        val businessPair: ComponentBusinessPair<SearchComponent, PlayComponent>,
+        val pagingFlow: DataState<PagingFlow<CartoonCover>> = DataState.Companion.none(),
+        val expandedMap: Map<String, DataState<List<PlayerLine>>> = mapOf(),
+    ) {
+        val searchBusiness = businessPair.first
+        val playBusiness = businessPair.second
+    }
 
     private val sourceCase: SourceCase by inject()
 
-
     private var pagingTemp: Pair<String, Map<String, PagingFlow<CartoonCover>>>? = null
+
 
     init {
         viewModelScope.launch {
@@ -99,13 +121,13 @@ class SearchRadarVM(
                     val res = playBusiness.business.map {
                         val t = map[it.first.source.key]
                         if (t != null) {
-                            LineState(it, DataState.ok(t))
+                            LineState(it, DataState.Companion.ok(t))
                         } else {
-                            val pagingSource =   it.first.createPagingSource(keyword)
+                            val pagingSource = it.first.createPagingSource(keyword)
 
                             val pagingFlow = pagingSource.newPagingFlow().cachedIn(viewModelScope)
                             map[it.first.source.key] = pagingFlow
-                            LineState(it, DataState.ok(pagingFlow))
+                            LineState(it, DataState.Companion.ok(pagingFlow))
                         }
                     }
                     pagingTemp = keyword to map
@@ -119,6 +141,25 @@ class SearchRadarVM(
             }.collect()
         }
     }
+
+    fun onSourceDisableChange(
+        key: String,
+    ){
+        viewModelScope.launch {
+            disableSourceFileHelper.update {
+                val set = it.toMutableSet()
+                if (set.contains(key)) {
+                    set.remove(key)
+                } else {
+                    set.add(key)
+                }
+                set.toList()
+            }
+        }
+
+    }
+
+
 
     fun onFieldChange(
         text: String,
@@ -134,5 +175,35 @@ class SearchRadarVM(
         }
     }
 
+    fun suggestShowAll(showAll: Boolean){
+        update {
+            it.copy(suggestShowAll = showAll)
+        }
+    }
 
+    fun updateSuggestKeywordChangeIfNeed(
+        suggestKeywordList: List<String>,
+    ){
+        update {
+            it.copy(
+                popup = if (it.popup is MediaSearchVM.Popup.EditState) {
+                    it.popup.copy(
+                        keywordList = suggestKeywordList
+                    )
+                } else {
+                    it.popup
+                }
+            )
+        }
+    }
+
+    fun showEditPopup(){
+        update {
+            it.copy(
+                popup = MediaSearchVM.Popup.EditState(
+                    keywordList = suggestKeyword
+                )
+            )
+        }
+    }
 }

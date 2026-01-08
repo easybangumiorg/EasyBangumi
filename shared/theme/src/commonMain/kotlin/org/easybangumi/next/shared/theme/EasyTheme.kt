@@ -23,11 +23,12 @@ import org.koin.compose.koinInject
 fun EasyTheme(content: @Composable () -> Unit) {
     val themeController = koinInject<ThemeController>()
     val theme by themeController.themeFlow.collectAsState()
-    val isDark = when (theme.darkMode) {
-        ThemeController.DarkMode.Dark -> true
-        ThemeController.DarkMode.Light -> false
-        else -> isSystemInDarkTheme()
-    }
+    val isDark = false
+//    when (theme.darkMode) {
+//        ThemeController.DarkMode.Dark -> true
+//        ThemeController.DarkMode.Light -> false
+//        else -> isSystemInDarkTheme()
+//    }
 
     val colorScheme = if (theme.isDynamicColor && themeController.isSupportDynamicColor()) {
         themeController.getDynamicColorScheme(isDark) ?: theme.themeMode.getColorScheme(isDark)

@@ -40,7 +40,7 @@ import kotlin.collections.emptyList
 class SimpleSearchViewModel(
     val keywordFlow: StateFlow<String?>,
     val searchBusiness: StateFlow<List<ComponentBusiness<SearchComponent>>>,
-    val focusRequester: FocusRequester,
+    val focusRequester: FocusRequester?,
     var defSourceKey: String? = null
 ): BaseViewModel() {
 
@@ -120,7 +120,7 @@ class SimpleSearchViewModel(
 
     fun tryFreeFocus() {
         try {
-            focusRequester.freeFocus()
+            focusRequester?.freeFocus()
         }catch (e: Exception) {
             logger.error("free focus error", e)
         }

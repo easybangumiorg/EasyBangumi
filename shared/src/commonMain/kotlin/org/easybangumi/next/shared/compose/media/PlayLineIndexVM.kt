@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.logger.logger
@@ -13,9 +14,12 @@ import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.data.cartoon.Episode
 import org.easybangumi.next.shared.data.cartoon.PlayInfo
 import org.easybangumi.next.shared.data.cartoon.PlayerLine
+import org.easybangumi.next.shared.foundation.source.sourceCase
 import org.easybangumi.next.shared.foundation.view_model.StateViewModel
+import org.easybangumi.next.shared.source.SourceCase
 import org.easybangumi.next.shared.source.api.component.ComponentBusiness
 import org.easybangumi.next.shared.source.api.component.play.PlayComponent
+import org.koin.core.component.inject
 
 
 /**
@@ -55,6 +59,8 @@ class PlayLineIndexVM(
             playLineOrNull?.episodeList?.getOrNull(currentEpisode)
         }
     }
+
+    val sourceCase: SourceCase by inject()
 
     init {
         viewModelScope.launch {
@@ -139,7 +145,6 @@ class PlayLineIndexVM(
     fun loadPlayLine(
         // playerIndex
         cartoonIndex: CartoonIndex,
-        business: ComponentBusiness<PlayComponent>,
     ) {
         viewModelScope.launch {
             update {
@@ -148,6 +153,17 @@ class PlayLineIndexVM(
                     playerLineList = DataState.loading()
                 )
             }
+            val business = sourceCase.playComponentFlow(cartoonIndex.source)
+                .firstOrNull()
+                ?: run {
+                    update {
+                        it.copy(
+                            playerLineList = DataState.error("无播放源"),
+                        )
+                    }
+                    return@launch
+                }
+
             val res = business.run {
                 getPlayLines(cartoonIndex)
             }

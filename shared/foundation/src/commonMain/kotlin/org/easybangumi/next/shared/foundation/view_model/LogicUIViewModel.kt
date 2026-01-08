@@ -10,7 +10,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.easybangumi.next.lib.utils.coroutineProvider
 import org.koin.core.component.KoinComponent
+import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -41,7 +43,7 @@ abstract class LogicUIViewModel <UI_STATE, LOGIC_STATE>(
     abstract suspend fun logicToUi(logicState: LOGIC_STATE): UI_STATE
 
     init {
-        viewModelScope.launch {
+        viewModelScope.launch() {
             logic.collectLatest { logicState ->
                 uiState.value = logicToUi(logicState)
             }

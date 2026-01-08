@@ -1,6 +1,7 @@
 ﻿package org.easybangumi.next.shared.compose.media.bangumi
 
 import androidx.lifecycle.viewModelScope
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -11,8 +12,7 @@ import kotlinx.coroutines.launch
 import org.easybangumi.next.shared.compose.detail.bangumi.BangumiDetailVM
 import org.easybangumi.next.shared.compose.media.MediaParam
 import org.easybangumi.next.shared.compose.media.PlayLineIndexVM
-import org.easybangumi.next.shared.compose.media_radar.MediaRadarParam
-import org.easybangumi.next.shared.compose.media_radar.MediaRadarVM
+import org.easybangumi.next.shared.compose.media_finder.MediaFinderVM
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
 import kotlin.getValue
@@ -39,10 +39,12 @@ class BangumiMediaCommonVM (
 
     // == 数据状态 =============================
     data class State(
-        val radarResult: MediaRadarVM.SelectionResult? = null,
+        val radarResult: MediaFinderVM.SelectionResult? = null,
         val showDetailFromPlay: Boolean = true,
         val isFullscreen: Boolean = false,
         val isTableMode: Boolean = false,
+        // 静默搜索状态
+        val silentFindingState: MediaFinderVM.State? = null,
     )
 
     internal val sta = MutableStateFlow(State())
@@ -50,7 +52,7 @@ class BangumiMediaCommonVM (
 
     // == 弹窗状态 =============================
     sealed class Popup {
-        data object MediaRadarPanel: Popup()
+
 
         data object BangumiDetailPanel: Popup()
     }
@@ -68,13 +70,12 @@ class BangumiMediaCommonVM (
 
 
     // == 视频雷达状态 =============================
-    val mediaRadarVM: MediaRadarVM by childViewModel {
-        MediaRadarVM(
-            param.suggestMediaRadarParam ?: MediaRadarParam(
-                defaultKeyword = param.cartoonCover?.name?:""
-            )
+    val mediaFinderVM: MediaFinderVM by childViewModel {
+        MediaFinderVM(
+            param.radarKeywordSuggest.ifEmpty { listOf(param.cartoonCover?.name?:"")  }
         )
     }
+    private val silentFindFirst = atomic(false)
 
     // == Bangumi 番剧详情面板状态 =============================
     val bangumiDetailVM: BangumiDetailVM by childViewModel {
@@ -86,13 +87,65 @@ class BangumiMediaCommonVM (
         viewModelScope.launch {
             state.map { it.radarResult }.distinctUntilChanged().collectLatest {
                 if (it != null) {
-                    playLineIndexVM.loadPlayLine(it.playCover.toCartoonIndex(), it.playBusiness)
+                    playLineIndexVM.loadPlayLine(it.playCover.toCartoonIndex())
                 }
             }
         }
 
         // 这里只是为了展示番剧 Preview ，用最弱的刷新方式
         bangumiDetailVM.subjectRepository.refreshIfNone()
+
+        // Bangumi 详情别名 -> 媒体雷达搜索建议
+        viewModelScope.launch {
+            bangumiDetailVM.subjectRepository.flow.collectLatest {
+                it.cacheData?.allName?.let {
+                    mediaFinderVM.changeKeywordSuggest(it)
+
+                    it.firstOrNull()?.let {
+                        // 尝试静默搜索一次
+                        viewModelScope.launch {
+                            if (silentFindFirst.compareAndSet(expect = false, update = true)) {
+                                mediaFinderVM.silentFind(it)
+                            }
+
+                        }
+                    }
+
+                }
+            }
+        }
+
+        val keyword = param.radarKeywordSuggest.firstOrNull()
+            ?: bangumiDetailVM.subjectRepository.flow.value.cacheData?.allName?.firstOrNull()
+            ?: param.cartoonCover?.name
+        if (keyword != null) {
+            // 尝试静默搜索一次
+            viewModelScope.launch {
+                if (silentFindFirst.compareAndSet(false, update = true)) {
+                    mediaFinderVM.silentFind(keyword)
+                }
+
+            }
+        }
+
+        // 媒体雷达选择结果处理
+        viewModelScope.launch {
+            mediaFinderVM.logic.map { it.result }.distinctUntilChanged().collectLatest {
+                if (it != null) {
+                    onMediaRadarSelect(it)
+                }
+            }
+        }
+
+        viewModelScope.launch {
+            mediaFinderVM.logic.collectLatest { state ->
+                sta.update {
+                    it.copy(
+                        silentFindingState = state
+                    )
+                }
+            }
+        }
     }
 
     // state change ============================
@@ -101,7 +154,7 @@ class BangumiMediaCommonVM (
     // popup =============================
 
     fun showMediaRadar() {
-        _popupState.update { Popup.MediaRadarPanel }
+        mediaFinderVM.showPanel()
     }
 
     fun showBangumiDetailPanel() {
@@ -112,7 +165,7 @@ class BangumiMediaCommonVM (
     }
 
 
-    fun onMediaRadarSelect(result: MediaRadarVM.SelectionResult?) {
+    fun onMediaRadarSelect(result: MediaFinderVM.SelectionResult?) {
         sta.update {
             it.copy(
                 radarResult = result

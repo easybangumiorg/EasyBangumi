@@ -63,6 +63,39 @@ data class BgmSubject(
 
 ) {
 
+    val allName: List<String> by lazy {
+        val linkedSet = linkedSetOf<String>()
+        nameCn?.let {
+            if (it.isNotEmpty()) {
+                linkedSet.add(it)
+            }
+        }
+        name?.let {
+            if (it.isNotEmpty() && it != nameCn) {
+                linkedSet.add(it)
+            }
+        }
+        infobox.forEach {
+            if (it.key == "别名" || it.key == "中文名") {
+                when (val value = it.value) {
+                    is BgmInfoBoxValue.Str -> {
+                        linkedSet.add(value.value.trim())
+                    }
+
+                    is BgmInfoBoxValue.ListMap -> {
+                        val aliases = value.value.mapNotNull { map ->
+                            map["v"]?.trim()
+                        }
+                        linkedSet.addAll(aliases)
+                    }
+                    else -> {}
+                }
+            }
+        }
+
+        linkedSet.toList()
+    }
+
     val displayName: String by lazy {
         nameCn?.ifEmpty { name } ?: name ?: ""
     }

@@ -29,7 +29,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import org.easybangumi.next.shared.debug.DebugPage
-import org.easybangumi.next.shared.debug.media_radar.mediaRadarDebugCover
 import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.DataState
@@ -159,12 +158,6 @@ fun BangumiDetail(
             onBack = onBack,
         )
 
-        if (platformInformation.isDebug) {
-            Text(modifier = Modifier.padding(64.dp).clickable {
-                mediaRadarDebugCover = vm.ui.value.subjectState.okOrNull()?.cartoonCover
-                nav.navigate(RouterPage.Debug(DebugPage.MEDIA_RADAR.name))
-            },text = "debug")
-        }
 
     }
 

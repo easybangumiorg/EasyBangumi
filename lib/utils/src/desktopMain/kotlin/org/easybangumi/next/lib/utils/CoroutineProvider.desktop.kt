@@ -24,6 +24,9 @@ private class CoroutineProviderImpl : CoroutineProvider {
         Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     }
 
+    private val singleThreadExecutorMap = safeMutableMapOf<String, CoroutineDispatcher>()
+
+
     override fun io(): CoroutineDispatcher {
         return Dispatchers.IO
     }
@@ -38,6 +41,12 @@ private class CoroutineProviderImpl : CoroutineProvider {
 
     override fun main(): CoroutineDispatcher {
         return Dispatchers.Main
+    }
+
+    override fun singleForTag(tag: String): CoroutineDispatcher {
+        return singleThreadExecutorMap.getOrPut(tag) {
+            Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+        }
     }
 }
 

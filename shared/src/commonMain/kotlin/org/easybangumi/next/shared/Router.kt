@@ -21,14 +21,12 @@ import androidx.navigation.toRoute
 import org.easybangumi.next.shared.debug.DebugHost
 import org.easybangumi.next.shared.debug.DebugPage
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import org.easybangumi.next.lib.utils.WeakRef
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.compose.detail.Detail
 import org.easybangumi.next.shared.compose.home.Home
 import org.easybangumi.next.shared.compose.media.Media
 import org.easybangumi.next.shared.compose.media.MediaParam
-import org.easybangumi.next.shared.compose.media_radar.MediaRadarParam
 import org.easybangumi.next.shared.compose.search.Search
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.data.cartoon.CartoonInfo
@@ -88,7 +86,7 @@ sealed class RouterPage {
         val cartoonIndex: CartoonIndex,
         val cartoonCover: CartoonCover? = null,
         val suggestEpisode: Int? = null,
-        val suggestMediaRadarParam: MediaRadarParam? = null,
+        val radarKeywordSuggest: List<String> = emptyList(),
     ): RouterPage() {
 
         companion object {
@@ -96,13 +94,13 @@ sealed class RouterPage {
                 cartoonIndex: CartoonIndex,
                 cartoonCover: CartoonCover? = null,
                 suggestEpisode: Int? = null,
-                suggestMediaRadarParam: MediaRadarParam? = null,
+                radarKeywordSuggest: List<String> = emptyList(),
             ): Media {
                 return Media(
                     cartoonIndex,
                     cartoonCover,
                     suggestEpisode,
-                    suggestMediaRadarParam
+                    radarKeywordSuggest
                 )
             }
         }
@@ -232,7 +230,7 @@ fun Router() {
                             cartoonIndex = param.cartoonIndex,
                             cartoonCover = param.cartoonCover,
                             suggestEpisode = param.suggestEpisode,
-                            suggestMediaRadarParam = param.suggestMediaRadarParam
+                            radarKeywordSuggest = param.radarKeywordSuggest
                         )
                     }
                     Media(param)
