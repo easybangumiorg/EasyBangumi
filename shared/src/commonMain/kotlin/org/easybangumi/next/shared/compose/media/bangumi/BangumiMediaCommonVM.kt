@@ -9,12 +9,16 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import org.easybangumi.next.shared.compose.detail.bangumi.BangumiDetailVM
 import org.easybangumi.next.shared.compose.media.MediaParam
 import org.easybangumi.next.shared.compose.media.PlayLineIndexVM
 import org.easybangumi.next.shared.compose.media_finder.MediaFinderVM
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
+import org.easybangumi.next.shared.data.cartoon.CartoonInfo
+import org.easybangumi.next.shared.data.room.cartoon.dao.CartoonInfoDao
 import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
+import org.koin.core.component.inject
 import kotlin.getValue
 
 
@@ -81,6 +85,8 @@ class BangumiMediaCommonVM (
     val bangumiDetailVM: BangumiDetailVM by childViewModel {
         BangumiDetailVM(cartoonIndex = cartoonIndex,)
     }
+
+    private val cartoonInfoDao: CartoonInfoDao by inject()
 
     init {
         // 媒体雷达结果 -> 播放线路状态
@@ -173,4 +179,22 @@ class BangumiMediaCommonVM (
         }
     }
 
+
+    suspend fun trySaveHistory(positionMs: Long) {
+        val cover = bangumiDetailVM.subjectRepository.flow.value.okOrNull()?.cartoonCover
+        val playLine = playLineIndexVM.logic.value
+        cover ?: return
+        cartoonInfoDao.update(cover.toCartoonIndex()) {
+            val info = it ?: CartoonInfo.fromCartoonCover(cover)
+            info.copy(
+                lastHistoryTime = Clock.System.now().toEpochMilliseconds(),
+                lastProcessTime = positionMs,
+                lastPlaySourceKey = playLine.business?.source?.key ?: info.lastPlaySourceKey,
+                lastPlaySourceId = playLine.cartoonIndex?.id ?: info.lastPlaySourceId,
+                lastLineId = playLine.playLineOrNull?.id ?: info.lastLineId,
+                lastEpisodeId = playLine.currentEpisodeOrNull?.id ?: info.lastEpisodeId,
+                lastEpisodeLabel = playLine.currentEpisodeOrNull?.label ?: info.lastEpisodeLabel,
+            )
+        }
+    }
 }

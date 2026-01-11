@@ -3,14 +3,19 @@
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
@@ -23,11 +28,14 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key.Companion.R
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import dev.icerock.moko.resources.compose.stringResource
 import org.easybangumi.next.shared.debug.DebugPage
 import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.logger.logger
@@ -46,6 +54,8 @@ import org.easybangumi.next.shared.foundation.shimmer.rememberShimmerState
 import org.easybangumi.next.shared.foundation.view_model.vm
 import org.easybangumi.next.shared.scheme.EasyScheme
 import org.easybangumi.next.shared.data.bangumi.BgmSubject
+import org.easybangumi.next.shared.foundation.stringRes
+import org.easybangumi.next.shared.resources.Res
 import kotlin.math.absoluteValue
 
 /**
@@ -59,7 +69,7 @@ import kotlin.math.absoluteValue
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-private val logger = logger("BangumiDetail")
+internal val logger = logger("BangumiDetail")
 @Composable
 fun BangumiDetail(
     modifier: Modifier = Modifier,
@@ -134,6 +144,9 @@ fun BangumiDetail(
                 cartoonInfo = cartoonInfoState,
                 onCollectClick = {
                     vm.openCollectDialog()
+                },
+                onPlayClick = {
+                    vm.onPlayClick(nav)
                 }
             )
 
@@ -158,8 +171,8 @@ fun BangumiDetail(
             onBack = onBack,
         )
 
-
     }
+
 
 
     when (val dia = vm.ui.value.dialog) {

@@ -1,16 +1,12 @@
 ﻿package org.easybangumi.next.shared.compose.detail.bangumi
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -25,16 +21,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.StarHalf
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.StarOutline
-import androidx.compose.material.icons.outlined.Favorite
-import androidx.compose.material.icons.outlined.StarOutline
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.StarOutline
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -43,12 +40,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.painter.BrushPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -62,6 +62,9 @@ import org.easybangumi.next.shared.scheme.EasyScheme
 import org.easybangumi.next.shared.data.bangumi.BgmRating
 import org.easybangumi.next.shared.data.bangumi.BgmSubject
 import org.easybangumi.next.shared.data.cartoon.CartoonInfo
+import org.easybangumi.next.shared.foundation.shimmer.drawRectWhenShimmerVisible
+import org.easybangumi.next.shared.foundation.shimmer.rememberShimmerState
+import org.easybangumi.next.shared.foundation.shimmer.shimmer
 import org.easybangumi.next.shared.foundation.stringRes
 import org.easybangumi.next.shared.resources.Res
 
@@ -87,6 +90,7 @@ fun BangumiDetailHeader(
     bgmCollectionState: DataState<BgmCollectResp> = DataState.none(),
     cartoonInfo: CartoonInfo? = null,
     onCollectClick: () -> Unit,
+    onPlayClick: () -> Unit,
 ){
     val surfaceLowestColor = MaterialTheme.colorScheme.surfaceContainerLowest
     val backgroundColor = MaterialTheme.colorScheme.surfaceContainer
@@ -94,135 +98,197 @@ fun BangumiDetailHeader(
         BrushPainter(SolidColor(backgroundColor))
     }
     val data = subjectState.cacheData
-    Box(modifier.height(IntrinsicSize.Min)) {
-        Crossfade(data) {
-            if (it != null && !isHeaderPin) {
-                AsyncImage(
-                    modifier = Modifier.fillMaxSize().blur(32.dp),
-                    model = coverUrl,
-                    contentScale = ContentScale.FillWidth,
-                    contentDescription = "cartoon cover background",
-                    fallback = backgroundPainter,
-                    placeholder = backgroundPainter,
-                )
+    val shimmerState = rememberShimmerState(subjectState.isLoading())
+    Layout (
+        modifier = modifier.fillMaxWidth().clipToBounds().background(surfaceLowestColor),
+        measurePolicy = {measurables, constraints ->
+            if (measurables.isEmpty()) {
+                return@Layout layout(0, 0) {}
             }
+            // 测量所有 children
+            val placeables = measurables.map { it.measure(constraints) }
 
-            Box(
-                modifier = Modifier.fillMaxSize()
-                    .run {
-                        if (isHeaderPin) {
-                            background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                        } else {
-                            background(
-                                remember(
-                                    surfaceLowestColor, backgroundColor,
-                                ) {
-                                    if (surfaceLowestColor.luminance() < 0.5f) {
-                                        Brush.verticalGradient(
-                                            0f to backgroundColor.copy(alpha = 0xA2.toFloat() / 0xFF),
-                                            0.4f to backgroundColor.copy(alpha = 0xA2.toFloat() / 0xFF),
-                                            1.00f to surfaceLowestColor,
-                                        )
-                                    } else {
-                                        Brush.verticalGradient(
-                                            0f to Color(0xA2FAFAFA),
-                                            0.4f to Color(0xA2FAFAFA),
-                                            1.00f to surfaceLowestColor,
-                                        )
-                                    }
-                                }
-                            )
-                        }
-                    },
-            )
-        }
+            val wrapHeight: Placeable? = placeables.getOrNull(1)
+            logger.info("wrapHeight: $wrapHeight size: ${wrapHeight?.height}")
 
-
-
-        Column(
-            modifier = Modifier.padding(16.dp, 0.dp)
-        ) {
-            Spacer(modifier = Modifier.size(contentPaddingTop))
-
-            Row(
-                modifier = Modifier.fillMaxWidth().height(EasyScheme.size.cartoonCoverHeight)
-            ) {
-
-                CartoonCoverCard(
-                    model = coverUrl,
-                )
-
-                Spacer(modifier = Modifier.size(16.dp))
-
-                AnimatedContent(
-                    subjectState,
-                    transitionSpec = {
-                        (fadeIn(animationSpec = tween(220, delayMillis = 90)))
-                            .togetherWith(fadeOut(animationSpec = tween(90)))
-                    },
-                ) {
-                    val subjectState = it
-                    LoadScaffold(
-                        modifier = Modifier.weight(1f).fillMaxHeight(),
-                        data = subjectState,
-                        onCacheOrData = { state, cache ->
-                            HeaderContent(cache,
-                                bgmCollectionState = bgmCollectionState,
-                                cartoonInfo = cartoonInfo,
-                                onCollectClick = onCollectClick,
-                            )
-                        },
-                        onLoading = {
-                            ShimmerHost(
-                                visible = true
-                            ) {
-                                Column {
-                                    Text(
-                                        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).drawRectWhenShimmerVisible(),
-                                        text = "",
-                                        style = MaterialTheme.typography.titleLarge,
-                                    )
-                                    Spacer(modifier = Modifier.size(8.dp))
-                                    Text(
-                                        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).drawRectWhenShimmerVisible(),
-                                        text = "",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                    )
-                                    Spacer(modifier = Modifier.size(8.dp))
-                                    Text(
-                                        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).drawRectWhenShimmerVisible(),
-                                        text = "",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                    )
-                                }
-                            }
-
-                        },
-                    ) {
-                        HeaderContent(it.data,bgmCollectionState = bgmCollectionState,
-                            cartoonInfo = cartoonInfo,
-                            onCollectClick = onCollectClick,)
-                    }
+            layout(constraints.maxWidth, wrapHeight?.height ?: constraints.maxHeight) {
+                placeables.forEach {
+                    it.place(0, 0)
+                }
+            }
+        },
+        content = {
+            Crossfade(data, modifier = Modifier) {
+                if (it != null && !isHeaderPin && !shimmerState.isVisible) {
+                    AsyncImage(
+                        modifier = Modifier.fillMaxSize().blur(32.dp),
+                        model = coverUrl,
+                        alignment = Alignment.TopCenter,
+                        contentScale = ContentScale.FillWidth,
+                        contentDescription = "cartoon cover background",
+                        fallback = backgroundPainter,
+                        placeholder = backgroundPainter,
+                    )
                 }
 
 
             }
 
-//            Row {
-//                HeaderCollectBtn(
-//                    modifier = Modifier.weight(1f),
-//                    bgmCollectionState = bgmCollectionState,
-//                    cartoonInfo = cartoonInfo,
-//                    onCollectClick = onCollectClick,
-//                )
-//                // TODO 播放按钮
-//                Button(
-//                    modifier = Modifier.weight(1f),
-//                    onClick = {  }
-//                ) {}
-//            }
-        }
-    }
+
+
+            if (subjectState.isLoading()) {
+
+                Column(
+                    modifier = Modifier.shimmer(shimmerState).padding(16.dp, 0.dp)
+                ){
+                    Spacer(modifier = Modifier.size(contentPaddingTop))
+                    Text(
+                        text = data?.displayName ?: "",
+                        style = MaterialTheme.typography.headlineSmall,
+                        maxLines = 3,
+                        overflow = TextOverflow.Ellipsis,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).drawRectWhenShimmerVisible(shimmerState)
+                    )
+                    Spacer(modifier = Modifier.size(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth().height(EasyScheme.size.cartoonCoverHeight)
+                    ) {
+
+                        Box(modifier.width(EasyScheme.size.cartoonCoverWidth).height(EasyScheme.size.cartoonCoverHeight).clip(RoundedCornerShape(12.dp)).drawRectWhenShimmerVisible(shimmerState))
+                        Spacer(modifier = Modifier.size(16.dp))
+                        Column(
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(
+                                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).drawRectWhenShimmerVisible(shimmerState),
+                                text = "",
+                                style = MaterialTheme.typography.titleLarge,
+                            )
+                            Spacer(modifier = Modifier.size(8.dp))
+                            Text(
+                                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).drawRectWhenShimmerVisible(shimmerState),
+                                text = "",
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                            Spacer(modifier = Modifier.size(8.dp))
+                            Text(
+                                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).drawRectWhenShimmerVisible(shimmerState),
+                                text = "",
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.size(8.dp))
+                }
+            } else {
+                Box(
+                    modifier = Modifier.height(IntrinsicSize.Min)
+                ) {
+                    Crossfade(data, modifier = Modifier.fillMaxWidth().fillMaxSize()){
+                        if (it != null && !isHeaderPin) {
+                            Box(
+                                modifier = Modifier.fillMaxWidth().fillMaxSize()
+                                    .run {
+                                        if (isHeaderPin) {
+                                            background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                                        } else {
+                                            background(
+                                                remember(
+                                                    surfaceLowestColor, backgroundColor,
+                                                ) {
+                                                    if (surfaceLowestColor.luminance() < 0.5f) {
+                                                        Brush.verticalGradient(
+                                                            0f to backgroundColor.copy(alpha = 0xA2.toFloat() / 0xFF),
+                                                            0.4f to backgroundColor.copy(alpha = 0xA2.toFloat() / 0xFF),
+                                                            1.00f to surfaceLowestColor,
+                                                        )
+                                                    } else {
+                                                        Brush.verticalGradient(
+                                                            0f to Color(0xA2FAFAFA),
+                                                            0.4f to Color(0xA2FAFAFA),
+                                                            1.00f to surfaceLowestColor,
+                                                        )
+                                                    }
+                                                }
+                                            )
+                                        }
+                                    },
+                            )
+                        }
+                    }
+
+
+                    Column(
+                        modifier = Modifier.padding(16.dp, 0.dp)
+                    ) {
+                        Spacer(modifier = Modifier.size(contentPaddingTop))
+
+                        Text(
+                            text = data?.displayName ?: "",
+                            style = MaterialTheme.typography.headlineSmall,
+                            maxLines = 3,
+                            overflow = TextOverflow.Ellipsis,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+
+                        Spacer(modifier = Modifier.size(8.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth().height(EasyScheme.size.cartoonCoverHeight)
+                        ) {
+
+                            CartoonCoverCard(
+                                model = coverUrl,
+                            )
+
+                            Spacer(modifier = Modifier.size(16.dp))
+
+                            LoadScaffold(
+                                modifier = Modifier.weight(1f).fillMaxHeight(),
+                                data = subjectState,
+                                onCacheOrData = { state, cache ->
+                                    HeaderContent(cache,
+                                        bgmCollectionState = bgmCollectionState,
+                                        cartoonInfo = cartoonInfo,
+                                        onCollectClick = onCollectClick,
+                                    )
+                                },
+                                onLoading = {
+
+                                },
+                            ) {
+                                HeaderContent(it.data,bgmCollectionState = bgmCollectionState,
+                                    cartoonInfo = cartoonInfo,
+                                    onCollectClick = onCollectClick,)
+                            }
+
+
+                        }
+
+                        Spacer(modifier = Modifier.size(4.dp))
+//
+                        Row {
+                            PlayBtn(Modifier.weight(1f)) {
+                                onPlayClick()
+                            }
+                        }
+
+
+
+
+                    }
+                }
+
+            }
+
+
+        },
+    )
+
+
+
 
 }
 
@@ -234,14 +300,7 @@ fun HeaderContent(
     onCollectClick: () -> Unit,
 ) {
     Column {
-        Text(
-            text = it.displayName ?: "",
-            style = MaterialTheme.typography.titleLarge,
-            maxLines = 3,
-            overflow = TextOverflow.Ellipsis,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        Spacer(modifier = Modifier.size(8.dp))
+
         Text(
             modifier = Modifier,
             text = it.date ?: "",
@@ -259,16 +318,40 @@ fun HeaderContent(
 //        Spacer(modifier = Modifier.weight(1f))
         it.rating?.let {
             HeaderRanking(Modifier, it)
+            Spacer(modifier = Modifier.size(8.dp))
+            HeaderScore(Modifier, it)
         }
         Spacer(modifier = Modifier.weight(1f))
-        HeaderCollectBtn(
-            modifier = Modifier,
-            bgmCollectionState = bgmCollectionState,
-            cartoonInfo = cartoonInfo,
-            onCollectClick = onCollectClick,
-        )
+        Row {
+            Spacer(modifier = Modifier.weight(1f))
+            HeaderCollectBtn(
+                modifier = Modifier,
+                bgmCollectionState = bgmCollectionState,
+                cartoonInfo = cartoonInfo,
+                onCollectClick = onCollectClick,
+            )
+        }
 
 
+
+
+    }
+}
+
+@Composable
+fun PlayBtn(
+    modifier: Modifier,
+    onClick: () ->Unit,
+) {
+    Button(
+        modifier = modifier,
+        onClick = {
+            onClick()
+        }
+    ) {
+        Icon(Icons.Filled.PlayArrow, modifier = Modifier.size(16.dp),contentDescription = null)
+        Spacer(modifier = Modifier.size(4.dp))
+        Text(stringRes(Res.strings.play_now))
     }
 }
 
@@ -280,8 +363,11 @@ fun HeaderCollectBtn(
     onCollectClick: () -> Unit,
 ) {
     val collectResp = bgmCollectionState.okOrCache()
-    Button(
+
+    OutlinedButton(
         modifier = modifier,
+//        shape = RoundedCornerShape(16.dp),
+//        contentPadding = PaddingValues(0.dp),
         onClick = {
         onCollectClick()
         }
@@ -333,51 +419,51 @@ fun HeaderCollectBtn(
 }
 
 @Composable
+fun HeaderScore(
+    modifier: Modifier,
+    rating: BgmRating,
+    color: Color = MaterialTheme.colorScheme.primary,
+){
+
+    Column(modifier) {
+        Text(
+            "${rating.total} 人评丨${ rating.score?.toString()?:""}",
+            Modifier,
+            style = MaterialTheme.typography.labelMedium,
+            maxLines = 1,
+            softWrap = false,
+            color = color
+        )
+        FiveRatingStars(score = rating.score?.toInt()?:0, color = color)
+    }
+
+
+}
+
+@Composable
 fun HeaderRanking(
     modifier: Modifier,
     rating: BgmRating,
     color: Color = MaterialTheme.colorScheme.primary,
 ){
 
-    Row (
-        verticalAlignment = Alignment.CenterVertically,
-
-        ){
-
-        Column(modifier) {
-            Text(
-                "${rating.total} 人评丨#${rating.rank}",
-                Modifier.padding(end = 2.dp),
-                style = MaterialTheme.typography.labelMedium,
-                maxLines = 1,
-                softWrap = false,
-                color = color
-            )
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    rating.score?.toString()?:"",
-                    color = color,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                FiveRatingStars(score = rating.score?.toInt()?:0, color = color)
-
-            }
-
-
-        }
-
-    }
-
+    Text(
+        "Rank: #${rating.rank}",
+        modifier,
+        style = MaterialTheme.typography.labelMedium,
+        maxLines = 1,
+        softWrap = false,
+        color = color
+    )
 
 
 }
 
+
 @Composable
 fun FiveRatingStars(
     score: Int, // range 0..10
-    starSize: Dp = 22.dp,
+    starSize: Dp = 21.dp,
     color: Color = MaterialTheme.colorScheme.primary,
     modifier: Modifier = Modifier,
 ) {

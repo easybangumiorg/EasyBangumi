@@ -34,9 +34,10 @@ abstract class FileAbsRepository<T: Any>(
     folder: UFD,
     val name: String,
     val scope: CoroutineScope,
+    val debug: Boolean = false,
 ): DataRepository<T> {
 
-    protected val logger = logger(this.toString())
+    protected val logger = logger(this.toString(), debug)
 
     private val _flow = MutableStateFlow<DataState<T>>(DataState.Companion.none())
     override val flow: StateFlow<DataState<T>> = _flow
@@ -118,8 +119,10 @@ abstract class FileAbsRepository<T: Any>(
                                 tempFile.delete()
                             }
                             tempFile.openSink(false).buffer().use {
-                                save(remote.data, it)
-                                it.flush()
+                                if (remote.data != null) {
+                                    save(remote.data, it)
+                                    it.flush()
+                                }
                             }
                             if (file.exists()) {
                                 file.delete()

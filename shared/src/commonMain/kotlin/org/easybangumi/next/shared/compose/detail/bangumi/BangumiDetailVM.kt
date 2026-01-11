@@ -267,6 +267,21 @@ class BangumiDetailVM(
     }
 
 
+    fun onPlayClick(
+        navController: NavController,
+    ) {
+        val sub = state.value.subjectState.okOrNull() ?: return
+
+        navController.navigate(
+            RouterPage.Media.from(
+                cartoonIndex = sub.cartoonIndex,
+                cartoonCover = sub.cartoonCover,
+                suggestEpisode = null,
+            )
+        )
+    }
+
+
 
 
 }

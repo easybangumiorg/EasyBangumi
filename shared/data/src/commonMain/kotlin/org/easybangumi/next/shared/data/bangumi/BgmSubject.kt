@@ -103,11 +103,7 @@ data class BgmSubject(
     val displayEpisode: String? by lazy {
         totalEpisodes ?: return@lazy null
         eps ?: return@lazy null
-        if (totalEpisodes == eps) {
-            "已完结 · 全 $totalEpisodes 话"
-        } else {
-            "更新至 ${eps} · 全 $totalEpisodes 话"
-        }
+        return@lazy "更新至 ${eps} · 全 $totalEpisodes 话"
     }
 
     val cartoonIndex: CartoonIndex by lazy {

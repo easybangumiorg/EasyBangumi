@@ -2,6 +2,7 @@ package org.easybangumi.next.shared.source.bangumi.business.embed
 
 import com.fleeksoft.ksoup.nodes.Document
 import io.ktor.http.URLBuilder
+import io.ktor.http.URLProtocol
 import io.ktor.http.path
 import org.easybangumi.next.shared.source.bangumi.BangumiConfig
 import org.easybangumi.next.shared.data.bangumi.BgmTrendsSubject
@@ -41,6 +42,7 @@ fun Document.toTrendsSubjectList(
         val name = small?.text()
         val image = li.select("img.cover").firstOrNull()
         val imageUrl = URLBuilder().run {
+            protocol = URLProtocol.HTTPS
             host = bangumiConfig.bangumiApiHost
             path("v0", "subjects", id.toString(), "image")
             parameters.set("subject_id", id.toString())

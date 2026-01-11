@@ -49,6 +49,7 @@ import org.easybangumi.next.shared.resources.Res
 import org.easybangumi.next.shared.scheme.EasyScheme
 import org.easybangumi.next.shared.compose.UI
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
+import kotlin.math.log
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -71,7 +72,7 @@ fun BangumiDiscover(
     headerContainerColor: Color? = null,
     pinHeaderContainerColor: Color? = null,
     contentContainerColor: Color? = null,
-    clipContent: Boolean = true,
+    clipContent: Boolean = false,
     onCoverClick: (CartoonCover) -> Unit,
     onTimelineClick: () -> Unit,
 ) {
@@ -108,7 +109,6 @@ fun BangumiDiscover(
                 if (tab != null) {
 
                     val lazyPageState =  tab.pagingFlow.collectAsLazyPagingItems()
-                    logger.info("ttt" + it.toString() + lazyPageState.toString())
                     val cartoonHeight = EasyScheme.size.cartoonCoverHeight
                     LazyVerticalGrid(
                         modifier = Modifier.fillMaxSize().contentPointerScrollOpt(LocalUIMode.current.inputMode == InputMode.POINTER).run {
@@ -132,6 +132,7 @@ fun BangumiDiscover(
                                     Box(
                                         contentAlignment = Alignment.Center
                                     ) {
+                                        logger.info("Loaded item $item")
                                         CartoonCardWithCover(
                                             modifier = Modifier.fillMaxWidth(),
                                             coverAspectRatio = null,
@@ -232,7 +233,7 @@ fun BannerHeadline(
 //                fontSize = 16.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.headlineSmall
+                style = MaterialTheme.typography.titleLarge
             )
         },
         trailingContent = {
@@ -243,8 +244,8 @@ fun BannerHeadline(
                 Spacer(Modifier.size(4.dp))
                 Text(
                     text = stringRes(Res.strings.anim_timeline),
-                    fontSize = 12.sp,
                 )
+
             }
         }
     )

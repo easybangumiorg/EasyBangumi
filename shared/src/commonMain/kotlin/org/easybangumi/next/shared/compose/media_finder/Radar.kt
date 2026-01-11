@@ -1,21 +1,40 @@
 package org.easybangumi.next.shared.compose.media_finder
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.Help
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,6 +42,9 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.easybangumi.next.shared.foundation.cartoon.CartoonCoverCard
 import org.easybangumi.next.shared.foundation.image.AsyncImage
@@ -57,67 +79,104 @@ fun Radar(
     LazyColumn(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
-        contentPadding = PaddingValues(16.dp, 0.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+//        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         item {
-            Row {
-                Text("搜索关键词：")
-                Text(state.keyword ?: "", modifier = Modifier.weight(1f))
-                Icon(Icons.Filled.Edit, contentDescription = null, modifier = Modifier.clickable {
-                    vm.showKeywordEditPopup()
-                })
+            Row(
+                modifier = Modifier.padding(16.dp, 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Text(
+                    "已搜索 ${state.radarState.resultTabCount}/${state.radarState.radarSourceTabList.size} 个番源",
+                        style = MaterialTheme.typography.titleMedium,
+                    textAlign = TextAlign.Start,
+                )
+                Spacer(Modifier.weight(1f))
+                IconButton(
+                    onClick = {}
+                ) {
+                    Icon(Icons.Filled.Refresh, null)
+                }
+
             }
+
+
         }
         item {
             LazyRow(
                 modifier = Modifier
                     .fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                contentPadding = PaddingValues(16.dp, 0.dp),
             ) {
+
                 items(radarState.radarSourceTabList.size) {
                     val tab = radarState.radarSourceTabList[it]
                     val selected = tab == radarState.selectionSource
-                    FilterChip(
-                        elevation = null,
-                        selected = selected,
-                        leadingIcon = {
-                            AsyncImage(
-                                model = tab.sourceManifest.icon,
-                                contentDescription = stringRes(tab.sourceManifest.label),
-                                modifier = Modifier.size(24.dp)
-                            )
-                        },
-                        label = {
-                            Text(stringRes(tab.sourceManifest.label))
+                    Row(modifier = Modifier
+//                                .widthIn(max = 120.dp)
 
-                        },
-                        trailingIcon = {
-                            if (tab.error) {
-                                Icon(Icons.Filled.Error, contentDescription = null)
-                            } else if (tab.loading) {
-                                // 加载中动画
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(24.dp),
-                                    strokeWidth = 2.dp
-                                )
-                            } else {
-                                Text(tab.count.toString())
-                            }
-                        },
-                        onClick = {
-
+                        .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(6.dp))
+                        .clip(RoundedCornerShape(6.dp))
+                        .clickable {
+//                                    vm.onTagClick(tag.name)
                         }
-                    )
+                        .padding(horizontal = 8.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        AsyncImage(
+                            model = tab.sourceManifest.icon,
+                            contentDescription = stringRes(tab.sourceManifest.label),
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        if (tab.error) {
+                            Icon(Icons.Filled.Check, tint = MaterialTheme.colorScheme.error, contentDescription = null)
+                        } else if (tab.loading) {
+                            // 加载中动画
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Text(tab.count.toString())
+                        }
+                    }
                 }
             }
         }
 
+        item {
+            ListItem(
+                headlineContent = {
+                    Text(
+                        "资源搜索结果 ${radarState.result.size}",
+                        style = MaterialTheme.typography.titleMedium,
+                        textAlign = TextAlign.Start
+                    )
+                },
+                trailingContent = {
+                    Text(
+                        "点击选择",
+//                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = TextAlign.Start
+                    )
+                },
+                colors = ListItemDefaults.colors(
+                    containerColor = Color.Transparent
+                )
+            )
+
+        }
+
         items(radarState.result.size) {
             val item = radarState.result[it]
-            Row(
-                modifier = Modifier.fillMaxWidth().clickable {
+            val selection = state.result == item
+
+            Card(
+                modifier = Modifier.padding(16.dp, 0.dp).fillMaxWidth().padding(0.dp, 4.dp).clip(RoundedCornerShape(16.dp)).clickable {
                     vm.onUserResultSelect(
                         MediaFinderVM.SelectionResult(
                             playCover = item.cover,
@@ -125,69 +184,79 @@ fun Radar(
                             suggestPlayerLine = null,
                         )
                     )
-                }
+                },
+                colors = CardDefaults.cardColors().copy(
+                    containerColor = if(selection) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh,
+                    contentColor = if(selection) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                ),
             ) {
-                CartoonCoverCard(
-                    modifier = Modifier,
-                    model = item.cover.coverUrl,
-                    name = null,
-                    itemSize = EasyScheme.size.cartoonCoverSmallHeight,
-                    itemIsWidth = false,
-                    coverAspectRatio = EasyScheme.size.cartoonCoverSmallAspectRatio,
-                    onClick = {
-                        vm.onUserResultSelect(
-                            MediaFinderVM.SelectionResult(
-                                playCover = item.cover,
-                                manifest = item.businessPair.getManifest(),
-                                suggestPlayerLine = null,
-                            )
-                        )
-                    }
-                )
-                Spacer(modifier = Modifier.size(4.dp))
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(8.dp).height(EasyScheme.size.cartoonCoverSmallHeight),
                 ) {
-                    Text(item.cover.name, maxLines = 1, style = MaterialTheme.typography.titleMedium)
-                    Row {
-                        AsyncImage(
-                            model = item.businessPair.getManifest().icon,
-                            contentDescription = stringRes(item.businessPair.getManifest().label),
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Text(stringRes(item.businessPair.getManifest().label))
-                    }
-                    item.playerLine?.let { lineList ->
-                        LazyRow(
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        ) {
-                            items(lineList.size) {
-                                val line = lineList[it]
-                                FilterChip(
-                                    elevation = null,
-                                    selected = false,
-                                    onClick = {
-                                        vm.onUserResultSelect(
-                                            MediaFinderVM.SelectionResult(
-                                                playCover = item.cover,
-                                                manifest = item.businessPair.getManifest(),
-                                                suggestPlayerLine = line,
-                                            )
-                                        )
-                                    },
-                                    label = {
-                                        Text(line.label)
-                                    },
-                                    trailingIcon = {
-                                        Text(line.episodeList.size.toString())
+                    CartoonCoverCard(
+                        modifier = Modifier,
+                        model = item.cover.coverUrl,
+                        name = null,
+                        itemSize = EasyScheme.size.cartoonCoverSmallHeight,
+                        itemIsWidth = false,
+                        coverAspectRatio = EasyScheme.size.cartoonCoverSmallAspectRatio,
+                        onClick = null
+                    )
+                    Spacer(modifier = Modifier.size(8.dp))
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                    ) {
+                        Text(item.cover.name, maxLines = 2, style = MaterialTheme.typography.titleMedium)
+
+                        Spacer(modifier = Modifier.size(8.dp))
+
+                        Row {
+                            AsyncImage(
+                                model = item.businessPair.getManifest().icon,
+                                contentDescription = stringRes(item.businessPair.getManifest().label),
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.size(2.dp))
+                            Text(stringRes(item.businessPair.getManifest().label), style = MaterialTheme.typography.bodySmall)
+                        }
+
+                        Spacer(modifier = Modifier.weight(1f))
+
+                        item.playerLine?.let { lineList ->
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            ) {
+                                items(lineList.size) {
+                                    val line = lineList[it]
+
+                                    Row(modifier = Modifier
+//                                .widthIn(max = 120.dp)
+
+                                        .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(6.dp))
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .clickable {
+//                                    vm.onTagClick(tag.name)
+                                        }
+                                        .padding(horizontal = 8.dp, vertical = 8.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(line.label, style = MaterialTheme.typography.bodyMedium)
+                                        Spacer(Modifier.width(4.dp))
+                                        Text(
+                                            "(${(line.episodeList.size.toString())})",
+                                            color = MaterialTheme.colorScheme.primary,
+                                            style = MaterialTheme.typography.bodyMedium)
+
                                     }
-                                )
+                                }
                             }
                         }
                     }
                 }
             }
+
         }
     }
 }

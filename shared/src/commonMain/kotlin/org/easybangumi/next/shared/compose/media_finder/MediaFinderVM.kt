@@ -1,6 +1,27 @@
 package org.easybangumi.next.shared.compose.media_finder
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.pager.PagerState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.Help
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
@@ -13,7 +34,9 @@ import org.easybangumi.next.shared.cartoon.radar.v1.CartoonRadarV1VM
 import org.easybangumi.next.shared.cartoon.search.CartoonSearchVM
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.data.cartoon.PlayerLine
+import org.easybangumi.next.shared.foundation.stringRes
 import org.easybangumi.next.shared.foundation.view_model.StateViewModel
+import org.easybangumi.next.shared.resources.Res
 import org.easybangumi.next.shared.source.api.component.getManifest
 import org.easybangumi.next.shared.source.api.source.SourceManifest
 
@@ -48,7 +71,9 @@ class MediaFinderVM(
         val suggestPlayerLine: PlayerLine? = null,
     )
 
+
     data class State(
+
         val keyword: String? = null,
         val panelShow: Boolean = false,
         // 静默搜索结果
@@ -57,7 +82,7 @@ class MediaFinderVM(
 
         val result: SelectionResult? = null,
 
-        val radarState: RadarState = RadarState(),
+        val radarState: RadarState = RadarState.EMPTY,
         val searchState: SearchState = SearchState(),
 
         val popup: Popup? = null,
@@ -66,6 +91,7 @@ class MediaFinderVM(
     sealed class Popup {
         data class KeywordEdit(
             val keywordList: List<String>,
+            val currentKeyword: String,
         ): Popup()
 
     }
@@ -75,9 +101,13 @@ class MediaFinderVM(
         val selectionSource: SourceManifest? = null,
         val result: List<CartoonRadarStrategyV1.CartoonCoverResult> = emptyList(),
     ) {
+        companion object {
+            val EMPTY = RadarState()
+        }
         val resultTab: List<RadarSourceTab> by lazy {
             radarSourceTabList.filter { !it.loading && !it.error && it.count > 0  }
         }
+        val resultTabCount get() = resultTab.size
     }
 
     data class RadarSourceTab(
@@ -187,20 +217,23 @@ class MediaFinderVM(
             }
             radarV1VM.changeKeyword(keyword)
             state.collectLatest {
-                if ( it.silentFinding
-                    && it.result == null
-                    && !it.radarState.radarSourceTabList.any { it.loading }) {
+                if (it.radarState != RadarState.EMPTY && it.silentFinding
+                    && it.result == null) {
 
                     val res = it.radarState.result.firstOrNull() {
                         it.playerLine?.isNotEmpty() == true && it.nameDistance < 3
                     }
                     if (res == null) {
-                        update {
-                            it.copy(
-                                silentFinding = false,
-                                silentNotResult = true,
-                            )
+                        if( !it.radarState.radarSourceTabList.any { it.loading }) {
+                            update {
+                                it.copy(
+                                    silentFinding = false,
+                                    silentNotResult = true,
+                                )
+                            }
+                            silentFindingJob?.cancel()
                         }
+
                     } else {
                         update {
                             // 兜底判断，只有用户没选择时才使用静默搜索的结果
@@ -214,8 +247,9 @@ class MediaFinderVM(
                                 silentFinding = false,
                             )
                         }
+                        silentFindingJob?.cancel()
                     }
-                    silentFindingJob?.cancel()
+
                 }
             }
 
@@ -228,6 +262,7 @@ class MediaFinderVM(
             it.copy(
                 popup = Popup.KeywordEdit(
                     keywordList = currentList,
+                    currentKeyword = state.value.keyword ?: currentList.firstOrNull() ?: "",
                 )
             )
         }
@@ -258,3 +293,4 @@ class MediaFinderVM(
 
 
 }
+

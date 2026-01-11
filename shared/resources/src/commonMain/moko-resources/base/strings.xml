@@ -232,6 +232,7 @@
 
     <string name="unselected_device">未选择设备</string>
 
+    <string name="play_now">立即播放</string>
     <string name="play">播放</string>
     <string name="pause">暂停</string>
     <string name="stop">停止</string>

@@ -19,7 +19,6 @@ import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -38,7 +37,6 @@ import kotlinx.coroutines.launch
 import org.easybangumi.next.platformInformation
 import org.easybangumi.next.shared.LocalNavController
 import org.easybangumi.next.shared.RouterPage
-import org.easybangumi.next.shared.foundation.stringRes
 import org.easybangumi.next.shared.resources.Res
 import org.easybangumi.next.shared.compose.UI
 import org.easybangumi.next.shared.compose.home.history.History
@@ -154,14 +152,7 @@ fun Home() {
                     modifier = Modifier.fillMaxHeight(),
 //                    contentColor = Color.Transparent,
                     header = {
-                        IconButton(onClick = {
-
-                        }) {
-                            Icon(
-                                Icons.Default.Search,
-                                contentDescription = stringRes(Res.strings.search)
-                            )
-                        }
+                        Text("纯纯看番")
                     }
                 ) {
                     HomePageList.forEachIndexed { index, page ->
@@ -176,9 +167,7 @@ fun Home() {
                             icon = {
                                 page.icon(selected)
                             },
-                            label = {
-                                page.tabLabel()
-                            }
+
                         )
                     }
                 }
@@ -192,14 +181,6 @@ fun Home() {
                     ) {
                         Box(modifier = Modifier.fillMaxSize()) {
                             HomePageList[it].content(homeVM)
-                            if (platformInformation.isDebug) {
-                                Text(
-                                    modifier = Modifier.align(Alignment.TopStart).padding(64.dp).clickable {
-                                        navController.navigate(RouterPage.Debug.HOME)
-                                    },
-                                    text = "Debug Mode"
-                                )
-                            }
                         }
                     }
 
@@ -219,14 +200,6 @@ fun Home() {
                 ) {
                     Box(modifier = Modifier.fillMaxSize()) {
                         HomePageList[it].content(homeVM)
-                        if (platformInformation.isDebug) {
-                            Text(
-                                modifier = Modifier.align(Alignment.TopStart).padding(64.dp).clickable {
-                                    navController.navigate(RouterPage.Debug.HOME)
-                                },
-                                text = "Debug Mode"
-                            )
-                        }
                     }
                 }
 

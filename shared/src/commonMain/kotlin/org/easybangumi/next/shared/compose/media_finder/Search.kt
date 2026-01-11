@@ -10,7 +10,10 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -22,6 +25,7 @@ import app.cash.paging.compose.collectAsLazyPagingItems
 import org.easybangumi.next.shared.foundation.cartoon.CartoonCoverCard
 import org.easybangumi.next.shared.foundation.lazy.pagingCommon
 import org.easybangumi.next.shared.foundation.stringRes
+import org.easybangumi.next.shared.resources.Res
 import org.easybangumi.next.shared.scheme.EasyScheme
 import org.easybangumi.next.shared.source.api.component.getManifest
 
@@ -54,15 +58,7 @@ fun Search(
         modifier = Modifier.fillMaxWidth().then(modifier),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        item {
-            Row {
-                Text("搜索关键词：")
-                Text(state.keyword ?: "", modifier = Modifier.weight(1f))
-                Icon(Icons.Filled.Edit, contentDescription = null, modifier = Modifier.clickable {
-                    vm.showKeywordEditPopup()
-                })
-            }
-        }
+
 
         items(searchState.searchLineStateList) { line ->
 

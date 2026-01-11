@@ -21,7 +21,11 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -62,7 +66,6 @@ import org.easybangumi.next.shared.data.bangumi.BgmSubject
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-private val logger = logger("BangumiDetailContent")
 
 @Composable
 fun BangumiDetailTab(
@@ -323,6 +326,13 @@ fun BangumiEpisodeItem(
                 text =  "${bgmEpisode.airdate}",
 //                style = MaterialTheme.typography.bodyMedium,
             )
+        },
+        trailingContent = {
+            IconButton(onClick = {
+                onClick?.invoke(bgmEpisode)
+            }) {
+                Icon(Icons.Default.PlayCircle, contentDescription = null)
+            }
         }
     )
 

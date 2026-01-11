@@ -124,6 +124,10 @@ object ApplyHelper {
 
                 defaultConfig {
                     minSdk = androidMinSdk
+                    targetSdk = androidCompileSdk
+                    lint {
+                        targetSdk = androidCompileSdk
+                    }
                 }
                 compileOptions {
                     sourceCompatibility = JAVA_VERSION
@@ -159,6 +163,10 @@ object ApplyHelper {
                 minSdk = androidMinSdk
                 versionCode = provider.versionCode
                 versionName = provider.versionName
+                targetSdk = androidCompileSdk
+                lint {
+                    targetSdk = androidCompileSdk
+                }
             }
 
             compileOptions {

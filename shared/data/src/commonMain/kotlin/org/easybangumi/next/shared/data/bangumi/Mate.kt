@@ -70,6 +70,7 @@ data class BgmCharacter (
     @SerialName("images") val images: BgmImages? = BgmImages(),
     @SerialName("name")  val name: String? = null,
     @SerialName("relation") val relation: String? = null,
+    @SerialName("summary") val summary: String? = null,
     @SerialName("actors") val actors: List<BgmActor> = emptyList<BgmActor>(),
     @SerialName("type") val type: Long? = null,
     @SerialName("id") val id: Long? = null,

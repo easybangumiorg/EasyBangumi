@@ -10,6 +10,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
@@ -61,6 +62,7 @@ fun BangumiMediaPage(
     commonVM: BangumiMediaCommonVM,
     modifier: Modifier
 ) {
+    val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState {
         bangumiMediaSubPageList.size
     }
@@ -73,7 +75,7 @@ fun BangumiMediaPage(
             size = bangumiMediaSubPageList.size,
             selection = pagerState.currentPage,
             onSelected = {
-                commonVM.viewModelScope.launch {
+                scope.launch {
                     pagerState.animateScrollToPage(it)
                 }
             },

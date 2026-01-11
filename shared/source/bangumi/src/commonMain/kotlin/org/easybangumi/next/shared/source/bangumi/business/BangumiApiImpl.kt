@@ -237,6 +237,7 @@ class BangumiApiImpl(
         type: String
     ): String {
         return URLBuilder().run {
+            protocol = URLProtocol.HTTPS
             host = bangumiConfig.bangumiApiHost
             path("v0", "subjects", subjectId, "image")
             parameters.append("subject_id", subjectId)

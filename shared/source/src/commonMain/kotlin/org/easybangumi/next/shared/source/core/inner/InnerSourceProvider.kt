@@ -12,8 +12,10 @@ import org.easybangumi.next.shared.source.api.source.SourceInfo
 import org.easybangumi.next.shared.source.api.source.SourceType
 import org.easybangumi.next.shared.source.bangumi.source.BangumiInnerSource
 import org.easybangumi.next.shared.source.core.source.SourceConfigController
+import org.easybangumi.next.source.inner.age.AgeInnerSource
 import org.easybangumi.next.source.inner.debug.DebugInnerSource
 import org.easybangumi.next.source.inner.ggl.GGLInnerSource
+import org.easybangumi.next.source.inner.xifan.XifanInnerSource
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -47,6 +49,24 @@ class InnerSourceProvider(
     }
     val gglComponentBundle: ComponentBundle by lazy {
         InnerComponentBundle(gglSource).apply { runBlocking {
+            load()
+        }}
+    }
+
+    val xifanSource by lazy {
+        XifanInnerSource()
+    }
+    val xifanComponentBundle: ComponentBundle by lazy {
+        InnerComponentBundle(xifanSource).apply { runBlocking {
+            load()
+        }}
+    }
+
+    val ageSource by lazy {
+        AgeInnerSource()
+    }
+    val ageComponentBundle by lazy {
+        InnerComponentBundle(ageSource).apply { runBlocking {
             load()
         }}
     }
@@ -93,6 +113,29 @@ class InnerSourceProvider(
                         },
                         componentBundle = gglComponentBundle
                     ),
+                    SourceInfo.Loaded(
+                        manifest = xifanSource.manifest,
+                        sourceConfig =  map.getOrElse(xifanSource.key) {
+                            SourceConfig(
+                                key = xifanSource.key,
+                                enable = true,
+                                order = 0,
+                            )
+                        },
+                        componentBundle = xifanComponentBundle
+                    ),
+                    SourceInfo.Loaded(
+                        manifest = ageSource.manifest,
+                        sourceConfig =  map.getOrElse(ageSource.key) {
+                            SourceConfig(
+                                key = ageSource.key,
+                                enable = true,
+                                order = 0,
+                            )
+                        },
+                        componentBundle = ageComponentBundle
+                    )
+                    ,
                     SourceInfo.Loaded(
                         manifest = debugSource.manifest,
                         sourceConfig =  map.getOrElse(debugSource.key) {

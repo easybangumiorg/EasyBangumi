@@ -1,6 +1,15 @@
 package org.easybangumi.next.shared.compose.home.more
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import org.easybangumi.next.platformInformation
+import org.easybangumi.next.shared.LocalNavController
+import org.easybangumi.next.shared.RouterPage
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -15,4 +24,13 @@ import androidx.compose.runtime.Composable
  */
 @Composable
 fun More() {
+    val navController = LocalNavController.current
+    if (platformInformation.isDebug) {
+        Text(
+            modifier = Modifier.clickable {
+                navController.navigate(RouterPage.Debug.HOME)
+            },
+            text = "Debug Mode"
+        )
+    }
 }

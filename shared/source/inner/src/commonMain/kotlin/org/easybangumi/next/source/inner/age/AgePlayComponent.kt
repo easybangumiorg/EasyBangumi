@@ -1,4 +1,4 @@
-package org.easybangumi.next.source.inner.ggl
+package org.easybangumi.next.source.inner.age
 
 import com.fleeksoft.ksoup.Ksoup
 import io.ktor.client.*
@@ -32,7 +32,7 @@ import org.koin.core.component.inject
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-class GGLPlayComponent: PlayComponent, BaseComponent() {
+class AgePlayComponent: PlayComponent, BaseComponent() {
 
     private val logger = logger()
 
@@ -44,21 +44,19 @@ class GGLPlayComponent: PlayComponent, BaseComponent() {
 
     override suspend fun getPlayLines(cartoonIndex: CartoonIndex): DataState<List<PlayerLine>> {
         return withResult {
-            val host = prefHelper.get("host", "bgm.girigirilove.com")
+            val host = prefHelper.ageHost()
             val html = ktorClient.get {
                 url {
                     protocol = URLProtocol.HTTPS
                     this.host = host
-                    path(if(cartoonIndex.id.startsWith("GV"))
-                        cartoonIndex.id
-                    else "GV${cartoonIndex.id}")
+                    path("detail", cartoonIndex.id)
                 }
             }.bodyAsText()
             val doc = Ksoup.parse(html)
             val tabs =
-                doc.select("div.anthology.wow div.anthology-tab div.swiper-wrapper a.swiper-slide")
+                doc.select("body > div.body_content_wrapper.pb-2 > div > section > div > div.video_detail_right.ps-3.flex-grow-1 > div.video_detail_playlist_wrapper.pt-4 > ul > li ")
                     .iterator()
-            val epRoot = doc.select("div.anthology-list-box div ul.anthology-list-play").iterator()
+            val epRoot = doc.select("body > div.body_content_wrapper.pb-2 > div > section > div > div.video_detail_right.ps-3.flex-grow-1 > div.video_detail_playlist_wrapper.pt-4 > div.tab-content > div ul").iterator()
             val playLines = arrayListOf<PlayerLine>()
             var ii = 1
             while (tabs.hasNext() && epRoot.hasNext()) {
@@ -95,30 +93,24 @@ class GGLPlayComponent: PlayComponent, BaseComponent() {
         episode: Episode
     ): DataState<PlayInfo> {
         return withResult {
-            val urlPath = "${
-                if(cartoonIndex.id.startsWith("GV"))
-                    cartoonIndex.id
-                else "GV${cartoonIndex.id}"}-${playerLine.id}-${episode.id}"
-            val host = prefHelper.get("host", "bgm.girigirilove.com")
+
+            val host = prefHelper.ageHost()
             val url = buildUrl {
                 protocol = URLProtocol.HTTPS
                 this.host = host
-                path("play${urlPath}" )
+                path("play", cartoonIndex.id, playerLine.id, episode.id)
             }.toString()
-            val html = webViewHelper.use {
+            var m3u8Url: String? = null
+            var mp4Url: String? = null
+            webViewHelper.use {
                 loadUrl(url, userAgent = networkHelper.defaultLinuxUA, interceptResRegex = null)
-                waitingForResourceLoaded(".*play.*", true, 2000L)
-                waitingForResourceLoaded(".*aplayer*", true, 2000L)
+                waitingForPageLoaded()
+                waitingForResourceLoaded(".*jx\\.ejtsyc\\.com.*", true, 1000)
+                m3u8Url = waitingForResourceLoaded(".*index\\.m3u8", true, 2000L)
+                mp4Url = waitingForResourceLoaded(".*\\.mp4", true, 2000L)
                 delay(500L)
-                getContent(2000L)
             } ?: throw DataStateException("获取播放信息失败，可能是网络异常或页面加载超时")
-            val doc = Ksoup.parse(html ?: "")
-            val src = doc.select("tbody td iframe").first()?.attr("src")?:""
-            val u = src.split("?").last().split("&").find {
-                it.startsWith("url=")
-            }?.let {
-                it.subSequence(4, it.length)
-            }?.toString() ?:""
+            val u = m3u8Url ?: mp4Url ?: ""
             if(u.isEmpty()){
                 throw DataStateException("url 解析失败")
             }

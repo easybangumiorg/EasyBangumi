@@ -1,10 +1,11 @@
-﻿package org.easybangumi.next.source.inner.ggl
+﻿package org.easybangumi.next.source.inner.age
 
 import com.fleeksoft.ksoup.Ksoup
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.URLProtocol
+import io.ktor.http.parameters
 import io.ktor.http.path
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.DataState
@@ -12,7 +13,6 @@ import org.easybangumi.next.lib.utils.PagingFrame
 import org.easybangumi.next.lib.utils.UrlUtils
 import org.easybangumi.next.lib.utils.withResult
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
-import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.source.api.component.BaseComponent
 import org.easybangumi.next.shared.source.api.component.search.SearchComponent
 import org.easybangumi.next.shared.source.api.utils.NetworkHelper
@@ -27,7 +27,7 @@ import kotlin.getValue
  * https://github.com/heyanLE
  */
 
-class GGLSearchComponent: SearchComponent, BaseComponent() {
+class AgeSearchComponent: SearchComponent, BaseComponent() {
 
     private val logger = logger()
 
@@ -45,28 +45,31 @@ class GGLSearchComponent: SearchComponent, BaseComponent() {
         key: String
     ): DataState<PagingFrame<CartoonCover>> {
         return withResult {
-            val host = prefHelper.get("host", "bgm.girigirilove.com")
+            val host = prefHelper.ageHost()
             logger.info("GGLPlayComponent searchPlayCovers: host=$host, keyword=${keyword}, key=$key")
             val html = ktorClient.get {
                 url {
                     protocol = URLProtocol.HTTPS
                     this.host = host
-                    path("search", "${keyword}----------${key}---" )
+                    path("search")
+                    parameters.append("query", keyword)
+                    parameters.append("page", key)
                 }
             }.bodyAsText()
             val doc = Ksoup.parse(html)
             val list = arrayListOf<CartoonCover>()
 
-            doc.select("div.box-width div.row div.search-list.vod-detail").forEach { ro ->
+            doc.select("#cata_video_list > div div.card.cata_video_item").forEach { ro ->
                 val it = ro.child(0);
-                val uu = it.child(1).child(0).attr("href")
-                val id = uu.subSequence(1, uu.length - 1).toString()
+                val uu = it.child(1).child(0).child(0).attr("href")
 
-                var cover = it.select("img.gen-movie-img")[0].attr("data-src")
+                val id = uu.split("/").lastOrNull() ?: return@forEach
+
+                var cover = it.select("img.video_thumbs")[0].attr("data-original")
                 cover = UrlUtils.parse("https://${host}", cover)
 
-                val detailInfo = it.select("div.detail-info").first()
-                val titleEle = detailInfo?.select("h3.slide-info-title")?.first()
+                val detailInfo = it.select("div.card-body").first()
+                val titleEle = detailInfo?.select("h5.card-title")?.first()
                 var title = "";
                 if (titleEle != null) {
                     title = titleEle.text();

@@ -1,4 +1,4 @@
-package org.easybangumi.next.source.inner.ggl
+package org.easybangumi.next.source.inner.xifan
 
 import com.fleeksoft.ksoup.Ksoup
 import io.ktor.client.*
@@ -14,6 +14,7 @@ import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.data.cartoon.Episode
 import org.easybangumi.next.shared.data.cartoon.PlayInfo
 import org.easybangumi.next.shared.data.cartoon.PlayerLine
+import org.easybangumi.next.shared.resources.Res.strings.bangumi
 import org.easybangumi.next.shared.source.api.component.BaseComponent
 import org.easybangumi.next.shared.source.api.component.play.PlayComponent
 import org.easybangumi.next.shared.source.api.utils.NetworkHelper
@@ -32,7 +33,7 @@ import org.koin.core.component.inject
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-class GGLPlayComponent: PlayComponent, BaseComponent() {
+class XifanPlayComponent: PlayComponent, BaseComponent() {
 
     private val logger = logger()
 
@@ -44,14 +45,12 @@ class GGLPlayComponent: PlayComponent, BaseComponent() {
 
     override suspend fun getPlayLines(cartoonIndex: CartoonIndex): DataState<List<PlayerLine>> {
         return withResult {
-            val host = prefHelper.get("host", "bgm.girigirilove.com")
+            val host = prefHelper.get("host", "dm.xifanacg.com")
             val html = ktorClient.get {
                 url {
                     protocol = URLProtocol.HTTPS
                     this.host = host
-                    path(if(cartoonIndex.id.startsWith("GV"))
-                        cartoonIndex.id
-                    else "GV${cartoonIndex.id}")
+                    path("bangumi", "${cartoonIndex.id}.html")
                 }
             }.bodyAsText()
             val doc = Ksoup.parse(html)
@@ -99,11 +98,11 @@ class GGLPlayComponent: PlayComponent, BaseComponent() {
                 if(cartoonIndex.id.startsWith("GV"))
                     cartoonIndex.id
                 else "GV${cartoonIndex.id}"}-${playerLine.id}-${episode.id}"
-            val host = prefHelper.get("host", "bgm.girigirilove.com")
+            val host = prefHelper.get("host", "dm.xifanacg.com")
             val url = buildUrl {
                 protocol = URLProtocol.HTTPS
                 this.host = host
-                path("play${urlPath}" )
+                path("watch", cartoonIndex.id, playerLine.id, episode.id + ".html")
             }.toString()
             val html = webViewHelper.use {
                 loadUrl(url, userAgent = networkHelper.defaultLinuxUA, interceptResRegex = null)

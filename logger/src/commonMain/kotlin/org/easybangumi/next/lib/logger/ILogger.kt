@@ -33,6 +33,48 @@ expect interface Logger {
 
 }
 
+fun logger(tag: String, enable: Boolean) = if (enable) {logger(tag)} else object: Logger {
+    override fun trace(message: String?, throwable: Throwable?) {
+
+    }
+
+    override fun debug(message: String?, throwable: Throwable?) {
+
+    }
+
+    override fun info(message: String?, throwable: Throwable?) {
+
+    }
+
+    override fun warn(message: String?, throwable: Throwable?) {
+
+    }
+
+    override fun error(message: String?, throwable: Throwable?) {
+
+    }
+
+    override fun isTraceEnabled(): Boolean {
+        return false
+    }
+
+    override fun isDebugEnabled(): Boolean {
+        return false
+    }
+
+    override fun isInfoEnabled(): Boolean {
+        return false
+    }
+
+    override fun isWarnEnabled(): Boolean {
+        return false
+    }
+
+    override fun isErrorEnabled(): Boolean {
+        return false
+    }
+}
+
 expect fun logger(tag: String): Logger
 
 expect fun Any.logger(): Logger

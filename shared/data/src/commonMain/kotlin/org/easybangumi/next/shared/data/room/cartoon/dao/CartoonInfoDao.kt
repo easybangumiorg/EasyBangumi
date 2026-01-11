@@ -8,6 +8,7 @@ import androidx.room.Transaction
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Clock
+import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.data.cartoon.CartoonInfo
 
 /**
@@ -54,6 +55,12 @@ interface CartoonInfoDao {
     @Transaction
     suspend fun transaction(block: suspend () -> Unit) {
         block()
+    }
+    @Transaction
+    suspend fun update(cartoonIndex: CartoonIndex, block: suspend (CartoonInfo?) -> CartoonInfo) {
+        val old = findById(cartoonIndex.source, cartoonIndex.id)
+        val new = block(old)
+        modify(new)
     }
 
     @Transaction

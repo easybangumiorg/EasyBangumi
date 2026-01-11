@@ -102,7 +102,13 @@ class BangumiBusiness(
                     val kSerializer = serializer(genericType)
                     val data = runCatching {
                         json.decodeFromString(kSerializer, body)
-                    }.getOrNull()
+                    }.getOrElse {
+                        it.printStackTrace()
+                        null
+                    }
+                    if (!genericType.isMarkedNullable && data == null ) {
+                        return@transformResponseBody null
+                    }
 
                     return@transformResponseBody BgmRsp.Success(
                         code = code,

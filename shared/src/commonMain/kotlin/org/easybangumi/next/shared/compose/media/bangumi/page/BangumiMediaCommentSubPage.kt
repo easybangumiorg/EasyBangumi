@@ -1,7 +1,12 @@
 package org.easybangumi.next.shared.compose.media.bangumi.page
 
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import org.easybangumi.next.shared.compose.media.bangumi.BangumiMediaCommonVM
+import org.easybangumi.next.shared.foundation.elements.ErrorElements
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -17,4 +22,10 @@ import org.easybangumi.next.shared.compose.media.bangumi.BangumiMediaCommonVM
 @Composable
 fun BangumiMediaCommentSubPage(
     vm: BangumiMediaCommonVM
-) {}
+) {
+    ErrorElements(
+        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+        isRow = false,
+        errorMsg = "加紧施工中，敬请期待！"
+    )
+}

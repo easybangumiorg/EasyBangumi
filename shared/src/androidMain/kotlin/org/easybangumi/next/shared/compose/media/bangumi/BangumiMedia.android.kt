@@ -16,6 +16,8 @@ import androidx.compose.material.icons.filled.Backup
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -62,6 +64,15 @@ actual fun BangumiMedia(mediaParam: MediaParam) {
         }
     }
 
+    LaunchedEffect(Unit) {
+        vm.onLaunch()
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            vm.onDispose()
+        }
+    }
+
 
     BangumiPopup(vm.commonVM)
 
@@ -94,7 +105,8 @@ actual fun BangumiMedia(mediaParam: MediaParam) {
                     LoadingElements(
                         modifier = Modifier.matchParentSize(),
                         isRow = false,
-                        loadingMsg = stringRes(Res.strings.parsing)
+                        loadingMsg = stringRes(Res.strings.parsing),
+                        msgColor = Color.White,
                     )
                     IconButton(onClick = {
                         if (!sta.isFullscreen) {

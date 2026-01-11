@@ -1,4 +1,4 @@
-﻿package org.easybangumi.next.source.inner.ggl
+﻿package org.easybangumi.next.source.inner.xifan
 
 import com.fleeksoft.ksoup.Ksoup
 import io.ktor.client.HttpClient
@@ -12,7 +12,6 @@ import org.easybangumi.next.lib.utils.PagingFrame
 import org.easybangumi.next.lib.utils.UrlUtils
 import org.easybangumi.next.lib.utils.withResult
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
-import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.source.api.component.BaseComponent
 import org.easybangumi.next.shared.source.api.component.search.SearchComponent
 import org.easybangumi.next.shared.source.api.utils.NetworkHelper
@@ -27,7 +26,7 @@ import kotlin.getValue
  * https://github.com/heyanLE
  */
 
-class GGLSearchComponent: SearchComponent, BaseComponent() {
+class XifanSearchComponent: SearchComponent, BaseComponent() {
 
     private val logger = logger()
 
@@ -45,22 +44,22 @@ class GGLSearchComponent: SearchComponent, BaseComponent() {
         key: String
     ): DataState<PagingFrame<CartoonCover>> {
         return withResult {
-            val host = prefHelper.get("host", "bgm.girigirilove.com")
+            val host = prefHelper.get("host", "dm.xifanacg.com")
             logger.info("GGLPlayComponent searchPlayCovers: host=$host, keyword=${keyword}, key=$key")
             val html = ktorClient.get {
                 url {
                     protocol = URLProtocol.HTTPS
                     this.host = host
-                    path("search", "${keyword}----------${key}---" )
+                    path("search", "wd", keyword, "page",  "${key}.html" )
                 }
             }.bodyAsText()
             val doc = Ksoup.parse(html)
             val list = arrayListOf<CartoonCover>()
 
-            doc.select("div.box-width div.row div.search-list.vod-detail").forEach { ro ->
+            doc.select("body > div.box-width > div div.vod-detail").forEach { ro ->
                 val it = ro.child(0);
                 val uu = it.child(1).child(0).attr("href")
-                val id = uu.subSequence(1, uu.length - 1).toString()
+                val id = uu.subSequence(9, uu.length - 5).toString()
 
                 var cover = it.select("img.gen-movie-img")[0].attr("data-src")
                 cover = UrlUtils.parse("https://${host}", cover)

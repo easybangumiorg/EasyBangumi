@@ -6,6 +6,7 @@ import io.ktor.client.plugins.api.TransformResponseBodyContext
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
+import io.ktor.http.URLProtocol
 import io.ktor.http.path
 import io.ktor.util.reflect.TypeInfo
 import io.ktor.utils.io.ByteReadChannel
@@ -38,6 +39,7 @@ class BangumiReviewsEmbedProxyHandler(
                 ?: throw  IllegalArgumentException("subject_id is required")
             val page = builder.url.parameters["page"] ?: "1"
             builder.url {
+                protocol = URLProtocol.HTTPS
                 host = bangumiConfig.bangumiHtmlHost
                 // subject/509986/reviews/1.html
                 path("subject", subjectId, "reviews", "$page.html")
