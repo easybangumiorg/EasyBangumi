@@ -9,7 +9,7 @@ import org.koin.dsl.module
  */
 val bangumiModule = module {
     single {
-        BangumiAccountController()
+        BangumiAccountController(get())
     }
     single {
         BangumiDataController(get(), get())

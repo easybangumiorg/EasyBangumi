@@ -45,6 +45,7 @@ import app.cash.paging.compose.collectAsLazyPagingItems
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.shared.LocalNavController
+import org.easybangumi.next.shared.compose.bangumi.comment.BangumiComment
 import org.easybangumi.next.shared.foundation.EasyTab
 import org.easybangumi.next.shared.foundation.elements.ErrorElements
 import org.easybangumi.next.shared.foundation.elements.LoadScaffold
@@ -139,10 +140,9 @@ fun BangumiContent(
                     )
                 }
                 BangumiDetailVM.DetailTab.COMMENT -> {
-                    ErrorElements(
-                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
-                        isRow = false,
-                        errorMsg = "加紧施工中，敬请期待！"
+                    BangumiDetailSubCommentPage(
+                        modifier = Modifier.fillMaxSize(),
+                        vm = vm,
                     )
                 }
 
@@ -335,5 +335,15 @@ fun BangumiEpisodeItem(
             }
         }
     )
+
+}
+
+
+@Composable
+fun BangumiDetailSubCommentPage(
+    modifier: Modifier = Modifier,
+    vm: BangumiDetailVM,
+) {
+    BangumiComment(modifier, vm.bangumiCommentVM)
 
 }

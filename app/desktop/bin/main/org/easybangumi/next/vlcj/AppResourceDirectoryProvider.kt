@@ -21,7 +21,7 @@ class AppResourceDirectoryProvider: DiscoveryDirectoryProvider {
     private val logger = logger()
 
     override fun priority(): Int {
-        return DiscoveryProviderPriority.USER_DIR
+        return DiscoveryProviderPriority.CONFIG_FILE
     }
 
     override fun directories(): Array<out String?>? {

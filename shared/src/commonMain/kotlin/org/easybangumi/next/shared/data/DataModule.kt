@@ -15,11 +15,3 @@ import org.koin.dsl.module
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-val shareDataModule = module {
-    single {
-        BangumiDataController(get(), get())
-    }
-    single {
-        BangumiAccountController()
-    }
-}

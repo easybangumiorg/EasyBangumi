@@ -23,7 +23,7 @@ import org.easybangumi.next.shared.compose.media.MediaParam
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-class AndroidBangumiMediaViewModel(
+class AndroidBangumiMediaVM(
     val param: MediaParam,
 ): BaseViewModel() {
 

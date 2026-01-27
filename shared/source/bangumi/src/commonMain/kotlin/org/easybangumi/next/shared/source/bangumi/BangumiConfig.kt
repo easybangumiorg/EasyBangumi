@@ -15,16 +15,33 @@ import org.easybangumi.next.lib.utils.pathProvider
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 data class BangumiConfig(
-    val bangumiApiHost: String = DEFAULT_BANGUMI_API_HOST,
-    val bangumiHtmlHost: String = DEFAULT_BANGUMI_HTML_HOST,
-    val bangumiEmbedProxyHost: String = BANGUMI_EMBED_PROXY_HOST,
-    val bangumiCachePath: UFD = pathProvider.getCachePath("bangumi")
+    val apiHost: String = DEFAULT_BANGUMI_API_HOST,
+    val authApiHost: String = DEFAULT_BANGUMI_API_HOST,
+    val htmlHost: String = DEFAULT_BANGUMI_HTML_HOST,
+    val embedProxyHost: String = BANGUMI_EMBED_PROXY_HOST,
+    val authApi: String = DEFAULT_BANGUMI_AUTH_API_HOST,
+    val cachePath: UFD = pathProvider.getCachePath("bangumi"),
+
+    val appId: String,
+    val appSecret: String,
+    val callbackUrl: String,
+
+    val handler: BangumiHandler,
 ) {
 
+
+    interface BangumiHandler {
+
+        fun onAuthFailed()
+
+    }
     companion object {
         const val DEFAULT_BANGUMI_API_HOST = "api.bgm.tv"
         const val DEFAULT_BANGUMI_HTML_HOST = "chii.in"
+
         const val BANGUMI_EMBED_PROXY_HOST = "bangumi.embed.proxy"
+
+        const val DEFAULT_BANGUMI_AUTH_API_HOST = "bgm.tv"
     }
 
 
@@ -33,7 +50,7 @@ data class BangumiConfig(
         if (res.startsWith("//")) {
             res = "https:$res"
         } else if (res.startsWith("/")) {
-            res = "https://$bangumiHtmlHost$res"
+            res = "https://$htmlHost$res"
         }
         return res
     }

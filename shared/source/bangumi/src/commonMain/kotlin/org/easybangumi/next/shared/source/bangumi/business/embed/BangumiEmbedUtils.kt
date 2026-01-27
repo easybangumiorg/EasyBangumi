@@ -43,7 +43,7 @@ fun Document.toTrendsSubjectList(
         val image = li.select("img.cover").firstOrNull()
         val imageUrl = URLBuilder().run {
             protocol = URLProtocol.HTTPS
-            host = bangumiConfig.bangumiApiHost
+            host = bangumiConfig.apiHost
             path("v0", "subjects", id.toString(), "image")
             parameters.set("subject_id", id.toString())
             parameters.set("type", "common")

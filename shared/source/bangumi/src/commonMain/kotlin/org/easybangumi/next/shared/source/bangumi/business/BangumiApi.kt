@@ -1,6 +1,7 @@
 ﻿package org.easybangumi.next.shared.source.bangumi.business
 
 import kotlinx.coroutines.Deferred
+import org.easybangumi.next.shared.data.bangumi.AccessTokenInfo
 import org.easybangumi.next.shared.source.bangumi.model.BgmRsp
 import org.easybangumi.next.shared.data.bangumi.BgmCalendarItem
 import org.easybangumi.next.shared.data.bangumi.BgmCharacter
@@ -121,6 +122,18 @@ interface BangumiApi {
         subjectId: String,
         type: String = "large",
     ): String
+
+    // auth
+    fun getLoginPageUrl(state: String = ""): String
+    fun onAuthUrlHook(url: String ): String?
+
+    fun getAccessToken(
+        code: String,
+    ): Deferred<Result<AccessTokenInfo>>
+
+    fun refreshAccessToken(
+        refreshToken: String,
+    ): Deferred<Result<AccessTokenInfo>>
 
 
 }

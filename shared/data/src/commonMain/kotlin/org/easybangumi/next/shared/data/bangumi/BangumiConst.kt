@@ -23,12 +23,18 @@ object BangumiConst {
         val label: ResourceOr,
     )
 
+    val collectTypeInPlan = BangumiCollectType(1, "想看")
+    val collectTypeWatching = BangumiCollectType(2, "在看")
+    val collectTypeWatched = BangumiCollectType(3, "看过")
+    val collectTypeOnHold = BangumiCollectType(4, "搁置")
+    val collectTypeDropped = BangumiCollectType(5, "抛弃")
+
     val collectTypeList = listOf(
-        BangumiCollectType(1, "想看"),
-        BangumiCollectType(2, "在看"),
-        BangumiCollectType(3, "看过"),
-        BangumiCollectType(4, "搁置"),
-        BangumiCollectType(5, "抛弃"),
+        collectTypeInPlan,
+        collectTypeWatching,
+        collectTypeWatched,
+        collectTypeOnHold,
+        collectTypeDropped,
     )
 
     fun getTypeDataById(type: Int): BangumiConst.BangumiCollectType? {

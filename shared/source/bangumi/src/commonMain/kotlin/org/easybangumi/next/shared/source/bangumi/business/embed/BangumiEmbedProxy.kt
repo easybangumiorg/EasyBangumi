@@ -49,7 +49,7 @@ class BangumiEmbedProxy(
 
     val bangumHtmlProxyPlugin = createClientPlugin("bangumi_html_proxy") {
         onRequest { req, _ ->
-            if (req.url.host.equals(config.bangumiEmbedProxyHost)) {
+            if (req.url.host.equals(config.embedProxyHost)) {
                 val path = req.url.pathSegments.firstOrNull()
                 logger.info(path)
                 if (path.isNullOrEmpty()) {

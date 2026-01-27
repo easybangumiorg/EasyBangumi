@@ -5,6 +5,7 @@ import org.easybangumi.next.shared.source.bangumi.business.BangumiApi
 import org.easybangumi.next.shared.source.bangumi.business.BangumiBusiness
 import org.koin.dsl.binds
 import org.koin.dsl.module
+import org.koin.mp.KoinPlatform
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -17,9 +18,37 @@ import org.koin.dsl.module
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
+// BangumiSourceModule 装载到沙盒里，从全局 koin 获取
 internal val bangumiSourceModule = module {
+    single<BangumiConfig> {
+        KoinPlatform.getKoin().get()
+    }
+    single <BangumiAppConfig>{
+        KoinPlatform.getKoin().get()
+    }
+    single <BangumiBusiness> {
+        KoinPlatform.getKoin().get()
+    }
+    single <BangumiApi> {
+        get<BangumiBusiness>().api
+    }
+
+    includes(ktorModule)
+}
+
+val bangumiApiModule = module {
     single {
-        BangumiConfig()
+        val bangumiAppConfig = get<BangumiAppConfig>()
+        BangumiConfig(
+            appId = bangumiAppConfig.appId,
+            appSecret = bangumiAppConfig.appSecret,
+            callbackUrl = bangumiAppConfig.callbackUrl,
+            handler = bangumiAppConfig.handler
+        )
+    }
+    single {
+        val appConfigProvider: BangumiAppConfigProvider = get()
+        appConfigProvider.provide()
     }
     single {
         BangumiBusiness(get(), get())
@@ -27,6 +56,4 @@ internal val bangumiSourceModule = module {
     single {
         get<BangumiBusiness>().api
     }.binds(arrayOf(BangumiApi::class))
-
-    includes(ktorModule)
 }

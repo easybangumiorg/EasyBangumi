@@ -25,7 +25,9 @@ import kotlin.coroutines.resume
  *
  *  这一坨逻辑有时间再来优化
  */
-class WebKitWebViewProxy: IWebView {
+class WebKitWebViewProxy(
+    private val webViewManager: WebViewManager,
+): IWebView {
 
     companion object {
         val BLOB_HOOK_JS = """
@@ -46,9 +48,7 @@ class WebKitWebViewProxy: IWebView {
         """.trimIndent()
     }
 
-    private val webViewManager: WebViewManager by lazy {
-        WebViewManager(3, CookieManager.getInstance(), global.appContext)
-    }
+
     private val singleScope by lazy {
         CoroutineScope(SupervisorJob() + coroutineProvider.single() + CoroutineName("WebKitWebViewProxy-single"))
     }

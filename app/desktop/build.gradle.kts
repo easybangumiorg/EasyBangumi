@@ -1,5 +1,8 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
+apply(from = "../build_common/easy_build_config.gradle.kts")
+
+
 plugins {
     alias(builds.plugins.kotlinJvm)
     alias(builds.plugins.kotlinCompose)
@@ -84,5 +87,8 @@ easyConfig {
         "NAMESPACE" with applicationId
         "VERSION_CODE" with versionCode
         "VERSION_NAME" with versionName
+        "BANGUMI_APP_ID" with extra["bangumiAppId"] as String
+        "BANGUMI_APP_SECRET" with extra["bangumiAppSecret"] as String
+        "BANGUMI_APP_CALLBACK_URL" with extra["bangumiAppCallbackUrl"] as String
     }
 }

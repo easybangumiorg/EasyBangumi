@@ -10,10 +10,15 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
+import org.easybangumi.next.lib.utils.DataState
+import org.easybangumi.next.shared.cartoon.collection.BgmCollectInfoVM
+import org.easybangumi.next.shared.compose.bangumi.comment.BangumiCommentVM
 import org.easybangumi.next.shared.compose.detail.bangumi.BangumiDetailVM
 import org.easybangumi.next.shared.compose.media.MediaParam
 import org.easybangumi.next.shared.compose.media.PlayLineIndexVM
 import org.easybangumi.next.shared.compose.media_finder.MediaFinderVM
+import org.easybangumi.next.shared.data.bangumi.BgmCollectResp
+import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.data.cartoon.CartoonInfo
 import org.easybangumi.next.shared.data.room.cartoon.dao.CartoonInfoDao
@@ -49,6 +54,12 @@ class BangumiMediaCommonVM (
         val isTableMode: Boolean = false,
         // 静默搜索状态
         val silentFindingState: MediaFinderVM.State? = null,
+
+
+        val hasBgmAccountInfo: Boolean = false,
+        val collectionState: DataState<BgmCollectResp> = DataState.none(),
+
+        val cartoonInfo: CartoonInfo? = null,
     )
 
     internal val sta = MutableStateFlow(State())
@@ -59,6 +70,9 @@ class BangumiMediaCommonVM (
 
 
         data object BangumiDetailPanel: Popup()
+        class CollectionDialog(
+            val cartoonCover: CartoonCover,
+        ): Popup()
     }
     private val _popupState = MutableStateFlow<Popup?>(null)
     val popupState = _popupState.asStateFlow()
@@ -81,12 +95,18 @@ class BangumiMediaCommonVM (
     }
     private val silentFindFirst = atomic(false)
 
-    // == Bangumi 番剧详情面板状态 =============================
+    // == Bangumi 番剧详情状态 =============================
     val bangumiDetailVM: BangumiDetailVM by childViewModel {
         BangumiDetailVM(cartoonIndex = cartoonIndex,)
     }
 
+
     private val cartoonInfoDao: CartoonInfoDao by inject()
+
+    val bgmCollectInfoVM: BgmCollectInfoVM = bangumiDetailVM.bgmCollectInfoVM
+
+    val bangumiCommentVM: BangumiCommentVM = bangumiDetailVM.bangumiCommentVM
+
 
     init {
         // 媒体雷达结果 -> 播放线路状态
@@ -152,6 +172,18 @@ class BangumiMediaCommonVM (
                 }
             }
         }
+
+        viewModelScope.launch {
+            bgmCollectInfoVM.logic.collectLatest { state ->
+                sta.update {
+                    it.copy(
+                        collectionState = state.collectionState,
+                        hasBgmAccountInfo = state.hasBgmAccountInfo,
+                        cartoonInfo = state.cartoonInfo,
+                    )
+                }
+            }
+        }
     }
 
     // state change ============================
@@ -195,6 +227,14 @@ class BangumiMediaCommonVM (
                 lastEpisodeId = playLine.currentEpisodeOrNull?.id ?: info.lastEpisodeId,
                 lastEpisodeLabel = playLine.currentEpisodeOrNull?.label ?: info.lastEpisodeLabel,
             )
+        }
+    }
+
+    fun onCollectDialogShow() {
+        bangumiDetailVM.subjectRepository.flow.value.okOrNull()?.cartoonCover?.let { cover ->
+            _popupState.update {
+                Popup.CollectionDialog(cover)
+            }
         }
     }
 }

@@ -45,7 +45,7 @@ class SourceLibWrapper(
     }
 
     override val scope: CoroutineScope by lazy {
-        CoroutineScope(SupervisorJob() + coroutineProvider.io() + SourceCoroutineExceptionHandler(source) + CoroutineName("source[${source.key}]"))
+        CoroutineScope(SupervisorJob() + coroutineProvider.singleForTag(source.key) + SourceCoroutineExceptionHandler(source) + CoroutineName("source[${source.key}]"))
     }
 
 

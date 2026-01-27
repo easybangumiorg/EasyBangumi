@@ -4,6 +4,7 @@ import android.content.Context
 import android.webkit.CookieManager
 import android.webkit.WebSettings
 import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.annotation.UiThread
 import kotlinx.coroutines.*
 import org.easybangumi.next.lib.logger.Logger
@@ -26,6 +27,8 @@ class WebViewManager(
     private val cookieManager: CookieManager,
     private val context: Context,
 ) {
+
+    private val nonClient = object: WebViewClient() {}
 
     private val logger: Logger by lazy {
         logger()
@@ -88,7 +91,9 @@ class WebViewManager(
     fun recycle(webView: WebView){
         mainScope.launch {
             runCatching { webView.removeAllViews() }
-            runCatching { webView.destroy() }
+            runCatching { webView.webViewClient = nonClient }
+            runCatching { webView.webChromeClient = null }
+            runCatching { webView.stop() }
             if (webViewList.size < maxWebViewCount) {
                 webViewList.add(webView)
             }

@@ -18,6 +18,7 @@ import org.easybangumi.next.lib.utils.coroutineProvider
 import org.easybangumi.next.platformInformation
 import org.easybangumi.next.shared.ktor.KtorConfig
 import org.easybangumi.next.shared.ktor.KtorFactory
+import org.easybangumi.next.shared.source.bangumi.BangumiAppConfig
 import org.easybangumi.next.shared.source.bangumi.BangumiConfig
 import org.easybangumi.next.shared.source.bangumi.business.embed.BangumiEmbedProxy
 import org.easybangumi.next.shared.source.bangumi.model.BgmNetException
@@ -40,7 +41,7 @@ import kotlin.reflect.KTypeProjection
 
 class BangumiBusiness(
     ktorFactory: KtorFactory,
-    private val bangumiConfig: BangumiConfig = BangumiConfig(),
+    private val bangumiConfig: BangumiConfig,
 ) {
 
 
@@ -83,6 +84,9 @@ class BangumiBusiness(
                 }
                 val code = response.status.value
                 val body = response.bodyAsText()
+                if (code == 401) {
+
+                }
                 if (code !in 200..299) {
                     val jsonObj = runCatching {
                         json.parseToJsonElement(body)
@@ -159,6 +163,14 @@ class BangumiBusiness(
                 }
             }
         }
+
+        override fun <T> requestNormal(block: suspend HttpClient.() -> T): Deferred<Result<T>> {
+            return scope.async {
+                runCatching {
+                    httpClient.block()
+                }
+            }
+        }
     }
 
 
@@ -166,18 +178,6 @@ class BangumiBusiness(
         BangumiApiImpl(bangumiCaller, bangumiConfig)
     }
 
-    fun coverUrl(
-        subjectId: String,
-        type: String = "large",
-    ): String {
-        return URLBuilder().run {
-            host = bangumiConfig.bangumiApiHost
-            path("v0", "subjects", subjectId, "image")
-            parameters.set("subject_id", subjectId)
-            parameters.set("type", type)
-            toString()
-        }
-    }
 
 
 }

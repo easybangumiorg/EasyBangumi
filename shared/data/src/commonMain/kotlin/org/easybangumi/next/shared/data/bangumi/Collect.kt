@@ -40,4 +40,7 @@ data class BgmCollect (
     val bangumiType: BangumiConst.BangumiCollectType? by lazy {
         BangumiConst.getTypeDataById(this.type?.toInt() ?: 1)
     }
+
+    val isDropped : Boolean
+        get() = this.type == BangumiConst.collectTypeDropped.type.toLong()
 }

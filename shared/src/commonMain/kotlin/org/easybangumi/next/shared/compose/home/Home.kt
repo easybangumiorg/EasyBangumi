@@ -26,6 +26,7 @@ import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -37,6 +38,7 @@ import kotlinx.coroutines.launch
 import org.easybangumi.next.platformInformation
 import org.easybangumi.next.shared.LocalNavController
 import org.easybangumi.next.shared.RouterPage
+import org.easybangumi.next.shared.Scheduler
 import org.easybangumi.next.shared.resources.Res
 import org.easybangumi.next.shared.compose.UI
 import org.easybangumi.next.shared.compose.home.history.History
@@ -136,6 +138,9 @@ val HomePageList = listOf(
 @Composable
 fun Home() {
 
+    LaunchedEffect(Unit) {
+        Scheduler.onHomePageLaunch()
+    }
     val homeVM = vm(::HomeVM)
 
     val navController = LocalNavController.current

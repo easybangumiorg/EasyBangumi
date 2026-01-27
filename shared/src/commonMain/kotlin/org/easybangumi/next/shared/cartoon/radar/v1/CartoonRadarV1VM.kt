@@ -75,6 +75,7 @@ class CartoonRadarV1VM : StateViewModel<CartoonRadarV1VM.LogicState>(LogicState(
     }
 
     fun changeKeyword(keyword: String?) {
+        logger.info("CartoonRadarV1VM changeKeyword: $keyword")
         update {
             it.copy(keyword = keyword,)
         }

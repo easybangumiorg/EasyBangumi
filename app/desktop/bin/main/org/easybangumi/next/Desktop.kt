@@ -2,13 +2,18 @@ package org.easybangumi.next
 
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import org.easybangumi.next.bangumi.BangumiAppConfigProviderImpl
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.coroutineProvider
 import org.easybangumi.next.platform.DesktopPlatform
 import org.easybangumi.next.libplayer.vlcj.VlcjBridgeManager
+import org.easybangumi.next.shared.playcon.desktop.FullscreenStrategy
+import org.easybangumi.next.shared.source.bangumi.BangumiAppConfig
+import org.easybangumi.next.shared.source.bangumi.BangumiAppConfigProvider
 import org.koin.core.context.loadKoinModules
 import org.koin.core.context.startKoin
 import org.koin.dsl.bind
+import org.koin.dsl.binds
 import org.koin.dsl.module
 import org.koin.mp.KoinPlatform
 import uk.co.caprica.vlcj.factory.MediaPlayerFactory
@@ -50,6 +55,21 @@ object Desktop {
                         "--intf=dummy",
                         "--vout=any"
                     ))
+                }
+
+                single {
+                    WindowController()
+                }
+
+                single {
+                    BangumiAppConfigProviderImpl()
+                }.binds(arrayOf(BangumiAppConfigProvider::class))
+
+
+                single {
+                    FullscreenStrategy(
+                        windowState = { get<WindowController>().getFirstWindowState() ?: throw IllegalStateException() },
+                    )
                 }
             })
         }

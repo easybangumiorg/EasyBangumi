@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -19,19 +18,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.StarHalf
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.StarOutline
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -53,11 +47,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import org.easybangumi.next.lib.utils.DataState
+import org.easybangumi.next.shared.cartoon.collection.CollectionUIUtils
 import org.easybangumi.next.shared.data.bangumi.BgmCollectResp
 import org.easybangumi.next.shared.foundation.cartoon.CartoonCoverCard
 import org.easybangumi.next.shared.foundation.elements.LoadScaffold
 import org.easybangumi.next.shared.foundation.image.AsyncImage
-import org.easybangumi.next.shared.foundation.shimmer.ShimmerHost
 import org.easybangumi.next.shared.scheme.EasyScheme
 import org.easybangumi.next.shared.data.bangumi.BgmRating
 import org.easybangumi.next.shared.data.bangumi.BgmSubject
@@ -372,48 +366,42 @@ fun HeaderCollectBtn(
         onCollectClick()
         }
     ) {
-
-        if (collectResp != null) {
-            val collectResp = collectResp.dataOrNull()
-            if (collectResp == null) {
-                // bgm 未收藏 - 本地未收藏 -> 点击收藏
-                if (cartoonInfo == null || cartoonInfo.starTime == 0L) {
-                    Icon(Icons.Filled.FavoriteBorder, modifier = Modifier.size(16.dp),contentDescription = null)
-                    Spacer(modifier = Modifier.size(4.dp))
-                    Text(stringRes(Res.strings.no_collect))
-                }
-                // bgm 未收藏 - 本地已收藏 -> 已本地收藏
-                else {
-                    Icon(Icons.Filled.Favorite, modifier = Modifier.size(16.dp), contentDescription = null)
-                    Spacer(modifier = Modifier.size(4.dp))
-                    Text(stringRes(Res.strings.local_collected))
-                }
-            } else {
-                // bgm 已 - 本地未收藏 -> [再看|想看 ……]
-                if (cartoonInfo == null || cartoonInfo.starTime == 0L) {
-                    Text(stringRes(collectResp.bangumiType?.label?:""))
-                } else {
-                    Text(stringRes(collectResp.bangumiType?.label?:""))
-                    Spacer(modifier = Modifier.size(4.dp))
-                    Box(modifier.width(1.dp).height(16.dp).background(LocalContentColor.current))
-                    Spacer(modifier = Modifier.size(4.dp))
-                    Text(stringRes(Res.strings.collected))
-                }
-            }
-        } else {
-            // 未登录 - 本地未收藏 -> 点击收藏
-            if (cartoonInfo == null || cartoonInfo.starTime == 0L) {
-                Icon(Icons.Filled.FavoriteBorder, modifier = Modifier.size(16.dp), contentDescription = null)
-                Spacer(modifier = Modifier.size(4.dp))
-                Text(stringRes(Res.strings.no_collect))
-            }
-            // 未登录 - 本地已收藏 -> 已收藏
-            else {
-                Icon(Icons.Filled.Favorite, modifier = Modifier.size(16.dp), contentDescription = null)
-                Spacer(modifier = Modifier.size(4.dp))
-                Text(stringRes(Res.strings.collected))
-            }
+        val collect = collectResp?.dataOrNull()
+        val isBgmLogin = collectResp != null
+        val bgmCollectType = collect?.bangumiType
+        val isLocalCollected = cartoonInfo != null && cartoonInfo.starTime > 0L
+        val label = remember(
+            isBgmLogin,
+            bgmCollectType,
+            isLocalCollected
+        ) {
+            CollectionUIUtils.getLabelOutlineBtn(
+                isBgmLogin,
+                bgmCollectType,
+                isLocalCollected
+            )
         }
+        val icon = remember(
+            isBgmLogin,
+            bgmCollectType,
+            isLocalCollected
+        ) {
+            CollectionUIUtils.getIcon(
+                isBgmLogin,
+                bgmCollectType,
+                isLocalCollected
+            )
+        }
+
+        Icon(
+            icon.first, modifier = Modifier.size(16.dp), contentDescription = null
+        )
+        Spacer(modifier = Modifier.size(4.dp))
+        Text(
+            stringRes(
+                label
+            )
+        )
     }
 
 }

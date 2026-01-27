@@ -58,6 +58,7 @@ class AgePlayComponent: PlayComponent, BaseComponent() {
                     .iterator()
             val epRoot = doc.select("body > div.body_content_wrapper.pb-2 > div > section > div > div.video_detail_right.ps-3.flex-grow-1 > div.video_detail_playlist_wrapper.pt-4 > div.tab-content > div ul").iterator()
             val playLines = arrayListOf<PlayerLine>()
+            val vipPlayLines = arrayListOf<PlayerLine>()
             var ii = 1
             while (tabs.hasNext() && epRoot.hasNext()) {
                 val tab = tabs.next()
@@ -74,6 +75,17 @@ class AgePlayComponent: PlayComponent, BaseComponent() {
                     )
                 }
 
+                val playLine = PlayerLine(
+                    id = ii.toString(),
+                    label = tab.text(),
+                    episodeList = es,
+                )
+                if(tab.text().contains("VIP") || tab.text().contains("付费")){
+                    vipPlayLines.add(playLine)
+                    ii++
+                    continue
+                }
+
                 playLines.add(
                     PlayerLine(
                         id = ii.toString(),
@@ -83,6 +95,8 @@ class AgePlayComponent: PlayComponent, BaseComponent() {
                 )
                 ii++
             }
+            // 小巧思，把 VIP 线路放到最后面
+            playLines.addAll(vipPlayLines)
             playLines
         }
     }

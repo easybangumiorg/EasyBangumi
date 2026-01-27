@@ -40,7 +40,7 @@ import org.easybangumi.next.shared.scheme.EasyScheme
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 @Composable
-fun BangumiDetailPreview(
+fun BangumiDetailPreviewOld(
     cartoonIndex: CartoonIndex,
     modifier: Modifier,
 ) {

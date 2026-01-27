@@ -1,5 +1,6 @@
 ﻿package org.easybangumi.next.shared.source.bangumi.business
 
+import coil3.toUri
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.HttpRequestBuilder
@@ -12,6 +13,7 @@ import io.ktor.http.URLProtocol
 import io.ktor.http.contentType
 import io.ktor.http.path
 import kotlinx.coroutines.Deferred
+import org.easybangumi.next.shared.data.bangumi.AccessTokenInfo
 import org.easybangumi.next.shared.source.bangumi.BangumiConfig
 import org.easybangumi.next.shared.source.bangumi.model.BgmRsp
 import org.easybangumi.next.shared.data.bangumi.BgmCalendarItem
@@ -39,19 +41,20 @@ import org.easybangumi.next.shared.data.bangumi.User
 
 class BangumiApiImpl(
     private val caller: BangumiCaller,
-    private val bangumiConfig: BangumiConfig
+    private val bangumiConfig: BangumiConfig,
 ) : BangumiApi {
 
     interface BangumiCaller {
         var debugHookUrl: String?
         fun <T> request(block: suspend HttpClient.() -> BgmRsp<T>): Deferred<BgmRsp<T>>
+        fun <T> requestNormal(block: suspend HttpClient.() -> T): Deferred<Result<T>>
     }
 
     // api host
     private fun HttpRequestBuilder.bgmUrl(block: URLBuilder.() -> Unit) {
         url {
             protocol = URLProtocol.HTTPS
-            host = caller.debugHookUrl ?: bangumiConfig.bangumiApiHost
+            host = caller.debugHookUrl ?: bangumiConfig.apiHost
             block(this)
         }
     }
@@ -59,7 +62,7 @@ class BangumiApiImpl(
     // 嵌入代理 host
     private fun HttpRequestBuilder.proxyUrl(block: URLBuilder.() -> Unit) {
         url {
-            host = caller.debugHookUrl ?: bangumiConfig.bangumiEmbedProxyHost
+            host = caller.debugHookUrl ?: bangumiConfig.embedProxyHost
             block(this)
         }
     }
@@ -238,11 +241,82 @@ class BangumiApiImpl(
     ): String {
         return URLBuilder().run {
             protocol = URLProtocol.HTTPS
-            host = bangumiConfig.bangumiApiHost
+            host = bangumiConfig.apiHost
             path("v0", "subjects", subjectId, "image")
             parameters.append("subject_id", subjectId)
             parameters.append("type", type)
             buildString()
+        }
+    }
+
+    override fun getLoginPageUrl(state: String): String {
+        return URLBuilder().run {
+            protocol = URLProtocol.HTTPS
+            host = bangumiConfig.authApi
+            path("oauth", "authorize")
+            parameters.append("client_id", bangumiConfig.appId)
+            parameters.append("response_type", "code")
+            parameters.append("redirect_uri", bangumiConfig.callbackUrl)
+            parameters.append("state", state)
+            buildString()
+        }
+    }
+
+    override fun onAuthUrlHook(url: String): String? {
+        if (url.contains(bangumiConfig.callbackUrl)) {
+            val uri = url.toUri()
+            uri.query?.split("&")?.forEach { param ->
+                val parts = param.split("=")
+                if (parts.size == 2 && parts[0] == "code") {
+                    return parts[1]
+                }
+            }
+            return ""
+        }
+        return null
+    }
+
+    override fun getAccessToken(code: String): Deferred<Result<AccessTokenInfo>> {
+        return caller.requestNormal {
+            post {
+                url {
+                    protocol = URLProtocol.HTTPS
+                    host = bangumiConfig.authApi
+                    path("oauth", "access_token")
+                }
+                contentType(ContentType.Application.Json)
+                setBody(
+                    mapOf(
+                        "client_id" to bangumiConfig.appId,
+                        "client_secret" to bangumiConfig.appSecret,
+                        "grant_type" to "authorization_code",
+                        "code" to code,
+                        "redirect_uri" to bangumiConfig.callbackUrl,
+                    )
+                )
+            }.body()
+        }
+    }
+
+    override fun refreshAccessToken(refreshToken: String): Deferred<Result<AccessTokenInfo>> {
+        return caller.requestNormal {
+            post {
+                url {
+                    protocol = URLProtocol.HTTPS
+                    host = bangumiConfig.authApi
+                    path("oauth", "access_token")
+                }
+                contentType(ContentType.Application.Json)
+                setBody(
+                    mapOf(
+                        "grant_type" to "refresh_token",
+                        "client_id" to bangumiConfig.appId,
+                        "client_secret" to bangumiConfig.appSecret,
+                        "refresh_token" to refreshToken,
+                        "redirect_uri" to bangumiConfig.callbackUrl,
+                    )
+                )
+            }.body()
         }
     }
 }

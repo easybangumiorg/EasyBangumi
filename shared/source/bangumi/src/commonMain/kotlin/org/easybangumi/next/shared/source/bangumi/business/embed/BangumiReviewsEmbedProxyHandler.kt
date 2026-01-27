@@ -40,7 +40,7 @@ class BangumiReviewsEmbedProxyHandler(
             val page = builder.url.parameters["page"] ?: "1"
             builder.url {
                 protocol = URLProtocol.HTTPS
-                host = bangumiConfig.bangumiHtmlHost
+                host = bangumiConfig.htmlHost
                 // subject/509986/reviews/1.html
                 path("subject", subjectId, "reviews", "$page.html")
                 parameters.append("subjectId", subjectId)
@@ -103,14 +103,15 @@ class BangumiReviewsEmbedProxyHandler(
             val title = entry?.select("h2.title")?.firstOrNull()?.text()
 
             val divTime = entry?.select("div.time")?.firstOrNull()
-            val authorA = divTime?.select("span.tip_j a")?.firstOrNull()
+            val authorA = divTime?.child(0)
             val authorName = authorA?.text()
             val authorId = authorA?.attr("href")?.split("user/")?.lastOrNull()
 
-            val time = divTime?.select("small.time")?.firstOrNull()?.text()
-            var orange = entry?.select("small.orange")?.firstOrNull()?.text()
-            orange = orange?.removePrefix("(+")
-            orange = orange?.removeSuffix(")")
+
+            val time = divTime?.ownText()?.trim()?.replace("·", "")
+            var orange = divTime?.child(1)?.ownText()?.trim()
+            orange = orange?.removeSuffix("回复")
+            orange = orange?.trim()
             val starCount = orange?.toIntOrNull()
 
             var divContent = entry?.select("div.content")?.firstOrNull()?.text()?.trim()

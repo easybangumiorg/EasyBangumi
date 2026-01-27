@@ -13,7 +13,9 @@ import org.easybangumi.next.lib.utils.PagingFlow
 import org.easybangumi.next.lib.utils.ResourceOr
 import org.easybangumi.next.lib.utils.newPagingFlow
 import org.easybangumi.next.shared.RouterPage
+import org.easybangumi.next.shared.cartoon.collection.BgmCollectInfoVM
 import org.easybangumi.next.shared.case.BangumiCase
+import org.easybangumi.next.shared.compose.bangumi.comment.BangumiCommentVM
 import org.easybangumi.next.shared.data.CartoonInfoCase
 import org.easybangumi.next.shared.data.bangumi.*
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
@@ -54,7 +56,11 @@ class BangumiDetailVM(
     val isDetailShowAll =  mutableStateOf(false)
     val isTabShowAll = mutableStateOf(false)
 
-    val cartoonInfoCase: CartoonInfoCase by inject()
+    val bgmCollectInfoVM: BgmCollectInfoVM by childViewModel {
+        BgmCollectInfoVM(cartoonIndex)
+    }
+
+
     val bangumiCase: BangumiCase by inject()
     val sourceCase: SourceCase by inject()
     val bangumiDetailBusiness = sourceCase.getBangumiDetailBusiness()
@@ -63,7 +69,11 @@ class BangumiDetailVM(
     val characterRepository = bangumiCase.getCharacterListRepository(cartoonIndex)
     val personRepository = bangumiCase.getPersonListRepository(cartoonIndex)
 
-    val bgmUserDataProvider = bangumiCase.flowUserDataProvider()
+    val coverUrl  = bangumiCase.coverUrl(cartoonIndex)
+
+    val bangumiCommentVM: BangumiCommentVM by childViewModel {
+        BangumiCommentVM(cartoonIndex)
+    }
 
 
     val detailTabList = DetailTab.entries.toList()
@@ -108,10 +118,6 @@ class BangumiDetailVM(
     }
 
 
-    val coverUrl  = bangumiDetailBusiness.runDirect {
-       coverUrl(cartoonIndex)
-    }
-
     private val lowPriorityDataInit = atomic(false)
     private val episodeInit = atomic(false)
 
@@ -144,43 +150,20 @@ class BangumiDetailVM(
             }.collect()
         }
 
-        // bangumi 登录态相关数据流绑定
+        // bgm 收藏状态 & cartoonInfo 数据
         viewModelScope.launch {
-            bgmUserDataProvider
-                .flatMapLatest { provider ->
-                    // provider 为空代表没有登录，返回空的收藏状态
-                    val collectFlow = if (provider == null) {
-                        flowOf(DataState.none<BgmCollectResp>())
-                    } else {
-                        provider.getCollectRepository(cartoonIndex).apply {
-                            refreshIfNoneOrCache()
-                        }.flow
-                    }
-                    collectFlow.map { collectDataState ->
-                        provider to collectDataState
-                    }
-                }
-                .collectLatest { (provider, collectDataState) ->
-                    update {
-                        it.copy(
-                            // provider 为空代表没有登录，直接隐藏 bgm 收藏按钮
-                            hasBgmAccountInfo = provider == null,
-                            collectionState = collectDataState,
-                        )
-                    }
-                }
-        }
-
-        // 本地收藏状态
-        viewModelScope.launch {
-            cartoonInfoCase.flowById(cartoonIndex.source, cartoonIndex.id).collectLatest { info ->
+            bgmCollectInfoVM.logic.collectLatest { state ->
                 update {
                     it.copy(
-                        cartoonInfo = info,
+                        collectionState = state.collectionState,
+                        hasBgmAccountInfo = state.hasBgmAccountInfo,
+                        cartoonInfo = state.cartoonInfo,
                     )
                 }
             }
+
         }
+
     }
 
     fun loadSubject(cacheAvailableMs : Long = -1) {

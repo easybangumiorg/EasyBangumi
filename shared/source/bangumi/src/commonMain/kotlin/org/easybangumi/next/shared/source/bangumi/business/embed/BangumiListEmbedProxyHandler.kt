@@ -6,6 +6,7 @@ import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.URLProtocol
+import io.ktor.http.encodeURLPath
 import io.ktor.http.path
 import io.ktor.util.reflect.TypeInfo
 import io.ktor.utils.io.ByteReadChannel
@@ -46,7 +47,7 @@ class BangumiRankingEmbedProxyHandler(
             val from = builder.url.parameters.get("from")
             builder.url {
                 protocol = URLProtocol.HTTPS
-                host = bangumiConfig.bangumiHtmlHost
+                host = bangumiConfig.htmlHost
                 if (from != null) {
                     path("anime", "browser", from)
                 } else {
@@ -61,7 +62,7 @@ class BangumiRankingEmbedProxyHandler(
             // 轮播图（tv 热度排行）
             // 转到网页 https://chii.in/anime/browser/tv/?sort=trends
             builder.url {
-                host = bangumiConfig.bangumiHtmlHost
+                host = bangumiConfig.htmlHost
                 protocol = URLProtocol.HTTPS
                 path("anime", "browser", "tv")
                 parameters.set("sort", "trends")
@@ -75,9 +76,10 @@ class BangumiRankingEmbedProxyHandler(
                 ?: throw  IllegalArgumentException("keyword is required")
             val page = builder.url.parameters.get("page")
             builder.url {
-                host = bangumiConfig.bangumiHtmlHost
+                host = bangumiConfig.htmlHost
                 protocol = URLProtocol.HTTPS
-                path("subject_search", keyword)
+
+                path("subject_search", keyword.encodeURLPath(encodeSlash = true))
                 parameters.set("cat", "2")
                 parameters.set("page", page ?: "1")
             }

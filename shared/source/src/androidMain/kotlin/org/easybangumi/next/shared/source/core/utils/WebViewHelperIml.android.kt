@@ -3,6 +3,7 @@
 import org.easybangumi.next.lib.webview.IWebView
 import org.easybangumi.next.shared.source.api.utils.WebViewHelper
 import org.easybangumi.next.webkit.WebKitWebViewProxy
+import org.easybangumi.next.webkit.WebViewManager
 import kotlin.use
 
 /**
@@ -17,15 +18,17 @@ import kotlin.use
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
-class WebViewHelperImpl: WebViewHelper {
+class WebViewHelperImpl(
+    private val webViewManager: WebViewManager,
+): WebViewHelper {
     override suspend fun <R> use(block: suspend IWebView.() -> R): R? {
-        val wb = WebKitWebViewProxy()
+        val wb = WebKitWebViewProxy(webViewManager)
         return wb.use {
             block.invoke(it)
         }
     }
 
     override suspend fun newWebView(): IWebView {
-        return WebKitWebViewProxy()
+        return WebKitWebViewProxy(webViewManager)
     }
 }

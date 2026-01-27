@@ -1,5 +1,7 @@
 import com.android.build.gradle.tasks.MergeSourceSetFolders
 
+apply(from = "../build_common/easy_build_config.gradle.kts")
+
 plugins {
     alias(builds.plugins.androidApplication)
     alias(builds.plugins.kotlinCompose)
@@ -10,12 +12,14 @@ plugins {
 }
 
 
-
 android {
     defaultConfig {
         vectorDrawables {
             useSupportLibrary = true
         }
+        buildConfigField("String", "BANGUMI_APP_ID", "\"${extra["bangumiAppId"]}\"")
+        buildConfigField("String", "BANGUMI_APP_SECRET", "\"${extra["bangumiAppSecret"]}\"")
+        buildConfigField("String", "BANGUMI_APP_CALLBACK_URL", "\"${extra["bangumiAppCallbackUrl"]}\"")
     }
     packaging {
         resources.excludes.add("META-INF/beans.xml")

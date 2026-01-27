@@ -13,6 +13,7 @@ import org.jetbrains.skia.Bitmap
 import org.jetbrains.skia.ColorAlphaType
 import org.jetbrains.skia.ColorType
 import org.jetbrains.skia.ImageInfo
+import uk.co.caprica.vlcj.media.Media
 import uk.co.caprica.vlcj.media.MediaRef
 import uk.co.caprica.vlcj.media.TrackType
 import uk.co.caprica.vlcj.player.base.MediaPlayer
@@ -35,7 +36,7 @@ import kotlin.reflect.KClass
 class VlcjPlayerBridge(
     private val manager: VlcjBridgeManager,
     customFrameScope: CoroutineScope?,
-) : AbsPlayerBridge(), AutoCloseable {
+) : AbsPlayerBridge<MediaPlayer>(), AutoCloseable {
 
     private val logger = logger()
 
@@ -43,7 +44,7 @@ class VlcjPlayerBridge(
         manager.createMediaPlayer()
     }
 
-    override val impl: Any
+    override val impl: MediaPlayer
         get() = mediaPlayer
 
 //    private val mediaPlayerLazy = lazy {
@@ -101,7 +102,7 @@ class VlcjPlayerBridge(
     }
 
 
-    override fun prepareAction(): Map<KClass<out Action>, Action> {
+    override fun prepareAction(): Map<KClass<out Action<*>>, Action<*>> {
         return mapOf(
 
         )

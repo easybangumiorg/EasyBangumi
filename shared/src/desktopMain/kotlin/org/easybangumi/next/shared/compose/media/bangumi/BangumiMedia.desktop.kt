@@ -11,13 +11,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import org.easybangumi.next.shared.compose.media.MediaParam
 import org.easybangumi.next.shared.compose.media.MediaPlayer
-import org.easybangumi.next.shared.compose.media.bangumi.page.BangumiMediaPage
 import org.easybangumi.next.shared.foundation.LocalUIMode
 import org.easybangumi.next.shared.foundation.elements.LoadingElements
 import org.easybangumi.next.shared.foundation.stringRes
@@ -28,6 +28,9 @@ import org.easybangumi.next.shared.resources.Res
 @Composable
 actual fun BangumiMedia(mediaParam: MediaParam) {
     val vm = vm(::DesktopBangumiMediaVM, mediaParam)
+    val pageParam = remember(vm) {
+        BangumiMediaPageParam(vm)
+    }
     val scope = rememberCoroutineScope()
     val state = vm.commonVM.state.collectAsState()
     val sta = state.value
@@ -48,7 +51,7 @@ actual fun BangumiMedia(mediaParam: MediaParam) {
                     MediaPlayerFloat(vm)
                 }
                 BangumiMediaPage(
-                    vm.commonVM,
+                    pageParam,
                     Modifier.fillMaxHeight().width(384.dp)
                 )
             }
@@ -64,7 +67,7 @@ actual fun BangumiMedia(mediaParam: MediaParam) {
                     MediaPlayerFloat(vm)
                 }
                 BangumiMediaPage(
-                    vm.commonVM,
+                    pageParam,
                     Modifier.fillMaxWidth().weight(1f)
                 )
             }

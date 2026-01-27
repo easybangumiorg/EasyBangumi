@@ -5,8 +5,10 @@ import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.URLProtocol
+import io.ktor.http.encodeURLPath
 import io.ktor.http.parameters
 import io.ktor.http.path
+import kotlinx.coroutines.delay
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.PagingFrame
@@ -84,7 +86,9 @@ class AgeSearchComponent: SearchComponent, BaseComponent() {
                 )
                 list.add(b)
             }
-            (if (list.isEmpty()) null else (key.toIntOrNull()?:0) + 1)?.toString() to list
+            (if (list.isEmpty()) null else (key.toIntOrNull()?:0) + 1)?.toString() to list.toList()
         }
     }
+
+
 }

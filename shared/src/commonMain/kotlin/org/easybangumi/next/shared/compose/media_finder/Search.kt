@@ -1,21 +1,13 @@
 package org.easybangumi.next.shared.compose.media_finder
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,11 +15,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import app.cash.paging.compose.collectAsLazyPagingItems
 import org.easybangumi.next.shared.foundation.cartoon.CartoonCoverCard
+import org.easybangumi.next.shared.foundation.elements.EmptyElements
 import org.easybangumi.next.shared.foundation.lazy.pagingCommon
+import org.easybangumi.next.shared.foundation.paging.isLoading
 import org.easybangumi.next.shared.foundation.stringRes
-import org.easybangumi.next.shared.resources.Res
 import org.easybangumi.next.shared.scheme.EasyScheme
-import org.easybangumi.next.shared.source.api.component.getManifest
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -44,10 +36,11 @@ import org.easybangumi.next.shared.source.api.component.getManifest
 fun Search(
     vm: MediaFinderVM,
     modifier: Modifier = Modifier,
+    onPanelHide: () -> Unit = {},
 ) {
 
     val state = vm.ui.value
-    val searchState = state.searchState
+    val searchState = state.searchUIState
 
     LaunchedEffect(state.keyword) {
         vm.searchVM.changeKeyword(state.keyword)
@@ -76,8 +69,7 @@ fun Search(
                 val paging = line.flow.collectAsLazyPagingItems()
 
                 LazyRow(
-                    modifier = Modifier.fillMaxWidth()
-                        .height(height),
+                    modifier = Modifier.fillMaxWidth().sizeIn(minHeight = height),
                     contentPadding = PaddingValues(8.dp, 0.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
@@ -94,6 +86,7 @@ fun Search(
                                     itemIsWidth = false,
                                     coverAspectRatio = EasyScheme.size.cartoonCoverSmallAspectRatio,
                                     onClick = {
+                                        onPanelHide()
                                         vm.onUserResultSelect(
                                             MediaFinderVM.SelectionResult(
                                                 playCover = item,
@@ -101,6 +94,20 @@ fun Search(
                                             )
                                         )
                                     }
+                                )
+                            }
+                        }
+                    } else if (!paging.isLoading()) {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillParentMaxWidth()
+                                    .height(height),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                EmptyElements(
+                                    modifier = Modifier.fillMaxWidth().height(height),
+                                    isRow = false
                                 )
                             }
                         }

@@ -172,7 +172,7 @@ fun CartoonCoverCard(
 
     if (nameShowOutside && name != null) {
         Column(
-            modifier = modifier,
+            modifier = modifier.width(IntrinsicSize.Min),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
 
@@ -245,7 +245,9 @@ fun CartoonCoverCard(
                 }
 
             }
-            Text(name, maxLines = 3)
+
+
+            Text(name, maxLines = 3, modifier = Modifier.fillMaxWidth())
         }
     } else {
 

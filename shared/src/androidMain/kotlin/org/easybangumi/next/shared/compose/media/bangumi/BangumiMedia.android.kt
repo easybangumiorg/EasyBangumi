@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Backup
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
@@ -24,13 +23,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
-import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.shared.LocalNavController
 import org.easybangumi.next.shared.playcon.android.AndroidPlayerVM
 import org.easybangumi.next.shared.foundation.view_model.vm
 import org.easybangumi.next.shared.compose.media.MediaParam
 import org.easybangumi.next.shared.compose.media.MediaPlayer
-import org.easybangumi.next.shared.compose.media.bangumi.page.BangumiMediaPage
 import org.easybangumi.next.shared.foundation.elements.LoadingElements
 import org.easybangumi.next.shared.foundation.stringRes
 import org.easybangumi.next.shared.playcon.android.MediaPlayerSync
@@ -49,7 +46,10 @@ import org.easybangumi.next.shared.resources.Res
  */
 @Composable
 actual fun BangumiMedia(mediaParam: MediaParam) {
-    val vm = vm(::AndroidBangumiMediaViewModel, mediaParam)
+    val vm = vm(::AndroidBangumiMediaVM, mediaParam)
+    val pageParam = remember(vm) {
+        BangumiMediaPageParam(vm)
+    }
 
     val scope = rememberCoroutineScope()
     val state = vm.commonVM.state.collectAsState()
@@ -125,7 +125,7 @@ actual fun BangumiMedia(mediaParam: MediaParam) {
         }
         if (!sta.isFullscreen) {
             BangumiMediaPage(
-                vm.commonVM,
+                pageParam,
                 Modifier.fillMaxWidth().weight(1f)
             )
         }

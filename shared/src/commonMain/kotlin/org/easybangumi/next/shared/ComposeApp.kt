@@ -12,6 +12,7 @@ import org.easybangumi.next.shared.scheme.LocalSizeScheme
 import org.easybangumi.next.shared.scheme.SizeScheme
 import org.easybangumi.next.shared.theme.EasyTheme
 import org.easybangumi.next.shared.compose.UI
+import org.easybangumi.next.shared.foundation.snackbar.MoeSnackBar
 import org.koin.compose.KoinContext
 
 /**
@@ -39,6 +40,7 @@ fun ComposeApp() {
         ) {
             EasyTheme {
                 Router()
+                MoeSnackBar()
             }
         }
     }

@@ -164,13 +164,31 @@ fun MediaFinderHost(
                     0 -> {
                         Radar(
                             modifier = Modifier.fillMaxSize(),
-                            vm = vm
+                            vm = vm,
+                            onPanelHide = {
+                                coroutineScope
+                                    .launch { bottomSheet.hide() }
+                                    .invokeOnCompletion {
+                                        if (!bottomSheet.isVisible) {
+                                            vm.hidePanel()
+                                        }
+                                    }
+                            }
                         )
                     }
                     1 -> {
                         Search(
                             modifier = Modifier.fillMaxSize(),
-                            vm = vm
+                            vm = vm,
+                            onPanelHide = {
+                                coroutineScope
+                                    .launch { bottomSheet.hide() }
+                                    .invokeOnCompletion {
+                                        if (!bottomSheet.isVisible) {
+                                            vm.hidePanel()
+                                        }
+                                    }
+                            }
                         )
                     }
                     else -> {}
@@ -279,6 +297,7 @@ fun FinderEditDialog(
         confirmButton = {
             TextButton(
                 onClick = {
+                    vm.dismissPopup()
                     vm.changeKeyword(fieldText.value)
                 }
             ) {

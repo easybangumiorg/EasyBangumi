@@ -1,31 +1,9 @@
 package org.easybangumi.next.shared.compose.media_finder
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.pager.PagerState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDownward
-import androidx.compose.material.icons.filled.ArrowUpward
-import androidx.compose.material.icons.filled.Help
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.utils.PagingFlow
 import org.easybangumi.next.lib.utils.coroutineProvider
@@ -34,9 +12,7 @@ import org.easybangumi.next.shared.cartoon.radar.v1.CartoonRadarV1VM
 import org.easybangumi.next.shared.cartoon.search.CartoonSearchVM
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.data.cartoon.PlayerLine
-import org.easybangumi.next.shared.foundation.stringRes
 import org.easybangumi.next.shared.foundation.view_model.StateViewModel
-import org.easybangumi.next.shared.resources.Res
 import org.easybangumi.next.shared.source.api.component.getManifest
 import org.easybangumi.next.shared.source.api.source.SourceManifest
 
@@ -82,8 +58,8 @@ class MediaFinderVM(
 
         val result: SelectionResult? = null,
 
-        val radarState: RadarState = RadarState.EMPTY,
-        val searchState: SearchState = SearchState(),
+        val radarUIState: RadarUIState = RadarUIState.EMPTY,
+        val searchUIState: SearchUIState = SearchUIState(),
 
         val popup: Popup? = null,
     )
@@ -96,13 +72,13 @@ class MediaFinderVM(
 
     }
 
-    data class RadarState(
+    data class RadarUIState(
         val radarSourceTabList: List<RadarSourceTab> = emptyList(),
         val selectionSource: SourceManifest? = null,
         val result: List<CartoonRadarStrategyV1.CartoonCoverResult> = emptyList(),
     ) {
         companion object {
-            val EMPTY = RadarState()
+            val EMPTY = RadarUIState()
         }
         val resultTab: List<RadarSourceTab> by lazy {
             radarSourceTabList.filter { !it.loading && !it.error && it.count > 0  }
@@ -118,7 +94,7 @@ class MediaFinderVM(
     )
 
 
-    data class SearchState(
+    data class SearchUIState(
         val loading: Boolean = false,
         val searchLineStateList: List<SearchLineState> = emptyList(),
     )
@@ -160,7 +136,7 @@ class MediaFinderVM(
                 }.sortedBy { it.nameDistance }
                 update {
                     it.copy(
-                        radarState = it.radarState.copy(
+                        radarUIState = it.radarUIState.copy(
                             radarSourceTabList = tabList,
                             result = resultList,
                         )
@@ -169,6 +145,35 @@ class MediaFinderVM(
 
             }
         }
+
+        viewModelScope.launch {
+            searchVM.logic.collectLatest { searchState ->
+                val searchLineList = mutableListOf<SearchLineState>()
+                searchState.searchBusiness.forEach {
+                    val flow = it.source.key.let { key ->
+                        searchState.pagingFlowMap[key]
+                    }
+                    if (flow != null) {
+                        searchLineList.add(
+                            SearchLineState(
+                                sourceManifest = it.source.manifest,
+                                flow = flow,
+                            )
+                        )
+                    }
+                }
+                update {
+                    it.copy(
+                        searchUIState = SearchUIState(
+                            loading = false,
+                            searchLineStateList = searchLineList,
+                        )
+                    )
+                }
+            }
+        }
+
+
 
     }
 
@@ -217,14 +222,14 @@ class MediaFinderVM(
             }
             radarV1VM.changeKeyword(keyword)
             state.collectLatest {
-                if (it.radarState != RadarState.EMPTY && it.silentFinding
+                if (it.radarUIState != RadarUIState.EMPTY && it.silentFinding
                     && it.result == null) {
 
-                    val res = it.radarState.result.firstOrNull() {
+                    val res = it.radarUIState.result.firstOrNull() {
                         it.playerLine?.isNotEmpty() == true && it.nameDistance < 3
                     }
                     if (res == null) {
-                        if( !it.radarState.radarSourceTabList.any { it.loading }) {
+                        if( !it.radarUIState.radarSourceTabList.any { it.loading }) {
                             update {
                                 it.copy(
                                     silentFinding = false,

@@ -258,11 +258,15 @@
     <string name="click_collect">点击收藏</string>
     <string name="collected">已收藏</string>
     <string name="local_collected">本地已收藏</string>
+    <string name="local_collect">本地收藏</string>
     <string name="collected_min">已收藏</string>
     <string name="no_collect">未收藏</string>
+    <string name="click_to_collect">点击收藏</string>
 
     <string name="star">追番</string>
     <string name="started_miro">已追</string>
+
+    <string name="has">已</string>
 
     <string name="detailed_error">获取番剧详情错误</string>
 

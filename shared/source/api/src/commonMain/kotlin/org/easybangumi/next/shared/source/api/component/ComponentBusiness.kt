@@ -3,6 +3,7 @@ package org.easybangumi.next.shared.source.api.component
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.shared.source.api.component.play.PlayComponent
 import org.easybangumi.next.shared.source.api.component.search.SearchComponent
@@ -34,6 +35,8 @@ fun FinderComponentPair.getManifest(): SourceManifest {
 
 open class ComponentBusiness <T: Component> (
     protected val innerComponent: T,
+    protected val retryCount: Int = 2,
+    protected val retryDelayMillis: Long = 500,
 ){
     val source = innerComponent.source
     suspend fun <R> async(block: suspend T.(CoroutineScope) -> DataState<R>): Deferred<DataState<R>> {
@@ -49,9 +52,9 @@ open class ComponentBusiness <T: Component> (
 
         }
     }
-    suspend fun <R> run(block: suspend T.(CoroutineScope) -> DataState<R>): DataState<R> {
+    suspend fun <R> run(allowRetry: Boolean = true, block: suspend T.(CoroutineScope) -> DataState<R>): DataState<R> {
         return innerComponent.source.scope.async {
-            runCatching {
+            var res: DataState<R> = runCatching {
                 innerComponent.block(this)
             }.getOrElse {
                 DataState.error(
@@ -59,7 +62,23 @@ open class ComponentBusiness <T: Component> (
                     throwable = it,
                 )
             }
-
+            if (!res.isOk() && retryCount >= 1 && allowRetry) {
+                repeat(retryCount) { attempt ->
+                    delay(retryDelayMillis)
+                    res =  runCatching {
+                        innerComponent.block(this)
+                    }.getOrElse {
+                        DataState.error(
+                            errorMsg = it.message?:"$it",
+                            throwable = it,
+                        )
+                    }
+                    if (res?.isOk() == true) {
+                        return@repeat
+                    }
+                }
+            }
+            res
         }.await()
     }
 

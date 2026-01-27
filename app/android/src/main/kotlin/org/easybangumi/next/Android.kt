@@ -1,12 +1,18 @@
 package org.easybangumi.next
 
+import android.webkit.CookieManager
 import androidx.media3.exoplayer.ExoPlayer
+import org.easybangumi.next.bangumi.BangumiAppConfigProviderImpl
 import org.easybangumi.next.platform.AndroidPlatform
 import org.easybangumi.next.shared.foundation.ActivityController
+import org.easybangumi.next.shared.source.bangumi.BangumiAppConfig
+import org.easybangumi.next.shared.source.bangumi.BangumiAppConfigProvider
+import org.easybangumi.next.webkit.WebViewManager
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.loadKoinModules
 import org.koin.core.context.startKoin
 import org.koin.dsl.bind
+import org.koin.dsl.binds
 import org.koin.dsl.module
 
 /**
@@ -39,6 +45,14 @@ object Android {
                 single {
                     ActivityController()
                 }
+
+                single {
+                    BangumiAppConfigProviderImpl()
+                }.binds(arrayOf(BangumiAppConfigProvider::class))
+
+                single {
+                    WebViewManager(3, CookieManager.getInstance(), application)
+                }.binds(arrayOf(WebViewManager::class))
             })
         }
     }

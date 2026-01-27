@@ -5,7 +5,10 @@ import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.URLProtocol
+import io.ktor.http.encodeURLPath
 import io.ktor.http.path
+import io.ktor.http.userAgent
+import kotlinx.coroutines.delay
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.PagingFrame
@@ -43,15 +46,25 @@ class XifanSearchComponent: SearchComponent, BaseComponent() {
         keyword: String,
         key: String
     ): DataState<PagingFrame<CartoonCover>> {
-        return withResult {
+        return search(keyword, key, true)
+    }
+
+    private suspend fun search(
+        keyword: String,
+        key: String,
+        allowedRetry: Boolean
+    ): DataState<PagingFrame<CartoonCover>> {
+        var needRetry = false
+        val res = withResult {
             val host = prefHelper.get("host", "dm.xifanacg.com")
             logger.info("GGLPlayComponent searchPlayCovers: host=$host, keyword=${keyword}, key=$key")
             val html = ktorClient.get {
                 url {
                     protocol = URLProtocol.HTTPS
                     this.host = host
-                    path("search", "wd", keyword, "page",  "${key}.html" )
+                    path("search", "wd", keyword.encodeURLPath(encodeSlash = true), "page",  "${key}.html" )
                 }
+                userAgent(networkHelper.defaultWindowsUA)
             }.bodyAsText()
             val doc = Ksoup.parse(html)
             val list = arrayListOf<CartoonCover>()
@@ -80,7 +93,24 @@ class XifanSearchComponent: SearchComponent, BaseComponent() {
                 )
                 list.add(b)
             }
-            (if (list.isEmpty()) null else (key.toIntOrNull()?:0) + 1)?.toString() to list
+            if (list.isEmpty()) {
+                val msgContent = doc.select("div.msg-content").firstOrNull()
+                if (msgContent?.text()?.contains("频繁操作") == true) {
+                    needRetry = true
+                }
+            }
+            ((if (list.isEmpty()) null else (key.toIntOrNull()?:0) + 1)?.toString() to list.toList())
+                .apply {
+                    logger.info(" ${key} ${keyword} SearchPlayCovers: $this")
+                    if (this.second.isEmpty()) {
+                        logger.warn("SearchPlayCovers: $html")
+                    }
+                }
         }
+        if (needRetry && allowedRetry) {
+            delay(3000)
+            return search(keyword, key, false)
+        }
+        return res
     }
 }

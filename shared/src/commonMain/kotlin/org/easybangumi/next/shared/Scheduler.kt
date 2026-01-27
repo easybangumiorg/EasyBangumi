@@ -1,16 +1,20 @@
 package org.easybangumi.next.shared
 
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.store.storeModule
+import org.easybangumi.next.shared.bangumi.account.BangumiAccountController
 import org.easybangumi.next.shared.bangumi.bangumiModule
 import org.easybangumi.next.shared.cartoon.cartoonModule
 import org.easybangumi.next.shared.case.caseModule
 import org.easybangumi.next.shared.data.dataModule
-import org.easybangumi.next.shared.data.shareDataModule
 import org.easybangumi.next.shared.ktor.ktorModule
 import org.easybangumi.next.shared.preference.preferenceModule
+import org.easybangumi.next.shared.source.bangumi.bangumiApiModule
 import org.easybangumi.next.shared.source.sourceModule
 import org.easybangumi.next.shared.theme.themeModule
 import org.koin.core.context.loadKoinModules
+import org.koin.mp.KoinPlatform
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -27,7 +31,8 @@ import org.koin.core.context.loadKoinModules
 object Scheduler {
 
     private var isInit = false
-
+    private var isHomePageLaunchInit = false
+    val scope = MainScope()
 
     // 业务要么保证只执行一次，要么保证只在同一个线程饱和执行多次
     fun onInit() {
@@ -41,8 +46,8 @@ object Scheduler {
                 preferenceModule,
                 ktorModule,
                 caseModule,
-                shareDataModule,
                 bangumiModule,
+                bangumiApiModule,
                 cartoonModule,
             ))
         }
@@ -54,6 +59,14 @@ object Scheduler {
     }
 
     fun onHomePageLaunch() {
+        if (isHomePageLaunchInit) {
+            return
+        }
+        isHomePageLaunchInit = true
+        scope.launch {
+            val bangumiAccountController = KoinPlatform.getKoin().getOrNull<BangumiAccountController>()
+            bangumiAccountController?.checkRefreshIfNeed()
+        }
 
     }
 

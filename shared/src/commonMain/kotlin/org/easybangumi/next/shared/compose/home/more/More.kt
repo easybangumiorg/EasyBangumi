@@ -1,7 +1,11 @@
 package org.easybangumi.next.shared.compose.home.more
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -25,12 +29,27 @@ import org.easybangumi.next.shared.RouterPage
 @Composable
 fun More() {
     val navController = LocalNavController.current
-    if (platformInformation.isDebug) {
-        Text(
+    Column {
+        Spacer(Modifier.height(200.dp))
+        if (platformInformation.isDebug) {
+            ListItem(
+                modifier = Modifier.clickable {
+                    navController.navigate(RouterPage.Debug.HOME)
+                },
+                headlineContent = {
+                    Text(text = "Debug Mode")
+                }
+            )
+        }
+        ListItem(
             modifier = Modifier.clickable {
-                navController.navigate(RouterPage.Debug.HOME)
+                navController.navigate(RouterPage.BangumiLogin)
             },
-            text = "Debug Mode"
+            headlineContent = {
+                Text(text = "BangumiLogin")
+            }
         )
+
     }
+
 }

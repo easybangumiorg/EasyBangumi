@@ -13,5 +13,5 @@ fun WebView.clearWeb() {
 
 fun WebView.stop() {
     stopLoading()
-    pauseTimers()
+//    pauseTimers()
 }

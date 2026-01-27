@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.material.Button
 import androidx.compose.material.Text
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
@@ -19,6 +21,7 @@ import androidx.compose.ui.window.rememberWindowState
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.shared.ComposeApp
 import org.easybangumi.next.shared.Scheduler
+import org.koin.mp.KoinPlatform
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -39,8 +42,18 @@ suspend fun main() {
         Desktop.onInit()
         Scheduler.onInit()
 
+        val windowController = KoinPlatform.getKoin().get<WindowController>()
+
         application {
             val windowState = rememberWindowState()
+            LaunchedEffect(windowController) {
+                windowController.addWindowState(windowState)
+            }
+            DisposableEffect(windowController) {
+                onDispose {
+                    windowController.removeWindowState(windowState)
+                }
+            }
             Window(
                 onCloseRequest = ::exitApplication,
                 title = "EasyBangumi.next",

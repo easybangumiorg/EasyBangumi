@@ -40,7 +40,7 @@ abstract class MakeConfigTask: DefaultTask() {
         option = "buildConfigFileName",
         description = "The name of the build config object to create. Defaults to BuildConfig."
     )
-    abstract val buildConfigName: Property<String?>
+    abstract val buildConfigName: Property<String>
 
     @get:Input
     @get:Optional

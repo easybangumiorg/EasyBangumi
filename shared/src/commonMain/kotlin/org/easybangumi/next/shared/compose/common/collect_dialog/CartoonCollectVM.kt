@@ -35,6 +35,8 @@ import org.koin.core.component.inject
  *    You may obtain a copy of the License at
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  TODO：改为复用 BgmCollectInfoVM 代码
  */
 class CartoonCollectVM(
     private val cartoonCover: CartoonCover,

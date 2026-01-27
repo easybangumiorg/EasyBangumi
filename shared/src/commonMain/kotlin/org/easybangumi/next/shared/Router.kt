@@ -22,6 +22,7 @@ import org.easybangumi.next.shared.debug.DebugHost
 import org.easybangumi.next.shared.debug.DebugPage
 import kotlinx.serialization.Serializable
 import org.easybangumi.next.lib.utils.WeakRef
+import org.easybangumi.next.shared.bangumi.login.BangumiLoginHost
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.compose.detail.Detail
 import org.easybangumi.next.shared.compose.home.Home
@@ -122,6 +123,9 @@ sealed class RouterPage {
             }
         }
     }
+
+    @Serializable
+    object BangumiLogin: RouterPage()
 
     companion object {
         val DEFAULT = Main
@@ -248,6 +252,16 @@ fun Router() {
                         defSearchKeyword = search.defSearchKeyword,
                         defSourceKey = search.defSourceKey,
                     )
+                }
+            }
+
+            // Bangumi Login
+            composable<RouterPage.BangumiLogin>(
+                typeMap = NavTypeMap
+            ) {
+                val bangumiLogin = it.toRoute<RouterPage.BangumiLogin>()
+                NavHook(bangumiLogin, it) {
+                    BangumiLoginHost()
                 }
             }
         }
