@@ -157,7 +157,12 @@ data class BgmImages(
     @SerialName("large") val large: String? = null,
     @SerialName("medium") val medium: String? = null,
     @SerialName("common") val common: String? = null
-)
+) {
+
+    fun getCommonUrlFirst(): String? {
+        return common ?: large ?: medium ?: small ?: grid
+    }
+}
 
 @Serializable
 data class BgmInfobox(

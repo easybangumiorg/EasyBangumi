@@ -62,6 +62,7 @@ class BangumiApiImpl(
     // 嵌入代理 host
     private fun HttpRequestBuilder.proxyUrl(block: URLBuilder.() -> Unit) {
         url {
+            protocol = URLProtocol.HTTPS
             host = caller.debugHookUrl ?: bangumiConfig.embedProxyHost
             block(this)
         }

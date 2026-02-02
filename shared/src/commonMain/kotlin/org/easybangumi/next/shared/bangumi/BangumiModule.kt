@@ -12,6 +12,6 @@ val bangumiModule = module {
         BangumiAccountController(get())
     }
     single {
-        BangumiDataController(get(), get())
+        BangumiDataController(get(), get(), get())
     }
 }

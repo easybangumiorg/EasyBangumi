@@ -8,10 +8,12 @@ import org.easybangumi.next.lib.unifile.UFD
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.shared.bangumi.account.BangumiAccountController
 import org.easybangumi.next.shared.bangumi.data.repository.BangumiCollectionRepository
+import org.easybangumi.next.shared.bangumi.data.repository.BangumiUserRepository
 import org.easybangumi.next.shared.data.bangumi.BangumiConst
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.source.bangumi.source.BangumiCollectComponent.CollectionsPagingSource
 import org.easybangumi.next.shared.source.SourceCase
+import org.easybangumi.next.shared.source.bangumi.business.BangumiApi
 import org.easybangumi.next.shared.source.bangumi.model.BgmRsp
 import kotlin.concurrent.Volatile
 
@@ -23,13 +25,23 @@ class BangumiUserDataProvider(
     private val info: BangumiAccountController.BangumiAccountInfo,
     private val bangumiRootFileUfd: UFD,
     private val sourceCase: SourceCase,
+    private val bangumiApi: BangumiApi,
     private val lock: ReentrantLock,
     private val scope: CoroutineScope,
 ) {
 
-    private val bangumiUserFileUfd = bangumiRootFileUfd.child("user")
+    private val bangumiUserFileUfd = bangumiRootFileUfd.child(info.username)
     private val collectionRepositoryMap = hashMapOf<String, BangumiCollectionRepository>()
-
+    private val bangumiUserRepository: BangumiUserRepository by lazy {
+        BangumiUserRepository(
+            folder = bangumiUserFileUfd ?: throw IllegalStateException("bangumi getUserFile null"),
+            scope = scope,
+            bangumiApi = bangumiApi,
+            accountInfo = info,
+        ).apply {
+            refreshIfNoneOrCache()
+        }
+    }
     companion object {
 
         @Volatile
@@ -85,6 +97,10 @@ class BangumiUserDataProvider(
                 )
             }
         }
+    }
+
+    fun getUserRepository(): BangumiUserRepository {
+        return bangumiUserRepository
     }
 
     fun getCollectPagingSource(

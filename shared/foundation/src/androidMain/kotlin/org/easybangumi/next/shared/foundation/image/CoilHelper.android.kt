@@ -62,8 +62,6 @@ private class MokoAssetResourceFetcher(
 
     class AssetFactory: Fetcher.Factory<AssetResource> {
         override fun create(data: AssetResource, options: Options, imageLoader: ImageLoader): Fetcher {
-            data.originalPath
-            imageLoader.newBuilder()
             return MokoAssetResourceFetcher(data, options)
         }
     }

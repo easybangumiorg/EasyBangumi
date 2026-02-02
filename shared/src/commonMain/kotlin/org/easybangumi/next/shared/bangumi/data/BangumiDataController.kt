@@ -17,6 +17,7 @@ import org.easybangumi.next.shared.bangumi.data.repository.BangumiPersonListRepo
 import org.easybangumi.next.shared.bangumi.data.repository.BangumiSubjectRepository
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.source.SourceCase
+import org.easybangumi.next.shared.source.bangumi.business.BangumiApi
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -31,6 +32,7 @@ import org.easybangumi.next.shared.source.SourceCase
  */
 class BangumiDataController(
     private val sourceCase: SourceCase,
+    private val bangumiApi: BangumiApi,
     private val bangumiAccountController: BangumiAccountController,
 ) {
 
@@ -58,6 +60,7 @@ class BangumiDataController(
                 info = it,
                 bangumiRootFileUfd = bangumiRootFileUfd,
                 sourceCase = sourceCase,
+                bangumiApi = bangumiApi,
                 lock = lock,
                 scope = scope,
             )
