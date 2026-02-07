@@ -17,6 +17,11 @@ actual val ktorModule: Module
         single {
             DesktopKtorFactory()
         }.binds(arrayOf(KtorFactory::class))
+
+        // Global HttpClient
+        single {
+            get<KtorFactory>().create()
+        }.binds(arrayOf(HttpClient::class))
     }
 
 

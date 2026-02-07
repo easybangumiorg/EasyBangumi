@@ -18,11 +18,13 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.SwingPanel
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
 import org.easybangumi.next.shared.LocalNavController
 import org.easybangumi.next.shared.foundation.elements.LoadingElements
 import org.easybangumi.next.shared.foundation.snackbar.moeSnackBar
@@ -83,8 +85,17 @@ actual fun BangumiLoginHost() {
                             Text(text = "操作登录后点击右上角申请授权", color = MaterialTheme.colorScheme.onSecondaryContainer)
                         }
 
+                        val isLoading = remember {
+                            mutableStateOf(true)
+                        }
+                        LaunchedEffect(sta) {
+                            while (true) {
+                                isLoading.value = sta.browser.isLoading
+                                delay(100)
+                            }
+                        }
 
-                        if (sta.browser.isLoading) {
+                        if (isLoading.value) {
                             LoadingElements(
                                 modifier = Modifier
                                     .fillMaxWidth()

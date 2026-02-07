@@ -73,6 +73,21 @@ compose.desktop {
             packageName = applicationId
             packageVersion = versionName
 
+            windows {
+                iconFile.set(project.file("./src/main/resources/logo.png"))
+                menuGroup = "EasyBangumi.org"
+            }
+            linux {
+                iconFile.set(project.file("./src/main/resources/logo.png"))
+                packageName = "EasyBangumi.org"
+            }
+            macOS {
+                iconFile.set(project.file("./src/main/resources/logo.png"))
+                bundleID = "org.easybangumi.next"
+                dockName = "纯纯看番"
+            }
+
+
         }
     }
 }

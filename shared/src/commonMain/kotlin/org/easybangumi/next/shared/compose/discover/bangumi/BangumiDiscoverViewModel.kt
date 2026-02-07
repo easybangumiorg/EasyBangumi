@@ -9,6 +9,7 @@ import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.PagingFlow
 import org.easybangumi.next.lib.utils.ResourceOr
 import org.easybangumi.next.lib.utils.newPagingFlow
+import org.easybangumi.next.shared.compose.bangumi.account_card.BangumiAccountCardVM
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.foundation.view_model.StateViewModel
 import org.easybangumi.next.shared.source.bangumi.business.BangumiApi
@@ -46,6 +47,10 @@ class BangumiDiscoverViewModel: StateViewModel<BangumiDiscoverViewModel.State>(S
     }
 
     private val sourceCase: SourceCase by inject()
+
+    val bangumiAccountCardVM: BangumiAccountCardVM by childViewModel {
+        BangumiAccountCardVM()
+    }
 
     init {
         //  Load discover

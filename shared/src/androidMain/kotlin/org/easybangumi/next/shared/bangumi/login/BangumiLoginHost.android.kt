@@ -18,11 +18,14 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.yield
 import org.easybangumi.next.shared.LocalNavController
 import org.easybangumi.next.shared.foundation.elements.LoadingElements
 import org.easybangumi.next.shared.foundation.snackbar.moeSnackBar
@@ -73,16 +76,23 @@ actual fun BangumiLoginHost() {
                             Spacer(modifier = Modifier.width(16.dp))
                             Text(text = "操作登录后点击右上角申请授权", color = MaterialTheme.colorScheme.onSecondaryContainer)
                         }
-                        val progress = remember(sta.webView.progress) {
-                            sta.webView.progress
+                        val progress = remember {
+                            mutableStateOf(0)
                         }
-                        if (progress < 100) {
+                        LaunchedEffect(sta) {
+                            while (true) {
+                                progress.value = sta.webView.progress
+                                delay(100)
+                            }
+                        }
+
+                        if (progress.value < 100) {
                             LoadingElements(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .background(MaterialTheme.colorScheme.primaryContainer),
                                 isRow = true,
-                                loadingMsg = "加载中... $progress%"
+                                loadingMsg = "加载中... ${progress.value}%"
                             )
                         }
                         Box(Modifier.fillMaxWidth().weight(1f).clipToBounds()) {

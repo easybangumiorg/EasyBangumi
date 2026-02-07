@@ -2,7 +2,9 @@
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -13,6 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import org.easybangumi.next.shared.LocalNavController
 import org.easybangumi.next.shared.RouterPage
+import org.easybangumi.next.shared.compose.bangumi.bangumi
+import org.easybangumi.next.shared.compose.bangumi.bangumiContainer
 import org.easybangumi.next.shared.foundation.stringRes
 import org.easybangumi.next.shared.resources.Res
 import org.easybangumi.next.shared.source.bangumi.source.BangumiInnerSource
@@ -35,6 +39,7 @@ fun BangumiDiscoverTopAppBar(
     scrollBehavior: TopAppBarScrollBehavior? = null,
 ) {
     val nav = LocalNavController.current
+    val user = vm.bangumiAccountCardVM.ui.value
 
     TopAppBar(
         modifier = modifier,
@@ -46,6 +51,23 @@ fun BangumiDiscoverTopAppBar(
         ),
         scrollBehavior = scrollBehavior,
         actions = {
+
+            if (user.isNone()) {
+                TextButton(
+                    onClick = {
+                        nav.navigate(RouterPage.BangumiLogin)
+                    },
+                    colors = ButtonDefaults.textButtonColors(
+                        containerColor = MaterialTheme.colorScheme.bangumiContainer,
+                        contentColor = MaterialTheme.colorScheme.bangumi,
+                    )
+                ) {
+                    Text(
+                        text = "绑定 Bangumi",
+                    )
+                }
+            }
+
             TextButton(
                 onClick = {
                     nav.navigate(RouterPage.Search.from("", BangumiInnerSource.SOURCE_KEY))

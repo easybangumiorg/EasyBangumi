@@ -11,6 +11,11 @@ actual val ktorModule: Module
         single {
             AndroidKtorFactory()
         }.binds(arrayOf(KtorFactory::class))
+
+        // Global HttpClient
+        single {
+            get<KtorFactory>().create()
+        }.binds(arrayOf(HttpClient::class))
     }
 
 

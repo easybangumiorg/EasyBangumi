@@ -14,10 +14,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion
 import androidx.compose.ui.unit.dp
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.shared.LocalNavController
 import org.easybangumi.next.shared.RouterPage
+import org.easybangumi.next.shared.compose.bangumi.bangumiContainer
+import org.easybangumi.next.shared.compose.bangumi.onBangumiContainer
 import org.easybangumi.next.shared.foundation.image.AsyncImage
 import org.easybangumi.next.shared.foundation.view_model.vm
 import org.easybangumi.next.shared.resources.Res
@@ -40,7 +43,7 @@ fun BangumiAccountCard(
     val vm = vm(::BangumiAccountCardVM)
     val sta = vm.ui.value
     val icon = remember(sta) {
-        sta.cacheData?.avatar?.getCommonUrlFirst() ?: Res.images.empty_soyolin
+        sta.cacheData?.avatar?.getCommonUrlFirst() ?: Res.images.bangumi
     }
     val label = remember(sta) {
         sta.cacheData?.nickname ?: "未绑定 Bangumi"
@@ -50,8 +53,8 @@ fun BangumiAccountCard(
             "#$it"
         } ?: "点击绑定"
     }
-    val error = remember(sta) {
-        sta.mapError { it.errorMsg }
+    val trailing = remember(sta) {
+        (sta.mapError { it.errorMsg }?.let { it to true }) ?: if (sta.cacheData?.id == null) null else "点击重新绑定" to false
     }
     val nav = LocalNavController.current
     ListItem(
@@ -60,9 +63,11 @@ fun BangumiAccountCard(
             .clickable {
                 nav.navigate(RouterPage.BangumiLogin)
             }
-            .background(MaterialTheme.colorScheme.surfaceContainerHigh, RoundedCornerShape(8.dp)),
+            .background(MaterialTheme.colorScheme.bangumiContainer, RoundedCornerShape(8.dp)),
         colors = ListItemDefaults.colors(
             containerColor = Color.Transparent,
+            headlineColor = MaterialTheme.colorScheme.onBangumiContainer,
+            supportingColor = MaterialTheme.colorScheme.onBangumiContainer,
         ),
         headlineContent = {
             Text(
@@ -83,11 +88,11 @@ fun BangumiAccountCard(
                 modifier = Modifier.size(24.dp)
             )
         },
-        trailingContent = error?.let {
+        trailingContent = trailing?.let {
             {
                 Text(
-                    text = it,
-                    color = MaterialTheme.colorScheme.error,
+                    text = it.first,
+                    color = if (it.second) MaterialTheme.colorScheme.error else Color.Unspecified,
                     style = MaterialTheme.typography.bodySmall,
                 )
             }
