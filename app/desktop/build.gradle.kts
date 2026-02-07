@@ -69,6 +69,8 @@ compose.desktop {
         nativeDistributions {
             appResourcesRootDir.set(project.layout.projectDirectory.dir("../assets"))
 
+            // 关键配置：禁用资源压缩和优化
+            includeAllModules = true
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = applicationId
             packageVersion = versionName
@@ -76,6 +78,10 @@ compose.desktop {
             windows {
                 iconFile.set(project.file("./src/main/resources/logo.png"))
                 menuGroup = "EasyBangumi.org"
+                console = false
+                dirChooser = true
+                menu = true
+                shortcut = true
             }
             linux {
                 iconFile.set(project.file("./src/main/resources/logo.png"))

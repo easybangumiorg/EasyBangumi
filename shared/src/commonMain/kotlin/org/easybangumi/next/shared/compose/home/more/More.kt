@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.HorizontalDivider
@@ -50,7 +51,7 @@ fun More() {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(Modifier.height(64.dp))
-                AsyncImage(Res.images.logo, contentDescription = "Logo",)
+                AsyncImage(Res.images.logo, contentDescription = "Logo", modifier = Modifier.size(32.dp))
                 Spacer(Modifier.height(8.dp))
                 Text(stringRes(Res.strings.app_name))
                 Spacer(Modifier.height(12.dp))

@@ -22,6 +22,7 @@ import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.data.cartoon.CartoonInfo
 import org.easybangumi.next.shared.data.room.cartoon.dao.CartoonInfoDao
+import org.easybangumi.next.shared.foundation.todo.easyTODO
 import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
 import org.koin.core.component.inject
 import kotlin.getValue
@@ -196,6 +197,7 @@ class BangumiMediaCommonVM (
     }
 
     fun showBangumiDetailPanel() {
+        easyTODO("bottomSheet")
         _popupState.update { Popup.BangumiDetailPanel }
     }
     fun dismissPopup() {

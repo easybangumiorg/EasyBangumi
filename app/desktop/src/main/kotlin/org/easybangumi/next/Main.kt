@@ -19,6 +19,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import org.easybangumi.next.lib.logger.logger
+import org.easybangumi.next.panic.PanicApp
 import org.easybangumi.next.shared.ComposeApp
 import org.easybangumi.next.shared.Scheduler
 import org.koin.mp.KoinPlatform
@@ -43,7 +44,6 @@ suspend fun main() {
         Scheduler.onInit()
 
         val windowController = KoinPlatform.getKoin().get<WindowController>()
-
         application {
             val windowState = rememberWindowState()
             LaunchedEffect(windowController) {
@@ -63,7 +63,11 @@ suspend fun main() {
                 ComposeApp()
             }
         }
+
     } catch (e: Throwable) {
+        application {
+            PanicApp(e)
+        }
         logger.error("Application failed to start", e)
         throw e
     } finally {

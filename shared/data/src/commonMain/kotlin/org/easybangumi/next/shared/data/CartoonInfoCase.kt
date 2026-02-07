@@ -29,6 +29,37 @@ class CartoonInfoCase(
 
     fun flowHistory() = cartoonInfoDao.flowHistory()
 
+    suspend fun removeCartoonCoverCollection(
+        cartoonCoverList: List<CartoonCover>,
+    ) {
+        cartoonInfoDao.transaction {
+            cartoonCoverList.forEach { cartoonCover ->
+                val info = cartoonInfoDao.findById(cartoonCover.source, cartoonCover.id, )
+                if (info != null) {
+                    val newInfo = info.copy(
+                        starTime = 0,
+                    )
+                    cartoonInfoDao.update(newInfo)
+                }
+            }
+        }
+    }
+
+    suspend fun removeCartoonInfoCollection(
+        cartoonCoverList: List<CartoonInfo>,
+    ) {
+        cartoonInfoDao.transaction {
+            cartoonCoverList.forEach { cartoonCover ->
+                val info = cartoonInfoDao.findById(cartoonCover.fromSourceKey, cartoonCover.fromId, )
+                if (info != null) {
+                    val newInfo = info.copy(
+                        starTime = 0,
+                    )
+                    cartoonInfoDao.update(newInfo)
+                }
+            }
+        }
+    }
     // 必须为 cover 级别的数据才能收藏
     suspend fun changeCartoonInfoTag(
         cartoonCover: CartoonCover,

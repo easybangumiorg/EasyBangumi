@@ -24,6 +24,7 @@ import org.easybangumi.next.shared.foundation.InnerBackHandler
 import org.easybangumi.next.shared.foundation.TabPage
 import org.easybangumi.next.shared.foundation.selection.SelectionTopAppBar
 import org.easybangumi.next.shared.foundation.stringRes
+import org.easybangumi.next.shared.foundation.todo.easyTODO
 import org.easybangumi.next.shared.foundation.view_model.vm
 import org.easybangumi.next.shared.navigateToDetailOrMedia
 import org.easybangumi.next.shared.resources.Res
@@ -126,11 +127,13 @@ fun Collection(
                     },
                     starNum = state.starCount,
                     onSearchClick = {
+                        easyTODO("搜索")
                     },
                     onUpdate = {
+                        easyTODO("更新")
                     },
                     onSearch = {
-
+                        easyTODO("搜索")
                     },
                     onFilterClick = {
                         collectionVM.dialogProc()

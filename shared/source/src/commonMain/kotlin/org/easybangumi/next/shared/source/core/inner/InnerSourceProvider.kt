@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.map
+import org.easybangumi.next.platformInformation
 import org.easybangumi.next.shared.source.api.SourceProvider
 import org.easybangumi.next.shared.source.api.component.ComponentBundle
 import org.easybangumi.next.shared.source.api.source.SourceConfig
@@ -136,18 +137,23 @@ class InnerSourceProvider(
                         componentBundle = ageComponentBundle
                     )
                     ,
-                    SourceInfo.Loaded(
-                        manifest = debugSource.manifest,
-                        sourceConfig =  map.getOrElse(debugSource.key) {
-                            SourceConfig(
-                                key = debugSource.key,
-                                enable = false,
-                                order = 1,
-                            )
-                        },
-                        componentBundle = debugComponentBundle
-                    ),
-                )
+
+
+                ).also {
+                    if (platformInformation.isDebug) {
+                        it +  SourceInfo.Loaded(
+                            manifest = debugSource.manifest,
+                            sourceConfig =  map.getOrElse(debugSource.key) {
+                                SourceConfig(
+                                    key = debugSource.key,
+                                    enable = false,
+                                    order = 1,
+                                )
+                            },
+                            componentBundle = debugComponentBundle
+                        )
+                    }
+                }
             }
         }
     }

@@ -21,6 +21,7 @@ import org.easybangumi.next.shared.foundation.view_model.vm
 import org.easybangumi.next.shared.compose.discover.bangumi.BangumiDiscover
 import org.easybangumi.next.shared.compose.discover.bangumi.BangumiDiscoverTopAppBar
 import org.easybangumi.next.shared.compose.discover.bangumi.BangumiDiscoverViewModel
+import org.easybangumi.next.shared.foundation.todo.easyTODO
 import kotlin.math.absoluteValue
 
 /**
@@ -87,7 +88,9 @@ fun HomeDiscover() {
                 val page = RouterPage.Detail.fromCartoonIndex(it.toCartoonIndex())
                 nav.navigate(page)
             },
-            onTimelineClick = {}
+            onTimelineClick = {
+                easyTODO("新番时刻表")
+            }
         )
     }
 

@@ -1,7 +1,9 @@
 package org.easybangumi.next
 
 import android.app.Application
+import org.easybangumi.next.crash.CrashHandler
 import org.easybangumi.next.shared.Scheduler
+import javax.net.ssl.HttpsURLConnection
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -18,7 +20,9 @@ class EasyApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        Thread.setDefaultUncaughtExceptionHandler(CrashHandler(this))
         Android.onInit(this)
     }
+
 
 }

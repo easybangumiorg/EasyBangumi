@@ -168,5 +168,13 @@ class CartoonCollectionController(
         cartoonInfoCase.changeCartoonInfoTag(cartoonCover, newTagSet)
     }
 
+    suspend fun removeCartoonCoverCollection(cartoonCoverList: List<CartoonCover>) {
+        cartoonInfoCase.removeCartoonCoverCollection(cartoonCoverList)
+    }
+
+    suspend fun removeCartoonCollection(cartoonInfoList: List<CartoonInfo>) {
+        cartoonInfoCase.removeCartoonInfoCollection(cartoonInfoList)
+    }
+
 
 }

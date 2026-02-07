@@ -243,7 +243,7 @@ class BangumiDetailVM(
             RouterPage.Media.from(
                 cartoonIndex = sub.cartoonIndex,
                 cartoonCover = sub.cartoonCover,
-                suggestEpisode = episode.ep?.toInt(),
+                suggestEpisode = episode.ep?.toInt()?.let { it - 1 },
             )
         )
 

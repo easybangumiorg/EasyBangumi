@@ -5,10 +5,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -46,6 +49,7 @@ import org.easybangumi.next.shared.compose.home.more.More
 import org.easybangumi.next.shared.compose.home.collection.Collection
 import org.easybangumi.next.shared.compose.home.collection.TAG_COLLECTION
 import org.easybangumi.next.shared.compose.home.discover.HomeDiscover
+import org.easybangumi.next.shared.foundation.image.AsyncImage
 import org.easybangumi.next.shared.foundation.view_model.vm
 
 /**
@@ -157,7 +161,12 @@ fun Home() {
                     modifier = Modifier.fillMaxHeight(),
 //                    contentColor = Color.Transparent,
                     header = {
-                        Text("纯纯看番")
+                        Spacer(Modifier.width(16.dp))
+                        AsyncImage(
+                            Res.images.logo,
+                            modifier = Modifier.size(32.dp),
+                            contentDescription = ""
+                        )
                     }
                 ) {
                     HomePageList.forEachIndexed { index, page ->
@@ -172,6 +181,9 @@ fun Home() {
                             icon = {
                                 page.icon(selected)
                             },
+                            label = {
+                                page.tabLabel()
+                            }
 
                         )
                     }

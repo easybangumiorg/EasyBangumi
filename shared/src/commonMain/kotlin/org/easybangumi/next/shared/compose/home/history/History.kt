@@ -59,6 +59,7 @@ import org.easybangumi.next.shared.foundation.elements.EmptyElements
 import org.easybangumi.next.shared.foundation.elements.LoadingElements
 import org.easybangumi.next.shared.foundation.selection.SelectionTopAppBar
 import org.easybangumi.next.shared.foundation.stringRes
+import org.easybangumi.next.shared.foundation.todo.easyTODO
 import org.easybangumi.next.shared.foundation.view_model.vm
 import org.easybangumi.next.shared.navigateToDetailOrMedia
 import org.easybangumi.next.shared.playcon.TimeUtils
@@ -133,7 +134,10 @@ fun History(
                     onSearchClick = {
                         vm.search("")
                     },
-                    onClear = { vm.clearDialog() },
+                    onClear = {
+                        easyTODO("清空历史记录")
+                        vm.clearDialog()
+                    },
                     onSearch = {
                         vm.search(it)
                     },

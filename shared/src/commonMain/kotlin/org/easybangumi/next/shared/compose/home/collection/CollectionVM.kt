@@ -8,6 +8,7 @@ import org.easybangumi.next.shared.cartoon.collection.CartoonCollectionControlle
 import org.easybangumi.next.shared.data.bangumi.BangumiConst
 import org.easybangumi.next.shared.data.cartoon.CartoonInfo
 import org.easybangumi.next.shared.data.cartoon.CartoonTag
+import org.easybangumi.next.shared.foundation.todo.easyTODO
 import org.easybangumi.next.shared.foundation.view_model.StateViewModel
 import org.koin.core.component.inject
 
@@ -55,14 +56,14 @@ class CollectionVM: StateViewModel<CollectionVM.State>(State()) {
     private var lastSelectCartoon: CartoonInfo? = null
     private var lastSelectTag: CartoonTag? = null
 
-    // 删除
-    fun fireDelete(selection: Set<CartoonInfo>) {}
-    // 修改分类
-    fun fireChangeTag(selection: Set<CartoonInfo>, tags: List<CartoonTag>) {}
-    // 迁移
-    fun fireMigrate(selection: Set<CartoonInfo>) {}
-    // 更新
-    fun fireUpdate(selection: Set<CartoonInfo>) {}
+//    // 删除
+//    fun fireDelete(selection: Set<CartoonInfo>) {}
+//    // 修改分类
+//    fun fireChangeTag(selection: Set<CartoonInfo>, tags: List<CartoonTag>) {}
+//    // 迁移
+//    fun fireMigrate(selection: Set<CartoonInfo>) {}
+//    // 更新
+//    fun fireUpdate(selection: Set<CartoonInfo>) {}
 
     init {
         viewModelScope.launch {
@@ -191,16 +192,25 @@ class CollectionVM: StateViewModel<CollectionVM.State>(State()) {
     }
     // dialog =====
     fun dialogDeleteSelection() {
+        viewModelScope.launch {
+            val selection = logic.value.selection
+            collectionController.removeCartoonCollection(selection.toList())
+            update {
+                it.copy(
+                    selection = emptySet()
+                )
+            }
+        }
 
     }
 
 
     fun dialogChangeTag() {
-
+        easyTODO("切换收藏")
     }
 
     fun dialogMigrateSelect() {
-
+        easyTODO("多选迁移")
     }
 
     fun dialogProc() {
