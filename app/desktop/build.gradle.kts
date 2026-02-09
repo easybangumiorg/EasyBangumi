@@ -90,7 +90,7 @@ compose.desktop {
 
 
             windows {
-                iconFile.set(project.rootProject.file("logo/logo.png"))
+                iconFile.set(project.rootProject.file("logo/logo.ico"))
                 menuGroup = "EasyBangumi.org"
                 console = false
                 dirChooser = true
@@ -146,63 +146,66 @@ tasks.register("printJdkPath") {
 }
 
 afterEvaluate {
-    // copy native lib for mac
-    tasks.named<AbstractJPackageTask>("createReleaseDistributable") {
-        val javaHome = System.getProperty("java.home")
-        val copyItem = listOf(
-            // 1. jcef
-            "../Frameworks" to "Contents/runtime/Contents"
-        ).map {
-            val source = File(javaHome).resolve(it.first).normalize()
-            source to it.second
-        }
-
-        copyItem.forEach {
-            inputs.dir(it.first)
-        }
-
-        doLast("copy native lib") {
-            val appBundle = destinationDir.get().asFile.walk().find {
-                it.name.contains("${applicationId}.app") && it.isDirectory
-            }?: throw GradleException("Cannot find ${applicationId}.app in $destinationDir")
-            copyItem.forEach { (sourcePath, destPath) ->
-                var dest = appBundle.resolve(destPath)?.normalize()
-                    ?: throw GradleException("Cannot find ${destPath} in $appBundle")
-                ProcessBuilder().run {
-                    command("cp", "-r", sourcePath.absolutePath, dest.absolutePath)
-                    inheritIO()
-                    start()
-                }.waitFor().let {
-                    if (it != 0) {
-                        throw GradleException("Failed to copy $sourcePath")
-                    }
-                }
-                println("Copied $sourcePath to $dest")
-            }
-        }
-    }
-
-//
-//    // copy native lib for windows
-//    tasks.named<AbstractJLinkTask>("createRuntimeImage") {
+//    // copy native lib for mac
+//    tasks.named<AbstractJPackageTask>("createReleaseDistributable") {
 //        val javaHome = System.getProperty("java.home")
 //        val copyItem = listOf(
 //            // 1. jcef
-//            "bin/jcef_helper.exe" to "bin/jcef_helper.exe",
+//            "../Frameworks" to "Contents/runtime/Contents"
 //        ).map {
 //            val source = File(javaHome).resolve(it.first).normalize()
 //            source to it.second
 //        }
+//
 //        copyItem.forEach {
 //            inputs.dir(it.first)
 //        }
 //
 //        doLast("copy native lib") {
-//            copyItem.forEach { (source, destPath) ->
-//                val dest = destinationDir.file(destPath)
-//                source.copyTo(dest.get().asFile)
+//            val appBundle = destinationDir.get().asFile.walk().find {
+//                it.name.contains("${applicationId}.app") && it.isDirectory
+//            }?: throw GradleException("Cannot find ${applicationId}.app in $destinationDir")
+//            copyItem.forEach { (sourcePath, destPath) ->
+//                var dest = appBundle.resolve(destPath)?.normalize()
+//                    ?: throw GradleException("Cannot find ${destPath} in $appBundle")
+//                ProcessBuilder().run {
+//                    command("cp", "-r", sourcePath.absolutePath, dest.absolutePath)
+//                    inheritIO()
+//                    start()
+//                }.waitFor().let {
+//                    if (it != 0) {
+//                        throw GradleException("Failed to copy $sourcePath")
+//                    }
+//                }
+//                println("Copied $sourcePath to $dest")
 //            }
 //        }
 //    }
+
+
+    // copy native lib for windows
+    tasks.named<AbstractJLinkTask>("createRuntimeImage") {
+        val javaHome = System.getProperty("java.home")
+        val copyItem = listOf(
+            // 1. jcef
+            "bin/jcef_helper.exe" to "bin/jcef_helper.exe",
+            "bin/icudtl.dat" to "bin/icudtl.dat",
+        ).map {
+            val source = File(javaHome).resolve(it.first).normalize()
+            source to it.second
+        }
+        copyItem.forEach {
+            inputs.file(it.first)
+        }
+
+        doLast("copy native lib") {
+            copyItem.forEach { (source, destPath) ->
+                val dest = destinationDir.file(destPath)
+                val destFile = dest.get().asFile
+                source.copyTo(dest.get().asFile)
+                println("copied $source to $destFile")
+            }
+        }
+    }
 }
 
