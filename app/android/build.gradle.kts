@@ -1,6 +1,6 @@
 import com.android.build.gradle.tasks.MergeSourceSetFolders
 
-apply(from = "../build_common/easy_build_config.gradle.kts")
+apply(from = "../build_common/property_loader.gradle.kts")
 
 plugins {
     alias(builds.plugins.androidApplication)

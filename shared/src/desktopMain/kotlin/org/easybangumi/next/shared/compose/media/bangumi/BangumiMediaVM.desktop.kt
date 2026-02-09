@@ -1,11 +1,19 @@
 package org.easybangumi.next.shared.compose.media.bangumi
 
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.easybangumi.next.libplayer.api.C
 import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
 import org.easybangumi.next.shared.compose.media.MediaParam
+import org.easybangumi.next.shared.playcon.BasePlayconViewModel
 import org.easybangumi.next.shared.playcon.desktop.DesktopPlayerVM
 
 /**
@@ -23,6 +31,8 @@ class DesktopBangumiMediaVM(
     val param: MediaParam,
 ): BaseViewModel() {
 
+    val showMediaPage = mutableStateOf(true)
+
     val commonVM: BangumiMediaCommonVM by childViewModel {
         BangumiMediaCommonVM(param)
     }
@@ -39,7 +49,50 @@ class DesktopBangumiMediaVM(
                 playerVM.onPlayInfoChange(it)
             }
         }
+        viewModelScope.launch {
+            snapshotFlow {
+                playerVM.playconVM.screenMode
+            }.collectLatest { screenMode ->
+                commonVM.sta.update {
+                    it.copy(
+                        isFullscreen = screenMode == BasePlayconViewModel.ScreenMode.FULLSCREEN,
+//                        isTableMode = playerVM.screenMode == DesktopPlayerVM.ScreenMode.TABLE
+                    )
+                }
+            }
+
+        }
+    }
+    private var saveJob: Job? = null
+
+
+    fun onLaunch() {
+        saveJob?.cancel()
+        saveJob = viewModelScope.launch {
+            while (true) {
+                delay(10000)
+                trySaveHistory()
+            }
+        }
+    }
+
+    fun onDispose() {
+        saveJob?.cancel()
+        trySaveHistory()
     }
 
 
+    fun trySaveHistory() {
+        val state = playerVM.vlcjPlayerBridge.playStateFlow.value
+        if (state == C.State.BUFFERING || state == C.State.READY || state == C.State.ENDED) {
+            val pos = playerVM.vlcjPlayerBridge.positionMs
+            if (pos != C.TIME_UNSET && pos > 0) {
+                viewModelScope.launch {
+                    commonVM.trySaveHistory(pos)
+                }
+            }
+        }
+
+
+    }
 }

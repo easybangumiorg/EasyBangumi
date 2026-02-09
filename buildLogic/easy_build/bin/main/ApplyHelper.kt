@@ -199,15 +199,6 @@ object ApplyHelper {
 
         project.extensions.configure<KotlinProjectExtension>() {
             jvmToolchain(JAVA_VERSION_INT)
-
-//            if (provider.optMd3Api) {
-//                sourceSets.all {
-//                    languageSettings.apply {
-//                        // 为所有 Material3 实验性 API 启用
-//                        optIn("androidx.compose.material3.ExperimentalMaterial3Api")
-//                    }
-//                }
-//            }
         }
 
 

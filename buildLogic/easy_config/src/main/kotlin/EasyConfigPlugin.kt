@@ -2,6 +2,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.TaskCollection
+import org.gradle.internal.extensions.core.extra
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.withType
@@ -38,9 +39,15 @@ abstract class EasyConfigPlugin: Plugin<Project> {
         setupGradleSync(target)
 
         target.afterEvaluate {
-            val isRelease = target.gradle.startParameter.taskNames.any {
-                it.startsWith("packageRelease") || it.startsWith("assembleRelease")
+            var isRelease = target.gradle.startParameter.taskNames.any {
+                it.contains("release")  || it.contains("Release")
             }
+            isRelease = runCatching {
+                project.findProperty("is_release_build")?.toString()?.toBoolean()
+            }.getOrNull() ?: isRelease
+            isRelease = runCatching {
+                project.extra.get("is_release_build")?.toString()?.toBoolean()
+            }.getOrNull() ?: isRelease
             val taskToAdd = target.tasks.register<Task>("addToSourceSet") {
                 group = "easyConfig"
                 description = "Adds the generated source directory to the source set for ${if (isRelease) "release" else "debug"} build type."

@@ -6,7 +6,10 @@ import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.URLProtocol
+import io.ktor.http.decodeURLPart
+import io.ktor.http.decodeURLQueryComponent
 import io.ktor.http.encodeURLPath
+import io.ktor.http.parameters
 import io.ktor.http.path
 import io.ktor.util.reflect.TypeInfo
 import io.ktor.utils.io.ByteReadChannel
@@ -14,6 +17,7 @@ import org.easybangumi.next.shared.source.bangumi.BangumiConfig
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.shared.source.bangumi.model.BgmRsp
 import org.easybangumi.next.shared.data.bangumi.BgmTrendsSubject
+import kotlin.collections.map
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -78,10 +82,15 @@ class BangumiRankingEmbedProxyHandler(
             builder.url {
                 host = bangumiConfig.htmlHost
                 protocol = URLProtocol.HTTPS
-
-                path("subject_search", keyword.encodeURLPath(encodeSlash = true))
+                // path 函数会自动 encodeURLPath(false)，这里需要 encodeURLPath(true)
+                encodedPathSegments = listOf(
+                    "subject_search", keyword.encodeURLPath(true)
+                )
                 parameters.set("cat", "2")
                 parameters.set("page", page ?: "1")
+                this.toString().apply {
+                    logger.info("search url: $this")
+                }
             }
             return true
         }

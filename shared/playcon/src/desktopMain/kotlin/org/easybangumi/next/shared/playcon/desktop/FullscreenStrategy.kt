@@ -30,7 +30,7 @@ class FullscreenStrategy(
 
     fun exitFullscreen() {
         val windowState = windowState()
-        windowState.placement = lastPlacement ?: WindowPlacement.Floating
+        windowState.placement = WindowPlacement.Floating
     }
 
     fun isFullscreen(): Boolean {

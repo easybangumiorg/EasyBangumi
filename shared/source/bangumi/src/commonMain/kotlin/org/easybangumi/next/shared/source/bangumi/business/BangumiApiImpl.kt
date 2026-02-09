@@ -166,6 +166,7 @@ class BangumiApiImpl(
             get {
                 bgmUrl {
                     path("v0", "users", username, "collections")
+                    parameters.append("subject_type", "2")
                     parameters.append("type", type.toString())
                     parameters.append("offset", offset.toString())
                     parameters.append("limit", limit.toString())

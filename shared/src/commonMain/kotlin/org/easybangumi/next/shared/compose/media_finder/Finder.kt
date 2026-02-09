@@ -55,9 +55,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import org.easybangumi.next.shared.compose.media_finder_old.logger
-import org.easybangumi.next.shared.compose.media_finder_old.radar.MediaRadar
-import org.easybangumi.next.shared.compose.media_finder_old.search.MediaSearcher
+import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.shared.foundation.stringRes
 import org.easybangumi.next.shared.resources.Res
 
@@ -72,6 +70,7 @@ import org.easybangumi.next.shared.resources.Res
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
+internal val logger = logger("MediaFinder")
 @Composable
 fun MediaFinderHost(
     vm: MediaFinderVM

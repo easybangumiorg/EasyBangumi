@@ -1,23 +1,16 @@
 ﻿package org.easybangumi.next.jcef
 
 import com.jetbrains.cef.JCefAppConfig
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.cef.CefApp
 import org.cef.CefSettings
 import org.cef.misc.CefLog
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.coroutineProvider
 import org.easybangumi.next.lib.utils.pathProvider
-import org.slf4j.Logger
-import java.awt.EventQueue
 import java.io.File
 import java.text.SimpleDateFormat
-import java.util.Locale
+import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.concurrent.thread
 
