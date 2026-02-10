@@ -1,5 +1,6 @@
 package org.easybangumi.next.shared.bangumi.login
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -9,6 +10,7 @@ import org.cef.browser.CefBrowser
 import org.cef.browser.CefFrame
 import org.cef.browser.CefRendering
 import org.cef.browser.CefRequestContext
+import org.cef.handler.CefLoadHandler
 import org.cef.handler.CefResourceRequestHandlerAdapter
 import org.cef.network.CefRequest
 import org.easybangumi.next.jcef.JcefManager
@@ -51,8 +53,41 @@ class BangumiLoginVM : StateViewModel<BangumiLoginVM.State>(State.Idle, true) {
         data class ErrorAndExit(val errorMsg: String): State()
     }
 
+    val isBrowserLoading = mutableStateOf(false)
+
     private val bangumiAccountController: BangumiAccountController by inject()
     private val bangumiApi: BangumiApi by inject()
+
+    private val loadHandler = object: CefLoadHandler {
+        override fun onLoadingStateChange(
+            p0: CefBrowser?,
+            p1: Boolean,
+            p2: Boolean,
+            p3: Boolean
+        ) {
+            if (p1 && p0 == (state.value as? State.ShowJcef)?.browser) {
+                isBrowserLoading.value = true
+            } else {
+                isBrowserLoading.value = false
+            }
+        }
+
+        override fun onLoadStart(
+            p0: CefBrowser?,
+            p1: CefFrame?,
+            p2: CefRequest.TransitionType?
+        ) {}
+
+        override fun onLoadEnd(p0: CefBrowser?, p1: CefFrame?, p2: Int) {}
+
+        override fun onLoadError(
+            p0: CefBrowser?,
+            p1: CefFrame?,
+            p2: CefLoadHandler.ErrorCode?,
+            p3: String?,
+            p4: String?
+        ) {}
+    }
 
     private val requestHandlerAdapter = object : CefResourceRequestHandlerAdapter() {
         override fun onBeforeResourceLoad(browser: CefBrowser?, frame: CefFrame?, request: CefRequest?): Boolean {
@@ -112,7 +147,7 @@ class BangumiLoginVM : StateViewModel<BangumiLoginVM.State>(State.Idle, true) {
                             }
                             return@runOnJcefContext
                         }
-
+                        client.addLoadHandler(loadHandler)
                         val browser = client.createBrowser(
                             bangumiApi.getLoginPageUrl(sta),
                             CefRendering.DEFAULT,

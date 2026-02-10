@@ -1,49 +1,26 @@
 ﻿package org.easybangumi.next.shared.compose.detail.bangumi
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.Key.Companion.R
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import dev.icerock.moko.resources.compose.stringResource
-import org.easybangumi.next.shared.debug.DebugPage
 import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.DataState
-import org.easybangumi.next.platformInformation
 import org.easybangumi.next.shared.LocalNavController
-import org.easybangumi.next.shared.RouterPage
 import org.easybangumi.next.shared.compose.common.collect_dialog.CartoonCollectDialog
+import org.easybangumi.next.shared.data.bangumi.BgmSubject
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.foundation.InputMode
 import org.easybangumi.next.shared.foundation.LocalUIMode
@@ -53,9 +30,6 @@ import org.easybangumi.next.shared.foundation.scroll_header.rememberScrollableHe
 import org.easybangumi.next.shared.foundation.shimmer.rememberShimmerState
 import org.easybangumi.next.shared.foundation.view_model.vm
 import org.easybangumi.next.shared.scheme.EasyScheme
-import org.easybangumi.next.shared.data.bangumi.BgmSubject
-import org.easybangumi.next.shared.foundation.stringRes
-import org.easybangumi.next.shared.resources.Res
 import kotlin.math.absoluteValue
 
 /**
@@ -111,6 +85,7 @@ fun BangumiDetail(
     ) {
         scrollableHeaderState.offset.absoluteValue >= (scrollableHeaderState.offsetLimit.absoluteValue - 20)
     }
+
 
     val nav = LocalNavController.current
     Box(modifier) {

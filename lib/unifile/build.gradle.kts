@@ -33,6 +33,8 @@ kotlin {
             implementation(projects.logger)
             implementation(projects.lib.serialization)
 
+            implementation(libs.koin.core)
+
         }
 
         commonTest.dependencies {

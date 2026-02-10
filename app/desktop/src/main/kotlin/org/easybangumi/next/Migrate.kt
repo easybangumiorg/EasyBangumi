@@ -1,7 +1,4 @@
-package org.easybangumi.next.shared.playcon.desktop
-
-import androidx.compose.ui.window.WindowPlacement
-import androidx.compose.ui.window.WindowState
+package org.easybangumi.next
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -13,15 +10,16 @@ import androidx.compose.ui.window.WindowState
  *    You may obtain a copy of the License at
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *  先简单写，后续再优化
  */
-interface FullscreenStrategy {
+object Migrate {
 
-    fun enterFullscreen()
+    fun needMigrate(): Boolean {
+        // 判断是否需要迁移
+        return false
+    }
 
-    fun exitFullscreen()
-
-    fun isFullscreen(): Boolean
+    suspend fun migrate() {
+        // 迁移数据
+    }
 
 }

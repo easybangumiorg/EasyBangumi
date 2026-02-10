@@ -110,6 +110,9 @@ object JcefManager {
         return newApp
     }
 
+    fun tryPreload() {
+        runOnJcefContext(false) {}
+    }
     private fun initCefApp(): CefApp? {
         if (init.compareAndSet(false, true)) {
             Runtime.getRuntime().addShutdownHook(

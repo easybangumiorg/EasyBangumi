@@ -7,12 +7,19 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import org.easybangumi.next.shared.LocalNavController
 import org.easybangumi.next.shared.compose.media.bangumi.DesktopBangumiMediaVM
 import org.easybangumi.next.shared.playcon.BasePlayconViewModel
@@ -22,6 +29,7 @@ import org.easybangumi.next.shared.playcon.pointer.DuringText
 import org.easybangumi.next.shared.playcon.pointer.FullScreenBtn
 import org.easybangumi.next.shared.playcon.pointer.PlayPauseBtn
 import org.easybangumi.next.shared.playcon.pointer.PlayconBottomBar
+import org.easybangumi.next.shared.playcon.pointer.PlayconBottomBarDoubleLine
 import org.easybangumi.next.shared.playcon.pointer.PointerPlaycon
 import org.easybangumi.next.shared.playcon.pointer.PointerPlayconContentScope
 import org.easybangumi.next.shared.playcon.pointer.PositionText
@@ -101,17 +109,25 @@ fun PointerPlayconContentScope.ControllerContent(
         ) {
 
             if (!isLock && isShowController) {
-                this@ControllerContent.PlayconBottomBar(
-                    modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter)
-                ) {
-                    PlayPauseBtn()
-                    PositionText()
-                    TimeSeekBar(Modifier.weight(1f))
-                    DuringText()
-                    FullScreenBtn(onFullScreenChange = {
-                        onFullScreenChange(it)
-                    })
-                }
+                this@ControllerContent.PlayconBottomBarDoubleLine(
+                    modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter),
+                    firstLine = {
+                        TimeSeekBar(Modifier.fillMaxWidth().padding(8.dp, 8.dp))
+                    },
+                    secondLine = {
+                        PlayPauseBtn()
+                        PositionText()
+                        Text("/",
+                            color = Color.White,
+                            textAlign = TextAlign.Center)
+                        DuringText()
+                        Spacer(Modifier.weight(1f))
+
+                        FullScreenBtn(onFullScreenChange = {
+                            onFullScreenChange(it)
+                        })
+                    },
+                )
                 this@ControllerContent.BackBtn {
                     onBack()
                 }

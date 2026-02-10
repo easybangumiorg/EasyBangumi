@@ -1,7 +1,11 @@
 package org.easybangumi.next.lib.utils
 
+import android.content.ComponentName
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
 import java.util.concurrent.Executors
 
@@ -18,6 +22,14 @@ import java.util.concurrent.Executors
  */
 
 private class CoroutineProviderImpl : CoroutineProvider {
+
+    private val globalCoroutineScope: CoroutineScope by lazy {
+        CoroutineScope(SupervisorJob() + CoroutineName("GlobalScope") + main() )
+    }
+
+    override fun globalScope(): CoroutineScope {
+        return globalCoroutineScope
+    }
 
     private val singleThreadExecutor: CoroutineDispatcher by lazy {
         Executors.newSingleThreadExecutor().asCoroutineDispatcher()

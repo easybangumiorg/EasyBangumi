@@ -48,7 +48,7 @@ fun ApplicationScope.PanicApp(
             Column(
                 modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
             ) {
-                Text("哎呀，怎么全错了!")
+                Text("哎呀，怎么全坏了!")
                 Text("操作系统：${platformInformation.platformName}")
                 Text("软件版本：${platformInformation.versionName}")
                 Text("软件版本：${platformInformation.versionCode}")

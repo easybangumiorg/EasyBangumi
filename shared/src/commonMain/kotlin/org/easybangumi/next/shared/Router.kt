@@ -8,7 +8,6 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavBackStackEntry
@@ -18,19 +17,18 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import org.easybangumi.next.shared.debug.DebugHost
-import org.easybangumi.next.shared.debug.DebugPage
 import kotlinx.serialization.Serializable
-import org.easybangumi.next.lib.utils.WeakRef
 import org.easybangumi.next.shared.bangumi.login.BangumiLoginHost
-import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.compose.detail.Detail
 import org.easybangumi.next.shared.compose.home.Home
 import org.easybangumi.next.shared.compose.media.Media
 import org.easybangumi.next.shared.compose.media.MediaParam
 import org.easybangumi.next.shared.compose.search.Search
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
+import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.data.cartoon.CartoonInfo
+import org.easybangumi.next.shared.debug.DebugHost
+import org.easybangumi.next.shared.debug.DebugPage
 import org.easybangumi.next.shared.source.bangumi.source.BangumiInnerSource
 
 /**
@@ -48,10 +46,6 @@ import org.easybangumi.next.shared.source.bangumi.source.BangumiInnerSource
 val LocalNavController = staticCompositionLocalOf<NavHostController> {
     error("AppNavController Not Provide")
 }
-
-internal var innerNavControllerRef: WeakRef<NavHostController>? = null
-val navController: NavHostController? get() = innerNavControllerRef?.targetOrNull
-
 
 sealed class RouterPage {
     @Serializable
@@ -169,15 +163,15 @@ expect fun AnimatedContentScope.NavHook(
 )
 
 @Composable
-fun Router() {
-    val navController = rememberNavController()
-    LaunchedEffect(Unit) {
-        innerNavControllerRef = WeakRef(navController)
-    }
+fun Router(
+    navController: NavHostController = rememberNavController(),
+    initRoute: RouterPage = RouterPage.DEFAULT,
+) {
     CompositionLocalProvider(LocalNavController provides navController) {
         // 所有页面都尽量走 NavHook
         NavHost(
-            navController, RouterPage.DEFAULT,
+            navController,
+            initRoute,
             modifier = Modifier.fillMaxSize(),
             enterTransition = { slideInHorizontally(tween()) { it } },
             exitTransition = { slideOutHorizontally(tween()) { -it } + fadeOut(tween()) },

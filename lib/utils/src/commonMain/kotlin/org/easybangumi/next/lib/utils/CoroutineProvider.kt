@@ -1,6 +1,7 @@
 package org.easybangumi.next.lib.utils
 
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -14,6 +15,7 @@ import kotlinx.coroutines.CoroutineDispatcher
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 interface CoroutineProvider {
+    fun globalScope(): CoroutineScope
     fun io(): CoroutineDispatcher
     fun main(): CoroutineDispatcher
     fun single(): CoroutineDispatcher

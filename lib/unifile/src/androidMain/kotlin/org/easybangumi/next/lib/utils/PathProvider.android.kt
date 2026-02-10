@@ -11,7 +11,7 @@ actual interface PathProvider {
     actual fun getCachePath(type: String): UFD
 }
 
-private class PathProviderImpl : PathProvider {
+class PathProviderImpl : PathProvider {
 
     val logger = logger()
 
@@ -36,8 +36,4 @@ private class PathProviderImpl : PathProvider {
         val file = File(cachePathRoot, type)
         return UFD(UFD.TYPE_JVM, file.absolutePath)
     }
-}
-
-actual val pathProvider: PathProvider by lazy {
-    PathProviderImpl()
 }

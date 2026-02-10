@@ -1,9 +1,8 @@
 package org.easybangumi.next
 
 import android.app.Application
+import android.content.Context
 import org.easybangumi.next.crash.CrashHandler
-import org.easybangumi.next.shared.Scheduler
-import javax.net.ssl.HttpsURLConnection
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -17,6 +16,10 @@ import javax.net.ssl.HttpsURLConnection
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 class EasyApplication : Application() {
+
+    override fun attachBaseContext(base: Context?) {
+        super.attachBaseContext(base)
+    }
 
     override fun onCreate() {
         super.onCreate()

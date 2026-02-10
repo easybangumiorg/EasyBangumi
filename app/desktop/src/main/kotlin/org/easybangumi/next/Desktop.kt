@@ -1,21 +1,18 @@
 package org.easybangumi.next
 
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import org.easybangumi.next.bangumi.BangumiAppConfigProviderImpl
 import org.easybangumi.next.lib.logger.logger
-import org.easybangumi.next.lib.utils.coroutineProvider
-import org.easybangumi.next.platform.DesktopPlatform
+import org.easybangumi.next.lib.utils.PathProvider
+import org.easybangumi.next.lib.utils.PathProviderImpl
 import org.easybangumi.next.libplayer.vlcj.VlcjBridgeManager
+import org.easybangumi.next.platform.DesktopPlatform
 import org.easybangumi.next.shared.playcon.desktop.FullscreenStrategy
-import org.easybangumi.next.shared.source.bangumi.BangumiAppConfig
 import org.easybangumi.next.shared.source.bangumi.BangumiAppConfigProvider
 import org.koin.core.context.loadKoinModules
 import org.koin.core.context.startKoin
 import org.koin.dsl.bind
 import org.koin.dsl.binds
 import org.koin.dsl.module
-import org.koin.mp.KoinPlatform
 import uk.co.caprica.vlcj.factory.MediaPlayerFactory
 
 
@@ -37,10 +34,21 @@ object Desktop {
     val logger = logger("Desktop")
 
     suspend fun onInit() {
-        
         logger.debug("Desktop initialization started")
         startKoin {
             loadKoinModules(module {
+                single {
+                    logger.debug("Initializing PathProviderImpl for Desktop")
+                    PathProviderImpl(
+                        when(get<Platform>().hostOs) {
+                            DesktopHostOs.Linux -> PathProviderImpl.PLATFORM_LINUX
+                            DesktopHostOs.MacOS -> PathProviderImpl.PLATFORM_MACOS
+                            DesktopHostOs.Windows -> PathProviderImpl.PLATFORM_WINDOWS
+                            else -> throw IllegalStateException("Unsupported OS: ${platformInformation.hostOs}")
+                        }
+                    )
+                }.bind(PathProvider::class)
+
                 factory {
                     MediaPlayerFactory()
                 }.bind()
@@ -66,21 +74,13 @@ object Desktop {
                 }.binds(arrayOf(BangumiAppConfigProvider::class))
 
 
-                single {
-                    FullscreenStrategy(
-                        windowState = { get<WindowController>().getFirstWindowState() ?: throw IllegalStateException() },
-                    )
-                }
+//                single {
+//                    FullscreenStrategy(
+//                        windowState = { get<WindowController>().getFirstWindowState() ?: throw IllegalStateException() },
+//                    )
+//                }
             })
         }
-
-        coroutineScope() {
-            async(coroutineProvider.io()) {
-                // 预加载 vlcj
-                KoinPlatform.getKoin().get<VlcjBridgeManager>().preloadVlc()
-            }
-        }
-
     }
 
 }

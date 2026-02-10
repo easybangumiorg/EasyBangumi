@@ -1,7 +1,7 @@
-package org.easybangumi.next.shared.playcon.desktop
+package org.easybangumi.next.shared
 
-import androidx.compose.ui.window.WindowPlacement
-import androidx.compose.ui.window.WindowState
+import androidx.compose.runtime.Composable
+import org.easybangumi.next.shared.window.EasyWindowController
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -13,15 +13,8 @@ import androidx.compose.ui.window.WindowState
  *    You may obtain a copy of the License at
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *  先简单写，后续再优化
  */
-interface FullscreenStrategy {
-
-    fun enterFullscreen()
-
-    fun exitFullscreen()
-
-    fun isFullscreen(): Boolean
-
+@Composable
+actual fun ComposeApp() {
+    EasyWindowController.EasyWindowHost()
 }

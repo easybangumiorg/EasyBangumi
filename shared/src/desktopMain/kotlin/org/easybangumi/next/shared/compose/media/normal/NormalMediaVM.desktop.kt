@@ -1,5 +1,6 @@
 ﻿package org.easybangumi.next.shared.compose.media.normal
 
+import androidx.compose.ui.window.WindowPlacement
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
@@ -8,6 +9,7 @@ import org.easybangumi.next.shared.compose.media.MediaParam
 import org.easybangumi.next.shared.compose.media.bangumi.BangumiMediaCommonVM
 import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
 import org.easybangumi.next.shared.playcon.desktop.DesktopPlayerVM
+import org.easybangumi.next.shared.playcon.desktop.FullscreenStrategy
 
 
 /**
@@ -30,9 +32,27 @@ class DesktopNormalMediaVM(
         NormalMediaCommonVM(param)
     }
 
+    val fullscreenStrategy = object: FullscreenStrategy {
+        override fun enterFullscreen() {
+//            windowState.value?.let {
+//                it.state.placement = WindowPlacement.Fullscreen
+//            }
+        }
+
+        override fun exitFullscreen() {
+//            windowState.value?.let {
+//                it.state.placement = WindowPlacement.Floating
+//            }
+        }
+
+        override fun isFullscreen(): Boolean {
+            return false//windowState.value?.state?.placement == WindowPlacement.Fullscreen
+        }
+    }
+
     // == 播放状态 =============================
     val playerVM: DesktopPlayerVM by childViewModel {
-        DesktopPlayerVM()
+        DesktopPlayerVM(fullscreenStrategy)
     }
 
     init {

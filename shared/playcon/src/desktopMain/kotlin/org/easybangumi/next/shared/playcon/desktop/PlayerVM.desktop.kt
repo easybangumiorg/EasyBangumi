@@ -29,13 +29,13 @@ import org.koin.core.component.inject
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-class DesktopPlayerVM: BaseViewModel() {
+class DesktopPlayerVM(
+    val fullscreenStrategy: FullscreenStrategy
+): BaseViewModel() {
 
     companion object {
         const val MEDIA_COMPONENT_ASPECT = 16f / 9f
     }
-
-    private val fullscreenStrategy: FullscreenStrategy by inject()
 
     val vlcjManager: VlcjBridgeManager by inject()
     val vlcjPlayerBridge: VlcjPlayerBridge by lazy {

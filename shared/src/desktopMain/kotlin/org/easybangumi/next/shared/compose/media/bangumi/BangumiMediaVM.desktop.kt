@@ -2,6 +2,8 @@ package org.easybangumi.next.shared.compose.media.bangumi
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.window.WindowPlacement
+import androidx.compose.ui.window.WindowState
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -10,11 +12,14 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.easybangumi.next.lib.utils.coroutineProvider
 import org.easybangumi.next.libplayer.api.C
 import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
 import org.easybangumi.next.shared.compose.media.MediaParam
 import org.easybangumi.next.shared.playcon.BasePlayconViewModel
 import org.easybangumi.next.shared.playcon.desktop.DesktopPlayerVM
+import org.easybangumi.next.shared.playcon.desktop.FullscreenStrategy
+import org.easybangumi.next.shared.window.EasyWindowState
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -39,7 +44,25 @@ class DesktopBangumiMediaVM(
 
     // == 播放状态 =============================
     val playerVM: DesktopPlayerVM by childViewModel {
-        DesktopPlayerVM()
+        DesktopPlayerVM(fullscreenStrategy)
+    }
+
+    val fullscreenStrategy = object: FullscreenStrategy {
+        override fun enterFullscreen() {
+            windowState.value?.let {
+                it.state.placement = WindowPlacement.Fullscreen
+            }
+        }
+
+        override fun exitFullscreen() {
+            windowState.value?.let {
+                it.state.placement = WindowPlacement.Floating
+            }
+        }
+
+        override fun isFullscreen(): Boolean {
+            return windowState.value?.state?.placement == WindowPlacement.Fullscreen
+        }
     }
 
     init {
@@ -63,10 +86,13 @@ class DesktopBangumiMediaVM(
 
         }
     }
+    private var windowState = mutableStateOf<EasyWindowState?>(null)
     private var saveJob: Job? = null
 
 
-    fun onLaunch() {
+    fun onLaunch(
+        easyWindowState: EasyWindowState,
+    ) {
         saveJob?.cancel()
         saveJob = viewModelScope.launch {
             while (true) {
@@ -74,6 +100,7 @@ class DesktopBangumiMediaVM(
                 trySaveHistory()
             }
         }
+        windowState.value = easyWindowState
     }
 
     fun onDispose() {
@@ -87,7 +114,7 @@ class DesktopBangumiMediaVM(
         if (state == C.State.BUFFERING || state == C.State.READY || state == C.State.ENDED) {
             val pos = playerVM.vlcjPlayerBridge.positionMs
             if (pos != C.TIME_UNSET && pos > 0) {
-                viewModelScope.launch {
+                viewModelScope.launch(coroutineProvider.io()) {
                     commonVM.trySaveHistory(pos)
                 }
             }

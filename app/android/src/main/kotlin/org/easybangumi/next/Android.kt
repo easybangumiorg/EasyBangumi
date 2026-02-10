@@ -3,6 +3,8 @@ package org.easybangumi.next
 import android.webkit.CookieManager
 import androidx.media3.exoplayer.ExoPlayer
 import org.easybangumi.next.bangumi.BangumiAppConfigProviderImpl
+import org.easybangumi.next.lib.utils.PathProvider
+import org.easybangumi.next.lib.utils.PathProviderImpl
 import org.easybangumi.next.platform.AndroidPlatform
 import org.easybangumi.next.shared.foundation.ActivityController
 import org.easybangumi.next.shared.source.bangumi.BangumiAppConfig
@@ -34,6 +36,10 @@ object Android {
             androidContext(application)
 
             loadKoinModules(module {
+                single {
+                    PathProviderImpl()
+                }.bind(PathProvider::class)
+
                 single {
                     AndroidPlatform
                 }.bind(Platform::class)

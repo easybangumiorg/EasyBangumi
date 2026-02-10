@@ -3,11 +3,11 @@
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.paging.cachedIn
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.PagingFlow
 import org.easybangumi.next.lib.utils.ResourceOr
@@ -16,7 +16,7 @@ import org.easybangumi.next.shared.RouterPage
 import org.easybangumi.next.shared.cartoon.collection.BgmCollectInfoVM
 import org.easybangumi.next.shared.case.BangumiCase
 import org.easybangumi.next.shared.compose.bangumi.comment.BangumiCommentVM
-import org.easybangumi.next.shared.data.CartoonInfoCase
+import org.easybangumi.next.shared.compose.media.navigation
 import org.easybangumi.next.shared.data.bangumi.*
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
@@ -235,33 +235,27 @@ class BangumiDetailVM(
 
     fun onEpisodeClick(
         episode: BgmEpisode,
-        navController: NavController,
+        navController: NavHostController,
     ) {
         val sub = state.value.subjectState.okOrNull() ?: return
-
-        navController.navigate(
-            RouterPage.Media.from(
-                cartoonIndex = sub.cartoonIndex,
-                cartoonCover = sub.cartoonCover,
-                suggestEpisode = episode.ep?.toInt()?.let { it - 1 },
-            )
-        )
+        RouterPage.Media.from(
+            cartoonIndex = sub.cartoonIndex,
+            cartoonCover = sub.cartoonCover,
+            suggestEpisode = episode.ep?.toInt()?.let { it - 1 },
+        ).navigation(navController, true)
 
     }
 
 
     fun onPlayClick(
-        navController: NavController,
+        navController: NavHostController,
     ) {
         val sub = state.value.subjectState.okOrNull() ?: return
-
-        navController.navigate(
-            RouterPage.Media.from(
-                cartoonIndex = sub.cartoonIndex,
-                cartoonCover = sub.cartoonCover,
-                suggestEpisode = null,
-            )
-        )
+        RouterPage.Media.from(
+            cartoonIndex = sub.cartoonIndex,
+            cartoonCover = sub.cartoonCover,
+            suggestEpisode = null,
+        ).navigation(navController, true)
     }
 
 

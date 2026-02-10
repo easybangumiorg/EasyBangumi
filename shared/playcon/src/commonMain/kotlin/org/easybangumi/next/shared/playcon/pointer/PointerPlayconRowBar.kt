@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -81,6 +82,60 @@ fun PointerPlayconContentScope.PlayconBottomBar(
             )
         }
         scope.content()
+
+    }
+}
+
+@Composable
+fun PointerPlayconContentScope.PlayconBottomBarDoubleLine(
+    modifier: Modifier,
+    firstLine: @Composable PointerPlayconRowBarScope.() -> Unit = {},
+    secondLine: @Composable PointerPlayconRowBarScope.() -> Unit = {},
+) {
+    Row (
+        modifier.fillMaxWidth()
+            .background(
+                brush = Brush.verticalGradient(
+                    listOf(Color.Transparent, Color.Black)
+                )
+            ).padding(
+                16.dp, 4.dp
+            ).height(80.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterHorizontally),
+    ) {
+
+        Column(
+            modifier
+        ) {
+            Row(
+                modifier.fillMaxWidth().weight(1f),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                val scope = remember(this, this@PlayconBottomBarDoubleLine.vm) {
+                    PointerPlayconRowBarScopeImpl(
+                        this@PlayconBottomBarDoubleLine,
+                        this
+                    )
+                }
+                scope.firstLine()
+            }
+            Row (
+                modifier.fillMaxWidth().weight(1f),
+                verticalAlignment = Alignment.CenterVertically,
+            ){
+                val scope = remember(this, this@PlayconBottomBarDoubleLine.vm) {
+                    PointerPlayconRowBarScopeImpl(
+                        this@PlayconBottomBarDoubleLine,
+                        this
+                    )
+                }
+                scope.secondLine()
+            }
+        }
+
+
+
 
     }
 }
@@ -208,4 +263,14 @@ fun PointerPlayconRowBarScope.FullScreenBtn(
         tint = Color.White,
         contentDescription = null
     )
+}
+
+@Composable
+fun PointerPlayconRowBarScope.SpeedBtn(
+    diySpeed: Float,
+    onDiySpeedChange: (Float) -> Unit,
+    onSpeedChange: (Float) -> Unit,
+) {
+
+
 }

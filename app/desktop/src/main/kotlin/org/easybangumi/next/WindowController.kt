@@ -16,6 +16,13 @@ import androidx.compose.ui.window.WindowState
 class WindowController {
 
     private val windowStateList: MutableList<WindowState> = mutableListOf()
+    private var exitApplication: (()->Unit)? = null
+
+    fun bindExitApplication(
+        exitApplication: () -> Unit
+    ){
+        this.exitApplication = exitApplication
+    }
 
     fun addWindowState(windowState: WindowState) {
         windowStateList.add(windowState)
@@ -23,6 +30,9 @@ class WindowController {
 
     fun removeWindowState(windowState: WindowState) {
         windowStateList.remove(windowState)
+        if (windowStateList.isEmpty()) {
+            exitApplication?.invoke()
+        }
     }
 
     fun getFirstWindowState(): WindowState? {

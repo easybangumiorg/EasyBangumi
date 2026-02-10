@@ -31,7 +31,15 @@ actual interface PathProvider {
     fun getFileJvmPath(type: String): String
 }
 
-private class PathProviderImpl : PathProvider {
+class PathProviderImpl(
+    val platformType: Int,
+) : PathProvider {
+
+    companion object {
+        const val PLATFORM_MACOS = 1
+        const val PLATFORM_WINDOWS = 2
+        const val PLATFORM_LINUX = 3
+    }
 
     val logger = logger()
 
@@ -49,22 +57,13 @@ private class PathProviderImpl : PathProvider {
             return@lazy jvmCache
         }
 
-        // 2. 找 compose 资源目录的父目录
-        val comResCache = composeResourcePath?.let {
-            Path(it).parent?.resolve("cache")?.toAbsolutePath()?.pathString
+        // 2. 复用 filePath 逻辑
+        val fileCache = filePathRoot.let {
+            Path(it).resolve("cache").toAbsolutePath().pathString
         }
-        if (!comResCache.isNullOrEmpty()) {
-            logger.info( "find compose resource cache path: $comResCache")
-            return@lazy comResCache
-        }
-
-        // 3. 找用户目录
-        val userHome = System.getProperty("user.home")?.let {
-            Path(it).resolve("easybangumi.next").resolve("cache").toAbsolutePath().pathString
-        }
-        if (!userHome.isNullOrEmpty()) {
-            logger.info("find user home cache path: $userHome")
-            return@lazy userHome
+        if (!fileCache.isNullOrEmpty()) {
+            logger.info("find file cache path: $fileCache")
+            return@lazy fileCache
         }
 
         throw Exception("Desktop can not find cache path")
@@ -72,14 +71,26 @@ private class PathProviderImpl : PathProvider {
 
     private val filePathRoot: String by lazy {
 
-        // 1. 找 compose 资源目录的父目录
-        val comResFile = composeResourcePath?.let {
-            Path(it).parent?.resolve("file")?.toAbsolutePath()?.pathString
+        if (platformType == PLATFORM_MACOS) {
+            // mac 1. 找 compose 资源目录的父目录
+            val comResFile = composeResourcePath?.let {
+                Path(it).parent?.resolve("file")?.toAbsolutePath()?.pathString
+            }
+            if (!comResFile.isNullOrEmpty()) {
+                logger.info("find compose resource file path: $comResFile")
+                return@lazy comResFile
+            }
+        } else if ( platformType == PLATFORM_WINDOWS) {
+            // windows 1. 找 appdata 目录
+            val appDataFIle = System.getenv("APPDATA")?.let {
+                Path(it).resolve("easybangumi.next").toAbsolutePath().pathString
+            }
+            if (!appDataFIle.isNullOrEmpty()) {
+                logger.info("find windows appdata file path: $appDataFIle")
+                return@lazy appDataFIle
+            }
         }
-        if (!comResFile.isNullOrEmpty()) {
-            logger.info("find compose resource file path: $comResFile")
-            return@lazy comResFile
-        }
+
 
         // 2. 找用户目录
         val userHome = System.getProperty("user.home")?.let {
@@ -114,8 +125,4 @@ private class PathProviderImpl : PathProvider {
     override fun getFileJvmPath(type: String): String {
         return File(filePathRoot, type).absolutePath
     }
-}
-
-actual val pathProvider: PathProvider by lazy {
-    PathProviderImpl()
 }

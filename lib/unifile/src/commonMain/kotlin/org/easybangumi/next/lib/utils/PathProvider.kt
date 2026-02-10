@@ -1,6 +1,7 @@
 package org.easybangumi.next.lib.utils
 
 import org.easybangumi.next.lib.unifile.UFD
+import org.koin.mp.KoinPlatform
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -22,5 +23,7 @@ expect interface PathProvider {
 
 }
 
+val pathProvider: PathProvider
+    get() = KoinPlatform.getKoin().get<PathProvider>()
 
-expect val pathProvider: PathProvider
+

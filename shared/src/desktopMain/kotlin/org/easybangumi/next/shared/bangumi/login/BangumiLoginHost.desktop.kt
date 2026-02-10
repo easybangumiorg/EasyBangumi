@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Help
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -39,7 +41,11 @@ actual fun BangumiLoginHost() {
     val sta = vm.ui.value
     Column {
         TopAppBar(
-            title = {},
+            title = {
+                if (vm.isBrowserLoading.value) {
+                    CircularProgressIndicator(Modifier)
+                }
+            },
             navigationIcon =  {
                 IconButton(
                     onClick = {
@@ -58,6 +64,11 @@ actual fun BangumiLoginHost() {
                     ) {
                         Text("申请授权")
                     }
+                }
+                IconButton(onClick = {
+
+                }) {
+                    Icon(Icons.Filled.Help, null)
                 }
 
             }
@@ -85,25 +96,6 @@ actual fun BangumiLoginHost() {
                             Text(text = "操作登录后点击右上角申请授权", color = MaterialTheme.colorScheme.onSecondaryContainer)
                         }
 
-                        val isLoading = remember {
-                            mutableStateOf(true)
-                        }
-                        LaunchedEffect(sta) {
-                            while (true) {
-                                isLoading.value = sta.browser.isLoading
-                                delay(100)
-                            }
-                        }
-
-                        if (isLoading.value) {
-                            LoadingElements(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(MaterialTheme.colorScheme.primaryContainer),
-                                isRow = true,
-                                loadingMsg = "加载中..."
-                            )
-                        }
                         Box(Modifier.fillMaxWidth().weight(1f).clipToBounds()) {
                             SwingPanel(
                                 factory = {
