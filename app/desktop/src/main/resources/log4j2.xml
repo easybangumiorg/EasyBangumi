@@ -13,18 +13,19 @@
             <!-- 默认打印格式 -->
             <PatternLayout pattern="${Pattern}"/>
         </Console>
-<!--        &lt;!&ndash; 打印到日志文件上 &ndash;&gt;-->
-<!--        <File name="FileAppend" fileName="${dir_url}/fileLog.log" bufferedIO="true" immediateFlush="true">-->
-<!--            <PatternLayout>-->
-<!--                <pattern>${myPattern}</pattern>-->
-<!--            </PatternLayout>-->
-<!--        </File>-->
+        <!-- 打印到日志文件上 -->
+        <File name="FileAppend" fileName="C:\Program Files\纯纯看番 Next\fileLog.log" bufferedIO="true" immediateFlush="true">
+            <PatternLayout>
+                <pattern>${Pattern}</pattern>
+            </PatternLayout>
+        </File>
     </Appenders>
     <!--定义logger，只有定义了logger并引入的appender，appender才会生效-->
     <Loggers>
         <!-- 设置日志级别为 DEBUG 以显示调试信息 -->
         <Root level="DEBUG">
             <AppenderRef ref="ConsoleAppend"/>
+<!--            <AppenderRef ref="FileAppend"/>-->
         </Root>
     </Loggers>
 </Configuration>
