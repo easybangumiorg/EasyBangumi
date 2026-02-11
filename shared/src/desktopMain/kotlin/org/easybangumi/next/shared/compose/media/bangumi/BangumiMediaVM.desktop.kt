@@ -12,14 +12,19 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.easybangumi.next.lib.store.preference.PreferenceStore
 import org.easybangumi.next.lib.utils.coroutineProvider
 import org.easybangumi.next.libplayer.api.C
+import org.easybangumi.next.libplayer.api.action
+import org.easybangumi.next.libplayer.api.action.SpeedAction
 import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
 import org.easybangumi.next.shared.compose.media.MediaParam
 import org.easybangumi.next.shared.playcon.BasePlayconViewModel
 import org.easybangumi.next.shared.playcon.desktop.DesktopPlayerVM
 import org.easybangumi.next.shared.playcon.desktop.FullscreenStrategy
 import org.easybangumi.next.shared.window.EasyWindowState
+import org.koin.core.component.inject
+import org.koin.java.KoinJavaComponent.inject
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -36,7 +41,28 @@ class DesktopBangumiMediaVM(
     val param: MediaParam,
 ): BaseViewModel() {
 
-    val showMediaPage = mutableStateOf(true)
+    val preferenceStore: PreferenceStore by inject()
+    val sidePanelWidthDp = preferenceStore.getInt("desktop_media_side_panel_width_dp", 280)
+    val diySpeedPref = preferenceStore.getFloat("desktop_media_diy_speed", 4.0f)
+    val diySpeedFlow = diySpeedPref.stateIn(viewModelScope)
+    val speedList = listOf(
+        0.5f, 1.0f, 1.5f, 2.0f
+    )
+    val currentSpeed = mutableStateOf(1.0f)
+    fun onEditDiySpeed() {
+
+    }
+
+    fun onSpeedChange(speed: Float) {
+        val action = playerVM.vlcjPlayerBridge.action(SpeedAction::class)
+        action?.setSpeed(speed)
+        currentSpeed.value = action?.getSpeed() ?: currentSpeed.value
+    }
+
+    fun saveSidePanelWidth(widthDp: Int) {
+        sidePanelWidthDp.set(widthDp)
+//        preferenceStore.putInt("desktop_media_side_panel_width_dp", widthDp)
+    }
 
     val commonVM: BangumiMediaCommonVM by childViewModel {
         BangumiMediaCommonVM(param)
@@ -112,7 +138,9 @@ class DesktopBangumiMediaVM(
     fun trySaveHistory() {
         val state = playerVM.vlcjPlayerBridge.playStateFlow.value
         if (state == C.State.BUFFERING || state == C.State.READY || state == C.State.ENDED) {
-            val pos = playerVM.vlcjPlayerBridge.positionMs
+            val pos = runCatching {
+                playerVM.vlcjPlayerBridge.positionMs
+            }.getOrNull() ?: C.TIME_UNSET
             if (pos != C.TIME_UNSET && pos > 0) {
                 viewModelScope.launch(coroutineProvider.io()) {
                     commonVM.trySaveHistory(pos)

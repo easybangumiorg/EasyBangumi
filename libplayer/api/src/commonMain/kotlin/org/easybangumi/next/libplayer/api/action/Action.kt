@@ -7,5 +7,5 @@ import org.easybangumi.next.libplayer.api.PlayerBridge
  */
 interface Action<B: PlayerBridge<*>> {
     fun onBind(bridge: B)
-    fun onUnbind(bridge: B)
+    fun onUnbind()
 }

@@ -30,7 +30,7 @@ import org.koin.core.component.inject
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 class DesktopPlayerVM(
-    val fullscreenStrategy: FullscreenStrategy
+    val fullscreenStrategy: FullscreenStrategy,
 ): BaseViewModel() {
 
     companion object {

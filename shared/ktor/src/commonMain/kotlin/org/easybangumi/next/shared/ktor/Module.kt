@@ -45,7 +45,7 @@ object GlobalKtorConfig : KtorConfig {
         config.install(Logging) {
             logger = object : Logger {
                 override fun log(message: String) {
-                    GlobalKtorConfig.logger.info("KtorClient: $message")
+//                    GlobalKtorConfig.logger.info("KtorClient: $message")
                 }
             }
             level = if (debug) LogLevel.ALL else LogLevel.INFO

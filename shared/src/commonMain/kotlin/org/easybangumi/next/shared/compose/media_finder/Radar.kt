@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -124,7 +125,7 @@ fun Radar(
                         )
                         Spacer(Modifier.width(4.dp))
                         if (tab.error) {
-                            Icon(Icons.Filled.Check, tint = MaterialTheme.colorScheme.error, contentDescription = null)
+                            Icon(Icons.Filled.Close, tint = MaterialTheme.colorScheme.error, contentDescription = null)
                         } else if (tab.loading) {
                             // 加载中动画
                             CircularProgressIndicator(
@@ -229,6 +230,13 @@ fun Radar(
                                         .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(6.dp))
                                         .clip(RoundedCornerShape(6.dp))
                                         .clickable {
+                                            vm.onUserResultSelect(
+                                                MediaFinderVM.SelectionResult(
+                                                    playCover = item.cover,
+                                                    manifest = item.businessPair.getManifest(),
+                                                    suggestPlayerLine = line,
+                                                )
+                                            )
 //                                    vm.onTagClick(tag.name)
                                         }
                                         .padding(horizontal = 8.dp, vertical = 8.dp),

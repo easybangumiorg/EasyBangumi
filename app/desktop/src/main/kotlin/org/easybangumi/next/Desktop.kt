@@ -1,9 +1,15 @@
 package org.easybangumi.next
 
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.runBlocking
 import org.easybangumi.next.bangumi.BangumiAppConfigProviderImpl
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.PathProvider
 import org.easybangumi.next.lib.utils.PathProviderImpl
+import org.easybangumi.next.lib.utils.coroutineProvider
+import org.easybangumi.next.libplayer.vlcj.VlcBridgeManagerProvider
 import org.easybangumi.next.libplayer.vlcj.VlcjBridgeManager
 import org.easybangumi.next.platform.DesktopPlatform
 import org.easybangumi.next.shared.playcon.desktop.FullscreenStrategy
@@ -57,12 +63,25 @@ object Desktop {
                 }.bind(Platform::class)
 
                 single {
-                    logger.debug("Creating VlcjBridgeManager with args: -vvv, --file-caching=2000, --network-caching=2000, --intf=dummy, --video-filter=canvas, --vout=any")
-                    VlcjBridgeManager(listOf(
-                        "-vvv",
-                        "--intf=dummy",
-                        "--vout=any"
-                    ))
+                    // 可能会阻塞
+                    runBlocking {
+                        logger.debug("Creating VlcjBridgeManager with args: -vvv, --file-caching=2000, --network-caching=2000, --intf=dummy, --video-filter=canvas, --vout=any")
+                        get<VlcBridgeManagerProvider>()
+                            .getManager()
+                    }
+                }
+                single {
+                    VlcBridgeManagerProvider(
+                        ioScope = CoroutineScope(SupervisorJob() + coroutineProvider.io() ),
+                        libvlcArgs = listOf(
+                            "-vvv",
+                            "--file-caching=2000",
+                            "--network-caching=2000",
+                            "--intf=dummy",
+                            "--video-filter=canvas",
+                            "--vout=any"
+                        )
+                    )
                 }
 
                 single {

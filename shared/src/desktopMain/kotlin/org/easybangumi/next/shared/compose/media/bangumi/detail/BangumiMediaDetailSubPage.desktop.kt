@@ -7,10 +7,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.dp
 import org.easybangumi.next.shared.compose.media.bangumi.BangumiMediaPageParam
 import org.easybangumi.next.shared.compose.media.mediaPlayLineIndex
+import org.easybangumi.next.shared.compose.media.mediaPlayLineIndexDesktop
 
 @Composable
 fun BangumiMediaDetailSubPageDesktop(param: BangumiMediaPageParam) {
@@ -18,7 +24,12 @@ fun BangumiMediaDetailSubPageDesktop(param: BangumiMediaPageParam) {
     val state = commonVM.state.collectAsState()
     val sta = state.value
     val playLineIndexState = commonVM.playIndexState.collectAsState()
-    Box(modifier = Modifier.fillMaxSize()) {
+    var width by remember {
+        mutableStateOf((-1))
+    }
+    Box(modifier = Modifier.fillMaxSize().onSizeChanged {
+        width = it.width
+    }) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(0.dp, 8.dp),
@@ -32,9 +43,9 @@ fun BangumiMediaDetailSubPageDesktop(param: BangumiMediaPageParam) {
             // 播放源卡片
             playerSourceCard(commonVM, sta)
             space(Modifier.height(8.dp))
-            divider()
+
             // 播放线路和集数选择
-            mediaPlayLineIndex(commonVM.playLineIndexVM, commonVM.playLineIndexVM.ui.value, 2)
+            mediaPlayLineIndexDesktop(commonVM.playLineIndexVM, commonVM.playLineIndexVM.ui.value, 2, width)
         }
 
     }

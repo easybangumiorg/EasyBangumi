@@ -28,15 +28,16 @@ abstract class AbsPlayerBridge<T: Any> : PlayerBridge<T> {
 
     @OptIn(ExperimentalAtomicApi::class)
     private val actionInit = AtomicBoolean(false)
-    private val actionMap = mutableMapOf<KClass<out Action<*>>, Action<*>>()
+    protected val actionMap = mutableMapOf<KClass<out Action<*>>, Action<*>>()
 
     @OptIn(ExperimentalAtomicApi::class)
-    override fun <A : Action<*>> action(): A? {
-        if (!actionInit.compareAndSet(expectedValue = false, newValue = true)) {
-            actionMap.putAll(prepareAction())
+    override fun <A : Action<*>> action(clazz: KClass<A>): A? {
+        if (actionInit.compareAndSet(expectedValue = false, newValue = true)) {
+            val map = prepareAction()
+            actionMap.putAll(map)
         }
         @Suppress("UNCHECKED_CAST")
-        return actionMap[Action::class] as? A
+        return actionMap[clazz] as? A
     }
 
     abstract fun prepareAction(): Map<KClass<out Action<*>>, Action<*>>

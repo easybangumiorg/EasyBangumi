@@ -35,10 +35,11 @@ actual fun NormalMedia(param: MediaParam) {
             ) {
                 MediaPlayer(
                     modifier = Modifier.fillMaxHeight().weight(1f).background(Color.Black),
-                    playerVm = vm.playerVM
-                ) {
-                    MediaPlayerFloat(vm)
-                }
+                    playerVm = vm.playerVM,
+                    float = {
+                        MediaPlayerFloat(vm)
+                    }
+                )
                 NormalMediaPage(
                     vm.commonVM,
                     Modifier.fillMaxHeight().width(384.dp)
@@ -51,10 +52,11 @@ actual fun NormalMedia(param: MediaParam) {
                 MediaPlayer(
                     modifier = Modifier.fillMaxWidth().aspectRatio(DesktopPlayerVM.MEDIA_COMPONENT_ASPECT)
                         .background(Color.Black),
-                    playerVm = vm.playerVM
-                ){
-                    MediaPlayerFloat(vm)
-                }
+                    playerVm = vm.playerVM,
+                    float = {
+                        MediaPlayerFloat(vm)
+                    }
+                )
                 NormalMediaPage(
                     vm.commonVM,
                     Modifier.fillMaxWidth().weight(1f)

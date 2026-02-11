@@ -2,6 +2,7 @@ package org.easybangumi.next.libplayer.api
 
 import kotlinx.coroutines.flow.StateFlow
 import org.easybangumi.next.libplayer.api.action.Action
+import kotlin.reflect.KClass
 
 /**
  * 播放器桥接接口，用于在 Common 层中与播放器进行交互
@@ -34,14 +35,14 @@ interface PlayerBridge<T: Any>: AutoCloseable {
     fun setScaleType(scaleType: C.RendererScaleType)
     val scaleTypeFlow: StateFlow<C.RendererScaleType>
 
-    fun <A: Action<*>> action(): A?
+    fun <A: Action<*>> action(clazz: KClass<A>): A?
 
 
 
 }
 
-inline fun <A: Action<P>, P: Any, R> PlayerBridge<P>.action(check: Boolean = true, block: A.()->R,): R? {
-    val action = action<A>()
+inline fun <reified A: Action<P>, P: Any, R> PlayerBridge<P>.action(check: Boolean = true, block: A.()->R,): R? {
+    val action = action(A::class)
     if (action == null) {
         if (check) {
             throw IllegalStateException("Action is null")

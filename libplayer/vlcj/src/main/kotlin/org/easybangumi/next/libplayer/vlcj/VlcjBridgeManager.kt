@@ -18,14 +18,13 @@ import kotlin.concurrent.withLock
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 class VlcjBridgeManager(
-    // vlc 参数
-    libvlcArgs: Collection<String> = emptyList(),
+    private val mediaPlayerFactory: MediaPlayerFactory
 ) {
 
-    // factory 初始化直接会加载 native 库（耗时），lazy 里加了锁，线程安全
-    private val mediaPlayerFactory: MediaPlayerFactory by lazy {
-        MediaPlayerFactory(libvlcArgs)
-    }
+//    // factory 初始化直接会加载 native 库（耗时），lazy 里加了锁，线程安全
+//    private val mediaPlayerFactory: MediaPlayerFactory by lazy {
+//        MediaPlayerFactory(libvlcArgs)
+//    }
     // vlcj 播放器创建不支持并发
     private val reentrantLock = ReentrantLock()
 

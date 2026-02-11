@@ -24,7 +24,7 @@ fun <T> Continuation<T>.safeResume(t: T) {
     } catch (e: Throwable) {
         // Ignore the exception, it may be caused by the continuation being cancelled
         // or already resumed.
-        e.printStackTrace()
+//        e.printStackTrace()
     }
 }
 
@@ -32,7 +32,7 @@ fun CoroutineScope.safeCancel() {
     try {
         this.cancel()
     } catch (e: Throwable) {
-        e.printStackTrace()
+//        e.printStackTrace()
     }
 }
 

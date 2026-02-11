@@ -9,11 +9,12 @@ import org.easybangumi.next.libplayer.api.C
 import org.easybangumi.next.libplayer.api.MediaItem
 import org.easybangumi.next.libplayer.api.VideoSize
 import org.easybangumi.next.libplayer.api.action.Action
+import org.easybangumi.next.libplayer.api.action.SpeedAction
+import org.easybangumi.next.libplayer.vlcj.action.VlcjSpeedAction
 import org.jetbrains.skia.Bitmap
 import org.jetbrains.skia.ColorAlphaType
 import org.jetbrains.skia.ColorType
 import org.jetbrains.skia.ImageInfo
-import uk.co.caprica.vlcj.media.Media
 import uk.co.caprica.vlcj.media.MediaRef
 import uk.co.caprica.vlcj.media.TrackType
 import uk.co.caprica.vlcj.player.base.MediaPlayer
@@ -24,7 +25,6 @@ import uk.co.caprica.vlcj.player.embedded.videosurface.callback.BufferFormat
 import uk.co.caprica.vlcj.player.embedded.videosurface.callback.BufferFormatCallback
 import uk.co.caprica.vlcj.player.embedded.videosurface.callback.RenderCallback
 import uk.co.caprica.vlcj.player.embedded.videosurface.callback.format.RV32BufferFormat
-import java.awt.EventQueue
 import java.nio.ByteBuffer
 import javax.swing.SwingUtilities
 import kotlin.math.absoluteValue
@@ -103,12 +103,15 @@ class VlcjPlayerBridge(
 
 
     override fun prepareAction(): Map<KClass<out Action<*>>, Action<*>> {
-        return mapOf(
-
+        return mapOf<KClass<out Action<*>>, Action<*>>(
+            SpeedAction::class to VlcjSpeedAction().apply { onBind(this@VlcjPlayerBridge) }
         )
     }
 
     override fun close() {
+        actionMap.forEach { (klass, action) ->
+            action.onUnbind()
+        }
         mediaPlayer.events().removeMediaPlayerEventListener(mediaPlayerEventListener)
         mediaPlayer.release()
     }
