@@ -264,7 +264,8 @@ private fun PointerPlayconRowBarScope.FastSeekButton(
                                         else -> 0L
                                     }
                                     if (offset != 0L) {
-                                        // vm.seekTo((vm.position + offset).coerceIn(0, vm.duration))
+//                                        vm.seekTo(vm.position + offset)
+                                         vm.seekTo((vm.position + offset).coerceIn(0, vm.duration))
                                     }
                                 }
                                 lastPressedButtons = PointerButtons()
