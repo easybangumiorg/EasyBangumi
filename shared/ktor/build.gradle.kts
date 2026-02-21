@@ -45,11 +45,13 @@ kotlin {
 
         androidMain.dependencies {
             implementation(libs.ktor.client.android)
+            implementation(projects.lib.webviewWebkit)
         }
 
         desktopMain.dependencies {
             implementation(libs.ktor.client.java)
             implementation(libs.kotlinx.coroutines.swing)
+            implementation(projects.lib.webviewJcef)
         }
         iosMain.dependencies {
 

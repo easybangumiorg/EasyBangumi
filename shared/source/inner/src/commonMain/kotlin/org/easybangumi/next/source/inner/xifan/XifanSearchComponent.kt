@@ -16,6 +16,7 @@ import org.easybangumi.next.lib.utils.UrlUtils
 import org.easybangumi.next.lib.utils.withResult
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.source.api.component.BaseComponent
+import org.easybangumi.next.shared.source.api.component.NeedWebViewCheck
 import org.easybangumi.next.shared.source.api.component.search.SearchComponent
 import org.easybangumi.next.shared.source.api.utils.NetworkHelper
 import org.easybangumi.next.shared.source.api.utils.PreferenceHelper
@@ -58,16 +59,22 @@ class XifanSearchComponent: SearchComponent, BaseComponent() {
         val res = withResult {
             val host = prefHelper.get("host", "dm.xifanacg.com")
             logger.info("GGLPlayComponent searchPlayCovers: host=$host, keyword=${keyword}, key=$key")
+            var url = ""
             val html = ktorClient.get {
                 url {
                     protocol = URLProtocol.HTTPS
                     this.host = host
                     path("search", "wd", keyword.encodeURLPath(encodeSlash = true), "page",  "${key}.html" )
+                    url = this.toString()
                 }
                 userAgent(networkHelper.defaultWindowsUA)
             }.bodyAsText()
             val doc = Ksoup.parse(html)
             val list = arrayListOf<CartoonCover>()
+
+            if (doc.select("button.verify-submit").isNotEmpty()) {
+                throw NeedWebViewCheck(url)
+            }
 
             doc.select("body > div.box-width > div div.vod-detail").forEach { ro ->
                 val it = ro.child(0);

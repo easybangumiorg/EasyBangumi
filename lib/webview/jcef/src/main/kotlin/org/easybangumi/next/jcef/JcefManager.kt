@@ -5,6 +5,7 @@ import kotlinx.coroutines.*
 import org.cef.CefApp
 import org.cef.CefSettings
 import org.cef.misc.CefLog
+import org.cef.network.CefCookieManager
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.coroutineProvider
 import org.easybangumi.next.lib.utils.pathProvider
@@ -137,6 +138,7 @@ object JcefManager {
                         logger.error("JCEF initialization failed.")
                     }
                 }
+                CefCookieManager.getGlobalManager()
                 return app
             } catch (e: Exception) {
                 logger.error("Failed to initialize JCEF", e)

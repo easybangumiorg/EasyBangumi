@@ -15,6 +15,8 @@ import org.easybangumi.next.lib.utils.withResult
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.source.api.component.BaseComponent
+import org.easybangumi.next.shared.source.api.component.ComponentException
+import org.easybangumi.next.shared.source.api.component.NeedWebViewCheck
 import org.easybangumi.next.shared.source.api.component.search.SearchComponent
 import org.easybangumi.next.shared.source.api.utils.NetworkHelper
 import org.easybangumi.next.shared.source.api.utils.PreferenceHelper
@@ -48,15 +50,21 @@ class GGLSearchComponent: SearchComponent, BaseComponent() {
         return withResult {
             val host = prefHelper.get("host", "bgm.girigirilove.com")
             logger.info("GGLPlayComponent searchPlayCovers: host=$host, keyword=${keyword}, key=$key")
+            var url = ""
             val html = ktorClient.get {
                 url {
                     protocol = URLProtocol.HTTPS
                     this.host = host
                     path("search", "${keyword}----------${key}---" )
+                    url = this.toString()
                 }
             }.bodyAsText()
             val doc = Ksoup.parse(html)
             val list = arrayListOf<CartoonCover>()
+
+            if (doc.select("button.verify-submit").isNotEmpty()) {
+                throw NeedWebViewCheck(url)
+            }
 
             doc.select("div.box-width div.row div.search-list.vod-detail").forEach { ro ->
                 val it = ro.child(0);

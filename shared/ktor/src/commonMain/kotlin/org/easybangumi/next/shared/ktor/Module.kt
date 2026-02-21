@@ -39,9 +39,7 @@ object GlobalKtorConfig : KtorConfig {
             json()
             xml()
         }
-        config.install(HttpCookies) {
-            storage = EasyCookiesStorage()
-        }
+
         config.install(Logging) {
             logger = object : Logger {
                 override fun log(message: String) {

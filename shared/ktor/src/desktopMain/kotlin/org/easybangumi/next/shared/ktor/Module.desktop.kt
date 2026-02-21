@@ -32,6 +32,9 @@ private class DesktopKtorFactory : KtorFactory {
             config.forEach {
                 it.apply(this)
             }
+            install(HttpCookies) {
+                storage = JcefCookiesStorage()
+            }
             // Global 配置
             GlobalKtorConfig.apply(this)
         }

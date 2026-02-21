@@ -17,8 +17,10 @@ import org.easybangumi.next.shared.cartoon.radar.CartoonRadarStrategy
 import org.easybangumi.next.shared.cartoon.radar.editDistance
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.data.cartoon.PlayerLine
+import org.easybangumi.next.shared.foundation.snackbar.moeSnackBar
 import org.easybangumi.next.shared.source.SourceCase
 import org.easybangumi.next.shared.source.api.component.FinderComponentPair
+import org.easybangumi.next.shared.source.api.component.NeedWebViewCheck
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -112,6 +114,11 @@ class CartoonRadarStrategyV1(
                                     result.copy(playerLine = lineList)
                                 }
                             }
+                    }
+                    result.mapError {
+                        if (it.throwable is NeedWebViewCheck) {
+                            "${pair.first.source.manifest.label} 需要手动验证，功能开发中……".moeSnackBar()
+                        }
                     }
                     sourceSearchResMap[pair] = result
                     this@channelFlow.channel.send(
