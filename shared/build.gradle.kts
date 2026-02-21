@@ -24,11 +24,12 @@ kotlin {
         val iosSimulatorArm64Main by getting
 
         commonMain.dependencies {
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.materialIconsExtended) // 此依赖需要在生产环境中进行剪枝，非常巨大
-            implementation(compose.ui)
-            implementation(compose.material3)
+            implementation(libs.compose.runtime)
+            implementation(libs.compose.foundation)
+            implementation(libs.compose.material.icons.extended) // 此依赖需要在生产环境中进行剪枝，非常巨大
+            implementation(libs.compose.ui)
+            implementation(libs.compose.material)
+            implementation(libs.compose.material3)
             implementation(compose.components.uiToolingPreview)
 
             implementation(libs.navigation.compose)
@@ -77,7 +78,7 @@ kotlin {
 
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
-            implementation(compose.ui)
+            implementation(libs.compose.ui)
             api(projects.libplayer.libplayerVlcj)
 
         }

@@ -23,4 +23,6 @@ interface Source {
     // source 内部为独立 koin，如果依赖外部 module 需要手动 includes
     val module: Module? get() = null
 
+    val extMap: HashMap<Any, Any>
+
 }

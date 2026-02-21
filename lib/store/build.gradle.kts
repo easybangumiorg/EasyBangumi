@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(builds.plugins.kotlinMultiplatform)
     alias(builds.plugins.androidLibrary)
+    alias(libs.plugins.kotlinxSerialization)
     id("EasyLibBuild")
 }
 kotlin {
@@ -28,6 +29,8 @@ kotlin {
             implementation(libs.koin.core)
             api(libs.kache)
             api(libs.kache.file)
+
+            implementation(libs.kotlinx.serialization.json)
 
             implementation(projects.logger)
             implementation(projects.lib.serialization)

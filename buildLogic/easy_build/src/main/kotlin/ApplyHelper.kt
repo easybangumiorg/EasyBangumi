@@ -98,6 +98,7 @@ object ApplyHelper {
                         optIn("androidx.compose.material3.ExperimentalMaterial3Api")
                     }
                     optIn("kotlin.experimental.ExperimentalContextReceivers")
+                    optIn("kotlin.time.ExperimentalTime")
                 }
             }
 

@@ -1,7 +1,7 @@
 package org.easybangumi.next.shared.bangumi.account
 
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlinx.serialization.Serializable
 import org.easybangumi.next.lib.store.file_helper.json.JsonFileHelper
 import org.easybangumi.next.lib.utils.pathProvider

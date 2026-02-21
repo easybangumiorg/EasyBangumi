@@ -93,7 +93,7 @@ fun Search(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 private fun SearchTopAppBar(
     modifier: Modifier = Modifier,

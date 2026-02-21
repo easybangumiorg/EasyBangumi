@@ -38,7 +38,8 @@ actual fun NormalMedia(param: MediaParam) {
                     playerVm = vm.playerVM,
                     float = {
                         MediaPlayerFloat(vm)
-                    }
+                    },
+                    topLineController = {}
                 )
                 NormalMediaPage(
                     vm.commonVM,
@@ -55,7 +56,8 @@ actual fun NormalMedia(param: MediaParam) {
                     playerVm = vm.playerVM,
                     float = {
                         MediaPlayerFloat(vm)
-                    }
+                    },
+                    topLineController = {}
                 )
                 NormalMediaPage(
                     vm.commonVM,

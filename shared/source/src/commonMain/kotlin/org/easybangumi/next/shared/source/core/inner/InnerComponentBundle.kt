@@ -7,6 +7,7 @@ import org.easybangumi.next.shared.source.api.component.BaseComponent
 import org.easybangumi.next.shared.source.api.component.Component
 import org.easybangumi.next.shared.source.api.component.ComponentBundle
 import org.easybangumi.next.shared.source.api.component.ComponentBusiness
+import org.easybangumi.next.shared.source.api.component.play.PlayComponent
 import org.easybangumi.next.shared.source.api.component.search.SearchComponent
 import org.easybangumi.next.shared.source.api.source.InnerSource
 import org.easybangumi.next.shared.source.api.source.Source
@@ -92,6 +93,7 @@ class InnerComponentBundle(
                 sourceWrapper.module ?.let {
                     modules(it)
                 }
+
 
             }.koin
 

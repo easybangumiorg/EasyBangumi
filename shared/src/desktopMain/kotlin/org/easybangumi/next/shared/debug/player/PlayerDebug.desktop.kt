@@ -14,9 +14,8 @@ import org.easybangumi.next.shared.debug.DebugScope
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.libplayer.api.MediaItem
 import org.easybangumi.next.libplayer.vlcj.VlcjBridgeManager
-import org.easybangumi.next.libplayer.vlcj.VlcjPlayerFrame
-import org.easybangumi.next.libplayer.vlcj.rememberVlcjPlayerFrameState
-import org.easybangumi.next.shared.playcon.pointer.PointerPlaycon
+import org.easybangumi.next.libplayer.vlcj.bitmap.VlcjPlayerBitmapFrame
+import org.easybangumi.next.libplayer.vlcj.bitmap.rememberVlcjPlayerFrameState
 import org.koin.compose.koinInject
 
 /**
@@ -44,7 +43,7 @@ actual fun DebugScope.PlayerDebug() {
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val lifecycleState = lifecycle.currentStateAsState()
     val bridge = remember {
-        manager.getOrCreateBridge(tag, null)
+        manager.getOrCreateBitmapBridge(tag, null)
     }
 
     DisposableEffect(Unit) {
@@ -89,7 +88,7 @@ actual fun DebugScope.PlayerDebug() {
 
 
 
-    VlcjPlayerFrame(
+    VlcjPlayerBitmapFrame(
         modifier = Modifier.fillMaxSize(),
         state = frameState,
     )

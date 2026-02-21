@@ -24,15 +24,15 @@ kotlin {
         val iosSimulatorArm64Main by getting
 
         commonMain.dependencies {
-            implementation(compose.ui)
-            implementation(compose.materialIconsExtended) // 此依赖需要在生产环境中进行剪枝，非常巨大
+            implementation(libs.compose.ui)
+            implementation(libs.compose.material.icons.extended) // 此依赖需要在生产环境中进行剪枝，非常巨大
 
             implementation(libs.moko.resources.compose)
             implementation(libs.kotlin.reflect)
 
-            implementation(compose.material3)
-            implementation(compose.animation)
-            implementation(compose.animationGraphics)
+            implementation(libs.compose.material3)
+            implementation(libs.compose.animation)
+            implementation(libs.compose.animation.graphics)
 
             api(libs.androidx.lifecycle.runtime.compose)
             api(libs.androidx.lifecycle.viewmodel.compose)
@@ -47,6 +47,7 @@ kotlin {
 
             implementation(libs.coil.compose)
             api(libs.coil.ktor3)
+            api(libs.kotlinx.datetime)
 
             implementation(projects.shared.data)
 //            implementation(projects.shared.plugin)
@@ -83,7 +84,7 @@ kotlin {
             implementation(libs.ktor.client.java)
 
             @OptIn(ExperimentalComposeLibrary::class)
-            implementation(compose.desktop.components.animatedImage)
+            implementation(libs.compose.desktop.components.animated.image)
             // implementation(compose.components.)
         }
 

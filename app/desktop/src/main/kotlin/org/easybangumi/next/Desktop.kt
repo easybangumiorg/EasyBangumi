@@ -75,8 +75,8 @@ object Desktop {
                         ioScope = CoroutineScope(SupervisorJob() + coroutineProvider.io() ),
                         libvlcArgs = listOf(
                             "-vvv",
-                            "--file-caching=2000",
-                            "--network-caching=2000",
+                            "--file-caching=10000",
+                            "--network-caching=10000",
                             "--intf=dummy",
                             "--video-filter=canvas",
                             "--vout=any"

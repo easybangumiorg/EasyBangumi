@@ -25,4 +25,6 @@ class ManifestSource(
         get() = throw IllegalStateException("workPath not supported in ManifestSource, please use SourceWrapper")
     override val scope: CoroutineScope
         get() = throw IllegalStateException("scope not supported in ManifestSource, please use SourceWrapper")
+
+    override val extMap: HashMap<Any, Any> = hashMapOf()
 }

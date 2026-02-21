@@ -8,16 +8,18 @@ import io.ktor.http.Url
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlinx.serialization.json.internal.readJson
 import org.easybangumi.next.lib.store.file_helper.json.JsonlFileHelper
 import org.easybangumi.next.lib.unifile.UFD
 import org.easybangumi.next.lib.utils.coroutineProvider
 import org.easybangumi.next.lib.utils.pathProvider
+import kotlin.time.ExperimentalTime
 
 /**
  * Created by heyanle on 2025/6/26.
  */
+@OptIn(ExperimentalTime::class)
 class EasyCookiesStorage : CookiesStorage {
 
     companion object {

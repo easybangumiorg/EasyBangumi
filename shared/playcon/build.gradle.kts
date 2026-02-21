@@ -25,10 +25,10 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtime.compose)
             implementation(libs.androidx.lifecycle.viewmodel.compose)
             implementation(libs.koin.compose)
-            implementation(compose.materialIconsExtended)
-            implementation(compose.material3)
+            implementation(libs.compose.material.icons.extended)
+            implementation(libs.compose.material3)
 
-            implementation(compose.ui)
+            implementation(libs.compose.ui)
 
             implementation(projects.shared.foundation)
             implementation(projects.shared.resources)

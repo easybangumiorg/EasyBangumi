@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import coil3.ImageLoader
 import coil3.compose.AsyncImagePainter
+import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.ResourceOr
 
 /**
@@ -23,6 +24,7 @@ import org.easybangumi.next.lib.utils.ResourceOr
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
+internal val logger = logger("AsyncImage")
 @Composable
 expect fun AsyncImage(
     model: ResourceOr?,
@@ -39,6 +41,6 @@ expect fun AsyncImage(
     contentScale: ContentScale = ContentScale.Fit,
     alpha: Float = DefaultAlpha,
     colorFilter: ColorFilter? = null,
-    filterQuality: FilterQuality = FilterQuality.None,
+    filterQuality: FilterQuality = FilterQuality.High,
     clipToBounds: Boolean = true,
 )

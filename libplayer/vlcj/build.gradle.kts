@@ -1,7 +1,3 @@
-@file:OptIn(ExperimentalComposeLibrary::class)
-
-import org.jetbrains.compose.ExperimentalComposeLibrary
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 plugins {
     alias(builds.plugins.kotlinJvm)
@@ -17,8 +13,8 @@ dependencies {
     implementation(libs.kotlinx.datetime)
     implementation(libs.kotlinx.coroutines.swing)
 
-    implementation(compose.ui)
-    implementation(compose.foundation)
+    implementation(libs.compose.ui)
+    implementation(libs.compose.foundation)
     implementation(compose.desktop.currentOs)
 
     api(projects.libplayer.libplayerApi)

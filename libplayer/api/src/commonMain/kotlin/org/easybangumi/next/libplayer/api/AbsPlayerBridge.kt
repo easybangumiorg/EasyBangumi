@@ -25,6 +25,10 @@ abstract class AbsPlayerBridge<T: Any> : PlayerBridge<T> {
     protected val innerScaleTypeFlow = MutableStateFlow(C.RendererScaleType.SCALE_ADAPT)
     override val scaleTypeFlow: StateFlow<C.RendererScaleType> = innerScaleTypeFlow
 
+    protected val innerErrorFlow = MutableStateFlow<Exception?>(null)
+    override val errorStateFlow: StateFlow<Exception?> = innerErrorFlow
+
+
 
     @OptIn(ExperimentalAtomicApi::class)
     private val actionInit = AtomicBoolean(false)

@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
 import okio.buffer
 import okio.use
 import org.easybangumi.next.lib.serialization.deserialize
@@ -45,6 +46,7 @@ class JournalMapHelper(
         const val LOAD_FACTORY = 1.5f
     }
 
+    @Serializable
     data class Line(
         val key: String,
         val value: String?,

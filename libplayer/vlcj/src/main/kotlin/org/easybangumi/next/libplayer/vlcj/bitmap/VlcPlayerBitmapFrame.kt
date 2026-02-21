@@ -1,4 +1,4 @@
-package org.easybangumi.next.libplayer.vlcj
+package org.easybangumi.next.libplayer.vlcj.bitmap
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.*
@@ -21,9 +21,9 @@ import kotlin.math.roundToInt
  */
 
 @Composable
-fun VlcjPlayerFrame(
+fun VlcjPlayerBitmapFrame(
     modifier: Modifier,
-    state: VlcPlayerFrameState,
+    state: VlcPlayerBitmapFrameState,
 ){
     state.FrameCanvas(
         modifier = modifier,
@@ -32,16 +32,16 @@ fun VlcjPlayerFrame(
 
 @Composable
 fun rememberVlcjPlayerFrameState(
-): VlcPlayerFrameState {
+): VlcPlayerBitmapFrameState {
     return remember() {
-        VlcPlayerFrameState()
+        VlcPlayerBitmapFrameState()
     }
 }
 
-class VlcPlayerFrameState(): VlcjPlayerBridge.OnFrameListener, AutoCloseable {
+class VlcPlayerBitmapFrameState(): VlcjPlayerBitmapBridge.OnFrameListener, AutoCloseable {
 
 
-    fun bindBridge(bridge: VlcjPlayerBridge) {
+    fun bindBridge(bridge: VlcjPlayerBitmapBridge) {
         if (this.bridge == bridge) return
         this.bridge?.removeFrameListener()
         this.bridge = bridge
@@ -57,7 +57,7 @@ class VlcPlayerFrameState(): VlcjPlayerBridge.OnFrameListener, AutoCloseable {
         unbindBridge()
     }
 
-    private var bridge by mutableStateOf<VlcjPlayerBridge?>(null)
+    private var bridge by mutableStateOf<VlcjPlayerBitmapBridge?>(null)
     private val frameSizeCalculator = VlcFrameSizeCalculator()
     var time by mutableStateOf(0L)
     var composeBitmap by mutableStateOf<ImageBitmap?>(null)
@@ -87,7 +87,7 @@ class VlcPlayerFrameState(): VlcjPlayerBridge.OnFrameListener, AutoCloseable {
             }
 
             DisposableEffect(Unit) {
-                bridge.setFrameListener(this@VlcPlayerFrameState)
+                bridge.setFrameListener(this@VlcPlayerBitmapFrameState)
                 onDispose {
                     bridge.removeFrameListener()
                     composeBitmap = null

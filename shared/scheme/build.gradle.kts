@@ -23,7 +23,7 @@ kotlin {
         val iosSimulatorArm64Main by getting
 
         commonMain.dependencies {
-            implementation(compose.ui)
+            implementation(libs.compose.ui)
         }
 
         androidMain.dependencies {

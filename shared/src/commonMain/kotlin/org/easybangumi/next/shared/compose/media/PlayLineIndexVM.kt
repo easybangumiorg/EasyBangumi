@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
+import org.easybangumi.next.shared.data.cartoon.CartoonInfo
 import org.easybangumi.next.shared.data.cartoon.Episode
 import org.easybangumi.next.shared.data.cartoon.PlayInfo
 import org.easybangumi.next.shared.data.cartoon.PlayerLine
@@ -19,6 +20,7 @@ import org.easybangumi.next.shared.foundation.view_model.StateViewModel
 import org.easybangumi.next.shared.source.SourceCase
 import org.easybangumi.next.shared.source.api.component.ComponentBusiness
 import org.easybangumi.next.shared.source.api.component.play.PlayComponent
+import org.easybangumi.next.shared.source.cacheable
 import org.koin.core.component.inject
 
 
@@ -35,10 +37,11 @@ import org.koin.core.component.inject
  */
 
 class PlayLineIndexVM(
-    var suggestEpisode: Int? = null,
 ): StateViewModel<PlayLineIndexVM.State>(State()) {
 
 //    private val logger = logger()
+
+    var canCache: Boolean = true
 
     data class State(
         val cartoonIndex: CartoonIndex? = null,
@@ -70,29 +73,60 @@ class PlayLineIndexVM(
             ) { pair, business ->
                 val (cartoonIndex, playLine, episode) = pair
                 val biz = business
-                cartoonIndex ?: return@combine
-                playLine ?: return@combine
-                episode ?: return@combine
-                biz ?: return@combine
-                update {
-                    it.copy(
-                        playInfo = DataState.loading()
-                    )
-                }
-                val res = biz.run {
-                    getPlayInfo(
-                        cartoonIndex = cartoonIndex,
-                        playerLine = playLine,
-                        episode = episode,
-                    )
-                }
-                logger.info("loadPlayInfo: $res")
-                update {
-                    it.copy(
-                        playInfo = res
-                    )
-                }
+                innerRefreshPlayInfo(
+                    cartoonIndex = cartoonIndex,
+                    playLine = playLine,
+                    episode = episode,
+                    business = biz,
+                )
             }.collect()
+        }
+    }
+
+    fun tryRefreshPlayInfo(
+        canCache: Boolean = false,
+    ) {
+        this.canCache = canCache
+        val state = state.value
+        viewModelScope.launch {
+            innerRefreshPlayInfo(
+                cartoonIndex = state.cartoonIndex,
+                playLine = state.playLineOrNull,
+                episode = state.currentEpisodeOrNull,
+                business = state.business,
+            )
+        }
+    }
+
+    private suspend fun innerRefreshPlayInfo(
+        cartoonIndex: CartoonIndex?,
+        playLine: PlayerLine?,
+        episode: Episode?,
+        business: ComponentBusiness<PlayComponent>?,
+    ) {
+        val biz = business
+        cartoonIndex ?: return
+        playLine ?: return
+        episode ?: return
+        biz ?: return
+        update {
+            it.copy(
+                playInfo = DataState.loading()
+            )
+        }
+        val res = biz.run {
+            cacheable().getPlayInfo(
+                cartoonIndex = cartoonIndex,
+                playerLine = playLine,
+                episode = episode,
+                cache = canCache
+            )
+        }
+        logger.info("loadPlayInfo: $res")
+        update {
+            it.copy(
+                playInfo = res
+            )
         }
     }
 
@@ -142,9 +176,12 @@ class PlayLineIndexVM(
         }
     }
 
+
     fun loadPlayLine(
         // playerIndex
         cartoonIndex: CartoonIndex,
+        suggestPlayerLine: Int? = null,
+        suggestEpisode: Int? = null,
     ) {
         viewModelScope.launch {
             update {
@@ -173,6 +210,9 @@ class PlayLineIndexVM(
                 if (targetPlaylineIndex !in it.indices) {
                     targetPlaylineIndex = 0
                 }
+                if (suggestPlayerLine != null && suggestPlayerLine in it.indices) {
+                    targetPlaylineIndex = suggestPlayerLine
+                }
                 val playLine = it.getOrNull(targetPlaylineIndex)
                 if (playLine != null) {
                     val suggestIndex = playLine.episodeList.indexOfFirst { it.order == suggestEpisode }
@@ -183,8 +223,7 @@ class PlayLineIndexVM(
                     targetPlaylineIndex = 0
                     targetEpisodeIndex = 0
                 }
-                // 只生效一次
-                suggestEpisode = null
+
             }
             logger.info("loadPlayLine: $res, targetPlaylineIndex=$targetPlaylineIndex, targetEpisodeIndex=$targetEpisodeIndex")
 

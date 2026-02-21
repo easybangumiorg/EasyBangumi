@@ -1,4 +1,10 @@
 [versions]
+# compose (org.jetbrains.compose)
+compose = "1.10.1"
+compose-material3 = "1.9.0"
+compose-material = "1.10.1"
+compose-material-icons-extended = "1.7.3"
+
 # androidx
 androidx-activityCompose = "1.10.1"
 androidx-appcompat = "1.7.0"
@@ -7,13 +13,13 @@ androidx-core-ktx = "1.16.0"
 androidx-lifecycle = "2.9.0"
 androidx-material = "1.12.0"
 
-multiplatform-material = "1.7.3"
+multiplatform-material = "1.9.0"
 
 # kotlin
 kotlin = "2.1.20"
 kotlin-reflect = "2.1.10"
 kotlinx-coroutines = "1.10.1"
-kotlinx-datetime = "0.6.1"
+kotlinx-datetime = "0.7.1"
 kotlinx-io = "0.6.0"
 kotlinx-atomicfu = "0.27.0"
 
@@ -130,6 +136,17 @@ quickjs-kt = { module = "io.github.dokar3:quickjs-kt", version.ref = "quickjs-kt
 zip4j = { module = "net.lingala.zip4j:zip4j", version.ref = "zip4j" }
 
 md3-window-size = { group = "org.jetbrains.compose.material3", name = "material3-window-size-class", version.ref = "multiplatform-material" }
+
+# compose (versioned)
+compose-ui = { group = "org.jetbrains.compose.ui", name = "ui", version.ref = "compose" }
+compose-runtime = { group = "org.jetbrains.compose.runtime", name = "runtime", version.ref = "compose" }
+compose-foundation = { group = "org.jetbrains.compose.foundation", name = "foundation", version.ref = "compose" }
+compose-material = { group = "org.jetbrains.compose.material", name = "material", version.ref = "compose-material" }
+compose-material3 = { group = "org.jetbrains.compose.material3", name = "material3", version.ref = "compose-material3" }
+compose-material-icons-extended = { group = "org.jetbrains.compose.material", name = "material-icons-extended", version.ref = "compose-material-icons-extended" }
+compose-animation = { group = "org.jetbrains.compose.animation", name = "animation", version.ref = "compose" }
+compose-animation-graphics = { group = "org.jetbrains.compose.animation", name = "animation-graphics", version.ref = "compose" }
+compose-desktop-components-animated-image = { group = "org.jetbrains.compose.components", name = "components-animatedimage", version.ref = "compose" }
 
 moko-resources = { group = "dev.icerock.moko", name = "resources", version.ref = "moko-resources" }
 moko-resources-compose = { group = "dev.icerock.moko", name = "resources-compose", version.ref = "moko-resources" }

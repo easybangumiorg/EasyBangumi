@@ -45,6 +45,7 @@ class MediaFinderVM(
         val playCover: CartoonCover,
         val manifest: SourceManifest,
         val suggestPlayerLine: PlayerLine? = null,
+        val fromUser: Boolean = true,
     )
 
 
@@ -178,7 +179,7 @@ class MediaFinderVM(
     }
 
     // 用户手动点击的，为最高优先级
-    fun onUserResultSelect(result: SelectionResult) {
+    fun onUserResultSelect(result: SelectionResult?) {
         silentFindingJob?.cancel()
         update {
             it.copy(
@@ -248,6 +249,7 @@ class MediaFinderVM(
                                         playCover = res.cover,
                                         manifest = res.businessPair.getManifest(),
                                         suggestPlayerLine = res.playerLine?.firstOrNull(),
+                                        fromUser = false
                                     ),
                                 silentFinding = false,
                             )

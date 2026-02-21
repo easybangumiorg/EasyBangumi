@@ -3,28 +3,28 @@ package org.easybangumi.next.shared.compose.media.bangumi
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.window.WindowPlacement
-import androidx.compose.ui.window.WindowState
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.compose
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.store.preference.PreferenceStore
 import org.easybangumi.next.lib.utils.coroutineProvider
 import org.easybangumi.next.libplayer.api.C
-import org.easybangumi.next.libplayer.api.action
+import org.easybangumi.next.libplayer.api.PlayerBridge
 import org.easybangumi.next.libplayer.api.action.SpeedAction
 import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
 import org.easybangumi.next.shared.compose.media.MediaParam
 import org.easybangumi.next.shared.playcon.BasePlayconViewModel
 import org.easybangumi.next.shared.playcon.desktop.DesktopPlayerVM
 import org.easybangumi.next.shared.playcon.desktop.FullscreenStrategy
+import org.easybangumi.next.shared.preference.ExpectPreference
+import org.easybangumi.next.shared.preference.MainPreference
 import org.easybangumi.next.shared.window.EasyWindowState
 import org.koin.core.component.inject
-import org.koin.java.KoinJavaComponent.inject
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -49,6 +49,14 @@ class DesktopBangumiMediaVM(
         0.5f, 1.0f, 1.5f, 2.0f
     )
     val currentSpeed = mutableStateOf(1.0f)
+
+
+    val mainPreference: MainPreference by inject()
+    val expectPreference: ExpectPreference = mainPreference.expectPreference
+    val fastSeekPref = expectPreference.fastSeekDuring
+    val fastSeekFlow = fastSeekPref.stateIn(viewModelScope)
+
+
     fun onEditDiySpeed() {
 
     }
@@ -87,11 +95,13 @@ class DesktopBangumiMediaVM(
         }
 
         override fun isFullscreen(): Boolean {
-            return windowState.value?.state?.placement == WindowPlacement.Fullscreen
+            return windowState?.value?.state?.placement == WindowPlacement.Fullscreen
         }
     }
 
+
     init {
+        commonVM.attachBridge(playerVM.vlcjPlayerBridge)
         // 播放链接变化 -> 播放器
         viewModelScope.launch {
             commonVM.playIndexState.map { it.playInfo }.collectLatest {
@@ -111,8 +121,23 @@ class DesktopBangumiMediaVM(
             }
 
         }
+
+        viewModelScope.launch {
+            playerVM.vlcjPlayerBridge.playWhenReadyFlow.collectLatest {
+                if (!it) {
+                    trySaveHistory()
+                }
+            }
+        }
+        viewModelScope.launch {
+            playerVM.vlcjPlayerBridge.playStateFlow.collectLatest {
+                trySaveHistory()
+            }
+        }
+
+
     }
-    private var windowState = mutableStateOf<EasyWindowState?>(null)
+    private val windowState = mutableStateOf<EasyWindowState?>(null)
     private var saveJob: Job? = null
 
 

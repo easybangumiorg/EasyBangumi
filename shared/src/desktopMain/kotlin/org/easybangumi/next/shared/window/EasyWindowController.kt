@@ -80,12 +80,9 @@ object EasyWindowController {
     @Composable
     fun EasyWindowHost() {
         KoinContext() {
-            val top = with(LocalDensity.current) {
-                WindowInsets.statusBars.getTop(LocalDensity.current).toDp()
-            }
             CompositionLocalProvider(
                 LocalImageLoader provides createImageLoader(),
-                LocalSizeScheme provides SizeScheme(statusBarHeight = top)
+
             ) {
                 EasyTheme {
                     windowStateList.forEach { state ->
@@ -96,9 +93,13 @@ object EasyWindowController {
                             state = state.state,
                             title = "纯纯看番 Next",
                         ) {
+                            val top = with(LocalDensity.current) {
+                                WindowInsets.statusBars.getTop(LocalDensity.current).toDp()
+                            }
                             CompositionLocalProvider(
                                 LocalEasyWindowState provides state,
                                 LocalUIMode provides UI.getUiMode(),
+                                LocalSizeScheme provides SizeScheme(statusBarHeight = top)
                             ) {
                                 Router(
                                     initRoute = state.initPage ?: RouterPage.DEFAULT,

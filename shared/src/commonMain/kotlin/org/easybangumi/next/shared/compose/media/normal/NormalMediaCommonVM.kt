@@ -52,8 +52,6 @@ class NormalMediaCommonVM(
     // == 播放线路状态 =============================
     val playLineIndexVM: PlayLineIndexVM by childViewModel {
         PlayLineIndexVM(
-//            cartoonIndex = cartoonIndex.toCartoonIndex(),
-            suggestEpisode = suggestEpisode,
         )
     }
     val playIndexState = playLineIndexVM.logic

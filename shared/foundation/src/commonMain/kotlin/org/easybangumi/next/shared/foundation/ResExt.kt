@@ -19,7 +19,7 @@ fun stringRes(resource: ResourceOr): String{
 @Composable
 fun stringRes(resource: ResourceOr, vararg args: Any): String {
     if (resource is StringResource) {
-        return stringResource(resource, args)
+        return stringResource(resource, *args)
     }
     return resource.toString()
 }

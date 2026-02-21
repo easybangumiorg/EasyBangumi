@@ -41,6 +41,7 @@ class AndroidBangumiMediaVM(
 
 
     init {
+        commonVM.attachBridge(playerVM.exoBridge)
         // 播放链接变化 -> 播放器
         viewModelScope.launch {
             commonVM.playIndexState.map { it.playInfo }.collectLatest {
@@ -58,6 +59,20 @@ class AndroidBangumiMediaVM(
                 }
             }
         }
+
+        viewModelScope.launch {
+            playerVM.exoBridge.playWhenReadyFlow.collectLatest {
+                if (!it) {
+                    trySaveHistory()
+                }
+            }
+        }
+        viewModelScope.launch {
+            playerVM.exoBridge.playStateFlow.collectLatest {
+                trySaveHistory()
+            }
+        }
+
 
 
 

@@ -1,7 +1,7 @@
 package org.easybangumi.next.lib.utils
 
 import kotlinx.coroutines.withContext
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlinx.io.files.Path
 import okio.buffer
 import okio.use

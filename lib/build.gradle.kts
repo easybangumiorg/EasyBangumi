@@ -25,6 +25,7 @@ kotlin {
             api(projects.lib.utils)
             api(projects.lib.store)
             api(projects.lib.webview)
+            api(libs.kotlinx.datetime)
 
 
         }

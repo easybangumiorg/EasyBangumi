@@ -1,8 +1,11 @@
 package org.easybangumi.next.shared.data.cartoon
 
+import kotlinx.serialization.Serializable
+
 /**
  * Created by heyanle on 2024/12/5.
  */
+@Serializable
 data class PlayInfo(
     val url: String,
     val type: String,

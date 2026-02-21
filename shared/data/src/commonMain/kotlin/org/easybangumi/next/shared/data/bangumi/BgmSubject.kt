@@ -102,8 +102,7 @@ data class BgmSubject(
 
     val displayEpisode: String? by lazy {
         totalEpisodes ?: return@lazy null
-        eps ?: return@lazy null
-        return@lazy "更新至 ${eps} · 全 $totalEpisodes 话"
+        return@lazy "全 $totalEpisodes 话"
     }
 
     val cartoonIndex: CartoonIndex by lazy {

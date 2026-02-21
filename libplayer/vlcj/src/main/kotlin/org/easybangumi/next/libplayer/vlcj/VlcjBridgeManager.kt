@@ -1,6 +1,7 @@
 package org.easybangumi.next.libplayer.vlcj
 
 import kotlinx.coroutines.CoroutineScope
+import org.easybangumi.next.libplayer.vlcj.bitmap.VlcjPlayerBitmapBridge
 import uk.co.caprica.vlcj.factory.MediaPlayerFactory
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantLock
@@ -30,7 +31,7 @@ class VlcjBridgeManager(
 
     // 强引用防止回调被 GC，jna 会直接抛异常
     // 记得调用 release !
-    private val map = ConcurrentHashMap<String, VlcjPlayerBridge>()
+    private val map = ConcurrentHashMap<String, VlcjPlayerBitmapBridge>()
 
 
     // 耗时
@@ -38,16 +39,17 @@ class VlcjBridgeManager(
         mediaPlayerFactory
     }
 
-    fun getOrCreateBridge(
+    fun getMediaPlayerFactory() = mediaPlayerFactory
+
+    fun getOrCreateBitmapBridge(
         tag: String,
         customFrameScope: CoroutineScope? = null,
-    ): VlcjPlayerBridge {
+    ): VlcjPlayerBitmapBridge {
         return map.getOrPut(tag) {
             reentrantLock.withLock {
-                VlcjPlayerBridge(this, customFrameScope)
+                VlcjPlayerBitmapBridge(this, customFrameScope)
             }
         }
-
     }
 
     internal fun createMediaPlayer() =

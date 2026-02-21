@@ -24,8 +24,8 @@ object BangumiConst {
     )
 
     val collectTypeInPlan = BangumiCollectType(1, "想看")
-    val collectTypeWatching = BangumiCollectType(2, "在看")
-    val collectTypeWatched = BangumiCollectType(3, "看过")
+    val collectTypeWatching = BangumiCollectType(3, "在看")
+    val collectTypeWatched = BangumiCollectType(2, "看过")
     val collectTypeOnHold = BangumiCollectType(4, "搁置")
     val collectTypeDropped = BangumiCollectType(5, "抛弃")
 

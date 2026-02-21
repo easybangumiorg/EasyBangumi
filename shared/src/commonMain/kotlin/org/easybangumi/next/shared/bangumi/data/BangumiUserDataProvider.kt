@@ -3,7 +3,7 @@ package org.easybangumi.next.shared.bangumi.data
 import kotlinx.atomicfu.locks.ReentrantLock
 import kotlinx.atomicfu.locks.withLock
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import org.easybangumi.next.lib.unifile.UFD
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.shared.bangumi.account.BangumiAccountController

@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.easybangumi.next.lib.utils.DataState
@@ -158,7 +159,7 @@ fun PreviewCollectBtn(
         }
 
         Icon(
-            icon.first, modifier = Modifier.size(16.dp), contentDescription = null
+            icon.first, modifier = Modifier.size(16.dp), tint = if (icon.second) MaterialTheme.colorScheme.primary else Color.Unspecified, contentDescription = null
         )
         Spacer(modifier = Modifier.size(4.dp))
         Text(

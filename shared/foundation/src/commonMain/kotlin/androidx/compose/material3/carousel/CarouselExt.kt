@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.dp
 @Suppress("INVISIBLE_REFERENCE", "SYNTHETIC_ACCESSOR", "INVISIBLE_MEMBER",)
 @ExperimentalMaterial3Api
 @Composable
-fun HorizontalMultiBrowseCarousel(
+fun HorizontalMultiBrowseCarouselEasy(
     state: CarouselState,
     preferredItemWidth: Dp,
     modifier: Modifier = Modifier,
@@ -45,11 +45,12 @@ fun HorizontalMultiBrowseCarousel(
         orientation = Orientation.Horizontal,
         keylineList = { availableSpace, itemSpacingPx ->
             with(density) {
+                state.currentItem
                 multiBrowseKeylineList(
                     density = this,
                     carouselMainAxisSize = availableSpace,
                     preferredItemSize = preferredItemWidth.toPx(),
-                    itemCount = state.itemCountState.value.invoke(),
+                    itemCount = state.pagerState.pageCountState.value.invoke(),
                     itemSpacing = itemSpacingPx,
                     minSmallItemSize = minSmallItemWidth.toPx(),
                     maxSmallItemSize = maxSmallItemWidth.toPx(),
@@ -151,7 +152,7 @@ internal fun Carousel(
             userScrollEnabled = userScrollEnabled,
             modifier = modifier
         ) { page ->
-            val carouselItemInfo = remember { CarouselItemInfoImpl() }
+            val carouselItemInfo = remember { CarouselItemDrawInfoImpl() }
             val scope = remember { CarouselItemScopeImpl(itemInfo = carouselItemInfo) }
             val clipShape = remember {
                 object : Shape {
@@ -171,7 +172,7 @@ internal fun Carousel(
                         index = page,
                         state = state,
                         strategy = { pageSize.strategy },
-                        carouselItemInfo = carouselItemInfo,
+                        carouselItemDrawInfo = carouselItemInfo,
                         clipShape = clipShape
                     )
             ) {
@@ -195,7 +196,7 @@ internal fun Carousel(
             userScrollEnabled = userScrollEnabled,
             modifier = modifier
         ) { page ->
-            val carouselItemInfo = remember { CarouselItemInfoImpl() }
+            val carouselItemInfo = remember { CarouselItemDrawInfoImpl() }
             val scope = remember { CarouselItemScopeImpl(itemInfo = carouselItemInfo) }
             val clipShape = remember {
                 object : Shape {
@@ -215,7 +216,7 @@ internal fun Carousel(
                         index = page,
                         state = state,
                         strategy = { pageSize.strategy },
-                        carouselItemInfo = carouselItemInfo,
+                        carouselItemDrawInfo = carouselItemInfo,
                         clipShape = clipShape
                     )
             ) {

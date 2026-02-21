@@ -54,10 +54,10 @@ compose.desktop {
             isEnabled.set(false)
         }
 
-
         jvmArgs.addAll(
             listOf(
-//                "-Dsun.java2d.uiScale=1.0",
+                "-Dsun.java2d.uiScale=auto",
+                "-Dsun.java2d.dpiaware=true",
                 "-Dawt.useSystemAAFontSettings=lcd",
                 "-Dswing.aatext=true",
                 "-Dsun.java2d.metal=true",
@@ -66,9 +66,10 @@ compose.desktop {
                 "--add-exports=java.desktop/sun.java2d=ALL-UNNAMED",
                 "--add-opens=java.desktop/java.awt.peer=ALL-UNNAMED",
                 "--add-opens=java.desktop/sun.awt=ALL-UNNAMED",
-                "-Dsun.java2d.metal=true",
                 "-Djogamp.debug.JNILibLoader=true",
-//                "-Dcompose.interop.blending=true"
+                "-Dprism.allowhidpi=true",
+                "-Dcompose.interop.blending=true",
+                "-Dcompose.swing.render.on.graphics=true"
             )
         )
 
@@ -245,4 +246,3 @@ afterEvaluate {
 
     }
 }
-

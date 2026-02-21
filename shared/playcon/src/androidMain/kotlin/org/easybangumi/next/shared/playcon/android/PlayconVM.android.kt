@@ -160,7 +160,14 @@ class AndroidPlayconVM(
         }
     }
 
-    fun onGesturePositionChange(position: Long) {}
+    fun onGesturePositionChange(position: Long) {
+        logger.info("onGesturePositionChange: $position, duration: $duration, isMedia = ${bridge.isMedia()}")
+        if (!bridge.isMedia()) {
+            return
+        }
+        scrollingPosition = position.coerceIn(0L, duration.coerceAtLeast(Long.MAX_VALUE))
+        isPositionScrolling = true
+    }
 
     fun onSeekBarPositionChange(position: Long) {
         logger.info("onSeekBarPositionChange: $position, duration: $duration, isMedia = ${bridge.isMedia()}")

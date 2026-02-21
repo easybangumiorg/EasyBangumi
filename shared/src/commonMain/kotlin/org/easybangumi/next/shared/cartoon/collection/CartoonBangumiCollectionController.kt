@@ -45,7 +45,7 @@ class CartoonBangumiCollectionController(
         val pagingSource: Map<BangumiConst.BangumiCollectType, BangumiCollectComponent.CollectionsPagingSource> = mapOf(),
         val type2Collect: Map<BangumiConst.BangumiCollectType, PagingFlow<BgmCollect>> = emptyMap(),
         val type2Scope: Map<BangumiConst.BangumiCollectType, CoroutineScope> = emptyMap(),
-        val updateTime: Long = kotlinx.datetime.Clock.System.now().toEpochMilliseconds(),
+        val updateTime: Long = Clock.System.now().toEpochMilliseconds(),
     )
     private val _flow = MutableStateFlow<BangumiCollectionState>(BangumiCollectionState())
     val flow = _flow.asStateFlow()
@@ -133,7 +133,7 @@ class CartoonBangumiCollectionController(
                     isLoading = false,
                     type2Collect = type2CollectMap,
                     type2Scope = type2ScopeMap,
-                    updateTime = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
+                    updateTime = Clock.System.now().toEpochMilliseconds()
                 )
             }
         }

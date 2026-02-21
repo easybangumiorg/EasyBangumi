@@ -6,11 +6,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import org.easybangumi.next.lib.utils.DataState
+import org.easybangumi.next.libplayer.api.C
+import org.easybangumi.next.libplayer.api.PlayerBridge
 import org.easybangumi.next.shared.cartoon.collection.BgmCollectInfoVM
 import org.easybangumi.next.shared.compose.bangumi.comment.BangumiCommentVM
 import org.easybangumi.next.shared.compose.detail.bangumi.BangumiDetailVM
@@ -22,8 +25,10 @@ import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.data.cartoon.CartoonInfo
 import org.easybangumi.next.shared.data.room.cartoon.dao.CartoonInfoDao
+import org.easybangumi.next.shared.foundation.snackbar.moeSnackBar
 import org.easybangumi.next.shared.foundation.todo.easyTODO
 import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
+import org.easybangumi.next.shared.source.SourceCase
 import org.koin.core.component.inject
 import kotlin.getValue
 
@@ -45,7 +50,9 @@ class BangumiMediaCommonVM (
 ): BaseViewModel() {
 
     val cartoonIndex: CartoonIndex = param.cartoonIndex
+    var suggestPlayerLineId: Int? = null
     var suggestEpisode: Int? = param.suggestEpisode
+    var suggestPosition: Long? = null
 
     // == 数据状态 =============================
     data class State(
@@ -81,8 +88,6 @@ class BangumiMediaCommonVM (
     // == 播放线路状态 =============================
     val playLineIndexVM: PlayLineIndexVM by childViewModel {
         PlayLineIndexVM(
-//            cartoonIndex = cartoonIndex.toCartoonIndex(),
-            suggestEpisode = suggestEpisode,
         )
     }
     val playIndexState = playLineIndexVM.logic
@@ -101,6 +106,7 @@ class BangumiMediaCommonVM (
         BangumiDetailVM(cartoonIndex = cartoonIndex,)
     }
 
+    private val sourceCase: SourceCase by inject()
 
     private val cartoonInfoDao: CartoonInfoDao by inject()
 
@@ -108,13 +114,35 @@ class BangumiMediaCommonVM (
 
     val bangumiCommentVM: BangumiCommentVM = bangumiDetailVM.bangumiCommentVM
 
+    fun attachBridge(bridge: PlayerBridge<*>) {
+        viewModelScope.launch {
+            bridge.errorStateFlow.collectLatest {
+                if (it != null) {
+                    firePlayerError()
+                }
+            }
+        }
+
+        viewModelScope.launch {
+            bridge.playStateFlow.collectLatest {
+                if (it == C.State.READY) {
+                    val pos = suggestPosition
+                    if (pos != null) {
+                        bridge.seekTo(pos)
+                        suggestPosition = null
+                    }
+                }
+            }
+        }
+    }
+
 
     init {
         // 媒体雷达结果 -> 播放线路状态
         viewModelScope.launch {
-            state.map { it.radarResult }.distinctUntilChanged().collectLatest {
-                if (it != null) {
-                    playLineIndexVM.loadPlayLine(it.playCover.toCartoonIndex())
+            state.map { it.radarResult }.distinctUntilChanged().collectLatest { res ->
+                if (res != null) {
+                    playLineIndexVM.loadPlayLine(res.playCover.toCartoonIndex(), suggestPlayerLineId ?: res.suggestPlayerLine?.order, suggestEpisode)
                 }
             }
         }
@@ -127,33 +155,23 @@ class BangumiMediaCommonVM (
             bangumiDetailVM.subjectRepository.flow.collectLatest {
                 it.cacheData?.allName?.let {
                     mediaFinderVM.changeKeywordSuggest(it)
-
-                    it.firstOrNull()?.let {
-                        // 尝试静默搜索一次
-                        viewModelScope.launch {
-                            if (silentFindFirst.compareAndSet(expect = false, update = true)) {
-                                mediaFinderVM.silentFind(it)
-                            }
-
-                        }
-                    }
-
+                    mediaFinderVM.changeKeyword(it.firstOrNull())
                 }
             }
         }
 
-        val keyword = param.radarKeywordSuggest.firstOrNull()
-            ?: bangumiDetailVM.subjectRepository.flow.value.cacheData?.allName?.firstOrNull()
-            ?: param.cartoonCover?.name
-        if (keyword != null) {
-            // 尝试静默搜索一次
-            viewModelScope.launch {
-                if (silentFindFirst.compareAndSet(false, update = true)) {
-                    mediaFinderVM.silentFind(keyword)
-                }
-
-            }
-        }
+//        val keyword = param.radarKeywordSuggest.firstOrNull()
+//            ?: bangumiDetailVM.subjectRepository.flow.value.cacheData?.allName?.firstOrNull()
+//            ?: param.cartoonCover?.name
+//        if (keyword != null) {
+//            // 尝试静默搜索一次
+//            viewModelScope.launch {
+//                if (silentFindFirst.compareAndSet(false, update = true)) {
+//                    mediaFinderVM.silentFind(keyword)
+//                }
+//
+//            }
+//        }
 
         // 媒体雷达选择结果处理
         viewModelScope.launch {
@@ -185,6 +203,45 @@ class BangumiMediaCommonVM (
                 }
             }
         }
+
+        viewModelScope.launch {
+            // 先用缓存的播放源，如果错误在启动一次静默搜索
+            var needSilentFind = true
+            if (param.useHistory) {
+                val info = cartoonInfoDao.findById(cartoonIndex.source, cartoonIndex.id)
+                if (info != null) {
+                    suggestPlayerLineId = info.lastLineIndex
+                    if (param.suggestEpisode == null) {
+                        suggestEpisode = info.lastEpisodeOrder
+                    }
+                    if (param.suggestPosition == null) {
+                        suggestPosition = info.lastProcessTime
+                    }
+                    val manifest = sourceCase.sourceManifestFlow().first()
+                    manifest.firstOrNull {
+                        it.key == info.lastPlaySourceKey
+                    }?.let {
+                        needSilentFind = false
+                        mediaFinderVM.onUserResultSelect(
+                            MediaFinderVM.SelectionResult(
+                                // 这里没有缓存播放源的封面，先暂时使用元数据源的封面信息，直接修改 key 为播放源的 key，id 为播放源的 id
+                                // 如果后续需要做播放源封面的展示需要注意
+                                playCover = info.toCartoonCover().copy(
+                                    source = it.key,
+                                    id = info.lastPlaySourceId
+                                ),
+                                manifest = it,
+                                suggestPlayerLine = null,
+                                fromUser = false
+                            )
+                        )
+                    }
+                }
+            }
+            if (needSilentFind) {
+                trySilentFind()
+            }
+        }
     }
 
     // state change ============================
@@ -205,7 +262,12 @@ class BangumiMediaCommonVM (
     }
 
 
+    // 手动选择之后 suggest 全失效
     fun onMediaRadarSelect(result: MediaFinderVM.SelectionResult?) {
+        if (result?.fromUser == true) {
+            suggestEpisode = null
+            suggestPlayerLineId = null
+        }
         sta.update {
             it.copy(
                 radarResult = result
@@ -214,7 +276,7 @@ class BangumiMediaCommonVM (
     }
 
 
-    suspend fun trySaveHistory(positionMs: Long) {
+    suspend fun trySaveHistory(positionMs: Long?) {
         val cover = bangumiDetailVM.subjectRepository.flow.value.okOrNull()?.cartoonCover
         val playLine = playLineIndexVM.logic.value
         cover ?: return
@@ -222,11 +284,14 @@ class BangumiMediaCommonVM (
             val info = it ?: CartoonInfo.fromCartoonCover(cover)
             info.copy(
                 lastHistoryTime = Clock.System.now().toEpochMilliseconds(),
-                lastProcessTime = positionMs,
+                lastProcessTime = positionMs?: info.lastProcessTime,
                 lastPlaySourceKey = playLine.business?.source?.key ?: info.lastPlaySourceKey,
                 lastPlaySourceId = playLine.cartoonIndex?.id ?: info.lastPlaySourceId,
                 lastLineId = playLine.playLineOrNull?.id ?: info.lastLineId,
+                lastLineIndex = playLine.currentPlayerLine,
                 lastEpisodeId = playLine.currentEpisodeOrNull?.id ?: info.lastEpisodeId,
+                lastEpisodeOrder = playLine.currentEpisode,
+                lastEpisodeIndex = playLine.currentEpisode,
                 lastEpisodeLabel = playLine.currentEpisodeOrNull?.label ?: info.lastEpisodeLabel,
             )
         }
@@ -236,6 +301,34 @@ class BangumiMediaCommonVM (
         bangumiDetailVM.subjectRepository.flow.value.okOrNull()?.cartoonCover?.let { cover ->
             _popupState.update {
                 Popup.CollectionDialog(cover)
+            }
+        }
+    }
+
+    fun firePlayerError() {
+
+        if (playIndexState.value.playInfo.mapOkData { it.isCache } == true) {
+            // cache 数据出问题禁用 cache 后解析一下
+            playLineIndexVM.tryRefreshPlayInfo(false)
+        } else {
+            //　否则触发一次静默搜索，trySilentFind　中有单次判断，可以饱和调用
+            trySilentFind()
+        }
+
+    }
+
+    fun trySilentFind() {
+        val keyword = param.radarKeywordSuggest.firstOrNull()
+            ?: bangumiDetailVM.subjectRepository.flow.value.cacheData?.allName?.firstOrNull()
+            ?: param.cartoonCover?.name
+        if (keyword != null) {
+            // 尝试静默搜索一次
+            viewModelScope.launch {
+                if (silentFindFirst.compareAndSet(false, update = true)) {
+                    mediaFinderVM.onUserResultSelect(null)
+                    mediaFinderVM.silentFind(keyword)
+                }
+
             }
         }
     }

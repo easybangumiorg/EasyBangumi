@@ -1,7 +1,7 @@
 package org.easybangumi.next.shared.data.cartoon
 
 import androidx.room.Entity
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import org.easybangumi.next.lib.utils.getMatchReg
 
 
@@ -83,6 +83,8 @@ data class CartoonInfo(
     val lastPlaySourceKey: String = "", // 最后一次播放的源 key
 
     val lastHistoryTime: Long = 0, // 如果为 0 则代表没有历史记录
+
+    // 历史 PlayLines 缓存
     val lastHistoryPlayLineListJson: String = "",
 
     val lastLineId: String = "",

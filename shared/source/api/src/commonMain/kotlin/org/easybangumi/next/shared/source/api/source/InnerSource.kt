@@ -1,7 +1,7 @@
 ﻿package org.easybangumi.next.shared.source.api.source
 
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import org.easybangumi.next.lib.unifile.UFD
 import org.easybangumi.next.lib.utils.ResourceOr
 import org.easybangumi.next.shared.source.api.component.Component
@@ -55,5 +55,6 @@ abstract class InnerSource: Source {
         get() = throw IllegalStateException("scope not support in inner source, please use SourceWrapper")
 
 
+    override val extMap: HashMap<Any, Any> = hashMapOf()
 
 }

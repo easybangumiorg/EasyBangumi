@@ -1,6 +1,7 @@
 package org.easybangumi.next.lib.utils
 
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -13,6 +14,7 @@ import kotlinx.datetime.Clock
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
+@OptIn(ExperimentalTime::class)
 interface MutableDataRepository <T: Any>: DataRepository<T> {
 
     suspend fun update(

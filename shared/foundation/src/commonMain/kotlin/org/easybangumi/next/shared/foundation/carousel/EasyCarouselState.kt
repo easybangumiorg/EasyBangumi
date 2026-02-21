@@ -104,6 +104,7 @@ class EasyCarouselState(
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
+@Suppress("INVISIBLE_REFERENCE")
 @Composable
 fun rememberEasyCarouselState(
     initialItem: Int = 0,
@@ -116,5 +117,5 @@ fun rememberEasyCarouselState(
             itemCount = itemCount
         )
     }
-        .apply { carouselState.itemCountState.value = itemCount }
+        .apply { carouselState.pagerState.pageCountState.value = itemCount }
 }

@@ -157,24 +157,26 @@ object JcefManager {
         config.cefSettings.cache_path = getCachePath()
         config.cefSettings.log_severity = CefSettings.LogSeverity.LOGSEVERITY_DEFAULT
         config.cefSettings.log_file = getLogPath()
+        config.cefSettings.persist_session_cookies = true
         return config
     }
 
 
 
-    // jcef 如果泄露则会出现 cache 文件夹被占用，每次都使用新路径，并饱和删除所有路径
+    // cookie 持久化
     private fun getCachePath(): String {
         val path = pathProvider.getCacheJvmPath("jcef")
         val file = File(path)
-        try {
-            file.deleteRecursively()
-        }catch (e: Exception) {
-            // Ignore any errors during deletion
-        }
-        file.mkdirs()
-        val configFile = File(file, System.currentTimeMillis().toString())
-        configFile.mkdirs()
-        return configFile.absolutePath
+        return path
+//        try {
+//            file.deleteRecursively()
+//        }catch (e: Exception) {
+//            // Ignore any errors during deletion
+//        }
+//        file.mkdirs()
+//        val configFile = File(file, System.currentTimeMillis().toString())
+//        configFile.mkdirs()
+//        return configFile.absolutePath
     }
 
     private fun getLogPath(): String {

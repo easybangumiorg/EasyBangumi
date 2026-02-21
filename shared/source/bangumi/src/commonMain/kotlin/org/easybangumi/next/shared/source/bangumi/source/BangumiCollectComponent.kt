@@ -1,7 +1,7 @@
 package org.easybangumi.next.shared.source.bangumi.source
 
 import kotlinx.coroutines.async
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.EasyPagingSource
 import org.easybangumi.next.lib.utils.PagingFrame

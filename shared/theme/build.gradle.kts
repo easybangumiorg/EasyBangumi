@@ -17,10 +17,10 @@ kotlin {
         val iosSimulatorArm64Main by getting
 
         commonMain.dependencies {
-            implementation(compose.ui)
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
+            implementation(libs.compose.ui)
+            implementation(libs.compose.runtime)
+            implementation(libs.compose.foundation)
+            implementation(libs.compose.material3)
 
             implementation(libs.koin.core)
             implementation(libs.koin.compose)

@@ -1,6 +1,6 @@
 package org.easybangumi.next.shared.data
 
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.data.cartoon.CartoonInfo
 import org.easybangumi.next.shared.data.cartoon.CartoonTag

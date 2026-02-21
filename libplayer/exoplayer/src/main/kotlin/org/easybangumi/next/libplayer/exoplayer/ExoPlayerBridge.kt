@@ -5,6 +5,7 @@ import android.content.Context
 import android.view.TextureView
 import androidx.annotation.OptIn
 import androidx.media3.common.C
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
@@ -89,6 +90,7 @@ class ExoPlayerBridge(
         get() = exoPlayer
 
     override fun prepare(mediaItem: MediaItem) {
+        innerErrorFlow.update { null }
         val player = exoPlayerLazy.value
         val exoItem = exoMediaSourceFactory.getMediaItem(mediaItem)
         val mediaSource = exoMediaSourceFactory.getMediaSourceFactory(mediaItem)
@@ -147,6 +149,12 @@ class ExoPlayerBridge(
 //                height = videoSize.height,
 //            ))
         }
+
+        override fun onPlayerError(error: PlaybackException) {
+            super.onPlayerError(error)
+            innerErrorFlow.update { error }
+        }
+
 
         override fun onAvailableCommandsChanged(availableCommands: Player.Commands) {
             super.onAvailableCommandsChanged(availableCommands)

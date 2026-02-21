@@ -100,7 +100,7 @@ object CollectionUIUtils {
         if (isLocalCollected) {
             return Icons.Filled.Favorite to true
         } else if (bgmCollectType != null && bgmCollectType.type != BangumiConst.collectTypeDropped.type) {
-            return Icons.Filled.Favorite to false
+            return Icons.Filled.Favorite to true
         }
         return Icons.Filled.FavoriteBorder to false
     }

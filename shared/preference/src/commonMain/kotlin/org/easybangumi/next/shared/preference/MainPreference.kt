@@ -35,5 +35,8 @@ class MainPreference(
     // 私密模式，开启后播放的内容不会出现在历史记录中
     val privateMode = preferenceStore.getBoolean("private_mode", false)
 
+    val expectPreference = ExpectPreference(preferenceStore)
+
+
 
 }

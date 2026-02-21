@@ -35,6 +35,8 @@ interface PlayerBridge<T: Any>: AutoCloseable {
     fun setScaleType(scaleType: C.RendererScaleType)
     val scaleTypeFlow: StateFlow<C.RendererScaleType>
 
+    val errorStateFlow: StateFlow<Exception?>
+
     fun <A: Action<*>> action(clazz: KClass<A>): A?
 
 

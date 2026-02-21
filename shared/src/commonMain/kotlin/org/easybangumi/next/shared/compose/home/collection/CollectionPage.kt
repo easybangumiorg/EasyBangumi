@@ -107,6 +107,7 @@ fun BangumiCollectionList(
                 columns = GridCells.Adaptive(100.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
+                contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
             ) {
                 item(
                     span = {

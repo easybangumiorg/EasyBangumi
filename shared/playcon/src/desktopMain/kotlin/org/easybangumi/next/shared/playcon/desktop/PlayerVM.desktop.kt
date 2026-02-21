@@ -3,19 +3,20 @@ package org.easybangumi.next.shared.playcon.desktop
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.libplayer.api.MediaItem
-import org.easybangumi.next.libplayer.vlcj.VlcPlayerFrameState
+import org.easybangumi.next.libplayer.vlcj.BaseVlcjPlayerBridge
+import org.easybangumi.next.libplayer.vlcj.bitmap.VlcPlayerBitmapFrameState
 import org.easybangumi.next.libplayer.vlcj.VlcjBridgeManager
-import org.easybangumi.next.libplayer.vlcj.VlcjPlayerBridge
-import org.easybangumi.next.libplayer.vlcj.VlcjPlayerFrame
+import org.easybangumi.next.libplayer.vlcj.bitmap.VlcjPlayerBitmapBridge
 import org.easybangumi.next.shared.data.cartoon.PlayInfo
 import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
 import org.easybangumi.next.shared.playcon.BasePlayconViewModel
 import org.easybangumi.next.shared.playcon.pointer.PointerPlayconVM
+import org.easybangumi.next.shared.preference.ExpectPreference
+import org.easybangumi.next.shared.preference.MainPreference
 import org.koin.core.component.inject
 
 /**
@@ -37,11 +38,13 @@ class DesktopPlayerVM(
         const val MEDIA_COMPONENT_ASPECT = 16f / 9f
     }
 
+
+
     val vlcjManager: VlcjBridgeManager by inject()
-    val vlcjPlayerBridge: VlcjPlayerBridge by lazy {
-        vlcjManager.getOrCreateBridge(this.toString())
+    val vlcjPlayerBridge: BaseVlcjPlayerBridge by lazy {
+        vlcjManager.getOrCreateBitmapBridge(this.toString())
     }
-    val vlcPlayerFrameState = VlcPlayerFrameState()
+    val vlcPlayerBitmapFrameState = VlcPlayerBitmapFrameState()
 
     val playconVM: PointerPlayconVM by childViewModel {
         PointerPlayconVM(
@@ -52,11 +55,14 @@ class DesktopPlayerVM(
     val playInfo = mutableStateOf<DataState<PlayInfo>>(DataState.none())
     val isFinalLoading = mutableStateOf(false)
 
-
     init {
 
-        vlcPlayerFrameState.bindBridge(vlcjPlayerBridge)
-        addCloseable(vlcPlayerFrameState)
+//        vlcPlayerBitmapFrameState.bindBridge(vlcjPlayerBitmapBridge)
+//        addCloseable(vlcPlayerBitmapFrameState)
+//        addCloseable(vlcjPlayerBitmapBridge)
+
+        vlcPlayerBitmapFrameState.bindBridge(vlcjPlayerBridge as VlcjPlayerBitmapBridge)
+        addCloseable(vlcPlayerBitmapFrameState)
         addCloseable(vlcjPlayerBridge)
 
         viewModelScope.launch {

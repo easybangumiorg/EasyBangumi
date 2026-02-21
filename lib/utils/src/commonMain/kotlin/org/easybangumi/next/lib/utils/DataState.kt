@@ -1,10 +1,11 @@
 package org.easybangumi.next.lib.utils
 
 import kotlinx.coroutines.withContext
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
+import kotlin.time.ExperimentalTime
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -17,12 +18,13 @@ import kotlin.coroutines.CoroutineContext
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-
+@OptIn(ExperimentalTime::class)
 sealed class DataState<T> {
 
     abstract val timestamp: Long
     abstract val cacheData: T?
 
+    @OptIn(ExperimentalTime::class)
     class None<T>(
         override val timestamp: Long = Clock.System.now().toEpochMilliseconds()
     ) : DataState<T>() {
@@ -160,6 +162,22 @@ sealed class DataState<T> {
         return this
     }
 
+    inline fun <R> mapOkData(block: (DataState.Ok<T>) -> R): R? {
+        return when (this) {
+            is Ok -> {
+                block(this)
+            }
+
+            is Error -> {
+                null
+            }
+
+            else -> {
+                null
+            }
+        }
+
+    }
     inline fun <R> mapOK(block: (T) -> R): R? {
         return when (this) {
             is Ok -> {

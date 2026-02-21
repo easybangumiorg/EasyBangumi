@@ -1,5 +1,3 @@
-import org.jetbrains.compose.compose
-
 plugins {
     alias(builds.plugins.androidLibrary)
 //    alias(builds.plugins.compose)
@@ -22,7 +20,6 @@ dependencies {
     implementation(libs.kotlinx.datetime)
     implementation(projects.logger)
 
-    implementation(compose("org.jetbrains.compose.ui:ui"))
-//    implementation(compose.ui)
+    implementation(libs.compose.ui)
 
 }

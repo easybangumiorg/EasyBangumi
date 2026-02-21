@@ -27,7 +27,9 @@ import org.easybangumi.next.shared.data.cartoon.CartoonCover
 data class MediaParam(
     val cartoonIndex: CartoonIndex,
     val cartoonCover: CartoonCover? = null,
+    val useHistory: Boolean = true,
     val suggestEpisode: Int? = null,
+    val suggestPosition: Long? = null,
     // only bangumi source have
     val radarKeywordSuggest: List<String> = emptyList(),
 )

@@ -3,7 +3,7 @@ package org.easybangumi.next.shared.source.quick.utils
 import com.dokar.quickjs.QuickJs
 import com.dokar.quickjs.binding.JsObject
 import com.dokar.quickjs.binding.define
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import org.easybangumi.next.lib.utils.safeMutableMapOf
 import org.easybangumi.next.lib.webview.IWebView
 import org.easybangumi.next.shared.source.api.utils.WebViewHelper

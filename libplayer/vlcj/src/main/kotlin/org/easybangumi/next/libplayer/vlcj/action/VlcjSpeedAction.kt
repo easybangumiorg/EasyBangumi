@@ -1,7 +1,8 @@
 package org.easybangumi.next.libplayer.vlcj.action
 
 import org.easybangumi.next.libplayer.api.action.SpeedAction
-import org.easybangumi.next.libplayer.vlcj.VlcjPlayerBridge
+import org.easybangumi.next.libplayer.vlcj.BaseVlcjPlayerBridge
+import org.easybangumi.next.libplayer.vlcj.bitmap.VlcjPlayerBitmapBridge
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -14,9 +15,9 @@ import org.easybangumi.next.libplayer.vlcj.VlcjPlayerBridge
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-class VlcjSpeedAction: SpeedAction<VlcjPlayerBridge> {
+class VlcjSpeedAction: SpeedAction<BaseVlcjPlayerBridge> {
 
-    private var bridge: VlcjPlayerBridge? = null
+    private var bridge: BaseVlcjPlayerBridge? = null
     private var speed: Float = -1f
     private var realSpeed: Float = -1f
 
@@ -40,7 +41,7 @@ class VlcjSpeedAction: SpeedAction<VlcjPlayerBridge> {
         }.getOrNull()?.also { realSpeed = it ?: -1f } ?: -1f
     }
 
-    override fun onBind(bridge: VlcjPlayerBridge) {
+    override fun onBind(bridge: BaseVlcjPlayerBridge) {
         this.bridge = bridge
          if (speed > 0) {
              if (bridge.impl.controls().setRate(speed)) {
