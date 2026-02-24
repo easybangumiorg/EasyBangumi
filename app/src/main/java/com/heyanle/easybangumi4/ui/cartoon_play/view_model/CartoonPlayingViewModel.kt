@@ -21,11 +21,17 @@ import com.heyanle.easybangumi4.cartoon.story.local.source.LocalSource
 import com.heyanle.easybangumi4.case.SourceStateCase
 import com.heyanle.easybangumi4.exo.CartoonMediaSourceFactory
 import com.heyanle.easybangumi4.exo.thumbnail.ThumbnailBuffer
+import com.heyanle.easybangumi4.plugin.source.utils.network.WebViewHelperV2Impl
+import com.heyanle.easybangumi4.plugin.source.utils.network.web.IWebProxy
 import com.heyanle.easybangumi4.setting.SettingPreferences
+import com.heyanle.easybangumi4.source_api.component.PlayInfoNeedWebViewCheckBusinessException
+import com.heyanle.easybangumi4.source_api.component.SearchNeedWebViewCheckBusinessException
+import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
 import com.heyanle.easybangumi4.source_api.entity.Episode
 import com.heyanle.easybangumi4.source_api.entity.PlayLine
 import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
 import com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded.CartoonRecordedModel
+import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.CoroutineProvider
 import com.heyanle.easybangumi4.utils.MediaAndroidUtils
 import com.heyanle.easybangumi4.utils.getCachePath
@@ -316,6 +322,15 @@ class CartoonPlayingViewModel(
         })
     }
 
+    val webViewHelperV2Impl: WebViewHelperV2Impl by Inject.injectLazy()
+
+    // 很 hard 但是不管了
+    private var webProxyTemp: IWebProxy? = null
+    private var webTempSummary: CartoonSummary? = null
+    private var webTempLine: PlayLine? = null
+    private var webTempEpisode: Episode? = null
+
+
     private suspend fun innerPlay(
         cartoonPlayingState: CartoonPlayViewModel.CartoonPlayState,
         adviceProcess: Long,
@@ -339,11 +354,36 @@ class CartoonPlayingViewModel(
             }
             return
         }
-        play.getPlayInfo(
-            cartoonPlayingState.cartoonSummary,
-            cartoonPlayingState.playLine.playLine,
-            cartoonPlayingState.episode
-        )
+
+        val tw = webProxyTemp
+        val tsummary = webTempSummary
+        val tline = webTempLine
+        val tepisode = webTempEpisode
+        if (tw != null && tsummary != null && tline != null && tepisode != null &&
+            tsummary == cartoonPlayingState.cartoonSummary
+            && tline == cartoonPlayingState.playLine.playLine
+            && tepisode == cartoonPlayingState.episode
+            ) {
+            play.getPlayInfoWithCheck(
+                cartoonPlayingState.cartoonSummary,
+                cartoonPlayingState.playLine.playLine,
+                cartoonPlayingState.episode,
+                tw,
+            )
+        } else {
+            runCatching {
+                webProxyTemp?.close()
+            }
+            webProxyTemp = null
+            webTempSummary = null
+            webTempLine = null
+            webTempEpisode = null
+            play.getPlayInfo(
+                cartoonPlayingState.cartoonSummary,
+                cartoonPlayingState.playLine.playLine,
+                cartoonPlayingState.episode
+            )
+        }
             .complete {
                 yield()
                 it.data.uri.logi("CartoonPlayingViewModel")
@@ -363,6 +403,28 @@ class CartoonPlayingViewModel(
                 }
             }
 
+
+    }
+
+    fun onSearchNeedWebCheck(
+        playInfoNeedWebViewCheckBusinessException: PlayInfoNeedWebViewCheckBusinessException,
+    ){
+        val param = playInfoNeedWebViewCheckBusinessException.param
+        val webProxy = param.iWebProxy
+        val webView = webProxy.getWebView()
+        if (webView == null) {
+            "WebView is null".moeSnackBar()
+            tryRefresh()
+            return
+        }
+        webViewHelperV2Impl.openWebPage(
+            webView = webView,
+            tips = param.tips ?: "",
+            onCheck = { false },
+            onStop = {
+                tryRefresh()
+            },
+        )
 
     }
 

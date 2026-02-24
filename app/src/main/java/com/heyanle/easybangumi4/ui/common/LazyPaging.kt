@@ -3,8 +3,8 @@ package com.heyanle.easybangumi4.ui.common
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
@@ -17,6 +17,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import com.heyanle.easy_i18n.R
+import com.heyanle.easybangumi4.source_api.ParserException
+import com.heyanle.easybangumi4.source_api.component.SearchNeedWebViewCheckBusinessException
 import com.heyanle.easybangumi4.utils.stringRes
 
 /**
@@ -241,5 +243,208 @@ fun <T : Any> LazyListScope.pagingCommonHor(items: LazyPagingItems<T>, isShowLoa
         }
     }
 }
+
+fun <T : Any> LazyListScope.pagingCommonSourceSearch(
+    items: LazyPagingItems<T>,
+    onWebCheck: (SearchNeedWebViewCheckBusinessException) -> Unit,
+) {
+    when (val app = items.loadState.append) {
+        is LoadState.Loading -> {
+            item() {
+                LoadingPage(
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+
+        }
+
+        is LoadState.Error -> {
+            item() {
+                var needCommonError = true
+                when(val error = app.error) {
+                    is ParserException -> {
+                        when (val innerError = error.exception) {
+                            is SearchNeedWebViewCheckBusinessException -> {
+                                needCommonError = false
+                                ErrorPage(modifier = Modifier.fillMaxWidth(),
+                                    image = com.heyanle.easybangumi4.R.drawable.empty_bocchi,
+                                    errorMsg = "需要人机效验",
+                                    clickEnable = true,
+                                    other = {
+                                        Text(text = "点击跳转效验")
+                                    },
+                                    onClick = {
+                                        onWebCheck(innerError)
+                                    })
+                            }
+                        }
+                    }
+                }
+                if (needCommonError) {
+                    val errorMsg =
+                        app.error.message ?: stringRes(
+                            R.string.net_error
+                        )
+                    ErrorPage(modifier = Modifier.fillMaxWidth(),
+                        errorMsg = errorMsg,
+                        clickEnable = true,
+                        other = {
+                            Text(text = stringResource(id = R.string.click_to_retry))
+                        },
+                        onClick = {
+                            items.retry()
+                        })
+                }
+
+
+            }
+        }
+
+        else -> {
+
+        }
+    }
+}
+
+
+fun <T : Any> LazyListScope.pagingCommonSourceSearchHor(
+    items: LazyPagingItems<T>,
+    onWebCheck: (SearchNeedWebViewCheckBusinessException) -> Unit,
+) {
+    when (val app = items.loadState.append) {
+        is LoadState.Loading -> {
+            item() {
+                LoadingPage(
+                    modifier = Modifier.fillMaxHeight(),
+                )
+            }
+
+        }
+
+        is LoadState.Error -> {
+            item() {
+                var needCommonError = true
+                when(val error = app.error) {
+                    is ParserException -> {
+                        when (val innerError = error.exception) {
+                            is SearchNeedWebViewCheckBusinessException -> {
+                                needCommonError = false
+                                ErrorPage(modifier = Modifier.fillMaxHeight(),
+                                    image = com.heyanle.easybangumi4.R.drawable.empty_bocchi,
+                                    errorMsg = "需要人机效验",
+                                    clickEnable = true,
+                                    other = {
+                                        Text(text = "点击跳转效验")
+                                    },
+                                    onClick = {
+                                        onWebCheck(innerError)
+                                    })
+                            }
+                        }
+                    }
+                }
+                if (needCommonError) {
+                    val errorMsg =
+                        app.error.message ?: stringRes(
+                            R.string.net_error
+                        )
+                    ErrorPage(modifier = Modifier.fillMaxHeight(),
+                        errorMsg = errorMsg,
+                        clickEnable = true,
+                        other = {
+                            Text(text = stringResource(id = R.string.click_to_retry))
+                        },
+                        onClick = {
+                            items.retry()
+                        })
+                }
+
+
+            }
+        }
+
+        else -> {
+
+        }
+    }
+}
+
+@Composable
+fun <T : Any> PagingCommonSourceSearch(
+    items: LazyPagingItems<T>,
+    onWebCheck: (SearchNeedWebViewCheckBusinessException) -> Unit,
+) {
+    if (items.loadState.refresh is LoadState.NotLoading &&
+        items.loadState.append is LoadState.NotLoading && items.itemCount == 0
+    ) {
+        Column {
+            EmptyPage(
+                modifier = Modifier.fillMaxWidth().weight(1f),
+            )
+        }
+
+    }
+    when (val refresh = items.loadState.refresh) {
+        is LoadState.Loading -> {
+            Column {
+                LoadingPage(
+                    modifier = Modifier.fillMaxWidth().weight(1f),
+                )
+            }
+
+
+
+        }
+
+        is LoadState.Error -> {
+            var needCommonError = true
+            when(val error = refresh.error) {
+                is ParserException -> {
+                    when (val innerError = error.exception) {
+                        is SearchNeedWebViewCheckBusinessException -> {
+                            needCommonError = false
+                            ErrorPage(modifier = Modifier.fillMaxWidth(),
+                                image = com.heyanle.easybangumi4.R.drawable.empty_bocchi,
+                                errorMsg = "需要人机效验",
+                                other = {
+                                    Text(text = "点击跳转效验")
+                                },
+                                clickEnable = true,
+                                onClick = {
+                                    onWebCheck(innerError)
+                                })
+                        }
+                    }
+
+                }
+            }
+            if (needCommonError) {
+                val errorMsg =
+                    ((items.loadState.refresh as? LoadState.Error)?.error?.message ?: stringRes(
+                        R.string.net_error
+                    ))
+                Column {
+                    ErrorPage(modifier = Modifier.fillMaxWidth().weight(1f),
+                        errorMsg = errorMsg,
+                        clickEnable = true,
+                        other = {
+                            Text(text = stringResource(id = R.string.click_to_retry))
+                        },
+                        onClick = {
+                            items.refresh()
+                        })
+                }
+            }
+
+
+        }
+
+        else -> {
+
+        }
+    }
+
+}
+
 
 

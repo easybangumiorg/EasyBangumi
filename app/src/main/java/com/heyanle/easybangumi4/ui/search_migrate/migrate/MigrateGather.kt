@@ -117,9 +117,11 @@ fun MigrateGather(
         ) {
             itemList.value?.let {
                 items(it) {
-                    MigrateSourceItem(sourceItem = it, starVm = starVm, supportLongTouchStart = false){
-                        onClick(it)
-                    }
+                    MigrateSourceItem(sourceItem = it, starVm = starVm, supportLongTouchStart = false
+                    , onClick = {
+                            onClick(it)
+                        },
+                        onWebCheck = null)
                 }
             }
 

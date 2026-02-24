@@ -86,6 +86,8 @@ import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.cartoon.story.local.source.LocalSource
 import com.heyanle.easybangumi4.navigationDlna
+import com.heyanle.easybangumi4.source_api.ParserException
+import com.heyanle.easybangumi4.source_api.component.PlayInfoNeedWebViewCheckBusinessException
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayingViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.DetailedViewModel
@@ -225,20 +227,40 @@ fun VideoFloat(
         }
     } else if (playingState.isError) {
         Box {
-            ErrorPage(
-                modifier = Modifier
+            val inner = (playingState.errorThrowable as? ParserException)?.exception
+            if (playingState.errorThrowable is ParserException &&
+                inner is PlayInfoNeedWebViewCheckBusinessException) {
+                ErrorPage(modifier = Modifier
                     .fillMaxSize()
                     .background(Color.Black),
-                errorMsg = playingState.errorMsg.ifBlank { playingState.errorThrowable?.message?:"解析错误" },
-                errorMsgColor = Color.White,
-                clickEnable = true,
-                other = {
-                    Text(text = stringResource(id = R.string.click_to_retry), color = Color.White)
-                },
-                onClick = {
-                    cartoonPlayingViewModel.tryRefresh()
-                }
-            )
+                    image = com.heyanle.easybangumi4.R.drawable.empty_bocchi,
+                    errorMsgColor = Color.White,
+                    errorMsg = "需要人机效验",
+                    other = {
+                        Text(text = "点击跳转效验")
+                    },
+                    clickEnable = true,
+                    onClick = {
+                        cartoonPlayingViewModel.onSearchNeedWebCheck(inner)
+                    })
+
+            } else {
+                ErrorPage(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black),
+                    errorMsg = playingState.errorMsg.ifBlank { playingState.errorThrowable?.message?:"解析错误" },
+                    errorMsgColor = Color.White,
+                    clickEnable = true,
+                    other = {
+                        Text(text = stringResource(id = R.string.click_to_retry), color = Color.White)
+                    },
+                    onClick = {
+                        cartoonPlayingViewModel.tryRefresh()
+                    }
+                )
+            }
+
             IconButton(
                 modifier = Modifier.align(Alignment.TopStart),
                 onClick = {

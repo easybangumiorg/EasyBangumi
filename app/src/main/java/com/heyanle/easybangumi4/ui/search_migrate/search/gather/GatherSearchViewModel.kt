@@ -7,13 +7,17 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import com.heyanle.easybangumi4.plugin.source.utils.network.WebViewHelperV2Impl
+import com.heyanle.easybangumi4.plugin.source.utils.network.web.IWebProxy
+import com.heyanle.easybangumi4.source_api.component.SearchNeedWebViewCheckBusinessException
 import com.heyanle.easybangumi4.source_api.component.search.SearchComponent
 import com.heyanle.easybangumi4.source_api.entity.CartoonCover
+import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.ui.search_migrate.PagingSearchSource
+import com.heyanle.inject.core.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -34,6 +38,14 @@ class GatherSearchViewModel(
 
     private val _searchItemList = MutableStateFlow<List<GatherSearchItem>?>(emptyList())
     val searchItemList = _searchItemList.asStateFlow()
+
+    val webViewHelperV2Impl: WebViewHelperV2Impl by Inject.injectLazy()
+
+    private val webProxyTemp = hashMapOf<Pair<String, Int>, IWebProxy>()
+
+    val checkWebProvider: (key: Int, keyword: String) -> IWebProxy? = { key, keyword ->
+        webProxyTemp.remove(keyword to key)
+    }
 
     fun newSearchKey(searchKey: String) {
         viewModelScope.launch {
@@ -58,6 +70,39 @@ class GatherSearchViewModel(
         }
     }
 
+    fun onSearchNeedWebCheck(
+        searchNeedWebViewCheckBusinessException: SearchNeedWebViewCheckBusinessException,
+        onRetry: () -> Unit
+    ){
+        val param = searchNeedWebViewCheckBusinessException.param
+        val webProxy = param.iWebProxy
+        val webView = webProxy.getWebView()
+        if (webView == null) {
+            "WebView is null".moeSnackBar()
+            onRetry()
+            return
+        }
+        webViewHelperV2Impl.openWebPage(
+            webView = webView,
+            tips = param.tips ?: "",
+            onCheck = { false },
+            onStop = { onRetry() },
+        )
+
+    }
+
+    override fun onCleared() {
+        webProxyTemp.forEach {
+            try {
+                it.value.close()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+        webProxyTemp.clear()
+        super.onCleared()
+    }
+
 
     private fun getPager(
         keyword: String,
@@ -67,7 +112,7 @@ class GatherSearchViewModel(
             PagingConfig(pageSize = 10),
             initialKey = searchComponent.getFirstSearchKey(keyword)
         ) {
-            PagingSearchSource(searchComponent, keyword)
+            PagingSearchSource(searchComponent, keyword, checkWebProvider)
         }
     }
 

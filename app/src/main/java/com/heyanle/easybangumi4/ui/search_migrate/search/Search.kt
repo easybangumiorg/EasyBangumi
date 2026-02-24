@@ -93,18 +93,6 @@ fun Search(
                 nav.popBackStack()
             },
             onSearch = {
-//                val pid = Process.myPid()
-////self也可以改成pid
-////self也可以改成pid
-//                val f1 = File("/proc/self/maps")
-//                if (f1.exists() && f1.isFile) {
-//                    f1.readLines().forEach {
-//                        it.logi("Search")
-//                    }
-//                } else {
-//                    //Log.d("tag_so", " cannot read so libs " + f1.exists())
-//                }
-               // BydsSource.generateToken().logi("Search")
                 searchVM.search(it)
             },
             onTextChange = {

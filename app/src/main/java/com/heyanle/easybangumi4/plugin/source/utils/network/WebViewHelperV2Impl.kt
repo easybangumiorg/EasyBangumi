@@ -108,6 +108,24 @@ class WebViewHelperV2Impl(
         }
     }
 
+    fun openWebPage(
+        webView: WebView,
+        tips: String,
+        onCheck: (WebView) -> Boolean,
+        onStop: (WebView) -> Unit
+    ) {
+        scope.launch {
+            if (webPageShowing) {
+                return@launch
+            }
+            webPageShowing = true
+            webViewRef = WeakReference(webView)
+            check = WeakReference(onCheck)
+            stop = WeakReference(onStop)
+            navControllerRef?.get()?.navigate("$WEB_VIEW_USER?tips=$tips")
+        }
+    }
+
     fun renderHtmlFromJs(strategy: WebViewHelperV2.RenderedStrategy): WebViewHelperV2.RenderedResult {
         var res: RenderedResult? = null
         val countDownLatch = CountDownLatch(1)

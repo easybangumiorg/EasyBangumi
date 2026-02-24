@@ -512,5 +512,9 @@ class WebProxyImpl(
         }
     }
 
+    override fun getWebView(): WebView? {
+        return webView
+    }
+
 
 }

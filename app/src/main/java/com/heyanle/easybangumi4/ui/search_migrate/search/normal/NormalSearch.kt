@@ -62,9 +62,11 @@ import com.heyanle.easybangumi4.source_api.entity.toIdentify
 import com.heyanle.easybangumi4.ui.common.CartoonCard
 import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.PagingCommon
+import com.heyanle.easybangumi4.ui.common.PagingCommonSourceSearch
 import com.heyanle.easybangumi4.ui.common.TabIndicator
 import com.heyanle.easybangumi4.ui.common.pagingCommon
 import com.heyanle.easybangumi4.ui.common.cover_star.CoverStarViewModel
+import com.heyanle.easybangumi4.ui.common.pagingCommonSourceSearch
 import com.heyanle.easybangumi4.ui.search_migrate.search.SearchViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -228,11 +230,21 @@ fun NormalSearchPage(
                         }
 
                     }
-                    pagingCommon(page)
+                    pagingCommonSourceSearch(page, onWebCheck = {
+                        normalSearchViewModel.onSearchNeedWebCheck(it, onRetry = {
+                            page.retry()
+                        })
+                    })
+//                    pagingCommon(page)
 
                 }
             }
-            PagingCommon(items = page)
+            PagingCommonSourceSearch(page, onWebCheck = {
+                normalSearchViewModel.onSearchNeedWebCheck(it, onRetry = {
+                    page.retry()
+                })
+            })
+
 
 
             PullRefreshIndicator(

@@ -1,8 +1,8 @@
-// @key heyanle.ggl
-// @label GiriGiriLove
-// @versionName 1.2
-// @versionCode 4
-// @libVersion 12
+// @key heyanle.ggl.test
+// @label GiriGiriLoveTest
+// @versionName 1.4
+// @versionCode 999
+// @libVersion 13
 // @cover https://bgm.girigirilove.com/upload/site/20231121-1/fdd2694db66628a9deadd86e50aedd43.png
 
 // Inject
@@ -10,6 +10,7 @@ var networkHelper = Inject_NetworkHelper;
 var preferenceHelper = Inject_PreferenceHelper;
 var webViewHelperV2 = Inject_WebViewHelperV2;
 var okhttpHelper = Inject_OkhttpHelper;
+var webProxyProvider = Inject_WebProxyProvider;
 // Hook PreferenceComponent ========================================
 function PreferenceComponent_getPreference() {
     var res = new ArrayList();
@@ -188,51 +189,86 @@ function playline(doc, summary) {
 
 
  // Hook SearchComponent ========================================
- function SearchComponent_search(page, keyword) {
 
+ function SearchComponent_searchWithCheck(page, keyword, webProxy){
+    webProxy.waitingForPageLoaded();
+    var content = webProxy.getContentWithIframe();
+    var doc = Jsoup.parse(content);
+
+    var verify = doc.select("button.verify-submit");
+    if (!verify.isEmpty()) {
+        webProxy.needUserCheck("请输入验证码提交出现搜索结果后手动返回");
+    }
+
+    return getSearchResultWithDoc(page, keyword, doc);
+ }
+ function SearchComponent_search(page, keyword) {
+    var webProxy = webProxyProvider.getWebProxy();
+    var url = SourceUtils.urlParser(
+            getRootUrl(),
+            "/search/" + URLEncoder.encode(keyword, "utf-8")+"----------" + (page+1) + "---/"
+        )
+    Log.i("GiriGiriLove", "getDocFrom: " + url);
     var url = SourceUtils.urlParser(
         getRootUrl(),
         "/search/" + URLEncoder.encode(keyword, "utf-8")+"----------" + (page+1) + "---/"
     )
-    var doc = getDoc(url);
-    var res = new ArrayList();
-    var elements = doc.select("div.box-width div.row-9 div div.search-box.public-list-box");
-    for (var i = 0; i < elements.size(); i++) {
-        var it = elements.get(i);
-        var uu = it.child(1).child(0).attr("href")
-        var id = uu.subSequence(1, uu.length() - 1).toString()
 
-        var imgEle = it.select("img.gen-movie-img").first();
-        var coverUrl = "";
-        if (imgEle != null) {
-            coverUrl = imgEle.attr("data-src");
-        }
-        var cover = coverUrl;
-        if (cover.startsWith("//")) {
-            cover = "http:${cover}"
-        }
-        var detailInfo = it.select("div.right").first();
-        var titleEle = detailInfo.select("div.thumb-content div.thumb-txt").first();
-        var title = "";
-        if (titleEle != null) {
-            title = titleEle.text();
-        }
-        var b = makeCartoonCover({
-            id: id,
-            title: title,
-            url: SourceUtils.urlParser(getRootUrl(), uu),
-            intro: "",
-            cover: SourceUtils.urlParser(getRootUrl(), cover),
-            source: source.key,
-        })
-        res.add(b)
-    }
-    if (res.size() == 0) {
-        return new Pair(null, new ArrayList());
-    }
-    return new Pair(page + 1, res);
+    webProxy.loadUrl(url, networkHelper.defaultLinuxUA, null, null, true);
+    webProxy.waitingForPageLoaded();
+    var content = webProxy.getContentWithIframe();
+    var doc = Jsoup.parse(content);
 
+    var verify = doc.select("button.verify-submit");
+    if (!verify.isEmpty()) {
+        webProxy.needUserCheck("请输入验证码提交出现搜索结果后手动返回");
+    }
+
+    return getSearchResultWithDoc(page, keyword, doc);
  }
+
+ function getSearchResultWithDoc(page, keyword, doc) {
+ var res = new ArrayList();
+     var elements = doc.select("div.box-width div.row div.search-list.vod-detail");
+     for (var i = 0; i < elements.size(); i++) {
+         var it = elements.get(i);
+         var content = it.child(0);
+         if (content == null) {
+             continue;
+         }
+         var uu = content.child(1).child(0).attr("href")
+         var id = uu.subSequence(1, uu.length() - 1).toString()
+
+         var imgEle = it.select("img.gen-movie-img").first();
+         var coverUrl = "";
+         if (imgEle != null) {
+             coverUrl = imgEle.attr("data-src");
+         }
+         var cover = coverUrl;
+         if (cover.startsWith("//")) {
+             cover = "http:${cover}"
+         }
+         var detailInfo = content.select("div.detail-info").first();
+         var titleEle = detailInfo.select("h3.slide-info-title").first();
+         var title = "";
+         if (titleEle != null) {
+             title = titleEle.text();
+         }
+         var b = makeCartoonCover({
+             id: id,
+             title: title,
+             url: SourceUtils.urlParser(getRootUrl(), uu),
+             intro: "",
+             cover: SourceUtils.urlParser(getRootUrl(), cover),
+             source: source.key,
+         })
+         res.add(b)
+     }
+     if (res.size() == 0) {
+         return new Pair(null, new ArrayList());
+     }
+     return new Pair(page + 1, res);
+    }
 
  // Hook PlayComponent ========================================
 function PlayComponent_getPlayInfo(summary, playLine, episode) {

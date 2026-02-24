@@ -2,6 +2,7 @@ package com.heyanle.easybangumi4.ui.search_migrate
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import com.heyanle.easybangumi4.plugin.source.utils.network.web.IWebProxy
 import com.heyanle.easybangumi4.source_api.SourceResult
 import com.heyanle.easybangumi4.source_api.component.search.SearchComponent
 import com.heyanle.easybangumi4.source_api.entity.CartoonCover
@@ -14,6 +15,7 @@ import com.heyanle.easybangumi4.utils.logi
 class PagingSearchSource(
     private val searchParser: SearchComponent,
     private val keyword: String,
+    private val checkWebProvider: (key: Int, keyword: String) -> IWebProxy? = {_,_ -> null}
 ): PagingSource<Int, CartoonCover>() {
 
     override fun getRefreshKey(state: PagingState<Int, CartoonCover>): Int? {
@@ -26,7 +28,12 @@ class PagingSearchSource(
             return LoadResult.Error(NullPointerException())
         }
         try {
-            searchParser.search(key, keyword).let {
+            val web = checkWebProvider(key, keyword)
+            if (web != null) {
+                searchParser.searchWithCheck(key, keyword, web)
+            } else {
+                searchParser.search(key, keyword)
+            }.let {
                 it.logi("PagingSearchSource")
                 return when (it) {
                     is SourceResult.Error -> {

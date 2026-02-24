@@ -248,7 +248,7 @@ dependencies {
 
     implementation(libs.zip4j)
 
-    implementation(extension.extension.api)
+//    implementation(extension.extension.api)
 
     implementation(libs.bugly)
 

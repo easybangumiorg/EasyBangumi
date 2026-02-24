@@ -350,7 +350,10 @@ fun Nav() {
                 Setting(router = router)
             }
 
-            composable(WEB_VIEW_USER) {
+            composable("${WEB_VIEW_USER}?tips={tips}",
+                arguments = listOf(
+                    navArgument("tips") { defaultValue = "" },
+                )) {
                 ScreenShowEvent()
                 DisposableEffect(key1 = Unit) {
                     onDispose {
@@ -358,10 +361,11 @@ fun Nav() {
                     }
                 }
                 runCatching {
+                    val tips = it.arguments?.getString("tips") ?: ""
                     val wb = WebViewHelperV2Impl.webViewRef?.get() ?: throw NullPointerException()
                     val onCheck = WebViewHelperV2Impl.check?.get() ?: throw NullPointerException()
                     val onStop = WebViewHelperV2Impl.stop?.get() ?: throw NullPointerException()
-                    WebViewUser(webView = wb, onCheck = onCheck, onStop = onStop)
+                    WebViewUser(webView = wb, tips = tips, onCheck = onCheck, onStop = onStop)
                 }.onFailure {
                     nav.popBackStack()
                 }

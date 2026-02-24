@@ -6,5 +6,6 @@ package com.heyanle.easybangumi4.plugin.source
  */
 class SourceException(
     val msg: String,
+    var exception: Exception? = null
 ): Exception(msg) {
 }

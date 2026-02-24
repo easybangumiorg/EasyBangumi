@@ -193,20 +193,19 @@ class JSPageComponent(
                     if (res == null) {
                         throw ParserException("js parse error")
                     }
-                    val nextKey = res.first as? Int?
+                    val nextKey = res.first?.toString()?.toDoubleOrNull()?.toInt()
                     val data = res.second as? java.util.ArrayList<*> ?: throw ParserException("js parse error")
                     if (data.isNotEmpty() && data.first() !is CartoonCover) {
+                        webProxyManager?.close()
                         throw ParserException("js parse error")
                     }
+                    webProxyManager?.close()
                     return@requestRunWithScope nextKey to data.filterIsInstance<CartoonCover>().apply {
                         this.forEach {
 //                            it.coverUrl.logi("JsPageComponent")
                         }
                     }
                 }
-            }.apply {
-                this.logi("JSPageComponent")
-                webProxyManager?.close()
             }
         }
     }

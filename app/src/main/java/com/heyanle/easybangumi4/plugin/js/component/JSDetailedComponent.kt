@@ -52,12 +52,12 @@ class JSDetailedComponent(
                 val cartoon = res.first as? Cartoon ?: throw ParserException("js parse error")
                 val playLineList = res.second as? java.util.ArrayList<*> ?: throw ParserException("js parse error")
                 if (playLineList.isNotEmpty() && playLineList.first() !is PlayLine) {
+                    webProxyManager?.close()
                     throw ParserException("js parse error")
                 }
+                webProxyManager?.close()
                 return@requestRunWithScope cartoon to playLineList.filterIsInstance<PlayLine>()
             }
-        }.apply {
-            webProxyManager?.close()
         }
     }
 

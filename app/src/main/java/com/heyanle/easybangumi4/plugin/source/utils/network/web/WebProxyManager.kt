@@ -29,5 +29,9 @@ class WebProxyManager {
         webViewPool.add(webView)
     }
 
+    fun removeWebProxy(webView: IWebProxy) {
+        webViewPool.remove(webView)
+    }
+
 
 }

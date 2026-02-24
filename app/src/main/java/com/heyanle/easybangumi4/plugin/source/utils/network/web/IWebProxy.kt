@@ -1,5 +1,7 @@
 package com.heyanle.easybangumi4.plugin.source.utils.network.web
 
+import android.webkit.WebView
+
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
  *
@@ -55,6 +57,8 @@ interface IWebProxy: AutoCloseable {
     ): String?
 
     fun addToWindow(show: Boolean)
+
+    fun getWebView(): WebView?
 
 
 

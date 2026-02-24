@@ -1,7 +1,7 @@
 package com.heyanle.easybangumi4.plugin.js.utils
 
 import com.heyanle.easybangumi4.plugin.source.utils.network.web.IWebProxy
-import kotlinx.coroutines.delay
+import com.heyanle.easybangumi4.source_api.component.NeedWebViewCheckExceptionInner
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -117,5 +117,14 @@ class WebViewProxyKtWrapper(
 
     fun addToWindow(show: Boolean) {
         webView.addToWindow(show)
+    }
+
+    fun needUserCheck() {
+        throw NeedWebViewCheckExceptionInner(webView)
+    }
+    fun needUserCheck(
+        tips: String?
+    ) {
+        throw NeedWebViewCheckExceptionInner(webView, tips)
     }
 }
