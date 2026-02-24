@@ -105,7 +105,7 @@ class JSPlayComponent(
         }
     }
 
-    override suspend fun getPlayInfoWithCheck(
+    suspend fun getPlayInfoWithCheck(
         summary: CartoonSummary,
         playLine: PlayLine,
         episode: Episode,
@@ -160,4 +160,15 @@ class JSPlayComponent(
             }
         }
     }
+}
+
+suspend fun PlayComponent.getPlayInfoWithCheck(
+    summary: CartoonSummary,
+    playLine: PlayLine,
+    episode: Episode,
+    iWebProxy: IWebProxy
+): SourceResult<PlayerInfo> {
+    return (this as? JSPlayComponent)!!.getPlayInfoWithCheck(
+        summary, playLine, episode, iWebProxy
+    )
 }

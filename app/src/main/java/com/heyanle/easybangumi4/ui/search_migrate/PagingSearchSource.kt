@@ -2,6 +2,7 @@ package com.heyanle.easybangumi4.ui.search_migrate
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import com.heyanle.easybangumi4.plugin.js.component.searchWithCheck
 import com.heyanle.easybangumi4.plugin.source.utils.network.web.IWebProxy
 import com.heyanle.easybangumi4.source_api.SourceResult
 import com.heyanle.easybangumi4.source_api.component.search.SearchComponent

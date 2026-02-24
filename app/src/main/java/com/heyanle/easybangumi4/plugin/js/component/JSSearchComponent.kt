@@ -52,7 +52,7 @@ class JSSearchComponent(
         return 0
     }
 
-    override suspend fun searchWithCheck(
+    suspend fun searchWithCheck(
         pageKey: Int,
         keyword: String,
         iWebProxy: IWebProxy
@@ -179,4 +179,13 @@ class JSSearchComponent(
     override fun setWebProxyManager(webProxyManager: WebProxyManager) {
         this.webProxyManager = webProxyManager
     }
+}
+suspend fun SearchComponent.searchWithCheck(
+    pageKey: Int,
+    keyword: String,
+    iWebProxy: IWebProxy
+): SourceResult<Pair<Int?, List<CartoonCover>>> {
+    return (this as JSSearchComponent).searchWithCheck(
+        pageKey, keyword, iWebProxy
+    )
 }
