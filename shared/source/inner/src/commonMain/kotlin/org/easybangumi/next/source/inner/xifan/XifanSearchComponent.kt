@@ -16,7 +16,7 @@ import org.easybangumi.next.lib.utils.UrlUtils
 import org.easybangumi.next.lib.utils.withResult
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.source.api.component.BaseComponent
-import org.easybangumi.next.shared.source.api.component.NeedWebViewCheck
+import org.easybangumi.next.shared.source.api.component.NeedWebViewCheckException
 import org.easybangumi.next.shared.source.api.component.search.SearchComponent
 import org.easybangumi.next.shared.source.api.utils.NetworkHelper
 import org.easybangumi.next.shared.source.api.utils.PreferenceHelper
@@ -73,7 +73,7 @@ class XifanSearchComponent: SearchComponent, BaseComponent() {
             val list = arrayListOf<CartoonCover>()
 
             if (doc.select("button.verify-submit").isNotEmpty()) {
-                throw NeedWebViewCheck(url)
+                throw NeedWebViewCheckException(url)
             }
 
             doc.select("body > div.box-width > div div.vod-detail").forEach { ro ->

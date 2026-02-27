@@ -18,6 +18,7 @@ import org.easybangumi.next.shared.RouterPage
 import org.easybangumi.next.shared.compose.bangumi.bangumi
 import org.easybangumi.next.shared.compose.bangumi.bangumiContainer
 import org.easybangumi.next.shared.foundation.stringRes
+import org.easybangumi.next.shared.navigate
 import org.easybangumi.next.shared.resources.Res
 import org.easybangumi.next.shared.source.bangumi.source.BangumiInnerSource
 
@@ -55,7 +56,7 @@ fun BangumiDiscoverTopAppBar(
             if (user.isNone()) {
                 TextButton(
                     onClick = {
-                        nav.navigate(RouterPage.BangumiLogin)
+                        nav.navigate(RouterPage.BangumiLogin, true)
                     },
                     colors = ButtonDefaults.textButtonColors(
                         containerColor = MaterialTheme.colorScheme.bangumiContainer,

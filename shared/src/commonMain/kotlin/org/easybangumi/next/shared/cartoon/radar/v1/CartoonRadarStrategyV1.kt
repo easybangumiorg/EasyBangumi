@@ -7,7 +7,6 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.coroutineProvider
 import org.easybangumi.next.lib.utils.map
@@ -20,7 +19,7 @@ import org.easybangumi.next.shared.data.cartoon.PlayerLine
 import org.easybangumi.next.shared.foundation.snackbar.moeSnackBar
 import org.easybangumi.next.shared.source.SourceCase
 import org.easybangumi.next.shared.source.api.component.FinderComponentPair
-import org.easybangumi.next.shared.source.api.component.NeedWebViewCheck
+import org.easybangumi.next.shared.source.api.component.NeedWebViewCheckException
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -116,7 +115,7 @@ class CartoonRadarStrategyV1(
                             }
                     }
                     result.mapError {
-                        if (it.throwable is NeedWebViewCheck) {
+                        if (it.throwable is NeedWebViewCheckException) {
                             "${pair.first.source.manifest.label} 需要手动验证，功能开发中……".moeSnackBar()
                         }
                     }

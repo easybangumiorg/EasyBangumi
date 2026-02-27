@@ -1,5 +1,7 @@
 ﻿package org.easybangumi.next.shared.source.api.component
 
+import org.easybangumi.next.lib.webview.IWebView
+
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -15,4 +17,11 @@
 
 open class ComponentException(msg: String): RuntimeException(msg)
 
-class NeedWebViewCheck(val url: String,): ComponentException("需要启动网页效验: $url")
+data class WebViewCheckParam(
+    val url: String,
+    val tips: String? = null,
+    val check: (IWebView) -> Boolean,
+)
+class NeedWebViewCheckException(
+    val param: WebViewCheckParam
+): ComponentException("需要启动网页效验")

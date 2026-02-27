@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavHostController
 import org.easybangumi.next.lib.utils.global
 import org.easybangumi.next.shared.foundation.systembar.EasySystemBar
 import org.easybangumi.next.shared.foundation.systembar.EasySystemBarContext
@@ -64,4 +65,11 @@ actual fun AnimatedContentScope.NavHook(
     }
 
     content(entity)
+}
+
+actual fun NavHostController.navigate(
+    routerPage: RouterPage,
+    needNewWindowWhenDesktop: Boolean
+) {
+    this.navigate(routerPage)
 }

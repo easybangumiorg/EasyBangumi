@@ -23,6 +23,7 @@ import org.easybangumi.next.shared.compose.bangumi.bangumiContainer
 import org.easybangumi.next.shared.compose.bangumi.onBangumiContainer
 import org.easybangumi.next.shared.foundation.image.AsyncImage
 import org.easybangumi.next.shared.foundation.view_model.vm
+import org.easybangumi.next.shared.navigate
 import org.easybangumi.next.shared.resources.Res
 
 /**
@@ -61,7 +62,7 @@ fun BangumiAccountCard(
         modifier = modifier.padding(8.dp, 0.dp)
             .clip(RoundedCornerShape(8.dp))
             .clickable {
-                nav.navigate(RouterPage.BangumiLogin)
+                nav.navigate(RouterPage.BangumiLogin, true)
             }
             .background(MaterialTheme.colorScheme.bangumiContainer, RoundedCornerShape(8.dp)),
         colors = ListItemDefaults.colors(

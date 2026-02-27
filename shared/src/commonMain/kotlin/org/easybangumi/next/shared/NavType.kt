@@ -7,6 +7,7 @@ import androidx.savedstate.write
 import org.easybangumi.next.lib.serialization.deserialize
 import org.easybangumi.next.lib.serialization.jsonSerializer
 import org.easybangumi.next.lib.serialization.serialize
+import org.easybangumi.next.shared.compose.web.WebPageParam
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import kotlin.reflect.KClass
@@ -26,8 +27,10 @@ import kotlin.reflect.typeOf
 val NavTypeMap = mapOf(
     typeOf<CartoonIndex>() to JsonStringNavType(CartoonIndex::class),
     typeOf<CartoonCover>() to JsonStringNavType(CartoonCover::class),
+    typeOf<WebPageParam>() to JsonStringNavType(WebPageParam::class),
     typeOf<CartoonIndex?>() to JsonStringNullableNavType(CartoonIndex::class),
     typeOf<CartoonCover?>() to JsonStringNullableNavType(CartoonCover::class),
+    typeOf<WebPageParam?>() to JsonStringNullableNavType(WebPageParam::class),
 )
 
 class JsonStringNullableNavType<T : Any>(

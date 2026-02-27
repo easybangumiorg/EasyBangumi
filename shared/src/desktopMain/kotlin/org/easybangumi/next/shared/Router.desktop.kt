@@ -7,11 +7,15 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.window.WindowState
 import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavHostController
 import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.utils.coroutineProvider
 import org.easybangumi.next.libplayer.vlcj.VlcBridgeManagerProvider
 import org.easybangumi.next.shared.foundation.elements.LoadingElements
+import org.easybangumi.next.shared.window.EasyWindowController
+import org.easybangumi.next.shared.window.EasyWindowState
 import org.koin.compose.koinInject
 
 @Composable
@@ -49,4 +53,19 @@ actual fun AnimatedContentScope.NavHook(
         }
     }
 
+}
+
+actual fun NavHostController.navigate(
+    routerPage: RouterPage,
+    needNewWindowWhenDesktop: Boolean
+) {
+    if (needNewWindowWhenDesktop) {
+        val easyWindowState = EasyWindowState(
+            state = WindowState(),
+            initPage = routerPage,
+        )
+        EasyWindowController.addWindowState(easyWindowState)
+    } else {
+        navigate(this)
+    }
 }

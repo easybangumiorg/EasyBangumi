@@ -32,6 +32,14 @@ interface IPlayComponent {
         playerLine: PlayerLine,
         episode: Episode,
     ): DataState<PlayInfo>
+
+    suspend fun getPlayInfoWithCheck(
+        cartoonIndex: CartoonIndex,
+        playerLine: PlayerLine,
+        episode: Episode,
+    ): DataState<PlayInfo> {
+        return DataState.error("unsupported get play info with check")
+    }
 }
 
 interface PlayComponent: Component, IPlayComponent

@@ -2,8 +2,8 @@
 
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.PagingFrame
+import org.easybangumi.next.lib.webview.IWebView
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
-import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.source.api.component.Component
 
 /**
@@ -26,6 +26,14 @@ interface ISearchComponent {
         keyword: String,
         key: String,
     ): DataState<PagingFrame<CartoonCover>>
+
+    suspend fun searchWithCheck(
+        keyword: String,
+        key: String,
+        web: IWebView
+    ): DataState<PagingFrame<CartoonCover>> {
+        return DataState.error("unsupported search with check")
+    }
 
 }
 

@@ -1,6 +1,8 @@
 ﻿package org.easybangumi.next.shared.source
 
-import org.easybangumi.next.shared.source.api.component.NeedWebViewCheck
+import androidx.navigation.NavHostController
+import org.easybangumi.next.shared.compose.web.WebPageParam
+import org.easybangumi.next.shared.source.api.component.NeedWebViewCheckException
 
 
 /**
@@ -15,6 +17,15 @@ import org.easybangumi.next.shared.source.api.component.NeedWebViewCheck
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
-fun NeedWebViewCheck.fire(label: String) {
+fun NeedWebViewCheckException.fire(
+    navController: NavHostController,
+    onDismiss: () -> Unit = {},
+) {
+    val webPageParam = WebPageParam(
+        title = "网页效验",
+        url = this.url,
+    )
+
+
 
 }

@@ -1,9 +1,8 @@
-package org.easybangumi.next.shared.bangumi.login
+package org.easybangumi.next.shared.compose.web
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.cef.CefClient
 import org.cef.browser.CefBrowser
@@ -14,18 +13,8 @@ import org.cef.handler.CefLoadHandler
 import org.cef.handler.CefResourceRequestHandlerAdapter
 import org.cef.network.CefRequest
 import org.easybangumi.next.jcef.JcefManager
-import org.easybangumi.next.jcef.JcefWebViewProxy
-import org.easybangumi.next.jcef.safeClose
-import org.easybangumi.next.jcef.safeDispose
-import org.easybangumi.next.jcef.safeStopLoad
-import org.easybangumi.next.lib.utils.safeResume
-import org.easybangumi.next.shared.bangumi.account.BangumiAccountController
+import org.easybangumi.next.shared.bangumi.login.BangumiLoginVM
 import org.easybangumi.next.shared.foundation.view_model.StateViewModel
-import org.easybangumi.next.shared.source.bangumi.business.BangumiApi
-import org.koin.core.component.inject
-import kotlin.collections.component1
-import kotlin.collections.component2
-import kotlin.getValue
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -38,8 +27,9 @@ import kotlin.getValue
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-class BangumiLoginVM : StateViewModel<BangumiLoginVM.State>(State.Idle) {
-    private val sta = this.toString()
+class WebPageVM(
+    private val param: WebPageParam,
+) : StateViewModel<WebPageVM.State>(State.Idle, true) {
 
     sealed class State {
         object Idle: State()
@@ -48,15 +38,11 @@ class BangumiLoginVM : StateViewModel<BangumiLoginVM.State>(State.Idle) {
             val client: CefClient,
             val browser: CefBrowser,
         ): State()
-        data class WaitingAccessToken(val callback: String): State()
-        object GetAccountTokenSuccess: State()
-        data class ErrorAndExit(val errorMsg: String): State()
+        data class Error(val errorMsg: String): State()
     }
 
     val isBrowserLoading = mutableStateOf(false)
 
-    private val bangumiAccountController: BangumiAccountController by inject()
-    private val bangumiApi: BangumiApi by inject()
 
     private val loadHandler = object: CefLoadHandler {
         override fun onLoadingStateChange(
@@ -100,25 +86,12 @@ class BangumiLoginVM : StateViewModel<BangumiLoginVM.State>(State.Idle) {
             url: String?,
         ) {
             logger.info(
-                "BangumiLoginVM WebViewClient onUrlHook: $url"
+                "WebViewClient onUrlHook: $url"
             )
-            if (url != null ) {
-                viewModelScope.launch(Dispatchers.Main) {
-                    val code = bangumiApi.onAuthUrlHook(url)
-                    if (code != null) {
-                        if (code.isEmpty()) {
-                            update {
-                                State.ErrorAndExit("获取授权码失败 $url")
-                            }
-                        } else {
-                            getAccessToken(code)
-                        }
-                    }
 
-                }
-            }
         }
     }
+
 
     init {
         viewModelScope.launch {
@@ -129,7 +102,7 @@ class BangumiLoginVM : StateViewModel<BangumiLoginVM.State>(State.Idle) {
                 when (state) {
                     is JcefManager.CefAppState.Error -> {
                         update {
-                            State.ErrorAndExit("JCEF 初始化失败")
+                            State.Error("JCEF 初始化失败")
                         }
                     }
                     JcefManager.CefAppState.Initializing -> {
@@ -143,13 +116,13 @@ class BangumiLoginVM : StateViewModel<BangumiLoginVM.State>(State.Idle) {
                         val client = jcefApp.createClient()
                         if (client == null) {
                             update {
-                                State.ErrorAndExit("JCEF 创建浏览器客户端失败")
+                                State.Error("JCEF 创建浏览器客户端失败")
                             }
                             return@runOnJcefContext
                         }
                         client.addLoadHandler(loadHandler)
                         val browser = client.createBrowser(
-                            bangumiApi.getLoginPageUrl(sta),
+                            param.url,
                             CefRendering.DEFAULT,
                             true,
                             CefRequestContext.createContext { p0, p1, p2, p3, p4, p5, p6 ->
@@ -168,49 +141,6 @@ class BangumiLoginVM : StateViewModel<BangumiLoginVM.State>(State.Idle) {
                 }
 
             }
-        }
-    }
-
-    private var getAccessTokenJob: Job? = null
-    private fun getAccessToken(code: String) {
-        getAccessTokenJob?.cancel()
-        getAccessTokenJob = viewModelScope.launch {
-            update {
-                State.WaitingAccessToken(code)
-            }
-
-            bangumiApi.getAccessToken(code).await()
-                .onFailure {  th ->
-                    update {
-                        State.ErrorAndExit("获取访问令牌失败：${th.message}")
-                    }
-                }.onSuccess {
-                    bangumiAccountController.updateAccessToken(it)
-                    update {
-                        State.GetAccountTokenSuccess
-                    }
-                }
-        }
-
-    }
-
-    override fun onCleared() {
-        (state.value as? State.ShowJcef)?.let { jcef ->
-            update {
-                State.Idle
-            }
-            JcefManager.runOnJcefContext(false) {
-                jcef.browser.safeStopLoad()
-                jcef.browser.safeClose()
-                jcef.client.safeDispose()
-            }
-        }
-        super.onCleared()
-    }
-
-    fun reload() {
-        (state.value as? State.ShowJcef)?.let {
-            it.browser.loadURL(bangumiApi.getLoginPageUrl(sta))
         }
     }
 

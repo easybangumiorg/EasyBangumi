@@ -5,7 +5,6 @@ import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.URLProtocol
-import io.ktor.http.encodeURLPath
 import io.ktor.http.path
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.utils.DataState
@@ -13,10 +12,8 @@ import org.easybangumi.next.lib.utils.PagingFrame
 import org.easybangumi.next.lib.utils.UrlUtils
 import org.easybangumi.next.lib.utils.withResult
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
-import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.source.api.component.BaseComponent
-import org.easybangumi.next.shared.source.api.component.ComponentException
-import org.easybangumi.next.shared.source.api.component.NeedWebViewCheck
+import org.easybangumi.next.shared.source.api.component.NeedWebViewCheckException
 import org.easybangumi.next.shared.source.api.component.search.SearchComponent
 import org.easybangumi.next.shared.source.api.utils.NetworkHelper
 import org.easybangumi.next.shared.source.api.utils.PreferenceHelper
@@ -63,7 +60,7 @@ class GGLSearchComponent: SearchComponent, BaseComponent() {
             val list = arrayListOf<CartoonCover>()
 
             if (doc.select("button.verify-submit").isNotEmpty()) {
-                throw NeedWebViewCheck(url)
+                throw NeedWebViewCheckException(url)
             }
 
             doc.select("div.box-width div.row div.search-list.vod-detail").forEach { ro ->

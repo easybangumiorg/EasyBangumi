@@ -24,6 +24,8 @@ import org.easybangumi.next.shared.compose.home.Home
 import org.easybangumi.next.shared.compose.media.Media
 import org.easybangumi.next.shared.compose.media.MediaParam
 import org.easybangumi.next.shared.compose.search.Search
+import org.easybangumi.next.shared.compose.web.WebPage
+import org.easybangumi.next.shared.compose.web.WebPageParam
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.data.cartoon.CartoonInfo
@@ -121,6 +123,10 @@ sealed class RouterPage {
     @Serializable
     object BangumiLogin: RouterPage()
 
+    @Serializable
+    data class WebPage(
+        val param: WebPageParam
+    ): RouterPage()
     companion object {
         val DEFAULT = Main
     }
@@ -160,6 +166,11 @@ expect fun AnimatedContentScope.NavHook(
     routerPage: RouterPage,
     entity: NavBackStackEntry,
     content: @Composable AnimatedContentScope.(NavBackStackEntry) -> Unit
+)
+
+expect fun NavHostController.navigate(
+    routerPage: RouterPage,
+    needNewWindowWhenDesktop: Boolean = false,
 )
 
 @Composable
@@ -258,6 +269,18 @@ fun Router(
                     BangumiLoginHost()
                 }
             }
+
+            // Web Page
+            composable<RouterPage.WebPage>(
+                typeMap = NavTypeMap
+            ) {
+                val webPage = it.toRoute<RouterPage.WebPage>()
+                NavHook(webPage, it) {
+                    WebPage(webPage.param)
+                }
+            }
+
+
         }
     }
 }
