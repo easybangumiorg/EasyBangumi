@@ -1,6 +1,6 @@
 package org.easybangumi.next.shared.cartoon.radar
 
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -15,7 +15,9 @@ import kotlinx.coroutines.flow.Flow
  */
 interface CartoonRadarStrategy<T> {
 
-    fun start(): Flow<T>
+    val resultStateFlow: StateFlow<T>
+
+    fun start()
 
     fun cancel()
 

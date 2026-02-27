@@ -59,9 +59,9 @@ class GGLSearchComponent: SearchComponent, BaseComponent() {
             val doc = Ksoup.parse(html)
             val list = arrayListOf<CartoonCover>()
 
-            if (doc.select("button.verify-submit").isNotEmpty()) {
-                throw NeedWebViewCheckException(url)
-            }
+//            if (doc.select("button.verify-submit").isNotEmpty()) {
+//                throw NeedWebViewCheckException(url)
+//            }
 
             doc.select("div.box-width div.row div.search-list.vod-detail").forEach { ro ->
                 val it = ro.child(0);

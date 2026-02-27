@@ -43,4 +43,6 @@ interface IWebView: AutoCloseable {
         delay: Long = 100L,
     )
 
+    fun getImpl(): Any?
+
 }

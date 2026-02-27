@@ -1,4 +1,4 @@
-﻿package org.easybangumi.next.shared.compose.detail.bangumi
+package org.easybangumi.next.shared.compose.detail.bangumi
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
@@ -264,7 +264,7 @@ fun BangumiDetailHeader(
                         Spacer(modifier = Modifier.size(4.dp))
 //
                         Row {
-                            PlayBtn(Modifier.weight(1f)) {
+                            PlayBtn(Modifier.weight(1f), cartoonInfo = cartoonInfo) {
                                 onPlayClick()
                             }
                         }
@@ -335,17 +335,22 @@ fun HeaderContent(
 @Composable
 fun PlayBtn(
     modifier: Modifier,
-    onClick: () ->Unit,
+    cartoonInfo: CartoonInfo? = null,
+    onClick: () -> Unit,
 ) {
+    val hasHistory = cartoonInfo != null && cartoonInfo.lastHistoryTime > 0
+    val label = if (hasHistory) {
+        stringRes(Res.strings.last_episode_title, cartoonInfo!!.lastEpisodeLabel)
+    } else {
+        stringRes(Res.strings.play_now)
+    }
     Button(
         modifier = modifier,
-        onClick = {
-            onClick()
-        }
+        onClick = { onClick() }
     ) {
-        Icon(Icons.Filled.PlayArrow, modifier = Modifier.size(16.dp),contentDescription = null)
+        Icon(Icons.Filled.PlayArrow, modifier = Modifier.size(16.dp), contentDescription = null)
         Spacer(modifier = Modifier.size(4.dp))
-        Text(stringRes(Res.strings.play_now))
+        Text(label, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
 

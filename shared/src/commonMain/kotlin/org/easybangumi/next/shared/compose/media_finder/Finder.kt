@@ -157,7 +157,7 @@ fun MediaFinderHost(
                 modifier = Modifier.fillMaxSize(),
                 state = vm.pagerState,
                 userScrollEnabled = false,
-                beyondViewportPageCount = 2,
+                beyondViewportPageCount = 1,
             ) {
                 when(it) {
                     0 -> {
@@ -177,6 +177,7 @@ fun MediaFinderHost(
                     }
                     1 -> {
                         Search(
+                            isShow = vm.pagerState.currentPage == 1,
                             modifier = Modifier.fillMaxSize(),
                             vm = vm,
                             onPanelHide = {

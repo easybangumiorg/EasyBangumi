@@ -2,15 +2,15 @@ package org.easybangumi.next.shared.cartoon.radar.v1
 
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.utils.safeCancel
+import org.easybangumi.next.lib.webview.IWebView
 import org.easybangumi.next.shared.foundation.view_model.StateViewModel
 import org.easybangumi.next.shared.source.SourceCase
+import org.easybangumi.next.shared.source.api.component.FinderComponentPair
 import org.koin.core.component.inject
 
 /**
@@ -24,7 +24,9 @@ import org.koin.core.component.inject
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-class CartoonRadarV1VM : StateViewModel<CartoonRadarV1VM.LogicState>(LogicState()) {
+class CartoonRadarV1VM(
+    val iWebProvider: ((Pair<String, FinderComponentPair>) -> IWebView?)? = null
+) : StateViewModel<CartoonRadarV1VM.LogicState>(LogicState()) {
 
     private val sourceCase: SourceCase by inject()
 
@@ -46,32 +48,40 @@ class CartoonRadarV1VM : StateViewModel<CartoonRadarV1VM.LogicState>(LogicState(
     }
 
     private fun search(keyword: String) {
+        val strategy = CartoonRadarStrategyV1(
+            keyword = keyword,
+            sourceCase = sourceCase,
+            iWebProvider = iWebProvider,
+        )
+        val job = viewModelScope.launch {
+            strategy.resultStateFlow.collectLatest { resultState ->
+                update {
+                    it.copy(
+                        result = resultState
+                    )
+                }
+            }
+        }
+        strategy.start()
         update {
             it.collectJob?.safeCancel()
             it.strategy?.cancel()
-            val strategy = CartoonRadarStrategyV1(
-                keyword = keyword,
-                sourceCase = sourceCase,
-            )
-            val job = viewModelScope.launch {
-                strategy.start().collectLatest { resultState ->
-                    update {
-                        it.copy(
-                            result = resultState
-                        )
-                    }
-                }
-            }
             it.copy(
                 strategy = strategy,
                 collectJob = job,
                 result = CartoonRadarStrategyV1.ResultState(
                     searchingKeyword = keyword,
-                    isSearching = true,
                 )
             )
-
         }
+    }
+
+    fun retrySource(pair: FinderComponentPair) {
+        state.value.strategy?.retrySource(pair)
+    }
+
+    fun refreshAll() {
+        state.value.strategy?.refreshAll()
     }
 
     fun changeKeyword(keyword: String?) {

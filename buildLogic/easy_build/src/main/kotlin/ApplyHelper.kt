@@ -36,6 +36,9 @@ object ApplyHelper {
             androidTarget {
                 compilerOptions {
                     jvmTarget.set(JAVA_TARGET)
+                    freeCompilerArgs.add(
+                        "-Xcontext-parameters",
+                    )
                 }
 
             }
@@ -44,7 +47,7 @@ object ApplyHelper {
                 compilerOptions {
                     jvmTarget.set(JAVA_TARGET)
                     freeCompilerArgs.add(
-                        "-Xcontext-parameters"
+                        "-Xcontext-parameters",
                     )
                 }
 

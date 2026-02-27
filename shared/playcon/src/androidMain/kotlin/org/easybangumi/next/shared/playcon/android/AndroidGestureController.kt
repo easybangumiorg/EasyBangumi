@@ -1,4 +1,4 @@
-﻿package org.easybangumi.next.shared.playcon.android
+package org.easybangumi.next.shared.playcon.android
 
 import android.app.Activity
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
@@ -87,8 +87,8 @@ fun AndroidGestureController(
             .pointerInput("长按倍速", enableGuest) {
                 detectDragGesturesAfterLongPress(
                     onDragStart = { vm.onLongPress() },
-                    onDragCancel = { vm.onActionUP() },
-                    onDragEnd = { vm.onActionUP() },
+                    onDragCancel = { vm.onLongPressRelease() },
+                    onDragEnd = { vm.onLongPressRelease() },
                     onDrag = { _, _ -> }
                 )
             }

@@ -1,5 +1,6 @@
 package org.easybangumi.next.shared.compose.media_finder
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -19,6 +20,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.PanTool
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -37,9 +40,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import org.easybangumi.next.shared.LocalNavController
 import org.easybangumi.next.shared.foundation.cartoon.CartoonCoverCard
 import org.easybangumi.next.shared.foundation.image.AsyncImage
 import org.easybangumi.next.shared.foundation.stringRes
+import org.easybangumi.next.shared.resources.Res
 import org.easybangumi.next.shared.scheme.EasyScheme
 import org.easybangumi.next.shared.source.api.component.getManifest
 
@@ -86,9 +91,9 @@ fun Radar(
                 )
                 Spacer(Modifier.weight(1f))
                 IconButton(
-                    onClick = {}
+                    onClick = { vm.radarV1VM.refreshAll() }
                 ) {
-                    Icon(Icons.Filled.Refresh, null)
+                    Icon(Icons.Filled.Refresh, contentDescription = stringRes(Res.strings.refresh))
                 }
 
             }
@@ -106,14 +111,15 @@ fun Radar(
 
                 items(radarState.radarSourceTabList.size) {
                     val tab = radarState.radarSourceTabList[it]
-                    val selected = tab == radarState.selectionSource
+                    val selected = radarState.selectedSourceKey == tab.sourceManifest.key
+                    val borderColor = if (selected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.outlineVariant
+                    val bgColor = if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent
                     Row(modifier = Modifier
-//                                .widthIn(max = 120.dp)
-
-                        .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(6.dp))
+                        .border(1.dp, borderColor, RoundedCornerShape(6.dp))
                         .clip(RoundedCornerShape(6.dp))
+                        .background(bgColor)
                         .clickable {
-//                                    vm.onTagClick(tag.name)
+                            vm.onTabSelect(tab)
                         }
                         .padding(horizontal = 8.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -125,9 +131,20 @@ fun Radar(
                         )
                         Spacer(Modifier.width(4.dp))
                         if (tab.error) {
-                            Icon(Icons.Filled.Close, tint = MaterialTheme.colorScheme.error, contentDescription = null)
+                            Icon(
+                                Icons.Filled.Error,
+                                modifier = Modifier.size(24.dp),
+                                contentDescription = stringRes(Res.strings.click_to_refresh),
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        } else if (tab.mission) {
+                            Icon(
+                                Icons.Filled.PanTool,
+                                modifier = Modifier.size(24.dp),
+                                contentDescription = stringRes(Res.strings.click_to_refresh),
+                                tint = MaterialTheme.colorScheme.secondary
+                            )
                         } else if (tab.loading) {
-                            // 加载中动画
                             CircularProgressIndicator(
                                 modifier = Modifier.size(24.dp),
                                 strokeWidth = 2.dp
@@ -144,7 +161,8 @@ fun Radar(
             ListItem(
                 headlineContent = {
                     Text(
-                        "资源搜索结果 ${radarState.result.size}",
+                        if (radarState.selectedSourceKey == null) "资源搜索结果 ${radarState.filteredResult.size}"
+                        else "搜索结果筛选 ${radarState.filteredResult.size}",
                         style = MaterialTheme.typography.titleMedium,
                         textAlign = TextAlign.Start
                     )
@@ -152,7 +170,6 @@ fun Radar(
                 trailingContent = {
                     Text(
                         "点击选择",
-//                        style = MaterialTheme.typography.bodyLarge,
                         textAlign = TextAlign.Start
                     )
                 },
@@ -163,92 +180,116 @@ fun Radar(
 
         }
 
-        items(radarState.result.size) {
-            val item = radarState.result[it]
+        items(radarState.filteredResult.size) {
+            val item = radarState.filteredResult[it]
             val selection = state.result == item
 
-            Card(
-                modifier = Modifier.padding(16.dp, 0.dp).fillMaxWidth().padding(0.dp, 4.dp).clip(RoundedCornerShape(16.dp)).clickable {
-                    vm.onUserResultSelect(
-                        MediaFinderVM.SelectionResult(
-                            playCover = item.cover,
-                            manifest = item.businessPair.getManifest(),
-                            suggestPlayerLine = null,
-                        )
-                    )
-                    onPanelHide()
-                },
-                colors = CardDefaults.cardColors().copy(
-                    containerColor = if(selection) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh,
-                    contentColor = if(selection) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
-                ),
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(8.dp).height(EasyScheme.size.cartoonCoverSmallHeight),
+            val nav = LocalNavController.current
+            if (item.checkParam != null) {
+                Card(
+                    modifier = Modifier.padding(16.dp, 0.dp).fillMaxWidth().padding(0.dp, 4.dp).clip(RoundedCornerShape(16.dp)).clickable {
+                        vm.onWebViewCheck(item.businessPair, item.checkParam, nav)
+                    },
+                    colors = CardDefaults.cardColors().copy(
+                        containerColor = if(selection) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh,
+                        contentColor = if(selection) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                    ),
                 ) {
-                    CartoonCoverCard(
-                        modifier = Modifier,
-                        model = item.cover.coverUrl,
-                        name = null,
-                        itemSize = EasyScheme.size.cartoonCoverSmallHeight,
-                        itemIsWidth = false,
-                        coverAspectRatio = EasyScheme.size.cartoonCoverSmallAspectRatio,
-                        onClick = null
-                    )
-                    Spacer(modifier = Modifier.size(8.dp))
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                    ) {
-                        Text(item.cover.name, maxLines = 2, style = MaterialTheme.typography.titleMedium)
-
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(8.dp).height(EasyScheme.size.cartoonCoverSmallHeight),
+                    ){
+                        AsyncImage(
+                            item.businessPair.getManifest().icon,
+                            contentDescription = null
+                        )
                         Spacer(modifier = Modifier.size(8.dp))
-
-                        Row {
-                            AsyncImage(
-                                model = item.businessPair.getManifest().icon,
-                                contentDescription = stringRes(item.businessPair.getManifest().label),
-                                modifier = Modifier.size(18.dp)
+                        Text("点击进行人机验证")
+                    }
+                }
+            } else {
+                Card(
+                    modifier = Modifier.padding(16.dp, 0.dp).fillMaxWidth().padding(0.dp, 4.dp).clip(RoundedCornerShape(16.dp)).clickable {
+                        vm.onUserResultSelect(
+                            MediaFinderVM.SelectionResult(
+                                playCover = item.cover,
+                                manifest = item.businessPair.getManifest(),
+                                suggestPlayerLine = null,
                             )
-                            Spacer(modifier = Modifier.size(2.dp))
-                            Text(stringRes(item.businessPair.getManifest().label), style = MaterialTheme.typography.bodySmall)
-                        }
+                        )
+                        onPanelHide()
+                    },
+                    colors = CardDefaults.cardColors().copy(
+                        containerColor = if(selection) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh,
+                        contentColor = if(selection) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                    ),
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(8.dp).height(EasyScheme.size.cartoonCoverSmallHeight),
+                    ) {
+                        CartoonCoverCard(
+                            modifier = Modifier,
+                            model = item.cover.coverUrl,
+                            name = null,
+                            itemSize = EasyScheme.size.cartoonCoverSmallHeight,
+                            itemIsWidth = false,
+                            coverAspectRatio = EasyScheme.size.cartoonCoverSmallAspectRatio,
+                            onClick = null
+                        )
+                        Spacer(modifier = Modifier.size(8.dp))
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                        ) {
+                            Text(item.cover.name, maxLines = 2, style = MaterialTheme.typography.titleMedium)
 
-                        Spacer(modifier = Modifier.weight(1f))
+                            Spacer(modifier = Modifier.size(8.dp))
 
-                        item.playerLine?.let { lineList ->
-                            LazyRow(
-                                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            ) {
-                                items(lineList.size) {
-                                    val line = lineList[it]
+                            Row {
+                                AsyncImage(
+                                    model = item.businessPair.getManifest().icon,
+                                    contentDescription = stringRes(item.businessPair.getManifest().label),
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.size(2.dp))
+                                Text(stringRes(item.businessPair.getManifest().label), style = MaterialTheme.typography.bodySmall)
+                            }
 
-                                    Row(modifier = Modifier
+                            Spacer(modifier = Modifier.weight(1f))
+
+                            item.playerLine?.let { lineList ->
+                                LazyRow(
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                ) {
+                                    items(lineList.size) {
+                                        val line = lineList[it]
+
+                                        Row(modifier = Modifier
 //                                .widthIn(max = 120.dp)
 
-                                        .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(6.dp))
-                                        .clip(RoundedCornerShape(6.dp))
-                                        .clickable {
-                                            vm.onUserResultSelect(
-                                                MediaFinderVM.SelectionResult(
-                                                    playCover = item.cover,
-                                                    manifest = item.businessPair.getManifest(),
-                                                    suggestPlayerLine = line,
+                                            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(6.dp))
+                                            .clip(RoundedCornerShape(6.dp))
+                                            .clickable {
+                                                vm.onUserResultSelect(
+                                                    MediaFinderVM.SelectionResult(
+                                                        playCover = item.cover,
+                                                        manifest = item.businessPair.getManifest(),
+                                                        suggestPlayerLine = line,
+                                                    )
                                                 )
-                                            )
 //                                    vm.onTagClick(tag.name)
-                                        }
-                                        .padding(horizontal = 8.dp, vertical = 8.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Text(line.label, style = MaterialTheme.typography.bodyMedium)
-                                        Spacer(Modifier.width(4.dp))
-                                        Text(
-                                            "(${(line.episodeList.size.toString())})",
-                                            color = MaterialTheme.colorScheme.primary,
-                                            style = MaterialTheme.typography.bodyMedium)
+                                            }
+                                            .padding(horizontal = 8.dp, vertical = 8.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(line.label, style = MaterialTheme.typography.bodyMedium)
+                                            Spacer(Modifier.width(4.dp))
+                                            Text(
+                                                "(${(line.episodeList.size.toString())})",
+                                                color = MaterialTheme.colorScheme.primary,
+                                                style = MaterialTheme.typography.bodyMedium)
 
+                                        }
                                     }
                                 }
                             }
@@ -256,6 +297,8 @@ fun Radar(
                     }
                 }
             }
+
+
 
         }
     }

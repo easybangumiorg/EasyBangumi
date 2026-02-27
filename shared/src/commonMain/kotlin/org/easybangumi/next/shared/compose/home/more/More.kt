@@ -5,11 +5,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.HistoryToggleOff
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Tag
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -23,31 +28,23 @@ import org.easybangumi.next.platformInformation
 import org.easybangumi.next.shared.LocalNavController
 import org.easybangumi.next.shared.RouterPage
 import org.easybangumi.next.shared.compose.bangumi.account_card.BangumiAccountCard
+import org.easybangumi.next.shared.compose.common.BooleanPreferenceItem
 import org.easybangumi.next.shared.foundation.image.AsyncImage
 import org.easybangumi.next.shared.foundation.stringRes
+import org.easybangumi.next.shared.preference.MainPreference
 import org.easybangumi.next.shared.resources.Res
+import org.koin.compose.koinInject
 
-/**
- *    https://github.com/easybangumiorg/EasyBangumi
- *
- *    Copyright 2025 easybangumi.org and contributors
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- */
 @Composable
 fun More() {
     val navController = LocalNavController.current
+    val mainPreference = koinInject<MainPreference>()
     LazyColumn(
         modifier = Modifier.statusBarsPadding()
     ) {
         item {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(Modifier.height(64.dp))
@@ -64,15 +61,63 @@ fun More() {
                     headlineContent = {
                         Text(text = "Bangumi 账号：", color = MaterialTheme.colorScheme.secondary)
                     },
-                    colors = ListItemDefaults.colors(
-                        containerColor = Color.Transparent,
-                    )
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                 )
                 BangumiAccountCard(Modifier)
                 Spacer(Modifier.height(8.dp))
                 HorizontalDivider()
             }
-
+        }
+        item {
+            BooleanPreferenceItem(
+                title = { Text(text = stringRes(Res.strings.in_private)) },
+                subtitle = { Text(text = stringRes(Res.strings.in_private_msg)) },
+                icon = {
+                    Icon(
+                        Icons.Filled.HistoryToggleOff,
+                        contentDescription = stringRes(Res.strings.in_private)
+                    )
+                },
+                preference = mainPreference.privateMode,
+            )
+            HorizontalDivider()
+        }
+        item {
+            ListItem(
+                modifier = Modifier.clickable {
+                    navController.navigate(RouterPage.TagManage)
+                },
+                headlineContent = { Text(text = stringRes(Res.strings.tag_manage)) },
+                leadingContent = {
+                    Icon(Icons.Filled.Tag, contentDescription = stringRes(Res.strings.tag_manage))
+                },
+                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+            )
+        }
+        item {
+            HorizontalDivider()
+            ListItem(
+                modifier = Modifier.clickable {
+                    navController.navigate(RouterPage.Setting)
+                },
+                headlineContent = { Text(text = stringRes(Res.strings.setting)) },
+                leadingContent = {
+                    Icon(Icons.Filled.Settings, contentDescription = stringRes(Res.strings.setting))
+                },
+                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+            )
+        }
+        item {
+            ListItem(
+                modifier = Modifier.clickable {
+                    navController.navigate(RouterPage.About)
+                },
+                headlineContent = { Text(text = stringRes(Res.strings.about)) },
+                leadingContent = {
+                    Icon(Icons.Outlined.Info, contentDescription = stringRes(Res.strings.about))
+                },
+                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+            )
         }
         item {
             if (platformInformation.isDebug) {
@@ -80,17 +125,10 @@ fun More() {
                     modifier = Modifier.clickable {
                         navController.navigate(RouterPage.Debug.HOME)
                     },
-                    headlineContent = {
-                        Text(text = "Debug Mode")
-                    },
-                    colors = ListItemDefaults.colors(
-                        containerColor = Color.Transparent,
-                    )
+                    headlineContent = { Text(text = "Debug Mode") },
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                 )
             }
         }
     }
-
-
-
 }

@@ -1,9 +1,12 @@
 package org.easybangumi.next.shared.data.cartoon
 
+import kotlinx.serialization.Serializable
+
 /**
  * Created by heyanle on 2024/7/14.
  * https://github.com/heyanLE
  */
+@Serializable
 data class CartoonTag (
     val label: String,
 

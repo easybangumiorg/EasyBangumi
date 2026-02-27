@@ -34,6 +34,7 @@ import org.easybangumi.next.shared.scheme.EasyScheme
  */
 @Composable
 fun Search(
+    isShow: Boolean,
     vm: MediaFinderVM,
     modifier: Modifier = Modifier,
     onPanelHide: () -> Unit = {},
@@ -42,8 +43,10 @@ fun Search(
     val state = vm.ui.value
     val searchState = state.searchUIState
 
-    LaunchedEffect(state.keyword) {
-        vm.searchVM.changeKeyword(state.keyword)
+    LaunchedEffect(state.keyword, isShow) {
+        if (isShow) {
+            vm.searchVM.changeKeyword(state.keyword)
+        }
     }
 
 

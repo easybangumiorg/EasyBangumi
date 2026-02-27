@@ -109,8 +109,8 @@ class ScreenModeVM: BaseViewModel() {
         val act = activityController.showingActivity() ?: return
         val curState = _logicState.value
         val tabletMod = curState.isTabletMod
-        val reverse = orientationTemp == 270 || orientationTemp == 90
-        // 用户操作无论如何都要执行屏幕翻转
+        // 进入全屏时根据当前传感器方向决定横屏方向，退出全屏时竖屏只允许正向
+        val reverse = if (isFullScreen) orientationTemp == 90 else false
         changeRequestedOrientation(
             fullScreen = isFullScreen,
             reverse = reverse,
@@ -140,30 +140,57 @@ class ScreenModeVM: BaseViewModel() {
     private fun handleOrientationChange(
         orientation: Int
     ) {
-//        logger.info("handleOrientationChange: $orientation")
         val act = activityController.showingActivity() ?: return
         val curState = _logicState.value
         val tabletMod = curState.isTabletMod
+        val canAutoChange = act.canAutoChangeFullScreenMode()
 
-        val needFullScreen = orientation == 90 || orientation == 270
-        val needReverse = orientation == 270 || orientation == 90
-        // act.canAutoChangeFullScreenMode() 为 false 代表不允许横竖屏的自动切换
-        if (needFullScreen != curState.isFullScreen && !act.canAutoChangeFullScreenMode()) {
-            return
-        }
-        // 横屏和横屏翻转，竖屏和竖屏翻转的切换总是允许
-        changeRequestedOrientation(
-            fullScreen = needFullScreen,
-            reverse = needReverse,
-            isTabletMod = tabletMod,
-            ctx = act
-        )
-        _logicState.update {
-            it.copy(
-                isFullScreen = needFullScreen,
-                isReserve = needReverse,
-                lastFullScreenReason = Event.WHAT_ORIENTATION_CHANGE
-            )
+        when (orientation) {
+            90, 270 -> {
+                // 横屏方向: 90° = reverse landscape, 270° = normal landscape
+                val reverse = orientation == 90
+                if (curState.isFullScreen) {
+                    // 已经全屏 → 允许横屏方向切换（无论 canAutoChange）
+                    changeRequestedOrientation(
+                        fullScreen = true, reverse = reverse,
+                        isTabletMod = tabletMod, ctx = act
+                    )
+                    _logicState.update {
+                        it.copy(isReserve = reverse, lastFullScreenReason = Event.WHAT_ORIENTATION_CHANGE)
+                    }
+                } else if (canAutoChange) {
+                    // 非全屏 + 允许自动切换 → 进入全屏
+                    changeRequestedOrientation(
+                        fullScreen = true, reverse = reverse,
+                        isTabletMod = tabletMod, ctx = act
+                    )
+                    _logicState.update {
+                        it.copy(
+                            isFullScreen = true, isReserve = reverse,
+                            lastFullScreenReason = Event.WHAT_ORIENTATION_CHANGE
+                        )
+                    }
+                }
+                // 非全屏 + 不允许自动切换 → 忽略，不进入全屏
+            }
+            0 -> {
+                // 竖屏正向: 只有 canAutoChange 才允许退出全屏
+                if (!canAutoChange) return
+                // 竖屏只允许正向，reverse 始终为 false
+                changeRequestedOrientation(
+                    fullScreen = false, reverse = false,
+                    isTabletMod = tabletMod, ctx = act
+                )
+                _logicState.update {
+                    it.copy(
+                        isFullScreen = false, isReserve = false,
+                        lastFullScreenReason = Event.WHAT_ORIENTATION_CHANGE
+                    )
+                }
+            }
+            // 180° 竖屏反向 → 忽略，不允许反向竖屏
+            // -1 或其他无效值 → 忽略
+            else -> return
         }
     }
 

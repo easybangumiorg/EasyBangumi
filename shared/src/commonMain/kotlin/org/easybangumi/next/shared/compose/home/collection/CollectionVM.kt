@@ -3,6 +3,7 @@ package org.easybangumi.next.shared.compose.home.collection
 import androidx.compose.foundation.pager.PagerState
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.easybangumi.next.shared.cartoon.collection.CartoonCollectionController
 import org.easybangumi.next.shared.data.bangumi.BangumiConst
@@ -67,7 +68,11 @@ class CollectionVM: StateViewModel<CollectionVM.State>(State()) {
 
     init {
         viewModelScope.launch {
-            collectionController.collectionFlow.collectLatest { cs ->
+            collectionController.collectionFlow.map {
+                it.copy(
+                    tagList = it.tagList.filter { it.show }
+                )
+            }.collectLatest { cs ->
 
                 update {
 

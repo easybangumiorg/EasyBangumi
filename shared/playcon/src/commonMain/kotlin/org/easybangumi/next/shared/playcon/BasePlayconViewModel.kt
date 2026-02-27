@@ -150,10 +150,10 @@ open class BasePlayconViewModel<T: PlayerBridge<*>>(
     }
 
     fun setPlayWhenReady(playWhenReady: Boolean) {
-        if (_playWhenReady != playWhenReady) {
-            _playWhenReady = playWhenReady
-        }
         bridge.setPlayWhenReady(playWhenReady)
+//        if (_playWhenReady != playWhenReady) {
+//            _playWhenReady = playWhenReady
+//        }
     }
 
 }

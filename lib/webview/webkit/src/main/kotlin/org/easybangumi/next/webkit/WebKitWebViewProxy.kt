@@ -271,4 +271,8 @@ class WebKitWebViewProxy(
         }
         webView = null
     }
+
+    override fun getImpl(): Any? {
+        return webView
+    }
 }

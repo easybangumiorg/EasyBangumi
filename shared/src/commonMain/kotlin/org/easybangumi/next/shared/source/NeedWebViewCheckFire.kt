@@ -1,8 +1,13 @@
 ﻿package org.easybangumi.next.shared.source
 
 import androidx.navigation.NavHostController
+import org.easybangumi.next.lib.utils.WeakRef
+import org.easybangumi.next.shared.RouterPage
 import org.easybangumi.next.shared.compose.web.WebPageParam
+import org.easybangumi.next.shared.compose.web.needWebViewCheckParamMap
 import org.easybangumi.next.shared.source.api.component.NeedWebViewCheckException
+import org.easybangumi.next.shared.source.api.component.WebViewCheckParam
+import kotlin.time.Clock
 
 
 /**
@@ -17,15 +22,15 @@ import org.easybangumi.next.shared.source.api.component.NeedWebViewCheckExceptio
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
-fun NeedWebViewCheckException.fire(
+fun WebViewCheckParam.fire(
     navController: NavHostController,
-    onDismiss: () -> Unit = {},
 ) {
-    val webPageParam = WebPageParam(
-        title = "网页效验",
-        url = this.url,
+    val key = Clock.System.now().toString()
+    needWebViewCheckParamMap[key] = WeakRef(this)
+    val page = WebPageParam(
+        key,
     )
-
-
+    val webPage = RouterPage.WebPage(page)
+    navController.navigate(webPage)
 
 }

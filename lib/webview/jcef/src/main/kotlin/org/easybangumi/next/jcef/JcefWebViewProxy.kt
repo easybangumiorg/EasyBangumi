@@ -157,6 +157,7 @@ class JcefWebViewProxy : IWebView {
 
     private val requestHandlerAdapter = object : CefResourceRequestHandlerAdapter() {
         override fun onBeforeResourceLoad(browser: CefBrowser?, frame: CefFrame?, request: CefRequest?): Boolean {
+            logger.info("onBeforeResourceLoad ${request?.url}")
             request ?: return super.onBeforeResourceLoad(browser, frame, request)
             val url = request.url ?: return super.onBeforeResourceLoad(browser, frame, request)
             if (request.url == this@JcefWebViewProxy.url) {
@@ -382,5 +383,9 @@ class JcefWebViewProxy : IWebView {
         }
         state?.continuation?.cancel()
         state = null
+    }
+
+    override fun getImpl(): Any? {
+        return browser
     }
 }

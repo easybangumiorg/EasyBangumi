@@ -26,6 +26,10 @@ data class CartoonCover(
     val webUrl: String,
 ): Extractor {
 
+    companion object {
+        val NONE = CartoonCover("", "", "", "", "", "")
+    }
+
     fun toIdentify(): String {
         return "${id},${source}"
     }

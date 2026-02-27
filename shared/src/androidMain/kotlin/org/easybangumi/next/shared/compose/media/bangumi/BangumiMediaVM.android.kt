@@ -1,5 +1,6 @@
 package org.easybangumi.next.shared.compose.media.bangumi
 
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -73,9 +74,23 @@ class AndroidBangumiMediaVM(
             }
         }
 
+        // auto next episode on video ended
+        viewModelScope.launch {
+            snapshotFlow { playerVM.playconVM.isEnded }.collectLatest { ended ->
+                if (ended) {
+                    tryNextEpisode()
+                }
+            }
+        }
+    }
 
-
-
+    fun tryNextEpisode() {
+        val state = commonVM.playIndexState.value
+        val playLine = state.playLineOrNull ?: return
+        val nextIndex = state.currentEpisode + 1
+        if (nextIndex in playLine.episodeList.indices) {
+            commonVM.playLineIndexVM.onEpisodeSelected(state.currentPlayerLine, nextIndex)
+        }
     }
 
     fun onLaunch() {

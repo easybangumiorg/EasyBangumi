@@ -3,6 +3,9 @@ package org.easybangumi.next.shared.compose.home.collection
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -10,11 +13,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.dp
 import org.easybangumi.next.shared.LocalNavController
 import org.easybangumi.next.shared.cartoon.collection.CartoonCollectionController
 import org.easybangumi.next.shared.cartoon.displayName
@@ -22,6 +27,7 @@ import org.easybangumi.next.shared.compose.home.HomeVM
 import org.easybangumi.next.shared.data.bangumi.BangumiConst
 import org.easybangumi.next.shared.foundation.InnerBackHandler
 import org.easybangumi.next.shared.foundation.TabPage
+import org.easybangumi.next.shared.foundation.image.AsyncImage
 import org.easybangumi.next.shared.foundation.selection.SelectionTopAppBar
 import org.easybangumi.next.shared.foundation.stringRes
 import org.easybangumi.next.shared.foundation.todo.easyTODO
@@ -216,7 +222,24 @@ fun Collection(
                     Row {
                         val tab = state.tagList[i]
                         val starNum = state.data[tab]?.localOrNull()?.size
-                        Text(text = stringRes(tab.displayName()))
+                        if (tab.isBangumi) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                AsyncImage(Res.images.bangumi_small, contentDescription = "bangumi", modifier = Modifier.size(18.dp))
+                                Spacer(Modifier.width(4.dp))
+                                Text(
+                                    text = stringRes(tab.displayName()),
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                            }
+                        } else {
+                            Text(
+                                text = stringRes(tab.displayName()),
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        }
+//                        Text(text = stringRes(tab.displayName()))
                         if (starNum != null) {
                             Badge(
                                 containerColor = MaterialTheme.colorScheme.primaryContainer,

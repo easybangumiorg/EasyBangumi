@@ -18,9 +18,10 @@ import org.easybangumi.next.lib.webview.IWebView
 open class ComponentException(msg: String): RuntimeException(msg)
 
 data class WebViewCheckParam(
-    val url: String,
     val tips: String? = null,
-    val check: (IWebView) -> Boolean,
+    val iWebView: IWebView,
+    val check: (suspend (IWebView) -> Boolean)? = null,
+    val onFinish: (() -> Unit)? = null
 )
 class NeedWebViewCheckException(
     val param: WebViewCheckParam

@@ -176,5 +176,48 @@ class CartoonCollectionController(
         cartoonInfoCase.removeCartoonInfoCollection(cartoonInfoList)
     }
 
+    // ========== Tag CRUD（供 TagsManager 使用）==========
+
+    suspend fun addTag(label: String) {
+        val current = collectionTagFileHelper.get()
+        if (current.any { it.label == label }) return
+        val newTag = CartoonTag.create(label)
+        collectionTagFileHelper.setAndWait(current + newTag)
+    }
+
+    suspend fun removeTag(tag: CartoonTag) {
+        val current = collectionTagFileHelper.get()
+        collectionTagFileHelper.setAndWait(current.filter { it.label != tag.label })
+    }
+
+    suspend fun renameTag(tag: CartoonTag, newLabel: String) {
+        val current = collectionTagFileHelper.get()
+        if (current.any { it.label != tag.label && it.label == newLabel }) return
+        val updated = current.map {
+            if (it.label == tag.label) it.copy(label = newLabel) else it
+        }
+        collectionTagFileHelper.setAndWait(updated)
+    }
+
+    suspend fun setTagOrder(tagList: List<CartoonTag>) {
+        val reordered = tagList.mapIndexed { index, tag -> tag.copy(order = index) }
+        collectionTagFileHelper.setAndWait(reordered)
+    }
+
+    suspend fun setTagShow(tag: CartoonTag, show: Boolean) {
+        val current = collectionTagFileHelper.get()
+        var needAppend = true
+        val updated = current.map {
+            if (it.label == tag.label) it.copy(show = show).apply {
+                needAppend = false
+            } else it
+        }
+        if (needAppend) {
+            collectionTagFileHelper.setAndWait(updated + tag)
+        } else {
+            collectionTagFileHelper.setAndWait(updated)
+        }
+
+    }
 
 }

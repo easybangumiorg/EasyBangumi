@@ -19,11 +19,14 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import kotlinx.serialization.Serializable
 import org.easybangumi.next.shared.bangumi.login.BangumiLoginHost
+import org.easybangumi.next.shared.compose.about.About
 import org.easybangumi.next.shared.compose.detail.Detail
 import org.easybangumi.next.shared.compose.home.Home
 import org.easybangumi.next.shared.compose.media.Media
 import org.easybangumi.next.shared.compose.media.MediaParam
 import org.easybangumi.next.shared.compose.search.Search
+import org.easybangumi.next.shared.compose.setting.SettingPage
+import org.easybangumi.next.shared.compose.tags.TagsManager
 import org.easybangumi.next.shared.compose.web.WebPage
 import org.easybangumi.next.shared.compose.web.WebPageParam
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
@@ -127,12 +130,19 @@ sealed class RouterPage {
     data class WebPage(
         val param: WebPageParam
     ): RouterPage()
+
+    @Serializable
+    object Setting : RouterPage()
+
+    @Serializable
+    object TagManage : RouterPage()
+
+    @Serializable
+    object About : RouterPage()
+
     companion object {
         val DEFAULT = Main
     }
-
-
-
 }
 
 fun NavController.navigateToDetailOrMedia(
@@ -280,6 +290,35 @@ fun Router(
                 }
             }
 
+            // Setting
+            composable<RouterPage.Setting>(
+                typeMap = NavTypeMap
+            ) {
+                val setting = it.toRoute<RouterPage.Setting>()
+                NavHook(setting, it) {
+                    SettingPage(onBack = { navController.popBackStack() })
+                }
+            }
+
+            // Tag Manage
+            composable<RouterPage.TagManage>(
+                typeMap = NavTypeMap
+            ) {
+                val tagManage = it.toRoute<RouterPage.TagManage>()
+                NavHook(tagManage, it) {
+                    TagsManager(onBack = { navController.popBackStack() })
+                }
+            }
+
+            // About
+            composable<RouterPage.About>(
+                typeMap = NavTypeMap
+            ) {
+                val about = it.toRoute<RouterPage.About>()
+                NavHook(about, it) {
+                    About(onBack = { navController.popBackStack() })
+                }
+            }
 
         }
     }
