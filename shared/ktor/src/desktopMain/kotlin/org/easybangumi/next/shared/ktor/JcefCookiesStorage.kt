@@ -29,6 +29,7 @@ object JcefCookiesStorage {
 
     private const val COOKIE_SYNC_TIMEOUT = 5000L
 
+    // TODO 还有bug需要在调一调
     val easyCookiesStorage by lazy { EasyCookiesStorage() }
     private val logger = logger("JcefCookiesStorage")
 
