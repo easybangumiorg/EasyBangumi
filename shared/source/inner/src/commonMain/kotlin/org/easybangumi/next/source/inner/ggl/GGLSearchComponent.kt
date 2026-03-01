@@ -25,6 +25,7 @@ import org.easybangumi.next.shared.source.api.component.search.SearchComponent
 import org.easybangumi.next.shared.source.api.utils.NetworkHelper
 import org.easybangumi.next.shared.source.api.utils.PreferenceHelper
 import org.easybangumi.next.shared.source.api.utils.WebViewHelper
+import org.easybangumi.next.shared.source.api.utils.closeFinally
 import org.koin.core.component.inject
 import kotlin.getValue
 
@@ -47,6 +48,8 @@ class GGLSearchComponent: SearchComponent, BaseComponent() {
         return "1"
     }
 
+    private var firstCacheSuccess = false
+
     override suspend fun search(
         keyword: String,
         key: String
@@ -54,13 +57,15 @@ class GGLSearchComponent: SearchComponent, BaseComponent() {
         logger.info("GGLSearchComponent search start keyword=$keyword key=$key")
         return withResult {
             try {
-                val html = ktorClient.get(getUrl(keyword, key).build()) {
-                    headers.append(HttpHeaders.UserAgent, networkHelper.defaultWindowsUA)
-                }.bodyAsText()
-                val doc = Ksoup.parse(html)
-                val result = searchWithDoc(keyword, key, doc)
-                if (result.second.isNotEmpty()) {
-                    return@withResult result
+                if (firstCacheSuccess) {
+                    val html = ktorClient.get(getUrl(keyword, key).build()) {
+                        headers.append(HttpHeaders.UserAgent, networkHelper.defaultWindowsUA)
+                    }.bodyAsText()
+                    val doc = Ksoup.parse(html)
+                    val result = searchWithDoc(keyword, key, doc)
+                    if (result.second.isNotEmpty()) {
+                        return@withResult result
+                    }
                 }
             } catch (e: Exception) {
                 logger.warn("GGLSearchComponent search by ktor failed, fallback to webview", e)
@@ -123,7 +128,12 @@ class GGLSearchComponent: SearchComponent, BaseComponent() {
         }
         val content = web.getContent(5000) ?: throw DataStateException("解析错误")
         val doc = Ksoup.parse(content)
-        return searchWithDoc(keyword, key, doc)
+        return searchWithDoc(keyword, key, doc).apply {
+            if (this.second.isNotEmpty()) {
+                firstCacheSuccess = true
+            }
+            web.closeFinally()
+        }
     }
 
     private suspend fun searchWithDoc(

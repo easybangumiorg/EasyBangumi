@@ -73,3 +73,10 @@ actual fun NavHostController.navigate(
 ) {
     this.navigate(routerPage)
 }
+
+actual fun NavHostController.navigate(
+    webPage: RouterPage.WebPage,
+    needNewWindowWhenDesktop: Boolean
+) {
+    this.navigate(webPage)
+}

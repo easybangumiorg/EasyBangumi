@@ -18,6 +18,7 @@ import org.easybangumi.next.shared.source.api.component.search.SearchComponent
 import org.easybangumi.next.shared.source.api.utils.NetworkHelper
 import org.easybangumi.next.shared.source.api.utils.PreferenceHelper
 import org.easybangumi.next.shared.source.api.utils.WebViewHelper
+import org.easybangumi.next.shared.source.api.utils.closeFinally
 import org.easybangumi.next.shared.source.api.utils.useWithHook
 import org.koin.core.component.inject
 import kotlin.math.log
@@ -42,6 +43,8 @@ class XifanSearchComponent: SearchComponent, BaseComponent() {
         return "1"
     }
 
+    private var firstCacheSuccess = false
+
     override suspend fun search(
         keyword: String,
         key: String
@@ -51,14 +54,16 @@ class XifanSearchComponent: SearchComponent, BaseComponent() {
         Exception("test").printStackTrace()
         val res = withResult {
             try {
-                // 先使用 ktor 试试能不能用，如果可以就不开 webView 了
-                val html = ktorClient.get(getUrl(keyword, key).build()) {
-                    userAgent(networkHelper.defaultWindowsUA)
-                }.bodyAsText()
-                val doc = Ksoup.parse(html)
-                val tr = searchWithDoc(keyword, key, doc)
-                if (tr.second.isNotEmpty()) {
-                    return@withResult tr
+                if (firstCacheSuccess) {
+                    // 先使用 ktor 试试能不能用，如果可以就不开 webView 了
+                    val html = ktorClient.get(getUrl(keyword, key).build()) {
+                        userAgent(networkHelper.defaultWindowsUA)
+                    }.bodyAsText()
+                    val doc = Ksoup.parse(html)
+                    val tr = searchWithDoc(keyword, key, doc)
+                    if (tr.second.isNotEmpty()) {
+                        return@withResult tr
+                    }
                 }
             }catch (e: Exception) {
                 e.printStackTrace()
@@ -136,7 +141,12 @@ class XifanSearchComponent: SearchComponent, BaseComponent() {
             keyword = keyword,
             key = key,
             doc = doc,
-        )
+        ).apply {
+            if (this.second.isNotEmpty()) {
+                firstCacheSuccess = true
+            }
+            web.closeFinally()
+        }
     }
 
     private suspend fun searchWithDoc(

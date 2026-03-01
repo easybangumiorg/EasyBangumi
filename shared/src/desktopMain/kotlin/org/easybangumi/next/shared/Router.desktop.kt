@@ -69,3 +69,18 @@ actual fun NavHostController.navigate(
         navigate(this)
     }
 }
+
+actual fun NavHostController.navigate(
+    webPage: RouterPage.WebPage,
+    needNewWindowWhenDesktop: Boolean
+) {
+    if (needNewWindowWhenDesktop) {
+        val easyWindowState = EasyWindowState(
+            state = WindowState(),
+            initPage = webPage,
+        )
+        EasyWindowController.addWindowState(easyWindowState)
+    } else {
+        navigate(this)
+    }
+}

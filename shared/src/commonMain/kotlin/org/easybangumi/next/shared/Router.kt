@@ -5,11 +5,14 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
@@ -209,6 +212,11 @@ expect fun NavHostController.navigate(
     needNewWindowWhenDesktop: Boolean = false,
 )
 
+expect fun NavHostController.navigate(
+    webPage: RouterPage.WebPage,
+    needNewWindowWhenDesktop: Boolean = false,
+)
+
 @Composable
 fun Router(
     navController: NavHostController = rememberNavController(),
@@ -219,7 +227,7 @@ fun Router(
         NavHost(
             navController,
             initRoute,
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
             enterTransition = { slideInHorizontally(tween()) { it } },
             exitTransition = { slideOutHorizontally(tween()) { -it } + fadeOut(tween()) },
             popEnterTransition = { slideInHorizontally(tween()) { -it } },

@@ -216,7 +216,9 @@ class WebKitWebViewProxy(
             delay(timeout)
             winner.complete(isLoadEnd)
         }
-        return winner.await()
+        val res =  winner.await()
+        delay(500)
+        return res
     }
 
     override suspend fun waitingForResourceLoaded(
