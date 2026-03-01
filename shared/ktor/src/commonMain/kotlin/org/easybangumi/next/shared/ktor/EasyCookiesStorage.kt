@@ -77,4 +77,32 @@ class EasyCookiesStorage : CookiesStorage {
     override fun close() {
 
     }
+
+    suspend fun getAllCookies(): List<Cookie> {
+        return jsonlFileHelper.get().normalizeCookies()
+    }
+
+    suspend fun replaceAllCookies(cookies: List<Cookie>) {
+        jsonlFileHelper.setAndWait(cookies.normalizeCookies())
+    }
+
+    private fun List<Cookie>.normalizeCookies(): List<Cookie> {
+        val now = Clock.System.now().toEpochMilliseconds()
+        val dedup = linkedMapOf<String, Cookie>()
+        this.forEach { cookie ->
+            val exp = cookie.expires
+            if (exp != null && exp.timestamp <= now) {
+                return@forEach
+            }
+            val key = buildString {
+                append(cookie.name)
+                append('|')
+                append(cookie.domain ?: "")
+                append('|')
+                append(cookie.path ?: "")
+            }
+            dedup[key] = cookie
+        }
+        return dedup.values.toList()
+    }
 }

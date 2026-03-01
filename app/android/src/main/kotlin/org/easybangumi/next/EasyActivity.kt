@@ -12,6 +12,7 @@ import org.easybangumi.next.shared.ComposeApp
 import org.easybangumi.next.shared.Scheduler
 import org.easybangumi.next.shared.foundation.ActivityController
 import org.easybangumi.next.shared.foundation.utils.MediaUtils
+import org.easybangumi.next.webkit.WebKitWindowEndpoint
 import org.koin.android.ext.android.inject
 
 /**
@@ -46,6 +47,36 @@ class EasyActivity : ComponentActivity() {
                 ComposeApp()
             }
         }
+
+        WebKitWindowEndpoint.register(addBrowserToWindow = { webView ->
+            // 将 WebView 放到 activity 最底层
+            try {
+                val rootLayout = window.decorView as? android.view.ViewGroup
+                if (rootLayout != null) {
+                    // 设置 WebView 的布局参数，使其填充整个父布局
+                    val layoutParams = android.widget.FrameLayout.LayoutParams(
+                        android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                        android.widget.FrameLayout.LayoutParams.MATCH_PARENT
+                    )
+                    // 将 WebView 添加到根布局的最底层（索引 0）
+                    rootLayout.addView(webView, 0, layoutParams)
+                    true
+                } else {
+                    false
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                false
+            }
+        }, removeBrowserFromWindow = { webView ->
+            // 从布局中移除 WebView
+            try {
+                val rootLayout = window.decorView as? android.view.ViewGroup
+                rootLayout?.removeView(webView)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        })
     }
 
     override fun onDestroy() {

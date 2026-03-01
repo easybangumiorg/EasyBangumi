@@ -2,6 +2,7 @@ package org.easybangumi.next.shared.ktor
 
 import io.ktor.client.*
 import io.ktor.client.engine.android.*
+import io.ktor.client.plugins.cookies.HttpCookies
 import org.koin.core.module.Module
 import org.koin.dsl.binds
 import org.koin.dsl.module
@@ -25,6 +26,9 @@ private class AndroidKtorFactory : KtorFactory {
         return HttpClient(Android) {
             config.forEach {
                 it.apply(this)
+            }
+            install(HttpCookies) {
+                storage = WebkitCookiesStorage
             }
             // Global 配置
             GlobalKtorConfig.apply(this)

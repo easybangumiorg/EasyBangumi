@@ -74,7 +74,7 @@ object Desktop {
                     VlcBridgeManagerProvider(
                         ioScope = CoroutineScope(SupervisorJob() + coroutineProvider.io() ),
                         libvlcArgs = listOf(
-                            "-vvv",
+//                            "-vvv",
                             "--file-caching=10000",
                             "--network-caching=10000",
                             "--intf=dummy",

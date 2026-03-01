@@ -20,6 +20,8 @@ import androidx.navigation.toRoute
 import kotlinx.serialization.Serializable
 import org.easybangumi.next.shared.bangumi.login.BangumiLoginHost
 import org.easybangumi.next.shared.compose.about.About
+import org.easybangumi.next.shared.compose.browser.BrowserPage
+import org.easybangumi.next.shared.compose.browser.BrowserPageParam
 import org.easybangumi.next.shared.compose.detail.Detail
 import org.easybangumi.next.shared.compose.home.Home
 import org.easybangumi.next.shared.compose.media.Media
@@ -132,6 +134,11 @@ sealed class RouterPage {
     ): RouterPage()
 
     @Serializable
+    data class BrowserPage(
+        val param: BrowserPageParam
+    ): RouterPage()
+
+    @Serializable
     object Setting : RouterPage()
 
     @Serializable
@@ -168,6 +175,25 @@ fun NavController.navigateToDetailOrMedia(
         cartoonIndex = cartoonInfo.toCartoonIndex(),
         cartoonCover = cartoonInfo.toCartoonCover()
     )
+}
+
+fun NavController.navigateToBrowser(
+    url: String,
+    title: String? = null,
+    showToolbar: Boolean = true,
+    enableJavaScript: Boolean = true,
+    userAgent: String? = null,
+) {
+    val browserPage = RouterPage.BrowserPage(
+        param = BrowserPageParam(
+            url = url,
+            title = title,
+            showToolbar = showToolbar,
+            enableJavaScript = enableJavaScript,
+            userAgent = userAgent
+        )
+    )
+    this.navigate(browserPage)
 }
 
 
@@ -287,6 +313,19 @@ fun Router(
                 val webPage = it.toRoute<RouterPage.WebPage>()
                 NavHook(webPage, it) {
                     WebPage(webPage.param)
+                }
+            }
+
+            // Browser Page
+            composable<RouterPage.BrowserPage>(
+                typeMap = NavTypeMap
+            ) {
+                val browserPage = it.toRoute<RouterPage.BrowserPage>()
+                NavHook(browserPage, it) {
+                    BrowserPage(
+                        param = browserPage.param,
+                        onBack = { navController.popBackStack() }
+                    )
                 }
             }
 

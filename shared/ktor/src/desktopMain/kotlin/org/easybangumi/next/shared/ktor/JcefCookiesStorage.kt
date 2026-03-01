@@ -1,17 +1,16 @@
-﻿package org.easybangumi.next.shared.ktor
+package org.easybangumi.next.shared.ktor
 
-import io.ktor.client.plugins.cookies.CookiesStorage
 import io.ktor.http.Cookie
 import io.ktor.http.Url
 import io.ktor.util.date.GMTDate
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.suspendCancellableCoroutine
-import org.cef.callback.CefCookieVisitor
-import org.cef.misc.BoolRef
 import org.cef.network.CefCookie
-import org.cef.network.CefCookieManager
 import org.easybangumi.next.jcef.JcefManager
+import org.easybangumi.next.lib.logger.logger
+import org.easybangumi.next.lib.utils.safeResume
 import java.util.Date
-import kotlin.coroutines.resume
+import java.util.concurrent.atomic.AtomicBoolean
 
 
 /**
@@ -26,40 +25,110 @@ import kotlin.coroutines.resume
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
-class JcefCookiesStorage: CookiesStorage {
-    override suspend fun addCookie(requestUrl: Url, cookie: Cookie) {
-        suspendCancellableCoroutine<Unit> { con ->
-            JcefManager.runOnJcefContext(true) {
-                CefCookieManager.getGlobalManager().setCookie(requestUrl.toString(), cookie.toCefCookie())
-                if (!CefCookieManager.getGlobalManager().flushStore {
-                    con.resume(Unit)
-                }) {
-                    con.resume(Unit)
-                }
-            }
+object JcefCookiesStorage {
+
+    private const val COOKIE_SYNC_TIMEOUT = 5000L
+
+    val easyCookiesStorage by lazy { EasyCookiesStorage() }
+    private val logger = logger("JcefCookiesStorage")
+
+    suspend fun storageToJcef(url: String) {
+        val targetUrl = runCatching { Url(url) }.getOrNull() ?: return
+        val storageCookies = easyCookiesStorage.get(targetUrl)
+        if (storageCookies.isEmpty()) {
+            return
         }
 
-    }
-
-    override suspend fun get(requestUrl: Url): List<Cookie> {
-        return suspendCancellableCoroutine { con ->
-            JcefManager.runOnJcefContext {
-                val cookieList = arrayListOf<Cookie>()
-                CefCookieManager.getGlobalManager().visitUrlCookies(requestUrl.toString(), true
-                ) { p0, p1, p2, p3 ->
-                    if (p0 != null) {
-                        cookieList.add(p0.toCookie())
+        val synced = withTimeoutOrNull(COOKIE_SYNC_TIMEOUT) {
+            suspendCancellableCoroutine<Unit> { continuation ->
+                JcefManager.runOnJcefContext(true) { state ->
+                    if (state !is JcefManager.CefAppState.Initialized) {
+                        continuation.safeResume(Unit)
+                        return@runOnJcefContext
                     }
-                    true
+
+                    val manager = JcefManager.getSharedCookieManager()
+                    if (manager == null) {
+                        logger.warn("Shared JCEF cookie manager is null in storageToJcef.")
+                        continuation.safeResume(Unit)
+                        return@runOnJcefContext
+                    }
+
+                    storageCookies.forEach { cookie ->
+                        val cookieUrl = cookie.toSetCookieUrl(url)
+                        manager.setCookie(cookieUrl, cookie.toCefCookie())
+                    }
+
+                    if (!manager.flushStore {
+                            continuation.safeResume(Unit)
+                        }) {
+                        continuation.safeResume(Unit)
+                    }
                 }
-                con.resume(cookieList)
             }
+            true
+        } ?: false
+        if (!synced) {
+            logger.warn("storageToJcef timed out for url: $url")
         }
-    }
-
-    override fun close() {
 
     }
+
+    suspend fun jcefToStorage() {
+        val jcefCookies = withTimeoutOrNull(COOKIE_SYNC_TIMEOUT) {
+            suspendCancellableCoroutine<List<Cookie>> { continuation ->
+                JcefManager.runOnJcefContext(true) { state ->
+                    if (state !is JcefManager.CefAppState.Initialized) {
+                        continuation.safeResume(emptyList())
+                        return@runOnJcefContext
+                    }
+
+                    val manager = JcefManager.getSharedCookieManager()
+                    if (manager == null) {
+                        logger.warn("Shared JCEF cookie manager is null in jcefToStorage.")
+                        continuation.safeResume(emptyList())
+                        return@runOnJcefContext
+                    }
+
+                    val cookieList = arrayListOf<Cookie>()
+                    val hasResume = AtomicBoolean(false)
+                    val visited = manager.visitAllCookies { cefCookie, index, total, _ ->
+                        cefCookie?.let {
+                            cookieList.add(it.toCookie())
+                        }
+                        if (total <= 0 || index >= total - 1) {
+                            if (hasResume.compareAndSet(false, true)) {
+                                continuation.safeResume(cookieList)
+                            }
+                        }
+                        true
+                    }
+
+                    if (!visited && hasResume.compareAndSet(false, true)) {
+                        continuation.safeResume(cookieList)
+                    }
+                }
+            }
+        } ?: run {
+            logger.warn("jcefToStorage timed out, keep current EasyCookiesStorage.")
+            return
+        }
+
+        easyCookiesStorage.replaceAllCookies(jcefCookies)
+
+    }
+
+
+}
+
+private fun Cookie.toSetCookieUrl(defaultUrl: String): String {
+    val host = this.domain?.removePrefix(".")?.trim().orEmpty()
+    if (host.isBlank()) {
+        return defaultUrl
+    }
+    val path = this.path?.ifBlank { "/" } ?: "/"
+    val scheme = if (this.secure) "https" else "http"
+    return "$scheme://$host$path"
 }
 
 private fun Cookie.toCefCookie(): CefCookie {
@@ -90,7 +159,9 @@ private fun CefCookie.toCookie(): Cookie {
         path = this.path,
         secure = this.secure,
         httpOnly = this.httponly,
-        expires = if (this.hasExpires || exp == null) GMTDate(this.expires.time) else GMTDate(exp.time)
+        expires = run {
+            if (this.hasExpires || exp == null) GMTDate(this.expires?.time?:return@run null) else GMTDate(exp?.time?:return@run null)
+        }
     )
     return cookie
 }

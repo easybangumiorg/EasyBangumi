@@ -94,10 +94,6 @@ class XifanPlayComponent: PlayComponent, BaseComponent() {
         episode: Episode
     ): DataState<PlayInfo> {
         return withResult {
-            val urlPath = "${
-                if(cartoonIndex.id.startsWith("GV"))
-                    cartoonIndex.id
-                else "GV${cartoonIndex.id}"}-${playerLine.id}-${episode.id}"
             val host = prefHelper.get("host", "dm.xifanacg.com")
             val url = buildUrl {
                 protocol = URLProtocol.HTTPS

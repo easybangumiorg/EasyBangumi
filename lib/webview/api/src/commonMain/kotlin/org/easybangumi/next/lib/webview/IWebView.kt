@@ -15,11 +15,21 @@ import kotlin.jvm.JvmOverloads
  */
 interface IWebView: AutoCloseable {
 
+    suspend fun init(
+        userAgent: String? = null,
+        headers: Map<String, String> = emptyMap(),
+        needBlob: Boolean = false,
+    ): Boolean
+
+    fun setInterceptResRegex(
+        interceptResRegex: String?
+    )
+
     suspend fun loadUrl(
         url: String,
         userAgent: String? = null,
         headers: Map<String, String> = emptyMap(),
-        interceptResRegex: String? = ".*\\.(css|mp3|m4a|gif|jpg|png|webp).*",
+        interceptResRegex: String? =  null, //".*\\.(css|mp3|m4a|gif|jpg|png|webp).*",
         needBlob: Boolean = false,
     ): Boolean
 
@@ -44,5 +54,9 @@ interface IWebView: AutoCloseable {
     )
 
     fun getImpl(): Any?
+
+    fun addToEndpoint(): Boolean
+    
+    fun removeFromEndpoint(): Boolean
 
 }

@@ -109,6 +109,13 @@ class CartoonRadarStrategyV1(
     private fun searchSource(pair: FinderComponentPair) {
         sourceJobMap[pair]?.cancel()
         val job = scope.launch(dispatcher) {
+            _resultStateFlow.update {
+                it.copy(
+                    sourceSearchResMap = it.sourceSearchResMap.toMutableMap().apply {
+                        this[pair] = DataState.loading()
+                    }
+                )
+            }
             val result = pair.first.run(allowRetry = false) {
                 val iWebView = iWebProvider?.invoke(
                     keyword to pair
@@ -141,7 +148,7 @@ class CartoonRadarStrategyV1(
             }
             result.mapError {
                 if (it.throwable is NeedWebViewCheckException) {
-                    "${pair.first.source.manifest.label} 需要手动验证，功能开发中……".moeSnackBar()
+                    "${pair.first.source.manifest.label} 需要手动验证，请打开播放源面板操作".moeSnackBar()
                 }
             }
             _resultStateFlow.update {

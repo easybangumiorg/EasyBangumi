@@ -3,6 +3,7 @@ package org.easybangumi.next.shared.compose.media_finder
 import androidx.compose.foundation.pager.PagerState
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
+import io.ktor.util.reflect.instanceOf
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -42,7 +43,7 @@ class MediaFinderVM(
 
     // 普通搜索
     val searchVM: CartoonSearchVM by childViewModel {
-        CartoonSearchVM()
+        CartoonSearchVM(true)
     }
 
     // 智能搜索
@@ -242,11 +243,13 @@ class MediaFinderVM(
     ) {
         val checkParamCopy = checkParam.copy (
             onFinish = {
+                checkParam.iWebView.addToEndpoint()
                 checkParam?.onFinish?.invoke()
                 radarV1VM.retrySource(businessPair)
             }
         )
         webMap[(logic.value.keyword ?: return) to businessPair] = checkParam.iWebView
+        checkParam.iWebView.removeFromEndpoint()
         checkParamCopy.fire(navHostController)
     }
 

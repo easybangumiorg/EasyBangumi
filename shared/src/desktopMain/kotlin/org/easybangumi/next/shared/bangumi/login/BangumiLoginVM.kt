@@ -11,8 +11,12 @@ import org.cef.browser.CefFrame
 import org.cef.browser.CefRendering
 import org.cef.browser.CefRequestContext
 import org.cef.handler.CefLoadHandler
+import org.cef.handler.CefRequestHandlerAdapter
+import org.cef.handler.CefResourceRequestHandler
 import org.cef.handler.CefResourceRequestHandlerAdapter
+import org.cef.misc.BoolRef
 import org.cef.network.CefRequest
+import org.easybangumi.next.jcef.JcefCookieSyncEndpoint
 import org.easybangumi.next.jcef.JcefManager
 import org.easybangumi.next.jcef.JcefWebViewProxy
 import org.easybangumi.next.jcef.safeClose
@@ -120,6 +124,20 @@ class BangumiLoginVM : StateViewModel<BangumiLoginVM.State>(State.Idle) {
         }
     }
 
+    private val requestHandler = object : CefRequestHandlerAdapter() {
+        override fun getResourceRequestHandler(
+            browser: CefBrowser?,
+            frame: CefFrame?,
+            request: CefRequest?,
+            isNavigation: Boolean,
+            isDownload: Boolean,
+            requestInitiator: String?,
+            disableDefaultHandling: BoolRef?
+        ): CefResourceRequestHandler? {
+            return requestHandlerAdapter
+        }
+    }
+
     init {
         viewModelScope.launch {
             update {
@@ -148,13 +166,13 @@ class BangumiLoginVM : StateViewModel<BangumiLoginVM.State>(State.Idle) {
                             return@runOnJcefContext
                         }
                         client.addLoadHandler(loadHandler)
+                        client.addRequestHandler(requestHandler)
+                        val requestContext = JcefManager.getSharedRequestContext() ?: CefRequestContext.getGlobalContext()
                         val browser = client.createBrowser(
                             bangumiApi.getLoginPageUrl(sta),
                             CefRendering.DEFAULT,
                             true,
-                            CefRequestContext.createContext { p0, p1, p2, p3, p4, p5, p6 ->
-                                requestHandlerAdapter
-                            }
+                            requestContext
                         )
                         browser.setCloseAllowed()
                         browser.createImmediately()
@@ -199,9 +217,11 @@ class BangumiLoginVM : StateViewModel<BangumiLoginVM.State>(State.Idle) {
             update {
                 State.Idle
             }
+            JcefCookieSyncEndpoint.jcefToStorageBlocking()
             JcefManager.runOnJcefContext(false) {
                 jcef.browser.safeStopLoad()
                 jcef.browser.safeClose()
+                JcefManager.flushCookieStoreSync()
                 jcef.client.safeDispose()
             }
         }
@@ -210,7 +230,9 @@ class BangumiLoginVM : StateViewModel<BangumiLoginVM.State>(State.Idle) {
 
     fun reload() {
         (state.value as? State.ShowJcef)?.let {
-            it.browser.loadURL(bangumiApi.getLoginPageUrl(sta))
+            val url = bangumiApi.getLoginPageUrl(sta)
+            JcefCookieSyncEndpoint.storageToJcefBlocking(url)
+            it.browser.loadURL(url)
         }
     }
 

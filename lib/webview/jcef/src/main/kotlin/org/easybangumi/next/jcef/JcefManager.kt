@@ -4,6 +4,7 @@ import com.jetbrains.cef.JCefAppConfig
 import kotlinx.coroutines.*
 import org.cef.CefApp
 import org.cef.CefSettings
+import org.cef.browser.CefRequestContext
 import org.cef.misc.CefLog
 import org.cef.network.CefCookieManager
 import org.easybangumi.next.lib.logger.logger
@@ -12,6 +13,8 @@ import org.easybangumi.next.lib.utils.pathProvider
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.concurrent.thread
 
@@ -29,6 +32,9 @@ import kotlin.concurrent.thread
 object JcefManager {
 
     private const val CEF_INIT_TIMEOUT = 10000L // 10 seconds
+    private const val CEF_INIT_POLL_INTERVAL = 200L
+    private const val COOKIE_FLUSH_TIMEOUT = 3000L
+    private const val SHUTDOWN_WAIT_TIMEOUT = 5000L
 
     private val CefAppLocal = ThreadLocal<CefApp>()
     private val logger by lazy {
@@ -37,10 +43,18 @@ object JcefManager {
     private val singleScope by lazy {
         CoroutineScope(SupervisorJob() + coroutineProvider.newSingle() + CoroutineName("JcefSingle"))
     }
-    private val ioScope by lazy {
-        CoroutineScope(SupervisorJob() + coroutineProvider.io() + CoroutineName("JcefIo"))
-    }
     private val init = AtomicBoolean(false)
+    private val requestContextLock = Any()
+
+    @Volatile
+    private var sharedRequestContext: CefRequestContext? = null
+
+    @Volatile
+    private var sharedCookieManager: CefCookieManager? = null
+
+    @Volatile
+    private var jcefThread: Thread? = null
+
     @Volatile
     private var isInitialized = false
     @Volatile
@@ -60,6 +74,7 @@ object JcefManager {
         // deepseek 说一定要在 awt 线程，但实际上自测可以不用？先试试
         singleScope.launch {
 //            logger.info("Running block on JCEF context")
+            jcefThread = Thread.currentThread()
             try {
                 val app = innerGetCefApp()
                 if (isError || app == null) {
@@ -67,33 +82,30 @@ object JcefManager {
                 } else if (isInitialized) {
                     block(CefAppState.Initialized(app))
                 } else if (waitingForInit) {
-                    ioScope.launch {
-                        val startTime = System.currentTimeMillis()
-                        while(System.currentTimeMillis() - startTime < CEF_INIT_TIMEOUT) {
-                            if (isInitialized) {
-                                block(CefAppState.Initialized(app))
-
-                                return@launch
-                            } else if (isError) {
-                                block(CefAppState.Error)
-                                return@launch
-                            }
-                            delay(500) // Check every 500ms
-                        }
-
+                    val startTime = System.currentTimeMillis()
+                    while(System.currentTimeMillis() - startTime < CEF_INIT_TIMEOUT) {
                         if (isInitialized) {
                             block(CefAppState.Initialized(app))
+                            return@launch
                         } else if (isError) {
                             block(CefAppState.Error)
-                        } else {
-                            block(CefAppState.Initializing)
+                            return@launch
                         }
+                        delay(CEF_INIT_POLL_INTERVAL)
+                    }
+                    if (isInitialized) {
+                        block(CefAppState.Initialized(app))
+                    } else if (isError) {
+                        block(CefAppState.Error)
+                    } else {
+                        block(CefAppState.Initializing)
                     }
                 } else {
                     block(CefAppState.Initializing)
                 }
             } catch (e: Throwable) {
                 logger.error("Error running block on JCEF context", e)
+                block(CefAppState.Error)
             }
 
         }
@@ -114,13 +126,94 @@ object JcefManager {
     fun tryPreload() {
         runOnJcefContext(false) {}
     }
+
+    fun getSharedRequestContext(): CefRequestContext? {
+        sharedRequestContext?.let {
+            return it
+        }
+        return synchronized(requestContextLock) {
+            sharedRequestContext?.let {
+                return@synchronized it
+            }
+            runCatching {
+                CefRequestContext.getGlobalContext()
+            }.onFailure {
+                logger.error("Failed to get global request context", it)
+            }.getOrNull()?.also {
+                sharedRequestContext = it
+                if (sharedCookieManager == null) {
+                    sharedCookieManager = resolveCookieManagerFromContext(it)
+                }
+            }
+        }
+    }
+
+    fun getSharedCookieManager(): CefCookieManager? {
+        sharedCookieManager?.let {
+            return it
+        }
+        val contextManager = getSharedRequestContext()?.let { resolveCookieManagerFromContext(it) }
+        if (contextManager != null) {
+            sharedCookieManager = contextManager
+            return contextManager
+        }
+        return runCatching {
+            CefCookieManager.getGlobalManager()
+        }.onFailure {
+            logger.error("Failed to get global cookie manager", it)
+        }.getOrNull()?.also {
+            sharedCookieManager = it
+        }
+    }
+
+    fun flushCookieStoreSync(timeoutMillis: Long = COOKIE_FLUSH_TIMEOUT): Boolean {
+        if (Thread.currentThread() === jcefThread) {
+            val success = flushCookieStoreInternal(timeoutMillis)
+            if (!success) {
+                logger.warn("Cookie flush failed on JCEF thread.")
+            }
+            return success
+        }
+
+        val done = CountDownLatch(1)
+        val success = AtomicBoolean(false)
+        runOnJcefContext(true) { state ->
+            if (state is CefAppState.Initialized) {
+                success.set(flushCookieStoreInternal(timeoutMillis))
+            }
+            done.countDown()
+        }
+        val completed = done.await(timeoutMillis + CEF_INIT_TIMEOUT, TimeUnit.MILLISECONDS)
+        if (!completed) {
+            logger.warn("Timeout while waiting for cookie flush task.")
+            return false
+        }
+        if (!success.get()) {
+            logger.warn("Cookie flush finished but did not succeed.")
+        }
+        return success.get()
+    }
+
     private fun initCefApp(): CefApp? {
         if (init.compareAndSet(false, true)) {
             Runtime.getRuntime().addShutdownHook(
                 thread(start = false) {
-                    runOnJcefContext(false) {
-                        if (it is CefAppState.Initialized) {
-                            it.cefApp.dispose()
+                    runBlocking {
+                        val shutdownDone = CompletableDeferred<Unit>()
+                        runOnJcefContext(false) {
+                            try {
+                                if (it is CefAppState.Initialized) {
+                                    flushCookieStoreInternal(COOKIE_FLUSH_TIMEOUT)
+                                    it.cefApp.dispose()
+                                    sharedRequestContext = null
+                                    sharedCookieManager = null
+                                }
+                            } finally {
+                                shutdownDone.complete(Unit)
+                            }
+                        }
+                        withTimeoutOrNull(SHUTDOWN_WAIT_TIMEOUT) {
+                            shutdownDone.await()
                         }
                     }
                 },
@@ -132,15 +225,22 @@ object JcefManager {
                 val app = CefApp.getInstance(config.appArgs, config.cefSettings)
                 app.onInitialization {
                     if (it == CefApp.CefAppState.INITIALIZED) {
+                        getSharedCookieManager()
+                        getSharedRequestContext()
                         logger.info("JCEF initialized successfully.")
                         isInitialized = true
                     } else {
+                        isError = true
                         logger.error("JCEF initialization failed.")
                     }
                 }
-                CefCookieManager.getGlobalManager()
+
                 return app
             } catch (e: Exception) {
+                isError = true
+                init.set(false)
+                sharedRequestContext = null
+                sharedCookieManager = null
                 logger.error("Failed to initialize JCEF", e)
                 return null
             }
@@ -160,16 +260,46 @@ object JcefManager {
         config.cefSettings.log_severity = CefSettings.LogSeverity.LOGSEVERITY_DEFAULT
         config.cefSettings.log_file = getLogPath()
         config.cefSettings.persist_session_cookies = true
+        config.cefSettings.cookieable_schemes_exclude_defaults = false
         return config
+    }
+
+    private fun flushCookieStoreInternal(timeoutMillis: Long): Boolean {
+        runCatching {
+            val cookieManager = getSharedCookieManager() ?: return false
+            val latch = CountDownLatch(1)
+            val shouldWait = cookieManager.flushStore {
+                latch.countDown()
+            }
+            val completed = if (shouldWait) {
+                latch.await(timeoutMillis, TimeUnit.MILLISECONDS)
+            } else {
+                true
+            }
+            if (shouldWait && !completed) {
+                logger.warn("Cookie flush callback timed out after ${timeoutMillis}ms.")
+            }
+            return completed
+        }.onFailure {
+            logger.warn("Failed to flush cookie store", it)
+        }
+        return false
+    }
+
+    private fun resolveCookieManagerFromContext(context: CefRequestContext): CefCookieManager? {
+        return CefCookieManager.getGlobalManager()
     }
 
 
 
     // cookie 持久化
     private fun getCachePath(): String {
-        val path = pathProvider.getCacheJvmPath("jcef")
-        val file = File(path)
-        return path
+        val cacheDir = File(pathProvider.getFileJvmPath("jcef-cache"))
+        if (!cacheDir.exists() && !cacheDir.mkdirs()) {
+            logger.warn("Failed to create JCEF cache directory: ${cacheDir.absolutePath}")
+        }
+        logger.info("JCEF cache path: ${cacheDir.absolutePath}")
+        return cacheDir.absolutePath
 //        try {
 //            file.deleteRecursively()
 //        }catch (e: Exception) {

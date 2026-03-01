@@ -196,14 +196,20 @@ fun Radar(
                     ),
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(8.dp).height(EasyScheme.size.cartoonCoverSmallHeight),
+                        modifier = Modifier.fillMaxWidth().padding(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                     ){
                         AsyncImage(
                             item.businessPair.getManifest().icon,
+                            modifier = Modifier.size(24.dp),
                             contentDescription = null
                         )
                         Spacer(modifier = Modifier.size(8.dp))
-                        Text("点击进行人机验证")
+                        Column {
+                            Text(stringRes(item.businessPair.getManifest().label))
+                            Text("点击进行人机验证")
+                        }
+
                     }
                 }
             } else {

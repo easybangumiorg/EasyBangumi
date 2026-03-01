@@ -5,12 +5,9 @@ import android.webkit.*
 import kotlinx.coroutines.*
 import org.apache.commons.text.StringEscapeUtils
 import org.easybangumi.next.lib.utils.coroutineProvider
-import org.easybangumi.next.lib.utils.global
 import org.easybangumi.next.lib.utils.safeResume
 import org.easybangumi.next.lib.webview.IWebView
 import java.io.ByteArrayInputStream
-import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.coroutines.resume
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -65,11 +62,15 @@ class WebKitWebViewProxy(
     @Volatile
     private var interceptResRegex: Regex? = null
 
-    private val hasLoad = AtomicBoolean(false)
-
     private var webView: WebView? = null
 
     private val resourceList = mutableListOf<String>()
+
+    @Volatile
+    private var userAgent: String? = null
+
+    @Volatile
+    private var headers: Map<String, String> = emptyMap()
 
     private var needBlob: Boolean = false
     @Volatile
@@ -88,6 +89,20 @@ class WebKitWebViewProxy(
     }
 
     private var state: State? = null
+
+    private val blobHookBridge = object : Any() {
+        @JavascriptInterface
+        fun handleWrapper(blobTextData: String) {
+            singleScope.launch {
+                resourceList.add(blobTextData)
+                (state as? State.WaitingForResourceLoaded)?.let {
+                    if (it.resourceRegex.matches(blobTextData)) {
+                        it.continuation.safeResume(blobTextData)
+                    }
+                }
+            }
+        }
+    }
 
 
     private val webViewClient = object: WebViewClient() {
@@ -130,6 +145,32 @@ class WebKitWebViewProxy(
 
     }
 
+    override suspend fun init(
+        userAgent: String?,
+        headers: Map<String, String>,
+        needBlob: Boolean
+    ): Boolean {
+        this.userAgent = userAgent
+        this.headers = headers
+        this.needBlob = needBlob
+
+        return mainScope.async {
+            val currentWebView = webView ?: webViewManager.getWebView() ?: return@async false
+            webView = currentWebView
+            currentWebView.clearWeb()
+            currentWebView.settings.userAgentString = userAgent
+            currentWebView.webViewClient = webViewClient
+            if (needBlob) {
+                currentWebView.addJavascriptInterface(blobHookBridge, "blobHook")
+            }
+            true
+        }.await()
+    }
+
+    override fun setInterceptResRegex(interceptResRegex: String?) {
+        this.interceptResRegex = interceptResRegex?.takeIf { it.isNotBlank() }?.let { Regex(it) }
+    }
+
     override suspend fun loadUrl(
         url: String,
         userAgent: String?,
@@ -137,41 +178,22 @@ class WebKitWebViewProxy(
         interceptResRegex: String?,
         needBlob: Boolean
     ): Boolean {
-        if (hasLoad.compareAndSet(false, true)) {
-            close()
-            this@WebKitWebViewProxy.url = url
-            this@WebKitWebViewProxy.interceptResRegex = interceptResRegex?.let { Regex(it) }
-
-            mainScope.async {
-               val wb = webViewManager.getWebView()
-                if (wb == null) {
-                    return@async false
-                }
-                webView = wb
-                wb.clearWeb()
-                wb.settings.userAgentString = userAgent
-                wb.webViewClient = webViewClient
-                if (needBlob) {
-                    wb.addJavascriptInterface(object : Any() {
-                        @JavascriptInterface
-                        fun handleWrapper(blobTextData: String) {
-                            singleScope.launch {
-                                resourceList.add(blobTextData)
-                                (state as? State.WaitingForResourceLoaded)?.let {
-                                    if (it.resourceRegex.matches(blobTextData)) {
-                                        it.continuation.safeResume(blobTextData)
-                                    }
-                                }
-                            }
-                        }
-                    }, "blobHook")
-                }
-                wb.loadUrl(url, headers)
-            }
+        this.url = url
+        setInterceptResRegex(interceptResRegex)
+        if (!init(userAgent, headers, needBlob)) {
             return false
-        } else {
-            throw IllegalStateException("IWebView can only be loaded once, and it has already been loaded.")
         }
+
+        state?.continuation?.cancel()
+        state = null
+        isLoadEnd = false
+        resourceList.clear()
+
+        return mainScope.async {
+            val currentWebView = webView ?: return@async false
+            currentWebView.loadUrl(url, this@WebKitWebViewProxy.headers)
+            true
+        }.await()
     }
 
     override suspend fun waitingForPageLoaded(timeout: Long): Boolean {
@@ -270,9 +292,29 @@ class WebKitWebViewProxy(
             webViewManager.recycle(it)
         }
         webView = null
+        url = null
+        interceptResRegex = null
+        userAgent = null
+        headers = emptyMap()
+        needBlob = false
+        isLoadEnd = false
+        resourceList.clear()
     }
 
     override fun getImpl(): Any? {
         return webView
+    }
+
+    override fun addToEndpoint(): Boolean {
+        return webView?.let {
+            WebKitWindowEndpoint.addBrowserToWindow(it)
+        } ?: false
+    }
+
+    override fun removeFromEndpoint(): Boolean {
+        return webView?.let {
+            WebKitWindowEndpoint.removeBrowserFromWindow(it)
+            true
+        } ?: false
     }
 }

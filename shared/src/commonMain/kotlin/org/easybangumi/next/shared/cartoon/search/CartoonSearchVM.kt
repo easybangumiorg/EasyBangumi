@@ -17,6 +17,7 @@ import org.easybangumi.next.shared.source.SourceCase
 import org.easybangumi.next.shared.source.api.component.ComponentBusiness
 import org.easybangumi.next.shared.source.api.component.search.SearchComponent
 import org.easybangumi.next.shared.source.api.component.search.createPagingSource
+import org.easybangumi.next.shared.source.bangumi.source.BangumiInnerSource
 import org.koin.core.component.inject
 import kotlin.collections.map
 
@@ -31,7 +32,9 @@ import kotlin.collections.map
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
-class CartoonSearchVM: StateViewModel<CartoonSearchVM.State>(State()) {
+class CartoonSearchVM(
+    onlyPlay: Boolean = false
+): StateViewModel<CartoonSearchVM.State>(State()) {
 
     data class State(
         val searchKeyword: String? = null,
@@ -51,9 +54,18 @@ class CartoonSearchVM: StateViewModel<CartoonSearchVM.State>(State()) {
             combine(
                 sourceCase.searchBusiness(),
                 state.map { it.searchKeyword }.distinctUntilChanged(),
-            ) { searchBusinessList, keyword ->
+            ) { searchBusinessListS, keyword ->
+                var searchBusinessList = searchBusinessListS
+                if (onlyPlay) {
+                    // TODO 使用searchBusinessWithPlayFlow
+                    // 写不完了，先屏蔽 bangumi把
+                    searchBusinessList = searchBusinessList.filter {
+                        it.source.key != BangumiInnerSource.SOURCE_KEY
+                    }
+                }
                 if (keyword != null) {
                     val pagingFlowMap = mutableMapOf<String, PagingFlow<CartoonCover>>()
+                    var searchBusinessList = searchBusinessListS
                     searchBusinessList.forEach { business ->
                         val key = business.source.key
                         val temp = pagingSourceTemp[key]

@@ -2,12 +2,14 @@ package org.easybangumi.next
 
 import androidx.compose.runtime.mutableStateOf
 import kotlinx.coroutines.launch
+import org.easybangumi.next.jcef.JcefCookieSyncEndpoint
 import org.easybangumi.next.jcef.JcefManager
 import org.easybangumi.next.lib.utils.PathProviderImpl
 import org.easybangumi.next.lib.utils.coroutineProvider
 import org.easybangumi.next.libplayer.vlcj.VlcBridgeManagerProvider
 import org.easybangumi.next.libplayer.vlcj.VlcjBridgeManager
 import org.easybangumi.next.shared.Scheduler
+import org.easybangumi.next.shared.ktor.JcefCookiesStorage
 import org.koin.mp.KoinPlatform
 
 /**
@@ -77,6 +79,15 @@ object LaunchManager {
     fun fireLazyInit() {
         // 预加载 vlc
         KoinPlatform.getKoin().get<VlcBridgeManagerProvider>().tryInit()
+
+        JcefCookieSyncEndpoint.register(
+            storageToJcef = { url ->
+                JcefCookiesStorage.storageToJcef(url)
+            },
+            jcefToStorage = {
+                JcefCookiesStorage.jcefToStorage()
+            }
+        )
 
         // 预加载 jcef
         JcefManager.tryPreload()

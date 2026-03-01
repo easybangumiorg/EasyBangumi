@@ -1,6 +1,7 @@
 ﻿package org.easybangumi.next.shared.debug.webview
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
@@ -11,6 +12,10 @@ import org.easybangumi.next.shared.debug.DebugScope
 import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.logger.logger
 import org.easybangumi.next.lib.webview.IWebView
+import org.easybangumi.next.shared.LocalNavController
+import org.easybangumi.next.shared.compose.browser.BrowserPage
+import org.easybangumi.next.shared.compose.browser.BrowserPageParam
+import org.easybangumi.next.shared.navigateToBrowser
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -24,18 +29,28 @@ import org.easybangumi.next.lib.webview.IWebView
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 
-private val logger = logger("WebViewDebug")
+internal val logger = logger("WebViewDebug")
+expect suspend fun test2()
 @Composable
 fun DebugScope.WebViewDebug() {
     val scope = rememberCoroutineScope()
+    val nav = LocalNavController.current
 
-    Box(modifier = Modifier.fillMaxSize()) {
+
+    Column (modifier = Modifier.fillMaxSize()) {
         Button(onClick = {
             scope.launch {
-                test1()
+               nav.navigateToBrowser("")
             }
         }) {
             Text("test1")
+        }
+        Button(onClick = {
+            scope.launch {
+                test2()
+            }
+        }) {
+            Text("test2")
         }
     }
 

@@ -11,3 +11,6 @@ actual fun getWebView(): IWebView {
     val webViewManager = KoinPlatform.getKoin().get<WebViewManager>()
     return WebKitWebViewProxy(webViewManager)
 }
+
+actual suspend fun test2() {
+}
