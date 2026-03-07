@@ -5,6 +5,7 @@ import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
+import androidx.navigation.NavController
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import org.easybangumi.next.lib.utils.global
@@ -69,14 +70,18 @@ actual fun AnimatedContentScope.NavHook(
 
 actual fun NavHostController.navigate(
     routerPage: RouterPage,
-    needNewWindowWhenDesktop: Boolean
+    windowModeWhenDesktop: NavigationWindowMode
 ) {
-    this.navigate(routerPage)
+    (this as NavController).navigate(routerPage)
 }
 
 actual fun NavHostController.navigate(
     webPage: RouterPage.WebPage,
-    needNewWindowWhenDesktop: Boolean
+    windowModeWhenDesktop: NavigationWindowMode
 ) {
-    this.navigate(webPage)
+    (this as NavController).navigate(webPage)
+}
+
+actual fun NavHostController.popBackStackWithWindowMode(): Boolean {
+    return popBackStack()
 }

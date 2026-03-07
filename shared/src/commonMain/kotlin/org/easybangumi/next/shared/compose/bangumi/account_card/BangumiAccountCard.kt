@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color.Companion
 import androidx.compose.ui.unit.dp
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.shared.LocalNavController
+import org.easybangumi.next.shared.NavigationWindowMode
 import org.easybangumi.next.shared.RouterPage
 import org.easybangumi.next.shared.compose.bangumi.bangumiContainer
 import org.easybangumi.next.shared.compose.bangumi.onBangumiContainer
@@ -62,7 +63,10 @@ fun BangumiAccountCard(
         modifier = modifier.padding(8.dp, 0.dp)
             .clip(RoundedCornerShape(8.dp))
             .clickable {
-                nav.navigate(RouterPage.BangumiLogin, true)
+                nav.navigate(
+                    RouterPage.BangumiLogin,
+                    NavigationWindowMode.FixedWindow("bangumi-login")
+                )
             }
             .background(MaterialTheme.colorScheme.bangumiContainer, RoundedCornerShape(8.dp)),
         colors = ListItemDefaults.colors(

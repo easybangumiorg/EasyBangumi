@@ -62,6 +62,7 @@ import org.easybangumi.next.shared.foundation.stringRes
 import org.easybangumi.next.shared.foundation.todo.easyTODO
 import org.easybangumi.next.shared.foundation.view_model.vm
 import org.easybangumi.next.shared.navigateToDetailOrMedia
+import org.easybangumi.next.shared.popBackStackWithWindowMode
 import org.easybangumi.next.shared.playcon.TimeUtils
 import org.easybangumi.next.shared.resources.Res
 
@@ -147,7 +148,7 @@ fun History(
                     },
                     onBack = if (showBack) {
                         {
-                            nav.popBackStack()
+                            nav.popBackStackWithWindowMode()
                         }
                     } else null,
                     onSearchExit = {

@@ -176,6 +176,15 @@ class PlayLineIndexVM(
         }
     }
 
+    fun tryRefreshPlayLine(){
+        val cartoonIndex = state.value.cartoonIndex ?: return
+        loadPlayLine(
+            cartoonIndex,
+            suggestPlayerLine = state.value.currentPlayerLine,
+            suggestEpisode = state.value.currentEpisode,
+        )
+    }
+
 
     fun loadPlayLine(
         // playerIndex

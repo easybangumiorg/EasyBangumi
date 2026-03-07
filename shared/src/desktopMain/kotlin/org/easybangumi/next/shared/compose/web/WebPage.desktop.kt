@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -14,6 +15,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import org.easybangumi.next.shared.LocalNavController
+import org.easybangumi.next.shared.popBackStackWithWindowMode
 import org.easybangumi.next.shared.foundation.elements.LoadingElements
 import org.easybangumi.next.shared.foundation.view_model.vm
 
@@ -33,7 +35,7 @@ actual fun WebPage(param: WebPageParam) {
         while (true) {
             delay(5000)
             if (vm.onCheck()) {
-                nav.popBackStack()
+                nav.popBackStackWithWindowMode()
             }
         }
     }
@@ -47,28 +49,20 @@ actual fun WebPage(param: WebPageParam) {
             navigationIcon =  {
                 IconButton(
                     onClick = {
-                        nav.popBackStack()
+                        nav.popBackStackWithWindowMode()
                     }
                 ) {
                     Icon(Icons.Filled.ArrowBack, "back")
                 }
             },
             actions = {
-//                if (sta is BangumiLoginVM.State.ShowJcef) {
-//                    TextButton(
-//                        onClick = {
-//                            vm.reload()
-//                        }
-//                    ) {
-//                        Text("申请授权")
-//                    }
-//                }
-//                IconButton(onClick = {
-//
-//                }) {
-//                    Icon(Icons.Filled.Help, null)
-//                }
-
+                IconButton(
+                    onClick = {
+                        vm.reload()
+                    }
+                ) {
+                    Icon(Icons.Filled.Refresh, "refresh")
+                }
             }
         )
         Box(modifier = Modifier.fillMaxWidth().weight(1f)) {

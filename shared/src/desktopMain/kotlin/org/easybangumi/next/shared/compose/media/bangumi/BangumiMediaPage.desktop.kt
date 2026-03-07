@@ -66,7 +66,7 @@ actual fun BangumiMediaPage(
         EasyTab(
             modifier = Modifier.fillMaxWidth(),
             scrollable = true,
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            containerColor = MaterialTheme.colorScheme.surface,
             contentColor = MaterialTheme.colorScheme.onSurface,
             size = bangumiMediaSubPageList.size,
             selection = pagerState.currentPage,
@@ -87,7 +87,7 @@ actual fun BangumiMediaPage(
         ) {
             val tab = bangumiMediaSubPageList[it]
             Box(
-                modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceContainerLow)
+                modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface)
             ) {
                 tab.content(param)
             }

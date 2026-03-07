@@ -28,6 +28,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import org.easybangumi.next.shared.LocalNavController
+import org.easybangumi.next.shared.popBackStackWithWindowMode
 import org.easybangumi.next.shared.foundation.elements.LoadingElements
 import org.easybangumi.next.shared.foundation.snackbar.moeSnackBar
 import org.easybangumi.next.shared.foundation.view_model.vm
@@ -49,7 +50,7 @@ actual fun BangumiLoginHost() {
             navigationIcon =  {
                 IconButton(
                     onClick = {
-                        nav.popBackStack()
+                        nav.popBackStackWithWindowMode()
                     }
                 ) {
                     Icon(Icons.Filled.ArrowBack, "back")
@@ -123,13 +124,13 @@ actual fun BangumiLoginHost() {
                     LaunchedEffect(Unit) {
                         // TODO snackbar show success
                         "Bangumi 授权成功".moeSnackBar()
-                        nav.popBackStack()
+                        nav.popBackStackWithWindowMode()
                     }
                 }
                 is BangumiLoginVM.State.ErrorAndExit -> {
                     LaunchedEffect(Unit) {
                         "授权错误： ${sta.errorMsg}".moeSnackBar()
-                        nav.popBackStack()
+                        nav.popBackStackWithWindowMode()
                     }
                 }
             }

@@ -1,14 +1,7 @@
-package org.easybangumi.next.jcef
+﻿package org.easybangumi.next.jcef
 
 import com.jetbrains.cef.JCefAppConfig
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.coroutines.*
 import org.cef.CefApp
 import org.cef.CefSettings
 import org.cef.browser.CefRequestContext
@@ -19,7 +12,7 @@ import org.easybangumi.next.lib.utils.coroutineProvider
 import org.easybangumi.next.lib.utils.pathProvider
 import java.io.File
 import java.text.SimpleDateFormat
-import java.util.Locale
+import java.util.*
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
@@ -64,7 +57,6 @@ object JcefManager {
 
     @Volatile
     private var isInitialized = false
-
     @Volatile
     private var isError = false
 
@@ -77,8 +69,11 @@ object JcefManager {
     fun runOnJcefContext(
         waitingForInit: Boolean = true,
         block: (CefAppState) -> Unit
-    ) {
+    ){
+        // EventQueue.invokeLater
+        // deepseek 说一定要在 awt 线程，但实际上自测可以不用？先试试
         singleScope.launch {
+//            logger.info("Running block on JCEF context")
             jcefThread = Thread.currentThread()
             try {
                 val app = innerGetCefApp()
@@ -88,7 +83,7 @@ object JcefManager {
                     block(CefAppState.Initialized(app))
                 } else if (waitingForInit) {
                     val startTime = System.currentTimeMillis()
-                    while (System.currentTimeMillis() - startTime < CEF_INIT_TIMEOUT) {
+                    while(System.currentTimeMillis() - startTime < CEF_INIT_TIMEOUT) {
                         if (isInitialized) {
                             block(CefAppState.Initialized(app))
                             return@launch
@@ -265,7 +260,6 @@ object JcefManager {
         config.cefSettings.log_severity = CefSettings.LogSeverity.LOGSEVERITY_DEFAULT
         config.cefSettings.log_file = getLogPath()
         config.cefSettings.persist_session_cookies = true
-        config.cefSettings.persist_user_preferences = true
         config.cefSettings.cookieable_schemes_exclude_defaults = false
         return config
     }
@@ -293,25 +287,12 @@ object JcefManager {
     }
 
     private fun resolveCookieManagerFromContext(context: CefRequestContext): CefCookieManager? {
-        val manager = runCatching {
-            val method = context.javaClass.methods.firstOrNull {
-                it.name == "getCookieManager" && (it.parameterCount == 0 || it.parameterCount == 1)
-            } ?: return@runCatching null
-            when (method.parameterCount) {
-                0 -> method.invoke(context) as? CefCookieManager
-                1 -> method.invoke(context, null) as? CefCookieManager
-                else -> null
-            }
-        }.onFailure {
-            logger.warn("Failed to resolve cookie manager from request context", it)
-        }.getOrNull()
-        return manager ?: runCatching {
-            CefCookieManager.getGlobalManager()
-        }.onFailure {
-            logger.error("Failed to fallback to global cookie manager", it)
-        }.getOrNull()
+        return CefCookieManager.getGlobalManager()
     }
 
+
+
+    // cookie 持久化
     private fun getCachePath(): String {
         val cacheDir = File(pathProvider.getFileJvmPath("jcef-cache"))
         if (!cacheDir.exists() && !cacheDir.mkdirs()) {
@@ -319,6 +300,15 @@ object JcefManager {
         }
         logger.info("JCEF cache path: ${cacheDir.absolutePath}")
         return cacheDir.absolutePath
+//        try {
+//            file.deleteRecursively()
+//        }catch (e: Exception) {
+//            // Ignore any errors during deletion
+//        }
+//        file.mkdirs()
+//        val configFile = File(file, System.currentTimeMillis().toString())
+//        configFile.mkdirs()
+//        return configFile.absolutePath
     }
 
     private fun getLogPath(): String {
@@ -332,4 +322,5 @@ object JcefManager {
         }
         return logFile.absolutePath
     }
+
 }

@@ -38,6 +38,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.PlayForWork
 import androidx.compose.material.icons.filled.PlayLesson
 import androidx.compose.material.icons.filled.PlaylistPlay
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -91,9 +92,7 @@ fun LazyListScope.mediaPlayLineIndexDesktop(
     } else if(data != null) {
         item {
             Column(
-                modifier = Modifier.padding(8.dp, 0.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.surfaceContainerHigh, RoundedCornerShape(8.dp))
+                modifier = Modifier
 
             ) {
                 val scope = rememberCoroutineScope()
@@ -101,18 +100,37 @@ fun LazyListScope.mediaPlayLineIndexDesktop(
                     mutableStateOf(false)
                 }
                 val lazyListState = rememberLazyListState()
-                Spacer(Modifier.size(16.dp))
+                Spacer(Modifier.size(8.dp))
                 Row (
                     verticalAlignment = Alignment.CenterVertically,
                 ){
                     Spacer(Modifier.size(16.dp))
-                    Icon(Icons.Filled.PlaylistPlay, contentDescription = "", modifier = Modifier.size(20.dp))
+                    Icon(Icons.Filled.PlaylistPlay,
+                        contentDescription = "",
+                        modifier = Modifier.size(20.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
                     Spacer(Modifier.size(8.dp))
                     Text(
                         "播放线路",
                         style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary,
                     )
                     Spacer(Modifier.weight(1f))
+                    Icon(
+                        Icons.Default.Refresh,
+                        contentDescription = "",
+                        modifier = Modifier.size(24.dp).clip(CircleShape).clickable {
+                            scope.launch {
+                                runCatching {
+                                    vm.tryRefreshPlayLine()
+                                }.onFailure {
+                                    it.printStackTrace()
+                                }
+
+                            }
+                        }.padding(2.dp)
+                    )
                     if ((data.size ?: 0) > 1) {
                         Icon(
                             Icons.Default.KeyboardArrowLeft,
@@ -131,7 +149,7 @@ fun LazyListScope.mediaPlayLineIndexDesktop(
                                     }
 
                                 }
-                            }
+                            }.padding(2.dp)
                         )
                         Icon(
                             Icons.Default.KeyboardArrowRight,
@@ -150,7 +168,7 @@ fun LazyListScope.mediaPlayLineIndexDesktop(
 
                                 }
 
-                            }
+                            }.padding(2.dp)
                         )
                         Icon(
                             if (showAll.value) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
@@ -163,7 +181,7 @@ fun LazyListScope.mediaPlayLineIndexDesktop(
                     }
 
                 }
-                Spacer(Modifier.size(8.dp))
+                Spacer(Modifier.size(16.dp))
                 val list = data
                 AnimatedContent(showAll.value && list.size > 1) {
                     if (it) {
@@ -258,17 +276,17 @@ fun LazyListScope.mediaPlayLineIndexDesktop(
 
 
         }
-        divider()
-        space(Modifier.height(8.dp))
+        space(Modifier.height(4.dp))
 //        divider()
         item {
             Row (
                 verticalAlignment = Alignment.CenterVertically,
             ){
-                Spacer(Modifier.size(8.dp))
+                Spacer(Modifier.size(16.dp))
                 Text(
                     "选集",
                     style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary,
                 )
                 Spacer(Modifier.weight(1f))
                 Icon(
@@ -297,8 +315,8 @@ fun LazyListScope.mediaPlayLineIndexDesktop(
                         vm.onEpisodeSelected(state.currentShowingPlayerLine, it)
                     },
                     colors = CardDefaults.cardColors().copy(
-                        containerColor = if(item == state.currentEpisodeOrNull) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh,
-                        contentColor = if(item == state.currentEpisodeOrNull) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                        containerColor = if(currentPlayLine == state.playLineOrNull && item == state.currentEpisodeOrNull) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh,
+                        contentColor = if(currentPlayLine == state.playLineOrNull && item == state.currentEpisodeOrNull) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
                     ),
                 ) {
                     Text(text = item.label, modifier = Modifier.padding(8.dp, 8.dp, 0.dp, 24.dp))

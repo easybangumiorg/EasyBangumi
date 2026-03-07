@@ -81,4 +81,8 @@ class WebPageVM(
 
     }
 
+    fun reload() {
+        (state.value as? State.ShowJcef)?.browser?.reload()
+    }
+
 }

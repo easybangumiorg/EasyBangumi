@@ -1,6 +1,7 @@
 package org.easybangumi.next.libplayer.vlcj
 
 import kotlinx.coroutines.CoroutineScope
+import org.easybangumi.next.libplayer.vlcj.bitmap.VlcjPlayerBitmapBridge
 import uk.co.caprica.vlcj.factory.MediaPlayerFactory
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantLock
@@ -18,20 +19,19 @@ import kotlin.concurrent.withLock
  *        http://www.apache.org/licenses/LICENSE-2.0
  */
 class VlcjBridgeManager(
-    // vlc 参数
-    libvlcArgs: Collection<String> = emptyList(),
+    private val mediaPlayerFactory: MediaPlayerFactory
 ) {
 
-    // factory 初始化直接会加载 native 库（耗时），lazy 里加了锁，线程安全
-    private val mediaPlayerFactory: MediaPlayerFactory by lazy {
-        MediaPlayerFactory(libvlcArgs)
-    }
+//    // factory 初始化直接会加载 native 库（耗时），lazy 里加了锁，线程安全
+//    private val mediaPlayerFactory: MediaPlayerFactory by lazy {
+//        MediaPlayerFactory(libvlcArgs)
+//    }
     // vlcj 播放器创建不支持并发
     private val reentrantLock = ReentrantLock()
 
     // 强引用防止回调被 GC，jna 会直接抛异常
     // 记得调用 release !
-    private val map = ConcurrentHashMap<String, VlcjPlayerBridge>()
+    private val map = ConcurrentHashMap<String, VlcjPlayerBitmapBridge>()
 
 
     // 耗时
@@ -39,16 +39,17 @@ class VlcjBridgeManager(
         mediaPlayerFactory
     }
 
-    fun getOrCreateBridge(
+    fun getMediaPlayerFactory() = mediaPlayerFactory
+
+    fun getOrCreateBitmapBridge(
         tag: String,
         customFrameScope: CoroutineScope? = null,
-    ): VlcjPlayerBridge {
+    ): VlcjPlayerBitmapBridge {
         return map.getOrPut(tag) {
             reentrantLock.withLock {
-                VlcjPlayerBridge(this, customFrameScope)
+                VlcjPlayerBitmapBridge(this, customFrameScope)
             }
         }
-
     }
 
     internal fun createMediaPlayer() =

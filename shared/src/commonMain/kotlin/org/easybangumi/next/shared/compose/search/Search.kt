@@ -26,6 +26,7 @@ import org.easybangumi.next.shared.LocalNavController
 import org.easybangumi.next.shared.compose.search.simple.SimpleSearch
 import org.easybangumi.next.shared.foundation.stringRes
 import org.easybangumi.next.shared.foundation.view_model.vm
+import org.easybangumi.next.shared.popBackStackWithWindowMode
 import org.easybangumi.next.shared.resources.Res
 
 
@@ -62,7 +63,7 @@ fun Search(
             },
             onSearchTextChange = { vm.searchBarText.value = it },
             onBack = {
-                nav.popBackStack()
+                nav.popBackStackWithWindowMode()
             },
             onSearch = { keyword ->
                 vm.search(keyword)

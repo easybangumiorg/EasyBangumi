@@ -155,6 +155,12 @@ sealed class RouterPage {
     }
 }
 
+sealed class NavigationWindowMode {
+    data object MainWindow : NavigationWindowMode()
+    data object CurrentWindow : NavigationWindowMode()
+    data class FixedWindow(val tag: String) : NavigationWindowMode()
+}
+
 fun NavController.navigateToDetailOrMedia(
     cartoonIndex: CartoonIndex,
     cartoonCover: CartoonCover? = null,
@@ -209,13 +215,15 @@ expect fun AnimatedContentScope.NavHook(
 
 expect fun NavHostController.navigate(
     routerPage: RouterPage,
-    needNewWindowWhenDesktop: Boolean = false,
+    windowModeWhenDesktop: NavigationWindowMode = NavigationWindowMode.CurrentWindow,
 )
 
 expect fun NavHostController.navigate(
     webPage: RouterPage.WebPage,
-    needNewWindowWhenDesktop: Boolean = false,
+    windowModeWhenDesktop: NavigationWindowMode = NavigationWindowMode.CurrentWindow,
 )
+
+expect fun NavHostController.popBackStackWithWindowMode(): Boolean
 
 @Composable
 fun Router(
@@ -257,7 +265,7 @@ fun Router(
                             navController.navigate(debug)
                         },
                         onBack = {
-                            navController.popBackStack()
+                            navController.popBackStackWithWindowMode()
                         }
                     )
                 }
@@ -332,7 +340,7 @@ fun Router(
                 NavHook(browserPage, it) {
                     BrowserPage(
                         param = browserPage.param,
-                        onBack = { navController.popBackStack() }
+                        onBack = { navController.popBackStackWithWindowMode() }
                     )
                 }
             }
@@ -343,7 +351,7 @@ fun Router(
             ) {
                 val setting = it.toRoute<RouterPage.Setting>()
                 NavHook(setting, it) {
-                    SettingPage(onBack = { navController.popBackStack() })
+                    SettingPage(onBack = { navController.popBackStackWithWindowMode() })
                 }
             }
 
@@ -353,7 +361,7 @@ fun Router(
             ) {
                 val tagManage = it.toRoute<RouterPage.TagManage>()
                 NavHook(tagManage, it) {
-                    TagsManager(onBack = { navController.popBackStack() })
+                    TagsManager(onBack = { navController.popBackStackWithWindowMode() })
                 }
             }
 
@@ -363,7 +371,7 @@ fun Router(
             ) {
                 val about = it.toRoute<RouterPage.About>()
                 NavHook(about, it) {
-                    About(onBack = { navController.popBackStack() })
+                    About(onBack = { navController.popBackStackWithWindowMode() })
                 }
             }
 

@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -59,7 +60,13 @@ actual fun WebPage(param: WebPageParam) {
                 }
             },
             actions = {
-                // Android 平台可以添加更多操作按钮
+                IconButton(
+                    onClick = {
+                        vm.reload()
+                    }
+                ) {
+                    Icon(Icons.Filled.Refresh, "refresh")
+                }
             }
         )
         Box(modifier = Modifier.fillMaxWidth().weight(1f)) {

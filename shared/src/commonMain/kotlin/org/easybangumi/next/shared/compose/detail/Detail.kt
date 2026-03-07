@@ -6,6 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.easybangumi.next.shared.LocalNavController
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
+import org.easybangumi.next.shared.popBackStackWithWindowMode
 import org.easybangumi.next.shared.scheme.LocalSizeScheme
 import org.easybangumi.next.shared.source.bangumi.source.BangumiInnerSource
 import org.easybangumi.next.shared.compose.detail.bangumi.BangumiDetail
@@ -30,7 +31,7 @@ fun Detail(cartoonIndex: CartoonIndex) {
                 cartoonIndex = cartoonIndex,
                 contentPaddingTop = LocalSizeScheme.current.statusBarHeight,
                 onBack = {
-                    nav.popBackStack()
+                    nav.popBackStackWithWindowMode()
                 }
             )
         }

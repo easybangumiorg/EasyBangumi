@@ -2,7 +2,6 @@ package org.easybangumi.next.shared.window
 
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.window.WindowState
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import org.easybangumi.next.shared.RouterPage
 
@@ -23,5 +22,9 @@ val LocalEasyWindowState = staticCompositionLocalOf<EasyWindowState> {
 }
 class EasyWindowState(
     val state: WindowState,
-    val initPage: RouterPage? = RouterPage.DEFAULT,
-) {}
+    var initPage: RouterPage? = RouterPage.DEFAULT,
+    var tag: String = "",
+    var singlePageMode: Boolean = false,
+) {
+    var navController: NavHostController? = null
+}

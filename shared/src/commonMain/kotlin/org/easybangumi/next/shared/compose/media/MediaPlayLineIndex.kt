@@ -119,8 +119,8 @@ fun LazyListScope.mediaPlayLineIndex(
                         vm.onEpisodeSelected(state.currentShowingPlayerLine, it)
                     },
                     colors = CardDefaults.cardColors().copy(
-                        containerColor = if(item == state.currentEpisodeOrNull) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh,
-                        contentColor = if(item == state.currentEpisodeOrNull) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                        containerColor = if(currentPlayLine == state.playLineOrNull && item == state.currentEpisodeOrNull) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh,
+                        contentColor = if(currentPlayLine == state.playLineOrNull && item == state.currentEpisodeOrNull) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
                     ),
                 ) {
                     Text(text = item.label, modifier = Modifier.padding(8.dp, 8.dp, 0.dp, 24.dp))

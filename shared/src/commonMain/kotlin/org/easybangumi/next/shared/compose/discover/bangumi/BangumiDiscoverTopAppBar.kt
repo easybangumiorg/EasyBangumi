@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import org.easybangumi.next.shared.LocalNavController
+import org.easybangumi.next.shared.NavigationWindowMode
 import org.easybangumi.next.shared.RouterPage
 import org.easybangumi.next.shared.compose.bangumi.bangumi
 import org.easybangumi.next.shared.compose.bangumi.bangumiContainer
@@ -56,7 +57,10 @@ fun BangumiDiscoverTopAppBar(
             if (user.isNone()) {
                 TextButton(
                     onClick = {
-                        nav.navigate(RouterPage.BangumiLogin, true)
+                        nav.navigate(
+                            RouterPage.BangumiLogin,
+                            NavigationWindowMode.FixedWindow("bangumi-login")
+                        )
                     },
                     colors = ButtonDefaults.textButtonColors(
                         containerColor = MaterialTheme.colorScheme.bangumiContainer,

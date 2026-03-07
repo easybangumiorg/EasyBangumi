@@ -94,4 +94,8 @@ class WebPageVMAndroid(
             it.check?.invoke(it.iWebView)
         } ?: false
     }
+
+    fun reload() {
+        webView?.reload()
+    }
 }

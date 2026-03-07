@@ -2,26 +2,28 @@
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.paging.cachedIn
 import kotlinx.atomicfu.atomic
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.PagingFlow
 import org.easybangumi.next.lib.utils.ResourceOr
 import org.easybangumi.next.lib.utils.newPagingFlow
+import org.easybangumi.next.shared.NavigationWindowMode
 import org.easybangumi.next.shared.RouterPage
 import org.easybangumi.next.shared.cartoon.collection.BgmCollectInfoVM
 import org.easybangumi.next.shared.case.BangumiCase
 import org.easybangumi.next.shared.compose.bangumi.comment.BangumiCommentVM
-import org.easybangumi.next.shared.compose.media.navigation
 import org.easybangumi.next.shared.data.bangumi.*
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.data.cartoon.CartoonInfo
 import org.easybangumi.next.shared.foundation.view_model.StateViewModel
+import org.easybangumi.next.shared.navigate
 import org.easybangumi.next.shared.resources.Res
 import org.easybangumi.next.shared.source.SourceCase
 import org.koin.core.component.inject
@@ -242,7 +244,9 @@ class BangumiDetailVM(
             cartoonIndex = sub.cartoonIndex,
             cartoonCover = sub.cartoonCover,
             suggestEpisode = episode.ep?.toInt()?.let { it - 1 },
-        ).navigation(navController, true)
+        ).let {
+            navController.navigate(it, NavigationWindowMode.FixedWindow("media-player"))
+        }
 
     }
 
@@ -255,7 +259,9 @@ class BangumiDetailVM(
             cartoonIndex = sub.cartoonIndex,
             cartoonCover = sub.cartoonCover,
             suggestEpisode = null,
-        ).navigation(navController, true)
+        ).let {
+            navController.navigate(it, NavigationWindowMode.FixedWindow("media-player"))
+        }
     }
 
 

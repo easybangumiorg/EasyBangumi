@@ -1,19 +1,29 @@
 package org.easybangumi.next.shared.window
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
+import androidx.compose.ui.awt.SwingPanel
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowState
-import kotlinx.coroutines.launch
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import org.easybangumi.next.jcef.JcefBrowserWindowEndpoint
 import org.easybangumi.next.lib.logger.logger
-import org.easybangumi.next.lib.utils.coroutineProvider
+import org.easybangumi.next.shared.NavigationWindowMode
 import org.easybangumi.next.shared.NeedKnowDialog
 import org.easybangumi.next.shared.Router
 import org.easybangumi.next.shared.RouterPage
@@ -27,13 +37,11 @@ import org.easybangumi.next.shared.scheme.SizeScheme
 import org.easybangumi.next.shared.theme.EasyTheme
 import org.koin.compose.KoinContext
 import java.awt.BorderLayout
-import java.awt.Color
 import java.awt.Component
 import java.awt.Dimension
 import java.util.concurrent.FutureTask
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
-import javax.swing.JWindow
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -48,18 +56,21 @@ import javax.swing.JWindow
  */
 object EasyWindowController {
 
-    private const val JCEF_HOST_WINDOW_NAME = "easybangumi-jcef-host-window"
     private const val JCEF_HOST_PANEL_NAME = "easybangumi-jcef-host-panel"
+    private const val MAIN_WINDOW_TAG = "main-window"
 
     val mainWindowState = EasyWindowState(
         WindowState(),
-        RouterPage.DEFAULT
+        initPage = RouterPage.DEFAULT,
+        tag = MAIN_WINDOW_TAG,
+        singlePageMode = false,
     )
     private val windowStateList = mutableStateListOf(
         mainWindowState
     )
     private var exitApplication: (() -> Unit)? = null
     private val logger = logger("EasyWindowController")
+    private var windowTagCounter = 0L
 
     private val jcefLock = Any()
     private val pendingBrowserComponentSet = linkedSetOf<Component>()
@@ -67,9 +78,6 @@ object EasyWindowController {
 
     @Volatile
     private var mainComposeWindow: ComposeWindow? = null
-
-    @Volatile
-    private var jcefHostWindow: JWindow? = null
 
     @Volatile
     private var jcefHostPanel: JPanel? = null
@@ -92,15 +100,14 @@ object EasyWindowController {
     }
 
     fun addWindowState(windowState: EasyWindowState) {
-        coroutineProvider.globalScope().launch(
-            coroutineProvider.io()
-        ) {
-            windowStateList.add(windowState)
+        if (windowState.tag.isBlank()) {
+            windowState.tag = nextWindowTag()
         }
-
+        windowStateList.add(windowState)
     }
 
     fun removeWindowState(windowState: EasyWindowState) {
+        windowState.navController = null
         windowStateList.remove(windowState)
         if (windowStateList.isEmpty()) {
             exitApplication?.invoke()
@@ -110,93 +117,159 @@ object EasyWindowController {
         }
     }
 
-//    fun findWindowStateByNavController(
-//        navController: NavHostController
-//    ): EasyWindowState? {
-//        return windowStateList.find {
-//            it.navController == navController
-//        }
-//    }
+    fun bindNavController(
+        windowState: EasyWindowState,
+        navController: NavHostController,
+    ) {
+        windowState.navController = navController
+    }
+
+    fun unbindNavController(
+        windowState: EasyWindowState,
+        navController: NavHostController,
+    ) {
+        if (windowState.navController === navController) {
+            windowState.navController = null
+        }
+    }
+
+    fun navigate(
+        sourceNavController: NavHostController,
+        routerPage: RouterPage,
+        mode: NavigationWindowMode,
+    ) {
+        when (mode) {
+            NavigationWindowMode.MainWindow -> {
+                navigateInWindow(mainWindowState, routerPage, replaceCurrentPage = false)
+            }
+
+            NavigationWindowMode.CurrentWindow -> {
+                val currentWindowState = findWindowStateByNavController(sourceNavController) ?: mainWindowState
+                navigateInWindow(
+                    windowState = currentWindowState,
+                    routerPage = routerPage,
+                    replaceCurrentPage = currentWindowState.singlePageMode,
+                )
+            }
+
+            is NavigationWindowMode.FixedWindow -> {
+                val target = findWindowStateByTag(mode.tag)
+                if (target != null) {
+                    target.singlePageMode = true
+                    navigateInWindow(target, routerPage, replaceCurrentPage = true)
+                } else {
+                    addWindowState(
+                        EasyWindowState(
+                            state = WindowState(),
+                            initPage = routerPage,
+                            tag = mode.tag,
+                            singlePageMode = true,
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    fun closeWindowWhenBackStackExhausted(navController: NavHostController) {
+        val windowState = findWindowStateByNavController(navController) ?: return
+        if (windowState != mainWindowState) {
+            removeWindowState(windowState)
+        }
+    }
+
+    private fun navigateInWindow(
+        windowState: EasyWindowState,
+        routerPage: RouterPage,
+        replaceCurrentPage: Boolean,
+    ) {
+        val navController = windowState.navController
+        if (navController == null) {
+            windowState.initPage = routerPage
+            return
+        }
+        if (replaceCurrentPage) {
+            val startDestinationId = navController.graph.startDestinationId
+            (navController as NavController).navigate(routerPage) {
+                if (startDestinationId != 0) {
+                    popUpTo(startDestinationId) {
+                        inclusive = true
+                    }
+                }
+                launchSingleTop = true
+            }
+            return
+        }
+        (navController as NavController).navigate(routerPage)
+    }
+
+    private fun findWindowStateByNavController(navController: NavHostController): EasyWindowState? {
+        return windowStateList.find {
+            it.navController === navController
+        }
+    }
+
+    private fun findWindowStateByTag(tag: String): EasyWindowState? {
+        return windowStateList.find {
+            it.tag == tag
+        }
+    }
+
+    private fun nextWindowTag(): String {
+        windowTagCounter += 1
+        return "window-$windowTagCounter"
+    }
 
     private fun bindMainWindow(window: ComposeWindow) {
         synchronized(jcefLock) {
             mainComposeWindow = window
         }
 
-        ensureJcefHostPanel(window)
-
-        val pendingComponents = synchronized(jcefLock) {
-            if (pendingBrowserComponentSet.isEmpty()) {
-                emptyList()
-            } else {
-                pendingBrowserComponentSet.toList().also { pendingBrowserComponentSet.clear() }
-            }
-        }
-
-        pendingComponents.forEach { browserComponent ->
-            if (attachBrowserComponentToMainWindowNow(window, browserComponent)) {
-                synchronized(jcefLock) {
-                    attachedBrowserComponentSet.add(browserComponent)
-                }
-            } else {
-                synchronized(jcefLock) {
-                    if (mainComposeWindow === window) {
-                        pendingBrowserComponentSet.add(browserComponent)
-                    }
-                }
-            }
-        }
+        // If the JCEF host panel is already composed, flush pending browser components.
+        tryFlushPendingBrowserComponents()
     }
 
     private fun unbindMainWindow(window: ComposeWindow) {
-        val shouldDispose = synchronized(jcefLock) {
+        synchronized(jcefLock) {
             if (mainComposeWindow !== window) {
-                false
-            } else {
-                mainComposeWindow = null
-                if (attachedBrowserComponentSet.isNotEmpty()) {
-                    pendingBrowserComponentSet.addAll(attachedBrowserComponentSet)
-                    attachedBrowserComponentSet.clear()
-                }
-                true
+                return
             }
-        }
-
-        if (shouldDispose) {
-            disposeJcefHostWindow()
+            mainComposeWindow = null
+            if (attachedBrowserComponentSet.isNotEmpty()) {
+                pendingBrowserComponentSet.addAll(attachedBrowserComponentSet)
+                attachedBrowserComponentSet.clear()
+            }
         }
     }
 
     private fun attachBrowserComponentToMainWindow(browserComponent: Component): Boolean {
-        val currentWindow = synchronized(jcefLock) {
-            val window = mainComposeWindow
-            if (window == null) {
+        val hostPanel = synchronized(jcefLock) {
+            val panel = jcefHostPanel
+            if (panel == null) {
+                // Host panel is not ready yet. Keep it pending but report success so JCEF can continue.
                 pendingBrowserComponentSet.add(browserComponent)
             }
-            window
+            panel
         }
 
-        if (currentWindow == null) {
+        if (hostPanel == null) {
             return true
         }
 
-        val attached = attachBrowserComponentToMainWindowNow(currentWindow, browserComponent)
+        val attached = attachBrowserComponentToHostPanelNow(hostPanel, browserComponent)
         synchronized(jcefLock) {
             if (attached) {
                 attachedBrowserComponentSet.add(browserComponent)
             } else {
-                if (mainComposeWindow === currentWindow) {
-                    pendingBrowserComponentSet.add(browserComponent)
-                }
+                pendingBrowserComponentSet.add(browserComponent)
             }
         }
         return attached
     }
 
-    private fun attachBrowserComponentToMainWindowNow(window: ComposeWindow, browserComponent: Component): Boolean {
+    private fun attachBrowserComponentToHostPanelNow(hostPanel: JPanel, browserComponent: Component): Boolean {
         return runCatching {
             runOnEdtSync {
-                val hostPanel = ensureJcefHostPanel(window)
                 browserComponent.parent?.remove(browserComponent)
                 hostPanel.add(browserComponent, BorderLayout.CENTER)
                 browserComponent.isVisible = true
@@ -228,61 +301,89 @@ object EasyWindowController {
         }
     }
 
-    private fun ensureJcefHostPanel(window: ComposeWindow): JPanel = runOnEdtSync {
-        val currentWindow = jcefHostWindow
-        val currentPanel = jcefHostPanel
-        if (currentWindow != null && currentPanel != null && currentWindow.isDisplayable) {
-            return@runOnEdtSync currentPanel
+    private fun bindJcefHostPanel(panel: JPanel) {
+        synchronized(jcefLock) {
+            jcefHostPanel = panel
         }
-
-        currentWindow?.let {
-            runCatching {
-                it.isVisible = false
-                it.dispose()
-            }
-        }
-
-        val hostPanel = JPanel(BorderLayout()).apply {
-            name = JCEF_HOST_PANEL_NAME
-            isOpaque = false
-            isVisible = true
-            preferredSize = Dimension(1080, 1080)
-            minimumSize = Dimension(1, 1)
-            maximumSize = Dimension(1080, 1080)
-        }
-
-        val hostWindow = JWindow().apply {
-            name = JCEF_HOST_WINDOW_NAME
-            setFocusableWindowState(false)
-            isAutoRequestFocus = false
-            isAlwaysOnTop = false
-            background = Color(0, 0, 0, 0)
-            contentPane.layout = BorderLayout()
-            contentPane.add(hostPanel, BorderLayout.CENTER)
-            setSize(1080, 1080)
-            setLocation(window.x - 10000, window.y - 10000)
-            isVisible = true
-        }
-
-        jcefHostWindow = hostWindow
-        jcefHostPanel = hostPanel
-        hostPanel
+        tryFlushPendingBrowserComponents()
     }
 
-    private fun disposeJcefHostWindow() {
-        runCatching {
-            runOnEdtSync {
-                jcefHostPanel?.removeAll()
+    private fun unbindJcefHostPanel(panel: JPanel) {
+        val shouldClear = synchronized(jcefLock) {
+            if (jcefHostPanel !== panel) {
+                false
+            } else {
                 jcefHostPanel = null
-                jcefHostWindow?.let {
-                    it.isVisible = false
-                    it.dispose()
+                if (attachedBrowserComponentSet.isNotEmpty()) {
+                    pendingBrowserComponentSet.addAll(attachedBrowserComponentSet)
+                    attachedBrowserComponentSet.clear()
                 }
-                jcefHostWindow = null
+                true
             }
-        }.onFailure {
-            logger.warn("Failed to dispose JCEF host window", it)
         }
+
+        if (shouldClear) {
+            runCatching {
+                runOnEdtSync {
+                    panel.removeAll()
+                    panel.revalidate()
+                    panel.repaint()
+                }
+            }.onFailure {
+                logger.warn("Failed to clear JCEF host panel", it)
+            }
+        }
+    }
+
+    private fun tryFlushPendingBrowserComponents() {
+        val hostPanel = synchronized(jcefLock) { jcefHostPanel } ?: return
+
+        val pendingComponents = synchronized(jcefLock) {
+            if (pendingBrowserComponentSet.isEmpty()) {
+                emptyList()
+            } else {
+                pendingBrowserComponentSet.toList().also { pendingBrowserComponentSet.clear() }
+            }
+        }
+
+        pendingComponents.forEach { browserComponent ->
+            if (attachBrowserComponentToHostPanelNow(hostPanel, browserComponent)) {
+                synchronized(jcefLock) {
+                    attachedBrowserComponentSet.add(browserComponent)
+                }
+            } else {
+                synchronized(jcefLock) {
+                    pendingBrowserComponentSet.add(browserComponent)
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun MainWindowJcefHost() {
+        val hostPanel = remember {
+            JPanel(BorderLayout()).apply {
+                name = JCEF_HOST_PANEL_NAME
+                isOpaque = false
+                isVisible = true
+                minimumSize = Dimension(1, 1)
+                preferredSize = Dimension(1, 1)
+            }
+        }
+
+        DisposableEffect(hostPanel) {
+            bindJcefHostPanel(hostPanel)
+            onDispose {
+                unbindJcefHostPanel(hostPanel)
+            }
+        }
+
+        // Keep the panel displayable by attaching it to the main Compose window.
+        // It stays effectively invisible and serves as a stable Swing parent for JCEF.
+        SwingPanel(
+            factory = { hostPanel },
+            modifier = Modifier.size(1.dp),
+        )
     }
 
     private fun <T> runOnEdtSync(block: () -> T): T {
@@ -305,38 +406,52 @@ object EasyWindowController {
             ) {
                 EasyTheme {
                     windowStateList.forEach { state ->
-                        Window(
-                            onCloseRequest = {
-                                removeWindowState(state)
-                            },
-                            state = state.state,
-                            title = "纯纯看番 Next",
-                        ) {
-                            if (state == mainWindowState) {
-                                DisposableEffect(window) {
-                                    bindMainWindow(window)
+                        key(state.tag) {
+                            Window(
+                                onCloseRequest = {
+                                    removeWindowState(state)
+                                },
+                                state = state.state,
+                                title = "纯纯看番 Next",
+                            ) {
+                                val navController = rememberNavController()
+                                DisposableEffect(state, navController) {
+                                    bindNavController(state, navController)
                                     onDispose {
-                                        unbindMainWindow(window)
+                                        unbindNavController(state, navController)
+                                    }
+                                }
+                                if (state == mainWindowState) {
+                                    DisposableEffect(window) {
+                                        bindMainWindow(window)
+                                        onDispose {
+                                            unbindMainWindow(window)
+                                        }
+                                    }
+                                }
+                                val top = with(LocalDensity.current) {
+                                    WindowInsets.statusBars.getTop(LocalDensity.current).toDp()
+                                }
+                                CompositionLocalProvider(
+                                    LocalEasyWindowState provides state,
+                                    LocalUIMode provides UI.getUiMode(),
+                                    LocalSizeScheme provides SizeScheme(statusBarHeight = top)
+                                ) {
+                                    Box(Modifier.fillMaxSize()) {
+                                        if (state == mainWindowState) {
+                                            MainWindowJcefHost()
+                                        }
+                                        Router(
+                                            navController = navController,
+                                            initRoute = state.initPage ?: RouterPage.DEFAULT,
+                                        )
+                                        MoeSnackBar()
+                                        if (state == mainWindowState) {
+                                            NeedKnowDialog()
+                                        }
                                     }
                                 }
                             }
-                            val top = with(LocalDensity.current) {
-                                WindowInsets.statusBars.getTop(LocalDensity.current).toDp()
-                            }
-                            CompositionLocalProvider(
-                                LocalEasyWindowState provides state,
-                                LocalUIMode provides UI.getUiMode(),
-                                LocalSizeScheme provides SizeScheme(statusBarHeight = top)
-                            ) {
-                                Router(
-                                    initRoute = state.initPage ?: RouterPage.DEFAULT,
-                                )
-                                MoeSnackBar()
-                                if (state == mainWindowState) {
-                                    NeedKnowDialog()
-                                }
-                            }
-
                         }
                     }
                 }
