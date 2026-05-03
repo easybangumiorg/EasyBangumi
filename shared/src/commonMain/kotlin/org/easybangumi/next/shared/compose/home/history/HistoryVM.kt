@@ -210,7 +210,7 @@ class HistoryVM: StateViewModel<HistoryVM.HistoryState>(HistoryState()) {
     fun delete(cartoonHistory: CartoonInfo) {
         viewModelScope.launch {
             withContext(coroutineProvider.io()) {
-//                cartoonInfoDao.deleteHistory(cartoonHistory)
+                cartoonInfoCase.deleteHistory(cartoonHistory)
             }
         }
     }
@@ -218,7 +218,7 @@ class HistoryVM: StateViewModel<HistoryVM.HistoryState>(HistoryState()) {
     fun delete(cartoonHistory: List<CartoonInfo>) {
         viewModelScope.launch {
             withContext(coroutineProvider.io()) {
-//                cartoonInfoDao.deleteHistory(cartoonHistory)
+                cartoonInfoCase.deleteHistory(cartoonHistory)
             }
         }
     }
@@ -226,7 +226,7 @@ class HistoryVM: StateViewModel<HistoryVM.HistoryState>(HistoryState()) {
     fun clear() {
         viewModelScope.launch {
             withContext(coroutineProvider.io()) {
-//                cartoonInfoDao.clearHistory()
+                cartoonInfoCase.clearHistory()
             }
         }
     }

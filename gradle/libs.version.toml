@@ -1,8 +1,8 @@
 [versions]
 # compose (org.jetbrains.compose)
-compose = "1.10.1"
+compose = "1.10.3"
 compose-material3 = "1.9.0"
-compose-material = "1.10.1"
+compose-material = "1.10.3"
 compose-material-icons-extended = "1.7.3"
 
 # androidx

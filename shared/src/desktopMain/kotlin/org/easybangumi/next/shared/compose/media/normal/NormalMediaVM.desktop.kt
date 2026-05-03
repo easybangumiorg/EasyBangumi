@@ -1,15 +1,18 @@
-﻿package org.easybangumi.next.shared.compose.media.normal
+package org.easybangumi.next.shared.compose.media.normal
 
-import androidx.compose.ui.window.WindowPlacement
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.easybangumi.next.shared.compose.media.MediaParam
-import org.easybangumi.next.shared.compose.media.bangumi.BangumiMediaCommonVM
 import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
+import org.easybangumi.next.shared.playcon.BasePlayconViewModel
 import org.easybangumi.next.shared.playcon.desktop.DesktopPlayerVM
-import org.easybangumi.next.shared.playcon.desktop.FullscreenStrategy
+import org.easybangumi.next.shared.window.DesktopWindowFullscreenStrategy
+import org.easybangumi.next.shared.window.EasyWindowState
 
 
 /**
@@ -32,22 +35,10 @@ class DesktopNormalMediaVM(
         NormalMediaCommonVM(param)
     }
 
-    val fullscreenStrategy = object: FullscreenStrategy {
-        override fun enterFullscreen() {
-//            windowState.value?.let {
-//                it.state.placement = WindowPlacement.Fullscreen
-//            }
-        }
+    private val windowState = mutableStateOf<EasyWindowState?>(null)
 
-        override fun exitFullscreen() {
-//            windowState.value?.let {
-//                it.state.placement = WindowPlacement.Floating
-//            }
-        }
-
-        override fun isFullscreen(): Boolean {
-            return false//windowState.value?.state?.placement == WindowPlacement.Fullscreen
-        }
+    val fullscreenStrategy = DesktopWindowFullscreenStrategy {
+        windowState.value
     }
 
     // == 播放状态 =============================
@@ -62,5 +53,22 @@ class DesktopNormalMediaVM(
                 playerVM.onPlayInfoChange(it)
             }
         }
+        viewModelScope.launch {
+            snapshotFlow {
+                playerVM.playconVM.screenMode
+            }.collectLatest { screenMode ->
+                commonVM.sta.update {
+                    it.copy(
+                        isFullscreen = screenMode == BasePlayconViewModel.ScreenMode.FULLSCREEN,
+                    )
+                }
+            }
+        }
+    }
+
+    fun onLaunch(
+        easyWindowState: EasyWindowState,
+    ) {
+        windowState.value = easyWindowState
     }
 }

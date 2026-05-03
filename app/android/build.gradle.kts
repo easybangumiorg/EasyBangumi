@@ -1,4 +1,5 @@
 import com.android.build.gradle.tasks.MergeSourceSetFolders
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 apply(from = "../build_common/property_loader.gradle.kts")
 
@@ -37,18 +38,19 @@ android {
         }
     }
 
-    kotlinOptions {
-        jvmTarget = "21"
-        freeCompilerArgs += listOf(
-            "-Xjvm-default=all",
-        )
-    }
     buildFeatures {
         compose = true
         buildConfig = true
     }
 
 
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_21)
+        freeCompilerArgs.add("-Xjvm-default=all")
+    }
 }
 
 

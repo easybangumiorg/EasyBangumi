@@ -93,5 +93,34 @@ class CartoonInfoCase(
 
     }
 
+    suspend fun deleteHistory(cartoonInfo: CartoonInfo) {
+        cartoonInfoDao.update(cartoonInfo.copy(lastHistoryTime = 0))
+    }
+
+    suspend fun deleteHistory(cartoonInfoList: List<CartoonInfo>) {
+        cartoonInfoDao.transaction {
+            cartoonInfoList.forEach { info ->
+                cartoonInfoDao.update(info.copy(lastHistoryTime = 0))
+            }
+        }
+    }
+
+    suspend fun clearHistory() {
+        val allHistory = cartoonInfoDao.flowHistory().let { flow ->
+            // We need to get the current value from the flow
+            // Since this is a suspend function, we can collect from the flow
+            var result: List<CartoonInfo> = emptyList()
+            flow.collect { list ->
+                result = list
+                return@collect
+            }
+            result
+        }
+        cartoonInfoDao.transaction {
+            allHistory.forEach { info ->
+                cartoonInfoDao.update(info.copy(lastHistoryTime = 0))
+            }
+        }
+    }
 
 }

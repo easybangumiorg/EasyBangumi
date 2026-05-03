@@ -108,6 +108,7 @@ object EasyWindowController {
 
     fun removeWindowState(windowState: EasyWindowState) {
         windowState.navController = null
+        windowState.composeWindow = null
         windowStateList.remove(windowState)
         if (windowStateList.isEmpty()) {
             exitApplication?.invoke()
@@ -419,6 +420,14 @@ object EasyWindowController {
                                     bindNavController(state, navController)
                                     onDispose {
                                         unbindNavController(state, navController)
+                                    }
+                                }
+                                DisposableEffect(state, window) {
+                                    state.composeWindow = window
+                                    onDispose {
+                                        if (state.composeWindow === window) {
+                                            state.composeWindow = null
+                                        }
                                     }
                                 }
                                 if (state == mainWindowState) {

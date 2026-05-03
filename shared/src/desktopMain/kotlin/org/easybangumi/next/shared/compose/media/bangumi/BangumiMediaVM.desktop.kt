@@ -2,27 +2,24 @@ package org.easybangumi.next.shared.compose.media.bangumi
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.window.WindowPlacement
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.compose
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.easybangumi.next.lib.store.preference.PreferenceStore
 import org.easybangumi.next.lib.utils.coroutineProvider
 import org.easybangumi.next.libplayer.api.C
-import org.easybangumi.next.libplayer.api.PlayerBridge
 import org.easybangumi.next.libplayer.api.action.SpeedAction
 import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
 import org.easybangumi.next.shared.compose.media.MediaParam
 import org.easybangumi.next.shared.playcon.BasePlayconViewModel
 import org.easybangumi.next.shared.playcon.desktop.DesktopPlayerVM
-import org.easybangumi.next.shared.playcon.desktop.FullscreenStrategy
 import org.easybangumi.next.shared.preference.ExpectPreference
 import org.easybangumi.next.shared.preference.MainPreference
+import org.easybangumi.next.shared.window.DesktopWindowFullscreenStrategy
 import org.easybangumi.next.shared.window.EasyWindowState
 import org.koin.core.component.inject
 
@@ -76,27 +73,15 @@ class DesktopBangumiMediaVM(
         BangumiMediaCommonVM(param)
     }
 
+    private val windowState = mutableStateOf<EasyWindowState?>(null)
+
+    val fullscreenStrategy = DesktopWindowFullscreenStrategy {
+        windowState.value
+    }
+
     // == 播放状态 =============================
     val playerVM: DesktopPlayerVM by childViewModel {
         DesktopPlayerVM(fullscreenStrategy)
-    }
-
-    val fullscreenStrategy = object: FullscreenStrategy {
-        override fun enterFullscreen() {
-            windowState.value?.let {
-                it.state.placement = WindowPlacement.Fullscreen
-            }
-        }
-
-        override fun exitFullscreen() {
-            windowState.value?.let {
-                it.state.placement = WindowPlacement.Floating
-            }
-        }
-
-        override fun isFullscreen(): Boolean {
-            return windowState?.value?.state?.placement == WindowPlacement.Fullscreen
-        }
     }
 
 
@@ -137,7 +122,6 @@ class DesktopBangumiMediaVM(
 
 
     }
-    private val windowState = mutableStateOf<EasyWindowState?>(null)
     private var saveJob: Job? = null
 
 

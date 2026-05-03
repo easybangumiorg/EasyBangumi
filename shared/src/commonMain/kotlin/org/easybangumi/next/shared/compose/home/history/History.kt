@@ -25,10 +25,12 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
@@ -170,6 +172,60 @@ fun History(
                 vm.dialogDeleteOne(it)
             }
         )
+    }
+
+    // 删除确认对话框
+    when (val dialog = state.dialog) {
+        is HistoryVM.Dialog.Delete -> {
+            AlertDialog(
+                onDismissRequest = { vm.dialogDismiss() },
+                title = { Text(text = stringRes(Res.strings.delete)) },
+                text = {
+                    Text(
+                        text = if (dialog.selection.size == 1) {
+                            stringRes(Res.strings.delete_history_confirm, dialog.selection.first().name)
+                        } else {
+                            stringRes(Res.strings.delete_history_confirm_multiple, dialog.selection.size.toString())
+                        }
+                    )
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        vm.delete(dialog.selection.toList())
+                        vm.dialogDismiss()
+                        vm.onSelectionExit()
+                    }) {
+                        Text(text = stringRes(Res.strings.confirm))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { vm.dialogDismiss() }) {
+                        Text(text = stringRes(Res.strings.cancel))
+                    }
+                }
+            )
+        }
+        is HistoryVM.Dialog.Clear -> {
+            AlertDialog(
+                onDismissRequest = { vm.dialogDismiss() },
+                title = { Text(text = stringRes(Res.strings.clear_history)) },
+                text = { Text(text = stringRes(Res.strings.clear_history_confirm)) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        vm.clear()
+                        vm.dialogDismiss()
+                    }) {
+                        Text(text = stringRes(Res.strings.confirm))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { vm.dialogDismiss() }) {
+                        Text(text = stringRes(Res.strings.cancel))
+                    }
+                }
+            )
+        }
+        null -> {}
     }
 }
 

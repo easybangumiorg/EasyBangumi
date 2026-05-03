@@ -64,6 +64,8 @@ kotlin {
 //            api(projects.shared.debug)
             api(projects.shared.playcon)
             api(projects.shared.ktor)
+            api(projects.shared.local)
+            api(projects.shared.sourceApi)
             api(projects.lib.webview)
 //            api(projects.shared.ui)
 

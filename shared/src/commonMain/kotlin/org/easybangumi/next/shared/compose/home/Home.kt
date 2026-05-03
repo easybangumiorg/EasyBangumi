@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.MoreHoriz
+import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -49,6 +50,7 @@ import org.easybangumi.next.shared.compose.home.more.More
 import org.easybangumi.next.shared.compose.home.collection.Collection
 import org.easybangumi.next.shared.compose.home.collection.TAG_COLLECTION
 import org.easybangumi.next.shared.compose.home.discover.HomeDiscover
+import org.easybangumi.next.shared.compose.home.story.Story
 import org.easybangumi.next.shared.foundation.image.AsyncImage
 import org.easybangumi.next.shared.foundation.view_model.vm
 
@@ -130,12 +132,27 @@ sealed class HomePage(
             More()
         },
     )
+
+    object StoryPage : HomePage(
+        route = "story",
+        tabLabel = { Text(text = "下载") },
+        icon = {
+            Icon(
+                if (it) Icons.Filled.Download else Icons.Outlined.Download,
+                contentDescription = "下载"
+            )
+        },
+        content = {
+            Story()
+        },
+    )
 }
 
 val HomePageList = listOf(
     HomePage.DiscoverPage,
     HomePage.CollectionPage,
     HomePage.HistoryPage,
+    HomePage.StoryPage,
     HomePage.MorePage,
 )
 

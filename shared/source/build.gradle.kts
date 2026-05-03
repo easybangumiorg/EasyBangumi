@@ -38,6 +38,7 @@ kotlin {
             api(projects.shared.sourceApi)
             api(projects.shared.sourceBangumi)
             api(projects.shared.sourceInner)
+            api(projects.shared.sourceLocal)
             api(projects.lib)
 
             implementation(projects.javascript.quickjsKt)

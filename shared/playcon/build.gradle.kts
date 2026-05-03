@@ -9,8 +9,10 @@ plugins {
 kotlin {
     sourceSets {
         val commonMain by getting
+        val commonTest by getting
         val jvmMain by getting
         val desktopMain by getting
+        val desktopTest by getting
         val androidMain by getting
         val iosMain by getting
         val iosX64Main by getting
@@ -43,6 +45,10 @@ kotlin {
             implementation(projects.lib.utils)
             implementation(projects.logger)
         }
+
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+        }
         androidMain.dependencies {
             implementation(projects.libplayer.libplayerExoplayer)
         }
@@ -53,11 +59,14 @@ kotlin {
             implementation(compose.desktop.currentOs)
             implementation(projects.libplayer.libplayerVlcj)
         }
+
+        desktopTest.dependencies {
+            implementation(libs.kotlin.test)
+        }
     }
 }
 
 dependencies {
 
 }
-
 

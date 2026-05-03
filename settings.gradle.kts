@@ -78,6 +78,8 @@ includeModule(":shared:source", "shared/source")
 includeModule(":shared:source_api", "shared/source/api")
 includeModule(":shared:source_bangumi", "shared/source/bangumi")
 includeModule(":shared:source_inner", "shared/source/inner")
+includeModule(":shared:source_local", "shared/source/local")
+includeModule(":shared:local", "shared/local")
 
 
 // ------------- lib -------------

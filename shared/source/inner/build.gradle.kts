@@ -41,6 +41,7 @@ kotlin {
             implementation(libs.ksoup)
 
             implementation(projects.shared.sourceApi)
+            implementation(projects.shared.sourceLocal)
         }
 
         androidMain.dependencies {

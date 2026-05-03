@@ -3,8 +3,8 @@ package org.easybangumi.next.shared.compose.media.normal
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -16,54 +16,68 @@ import org.easybangumi.next.shared.foundation.stringRes
 import org.easybangumi.next.shared.foundation.view_model.vm
 import org.easybangumi.next.shared.playcon.desktop.DesktopPlayerVM
 import org.easybangumi.next.shared.resources.Res
+import org.easybangumi.next.shared.window.LocalEasyWindowState
 
 @Composable
 actual fun NormalMedia(param: MediaParam) {
     val vm = vm(::DesktopNormalMediaVM, param)
-    val scope = rememberCoroutineScope()
     val state = vm.commonVM.state.collectAsState()
     val sta = state.value
+    val windowsState = LocalEasyWindowState.current
+
+    LaunchedEffect(Unit) {
+        vm.onLaunch(windowsState)
+    }
 
 
     val isTableMode = LocalUIMode.current.isTableMode
 
 //    BangumiPopup(vm.commonVM)
-    if (!sta.isFullscreen) {
-        if (isTableMode) {
-            Row(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                MediaPlayer(
-                    modifier = Modifier.fillMaxHeight().weight(1f).background(Color.Black),
-                    playerVm = vm.playerVM,
-                    float = {
-                        MediaPlayerFloat(vm)
-                    },
-                    topLineController = {}
-                )
-                NormalMediaPage(
-                    vm.commonVM,
-                    Modifier.fillMaxHeight().width(384.dp)
-                )
-            }
-        } else {
-            Column(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                MediaPlayer(
-                    modifier = Modifier.fillMaxWidth().aspectRatio(DesktopPlayerVM.MEDIA_COMPONENT_ASPECT)
-                        .background(Color.Black),
-                    playerVm = vm.playerVM,
-                    float = {
-                        MediaPlayerFloat(vm)
-                    },
-                    topLineController = {}
-                )
-                NormalMediaPage(
-                    vm.commonVM,
-                    Modifier.fillMaxWidth().weight(1f)
-                )
-            }
+    if (sta.isFullscreen) {
+        Box(Modifier.fillMaxSize()) {
+            MediaPlayer(
+                modifier = Modifier.fillMaxSize().background(Color.Black),
+                playerVm = vm.playerVM,
+                float = {
+                    MediaPlayerFloat(vm)
+                },
+                topLineController = {}
+            )
+        }
+    } else if (isTableMode) {
+        Row(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            MediaPlayer(
+                modifier = Modifier.fillMaxHeight().weight(1f).background(Color.Black),
+                playerVm = vm.playerVM,
+                float = {
+                    MediaPlayerFloat(vm)
+                },
+                topLineController = {}
+            )
+            NormalMediaPage(
+                vm.commonVM,
+                Modifier.fillMaxHeight().width(384.dp)
+            )
+        }
+    } else {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            MediaPlayer(
+                modifier = Modifier.fillMaxWidth().aspectRatio(DesktopPlayerVM.MEDIA_COMPONENT_ASPECT)
+                    .background(Color.Black),
+                playerVm = vm.playerVM,
+                float = {
+                    MediaPlayerFloat(vm)
+                },
+                topLineController = {}
+            )
+            NormalMediaPage(
+                vm.commonVM,
+                Modifier.fillMaxWidth().weight(1f)
+            )
         }
     }
 

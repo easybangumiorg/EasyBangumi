@@ -16,6 +16,7 @@ import org.easybangumi.next.shared.source.core.source.SourceConfigController
 import org.easybangumi.next.source.inner.age.AgeInnerSource
 import org.easybangumi.next.source.inner.debug.DebugInnerSource
 import org.easybangumi.next.source.inner.ggl.GGLInnerSource
+import org.easybangumi.next.source.local.LocalInnerSource
 import org.easybangumi.next.source.inner.xifan.XifanInnerSource
 
 /**
@@ -82,6 +83,15 @@ class InnerSourceProvider(
         }}
     }
 
+    val localSource by lazy {
+        LocalInnerSource()
+    }
+    val localComponentBundle: ComponentBundle by lazy {
+        InnerComponentBundle(localSource).apply { runBlocking {
+            load()
+        }}
+    }
+
 
 
 
@@ -135,8 +145,19 @@ class InnerSourceProvider(
                             )
                         },
                         componentBundle = ageComponentBundle
-                    )
-                    ,
+                    ),
+                    // 本地源
+                    SourceInfo.Loaded(
+                        manifest = localSource.manifest,
+                        sourceConfig = map.getOrElse(localSource.key) {
+                            SourceConfig(
+                                key = localSource.key,
+                                enable = true,
+                                order = 1,
+                            )
+                        },
+                        componentBundle = localComponentBundle
+                    ),
 
 
                 ).also {

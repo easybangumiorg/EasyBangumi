@@ -8,7 +8,9 @@ import org.easybangumi.next.libplayer.api.C
 import org.easybangumi.next.libplayer.api.MediaItem
 import org.easybangumi.next.libplayer.api.action.Action
 import org.easybangumi.next.libplayer.api.action.SpeedAction
+import org.easybangumi.next.libplayer.api.action.VolumeAction
 import org.easybangumi.next.libplayer.vlcj.action.VlcjSpeedAction
+import org.easybangumi.next.libplayer.vlcj.action.VlcjVolumeAction
 import uk.co.caprica.vlcj.media.MediaRef
 import uk.co.caprica.vlcj.media.TrackType
 import uk.co.caprica.vlcj.player.base.MediaPlayer
@@ -108,7 +110,8 @@ open class BaseVlcjPlayerBridge(
 
     override fun prepareAction(): Map<KClass<out Action<*>>, Action<*>> {
         return mapOf<KClass<out Action<*>>, Action<*>>(
-            SpeedAction::class to VlcjSpeedAction().apply { onBind(this@BaseVlcjPlayerBridge) }
+            SpeedAction::class to VlcjSpeedAction().apply { onBind(this@BaseVlcjPlayerBridge) },
+            VolumeAction::class to VlcjVolumeAction().apply { onBind(this@BaseVlcjPlayerBridge) }
         )
     }
 

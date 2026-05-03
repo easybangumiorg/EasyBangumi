@@ -1,6 +1,7 @@
 package org.easybangumi.next.shared.window
 
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.window.WindowState
 import androidx.navigation.NavHostController
 import org.easybangumi.next.shared.RouterPage
@@ -27,4 +28,5 @@ class EasyWindowState(
     var singlePageMode: Boolean = false,
 ) {
     var navController: NavHostController? = null
+    var composeWindow: ComposeWindow? = null
 }

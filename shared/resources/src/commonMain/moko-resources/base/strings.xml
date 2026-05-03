@@ -326,6 +326,11 @@
     <string name="delete_confirmation">确定要删除吗？</string>
     <string name="clear_confirmation">确定要清空吗？</string>
 
+    <string name="delete_history_confirm">确定要删除「%1$s」的观看历史吗？</string>
+    <string name="delete_history_confirm_multiple">确定要删除选中的%1$s项历史记录吗？</string>
+    <string name="clear_history">清空历史记录</string>
+    <string name="clear_history_confirm">确定要清空所有观看历史吗？此操作不可撤销。</string>
+
     <string name="qq_chanel">QQ 频道</string>
 
     <string name="telegram">Telegram</string>
