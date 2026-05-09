@@ -10,7 +10,9 @@ import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.lib.utils.pathProvider
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.data.cartoon.Episode
+import org.easybangumi.next.shared.data.cartoon.EpisodeSimple
 import org.easybangumi.next.shared.data.cartoon.PlayInfo
+import org.easybangumi.next.shared.data.cartoon.PlayLineSimple
 import org.easybangumi.next.shared.data.cartoon.PlayerLine
 import org.easybangumi.next.shared.source.api.component.play.IPlayComponent
 import org.easybangumi.next.shared.source.api.component.play.PlayComponent
@@ -75,6 +77,46 @@ class CacheablePlayComponentWrapper (
         }
     }
 
+    @Serializable
+    data class PlayInfoSimpleCacheItem(
+        val cartoonIndex: CartoonIndex,
+        val playLineSimple: PlayLineSimple,
+        val episodeSimple: EpisodeSimple,
+        val playInfo: PlayInfo,
+    ) {
+        fun isFrom(
+            cartoonIndex: CartoonIndex,
+            playLineSimple: PlayLineSimple,
+            episodeSimple: EpisodeSimple,
+        ): Boolean {
+            return this.cartoonIndex == cartoonIndex && this.playLineSimple == playLineSimple && this.episodeSimple == episodeSimple
+        }
+    }
+
+    suspend fun getPlayInfoSimple(
+        cartoonIndex: CartoonIndex,
+        playLineSimple: PlayLineSimple,
+        episodeSimple: EpisodeSimple,
+        cache: Boolean,
+    ): DataState<PlayInfo>? {
+        val key = getKeySimple(cartoonIndex, playLineSimple, episodeSimple)
+        if (cache) {
+            val cacheData = tempMap.get(key)
+            if (cacheData.isNotEmpty()) {
+                val cacheItem = runCatching { jsonSerializer.deserialize<PlayInfoSimpleCacheItem>(cacheData, null) }.getOrNull()
+                if (cacheItem != null && cacheItem.isFrom(cartoonIndex, playLineSimple, episodeSimple)) {
+                    return DataState.ok(cacheItem.playInfo, true)
+                }
+            }
+        }
+        return playComponent.getPlayInfoSimple(cartoonIndex, playLineSimple, episodeSimple)?.apply {
+            if (this is DataState.Ok) {
+                val cacheItem = PlayInfoSimpleCacheItem(cartoonIndex, playLineSimple, episodeSimple, this.data)
+                tempMap.put(key, jsonSerializer.serialize(cacheItem))
+            }
+        }
+    }
+
     fun getKey(
         cartoonIndex: CartoonIndex,
         playerLine: PlayerLine,
@@ -82,6 +124,14 @@ class CacheablePlayComponentWrapper (
     ): String {
         return "$cartoonIndex|${playerLine.id}|${episode.id}"
 
+    }
+
+    fun getKeySimple(
+        cartoonIndex: CartoonIndex,
+        playLineSimple: PlayLineSimple,
+        episodeSimple: EpisodeSimple,
+    ): String {
+        return "simple|$cartoonIndex|${playLineSimple.id}|${episodeSimple.id}"
     }
 }
 

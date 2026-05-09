@@ -4,7 +4,9 @@ import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.shared.source.api.component.Component
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.data.cartoon.Episode
+import org.easybangumi.next.shared.data.cartoon.EpisodeSimple
 import org.easybangumi.next.shared.data.cartoon.PlayInfo
+import org.easybangumi.next.shared.data.cartoon.PlayLineSimple
 import org.easybangumi.next.shared.data.cartoon.PlayerLine
 
 /**
@@ -40,6 +42,44 @@ interface IPlayComponent {
     ): DataState<PlayInfo> {
         return DataState.error("unsupported get play info with check")
     }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // 剧集优先模式（可选实现）
+    // ═══════════════════════════════════════════════════════════════════
+
+    /**
+     * 判断是否为剧集优先模式，默认返回 false（线路优先模式）
+     * 无需重试逻辑
+     */
+    suspend fun isEpisodeFirstMode(cartoonIndex: CartoonIndex): Boolean = false
+
+    /**
+     * 获取剧集列表（剧集优先模式专用）
+     * 需要重试逻辑
+     */
+    suspend fun getEpisodeList(
+        cartoonIndex: CartoonIndex
+    ): DataState<List<EpisodeSimple>>? = null
+
+    /**
+     * 根据剧集获取播放线路（剧集优先模式专用）
+     * 需要重试逻辑
+     */
+    suspend fun getPlayLineSimpleForEpisode(
+        cartoonIndex: CartoonIndex,
+        episode: EpisodeSimple
+    ): DataState<List<PlayLineSimple>>? = null
+
+    /**
+     * 获取播放信息（剧集优先模式专用）
+     * 复用 PlayInfo 结构
+     * 需要重试逻辑
+     */
+    suspend fun getPlayInfoSimple(
+        cartoonIndex: CartoonIndex,
+        playLineSimple: PlayLineSimple,
+        episodeSimple: EpisodeSimple
+    ): DataState<PlayInfo>? = null
 }
 
 interface PlayComponent: Component, IPlayComponent

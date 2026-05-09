@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.dp
 import org.easybangumi.next.shared.compose.media.bangumi.BangumiMediaPageParam
+import org.easybangumi.next.shared.compose.media.mediaEpisodeFirstIndexDesktop
 import org.easybangumi.next.shared.compose.media.mediaPlayLineIndex
 import org.easybangumi.next.shared.compose.media.mediaPlayLineIndexDesktop
 
@@ -45,7 +46,13 @@ fun BangumiMediaDetailSubPageDesktop(param: BangumiMediaPageParam) {
             space(Modifier.height(8.dp))
 
             // 播放线路和集数选择
-            mediaPlayLineIndexDesktop(commonVM.playLineIndexVM, commonVM.playLineIndexVM.ui.value, 2, width)
+            val playLineIndexVM = commonVM.playLineIndexVM
+            val playLineIndexStateValue = playLineIndexState.value
+            if (playLineIndexStateValue.isEpisodeFirst) {
+                mediaEpisodeFirstIndexDesktop(playLineIndexVM, playLineIndexStateValue, 2, width)
+            } else {
+                mediaPlayLineIndexDesktop(playLineIndexVM, playLineIndexStateValue, 2, width)
+            }
         }
 
     }

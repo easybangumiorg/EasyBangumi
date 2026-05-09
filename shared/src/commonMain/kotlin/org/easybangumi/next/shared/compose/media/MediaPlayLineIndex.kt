@@ -130,3 +130,122 @@ fun LazyListScope.mediaPlayLineIndex(
     }
 
 }
+
+/**
+ * 剧集优先模式的基础 UI 组件
+ */
+fun LazyListScope.mediaEpisodeFirstIndex(
+    vm: PlayLineIndexVM,
+    state: PlayLineIndexVM.State,
+    gridCount: Int = 2,
+) {
+    // 剧集选择区域
+    val episodeData = state.episodeList.okOrNull()
+    if (state.episodeList.isLoading()) {
+        item {
+            LoadingElements(
+                modifier = Modifier.fillMaxWidth().height(100.dp).padding(8.dp, 0.dp),
+                isRow = true
+            )
+        }
+    } else if (state.episodeList is DataState.Error) {
+        val errorMsg = state.episodeList.errorMsg
+        item {
+            ErrorElements(
+                modifier = Modifier.fillMaxWidth().height(100.dp).padding(8.dp, 0.dp),
+                errorMsg = errorMsg,
+                isRow = true
+            )
+        }
+    } else if (episodeData != null) {
+        item {
+            Row(
+                modifier = Modifier.padding(8.dp, 0.dp)
+            ) {
+                LazyRow(
+                    modifier = Modifier.weight(1f),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(episodeData.size) { index ->
+                        val item = episodeData[index]
+                        FilterChip(
+                            elevation = null,
+                            selected = index == state.currentShowingEpisode,
+                            onClick = {
+                                vm.onShowingEpisodeSelected(index)
+                                vm.onEpisodeSimpleSelected(index)
+                            },
+                            label = {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    if (index == state.currentEpisodeIndex) {
+                                        Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary))
+                                        Spacer(Modifier.size(4.dp))
+                                    }
+                                    Text(item.label)
+                                }
+                            },
+                            modifier = Modifier
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    // 播放线路选择区域
+    val playLineData = state.episodePlayLineList.okOrNull()
+    if (state.episodePlayLineList.isLoading()) {
+        item {
+            LoadingElements(
+                modifier = Modifier.fillMaxWidth().height(100.dp).padding(8.dp, 0.dp),
+                isRow = true
+            )
+        }
+    } else if (state.episodePlayLineList is DataState.Error) {
+        val errorMsg = state.episodePlayLineList.errorMsg
+        item {
+            ErrorElements(
+                modifier = Modifier.fillMaxWidth().height(100.dp).padding(8.dp, 0.dp),
+                errorMsg = errorMsg,
+                isRow = true
+            )
+        }
+    } else if (playLineData != null) {
+        item {
+            Row(
+                modifier = Modifier.padding(8.dp, 0.dp)
+            ) {
+                LazyRow(
+                    modifier = Modifier.weight(1f),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(playLineData.size) { index ->
+                        val item = playLineData[index]
+                        FilterChip(
+                            elevation = null,
+                            selected = index == state.currentShowingEpisodePlayLine,
+                            onClick = {
+                                vm.onShowingEpisodePlayLineSelected(index)
+                                vm.onPlayLineSimpleSelected(index)
+                            },
+                            label = {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    if (index == state.currentEpisodePlayLine) {
+                                        Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary))
+                                        Spacer(Modifier.size(4.dp))
+                                    }
+                                    Text(item.label)
+                                }
+                            },
+                            modifier = Modifier
+                        )
+                    }
+                }
+            }
+        }
+    }
+}

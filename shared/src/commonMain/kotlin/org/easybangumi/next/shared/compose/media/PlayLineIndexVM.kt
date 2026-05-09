@@ -13,7 +13,9 @@ import org.easybangumi.next.lib.utils.DataState
 import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.data.cartoon.CartoonInfo
 import org.easybangumi.next.shared.data.cartoon.Episode
+import org.easybangumi.next.shared.data.cartoon.EpisodeSimple
 import org.easybangumi.next.shared.data.cartoon.PlayInfo
+import org.easybangumi.next.shared.data.cartoon.PlayLineSimple
 import org.easybangumi.next.shared.data.cartoon.PlayerLine
 import org.easybangumi.next.shared.foundation.source.sourceCase
 import org.easybangumi.next.shared.foundation.view_model.StateViewModel
@@ -21,6 +23,10 @@ import org.easybangumi.next.shared.source.SourceCase
 import org.easybangumi.next.shared.source.api.component.ComponentBusiness
 import org.easybangumi.next.shared.source.api.component.play.PlayComponent
 import org.easybangumi.next.shared.source.cacheable
+import org.easybangumi.next.shared.source.getEpisodeList
+import org.easybangumi.next.shared.source.getPlayInfoSimple
+import org.easybangumi.next.shared.source.getPlayLineSimpleForEpisode
+import org.easybangumi.next.shared.source.isEpisodeFirstMode
 import org.koin.core.component.inject
 
 
@@ -51,7 +57,17 @@ class PlayLineIndexVM(
         val currentEpisode: Int = 0,
         val business: ComponentBusiness<PlayComponent>? = null,
         val playInfo: DataState<PlayInfo> = DataState.none(),
+
+        // 剧集优先模式
+        val isEpisodeFirst: Boolean = false,
+        val episodeList: DataState<List<EpisodeSimple>> = DataState.none(),
+        val currentShowingEpisode: Int = 0,
+        val currentEpisodeIndex: Int = 0,
+        val episodePlayLineList: DataState<List<PlayLineSimple>> = DataState.none(),
+        val currentShowingEpisodePlayLine: Int = 0,
+        val currentEpisodePlayLine: Int = 0,
     ) {
+        // 线路优先模式的计算属性
         val showingPlayerLine: PlayerLine? by lazy {
             playerLineList.okOrNull()?.getOrNull(currentShowingPlayerLine)
         }
@@ -61,11 +77,26 @@ class PlayLineIndexVM(
         val currentEpisodeOrNull: Episode? by lazy {
             playLineOrNull?.episodeList?.getOrNull(currentEpisode)
         }
+
+        // 剧集优先模式的计算属性
+        val showingEpisode: EpisodeSimple? by lazy {
+            episodeList.okOrNull()?.getOrNull(currentShowingEpisode)
+        }
+        val currentEpisodeObj: EpisodeSimple? by lazy {
+            episodeList.okOrNull()?.getOrNull(currentEpisodeIndex)
+        }
+        val showingEpisodePlayLine: PlayLineSimple? by lazy {
+            episodePlayLineList.okOrNull()?.getOrNull(currentShowingEpisodePlayLine)
+        }
+        val currentEpisodePlayLineObj: PlayLineSimple? by lazy {
+            episodePlayLineList.okOrNull()?.getOrNull(currentEpisodePlayLine)
+        }
     }
 
     val sourceCase: SourceCase by inject()
 
     init {
+        // 线路优先模式：监听 playLine 和 episode 变化
         viewModelScope.launch {
             combine(
                 state.map { Triple(it.cartoonIndex, it.playLineOrNull , it.currentEpisodeOrNull) }.filterNotNull().distinctUntilChanged(),
@@ -79,6 +110,25 @@ class PlayLineIndexVM(
                     episode = episode,
                     business = biz,
                 )
+            }.collect()
+        }
+
+        // 剧集优先模式：监听 episodePlayLine 和 episodeIndex 变化
+        viewModelScope.launch {
+            combine(
+                state.map { Triple(it.cartoonIndex, it.currentEpisodePlayLineObj, it.currentEpisodeObj) }.filterNotNull().distinctUntilChanged(),
+                state.map { it.business }.distinctUntilChanged(),
+                state.map { it.isEpisodeFirst }.distinctUntilChanged()
+            ) { triple, business, isEpisodeFirst ->
+                if (isEpisodeFirst) {
+                    val (cartoonIndex, playLineSimple, episodeSimple) = triple
+                    innerRefreshPlayInfoSimple(
+                        cartoonIndex = cartoonIndex,
+                        playLineSimple = playLineSimple,
+                        episodeSimple = episodeSimple,
+                        business = business,
+                    )
+                }
             }.collect()
         }
     }
@@ -126,6 +176,38 @@ class PlayLineIndexVM(
         update {
             it.copy(
                 playInfo = res
+            )
+        }
+    }
+
+    private suspend fun innerRefreshPlayInfoSimple(
+        cartoonIndex: CartoonIndex?,
+        playLineSimple: PlayLineSimple?,
+        episodeSimple: EpisodeSimple?,
+        business: ComponentBusiness<PlayComponent>?,
+    ) {
+        val biz = business
+        cartoonIndex ?: return
+        playLineSimple ?: return
+        episodeSimple ?: return
+        biz ?: return
+        update {
+            it.copy(
+                playInfo = DataState.loading()
+            )
+        }
+        val res = biz.runOrNull {
+            cacheable().getPlayInfoSimple(
+                cartoonIndex = cartoonIndex,
+                playLineSimple = playLineSimple,
+                episodeSimple = episodeSimple,
+                cache = canCache
+            )
+        }
+        logger.info("loadPlayInfoSimple: $res")
+        update {
+            it.copy(
+                playInfo = res ?: DataState.error("获取播放信息失败")
             )
         }
     }
@@ -245,6 +327,158 @@ class PlayLineIndexVM(
                     business = business,
                 )
             }
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // 剧集优先模式方法
+    // ═══════════════════════════════════════════════════════════════════
+
+    /**
+     * 加载剧集优先模式数据
+     */
+    fun loadEpisodeFirst(
+        cartoonIndex: CartoonIndex,
+        suggestEpisodeIndex: Int? = null,
+    ) {
+        viewModelScope.launch {
+            update {
+                it.copy(
+                    cartoonIndex = cartoonIndex,
+                    isEpisodeFirst = true,
+                    episodeList = DataState.loading(),
+                    episodePlayLineList = DataState.none(),
+                )
+            }
+            val business = sourceCase.playComponentFlow(cartoonIndex.source)
+                .firstOrNull()
+                ?: run {
+                    update {
+                        it.copy(
+                            episodeList = DataState.error("无播放源"),
+                        )
+                    }
+                    return@launch
+                }
+
+            // 获取剧集列表
+            val episodeListRes = business.getEpisodeList(cartoonIndex)
+            if (episodeListRes == null) {
+                update {
+                    it.copy(
+                        episodeList = DataState.error("源不支持剧集优先模式"),
+                    )
+                }
+                return@launch
+            }
+
+            var targetEpisodeIndex = 0
+            episodeListRes.onOK { episodes ->
+                targetEpisodeIndex = suggestEpisodeIndex?.coerceIn(episodes.indices) ?: 0
+            }
+
+            update {
+                it.copy(
+                    cartoonIndex = cartoonIndex,
+                    isEpisodeFirst = true,
+                    episodeList = episodeListRes,
+                    currentEpisodeIndex = targetEpisodeIndex,
+                    currentShowingEpisode = targetEpisodeIndex,
+                    business = business,
+                )
+            }
+
+            // 获取第一个剧集的播放线路
+            episodeListRes.okOrNull()?.getOrNull(targetEpisodeIndex)?.let { episode ->
+                loadPlayLineForEpisode(cartoonIndex, episode, business)
+            }
+        }
+    }
+
+    /**
+     * 根据剧集加载播放线路
+     */
+    private suspend fun loadPlayLineForEpisode(
+        cartoonIndex: CartoonIndex,
+        episode: EpisodeSimple,
+        business: ComponentBusiness<PlayComponent>,
+    ) {
+        update {
+            it.copy(
+                episodePlayLineList = DataState.loading(),
+            )
+        }
+
+        val playLineListRes = business.getPlayLineSimpleForEpisode(cartoonIndex, episode)
+        if (playLineListRes == null) {
+            update {
+                it.copy(
+                    episodePlayLineList = DataState.error("获取播放线路失败"),
+                )
+            }
+            return
+        }
+
+        update {
+            it.copy(
+                episodePlayLineList = playLineListRes,
+                currentEpisodePlayLine = 0,
+                currentShowingEpisodePlayLine = 0,
+            )
+        }
+    }
+
+    /**
+     * 切换剧集
+     */
+    fun onEpisodeSimpleSelected(index: Int) {
+        val currentState = state.value
+        val cartoonIndex = currentState.cartoonIndex ?: return
+        val business = currentState.business ?: return
+        val episode = currentState.episodeList.okOrNull()?.getOrNull(index) ?: return
+
+        update {
+            it.copy(
+                currentEpisodeIndex = index,
+                currentShowingEpisode = index,
+            )
+        }
+
+        viewModelScope.launch {
+            loadPlayLineForEpisode(cartoonIndex, episode, business)
+        }
+    }
+
+    /**
+     * 切换播放线路
+     */
+    fun onPlayLineSimpleSelected(index: Int) {
+        update {
+            it.copy(
+                currentEpisodePlayLine = index,
+            )
+        }
+    }
+
+    /**
+     * UI 展示用：切换显示的剧集
+     */
+    fun onShowingEpisodeSelected(index: Int) {
+        update {
+            it.copy(
+                currentShowingEpisode = index,
+            )
+        }
+    }
+
+    /**
+     * UI 展示用：切换显示的播放线路
+     */
+    fun onShowingEpisodePlayLineSelected(index: Int) {
+        update {
+            it.copy(
+                currentShowingEpisodePlayLine = index,
+            )
         }
     }
 

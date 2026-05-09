@@ -10,6 +10,7 @@ import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
 import org.easybangumi.next.shared.source.api.component.ComponentBusiness
 import org.easybangumi.next.shared.source.api.component.play.PlayComponent
 import org.easybangumi.next.shared.source.SourceCase
+import org.easybangumi.next.shared.source.isEpisodeFirstMode
 import org.koin.core.component.inject
 
 /**
@@ -73,12 +74,21 @@ class NormalMediaCommonVM(
         }
 
         viewModelScope.launch {
-            state.map { it.playBusiness }.distinctUntilChanged().collectLatest {
-                if (it != null) {
-                    playLineIndexVM.loadPlayLine(
-                        cartoonIndex = cartoonIndex,
-//                        business = it,
-                    )
+            state.map { it.playBusiness }.distinctUntilChanged().collectLatest { business ->
+                if (business != null) {
+                    // 判断是否为剧集优先模式
+                    val isEpisodeFirst = business.isEpisodeFirstMode(cartoonIndex)
+                    if (isEpisodeFirst) {
+                        playLineIndexVM.loadEpisodeFirst(
+                            cartoonIndex = cartoonIndex,
+                            suggestEpisodeIndex = suggestEpisode,
+                        )
+                    } else {
+                        playLineIndexVM.loadPlayLine(
+                            cartoonIndex = cartoonIndex,
+                            suggestEpisode = suggestEpisode,
+                        )
+                    }
                 }
             }
         }

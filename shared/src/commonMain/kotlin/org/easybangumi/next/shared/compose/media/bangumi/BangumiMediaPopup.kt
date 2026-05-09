@@ -1,8 +1,15 @@
 ﻿package org.easybangumi.next.shared.compose.media.bangumi
 
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import org.easybangumi.next.shared.compose.common.collect_dialog.CartoonCollectDialog
+import org.easybangumi.next.shared.compose.detail.bangumi.BangumiDetailPanel
 import org.easybangumi.next.shared.compose.detail.bangumi.BangumiDetailVM
 import org.easybangumi.next.shared.compose.media_finder.MediaFinderHost
 
@@ -27,7 +34,23 @@ fun BangumiPopup(
     val popup = state.value
     when (val po = popup) {
         is BangumiMediaCommonVM.Popup.BangumiDetailPanel -> {
-
+            val sheetState = rememberModalBottomSheetState()
+            ModalBottomSheet(
+                onDismissRequest = {
+                    vm.dismissPopup()
+                },
+                sheetState = sheetState,
+                contentWindowInsets = {
+                    WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom + WindowInsetsSides.Top)
+                }
+            ) {
+                BangumiDetailPanel(
+                    vm = vm.bangumiDetailVM,
+                    onDismiss = {
+                        vm.dismissPopup()
+                    }
+                )
+            }
         }
         is BangumiMediaCommonVM.Popup.CollectionDialog -> {
             CartoonCollectDialog(

@@ -53,6 +53,12 @@ interface IWebView: AutoCloseable {
         delay: Long = 100L,
     )
 
+    // 带 callback 的版本，通过 cefQuery 或 evaluateJavascript 返回结果
+    suspend fun executeJavaScriptWithCallback(
+        script: String,
+        timeout: Long = 5000L,
+    ): String?
+
     fun getImpl(): Any?
 
     fun addToEndpoint(): Boolean

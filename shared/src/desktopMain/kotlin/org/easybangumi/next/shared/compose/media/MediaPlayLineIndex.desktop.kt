@@ -325,3 +325,363 @@ fun LazyListScope.mediaPlayLineIndexDesktop(
         }
     }
 }
+
+/**
+ * 剧集优先模式的 Desktop UI 组件
+ */
+fun LazyListScope.mediaEpisodeFirstIndexDesktop(
+    vm: PlayLineIndexVM,
+    state: PlayLineIndexVM.State,
+    gridCount: Int = 2,
+    width: Int,
+) {
+    // 剧集选择区域
+    val episodeData = state.episodeList.okOrNull()
+    if (state.episodeList.isLoading()) {
+        item {
+            LoadingElements(
+                modifier = Modifier.fillMaxWidth().height(100.dp).padding(8.dp, 0.dp),
+                isRow = true
+            )
+        }
+    } else if (state.episodeList is DataState.Error) {
+        val errorMsg = state.episodeList.errorMsg
+        item {
+            ErrorElements(
+                modifier = Modifier.fillMaxWidth().height(100.dp).padding(8.dp, 0.dp),
+                errorMsg = errorMsg,
+                isRow = true
+            )
+        }
+    } else if (episodeData != null) {
+        item {
+            Column {
+                val scope = rememberCoroutineScope()
+                val showAllEpisodes = remember { mutableStateOf(false) }
+                val episodeLazyListState = rememberLazyListState()
+
+                Spacer(Modifier.size(8.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Spacer(Modifier.size(16.dp))
+                    Icon(
+                        Icons.Filled.PlayLesson,
+                        contentDescription = "",
+                        modifier = Modifier.size(20.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(Modifier.size(8.dp))
+                    Text(
+                        "选集",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    Spacer(Modifier.weight(1f))
+                    if (episodeData.size > 1) {
+                        Icon(
+                            Icons.Default.KeyboardArrowLeft,
+                            contentDescription = "",
+                            modifier = Modifier.size(24.dp).clip(CircleShape).clickable {
+                                scope.launch {
+                                    runCatching {
+                                        if ((width - 64) > 0) {
+                                            episodeLazyListState.animateScrollBy(-(width - 64).toFloat())
+                                        } else {
+                                            episodeLazyListState.animateScrollToItem(episodeLazyListState.firstVisibleItemIndex - 1)
+                                        }
+                                    }.onFailure {
+                                        it.printStackTrace()
+                                    }
+                                }
+                            }.padding(2.dp)
+                        )
+                        Icon(
+                            Icons.Default.KeyboardArrowRight,
+                            contentDescription = "",
+                            modifier = Modifier.size(24.dp).clip(CircleShape).clickable {
+                                scope.launch {
+                                    runCatching {
+                                        if ((width - 64) > 0) {
+                                            episodeLazyListState.animateScrollBy((width - 64).toFloat())
+                                        } else {
+                                            episodeLazyListState.animateScrollToItem(episodeLazyListState.firstVisibleItemIndex + 1)
+                                        }
+                                    }.onFailure {
+                                        it.printStackTrace()
+                                    }
+                                }
+                            }.padding(2.dp)
+                        )
+                        Icon(
+                            if (showAllEpisodes.value) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                            contentDescription = "",
+                            modifier = Modifier.size(24.dp).clip(CircleShape).clickable {
+                                showAllEpisodes.value = !showAllEpisodes.value
+                            }
+                        )
+                    }
+                    Spacer(Modifier.size(12.dp))
+                }
+                Spacer(Modifier.size(16.dp))
+
+                AnimatedContent(showAllEpisodes.value && episodeData.size > 1) { showAll ->
+                    if (showAll) {
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.padding(8.dp, 0.dp)
+                        ) {
+                            episodeData.forEachIndexed { index, item ->
+                                val isSelected = index == state.currentShowingEpisode
+                                Row(
+                                    modifier = Modifier
+                                        .run {
+                                            if (isSelected) {
+                                                background(MaterialTheme.colorScheme.secondaryContainer, RoundedCornerShape(6.dp))
+                                            } else {
+                                                border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(6.dp))
+                                            }
+                                        }
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .clickable {
+                                            vm.onShowingEpisodeSelected(index)
+                                            vm.onEpisodeSimpleSelected(index)
+                                        }
+                                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    if (index == state.currentEpisodeIndex) {
+                                        Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary))
+                                        Spacer(Modifier.size(4.dp))
+                                    }
+                                    Text(
+                                        item.label,
+                                        color = if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer else Color.Unspecified,
+                                        style = MaterialTheme.typography.titleSmall
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        LazyRow(
+                            modifier = Modifier,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            state = episodeLazyListState,
+                            contentPadding = PaddingValues(8.dp, 0.dp)
+                        ) {
+                            items(episodeData.size) { index ->
+                                val item = episodeData[index]
+                                val isSelected = index == state.currentShowingEpisode
+                                Row(
+                                    modifier = Modifier
+                                        .run {
+                                            if (isSelected) {
+                                                background(MaterialTheme.colorScheme.secondaryContainer, RoundedCornerShape(6.dp))
+                                            } else {
+                                                border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(6.dp))
+                                            }
+                                        }
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .clickable {
+                                            vm.onShowingEpisodeSelected(index)
+                                            vm.onEpisodeSimpleSelected(index)
+                                        }
+                                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    if (index == state.currentEpisodeIndex) {
+                                        Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary))
+                                        Spacer(Modifier.size(4.dp))
+                                    }
+                                    Text(
+                                        item.label,
+                                        color = if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer else Color.Unspecified,
+                                        style = MaterialTheme.typography.titleSmall
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+                Spacer(Modifier.size(16.dp))
+            }
+        }
+    }
+
+    space(Modifier.height(4.dp))
+
+    // 播放线路选择区域
+    val playLineData = state.episodePlayLineList.okOrNull()
+    if (state.episodePlayLineList.isLoading()) {
+        item {
+            LoadingElements(
+                modifier = Modifier.fillMaxWidth().height(100.dp).padding(8.dp, 0.dp),
+                isRow = true
+            )
+        }
+    } else if (state.episodePlayLineList is DataState.Error) {
+        val errorMsg = state.episodePlayLineList.errorMsg
+        item {
+            ErrorElements(
+                modifier = Modifier.fillMaxWidth().height(100.dp).padding(8.dp, 0.dp),
+                errorMsg = errorMsg,
+                isRow = true
+            )
+        }
+    } else if (playLineData != null) {
+        item {
+            Column {
+                val scope = rememberCoroutineScope()
+                val showAllPlayLines = remember { mutableStateOf(false) }
+                val playLineLazyListState = rememberLazyListState()
+
+                Spacer(Modifier.size(8.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Spacer(Modifier.size(16.dp))
+                    Icon(
+                        Icons.Filled.PlaylistPlay,
+                        contentDescription = "",
+                        modifier = Modifier.size(20.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(Modifier.size(8.dp))
+                    Text(
+                        "播放源",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    Spacer(Modifier.weight(1f))
+                    if (playLineData.size > 1) {
+                        Icon(
+                            Icons.Default.KeyboardArrowLeft,
+                            contentDescription = "",
+                            modifier = Modifier.size(24.dp).clip(CircleShape).clickable {
+                                scope.launch {
+                                    runCatching {
+                                        if ((width - 64) > 0) {
+                                            playLineLazyListState.animateScrollBy(-(width - 64).toFloat())
+                                        } else {
+                                            playLineLazyListState.animateScrollToItem(playLineLazyListState.firstVisibleItemIndex - 1)
+                                        }
+                                    }.onFailure {
+                                        it.printStackTrace()
+                                    }
+                                }
+                            }.padding(2.dp)
+                        )
+                        Icon(
+                            Icons.Default.KeyboardArrowRight,
+                            contentDescription = "",
+                            modifier = Modifier.size(24.dp).clip(CircleShape).clickable {
+                                scope.launch {
+                                    runCatching {
+                                        if ((width - 64) > 0) {
+                                            playLineLazyListState.animateScrollBy((width - 64).toFloat())
+                                        } else {
+                                            playLineLazyListState.animateScrollToItem(playLineLazyListState.firstVisibleItemIndex + 1)
+                                        }
+                                    }.onFailure {
+                                        it.printStackTrace()
+                                    }
+                                }
+                            }.padding(2.dp)
+                        )
+                        Icon(
+                            if (showAllPlayLines.value) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                            contentDescription = "",
+                            modifier = Modifier.size(24.dp).clip(CircleShape).clickable {
+                                showAllPlayLines.value = !showAllPlayLines.value
+                            }
+                        )
+                    }
+                    Spacer(Modifier.size(12.dp))
+                }
+                Spacer(Modifier.size(16.dp))
+
+                AnimatedContent(showAllPlayLines.value && playLineData.size > 1) { showAll ->
+                    if (showAll) {
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.padding(8.dp, 0.dp)
+                        ) {
+                            playLineData.forEachIndexed { index, item ->
+                                val isSelected = index == state.currentShowingEpisodePlayLine
+                                Row(
+                                    modifier = Modifier
+                                        .run {
+                                            if (isSelected) {
+                                                background(MaterialTheme.colorScheme.secondaryContainer, RoundedCornerShape(6.dp))
+                                            } else {
+                                                border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(6.dp))
+                                            }
+                                        }
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .clickable {
+                                            vm.onShowingEpisodePlayLineSelected(index)
+                                            vm.onPlayLineSimpleSelected(index)
+                                        }
+                                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    if (index == state.currentEpisodePlayLine) {
+                                        Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary))
+                                        Spacer(Modifier.size(4.dp))
+                                    }
+                                    Text(
+                                        item.label,
+                                        color = if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer else Color.Unspecified,
+                                        style = MaterialTheme.typography.titleSmall
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        LazyRow(
+                            modifier = Modifier,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            state = playLineLazyListState,
+                            contentPadding = PaddingValues(8.dp, 0.dp)
+                        ) {
+                            items(playLineData.size) { index ->
+                                val item = playLineData[index]
+                                val isSelected = index == state.currentShowingEpisodePlayLine
+                                Row(
+                                    modifier = Modifier
+                                        .run {
+                                            if (isSelected) {
+                                                background(MaterialTheme.colorScheme.secondaryContainer, RoundedCornerShape(6.dp))
+                                            } else {
+                                                border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(6.dp))
+                                            }
+                                        }
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .clickable {
+                                            vm.onShowingEpisodePlayLineSelected(index)
+                                            vm.onPlayLineSimpleSelected(index)
+                                        }
+                                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    if (index == state.currentEpisodePlayLine) {
+                                        Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary))
+                                        Spacer(Modifier.size(4.dp))
+                                    }
+                                    Text(
+                                        item.label,
+                                        color = if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer else Color.Unspecified,
+                                        style = MaterialTheme.typography.titleSmall
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+                Spacer(Modifier.size(16.dp))
+            }
+        }
+    }
+}

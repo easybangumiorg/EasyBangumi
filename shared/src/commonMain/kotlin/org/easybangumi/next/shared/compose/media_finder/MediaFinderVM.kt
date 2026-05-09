@@ -15,6 +15,7 @@ import org.easybangumi.next.shared.cartoon.radar.v1.CartoonRadarStrategyV1
 import org.easybangumi.next.shared.cartoon.radar.v1.CartoonRadarV1VM
 import org.easybangumi.next.shared.cartoon.search.CartoonSearchVM
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
+import org.easybangumi.next.shared.data.cartoon.EpisodeSimple
 import org.easybangumi.next.shared.data.cartoon.PlayerLine
 import org.easybangumi.next.shared.foundation.view_model.StateViewModel
 import org.easybangumi.next.shared.source.api.component.ComponentBusinessPair
@@ -61,6 +62,7 @@ class MediaFinderVM(
         val playCover: CartoonCover,
         val manifest: SourceManifest,
         val suggestPlayerLine: PlayerLine? = null,
+        val suggestEpisode: EpisodeSimple? = null,
         val fromUser: Boolean = true,
     )
 
@@ -294,8 +296,9 @@ class MediaFinderVM(
                 if (it.radarUIState != RadarUIState.EMPTY && it.silentFinding
                     && it.result == null) {
 
+                    // 查找第一个有内容的结果（线路优先或剧集优先）
                     val res = it.radarUIState.result.firstOrNull() {
-                        it.playerLine?.isNotEmpty() == true && it.nameDistance < 3
+                        (it.playerLine?.isNotEmpty() == true || it.episodes?.isNotEmpty() == true) && it.nameDistance < 3
                     }
                     if (res == null) {
                         if( !it.radarUIState.radarSourceTabList.any { it.loading }) {
@@ -317,6 +320,7 @@ class MediaFinderVM(
                                         playCover = res.cover,
                                         manifest = res.businessPair.getManifest(),
                                         suggestPlayerLine = res.playerLine?.firstOrNull(),
+                                        suggestEpisode = res.episodes?.firstOrNull(),
                                         fromUser = false
                                     ),
                                 silentFinding = false,

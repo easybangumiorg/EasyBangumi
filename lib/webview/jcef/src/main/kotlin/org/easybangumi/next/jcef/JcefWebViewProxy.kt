@@ -517,6 +517,39 @@ class JcefWebViewProxy : IWebView {
         delay(delay)
     }
 
+    override suspend fun executeJavaScriptWithCallback(script: String, timeout: Long): String? {
+        return withTimeoutOrNull(timeout) {
+            suspendCancellableCoroutine<String?> { continuation ->
+                replaceState(State.WaitingForGetContent(continuation))
+                continuation.invokeOnCancellation {
+                    clearState(continuation)
+                }
+                // 使用 cefQuery 包装脚本，通过 messageRouter 返回结果
+                val wrappedScript = """
+                    (function() {
+                        try {
+                            var result = (function() { $script })();
+                            window.cefQuery({
+                                request: "content:" + (typeof result === 'string' ? result : JSON.stringify(result)),
+                                onSuccess: function(response) { /* ... */ },
+                                onFailure: function(error_code, error_message) { /* ... */ }
+                            });
+                        } catch(e) {
+                            window.cefQuery({
+                                request: "content:" + JSON.stringify({error: e.message}),
+                                onSuccess: function(response) { /* ... */ },
+                                onFailure: function(error_code, error_message) { /* ... */ }
+                            });
+                        }
+                    })()
+                """.trimIndent()
+                JcefManager.runOnJcefContext(false) {
+                    browser?.executeJavaScript(wrappedScript, "", 0)
+                }
+            }
+        }
+    }
+
     override fun close() {
         logger.info("Closing JcefWebViewProxy")
 

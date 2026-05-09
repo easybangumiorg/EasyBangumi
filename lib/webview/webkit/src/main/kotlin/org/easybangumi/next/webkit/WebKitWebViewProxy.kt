@@ -287,6 +287,30 @@ class WebKitWebViewProxy(
         }
     }
 
+    override suspend fun executeJavaScriptWithCallback(script: String, timeout: Long): String? {
+        if (webView == null) {
+            throw IllegalStateException("WebView is not initialized, please call loadUrl first.")
+        }
+
+        state?.continuation?.cancel()
+        val winner = CompletableDeferred<String?>()
+        singleScope.launch {
+            val res = suspendCancellableCoroutine<String?> { continuation ->
+                mainScope.launch {
+                    webView?.evaluateJavascript(script) {
+                        continuation.safeResume(it?.removeSurrounding("\""))
+                    }
+                }
+            }
+            winner.complete(res)
+        }
+        mainScope.launch {
+            delay(timeout)
+            winner.complete(null)
+        }
+        return winner.await()
+    }
+
     override fun close() {
         state?.continuation?.cancel()
         state = null

@@ -20,12 +20,16 @@ import org.easybangumi.next.lib.webview.IWebView
 import org.easybangumi.next.shared.cartoon.radar.CartoonRadarStrategy
 import org.easybangumi.next.shared.cartoon.radar.editDistance
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
+import org.easybangumi.next.shared.data.cartoon.EpisodeSimple
 import org.easybangumi.next.shared.data.cartoon.PlayerLine
 import org.easybangumi.next.shared.foundation.snackbar.moeSnackBar
 import org.easybangumi.next.shared.source.SourceCase
 import org.easybangumi.next.shared.source.api.component.FinderComponentPair
 import org.easybangumi.next.shared.source.api.component.NeedWebViewCheckException
 import org.easybangumi.next.shared.source.api.component.WebViewCheckParam
+import org.easybangumi.next.shared.source.getEpisodeList
+import org.easybangumi.next.shared.source.isEpisodeFirstMode
+import org.easybangumi.next.shared.source.isEpisodeFirstMode
 
 /**
  *    https://github.com/easybangumiorg/EasyBangumi
@@ -63,6 +67,8 @@ class CartoonRadarStrategyV1(
         val nameDistance: Int,
         // 前 N 个结果才会进行
         val playerLine: List<PlayerLine>? = null,
+        // 剧集优先模式
+        val episodes: List<EpisodeSimple>? = null,
     )
 
     private val dispatcher = coroutineProvider.io()
@@ -139,10 +145,25 @@ class CartoonRadarStrategyV1(
                         if (index >= playerLineSearchLimitPreSource) {
                             result
                         } else {
-                            val lineList = pair.second.run {
-                                getPlayLines(result.cover.toCartoonIndex())
-                            }.okOrNull()
-                            result.copy(playerLine = lineList)
+                            val cartoonIndex = result.cover.toCartoonIndex()
+                            val playComponent = pair.second
+
+                            // 判断是否为剧集优先模式
+                            val isEpisodeFirst = playComponent.runNoRetry {
+                                isEpisodeFirstMode(cartoonIndex)
+                            }
+
+                            if (isEpisodeFirst) {
+                                // 剧集优先模式：获取剧集列表
+                                val episodes = playComponent.getEpisodeList(cartoonIndex)?.okOrNull()
+                                result.copy(episodes = episodes)
+                            } else {
+                                // 线路优先模式：获取播放线路
+                                val lineList = playComponent.run {
+                                    getPlayLines(cartoonIndex)
+                                }.okOrNull()
+                                result.copy(playerLine = lineList)
+                            }
                         }
                     }
             }

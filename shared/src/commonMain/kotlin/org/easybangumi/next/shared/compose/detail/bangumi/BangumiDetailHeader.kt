@@ -85,8 +85,10 @@ fun BangumiDetailHeader(
     cartoonInfo: CartoonInfo? = null,
     onCollectClick: () -> Unit,
     onPlayClick: () -> Unit,
+    showPlayBtn: Boolean = true,
+    panelMode: Boolean = false,
 ){
-    val surfaceLowestColor = MaterialTheme.colorScheme.surfaceContainerLowest
+    val surfaceLowestColor = if (panelMode) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surfaceContainerLowest
     val backgroundColor = MaterialTheme.colorScheme.surfaceContainer
     val backgroundPainter = remember(backgroundColor) {
         BrushPainter(SolidColor(backgroundColor))
@@ -247,6 +249,7 @@ fun BangumiDetailHeader(
                                         bgmCollectionState = bgmCollectionState,
                                         cartoonInfo = cartoonInfo,
                                         onCollectClick = onCollectClick,
+                                        showPlayBtn = showPlayBtn,
                                     )
                                 },
                                 onLoading = {
@@ -255,7 +258,8 @@ fun BangumiDetailHeader(
                             ) {
                                 HeaderContent(it.data,bgmCollectionState = bgmCollectionState,
                                     cartoonInfo = cartoonInfo,
-                                    onCollectClick = onCollectClick,)
+                                    onCollectClick = onCollectClick,
+                                    showPlayBtn = showPlayBtn,)
                             }
 
 
@@ -263,9 +267,11 @@ fun BangumiDetailHeader(
 
                         Spacer(modifier = Modifier.size(4.dp))
 //
-                        Row {
-                            PlayBtn(Modifier.weight(1f), cartoonInfo = cartoonInfo) {
-                                onPlayClick()
+                        if (showPlayBtn) {
+                            Row {
+                                PlayBtn(Modifier.weight(1f), cartoonInfo = cartoonInfo) {
+                                    onPlayClick()
+                                }
                             }
                         }
 
@@ -292,6 +298,7 @@ fun HeaderContent(
     bgmCollectionState: DataState<BgmCollectResp> = DataState.none(),
     cartoonInfo: CartoonInfo? = null,
     onCollectClick: () -> Unit,
+    showPlayBtn: Boolean = true,
 ) {
     Column {
 
@@ -317,7 +324,6 @@ fun HeaderContent(
         }
         Spacer(modifier = Modifier.weight(1f))
         Row {
-            Spacer(modifier = Modifier.weight(1f))
             HeaderCollectBtn(
                 modifier = Modifier,
                 bgmCollectionState = bgmCollectionState,

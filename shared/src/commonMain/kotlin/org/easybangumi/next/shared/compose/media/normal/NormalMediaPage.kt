@@ -19,6 +19,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import org.easybangumi.next.shared.compose.media.mediaEpisodeFirstIndex
 import org.easybangumi.next.shared.compose.media.mediaPlayLineIndex
 import org.easybangumi.next.shared.data.cartoon.CartoonCover
 import org.easybangumi.next.shared.foundation.cartoon.CartoonCoverCard
@@ -58,7 +59,13 @@ fun NormalMediaPage(
             space(Modifier.height(8.dp))
             divider()
             // 播放线路和集数选择
-            mediaPlayLineIndex(commonVM.playLineIndexVM, commonVM.playLineIndexVM.ui.value, 2)
+            val playLineIndexVM = commonVM.playLineIndexVM
+            val playLineIndexState = playLineIndexState.value
+            if (playLineIndexState.isEpisodeFirst) {
+                mediaEpisodeFirstIndex(playLineIndexVM, playLineIndexState, 2)
+            } else {
+                mediaPlayLineIndex(playLineIndexVM, playLineIndexState, 2)
+            }
         }
 
     }

@@ -26,9 +26,9 @@ import org.easybangumi.next.shared.data.cartoon.CartoonIndex
 import org.easybangumi.next.shared.data.cartoon.CartoonInfo
 import org.easybangumi.next.shared.data.room.cartoon.dao.CartoonInfoDao
 import org.easybangumi.next.shared.foundation.snackbar.moeSnackBar
-import org.easybangumi.next.shared.foundation.todo.easyTODO
 import org.easybangumi.next.shared.foundation.view_model.BaseViewModel
 import org.easybangumi.next.shared.source.SourceCase
+import org.easybangumi.next.shared.source.isEpisodeFirstMode
 import org.koin.core.component.inject
 import kotlin.getValue
 
@@ -142,7 +142,24 @@ class BangumiMediaCommonVM (
         viewModelScope.launch {
             state.map { it.radarResult }.distinctUntilChanged().collectLatest { res ->
                 if (res != null) {
-                    playLineIndexVM.loadPlayLine(res.playCover.toCartoonIndex(), suggestPlayerLineId ?: res.suggestPlayerLine?.order, suggestEpisode)
+                    val cartoonIndex = res.playCover.toCartoonIndex()
+                    // 判断是否为剧集优先模式
+                    val business = sourceCase.playComponentFlow(cartoonIndex.source).first()
+                    if (business != null) {
+                        val isEpisodeFirst = business.isEpisodeFirstMode(cartoonIndex)
+                        if (isEpisodeFirst) {
+                            playLineIndexVM.loadEpisodeFirst(
+                                cartoonIndex = cartoonIndex,
+                                suggestEpisodeIndex = suggestEpisode,
+                            )
+                        } else {
+                            playLineIndexVM.loadPlayLine(
+                                cartoonIndex = cartoonIndex,
+                                suggestPlayerLine = suggestPlayerLineId ?: res.suggestPlayerLine?.order,
+                                suggestEpisode = suggestEpisode,
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -254,7 +271,6 @@ class BangumiMediaCommonVM (
     }
 
     fun showBangumiDetailPanel() {
-        easyTODO("bottomSheet")
         _popupState.update { Popup.BangumiDetailPanel }
     }
     fun dismissPopup() {

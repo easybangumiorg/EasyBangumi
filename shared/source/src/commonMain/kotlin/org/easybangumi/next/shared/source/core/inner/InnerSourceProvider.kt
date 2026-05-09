@@ -14,6 +14,7 @@ import org.easybangumi.next.shared.source.api.source.SourceType
 import org.easybangumi.next.shared.source.bangumi.source.BangumiInnerSource
 import org.easybangumi.next.shared.source.core.source.SourceConfigController
 import org.easybangumi.next.source.inner.age.AgeInnerSource
+import org.easybangumi.next.source.inner.anich.AniChInnerSource
 import org.easybangumi.next.source.inner.debug.DebugInnerSource
 import org.easybangumi.next.source.inner.ggl.GGLInnerSource
 import org.easybangumi.next.source.local.LocalInnerSource
@@ -92,6 +93,15 @@ class InnerSourceProvider(
         }}
     }
 
+    val anichSource by lazy {
+        AniChInnerSource()
+    }
+    val anichComponentBundle: ComponentBundle by lazy {
+        InnerComponentBundle(anichSource).apply { runBlocking {
+            load()
+        }}
+    }
+
 
 
 
@@ -157,6 +167,18 @@ class InnerSourceProvider(
                             )
                         },
                         componentBundle = localComponentBundle
+                    ),
+                    // AniCh 源
+                    SourceInfo.Loaded(
+                        manifest = anichSource.manifest,
+                        sourceConfig = map.getOrElse(anichSource.key) {
+                            SourceConfig(
+                                key = anichSource.key,
+                                enable = true,
+                                order = 0,
+                            )
+                        },
+                        componentBundle = anichComponentBundle
                     ),
 
 

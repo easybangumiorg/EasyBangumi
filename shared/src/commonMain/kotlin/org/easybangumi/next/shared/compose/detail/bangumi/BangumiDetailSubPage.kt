@@ -108,6 +108,7 @@ fun BangumiContent(
     pagerState: PagerState,
     vm: BangumiDetailVM,
     contentPadding: PaddingValues,
+    interactive: Boolean = true,
 ){
     val subjectState = vm.ui.value.subjectState
     HorizontalPager(
@@ -137,6 +138,7 @@ fun BangumiContent(
                     BangumiDetailSubEpisodePage(
                         modifier = Modifier.fillMaxSize(),
                         vm = vm,
+                        interactive = interactive,
                     )
                 }
                 BangumiDetailVM.DetailTab.COMMENT -> {
@@ -256,6 +258,7 @@ fun BangumiDetailSubDetailPage(
 fun BangumiDetailSubEpisodePage(
     modifier: Modifier = Modifier,
     vm: BangumiDetailVM,
+    interactive: Boolean = true,
 ) {
 
 
@@ -281,9 +284,12 @@ fun BangumiDetailSubEpisodePage(
                             BangumiEpisodeItem(
                                 modifier = Modifier.fillMaxWidth(),
                                 bgmEpisode = item,
-                                onClick = {
-                                    vm.onEpisodeClick(it, navController)
-                                }
+                                onClick = if (interactive) {
+                                    { vm.onEpisodeClick(it, navController) }
+                                } else {
+                                    null
+                                },
+                                showPlayIcon = interactive,
                             )
                             HorizontalDivider()
                         }
@@ -305,10 +311,11 @@ fun BangumiDetailSubEpisodePage(
 fun BangumiEpisodeItem(
     modifier: Modifier,
     bgmEpisode: BgmEpisode,
-    onClick: ((BgmEpisode) -> Unit)? = null
+    onClick: ((BgmEpisode) -> Unit)? = null,
+    showPlayIcon: Boolean = true,
 ){
     ListItem(
-        modifier = modifier.clickable() {
+        modifier = modifier.clickable(enabled = onClick != null) {
             onClick?.invoke(bgmEpisode)
         },
         colors = ListItemDefaults.colors(
@@ -327,12 +334,16 @@ fun BangumiEpisodeItem(
 //                style = MaterialTheme.typography.bodyMedium,
             )
         },
-        trailingContent = {
-            IconButton(onClick = {
-                onClick?.invoke(bgmEpisode)
-            }) {
-                Icon(Icons.Default.PlayCircle, contentDescription = null)
+        trailingContent = if (showPlayIcon) {
+            {
+                IconButton(onClick = {
+                    onClick?.invoke(bgmEpisode)
+                }) {
+                    Icon(Icons.Default.PlayCircle, contentDescription = null)
+                }
             }
+        } else {
+            null
         }
     )
 

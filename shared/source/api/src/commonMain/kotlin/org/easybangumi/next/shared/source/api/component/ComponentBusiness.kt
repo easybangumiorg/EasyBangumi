@@ -89,4 +89,36 @@ open class ComponentBusiness <T: Component> (
     fun <R> runDirect( block: T.() -> R): R {
         return innerComponent.block()
     }
+
+    /**
+     * 无重试执行，用于不需要重试的方法（如 isEpisodeFirstMode）
+     */
+    suspend fun <R> runNoRetry(block: suspend T.(CoroutineScope) -> R): R {
+        return innerComponent.source.scope.async {
+            innerComponent.block(this)
+        }.await()
+    }
+
+    /**
+     * 执行可返回 null 的方法（带重试）
+     */
+    suspend fun <R> runOrNull(allowRetry: Boolean = true, block: suspend T.(CoroutineScope) -> R?): R? {
+        return innerComponent.source.scope.async {
+            var res: R? = runCatching {
+                innerComponent.block(this)
+            }.getOrNull()
+            if (res == null && retryCount >= 1 && allowRetry) {
+                repeat(retryCount) { attempt ->
+                    delay(retryDelayMillis)
+                    res = runCatching {
+                        innerComponent.block(this)
+                    }.getOrNull()
+                    if (res != null) {
+                        return@repeat
+                    }
+                }
+            }
+            res
+        }.await()
+    }
 }
