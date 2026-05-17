@@ -10,4 +10,7 @@
 - [x] 6. 新建 BangumiDetailPanel.kt，创建 BottomSheet 专用详情页组件
 - [x] 7. 修改 BangumiMediaPopup.kt，实现 ModalBottomSheet
 - [x] 8. 修改 BangumiMediaCommonVM.kt，移除 easyTODO 调用
-- [ ] 9. 测试功能完整性
+- [x] 9. BottomSheet 模式下顶部背景颜色与 Tab 一致（使用 surfaceContainerHigh）
+- [x] 10. BottomSheet 模式下收藏按钮左对齐
+- [x] 11. BottomSheet 模式下支持滚动，Header 可滚动，Tab 固定（使用 LazyColumn + stickyHeader）
+- [x] 12. 测试功能完整性
