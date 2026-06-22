@@ -10,19 +10,24 @@ import com.heyanle.easybangumi4.plugin.api.entity.PlayLine
 import com.heyanle.easybangumi4.plugin.api.entity.PlayerInfo
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.easybangumi4.utils.getMD5
-import com.heyanle.easybangumi4.utils.jsonTo
-import com.heyanle.easybangumi4.utils.toJson
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 
 class PlayComponentCacheWrapper(
     private val delegate: PlayComponent,
+    private val cacheFolder: File = File(APP.getFilePath("play_info_cache")),
 ) : ComponentWrapper(), PlayComponent {
 
-    private val cacheFolder = File(APP.getFilePath("play_info_cache")).apply {
+    private val cacheRoot = cacheFolder.apply {
         mkdirs()
     }
+    private val cacheAdapter = Moshi.Builder()
+        .add(KotlinJsonAdapterFactory())
+        .build()
+        .adapter(CachedPlayerInfo::class.java)
 
     init {
         innerSource = delegate.source
@@ -52,17 +57,17 @@ class PlayComponentCacheWrapper(
     }
 
     private suspend fun read(key: String): PlayerInfo? = withContext(Dispatchers.IO) {
-        val file = File(cacheFolder, "$key.json")
+        val file = File(cacheRoot, "$key.json")
         if (!file.isFile || !file.canRead()) return@withContext null
         runCatching {
-            file.readText().jsonTo<CachedPlayerInfo>()?.toPlayerInfo()
+            cacheAdapter.fromJson(file.readText())?.toPlayerInfo()
         }.getOrNull()
     }
 
     private suspend fun write(key: String, playerInfo: PlayerInfo) = withContext(Dispatchers.IO) {
-        val file = File(cacheFolder, "$key.json")
+        val file = File(cacheRoot, "$key.json")
         runCatching {
-            file.writeText(CachedPlayerInfo.from(playerInfo).toJson())
+            file.writeText(cacheAdapter.toJson(CachedPlayerInfo.from(playerInfo)))
         }
     }
 

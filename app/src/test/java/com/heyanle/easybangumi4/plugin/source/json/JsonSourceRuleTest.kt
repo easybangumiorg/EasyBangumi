@@ -1,5 +1,8 @@
 package com.heyanle.easybangumi4.plugin.source.json
 
+import com.heyanle.easybangumi4.plugin.api.ParserException
+import com.heyanle.easybangumi4.plugin.api.component.BusinessActionType
+import com.heyanle.easybangumi4.plugin.api.component.SearchNeedWebViewCheckBusinessException
 import com.heyanle.easybangumi4.plugin.api.entity.Cartoon
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonSummary
 import com.heyanle.easybangumi4.plugin.api.entity.PlayerInfo
@@ -11,6 +14,7 @@ import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
 import org.junit.Test
 import java.io.File
 
@@ -220,6 +224,75 @@ class JsonSourceRuleTest {
         val playerInfo = executor.loadPlay(CartoonSummary(covers.first().url, source.key), lines.first(), lines.first().episode.first())
         assertEquals(PlayerInfo.DECODE_TYPE_HLS, playerInfo.decodeType)
         assertEquals("https://cdn.example.test/one.m3u8", playerInfo.uri)
+    }
+
+    @Test
+    fun executorThrowsDialogCaptchaAndRetriesWithInput() = runBlocking {
+        val rule = JsonSourceRule(
+            key = "json.captcha",
+            label = "Json Captcha",
+            versionName = "1.0",
+            versionCode = 1,
+            libVersion = 15,
+            site = SiteRule(baseUrl = "https://example.test"),
+            pages = emptyList(),
+            search = ListRule(
+                url = "/search?keyword={keyword:url}",
+                firstPage = 1,
+                item = SelectorRule(".item"),
+                fields = CoverFieldRule(
+                    title = SelectorRule(".title"),
+                    url = SelectorRule(".title", attr = "href"),
+                ),
+            ),
+            captcha = CaptchaRule(
+                detect = SelectorRule(".captcha"),
+                image = SelectorRule(".captcha img", attr = "src"),
+                url = "/captcha/check",
+                inputName = "verify",
+                title = "Captcha",
+                hint = "Input captcha",
+            ),
+        )
+        val source = JsonSource(rule, File("json.captcha.json"))
+        val urls = mutableListOf<String>()
+        val executor = JsonRuleExecutor(
+            source = source,
+            networkHelper = FakeNetworkHelper,
+            okhttpHelper = FakeOkhttpHelper,
+            renderHelper = FakeRenderHelper,
+            fetcher = { url ->
+                urls += url
+                if ("verify=1234" in url) {
+                    """
+                    <div class="item">
+                      <a class="title" href="/detail/ok">Captcha Passed</a>
+                    </div>
+                    """.trimIndent()
+                } else {
+                    """
+                    <div class="captcha">
+                      <img src="/captcha.png" />
+                    </div>
+                    """.trimIndent()
+                }
+            },
+        )
+
+        try {
+            executor.loadList(rule.search!!, 1, "bocchi")
+            fail("Expected captcha business exception")
+        } catch (e: ParserException) {
+            val business = e.exception as SearchNeedWebViewCheckBusinessException
+            assertEquals(BusinessActionType.DIALOG_CAPTCHA, business.actionType)
+            assertEquals("https://example.test/captcha.png", business.dialogCaptchaParam?.image)
+            business.dialogCaptchaParam?.onInput?.invoke("1234")
+        }
+
+        val (_, covers) = executor.loadList(rule.search!!, 1, "bocchi")
+        assertEquals(1, covers.size)
+        assertEquals("Captcha Passed", covers.first().title)
+        assertEquals("https://example.test/captcha/check?verify=1234", urls.last())
     }
 
     private object FakeNetworkHelper : NetworkHelper {

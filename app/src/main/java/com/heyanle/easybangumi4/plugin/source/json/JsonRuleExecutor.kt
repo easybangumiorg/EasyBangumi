@@ -162,8 +162,9 @@ class JsonRuleExecutor(
 
     private suspend fun fetch(url: String, captchaContext: CaptchaContext): String {
         fetcher?.let {
-            val html = it(url)
-            checkCaptcha(html, url, captchaContext)
+            val requestUrl = buildRequest(url).url.toString()
+            val html = it(requestUrl)
+            checkCaptcha(html, requestUrl, captchaContext)
             return html
         }
         val request = buildRequest(url)
@@ -200,7 +201,7 @@ class JsonRuleExecutor(
     private fun checkCaptcha(html: String, url: String, captchaContext: CaptchaContext) {
         val captcha = rule.captcha ?: return
         val document = XPathUtils.parse(html, url)
-        if (document.extract(captcha.detect).isNullOrBlank()) return
+        if (document.selectBy(captcha.detect).isEmpty()) return
         val image = required(document.extract(captcha.image)?.let { normalizeUrl(it, url) }, "captcha.image")
         val dialogCaptchaParam = DialogCaptchaParam(
             image = image,
