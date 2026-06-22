@@ -23,5 +23,6 @@ interface PlayComponent: Component {
         summary: CartoonSummary,
         playLine: PlayLine,
         episode: Episode,
+        canCache: Boolean = true,
     ): SourceResult<PlayerInfo>
 }

@@ -8,7 +8,8 @@ import kotlin.coroutines.EmptyCoroutineContext
 @Keep
 sealed class SourceResult<T> {
     data class Complete<T>(
-        val data: T
+        val data: T,
+        val isCache: Boolean = false,
     ) : SourceResult<T>()
 
     data class Error<T>(

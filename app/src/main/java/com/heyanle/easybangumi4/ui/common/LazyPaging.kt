@@ -18,6 +18,7 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.plugin.api.ParserException
+import com.heyanle.easybangumi4.plugin.api.component.BusinessActionType
 import com.heyanle.easybangumi4.plugin.api.component.SearchNeedWebViewCheckBusinessException
 import com.heyanle.easybangumi4.utils.stringRes
 
@@ -266,12 +267,13 @@ fun <T : Any> LazyListScope.pagingCommonSourceSearch(
                         when (val innerError = error.exception) {
                             is SearchNeedWebViewCheckBusinessException -> {
                                 needCommonError = false
+                                val isCaptcha = innerError.actionType == BusinessActionType.DIALOG_CAPTCHA
                                 ErrorPage(modifier = Modifier.fillMaxWidth(),
                                     image = com.heyanle.easybangumi4.R.drawable.empty_bocchi,
-                                    errorMsg = "需要人机效验",
+                                    errorMsg = if (isCaptcha) "需要输入验证码" else "需要人机效验",
                                     clickEnable = true,
                                     other = {
-                                        Text(text = "点击跳转效验")
+                                        Text(text = if (isCaptcha) "点击输入验证码" else "点击跳转效验")
                                     },
                                     onClick = {
                                         onWebCheck(innerError)
@@ -329,12 +331,13 @@ fun <T : Any> LazyListScope.pagingCommonSourceSearchHor(
                         when (val innerError = error.exception) {
                             is SearchNeedWebViewCheckBusinessException -> {
                                 needCommonError = false
+                                val isCaptcha = innerError.actionType == BusinessActionType.DIALOG_CAPTCHA
                                 ErrorPage(modifier = Modifier.fillMaxHeight(),
                                     image = com.heyanle.easybangumi4.R.drawable.empty_bocchi,
-                                    errorMsg = "需要人机效验",
+                                    errorMsg = if (isCaptcha) "需要输入验证码" else "需要人机效验",
                                     clickEnable = true,
                                     other = {
-                                        Text(text = "点击跳转效验")
+                                        Text(text = if (isCaptcha) "点击输入验证码" else "点击跳转效验")
                                     },
                                     onClick = {
                                         onWebCheck(innerError)
@@ -403,11 +406,12 @@ fun <T : Any> PagingCommonSourceSearch(
                     when (val innerError = error.exception) {
                         is SearchNeedWebViewCheckBusinessException -> {
                             needCommonError = false
+                            val isCaptcha = innerError.actionType == BusinessActionType.DIALOG_CAPTCHA
                             ErrorPage(modifier = Modifier.fillMaxWidth(),
                                 image = com.heyanle.easybangumi4.R.drawable.empty_bocchi,
-                                errorMsg = "需要人机效验",
+                                errorMsg = if (isCaptcha) "需要输入验证码" else "需要人机效验",
                                 other = {
-                                    Text(text = "点击跳转效验")
+                                    Text(text = if (isCaptcha) "点击输入验证码" else "点击跳转效验")
                                 },
                                 clickEnable = true,
                                 onClick = {

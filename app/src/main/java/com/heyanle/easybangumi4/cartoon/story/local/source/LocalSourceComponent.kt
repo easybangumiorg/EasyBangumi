@@ -130,7 +130,8 @@ class LocalSourceComponent : ComponentWrapper(), PlayComponent, DetailedComponen
     override suspend fun getPlayInfo(
         summary: CartoonSummary,
         playLine: PlayLine,
-        episode: Episode
+        episode: Episode,
+        canCache: Boolean,
     ): SourceResult<PlayerInfo> {
         return withResult {
             val result = cartoonStoryController.storyItemList.filter { it !is DataResult.Error }

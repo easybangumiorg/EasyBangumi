@@ -1,6 +1,12 @@
 package com.heyanle.easybangumi4.plugin.source.json
 
 import com.heyanle.easybangumi4.plugin.api.ParserException
+import com.heyanle.easybangumi4.plugin.api.component.BusinessActionType
+import com.heyanle.easybangumi4.plugin.api.component.DialogCaptchaParam
+import com.heyanle.easybangumi4.plugin.api.component.PlayInfoNeedWebViewCheckBusinessException
+import com.heyanle.easybangumi4.plugin.api.component.PlayInfoWebViewCheckParam
+import com.heyanle.easybangumi4.plugin.api.component.SearchNeedWebViewCheckBusinessException
+import com.heyanle.easybangumi4.plugin.api.component.SearchWebViewCheckParam
 import com.heyanle.easybangumi4.plugin.api.entity.Cartoon
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonCover
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonCoverImpl
@@ -13,6 +19,7 @@ import com.heyanle.easybangumi4.plugin.api.utils.api.NetworkHelper
 import com.heyanle.easybangumi4.plugin.api.utils.api.OkhttpHelper
 import com.heyanle.easybangumi4.plugin.api.utils.api.RenderHelper
 import okhttp3.Request
+import okhttp3.FormBody
 import org.jsoup.nodes.Element
 import java.net.URI
 import java.net.URLEncoder
@@ -26,12 +33,13 @@ class JsonRuleExecutor(
     private val fetcher: (suspend (String) -> String)? = null,
 ) {
     private val rule: JsonSourceRule = source.rule
+    private var captchaInput: String? = null
 
     fun firstPage(listRule: ListRule): Int = listRule.firstPage
 
     suspend fun loadList(listRule: ListRule, page: Int, keyword: String? = null): Pair<Int?, List<CartoonCover>> {
         val url = buildUrl(listRule.url, mapOf("page" to page.toString(), "keyword" to keyword.orEmpty()))
-        val document = XPathUtils.parse(fetch(url), url)
+        val document = XPathUtils.parse(fetch(url, CaptchaContext.Search(page, keyword.orEmpty())), url)
         val items = document.selectBy(listRule.item)
         val covers = items.mapNotNull { element ->
             runCatching { parseCover(element, listRule.fields, url) }.getOrNull()
@@ -47,7 +55,7 @@ class JsonRuleExecutor(
     suspend fun loadDetail(summary: CartoonSummary): Pair<Cartoon, List<PlayLine>> {
         val detailRule = rule.detail ?: throw ParserException("json detail rule is missing")
         val url = buildUrl(detailRule.url, mapOf("id" to summary.id, "url" to summary.id))
-        val document = XPathUtils.parse(fetch(url), url)
+        val document = XPathUtils.parse(fetch(url, CaptchaContext.Search(0, summary.id)), url)
         val cartoon = parseCartoon(document, detailRule.fields, summary, url)
         val playLines = parsePlayLines(document, detailRule.playLines)
         return cartoon to playLines
@@ -65,7 +73,7 @@ class JsonRuleExecutor(
             )
         )
         val direct = playRule.direct?.let { selector ->
-            val document = XPathUtils.parse(fetch(pageUrl), pageUrl)
+            val document = XPathUtils.parse(fetch(pageUrl, CaptchaContext.Play(summary, playLine, episode)), pageUrl)
             document.extract(selector)?.let { normalizeUrl(it, pageUrl) }
         }
         val videoUrl = direct ?: if (playRule.renderVideo) {
@@ -152,22 +160,81 @@ class JsonRuleExecutor(
         return element.baseUri().takeIf { it.isNotBlank() } ?: rule.site.baseUrl
     }
 
-    private suspend fun fetch(url: String): String {
+    private suspend fun fetch(url: String, captchaContext: CaptchaContext): String {
         fetcher?.let {
-            return it(url)
+            val html = it(url)
+            checkCaptcha(html, url, captchaContext)
+            return html
         }
-        val request = Request.Builder()
-            .url(url)
+        val request = buildRequest(url)
+        val html = okhttpHelper.cloudflareWebViewClient.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) throw ParserException("json request failed: ${response.code}")
+            response.body?.string().orEmpty()
+        }
+        checkCaptcha(html, url, captchaContext)
+        return html
+    }
+
+    private fun buildRequest(url: String): Request {
+        val captcha = rule.captcha
+        val input = captchaInput
+        captchaInput = null
+        val targetUrl = if (!input.isNullOrBlank() && captcha != null && captcha.method.equals("GET", ignoreCase = true)) {
+            appendQuery(buildUrl(captcha.url.ifBlank { url }, emptyMap()), captcha.inputName, input)
+        } else {
+            url
+        }
+        return Request.Builder()
+            .url(targetUrl)
             .apply {
                 val ua = rule.site.userAgent ?: networkHelper.defaultLinuxUA
                 if (ua.isNotBlank()) header("User-Agent", ua)
                 rule.site.headers.forEach { (key, value) -> header(key, value) }
+                if (!input.isNullOrBlank() && captcha != null && captcha.method.equals("POST", ignoreCase = true)) {
+                    post(FormBody.Builder().add(captcha.inputName, input).build())
+                }
             }
             .build()
-        return okhttpHelper.cloudflareWebViewClient.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) throw ParserException("json request failed: ${response.code}")
-            response.body?.string().orEmpty()
+    }
+
+    private fun checkCaptcha(html: String, url: String, captchaContext: CaptchaContext) {
+        val captcha = rule.captcha ?: return
+        val document = XPathUtils.parse(html, url)
+        if (document.extract(captcha.detect).isNullOrBlank()) return
+        val image = required(document.extract(captcha.image)?.let { normalizeUrl(it, url) }, "captcha.image")
+        val dialogCaptchaParam = DialogCaptchaParam(
+            image = image,
+            text = captcha.text,
+            title = captcha.title,
+            hint = captcha.hint,
+            onInput = { input -> captchaInput = input },
+        )
+        val exception = when (captchaContext) {
+            is CaptchaContext.Search -> SearchNeedWebViewCheckBusinessException(
+                param = SearchWebViewCheckParam(
+                    key = captchaContext.page,
+                    keyword = captchaContext.keyword,
+                    source = source.key,
+                    iWebProxy = EmptyWebProxy,
+                ),
+                actionType = BusinessActionType.DIALOG_CAPTCHA,
+                dialogCaptchaParam = dialogCaptchaParam,
+            )
+            is CaptchaContext.Play -> PlayInfoNeedWebViewCheckBusinessException(
+                param = PlayInfoWebViewCheckParam(
+                    summary = captchaContext.summary,
+                    playLine = captchaContext.playLine,
+                    episode = captchaContext.episode,
+                    iWebProxy = EmptyWebProxy,
+                ),
+                actionType = BusinessActionType.DIALOG_CAPTCHA,
+                dialogCaptchaParam = dialogCaptchaParam,
+            )
         }
+        throw ParserException(
+            message = "need captcha",
+            exception = exception,
+        )
     }
 
     private fun buildUrl(template: String, values: Map<String, String>): String {
@@ -186,6 +253,12 @@ class JsonRuleExecutor(
         return runCatching {
             URI(baseUrl).resolve(value).toString()
         }.getOrElse { value }
+    }
+
+    private fun appendQuery(url: String, name: String, value: String): String {
+        val encoded = URLEncoder.encode(value, "UTF-8")
+        val separator = if (url.contains("?")) "&" else "?"
+        return "$url$separator$name=$encoded"
     }
 
     private fun normalizeId(raw: String, baseUrl: String): String {
@@ -213,4 +286,42 @@ class JsonRuleExecutor(
             else -> Cartoon.STATUS_UNKNOWN
         }
     }
+}
+
+private sealed class CaptchaContext {
+    data class Search(
+        val page: Int,
+        val keyword: String,
+    ) : CaptchaContext()
+
+    data class Play(
+        val summary: CartoonSummary,
+        val playLine: PlayLine,
+        val episode: Episode,
+    ) : CaptchaContext()
+}
+
+private object EmptyWebProxy : com.heyanle.easybangumi4.plugin.source.utils.network.web.IWebProxy {
+    override suspend fun href(url: String, cleanLoaded: Boolean) = Unit
+    override suspend fun loadUrl(
+        url: String,
+        userAgent: String?,
+        headers: Map<String, String>,
+        interceptResRegex: String?,
+        needBlob: Boolean,
+    ) = Unit
+    override suspend fun waitingForPageLoaded(timeout: Long): Boolean = false
+    override suspend fun waitingForResourceLoaded(urlRegex: String, sticky: Boolean, timeout: Long): String? = null
+    override suspend fun waitingForBlobText(
+        urlRegex: String?,
+        textRegex: String?,
+        sticky: Boolean,
+        timeout: Long,
+    ): Pair<String?, String?>? = null
+    override suspend fun getContent(timeout: Long): String? = null
+    override suspend fun getContentWithIframe(timeout: Long): String? = null
+    override suspend fun executeJavaScript(script: String, delay: Long): String? = null
+    override fun addToWindow(show: Boolean) = Unit
+    override fun getWebView(): android.webkit.WebView? = null
+    override fun close() = Unit
 }

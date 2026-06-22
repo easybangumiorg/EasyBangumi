@@ -87,6 +87,7 @@ import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.cartoon.story.local.source.LocalSource
 import com.heyanle.easybangumi4.navigationDlna
 import com.heyanle.easybangumi4.plugin.api.ParserException
+import com.heyanle.easybangumi4.plugin.api.component.BusinessActionType
 import com.heyanle.easybangumi4.plugin.api.component.PlayInfoNeedWebViewCheckBusinessException
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayingViewModel
@@ -230,14 +231,15 @@ fun VideoFloat(
             val inner = (playingState.errorThrowable as? ParserException)?.exception
             if (playingState.errorThrowable is ParserException &&
                 inner is PlayInfoNeedWebViewCheckBusinessException) {
+                val isCaptcha = inner.actionType == BusinessActionType.DIALOG_CAPTCHA
                 ErrorPage(modifier = Modifier
                     .fillMaxSize()
                     .background(Color.Black),
                     image = com.heyanle.easybangumi4.R.drawable.empty_bocchi,
                     errorMsgColor = Color.White,
-                    errorMsg = "需要人机效验",
+                    errorMsg = if (isCaptcha) "需要输入验证码" else "需要人机效验",
                     other = {
-                        Text(text = "点击跳转效验")
+                        Text(text = if (isCaptcha) "点击输入验证码" else "点击跳转效验")
                     },
                     clickEnable = true,
                     onClick = {

@@ -10,9 +10,11 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.heyanle.easybangumi4.plugin.source.utils.network.WebViewHelperV2Impl
 import com.heyanle.easybangumi4.plugin.source.utils.network.web.IWebProxy
+import com.heyanle.easybangumi4.plugin.api.component.BusinessActionType
 import com.heyanle.easybangumi4.plugin.api.component.SearchNeedWebViewCheckBusinessException
 import com.heyanle.easybangumi4.plugin.api.component.search.SearchComponent
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonCover
+import com.heyanle.easybangumi4.plugin.source.utils.CaptchaHelperImpl
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.ui.search_migrate.PagingSearchSource
 import com.heyanle.inject.core.Inject
@@ -76,6 +78,18 @@ class NormalSearchViewModel(
         searchNeedWebViewCheckBusinessException: SearchNeedWebViewCheckBusinessException,
         onRetry: () -> Unit
     ){
+        if (searchNeedWebViewCheckBusinessException.actionType == BusinessActionType.DIALOG_CAPTCHA) {
+            val param = searchNeedWebViewCheckBusinessException.dialogCaptchaParam
+            if (param == null) {
+                onRetry()
+                return
+            }
+            CaptchaHelperImpl.start(param.image, param.text, param.title, param.hint) {
+                param.onInput(it)
+                onRetry()
+            }
+            return
+        }
         val param = searchNeedWebViewCheckBusinessException.param
         val webProxy = param.iWebProxy
         val webView = webProxy.getWebView()

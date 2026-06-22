@@ -92,7 +92,7 @@ class SourceBundle(
             }
 
             if (playComponent != null) {
-                playMap[source.key] = playComponent
+                playMap[source.key] = PlayComponentCacheWrapper(playComponent)
             }
 
             if (preferenceComponent != null) {

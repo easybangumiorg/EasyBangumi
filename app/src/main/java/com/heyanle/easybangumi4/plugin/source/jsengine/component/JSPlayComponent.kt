@@ -56,7 +56,8 @@ class JSPlayComponent(
     override suspend fun getPlayInfo(
         summary: CartoonSummary,
         playLine: PlayLine,
-        episode: Episode
+        episode: Episode,
+        canCache: Boolean,
     ): SourceResult<PlayerInfo> {
         return withResult(Dispatchers.IO) {
             jsScope.requestRunWithScope { context, scriptable ->

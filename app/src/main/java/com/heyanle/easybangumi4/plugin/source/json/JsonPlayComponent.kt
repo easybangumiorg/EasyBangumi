@@ -23,6 +23,7 @@ class JsonPlayComponent(
         summary: CartoonSummary,
         playLine: PlayLine,
         episode: Episode,
+        canCache: Boolean,
     ): SourceResult<PlayerInfo> {
         return withResult(Dispatchers.IO) {
             executor.loadPlay(summary, playLine, episode)

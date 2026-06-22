@@ -13,6 +13,7 @@ data class JsonSourceRule(
     val cover: String? = null,
     val describe: String? = null,
     val site: SiteRule = SiteRule(),
+    val captcha: CaptchaRule? = null,
     val pages: List<PageRule> = emptyList(),
     val search: ListRule? = null,
     val detail: DetailRule? = null,
@@ -27,6 +28,17 @@ data class SiteRule(
     val baseUrl: String = "",
     val userAgent: String? = null,
     val headers: Map<String, String> = emptyMap(),
+)
+
+data class CaptchaRule(
+    val detect: SelectorRule = SelectorRule(),
+    val image: SelectorRule = SelectorRule(),
+    val url: String = "",
+    val method: String = "GET",
+    val inputName: String = "verify",
+    val text: String? = null,
+    val title: String? = null,
+    val hint: String? = null,
 )
 
 data class PageRule(

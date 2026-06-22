@@ -25,12 +25,14 @@ import com.heyanle.easybangumi4.plugin.source.jsengine.component.getPlayInfoWith
 import com.heyanle.easybangumi4.plugin.source.utils.network.WebViewHelperV2Impl
 import com.heyanle.easybangumi4.plugin.source.utils.network.web.IWebProxy
 import com.heyanle.easybangumi4.setting.SettingPreferences
+import com.heyanle.easybangumi4.plugin.api.component.BusinessActionType
 import com.heyanle.easybangumi4.plugin.api.component.PlayInfoNeedWebViewCheckBusinessException
 import com.heyanle.easybangumi4.plugin.api.component.SearchNeedWebViewCheckBusinessException
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonSummary
 import com.heyanle.easybangumi4.plugin.api.entity.Episode
 import com.heyanle.easybangumi4.plugin.api.entity.PlayLine
 import com.heyanle.easybangumi4.plugin.api.entity.PlayerInfo
+import com.heyanle.easybangumi4.plugin.source.utils.CaptchaHelperImpl
 import com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded.CartoonRecordedModel
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.CoroutineProvider
@@ -83,6 +85,8 @@ class CartoonPlayingViewModel(
     private var playingPlayLine: PlayLine? = null
     private var playingEpisode: Episode? = null
     private var playingInfo: PlayerInfo? = null
+    private var playingInfoIsCache: Boolean = false
+    private var forceNoCacheRetrying: Boolean = false
 
     // 播放状态 =================================================
     data class PlayingState(
@@ -242,6 +246,17 @@ class CartoonPlayingViewModel(
 
     }
 
+    private fun tryRefreshNoCache() {
+        if (forceNoCacheRetrying) return
+        forceNoCacheRetrying = true
+        lastJob?.cancel()
+        lastJob = scope.launch {
+            cartoonPlayingState?.let {
+                innerPlay(it, exoPlayer.currentPosition.coerceAtLeast(0L), canCache = false)
+            }
+        }
+    }
+
     fun changePlay(
         cartoonPlayingState: CartoonPlayViewModel.CartoonPlayState?,
         adviceProcess: Long,
@@ -335,6 +350,7 @@ class CartoonPlayingViewModel(
     private suspend fun innerPlay(
         cartoonPlayingState: CartoonPlayViewModel.CartoonPlayState,
         adviceProcess: Long,
+        canCache: Boolean = true,
     ) {
 
 
@@ -382,7 +398,8 @@ class CartoonPlayingViewModel(
             play.getPlayInfo(
                 cartoonPlayingState.cartoonSummary,
                 cartoonPlayingState.playLine.playLine,
-                cartoonPlayingState.episode
+                cartoonPlayingState.episode,
+                canCache = canCache,
             )
         }
             .complete {
@@ -390,6 +407,8 @@ class CartoonPlayingViewModel(
                 it.data.uri.logi("CartoonPlayingViewModel")
                 playingPlayLine = cartoonPlayingState.playLine.playLine
                 playingEpisode = cartoonPlayingState.episode
+                playingInfoIsCache = it.isCache
+                forceNoCacheRetrying = false
                 innerPlay(it.data, adviceProcess)
             }
             .error { state ->
@@ -410,7 +429,23 @@ class CartoonPlayingViewModel(
     fun onSearchNeedWebCheck(
         playInfoNeedWebViewCheckBusinessException: PlayInfoNeedWebViewCheckBusinessException,
     ){
+        if (playInfoNeedWebViewCheckBusinessException.actionType == BusinessActionType.DIALOG_CAPTCHA) {
+            val param = playInfoNeedWebViewCheckBusinessException.dialogCaptchaParam
+            if (param == null) {
+                tryRefresh()
+                return
+            }
+            CaptchaHelperImpl.start(param.image, param.text, param.title, param.hint) {
+                param.onInput(it)
+                tryRefresh()
+            }
+            return
+        }
         val param = playInfoNeedWebViewCheckBusinessException.param
+        if (param == null) {
+            tryRefresh()
+            return
+        }
         val webProxy = param.iWebProxy
         val webView = webProxy.getWebView()
         if (webView == null) {
@@ -547,6 +582,23 @@ class CartoonPlayingViewModel(
         }
 
 
+    }
+
+    override fun onPlayerError(error: PlaybackException) {
+        super.onPlayerError(error)
+        if (playingInfoIsCache) {
+            tryRefreshNoCache()
+            return
+        }
+        _playingState.update {
+            it.copy(
+                isLoading = false,
+                isPlaying = false,
+                isError = true,
+                errorMsg = error.message ?: "play error",
+                errorThrowable = error,
+            )
+        }
     }
 
     override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
