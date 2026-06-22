@@ -4,24 +4,22 @@ import android.app.Application
 import android.webkit.CookieManager
 import com.heyanle.easybangumi4.base.hekv.HeKV
 import com.heyanle.easybangumi4.plugin.source.utils.CaptchaHelperImpl
-import com.heyanle.easybangumi4.plugin.source.utils.NativeHelperImpl
 import com.heyanle.easybangumi4.plugin.source.utils.PreferenceHelperImpl
 import com.heyanle.easybangumi4.plugin.source.utils.StringHelperImpl
 import com.heyanle.easybangumi4.plugin.source.utils.network.NetworkHelperImpl
 import com.heyanle.easybangumi4.plugin.source.utils.network.OkhttpHelperImpl
-import com.heyanle.easybangumi4.plugin.source.utils.network.WebViewHelperImpl
+import com.heyanle.easybangumi4.plugin.source.utils.network.RenderHelperImpl
 import com.heyanle.easybangumi4.plugin.source.utils.network.WebViewHelperV2Impl
 import com.heyanle.easybangumi4.plugin.source.utils.network.web.WebProxyManager
 import com.heyanle.easybangumi4.plugin.source.utils.network.web.WebProxyProvider
-import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
-
-import com.heyanle.easybangumi4.source_api.utils.api.CaptchaHelper
-import com.heyanle.easybangumi4.source_api.utils.api.NetworkHelper
-import com.heyanle.easybangumi4.source_api.utils.api.OkhttpHelper
-import com.heyanle.easybangumi4.source_api.utils.api.PreferenceHelper
-import com.heyanle.easybangumi4.source_api.utils.api.StringHelper
-import com.heyanle.easybangumi4.source_api.utils.api.WebViewHelper
-import com.heyanle.easybangumi4.source_api.utils.api.WebViewHelperV2
+import com.heyanle.easybangumi4.plugin.source.push.SourcePushController
+import com.heyanle.easybangumi4.plugin.api.utils.api.CaptchaHelper
+import com.heyanle.easybangumi4.plugin.api.utils.api.NetworkHelper
+import com.heyanle.easybangumi4.plugin.api.utils.api.OkhttpHelper
+import com.heyanle.easybangumi4.plugin.api.utils.api.PreferenceHelper
+import com.heyanle.easybangumi4.plugin.api.utils.api.RenderHelper
+import com.heyanle.easybangumi4.plugin.api.utils.api.StringHelper
+import com.heyanle.easybangumi4.plugin.api.utils.api.WebViewHelperV2
 import com.heyanle.easybangumi4.utils.WebViewManager
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.inject.api.InjectModule
@@ -29,6 +27,7 @@ import com.heyanle.inject.api.InjectScope
 import com.heyanle.inject.api.addAlias
 import com.heyanle.inject.api.addSingletonFactory
 import com.heyanle.inject.api.get
+import java.io.File
 
 /**
  * Created by heyanlin on 2023/11/1.
@@ -41,24 +40,18 @@ class SourceModule(
 
 
 
-        addSingletonFactory {
-            NativeHelperImpl(application)
-        }
-
         addSingletonFactory<ISourceController> {
-            val mmkvSetting = get<SettingMMKVPreferences>()
-            if (mmkvSetting.extensionV2Temp) {
-                get<SourceControllerV2>()
-            } else {
-                get<SourceController>()
-            }
+            get<SourceController>()
         }
 
         addSingletonFactory {
-            SourceController(get(), get(), get())
+            SourceController(
+                sourceFolder = File(application.getFilePath("source_v3")),
+                sourcePreferences = get(),
+            )
         }
         addSingletonFactory {
-            SourceControllerV2(get(), get())
+            SourcePushController(application, get())
         }
 
 
@@ -83,7 +76,7 @@ class SourceModule(
 
         // OkHttpHelper
         addScopedPerKeyFactory<OkhttpHelperImpl, String> {
-            OkhttpHelperImpl(application, get(it), get(it), get())
+            OkhttpHelperImpl(application, get(it), get())
         }
         addAlias<OkhttpHelperImpl, OkhttpHelper>()
 
@@ -93,14 +86,17 @@ class SourceModule(
         }
         addAlias<PreferenceHelperImpl, PreferenceHelper>()
 
-        // WebViewHelper
-        addScopedPerKeyFactory<WebViewHelper, String> {
-            WebViewHelperImpl(get(it))
-        }
-
         addSingletonFactory {
             WebViewManager(CookieManager.getInstance())
         }
+
+        addSingletonFactory<RenderHelperImpl> {
+            RenderHelperImpl(get())
+        }
+        addScopedPerKeyFactory<RenderHelper, String> {
+            get<RenderHelperImpl>()
+        }
+
         // WebViewHelperV2
         addSingletonFactory<WebViewHelperV2Impl> {
             WebViewHelperV2Impl(get())
@@ -121,3 +117,4 @@ class SourceModule(
 
     }
 }
+

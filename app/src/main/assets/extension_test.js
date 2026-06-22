@@ -8,7 +8,7 @@
 // Inject
 var networkHelper = Inject_NetworkHelper;
 var preferenceHelper = Inject_PreferenceHelper;
-var webViewHelperV2 = Inject_WebViewHelperV2;
+var renderHelper = Inject_RenderHelper;
 var okhttpHelper = Inject_OkhttpHelper;
 var webProxyProvider = Inject_WebProxyProvider;
 // Hook PreferenceComponent ========================================
@@ -279,44 +279,16 @@ function PlayComponent_getPlayInfo(summary, playLine, episode) {
         urlPath = "GV"+ summary.id + "-" + playLine.id + "-" + episode.id;
     }
     var url = JSSourceUtils.urlParser(getRootUrl(), "play" + urlPath + "/");
-    var strategy = new WebViewHelperV2.RenderedStrategy(
+    var strategy = new RenderHelper.VideoStrategy(
         url,
-        preferenceHelper.get("PlayerReg", "https://m3u8.girigirilove.com/addons/aplyer/atom.php?.*"),
-        "utf-8",
         networkHelper.defaultLinuxUA,
         null,
         null,
-        false,
-        Long.parseLong(preferenceHelper.get("Timeout", "10000"))
+        Long.parseLong(preferenceHelper.get("Timeout", "10000")),
+        false
     );
-    var result = webViewHelperV2.renderHtmlFromJs(strategy);
-    if (result == null) {
-        throw new ParserException("解析错误 1");
-    }
-    Log.i("result", result);
-    var doc = Jsoup.parse(result.content);
-
-
-    var src = "";
-    var iframe = doc.select("tbody td iframe").first();
-    if (iframe != null) {
-        src = iframe.attr("src")
-    }
-    Log.i("GiriGiriLove", "PlayComponent_getPlayInfo: src: " + src);
-    var res = "";
-    var split = src.split("\\?");
-    if (split.length > 0) {
-        var last = split[split.length - 1];
-        var ls = last.split("\\&");
-        for (var i = 0; i < ls.length; i++) {
-            var it = ls[i];
-            if (it.startsWith("url=")) {
-                res = it.subSequence(4, it.length()).toString();
-                break;
-            }
-        }
-    }
-
+    var result = renderHelper.renderVideoFromJs(strategy);
+    var res = result == null ? "" : result.url;
     if(res.length == 0) {
         throw ParserException("url 解析失败")
     }

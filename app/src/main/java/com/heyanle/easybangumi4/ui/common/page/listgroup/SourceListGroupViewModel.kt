@@ -10,7 +10,7 @@ import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewModelScope
 import com.heyanle.easy_i18n.R
-import com.heyanle.easybangumi4.source_api.component.page.SourcePage
+import com.heyanle.easybangumi4.plugin.api.component.page.SourcePage
 import com.heyanle.easybangumi4.utils.stringRes
 import kotlinx.coroutines.launch
 

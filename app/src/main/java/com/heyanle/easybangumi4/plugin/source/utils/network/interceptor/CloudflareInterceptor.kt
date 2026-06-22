@@ -10,7 +10,7 @@ import androidx.core.content.ContextCompat
 import androidx.webkit.WebResourceErrorCompat
 import androidx.webkit.WebViewClientCompat
 import com.heyanle.easybangumi4.plugin.source.utils.network.WebViewHelperV2Impl
-import com.heyanle.easybangumi4.source_api.utils.api.NetworkHelper
+import com.heyanle.easybangumi4.plugin.api.utils.api.NetworkHelper
 import okhttp3.Cookie
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Interceptor

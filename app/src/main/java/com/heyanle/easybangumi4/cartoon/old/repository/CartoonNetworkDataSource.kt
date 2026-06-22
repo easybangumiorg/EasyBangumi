@@ -3,9 +3,9 @@ package com.heyanle.easybangumi4.cartoon.old.repository
 import com.heyanle.easybangumi4.base.DataResult
 import com.heyanle.easybangumi4.base.toDataResult
 import com.heyanle.easybangumi4.case.SourceStateCase
-import com.heyanle.easybangumi4.source_api.entity.Cartoon
-import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
-import com.heyanle.easybangumi4.source_api.entity.PlayLine
+import com.heyanle.easybangumi4.plugin.api.entity.Cartoon
+import com.heyanle.easybangumi4.plugin.api.entity.CartoonSummary
+import com.heyanle.easybangumi4.plugin.api.entity.PlayLine
 
 /**
  * Created by HeYanLe on 2023/8/13 16:35.

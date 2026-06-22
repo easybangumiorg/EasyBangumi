@@ -32,9 +32,9 @@ import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.plugin.source.SourceConfig
 import com.heyanle.easybangumi4.plugin.source.SourceInfo
 import com.heyanle.easybangumi4.plugin.source.bundle.get
-import com.heyanle.easybangumi4.source_api.component.preference.PreferenceComponent
-import com.heyanle.easybangumi4.source_api.component.preference.SourcePreference
-import com.heyanle.easybangumi4.source_api.utils.api.PreferenceHelper
+import com.heyanle.easybangumi4.plugin.api.component.preference.PreferenceComponent
+import com.heyanle.easybangumi4.plugin.api.component.preference.SourcePreference
+import com.heyanle.easybangumi4.plugin.api.utils.api.PreferenceHelper
 import com.heyanle.easybangumi4.ui.common.BooleanPreferenceItem
 import com.heyanle.easybangumi4.ui.common.ErrorPage
 import com.heyanle.easybangumi4.ui.common.SourceContainerBase

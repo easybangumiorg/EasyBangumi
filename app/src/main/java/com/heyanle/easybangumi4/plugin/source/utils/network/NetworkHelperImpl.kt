@@ -2,8 +2,8 @@ package com.heyanle.easybangumi4.plugin.source.utils.network
 
 import android.content.Context
 import android.webkit.WebSettings
-import com.heyanle.easybangumi4.source_api.utils.api.NetworkHelper
-import com.heyanle.easybangumi4.source_api.utils.core.AndroidCookieJar
+import com.heyanle.easybangumi4.plugin.api.utils.api.NetworkHelper
+import com.heyanle.easybangumi4.plugin.api.utils.core.AndroidCookieJar
 import com.heyanle.okkv2.core.okkv
 
 /**

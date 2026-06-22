@@ -8,12 +8,8 @@ import com.heyanle.easybangumi4.exo.MediaModule
 import com.heyanle.easybangumi4.case.CaseModule
 import com.heyanle.easybangumi4.crash.SourceCrashController
 import com.heyanle.easybangumi4.dlna.DlnaModule
-import com.heyanle.easybangumi4.plugin.extension.ExtensionModule
-import com.heyanle.easybangumi4.plugin.extension.IExtensionController
-import com.heyanle.easybangumi4.plugin.extension.remote.ExtensionRepoController
 import com.heyanle.easybangumi4.setting.SettingModule
 import com.heyanle.easybangumi4.plugin.source.SourceModule
-import com.heyanle.easybangumi4.plugin.source.utils.NativeHelperImpl
 import com.heyanle.easybangumi4.splash.SplashActivity
 import com.heyanle.easybangumi4.storage.StorageModule
 import com.heyanle.easybangumi4.ui.common.dismiss
@@ -23,8 +19,6 @@ import com.heyanle.easybangumi4.utils.exo_ssl.CropUtil
 import com.heyanle.easybangumi4.utils.exo_ssl.TrustAllHostnameVerifier
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.stringRes
-import com.heyanle.extension_api.IconFactory
-import com.heyanle.extension_api.iconFactory
 import com.heyanle.inject.api.get
 import com.heyanle.inject.core.Inject
 import com.heyanle.okkv2.MMKVStore
@@ -77,11 +71,9 @@ object Scheduler {
         CartoonModule(application).registerWith(Inject)
         MediaModule(application).registerWith(Inject)
         CaseModule(application).registerWith(Inject)
-        ExtensionModule(application).registerWith(Inject)
         SourceModule(application).registerWith(Inject)
         StorageModule(application).registerWith(Inject)
         DlnaModule(application).registerWith(Inject)
-        Inject.get<NativeHelperImpl>()
         initOkkv(application)
         initBugly(application)
         initAria(application)
@@ -101,10 +93,6 @@ object Scheduler {
      */
     fun runOnMainActivityCreate(activity: MainActivity, isFirst: Boolean) {
         Migrate.update(activity)
-        val extensionController: IExtensionController by Inject.injectLazy()
-        val extensionIconFactory: IconFactory by Inject.injectLazy()
-        iconFactory = extensionIconFactory
-        extensionController.init()
         if (isFirst) {
             try {
                 // 启动须知
@@ -123,8 +111,6 @@ object Scheduler {
             }
 
         }
-        // 自动同步
-        Inject.get<ExtensionRepoController>().fireAutoSync()
         UpdateController.checkUpdate()
     }
 

@@ -57,8 +57,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.entity.PlayLineWrapper
-import com.heyanle.easybangumi4.source_api.entity.CartoonSummary
-import com.heyanle.easybangumi4.source_api.entity.Episode
+import com.heyanle.easybangumi4.plugin.api.entity.CartoonSummary
+import com.heyanle.easybangumi4.plugin.api.entity.Episode
 import com.heyanle.easybangumi4.ui.cartoon_play.cartoonEpisodeList
 import com.heyanle.easybangumi4.ui.cartoon_play.cartoonMessage
 import com.heyanle.easybangumi4.ui.cartoon_play.cartoonPlayLines

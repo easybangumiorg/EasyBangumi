@@ -2,24 +2,22 @@ package com.heyanle.easybangumi4.plugin.source.bundle
 
 import android.app.Application
 import android.content.Context
-import com.heyanle.easybangumi4.source_api.IconSource
-import com.heyanle.easybangumi4.source_api.Source
-import com.heyanle.easybangumi4.source_api.component.Component
-import com.heyanle.easybangumi4.source_api.component.detailed.DetailedComponent
-import com.heyanle.easybangumi4.source_api.component.page.PageComponent
-import com.heyanle.easybangumi4.source_api.component.play.PlayComponent
-import com.heyanle.easybangumi4.source_api.component.preference.PreferenceComponent
-import com.heyanle.easybangumi4.source_api.component.search.SearchComponent
-import com.heyanle.easybangumi4.source_api.component.update.UpdateComponent
-import com.heyanle.easybangumi4.source_api.utils.api.CaptchaHelper
-import com.heyanle.easybangumi4.source_api.utils.api.NetworkHelper
-import com.heyanle.easybangumi4.source_api.utils.api.OkhttpHelper
-import com.heyanle.easybangumi4.source_api.utils.api.PreferenceHelper
-import com.heyanle.easybangumi4.source_api.utils.api.StringHelper
-import com.heyanle.easybangumi4.source_api.utils.api.WebViewHelper
-import com.heyanle.easybangumi4.source_api.utils.api.WebViewHelperV2
-import com.heyanle.extension_api.ExtensionIconSource
-import com.heyanle.extension_api.ExtensionSource
+import com.heyanle.easybangumi4.plugin.api.IconSource
+import com.heyanle.easybangumi4.plugin.api.Source
+import com.heyanle.easybangumi4.plugin.api.component.Component
+import com.heyanle.easybangumi4.plugin.api.component.detailed.DetailedComponent
+import com.heyanle.easybangumi4.plugin.api.component.page.PageComponent
+import com.heyanle.easybangumi4.plugin.api.component.play.PlayComponent
+import com.heyanle.easybangumi4.plugin.api.component.preference.PreferenceComponent
+import com.heyanle.easybangumi4.plugin.api.component.search.SearchComponent
+import com.heyanle.easybangumi4.plugin.api.component.update.UpdateComponent
+import com.heyanle.easybangumi4.plugin.api.utils.api.CaptchaHelper
+import com.heyanle.easybangumi4.plugin.api.utils.api.NetworkHelper
+import com.heyanle.easybangumi4.plugin.api.utils.api.OkhttpHelper
+import com.heyanle.easybangumi4.plugin.api.utils.api.PreferenceHelper
+import com.heyanle.easybangumi4.plugin.api.utils.api.RenderHelper
+import com.heyanle.easybangumi4.plugin.api.utils.api.StringHelper
+import com.heyanle.easybangumi4.plugin.api.utils.api.WebViewHelperV2
 import kotlin.reflect.KClass
 
 /**
@@ -39,12 +37,9 @@ interface ComponentBundle {
 
         // Source 接口
         val sourceClazz: Set<KClass<*>> = setOf(
-            ExtensionSource::class,
             IconSource::class,
-            ExtensionIconSource::class,
             Source::class,
-
-            )
+        )
 
         // 工具类接口
         val utilsClazz: Set<KClass<*>> = setOf(
@@ -52,7 +47,7 @@ interface ComponentBundle {
             NetworkHelper::class,
             OkhttpHelper::class,
             PreferenceHelper::class,
-            WebViewHelper::class,
+            RenderHelper::class,
             WebViewHelperV2::class,
             CaptchaHelper::class
         )

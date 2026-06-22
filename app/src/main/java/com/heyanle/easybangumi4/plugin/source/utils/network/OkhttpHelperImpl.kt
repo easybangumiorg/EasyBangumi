@@ -7,10 +7,8 @@ import com.heyanle.easybangumi4.plugin.source.utils.network.interceptor.Cloudfla
 import com.heyanle.easybangumi4.plugin.source.utils.network.interceptor.CloudflareUserInterceptor
 import com.heyanle.easybangumi4.plugin.source.utils.network.interceptor.CookieInterceptor
 import com.heyanle.easybangumi4.plugin.source.utils.network.interceptor.UserAgentInterceptor
-import com.heyanle.easybangumi4.source_api.utils.api.NetworkHelper
-import com.heyanle.easybangumi4.source_api.utils.api.OkhttpHelper
-import com.heyanle.easybangumi4.source_api.utils.api.WebViewHelper
-import com.heyanle.easybangumi4.source_api.utils.core.network.GET
+import com.heyanle.easybangumi4.plugin.api.utils.api.NetworkHelper
+import com.heyanle.easybangumi4.plugin.api.utils.api.OkhttpHelper
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -30,7 +28,6 @@ import javax.net.ssl.X509TrustManager
  */
 class OkhttpHelperImpl(
     private val context: Context,
-    private val webViewHelper: WebViewHelper,
     private val networkHelper: NetworkHelper,
     private val webViewHelperV2Impl: WebViewHelperV2Impl,
 ): OkhttpHelper {

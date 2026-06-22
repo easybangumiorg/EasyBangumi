@@ -87,7 +87,7 @@ import com.heyanle.easybangumi4.R
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.entity.PlayLineWrapper
 import com.heyanle.easybangumi4.cartoon.story.download.req.CartoonDownloadReqController
-import com.heyanle.easybangumi4.source_api.entity.Episode
+import com.heyanle.easybangumi4.plugin.api.entity.Episode
 import com.heyanle.easybangumi4.ui.common.Action
 import com.heyanle.easybangumi4.ui.common.ActionRow
 import com.heyanle.easybangumi4.ui.common.EmptyPage

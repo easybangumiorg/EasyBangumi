@@ -11,7 +11,7 @@ import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.exo.CartoonMediaSourceFactory
 import com.heyanle.easybangumi4.exo.thumbnail.OutputThumbnailHelper
 import com.heyanle.easybangumi4.exo.thumbnail.ThumbnailBuffer
-import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
+import com.heyanle.easybangumi4.plugin.api.entity.PlayerInfo
 import com.heyanle.easybangumi4.utils.dip2px
 import com.heyanle.easybangumi4.utils.getCachePath
 import kotlinx.coroutines.CoroutineScope

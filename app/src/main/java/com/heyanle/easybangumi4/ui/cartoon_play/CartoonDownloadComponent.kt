@@ -71,7 +71,7 @@ import com.heyanle.easybangumi4.STORY
 import com.heyanle.easybangumi4.base.DataResult
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.entity.PlayLineWrapper
-import com.heyanle.easybangumi4.source_api.entity.Episode
+import com.heyanle.easybangumi4.plugin.api.entity.Episode
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonDownloadReqModel
 import com.heyanle.easybangumi4.ui.common.CartoonCardWithCover
 import com.heyanle.easybangumi4.ui.common.ErrorPage

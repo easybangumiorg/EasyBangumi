@@ -5,8 +5,7 @@ import android.content.Context
 import android.webkit.WebView
 import androidx.core.content.ContextCompat
 import com.heyanle.easybangumi4.plugin.source.utils.network.WebViewHelperV2Impl
-import com.heyanle.easybangumi4.source_api.utils.api.NetworkHelper
-import com.heyanle.easybangumi4.source_api.utils.api.WebViewHelper
+import com.heyanle.easybangumi4.plugin.api.utils.api.NetworkHelper
 import com.heyanle.easybangumi4.utils.stringRes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope

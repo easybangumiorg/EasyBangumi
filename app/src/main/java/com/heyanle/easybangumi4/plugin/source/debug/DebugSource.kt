@@ -4,8 +4,7 @@ import android.graphics.drawable.Drawable
 import androidx.core.content.res.ResourcesCompat
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.R
-import com.heyanle.easybangumi4.cartoon.story.local.source.LocalSourceComponent
-import com.heyanle.extension_api.ExtensionIconSource
+import com.heyanle.easybangumi4.plugin.api.IconSource
 import kotlin.reflect.KClass
 
 
@@ -14,11 +13,10 @@ import kotlin.reflect.KClass
  * https://github.com/heyanLE
  */
 
-object DebugSource: ExtensionIconSource {
+object DebugSource: IconSource {
 
     const val DEBUG_SOURCE_KEY = "easybangumi_debug"
 
-    override fun getIconResourcesId(): Int? = null
     override fun getIconFactory(): () -> Drawable? {
         return {
             ResourcesCompat.getDrawable(APP.resources, R.mipmap.logo_new, null)

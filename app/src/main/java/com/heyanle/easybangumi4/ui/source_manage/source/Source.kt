@@ -34,11 +34,11 @@ import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.cartoon.story.local.source.LocalSource
 import com.heyanle.easybangumi4.navigationSetting
 import com.heyanle.easybangumi4.navigationSourceConfig
-import com.heyanle.easybangumi4.plugin.js.source.getIconWithAsyncOrDrawable
+import com.heyanle.easybangumi4.plugin.source.jsengine.source.getIconWithAsyncOrDrawable
 import com.heyanle.easybangumi4.plugin.source.ConfigSource
 import com.heyanle.easybangumi4.plugin.source.LocalSourceBundleController
 import com.heyanle.easybangumi4.plugin.source.SourceInfo
-import com.heyanle.easybangumi4.source_api.IconSource
+import com.heyanle.easybangumi4.plugin.api.IconSource
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.common.moeDialogAlert
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
@@ -133,7 +133,7 @@ fun Source() {
                         },
                         onClick = {
                             if (it.source.key == LocalSource.key) {
-                                nav.navigationSetting(SettingPage.LocalExtension)
+                                nav.navigationSetting(SettingPage.LocalSource)
                             } else if(it.sourceInfo is SourceInfo.Loaded && it.config.enable && bundle.preference(it.sourceInfo.source.key) != null){
                                 nav.navigationSourceConfig(it.sourceInfo.source.key)
                             } else if (it.sourceInfo is SourceInfo.Error) {

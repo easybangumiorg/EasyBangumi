@@ -1,7 +1,7 @@
 package com.heyanle.easybangumi4.storage.entity
 
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
-import com.heyanle.easybangumi4.source_api.entity.Cartoon
+import com.heyanle.easybangumi4.plugin.api.entity.Cartoon
 
 /**
  * 备份用，会转成 Json

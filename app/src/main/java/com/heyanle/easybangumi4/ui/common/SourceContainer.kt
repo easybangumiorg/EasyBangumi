@@ -11,15 +11,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.heyanle.easy_i18n.R
-import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.case.SourceStateCase
 import com.heyanle.easybangumi4.plugin.source.ISourceController
 import com.heyanle.easybangumi4.plugin.source.LocalSourceBundleController
-import com.heyanle.easybangumi4.plugin.source.SourceController
 import com.heyanle.easybangumi4.plugin.source.bundle.SourceBundle
-import com.heyanle.easybangumi4.source_api.Source
-import com.heyanle.easybangumi4.source_api.component.detailed.DetailedComponent
-import com.heyanle.easybangumi4.source_api.component.page.SourcePage
+import com.heyanle.easybangumi4.plugin.api.Source
+import com.heyanle.easybangumi4.plugin.api.component.detailed.DetailedComponent
+import com.heyanle.easybangumi4.plugin.api.component.page.SourcePage
 import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.inject.core.Inject
 
@@ -66,7 +64,6 @@ fun SourceContainerBase(
             }
             is ISourceController.SourceInfoState.Info -> {
                 if (!hasSource(anim)) {
-                    val nav = LocalNavController.current
                     ErrorPage(
                         modifier = Modifier
                             .fillMaxSize()

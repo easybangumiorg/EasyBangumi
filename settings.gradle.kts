@@ -42,8 +42,8 @@ include(":easy-i18n")
 include(":inject")
 include(":lib_upnp")
 
-include(":EasyPlayer2:easyplayer2")
-include(":EasyMediaTransformer:easy_transformer")
+include(":easy-player2")
+include(":easy_transformer")
 
 
 

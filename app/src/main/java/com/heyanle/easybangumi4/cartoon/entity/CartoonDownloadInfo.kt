@@ -6,8 +6,8 @@ import com.heyanle.easybangumi4.cartoon.story.download.action.ParseAction
 import com.heyanle.easybangumi4.cartoon.story.download.action.TranscodeAction
 import com.heyanle.easybangumi4.cartoon.story.download.action.TransformerAction
 import com.heyanle.easybangumi4.cartoon.story.download.runtime.CartoonDownloadRuntime
-import com.heyanle.easybangumi4.source_api.entity.Episode
-import com.heyanle.easybangumi4.source_api.entity.PlayLine
+import com.heyanle.easybangumi4.plugin.api.entity.Episode
+import com.heyanle.easybangumi4.plugin.api.entity.PlayLine
 
 /**
  * 番剧下载请求

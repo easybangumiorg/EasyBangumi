@@ -15,7 +15,7 @@ import androidx.media3.exoplayer.offline.DownloadRequest
 import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import com.heyanle.easybangumi4.APP
-import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
+import com.heyanle.easybangumi4.plugin.api.entity.PlayerInfo
 
 /**
  * Created by HeYanLe on 2023/8/13 21:21.

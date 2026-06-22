@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="config_minScalingSpan">27mm</dimen>
+</resources>

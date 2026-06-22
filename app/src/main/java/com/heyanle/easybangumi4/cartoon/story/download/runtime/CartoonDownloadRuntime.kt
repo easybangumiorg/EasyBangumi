@@ -8,7 +8,7 @@ import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.bus.DownloadingBus
 import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadReq
 import com.heyanle.easybangumi4.cartoon.story.download.action.BaseAction
-import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
+import com.heyanle.easybangumi4.plugin.api.entity.PlayerInfo
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.inject.api.get
 import com.heyanle.inject.core.Inject

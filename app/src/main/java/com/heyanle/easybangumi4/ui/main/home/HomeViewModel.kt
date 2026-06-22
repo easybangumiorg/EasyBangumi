@@ -5,8 +5,8 @@ import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.case.SourceStateCase
-import com.heyanle.easybangumi4.source_api.component.page.PageComponent
-import com.heyanle.easybangumi4.source_api.component.page.SourcePage
+import com.heyanle.easybangumi4.plugin.api.component.page.PageComponent
+import com.heyanle.easybangumi4.plugin.api.component.page.SourcePage
 import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.inject.core.Inject
 import com.heyanle.okkv2.core.okkv

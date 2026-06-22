@@ -4,18 +4,18 @@ import android.app.Application
 import android.content.Context
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.plugin.source.SourceException
-import com.heyanle.easybangumi4.source_api.Source
-import com.heyanle.easybangumi4.source_api.component.Component
-import com.heyanle.easybangumi4.source_api.component.ComponentWrapper
-import com.heyanle.easybangumi4.source_api.component.preference.PreferenceComponent
-import com.heyanle.easybangumi4.source_api.component.preference.SourcePreference
-import com.heyanle.easybangumi4.source_api.utils.api.CaptchaHelper
-import com.heyanle.easybangumi4.source_api.utils.api.NetworkHelper
-import com.heyanle.easybangumi4.source_api.utils.api.OkhttpHelper
-import com.heyanle.easybangumi4.source_api.utils.api.PreferenceHelper
-import com.heyanle.easybangumi4.source_api.utils.api.StringHelper
-import com.heyanle.easybangumi4.source_api.utils.api.WebViewHelper
-import com.heyanle.easybangumi4.source_api.utils.api.WebViewHelperV2
+import com.heyanle.easybangumi4.plugin.api.Source
+import com.heyanle.easybangumi4.plugin.api.component.Component
+import com.heyanle.easybangumi4.plugin.api.component.ComponentWrapper
+import com.heyanle.easybangumi4.plugin.api.component.preference.PreferenceComponent
+import com.heyanle.easybangumi4.plugin.api.component.preference.SourcePreference
+import com.heyanle.easybangumi4.plugin.api.utils.api.CaptchaHelper
+import com.heyanle.easybangumi4.plugin.api.utils.api.NetworkHelper
+import com.heyanle.easybangumi4.plugin.api.utils.api.OkhttpHelper
+import com.heyanle.easybangumi4.plugin.api.utils.api.PreferenceHelper
+import com.heyanle.easybangumi4.plugin.api.utils.api.RenderHelper
+import com.heyanle.easybangumi4.plugin.api.utils.api.StringHelper
+import com.heyanle.easybangumi4.plugin.api.utils.api.WebViewHelperV2
 import com.heyanle.inject.api.get
 import com.heyanle.inject.core.Inject
 import java.lang.reflect.Proxy
@@ -50,7 +50,7 @@ class SimpleComponentBundle(
         put(NetworkHelper::class, Inject.get(source.key))
         put(OkhttpHelper::class, Inject.get(source.key))
         put(PreferenceHelper::class, Inject.get(source.key))
-        put(WebViewHelper::class, Inject.get(source.key))
+        put(RenderHelper::class, Inject.get(source.key))
         put(CaptchaHelper::class, Inject.get(source.key))
         put(WebViewHelperV2::class, Inject.get(source.key))
 

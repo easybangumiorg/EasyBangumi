@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.case.SourceStateCase
 import com.heyanle.easybangumi4.dlna.EasyDlna
-import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
+import com.heyanle.easybangumi4.plugin.api.entity.PlayerInfo
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.inject.core.Inject

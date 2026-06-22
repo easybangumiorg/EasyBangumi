@@ -1,7 +1,6 @@
 package com.heyanle.easybangumi4.case
 
 import com.heyanle.easybangumi4.plugin.source.ISourceController
-import com.heyanle.easybangumi4.plugin.source.SourceController
 import com.heyanle.easybangumi4.plugin.source.bundle.SourceBundle
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow

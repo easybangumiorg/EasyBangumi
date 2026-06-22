@@ -10,9 +10,9 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.heyanle.easybangumi4.plugin.source.utils.network.WebViewHelperV2Impl
 import com.heyanle.easybangumi4.plugin.source.utils.network.web.IWebProxy
-import com.heyanle.easybangumi4.source_api.component.SearchNeedWebViewCheckBusinessException
-import com.heyanle.easybangumi4.source_api.component.search.SearchComponent
-import com.heyanle.easybangumi4.source_api.entity.CartoonCover
+import com.heyanle.easybangumi4.plugin.api.component.SearchNeedWebViewCheckBusinessException
+import com.heyanle.easybangumi4.plugin.api.component.search.SearchComponent
+import com.heyanle.easybangumi4.plugin.api.entity.CartoonCover
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.ui.search_migrate.PagingSearchSource
 import com.heyanle.inject.core.Inject

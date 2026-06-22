@@ -9,7 +9,7 @@ import com.heyanle.easybangumi4.cartoon.entity.CartoonStoryItem
 import com.heyanle.easybangumi4.cartoon.entity.CartoonLocalMsg
 import com.heyanle.easybangumi4.cartoon.entity.PlayLineWrapper
 import com.heyanle.easybangumi4.cartoon.story.CartoonStoryController
-import com.heyanle.easybangumi4.source_api.entity.Episode
+import com.heyanle.easybangumi4.plugin.api.entity.Episode
 import com.heyanle.inject.core.Inject
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableStateFlow

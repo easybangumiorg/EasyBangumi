@@ -2,7 +2,7 @@ package com.heyanle.easybangumi4.plugin.source.utils
 
 import android.widget.Toast
 import com.heyanle.easybangumi4.APP
-import com.heyanle.easybangumi4.source_api.utils.api.StringHelper
+import com.heyanle.easybangumi4.plugin.api.utils.api.StringHelper
 import com.heyanle.easybangumi4.ui.common.moeDialogAlert
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 

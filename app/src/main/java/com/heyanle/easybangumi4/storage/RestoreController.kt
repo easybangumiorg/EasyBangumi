@@ -8,14 +8,10 @@ import com.heyanle.easybangumi4.base.hekv.HeKV
 import com.heyanle.easybangumi4.base.json.JsonFileProvider
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
-import com.heyanle.easybangumi4.plugin.extension.ExtensionController
-import com.heyanle.easybangumi4.plugin.extension.ExtensionControllerV2
-import com.heyanle.easybangumi4.plugin.extension.IExtensionController
-import com.heyanle.easybangumi4.plugin.extension.provider.JsExtensionProviderV2
-import com.heyanle.easybangumi4.plugin.extension.remote.ExtensionRemoteController
+import com.heyanle.easybangumi4.plugin.source.SourceController
 import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
 import com.heyanle.easybangumi4.setting.SettingPreferences
-import com.heyanle.easybangumi4.source_api.utils.api.PreferenceHelper
+import com.heyanle.easybangumi4.plugin.api.utils.api.PreferenceHelper
 import com.heyanle.easybangumi4.storage.entity.CartoonStorage
 import com.heyanle.easybangumi4.theme.EasyThemeMode
 import com.heyanle.easybangumi4.ui.common.moeDialogAlert
@@ -32,16 +28,13 @@ import net.lingala.zip4j.ZipFile
 import org.json.JSONObject
 import java.io.File
 import java.util.zip.GZIPInputStream
-import kotlin.reflect.javaType
-import kotlin.reflect.jvm.javaType
-import kotlin.reflect.typeOf
 
 /**
  * Created by heyanle on 2024/7/26.
  * https://github.com/heyanLE
  */
 class RestoreController(
-    private val extensionController: IExtensionController,
+    private val sourceController: SourceController,
     private val jsonFileProvider: JsonFileProvider,
     private val cartoonInfoDao: CartoonInfoDao,
 
@@ -107,13 +100,10 @@ class RestoreController(
                         restorePreference(File(targetFolder, BackupController.PreferenceFolderName))
                     },
                     async {
-                        restoreExtension(File(targetFolder, BackupController.ExtensionFolderName))
+                        restoreSourceFiles(File(targetFolder, "extension"))
                     },
                     async {
                         restoreSourcePreference(File(targetFolder, BackupController.SourcePrefFolderName))
-                    },
-                    async {
-                        restoreExtensionRepository(File(targetFolder, BackupController.ExtensionRepositoryFileName))
                     }
                 ).forEach {
                     it.await()
@@ -255,27 +245,17 @@ class RestoreController(
         }
 
     }
-    private suspend fun restoreExtension(folder: File): Boolean {
+    private suspend fun restoreSourceFiles(folder: File): Boolean {
         try {
             if (!folder.exists()){
                 return false
             }
-            if (extensionController is ExtensionController) {
-                folder.listFiles()?.forEach {
-                    if (it.isFile && it.canRead()){
-                        extensionController.appendExtensionPath(it.absolutePath){
-                            it?.printStackTrace()
-                        }
-
-                    }
+            folder.listFiles()?.forEach {
+                if (it.isFile && it.canRead()) {
+                    sourceController.appendOrUpdateSource(it)
                 }
-                return true
-            } else if (extensionController is ExtensionControllerV2) {
-                extensionController.appendOrUpdateExtension(folder.listFiles()?.filterNotNull()?:emptyList())
-                return true
-            } else {
-                return false
             }
+            return true
 
         } catch (e: Exception) {
             e.printStackTrace()
@@ -296,24 +276,6 @@ class RestoreController(
                     preferenceHelper.put(it, sourceData.optString(it))
                 }
             }
-        }
-    }
-
-    private suspend fun restoreExtensionRepository(jsonFile: File) {
-        if (!jsonFile.exists()) {
-            return
-        }
-        val list = jsonFile.inputStream().use {
-            it.bufferedReader().lineSequence().map {
-                it.jsonTo<ExtensionRemoteController.Repository>(typeOf<ExtensionRemoteController.Repository>().javaType)
-            }.filterNotNull().toList()
-        }.toMutableList()
-        jsonFileProvider.extensionRepository.update {
-            val map = it.associateBy { it.url}.toMutableMap()
-            list.forEach {
-                map[it.url] = it
-            }
-            map.values.toList()
         }
     }
 }

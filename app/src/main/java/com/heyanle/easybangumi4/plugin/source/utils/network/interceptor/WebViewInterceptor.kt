@@ -3,7 +3,7 @@ package com.heyanle.easybangumi4.plugin.source.utils.network.interceptor
 import android.content.Context
 import android.webkit.WebView
 import com.heyanle.easybangumi4.plugin.source.utils.network.WebViewHelperV2Impl
-import com.heyanle.easybangumi4.source_api.utils.api.NetworkHelper
+import com.heyanle.easybangumi4.plugin.api.utils.api.NetworkHelper
 import okhttp3.Headers
 import okhttp3.Interceptor
 import okhttp3.Request

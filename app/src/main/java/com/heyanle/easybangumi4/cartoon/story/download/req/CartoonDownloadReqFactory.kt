@@ -8,8 +8,8 @@ import com.heyanle.easybangumi4.cartoon.story.download.action.CopyAndNfoAction
 import com.heyanle.easybangumi4.cartoon.story.download.action.ParseAction
 import com.heyanle.easybangumi4.cartoon.story.download.action.TranscodeAction
 import com.heyanle.easybangumi4.cartoon.story.download.action.TransformerAction
-import com.heyanle.easybangumi4.source_api.entity.Episode
-import com.heyanle.easybangumi4.source_api.entity.PlayLine
+import com.heyanle.easybangumi4.plugin.api.entity.Episode
+import com.heyanle.easybangumi4.plugin.api.entity.PlayLine
 
 /**
  * Created by heyanle on 2024/7/9.

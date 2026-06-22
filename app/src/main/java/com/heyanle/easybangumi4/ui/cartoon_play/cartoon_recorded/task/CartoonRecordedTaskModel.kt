@@ -25,7 +25,7 @@ import com.heyanle.easybangumi4.exo.recorded.task.AbsRecordedTask
 import com.heyanle.easybangumi4.exo.recorded.task.GifRecordedTask
 import com.heyanle.easybangumi4.exo.recorded.task.Mp4RecordedTask
 import com.heyanle.easybangumi4.exo.recorded.task.RecordedTask
-import com.heyanle.easybangumi4.source_api.entity.PlayerInfo
+import com.heyanle.easybangumi4.plugin.api.entity.PlayerInfo
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.MediaAndroidUtils
 import com.heyanle.easybangumi4.utils.getCachePath

@@ -1,13 +1,13 @@
 package com.heyanle.easybangumi4.plugin.source.debug;
 
-import com.heyanle.easybangumi4.source_api.component.ComponentWrapper
-import com.heyanle.easybangumi4.source_api.component.page.PageComponent
-import com.heyanle.easybangumi4.source_api.component.page.SourcePage
-import com.heyanle.easybangumi4.source_api.entity.CartoonCover
-import com.heyanle.easybangumi4.source_api.entity.CartoonCoverImpl
-import com.heyanle.easybangumi4.source_api.utils.api.NetworkHelper
-import com.heyanle.easybangumi4.source_api.utils.core.SourceUtils
-import com.heyanle.easybangumi4.source_api.withResult
+import com.heyanle.easybangumi4.plugin.api.component.ComponentWrapper
+import com.heyanle.easybangumi4.plugin.api.component.page.PageComponent
+import com.heyanle.easybangumi4.plugin.api.component.page.SourcePage
+import com.heyanle.easybangumi4.plugin.api.entity.CartoonCover
+import com.heyanle.easybangumi4.plugin.api.entity.CartoonCoverImpl
+import com.heyanle.easybangumi4.plugin.api.utils.api.NetworkHelper
+import com.heyanle.easybangumi4.plugin.api.utils.core.SourceUtils
+import com.heyanle.easybangumi4.plugin.api.withResult
 import io.ktor.util.valuesOf
 import kotlinx.coroutines.Dispatchers
 import org.jsoup.Jsoup

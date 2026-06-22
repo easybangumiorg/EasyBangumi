@@ -1,8 +1,8 @@
 package com.heyanle.easybangumi4.cartoon.entity
 
 import com.heyanle.easy_i18n.R
-import com.heyanle.easybangumi4.source_api.entity.Episode
-import com.heyanle.easybangumi4.source_api.entity.PlayLine
+import com.heyanle.easybangumi4.plugin.api.entity.Episode
+import com.heyanle.easybangumi4.plugin.api.entity.PlayLine
 import com.heyanle.easybangumi4.ui.common.proc.SortBy
 import com.heyanle.easybangumi4.utils.stringRes
 

@@ -1,196 +1,202 @@
 package com.heyanle.easybangumi4.plugin.source
 
-import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
-import com.heyanle.easybangumi4.cartoon.story.local.source.LocalSource
-import com.heyanle.easybangumi4.case.ExtensionCase
-import com.heyanle.easybangumi4.plugin.extension.ExtensionInfo
-import com.heyanle.easybangumi4.plugin.js.source.JSComponentBundle
-import com.heyanle.easybangumi4.plugin.js.source.JsSource
+import com.heyanle.easybangumi4.base.DataResult
+import com.heyanle.easybangumi4.plugin.source.jsengine.runtime.JSRuntimeProvider
+import com.heyanle.easybangumi4.plugin.source.jsengine.source.JSComponentBundle
+import com.heyanle.easybangumi4.plugin.source.jsengine.source.JsSource
+import com.heyanle.easybangumi4.plugin.source.ConfigSource
+import com.heyanle.easybangumi4.plugin.source.ISourceController
+import com.heyanle.easybangumi4.plugin.source.InnerSourceMaster
+import com.heyanle.easybangumi4.plugin.source.SourceConfig
+import com.heyanle.easybangumi4.plugin.source.SourceException
+import com.heyanle.easybangumi4.plugin.source.SourceInfo
+import com.heyanle.easybangumi4.plugin.source.SourcePreferences
+import com.heyanle.easybangumi4.plugin.source.bundle.ComponentBundle
 import com.heyanle.easybangumi4.plugin.source.bundle.SimpleComponentBundle
 import com.heyanle.easybangumi4.plugin.source.bundle.SourceBundle
-import com.heyanle.easybangumi4.plugin.source.debug.DebugSource
-import com.heyanle.easybangumi4.source_api.Source
-import com.heyanle.easybangumi4.utils.TimeLogUtils
-import com.heyanle.extension_api.NativeSupportedSource
+import com.heyanle.easybangumi4.plugin.source.json.JsonComponentBundle
+import com.heyanle.easybangumi4.plugin.source.json.JsonSource
+import com.heyanle.easybangumi4.plugin.source.json.JsonSourceFileLoader
+import com.heyanle.easybangumi4.plugin.source.js.JsSourceFileLoader
+import com.heyanle.easybangumi4.plugin.api.Source
+import com.heyanle.easybangumi4.utils.CoroutineProvider
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.util.concurrent.Executors
+import java.io.File
 
-/**
- * 源业务层
- * Created by heyanlin on 2023/10/27.
- */
-@Deprecated("SourceControllerV2")
 class SourceController(
-    private val extensionCase: ExtensionCase,
+    private val sourceFolder: File,
     private val sourcePreferences: SourcePreferences,
-    private val cartoonInfoDao: CartoonInfoDao,
-): ISourceController {
+) : ISourceController {
 
-    companion object {
-        val TAG = "SourceController"
-    }
+    private val scope = CoroutineScope(SupervisorJob() + CoroutineProvider.newSingleDispatcher)
+    private val jsRuntimeProvider = JSRuntimeProvider(2)
+    private val componentBundleCache = hashMapOf<String, ComponentBundle>()
 
-   
-    private val _extensionSourceInfo = MutableStateFlow<ISourceController.SourceInfoState>(ISourceController.SourceInfoState.Loading)
-    private val _innerSourceInfo = flow<ISourceController.SourceInfoState> {
-        emit(ISourceController.SourceInfoState.Loading)
-        val n = innerSource.map {
-            loadSource(it)
-        }
-        emit(ISourceController.SourceInfoState.Info(n))
-    }
-
-
-    private val _sourceInfo = MutableStateFlow<ISourceController.SourceInfoState>(ISourceController.SourceInfoState.Loading)
-    override val sourceInfo = _sourceInfo.asStateFlow()
+    private val _sourceInfo = MutableStateFlow<ISourceController.SourceInfoState>(
+        ISourceController.SourceInfoState.Loading
+    )
+    override val sourceInfo: StateFlow<ISourceController.SourceInfoState> = _sourceInfo
 
     private val _configSource = MutableStateFlow<List<ConfigSource>>(emptyList())
-    override val configSource = _configSource.asStateFlow()
+    override val configSource: StateFlow<List<ConfigSource>> = _configSource
 
     private val _sourceBundle = MutableStateFlow<SourceBundle?>(null)
-    override val sourceBundle = _sourceBundle.asStateFlow()
-
-
-    private val dispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
-    private val migrateScope = CoroutineScope(SupervisorJob() + dispatcher)
-    val scope = CoroutineScope(SupervisorJob() + dispatcher)
-
-    private val innerSource = listOf<Source>(
-        LocalSource,
-        // DebugSource
-    )
-
-
+    override val sourceBundle: StateFlow<SourceBundle?> = _sourceBundle
 
     init {
+        sourceFolder.mkdirs()
         scope.launch {
-            extensionCase.flowExtensionState().collectLatest { sta ->
-                if(sta.loading){
-                    _sourceInfo.update {
-                        ISourceController.SourceInfoState.Loading
-                    }
-                }else{
-                    TimeLogUtils.i("loadSource start")
-                    val it = sta.extensionInfoMap.values
-                    val map = hashMapOf<String, Pair<ExtensionInfo.Installed, Source>>()
-                    it.filterIsInstance<ExtensionInfo.Installed>().flatMap { exten ->
-                        exten.sources.map {
-                            exten to it
-                        }
-                    }.forEach {
-                        val old = map[it.second.key]
-                        if (old == null || old.second.versionCode <= it.second.versionCode) {
-                            map[it.second.key] = it
-                        }
-                    }
-                    val n = map.values.map {
-                        val res = loadSource(it.second)
-                        res
-                    }
-                    _extensionSourceInfo.update {
-                        ISourceController.SourceInfoState.Info(n)
-                    }
-                }
+            sourcePreferences.configs.requestFlow.distinctUntilChanged().collectLatest { configs ->
+                reload(configs)
             }
         }
-//        scope.launch {
-//            _sourceInfo.filterIsInstance<SourceInfoState.Info>()
-//                .map { it.info.filterIsInstance<SourceInfo.Migrating>() }
-//                .collectLatest {
-//                    migrateScope.launch {
-//                        it.forEach {
-//                            migrate(it)
-//                        }
-//                    }
-//                }
-//        }
-        scope.launch {
-            combine(
-                _extensionSourceInfo,
-                _innerSourceInfo.distinctUntilChanged()
-            ) { extensionSource, innerSource ->
-                if (extensionSource is ISourceController.SourceInfoState.Loading || innerSource is ISourceController.SourceInfoState.Loading) {
-                    ISourceController.SourceInfoState.Loading
-                } else {
-                    val e = extensionSource as ISourceController.SourceInfoState.Info
-                    val i = innerSource as ISourceController.SourceInfoState.Info
-                    ISourceController.SourceInfoState.Info(e.info + i.info)
-                }
-
-            }.collectLatest { n ->
-                _sourceInfo.update {
-                    n
-                }
-            }
-        }
-        scope.launch {
-            combine(
-                _sourceInfo.filterIsInstance<ISourceController.SourceInfoState.Info>().map {
-                    it.info
-                },
-                sourcePreferences.configs.requestFlow.distinctUntilChanged()
-            ) { sourceInfo, config ->
-                val d = sourceInfo.map {
-                    val con =
-                        config[it.source.key] ?: SourceConfig(it.source.key, Int.MAX_VALUE, true)
-                    ConfigSource(it, con)
-                }
-                d
-            }.collectLatest { list ->
-                _configSource.update {
-                    list
-                }
-                _sourceBundle.update {
-                    SourceBundle(list)
-                }
-            }
-        }
-
     }
 
-    private suspend fun loadSource(source: Source): SourceInfo {
-        TimeLogUtils.i("loadSource ${source.key} start")
+    suspend fun appendOrUpdateSource(file: File): DataResult<SourceFileInfo.Loaded> {
+        val loaded = when (val info = loadSourceFile(file)) {
+            is SourceFileInfo.Loaded -> info
+            is SourceFileInfo.Error -> return DataResult.error(info.message, info.exception)
+            null -> return DataResult.error("source file cannot be loaded")
+        }
         return try {
-            if (source is JsSource) {
-                val bundle = JSComponentBundle(source)
-                bundle.init()
-
+            sourceFolder.mkdirs()
+            val suffix = when (loaded.source) {
+                is JsonSource -> PluginV3.JSON_SOURCE_SUFFIX
+                else -> PluginV3.JS_SOURCE_SUFFIX
             }
-            val bundle =
-                if (source is JsSource) JSComponentBundle(source) else SimpleComponentBundle(source)
-            bundle.init()
-
-//            // 加载 So 咯
-            if (source is NativeSupportedSource) {
-                return SourceInfo.Error(
-                    source,
-                    "NativeSupportedSource 已过时，请在 onInit 中加载 so"
-                )
+            val target = File(sourceFolder, "${loaded.key.toSafeFileName()}.${suffix.removePrefix(".")}")
+            if (file.absolutePath != target.absolutePath) {
+                file.copyTo(target, overwrite = true)
             }
-
-            SourceInfo.Loaded(source, bundle)
-        } catch (e: SourceException) {
-            SourceInfo.Error(source,  e.msg, e)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            SourceInfo.Error(source, "加载错误：${e.message}", e)
+            componentBundleCache.remove(loaded.key)
+            reload(sourcePreferences.configs.getOrDef())
+            DataResult.ok(loaded.copy(file = target))
+        } catch (e: Throwable) {
+            DataResult.error(e)
         }
     }
 
+    fun refresh() {
+        scope.launch {
+            reload(sourcePreferences.configs.getOrDef())
+        }
+    }
 
+    private suspend fun reload(configs: Map<String, SourceConfig>) {
+        _sourceInfo.update { ISourceController.SourceInfoState.Loading }
+        val configSources = loadSourceFiles(configs).toMutableList()
+        configSources.add(InnerSourceMaster.localConfigSource)
+        configSources.sortBy { it.config.order }
+        _configSource.update { configSources }
+        _sourceInfo.update {
+            ISourceController.SourceInfoState.Info(configSources.map { source -> source.sourceInfo })
+        }
+        _sourceBundle.update { SourceBundle(configSources) }
+    }
 
+    private suspend fun loadSourceFiles(
+        configs: Map<String, SourceConfig>,
+    ): List<ConfigSource> {
+        val files = sourceFolder.listFiles()
+            ?.filter {
+                it.isFile &&
+                    (it.name.endsWith(PluginV3.JS_SOURCE_SUFFIX) || it.name.endsWith(PluginV3.JSON_SOURCE_SUFFIX))
+            }
+            ?.sortedBy { it.name }
+            .orEmpty()
 
+        return files.map { file ->
+            scope.async(Dispatchers.IO) {
+                when (val info = loadSourceFile(file)) {
+                    is SourceFileInfo.Loaded -> load(info.source, configs[info.key])
+                    is SourceFileInfo.Error -> ConfigSource(
+                        SourceInfo.Error(
+                            source = MetadataSource(
+                                key = info.key.ifBlank { "file:${file.absolutePath}" },
+                                label = info.label.ifBlank { file.name },
+                                version = info.versionName,
+                                versionCode = info.versionCode.toInt(),
+                            ),
+                            msg = info.message,
+                            exception = info.exception as? Exception,
+                        ),
+                        configs[info.key] ?: SourceConfig(info.key, Int.MAX_VALUE, true),
+                    )
+                    null -> ConfigSource(
+                        SourceInfo.Error(
+                            source = MetadataSource(
+                                key = "file:${file.absolutePath}",
+                                label = file.name,
+                                version = "",
+                                versionCode = 0,
+                            ),
+                            msg = "source file cannot be loaded",
+                        ),
+                        SourceConfig("file:${file.absolutePath}", Int.MAX_VALUE, true),
+                    )
+                }
+            }
+        }.awaitAll()
+    }
+
+    private suspend fun load(source: Source, config: SourceConfig?): ConfigSource {
+        if (config?.enable == false) {
+            return ConfigSource(SourceInfo.Disabled(source), config)
+        }
+
+        val sourceConfig = config ?: SourceConfig(source.key, Int.MAX_VALUE, true)
+        val cached = componentBundleCache[source.key]
+        if (cached != null) {
+            return ConfigSource(SourceInfo.Loaded(source, cached), sourceConfig)
+        }
+
+        val sourceInfo = try {
+            val bundle = when (source) {
+                is JsSource -> JSComponentBundle(source)
+                is JsonSource -> JsonComponentBundle(source)
+                else -> SimpleComponentBundle(source)
+            }
+            bundle.init()
+            SourceInfo.Loaded(source, bundle).also {
+                componentBundleCache[source.key] = bundle
+            }
+        } catch (e: SourceException) {
+            SourceInfo.Error(source, e.msg, e)
+        } catch (e: Exception) {
+            SourceInfo.Error(source, "load source failed: ${e.message}", e)
+        }
+        return ConfigSource(sourceInfo, sourceConfig)
+    }
+
+    private fun loadSourceFile(file: File): SourceFileInfo? {
+        return JsSourceFileLoader(file, jsRuntimeProvider).load()
+            ?: JsonSourceFileLoader(file).load()
+    }
+
+    private class MetadataSource(
+        override val key: String,
+        override val label: String,
+        override val version: String,
+        override val versionCode: Int,
+    ) : Source {
+        override val describe: String? = null
+
+        override fun register(): List<kotlin.reflect.KClass<*>> {
+            return emptyList()
+        }
+    }
+
+    private fun String.toSafeFileName(): String {
+        return replace(Regex("[^A-Za-z0-9._-]"), "_").ifBlank { "source" }
+    }
 }

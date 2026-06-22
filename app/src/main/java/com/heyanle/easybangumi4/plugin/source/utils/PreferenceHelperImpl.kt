@@ -1,7 +1,7 @@
 package com.heyanle.easybangumi4.plugin.source.utils
 
 import com.heyanle.easybangumi4.base.hekv.HeKV
-import com.heyanle.easybangumi4.source_api.utils.api.PreferenceHelper
+import com.heyanle.easybangumi4.plugin.api.utils.api.PreferenceHelper
 
 /**
  * Created by HeYanLe on 2023/10/29 16:31.

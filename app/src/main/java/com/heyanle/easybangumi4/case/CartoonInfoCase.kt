@@ -4,7 +4,7 @@ import com.heyanle.easybangumi4.base.DataResult
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.repository.CartoonRepository
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
-import com.heyanle.easybangumi4.source_api.entity.PlayLine
+import com.heyanle.easybangumi4.plugin.api.entity.PlayLine
 import kotlinx.coroutines.flow.Flow
 
 /**

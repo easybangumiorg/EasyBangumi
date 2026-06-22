@@ -16,7 +16,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import coil.compose.AsyncImage
-import com.heyanle.easybangumi4.source_api.utils.api.CaptchaHelper
+import com.heyanle.easybangumi4.plugin.api.utils.api.CaptchaHelper
 import com.heyanle.easybangumi4.ui.common.MoeDialogData
 import com.heyanle.easybangumi4.ui.common.dismiss
 import com.heyanle.easybangumi4.ui.common.moeDialogAlert

@@ -1,0 +1,9 @@
+id: remove-auto-extension-sync
+status: proposed
+artifacts:
+  - proposal
+  - design
+  - tasks
+apply:
+  requires:
+    - tasks

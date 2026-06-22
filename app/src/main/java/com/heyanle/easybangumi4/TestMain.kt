@@ -1,9 +1,6 @@
 package com.heyanle.easybangumi4
 
-import com.heyanle.easybangumi4.plugin.source.SourceController
 import com.heyanle.easybangumi4.utils.logi
-import com.heyanle.inject.core.Inject
-import kotlinx.coroutines.launch
 
 /**
  * Created by heyanle on 2024/6/10.
@@ -68,11 +65,7 @@ function getCartoonPageDocById(id: String) {
 
 
     fun main(){
-
-        val sourceController: SourceController by Inject.injectLazy()
-        sourceController.scope.launch {
-            "test".logi("TestMain")
-        }
+        "test".logi("TestMain")
     }
 
 }

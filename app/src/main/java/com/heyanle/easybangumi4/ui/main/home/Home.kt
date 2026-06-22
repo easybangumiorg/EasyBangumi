@@ -51,7 +51,7 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.navigationSearch
-import com.heyanle.easybangumi4.plugin.js.source.getIconWithAsyncOrDrawable
+import com.heyanle.easybangumi4.plugin.source.jsengine.source.getIconWithAsyncOrDrawable
 import com.heyanle.easybangumi4.plugin.source.LocalSourceBundleController
 import com.heyanle.easybangumi4.ui.common.EmptyPage
 import com.heyanle.easybangumi4.ui.common.OkImage

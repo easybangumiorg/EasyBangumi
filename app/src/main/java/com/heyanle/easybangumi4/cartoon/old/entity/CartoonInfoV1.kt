@@ -1,7 +1,7 @@
 package com.heyanle.easybangumi4.cartoon.old.entity
 
 import androidx.room.Entity
-import com.heyanle.easybangumi4.source_api.entity.Cartoon
+import com.heyanle.easybangumi4.plugin.api.entity.Cartoon
 
 /**
  * Created by heyanle on 2024/1/28.

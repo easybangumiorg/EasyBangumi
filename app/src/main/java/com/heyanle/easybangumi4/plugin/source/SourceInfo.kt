@@ -2,7 +2,7 @@ package com.heyanle.easybangumi4.plugin.source
 
 import com.heyanle.easybangumi4.plugin.source.bundle.ComponentBundle
 import com.heyanle.easybangumi4.plugin.source.bundle.SimpleComponentBundle
-import com.heyanle.easybangumi4.source_api.Source
+import com.heyanle.easybangumi4.plugin.api.Source
 
 /**
  * Created by heyanlin on 2023/10/27.

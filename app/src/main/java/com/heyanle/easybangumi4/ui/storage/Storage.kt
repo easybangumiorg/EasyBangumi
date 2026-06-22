@@ -8,11 +8,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Extension
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
@@ -26,7 +24,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -223,97 +220,6 @@ fun Storage() {
                                     })
                                 }
                             )
-                        }
-
-
-                        item {
-                            ListItem(
-                                modifier = Modifier.clickable {
-                                    vm.setNeedBackupExtensionRepository(!sta.needBackupRepository)
-                                },
-                                headlineContent = {
-                                    Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.extension_repository))
-                                },
-                                leadingContent = {
-                                    Icon(
-                                        Icons.Filled.Extension,
-                                        modifier = Modifier.size(40.dp),
-                                        contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.extension_repository)
-                                    )
-                                },
-                                supportingContent = {
-                                    Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.extension_repository))
-                                },
-                                trailingContent = {
-                                    Switch(checked = sta.needBackupRepository, onCheckedChange = {
-                                        vm.setNeedBackupExtensionRepository(it)
-                                    })
-                                }
-                            )
-
-                        }
-
-
-                        item {
-                            ListItem(
-                                modifier = Modifier.clickable {
-                                    vm.setNeedBackupExtension(!sta.needBackupExtension)
-                                },
-                                headlineContent = {
-                                    Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.extension))
-                                },
-                                leadingContent = {
-                                    Icon(
-                                        Icons.Filled.Extension,
-                                        modifier = Modifier.size(40.dp),
-                                        contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.extension)
-                                    )
-                                },
-                                supportingContent = {
-                                    Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.extension_desc))
-                                },
-                                trailingContent = {
-                                    Switch(checked = sta.needBackupExtension, onCheckedChange = {
-                                        vm.setNeedBackupExtension(it)
-                                    })
-                                }
-                            )
-
-                        }
-
-                        if (sta.needBackupExtension) {
-                            items(sta.extensionInfoList, key = {it.key}){ extension ->
-                                ListItem(
-                                    modifier = Modifier.clickable {
-                                        vm.toggleExtensionPackage(extension)
-                                    },
-                                    headlineContent = {
-                                        Text(text = extension.label)
-                                    },
-                                    leadingContent = {
-                                        OkImage(
-                                            modifier = Modifier.size(40.dp),
-                                            image = extension.icon,
-                                            crossFade = false,
-                                            placeholderColor = null,
-                                            placeholderRes = null,
-                                            errorColor = null,
-                                            errorRes = null,
-                                            contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.extension_desc)
-                                        )
-                                    },
-                                    supportingContent = {
-                                        Text(text = extension.versionName)
-                                    },
-                                    trailingContent = {
-                                        Checkbox(
-                                            checked = sta.needExtensionPackageInfo.contains(extension),
-                                            onCheckedChange = {
-                                                vm.toggleExtensionPackage(extension)
-                                            })
-                                    }
-                                )
-                            }
                         }
 
 

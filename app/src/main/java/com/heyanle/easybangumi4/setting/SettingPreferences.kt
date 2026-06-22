@@ -115,7 +115,7 @@ class SettingPreferences(
     val localPath = preferenceStore.getString("local_folder_path", "")
 
 
-    // 启动后自动同步仓库中的所有源（下载 or 更新）
+    // Legacy setting kept for existing stored values; startup auto sync is no longer used.
     val sourceAutoSync = preferenceStore.getBoolean("launch_auto_sync", true)
 
 

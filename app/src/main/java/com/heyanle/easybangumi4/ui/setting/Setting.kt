@@ -16,7 +16,6 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.DeveloperMode
 import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.filled.Extension
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -71,19 +70,13 @@ sealed class SettingPage(
         DownloadSetting(nestedScrollConnection = it)
     })
 
-    data object Extension : SettingPage("extension", {
-        Text(text = stringResource(id = R.string.extension_setting))
-    }, {
-        ExtensionSetting(nestedScrollConnection = it)
-    })
-
     data object Developers : SettingPage("developers", {
         Text(text = stringResource(id = R.string.developers_setting))
     }, {
         DevelopersSetting(nestedScrollConnection = it)
     })
 
-    data object LocalExtension : SettingPage("local_extension", {
+    data object LocalSource : SettingPage("local_source", {
         Text(text = stringResource(id = R.string.local_extension_setting))
     }, {
         LocalExtensionSetting(nestedScrollConnection = it)
@@ -96,9 +89,8 @@ val settingPages = mapOf(
     SettingPage.Player.router to SettingPage.Player,
     SettingPage.Download.router to SettingPage.Download,
     SettingPage.First.router to SettingPage.First,
-    SettingPage.Extension.router to SettingPage.Extension,
     SettingPage.Developers.router to SettingPage.Developers,
-    SettingPage.LocalExtension.router to SettingPage.LocalExtension
+    SettingPage.LocalSource.router to SettingPage.LocalSource
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -192,19 +184,6 @@ fun ColumnScope.FirstSetting(
                 Icon(
                     Icons.Filled.Download,
                     contentDescription = stringResource(id = R.string.download_setting)
-                )
-            }
-        )
-
-        ListItem(
-            modifier = Modifier.clickable {
-                nav.navigationSetting(SettingPage.Extension)
-            },
-            headlineContent = { Text(text = stringResource(id = R.string.extension_setting)) },
-            leadingContent = {
-                Icon(
-                    Icons.Filled.Extension,
-                    contentDescription = stringResource(id = R.string.extension_setting)
                 )
             }
         )

@@ -17,8 +17,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import com.heyanle.easy_i18n.R
-import com.heyanle.easybangumi4.source_api.ParserException
-import com.heyanle.easybangumi4.source_api.component.SearchNeedWebViewCheckBusinessException
+import com.heyanle.easybangumi4.plugin.api.ParserException
+import com.heyanle.easybangumi4.plugin.api.component.SearchNeedWebViewCheckBusinessException
 import com.heyanle.easybangumi4.utils.stringRes
 
 /**
