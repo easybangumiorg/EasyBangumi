@@ -51,18 +51,22 @@ data class DialogCaptchaParam(
     val hint: String? = null,
 )
 
-data class SearchWebViewCheckParam(
+data class SearchVerificationRequest(
     val key: Int,
     val keyword: String,
     val source: String,
-    val iWebProxy: IWebProxy,
-    val tips: String? = null,
 )
 
-class SearchNeedWebViewCheckBusinessException(
-    val param: SearchWebViewCheckParam,
-    val verificationParam: VerificationParam = VerificationParam.WebView(param.iWebProxy, param.tips),
+class SearchNeedVerificationBusinessException(
+    val request: SearchVerificationRequest,
+    val verificationParam: VerificationParam,
 ) : ComponentException("need user check") {
+    constructor(
+        request: SearchVerificationRequest,
+        iWebProxy: IWebProxy,
+        tips: String? = null,
+    ) : this(request, VerificationParam.WebView(iWebProxy, tips))
+
     val actionType: BusinessActionType
         get() = when (verificationParam) {
             is VerificationParam.WebView -> BusinessActionType.WEB_VIEW
@@ -80,19 +84,24 @@ class SearchNeedWebViewCheckBusinessException(
         }
 }
 
-data class PlayInfoWebViewCheckParam(
+typealias SearchNeedWebViewCheckBusinessException = SearchNeedVerificationBusinessException
+
+data class PlayInfoVerificationRequest(
     val summary: CartoonSummary,
     val playLine: PlayLine,
     val episode: Episode,
-    val iWebProxy: IWebProxy,
-    val tips: String? = null,
 )
 
-class PlayInfoNeedWebViewCheckBusinessException(
-    val param: PlayInfoWebViewCheckParam?,
-    val verificationParam: VerificationParam = param?.let { VerificationParam.WebView(it.iWebProxy, it.tips) }
-        ?: throw IllegalArgumentException("verificationParam is required when param is null"),
+class PlayInfoNeedVerificationBusinessException(
+    val request: PlayInfoVerificationRequest?,
+    val verificationParam: VerificationParam,
 ) : ComponentException("need user check") {
+    constructor(
+        request: PlayInfoVerificationRequest,
+        iWebProxy: IWebProxy,
+        tips: String? = null,
+    ) : this(request, VerificationParam.WebView(iWebProxy, tips))
+
     val actionType: BusinessActionType
         get() = when (verificationParam) {
             is VerificationParam.WebView -> BusinessActionType.WEB_VIEW
@@ -109,3 +118,5 @@ class PlayInfoNeedWebViewCheckBusinessException(
             )
         }
 }
+
+typealias PlayInfoNeedWebViewCheckBusinessException = PlayInfoNeedVerificationBusinessException

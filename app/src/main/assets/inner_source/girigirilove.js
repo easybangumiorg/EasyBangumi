@@ -1,13 +1,14 @@
-// @key heyanle.ggl.test
-// @label GiriGiriLoveTest
-// @versionName 1.4
-// @versionCode 999
-// @libVersion 13
+// @key heyanle.ggl
+// @label GiriGiriLove
+// @versionName 1.5
+// @versionCode 7
+// @libVersion 15
 // @cover https://bgm.girigirilove.com/upload/site/20231121-1/fdd2694db66628a9deadd86e50aedd43.png
 
 // Inject
 var networkHelper = Inject_NetworkHelper;
 var preferenceHelper = Inject_PreferenceHelper;
+var webViewHelperV2 = Inject_WebViewHelperV2;
 var renderHelper = Inject_RenderHelper;
 var okhttpHelper = Inject_OkhttpHelper;
 var webProxyProvider = Inject_WebProxyProvider;
@@ -15,7 +16,7 @@ var webProxyProvider = Inject_WebProxyProvider;
 function PreferenceComponent_getPreference() {
     var res = new ArrayList();
     var host = new SourcePreference.Edit("网页", "HostV2", "https://bgm.girigirilove.com");
-    var playerUrl = new SourcePreference.Edit("播放器网页正则", "PlayerReg", "https://m3u8.girigirilove.com/addons/aplyer/atom.php?.*");
+    var playerUrl = new SourcePreference.Edit("播放器网页正则", "PlayerReg", "https://.*.girigirilove..*/zijian/.*");
     var timeout = new SourcePreference.Edit("超时时间", "Timeout", "10000");
     res.add(host);
     res.add(playerUrl);
@@ -279,29 +280,24 @@ function PlayComponent_getPlayInfo(summary, playLine, episode) {
         urlPath = "GV"+ summary.id + "-" + playLine.id + "-" + episode.id;
     }
     var url = JSSourceUtils.urlParser(getRootUrl(), "play" + urlPath + "/");
-    var strategy = new RenderHelper.VideoStrategy(
+    return renderVideo(url, Long.parseLong(preferenceHelper.get("Timeout", "10000")), false);
+}
+
+function renderVideo(url, timeout, legacy) {
+    var result = renderHelper.renderVideoFromJs(new RenderHelper.VideoStrategy(
         url,
         networkHelper.defaultLinuxUA,
+        new HashMap(),
         null,
-        null,
-        Long.parseLong(preferenceHelper.get("Timeout", "10000")),
-        false
-    );
-    var result = renderHelper.renderVideoFromJs(strategy);
+        timeout,
+        legacy
+    ));
     var res = result == null ? "" : result.url;
-    if(res.length == 0) {
-        throw ParserException("url 解析失败")
+    if (res == null || res.length == 0) {
+        throw new ParserException("url 解析失败");
     }
-
-    var type = PlayerInfo.DECODE_TYPE_OTHER;
-    if (res.endsWith(".m3u8")) {
-        type = PlayerInfo.DECODE_TYPE_HLS;
-    }
-    return new PlayerInfo(
-        type, res
-    )
-
-
+    var type = result.isM3u8 ? PlayerInfo.DECODE_TYPE_HLS : PlayerInfo.DECODE_TYPE_OTHER;
+    return new PlayerInfo(type, res);
 }
 
 
@@ -311,7 +307,7 @@ function PlayComponent_getPlayInfo(summary, playLine, episode) {
 function getDoc(url) {
     var u = SourceUtils.urlParser(getRootUrl(), url);
     Log.i("GiriGiriLove", "getDocFrom: " + url);
-    var req = okhttpHelper.client.newCall(
+    var req = okhttpHelper.cloudflareWebViewClient.newCall(
         OkhttpUtils.get(u)
     );
     var string = req.execute().body().string();

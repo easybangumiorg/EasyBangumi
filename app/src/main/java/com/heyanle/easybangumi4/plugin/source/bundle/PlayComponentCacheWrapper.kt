@@ -5,6 +5,7 @@ import com.heyanle.easybangumi4.plugin.api.SourceResult
 import com.heyanle.easybangumi4.plugin.api.component.ComponentWrapper
 import com.heyanle.easybangumi4.plugin.api.component.VerificationResult
 import com.heyanle.easybangumi4.plugin.api.component.play.PlayComponent
+import com.heyanle.easybangumi4.plugin.api.entity.Cartoon
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonSummary
 import com.heyanle.easybangumi4.plugin.api.entity.Episode
 import com.heyanle.easybangumi4.plugin.api.entity.PlayLine
@@ -63,6 +64,48 @@ class PlayComponentCacheWrapper(
         val cacheKey = cacheKey(summary, playLine, episode)
         val result = delegate.getPlayInfo(
             summary = summary,
+            playLine = playLine,
+            episode = episode,
+            verificationResult = verificationResult,
+            canCache = false,
+        )
+        if (canCache && result is SourceResult.Complete && !result.isCache) {
+            write(cacheKey, result.data)
+        }
+        return result
+    }
+
+    override suspend fun getPlayInfo(
+        cartoon: Cartoon,
+        playLine: PlayLine,
+        episode: Episode,
+        canCache: Boolean,
+    ): SourceResult<PlayerInfo> {
+        val summary = CartoonSummary(cartoon.id, cartoon.source)
+        val cacheKey = cacheKey(summary, playLine, episode)
+        if (canCache) {
+            read(cacheKey)?.let {
+                return SourceResult.Complete(it, isCache = true)
+            }
+        }
+        val result = delegate.getPlayInfo(cartoon, playLine, episode, canCache = false)
+        if (canCache && result is SourceResult.Complete && !result.isCache) {
+            write(cacheKey, result.data)
+        }
+        return result
+    }
+
+    override suspend fun getPlayInfo(
+        cartoon: Cartoon,
+        playLine: PlayLine,
+        episode: Episode,
+        verificationResult: VerificationResult,
+        canCache: Boolean,
+    ): SourceResult<PlayerInfo> {
+        val summary = CartoonSummary(cartoon.id, cartoon.source)
+        val cacheKey = cacheKey(summary, playLine, episode)
+        val result = delegate.getPlayInfo(
+            cartoon = cartoon,
             playLine = playLine,
             episode = episode,
             verificationResult = verificationResult,

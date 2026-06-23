@@ -35,7 +35,7 @@ import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.navigationDetailed
 import com.heyanle.easybangumi4.plugin.source.LocalSourceBundleController
-import com.heyanle.easybangumi4.plugin.api.component.SearchNeedWebViewCheckBusinessException
+import com.heyanle.easybangumi4.plugin.api.component.SearchNeedVerificationBusinessException
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonCover
 import com.heyanle.easybangumi4.plugin.api.entity.toIdentify
 import com.heyanle.easybangumi4.ui.common.CartoonCardWithCover
@@ -114,7 +114,7 @@ fun MigrateSourceItem(
     starVm: CoverStarViewModel,
     supportLongTouchStart: Boolean = true,
     onClick: (CartoonCover)->Unit,
-    onWebCheck: ((SearchNeedWebViewCheckBusinessException,LazyPagingItems<CartoonCover>  ) -> Unit) ?= null,
+    onWebCheck: ((SearchNeedVerificationBusinessException,LazyPagingItems<CartoonCover>  ) -> Unit) ?= null,
 
     ) {
     val page = sourceItem.flow.collectAsLazyPagingItems()

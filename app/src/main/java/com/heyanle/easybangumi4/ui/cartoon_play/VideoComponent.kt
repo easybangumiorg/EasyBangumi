@@ -88,7 +88,7 @@ import com.heyanle.easybangumi4.cartoon.story.local.source.LocalSource
 import com.heyanle.easybangumi4.navigationDlna
 import com.heyanle.easybangumi4.plugin.api.ParserException
 import com.heyanle.easybangumi4.plugin.api.component.BusinessActionType
-import com.heyanle.easybangumi4.plugin.api.component.PlayInfoNeedWebViewCheckBusinessException
+import com.heyanle.easybangumi4.plugin.api.component.PlayInfoNeedVerificationBusinessException
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayingViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.DetailedViewModel
@@ -230,7 +230,7 @@ fun VideoFloat(
         Box {
             val inner = (playingState.errorThrowable as? ParserException)?.exception
             if (playingState.errorThrowable is ParserException &&
-                inner is PlayInfoNeedWebViewCheckBusinessException) {
+                inner is PlayInfoNeedVerificationBusinessException) {
                 val isCaptcha = inner.actionType == BusinessActionType.DIALOG_CAPTCHA
                 ErrorPage(modifier = Modifier
                     .fillMaxSize()

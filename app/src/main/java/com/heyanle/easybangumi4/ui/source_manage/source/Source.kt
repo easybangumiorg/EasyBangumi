@@ -39,6 +39,10 @@ import com.heyanle.easybangumi4.plugin.source.ConfigSource
 import com.heyanle.easybangumi4.plugin.source.LocalSourceBundleController
 import com.heyanle.easybangumi4.plugin.source.SourceInfo
 import com.heyanle.easybangumi4.plugin.api.IconSource
+import com.heyanle.easybangumi4.plugin.api.component.detailed.DetailedComponent
+import com.heyanle.easybangumi4.plugin.api.component.page.PageComponent
+import com.heyanle.easybangumi4.plugin.api.component.play.PlayComponent
+import com.heyanle.easybangumi4.plugin.api.component.search.SearchComponent
 import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.common.moeDialogAlert
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
@@ -174,7 +178,7 @@ fun SourceItem(
             when(sourceInfo) {
                 is SourceInfo.Loaded -> {
                     Text(
-                        text = sourceInfo.source.version,
+                        text = sourceInfo.subtitle(),
                     )
                 }
                 is SourceInfo.Error -> {
@@ -227,4 +231,30 @@ fun SourceItem(
         }
     )
 
+}
+
+private fun SourceInfo.Loaded.subtitle(): String {
+    val features = sourceFeatures()
+    return if (features.isEmpty()) {
+        source.version
+    } else {
+        "${source.version} · ${features.joinToString(" · ")}"
+    }
+}
+
+private fun SourceInfo.Loaded.sourceFeatures(): List<String> {
+    val features = mutableListOf<String>()
+    if (componentBundle.get(PageComponent::class) is PageComponent) {
+        features.add("首页")
+    }
+    if (
+        componentBundle.get(PlayComponent::class) is PlayComponent &&
+        componentBundle.get(DetailedComponent::class) is DetailedComponent
+    ) {
+        features.add("播放")
+    }
+    if (componentBundle.get(SearchComponent::class) is SearchComponent) {
+        features.add("搜索")
+    }
+    return features
 }

@@ -23,8 +23,7 @@ import com.heyanle.easybangumi4.exo.CartoonMediaSourceFactory
 import com.heyanle.easybangumi4.exo.thumbnail.ThumbnailBuffer
 import com.heyanle.easybangumi4.plugin.source.utils.network.WebViewHelperV2Impl
 import com.heyanle.easybangumi4.setting.SettingPreferences
-import com.heyanle.easybangumi4.plugin.api.component.PlayInfoNeedWebViewCheckBusinessException
-import com.heyanle.easybangumi4.plugin.api.component.SearchNeedWebViewCheckBusinessException
+import com.heyanle.easybangumi4.plugin.api.component.PlayInfoNeedVerificationBusinessException
 import com.heyanle.easybangumi4.plugin.api.component.VerificationResult
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonSummary
 import com.heyanle.easybangumi4.plugin.api.entity.Episode
@@ -382,7 +381,15 @@ class CartoonPlayingViewModel(
             verificationTempSummary = null
             verificationTempLine = null
             verificationTempEpisode = null
-            play.getPlayInfo(
+            cartoonPlayingState.cartoon?.let { cartoon ->
+                play.getPlayInfo(
+                    cartoon,
+                    cartoonPlayingState.playLine.playLine,
+                    cartoonPlayingState.episode,
+                    verificationResult,
+                    canCache = canCache,
+                )
+            } ?: play.getPlayInfo(
                 cartoonPlayingState.cartoonSummary,
                 cartoonPlayingState.playLine.playLine,
                 cartoonPlayingState.episode,
@@ -394,7 +401,14 @@ class CartoonPlayingViewModel(
             verificationTempSummary = null
             verificationTempLine = null
             verificationTempEpisode = null
-            play.getPlayInfo(
+            cartoonPlayingState.cartoon?.let { cartoon ->
+                play.getPlayInfo(
+                    cartoon,
+                    cartoonPlayingState.playLine.playLine,
+                    cartoonPlayingState.episode,
+                    canCache = canCache,
+                )
+            } ?: play.getPlayInfo(
                 cartoonPlayingState.cartoonSummary,
                 cartoonPlayingState.playLine.playLine,
                 cartoonPlayingState.episode,
@@ -426,14 +440,14 @@ class CartoonPlayingViewModel(
     }
 
     fun onSearchNeedWebCheck(
-        playInfoNeedWebViewCheckBusinessException: PlayInfoNeedWebViewCheckBusinessException,
+        playInfoNeedWebViewCheckBusinessException: PlayInfoNeedVerificationBusinessException,
     ){
         scope.launch {
-            val param = playInfoNeedWebViewCheckBusinessException.param
-            if (param != null) {
-                verificationTempSummary = param.summary
-                verificationTempLine = param.playLine
-                verificationTempEpisode = param.episode
+            val request = playInfoNeedWebViewCheckBusinessException.request
+            if (request != null) {
+                verificationTempSummary = request.summary
+                verificationTempLine = request.playLine
+                verificationTempEpisode = request.episode
             } else {
                 val state = cartoonPlayingState
                 verificationTempSummary = state?.cartoonSummary

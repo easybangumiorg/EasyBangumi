@@ -26,8 +26,9 @@ class JSRuntime {
         postThread.post {
             println("JSRuntime init")
             val context = JSContext.enter()
-            // Android 鍙兘杩愯缈昏瘧妯″紡
+            // Android 只能运行解释模式
             context.optimizationLevel = -1
+            context.languageVersion = JSContext.VERSION_ES6
             JSContextLocal.set(context)
             val scope: ScriptableObject = ImporterTopLevel(context)
             context.initStandardObjects(scope)

@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.entity.PlayLineWrapper
+import com.heyanle.easybangumi4.plugin.api.entity.Cartoon
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonSummary
 import com.heyanle.easybangumi4.plugin.api.entity.Episode
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -56,6 +57,7 @@ class CartoonPlayViewModel(
         val cartoonSummary: CartoonSummary,
         val playLine: PlayLineWrapper,
         val episode: Episode,
+        val cartoon: Cartoon? = null,
     ){
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -108,7 +110,7 @@ class CartoonPlayViewModel(
 
         _curringPlayStatus.update {
             if(pair != null){
-                CartoonPlayState(info.toSummary(), pair.first, pair.second)
+                CartoonPlayState(info.toSummary(), pair.first, pair.second, info.toCartoon())
             }else{
                 null
             }
@@ -130,7 +132,7 @@ class CartoonPlayViewModel(
         episode: Episode,
     ){
         _curringPlayStatus.update {
-            CartoonPlayState(cartoonInfo.toSummary(), playLineWrapper, episode)
+            CartoonPlayState(cartoonInfo.toSummary(), playLineWrapper, episode, cartoonInfo.toCartoon())
         }
     }
 

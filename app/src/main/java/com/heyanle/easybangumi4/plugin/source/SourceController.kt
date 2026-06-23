@@ -14,9 +14,6 @@ import com.heyanle.easybangumi4.plugin.source.SourcePreferences
 import com.heyanle.easybangumi4.plugin.source.bundle.ComponentBundle
 import com.heyanle.easybangumi4.plugin.source.bundle.SimpleComponentBundle
 import com.heyanle.easybangumi4.plugin.source.bundle.SourceBundle
-import com.heyanle.easybangumi4.plugin.source.json.JsonComponentBundle
-import com.heyanle.easybangumi4.plugin.source.json.JsonSource
-import com.heyanle.easybangumi4.plugin.source.json.JsonSourceFileLoader
 import com.heyanle.easybangumi4.plugin.source.js.JsSourceFileLoader
 import com.heyanle.easybangumi4.plugin.api.Source
 import com.heyanle.easybangumi4.utils.CoroutineProvider
@@ -36,6 +33,7 @@ import java.io.File
 class SourceController(
     private val sourceFolder: File,
     private val sourcePreferences: SourcePreferences,
+    private val innerSourceFileProvider: InnerSourceFileProvider? = null,
 ) : ISourceController {
 
     private val scope = CoroutineScope(SupervisorJob() + CoroutineProvider.newSingleDispatcher)
@@ -70,11 +68,7 @@ class SourceController(
         }
         return try {
             sourceFolder.mkdirs()
-            val suffix = when (loaded.source) {
-                is JsonSource -> PluginV3.JSON_SOURCE_SUFFIX
-                else -> PluginV3.JS_SOURCE_SUFFIX
-            }
-            val target = File(sourceFolder, "${loaded.key.toSafeFileName()}.${suffix.removePrefix(".")}")
+            val target = File(sourceFolder, "${loaded.key.toSafeFileName()}.${PluginV3.JS_SOURCE_SUFFIX.removePrefix(".")}")
             if (file.absolutePath != target.absolutePath) {
                 file.copyTo(target, overwrite = true)
             }
@@ -107,13 +101,14 @@ class SourceController(
     private suspend fun loadSourceFiles(
         configs: Map<String, SourceConfig>,
     ): List<ConfigSource> {
-        val files = sourceFolder.listFiles()
+        val userFiles = sourceFolder.listFiles()
             ?.filter {
                 it.isFile &&
-                    (it.name.endsWith(PluginV3.JS_SOURCE_SUFFIX) || it.name.endsWith(PluginV3.JSON_SOURCE_SUFFIX))
+                    it.name.endsWith(PluginV3.JS_SOURCE_SUFFIX)
             }
             ?.sortedBy { it.name }
             .orEmpty()
+        val files = userFiles + innerSourceFileProvider?.loadSourceFiles().orEmpty()
 
         return files.map { file ->
             scope.async(Dispatchers.IO) {
@@ -163,7 +158,6 @@ class SourceController(
         val sourceInfo = try {
             val bundle = when (source) {
                 is JsSource -> JSComponentBundle(source)
-                is JsonSource -> JsonComponentBundle(source)
                 else -> SimpleComponentBundle(source)
             }
             bundle.init()
@@ -180,7 +174,6 @@ class SourceController(
 
     private fun loadSourceFile(file: File): SourceFileInfo? {
         return JsSourceFileLoader(file, jsRuntimeProvider).load()
-            ?: JsonSourceFileLoader(file).load()
     }
 
     private class MetadataSource(

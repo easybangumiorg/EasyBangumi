@@ -13,9 +13,13 @@ class WebProxyProvider(
 ) {
 
     fun getWebProxy(): WebViewProxyKtWrapper? {
+        return getRawWebProxy()?.let { WebViewProxyKtWrapper(it) }
+    }
+
+    fun getRawWebProxy(): IWebProxy? {
         val webProxy = WebProxyImpl(webViewManager)
         webProxyManager.addWebProxy(webProxy)
-        return WebViewProxyKtWrapper(webProxy)
+        return webProxy
     }
 
 }

@@ -8,12 +8,9 @@ import com.heyanle.easybangumi4.plugin.source.utils.network.web.WebProxyManager
 import com.heyanle.easybangumi4.plugin.api.ParserException
 import com.heyanle.easybangumi4.plugin.api.SourceResult
 import com.heyanle.easybangumi4.plugin.api.component.ComponentWrapper
-import com.heyanle.easybangumi4.plugin.api.component.SearchNeedWebViewCheckBusinessException
 import com.heyanle.easybangumi4.plugin.api.component.NeedWebViewCheckExceptionInner
-import com.heyanle.easybangumi4.plugin.api.component.PlayInfoNeedWebViewCheckBusinessException
-import com.heyanle.easybangumi4.plugin.api.component.PlayInfoWebViewCheckParam
-import com.heyanle.easybangumi4.plugin.api.component.SearchWebViewCheckParam
-import com.heyanle.easybangumi4.plugin.api.component.VerificationParam
+import com.heyanle.easybangumi4.plugin.api.component.PlayInfoNeedVerificationBusinessException
+import com.heyanle.easybangumi4.plugin.api.component.PlayInfoVerificationRequest
 import com.heyanle.easybangumi4.plugin.api.component.VerificationResult
 import com.heyanle.easybangumi4.plugin.api.component.play.PlayComponent
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonSummary
@@ -78,24 +75,23 @@ class JSPlayComponent(
                         webProxyManager?.close()
                     }
                 } catch (e: Exception) {
-                    // 鏈夌偣 hard 锛屼絾鏄笉绠′簡锛屾棫鐗堟湰閮借涓嶇淮鎶や簡
-                    // 濡傛灉闇€瑕佽繃楠岃瘉锛岄渶瑕佸厛鎶婇偅涓?WebView 鐨勭敓鍛藉懆鏈熸彁鍗?
-                    // 閫掑綊楠岃瘉
+                    // 有点 hard，但是旧版本暂不继续维护。
+                    // 如果需要过验证，需要先把 WebView 的生命周期提升。
+                    // 递归验证
                     if (e is WrappedException) {
                         val e = e.wrappedException
                         if (e is NeedWebViewCheckExceptionInner) {
                             webProxyManager?.removeWebProxy(e.iWebProxy)
                             webProxyManager?.close()
-                            // 蹇呴』瑕?ParserException 鎵嶄細閫忎紶
-                            throw ParserException(message = "need web check", exception = PlayInfoNeedWebViewCheckBusinessException(
-                                param = PlayInfoWebViewCheckParam(
+                            // 必须包装成 ParserException 才会透传
+                            throw ParserException(message = "need web check", exception = PlayInfoNeedVerificationBusinessException(
+                                request = PlayInfoVerificationRequest(
                                     summary = summary,
                                     playLine = playLine,
                                     episode = episode,
-                                    iWebProxy = e.iWebProxy,
-                                    tips = e.tips,
                                 ),
-                                verificationParam = VerificationParam.WebView(e.iWebProxy, e.tips),
+                                iWebProxy = e.iWebProxy,
+                                tips = e.tips,
                             ))
 
                         }
@@ -138,24 +134,23 @@ class JSPlayComponent(
                         webProxyManager?.close()
                     }
                 } catch (e: Exception) {
-                    // 鏈夌偣 hard 锛屼絾鏄笉绠′簡锛屾棫鐗堟湰閮借涓嶇淮鎶や簡
-                    // 濡傛灉闇€瑕佽繃楠岃瘉锛岄渶瑕佸厛鎶婇偅涓?WebView 鐨勭敓鍛藉懆鏈熸彁鍗?
-                    // 閫掑綊楠岃瘉
+                    // 有点 hard，但是旧版本暂不继续维护。
+                    // 如果需要过验证，需要先把 WebView 的生命周期提升。
+                    // 递归验证
                     if (e is WrappedException) {
                         val e = e.wrappedException
                         if (e is NeedWebViewCheckExceptionInner) {
                             webProxyManager?.removeWebProxy(e.iWebProxy)
                             webProxyManager?.close()
-                            // 蹇呴』瑕?ParserException 鎵嶄細閫忎紶
-                            throw ParserException(message = "need web check", exception = PlayInfoNeedWebViewCheckBusinessException(
-                                param = PlayInfoWebViewCheckParam(
+                            // 必须包装成 ParserException 才会透传
+                            throw ParserException(message = "need web check", exception = PlayInfoNeedVerificationBusinessException(
+                                request = PlayInfoVerificationRequest(
                                     summary = summary,
                                     playLine = playLine,
                                     episode = episode,
-                                    iWebProxy = e.iWebProxy,
-                                    tips = e.tips,
                                 ),
-                                verificationParam = VerificationParam.WebView(e.iWebProxy, e.tips),
+                                iWebProxy = e.iWebProxy,
+                                tips = e.tips,
                             ))
 
                         }

@@ -11,6 +11,7 @@ import com.heyanle.easybangumi4.plugin.source.utils.LightweightGettingWebViewCli
 import com.heyanle.easybangumi4.utils.clearWeb
 import com.heyanle.easybangumi4.utils.evaluateJavascript
 import com.heyanle.easybangumi4.utils.getHtml
+import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.safeResume
 import com.heyanle.easybangumi4.utils.stop
 import com.heyanle.easybangumi4.utils.waitUntil
@@ -20,6 +21,8 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import java.net.URI
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -29,19 +32,22 @@ import kotlin.coroutines.suspendCoroutine
 
 class RenderHelperImpl(
     private val webViewHelperV2Impl: WebViewHelperV2Impl,
+    private val okHttpClient: OkHttpClient = OkHttpClient(),
 ) : RenderHelper {
 
     companion object {
+        private const val logTag = "RenderHelperImpl"
+
         private val videoUrlRegex = Regex(
             """(https?:)?//[^\s"'<>]+?\.(?:m3u8|mp4)(?:[^\s"'<>]*)?""",
             RegexOption.IGNORE_CASE,
         )
 
         private const val blobHookJs = """
-        let origin = window.URL.createObjectURL
+        var origin = window.URL.createObjectURL
         window.URL.createObjectURL = function (t) {
-            let blobUrl = origin(t)
-            let xhr = new XMLHttpRequest()
+            var blobUrl = origin(t)
+            var xhr = new XMLHttpRequest()
             xhr.onload = function () {
                  window.blobHook.handleWrapper(xhr.responseText)
             }
@@ -68,6 +74,14 @@ class RenderHelperImpl(
                 } catch (e) {}
             }
 
+            function notifyM3u8(url) {
+                try {
+                    if (url && String(url).indexOf("http") >= 0) {
+                        window.videoParserBridge.onM3u8Url(String(url));
+                    }
+                } catch (e) {}
+            }
+
             function isIgnored(url) {
                 return !url ||
                     String(url).indexOf("googleads") >= 0 ||
@@ -78,15 +92,29 @@ class RenderHelperImpl(
                     String(url).indexOf("doubleclick") >= 0;
             }
 
+            function isM3u8Response(url, contentType, text) {
+                try {
+                    var normalizedUrl = String(url || "").toLowerCase();
+                    var normalizedType = String(contentType || "").toLowerCase();
+                    var normalizedText = String(text || "").replace(/^\s+/, "");
+                    return normalizedText.indexOf("#EXTM3U") === 0 ||
+                        normalizedType.indexOf("mpegurl") >= 0 ||
+                        normalizedType.indexOf("vnd.apple.mpegurl") >= 0 ||
+                        normalizedUrl.indexOf(".m3u8") >= 0;
+                } catch (e) {
+                    return false;
+                }
+            }
+
             function processVideoElement(video) {
                 if (!video) return false;
-                let src = video.getAttribute("src");
+                var src = video.getAttribute("src");
                 if (src && src.trim() !== "" && !src.startsWith("blob:") && !isIgnored(src)) {
                     notify(src);
                     return true;
                 }
-                const sources = video.getElementsByTagName("source");
-                for (let i = 0; i < sources.length; i++) {
+                var sources = video.getElementsByTagName("source");
+                for (var i = 0; i < sources.length; i++) {
                     src = sources[i].getAttribute("src");
                     if (src && src.trim() !== "" && !src.startsWith("blob:") && !isIgnored(src)) {
                         notify(src);
@@ -97,32 +125,34 @@ class RenderHelperImpl(
             }
 
             function scanVideoElements() {
-                const videos = document.querySelectorAll("video");
-                for (let i = 0; i < videos.length; i++) {
+                var videos = document.querySelectorAll("video");
+                for (var i = 0; i < videos.length; i++) {
                     if (processVideoElement(videos[i])) return;
                 }
             }
 
             function installVideoObserver() {
                 scanVideoElements();
-                const target = document.body || document.documentElement;
+                var target = document.body || document.documentElement;
                 if (!target) return;
-                const observer = new MutationObserver((mutations) => {
-                    for (const mutation of mutations) {
+                var observer = new MutationObserver(function (mutations) {
+                    for (var m = 0; m < mutations.length; m++) {
+                        var mutation = mutations[m];
                         if (mutation.type === "attributes" && mutation.target.nodeName === "VIDEO") {
                             if (processVideoElement(mutation.target)) {
                                 observer.disconnect();
                                 return;
                             }
                         }
-                        for (const node of mutation.addedNodes) {
+                        for (var n = 0; n < mutation.addedNodes.length; n++) {
+                            var node = mutation.addedNodes[n];
                             if (node.nodeName === "VIDEO" && processVideoElement(node)) {
                                 observer.disconnect();
                                 return;
                             }
                             if (node.querySelectorAll) {
-                                const videos = node.querySelectorAll("video");
-                                for (let i = 0; i < videos.length; i++) {
+                                var videos = node.querySelectorAll("video");
+                                for (var i = 0; i < videos.length; i++) {
                                     if (processVideoElement(videos[i])) {
                                         observer.disconnect();
                                         return;
@@ -140,35 +170,79 @@ class RenderHelperImpl(
                 });
             }
 
-            function installM3u8Hooks(scopeWindow) {
-                try {
-                    if (scopeWindow.__easybangumiM3u8HookInstalled) return;
-                    scopeWindow.__easybangumiM3u8HookInstalled = true;
+            function installIframeHooks() {
+                var iframes = document.querySelectorAll("iframe");
+                for (var i = 0; i < iframes.length; i++) {
+                    iframes[i].addEventListener("load", scanVideoElements);
+                }
 
-                    const responseText = scopeWindow.Response && scopeWindow.Response.prototype.text;
-                    if (responseText) {
-                        scopeWindow.Response.prototype.text = function () {
-                            return new Promise((resolve, reject) => {
-                                responseText.call(this).then((text) => {
-                                    resolve(text);
-                                    try {
-                                        if (text && text.trim().startsWith("#EXTM3U")) {
-                                            notify(this.url);
-                                        }
-                                    } catch (e) {}
-                                }).catch(reject);
+                var target = document.body || document.documentElement;
+                if (!target) return;
+                var observer = new MutationObserver(function (mutations) {
+                    for (var m = 0; m < mutations.length; m++) {
+                        var mutation = mutations[m];
+                        for (var n = 0; n < mutation.addedNodes.length; n++) {
+                            var node = mutation.addedNodes[n];
+                            if (node.nodeName === "IFRAME") {
+                                node.addEventListener("load", scanVideoElements);
+                            }
+                            if (node.querySelectorAll) {
+                                var nestedIframes = node.querySelectorAll("iframe");
+                                for (var i = 0; i < nestedIframes.length; i++) {
+                                    nestedIframes[i].addEventListener("load", scanVideoElements);
+                                }
+                            }
+                        }
+                    }
+                });
+                observer.observe(target, { childList: true, subtree: true });
+            }
+
+            function installM3u8FallbackHooks() {
+                try {
+                    if (window.__easybangumiM3u8FallbackInstalled) return;
+                    window.__easybangumiM3u8FallbackInstalled = true;
+
+                    var originFetch = window.fetch;
+                    if (originFetch) {
+                        window.fetch = function () {
+                            var args = arguments;
+                            var requestUrl = args && args[0] && (args[0].url || args[0]);
+                            return originFetch.apply(this, args).then(function (response) {
+                                try {
+                                    var responseUrl = response.url || requestUrl;
+                                    var type = response.headers && response.headers.get && response.headers.get("content-type");
+                                    if (isM3u8Response(responseUrl, type, "")) {
+                                        notifyM3u8(responseUrl);
+                                        return response;
+                                    }
+                                    var cloned = response.clone && response.clone();
+                                    if (cloned && cloned.text) {
+                                        cloned.text().then(function (text) {
+                                            try {
+                                                if (isM3u8Response(responseUrl, type, text)) {
+                                                    notifyM3u8(responseUrl);
+                                                }
+                                            } catch (e) {}
+                                        }).catch(function () {});
+                                    }
+                                } catch (e) {}
+                                return response;
                             });
                         };
                     }
 
-                    const xhrOpen = scopeWindow.XMLHttpRequest && scopeWindow.XMLHttpRequest.prototype.open;
+                    var xhrOpen = window.XMLHttpRequest && window.XMLHttpRequest.prototype.open;
                     if (xhrOpen) {
-                        scopeWindow.XMLHttpRequest.prototype.open = function (...args) {
-                            this.addEventListener("load", () => {
+                        window.XMLHttpRequest.prototype.open = function () {
+                            var args = arguments;
+                            var requestUrl = args && args[1];
+                            this.addEventListener("load", function () {
                                 try {
-                                    const content = this.responseText;
-                                    if (content && content.trim().startsWith("#EXTM3U")) {
-                                        notify(args[1]);
+                                    var text = this.responseText;
+                                    var type = this.getResponseHeader && this.getResponseHeader("content-type");
+                                    if (isM3u8Response(this.responseURL || requestUrl, type, text)) {
+                                        notifyM3u8(this.responseURL || requestUrl);
                                     }
                                 } catch (e) {}
                             });
@@ -178,49 +252,16 @@ class RenderHelperImpl(
                 } catch (e) {}
             }
 
-            function installIframeHooks() {
-                function injectIntoIframe(iframe) {
-                    try {
-                        const iframeWindow = iframe.contentWindow;
-                        if (iframeWindow) {
-                            installM3u8Hooks(iframeWindow);
-                        }
-                    } catch (e) {}
-                }
-
-                document.querySelectorAll("iframe").forEach((iframe) => {
-                    injectIntoIframe(iframe);
-                    iframe.addEventListener("load", () => injectIntoIframe(iframe));
-                });
-
-                const target = document.body || document.documentElement;
-                if (!target) return;
-                const observer = new MutationObserver((mutations) => {
-                    for (const mutation of mutations) {
-                        for (const node of mutation.addedNodes) {
-                            if (node.nodeName === "IFRAME") {
-                                node.addEventListener("load", () => injectIntoIframe(node));
-                            }
-                            if (node.querySelectorAll) {
-                                node.querySelectorAll("iframe").forEach((iframe) => {
-                                    iframe.addEventListener("load", () => injectIntoIframe(iframe));
-                                });
-                            }
-                        }
-                    }
-                });
-                observer.observe(target, { childList: true, subtree: true });
-            }
-
-            installM3u8Hooks(window);
             if (document.readyState === "loading") {
-                document.addEventListener("DOMContentLoaded", () => {
+                document.addEventListener("DOMContentLoaded", function () {
                     installVideoObserver();
                     installIframeHooks();
+                    installM3u8FallbackHooks();
                 });
             } else {
                 installVideoObserver();
                 installIframeHooks();
+                installM3u8FallbackHooks();
             }
         })();
         """
@@ -241,27 +282,35 @@ class RenderHelperImpl(
             }
 
             function processIframeElement(iframe) {
-                const src = iframe && iframe.getAttribute("src");
+                var src = iframe && iframe.getAttribute("src");
                 if (src) notify(src);
             }
 
             function scanIframes() {
-                document.querySelectorAll("iframe").forEach(processIframeElement);
+                var iframes = document.querySelectorAll("iframe");
+                for (var i = 0; i < iframes.length; i++) {
+                    processIframeElement(iframes[i]);
+                }
             }
 
-            const observer = new MutationObserver((mutations) => {
-                mutations.forEach((mutation) => {
+            var observer = new MutationObserver(function (mutations) {
+                for (var m = 0; m < mutations.length; m++) {
+                    var mutation = mutations[m];
                     if (mutation.type === "attributes" && mutation.target.nodeName === "IFRAME") {
                         processIframeElement(mutation.target);
                     } else {
-                        mutation.addedNodes.forEach((node) => {
+                        for (var n = 0; n < mutation.addedNodes.length; n++) {
+                            var node = mutation.addedNodes[n];
                             if (node.nodeName === "IFRAME") processIframeElement(node);
                             if (node.querySelectorAll) {
-                                node.querySelectorAll("iframe").forEach(processIframeElement);
+                                var iframes = node.querySelectorAll("iframe");
+                                for (var i = 0; i < iframes.length; i++) {
+                                    processIframeElement(iframes[i]);
+                                }
                             }
-                        });
+                        }
                     }
-                });
+                }
             });
 
             observer.observe(document.documentElement, {
@@ -310,7 +359,7 @@ class RenderHelperImpl(
 
     private val scope = MainScope()
 
-    fun renderHtmlFromJs(strategy: RenderHelper.RenderedStrategy): RenderHelper.RenderedResult {
+    override fun renderHtmlFromJs(strategy: RenderHelper.RenderedStrategy): RenderHelper.RenderedResult {
         var res: RenderHelper.RenderedResult? = null
         val countDownLatch = CountDownLatch(1)
         scope.launch {
@@ -327,7 +376,7 @@ class RenderHelperImpl(
         )
     }
 
-    fun renderVideoFromJs(strategy: RenderHelper.VideoStrategy): RenderHelper.VideoResult {
+    override fun renderVideoFromJs(strategy: RenderHelper.VideoStrategy): RenderHelper.VideoResult {
         var res: RenderHelper.VideoResult? = null
         val countDownLatch = CountDownLatch(1)
         scope.launch {
@@ -468,15 +517,33 @@ class RenderHelperImpl(
             }
             webview.resumeTimers()
 
+            var fallbackVideoUrl: String? = null
+            var resultFromM3u8Hook = false
             val result = withTimeoutOrNull(strategy.timeOut) {
                 suspendCancellableCoroutine<String> { continuation ->
                     var completed = false
+                    val probingUrls = mutableSetOf<String>()
 
-                    fun complete(url: String?) {
+                    fun complete(url: String?, isM3u8Hook: Boolean = false) {
                         val normalized = normalizeVideoUrl(url, strategy.url) ?: return
                         if (isAdUrl(normalized) || completed) return
+                        resultFromM3u8Hook = isM3u8Hook || isM3u8Url(normalized)
+                        debugLog("renderVideo complete page=${strategy.url} url=$normalized legacy=${strategy.useLegacyParser} m3u8=$resultFromM3u8Hook")
                         completed = true
                         continuation.safeResume(normalized)
+                    }
+
+                    fun probeAndComplete(url: String?) {
+                        val normalized = normalizeVideoUrl(url, strategy.url) ?: return
+                        if (!probingUrls.add(normalized) || completed) return
+                        scope.launch(Dispatchers.IO) {
+                            val probe = probeVideoUrl(normalized, strategy)
+                            if (probe != null) {
+                                withContext(Dispatchers.Main) {
+                                    complete(probe.url, isM3u8Hook = probe.isM3u8)
+                                }
+                            }
+                        }
                     }
 
                     webview.addJavascriptInterface(object : Any() {
@@ -484,6 +551,13 @@ class RenderHelperImpl(
                         fun onVideoUrl(url: String?) {
                             webview.post {
                                 complete(url)
+                            }
+                        }
+
+                        @JavascriptInterface
+                        fun onM3u8Url(url: String?) {
+                            webview.post {
+                                complete(url, isM3u8Hook = true)
                             }
                         }
 
@@ -519,8 +593,14 @@ class RenderHelperImpl(
                         ): WebResourceResponse? {
                             val url = request?.url?.toString()
                             if (!strategy.useLegacyParser && isVideoRequest(url, request?.requestHeaders)) {
+                                debugLog("renderVideo intercept candidate page=${strategy.url} url=$url")
+                                fallbackVideoUrl = normalizeVideoUrl(url, strategy.url)
                                 webview.post {
-                                    complete(url)
+                                    if (isM3u8Url(url)) {
+                                        complete(url, isM3u8Hook = true)
+                                    } else {
+                                        probeAndComplete(url)
+                                    }
                                 }
                             }
                             return super.shouldInterceptRequest(view, request)
@@ -529,8 +609,9 @@ class RenderHelperImpl(
                         @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
                         override fun shouldInterceptRequest(view: WebView?, url: String?): WebResourceResponse? {
                             if (!strategy.useLegacyParser && isM3u8Url(url)) {
+                                debugLog("renderVideo intercept m3u8 page=${strategy.url} url=$url")
                                 webview.post {
-                                    complete(url)
+                                    complete(url, isM3u8Hook = true)
                                 }
                             }
                             return super.shouldInterceptRequest(view, url)
@@ -549,12 +630,25 @@ class RenderHelperImpl(
             webview.stop()
             webViewHelperV2Impl.recyclerWebView(webview)
 
+            val fallbackProbe = if (result == null) {
+                withContext(Dispatchers.IO) { probeVideoUrl(fallbackVideoUrl, strategy) }
+            } else {
+                null
+            }
+            val finalUrl = result ?: fallbackProbe?.url.orEmpty()
             RenderHelper.VideoResult(
                 strategy = strategy,
-                url = result.orEmpty(),
-                isTimeout = result == null,
-            )
+                url = finalUrl,
+                isTimeout = finalUrl.isBlank(),
+                isM3u8 = resultFromM3u8Hook || fallbackProbe?.isM3u8 == true || isM3u8Url(finalUrl),
+            ).also {
+                debugLog("renderVideo finished page=${strategy.url} timeout=${it.isTimeout} m3u8=${it.isM3u8} url=${it.url}")
+            }
         }
+    }
+
+    private fun debugLog(message: String) {
+        runCatching { message.logi(logTag) }
     }
 
     private fun normalizeVideoUrl(url: String?, baseUrl: String): String? {
@@ -633,4 +727,42 @@ class RenderHelperImpl(
             lower.contains("adtrafficquality") ||
             lower.contains("doubleclick")
     }
+
+    private fun probeVideoUrl(url: String?, strategy: RenderHelper.VideoStrategy): VideoProbe? {
+        val normalized = normalizeVideoUrl(url, strategy.url) ?: return null
+        if (isAdUrl(normalized)) return null
+        val request = Request.Builder()
+            .url(normalized)
+            .header("Range", "bytes=0-2047")
+            .apply {
+                strategy.userAgentString?.takeIf { it.isNotBlank() }?.let { header("User-Agent", it) }
+                strategy.header.orEmpty().forEach { (key, value) -> header(key, value) }
+            }
+            .build()
+        return runCatching {
+            okHttpClient.newCall(request).execute().use { response ->
+                if (!response.isSuccessful && response.code != 206) return null
+                val contentType = response.header("Content-Type").orEmpty().lowercase()
+                val bodyPrefix = response.body?.string().orEmpty().trimStart()
+                when {
+                    bodyPrefix.startsWith("#EXTM3U") ||
+                        contentType.contains("mpegurl") ||
+                        contentType.contains("vnd.apple.mpegurl") -> {
+                        debugLog("renderVideo probe m3u8 url=$normalized contentType=$contentType")
+                        VideoProbe(normalized, isM3u8 = true)
+                    }
+                    contentType.startsWith("video/") || contentType.contains("octet-stream") -> {
+                        debugLog("renderVideo probe video url=$normalized contentType=$contentType")
+                        VideoProbe(normalized, isM3u8 = false)
+                    }
+                    else -> null
+                }
+            }
+        }.getOrNull()
+    }
+
+    private data class VideoProbe(
+        val url: String,
+        val isM3u8: Boolean,
+    )
 }

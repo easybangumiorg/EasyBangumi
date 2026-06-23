@@ -90,7 +90,7 @@ class JsSource(
 
 
 
-    // 杞婚噺绾ф彃浠剁殑涓氬姟娉ㄥ唽浜ょ粰 JSComponentBundle 澶勭悊
+    // 轻量级插件的业务注册交给 JSComponentBundle 处理
     override fun register(): List<KClass<*>> {
         return emptyList()
     }

@@ -8,7 +8,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.heyanle.easybangumi4.plugin.source.utils.network.WebViewHelperV2Impl
-import com.heyanle.easybangumi4.plugin.api.component.SearchNeedWebViewCheckBusinessException
+import com.heyanle.easybangumi4.plugin.api.component.SearchNeedVerificationBusinessException
 import com.heyanle.easybangumi4.plugin.api.component.VerificationResult
 import com.heyanle.easybangumi4.plugin.api.component.search.SearchComponent
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonCover
@@ -71,12 +71,12 @@ class GatherSearchViewModel(
     }
 
     fun onSearchNeedWebCheck(
-        searchNeedWebViewCheckBusinessException: SearchNeedWebViewCheckBusinessException,
+        searchNeedWebViewCheckBusinessException: SearchNeedVerificationBusinessException,
         onRetry: () -> Unit
     ){
         viewModelScope.launch {
-            val param = searchNeedWebViewCheckBusinessException.param
-            verificationTemp[param.keyword to param.key] = VerificationHelper.start(
+            val request = searchNeedWebViewCheckBusinessException.request
+            verificationTemp[request.keyword to request.key] = VerificationHelper.start(
                 searchNeedWebViewCheckBusinessException.verificationParam,
                 webViewHelperV2Impl,
             )

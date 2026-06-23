@@ -48,6 +48,13 @@ class SourceModule(
             SourceController(
                 sourceFolder = File(application.getFilePath("source_v3")),
                 sourcePreferences = get(),
+                innerSourceFileProvider = get(),
+            )
+        }
+        addSingletonFactory {
+            InnerSourceFileProvider(
+                application = application,
+                cacheFolder = File(application.getFilePath("inner_source")),
             )
         }
         addSingletonFactory {
@@ -117,4 +124,3 @@ class SourceModule(
 
     }
 }
-

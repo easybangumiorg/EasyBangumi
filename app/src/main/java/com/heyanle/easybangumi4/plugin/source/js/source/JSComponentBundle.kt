@@ -48,7 +48,7 @@ class JSComponentBundle(
     @WorkerThread
     override suspend fun init() {
         val webProxyManager: WebProxyManager = Inject.get<WebProxyManager>(jsSource.key)
-        // 1. 娉ㄥ叆宸ュ叿绫?
+        // 1. 注入工具类
         put(StringHelper::class, Inject.get(jsSource.key))
         put(NetworkHelper::class, Inject.get(jsSource.key))
         put(OkhttpHelper::class, Inject.get(jsSource.key))
@@ -74,7 +74,7 @@ class JSComponentBundle(
 
 
 
-            // 2. 娉ㄥ叆宸ュ叿缁?JS
+            // 2. 将工具对象注入到 JS
             bundle.forEach { (k, v) ->
                 val simpleName = k.simpleName ?: return@forEach
                 val name = "Inject_${simpleName}"
@@ -91,7 +91,7 @@ class JSComponentBundle(
                 null
             )
 
-            // 4. 鍔犺浇鎻掍欢婧愪唬鐮?
+            // 4. 加载插件源代码
             if (jsFile == null) {
                 context.evaluateString(
                     scriptable,
@@ -116,7 +116,7 @@ class JSComponentBundle(
 
         }
 
-        // 5. 妫€鏌?& 鍔犺浇 Component
+        // 5. 检查并加载 Component
 
         val jsSearchComponent = JSSearchComponent.of(jsSource.jsScope)
         val jsPageComponent = JSPageComponent.of(jsSource.jsScope)
@@ -160,13 +160,13 @@ class JSComponentBundle(
                 val keySet = hashSetOf<String>()
                 preferenceList.forEach {
                     if (keySet.contains(it.key)) {
-                        throw SourceException("PreferenceComponent 瑁呴厤閿欒锛歬ey 鍐茬獊 ${it.key}")
+                        throw SourceException("PreferenceComponent 装配错误：key 冲突 ${it.key}")
                     }
                     if (it is SourcePreference.Selection) {
                         val current = preferenceHelper.get(it.key, "")
                         if (it.selections.indexOf(current) == -1) {
                             if (it.selections.indexOf(it.def) == -1) {
-                                throw SourceException("PreferenceComponent 瑁呴厤閿欒锛歞ef not fount in selections of ${it.key}")
+                                throw SourceException("PreferenceComponent 装配错误：def not found in selections of ${it.key}")
                             }
 //                            preferenceHelper.put(it.key, it.def)
                         }

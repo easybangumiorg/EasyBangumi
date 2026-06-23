@@ -38,13 +38,6 @@
 - [ ] 基于 Bangumi 的刮削功能
 - [ ] 基于 Bangumi 的数据同步功能
 
-# 支持我们
-
-学习不易，如果你觉得源码对你有帮助，请扫码给开发者加个鸡腿吧！
-
-| <img src="./thanks_wx.png" /> | <img src="./thanks_zfb.jpg" />  |
-|:---------------------------------:|:----------------------------------:|
-
 # 反馈
 
 点击链接加入群聊【纯纯看番】：[729848189](https://jq.qq.com/?_wv=1027&k=vyJ8l8M7)  
@@ -60,6 +53,5 @@
 <img src="./screenshots/7.jpg"/>
 
 # [更新列表](https://github.com/easybangumiorg/EasyBangumi/blob/main/app/src/main/assets/update_log.txt)  
-
 
 

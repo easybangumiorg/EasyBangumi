@@ -19,7 +19,7 @@ import androidx.paging.compose.LazyPagingItems
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.plugin.api.ParserException
 import com.heyanle.easybangumi4.plugin.api.component.BusinessActionType
-import com.heyanle.easybangumi4.plugin.api.component.SearchNeedWebViewCheckBusinessException
+import com.heyanle.easybangumi4.plugin.api.component.SearchNeedVerificationBusinessException
 import com.heyanle.easybangumi4.utils.stringRes
 
 /**
@@ -247,7 +247,7 @@ fun <T : Any> LazyListScope.pagingCommonHor(items: LazyPagingItems<T>, isShowLoa
 
 fun <T : Any> LazyListScope.pagingCommonSourceSearch(
     items: LazyPagingItems<T>,
-    onWebCheck: (SearchNeedWebViewCheckBusinessException) -> Unit,
+    onWebCheck: (SearchNeedVerificationBusinessException) -> Unit,
 ) {
     when (val app = items.loadState.append) {
         is LoadState.Loading -> {
@@ -265,7 +265,7 @@ fun <T : Any> LazyListScope.pagingCommonSourceSearch(
                 when(val error = app.error) {
                     is ParserException -> {
                         when (val innerError = error.exception) {
-                            is SearchNeedWebViewCheckBusinessException -> {
+                            is SearchNeedVerificationBusinessException -> {
                                 needCommonError = false
                                 val isCaptcha = innerError.actionType == BusinessActionType.DIALOG_CAPTCHA
                                 ErrorPage(modifier = Modifier.fillMaxWidth(),
@@ -311,7 +311,7 @@ fun <T : Any> LazyListScope.pagingCommonSourceSearch(
 
 fun <T : Any> LazyListScope.pagingCommonSourceSearchHor(
     items: LazyPagingItems<T>,
-    onWebCheck: (SearchNeedWebViewCheckBusinessException) -> Unit,
+    onWebCheck: (SearchNeedVerificationBusinessException) -> Unit,
 ) {
     when (val app = items.loadState.append) {
         is LoadState.Loading -> {
@@ -329,7 +329,7 @@ fun <T : Any> LazyListScope.pagingCommonSourceSearchHor(
                 when(val error = app.error) {
                     is ParserException -> {
                         when (val innerError = error.exception) {
-                            is SearchNeedWebViewCheckBusinessException -> {
+                            is SearchNeedVerificationBusinessException -> {
                                 needCommonError = false
                                 val isCaptcha = innerError.actionType == BusinessActionType.DIALOG_CAPTCHA
                                 ErrorPage(modifier = Modifier.fillMaxHeight(),
@@ -375,7 +375,7 @@ fun <T : Any> LazyListScope.pagingCommonSourceSearchHor(
 @Composable
 fun <T : Any> PagingCommonSourceSearch(
     items: LazyPagingItems<T>,
-    onWebCheck: (SearchNeedWebViewCheckBusinessException) -> Unit,
+    onWebCheck: (SearchNeedVerificationBusinessException) -> Unit,
 ) {
     if (items.loadState.refresh is LoadState.NotLoading &&
         items.loadState.append is LoadState.NotLoading && items.itemCount == 0
@@ -404,7 +404,7 @@ fun <T : Any> PagingCommonSourceSearch(
             when(val error = refresh.error) {
                 is ParserException -> {
                     when (val innerError = error.exception) {
-                        is SearchNeedWebViewCheckBusinessException -> {
+                        is SearchNeedVerificationBusinessException -> {
                             needCommonError = false
                             val isCaptcha = innerError.actionType == BusinessActionType.DIALOG_CAPTCHA
                             ErrorPage(modifier = Modifier.fillMaxWidth(),
@@ -449,6 +449,5 @@ fun <T : Any> PagingCommonSourceSearch(
     }
 
 }
-
 
 
