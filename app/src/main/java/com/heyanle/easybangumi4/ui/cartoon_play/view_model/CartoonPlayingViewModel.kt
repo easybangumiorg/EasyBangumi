@@ -21,20 +21,17 @@ import com.heyanle.easybangumi4.cartoon.story.local.source.LocalSource
 import com.heyanle.easybangumi4.case.SourceStateCase
 import com.heyanle.easybangumi4.exo.CartoonMediaSourceFactory
 import com.heyanle.easybangumi4.exo.thumbnail.ThumbnailBuffer
-import com.heyanle.easybangumi4.plugin.source.jsengine.component.getPlayInfoWithCheck
 import com.heyanle.easybangumi4.plugin.source.utils.network.WebViewHelperV2Impl
-import com.heyanle.easybangumi4.plugin.source.utils.network.web.IWebProxy
 import com.heyanle.easybangumi4.setting.SettingPreferences
-import com.heyanle.easybangumi4.plugin.api.component.BusinessActionType
 import com.heyanle.easybangumi4.plugin.api.component.PlayInfoNeedWebViewCheckBusinessException
 import com.heyanle.easybangumi4.plugin.api.component.SearchNeedWebViewCheckBusinessException
+import com.heyanle.easybangumi4.plugin.api.component.VerificationResult
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonSummary
 import com.heyanle.easybangumi4.plugin.api.entity.Episode
 import com.heyanle.easybangumi4.plugin.api.entity.PlayLine
 import com.heyanle.easybangumi4.plugin.api.entity.PlayerInfo
-import com.heyanle.easybangumi4.plugin.source.utils.CaptchaHelperImpl
+import com.heyanle.easybangumi4.plugin.source.utils.VerificationHelper
 import com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded.CartoonRecordedModel
-import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.CoroutineProvider
 import com.heyanle.easybangumi4.utils.MediaAndroidUtils
 import com.heyanle.easybangumi4.utils.getCachePath
@@ -341,10 +338,10 @@ class CartoonPlayingViewModel(
     val webViewHelperV2Impl: WebViewHelperV2Impl by Inject.injectLazy()
 
     // 很 hard 但是不管了
-    private var webProxyTemp: IWebProxy? = null
-    private var webTempSummary: CartoonSummary? = null
-    private var webTempLine: PlayLine? = null
-    private var webTempEpisode: Episode? = null
+    private var verificationResultTemp: VerificationResult? = null
+    private var verificationTempSummary: CartoonSummary? = null
+    private var verificationTempLine: PlayLine? = null
+    private var verificationTempEpisode: Episode? = null
 
 
     private suspend fun innerPlay(
@@ -372,29 +369,31 @@ class CartoonPlayingViewModel(
             return
         }
 
-        val tw = webProxyTemp
-        val tsummary = webTempSummary
-        val tline = webTempLine
-        val tepisode = webTempEpisode
-        if (tw != null && tsummary != null && tline != null && tepisode != null &&
+        val verificationResult = verificationResultTemp
+        val tsummary = verificationTempSummary
+        val tline = verificationTempLine
+        val tepisode = verificationTempEpisode
+        if (verificationResult != null && tsummary != null && tline != null && tepisode != null &&
             tsummary == cartoonPlayingState.cartoonSummary
             && tline == cartoonPlayingState.playLine.playLine
             && tepisode == cartoonPlayingState.episode
             ) {
-            play.getPlayInfoWithCheck(
+            verificationResultTemp = null
+            verificationTempSummary = null
+            verificationTempLine = null
+            verificationTempEpisode = null
+            play.getPlayInfo(
                 cartoonPlayingState.cartoonSummary,
                 cartoonPlayingState.playLine.playLine,
                 cartoonPlayingState.episode,
-                tw,
+                verificationResult,
+                canCache = canCache,
             )
         } else {
-            runCatching {
-                webProxyTemp?.close()
-            }
-            webProxyTemp = null
-            webTempSummary = null
-            webTempLine = null
-            webTempEpisode = null
+            verificationResultTemp = null
+            verificationTempSummary = null
+            verificationTempLine = null
+            verificationTempEpisode = null
             play.getPlayInfo(
                 cartoonPlayingState.cartoonSummary,
                 cartoonPlayingState.playLine.playLine,
@@ -429,38 +428,24 @@ class CartoonPlayingViewModel(
     fun onSearchNeedWebCheck(
         playInfoNeedWebViewCheckBusinessException: PlayInfoNeedWebViewCheckBusinessException,
     ){
-        if (playInfoNeedWebViewCheckBusinessException.actionType == BusinessActionType.DIALOG_CAPTCHA) {
-            val param = playInfoNeedWebViewCheckBusinessException.dialogCaptchaParam
-            if (param == null) {
-                tryRefresh()
-                return
+        scope.launch {
+            val param = playInfoNeedWebViewCheckBusinessException.param
+            if (param != null) {
+                verificationTempSummary = param.summary
+                verificationTempLine = param.playLine
+                verificationTempEpisode = param.episode
+            } else {
+                val state = cartoonPlayingState
+                verificationTempSummary = state?.cartoonSummary
+                verificationTempLine = state?.playLine?.playLine
+                verificationTempEpisode = state?.episode
             }
-            CaptchaHelperImpl.start(param.image, param.text, param.title, param.hint) {
-                param.onInput(it)
-                tryRefresh()
-            }
-            return
-        }
-        val param = playInfoNeedWebViewCheckBusinessException.param
-        if (param == null) {
+            verificationResultTemp = VerificationHelper.start(
+                playInfoNeedWebViewCheckBusinessException.verificationParam,
+                webViewHelperV2Impl,
+            )
             tryRefresh()
-            return
         }
-        val webProxy = param.iWebProxy
-        val webView = webProxy.getWebView()
-        if (webView == null) {
-            "WebView is null".moeSnackBar()
-            tryRefresh()
-            return
-        }
-        webViewHelperV2Impl.openWebPage(
-            webView = webView,
-            tips = param.tips ?: "",
-            onCheck = { false },
-            onStop = {
-                tryRefresh()
-            },
-        )
 
     }
 

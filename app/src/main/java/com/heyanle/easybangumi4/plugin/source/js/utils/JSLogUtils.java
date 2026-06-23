@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.plugin.source.jsengine.utils;
+package com.heyanle.easybangumi4.plugin.source.js.utils;
 
 
 import static com.tencent.bugly.proguard.at.i;

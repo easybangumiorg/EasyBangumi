@@ -7,7 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DataObject
 import com.heyanle.easybangumi4.plugin.api.IconSource
 import com.heyanle.easybangumi4.plugin.api.Source
-import com.heyanle.easybangumi4.plugin.source.jsengine.source.AsyncIconSource
+import com.heyanle.easybangumi4.plugin.source.js.source.AsyncIconSource
 import java.io.File
 import kotlin.reflect.KClass
 

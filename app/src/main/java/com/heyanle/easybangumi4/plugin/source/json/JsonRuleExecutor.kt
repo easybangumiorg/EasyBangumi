@@ -1,12 +1,12 @@
 package com.heyanle.easybangumi4.plugin.source.json
 
 import com.heyanle.easybangumi4.plugin.api.ParserException
-import com.heyanle.easybangumi4.plugin.api.component.BusinessActionType
-import com.heyanle.easybangumi4.plugin.api.component.DialogCaptchaParam
 import com.heyanle.easybangumi4.plugin.api.component.PlayInfoNeedWebViewCheckBusinessException
 import com.heyanle.easybangumi4.plugin.api.component.PlayInfoWebViewCheckParam
 import com.heyanle.easybangumi4.plugin.api.component.SearchNeedWebViewCheckBusinessException
 import com.heyanle.easybangumi4.plugin.api.component.SearchWebViewCheckParam
+import com.heyanle.easybangumi4.plugin.api.component.VerificationParam
+import com.heyanle.easybangumi4.plugin.api.component.VerificationResult
 import com.heyanle.easybangumi4.plugin.api.entity.Cartoon
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonCover
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonCoverImpl
@@ -33,13 +33,17 @@ class JsonRuleExecutor(
     private val fetcher: (suspend (String) -> String)? = null,
 ) {
     private val rule: JsonSourceRule = source.rule
-    private var captchaInput: String? = null
 
     fun firstPage(listRule: ListRule): Int = listRule.firstPage
 
-    suspend fun loadList(listRule: ListRule, page: Int, keyword: String? = null): Pair<Int?, List<CartoonCover>> {
+    suspend fun loadList(
+        listRule: ListRule,
+        page: Int,
+        keyword: String? = null,
+        verificationResult: VerificationResult? = null,
+    ): Pair<Int?, List<CartoonCover>> {
         val url = buildUrl(listRule.url, mapOf("page" to page.toString(), "keyword" to keyword.orEmpty()))
-        val document = XPathUtils.parse(fetch(url, CaptchaContext.Search(page, keyword.orEmpty())), url)
+        val document = XPathUtils.parse(fetch(url, CaptchaContext.Search(page, keyword.orEmpty()), verificationResult), url)
         val items = document.selectBy(listRule.item)
         val covers = items.mapNotNull { element ->
             runCatching { parseCover(element, listRule.fields, url) }.getOrNull()
@@ -61,7 +65,12 @@ class JsonRuleExecutor(
         return cartoon to playLines
     }
 
-    suspend fun loadPlay(summary: CartoonSummary, playLine: PlayLine, episode: Episode): PlayerInfo {
+    suspend fun loadPlay(
+        summary: CartoonSummary,
+        playLine: PlayLine,
+        episode: Episode,
+        verificationResult: VerificationResult? = null,
+    ): PlayerInfo {
         val playRule = rule.play ?: throw ParserException("json play rule is missing")
         val pageUrl = buildUrl(
             playRule.url,
@@ -73,7 +82,7 @@ class JsonRuleExecutor(
             )
         )
         val direct = playRule.direct?.let { selector ->
-            val document = XPathUtils.parse(fetch(pageUrl, CaptchaContext.Play(summary, playLine, episode)), pageUrl)
+            val document = XPathUtils.parse(fetch(pageUrl, CaptchaContext.Play(summary, playLine, episode), verificationResult), pageUrl)
             document.extract(selector)?.let { normalizeUrl(it, pageUrl) }
         }
         val videoUrl = direct ?: if (playRule.renderVideo) {
@@ -160,14 +169,18 @@ class JsonRuleExecutor(
         return element.baseUri().takeIf { it.isNotBlank() } ?: rule.site.baseUrl
     }
 
-    private suspend fun fetch(url: String, captchaContext: CaptchaContext): String {
+    private suspend fun fetch(
+        url: String,
+        captchaContext: CaptchaContext,
+        verificationResult: VerificationResult? = null,
+    ): String {
         fetcher?.let {
-            val requestUrl = buildRequest(url).url.toString()
+            val requestUrl = buildRequest(url, verificationResult).url.toString()
             val html = it(requestUrl)
             checkCaptcha(html, requestUrl, captchaContext)
             return html
         }
-        val request = buildRequest(url)
+        val request = buildRequest(url, verificationResult)
         val html = okhttpHelper.cloudflareWebViewClient.newCall(request).execute().use { response ->
             if (!response.isSuccessful) throw ParserException("json request failed: ${response.code}")
             response.body?.string().orEmpty()
@@ -176,10 +189,9 @@ class JsonRuleExecutor(
         return html
     }
 
-    private fun buildRequest(url: String): Request {
+    private fun buildRequest(url: String, verificationResult: VerificationResult? = null): Request {
         val captcha = rule.captcha
-        val input = captchaInput
-        captchaInput = null
+        val input = (verificationResult as? VerificationResult.ImageCaptcha)?.input
         val targetUrl = if (!input.isNullOrBlank() && captcha != null && captcha.method.equals("GET", ignoreCase = true)) {
             appendQuery(buildUrl(captcha.url.ifBlank { url }, emptyMap()), captcha.inputName, input)
         } else {
@@ -203,12 +215,11 @@ class JsonRuleExecutor(
         val document = XPathUtils.parse(html, url)
         if (document.selectBy(captcha.detect).isEmpty()) return
         val image = required(document.extract(captcha.image)?.let { normalizeUrl(it, url) }, "captcha.image")
-        val dialogCaptchaParam = DialogCaptchaParam(
+        val verificationParam = VerificationParam.ImageCaptcha(
             image = image,
             text = captcha.text,
             title = captcha.title,
             hint = captcha.hint,
-            onInput = { input -> captchaInput = input },
         )
         val exception = when (captchaContext) {
             is CaptchaContext.Search -> SearchNeedWebViewCheckBusinessException(
@@ -218,8 +229,7 @@ class JsonRuleExecutor(
                     source = source.key,
                     iWebProxy = EmptyWebProxy,
                 ),
-                actionType = BusinessActionType.DIALOG_CAPTCHA,
-                dialogCaptchaParam = dialogCaptchaParam,
+                verificationParam = verificationParam,
             )
             is CaptchaContext.Play -> PlayInfoNeedWebViewCheckBusinessException(
                 param = PlayInfoWebViewCheckParam(
@@ -228,8 +238,7 @@ class JsonRuleExecutor(
                     episode = captchaContext.episode,
                     iWebProxy = EmptyWebProxy,
                 ),
-                actionType = BusinessActionType.DIALOG_CAPTCHA,
-                dialogCaptchaParam = dialogCaptchaParam,
+                verificationParam = verificationParam,
             )
         }
         throw ParserException(

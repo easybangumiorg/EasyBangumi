@@ -8,13 +8,11 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.heyanle.easybangumi4.plugin.source.utils.network.WebViewHelperV2Impl
-import com.heyanle.easybangumi4.plugin.source.utils.network.web.IWebProxy
-import com.heyanle.easybangumi4.plugin.api.component.BusinessActionType
 import com.heyanle.easybangumi4.plugin.api.component.SearchNeedWebViewCheckBusinessException
+import com.heyanle.easybangumi4.plugin.api.component.VerificationResult
 import com.heyanle.easybangumi4.plugin.api.component.search.SearchComponent
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonCover
-import com.heyanle.easybangumi4.plugin.source.utils.CaptchaHelperImpl
-import com.heyanle.easybangumi4.ui.common.moeSnackBar
+import com.heyanle.easybangumi4.plugin.source.utils.VerificationHelper
 import com.heyanle.easybangumi4.ui.search_migrate.PagingSearchSource
 import com.heyanle.inject.core.Inject
 import kotlinx.coroutines.flow.Flow
@@ -43,10 +41,10 @@ class GatherSearchViewModel(
 
     val webViewHelperV2Impl: WebViewHelperV2Impl by Inject.injectLazy()
 
-    private val webProxyTemp = hashMapOf<Pair<String, Int>, IWebProxy>()
+    private val verificationTemp = hashMapOf<Pair<String, Int>, VerificationResult>()
 
-    val checkWebProvider: (key: Int, keyword: String) -> IWebProxy? = { key, keyword ->
-        webProxyTemp.remove(keyword to key)
+    val verificationProvider: (key: Int, keyword: String) -> VerificationResult? = { key, keyword ->
+        verificationTemp.remove(keyword to key)
     }
 
     fun newSearchKey(searchKey: String) {
@@ -76,44 +74,19 @@ class GatherSearchViewModel(
         searchNeedWebViewCheckBusinessException: SearchNeedWebViewCheckBusinessException,
         onRetry: () -> Unit
     ){
-        if (searchNeedWebViewCheckBusinessException.actionType == BusinessActionType.DIALOG_CAPTCHA) {
-            val param = searchNeedWebViewCheckBusinessException.dialogCaptchaParam
-            if (param == null) {
-                onRetry()
-                return
-            }
-            CaptchaHelperImpl.start(param.image, param.text, param.title, param.hint) {
-                param.onInput(it)
-                onRetry()
-            }
-            return
-        }
-        val param = searchNeedWebViewCheckBusinessException.param
-        val webProxy = param.iWebProxy
-        val webView = webProxy.getWebView()
-        if (webView == null) {
-            "WebView is null".moeSnackBar()
+        viewModelScope.launch {
+            val param = searchNeedWebViewCheckBusinessException.param
+            verificationTemp[param.keyword to param.key] = VerificationHelper.start(
+                searchNeedWebViewCheckBusinessException.verificationParam,
+                webViewHelperV2Impl,
+            )
             onRetry()
-            return
         }
-        webViewHelperV2Impl.openWebPage(
-            webView = webView,
-            tips = param.tips ?: "",
-            onCheck = { false },
-            onStop = { onRetry() },
-        )
 
     }
 
     override fun onCleared() {
-        webProxyTemp.forEach {
-            try {
-                it.value.close()
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-        webProxyTemp.clear()
+        verificationTemp.clear()
         super.onCleared()
     }
 
@@ -126,7 +99,7 @@ class GatherSearchViewModel(
             PagingConfig(pageSize = 10),
             initialKey = searchComponent.getFirstSearchKey(keyword)
         ) {
-            PagingSearchSource(searchComponent, keyword, checkWebProvider)
+            PagingSearchSource(searchComponent, keyword, verificationProvider)
         }
     }
 

@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.plugin.source.jsengine.source
+package com.heyanle.easybangumi4.plugin.source.js.source
 
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable

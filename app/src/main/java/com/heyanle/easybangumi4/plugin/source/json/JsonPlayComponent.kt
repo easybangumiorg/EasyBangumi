@@ -2,6 +2,7 @@ package com.heyanle.easybangumi4.plugin.source.json
 
 import com.heyanle.easybangumi4.plugin.api.SourceResult
 import com.heyanle.easybangumi4.plugin.api.component.ComponentWrapper
+import com.heyanle.easybangumi4.plugin.api.component.VerificationResult
 import com.heyanle.easybangumi4.plugin.api.component.play.PlayComponent
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonSummary
 import com.heyanle.easybangumi4.plugin.api.entity.Episode
@@ -27,6 +28,18 @@ class JsonPlayComponent(
     ): SourceResult<PlayerInfo> {
         return withResult(Dispatchers.IO) {
             executor.loadPlay(summary, playLine, episode)
+        }
+    }
+
+    override suspend fun getPlayInfo(
+        summary: CartoonSummary,
+        playLine: PlayLine,
+        episode: Episode,
+        verificationResult: VerificationResult,
+        canCache: Boolean,
+    ): SourceResult<PlayerInfo> {
+        return withResult(Dispatchers.IO) {
+            executor.loadPlay(summary, playLine, episode, verificationResult)
         }
     }
 }

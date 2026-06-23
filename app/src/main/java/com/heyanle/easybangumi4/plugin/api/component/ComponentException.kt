@@ -15,6 +15,30 @@ enum class BusinessActionType {
     DIALOG_CAPTCHA,
 }
 
+sealed class VerificationParam {
+    data class WebView(
+        val iWebProxy: IWebProxy,
+        val tips: String? = null,
+    ) : VerificationParam()
+
+    data class ImageCaptcha(
+        val image: Any,
+        val text: String? = null,
+        val title: String? = null,
+        val hint: String? = null,
+    ) : VerificationParam()
+}
+
+sealed class VerificationResult {
+    data class WebView(
+        val iWebProxy: IWebProxy,
+    ) : VerificationResult()
+
+    data class ImageCaptcha(
+        val input: String,
+    ) : VerificationResult()
+}
+
 class NeedWebViewCheckExceptionInner(
     val iWebProxy: IWebProxy,
     val tips: String? = null,
@@ -25,7 +49,6 @@ data class DialogCaptchaParam(
     val text: String? = null,
     val title: String? = null,
     val hint: String? = null,
-    val onInput: (String) -> Unit,
 )
 
 data class SearchWebViewCheckParam(
@@ -38,9 +61,24 @@ data class SearchWebViewCheckParam(
 
 class SearchNeedWebViewCheckBusinessException(
     val param: SearchWebViewCheckParam,
-    val actionType: BusinessActionType = BusinessActionType.WEB_VIEW,
-    val dialogCaptchaParam: DialogCaptchaParam? = null,
-) : ComponentException("need user check")
+    val verificationParam: VerificationParam = VerificationParam.WebView(param.iWebProxy, param.tips),
+) : ComponentException("need user check") {
+    val actionType: BusinessActionType
+        get() = when (verificationParam) {
+            is VerificationParam.WebView -> BusinessActionType.WEB_VIEW
+            is VerificationParam.ImageCaptcha -> BusinessActionType.DIALOG_CAPTCHA
+        }
+
+    val dialogCaptchaParam: DialogCaptchaParam?
+        get() = (verificationParam as? VerificationParam.ImageCaptcha)?.let {
+            DialogCaptchaParam(
+                image = it.image,
+                text = it.text,
+                title = it.title,
+                hint = it.hint,
+            )
+        }
+}
 
 data class PlayInfoWebViewCheckParam(
     val summary: CartoonSummary,
@@ -52,6 +90,22 @@ data class PlayInfoWebViewCheckParam(
 
 class PlayInfoNeedWebViewCheckBusinessException(
     val param: PlayInfoWebViewCheckParam?,
-    val actionType: BusinessActionType = BusinessActionType.WEB_VIEW,
-    val dialogCaptchaParam: DialogCaptchaParam? = null,
-) : ComponentException("need user check")
+    val verificationParam: VerificationParam = param?.let { VerificationParam.WebView(it.iWebProxy, it.tips) }
+        ?: throw IllegalArgumentException("verificationParam is required when param is null"),
+) : ComponentException("need user check") {
+    val actionType: BusinessActionType
+        get() = when (verificationParam) {
+            is VerificationParam.WebView -> BusinessActionType.WEB_VIEW
+            is VerificationParam.ImageCaptcha -> BusinessActionType.DIALOG_CAPTCHA
+        }
+
+    val dialogCaptchaParam: DialogCaptchaParam?
+        get() = (verificationParam as? VerificationParam.ImageCaptcha)?.let {
+            DialogCaptchaParam(
+                image = it.image,
+                text = it.text,
+                title = it.title,
+                hint = it.hint,
+            )
+        }
+}

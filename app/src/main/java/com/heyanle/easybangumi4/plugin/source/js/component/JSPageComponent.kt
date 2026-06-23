@@ -1,12 +1,12 @@
-package com.heyanle.easybangumi4.plugin.source.jsengine.component
+package com.heyanle.easybangumi4.plugin.source.js.component
 
-import com.heyanle.easybangumi4.plugin.source.jsengine.entity.MainTab
-import com.heyanle.easybangumi4.plugin.source.jsengine.entity.NonLabelMainTab
-import com.heyanle.easybangumi4.plugin.source.jsengine.entity.SubTab
-import com.heyanle.easybangumi4.plugin.source.jsengine.runtime.JSScope
-import com.heyanle.easybangumi4.plugin.source.jsengine.runtime.JSScopeException
-import com.heyanle.easybangumi4.plugin.source.jsengine.utils.JSFunction
-import com.heyanle.easybangumi4.plugin.source.jsengine.utils.jsUnwrap
+import com.heyanle.easybangumi4.plugin.source.js.entity.MainTab
+import com.heyanle.easybangumi4.plugin.source.js.entity.NonLabelMainTab
+import com.heyanle.easybangumi4.plugin.source.js.entity.SubTab
+import com.heyanle.easybangumi4.plugin.source.js.runtime.JSScope
+import com.heyanle.easybangumi4.plugin.source.js.runtime.JSScopeException
+import com.heyanle.easybangumi4.plugin.source.js.utils.JSFunction
+import com.heyanle.easybangumi4.plugin.source.js.utils.jsUnwrap
 import com.heyanle.easybangumi4.plugin.source.utils.network.web.WebProxyManager
 import com.heyanle.easybangumi4.plugin.api.ParserException
 import com.heyanle.easybangumi4.plugin.api.SourceResult
@@ -69,9 +69,9 @@ class JSPageComponent(
 
 
     override suspend fun init() {
-        // 历史遗留问题导致 getPages 不是 suspend 方法，业务也没有做加载态直接同步加载
-        // 这里 getMainTab 的操作只能前置到 init
-        // 这里 5s 超时尽量保证 getMainTab 不做延时操作
+        // 鍘嗗彶閬楃暀闂瀵艰嚧 getPages 涓嶆槸 suspend 鏂规硶锛屼笟鍔′篃娌℃湁鍋氬姞杞芥€佺洿鎺ュ悓姝ュ姞杞?
+        // 杩欓噷 getMainTab 鐨勬搷浣滃彧鑳藉墠缃埌 init
+        // 杩欓噷 5s 瓒呮椂灏介噺淇濊瘉 getMainTab 涓嶅仛寤舵椂鎿嶄綔
         try {
             jsScope.requestRunWithScope (
                 5000,
@@ -97,7 +97,7 @@ class JSPageComponent(
             }
         } catch (e: TimeoutCancellationException) {
             e.printStackTrace()
-            throw JSScopeException("${FUNCTION_NAME_GET_MAIN_TABS} 方法需要同步返回，异步 tab 需要设定 NonLabelMainTab 后在 subTab 处理")
+            throw JSScopeException("${FUNCTION_NAME_GET_MAIN_TABS} 鏂规硶闇€瑕佸悓姝ヨ繑鍥烇紝寮傛 tab 闇€瑕佽瀹?NonLabelMainTab 鍚庡湪 subTab 澶勭悊")
         }
 
     }

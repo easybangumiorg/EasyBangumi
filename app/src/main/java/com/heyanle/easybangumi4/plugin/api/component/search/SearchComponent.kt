@@ -4,6 +4,7 @@ package com.heyanle.easybangumi4.plugin.api.component.search
 import androidx.annotation.Keep
 import com.heyanle.easybangumi4.plugin.api.SourceResult
 import com.heyanle.easybangumi4.plugin.api.component.Component
+import com.heyanle.easybangumi4.plugin.api.component.VerificationResult
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonCover
 
 /**
@@ -27,4 +28,12 @@ interface SearchComponent: Component {
      * @return 下一页页码（没有下一页则为 null）， 番剧列表
      */
     suspend fun search(pageKey: Int, keyword: String): SourceResult<Pair<Int?, List<CartoonCover>>>
+
+    suspend fun search(
+        pageKey: Int,
+        keyword: String,
+        verificationResult: VerificationResult,
+    ): SourceResult<Pair<Int?, List<CartoonCover>>> {
+        return search(pageKey, keyword)
+    }
 }

@@ -1,6 +1,6 @@
-package com.heyanle.easybangumi4.plugin.source.jsengine.runtime
+package com.heyanle.easybangumi4.plugin.source.js.runtime
 
-import com.heyanle.easybangumi4.plugin.source.jsengine.utils.JSContext
+import com.heyanle.easybangumi4.plugin.source.js.utils.JSContext
 import com.heyanle.easybangumi4.utils.PostThread
 import org.mozilla.javascript.ImporterTopLevel
 import org.mozilla.javascript.ScriptableObject
@@ -26,7 +26,7 @@ class JSRuntime {
         postThread.post {
             println("JSRuntime init")
             val context = JSContext.enter()
-            // Android 只能运行翻译模式
+            // Android 鍙兘杩愯缈昏瘧妯″紡
             context.optimizationLevel = -1
             JSContextLocal.set(context)
             val scope: ScriptableObject = ImporterTopLevel(context)

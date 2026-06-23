@@ -1,14 +1,14 @@
-package com.heyanle.easybangumi4.plugin.source.jsengine.source
+package com.heyanle.easybangumi4.plugin.source.js.source
 
 import android.app.Application
 import android.content.Context
 import androidx.annotation.WorkerThread
 import com.heyanle.easybangumi4.APP
-import com.heyanle.easybangumi4.plugin.source.jsengine.component.JSDetailedComponent
-import com.heyanle.easybangumi4.plugin.source.jsengine.component.JSPageComponent
-import com.heyanle.easybangumi4.plugin.source.jsengine.component.JSPlayComponent
-import com.heyanle.easybangumi4.plugin.source.jsengine.component.JSPreferenceComponent
-import com.heyanle.easybangumi4.plugin.source.jsengine.component.JSSearchComponent
+import com.heyanle.easybangumi4.plugin.source.js.component.JSDetailedComponent
+import com.heyanle.easybangumi4.plugin.source.js.component.JSPageComponent
+import com.heyanle.easybangumi4.plugin.source.js.component.JSPlayComponent
+import com.heyanle.easybangumi4.plugin.source.js.component.JSPreferenceComponent
+import com.heyanle.easybangumi4.plugin.source.js.component.JSSearchComponent
 import com.heyanle.easybangumi4.plugin.source.SourceException
 import com.heyanle.easybangumi4.plugin.source.bundle.ComponentBundle
 import com.heyanle.easybangumi4.plugin.source.bundle.ComponentProxy
@@ -48,7 +48,7 @@ class JSComponentBundle(
     @WorkerThread
     override suspend fun init() {
         val webProxyManager: WebProxyManager = Inject.get<WebProxyManager>(jsSource.key)
-        // 1. 注入工具类
+        // 1. 娉ㄥ叆宸ュ叿绫?
         put(StringHelper::class, Inject.get(jsSource.key))
         put(NetworkHelper::class, Inject.get(jsSource.key))
         put(OkhttpHelper::class, Inject.get(jsSource.key))
@@ -74,7 +74,7 @@ class JSComponentBundle(
 
 
 
-            // 2. 注入工具给 JS
+            // 2. 娉ㄥ叆宸ュ叿缁?JS
             bundle.forEach { (k, v) ->
                 val simpleName = k.simpleName ?: return@forEach
                 val name = "Inject_${simpleName}"
@@ -91,7 +91,7 @@ class JSComponentBundle(
                 null
             )
 
-            // 4. 加载插件源代码
+            // 4. 鍔犺浇鎻掍欢婧愪唬鐮?
             if (jsFile == null) {
                 context.evaluateString(
                     scriptable,
@@ -116,7 +116,7 @@ class JSComponentBundle(
 
         }
 
-        // 5. 检查 & 加载 Component
+        // 5. 妫€鏌?& 鍔犺浇 Component
 
         val jsSearchComponent = JSSearchComponent.of(jsSource.jsScope)
         val jsPageComponent = JSPageComponent.of(jsSource.jsScope)
@@ -160,13 +160,13 @@ class JSComponentBundle(
                 val keySet = hashSetOf<String>()
                 preferenceList.forEach {
                     if (keySet.contains(it.key)) {
-                        throw SourceException("PreferenceComponent 装配错误：key 冲突 ${it.key}")
+                        throw SourceException("PreferenceComponent 瑁呴厤閿欒锛歬ey 鍐茬獊 ${it.key}")
                     }
                     if (it is SourcePreference.Selection) {
                         val current = preferenceHelper.get(it.key, "")
                         if (it.selections.indexOf(current) == -1) {
                             if (it.selections.indexOf(it.def) == -1) {
-                                throw SourceException("PreferenceComponent 装配错误：def not fount in selections of ${it.key}")
+                                throw SourceException("PreferenceComponent 瑁呴厤閿欒锛歞ef not fount in selections of ${it.key}")
                             }
 //                            preferenceHelper.put(it.key, it.def)
                         }

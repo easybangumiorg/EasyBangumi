@@ -3,6 +3,7 @@ package com.heyanle.easybangumi4.plugin.source.bundle
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.plugin.api.SourceResult
 import com.heyanle.easybangumi4.plugin.api.component.ComponentWrapper
+import com.heyanle.easybangumi4.plugin.api.component.VerificationResult
 import com.heyanle.easybangumi4.plugin.api.component.play.PlayComponent
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonSummary
 import com.heyanle.easybangumi4.plugin.api.entity.Episode
@@ -46,6 +47,27 @@ class PlayComponentCacheWrapper(
             }
         }
         val result = delegate.getPlayInfo(summary, playLine, episode, canCache = false)
+        if (canCache && result is SourceResult.Complete && !result.isCache) {
+            write(cacheKey, result.data)
+        }
+        return result
+    }
+
+    override suspend fun getPlayInfo(
+        summary: CartoonSummary,
+        playLine: PlayLine,
+        episode: Episode,
+        verificationResult: VerificationResult,
+        canCache: Boolean,
+    ): SourceResult<PlayerInfo> {
+        val cacheKey = cacheKey(summary, playLine, episode)
+        val result = delegate.getPlayInfo(
+            summary = summary,
+            playLine = playLine,
+            episode = episode,
+            verificationResult = verificationResult,
+            canCache = false,
+        )
         if (canCache && result is SourceResult.Complete && !result.isCache) {
             write(cacheKey, result.data)
         }

@@ -1,8 +1,8 @@
-package com.heyanle.easybangumi4.plugin.source.jsengine.component
+package com.heyanle.easybangumi4.plugin.source.js.component
 
-import com.heyanle.easybangumi4.plugin.source.jsengine.runtime.JSScope
-import com.heyanle.easybangumi4.plugin.source.jsengine.utils.JSFunction
-import com.heyanle.easybangumi4.plugin.source.jsengine.utils.jsUnwrap
+import com.heyanle.easybangumi4.plugin.source.js.runtime.JSScope
+import com.heyanle.easybangumi4.plugin.source.js.utils.JSFunction
+import com.heyanle.easybangumi4.plugin.source.js.utils.jsUnwrap
 import com.heyanle.easybangumi4.plugin.source.utils.network.web.IWebProxy
 import com.heyanle.easybangumi4.plugin.source.utils.network.web.WebProxyManager
 import com.heyanle.easybangumi4.plugin.api.ParserException
@@ -13,6 +13,8 @@ import com.heyanle.easybangumi4.plugin.api.component.NeedWebViewCheckExceptionIn
 import com.heyanle.easybangumi4.plugin.api.component.PlayInfoNeedWebViewCheckBusinessException
 import com.heyanle.easybangumi4.plugin.api.component.PlayInfoWebViewCheckParam
 import com.heyanle.easybangumi4.plugin.api.component.SearchWebViewCheckParam
+import com.heyanle.easybangumi4.plugin.api.component.VerificationParam
+import com.heyanle.easybangumi4.plugin.api.component.VerificationResult
 import com.heyanle.easybangumi4.plugin.api.component.play.PlayComponent
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonSummary
 import com.heyanle.easybangumi4.plugin.api.entity.Episode
@@ -76,15 +78,15 @@ class JSPlayComponent(
                         webProxyManager?.close()
                     }
                 } catch (e: Exception) {
-                    // 有点 hard ，但是不管了，旧版本都要不维护了
-                    // 如果需要过验证，需要先把那个 WebView 的生命周期提升
-                    // 递归验证
+                    // 鏈夌偣 hard 锛屼絾鏄笉绠′簡锛屾棫鐗堟湰閮借涓嶇淮鎶や簡
+                    // 濡傛灉闇€瑕佽繃楠岃瘉锛岄渶瑕佸厛鎶婇偅涓?WebView 鐨勭敓鍛藉懆鏈熸彁鍗?
+                    // 閫掑綊楠岃瘉
                     if (e is WrappedException) {
                         val e = e.wrappedException
                         if (e is NeedWebViewCheckExceptionInner) {
                             webProxyManager?.removeWebProxy(e.iWebProxy)
                             webProxyManager?.close()
-                            // 必须要 ParserException 才会透传
+                            // 蹇呴』瑕?ParserException 鎵嶄細閫忎紶
                             throw ParserException(message = "need web check", exception = PlayInfoNeedWebViewCheckBusinessException(
                                 param = PlayInfoWebViewCheckParam(
                                     summary = summary,
@@ -92,7 +94,8 @@ class JSPlayComponent(
                                     episode = episode,
                                     iWebProxy = e.iWebProxy,
                                     tips = e.tips,
-                                )
+                                ),
+                                verificationParam = VerificationParam.WebView(e.iWebProxy, e.tips),
                             ))
 
                         }
@@ -106,12 +109,15 @@ class JSPlayComponent(
         }
     }
 
-    suspend fun getPlayInfoWithCheck(
+    override suspend fun getPlayInfo(
         summary: CartoonSummary,
         playLine: PlayLine,
         episode: Episode,
-        iWebProxy: IWebProxy
+        verificationResult: VerificationResult,
+        canCache: Boolean,
     ): SourceResult<PlayerInfo> {
+        val iWebProxy = (verificationResult as? VerificationResult.WebView)?.iWebProxy
+            ?: return SourceResult.Error(ParserException("unsupported verification result"), true)
         if (getPlayInfoWithCheck == null) {
             throw RuntimeException("getPlayInfoWithCheck is null")
         }
@@ -132,15 +138,15 @@ class JSPlayComponent(
                         webProxyManager?.close()
                     }
                 } catch (e: Exception) {
-                    // 有点 hard ，但是不管了，旧版本都要不维护了
-                    // 如果需要过验证，需要先把那个 WebView 的生命周期提升
-                    // 递归验证
+                    // 鏈夌偣 hard 锛屼絾鏄笉绠′簡锛屾棫鐗堟湰閮借涓嶇淮鎶や簡
+                    // 濡傛灉闇€瑕佽繃楠岃瘉锛岄渶瑕佸厛鎶婇偅涓?WebView 鐨勭敓鍛藉懆鏈熸彁鍗?
+                    // 閫掑綊楠岃瘉
                     if (e is WrappedException) {
                         val e = e.wrappedException
                         if (e is NeedWebViewCheckExceptionInner) {
                             webProxyManager?.removeWebProxy(e.iWebProxy)
                             webProxyManager?.close()
-                            // 必须要 ParserException 才会透传
+                            // 蹇呴』瑕?ParserException 鎵嶄細閫忎紶
                             throw ParserException(message = "need web check", exception = PlayInfoNeedWebViewCheckBusinessException(
                                 param = PlayInfoWebViewCheckParam(
                                     summary = summary,
@@ -148,7 +154,8 @@ class JSPlayComponent(
                                     episode = episode,
                                     iWebProxy = e.iWebProxy,
                                     tips = e.tips,
-                                )
+                                ),
+                                verificationParam = VerificationParam.WebView(e.iWebProxy, e.tips),
                             ))
 
                         }
@@ -169,7 +176,7 @@ suspend fun PlayComponent.getPlayInfoWithCheck(
     episode: Episode,
     iWebProxy: IWebProxy
 ): SourceResult<PlayerInfo> {
-    return (this as? JSPlayComponent)!!.getPlayInfoWithCheck(
-        summary, playLine, episode, iWebProxy
+    return getPlayInfo(
+        summary, playLine, episode, VerificationResult.WebView(iWebProxy)
     )
 }

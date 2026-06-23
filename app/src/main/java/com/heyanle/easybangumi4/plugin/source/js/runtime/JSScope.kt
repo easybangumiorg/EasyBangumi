@@ -1,6 +1,6 @@
-package com.heyanle.easybangumi4.plugin.source.jsengine.runtime
+package com.heyanle.easybangumi4.plugin.source.js.runtime
 
-import com.heyanle.easybangumi4.plugin.source.jsengine.utils.JSContext
+import com.heyanle.easybangumi4.plugin.source.js.utils.JSContext
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.withTimeout
 import org.mozilla.javascript.Scriptable
@@ -14,7 +14,7 @@ class JSScope(
     private val jsRuntime: JSRuntime
 ) {
 
-    // 需要在 runtime 里初始化
+    // 闇€瑕佸湪 runtime 閲屽垵濮嬪寲
     private val scriptable: Scriptable by lazy {
         val ctx = JSRuntime.JSContextLocal.get() ?: throw IllegalStateException("JSContext is null")
         val scope = JSRuntime.JSTopScopeLocal.get() ?: throw IllegalStateException("JSTopScope is null")
@@ -37,7 +37,7 @@ class JSScope(
 
     @Throws(TimeoutCancellationException::class, JSScopeException::class, Exception::class)
     suspend fun <R> requestRunWithScope(
-        // 有的嗅探工具超时时间是 20s（有的源会延迟 10s 加载），这里需要加饱和 buffer
+        // 鏈夌殑鍡呮帰宸ュ叿瓒呮椂鏃堕棿鏄?20s锛堟湁鐨勬簮浼氬欢杩?10s 鍔犺浇锛夛紝杩欓噷闇€瑕佸姞楗卞拰 buffer
         timeout: Long = 50000L,
         block: (JSContext, Scriptable) -> R,
     ) : R {

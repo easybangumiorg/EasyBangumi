@@ -3,6 +3,7 @@ package com.heyanle.easybangumi4.plugin.api.component.play
 
 import com.heyanle.easybangumi4.plugin.api.SourceResult
 import com.heyanle.easybangumi4.plugin.api.component.Component
+import com.heyanle.easybangumi4.plugin.api.component.VerificationResult
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonSummary
 import com.heyanle.easybangumi4.plugin.api.entity.Episode
 import com.heyanle.easybangumi4.plugin.api.entity.PlayLine
@@ -25,4 +26,14 @@ interface PlayComponent: Component {
         episode: Episode,
         canCache: Boolean = true,
     ): SourceResult<PlayerInfo>
+
+    suspend fun getPlayInfo(
+        summary: CartoonSummary,
+        playLine: PlayLine,
+        episode: Episode,
+        verificationResult: VerificationResult,
+        canCache: Boolean = true,
+    ): SourceResult<PlayerInfo> {
+        return getPlayInfo(summary, playLine, episode, canCache)
+    }
 }

@@ -1,8 +1,8 @@
 package com.heyanle.easybangumi4.plugin.source.js
 
-import com.heyanle.easybangumi4.plugin.source.jsengine.runtime.JSRuntimeProvider
-import com.heyanle.easybangumi4.plugin.source.jsengine.runtime.JSScope
-import com.heyanle.easybangumi4.plugin.source.jsengine.source.JsSource
+import com.heyanle.easybangumi4.plugin.source.js.runtime.JSRuntimeProvider
+import com.heyanle.easybangumi4.plugin.source.js.runtime.JSScope
+import com.heyanle.easybangumi4.plugin.source.js.source.JsSource
 import com.heyanle.easybangumi4.plugin.source.PluginV3
 import com.heyanle.easybangumi4.plugin.source.SourceFileInfo
 import java.io.File

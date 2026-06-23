@@ -2,9 +2,13 @@ package com.heyanle.easybangumi4.plugin.source.json
 
 import com.heyanle.easybangumi4.plugin.api.ParserException
 import com.heyanle.easybangumi4.plugin.api.component.BusinessActionType
+import com.heyanle.easybangumi4.plugin.api.component.PlayInfoNeedWebViewCheckBusinessException
 import com.heyanle.easybangumi4.plugin.api.component.SearchNeedWebViewCheckBusinessException
+import com.heyanle.easybangumi4.plugin.api.component.VerificationResult
 import com.heyanle.easybangumi4.plugin.api.entity.Cartoon
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonSummary
+import com.heyanle.easybangumi4.plugin.api.entity.Episode
+import com.heyanle.easybangumi4.plugin.api.entity.PlayLine
 import com.heyanle.easybangumi4.plugin.api.entity.PlayerInfo
 import com.heyanle.easybangumi4.plugin.api.utils.api.NetworkHelper
 import com.heyanle.easybangumi4.plugin.api.utils.api.OkhttpHelper
@@ -286,13 +290,83 @@ class JsonSourceRuleTest {
             val business = e.exception as SearchNeedWebViewCheckBusinessException
             assertEquals(BusinessActionType.DIALOG_CAPTCHA, business.actionType)
             assertEquals("https://example.test/captcha.png", business.dialogCaptchaParam?.image)
-            business.dialogCaptchaParam?.onInput?.invoke("1234")
         }
 
-        val (_, covers) = executor.loadList(rule.search!!, 1, "bocchi")
+        val (_, covers) = executor.loadList(
+            rule.search!!,
+            1,
+            "bocchi",
+            VerificationResult.ImageCaptcha("1234"),
+        )
         assertEquals(1, covers.size)
         assertEquals("Captcha Passed", covers.first().title)
         assertEquals("https://example.test/captcha/check?verify=1234", urls.last())
+    }
+
+    @Test
+    fun executorThrowsDialogCaptchaForPlayAndRetriesWithInput() = runBlocking {
+        val rule = JsonSourceRule(
+            key = "json.play.captcha",
+            label = "Json Play Captcha",
+            versionName = "1.0",
+            versionCode = 1,
+            libVersion = 15,
+            site = SiteRule(baseUrl = "https://example.test"),
+            pages = emptyList(),
+            play = PlayRule(
+                url = "/play/{episodeId}",
+                direct = SelectorRule("video", attr = "src"),
+                renderVideo = false,
+            ),
+            captcha = CaptchaRule(
+                detect = SelectorRule(".captcha"),
+                image = SelectorRule(".captcha img", attr = "src"),
+                url = "/captcha/check",
+                inputName = "verify",
+            ),
+        )
+        val source = JsonSource(rule, File("json.play.captcha.json"))
+        val urls = mutableListOf<String>()
+        val executor = JsonRuleExecutor(
+            source = source,
+            networkHelper = FakeNetworkHelper,
+            okhttpHelper = FakeOkhttpHelper,
+            renderHelper = FakeRenderHelper,
+            fetcher = { url ->
+                urls += url
+                if ("verify=5678" in url) {
+                    """<video src="https://cdn.example.test/play.m3u8"></video>"""
+                } else {
+                    """
+                    <div class="captcha">
+                      <img src="/play-captcha.png" />
+                    </div>
+                    """.trimIndent()
+                }
+            },
+        )
+        val summary = CartoonSummary("cartoon", source.key)
+        val playLine = PlayLine("line", "Line", arrayListOf())
+        val episode = Episode("ep1", "EP1", 1)
+
+        try {
+            executor.loadPlay(summary, playLine, episode)
+            fail("Expected play captcha business exception")
+        } catch (e: ParserException) {
+            val business = e.exception as PlayInfoNeedWebViewCheckBusinessException
+            assertEquals(BusinessActionType.DIALOG_CAPTCHA, business.actionType)
+            assertEquals("https://example.test/play-captcha.png", business.dialogCaptchaParam?.image)
+        }
+
+        val playerInfo = executor.loadPlay(
+            summary,
+            playLine,
+            episode,
+            VerificationResult.ImageCaptcha("5678"),
+        )
+        assertEquals(PlayerInfo.DECODE_TYPE_HLS, playerInfo.decodeType)
+        assertEquals("https://cdn.example.test/play.m3u8", playerInfo.uri)
+        assertEquals("https://example.test/captcha/check?verify=5678", urls.last())
     }
 
     private object FakeNetworkHelper : NetworkHelper {

@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.plugin.source.jsengine.entity
+package com.heyanle.easybangumi4.plugin.source.js.entity
 
 import java.util.ArrayList
 import java.util.Objects
@@ -7,7 +7,7 @@ class MainTab (
     val label: String,
     val type: Int,
 
-    // js 维护用以透传数据
+    // js 缁存姢鐢ㄤ互閫忎紶鏁版嵁
     val ext: Object?,
 ) {
     companion object {
@@ -22,7 +22,7 @@ class MainTab (
 class NonLabelMainTab(
     val type: Int,
 
-    // js 维护用以透传数据
+    // js 缁存姢鐢ㄤ互閫忎紶鏁版嵁
     val ext: Object?,
 ): ArrayList<MainTab>() {
     constructor(type: Int): this(type, null)
@@ -32,7 +32,7 @@ class SubTab (
     val label: String,
     val isCover: Boolean,
 
-    // js 维护用以透传数据
+    // js 缁存姢鐢ㄤ互閫忎紶鏁版嵁
     val ext: String?,
 ){
     constructor(label: String, isCover: Boolean): this(label, isCover, null)

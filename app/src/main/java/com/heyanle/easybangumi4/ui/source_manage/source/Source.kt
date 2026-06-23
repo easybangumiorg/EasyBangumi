@@ -34,7 +34,7 @@ import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.cartoon.story.local.source.LocalSource
 import com.heyanle.easybangumi4.navigationSetting
 import com.heyanle.easybangumi4.navigationSourceConfig
-import com.heyanle.easybangumi4.plugin.source.jsengine.source.getIconWithAsyncOrDrawable
+import com.heyanle.easybangumi4.plugin.source.js.source.getIconWithAsyncOrDrawable
 import com.heyanle.easybangumi4.plugin.source.ConfigSource
 import com.heyanle.easybangumi4.plugin.source.LocalSourceBundleController
 import com.heyanle.easybangumi4.plugin.source.SourceInfo

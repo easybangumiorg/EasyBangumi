@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.plugin.source.jsengine
+package com.heyanle.easybangumi4.plugin.source.js
 
 /**
  * Created by heyanle on 2024/7/29.

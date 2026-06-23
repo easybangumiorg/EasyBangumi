@@ -1,11 +1,11 @@
-package com.heyanle.easybangumi4.plugin.source.jsengine.source
+package com.heyanle.easybangumi4.plugin.source.js.source
 
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.util.Base64
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Javascript
-import com.heyanle.easybangumi4.plugin.source.jsengine.runtime.JSScope
+import com.heyanle.easybangumi4.plugin.source.js.runtime.JSScope
 import com.heyanle.easybangumi4.plugin.source.js.SourceMetadata
 import com.heyanle.easybangumi4.plugin.api.IconSource
 import com.heyanle.easybangumi4.plugin.api.Source
@@ -24,13 +24,13 @@ class JsSource(
 
     companion object {
         const val JS_IMPORT = """
-            importPackage(Packages.com.heyanle.easybangumi4.plugin.source.jsengine.runtime);
-            importPackage(Packages.com.heyanle.easybangumi4.plugin.source.jsengine.entity);
+            importPackage(Packages.com.heyanle.easybangumi4.plugin.source.js.runtime);
+            importPackage(Packages.com.heyanle.easybangumi4.plugin.source.js.entity);
             importPackage(Packages.com.heyanle.easybangumi4.plugin.source.js);
             importPackage(Packages.com.heyanle.easybangumi4.plugin.api);
             importPackage(Packages.com.heyanle.easybangumi4.plugin.api.utils.api);
             importPackage(Packages.com.heyanle.easybangumi4.plugin.api.entity);
-            importPackage(Packages.com.heyanle.easybangumi4.plugin.source.jsengine.utils);
+            importPackage(Packages.com.heyanle.easybangumi4.plugin.source.js.utils);
             importPackage(Packages.com.heyanle.easybangumi4.plugin.api.component.preference);
             
             importPackage(Packages.kotlin.text);
@@ -90,7 +90,7 @@ class JsSource(
 
 
 
-    // 轻量级插件的业务注册交给 JSComponentBundle 处理
+    // 杞婚噺绾ф彃浠剁殑涓氬姟娉ㄥ唽浜ょ粰 JSComponentBundle 澶勭悊
     override fun register(): List<KClass<*>> {
         return emptyList()
     }

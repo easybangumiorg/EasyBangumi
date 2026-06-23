@@ -1,6 +1,6 @@
 package com.heyanle.easybangumi4.plugin.source.utils.network.web
 
-import com.heyanle.easybangumi4.plugin.source.jsengine.utils.WebViewProxyKtWrapper
+import com.heyanle.easybangumi4.plugin.source.js.utils.WebViewProxyKtWrapper
 import com.heyanle.easybangumi4.utils.WebViewManager
 
 /**

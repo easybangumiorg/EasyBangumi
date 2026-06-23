@@ -1,9 +1,9 @@
 package com.heyanle.easybangumi4.plugin.source
 
 import com.heyanle.easybangumi4.base.DataResult
-import com.heyanle.easybangumi4.plugin.source.jsengine.runtime.JSRuntimeProvider
-import com.heyanle.easybangumi4.plugin.source.jsengine.source.JSComponentBundle
-import com.heyanle.easybangumi4.plugin.source.jsengine.source.JsSource
+import com.heyanle.easybangumi4.plugin.source.js.runtime.JSRuntimeProvider
+import com.heyanle.easybangumi4.plugin.source.js.source.JSComponentBundle
+import com.heyanle.easybangumi4.plugin.source.js.source.JsSource
 import com.heyanle.easybangumi4.plugin.source.ConfigSource
 import com.heyanle.easybangumi4.plugin.source.ISourceController
 import com.heyanle.easybangumi4.plugin.source.InnerSourceMaster

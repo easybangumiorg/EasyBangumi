@@ -1,8 +1,8 @@
-package com.heyanle.easybangumi4.plugin.source.jsengine.component
+package com.heyanle.easybangumi4.plugin.source.js.component
 
-import com.heyanle.easybangumi4.plugin.source.jsengine.runtime.JSScope
-import com.heyanle.easybangumi4.plugin.source.jsengine.utils.JSFunction
-import com.heyanle.easybangumi4.plugin.source.jsengine.utils.jsUnwrap
+import com.heyanle.easybangumi4.plugin.source.js.runtime.JSScope
+import com.heyanle.easybangumi4.plugin.source.js.utils.JSFunction
+import com.heyanle.easybangumi4.plugin.source.js.utils.jsUnwrap
 import com.heyanle.easybangumi4.plugin.source.utils.network.web.IWebProxy
 import com.heyanle.easybangumi4.plugin.source.utils.network.web.WebProxyManager
 import com.heyanle.easybangumi4.plugin.api.ParserException
@@ -11,6 +11,8 @@ import com.heyanle.easybangumi4.plugin.api.component.ComponentWrapper
 import com.heyanle.easybangumi4.plugin.api.component.SearchNeedWebViewCheckBusinessException
 import com.heyanle.easybangumi4.plugin.api.component.NeedWebViewCheckExceptionInner
 import com.heyanle.easybangumi4.plugin.api.component.SearchWebViewCheckParam
+import com.heyanle.easybangumi4.plugin.api.component.VerificationParam
+import com.heyanle.easybangumi4.plugin.api.component.VerificationResult
 import com.heyanle.easybangumi4.plugin.api.component.search.SearchComponent
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonCover
 import com.heyanle.easybangumi4.plugin.api.withResult
@@ -38,7 +40,7 @@ class JSSearchComponent(
             return jsScope.runWithScope { _, scriptable ->
                 val search = scriptable.get(FUNCTION_NAME_SEARCH, scriptable) as? JSFunction
                     ?: return@runWithScope null
-                // 该函数为非必须
+                // 璇ュ嚱鏁颁负闈炲繀椤?
                 val searchWithCheck = scriptable.get(FUNCTION_NAME_SEARCH_WITH_CHECK, scriptable) as? JSFunction
                 return@runWithScope JSSearchComponent(jsScope, search, searchWithCheck)
             }
@@ -46,24 +48,26 @@ class JSSearchComponent(
     }
 
 
-    // 这里因为不支持异步，因此强迫从 0 开始，交给 js 端处理
+    // 杩欓噷鍥犱负涓嶆敮鎸佸紓姝ワ紝鍥犳寮鸿揩浠?0 寮€濮嬶紝浜ょ粰 js 绔鐞?
     override fun getFirstSearchKey(keyword: String): Int {
         URLEncoder.encode(keyword, "utf-8")
         return 0
     }
 
-    suspend fun searchWithCheck(
+    override suspend fun search(
         pageKey: Int,
         keyword: String,
-        iWebProxy: IWebProxy
+        verificationResult: VerificationResult,
     ): SourceResult<Pair<Int?, List<CartoonCover>>> {
+        val iWebProxy = (verificationResult as? VerificationResult.WebView)?.iWebProxy
+            ?: return SourceResult.Error(ParserException("unsupported verification result"), true)
         if (searchWithCheck == null){
             throw ParserException("js parse error")
         }
         return withResult(Dispatchers.IO) {
             return@withResult jsScope.requestRunWithScope { context, scriptable ->
                 try {
-                    // 将该 webview 补入到 webProxyManager 中
+                    // 灏嗚 webview 琛ュ叆鍒?webProxyManager 涓?
                     webProxyManager?.addWebProxy(iWebProxy)
                     val res = search.call(
                         context,
@@ -87,15 +91,15 @@ class JSSearchComponent(
                     webProxyManager?.close()
                     nextKey to data.filterIsInstance<CartoonCover>()
                 } catch (e: Exception) {
-                    // 有点 hard ，但是不管了，旧版本都要不维护了
-                    // 如果需要过验证，需要先把那个 WebView 的生命周期提升
-                    // 递归验证
+                    // 鏈夌偣 hard 锛屼絾鏄笉绠′簡锛屾棫鐗堟湰閮借涓嶇淮鎶や簡
+                    // 濡傛灉闇€瑕佽繃楠岃瘉锛岄渶瑕佸厛鎶婇偅涓?WebView 鐨勭敓鍛藉懆鏈熸彁鍗?
+                    // 閫掑綊楠岃瘉
                     if (e is WrappedException) {
                         val e = e.wrappedException
                         if (e is NeedWebViewCheckExceptionInner) {
                             webProxyManager?.removeWebProxy(e.iWebProxy)
                             webProxyManager?.close()
-                            // 必须要 ParserException 才会透传
+                            // 蹇呴』瑕?ParserException 鎵嶄細閫忎紶
                             throw ParserException(message = "need web check", exception = SearchNeedWebViewCheckBusinessException(
                                 param = SearchWebViewCheckParam(
                                     key = pageKey,
@@ -103,7 +107,8 @@ class JSSearchComponent(
                                     source = source.key,
                                     iWebProxy = e.iWebProxy,
                                     tips = e.tips
-                                )
+                                ),
+                                verificationParam = VerificationParam.WebView(e.iWebProxy, e.tips),
                             ))
                         }
 
@@ -145,14 +150,14 @@ class JSSearchComponent(
                         this.logi("JSSearchComponent")
                     }
                 } catch (e: Exception) {
-                    // 有点 hard ，但是不管了，旧版本都要不维护了
-                    // 如果需要过验证，需要先把那个 WebView 的生命周期提升
+                    // 鏈夌偣 hard 锛屼絾鏄笉绠′簡锛屾棫鐗堟湰閮借涓嶇淮鎶や簡
+                    // 濡傛灉闇€瑕佽繃楠岃瘉锛岄渶瑕佸厛鎶婇偅涓?WebView 鐨勭敓鍛藉懆鏈熸彁鍗?
                     if (e is WrappedException) {
                         val e = e.wrappedException
                         if (e is NeedWebViewCheckExceptionInner) {
                             webProxyManager?.removeWebProxy(e.iWebProxy)
                             webProxyManager?.close()
-                            // 必须要 ParserException 才会透传
+                            // 蹇呴』瑕?ParserException 鎵嶄細閫忎紶
                             throw ParserException(message = "need web check", SearchNeedWebViewCheckBusinessException(
                                 param = SearchWebViewCheckParam(
                                     key = pageKey,
@@ -160,7 +165,8 @@ class JSSearchComponent(
                                     source = source.key,
                                     iWebProxy = e.iWebProxy,
                                     tips = e.tips
-                                )
+                                ),
+                                verificationParam = VerificationParam.WebView(e.iWebProxy, e.tips),
                             ))
                         }
 
@@ -185,7 +191,5 @@ suspend fun SearchComponent.searchWithCheck(
     keyword: String,
     iWebProxy: IWebProxy
 ): SourceResult<Pair<Int?, List<CartoonCover>>> {
-    return (this as JSSearchComponent).searchWithCheck(
-        pageKey, keyword, iWebProxy
-    )
+    return search(pageKey, keyword, VerificationResult.WebView(iWebProxy))
 }

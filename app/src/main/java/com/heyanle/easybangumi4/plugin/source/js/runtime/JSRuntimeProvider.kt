@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.plugin.source.jsengine.runtime
+package com.heyanle.easybangumi4.plugin.source.js.runtime
 
 /**
  * Created by heyanle on 2024/7/30.

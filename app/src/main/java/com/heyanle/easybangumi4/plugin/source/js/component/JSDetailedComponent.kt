@@ -1,8 +1,8 @@
-package com.heyanle.easybangumi4.plugin.source.jsengine.component
+package com.heyanle.easybangumi4.plugin.source.js.component
 
-import com.heyanle.easybangumi4.plugin.source.jsengine.runtime.JSScope
-import com.heyanle.easybangumi4.plugin.source.jsengine.utils.JSFunction
-import com.heyanle.easybangumi4.plugin.source.jsengine.utils.jsUnwrap
+import com.heyanle.easybangumi4.plugin.source.js.runtime.JSScope
+import com.heyanle.easybangumi4.plugin.source.js.utils.JSFunction
+import com.heyanle.easybangumi4.plugin.source.js.utils.jsUnwrap
 import com.heyanle.easybangumi4.plugin.source.utils.network.web.WebProxyManager
 import com.heyanle.easybangumi4.plugin.source.utils.network.web.WebProxyProvider
 import com.heyanle.easybangumi4.plugin.api.ParserException
