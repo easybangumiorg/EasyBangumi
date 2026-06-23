@@ -3,6 +3,7 @@ package com.heyanle.easybangumi4.ui.cartoon_play.view_model
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.SurfaceTexture
+import android.util.Log
 import android.view.TextureView
 import androidx.annotation.OptIn
 import androidx.compose.runtime.mutableStateOf
@@ -14,6 +15,7 @@ import androidx.media3.common.C
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DataSourceException
 import androidx.media3.exoplayer.ExoPlayer
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
@@ -83,6 +85,7 @@ class CartoonPlayingViewModel(
     private var playingInfo: PlayerInfo? = null
     private var playingInfoIsCache: Boolean = false
     private var forceNoCacheRetrying: Boolean = false
+    private var forceClearMediaCacheRetrying: Boolean = false
 
     // 播放状态 =================================================
     data class PlayingState(
@@ -422,7 +425,7 @@ class CartoonPlayingViewModel(
                 playingEpisode = cartoonPlayingState.episode
                 playingInfoIsCache = it.isCache
                 forceNoCacheRetrying = false
-                innerPlay(it.data, adviceProcess)
+                innerPlay(it.data, adviceProcess, canMediaCache = canCache)
             }
             .error { state ->
                 yield()
@@ -465,7 +468,11 @@ class CartoonPlayingViewModel(
 
 
     @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-    private suspend fun innerPlay(playerInfo: PlayerInfo, adviceProcess: Long) {
+    private suspend fun innerPlay(
+        playerInfo: PlayerInfo,
+        adviceProcess: Long,
+        canMediaCache: Boolean = true,
+    ) {
         exoPlayer.pause()
         if (lastJob?.isCancelled != false || lastJob?.isActive != true) {
             return
@@ -497,7 +504,7 @@ class CartoonPlayingViewModel(
         playingInfo = playerInfo
         // 本地番源不过缓存
         val media =
-            if (cartoonPlayingState?.cartoonSummary?.source?.equals(LocalSource.LOCAL_SOURCE_KEY) == true)
+            if (!canMediaCache || cartoonPlayingState?.cartoonSummary?.source?.equals(LocalSource.LOCAL_SOURCE_KEY) == true)
                 cartoonMediaSourceFactory.getWithoutCache(playerInfo) else
                 cartoonMediaSourceFactory.getWithCache(playerInfo)
         exoPlayer.setMediaSource(media, adviceProcess)
@@ -575,6 +582,7 @@ class CartoonPlayingViewModel(
         if (playbackState == Player.STATE_READY) {
             exoPlayer.duration.logi(TAG)
             duringTemp = exoPlayer.duration
+            forceClearMediaCacheRetrying = false
         }
         if (_playingState.value.isPlaying && !exoPlayer.playWhenReady && exoPlayer.isMedia()) {
             trySaveHistory()
@@ -585,6 +593,16 @@ class CartoonPlayingViewModel(
 
     override fun onPlayerError(error: PlaybackException) {
         super.onPlayerError(error)
+        var cause: Throwable? = error
+        var level = 0
+        while (cause != null) {
+            Log.e(TAG, "playback cause[$level]: ${cause::class.java.name}: ${cause.message}", cause)
+            cause = cause.cause
+            level++
+        }
+        if (error.hasReadPositionOutOfRangeCause() && tryClearMediaCacheAndRetry()) {
+            return
+        }
         if (playingInfoIsCache) {
             tryRefreshNoCache()
             return
@@ -598,6 +616,36 @@ class CartoonPlayingViewModel(
                 errorThrowable = error,
             )
         }
+    }
+
+    private fun tryClearMediaCacheAndRetry(): Boolean {
+        if (forceClearMediaCacheRetrying) return false
+        val playerInfo = playingInfo ?: return false
+        forceClearMediaCacheRetrying = true
+        val position = exoPlayer.currentPosition.coerceAtLeast(0L)
+        lastJob?.cancel()
+        lastJob = scope.launch {
+            runCatching {
+                cartoonMediaSourceFactory.removeNormalCache(playerInfo)
+            }.onFailure {
+                Log.e(TAG, "remove media cache failed: ${it.message}", it)
+            }
+            innerPlay(playerInfo, position, canMediaCache = false)
+        }
+        return true
+    }
+
+    private fun Throwable.hasReadPositionOutOfRangeCause(): Boolean {
+        var cause: Throwable? = this
+        while (cause != null) {
+            if (cause is DataSourceException &&
+                cause.reason == PlaybackException.ERROR_CODE_IO_READ_POSITION_OUT_OF_RANGE
+            ) {
+                return true
+            }
+            cause = cause.cause
+        }
+        return false
     }
 
     override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
