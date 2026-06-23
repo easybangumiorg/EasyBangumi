@@ -9,6 +9,7 @@ import com.heyanle.easybangumi4.plugin.api.entity.CartoonSummary
 import com.heyanle.easybangumi4.plugin.api.entity.Episode
 import com.heyanle.easybangumi4.plugin.api.entity.PlayLine
 import com.heyanle.easybangumi4.plugin.api.entity.PlayerInfo
+import com.heyanle.easybangumi4.utils.logi
 
 /**
  * Created by HeYanLe on 2023/10/18 23:28.
@@ -35,6 +36,9 @@ interface PlayComponent: Component {
         canCache: Boolean = true,
     ): SourceResult<PlayerInfo> {
         return getPlayInfo(CartoonSummary(cartoon.id, cartoon.source), playLine, episode, canCache)
+            .apply {
+                this@PlayComponent.logi("PlayComponent")
+            }
     }
 
     suspend fun getPlayInfo(
@@ -45,6 +49,9 @@ interface PlayComponent: Component {
         canCache: Boolean = true,
     ): SourceResult<PlayerInfo> {
         return getPlayInfo(summary, playLine, episode, canCache)
+            .apply {
+                this@PlayComponent.logi("PlayComponent")
+            }
     }
 
     suspend fun getPlayInfo(
@@ -55,5 +62,8 @@ interface PlayComponent: Component {
         canCache: Boolean = true,
     ): SourceResult<PlayerInfo> {
         return getPlayInfo(CartoonSummary(cartoon.id, cartoon.source), playLine, episode, verificationResult, canCache)
+            .apply {
+                this@PlayComponent.logi("PlayComponent")
+            }
     }
 }

@@ -45,6 +45,11 @@ class PlayComponentCacheWrapperTest {
             assertEquals("https://cdn.example.test/video-2.m3u8", third.data.uri)
             assertEquals(2, delegate.callCount)
             assertEquals(false, delegate.lastCanCache)
+
+            val fourth = wrapper.getPlayInfo(summary, playLine, episode) as SourceResult.Complete
+            assertTrue(fourth.isCache)
+            assertEquals("https://cdn.example.test/video-2.m3u8", fourth.data.uri)
+            assertEquals(2, delegate.callCount)
         } finally {
             cacheFolder.deleteRecursively()
         }

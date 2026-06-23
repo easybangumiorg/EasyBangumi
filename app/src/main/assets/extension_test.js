@@ -279,7 +279,7 @@ function PlayComponent_getPlayInfo(summary, playLine, episode) {
         urlPath = "GV"+ summary.id + "-" + playLine.id + "-" + episode.id;
     }
     var url = JSSourceUtils.urlParser(getRootUrl(), "play" + urlPath + "/");
-    var strategy = new RenderHelper.VideoStrategy(
+    var strategy = new JsVideoStrategy(
         url,
         networkHelper.defaultLinuxUA,
         null,

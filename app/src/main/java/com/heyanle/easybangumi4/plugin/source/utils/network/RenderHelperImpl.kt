@@ -6,6 +6,10 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import com.heyanle.easybangumi4.plugin.api.utils.api.JsRenderedResult
+import com.heyanle.easybangumi4.plugin.api.utils.api.JsRenderedStrategy
+import com.heyanle.easybangumi4.plugin.api.utils.api.JsVideoResult
+import com.heyanle.easybangumi4.plugin.api.utils.api.JsVideoStrategy
 import com.heyanle.easybangumi4.plugin.api.utils.api.RenderHelper
 import com.heyanle.easybangumi4.plugin.source.utils.LightweightGettingWebViewClient
 import com.heyanle.easybangumi4.utils.clearWeb
@@ -359,35 +363,107 @@ class RenderHelperImpl(
 
     private val scope = MainScope()
 
-    override fun renderHtmlFromJs(strategy: RenderHelper.RenderedStrategy): RenderHelper.RenderedResult {
+    override fun renderHtmlFromJs(strategy: JsRenderedStrategy): JsRenderedResult {
+        val renderedStrategy = strategy.toRenderedStrategy()
         var res: RenderHelper.RenderedResult? = null
         val countDownLatch = CountDownLatch(1)
         scope.launch {
-            res = renderedHtml(strategy)
+            res = renderedHtml(renderedStrategy)
             countDownLatch.countDown()
         }
         countDownLatch.await(10, TimeUnit.SECONDS)
-        return res ?: RenderHelper.RenderedResult(
-            strategy = strategy,
+        return (res ?: RenderHelper.RenderedResult(
+            strategy = renderedStrategy,
             url = "",
             isTimeout = true,
             content = "",
             interceptResource = ""
-        )
+        )).toJsRenderedResult()
     }
 
-    override fun renderVideoFromJs(strategy: RenderHelper.VideoStrategy): RenderHelper.VideoResult {
+    override fun renderVideoFromJs(strategy: JsVideoStrategy): JsVideoResult {
+        val videoStrategy = strategy.toVideoStrategy()
         var res: RenderHelper.VideoResult? = null
         val countDownLatch = CountDownLatch(1)
         scope.launch {
-            res = renderVideo(strategy)
+            res = renderVideo(videoStrategy)
             countDownLatch.countDown()
         }
-        countDownLatch.await(strategy.timeOut + 1000L, TimeUnit.MILLISECONDS)
-        return res ?: RenderHelper.VideoResult(
-            strategy = strategy,
+        countDownLatch.await(videoStrategy.timeOut + 1000L, TimeUnit.MILLISECONDS)
+        return (res ?: RenderHelper.VideoResult(
+            strategy = videoStrategy,
             url = "",
             isTimeout = true,
+            isM3u8 = false
+        )).toJsVideoResult()
+    }
+
+    private fun JsRenderedStrategy.toRenderedStrategy(): RenderHelper.RenderedStrategy {
+        return RenderHelper.RenderedStrategy(
+            url = url,
+            callBackRegex = callBackRegex,
+            encoding = encoding,
+            userAgentString = userAgentString,
+            header = header,
+            actionJs = actionJs,
+            isBlockBlob = isBlockBlob,
+            timeOut = timeOut,
+            isBlockResource = isBlockResource,
+        )
+    }
+
+    private fun RenderHelper.RenderedResult.toJsRenderedResult(): JsRenderedResult {
+        return JsRenderedResult(
+            strategy.toJsRenderedStrategy(),
+            url,
+            isTimeout,
+            content,
+            interceptResource,
+        )
+    }
+
+    private fun RenderHelper.RenderedStrategy.toJsRenderedStrategy(): JsRenderedStrategy {
+        return JsRenderedStrategy(
+            url,
+            callBackRegex,
+            encoding,
+            userAgentString,
+            header,
+            actionJs,
+            isBlockBlob,
+            timeOut,
+            isBlockResource,
+        )
+    }
+
+    private fun JsVideoStrategy.toVideoStrategy(): RenderHelper.VideoStrategy {
+        return RenderHelper.VideoStrategy(
+            url = url,
+            userAgentString = userAgentString,
+            header = header,
+            actionJs = actionJs,
+            timeOut = timeOut,
+            useLegacyParser = useLegacyParser,
+        )
+    }
+
+    private fun RenderHelper.VideoResult.toJsVideoResult(): JsVideoResult {
+        return JsVideoResult(
+            strategy.toJsVideoStrategy(),
+            url,
+            isTimeout,
+            isM3u8,
+        )
+    }
+
+    private fun RenderHelper.VideoStrategy.toJsVideoStrategy(): JsVideoStrategy {
+        return JsVideoStrategy(
+            url,
+            userAgentString,
+            header,
+            actionJs,
+            timeOut,
+            useLegacyParser,
         )
     }
 
@@ -539,9 +615,7 @@ class RenderHelperImpl(
                         scope.launch(Dispatchers.IO) {
                             val probe = probeVideoUrl(normalized, strategy)
                             if (probe != null) {
-                                withContext(Dispatchers.Main) {
-                                    complete(probe.url, isM3u8Hook = probe.isM3u8)
-                                }
+                                complete(probe.url, isM3u8Hook = probe.isM3u8)
                             }
                         }
                     }
@@ -595,12 +669,10 @@ class RenderHelperImpl(
                             if (!strategy.useLegacyParser && isVideoRequest(url, request?.requestHeaders)) {
                                 debugLog("renderVideo intercept candidate page=${strategy.url} url=$url")
                                 fallbackVideoUrl = normalizeVideoUrl(url, strategy.url)
-                                webview.post {
-                                    if (isM3u8Url(url)) {
-                                        complete(url, isM3u8Hook = true)
-                                    } else {
-                                        probeAndComplete(url)
-                                    }
+                                if (isM3u8Url(url)) {
+                                    complete(url, isM3u8Hook = true)
+                                } else {
+                                    probeAndComplete(url)
                                 }
                             }
                             return super.shouldInterceptRequest(view, request)
@@ -610,9 +682,7 @@ class RenderHelperImpl(
                         override fun shouldInterceptRequest(view: WebView?, url: String?): WebResourceResponse? {
                             if (!strategy.useLegacyParser && isM3u8Url(url)) {
                                 debugLog("renderVideo intercept m3u8 page=${strategy.url} url=$url")
-                                webview.post {
-                                    complete(url, isM3u8Hook = true)
-                                }
+                                complete(url, isM3u8Hook = true)
                             }
                             return super.shouldInterceptRequest(view, url)
                         }

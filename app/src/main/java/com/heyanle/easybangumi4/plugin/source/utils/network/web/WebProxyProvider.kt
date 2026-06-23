@@ -18,7 +18,7 @@ class WebProxyProvider(
 
     fun getRawWebProxy(): IWebProxy? {
         val webProxy = WebProxyImpl(webViewManager)
-        webProxyManager.addWebProxy(webProxy)
+//        webProxyManager.addWebProxy(webProxy)
         return webProxy
     }
 

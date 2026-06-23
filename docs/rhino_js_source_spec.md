@@ -224,7 +224,7 @@ webProxy.close();
 JS 中只能使用非 suspend 桥接方法：
 
 ```js
-var htmlResult = renderHelper.renderHtmlFromJs(new RenderHelper.RenderedStrategy(
+var htmlResult = renderHelper.renderHtmlFromJs(new JsRenderedStrategy(
     url,
     "",
     "utf-8",
@@ -240,7 +240,7 @@ var htmlResult = renderHelper.renderHtmlFromJs(new RenderHelper.RenderedStrategy
 播放嗅探：
 
 ```js
-var result = renderHelper.renderVideoFromJs(new RenderHelper.VideoStrategy(
+var result = renderHelper.renderVideoFromJs(new JsVideoStrategy(
     url,
     networkHelper.defaultLinuxUA,
     new HashMap(),
@@ -514,7 +514,7 @@ function PlayComponent_getPlayInfo(summary, playLine, episode) {
 ```js
 function PlayComponent_getPlayInfo(summary, playLine, episode) {
     var pageUrl = "";
-    var result = renderHelper.renderVideoFromJs(new RenderHelper.VideoStrategy(
+    var result = renderHelper.renderVideoFromJs(new JsVideoStrategy(
         pageUrl,
         networkHelper.defaultLinuxUA,
         new HashMap(),

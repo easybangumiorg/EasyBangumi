@@ -67,7 +67,7 @@ class JSSearchComponent(
             return@withResult jsScope.requestRunWithScope { context, scriptable ->
                 try {
                     // 将该 webview 补入到 webProxyManager 中
-                    webProxyManager?.addWebProxy(iWebProxy)
+//                    webProxyManager?.addWebProxy(iWebProxy)
                     val res = searchWithCheck.call(
                         context,
                         scriptable,

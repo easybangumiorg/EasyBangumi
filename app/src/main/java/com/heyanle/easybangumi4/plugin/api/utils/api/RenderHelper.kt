@@ -35,14 +35,14 @@ interface RenderHelper {
         val strategy: VideoStrategy,
         val url: String,
         val isTimeout: Boolean,
-        val isM3u8: Boolean = false,
+        val isM3u8: Boolean,
     )
 
     suspend fun renderedHtml(strategy: RenderedStrategy): RenderedResult
 
     suspend fun renderVideo(strategy: VideoStrategy): VideoResult
 
-    fun renderHtmlFromJs(strategy: RenderedStrategy): RenderedResult
+    fun renderHtmlFromJs(strategy: JsRenderedStrategy): JsRenderedResult
 
-    fun renderVideoFromJs(strategy: VideoStrategy): VideoResult
+    fun renderVideoFromJs(strategy: JsVideoStrategy): JsVideoResult
 }

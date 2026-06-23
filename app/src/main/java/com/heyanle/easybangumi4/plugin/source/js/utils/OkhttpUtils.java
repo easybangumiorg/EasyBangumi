@@ -32,6 +32,10 @@ public class OkhttpUtils {
         return OkhttpRequestKtWrapper.INSTANCE.postFormBody(url, fromBody);
     }
 
+    public static Request postFromBody(String url, Map<String, Object> fromBody, Map<String, Object> header){
+        return OkhttpRequestKtWrapper.INSTANCE.postFormBody(url, fromBody, header);
+    }
+
 
 
 

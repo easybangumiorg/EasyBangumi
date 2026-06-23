@@ -213,6 +213,7 @@ dependencies {
     //implementation(libs.bundles.appcenter)
 
     implementation(libs.jsoup)
+    implementation(libs.jsoup.xpath)
     implementation(libs.gson)
     implementation(libs.moshi)
 

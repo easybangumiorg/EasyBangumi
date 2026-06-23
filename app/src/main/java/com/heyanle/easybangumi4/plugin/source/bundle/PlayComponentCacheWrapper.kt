@@ -46,9 +46,11 @@ class PlayComponentCacheWrapper(
             read(cacheKey)?.let {
                 return SourceResult.Complete(it, isCache = true)
             }
+        } else {
+            delete(cacheKey)
         }
         val result = delegate.getPlayInfo(summary, playLine, episode, canCache = false)
-        if (canCache && result is SourceResult.Complete && !result.isCache) {
+        if (result is SourceResult.Complete && !result.isCache) {
             write(cacheKey, result.data)
         }
         return result
@@ -62,6 +64,9 @@ class PlayComponentCacheWrapper(
         canCache: Boolean,
     ): SourceResult<PlayerInfo> {
         val cacheKey = cacheKey(summary, playLine, episode)
+        if (!canCache) {
+            delete(cacheKey)
+        }
         val result = delegate.getPlayInfo(
             summary = summary,
             playLine = playLine,
@@ -69,7 +74,7 @@ class PlayComponentCacheWrapper(
             verificationResult = verificationResult,
             canCache = false,
         )
-        if (canCache && result is SourceResult.Complete && !result.isCache) {
+        if (result is SourceResult.Complete && !result.isCache) {
             write(cacheKey, result.data)
         }
         return result
@@ -87,9 +92,11 @@ class PlayComponentCacheWrapper(
             read(cacheKey)?.let {
                 return SourceResult.Complete(it, isCache = true)
             }
+        } else {
+            delete(cacheKey)
         }
         val result = delegate.getPlayInfo(cartoon, playLine, episode, canCache = false)
-        if (canCache && result is SourceResult.Complete && !result.isCache) {
+        if (result is SourceResult.Complete && !result.isCache) {
             write(cacheKey, result.data)
         }
         return result
@@ -104,6 +111,9 @@ class PlayComponentCacheWrapper(
     ): SourceResult<PlayerInfo> {
         val summary = CartoonSummary(cartoon.id, cartoon.source)
         val cacheKey = cacheKey(summary, playLine, episode)
+        if (!canCache) {
+            delete(cacheKey)
+        }
         val result = delegate.getPlayInfo(
             cartoon = cartoon,
             playLine = playLine,
@@ -111,7 +121,7 @@ class PlayComponentCacheWrapper(
             verificationResult = verificationResult,
             canCache = false,
         )
-        if (canCache && result is SourceResult.Complete && !result.isCache) {
+        if (result is SourceResult.Complete && !result.isCache) {
             write(cacheKey, result.data)
         }
         return result
@@ -133,6 +143,15 @@ class PlayComponentCacheWrapper(
         val file = File(cacheRoot, "$key.json")
         runCatching {
             file.writeText(cacheAdapter.toJson(CachedPlayerInfo.from(playerInfo)))
+        }
+    }
+
+    private suspend fun delete(key: String) = withContext(Dispatchers.IO) {
+        val file = File(cacheRoot, "$key.json")
+        runCatching {
+            if (file.isFile) {
+                file.delete()
+            }
         }
     }
 

@@ -242,7 +242,7 @@ function PlayComponent_getPlayInfo(summary, playLine, episode) {
 }
 
 function renderVideo(url, timeout, legacy) {
-    var result = renderHelper.renderVideoFromJs(new RenderHelper.VideoStrategy(
+    var result = renderHelper.renderVideoFromJs(new JsVideoStrategy(
         url,
         networkHelper.defaultLinuxUA,
         new HashMap(),
@@ -250,11 +250,17 @@ function renderVideo(url, timeout, legacy) {
         timeout,
         legacy
     ));
-    var res = result == null ? "" : result.url;
+    var res = "";
+    if (result != null) {
+        res = result.url;
+    }
     if (res == null || res.length == 0) {
         throw new ParserException("url 解析失败");
     }
-    var type = result.isM3u8 ? PlayerInfo.DECODE_TYPE_HLS : PlayerInfo.DECODE_TYPE_OTHER;
+    var type = PlayerInfo.DECODE_TYPE_OTHER;
+    if (result.isM3u8) {
+        type = PlayerInfo.DECODE_TYPE_HLS;
+    }
     return new PlayerInfo(type, res);
 }
 

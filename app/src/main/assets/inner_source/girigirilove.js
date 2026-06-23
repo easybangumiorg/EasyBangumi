@@ -3,7 +3,7 @@
 // @versionName 1.5
 // @versionCode 7
 // @libVersion 15
-// @cover https://bgm.girigirilove.com/upload/site/20231121-1/fdd2694db66628a9deadd86e50aedd43.png
+// @cover https://ani.girigirilove.com/upload/site/20231121-1/fdd2694db66628a9deadd86e50aedd43.png
 
 // Inject
 var networkHelper = Inject_NetworkHelper;
@@ -15,7 +15,7 @@ var webProxyProvider = Inject_WebProxyProvider;
 // Hook PreferenceComponent ========================================
 function PreferenceComponent_getPreference() {
     var res = new ArrayList();
-    var host = new SourcePreference.Edit("网页", "HostV2", "https://bgm.girigirilove.com");
+    var host = new SourcePreference.Edit("网页", "HostV2", "https://ani.girigirilove.com");
     var playerUrl = new SourcePreference.Edit("播放器网页正则", "PlayerReg", "https://.*.girigirilove..*/zijian/.*");
     var timeout = new SourcePreference.Edit("超时时间", "Timeout", "10000");
     res.add(host);
@@ -73,7 +73,7 @@ function getContent(url) {
     var doc = getDoc(url);
     var list = new ArrayList();
     var elements = doc.select("div.border-box div.public-list-box");
-//     Log.i("GiriGiriLove", "size: " + elements.size());
+    Log.i("GiriGiriLove", "size: " + elements.size());
     for (var i = 0; i < elements.size() - 1; i++) {
         var it = elements.get(i);
 
@@ -225,6 +225,7 @@ function playline(doc, summary) {
         webProxy.needUserCheck("请输入验证码提交出现搜索结果后手动返回");
     }
 
+    webProxy.close();
     return getSearchResultWithDoc(page, keyword, doc);
  }
 
@@ -284,7 +285,7 @@ function PlayComponent_getPlayInfo(summary, playLine, episode) {
 }
 
 function renderVideo(url, timeout, legacy) {
-    var result = renderHelper.renderVideoFromJs(new RenderHelper.VideoStrategy(
+    var result = renderHelper.renderVideoFromJs(new JsVideoStrategy(
         url,
         networkHelper.defaultLinuxUA,
         new HashMap(),
@@ -292,11 +293,17 @@ function renderVideo(url, timeout, legacy) {
         timeout,
         legacy
     ));
-    var res = result == null ? "" : result.url;
+    var res = "";
+    if (result != null) {
+        res = result.url;
+    }
     if (res == null || res.length == 0) {
         throw new ParserException("url 解析失败");
     }
-    var type = result.isM3u8 ? PlayerInfo.DECODE_TYPE_HLS : PlayerInfo.DECODE_TYPE_OTHER;
+    var type = PlayerInfo.DECODE_TYPE_OTHER;
+    if (result.isM3u8) {
+        type = PlayerInfo.DECODE_TYPE_HLS;
+    }
     return new PlayerInfo(type, res);
 }
 
@@ -317,5 +324,5 @@ function getDoc(url) {
 }
 
 function getRootUrl() {
-    return preferenceHelper.get("HostV2", "https://bgm.girigirilove.com");
+    return preferenceHelper.get("HostV2", "https://ani.girigirilove.com");
 }
