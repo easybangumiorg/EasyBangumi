@@ -104,11 +104,15 @@ class SourceController(
         val userFiles = sourceFolder.listFiles()
             ?.filter {
                 it.isFile &&
-                    it.name.endsWith(PluginV3.JS_SOURCE_SUFFIX)
+                    it.name.endsWith(PluginV3.JS_SOURCE_SUFFIX) &&
+                    !isBlockedSourceFile(it)
             }
             ?.sortedBy { it.name }
             .orEmpty()
-        val files = userFiles + innerSourceFileProvider?.loadSourceFiles().orEmpty()
+        val innerFiles = innerSourceFileProvider?.loadSourceFiles()
+            ?.filter { !isBlockedSourceFile(it) }
+            .orEmpty()
+        val files = userFiles + innerFiles
 
         return files.map { file ->
             scope.async(Dispatchers.IO) {
@@ -176,6 +180,10 @@ class SourceController(
         return JsSourceFileLoader(file, jsRuntimeProvider).load()
     }
 
+    private fun isBlockedSourceFile(file: File): Boolean {
+        return file.name.startsWith(BLOCKED_SOURCE_FILE_PREFIX)
+    }
+
     private class MetadataSource(
         override val key: String,
         override val label: String,
@@ -191,5 +199,9 @@ class SourceController(
 
     private fun String.toSafeFileName(): String {
         return replace(Regex("[^A-Za-z0-9._-]"), "_").ifBlank { "source" }
+    }
+
+    private companion object {
+        const val BLOCKED_SOURCE_FILE_PREFIX = "block-"
     }
 }

@@ -1,0 +1,59 @@
+key	file	android_search	http_code	time	classification	search_url	error
+kazumi.1ani	block-kazumi-1ani.js	空	200	0.812010	域名停放/未配置，放弃；浏览器 JS 防护页，放弃	https://anime.d1dm.xyz/vodsearch/-------------.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.233dm	block-kazumi-233dm.js	失败	000	0.076836	SSL/握手失败，放弃	https://www.233dm.cc/vs.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	LibreSSL SSL_connect: SSL_ERROR_SYSCALL in connection to www.233dm.cc:443
+kazumi.295yhw	block-kazumi-295yhw.js	失败	000	6.002263	连接或响应超时，放弃	https://www.295yhw.com/search/-------------.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A&submit=	SSL connection timeout
+kazumi.80tv	block-kazumi-80tv.js	失败	404	0.568770	HTTP 404，搜索接口/服务器不可用，放弃	https://www.80s-tv.com/search.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A&submit=	
+kazumi.aafun	block-kazumi-aafun.js	失败	200	0.159911	浏览器 JS 防护页，放弃	https://www.aafun.cc/feng-s.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A&submit=	
+kazumi.akianime	block-kazumi-akianime.js	空	200	0.150756	浏览器 JS 防护页，放弃	https://www.akianime.cc/bgmsearch/-------------.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.anfuns	block-kazumi-anfuns.js	空	200	0.770564	HTTP 200 但无有效结果，放弃或待规则复查	https://www.anfuns.org/search.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.aowu	block-kazumi-aowu.js	失败	403	0.132414	HTTP 403，搜索接口/服务器不可用，放弃	https://www.aowu.tv/vods/?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.bf	block-kazumi-bf.js	失败	404	1.007028	HTTP 404，搜索接口/服务器不可用，放弃	https://bilfun.cc/bilfunsearch/-------------.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.bobodm	block-kazumi-bobodm.js	空	200	0.463552	HTTP 200 但无有效结果，放弃或待规则复查	http://www.bobodm.com/vodsearch/%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A-------------.html	
+kazumi.brovod	block-kazumi-brovod.js	失败	444	0.751685	HTTP 444，搜索接口/服务器不可用，放弃	https://www.brovod.com/ss/-------------/?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	HTTP/2 stream 1 was not closed cleanly: PROTOCOL_ERROR (err 1)
+kazumi.ciyuancheng	block-kazumi-ciyuancheng.js	空	200	0.235617	HTTP 200 但无有效结果，放弃或待规则复查	https://www.cycani.org/search.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.clicli	block-kazumi-clicli.js	空	200	0.702928	HTTP 200 但无有效结果，放弃或待规则复查	https://www.clicli.pro/search.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.cyfz	block-kazumi-cyfz.js	空	403	0.306818	HTTP 403，搜索接口/服务器不可用，放弃	https://www.cyfz.vip/search.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.dlma	block-kazumi-dlma.js	失败	404	0.672912	HTTP 404，搜索接口/服务器不可用，放弃	https://www.dmla5.com/search/-------------.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.dm84	block-kazumi-dm84.js	失败	522	0.628543	HTTP 522，搜索接口/服务器不可用，放弃	https://dmbus.cc/s----------.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.dmand	block-kazumi-dmand.js	失败	000	2.673352	SSL/握手失败，放弃	https://www.88dmw.com/index.php?m=vod-search-wd-%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	LibreSSL SSL_connect: SSL_ERROR_SYSCALL in connection to www.88dmw.com:443
+kazumi.dms	block-kazumi-dms.js	失败	000	0.469224	SSL/握手失败，放弃	https://www.agedms.com/index.php/vod/search.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	LibreSSL SSL_connect: SSL_ERROR_SYSCALL in connection to www.agedms.com:443
+kazumi.eacg	block-kazumi-eacg.js	失败	200	0.153382	页面含关键词但规则未提取结果，保留为规则/选择器问题	https://eacg1.com/vodsearch/-------------.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.fantuan	block-kazumi-fantuan.js	失败	200	0.885798	页面含关键词但规则未提取结果，保留为规则/选择器问题	https://acgpost.com/search.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.ffdm	block-kazumi-ffdm.js	失败	000	6.004150	连接或响应超时，放弃	https://www.ffdm.cc/search.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	SSL connection timeout
+kazumi.hfkzm	block-kazumi-hfkzm.js	空	200	1.161399	页面含关键词但规则未提取结果，保留为规则/选择器问题	https://hfkzm.com/search.php?searchword=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.hzdm	block-kazumi-hzdm.js	失败	404	0.827982	HTTP 404，搜索接口/服务器不可用，放弃	https://www.huazidm.com/vodsearch/-------------.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.if	block-kazumi-if.js	空	200	0.631092	HTTP 200 但无有效结果，放弃或待规则复查	https://www.lffun.com/vodsearch/-------------.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.jzsdm	block-kazumi-jzsdm.js	空	200	0.639585	域名停放/未配置，放弃；浏览器 JS 防护页，放弃	https://www.jzsdm1.com/index.php/vod/search.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.k8dm	block-kazumi-k8dm.js	失败	200	0.175750	页面含关键词但规则未提取结果，保留为规则/选择器问题	https://k8dm.com/index.php/vod/search.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.kimani	block-kazumi-kimani.js	失败	500	0.174034	HTTP 500，搜索接口/服务器不可用，放弃	https://kimani22.com/index.php/vod/search.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.libvio	block-kazumi-libvio.js	失败	404	0.118669	HTTP 404，搜索接口/服务器不可用，放弃	https://www.libvio.cc/search/-------------.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A&submit=	
+kazumi.lmm	block-kazumi-lmm.js	空	403	0.136782	HTTP 403，搜索接口/服务器不可用，放弃	https://www.lmm85.com/vod/search.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.mandao	block-kazumi-mandao.js	失败	000	12.006922	连接或响应超时，放弃	https://www.mengdao.tv/search.php?searchword=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	Operation timed out after 12006 milliseconds with 0 bytes received
+kazumi.mcy	block-kazumi-mcy.js	空	200	0.680545	域名停放/未配置，放弃；浏览器 JS 防护页，放弃	https://www.mcydh.com/vodsearch/-------------.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.mengfan	block-kazumi-mengfan.js	空	200	0.808872	HTTP 200 但无有效结果，放弃或待规则复查	https://www.mfan.tv/search/?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A&submit=	
+kazumi.mgnacg	block-kazumi-mgnacg.js	空	200	0.219242	HTTP 200 但无有效结果，放弃或待规则复查	https://www.mgnacg.com/search/-------------/?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.mifun	block-kazumi-mifun.js	失败	000	0.111497	SSL/握手失败，放弃	https://mifun.tw/vodsearch/?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A&submit=	LibreSSL SSL_connect: SSL_ERROR_SYSCALL in connection to mifun.tw:443
+kazumi.mitang	block-kazumi-mitang.js	空	200	0.614615	HTTP 200 但无有效结果，放弃或待规则复查	https://www.mitang.tv/mitang-s/?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.mitaodm	block-kazumi-mitaodm.js	空	200	0.791329	域名停放/未配置，放弃；浏览器 JS 防护页，放弃	https://www.mitaodm.com/vodsearch.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A&submit=	
+kazumi.moefan	block-kazumi-moefan.js	空	200	0.957598	HTTP 200 但无有效结果，放弃或待规则复查	https://www.moefan.cc/index.php/vod/search.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.mt	block-kazumi-mt.js	空	200	1.861808	HTTP 200 但无有效结果，放弃或待规则复查	https://www.mutean.com/vodsearch/-------------.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.mutefun	block-kazumi-mutefun.js	空	200	0.772482	HTTP 200 但无有效结果，放弃或待规则复查	https://www.mutefun.tv/vodsearch/-------------.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.mwcy	block-kazumi-mwcy.js	失败	403	0.145467	HTTP 403，搜索接口/服务器不可用，放弃	https://www.mwcy.net/search.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.nekodm	block-kazumi-nekodm.js	空	200	0.816148	域名停放/未配置，放弃；浏览器 JS 防护页，放弃	https://nekodm.com/search?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.nt	block-kazumi-nt.js	失败	000	6.006054	连接或响应超时，放弃	https://www.ntdm8.com/search/-------------.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A&page=1	SSL connection timeout
+kazumi.nyafun	block-kazumi-nyafun.js	空	200	0.881708	域名停放/未配置，放弃；浏览器 JS 防护页，放弃	https://www.nyadm.net/search.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.omofunz	block-kazumi-omofunz.js	失败	400	0.452631	HTTP 400，搜索接口/服务器不可用，放弃	https://omofunz.com/index.php/vod/search.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A&submit=	
+kazumi.pekolove	block-kazumi-pekolove.js	失败	200	2.002738	页面含关键词但规则未提取结果，保留为规则/选择器问题	https://acg.pekolove.net/?s=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.qdm	block-kazumi-qdm.js	空	200	1.155313	域名停放/未配置，放弃；浏览器 JS 防护页，放弃	https://www.qdm8.cc/index.php?s=vod-search-name&wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.qifun	block-kazumi-qifun.js	空	200	0.552584	页面含关键词但规则未提取结果，保留为规则/选择器问题	https://www.qifun.cc/vodsearch/-------------.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.qimi	block-kazumi-qimi.js	空	200	0.744435	域名停放/未配置，放弃；浏览器 JS 防护页，放弃	https://www.qimiqimi.net/index.php/vod/search.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.qkan9	block-kazumi-qkan9.js	失败	200	0.163677	页面含关键词但规则未提取结果，保留为规则/选择器问题	https://www.qkan9.com/index.php/vod/search.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.tt776b	block-kazumi-tt776b.js	空	200	1.087243	HTTP 200 但无有效结果，放弃或待规则复查	https://www.tt776b.com/search/-------------.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A&submit=	
+kazumi.wydm	block-kazumi-wydm.js	失败	200	0.681212	Cloudflare/防护页，放弃；页面含关键词但规则未提取结果，保留为规则/选择器问题	https://www.vdm5.com/search_-------------.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.xfdm	block-kazumi-xfdm.js	空	200	0.239352	HTTP 200 但无有效结果，放弃或待规则复查	https://anime.xifanacg.com/search.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.xiaobao	block-kazumi-xiaobao.js	失败	404	0.710683	HTTP 404，搜索接口/服务器不可用，放弃	https://www.xiaobaotv.app/vod/search/-------------.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.xiapidm	block-kazumi-xiapidm.js	失败	404	0.294188	HTTP 404，搜索接口/服务器不可用，放弃	https://xiapidm.com/xvseabcdefghigklm.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.xigua	block-kazumi-xigua.js	失败	200	0.456363	页面含关键词但规则未提取结果，保留为规则/选择器问题	https://cn.xgcartoon.com/search?q=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.yinghua	block-kazumi-yinghua.js	失败	404	0.765769	HTTP 404，搜索接口/服务器不可用，放弃	http://www.iyinghua.com/search/%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A/	
+kazumi.ziyedm	block-kazumi-ziyedm.js	空	200	0.687594	域名停放/未配置，放弃；浏览器 JS 防护页，放弃	https://www.ziyedm.com/search/-------------/?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	
+kazumi.zkk79	block-kazumi-zkk79.js	失败	530	0.579017	HTTP 530，搜索接口/服务器不可用，放弃	https://www.zkk79.com/search/-------------.html?wd=%E5%AD%A4%E7%8B%AC%E6%91%87%E6%BB%9A	

@@ -8,8 +8,9 @@
 var networkHelper = Inject_NetworkHelper;
 var renderHelper = Inject_RenderHelper;
 var okhttpHelper = Inject_OkhttpHelper;
+var preferenceHelper = Inject_PreferenceHelper;
 
-var BASE_URL = "https://www.mayi520.org/";
+var DEFAULT_BASE_URL = "https://www.mayi520.org/";
 var SEARCH_URL = "https://www.mayi520.org/vodsearch/-------------.html?wd=@keyword";
 var SEARCH_LIST_XPATH = "//div[2]/div[1]/div[1]/div[1]/div[1]/div[2]/ul/li";
 var SEARCH_NAME_XPATH = "//div[2]/h3";
@@ -22,8 +23,15 @@ var USE_POST = false;
 var USE_LEGACY_PARSER = false;
 var PLAY_TIMEOUT = 30000;
 
+function PreferenceComponent_getPreference() {
+    var res = new ArrayList();
+    res.add(new SourcePreference.Edit("网页", "Host", DEFAULT_BASE_URL));
+    return res;
+}
+
+
 function SearchComponent_search(pageKey, keyword) {
-    var url = SEARCH_URL.replace("@keyword", URLEncoder.encode(keyword, "utf-8"));
+    var url = runtimeUrl(SEARCH_URL).replace("@keyword", URLEncoder.encode(keyword, "utf-8"));
     var doc = getDoc(url);
     var items = XPathUtils.nodes(doc, SEARCH_LIST_XPATH);
     var list = new ArrayList();
@@ -31,13 +39,16 @@ function SearchComponent_search(pageKey, keyword) {
         var item = items.get(i);
         var title = XPathUtils.text(item, SEARCH_NAME_XPATH);
         var href = XPathUtils.attr(item, SEARCH_RESULT_XPATH, "href");
+        if (title == null || String(title).trim().length == 0) {
+            continue;
+        }
         if (href == null || href.length == 0) {
             continue;
         }
         var detailUrl = absoluteUrl(href);
         var coverUrl = absoluteUrl(XPathUtils.firstImage(item));
         list.add(makeCartoonCover({
-            id: encodeSourceId(detailUrl),
+            id: encodeSourceId(detailUrl, title, coverUrl),
             source: source.key,
             url: detailUrl,
             title: title,
@@ -49,10 +60,17 @@ function SearchComponent_search(pageKey, keyword) {
 }
 
 function DetailedComponent_getDetailed(summary) {
-    var detailUrl = decodeSourceId(String(summary.id));
+    var sourceId = decodeSourceId(String(summary.id));
+    var detailUrl = runtimeUrl(sourceId.url);
     var doc = getDoc(detailUrl);
-    var coverUrl = absoluteUrl(XPathUtils.firstImage(doc));
-    var title = XPathUtils.title(doc);
+    var coverUrl = sourceId.cover;
+    if (coverUrl == null || coverUrl.length == 0) {
+        coverUrl = absoluteUrl(XPathUtils.firstImage(doc));
+    }
+    var title = sourceId.title;
+    if (title == null || title.length == 0) {
+        title = cleanTitle(XPathUtils.title(doc));
+    }
     if (title == null || title.length == 0) {
         title = detailUrl;
     }
@@ -70,7 +88,7 @@ function DetailedComponent_getDetailed(summary) {
                 continue;
             }
             var epUrl = absoluteUrl(epHref);
-            episodes.add(new Episode(encodeSourceId(epUrl), epLabel, j));
+            episodes.add(new Episode(encodeSourceId(epUrl, "", ""), epLabel, j));
         }
         if (episodes.size() > 0) {
             lines.add(new PlayLine(String(i), "播放线路" + (i + 1), episodes));
@@ -91,7 +109,11 @@ function DetailedComponent_getDetailed(summary) {
 }
 
 function PlayComponent_getPlayInfo(summary, playLine, episode) {
-    var pageUrl = decodeSourceId(String(episode.id));
+    var pageUrl = runtimeUrl(decodeSourceId(String(episode.id)).url);
+    var directUrl = tryParseDirectPlayerUrl(pageUrl);
+    if (directUrl != null && String(directUrl).length > 0) {
+        return makePlayerInfo(directUrl, isM3u8Url(directUrl));
+    }
     var result = renderHelper.renderVideoFromJs(new JsVideoStrategy(
         pageUrl,
         getUserAgent(),
@@ -101,19 +123,76 @@ function PlayComponent_getPlayInfo(summary, playLine, episode) {
         USE_LEGACY_PARSER
     ));
     var res = "";
-    if (result != null) {
-        res = result.url;
+    var isM3u8 = false;
+    if (result != null && result.url != null) {
+        res = String(result.url);
+        isM3u8 = result.isM3u8;
     }
-    if (res == null || res.length == 0) {
-        throw new ParserException("播放地址解析失败");
+    if (res == null || String(res).length == 0) {
+        throw new ParserException(String("播放地址解析失败"), null);
     }
+    return makePlayerInfo(res, isM3u8);
+}
+
+function makePlayerInfo(url, isM3u8) {
     var type = PlayerInfo.DECODE_TYPE_OTHER;
-    if (result.isM3u8) {
+    if (isM3u8) {
         type = PlayerInfo.DECODE_TYPE_HLS;
     }
-    var playerInfo = new PlayerInfo(type, res);
+    var playerInfo = new PlayerInfo(type, String(url));
     playerInfo.header = makeHeaders();
     return playerInfo;
+}
+
+function tryParseDirectPlayerUrl(pageUrl) {
+    try {
+        var html = getText(pageUrl);
+        return extractDirectVideoFromHtml(html, pageUrl);
+    } catch (e) {
+        return "";
+    }
+}
+
+function extractDirectVideoFromHtml(html, pageUrl) {
+    if (html == null || String(html).length == 0) {
+        return "";
+    }
+    var match = String(html).match(/player_aaaa\s*=\s*\{[\s\S]*?"url"\s*:\s*"([^"]*)"/);
+    if (match == null || match.length < 2) {
+        return "";
+    }
+    var raw = String(match[1]).replace(/\\//g, "/").replace(/\u0026/g, "&");
+    var resolved = SourceUtils.urlParser(String(pageUrl), raw);
+    if (isDirectVideoUrl(resolved)) {
+        return resolved;
+    }
+    return "";
+}
+
+function isDirectVideoUrl(url) {
+    var lower = String(url == null ? "" : url).toLowerCase();
+    return (lower.indexOf("http://") == 0 || lower.indexOf("https://") == 0 || lower.indexOf("//") == 0) &&
+        (lower.indexOf(".m3u8") >= 0 || lower.indexOf(".mp4") >= 0);
+}
+
+function isM3u8Url(url) {
+    return String(url == null ? "" : url).toLowerCase().indexOf(".m3u8") >= 0;
+}
+
+function getText(url) {
+    var response = okhttpHelper.client.newCall(OkhttpUtils.get(url, makeHeaders())).execute();
+    try {
+        if (!response.isSuccessful()) {
+            return "";
+        }
+        var body = response.body();
+        if (body == null) {
+            return "";
+        }
+        return body.string();
+    } finally {
+        response.close();
+    }
 }
 
 function getDoc(url) {
@@ -129,7 +208,7 @@ function getDoc(url) {
     var response = okhttpHelper.client.newCall(request).execute();
     try {
         if (!response.isSuccessful()) {
-            throw new ParserException("请求失败: " + response.code());
+            throw new ParserException(String("请求失败: " + response.code()), null);
         }
         return Jsoup.parse(response.body().string(), url);
     } finally {
@@ -141,9 +220,9 @@ function makeHeaders() {
     var headers = new HashMap();
     headers.put("user-agent", getUserAgent());
     if (REFERER != null && REFERER.length > 0) {
-        headers.put("referer", REFERER);
+        headers.put("referer", runtimeUrl(REFERER));
     } else {
-        headers.put("referer", BASE_URL);
+        headers.put("referer", getRootUrl());
     }
     return headers;
 }
@@ -167,15 +246,63 @@ function getUserAgent() {
 }
 
 function absoluteUrl(url) {
-    return SourceUtils.urlParser(BASE_URL, String(url));
+    return SourceUtils.urlParser(getRootUrl(), String(url));
 }
 
-function encodeSourceId(value) {
-    return URLEncoder.encode(String(value), "utf-8");
+function runtimeUrl(url) {
+    if (url == null || String(url).length == 0) {
+        return getRootUrl();
+    }
+    var parsed = String(url);
+    var oldRoot = normalizeRootUrl(DEFAULT_BASE_URL);
+    if (parsed.indexOf(oldRoot) == 0) {
+        return getRootUrl() + parsed.substring(oldRoot.length);
+    }
+    return SourceUtils.urlParser(getRootUrl(), parsed);
+}
+
+function getRootUrl() {
+    return normalizeRootUrl(preferenceHelper.get("Host", DEFAULT_BASE_URL));
+}
+
+function normalizeRootUrl(url) {
+    var value = String(url == null ? "" : url).trim();
+    if (value.length == 0) {
+        value = DEFAULT_BASE_URL;
+    }
+    if (value.indexOf("http://") != 0 && value.indexOf("https://") != 0) {
+        value = "https://" + value;
+    }
+    return value.replace(/\/+$/, "") + "/";
+}
+
+function cleanTitle(value) {
+    if (value == null) {
+        return "";
+    }
+    var text = String(value);
+    var parts = text.split("-");
+    if (parts.length > 0 && parts[0].length > 0) {
+        text = parts[0];
+    }
+    text = text.replace("《", "");
+    text = text.replace("》", "");
+    return text.trim();
+}
+
+function encodeSourceId(url, title, cover) {
+    return URLEncoder.encode(String(url), "utf-8") + "|" +
+        URLEncoder.encode(String(title == null ? "" : title), "utf-8") + "|" +
+        URLEncoder.encode(String(cover == null ? "" : cover), "utf-8");
 }
 
 function decodeSourceId(value) {
-    return URLDecoder.decode(String(value), "utf-8");
+    var parts = String(value).split("|", 3);
+    return {
+        url: URLDecoder.decode(parts[0], "utf-8"),
+        title: parts.length > 1 ? URLDecoder.decode(parts[1], "utf-8") : "",
+        cover: parts.length > 2 ? URLDecoder.decode(parts[2], "utf-8") : ""
+    };
 }
 
 function parseQueryToMap(query) {

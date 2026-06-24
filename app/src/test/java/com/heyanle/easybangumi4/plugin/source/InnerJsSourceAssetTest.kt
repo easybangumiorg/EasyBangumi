@@ -20,85 +20,20 @@ class InnerJsSourceAssetTest {
             listOf(
                 "age.js",
                 "girigirilove.js",
-                "kazumi-1ani.js",
-                "kazumi-233dm.js",
-                "kazumi-295yhw.js",
                 "kazumi-7sefun.js",
-                "kazumi-80tv.js",
                 "kazumi-9ciyuan.js",
-                "kazumi-aafun.js",
-                "kazumi-akianime.js",
-                "kazumi-anfuns.js",
                 "kazumi-anime7.js",
                 "kazumi-ant.js",
-                "kazumi-aowu.js",
                 "kazumi-baimao.js",
-                "kazumi-bf.js",
-                "kazumi-bobodm.js",
-                "kazumi-brovod.js",
-                "kazumi-ciyuancheng.js",
-                "kazumi-clicli.js",
-                "kazumi-cyfz.js",
-                "kazumi-dlma.js",
-                "kazumi-dm84.js",
-                "kazumi-dmand.js",
-                "kazumi-dmghg.js",
-                "kazumi-dms.js",
-                "kazumi-eacg.js",
-                "kazumi-enlie.js",
-                "kazumi-fantuan.js",
-                "kazumi-fcdm.js",
-                "kazumi-ffdm.js",
-                "kazumi-fqdm.js",
                 "kazumi-gpjda.js",
-                "kazumi-gugu3.js",
-                "kazumi-hfkzm.js",
-                "kazumi-hzdm.js",
-                "kazumi-if.js",
-                "kazumi-jzsdm.js",
-                "kazumi-k8dm.js",
-                "kazumi-kimani.js",
-                "kazumi-libvio.js",
-                "kazumi-lmm.js",
-                "kazumi-mandao.js",
-                "kazumi-mcy.js",
-                "kazumi-mengfan.js",
-                "kazumi-mgnacg.js",
-                "kazumi-mifun.js",
-                "kazumi-mitang.js",
-                "kazumi-mitaodm.js",
-                "kazumi-moefan.js",
-                "kazumi-mt.js",
-                "kazumi-mutefun.js",
-                "kazumi-mwcy.js",
                 "kazumi-mxdm.js",
-                "kazumi-nekodm.js",
-                "kazumi-nt.js",
-                "kazumi-nyafun.js",
                 "kazumi-omofun03.js",
-                "kazumi-omofunz.js",
-                "kazumi-pekolove.js",
-                "kazumi-qdm.js",
-                "kazumi-qifun.js",
-                "kazumi-qimi.js",
-                "kazumi-qkan9.js",
-                "kazumi-skr.js",
-                "kazumi-tt776b.js",
-                "kazumi-wydm.js",
-                "kazumi-xfdm.js",
-                "kazumi-xfdmneo.js",
-                "kazumi-xiaobao.js",
-                "kazumi-xiapidm.js",
-                "kazumi-xigua.js",
-                "kazumi-yinghua.js",
-                "kazumi-yishijie.js",
                 "kazumi-ylsp.js",
-                "kazumi-ziyedm.js",
-                "kazumi-zkk79.js",
                 "xifandm.js",
             ),
-            files.map { it.name }.sorted(),
+            activeInnerSourceFiles().map { it.name }.sorted(),
         )
+        assertEquals(66, blockedInnerSourceFiles().size)
 
         files.forEach { file ->
             val metadata = readMetadata(file)
@@ -224,6 +159,14 @@ class InnerJsSourceAssetTest {
             ?.filter { it.isFile && it.name.endsWith(PluginV3.JS_SOURCE_SUFFIX) }
             ?.sortedBy { it.name }
             .orEmpty()
+    }
+
+    private fun activeInnerSourceFiles(): List<File> {
+        return innerSourceFiles().filterNot { it.name.startsWith("block-") }
+    }
+
+    private fun blockedInnerSourceFiles(): List<File> {
+        return innerSourceFiles().filter { it.name.startsWith("block-") }
     }
 
     private inline fun <T> Context.use(block: (Context) -> T): T {
