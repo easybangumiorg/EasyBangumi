@@ -61,38 +61,15 @@ includeModule(":app:desktop", "app/desktop")
 
 // ------------- shared -------------
 includeModule(":shared", "shared")
-includeModule(":shared:platform", "shared/platform")
-includeModule(":shared:resources", "shared/resources")
-includeModule(":shared:foundation", "shared/foundation")
-includeModule(":shared:theme", "shared/theme")
-includeModule(":shared:data", "shared/data")
-includeModule(":shared:preference", "shared/preference")
-includeModule(":shared:scheme", "shared/scheme")
-//includeModule(":shared:debug", "shared/debug")
-includeModule(":shared:playcon", "shared/playcon")
-includeModule(":shared:ktor", "shared/ktor")
-//includeModule(":shared:media_radar", "shared/media_radar")
-//includeModule(":shared:ui", "shared/ui")
 
-includeModule(":shared:source", "shared/source")
-includeModule(":shared:source_api", "shared/source/api")
-includeModule(":shared:source_bangumi", "shared/source/bangumi")
-includeModule(":shared:source_inner", "shared/source/inner")
-includeModule(":shared:source_local", "shared/source/local")
-includeModule(":shared:local", "shared/local")
+// ------------- base -------------
+includeModule(":base", "base")
 
-
-// ------------- lib -------------
-includeModule(":lib", "lib")
-includeModule(":lib:utils", "lib/utils")
-includeModule(":lib:store", "lib/store")
-includeModule(":lib:unifile", "lib/unifile")
-includeModule(":lib:serialization", "lib/serialization")
-
-includeModule(":lib:webview", "lib/webview")
-includeModule(":lib:webview_api", "lib/webview/api")
-includeModule(":lib:webview_jcef", "lib/webview/jcef")
-includeModule(":lib:webview_webkit", "lib/webview/webkit")
+// ------------- webview -------------
+includeModule(":webview", "webview")
+includeModule(":webview:api", "webview/api")
+includeModule(":webview:jcef", "webview/jcef")
+includeModule(":webview:webkit", "webview/webkit")
 
 // -- 以下为独立代码层级 ---
 

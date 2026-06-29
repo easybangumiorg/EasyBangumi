@@ -24,16 +24,16 @@ inline fun <reified T : Enum<T>> EnumPreferenceItem(
     noinline title: @Composable () -> Unit,
     textList: List<String>,
     preference: Preference<T>,
+    values: List<T> = enumValues<T>().toList(),
     noinline onChangeListener: ((T) -> Unit)? = null,
 ) {
     val currentValue by preference.flow().collectAsState(preference.get())
-    val enumValues = enumValues<T>()
 
     ListItem(
         headlineContent = title,
         supportingContent = {
             Column {
-                enumValues.forEachIndexed { index, value ->
+                values.forEachIndexed { index, value ->
                     val label = textList.getOrElse(index) { value.name }
                     Row(
                         modifier = Modifier

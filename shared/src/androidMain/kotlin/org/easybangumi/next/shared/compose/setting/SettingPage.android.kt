@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.PlayCircle
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -34,9 +35,12 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import org.easybangumi.next.shared.compose.common.BooleanPreferenceItem
 import org.easybangumi.next.shared.compose.common.EnumPreferenceItem
+import org.easybangumi.next.shared.compose.common.StringPreferenceItem
 import org.easybangumi.next.shared.foundation.stringRes
+import org.easybangumi.next.shared.ktor.parseManualProxyEndpoint
 import org.easybangumi.next.shared.preference.AndroidPlayerPreference
 import org.easybangumi.next.shared.preference.MainPreference
+import org.easybangumi.next.shared.preference.NetworkPreference
 import org.easybangumi.next.shared.resources.Res
 import org.koin.compose.koinInject
 
@@ -45,6 +49,7 @@ import org.koin.compose.koinInject
 actual fun SettingPage(onBack: () -> Unit) {
     val mainPreference = koinInject<MainPreference>()
     val playerPreference = koinInject<AndroidPlayerPreference>()
+    val networkPreference = koinInject<NetworkPreference>()
 
     var currentPage by remember { mutableStateOf<String?>(null) }
 
@@ -53,6 +58,7 @@ actual fun SettingPage(onBack: () -> Unit) {
     val title = when (currentPage) {
         "appearance" -> stringRes(Res.strings.appearance_setting)
         "player" -> stringRes(Res.strings.player_setting)
+        "network" -> "Network settings"
         else -> stringRes(Res.strings.setting)
     }
 
@@ -81,6 +87,7 @@ actual fun SettingPage(onBack: () -> Unit) {
             when (currentPage) {
                 "appearance" -> AppearanceSettingContent(mainPreference, scrollBehavior.nestedScrollConnection)
                 "player" -> PlayerSettingContent(playerPreference, scrollBehavior.nestedScrollConnection)
+                "network" -> NetworkSettingContent(networkPreference, scrollBehavior.nestedScrollConnection)
                 else -> FirstSettingContent(
                     nestedScrollConnection = scrollBehavior.nestedScrollConnection,
                     onNavigate = { currentPage = it }
@@ -115,6 +122,14 @@ private fun ColumnScope.FirstSettingContent(
             headlineContent = { Text(text = stringRes(Res.strings.player_setting)) },
             leadingContent = {
                 Icon(Icons.Filled.PlayCircle, contentDescription = stringRes(Res.strings.player_setting))
+            },
+            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+        )
+        ListItem(
+            modifier = Modifier.clickable { onNavigate("network") },
+            headlineContent = { Text(text = "Network settings") },
+            leadingContent = {
+                Icon(Icons.Filled.Settings, contentDescription = "Network settings")
             },
             colors = ListItemDefaults.colors(containerColor = Color.Transparent),
         )
@@ -172,5 +187,58 @@ private fun ColumnScope.PlayerSettingContent(
             ),
             preference = playerPreference.autoFullScreenMode,
         )
+    }
+}
+
+@Composable
+private fun ColumnScope.NetworkSettingContent(
+    networkPreference: NetworkPreference,
+    nestedScrollConnection: androidx.compose.ui.input.nestedscroll.NestedScrollConnection,
+) {
+    val proxyMode by networkPreference.proxyMode.flow().collectAsState(networkPreference.proxyMode.get())
+
+    Column(
+        modifier = Modifier
+            .weight(1f)
+            .nestedScroll(nestedScrollConnection)
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        EnumPreferenceItem(
+            title = { Text("Proxy mode") },
+            textList = listOf("Disabled", "Manual"),
+            values = listOf(
+                NetworkPreference.ProxyMode.DISABLED,
+                NetworkPreference.ProxyMode.MANUAL,
+            ),
+            preference = networkPreference.proxyMode,
+            onChangeListener = {
+                if (it == NetworkPreference.ProxyMode.SYSTEM) {
+                    networkPreference.proxyMode.set(NetworkPreference.ProxyMode.DISABLED)
+                }
+            },
+        )
+
+        if (proxyMode == NetworkPreference.ProxyMode.MANUAL) {
+            EnumPreferenceItem(
+                title = { Text("Proxy protocol") },
+                textList = listOf("HTTP", "SOCKS5"),
+                preference = networkPreference.proxyProtocol,
+            )
+
+            StringPreferenceItem(
+                title = { Text("Proxy URL") },
+                preference = networkPreference.proxyUrl,
+                placeholder = "127.0.0.1:7890",
+                supportingText = "Use host:port or URL. Proxy settings take effect after restarting the app.",
+                isError = { parseManualProxyEndpoint(it) == null },
+            )
+        } else {
+            Text(
+                text = "Proxy settings take effect after restarting the app.",
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
     }
 }

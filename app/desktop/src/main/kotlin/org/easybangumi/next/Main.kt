@@ -33,6 +33,7 @@ import org.koin.mp.KoinPlatform
 
 private val logger = logger("")
 fun main() = try {
+    System.setProperty("java.net.useSystemProxies", "true")
     application {
         LaunchedEffect(Unit) {
             LaunchManager.fireInit()

@@ -25,7 +25,6 @@ dependencies {
 
     api(projects.shared)
     api(projects.logger)
-    api(projects.lib)
 
 
     api(libs.koin.core)
