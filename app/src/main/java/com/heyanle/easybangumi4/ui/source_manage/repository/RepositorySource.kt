@@ -11,11 +11,12 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -32,7 +33,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -159,6 +159,7 @@ fun RepositorySource() {
                 items(state.entries, key = { "${it.repoUrl}::${it.key}" }) { entry ->
                     RepositorySourceItem(
                         entry = entry,
+                        installedSource = state.installedSources[entry.key],
                         isInstalling = state.installState is RepositorySourceViewModel.InstallState.Installing
                                 && (state.installState as RepositorySourceViewModel.InstallState.Installing).key == entry.key,
                         onInstall = { vm.installSource(entry) }
@@ -178,17 +179,32 @@ fun RepositorySource() {
 @Composable
 fun RepositorySourceItem(
     entry: RepositoryEntry,
+    installedSource: RepositorySourceViewModel.InstalledSource?,
     isInstalling: Boolean,
     onInstall: () -> Unit,
 ) {
+    val hasInstalledSource = installedSource != null
+    val hasNewerRepoVersion = installedSource != null && entry.versionCode > installedSource.versionCode
+    val actionLabel = when {
+        isInstalling && hasNewerRepoVersion -> "更新中..."
+        isInstalling -> "安装中..."
+        !hasInstalledSource -> "安装"
+        hasNewerRepoVersion -> "更新"
+        else -> "已安装"
+    }
+    val actionEnabled = !isInstalling && (!hasInstalledSource || hasNewerRepoVersion)
+
     ListItem(
         headlineContent = {
             Text(text = entry.label)
         },
         supportingContent = {
             Column {
-                if (entry.version.isNotBlank()) {
-                    Text(text = "v${entry.version}")
+                repositoryVersionLabel(entry)?.let {
+                    Text(text = "仓库版本 $it")
+                }
+                installedVersionLabel(installedSource)?.let {
+                    Text(text = "当前版本 $it")
                 }
                 if (entry.describe != null) {
                     Text(text = entry.describe, maxLines = 2)
@@ -206,16 +222,35 @@ fun RepositorySourceItem(
             )
         },
         trailingContent = {
-            IconButton(
+            FilledTonalButton(
                 onClick = onInstall,
-                enabled = !isInstalling,
+                enabled = actionEnabled,
+                colors = ButtonDefaults.filledTonalButtonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                ),
             ) {
-                Icon(
-                    Icons.Filled.Download,
-                    contentDescription = "安装",
-                    tint = if (isInstalling) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.primary,
-                )
+                Text(text = actionLabel)
             }
         },
     )
+}
+
+private fun repositoryVersionLabel(entry: RepositoryEntry): String? {
+    return formatVersion(entry.version, entry.versionCode)
+}
+
+private fun installedVersionLabel(
+    installedSource: RepositorySourceViewModel.InstalledSource?,
+): String? {
+    if (installedSource == null) return null
+    return formatVersion(installedSource.version, installedSource.versionCode.toLong())
+}
+
+private fun formatVersion(version: String, versionCode: Long): String? {
+    return when {
+        version.isNotBlank() -> "v$version"
+        versionCode > 0 -> "code $versionCode"
+        else -> null
+    }
 }

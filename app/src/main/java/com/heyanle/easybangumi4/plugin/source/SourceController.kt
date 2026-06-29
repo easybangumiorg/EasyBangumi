@@ -30,6 +30,29 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
 
+internal data class SourceLoadCandidate(
+    val file: File,
+    val key: String?,
+    val versionCode: Long,
+)
+
+internal fun selectHighestVersionCandidates(
+    candidates: List<SourceLoadCandidate>,
+): List<SourceLoadCandidate> {
+    val selectedByKey = linkedMapOf<String, SourceLoadCandidate>()
+    candidates.forEach { candidate ->
+        val key = candidate.key?.takeIf { it.isNotBlank() } ?: return@forEach
+        val current = selectedByKey[key]
+        if (current == null || current.versionCode < candidate.versionCode) {
+            selectedByKey[key] = candidate
+        }
+    }
+    return candidates.filter { candidate ->
+        val key = candidate.key?.takeIf { it.isNotBlank() } ?: return@filter true
+        selectedByKey[key] === candidate
+    }
+}
+
 class SourceController(
     private val sourceFolder: File,
     private val sourcePreferences: SourcePreferences,
@@ -112,7 +135,18 @@ class SourceController(
         val innerFiles = innerSourceFileProvider?.loadSourceFiles()
             ?.filter { !isBlockedSourceFile(it) }
             .orEmpty()
-        val files = userFiles + innerFiles
+        val files = selectHighestVersionCandidates(
+            (userFiles + innerFiles).map { file ->
+                scope.async(Dispatchers.IO) {
+                    val metadata = inspectSourceFile(file)
+                    SourceLoadCandidate(
+                        file = file,
+                        key = metadata?.key,
+                        versionCode = metadata?.versionCode ?: Long.MIN_VALUE,
+                    )
+                }
+            }.awaitAll()
+        ).map { it.file }
 
         return files.map { file ->
             scope.async(Dispatchers.IO) {
@@ -178,6 +212,10 @@ class SourceController(
 
     private fun loadSourceFile(file: File): SourceFileInfo? {
         return JsSourceFileLoader(file, jsRuntimeProvider).load()
+    }
+
+    private fun inspectSourceFile(file: File): JsSourceFileLoader.Metadata? {
+        return JsSourceFileLoader(file, jsRuntimeProvider).inspect()
     }
 
     private fun isBlockedSourceFile(file: File): Boolean {

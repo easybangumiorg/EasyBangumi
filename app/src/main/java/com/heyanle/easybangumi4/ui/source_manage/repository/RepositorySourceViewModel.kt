@@ -2,7 +2,8 @@
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.heyanle.easybangumi4.base.DataResult
+import com.heyanle.easybangumi4.plugin.source.ISourceController
+import com.heyanle.easybangumi4.plugin.source.SourceController
 import com.heyanle.easybangumi4.plugin.source.repository.RepositoryController
 import com.heyanle.easybangumi4.plugin.source.repository.RepositoryEntry
 import com.heyanle.easybangumi4.plugin.source.repository.RepositoryPreferences
@@ -16,10 +17,18 @@ import kotlinx.coroutines.launch
 class RepositorySourceViewModel : ViewModel() {
 
     private val repositoryController: RepositoryController by Inject.injectLazy()
+    private val sourceController: SourceController by Inject.injectLazy()
     private val repositoryPreferences: RepositoryPreferences by Inject.injectLazy()
+
+    data class InstalledSource(
+        val key: String,
+        val version: String,
+        val versionCode: Int,
+    )
 
     data class State(
         val entries: List<RepositoryEntry> = emptyList(),
+        val installedSources: Map<String, InstalledSource> = emptyMap(),
         val isLoading: Boolean = false,
         val error: String? = null,
         val installState: InstallState = InstallState.Idle,
@@ -47,6 +56,28 @@ class RepositorySourceViewModel : ViewModel() {
                     }
                     is RepositoryController.State.Error -> {
                         _state.update { it.copy(isLoading = false, error = repoState.message, entries = emptyList()) }
+                    }
+                }
+            }
+        }
+        viewModelScope.launch {
+            sourceController.sourceInfo.collectLatest { sourceState ->
+                when (sourceState) {
+                    is ISourceController.SourceInfoState.Loading -> Unit
+                    is ISourceController.SourceInfoState.Info -> {
+                        val installed = sourceState.info
+                            .map { info ->
+                                InstalledSource(
+                                    key = info.source.key,
+                                    version = info.source.version,
+                                    versionCode = info.source.versionCode,
+                                )
+                            }
+                            .groupBy { it.key }
+                            .mapValues { (_, versions) ->
+                                versions.maxBy { it.versionCode }
+                            }
+                        _state.update { it.copy(installedSources = installed) }
                     }
                 }
             }

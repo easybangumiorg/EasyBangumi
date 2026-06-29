@@ -1,0 +1,7 @@
+interface:
+  display_name: "纯纯看番仓库测试"
+  short_description: "番源仓库专项场景与边界测试"
+  default_prompt: "Use $easybangumi-repository-test to execute the EasyBangumi repository feature test cases."
+
+policy:
+  allow_implicit_invocation: true

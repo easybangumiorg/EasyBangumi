@@ -1,0 +1,7 @@
+interface:
+  display_name: "纯纯看番通用测试"
+  short_description: "纯纯看番 adb/UI 通用测试与导航"
+  default_prompt: "Use $easybangumi-ui-test to run a reusable adb-driven test flow for EasyBangumi."
+
+policy:
+  allow_implicit_invocation: true

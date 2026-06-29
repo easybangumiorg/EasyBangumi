@@ -12,6 +12,15 @@ class JsSourceFileLoader(
     private val jsRuntimeProvider: JSRuntimeProvider,
 ) {
 
+    data class Metadata(
+        val key: String,
+        val label: String,
+        val versionName: String,
+        val versionCode: Long,
+        val libVersion: Int,
+        val file: File,
+    )
+
     fun canLoad(): Boolean {
         return file.isFile &&
             file.exists() &&
@@ -19,16 +28,28 @@ class JsSourceFileLoader(
             file.name.endsWith(PluginV3.JS_SOURCE_SUFFIX)
     }
 
-    fun load(): SourceFileInfo? {
+    fun inspect(): Metadata? {
         if (!canLoad()) {
             return null
         }
         val metadata = readMetadata()
-        val key = metadata[SourceMetadata.SOURCE_TAG_KEY].orEmpty()
-        val label = metadata[SourceMetadata.SOURCE_TAG_LABEL].orEmpty()
-        val versionName = metadata[SourceMetadata.SOURCE_TAG_VERSION_NAME].orEmpty()
-        val versionCode = metadata[SourceMetadata.SOURCE_TAG_VERSION_CODE]?.toLongOrNull() ?: -1
-        val libVersion = metadata[SourceMetadata.SOURCE_TAG_LIB_VERSION]?.toIntOrNull() ?: -1
+        return Metadata(
+            key = metadata[SourceMetadata.SOURCE_TAG_KEY].orEmpty(),
+            label = metadata[SourceMetadata.SOURCE_TAG_LABEL].orEmpty(),
+            versionName = metadata[SourceMetadata.SOURCE_TAG_VERSION_NAME].orEmpty(),
+            versionCode = metadata[SourceMetadata.SOURCE_TAG_VERSION_CODE]?.toLongOrNull() ?: -1,
+            libVersion = metadata[SourceMetadata.SOURCE_TAG_LIB_VERSION]?.toIntOrNull() ?: -1,
+            file = file,
+        )
+    }
+
+    fun load(): SourceFileInfo? {
+        val metadata = inspect() ?: return null
+        val key = metadata.key
+        val label = metadata.label
+        val versionName = metadata.versionName
+        val versionCode = metadata.versionCode
+        val libVersion = metadata.libVersion
 
         fun error(message: String, exception: Throwable? = null): SourceFileInfo.Error {
             return SourceFileInfo.Error(
@@ -37,7 +58,7 @@ class JsSourceFileLoader(
                 versionName = versionName,
                 versionCode = versionCode,
                 libVersion = libVersion,
-                file = file,
+                file = metadata.file,
                 message = message,
                 exception = exception,
             )
@@ -59,8 +80,8 @@ class JsSourceFileLoader(
                 versionName = versionName,
                 versionCode = versionCode,
                 libVersion = libVersion,
-                file = file,
-                source = JsSource(metadata, file, JSScope(jsRuntimeProvider.getRuntime())),
+                file = metadata.file,
+                source = JsSource(readMetadata(), metadata.file, JSScope(jsRuntimeProvider.getRuntime())),
             )
         } catch (e: Exception) {
             error("load source failed: ${e.message}", e)
