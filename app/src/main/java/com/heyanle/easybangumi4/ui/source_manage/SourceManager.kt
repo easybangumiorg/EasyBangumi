@@ -13,6 +13,9 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import com.heyanle.easybangumi4.ui.common.TabPage
+import com.heyanle.easybangumi4.ui.source_manage.repository.RepositorySource
+import com.heyanle.easybangumi4.ui.source_manage.repository.RepositoryTopAppBar
 import com.heyanle.easybangumi4.ui.source_manage.source.Source
 import com.heyanle.easybangumi4.ui.source_manage.source.SourceTopAppBar
 import com.heyanle.okkv2.core.okkv
@@ -40,10 +43,25 @@ sealed class ExplorePage constructor(
         },
     )
 
+    data object RepositoryPage : ExplorePage(
+        tabLabel = {
+            Text("番源仓库")
+        },
+        topAppBar = {
+            RepositoryTopAppBar(it)
+        },
+        content = {
+            RepositorySource()
+        },
+    )
+
 }
 
 val ExplorePageItems: List<ExplorePage> by lazy {
-    listOf(ExplorePage.SourcePage)
+    listOf(
+        ExplorePage.SourcePage,
+        ExplorePage.RepositoryPage,
+    )
 }
 
 var explorePageIndex by okkv("explorePageInitPageIndex", 0)
@@ -62,19 +80,28 @@ fun SourceManager(
         }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
-    Column(
-        modifier = Modifier.fillMaxWidth()
-    ) {
+    Column(modifier = Modifier.fillMaxWidth()) {
         ExplorePageItems[pagerState.currentPage].topAppBar(scrollBehavior)
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-        ) {
-            ExplorePageItems[pagerState.currentPage].content()
-        }
+        TabPage(
+            pagerModifier = Modifier.fillMaxWidth(),
+            tabSize = ExplorePageItems.size,
+            pagerState = pagerState,
+            onTabSelect = { explorePageIndex = it },
+            tabs = { index, _ ->
+                ExplorePageItems[index].tabLabel()
+            },
+            contents = { index ->
+                Column(modifier = Modifier.fillMaxWidth()) {
 
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                    ) {
+                        ExplorePageItems[index].content()
+                    }
+                }
+            },
+        )
     }
-
-
 }

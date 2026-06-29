@@ -3,6 +3,8 @@ package com.heyanle.easybangumi4.plugin.source
 import android.app.Application
 import android.webkit.CookieManager
 import com.heyanle.easybangumi4.base.hekv.HeKV
+import com.heyanle.easybangumi4.plugin.source.repository.RepositoryController
+import com.heyanle.easybangumi4.plugin.source.repository.RepositoryPreferences
 import com.heyanle.easybangumi4.plugin.source.utils.CaptchaHelperImpl
 import com.heyanle.easybangumi4.plugin.source.utils.PreferenceHelperImpl
 import com.heyanle.easybangumi4.plugin.source.utils.StringHelperImpl
@@ -121,6 +123,15 @@ class SourceModule(
             WebProxyManager()
         }
 
+        addSingletonFactory {
+            RepositoryPreferences()
+        }
+        addSingletonFactory {
+            RepositoryController(
+                sourceController = get(),
+                repositoryPreferences = get(),
+            )
+        }
 
     }
 }
