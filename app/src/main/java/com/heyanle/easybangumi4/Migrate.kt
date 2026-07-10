@@ -19,13 +19,6 @@ import com.heyanle.easybangumi4.cartoon.old.repository.db.AppDatabase
 import com.heyanle.easybangumi4.cartoon.old.repository.db.CacheDatabase
 import com.heyanle.easybangumi4.cartoon.repository.db.CartoonDatabase
 import com.heyanle.easybangumi4.cartoon.star.CartoonStarController
-import com.heyanle.easybangumi4.plugin.extension.ExtensionInfo
-import com.heyanle.easybangumi4.plugin.extension.loader.ExtensionLoaderFactory
-import com.heyanle.easybangumi4.plugin.extension.provider.JsExtensionProvider
-import com.heyanle.easybangumi4.plugin.extension.provider.JsExtensionProviderV2
-import com.heyanle.easybangumi4.plugin.js.extension.JSExtensionCryLoader
-import com.heyanle.easybangumi4.plugin.js.extension.JSExtensionLoader
-import com.heyanle.easybangumi4.plugin.js.runtime.JSRuntimeProvider
 import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.plugin.source.SourceConfig
