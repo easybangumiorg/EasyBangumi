@@ -1,25 +1,25 @@
-// @key kazumi.gpjda
-// @label gpjda
-// @versionName 1.0
-// @versionCode 10000
+// @key kazumi.9ciyuan
+// @label 9ciyuan
+// @versionName 1.3
+// @versionCode 10300
 // @libVersion 15
-// @cover https://www.gpjda.com/favicon.ico
+// @cover https://www.jcydm1.com/favicon.ico
 
 var networkHelper = Inject_NetworkHelper;
 var renderHelper = Inject_RenderHelper;
 var okhttpHelper = Inject_OkhttpHelper;
 var preferenceHelper = Inject_PreferenceHelper;
 
-var DEFAULT_BASE_URL = "https://www.gpjda.com/";
-var SEARCH_URL = "https://www.gpjda.com/search.php?searchword=@keyword";
-var SEARCH_LIST_XPATH = "//div[1]/div/div[2]/ul[1]/li";
-var SEARCH_NAME_XPATH = "//h4/a";
-var SEARCH_RESULT_XPATH = "//h4/a";
-var CHAPTER_ROADS_XPATH = "//ul[@class='stui-content__playlist playlink clearfix']";
-var CHAPTER_RESULT_XPATH = "//li/a";
+var DEFAULT_BASE_URL = "https://www.jcydm1.com/";
+var SEARCH_URL = "https://www.jcydm1.com/index.php/vod/search.html?wd=@keyword";
+var SEARCH_LIST_XPATH = "//div[1]/div[2]/div/div/div[2]/div[1]//div";
+var SEARCH_NAME_XPATH = "//div[2]/div[1]/a/strong";
+var SEARCH_RESULT_XPATH = "//div[3]/a[2]";
+var CHAPTER_ROADS_XPATH = "//div/div[2]/div/div[2]/div[@id='panel1']";
+var CHAPTER_RESULT_XPATH = "//div/div/a";
 var USER_AGENT = "";
 var REFERER = "";
-var USE_POST = true;
+var USE_POST = false;
 var USE_LEGACY_PARSER = false;
 var PLAY_TIMEOUT = 30000;
 
@@ -27,6 +27,245 @@ function PreferenceComponent_getPreference() {
     var res = new ArrayList();
     res.add(new SourcePreference.Edit("网页", "Host", DEFAULT_BASE_URL));
     return res;
+}
+
+function PageComponent_getMainTabs() {
+    var res = new ArrayList();
+    res.add(new MainTab("首页推荐", MainTab.MAIN_TAB_WITH_COVER));
+    return res;
+}
+
+function PageComponent_getSubTabs(mainTab) {
+    return new ArrayList();
+}
+
+function PageComponent_getContent(mainTab, subTab, pageKey) {
+    if (pageKey != null && String(pageKey) != "0") {
+        return new Pair(null, new ArrayList());
+    }
+    return new Pair(null, getHomeContent());
+}
+
+function getHomeContent() {
+    var doc = getDoc(getRootUrl());
+    var nodes = findHomeNodes(doc);
+    var list = new ArrayList();
+    var seen = new HashMap();
+    for (var i = 0; i < nodes.size(); i++) {
+        var item = nodes.get(i);
+        var href = homeHref(item);
+        var title = cleanTitle(homeTitle(item));
+        var coverUrl = absoluteUrl(XPathUtils.firstImage(item));
+        if (!isHomeHref(href) || isBadHomeTitle(title) || !isLikelyCoverUrl(coverUrl)) {
+            continue;
+        }
+        var detailUrl = absoluteUrl(href);
+        var uniqueKey = normalizeHomeUrl(detailUrl);
+        if (seen.containsKey(uniqueKey)) {
+            continue;
+        }
+        seen.put(uniqueKey, true);
+        list.add(makeCartoonCover({
+            id: encodeSourceId(detailUrl, title, coverUrl),
+            source: source.key,
+            url: detailUrl,
+            title: title,
+            intro: homeIntro(item),
+            cover: coverUrl
+        }));
+        if (list.size() >= 40) {
+            break;
+        }
+    }
+    return list;
+}
+
+function findHomeNodes(doc) {
+    var selectors = [
+        "a.module-poster-item[href]",
+        "a.module-item[href]",
+        "a.module-card-item[href]",
+        ".stui-vodlist__box",
+        ".stui-vodlist li",
+        ".public-list-box",
+        "div.main ul li",
+        "ul li"
+    ];
+    for (var i = 0; i < selectors.length; i++) {
+        var nodes = doc.select(selectors[i]);
+        if (nodes != null && nodes.size() >= 6) {
+            return nodes;
+        }
+    }
+    return doc.select("a[href]");
+}
+
+function homeHref(item) {
+    var direct = trimText(item.attr("href"));
+    if (isHomeHref(direct)) {
+        return direct;
+    }
+    var selectors = ["a[href]", "h3 a[href]", "h2 a[href]", ".txt a[href]"];
+    for (var i = 0; i < selectors.length; i++) {
+        var link = item.select(selectors[i]).first();
+        if (link == null) {
+            continue;
+        }
+        var href = trimText(link.attr("href"));
+        if (isHomeHref(href)) {
+            return href;
+        }
+    }
+    return "";
+}
+
+function homeTitle(item) {
+    var selectors = [
+        ".module-poster-item-title",
+        ".module-card-item-title",
+        ".module-item-title",
+        ".video-info-header h3",
+        "h3",
+        "h2",
+        ".txt a",
+        "strong"
+    ];
+    for (var i = 0; i < selectors.length; i++) {
+        var node = item.select(selectors[i]).first();
+        if (node == null) {
+            continue;
+        }
+        var title = trimText(node.text());
+        if (title.length == 0) {
+            title = trimText(node.attr("title"));
+        }
+        if (title.length > 0) {
+            return title;
+        }
+    }
+    var directTitle = trimText(item.attr("title"));
+    if (directTitle.length > 0) {
+        return directTitle;
+    }
+    var firstLink = item.select("a[href]").first();
+    if (firstLink != null) {
+        var linkTitle = trimText(firstLink.attr("title"));
+        if (linkTitle.length > 0) {
+            return linkTitle;
+        }
+        linkTitle = trimText(firstLink.text());
+        if (linkTitle.length > 0) {
+            return linkTitle;
+        }
+    }
+    var firstImage = item.select("img").first();
+    if (firstImage != null) {
+        return trimText(firstImage.attr("alt"));
+    }
+    return "";
+}
+
+function homeIntro(item) {
+    var selectors = [
+        ".module-item-note",
+        ".module-item-text",
+        ".module-card-item-note",
+        ".public-list-prb",
+        ".remarks",
+        "p"
+    ];
+    for (var i = 0; i < selectors.length; i++) {
+        var node = item.select(selectors[i]).first();
+        if (node == null) {
+            continue;
+        }
+        var text = trimText(node.text());
+        if (text.length > 0) {
+            return text;
+        }
+    }
+    return "";
+}
+
+function isHomeHref(href) {
+    var value = trimText(href);
+    if (value.length == 0 || value == "/" || value == "#") {
+        return false;
+    }
+    var lower = value.toLowerCase();
+    if (lower.indexOf("javascript:") == 0 || lower.indexOf("mailto:") == 0) {
+        return false;
+    }
+    var blocked = [
+        "/search",
+        "/vodsearch",
+        "/type/",
+        "/vodtype/",
+        "/label/",
+        "/topic/",
+        "/gbook",
+        "/map",
+        "/rss/",
+        "/user/",
+        "/login",
+        "/register",
+        ".xml"
+    ];
+    for (var i = 0; i < blocked.length; i++) {
+        if (lower.indexOf(blocked[i]) >= 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function trimText(value) {
+    if (value == null) {
+        return "";
+    }
+    return String(value).replace(/\s+/g, " ").trim();
+}
+
+function normalizeHomeUrl(url) {
+    var value = trimText(url);
+    var hashIndex = value.indexOf("#");
+    if (hashIndex >= 0) {
+        value = value.substring(0, hashIndex);
+    }
+    var queryIndex = value.indexOf("?");
+    if (queryIndex >= 0) {
+        value = value.substring(0, queryIndex);
+    }
+    while (value.length > 0 && value.charAt(value.length - 1) == "/") {
+        value = value.substring(0, value.length - 1);
+    }
+    return value;
+}
+
+function isBadHomeTitle(title) {
+    var value = trimText(title);
+    if (value.length == 0) {
+        return true;
+    }
+    var blocked = ["专题", "排行", "排行榜", "热榜", "目录", "APP下载", "安卓APP下载", "下载APP", "立即下载"];
+    for (var i = 0; i < blocked.length; i++) {
+        if (value.indexOf(blocked[i]) >= 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function isLikelyCoverUrl(url) {
+    var value = normalizeHomeUrl(url);
+    if (value.length == 0) {
+        return false;
+    }
+    var root = normalizeHomeUrl(getRootUrl());
+    if (value == root) {
+        return false;
+    }
+    return value.indexOf("http://") == 0 || value.indexOf("https://") == 0;
 }
 
 

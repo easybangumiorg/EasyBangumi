@@ -696,6 +696,8 @@ class InnerJsSourceBlackBoxTest {
                 "封面匹配=${booleanText(coverMatch)}",
                 "搜索标题=$searchTitle",
                 "详情标题=$detailTitle",
+                "搜索封面=$searchCover",
+                "详情封面=$detailCover",
                 "播放线路=$playLine",
                 "剧集=$episode",
                 "剧集ID=$episodeId",

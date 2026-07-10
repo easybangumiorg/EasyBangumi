@@ -115,6 +115,27 @@ class InnerJsSourceAssetTest {
     }
 
     @Test
+    fun activeKazumiAssetsExposePageComponent() {
+        activeInnerSourceFiles()
+            .filter { it.name.startsWith("kazumi-") }
+            .forEach { file ->
+                val js = file.readText()
+                assertTrue(
+                    "${file.name} should expose PageComponent_getMainTabs",
+                    js.contains("function PageComponent_getMainTabs()"),
+                )
+                assertTrue(
+                    "${file.name} should expose PageComponent_getSubTabs",
+                    js.contains("function PageComponent_getSubTabs(mainTab)"),
+                )
+                assertTrue(
+                    "${file.name} should expose PageComponent_getContent",
+                    js.contains("function PageComponent_getContent(mainTab, subTab, pageKey)"),
+                )
+            }
+    }
+
+    @Test
     fun searchWithCheckSourcesThrowVerificationRequest() {
         innerSourceFiles().forEach { file ->
             val js = file.readText()
@@ -154,7 +175,7 @@ class InnerJsSourceAssetTest {
     }
 
     private fun innerSourceFiles(): List<File> {
-        val folder = File("src/main/assets/inner_source")
+        val folder = File("inner_source")
         return folder.listFiles()
             ?.filter { it.isFile && it.name.endsWith(PluginV3.JS_SOURCE_SUFFIX) }
             ?.sortedBy { it.name }

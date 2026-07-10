@@ -105,7 +105,8 @@ class MeasureHelper {
                 height = (scale * mVideoHeight).toInt()
             }
             SCREEN_SCALE_FOR_HEIGHT -> {
-                height = heightMeasureSpec
+                // height 已经是 View.MeasureSpec.getSize(heightMeasureSpec) 的像素值
+                // 保持高度不变，按比例计算宽度
                 width = height * mVideoWidth / mVideoHeight
             }
             else -> {

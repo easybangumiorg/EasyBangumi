@@ -91,6 +91,7 @@ def render(rule: dict, key_prefix: str, lib_version: int, timeout: int) -> str:
         use_post=js_bool(rule.get("usePost", False)),
         use_legacy_parser=js_bool(rule.get("useLegacyParser", False)),
         timeout=int(timeout),
+        home_component=HOME_COMPONENT.strip(),
     )
 
 
@@ -113,6 +114,248 @@ def main() -> None:
         target.write_text(output, encoding="utf-8", newline="\n")
     else:
         print(output)
+
+
+HOME_COMPONENT = """
+function PageComponent_getMainTabs() {
+    var res = new ArrayList();
+    res.add(new MainTab("首页推荐", MainTab.MAIN_TAB_WITH_COVER));
+    return res;
+}
+
+function PageComponent_getSubTabs(mainTab) {
+    return new ArrayList();
+}
+
+function PageComponent_getContent(mainTab, subTab, pageKey) {
+    if (pageKey != null && String(pageKey) != "0") {
+        return new Pair(null, new ArrayList());
+    }
+    return new Pair(null, getHomeContent());
+}
+
+function getHomeContent() {
+    var doc = getDoc(getRootUrl());
+    var nodes = findHomeNodes(doc);
+    var list = new ArrayList();
+    var seen = new HashMap();
+    for (var i = 0; i < nodes.size(); i++) {
+        var item = nodes.get(i);
+        var href = homeHref(item);
+        var title = cleanTitle(homeTitle(item));
+        var coverUrl = absoluteUrl(XPathUtils.firstImage(item));
+        if (!isHomeHref(href) || isBadHomeTitle(title) || !isLikelyCoverUrl(coverUrl)) {
+            continue;
+        }
+        var detailUrl = absoluteUrl(href);
+        var uniqueKey = normalizeHomeUrl(detailUrl);
+        if (seen.containsKey(uniqueKey)) {
+            continue;
+        }
+        seen.put(uniqueKey, true);
+        list.add(makeCartoonCover({
+            id: encodeSourceId(detailUrl, title, coverUrl),
+            source: source.key,
+            url: detailUrl,
+            title: title,
+            intro: homeIntro(item),
+            cover: coverUrl
+        }));
+        if (list.size() >= 40) {
+            break;
+        }
+    }
+    return list;
+}
+
+function findHomeNodes(doc) {
+    var selectors = [
+        "a.module-poster-item[href]",
+        "a.module-item[href]",
+        "a.module-card-item[href]",
+        ".stui-vodlist__box",
+        ".stui-vodlist li",
+        ".public-list-box",
+        "div.main ul li",
+        "ul li"
+    ];
+    for (var i = 0; i < selectors.length; i++) {
+        var nodes = doc.select(selectors[i]);
+        if (nodes != null && nodes.size() >= 6) {
+            return nodes;
+        }
+    }
+    return doc.select("a[href]");
+}
+
+function homeHref(item) {
+    var direct = trimText(item.attr("href"));
+    if (isHomeHref(direct)) {
+        return direct;
+    }
+    var selectors = ["a[href]", "h3 a[href]", "h2 a[href]", ".txt a[href]"];
+    for (var i = 0; i < selectors.length; i++) {
+        var link = item.select(selectors[i]).first();
+        if (link == null) {
+            continue;
+        }
+        var href = trimText(link.attr("href"));
+        if (isHomeHref(href)) {
+            return href;
+        }
+    }
+    return "";
+}
+
+function homeTitle(item) {
+    var selectors = [
+        ".module-poster-item-title",
+        ".module-card-item-title",
+        ".module-item-title",
+        ".video-info-header h3",
+        "h3",
+        "h2",
+        ".txt a",
+        "strong"
+    ];
+    for (var i = 0; i < selectors.length; i++) {
+        var node = item.select(selectors[i]).first();
+        if (node == null) {
+            continue;
+        }
+        var title = trimText(node.text());
+        if (title.length == 0) {
+            title = trimText(node.attr("title"));
+        }
+        if (title.length > 0) {
+            return title;
+        }
+    }
+    var directTitle = trimText(item.attr("title"));
+    if (directTitle.length > 0) {
+        return directTitle;
+    }
+    var firstLink = item.select("a[href]").first();
+    if (firstLink != null) {
+        var linkTitle = trimText(firstLink.attr("title"));
+        if (linkTitle.length > 0) {
+            return linkTitle;
+        }
+        linkTitle = trimText(firstLink.text());
+        if (linkTitle.length > 0) {
+            return linkTitle;
+        }
+    }
+    var firstImage = item.select("img").first();
+    if (firstImage != null) {
+        return trimText(firstImage.attr("alt"));
+    }
+    return "";
+}
+
+function homeIntro(item) {
+    var selectors = [
+        ".module-item-note",
+        ".module-item-text",
+        ".module-card-item-note",
+        ".public-list-prb",
+        ".remarks",
+        "p"
+    ];
+    for (var i = 0; i < selectors.length; i++) {
+        var node = item.select(selectors[i]).first();
+        if (node == null) {
+            continue;
+        }
+        var text = trimText(node.text());
+        if (text.length > 0) {
+            return text;
+        }
+    }
+    return "";
+}
+
+function isHomeHref(href) {
+    var value = trimText(href);
+    if (value.length == 0 || value == "/" || value == "#") {
+        return false;
+    }
+    var lower = value.toLowerCase();
+    if (lower.indexOf("javascript:") == 0 || lower.indexOf("mailto:") == 0) {
+        return false;
+    }
+    var blocked = [
+        "/search",
+        "/vodsearch",
+        "/type/",
+        "/vodtype/",
+        "/label/",
+        "/topic/",
+        "/gbook",
+        "/map",
+        "/rss/",
+        "/user/",
+        "/login",
+        "/register",
+        ".xml"
+    ];
+    for (var i = 0; i < blocked.length; i++) {
+        if (lower.indexOf(blocked[i]) >= 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function trimText(value) {
+    if (value == null) {
+        return "";
+    }
+    return String(value).replace(/\\s+/g, " ").trim();
+}
+
+function normalizeHomeUrl(url) {
+    var value = trimText(url);
+    var hashIndex = value.indexOf("#");
+    if (hashIndex >= 0) {
+        value = value.substring(0, hashIndex);
+    }
+    var queryIndex = value.indexOf("?");
+    if (queryIndex >= 0) {
+        value = value.substring(0, queryIndex);
+    }
+    while (value.length > 0 && value.charAt(value.length - 1) == "/") {
+        value = value.substring(0, value.length - 1);
+    }
+    return value;
+}
+
+function isBadHomeTitle(title) {
+    var value = trimText(title);
+    if (value.length == 0) {
+        return true;
+    }
+    var blocked = ["专题", "排行", "排行榜", "热榜", "目录", "APP下载", "安卓APP下载", "下载APP", "立即下载"];
+    for (var i = 0; i < blocked.length; i++) {
+        if (value.indexOf(blocked[i]) >= 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function isLikelyCoverUrl(url) {
+    var value = normalizeHomeUrl(url);
+    if (value.length == 0) {
+        return false;
+    }
+    var root = normalizeHomeUrl(getRootUrl());
+    if (value == root) {
+        return false;
+    }
+    return value.indexOf("http://") == 0 || value.indexOf("https://") == 0;
+}
+"""
 
 
 TEMPLATE = """// @key {key}
@@ -145,6 +388,8 @@ function PreferenceComponent_getPreference() {{
     res.add(new SourcePreference.Edit("网页", "Host", DEFAULT_BASE_URL));
     return res;
 }}
+
+{home_component}
 
 function SearchComponent_search(pageKey, keyword) {{
     var url = runtimeUrl(SEARCH_URL).replace("@keyword", URLEncoder.encode(keyword, "utf-8"));
