@@ -71,6 +71,9 @@ tasks.configureEach {
     if (name.startsWith("merge") && name.endsWith("Assets")) {
         dependsOn(syncInnerSourceAssets)
     }
+    if (name.startsWith("generate") && name.contains("Lint") && name.endsWith("Model")) {
+        dependsOn(syncInnerSourceAssets)
+    }
     if (name == "check") {
         dependsOn(verifyInnerSourceAssets)
     }
