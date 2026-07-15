@@ -1,0 +1,18 @@
+{
+  "name": "cover-fix",
+  "leadAgentId": "8a6157f052104e0a928655000e4bca5a",
+  "workspacePath": "/Users/heyanle/Desktop/project/easybangumi_android",
+  "createdAt": "2026-06-30T08:11:05.067Z",
+  "options": {
+    "workspacePath": "/Users/heyanle/Desktop/project/easybangumi_android",
+    "isAutoTeam": false
+  },
+  "members": [
+    {
+      "memberId": "team-lead@cover-fix",
+      "name": "team-lead",
+      "role": "Team Lead - coordinates the team and interacts with the user"
+    }
+  ],
+  "isAutoTeam": false
+}
