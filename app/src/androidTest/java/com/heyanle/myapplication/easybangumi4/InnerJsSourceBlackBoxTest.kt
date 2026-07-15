@@ -23,6 +23,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
+import org.junit.Assume.assumeTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import okhttp3.OkHttpClient
@@ -39,6 +40,7 @@ class InnerJsSourceBlackBoxTest {
 
     @Test
     fun stableKazumiSourcesPassSearchDetailPlay() = runBlocking {
+        assumePackagedInnerSources()
         val controller = Inject.get<SourceController>()
         controller.refresh()
         val sourceBundle = waitForSourceBundle(controller, ACTIVE_KAZUMI_KEYS)
@@ -68,6 +70,7 @@ class InnerJsSourceBlackBoxTest {
 
     @Test
     fun activeInnerJsSourcesReportHomeAndSearchQuality() = runBlocking {
+        assumePackagedInnerSources()
         val controller = Inject.get<SourceController>()
         controller.refresh()
         val sourceBundle = waitForSourceBundle(controller, ACTIVE_INNER_JS_KEYS)
@@ -89,6 +92,7 @@ class InnerJsSourceBlackBoxTest {
     @Test
     fun allKazumiSourcesReportSearchDetailPlayQuality() = runBlocking {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
+        assumePackagedInnerSources(context)
         val assetFiles = kazumiAssetFiles(context)
         val assetFilesByKey = assetFiles.associateBy { keyFromKazumiAssetFile(it) }
         val assetMetaByKey = assetFiles.associate { fileName ->
@@ -148,6 +152,15 @@ class InnerJsSourceBlackBoxTest {
                     (it.startsWith("kazumi-") || it.startsWith("block-kazumi-"))
             }
             .sortedBy { it.removePrefix("block-") }
+    }
+
+    private fun assumePackagedInnerSources(
+        context: Context = InstrumentationRegistry.getInstrumentation().targetContext,
+    ) {
+        assumeTrue(
+            "Kazumi asset black-box tests require separately delivered inner sources",
+            context.assets.list(INNER_SOURCE_ASSET_DIR).orEmpty().isNotEmpty(),
+        )
     }
 
     private fun keyFromKazumiAssetFile(fileName: String): String {

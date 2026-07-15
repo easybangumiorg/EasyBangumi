@@ -27,43 +27,12 @@ import java.io.File
 class SourceInstallUpdateTest {
 
     @Test
-    fun packagedInnerSourcesAreCopiedButBlockedSourcesAreNotAutoLoaded() = runBlocking {
+    fun apkDoesNotPackageInnerSources() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val controller = Inject.get<SourceController>()
         val assetFiles = context.assets.list(INNER_SOURCE_ASSET_DIR)
             .orEmpty()
             .filter { it.endsWith(".js") }
-            .sorted()
-        val activeFiles = assetFiles.filterNot { it.startsWith("block-") }
-        val blockedFiles = assetFiles.filter { it.startsWith("block-") }
-        val activeKeys = activeFiles.map { keyFromAsset(context, it) }.toSet()
-        val blockedKeys = blockedFiles.map { keyFromAsset(context, it) }.toSet()
-
-        assertFalse("packaged inner sources should not be empty", assetFiles.isEmpty())
-        assertFalse("packaged active inner sources should not be empty", activeFiles.isEmpty())
-        assertFalse("packaged blocked inner sources should not be empty", blockedFiles.isEmpty())
-
-        controller.refresh()
-        val loadedKeys = withTimeout(60_000L) {
-            while (true) {
-                val state = controller.sourceInfo.value
-                if (state is ISourceController.SourceInfoState.Info) {
-                    val keys = state.info.map { it.source.key }.toSet()
-                    if (keys.containsAll(activeKeys)) {
-                        return@withTimeout keys
-                    }
-                }
-                delay(300L)
-            }
-            emptySet()
-        }
-
-        val copiedFolder = File(context.getFilePath(INNER_SOURCE_ASSET_DIR))
-        assetFiles.forEach { fileName ->
-            assertTrue("packaged source should be copied: $fileName", File(copiedFolder, fileName).isFile)
-        }
-        assertTrue("all active built-in sources should load", loadedKeys.containsAll(activeKeys))
-        assertTrue("blocked built-in sources must not auto-load", loadedKeys.intersect(blockedKeys).isEmpty())
+        assertTrue("APK must not package inner_source JS files", assetFiles.isEmpty())
     }
 
     @Test
@@ -257,24 +226,13 @@ class SourceInstallUpdateTest {
         versionCode: Int,
     ): String {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val text = context.assets.open("$INNER_SOURCE_ASSET_DIR/$assetFileName").use { input ->
+        val text = context.assets.open(assetFileName).use { input ->
             input.bufferedReader().readText()
         }
         return text
             .replace(Regex("""(?m)^// @key .*$"""), "// @key $key")
             .replace(Regex("""(?m)^// @versionName .*$"""), "// @versionName $versionName")
             .replace(Regex("""(?m)^// @versionCode .*$"""), "// @versionCode $versionCode")
-    }
-
-    private fun keyFromAsset(context: Context, assetFileName: String): String {
-        return context.assets.open("$INNER_SOURCE_ASSET_DIR/$assetFileName").use { input ->
-            Regex("""(?m)^// @key (.+)$""")
-                .find(input.bufferedReader().readText())
-                ?.groupValues
-                ?.getOrNull(1)
-                ?.trim()
-                ?: error("missing @key in $assetFileName")
-        }
     }
 
     private fun cleanupInstalledSource(context: Context, key: String) {
@@ -287,7 +245,7 @@ class SourceInstallUpdateTest {
 
     private companion object {
         const val INNER_SOURCE_ASSET_DIR = "inner_source"
-        const val ASSET_FILE_NAME = "age.js"
+        const val ASSET_FILE_NAME = "extension_test.js"
         const val SEARCH_KEYWORD = "孤独摇滚"
     }
 }
