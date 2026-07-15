@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -42,15 +43,15 @@ fun RepositoryManageDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text(text = "Repository Manager")
+            Text(text = "仓库管理")
         },
         text = {
             Column {
                 OutlinedTextField(
                     value = newUrl,
                     onValueChange = { newUrl = it },
-                    placeholder = { Text("Repository URL") },
-                    label = { Text("Add Repository") },
+                    placeholder = { Text("请输入仓库地址") },
+                    label = { Text("添加仓库") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                 )
@@ -64,13 +65,15 @@ fun RepositoryManageDialog(
                     enabled = newUrl.isNotBlank(),
                     modifier = Modifier.padding(vertical = 8.dp),
                 ) {
-                    Text(text = stringResource(R.string.confirm))
+                    Text(text = "添加")
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                HorizontalDivider()
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = stringResource(R.string.js_repo),
+                    text = "仓库列表",
                     style = MaterialTheme.typography.titleSmall,
                 )
                 Spacer(modifier = Modifier.height(4.dp))

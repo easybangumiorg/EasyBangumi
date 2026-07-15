@@ -149,7 +149,7 @@ fun RepositorySource() {
                 if (state.error != null) {
                     Text(text = state.error ?: "", color = MaterialTheme.colorScheme.error)
                 } else {
-                    Text(text = stringResource(R.string.no_source))
+                    Text(text = "暂无番源，点击右上角添加仓库")
                 }
             }
         } else {

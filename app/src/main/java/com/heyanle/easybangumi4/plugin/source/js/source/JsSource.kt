@@ -5,6 +5,7 @@ import android.net.Uri
 import android.util.Base64
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Javascript
+import com.heyanle.easybangumi4.R
 import com.heyanle.easybangumi4.plugin.source.js.runtime.JSScope
 import com.heyanle.easybangumi4.plugin.source.js.SourceMetadata
 import com.heyanle.easybangumi4.plugin.api.IconSource
@@ -161,6 +162,9 @@ class JsSource(
 
     override fun getAsyncIconData(): Any {
         val cover = map.get(SourceMetadata.SOURCE_TAG_COVER) ?: return Icons.Filled.Javascript
+        if (cover == "default") {
+            return R.drawable.ic_source_default
+        }
         // url
         val uri = Uri.parse(cover)
         uri.scheme?.let {

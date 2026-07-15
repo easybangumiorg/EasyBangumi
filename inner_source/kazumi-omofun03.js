@@ -3,7 +3,7 @@
 // @versionName 1.1
 // @versionCode 10100
 // @libVersion 15
-// @cover https://omofun03.top/favicon.ico
+// @cover https://omofun03.top/template/mxpro/mxtheme/images/favicon.png
 
 var networkHelper = Inject_NetworkHelper;
 var renderHelper = Inject_RenderHelper;
@@ -409,13 +409,18 @@ function extractDirectVideoFromHtml(html, pageUrl) {
 }
 
 function isDirectVideoUrl(url) {
-    var lower = String(url == null ? "" : url).toLowerCase();
-    return (lower.indexOf("http://") == 0 || lower.indexOf("https://") == 0 || lower.indexOf("//") == 0) &&
-        (lower.indexOf(".m3u8") >= 0 || lower.indexOf(".mp4") >= 0);
+    var value = String(url == null ? "" : url).trim();
+    var lower = value.toLowerCase();
+    if (lower.indexOf("http://") != 0 && lower.indexOf("https://") != 0 && lower.indexOf("//") != 0) {
+        return false;
+    }
+    var path = lower.split("?")[0].split("#")[0];
+    return path.lastIndexOf(".m3u8") == path.length - 5 || path.lastIndexOf(".mp4") == path.length - 4;
 }
 
 function isM3u8Url(url) {
-    return String(url == null ? "" : url).toLowerCase().indexOf(".m3u8") >= 0;
+    var path = String(url == null ? "" : url).toLowerCase().split("?")[0].split("#")[0];
+    return path.lastIndexOf(".m3u8") == path.length - 5;
 }
 
 function getText(url) {

@@ -30,6 +30,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
+import com.heyanle.easybangumi4.R as AppR
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.cartoon.story.local.source.LocalSource
 import com.heyanle.easybangumi4.navigationSetting
@@ -227,6 +228,8 @@ fun SourceItem(
                 crossFade = false,
                 placeholderColor = null,
                 errorColor = null,
+                placeholderRes = AppR.drawable.ic_source_default,
+                errorRes = AppR.drawable.ic_source_default,
             )
         }
     )

@@ -2,6 +2,7 @@
 import com.android.build.api.dsl.VariantDimension
 import com.heyanle.buildsrc.Android
 import com.heyanle.buildsrc.RoomSchemaArgProvider
+import org.gradle.api.tasks.Sync
 import java.util.Properties
 
 val DEFAULT_RELEASE = false
@@ -30,6 +31,50 @@ runCatching {
 
 val packageName = if (release) "com.heyanle.easybangumi4" else "com.heyanle.easybangumi4.debug"
 val labelNameRes = if (release) "@string/app_name" else "纯纯看番 Debug"
+
+val innerSourceDirectory = rootProject.layout.projectDirectory.dir("inner_source")
+val generatedInnerSourceAssets = layout.buildDirectory.dir("generated/inner-source-assets")
+val syncInnerSourceAssets by tasks.registering(Sync::class) {
+    group = "build"
+    description = "Packages repository-managed built-in JS sources as Android assets."
+    from(innerSourceDirectory) {
+        into("inner_source")
+    }
+    into(generatedInnerSourceAssets)
+}
+
+val verifyInnerSourceAssets by tasks.registering {
+    group = "verification"
+    description = "Verifies generated built-in JS source assets match the repository manifest."
+    dependsOn(syncInnerSourceAssets)
+    inputs.dir(innerSourceDirectory)
+    inputs.dir(generatedInnerSourceAssets)
+
+    doLast {
+        fun jsManifest(root: File): List<String> = root.walkTopDown()
+            .filter { it.isFile && it.extension == "js" }
+            .map { it.relativeTo(root).invariantSeparatorsPath }
+            .sorted()
+            .toList()
+
+        val sourceManifest = jsManifest(innerSourceDirectory.asFile)
+        val generatedRoot = generatedInnerSourceAssets.get().dir("inner_source").asFile
+        val generatedManifest = jsManifest(generatedRoot)
+        check(sourceManifest == generatedManifest) {
+            "Generated inner_source assets do not match repository sources. " +
+                "missing=${sourceManifest - generatedManifest}, unexpected=${generatedManifest - sourceManifest}"
+        }
+    }
+}
+
+tasks.configureEach {
+    if (name.startsWith("merge") && name.endsWith("Assets")) {
+        dependsOn(syncInnerSourceAssets)
+    }
+    if (name == "check") {
+        dependsOn(verifyInnerSourceAssets)
+    }
+}
 
 android {
     namespace =  "com.heyanle.easybangumi4"
@@ -78,6 +123,7 @@ android {
 //    }
 
     sourceSets {
+        getByName("main").assets.srcDir(generatedInnerSourceAssets)
         // Adds exported schema location as test app assets.
         getByName("androidTest").assets.srcDir("$projectDir/schemas")
     }

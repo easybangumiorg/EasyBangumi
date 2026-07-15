@@ -638,7 +638,7 @@ class RenderHelperImpl(
                         @JavascriptInterface
                         fun onLegacyUrl(url: String?) {
                             webview.post {
-                                complete(decodeVideoSource(url))
+                                complete(decodeVideoSource(url, strategy.url))
                             }
                         }
                     }, videoParserBridgeName)
@@ -738,8 +738,8 @@ class RenderHelperImpl(
         return null
     }
 
-    private fun decodeVideoSource(url: String?): String? {
-        val normalized = normalizeVideoUrl(url, "") ?: return null
+    private fun decodeVideoSource(url: String?, baseUrl: String): String? {
+        val normalized = normalizeVideoUrl(url, baseUrl) ?: return null
         val decoded = runCatching {
             java.net.URLDecoder.decode(normalized, "UTF-8")
         }.getOrDefault(normalized)

@@ -366,6 +366,25 @@ class InnerJsSourceBlackBoxTest {
             )
         }
 
+        val playlistFailure = validatePlayLines(playLines)
+        if (playlistFailure != null) {
+            return Report(
+                key = key,
+                home = pageReport,
+                search = "ok",
+                detail = "invalid",
+                titleMatch = titleMatch,
+                coverMatch = coverMatch,
+                searchTitle = first.title,
+                detailTitle = cartoon.title,
+                searchCover = first.coverUrl.orEmpty(),
+                detailCover = cartoon.coverUrl.orEmpty(),
+                playlistLines = playLines.size,
+                playlistEpisodeCounts = playLines.joinToString(",") { it.episode.size.toString() },
+                error = "playlist: $playlistFailure",
+            )
+        }
+
         val firstLine = playLines.first()
         val firstEpisode = firstLine.episode.first()
         val playPageUrl = decodeSourceIdUrl(firstEpisode.id)
@@ -392,7 +411,7 @@ class InnerJsSourceBlackBoxTest {
             )
         }
 
-        val videoVerdict = verifyVideoUrl(playerInfo.uri)
+        val videoVerdict = verifyVideoUrl(playerInfo.uri, playerInfo.header.orEmpty())
         assertEquals("source should be preserved for $key", key, first.source)
         return Report(
             key = key,
@@ -414,6 +433,8 @@ class InnerJsSourceBlackBoxTest {
             episode = firstEpisode.label,
             episodeId = firstEpisode.id,
             playPageUrl = playPageUrl,
+            playlistLines = playLines.size,
+            playlistEpisodeCounts = playLines.joinToString(",") { it.episode.size.toString() },
             playUrl = playerInfo.uri,
             videoVerdict = videoVerdict,
             error = when {
@@ -422,6 +443,24 @@ class InnerJsSourceBlackBoxTest {
                 else -> ""
             },
         )
+    }
+
+    private fun validatePlayLines(playLines: List<com.heyanle.easybangumi4.plugin.api.entity.PlayLine>): String? {
+        playLines.forEachIndexed { lineIndex, line ->
+            if (line.episode.isEmpty()) return "line ${lineIndex + 1} has no episodes"
+            val episodeIds = hashSetOf<String>()
+            line.episode.forEachIndexed { episodeIndex, episode ->
+                if (episode.label.isBlank()) return "line ${lineIndex + 1} episode ${episodeIndex + 1} label is blank"
+                val pageUrl = decodeSourceIdUrl(episode.id)
+                if (!pageUrl.startsWith("http://") && !pageUrl.startsWith("https://")) {
+                    return "line ${lineIndex + 1} episode ${episodeIndex + 1} has non-http page url: $pageUrl"
+                }
+                if (!episodeIds.add(pageUrl)) {
+                    return "line ${lineIndex + 1} repeats episode url: $pageUrl"
+                }
+            }
+        }
+        return null
     }
 
     private suspend fun probeHome(sourceBundle: SourceBundle, key: String): HomeReport {
@@ -507,7 +546,7 @@ class InnerJsSourceBlackBoxTest {
             detail.substringBefore("?").substringBefore("#")
     }
 
-    private fun verifyVideoUrl(url: String): VideoVerdict {
+    private fun verifyVideoUrl(url: String, headers: Map<String, String>): VideoVerdict {
         if (url.isBlank()) return VideoVerdict("empty", accepted = false, reason = "blank url")
         val lower = url.lowercase()
         if (SCRIPT_EXTENSIONS.any { lower.substringBefore("?").endsWith(it) }) {
@@ -524,13 +563,19 @@ class InnerJsSourceBlackBoxTest {
         if (!directM3u8 && !directMp4 && QUERY_VIDEO_REGEX.find(url) != null) {
             return VideoVerdict("wrapper", accepted = false, reason = "video url is embedded in wrapper query")
         }
-        return probeDirectVideoUrl(url, directM3u8, directM3u8 || directMp4)
+        return probeDirectVideoUrl(url, directM3u8, directM3u8 || directMp4, headers)
     }
 
-    private fun probeDirectVideoUrl(url: String, directM3u8: Boolean, allowUnverified: Boolean): VideoVerdict {
+    private fun probeDirectVideoUrl(
+        url: String,
+        directM3u8: Boolean,
+        allowUnverified: Boolean,
+        headers: Map<String, String>,
+    ): VideoVerdict {
         val request = Request.Builder()
             .url(url)
             .header("Range", "bytes=0-4095")
+            .apply { headers.forEach { (key, value) -> header(key, value) } }
             .build()
         return runCatching {
             HTTP_CLIENT.newCall(request).execute().use { response ->
@@ -674,6 +719,8 @@ class InnerJsSourceBlackBoxTest {
         val episode: String = "",
         val episodeId: String = "",
         val playPageUrl: String = "",
+        val playlistLines: Int = 0,
+        val playlistEpisodeCounts: String = "",
         val legacyParser: String = "",
         val playTimeout: String = "",
         val playUrl: String = "",
@@ -702,6 +749,8 @@ class InnerJsSourceBlackBoxTest {
                 "剧集=$episode",
                 "剧集ID=$episodeId",
                 "播放页=$playPageUrl",
+                "播放线路数=$playlistLines",
+                "每线路剧集数=$playlistEpisodeCounts",
                 "Legacy解析=$legacyParser",
                 "播放超时=$playTimeout",
                 "播放地址=$playUrl",
@@ -740,24 +789,20 @@ class InnerJsSourceBlackBoxTest {
         val IMAGE_EXTENSIONS = setOf(".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg")
 
         val ACTIVE_KAZUMI_KEYS = setOf(
-            "kazumi.7sefun",
             "kazumi.9ciyuan",
             "kazumi.anime7",
             "kazumi.ant",
             "kazumi.baimao",
-            "kazumi.gpjda",
             "kazumi.mxdm",
             "kazumi.omofun03",
             "kazumi.ylsp",
         )
 
         val STABLE_KAZUMI_KEYS = setOf(
-            "kazumi.7sefun",
             "kazumi.9ciyuan",
             "kazumi.anime7",
             "kazumi.ant",
             "kazumi.baimao",
-            "kazumi.gpjda",
             "kazumi.mxdm",
             "kazumi.omofun03",
             "kazumi.ylsp",

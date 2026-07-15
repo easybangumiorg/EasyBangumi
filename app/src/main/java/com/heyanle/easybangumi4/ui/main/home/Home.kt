@@ -60,6 +60,7 @@ import com.heyanle.easybangumi4.ui.common.page.CartoonPageUI
 import com.heyanle.easybangumi4.ui.main.MainViewModel
 import kotlinx.coroutines.launch
 import com.heyanle.easy_i18n.R
+import com.heyanle.easybangumi4.R as AppR
 import com.heyanle.easybangumi4.navigationSourceManager
 
 /**
@@ -233,7 +234,9 @@ fun HomeBottomSheet(
                     OkImage(
                         modifier = Modifier.size(32.dp),
                         image = icon?.getIconWithAsyncOrDrawable(),
-                        contentDescription = page.source.label
+                        contentDescription = page.source.label,
+                        placeholderRes = AppR.drawable.ic_source_default,
+                        errorRes = AppR.drawable.ic_source_default,
                     )
                 },
                 trailingContent = {

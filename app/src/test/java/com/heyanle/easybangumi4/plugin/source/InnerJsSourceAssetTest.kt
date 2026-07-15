@@ -9,6 +9,7 @@ import org.mozilla.javascript.Context
 import org.mozilla.javascript.ImporterTopLevel
 import org.mozilla.javascript.ScriptableObject
 import java.io.File
+import java.net.URI
 
 class InnerJsSourceAssetTest {
 
@@ -20,12 +21,10 @@ class InnerJsSourceAssetTest {
             listOf(
                 "age.js",
                 "girigirilove.js",
-                "kazumi-7sefun.js",
                 "kazumi-9ciyuan.js",
                 "kazumi-anime7.js",
                 "kazumi-ant.js",
                 "kazumi-baimao.js",
-                "kazumi-gpjda.js",
                 "kazumi-mxdm.js",
                 "kazumi-omofun03.js",
                 "kazumi-ylsp.js",
@@ -33,7 +32,7 @@ class InnerJsSourceAssetTest {
             ),
             activeInnerSourceFiles().map { it.name }.sorted(),
         )
-        assertEquals(66, blockedInnerSourceFiles().size)
+        assertEquals(68, blockedInnerSourceFiles().size)
 
         files.forEach { file ->
             val metadata = readMetadata(file)
@@ -47,6 +46,14 @@ class InnerJsSourceAssetTest {
             assertTrue(
                 "${file.name} libVersion should be supported",
                 metadata[SourceMetadata.SOURCE_TAG_LIB_VERSION]?.toIntOrNull() in PluginV3.SUPPORTED_LIB_VERSION_RANGE,
+            )
+            val cover = metadata[SourceMetadata.SOURCE_TAG_COVER]
+            assertTrue("${file.name} cover should not be blank", cover.isNotNullOrBlank())
+            assertTrue(
+                "${file.name} cover should be an HTTP(S) URL or the built-in default",
+                cover == "default" || cover?.let {
+                    runCatching { URI(it).scheme in setOf("http", "https") }.getOrDefault(false)
+                } == true,
             )
         }
     }
@@ -175,7 +182,7 @@ class InnerJsSourceAssetTest {
     }
 
     private fun innerSourceFiles(): List<File> {
-        val folder = File("inner_source")
+        val folder = File("../inner_source")
         return folder.listFiles()
             ?.filter { it.isFile && it.name.endsWith(PluginV3.JS_SOURCE_SUFFIX) }
             ?.sortedBy { it.name }
