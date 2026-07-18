@@ -19,9 +19,9 @@ class InnerSourceFileProviderTest {
             val provider = InnerSourceFileProvider(
                 assetReader = MemoryAssetReader(
                     mapOf(
-                        "inner_source/source.js" to "js",
-                        "inner_source/nested/source.txt" to "ignored nested",
-                        "inner_source/readme.txt" to "ignored",
+                        "source.js" to "js",
+                        "nested/source.txt" to "ignored nested",
+                        "readme.txt" to "ignored",
                     )
                 ),
                 cacheFolder = cacheFolder,
@@ -61,7 +61,7 @@ class InnerSourceFileProviderTest {
         private val files: Map<String, String>,
     ) : InnerSourceFileProvider.AssetReader {
         override fun list(path: String): List<String> {
-            val prefix = "$path/"
+            val prefix = if (path.isEmpty()) "" else "$path/"
             val children = files.keys
                 .filter { it.startsWith(prefix) }
                 .map { it.removePrefix(prefix).substringBefore("/") }

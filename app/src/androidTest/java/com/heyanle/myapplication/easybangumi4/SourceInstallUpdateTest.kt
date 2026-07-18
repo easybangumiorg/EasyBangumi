@@ -58,7 +58,7 @@ class SourceInstallUpdateTest {
             emptySet()
         }
 
-        val copiedFolder = File(context.getFilePath(INNER_SOURCE_ASSET_DIR))
+        val copiedFolder = File(context.getFilePath(COPIED_INNER_SOURCE_DIR))
         assetFiles.forEach { fileName ->
             assertTrue("packaged source should be copied: $fileName", File(copiedFolder, fileName).isFile)
         }
@@ -257,7 +257,7 @@ class SourceInstallUpdateTest {
         versionCode: Int,
     ): String {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val text = context.assets.open("$INNER_SOURCE_ASSET_DIR/$assetFileName").use { input ->
+        val text = context.assets.open(innerSourceAssetPath(assetFileName)).use { input ->
             input.bufferedReader().readText()
         }
         return text
@@ -271,7 +271,7 @@ class SourceInstallUpdateTest {
     }
 
     private fun keyFromAsset(context: Context, assetFileName: String): String {
-        return context.assets.open("$INNER_SOURCE_ASSET_DIR/$assetFileName").use { input ->
+        return context.assets.open(innerSourceAssetPath(assetFileName)).use { input ->
             Regex("""(?m)^// @key (.+)$""")
                 .find(input.bufferedReader().readText())
                 ?.groupValues
@@ -285,8 +285,13 @@ class SourceInstallUpdateTest {
         return File(context.getFilePath("source_v3"), "$key.js")
     }
 
+    private fun innerSourceAssetPath(fileName: String): String {
+        return if (INNER_SOURCE_ASSET_DIR.isEmpty()) fileName else "$INNER_SOURCE_ASSET_DIR/$fileName"
+    }
+
     private companion object {
-        const val INNER_SOURCE_ASSET_DIR = "inner_source"
+        const val INNER_SOURCE_ASSET_DIR = ""
+        const val COPIED_INNER_SOURCE_DIR = "inner_source"
         const val ASSET_FILE_NAME = "age.js"
         const val SEARCH_KEYWORD = "孤独摇滚"
     }

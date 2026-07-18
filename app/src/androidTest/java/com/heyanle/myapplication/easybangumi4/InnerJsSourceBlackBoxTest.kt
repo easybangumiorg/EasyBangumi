@@ -238,6 +238,10 @@ class InnerJsSourceBlackBoxTest {
             .removeSuffix(".js")
     }
 
+    private fun innerSourceAssetPath(fileName: String): String {
+        return if (INNER_SOURCE_ASSET_DIR.isEmpty()) fileName else "$INNER_SOURCE_ASSET_DIR/$fileName"
+    }
+
     private fun createAllKazumiSourceController(
         context: Context,
         assetFiles: List<String>,
@@ -251,7 +255,7 @@ class InnerJsSourceBlackBoxTest {
         }
         assetFiles.forEach { assetFile ->
             val target = File(sourceFolder, assetFile.removePrefix("block-"))
-            context.assets.open("$INNER_SOURCE_ASSET_DIR/$assetFile").use { input ->
+            context.assets.open(innerSourceAssetPath(assetFile)).use { input ->
                 target.outputStream().use { output ->
                     input.copyTo(output)
                 }
@@ -275,7 +279,7 @@ class InnerJsSourceBlackBoxTest {
     }
 
     private fun kazumiAssetMeta(context: Context, fileName: String): AssetMeta {
-        val text = context.assets.open("$INNER_SOURCE_ASSET_DIR/$fileName").use { input ->
+        val text = context.assets.open(innerSourceAssetPath(fileName)).use { input ->
             input.bufferedReader().readText()
         }
         return AssetMeta(
@@ -875,7 +879,7 @@ class InnerJsSourceBlackBoxTest {
         const val VIDEO_PROBE_BYTES = 4096L
         const val REPORT_FOLDER = "inner_source_reports"
         const val REPORT_TIMESTAMP_FORMAT = "yyyyMMdd_HHmmss_SSS"
-        const val INNER_SOURCE_ASSET_DIR = "inner_source"
+        const val INNER_SOURCE_ASSET_DIR = ""
 
         val HTTP_CLIENT: OkHttpClient = OkHttpClient.Builder()
             .connectTimeout(10, TimeUnit.SECONDS)

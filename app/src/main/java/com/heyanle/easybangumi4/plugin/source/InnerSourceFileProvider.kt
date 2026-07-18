@@ -47,7 +47,7 @@ class InnerSourceFileProvider(
             return listOf(path)
         }
         return children.flatMap { child ->
-            collectAssets("$path/$child")
+            collectAssets(if (path.isEmpty()) child else "$path/$child")
         }
     }
 
@@ -68,7 +68,7 @@ class InnerSourceFileProvider(
     }
 
     private companion object {
-        const val ASSET_DIR = "inner_source"
+        const val ASSET_DIR = ""
     }
 
     interface AssetReader {
