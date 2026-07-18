@@ -14,6 +14,21 @@ import java.net.URI
 class InnerJsSourceAssetTest {
 
     @Test
+    fun packagedInnerSourceAssetsMatchRepositorySources() {
+        val repositoryFiles = innerSourceFiles().associateBy { it.name }
+        val assetFolder = File("build/generated/inner_source_assets/inner_source")
+        val assetFiles = assetFolder.listFiles()
+            ?.filter { it.isFile && it.name.endsWith(PluginV3.JS_SOURCE_SUFFIX) }
+            ?.associateBy { it.name }
+            .orEmpty()
+
+        assertEquals(repositoryFiles.keys.sorted(), assetFiles.keys.sorted())
+        repositoryFiles.forEach { (name, sourceFile) ->
+            assertEquals("packaged asset differs from $name", sourceFile.readText(), assetFiles.getValue(name).readText())
+        }
+    }
+
+    @Test
     fun innerSourceAssetsHaveSupportedMetadata() {
         val files = innerSourceFiles()
 

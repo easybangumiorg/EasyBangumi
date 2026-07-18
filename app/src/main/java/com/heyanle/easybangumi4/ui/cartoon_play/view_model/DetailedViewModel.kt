@@ -14,6 +14,7 @@ import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonSummary
 import com.heyanle.easybangumi4.plugin.api.entity.Episode
 import com.heyanle.easybangumi4.ui.common.proc.SortState
+import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.inject.core.Inject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -91,6 +92,7 @@ class DetailedViewModel(
     fun load() {
         job?.cancel()
         job = viewModelScope.launch {
+            "detail-load action=start requestedSource=${cartoonSummary.source} requestedId=${cartoonSummary.id} vm=${System.identityHashCode(this@DetailedViewModel)}".logi("PlaybackTrace")
             _stateFlow.update {
                 it.copy(isLoading = true, cartoonInfo = null)
             }
@@ -100,6 +102,7 @@ class DetailedViewModel(
             )
                 .onOK {
                     yield()
+                    "detail-load action=success requestedSource=${cartoonSummary.source} requestedId=${cartoonSummary.id} returnedSource=${it.source} returnedId=${it.id} title=${it.name}".logi("PlaybackTrace")
                     _stateFlow.update { detail ->
                         detail.copy(
                             isLoading = false,
@@ -113,6 +116,7 @@ class DetailedViewModel(
                 }
                 .onError { err ->
                     yield()
+                    "detail-load action=error requestedSource=${cartoonSummary.source} requestedId=${cartoonSummary.id} message=${err.errorMsg}".logi("PlaybackTrace")
                     _stateFlow.update {
                         it.copy(
                             isLoading = false,

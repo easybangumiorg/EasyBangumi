@@ -12,6 +12,7 @@ import com.heyanle.easybangumi4.plugin.api.entity.PlayLine
 import com.heyanle.easybangumi4.plugin.api.entity.PlayerInfo
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.easybangumi4.utils.getMD5
+import com.heyanle.easybangumi4.utils.logi
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.Dispatchers
@@ -44,14 +45,18 @@ class PlayComponentCacheWrapper(
         val cacheKey = cacheKey(summary, playLine, episode)
         if (canCache) {
             read(cacheKey)?.let {
+                logCache("hit", summary, playLine, episode, cacheKey, it.uri)
                 return SourceResult.Complete(it, isCache = true)
             }
+            logCache("miss", summary, playLine, episode, cacheKey)
         } else {
+            logCache("invalidate", summary, playLine, episode, cacheKey)
             delete(cacheKey)
         }
         val result = delegate.getPlayInfo(summary, playLine, episode, canCache = false)
         if (result is SourceResult.Complete && !result.isCache) {
             write(cacheKey, result.data)
+            logCache("write", summary, playLine, episode, cacheKey, result.data.uri)
         }
         return result
     }
@@ -65,6 +70,7 @@ class PlayComponentCacheWrapper(
     ): SourceResult<PlayerInfo> {
         val cacheKey = cacheKey(summary, playLine, episode)
         if (!canCache) {
+            logCache("invalidate", summary, playLine, episode, cacheKey)
             delete(cacheKey)
         }
         val result = delegate.getPlayInfo(
@@ -76,6 +82,7 @@ class PlayComponentCacheWrapper(
         )
         if (result is SourceResult.Complete && !result.isCache) {
             write(cacheKey, result.data)
+            logCache("write", summary, playLine, episode, cacheKey, result.data.uri)
         }
         return result
     }
@@ -90,14 +97,18 @@ class PlayComponentCacheWrapper(
         val cacheKey = cacheKey(summary, playLine, episode)
         if (canCache) {
             read(cacheKey)?.let {
+                logCache("hit", summary, playLine, episode, cacheKey, it.uri)
                 return SourceResult.Complete(it, isCache = true)
             }
+            logCache("miss", summary, playLine, episode, cacheKey)
         } else {
+            logCache("invalidate", summary, playLine, episode, cacheKey)
             delete(cacheKey)
         }
         val result = delegate.getPlayInfo(cartoon, playLine, episode, canCache = false)
         if (result is SourceResult.Complete && !result.isCache) {
             write(cacheKey, result.data)
+            logCache("write", summary, playLine, episode, cacheKey, result.data.uri)
         }
         return result
     }
@@ -112,6 +123,7 @@ class PlayComponentCacheWrapper(
         val summary = CartoonSummary(cartoon.id, cartoon.source)
         val cacheKey = cacheKey(summary, playLine, episode)
         if (!canCache) {
+            logCache("invalidate", summary, playLine, episode, cacheKey)
             delete(cacheKey)
         }
         val result = delegate.getPlayInfo(
@@ -123,12 +135,26 @@ class PlayComponentCacheWrapper(
         )
         if (result is SourceResult.Complete && !result.isCache) {
             write(cacheKey, result.data)
+            logCache("write", summary, playLine, episode, cacheKey, result.data.uri)
         }
         return result
     }
 
     private fun cacheKey(summary: CartoonSummary, playLine: PlayLine, episode: Episode): String {
         return "${summary.source}|${summary.id}|${playLine.id}|${episode.id}".getMD5()
+    }
+
+    private fun logCache(
+        action: String,
+        summary: CartoonSummary,
+        playLine: PlayLine,
+        episode: Episode,
+        key: String,
+        uri: String? = null,
+    ) {
+        runCatching {
+            "play-cache action=$action source=${summary.source} cartoonId=${summary.id} lineId=${playLine.id} episodeId=${episode.id} key=$key uri=${uri.orEmpty()}".logi(TAG)
+        }
     }
 
     private suspend fun read(key: String): PlayerInfo? = withContext(Dispatchers.IO) {
@@ -175,5 +201,9 @@ class PlayComponentCacheWrapper(
                 )
             }
         }
+    }
+
+    private companion object {
+        const val TAG = "PlayInfoCache"
     }
 }

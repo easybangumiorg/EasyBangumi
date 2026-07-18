@@ -1,0 +1,4 @@
+interface:
+  display_name: "EasyBangumi 发布"
+  short_description: "核验并发布 EasyBangumi Android 版本"
+  default_prompt: "Use $easybangumi-release to prepare and publish an EasyBangumi release."

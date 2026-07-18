@@ -98,6 +98,10 @@ fun CartoonPlay(
         render = playingVM.easyTextRenderer
     )
 
+    LaunchedEffect(summary) {
+        "play-screen source=${summary.source} cartoonId=${summary.id} detailedVm=${System.identityHashCode(detailedVM)} playVm=${System.identityHashCode(playVM)} playingVm=${System.identityHashCode(playingVM)}".logi("PlaybackTrace")
+    }
+
     val detailedState = detailedVM.stateFlow.collectAsState()
     val playState = playVM.curringPlayState.collectAsState()
     val playingState = playingVM.playingState.collectAsState()
@@ -606,7 +610,6 @@ fun CartoonPlay(
 
     }
 }
-
 
 
 

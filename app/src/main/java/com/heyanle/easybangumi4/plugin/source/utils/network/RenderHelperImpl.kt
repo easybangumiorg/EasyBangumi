@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
+import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import com.heyanle.easybangumi4.plugin.api.utils.api.JsRenderedResult
@@ -584,12 +585,17 @@ class RenderHelperImpl(
     override suspend fun renderVideo(strategy: RenderHelper.VideoStrategy): RenderHelper.VideoResult {
         val webview = webViewHelperV2Impl.getGlobalWebViewOrNull() ?: throw WebViewCreatedException()
         return withContext(Dispatchers.Main) {
+            debugLog("renderVideo session=start page=${strategy.url} webView=${System.identityHashCode(webview)}")
             webview.clearWeb()
             webview.settings.apply {
                 setUserAgentString(strategy.userAgentString ?: userAgentString)
                 mediaPlaybackRequiresUserGesture = false
                 loadsImagesAutomatically = false
                 blockNetworkImage = true
+                // A player page frequently creates its real iframe asynchronously.  Do not let a
+                // cached response or a still-active subframe from the previous page satisfy this
+                // request; the source-level PlayerInfo cache handles intentional reuse instead.
+                cacheMode = WebSettings.LOAD_NO_CACHE
             }
             webview.resumeTimers()
 
@@ -645,10 +651,12 @@ class RenderHelperImpl(
 
                     webview.webViewClient = object : WebViewClient() {
                         override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                            debugLog("renderVideo page-start target=${strategy.url} actual=$url")
                             webview.evaluateJavascript(if (strategy.useLegacyParser) legacyVideoParserJs else videoParserJs)
                         }
 
                         override fun onPageFinished(view: WebView?, url: String?) {
+                            debugLog("renderVideo page-finished target=${strategy.url} actual=$url")
                             webview.evaluateJavascript(if (strategy.useLegacyParser) legacyVideoParserJs else videoParserJs)
                             webview.evaluateJavascript(strategy.actionJs)
                             scope.launch {
@@ -697,7 +705,12 @@ class RenderHelperImpl(
             }
 
             webview.removeJavascriptInterface(videoParserBridgeName)
+            // stopLoading alone leaves an asynchronously-created iframe alive in some WebView
+            // versions.  Its later media request can otherwise be observed by the next render.
             webview.stop()
+            webview.webViewClient = WebViewClient()
+            webview.loadUrl("about:blank")
+            webview.settings.cacheMode = WebSettings.LOAD_DEFAULT
             webViewHelperV2Impl.recyclerWebView(webview)
 
             val fallbackProbe = if (result == null) {

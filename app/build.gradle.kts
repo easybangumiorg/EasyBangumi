@@ -30,6 +30,11 @@ runCatching {
 
 val packageName = if (release) "com.heyanle.easybangumi4" else "com.heyanle.easybangumi4.debug"
 val labelNameRes = if (release) "@string/app_name" else "纯纯看番 Debug"
+val generatedInnerSourceAssets = layout.buildDirectory.dir("generated/inner_source_assets")
+val generateInnerSourceAssets by tasks.registering(Sync::class) {
+    from(rootProject.layout.projectDirectory.dir("inner_source"))
+    into(generatedInnerSourceAssets.map { it.dir("inner_source") })
+}
 
 android {
     namespace =  "com.heyanle.easybangumi4"
@@ -78,6 +83,7 @@ android {
 //    }
 
     sourceSets {
+        getByName("main").assets.srcDir(generatedInnerSourceAssets)
         // Adds exported schema location as test app assets.
         getByName("androidTest").assets.srcDir("$projectDir/schemas")
     }
@@ -135,6 +141,16 @@ android {
 
 }
 
+tasks.configureEach {
+    if (name.startsWith("merge") && name.endsWith("Assets")) {
+        dependsOn(generateInnerSourceAssets)
+    }
+}
+
+tasks.withType<Test>().configureEach {
+    dependsOn(generateInnerSourceAssets)
+}
+
 fun VariantDimension.buildConfig(){
 
 //    // thanks
@@ -176,7 +192,6 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 }
 
 dependencies {
-
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
     implementation(androidx.bundles.core)
     androidTestImplementation(androidx.bundles.test.core)

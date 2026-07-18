@@ -64,6 +64,19 @@ class CartoonPlayingViewModel(
 
     companion object {
         const val TAG = "CartoonPlayingViewModel"
+
+        internal fun isSamePlaybackTarget(
+            previousSummary: CartoonSummary?,
+            previousPlayLine: PlayLine?,
+            previousEpisode: Episode?,
+            nextSummary: CartoonSummary,
+            nextPlayLine: PlayLine,
+            nextEpisode: Episode,
+        ): Boolean {
+            return previousSummary == nextSummary &&
+                previousPlayLine == nextPlayLine &&
+                previousEpisode == nextEpisode
+        }
     }
 
     // 播放器状态 =================================================
@@ -262,6 +275,8 @@ class CartoonPlayingViewModel(
     ) {
         lastJob?.cancel()
         lastJob = scope.launch {
+            val previousSummary = this@CartoonPlayingViewModel.cartoonPlayingState?.cartoonSummary
+            val previousPlayerUri = playingInfo?.uri
             this@CartoonPlayingViewModel.cartoonPlayingState = cartoonPlayingState
             if (cartoonPlayingState == null) {
                 _playingState.update {
@@ -272,8 +287,16 @@ class CartoonPlayingViewModel(
                     )
                 }
             } else {
-                if (playingPlayLine == cartoonPlayingState.playLine.playLine
-                    && playingEpisode == cartoonPlayingState.episode
+                val sameTarget = isSamePlaybackTarget(
+                    previousSummary = previousSummary,
+                    previousPlayLine = playingPlayLine,
+                    previousEpisode = playingEpisode,
+                    nextSummary = cartoonPlayingState.cartoonSummary,
+                    nextPlayLine = cartoonPlayingState.playLine.playLine,
+                    nextEpisode = cartoonPlayingState.episode,
+                )
+                "play-target previousSource=${previousSummary?.source} previousId=${previousSummary?.id} previousUri=$previousPlayerUri nextSource=${cartoonPlayingState.cartoonSummary.source} nextId=${cartoonPlayingState.cartoonSummary.id} lineId=${cartoonPlayingState.playLine.playLine.id} episodeId=${cartoonPlayingState.episode.id} sameTarget=$sameTarget vm=${System.identityHashCode(this@CartoonPlayingViewModel)}".logi(TAG)
+                if (sameTarget
                     && _playingState.first().isPlaying
                     && exoPlayer.isMedia()
                 ) {
@@ -371,6 +394,8 @@ class CartoonPlayingViewModel(
             return
         }
 
+        "play-resolve source=${cartoonPlayingState.cartoonSummary.source} cartoonId=${cartoonPlayingState.cartoonSummary.id} lineId=${cartoonPlayingState.playLine.playLine.id} episodeId=${cartoonPlayingState.episode.id} canCache=$canCache".logi(TAG)
+
         val verificationResult = verificationResultTemp
         val tsummary = verificationTempSummary
         val tline = verificationTempLine
@@ -420,7 +445,7 @@ class CartoonPlayingViewModel(
         }
             .complete {
                 yield()
-                it.data.uri.logi("CartoonPlayingViewModel")
+                "play-resolve action=complete source=${cartoonPlayingState.cartoonSummary.source} cartoonId=${cartoonPlayingState.cartoonSummary.id} uri=${it.data.uri} resultCache=${it.isCache}".logi(TAG)
                 playingPlayLine = cartoonPlayingState.playLine.playLine
                 playingEpisode = cartoonPlayingState.episode
                 playingInfoIsCache = it.isCache
@@ -483,6 +508,7 @@ class CartoonPlayingViewModel(
                 && playingInfo?.decodeType == playerInfo.decodeType
                 && exoPlayer.isMedia()
             ) {
+                "play-media action=reuse uri=${playerInfo.uri} source=${cartoonPlayingState?.cartoonSummary?.source} cartoonId=${cartoonPlayingState?.cartoonSummary?.id}".logi(TAG)
                 playingInfo = playerInfo
                 if (adviceProcess >= 0) {
                     exoPlayer.seekTo(adviceProcess)
@@ -502,6 +528,7 @@ class CartoonPlayingViewModel(
         thumbnailFolder.deleteRecursively()
         thumbnailBuffer = ThumbnailBuffer(thumbnailFolder)
         playingInfo = playerInfo
+        "play-media action=set uri=${playerInfo.uri} source=${cartoonPlayingState?.cartoonSummary?.source} cartoonId=${cartoonPlayingState?.cartoonSummary?.id} cache=$canMediaCache".logi(TAG)
         // 本地番源不过缓存
         val media =
             if (!canMediaCache || cartoonPlayingState?.cartoonSummary?.source?.equals(LocalSource.LOCAL_SOURCE_KEY) == true)

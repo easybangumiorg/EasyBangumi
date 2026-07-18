@@ -5,13 +5,16 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.heyanle.easybangumi4.plugin.api.SourceResult
 import com.heyanle.easybangumi4.plugin.api.component.page.SourcePage
+import com.heyanle.easybangumi4.plugin.api.component.play.PlayComponent
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonSummary
 import com.heyanle.easybangumi4.plugin.source.ISourceController
 import com.heyanle.easybangumi4.plugin.source.SourceController
 import com.heyanle.easybangumi4.plugin.source.SourceConfig
 import com.heyanle.easybangumi4.plugin.source.SourceInfo
 import com.heyanle.easybangumi4.plugin.source.SourcePreferences
+import com.heyanle.easybangumi4.plugin.source.bundle.PlayComponentCacheWrapper
 import com.heyanle.easybangumi4.plugin.source.bundle.SourceBundle
+import com.heyanle.easybangumi4.plugin.source.bundle.getComponentProxy
 import com.heyanle.inject.api.get
 import com.heyanle.inject.core.Inject
 import kotlinx.coroutines.Dispatchers
@@ -22,6 +25,7 @@ import kotlinx.coroutines.withTimeout
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assume.assumeTrue
 import org.junit.Test
@@ -37,6 +41,70 @@ import java.util.concurrent.TimeUnit
 
 @RunWith(AndroidJUnit4::class)
 class InnerJsSourceBlackBoxTest {
+
+    @Test
+    fun kazumiPlayerCacheDoesNotCrossCartoons() = runBlocking {
+        assumePackagedInnerSources()
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val key = "kazumi.baimao"
+        val controller = Inject.get<SourceController>()
+        controller.refresh()
+        val sourceBundle = waitForSourceBundle(controller, setOf(key))
+        val search = sourceBundle.search(key) ?: error("$key search component missing")
+        val detailed = sourceBundle.detailed(key) ?: error("$key detailed component missing")
+        val sourceInfo = sourceBundle.sourceInfo(key) as? SourceInfo.Loaded
+            ?: error("$key source did not load")
+        val rawPlay = sourceInfo.componentBundle.getComponentProxy<PlayComponent>()
+            ?: error("$key raw play component missing")
+
+        val covers = when (val result = search.search(search.getFirstSearchKey(KEYWORD), KEYWORD)) {
+            is SourceResult.Complete -> result.data.second
+            is SourceResult.Error -> throw AssertionError("$key search failed: ${result.throwable.message}")
+        }
+        val firstCover = covers.firstOrNull() ?: throw AssertionError("$key search returned no covers")
+        val secondCover = covers.firstOrNull { it.id != firstCover.id }
+            ?: throw AssertionError("$key search returned no distinct second cartoon")
+
+        suspend fun firstPlayable(cover: com.heyanle.easybangumi4.plugin.api.entity.CartoonCover): Triple<CartoonSummary, com.heyanle.easybangumi4.plugin.api.entity.PlayLine, com.heyanle.easybangumi4.plugin.api.entity.Episode> {
+            val summary = CartoonSummary(cover.id, cover.source)
+            val (_, lines) = when (val result = detailed.getAll(summary)) {
+                is SourceResult.Complete -> result.data
+                is SourceResult.Error -> throw AssertionError("$key detail failed for ${cover.title}: ${result.throwable.message}")
+            }
+            val line = lines.firstOrNull { it.episode.isNotEmpty() }
+                ?: throw AssertionError("$key has no playable line for ${cover.title}")
+            return Triple(summary, line, line.episode.first())
+        }
+
+        val first = firstPlayable(firstCover)
+        val second = firstPlayable(secondCover)
+        val cacheFolder = File(context.cacheDir, "kazumi-player-cache-isolation")
+        cacheFolder.deleteRecursively()
+        try {
+            val cache = PlayComponentCacheWrapper(rawPlay, cacheFolder)
+            val firstResult = cache.getPlayInfo(first.first, first.second, first.third, canCache = false)
+                as? SourceResult.Complete ?: throw AssertionError("$key first cartoon play parsing failed")
+            assertFalse("first cartoon should not be a cache result", firstResult.isCache)
+
+            val secondResult = cache.getPlayInfo(second.first, second.second, second.third, canCache = true)
+                as? SourceResult.Complete ?: throw AssertionError("$key second cartoon play parsing failed")
+            assertFalse(
+                "different cartoons must not reuse the first cartoon's player-info cache",
+                secondResult.isCache,
+            )
+            assertNotEquals(
+                "different cartoons must not receive the previous render's video URL",
+                firstResult.data.uri,
+                secondResult.data.uri,
+            )
+
+            val firstCached = cache.getPlayInfo(first.first, first.second, first.third, canCache = true)
+                as? SourceResult.Complete ?: throw AssertionError("$key first cartoon cached play parsing failed")
+            assertTrue("first cartoon should reuse only its own cache entry", firstCached.isCache)
+        } finally {
+            cacheFolder.deleteRecursively()
+        }
+    }
 
     @Test
     fun stableKazumiSourcesPassSearchDetailPlay() = runBlocking {
@@ -158,7 +226,7 @@ class InnerJsSourceBlackBoxTest {
         context: Context = InstrumentationRegistry.getInstrumentation().targetContext,
     ) {
         assumeTrue(
-            "Kazumi asset black-box tests require separately delivered inner sources",
+            "Kazumi asset black-box tests require packaged inner sources",
             context.assets.list(INNER_SOURCE_ASSET_DIR).orEmpty().isNotEmpty(),
         )
     }
@@ -340,6 +408,10 @@ class InnerJsSourceBlackBoxTest {
         if (covers.isEmpty()) {
             return Report(key, home = pageReport, search = "empty", error = "search returned empty")
         }
+        val cartoonIdFailure = validateCartoonIds(covers)
+        if (cartoonIdFailure != null) {
+            return Report(key, home = pageReport, search = "invalid", error = "cartoon id: $cartoonIdFailure")
+        }
         val first = covers.first()
         if (first.id.isBlank()) {
             return Report(key, home = pageReport, search = "ok", error = "first search id empty")
@@ -471,6 +543,20 @@ class InnerJsSourceBlackBoxTest {
                 if (!episodeIds.add(pageUrl)) {
                     return "line ${lineIndex + 1} repeats episode url: $pageUrl"
                 }
+            }
+        }
+        return null
+    }
+
+    private fun validateCartoonIds(
+        covers: List<com.heyanle.easybangumi4.plugin.api.entity.CartoonCover>,
+    ): String? {
+        val idsByDetailUrl = hashMapOf<String, String>()
+        covers.forEachIndexed { index, cover ->
+            if (cover.id.isBlank()) return "result ${index + 1} id is blank"
+            val existingDetailUrl = idsByDetailUrl.put(cover.id, cover.url)
+            if (existingDetailUrl != null && existingDetailUrl != cover.url) {
+                return "id ${cover.id} maps to both $existingDetailUrl and ${cover.url}"
             }
         }
         return null

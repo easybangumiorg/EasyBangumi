@@ -24,6 +24,7 @@ import com.google.firebase.analytics.logEvent
 import com.heyanle.easybangumi4.plugin.source.utils.network.WebViewHelperV2Impl
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonCover
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonSummary
+import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.theme.NormalSystemBarColor
 import com.heyanle.easybangumi4.ui.WebViewUser
 import com.heyanle.easybangumi4.ui.about.About
@@ -113,6 +114,7 @@ fun NavHostController.navigationSourceHome(key: String) {
 }
 
 fun NavHostController.navigationDetailed(id: String, url: String, source: String) {
+    "detail-navigation source=$source cartoonId=$id url=$url".logi("PlaybackTrace")
     val el = URLEncoder.encode(url, "utf-8")
     val ed = URLEncoder.encode(id, "utf-8")
     val es = URLEncoder.encode(source, "utf-8")
@@ -121,6 +123,7 @@ fun NavHostController.navigationDetailed(id: String, url: String, source: String
 }
 
 fun NavHostController.navigationDetailed(cartoonCover: CartoonCover) {
+    "detail-navigation source=${cartoonCover.source} cartoonId=${cartoonCover.id} url=${cartoonCover.url}".logi("PlaybackTrace")
     val url = URLEncoder.encode(cartoonCover.url, "utf-8")
     val id = URLEncoder.encode(cartoonCover.id, "utf-8")
     val es = URLEncoder.encode(cartoonCover.source, "utf-8")
@@ -139,6 +142,7 @@ fun NavHostController.navigationDetailed(
     episode: Int,
     adviceProgress: Long,
 ) {
+    "detail-navigation source=${cartoonCover.source} cartoonId=${cartoonCover.id} url=${cartoonCover.url} lineIndex=$lineIndex episodeIndex=$episode adviceProgress=$adviceProgress".logi("PlaybackTrace")
     // easyTODO("详情页")
     val url = URLEncoder.encode(cartoonCover.url, "utf-8")
     val id = URLEncoder.encode(cartoonCover.id, "utf-8")
@@ -519,5 +523,4 @@ fun Nav() {
     }
 
 }
-
 

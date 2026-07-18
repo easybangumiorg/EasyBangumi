@@ -1,5 +1,4 @@
 [versions]
-
 jsoup = "1.16.1"
 jsoup-xpath = "2.5.5"
 okhttp3 = "4.12.0"

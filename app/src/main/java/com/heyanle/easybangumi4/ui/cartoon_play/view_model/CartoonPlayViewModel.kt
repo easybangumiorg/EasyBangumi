@@ -10,6 +10,7 @@ import com.heyanle.easybangumi4.cartoon.entity.PlayLineWrapper
 import com.heyanle.easybangumi4.plugin.api.entity.Cartoon
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonSummary
 import com.heyanle.easybangumi4.plugin.api.entity.Episode
+import com.heyanle.easybangumi4.utils.logi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -91,8 +92,10 @@ class CartoonPlayViewModel(
     ){
         val old = _curringPlayStatus.value
         if(old != null && old.cartoonSummary == info.toSummary()){
+            "play-state action=ignore-same-cartoon previousId=${old.cartoonSummary.id} nextId=${info.id}".logi("PlaybackTrace")
             return
         }
+        "play-state action=cartoon-info previousId=${old?.cartoonSummary?.id} nextSource=${info.source} nextId=${info.id} title=${info.name}".logi("PlaybackTrace")
         val pair = if(enter == null || enter?.isEffective() != true){
             if(adviceProgress == -1L && old == null){
                 adviceProgress = info.lastProcessTime
@@ -110,6 +113,7 @@ class CartoonPlayViewModel(
 
         _curringPlayStatus.update {
             if(pair != null){
+                "play-state action=select source=${info.source} cartoonId=${info.id} lineId=${pair.first.playLine.id} episodeId=${pair.second.id}".logi("PlaybackTrace")
                 CartoonPlayState(info.toSummary(), pair.first, pair.second, info.toCartoon())
             }else{
                 null
