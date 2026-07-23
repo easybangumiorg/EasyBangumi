@@ -33,5 +33,5 @@ After all confirmations and validation succeed:
 
 1. Recheck `git status`, `git diff --check`, the exact staged file list, and that the target tag does not already exist.
 2. Stage only the reviewed release files with explicit paths; do not use `git add -A` when unrelated changes exist.
-3. Commit as `release: <versionName>`, create an annotated tag named `<versionName>`, and push the selected branch and tag to `origin`.
+3. Commit as `[release] <versionName>`, create an annotated tag named `<versionName>`, and push the selected branch and tag to `origin`.
 4. Confirm the pushed commit/tag names and explain that the tag push triggers GitHub CI. If push is rejected, leave local commit and tag intact and report the remote error.
