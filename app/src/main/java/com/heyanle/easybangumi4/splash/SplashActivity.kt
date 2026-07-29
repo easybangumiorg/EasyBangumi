@@ -60,14 +60,27 @@ class SplashActivity : ComponentActivity() {
         LauncherBus.onResume(launcherBus)
     }
 
+    override fun onDestroy() {
+        if (lastSplashActivity?.get() === this) {
+            lastSplashActivity = null
+        }
+        super.onDestroy()
+    }
+
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val lat = lastSplashActivity?.get()
-        if (lat != this){
-            lat?.finish()
-            lastSplashActivity = WeakReference(this)
-        }
+        /*
+         * Do not finish the previously registered instance here. During a configuration change,
+         * Android creates the replacement SplashActivity while the old instance is still being
+         * destroyed. Finishing that old instance from the replacement can remove the activity
+         * record that owns the whole launcher task, which makes a rotation return to the launcher.
+         *
+         * The reference is only used by MainActivity as a best-effort cleanup after navigation,
+         * so replacing it with the latest instance is sufficient and lets Android own the
+         * configuration-change lifecycle.
+         */
+        lastSplashActivity = WeakReference(this)
         if (splashCompletely) {
             jumpToMain()
         } else {

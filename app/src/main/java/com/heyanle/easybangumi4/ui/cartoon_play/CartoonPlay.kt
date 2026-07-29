@@ -1,6 +1,5 @@
 package com.heyanle.easybangumi4.ui.cartoon_play
 
-import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -28,7 +27,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -47,7 +45,6 @@ import com.heyanle.easybangumi4.navigationSearch
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonSummary
 import com.heyanle.easybangumi4.plugin.api.entity.Episode
-import com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded.CartoonRecorded
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModelFactory
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayingViewModel
@@ -65,7 +62,6 @@ import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.openUrl
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.inject.core.Inject
-import kotlinx.coroutines.launch
 import loli.ball.easyplayer2.ControlViewModel
 import loli.ball.easyplayer2.ControlViewModelFactory
 import loli.ball.easyplayer2.EasyPlayerScaffoldBase
@@ -122,31 +118,6 @@ fun CartoonPlay(
     LaunchedEffect(key1 = detailedState.value) {
         detailedState.value.cartoonInfo?.let {
             playVM.onCartoonInfoChange(it)
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        launch {
-            snapshotFlow {
-                playingVM.showRecording.value
-            }.collect() {
-                if (it == null) {
-                    try {
-                        "bind".logi("CartoonPlay")
-                        controlVM.bind()
-                    } catch (e: Throwable) {
-                        e.printStackTrace()
-                    }
-
-                } else {
-                    try {
-                        "unbind".logi("CartoonPlay")
-                        controlVM.unbind()
-                    } catch (e: Throwable) {
-                        e.printStackTrace()
-                    }
-                }
-            }
         }
     }
 
@@ -354,23 +325,11 @@ fun CartoonPlay(
         )
     }
 
-    val recordState = playingVM.showRecording.value
-
-    if (recordState != null) {
-
-        CartoonRecorded(
-            controlViewModel = controlVM,
-            cartoonRecordedModel = recordState,
-            show = true,
-        ) {
-            playingVM.showRecording.value = null
-        }
-        BackHandler(
-            playingVM.showRecording.value != null
-        ) {
-            playingVM.showRecording.value = null
-        }
-    }
+    CartoonRecordedHost(
+        controlViewModel = controlVM,
+        recording = playingVM.showRecording.value,
+        onDismissRequest = { playingVM.showRecording.value = null },
+    )
 
 
 }
@@ -610,7 +569,6 @@ fun CartoonPlay(
 
     }
 }
-
 
 
 

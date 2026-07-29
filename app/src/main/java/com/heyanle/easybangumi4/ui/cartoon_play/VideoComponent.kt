@@ -525,6 +525,8 @@ fun VideoControl(
     showSpeedWin: MutableState<Boolean>,
     showEpisodeWin: MutableState<Boolean>,
     showVideoScaleTypeWin: MutableState<Boolean>,
+    danmakuControlState: PlayerDanmakuControlState? = null,
+    onShowPlayerSettings: (() -> Unit)? = null,
 ) {
     val nav = LocalNavController.current
     val scope = rememberCoroutineScope()
@@ -604,7 +606,11 @@ fun VideoControl(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
             ) {
-                showVideoScaleTypeWin.value = true
+                if (onShowPlayerSettings == null) {
+                    showVideoScaleTypeWin.value = true
+                } else {
+                    onShowPlayerSettings()
+                }
             }
 
 
@@ -697,7 +703,8 @@ fun VideoControl(
                 },
                 onNext = {
                     cartoonPlayVM.tryNext()
-                }
+                },
+                danmakuControlState = danmakuControlState,
             )
 
             // 锁定按钮
@@ -902,6 +909,7 @@ fun EasyVideoBottomControl(
     onShowEpisodeWin: () -> Unit,
     onSHowSpeedWin: () -> Unit,
     onNext: () -> Unit,
+    danmakuControlState: PlayerDanmakuControlState? = null,
 ) {
     AnimatedVisibility(
         modifier = modifier,
@@ -929,6 +937,8 @@ fun EasyVideoBottomControl(
                     contentDescription = stringResource(id = R.string.try_play_next)
                 )
             }
+
+            OptionalPlayerDanmakuToggle(state = danmakuControlState)
 
             TimeText(time = vm.position, Color.White)
 

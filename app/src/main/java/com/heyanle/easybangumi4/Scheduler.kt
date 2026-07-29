@@ -6,6 +6,7 @@ import com.heyanle.easy_crasher.CrashHandler
 import com.heyanle.easybangumi4.cartoon.CartoonModule
 import com.heyanle.easybangumi4.exo.MediaModule
 import com.heyanle.easybangumi4.case.CaseModule
+import com.heyanle.easybangumi4.danmaku.DanmakuModule
 import com.heyanle.easybangumi4.crash.SourceCrashController
 import com.heyanle.easybangumi4.dlna.DlnaModule
 import com.heyanle.easybangumi4.setting.SettingModule
@@ -69,6 +70,7 @@ object Scheduler {
         SettingModule(application).registerWith(Inject)
         ControllerModule(application).registerWith(Inject)
         CartoonModule(application).registerWith(Inject)
+        DanmakuModule().registerWith(Inject)
         MediaModule(application).registerWith(Inject)
         CaseModule(application).registerWith(Inject)
         SourceModule(application).registerWith(Inject)

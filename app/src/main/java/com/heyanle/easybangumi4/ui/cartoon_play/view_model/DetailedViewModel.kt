@@ -20,8 +20,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -48,16 +46,14 @@ class DetailedViewModel(
 
     private var job: Job? = null
 
-    val sortStateFlow = combine(
-        stateFlow.map { it.cartoonInfo }.filterIsInstance<CartoonInfo>().map { it.sortByKey.ifEmpty { PlayLineWrapper.SORT_DEFAULT_KEY } }
-            .stateIn(viewModelScope, SharingStarted.Lazily, PlayLineWrapper.SORT_DEFAULT_KEY),
-        stateFlow.map { it.cartoonInfo }.filterIsInstance<CartoonInfo>().map { it.reversal }
-            .stateIn(viewModelScope, SharingStarted.Lazily, false)
-    ){sortId, isReversal ->
+    val sortStateFlow = stateFlow.map { detailState ->
+        val cartoonInfo = detailState.cartoonInfo
         SortState<Episode>(
             PlayLineWrapper.sortList,
-            sortId,
-            isReversal
+            cartoonInfo?.sortByKey
+                ?.takeIf(String::isNotEmpty)
+                ?: PlayLineWrapper.SORT_DEFAULT_KEY,
+            cartoonInfo?.reversal ?: false,
         )
     }.stateIn(viewModelScope, SharingStarted.Lazily, SortState(PlayLineWrapper.sortList,
         PlayLineWrapper.SORT_DEFAULT_KEY, false))
