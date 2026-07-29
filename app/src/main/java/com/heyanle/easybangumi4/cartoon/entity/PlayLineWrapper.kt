@@ -20,21 +20,27 @@ class PlayLineWrapper(
     companion object {
         const val SORT_DEFAULT_KEY = "default"
 
-        val sortByDefault: SortBy<Episode> = SortBy<Episode>(
-            SORT_DEFAULT_KEY,
-            stringRes(R.string.default_word)
-        ) { o1, o2 ->
-            o1.order - o2.order
+        val sortByDefault: SortBy<Episode> by lazy {
+            SortBy(
+                SORT_DEFAULT_KEY,
+                stringRes(R.string.default_word),
+            ) { o1, o2 ->
+                o1.order - o2.order
+            }
         }
 
-        val sortByLabel: SortBy<Episode> = SortBy<Episode>(
-            "label",
-            stringRes(R.string.name_word)
-        ) { o1, o2 ->
-            o1.label.compareTo(o2.label)
+        val sortByLabel: SortBy<Episode> by lazy {
+            SortBy(
+                "label",
+                stringRes(R.string.name_word),
+            ) { o1, o2 ->
+                o1.label.compareTo(o2.label)
+            }
         }
 
-        val sortList = listOf(sortByDefault, sortByLabel)
+        val sortList: List<SortBy<Episode>> by lazy {
+            listOf(sortByDefault, sortByLabel)
+        }
 
 
         fun fromKey(playLine: PlayLine, key: String, isReverse: Boolean): PlayLineWrapper {

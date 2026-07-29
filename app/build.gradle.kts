@@ -28,6 +28,26 @@ runCatching {
     // it.printStackTrace()
 }
 
+val danDanPlayProps = Properties()
+project.rootProject.file("dandanplay.properties")
+    .takeIf { it.isFile }
+    ?.inputStream()
+    ?.use(danDanPlayProps::load)
+
+fun danDanPlayCredential(property: String, environment: String): String {
+    return System.getenv(environment)
+        ?: providers.gradleProperty(property).orNull
+        ?: danDanPlayProps.getProperty(property)
+        ?: ""
+}
+
+fun buildConfigString(value: String): String {
+    return "\"${value.replace("\\", "\\\\").replace("\"", "\\\"")}\""
+}
+
+val danDanPlayAppId = danDanPlayCredential("dandanplay.appId", "DANDANPLAY_APP_ID")
+val danDanPlayAppSecret = danDanPlayCredential("dandanplay.appSecret", "DANDANPLAY_APP_SECRET")
+
 val packageName = if (release) "com.heyanle.easybangumi4" else "com.heyanle.easybangumi4.debug"
 val labelNameRes = if (release) "@string/app_name" else "纯纯看番 Debug"
 
@@ -56,6 +76,9 @@ android {
         manifestPlaceholders["package_name"] = packageName
         manifestPlaceholders["label_res"] = labelNameRes
         manifestPlaceholders["is_release"] = release
+
+        buildConfigField("String", "DANDANPLAY_APP_ID", buildConfigString(danDanPlayAppId))
+        buildConfigField("String", "DANDANPLAY_APP_SECRET", buildConfigString(danDanPlayAppSecret))
 
         // bugly 调试模式
         manifestPlaceholders["bugly_is_debug"] = false
@@ -177,6 +200,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 }
 
 dependencies {
+    implementation(libs.dfm)
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
     implementation(androidx.bundles.core)
     androidTestImplementation(androidx.bundles.test.core)
@@ -208,6 +232,8 @@ dependencies {
     implementation(compose.bundles.foundation)
     implementation(compose.bundles.material)
     implementation(compose.bundles.material3)
+    androidTestImplementation(compose.ui.test.junit4)
+    debugImplementation(compose.ui.test.manifest)
 
     implementation(libs.bundles.okhttp3)
     //implementation(libs.bundles.appcenter)
@@ -223,6 +249,7 @@ dependencies {
     implementation(libs.okkv2)
 
     testImplementation(libs.junit)
+    testImplementation(libs.kotlin.coroutines.test)
 
 //    implementation(libs.accompanist.systemuicontroller)
 //    implementation(libs.accompanist.swiperefresh)

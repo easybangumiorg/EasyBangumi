@@ -46,15 +46,15 @@ This avoids chained dialogs and preserves the existing sort/display sheet semant
 
 ### 4. Danmaku source versus entry provenance
 
-Introduce a `DanmakuSource` contract with source metadata, anime search, episode listing, comment load, and optional automatic resolution. An `InnerDanmakuSourceRegistry` is the only registration mechanism in this change and initially registers `DanDanPlaySource`.
+Introduce a `DanmakuSource` contract with source metadata, bangumi search, episode listing, and comment loading. The page-level coordinator owns the two progressive matching stages instead of exposing one combined source-level automatic match. An `InnerDanmakuSourceRegistry` is the only registration mechanism in this change and initially registers `DanDanPlaySource`.
 
 DanDanPlay-returned entry provenance (for example BiliBili, Gamer, or DanDanPlay) remains a property of a comment for filtering; it is not modelled as a separately installable source. This prevents the source manager from presenting unavailable direct upstream integrations.
 
-### 5. Match to an episode binding, not only a title
+### 5. 将页面级番剧选择与播放目标级选集 binding 分离
 
-Persist a binding keyed by the actual playback identity: cartoon summary/source, selected play line, and episode identity. It stores the selected inner source and remote `episodeId`, plus match metadata. Automatic matching first reuses a binding; otherwise it resolves through available metadata and title + episode number. It binds automatically only for a unique/high-confidence result. Ambiguous, empty, or failed results surface an explicit manual search state.
+Persist a binding keyed by the actual playback identity: cartoon summary/source, selected play line, and episode identity. Separately retain a page-scoped bangumi selection with automatic/manual origin and its remote episode list. A playback-target change cancels only episode work, so line changes, episode changes, and next-episode transitions reuse the selected bangumi.
 
-Manual matching is a single stateful sheet: editable title search → anime selection → remote episode selection → bind and load. This is preferred to nested dialogs and prevents silent mismatch of specials or split-cour series.
+Manual matching is a single stateful sheet: editable title search → bangumi selection → remote episode selection → bind and load. The sheet always starts from bangumi selection, and committing the episode promotes the explicitly selected bangumi to the page-scoped selection. Manual selection has priority over late automatic work.
 
 ### 6. Cache and credentials are first-class integration concerns
 
@@ -67,6 +67,38 @@ Credentials SHALL be obtained through an application-specific secure build/runti
 Host a single transparent DFM `DanmakuView` via `AndroidView` in the `EasyPlayerScaffoldBase` foreground, below Compose controls and above the video `TextureView`. A controller adapter translates normalized comments into DFM items and synchronizes prepare/start/pause/seek/hide/release with ExoPlayer. The renderer is created/released with the V2 page lifecycle and is disabled for external-player playback.
 
 Using a DFM `SurfaceView` or `TextureView` is rejected because the app already has a texture-backed video surface and a normal transparent View keeps z-order and touch behavior predictable.
+
+### 8. 使用稳定身份分离播放状态与排序投影
+
+当前播放身份由 `cartoonId + sourceId + playLineId + episodeId` 唯一表示；浏览中的播放线路由稳定的 `selectedLineId` 表示。`PlayLineWrapper` 只承载当前排序配置下的展示投影，不作为选中态身份，也不参与跨刷新相等判断。
+
+`DetailedViewModel` 从同一个 `CartoonInfo` 快照原子派生 `SortState`。排序写入 Room 后虽然会重新创建 `PlayLineWrapper`，界面仍按稳定 ID 解析最新对象，因此不会清除播放源、选集高亮或重新加载 ExoPlayer。`tryNext` 从最新线路快照及当前稳定 ID 计算下一集。
+
+直接以 wrapper 实例或列表下标保存播放身份的方案被拒绝，因为持久化排序、数据刷新或线路变化都会使这些值失效。
+
+### 9. V2 复用旧版详情与排序交互语义
+
+详情区域采用旧版的整块点击热区、底部上下箭头和 `AnimatedContent` 顺序淡出/淡入，不再使用独立的“展开详情”文字按钮。排序按钮打开只包含旧版 `SortColumn` 的 Material Bottom Sheet，支持“默认（按 `Episode.order`）”和“名称（按 `Episode.label`）”，每个维度在正序与倒序间切换。
+
+“显示”页用于旧版网格列数，不适用于 V2 横向选集，因此 V2 不复制该页；全部选集面板与快捷选集栏共享同一持久排序状态。
+
+### 10. 递进的番剧匹配与纯位置选集匹配
+
+详情和当前播放目标就绪后，页面级番剧匹配至多执行一次缓存感知的 `searchBangumi`。只检查 DanDanPlay 搜索结果中的第一个番剧；标题先做 Unicode/大小写/空白和常见标点规范化，再以归一化 Levenshtein 距离计算相似度。相似度必须严格大于 `0.80` 才能加载该番剧的远端选集并进入选集匹配。
+
+自动选集匹配的唯一业务输入是当前播放目标在当下 `sortedEpisodeList` 中的一基位置，并直接映射到远端选集列表的同一位置。它不读取本地 `Episode.id/order/label`，也不按远端集号或标题兜底。排序变化本身不触发播放或匹配；后续真实播放目标变化使用最新排序投影的位置。番剧请求与选集请求使用独立 generation，切集不会取消或重启番剧匹配，晚到结果也不能覆盖手动番剧或新播放目标。
+
+遍历全部搜索结果取最高分、按本地 Episode 元数据猜测远端集的方案均被拒绝；产品规则明确要求只判断第一个番剧，并以用户当前选择的排序位置作为唯一选集坐标。
+
+`DanmakuPlaybackState.bangumiSelection` 是当前页已提交番剧的唯一状态源；手动面板只持有尚未提交的编辑草稿。打开面板时，如已存在自动、绑定恢复或手动提交的番剧，草稿直接由该选择派生为选集步骤并复用已加载选集；仅在没有已提交番剧时从番剧搜索开始。自动结果只可同步尚未编辑的空白草稿，不覆盖用户已经搜索或选择的手动草稿。
+
+匹配成功卡片使用结构化副标题行而非嵌入换行符：第一行承载来源、远端选集和缓存状态，并在空间不足时以省略号截断；第二行固定显示纯文本 `N 条弹幕`。两行独立布局，以保证弹幕数量不会被长番名或来源挤入同一行。
+
+### 11. 面板边界与进度分割线
+
+播放器和详情面板之间增加无圆角矩形轨道，轨道使用主题容器色，已播放部分使用 `primary`。进度读取 `ControlViewModel.position/during` 并做轻量平滑动画；时长无效时显示零进度。手机端分割线横跨详情面板顶部，平板端保留右侧面板顶部语义。
+
+`播放源`、`选集`、`弹幕`统一使用 20dp 水平基线。弹幕匹配结果 `ListItem` 使用透明容器色继承 Bottom Sheet 的 elevation surface，避免深浅主题下出现不协调色块。
 
 ## Risks / Trade-offs
 
@@ -86,5 +118,4 @@ Using a DFM `SurfaceView` or `TextureView` is rejected because the app already h
 ## Open Questions
 
 - Which approved DanDanPlay AppId/AppSecret delivery mechanism will the release pipeline use?
-- What exact confidence threshold and metadata precedence should allow an automatic binding without confirmation?
 - Should the V2/legacy selector be developer-only, an ordinary player setting, or a remotely controlled rollout flag during the migration period?

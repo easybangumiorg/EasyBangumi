@@ -10,6 +10,9 @@ The current playback detail page mixes playback routes and an unbounded episode 
 - Add a danmaku section that reports matching and load state, supports automatic matching, and provides a manual DanDanPlay title-search → anime selection → episode selection flow.
 - Introduce a built-in-only danmaku source abstraction and management surface, initially registering DanDanPlay and disallowing external source installation.
 - Integrate DanmakuFlameMaster as the in-player renderer and synchronize it with ExoPlayer playback, seek, lifecycle, and user visibility settings.
+- 稳定播放线路与选集的数据流：排序只改变列表投影，不改变当前播放身份；V2 排序入口复用旧版排序弹层中的排序能力。
+- 优化详情展开动画、弹幕区对齐、匹配结果配色，并在播放器与详情面板之间增加主题色播放进度分割线。
+- 将自动匹配明确为“DanDanPlay 首个作品标题相似度严格大于 80%，再按当前本地选集唯一解析远端选集”。
 
 ## Capabilities
 

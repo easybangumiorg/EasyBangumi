@@ -24,11 +24,17 @@ import com.google.firebase.analytics.logEvent
 import com.heyanle.easybangumi4.plugin.source.utils.network.WebViewHelperV2Impl
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonCover
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonSummary
+import com.heyanle.easybangumi4.navigation.PLAYBACK_DETAIL_LEGACY_ROUTE
+import com.heyanle.easybangumi4.navigation.PLAYBACK_DETAIL_V2_ROUTE
+import com.heyanle.easybangumi4.navigation.PlaybackDetailTarget
+import com.heyanle.easybangumi4.navigation.buildPlaybackDetailRoute
+import com.heyanle.easybangumi4.navigation.decodePlaybackDetailRouteArguments
 import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.theme.NormalSystemBarColor
 import com.heyanle.easybangumi4.ui.WebViewUser
 import com.heyanle.easybangumi4.ui.about.About
 import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlay
+import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlayV2
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.dlna.Dlna
 import com.heyanle.easybangumi4.ui.source_push.SourcePush
@@ -64,7 +70,8 @@ const val NAV = "nav"
 
 const val MAIN = "home"
 
-const val DETAILED = "detailed"
+const val DETAILED = PLAYBACK_DETAIL_V2_ROUTE
+const val DETAILED_LEGACY = PLAYBACK_DETAIL_LEGACY_ROUTE
 const val LOCAL_PLAY = "local_play"
 
 const val WEB_VIEW_USER = "web_view_user"
@@ -115,20 +122,12 @@ fun NavHostController.navigationSourceHome(key: String) {
 
 fun NavHostController.navigationDetailed(id: String, url: String, source: String) {
     "detail-navigation source=$source cartoonId=$id url=$url".logi("PlaybackTrace")
-    val el = URLEncoder.encode(url, "utf-8")
-    val ed = URLEncoder.encode(id, "utf-8")
-    val es = URLEncoder.encode(source, "utf-8")
-    // easyTODO("详情页")
-    navigate("${DETAILED}?url=${el}&source=${es}&id=${ed}")
+    navigate(buildPlaybackDetailRoute(id = id, source = source))
 }
 
 fun NavHostController.navigationDetailed(cartoonCover: CartoonCover) {
     "detail-navigation source=${cartoonCover.source} cartoonId=${cartoonCover.id} url=${cartoonCover.url}".logi("PlaybackTrace")
-    val url = URLEncoder.encode(cartoonCover.url, "utf-8")
-    val id = URLEncoder.encode(cartoonCover.id, "utf-8")
-    val es = URLEncoder.encode(cartoonCover.source, "utf-8")
-    // easyTODO("详情页")
-    navigate("${DETAILED}?url=${url}&source=${es}&id=${id}")
+    navigate(buildPlaybackDetailRoute(id = cartoonCover.id, source = cartoonCover.source))
 }
 
 fun NavHostController.navigationSourceManager(defIndex: Int = -1) {
@@ -143,12 +142,23 @@ fun NavHostController.navigationDetailed(
     adviceProgress: Long,
 ) {
     "detail-navigation source=${cartoonCover.source} cartoonId=${cartoonCover.id} url=${cartoonCover.url} lineIndex=$lineIndex episodeIndex=$episode adviceProgress=$adviceProgress".logi("PlaybackTrace")
-    // easyTODO("详情页")
-    val url = URLEncoder.encode(cartoonCover.url, "utf-8")
-    val id = URLEncoder.encode(cartoonCover.id, "utf-8")
-    val es = URLEncoder.encode(cartoonCover.source, "utf-8")
-    // easyTODO("详情页")
-    navigate("${DETAILED}?url=${url}&source=${es}&id=${id}&lineIndex=${lineIndex}&episode=${episode}&adviceProgress=${adviceProgress}")
+    val enterData = CartoonPlayViewModel.EnterData(
+        playLineId = "",
+        playLineLabel = "",
+        playLineIndex = lineIndex,
+        episodeId = "",
+        episodeLabel = "",
+        episodeOrder = -1,
+        episodeIndex = episode,
+        adviceProgress = adviceProgress,
+    )
+    navigate(
+        buildPlaybackDetailRoute(
+            id = cartoonCover.id,
+            source = cartoonCover.source,
+            enterDataJson = enterData.toJson(),
+        )
+    )
 }
 
 fun NavHostController.navigationDlna(
@@ -159,18 +169,30 @@ fun NavHostController.navigationDlna(
     val ed = URLEncoder.encode(s, "utf-8")
     val enterData = URLEncoder.encode(e.toJson(), "utf-8")
     // easyTODO("详情页")
-    navigate("${DLNA}?source=${ed}&id=${id}&enter_date=${enterData}")
+    navigate("${DLNA}?source=${ed}&id=${id}&enter_data=${enterData}")
 }
 
 fun NavHostController.navigationDetailed(
     i: String, s: String,
     e: CartoonPlayViewModel.EnterData,
 ) {
-    val id = URLEncoder.encode(i, "utf-8")
-    val ed = URLEncoder.encode(s, "utf-8")
-    val enterData = URLEncoder.encode(e.toJson(), "utf-8")
-    // easyTODO("详情页")
-    navigate("${DETAILED}?source=${ed}&id=${id}&enter_date=${enterData}")
+    navigate(buildPlaybackDetailRoute(id = i, source = s, enterDataJson = e.toJson()))
+}
+
+/** 显式进入保留的旧播放页，用于迁移期恢复和发布回退。 */
+fun NavHostController.navigationDetailedLegacy(
+    id: String,
+    source: String,
+    enterData: CartoonPlayViewModel.EnterData? = null,
+) {
+    navigate(
+        buildPlaybackDetailRoute(
+            id = id,
+            source = source,
+            enterDataJson = enterData?.toJson() ?: "{}",
+            target = PlaybackDetailTarget.Legacy,
+        )
+    )
 }
 
 fun NavHostController.navigationLocalPlay(
@@ -260,17 +282,16 @@ fun Nav() {
                     navArgument("enter_data") { defaultValue = "{}" },
                     )
             ) {
-
-                val id = it.arguments?.getString("id") ?: ""
-                val source = it.arguments?.getString("source") ?: ""
-
-                var enterDataString = it.arguments?.getString("enter_data") ?: ""
-                enterDataString = URLDecoder.decode(enterDataString, "utf-8")
+                val routeArguments = decodePlaybackDetailRouteArguments(
+                    id = it.arguments?.getString("id") ?: "",
+                    source = it.arguments?.getString("source") ?: "",
+                    enterDataJson = it.arguments?.getString("enter_data") ?: "{}",
+                )
 
                 ScreenShowEvent(
-                    "id" to id,
-                    "source" to source,
-                    "enter_data" to enterDataString
+                    "id" to routeArguments.id,
+                    "source" to routeArguments.source,
+                    "enter_data" to routeArguments.enterDataJson,
                 )
                 NormalSystemBarColor(
                     getStatusBarDark = {
@@ -279,12 +300,36 @@ fun Nav() {
                 )
 
                 val enterData = kotlin.runCatching {
-                    enterDataString.jsonTo<CartoonPlayViewModel.EnterData>()
+                    routeArguments.enterDataJson.jsonTo<CartoonPlayViewModel.EnterData>()
+                }.getOrNull()
+                CartoonPlayV2(
+                    id = routeArguments.id,
+                    source = routeArguments.source,
+                    enterData = enterData,
+                )
+            }
+
+            // Kept as a separate destination so the untouched legacy page remains available for rollback.
+            composable(
+                route = "${DETAILED_LEGACY}?source={source}&id={id}&enter_data={enter_data}",
+                arguments = listOf(
+                    navArgument("source") { defaultValue = "" },
+                    navArgument("id") { defaultValue = "" },
+                    navArgument("enter_data") { defaultValue = "{}" },
+                )
+            ) {
+                val routeArguments = decodePlaybackDetailRouteArguments(
+                    id = it.arguments?.getString("id") ?: "",
+                    source = it.arguments?.getString("source") ?: "",
+                    enterDataJson = it.arguments?.getString("enter_data") ?: "{}",
+                )
+                val enterData = kotlin.runCatching {
+                    routeArguments.enterDataJson.jsonTo<CartoonPlayViewModel.EnterData>()
                 }.getOrNull()
                 CartoonPlay(
-                    id = URLDecoder.decode(id, "utf-8"),
-                    source = URLDecoder.decode(source, "utf-8"),
-                    enterData
+                    id = routeArguments.id,
+                    source = routeArguments.source,
+                    enterData = enterData,
                 )
             }
 
@@ -523,4 +568,3 @@ fun Nav() {
     }
 
 }
-

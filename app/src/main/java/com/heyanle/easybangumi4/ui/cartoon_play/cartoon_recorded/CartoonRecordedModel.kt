@@ -134,6 +134,7 @@ class CartoonRecordedModel(
     fun onDispose() {
         exoPlayer.removeListener(this)
         textureView.detachPlayer(exoPlayer)
+        clipVideoModel.release()
     }
 
 
@@ -311,7 +312,7 @@ class CartoonRecordedModel(
     }
 
     fun onSave() {
-        clipVideoModel.outputThumbnailHelper.release()
+        clipVideoModel.release()
         exoPlayer.playWhenReady = false
         val render = renderState.value.renderRect.copy()
         val crop = cropRect.copy()

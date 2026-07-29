@@ -82,6 +82,12 @@ sealed class SettingPage(
         LocalExtensionSetting(nestedScrollConnection = it)
     })
 
+    data object DanmakuSource : SettingPage("danmaku_source", {
+        Text(text = "弹幕源")
+    }, {
+        DanmakuSourceSetting(nestedScrollConnection = it)
+    })
+
 }
 
 val settingPages = mapOf(
@@ -90,7 +96,8 @@ val settingPages = mapOf(
     SettingPage.Download.router to SettingPage.Download,
     SettingPage.First.router to SettingPage.First,
     SettingPage.Developers.router to SettingPage.Developers,
-    SettingPage.LocalSource.router to SettingPage.LocalSource
+    SettingPage.LocalSource.router to SettingPage.LocalSource,
+    SettingPage.DanmakuSource.router to SettingPage.DanmakuSource,
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -184,6 +191,20 @@ fun ColumnScope.FirstSetting(
                 Icon(
                     Icons.Filled.Download,
                     contentDescription = stringResource(id = R.string.download_setting)
+                )
+            }
+        )
+
+        ListItem(
+            modifier = Modifier.clickable {
+                nav.navigationSetting(SettingPage.DanmakuSource)
+            },
+            headlineContent = { Text(text = "弹幕源") },
+            supportingContent = { Text(text = "管理内置弹幕服务") },
+            leadingContent = {
+                Icon(
+                    Icons.Filled.PlayCircle,
+                    contentDescription = "弹幕源"
                 )
             }
         )

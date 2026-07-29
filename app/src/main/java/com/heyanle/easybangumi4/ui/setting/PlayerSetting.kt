@@ -37,7 +37,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,8 +49,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.heyanle.easy_i18n.R
-import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.setting.SettingPreferences
+import com.heyanle.easybangumi4.danmaku.DanmakuDisplayPreferences
+import com.heyanle.easybangumi4.danmaku.DANDANPLAY_SOURCE_ID
+import com.heyanle.easybangumi4.ui.cartoon_play.DanmakuDisplaySettingsContent
 import com.heyanle.easybangumi4.ui.cartoon_play.speedConfig
 import com.heyanle.easybangumi4.ui.common.BooleanPreferenceItem
 import com.heyanle.easybangumi4.ui.common.EmumPreferenceItem
@@ -72,11 +73,8 @@ fun ColumnScope.PlayerSetting(
     nestedScrollConnection: NestedScrollConnection
 ) {
 
-    val nav = LocalNavController.current
-
-    val scope = rememberCoroutineScope()
-
     val settingPreferences: SettingPreferences by Inject.injectLazy()
+    val danmakuDisplayPreferences: DanmakuDisplayPreferences by Inject.injectLazy()
 
     Column(
         modifier = Modifier
@@ -126,7 +124,28 @@ fun ColumnScope.PlayerSetting(
             preference = settingPreferences.playerSeekFullWidthTimeMS
         )
 
-
+        val danmakuDisplayConfig by remember(danmakuDisplayPreferences) {
+            danmakuDisplayPreferences.configFlow()
+        }.collectAsState(danmakuDisplayPreferences.getConfig())
+        DanmakuDisplaySettingsContent(
+            config = danmakuDisplayConfig,
+            onConfigChange = danmakuDisplayPreferences::setConfig,
+            onReset = danmakuDisplayPreferences::resetToDefaults,
+        )
+        val enabledProvenance by danmakuDisplayPreferences.enabledProvenance.flow()
+            .collectAsState(danmakuDisplayPreferences.enabledProvenance.get())
+        BooleanPreferenceItem(
+            title = { Text("弹弹play 弹幕") },
+            subtitle = { Text("按数据来源筛选显示的弹幕") },
+            change = DANDANPLAY_SOURCE_ID in enabledProvenance,
+            onChange = { enabled ->
+                danmakuDisplayPreferences.enabledProvenance.set(
+                    enabledProvenance.toMutableSet().apply {
+                        if (enabled) add(DANDANPLAY_SOURCE_ID) else remove(DANDANPLAY_SOURCE_ID)
+                    },
+                )
+            },
+        )
         val customSpeed = settingPreferences.customSpeed.flow()
             .collectAsState(settingPreferences.customSpeed.get())
 

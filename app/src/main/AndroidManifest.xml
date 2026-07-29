@@ -66,6 +66,7 @@
         <activity android:name=".splash.SplashActivity"
             android:exported="true"
             android:label="@string/app_name"
+            android:configChanges="orientation|screenSize"
             android:theme="@style/Theme.EasyBangumi">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
