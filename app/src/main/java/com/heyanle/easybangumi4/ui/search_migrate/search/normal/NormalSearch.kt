@@ -159,16 +159,17 @@ fun NormalSearchPage(
 
     val keyboard = LocalSoftwareKeyboardController.current
 
-    val realSearchKey by searchViewModel.searchFlow.collectAsState()
+    val searchRequest by searchViewModel.searchRequestFlow.collectAsState()
+    val realSearchKey = searchRequest.keyword
 
     val starVm = viewModel<CoverStarViewModel>()
     val starSet = starVm.stateFlow.collectAsState().value.identifySet
 
     val scope = rememberCoroutineScope()
 
-    LaunchedEffect(key1 = realSearchKey, key2 = isShow) {
-        if (realSearchKey != normalSearchViewModel.curKeyWord && isShow) {
-            normalSearchViewModel.newSearchKey(realSearchKey)
+    LaunchedEffect(key1 = searchRequest, key2 = isShow) {
+        if (isShow) {
+            normalSearchViewModel.newSearchKey(realSearchKey, force = true)
         }
     }
 
@@ -180,7 +181,7 @@ fun NormalSearchPage(
     val state = rememberPullRefreshState(normalSearchViewModel.isRefreshing.value, onRefresh = {
         scope.launch {
             normalSearchViewModel.isRefreshing.value = true
-            normalSearchViewModel.newSearchKey(normalSearchViewModel.curKeyWord)
+            normalSearchViewModel.newSearchKey(normalSearchViewModel.curKeyWord, force = true)
             // 自欺欺人刷新标记
             delay(500)
             normalSearchViewModel.isRefreshing.value = false

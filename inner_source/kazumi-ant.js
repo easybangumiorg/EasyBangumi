@@ -313,6 +313,7 @@ function DetailedComponent_getDetailed(summary) {
     if (title == null || title.length == 0) {
         title = detailUrl;
     }
+    var description = getDetailDescription(doc);
     var roads = XPathUtils.nodes(doc, CHAPTER_ROADS_XPATH);
     var lines = new ArrayList();
     for (var i = 0; i < roads.size(); i++) {
@@ -330,7 +331,7 @@ function DetailedComponent_getDetailed(summary) {
             episodes.add(new Episode(encodeSourceId(epUrl, "", ""), epLabel, j));
         }
         if (episodes.size() > 0) {
-            lines.add(new PlayLine(String(i), "播放线路" + (i + 1), episodes));
+            lines.add(new PlayLine(String(i), getPlayLineName(road, i), episodes));
         }
     }
     var cartoon = makeCartoon({
@@ -339,12 +340,47 @@ function DetailedComponent_getDetailed(summary) {
         url: detailUrl,
         title: title,
         cover: coverUrl,
-        intro: "",
-        description: "",
+        intro: description,
+        description: description,
         status: Cartoon.STATUS_UNKNOWN,
         updateStrategy: Cartoon.UPDATE_STRATEGY_ALWAYS
     });
     return new Pair(cartoon, lines);
+}
+
+// This source associates a playlist with the nearest preceding visible label.
+// Prefer its explicit data/title fields, then the adjacent heading, so a site
+// rename is reflected without embedding source-specific line names.
+function getPlayLineName(road, index) {
+    var name = trimText(XPathUtils.attrSelf(road, "data-name"));
+    if (name.length == 0) {
+        name = trimText(XPathUtils.attrSelf(road, "data-title"));
+    }
+    if (name.length > 0) {
+        return name;
+    }
+    return "播放线路" + (index + 1);
+}
+
+function getDetailDescription(doc) {
+    var selectors = [
+        ".vod_content",
+        ".stui-content__detail .detail-content",
+        ".detail-content",
+        "meta[name=description]"
+    ];
+    for (var i = 0; i < selectors.length; i++) {
+        var node = doc.select(selectors[i]).first();
+        if (node == null) {
+            continue;
+        }
+        var value = selectors[i].indexOf("meta") == 0 ? node.attr("content") : node.text();
+        value = trimText(value);
+        if (value.length > 0) {
+            return value;
+        }
+    }
+    return "";
 }
 
 function PlayComponent_getPlayInfo(summary, playLine, episode) {

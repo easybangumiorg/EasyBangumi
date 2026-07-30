@@ -15,7 +15,12 @@ import com.heyanle.easybangumi4.utils.logi
 class PagingSearchSource(
     private val searchParser: SearchComponent,
     private val keyword: String,
-    private val verificationProvider: (key: Int, keyword: String) -> VerificationResult? = {_,_ -> null}
+    /**
+     * Verification is scoped by source as well as request coordinates. Several sources use
+     * the same first-page key (normally 1), so key + keyword alone can leak a completed
+     * verification into another source's request.
+     */
+    private val verificationProvider: (sourceKey: String, key: Int, keyword: String) -> VerificationResult? = { _, _, _ -> null }
 ): PagingSource<Int, CartoonCover>() {
 
     override fun getRefreshKey(state: PagingState<Int, CartoonCover>): Int? {
@@ -28,7 +33,7 @@ class PagingSearchSource(
             return LoadResult.Error(NullPointerException())
         }
         try {
-            val verificationResult = verificationProvider(key, keyword)
+            val verificationResult = verificationProvider(searchParser.source.key, key, keyword)
             if (verificationResult != null) {
                 searchParser.search(key, keyword, verificationResult)
             } else {

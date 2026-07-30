@@ -137,6 +137,69 @@ class InnerJsSourceBlackBoxTest {
     }
 
     @Test
+    fun apiKazumiSourcesPassSearchDetailPlay() = runBlocking {
+        assumePackagedInnerSources()
+        val controller = Inject.get<SourceController>()
+        controller.refresh()
+        val sourceBundle = waitForSourceBundle(controller, API_KAZUMI_KEYS)
+
+        val reports = API_KAZUMI_KEYS.map { key ->
+            withContext(Dispatchers.IO) {
+                probeSource(sourceBundle, key)
+            }
+        }
+        val reportLines = reports.map { it.toLine() }
+        reportLines.forEach { println(it) }
+        writeReport("kazumi_api_blackbox", reportLines)
+        val failures = reports.filterNot { it.ok }
+        assertTrue(
+            failures.joinToString(separator = "\n") { it.toLine() },
+            failures.isEmpty(),
+        )
+    }
+
+    @Test
+    fun targetedKazumiSourcePassSearchDetailPlay() = runBlocking {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        assumePackagedInnerSources(context)
+        val targetKey = InstrumentationRegistry.getArguments()
+            .getString(TARGET_SOURCE_ARGUMENT)
+            .orEmpty()
+        assertTrue(
+            "pass -e $TARGET_SOURCE_ARGUMENT kazumi.<name> to select one source",
+            targetKey.startsWith("kazumi.") && targetKey.length > "kazumi.".length,
+        )
+
+        val assetFile = kazumiAssetFiles(context)
+            .singleOrNull { keyFromKazumiAssetFile(it) == targetKey }
+        assertNotNull("Kazumi asset not found for $targetKey", assetFile)
+
+        val sourcePreferences = Inject.get<SourcePreferences>()
+        val previousConfigs = sourcePreferences.configs.getOrDef()
+        try {
+            enableKazumiTestSources(setOf(targetKey))
+            val controller = createAllKazumiSourceController(context, listOf(assetFile!!))
+            controller.refresh()
+            val state = waitForSourceInfo(controller, setOf(targetKey))
+            val loadError = state.info
+                .filterIsInstance<SourceInfo.Error>()
+                .firstOrNull { it.source.key == targetKey }
+            assertTrue("$targetKey load failed: ${loadError?.msg.orEmpty()}", loadError == null)
+            val sourceBundle = waitForSourceBundle(controller, setOf(targetKey))
+
+            val report = withContext(Dispatchers.IO) {
+                probeSource(sourceBundle, targetKey)
+            }.withAssetMeta(assetFile, kazumiAssetMeta(context, assetFile))
+            val reportLine = report.toLine()
+            println(reportLine)
+            writeReport("kazumi_target", listOf(reportLine))
+            assertTrue(reportLine, report.ok)
+        } finally {
+            sourcePreferences.configs.set(previousConfigs)
+        }
+    }
+
+    @Test
     fun activeInnerJsSourcesReportHomeAndSearchQuality() = runBlocking {
         assumePackagedInnerSources()
         val controller = Inject.get<SourceController>()
@@ -168,8 +231,8 @@ class InnerJsSourceBlackBoxTest {
         }
         val expectedKeys = assetFilesByKey.keys.toSortedSet()
         assertTrue("all Kazumi assets should not be empty", expectedKeys.isNotEmpty())
-        val controller = createAllKazumiSourceController(context, assetFiles)
         enableKazumiTestSources(expectedKeys)
+        val controller = createAllKazumiSourceController(context, assetFiles)
         controller.refresh()
         val state = waitForSourceInfo(controller, expectedKeys)
         val sourceBundle = controller.sourceBundle.value ?: SourceBundle.NONE
@@ -181,6 +244,12 @@ class InnerJsSourceBlackBoxTest {
             .filterIsInstance<SourceInfo.Error>()
             .filter { it.source.key.startsWith("kazumi.") }
             .associateBy { it.source.key }
+        assertEquals(
+            "every Kazumi asset should resolve to loaded or error state",
+            expectedKeys,
+            loadedKeys + errors.keys,
+        )
+        assertTrue("at least one Kazumi source should load", loadedKeys.isNotEmpty())
 
         val reports = expectedKeys.map { key ->
             withContext(Dispatchers.IO) {
@@ -496,6 +565,8 @@ class InnerJsSourceBlackBoxTest {
                 episode = firstEpisode.label,
                 episodeId = firstEpisode.id,
                 playPageUrl = playPageUrl,
+                playlistLines = playLines.size,
+                playlistEpisodeCounts = playLines.joinToString(",") { it.episode.size.toString() },
                 error = "play: ${playResult.throwable.message}",
             )
         }
@@ -559,8 +630,12 @@ class InnerJsSourceBlackBoxTest {
         covers.forEachIndexed { index, cover ->
             if (cover.id.isBlank()) return "result ${index + 1} id is blank"
             val existingDetailUrl = idsByDetailUrl.put(cover.id, cover.url)
-            if (existingDetailUrl != null && existingDetailUrl != cover.url) {
-                return "id ${cover.id} maps to both $existingDetailUrl and ${cover.url}"
+            if (existingDetailUrl != null) {
+                return if (existingDetailUrl == cover.url) {
+                    "duplicate id ${cover.id} for the same detail url $existingDetailUrl"
+                } else {
+                    "id ${cover.id} maps to both $existingDetailUrl and ${cover.url}"
+                }
             }
         }
         return null
@@ -830,7 +905,12 @@ class InnerJsSourceBlackBoxTest {
         val videoVerdict: VideoVerdict = VideoVerdict(),
         val error: String = "",
     ) {
-        val ok: Boolean = search == "ok" && detail == "ok" && play == "ok"
+        val ok: Boolean = search == "ok" &&
+            detail == "ok" &&
+            play == "ok" &&
+            titleMatch &&
+            coverMatch &&
+            videoVerdict.kind !in setOf("direct_m3u8_unverified", "direct_video_unverified")
 
         fun toLine(): String {
             return listOf(
@@ -880,6 +960,7 @@ class InnerJsSourceBlackBoxTest {
         const val REPORT_FOLDER = "inner_source_reports"
         const val REPORT_TIMESTAMP_FORMAT = "yyyyMMdd_HHmmss_SSS"
         const val INNER_SOURCE_ASSET_DIR = ""
+        const val TARGET_SOURCE_ARGUMENT = "sourceKey"
 
         val HTTP_CLIENT: OkHttpClient = OkHttpClient.Builder()
             .connectTimeout(10, TimeUnit.SECONDS)
@@ -898,6 +979,8 @@ class InnerJsSourceBlackBoxTest {
             "kazumi.baimao",
             "kazumi.mxdm",
             "kazumi.omofun03",
+            "kazumi.sorani",
+            "kazumi.tvtfun",
             "kazumi.ylsp",
         )
 
@@ -908,7 +991,14 @@ class InnerJsSourceBlackBoxTest {
             "kazumi.baimao",
             "kazumi.mxdm",
             "kazumi.omofun03",
+            "kazumi.sorani",
+            "kazumi.tvtfun",
             "kazumi.ylsp",
+        )
+
+        val API_KAZUMI_KEYS = setOf(
+            "kazumi.sorani",
+            "kazumi.tvtfun",
         )
 
         val SEARCH_FAILED_KAZUMI_KEYS = setOf(
@@ -926,6 +1016,7 @@ class InnerJsSourceBlackBoxTest {
             "kazumi.ciyuancheng",
             "kazumi.clicli",
             "kazumi.cyfz",
+            "kazumi.dalvdm",
             "kazumi.dlma",
             "kazumi.dm84",
             "kazumi.dmand",

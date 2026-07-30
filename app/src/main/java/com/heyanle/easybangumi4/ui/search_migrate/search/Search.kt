@@ -25,6 +25,9 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material.icons.filled.ViewAgenda
+import androidx.compose.material.icons.filled.ViewList
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -59,6 +62,7 @@ import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.ui.common.EmptyPage
 import com.heyanle.easybangumi4.ui.search_migrate.search.gather.GatherSearch
 import com.heyanle.easybangumi4.ui.search_migrate.search.normal.NormalSearch
+import com.heyanle.easybangumi4.ui.search_migrate.search.overview.OverviewSearch
 import java.io.File
 
 
@@ -86,7 +90,7 @@ fun Search(
     ) {
         SearchTopAppBar(
             text = searchVM.searchBarText.value,
-            isGather = searchVM.isGather.value,
+            searchMode = searchVM.searchMode.value,
             focusRequester = focusRequester,
             showAction = true,
             onBack = {
@@ -101,8 +105,8 @@ fun Search(
                     searchVM.search(it)
                 }
             },
-            onIsGatherChange = {
-                searchVM.onGatherChange(it)
+            onSearchModeChange = {
+                searchVM.onSearchModeChange(it)
             }
         )
 
@@ -118,12 +122,15 @@ fun Search(
                     searchVM.clearHistory()
                 }
             )
-        }else if (searchVM.isGather.value){
-            // 聚合搜索
-            GatherSearch(searchViewModel = searchVM)
         }else{
-            // 普通搜素
-            NormalSearch(defSourceKey = defSourceKey, searchViewModel = searchVM)
+            when (searchVM.searchMode.value) {
+                SearchMode.SINGLE_SOURCE -> NormalSearch(
+                    defSourceKey = defSourceKey,
+                    searchViewModel = searchVM
+                )
+                SearchMode.BY_SOURCE -> GatherSearch(searchViewModel = searchVM)
+                SearchMode.OVERVIEW -> OverviewSearch(searchViewModel = searchVM)
+            }
         }
     }
 }
@@ -199,13 +206,13 @@ fun ColumnScope.SearchEmptyPage(
 @Composable
 fun SearchTopAppBar(
     text: String,
-    isGather: Boolean, // 是否是聚合搜索模式
+    searchMode: SearchMode,
     focusRequester: FocusRequester,
     showAction: Boolean = true,
     onBack: () -> Unit,
     onSearch: (String) -> Unit,
     onTextChange: (String) -> Unit,
-    onIsGatherChange: (isGather: Boolean) -> Unit,
+    onSearchModeChange: (SearchMode) -> Unit,
 ) {
 
     var showMenu by remember {
@@ -282,10 +289,7 @@ fun SearchTopAppBar(
                 IconButton(onClick = {
                     showMenu = !showMenu
                 }) {
-                    Icon(
-                        Icons.Filled.MoreVert,
-                        contentDescription = stringResource(id = R.string.more)
-                    )
+                Icon(Icons.Filled.GridView, contentDescription = stringResource(id = R.string.search_mode))
                 }
 
                 DropdownMenu(
@@ -293,19 +297,22 @@ fun SearchTopAppBar(
                     onDismissRequest = { showMenu = false }) {
 
                     DropdownMenuItem(
-                        text = {
-                            Text(text = stringResource(id = R.string.gather_search))
-                        },
-                        onClick = {
-                            onIsGatherChange(!isGather)
-                        },
-                        leadingIcon = {
-                            if(isGather){
-                                Icon(Icons.Filled.Check, contentDescription = stringResource(id = R.string.gather_search))
-                            }else{
-                                Box(modifier = Modifier.size(24.dp))
-                            }
-                        }
+                        text = { SearchModeMenuText(R.string.search_mode_single_source, R.string.search_mode_single_source_desc) },
+                        onClick = { onSearchModeChange(SearchMode.SINGLE_SOURCE); showMenu = false },
+                        leadingIcon = { Icon(Icons.Filled.ViewList, contentDescription = null) },
+                        trailingIcon = { SearchModeCheck(searchMode == SearchMode.SINGLE_SOURCE) },
+                    )
+                    DropdownMenuItem(
+                        text = { SearchModeMenuText(R.string.search_mode_by_source, R.string.search_mode_by_source_desc) },
+                        onClick = { onSearchModeChange(SearchMode.BY_SOURCE); showMenu = false },
+                        leadingIcon = { Icon(Icons.Filled.ViewAgenda, contentDescription = null) },
+                        trailingIcon = { SearchModeCheck(searchMode == SearchMode.BY_SOURCE) },
+                    )
+                    DropdownMenuItem(
+                        text = { SearchModeMenuText(R.string.search_mode_overview, R.string.search_mode_overview_desc) },
+                        onClick = { onSearchModeChange(SearchMode.OVERVIEW); showMenu = false },
+                        leadingIcon = { Icon(Icons.Filled.GridView, contentDescription = null) },
+                        trailingIcon = { SearchModeCheck(searchMode == SearchMode.OVERVIEW) },
                     )
                 }
             }
@@ -314,4 +321,25 @@ fun SearchTopAppBar(
         }
     )
 
+}
+
+@Composable
+private fun SearchModeMenuText(titleRes: Int, descriptionRes: Int) {
+    Column {
+        Text(text = stringResource(titleRes))
+        Text(
+            text = stringResource(descriptionRes),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun SearchModeCheck(selected: Boolean) {
+    if (selected) {
+        Icon(Icons.Filled.Check, contentDescription = null)
+    } else {
+        Box(modifier = Modifier.size(24.dp))
+    }
 }

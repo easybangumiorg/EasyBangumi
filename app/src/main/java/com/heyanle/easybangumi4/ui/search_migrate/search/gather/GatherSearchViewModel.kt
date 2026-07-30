@@ -41,15 +41,17 @@ class GatherSearchViewModel(
 
     val webViewHelperV2Impl: WebViewHelperV2Impl by Inject.injectLazy()
 
-    private val verificationTemp = hashMapOf<Pair<String, Int>, VerificationResult>()
+    /** A verification result is valid for exactly one source request. */
+    private val verificationTemp = hashMapOf<VerificationRequestKey, VerificationResult>()
+    private val verificationInProgress = hashSetOf<VerificationRequestKey>()
 
-    val verificationProvider: (key: Int, keyword: String) -> VerificationResult? = { key, keyword ->
-        verificationTemp.remove(keyword to key)
+    val verificationProvider: (sourceKey: String, key: Int, keyword: String) -> VerificationResult? = { sourceKey, key, keyword ->
+        verificationTemp.remove(VerificationRequestKey(sourceKey, keyword, key))
     }
 
-    fun newSearchKey(searchKey: String) {
+    fun newSearchKey(searchKey: String, force: Boolean = false) {
         viewModelScope.launch {
-            if (curKeyWord == searchKey && _searchItemList.value != null) {
+            if (!force && curKeyWord == searchKey && _searchItemList.value != null) {
                 return@launch
             }
             if (searchKey.isEmpty()) {
@@ -71,22 +73,34 @@ class GatherSearchViewModel(
     }
 
     fun onSearchNeedWebCheck(
+        sourceKey: String,
         searchNeedWebViewCheckBusinessException: SearchNeedVerificationBusinessException,
         onRetry: () -> Unit
     ){
         viewModelScope.launch {
             val request = searchNeedWebViewCheckBusinessException.request
-            verificationTemp[request.keyword to request.key] = VerificationHelper.start(
-                searchNeedWebViewCheckBusinessException.verificationParam,
-                webViewHelperV2Impl,
-            )
-            onRetry()
+            val requestKey = VerificationRequestKey(sourceKey, request.keyword, request.key)
+            // A card may be visible in both the All and source tabs during recomposition.
+            // Only let its owning source start one verification flow at a time.
+            if (!verificationInProgress.add(requestKey)) return@launch
+            try {
+                verificationTemp[requestKey] = VerificationHelper.start(
+                    searchNeedWebViewCheckBusinessException.verificationParam,
+                    webViewHelperV2Impl,
+                )
+                // This retry belongs to the PagingSource that emitted the exception. The
+                // shared paging flow then updates both All and the matching source tab.
+                onRetry()
+            } finally {
+                verificationInProgress.remove(requestKey)
+            }
         }
 
     }
 
     override fun onCleared() {
         verificationTemp.clear()
+        verificationInProgress.clear()
         super.onCleared()
     }
 
@@ -105,6 +119,12 @@ class GatherSearchViewModel(
 
 
 }
+
+private data class VerificationRequestKey(
+    val sourceKey: String,
+    val keyword: String,
+    val pageKey: Int,
+)
 
 class GatherSearchViewModelFactory(
     private val searchComponents: List<SearchComponent>

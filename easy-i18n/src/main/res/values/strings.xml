@@ -430,6 +430,15 @@
     <string name="push_pin">置顶</string>
 
     <string name="gather_search">聚合搜索</string>
+    <string name="search_mode">搜索视图</string>
+    <string name="search_mode_single_source">单源</string>
+    <string name="search_mode_single_source_desc">只看一个来源</string>
+    <string name="search_mode_by_source">分源</string>
+    <string name="search_mode_by_source_desc">按来源浏览</string>
+    <string name="search_mode_overview">总览</string>
+    <string name="search_mode_overview_desc">全部结果排序</string>
+    <string name="search_overview_all_results">全部结果</string>
+    <string name="search_overview_match_order">按名称匹配度排序</string>
 
     <string name="name_word">名称</string>
     <string name="sort">排序</string>

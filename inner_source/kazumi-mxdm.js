@@ -330,21 +330,83 @@ function DetailedComponent_getDetailed(summary) {
             episodes.add(new Episode(encodeSourceId(epUrl, "", ""), epLabel, j));
         }
         if (episodes.size() > 0) {
-            lines.add(new PlayLine(String(i), "播放线路" + (i + 1), episodes));
+            lines.add(new PlayLine(String(i), getPlayLineName(doc, i), episodes));
         }
     }
+    var description = getDetailDescription(doc, title);
     var cartoon = makeCartoon({
         id: summary.id,
         source: summary.source,
         url: detailUrl,
         title: title,
         cover: coverUrl,
-        intro: "",
-        description: "",
+        intro: description,
+        description: description,
         status: Cartoon.STATUS_UNKNOWN,
         updateStrategy: Cartoon.UPDATE_STRATEGY_ALWAYS
     });
     return new Pair(cartoon, lines);
+}
+
+// The page exposes source labels separately from episode groups.  Keep their
+// document order aligned with the parsed groups, falling back only when a site
+// omits a label instead of inventing a source-specific name.
+function getPlayLineName(doc, index) {
+    var selectors = [
+        ".playlist > .tabs > a",
+        ".playlist .tabs a",
+        "#y-playList .module-tab-item",
+        ".module-tab-items-box .module-tab-item",
+        ".play_source_tab a",
+        ".vod-play-tab a"
+    ];
+    for (var i = 0; i < selectors.length; i++) {
+        var nodes = doc.select(selectors[i]);
+        if (nodes != null && nodes.size() > index) {
+            var name = playLineLabel(nodes.get(index));
+            if (name.length > 0) {
+                return name;
+            }
+        }
+    }
+    return "播放线路" + (index + 1);
+}
+
+function playLineLabel(node) {
+    var label = node.select("span").first();
+    return label == null ? trimText(node.text()) : trimText(label.text());
+}
+
+function getDetailDescription(doc, title) {
+    var selectors = [
+        ".module-info-introduction-content",
+        ".module-info-introduction",
+        ".blurb",
+        ".vod_content",
+        ".detail-desc",
+        ".detail-content"
+    ];
+    for (var i = 0; i < selectors.length; i++) {
+        var node = doc.select(selectors[i]).first();
+        if (node == null) {
+            continue;
+        }
+        var text = cleanDescription(node.text(), title);
+        if (text.length > 0) {
+            return text;
+        }
+    }
+    var meta = doc.select("meta[name=description]").first();
+    return meta == null ? "" : cleanDescription(meta.attr("content"), title);
+}
+
+function cleanDescription(value, title) {
+    var text = trimText(value).replace(/^\s*(?:简介|剧情简介|剧情介绍)\s*[:：]?\s*/, "");
+    var titlePrefix = trimText(title) + ":";
+    if (titlePrefix.length > 1 && text.indexOf(titlePrefix) == 0) {
+        text = trimText(text.substring(titlePrefix.length));
+    }
+    return text;
 }
 
 function PlayComponent_getPlayInfo(summary, playLine, episode) {

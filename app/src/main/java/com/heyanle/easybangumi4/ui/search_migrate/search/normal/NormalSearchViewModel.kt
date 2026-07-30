@@ -37,15 +37,15 @@ class NormalSearchViewModel(
 
     val webViewHelperV2Impl: WebViewHelperV2Impl by Inject.injectLazy()
 
-    private val verificationTemp = hashMapOf<Pair<String, Int>, VerificationResult>()
+    private val verificationTemp = hashMapOf<VerificationRequestKey, VerificationResult>()
 
-    val verificationProvider: (key: Int, keyword: String) -> VerificationResult? = { key, keyword ->
-        verificationTemp.remove(keyword to key)
+    val verificationProvider: (sourceKey: String, key: Int, keyword: String) -> VerificationResult? = { sourceKey, key, keyword ->
+        verificationTemp.remove(VerificationRequestKey(sourceKey, keyword, key))
     }
 
-    fun newSearchKey(searchKey: String) {
+    fun newSearchKey(searchKey: String, force: Boolean = false) {
         viewModelScope.launch {
-            if (curKeyWord == searchKey) {
+            if (!force && curKeyWord == searchKey) {
                 return@launch
             }
             if (searchKey.isEmpty()) {
@@ -78,7 +78,7 @@ class NormalSearchViewModel(
     ){
         viewModelScope.launch {
             val request = searchNeedWebViewCheckBusinessException.request
-            verificationTemp[request.keyword to request.key] = VerificationHelper.start(
+            verificationTemp[VerificationRequestKey(searchComponent.source.key, request.keyword, request.key)] = VerificationHelper.start(
                 searchNeedWebViewCheckBusinessException.verificationParam,
                 webViewHelperV2Impl,
             )
@@ -93,6 +93,12 @@ class NormalSearchViewModel(
     }
 
 }
+
+private data class VerificationRequestKey(
+    val sourceKey: String,
+    val keyword: String,
+    val pageKey: Int,
+)
 
 class NormalSearchViewModelFactory(
     private val searchComponent: SearchComponent

@@ -61,9 +61,9 @@ fun ColumnScope.GatherSearch(
 
     val starVm = viewModel<CoverStarViewModel>()
 
-    val searchKey = searchViewModel.searchFlow.collectAsState()
-    LaunchedEffect(key1 = searchKey.value) {
-        vm.newSearchKey(searchKey.value)
+    val searchRequest = searchViewModel.searchRequestFlow.collectAsState()
+    LaunchedEffect(searchRequest.value) {
+        vm.newSearchKey(searchRequest.value.keyword, force = true)
     }
 
     val itemList = vm.searchItemList.collectAsState()
@@ -85,17 +85,18 @@ fun ColumnScope.GatherSearch(
                 }
             })
     ) {
-        itemList.value?.let {
-            items(it) {
+        itemList.value?.let { sourceItems ->
+            items(sourceItems) { sourceItem ->
                 MigrateSourceItem(
-                    sourceItem = it,
+                    sourceItem = sourceItem,
                     starVm = starVm,
                     onClick = {
                         nav.navigationDetailed(it)
                     },
                     onWebCheck = { exce, page ->
                         vm.onSearchNeedWebCheck(
-                            exce,
+                            sourceKey = sourceItem.searchComponent.source.key,
+                            searchNeedWebViewCheckBusinessException = exce,
                             onRetry = {
                                 page.retry()
                             }
