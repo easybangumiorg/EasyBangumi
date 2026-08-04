@@ -7,9 +7,12 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,7 +30,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -45,9 +47,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -74,6 +78,7 @@ import androidx.compose.ui.unit.sp
 import com.heyanle.easybangumi4.danmaku.DanmakuDisplayConfig
 import com.heyanle.easybangumi4.danmaku.DanmakuPlaybackState
 import com.heyanle.easybangumi4.danmaku.DanmakuPlaybackStatus
+import com.heyanle.easybangumi4.ui.common.TabIndicator
 import java.util.Locale
 import kotlin.math.roundToInt
 
@@ -86,6 +91,7 @@ data class PlayerDanmakuControlState(
     val displayEnabled: Boolean,
     val contentDescription: String,
     val onClick: () -> Unit,
+    val onLongClick: () -> Unit = {},
 ) {
     enum class VisualState {
         Available,
@@ -106,6 +112,7 @@ internal fun DanmakuPlaybackState.toPlayerDanmakuControlState(
         displayEnabled = false,
         contentDescription = "弹幕源未启用，点击前往设置",
         onClick = onOpenSourceSettings,
+        onLongClick = onOpenSourceSettings,
     )
 
     DanmakuPlaybackStatus.MatchingBangumi,
@@ -114,15 +121,21 @@ internal fun DanmakuPlaybackState.toPlayerDanmakuControlState(
     -> PlayerDanmakuControlState(
         visualState = PlayerDanmakuControlState.VisualState.Loading,
         displayEnabled = false,
-        contentDescription = "弹幕加载中",
+        contentDescription = "弹幕加载中，长按重新匹配",
         onClick = {},
+        onLongClick = onManualMatch,
     )
 
     is DanmakuPlaybackStatus.Matched -> PlayerDanmakuControlState(
         visualState = PlayerDanmakuControlState.VisualState.Available,
         displayEnabled = displayEnabled,
-        contentDescription = if (displayEnabled) "关闭弹幕" else "开启弹幕",
+        contentDescription = if (displayEnabled) {
+            "关闭弹幕，长按重新匹配"
+        } else {
+            "开启弹幕，长按重新匹配"
+        },
         onClick = { onToggleDisplay(!displayEnabled) },
+        onLongClick = onManualMatch,
     )
 
     is DanmakuPlaybackStatus.Empty -> PlayerDanmakuControlState(
@@ -130,6 +143,7 @@ internal fun DanmakuPlaybackState.toPlayerDanmakuControlState(
         displayEnabled = false,
         contentDescription = "当前选集暂无弹幕，点击更换番剧和选集",
         onClick = onManualMatch,
+        onLongClick = onManualMatch,
     )
 
     is DanmakuPlaybackStatus.Unmatched -> PlayerDanmakuControlState(
@@ -137,6 +151,7 @@ internal fun DanmakuPlaybackState.toPlayerDanmakuControlState(
         displayEnabled = false,
         contentDescription = "尚未匹配弹幕，点击匹配番剧和选集",
         onClick = onManualMatch,
+        onLongClick = onManualMatch,
     )
 
     is DanmakuPlaybackStatus.Unavailable -> {
@@ -151,6 +166,7 @@ internal fun DanmakuPlaybackState.toPlayerDanmakuControlState(
                 "${current.message}，点击重试"
             },
             onClick = if (sourceNeedsConfiguration) onOpenSourceSettings else onRetry,
+            onLongClick = if (sourceNeedsConfiguration) onOpenSourceSettings else onManualMatch,
         )
     }
 }
@@ -178,6 +194,7 @@ internal object PlayerPlaybackSettingsTestTags {
     fun videoScale(value: Int) = "player_video_scale_$value"
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun PlayerDanmakuToggle(
     state: PlayerDanmakuControlState,
@@ -195,10 +212,16 @@ internal fun PlayerDanmakuToggle(
         else -> Color.White.copy(alpha = 0.55f)
     }
 
-    IconButton(
+    Box(
         modifier = modifier
             .size(48.dp)
             .testTag(PlayerPlaybackSettingsTestTags.DANMAKU_TOGGLE)
+            .clip(RoundedCornerShape(12.dp))
+            .combinedClickable(
+                onClick = state.onClick,
+                onLongClickLabel = "强制匹配弹幕",
+                onLongClick = state.onLongClick,
+            )
             .semantics {
                 contentDescription = state.contentDescription
                 stateDescription = when {
@@ -208,8 +231,7 @@ internal fun PlayerDanmakuToggle(
                     else -> "已关闭"
                 }
             },
-        enabled = !isLoading,
-        onClick = state.onClick,
+        contentAlignment = Alignment.Center,
     ) {
         if (isLoading) {
             CircularProgressIndicator(
@@ -251,6 +273,74 @@ internal fun OptionalPlayerDanmakuToggle(
 }
 
 /**
+ * Shared fullscreen side-panel shell used by player-scoped overlays.
+ *
+ * Keeping the scrim, motion and safe-area behavior here prevents episode selection and playback
+ * settings from drifting into two visually similar but behaviorally different implementations.
+ */
+@Composable
+internal fun FullscreenPlayerSidePanel(
+    visible: Boolean,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
+    panelModifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    BackHandler(enabled = visible, onBack = onDismiss)
+    Box(modifier = modifier.fillMaxSize()) {
+        AnimatedVisibility(
+            visible = visible,
+            enter = fadeIn(animationSpec = tween(durationMillis = 180)),
+            exit = fadeOut(animationSpec = tween(durationMillis = 180)),
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.52f))
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = onDismiss,
+                    ),
+            )
+        }
+        AnimatedVisibility(
+            modifier = Modifier.align(Alignment.CenterEnd),
+            visible = visible,
+            enter = slideInHorizontally(
+                animationSpec = tween(durationMillis = 280),
+                initialOffsetX = { it },
+            ),
+            exit = slideOutHorizontally(
+                animationSpec = tween(durationMillis = 240),
+                targetOffsetX = { it },
+            ),
+        ) {
+            Surface(
+                modifier = panelModifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(0.45f)
+                    .widthIn(max = 360.dp)
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = {},
+                    ),
+                color = MaterialTheme.colorScheme.surfaceContainer,
+                tonalElevation = 6.dp,
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .navigationBarsPadding(),
+                    content = content,
+                )
+            }
+        }
+    }
+}
+
+/**
  * Material 3 adaptive shell for player-scoped settings.
  *
  * A compact portrait uses a modal bottom sheet. Landscape and expanded layouts retain the video
@@ -271,72 +361,31 @@ internal fun AdaptivePlayerSettingsPanel(
     videoScaleOptions: List<Pair<Int, Int>>,
     onVideoScaleSelected: (Int) -> Unit,
 ) {
-    if (!visible) return
-
-    BackHandler(onBack = onDismiss)
     val configuration = LocalConfiguration.current
     val useSidePanel = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE ||
         configuration.screenWidthDp >= 600
 
     if (useSidePanel) {
-        AnimatedVisibility(
-            visible = true,
-            enter = fadeIn(),
-            exit = fadeOut(),
+        FullscreenPlayerSidePanel(
+            visible = visible,
+            onDismiss = onDismiss,
+            panelModifier = Modifier.testTag(PlayerPlaybackSettingsTestTags.SETTINGS_PANEL),
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.52f))
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        onClick = onDismiss,
-                    ),
-            ) {
-                AnimatedVisibility(
-                    modifier = Modifier.align(Alignment.CenterEnd),
-                    visible = true,
-                    enter = slideInHorizontally { it },
-                    exit = slideOutHorizontally { it },
-                ) {
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .fillMaxWidth(0.45f)
-                            .widthIn(max = 360.dp)
-                            .testTag(PlayerPlaybackSettingsTestTags.SETTINGS_PANEL)
-                            .clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null,
-                                onClick = {},
-                            ),
-                        color = MaterialTheme.colorScheme.surfaceContainer,
-                        tonalElevation = 6.dp,
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .navigationBarsPadding(),
-                        ) {
-                            PlayerSettingsContent(
-                                initialSelectedSection = selectedSection,
-                                onSectionSelected = onSectionSelected,
-                                onDismiss = onDismiss,
-                                danmakuConfig = danmakuConfig,
-                                danmakuSummary = danmakuSummary,
-                                onDanmakuConfigChange = onDanmakuConfigChange,
-                                onResetDanmaku = onResetDanmaku,
-                                videoScaleType = videoScaleType,
-                                videoScaleOptions = videoScaleOptions,
-                                onVideoScaleSelected = onVideoScaleSelected,
-                            )
-                        }
-                    }
-                }
-            }
+            PlayerSettingsContent(
+                initialSelectedSection = selectedSection,
+                onSectionSelected = onSectionSelected,
+                onDismiss = onDismiss,
+                danmakuConfig = danmakuConfig,
+                danmakuSummary = danmakuSummary,
+                onDanmakuConfigChange = onDanmakuConfigChange,
+                onResetDanmaku = onResetDanmaku,
+                videoScaleType = videoScaleType,
+                videoScaleOptions = videoScaleOptions,
+                onVideoScaleSelected = onVideoScaleSelected,
+            )
         }
-    } else {
+    } else if (visible) {
+        BackHandler(onBack = onDismiss)
         ModalBottomSheet(
             modifier = Modifier.testTag(PlayerPlaybackSettingsTestTags.SETTINGS_PANEL),
             onDismissRequest = onDismiss,
@@ -406,9 +455,9 @@ private fun ColumnScope.PlayerSettingsContent(
             selectedSection = section
             onSectionSelected(section)
         },
-        modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
+        modifier = Modifier.padding(horizontal = 20.dp),
     )
-    HorizontalDivider(modifier = Modifier.padding(top = 8.dp))
+    HorizontalDivider()
 
     val danmakuScrollState = rememberScrollState()
     val videoScrollState = rememberScrollState()
@@ -448,58 +497,55 @@ private fun PlayerSettingsSectionSelector(
     onSelected: (PlayerSettingsSection) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Surface(
+    val selectedIndex = PlayerSettingsSection.entries.indexOf(selected)
+    ScrollableTabRow(
         modifier = modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surfaceContainerHighest,
-        shape = RoundedCornerShape(14.dp),
+        selectedTabIndex = selectedIndex,
+        containerColor = Color.Transparent,
+        contentColor = MaterialTheme.colorScheme.primary,
+        edgePadding = 0.dp,
+        indicator = { positions ->
+            if (selectedIndex in positions.indices) {
+                TabIndicator(currentTabPosition = positions[selectedIndex])
+            }
+        },
+        divider = {},
     ) {
-        Row(modifier = Modifier.padding(4.dp)) {
-            PlayerSettingsSection.entries.forEach { section ->
-                val isSelected = section == selected
-                val contentColor = if (isSelected) {
-                    MaterialTheme.colorScheme.onPrimaryContainer
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                }
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(
-                            if (isSelected) {
-                                MaterialTheme.colorScheme.primaryContainer
-                            } else {
-                                Color.Transparent
-                            },
-                        )
-                        .testTag(
-                            when (section) {
-                                PlayerSettingsSection.Danmaku ->
-                                    PlayerPlaybackSettingsTestTags.DANMAKU_SECTION_TAB
+        PlayerSettingsSection.entries.forEach { section ->
+            val isSelected = section == selected
+            Tab(
+                selected = isSelected,
+                onClick = { onSelected(section) },
+                modifier = Modifier
+                    .testTag(
+                        when (section) {
+                            PlayerSettingsSection.Danmaku ->
+                                PlayerPlaybackSettingsTestTags.DANMAKU_SECTION_TAB
 
-                                PlayerSettingsSection.Video ->
-                                    PlayerPlaybackSettingsTestTags.VIDEO_SECTION_TAB
-                            },
-                        )
-                        .selectable(
-                            selected = isSelected,
-                            role = Role.Tab,
-                            onClick = { onSelected(section) },
-                        ),
-                    contentAlignment = Alignment.Center,
-                ) {
+                            PlayerSettingsSection.Video ->
+                                PlayerPlaybackSettingsTestTags.VIDEO_SECTION_TAB
+                        },
+                    )
+                    .semantics {
+                        stateDescription = if (isSelected) "已选择" else "未选择"
+                    },
+                selectedContentColor = MaterialTheme.colorScheme.primary,
+                unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                text = {
                     Text(
                         text = when (section) {
                             PlayerSettingsSection.Danmaku -> "弹幕"
                             PlayerSettingsSection.Video -> "画面"
                         },
-                        modifier = Modifier.padding(vertical = 10.dp),
-                        color = contentColor,
-                        textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.labelLarge,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = if (isSelected) {
+                            FontWeight.SemiBold
+                        } else {
+                            FontWeight.Medium
+                        },
                     )
-                }
-            }
+                },
+            )
         }
     }
 }

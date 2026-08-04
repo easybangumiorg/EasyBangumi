@@ -160,7 +160,6 @@ fun NormalSearchPage(
     val keyboard = LocalSoftwareKeyboardController.current
 
     val searchRequest by searchViewModel.searchRequestFlow.collectAsState()
-    val realSearchKey = searchRequest.keyword
 
     val starVm = viewModel<CoverStarViewModel>()
     val starSet = starVm.stateFlow.collectAsState().value.identifySet
@@ -169,7 +168,7 @@ fun NormalSearchPage(
 
     LaunchedEffect(key1 = searchRequest, key2 = isShow) {
         if (isShow) {
-            normalSearchViewModel.newSearchKey(realSearchKey, force = true)
+            normalSearchViewModel.submitSearch(searchRequest)
         }
     }
 

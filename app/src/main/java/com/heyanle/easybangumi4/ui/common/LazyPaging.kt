@@ -269,11 +269,25 @@ fun <T : Any> LazyListScope.pagingCommonSourceSearch(
                                 needCommonError = false
                                 val isCaptcha = innerError.actionType == BusinessActionType.DIALOG_CAPTCHA
                                 ErrorPage(modifier = Modifier.fillMaxWidth(),
-                                    image = com.heyanle.easybangumi4.R.drawable.empty_bocchi,
-                                    errorMsg = if (isCaptcha) "需要输入验证码" else "需要人机效验",
+                                    image = com.heyanle.easybangumi4.R.drawable.search_verification,
+                                    errorMsg = stringResource(
+                                        if (isCaptcha) {
+                                            R.string.search_verification_captcha_required
+                                        } else {
+                                            R.string.search_verification_human_required
+                                        }
+                                    ),
                                     clickEnable = true,
                                     other = {
-                                        Text(text = if (isCaptcha) "点击输入验证码" else "点击跳转效验")
+                                        Text(
+                                            text = stringResource(
+                                                if (isCaptcha) {
+                                                    R.string.search_verification_captcha_action
+                                                } else {
+                                                    R.string.search_verification_human_action
+                                                }
+                                            )
+                                        )
                                     },
                                     onClick = {
                                         onWebCheck(innerError)
@@ -333,11 +347,25 @@ fun <T : Any> LazyListScope.pagingCommonSourceSearchHor(
                                 needCommonError = false
                                 val isCaptcha = innerError.actionType == BusinessActionType.DIALOG_CAPTCHA
                                 ErrorPage(modifier = Modifier.fillMaxHeight(),
-                                    image = com.heyanle.easybangumi4.R.drawable.empty_bocchi,
-                                    errorMsg = if (isCaptcha) "需要输入验证码" else "需要人机效验",
+                                    image = com.heyanle.easybangumi4.R.drawable.search_verification,
+                                    errorMsg = stringResource(
+                                        if (isCaptcha) {
+                                            R.string.search_verification_captcha_required
+                                        } else {
+                                            R.string.search_verification_human_required
+                                        }
+                                    ),
                                     clickEnable = true,
                                     other = {
-                                        Text(text = if (isCaptcha) "点击输入验证码" else "点击跳转效验")
+                                        Text(
+                                            text = stringResource(
+                                                if (isCaptcha) {
+                                                    R.string.search_verification_captcha_action
+                                                } else {
+                                                    R.string.search_verification_human_action
+                                                }
+                                            )
+                                        )
                                     },
                                     onClick = {
                                         onWebCheck(innerError)
@@ -408,10 +436,24 @@ fun <T : Any> PagingCommonSourceSearch(
                             needCommonError = false
                             val isCaptcha = innerError.actionType == BusinessActionType.DIALOG_CAPTCHA
                             ErrorPage(modifier = Modifier.fillMaxWidth(),
-                                image = com.heyanle.easybangumi4.R.drawable.empty_bocchi,
-                                errorMsg = if (isCaptcha) "需要输入验证码" else "需要人机效验",
+                                image = com.heyanle.easybangumi4.R.drawable.search_verification,
+                                errorMsg = stringResource(
+                                    if (isCaptcha) {
+                                        R.string.search_verification_captcha_required
+                                    } else {
+                                        R.string.search_verification_human_required
+                                    }
+                                ),
                                 other = {
-                                    Text(text = if (isCaptcha) "点击输入验证码" else "点击跳转效验")
+                                    Text(
+                                        text = stringResource(
+                                            if (isCaptcha) {
+                                                R.string.search_verification_captcha_action
+                                            } else {
+                                                R.string.search_verification_human_action
+                                            }
+                                        )
+                                    )
                                 },
                                 clickEnable = true,
                                 onClick = {
@@ -449,5 +491,4 @@ fun <T : Any> PagingCommonSourceSearch(
     }
 
 }
-
 

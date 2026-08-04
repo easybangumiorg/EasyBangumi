@@ -1,0 +1,60 @@
+brand:
+  id: arcana
+  version: v1
+  character: yellow-haired-magical-girl
+  audited_at: 2026-07-31
+
+assets:
+  - asset_id: arcana-app-logo
+    role: identity
+    status: active
+    canonical_source: design/brand/sources/arcana-v1/identity/app-logo-master.png
+    source_quality: recovered-derivative
+    source_sha256: ec1fcd9b124f89f3d2e0e9bdd0c0c6bdb98f446471d3f0a86a7ba1444e2cf389
+    outputs:
+      - path: app/src/main/res/mipmap-xxhdpi/logo_new.png
+        consumer: main AndroidManifest and in-app brand surfaces
+        sha256: ec1fcd9b124f89f3d2e0e9bdd0c0c6bdb98f446471d3f0a86a7ba1444e2cf389
+
+  - asset_id: arcana-debug-logo
+    role: debug-identity
+    status: active
+    output: app/src/debug/res/mipmap-xxhdpi/logo_debug.png
+    consumer: debug AndroidManifest overlay
+    sha256: ffd27dd30d36c3a9f979b56b87806b75b967330cd9670ee7e92d01c7c02f4d5e
+
+  - asset_id: arcana-empty
+    role: empty-state
+    status: active
+    output: app/src/main/res/drawable/empty_bocchi.png
+    sha256: 89b62898e1c88a3be7ed0bb023b9a9d7f5df7113af8e7573f81c6c8eacabd041
+
+  - asset_id: arcana-loading
+    role: loading-state
+    status: active
+    output: app/src/main/assets/loading_ryo.gif
+    sha256: 8cd33664f93c1fc0563e7b987229edf0c7778ad67ebe195d107b6fadabb7ce29
+
+  - asset_id: arcana-error
+    role: error-state
+    status: active
+    output: app/src/main/res/drawable/error_ikuyo.png
+    sha256: 79adfb18b017b708905c5aafdd6942c5935d51d1af93ef0532a0e741bda2162e
+
+  - asset_id: arcana-search-verification
+    role: verification-state
+    status: active
+    canonical_source: design/brand/sources/arcana-v1/verification/search-verification-master.png
+    source_sha256: 76ba612631571c640a3fcb30201df9f7d59bf0d825bff100d8587b89fe699c33
+    outputs:
+      - path: app/src/main/res/drawable-nodpi/search_verification.png
+        consumer: overview, single-source and grouped-search verification states
+        sha256: 9c5371ab7c7a55920c60ca1e809f9513276ac094e1afa2be328bb8b821279be1
+    notes: Yellow-haired Arcana chibi holding a purple-and-gold shield with a check-shaped sparkle.
+
+  - asset_id: overview-verification-legacy
+    role: verification-state
+    status: archived
+    output: design/brand/archive/2026-07-31-brand-audit/legacy-verification/overview_verification.png
+    sha256: 1c01f09a04ebe2c9eef6eb148474db9924540780e6b894cc5dbc384dfcf0e6eb
+    exception: Black-haired realistic artwork was outside the Arcana visual system.

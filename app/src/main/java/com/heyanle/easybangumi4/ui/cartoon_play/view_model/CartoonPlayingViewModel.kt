@@ -1,7 +1,6 @@
 package com.heyanle.easybangumi4.ui.cartoon_play.view_model
 
 import android.content.Intent
-import android.graphics.Bitmap
 import android.graphics.SurfaceTexture
 import android.util.Log
 import android.view.TextureView
@@ -34,11 +33,9 @@ import com.heyanle.easybangumi4.plugin.api.entity.PlayerInfo
 import com.heyanle.easybangumi4.plugin.source.utils.VerificationHelper
 import com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded.CartoonRecordedModel
 import com.heyanle.easybangumi4.utils.CoroutineProvider
-import com.heyanle.easybangumi4.utils.MediaAndroidUtils
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.stringRes
-import com.heyanle.easybangumi4.utils.toast
 import com.heyanle.inject.core.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -228,40 +225,6 @@ class CartoonPlayingViewModel(
     val thumbnailFolder: File = File(APP.getCachePath("thumbnail")).apply {
         deleteRecursively()
         mkdirs()
-    }
-
-    val imageCache: File = File(APP.getCachePath("image")).apply {
-        deleteRecursively()
-        mkdirs()
-    }
-
-    fun image() {
-        val playerInfo = playingInfo
-        if (playerInfo == null) {
-            stringRes(com.heyanle.easy_i18n.R.string.waiting_parsing)
-            return
-        }
-        val position = exoPlayer.currentPosition
-        scope.launch(dispatcher) {
-            val bmp = easyTextRenderer.getTextureViewOrNull()?.bitmap ?: return@launch
-            val file = File(imageCache, "${position}.png")
-            file.delete()
-            file.createNewFile()
-            bmp.compress(
-                Bitmap.CompressFormat.PNG,
-                100,
-                file.outputStream()
-            )
-            MediaAndroidUtils.saveToDownload(
-                file,
-                type = "image",
-                "image_${position}.png"
-            )
-            scope.launch {
-                stringRes(com.heyanle.easy_i18n.R.string.image_save_completely).toast()
-            }
-
-        }
     }
 
     @OptIn(UnstableApi::class)

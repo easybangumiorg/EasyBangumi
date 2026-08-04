@@ -405,6 +405,13 @@ private fun CartoonPlayV2Content(
         },
         control = {
             val matched = danmakuState.status as? DanmakuPlaybackStatus.Matched
+            val openManualDanmakuMatch = {
+                showEpisodeWindow.value = false
+                showSpeed.value = false
+                showScaleType.value = false
+                showPlayerSettings = false
+                onManualMatch()
+            }
             val openDanmakuSourceSettings = {
                 showPlayerSettings = false
                 if (controlVM.isFullScreen) {
@@ -423,7 +430,7 @@ private fun CartoonPlayV2Content(
                         danmakuDisplayConfig.copy(enabled = it),
                     )
                 },
-                onManualMatch = onManualMatch,
+                onManualMatch = openManualDanmakuMatch,
                 onRetry = onDanmakuRetry,
                 onOpenSourceSettings = openDanmakuSourceSettings,
             )
@@ -446,6 +453,8 @@ private fun CartoonPlayV2Content(
                     showEpisodeWin = showEpisodeWindow,
                     showVideoScaleTypeWin = showScaleType,
                     danmakuControlState = danmakuControlState,
+                    danmakuRenderer = danmakuRenderer,
+                    includeDanmakuInScreenshot = danmakuDisplayConfig.enabled,
                     onShowPlayerSettings = {
                         // “更多”没有预设的配置类别，重开时延续用户上一次浏览的 Tab。
                         openPlayerSettings(null)

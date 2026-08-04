@@ -1,5 +1,7 @@
 package com.heyanle.easybangumi4.ui.cartoon_play
 
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
 import android.os.SystemClock
 import android.view.View
@@ -27,6 +29,38 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class DfmDanmakuRendererInstrumentedTest {
+
+    @Test
+    fun rendererSnapshot_drawsVisibleLayerScaledIntoTargetCanvas() {
+        val renderer = DfmDanmakuRenderer()
+        val scenario = ActivityScenario.launch(MainActivity::class.java)
+        try {
+            scenario.onActivity { activity ->
+                val view = renderer.getOrCreateView(
+                    androidContext = activity,
+                    positionMillis = 0L,
+                    isPlaying = false,
+                ).apply {
+                    setBackgroundColor(Color.MAGENTA)
+                    measure(
+                        View.MeasureSpec.makeMeasureSpec(100, View.MeasureSpec.EXACTLY),
+                        View.MeasureSpec.makeMeasureSpec(50, View.MeasureSpec.EXACTLY),
+                    )
+                    layout(0, 0, 100, 50)
+                }
+                val target = Bitmap.createBitmap(200, 100, Bitmap.Config.ARGB_8888)
+
+                assertTrue(renderer.drawSnapshotOnto(Canvas(target), 200, 100))
+                assertEquals(Color.MAGENTA, target.getPixel(100, 50))
+
+                target.recycle()
+                view.setBackgroundColor(Color.TRANSPARENT)
+            }
+        } finally {
+            scenario.onActivity { renderer.release() }
+            scenario.close()
+        }
+    }
 
     @Test
     fun rendererOwnedView_holderReplacementReusesRendererSession() {

@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.ui.cartoon_play
 
 import android.content.Context
+import android.graphics.Canvas
 import android.graphics.Color
 import android.view.View
 import android.view.ViewGroup
@@ -179,6 +180,27 @@ class DfmDanmakuRenderer {
 
     fun setVisible(visible: Boolean) {
         view?.visibility = if (visible) View.VISIBLE else View.GONE
+    }
+
+    /**
+     * Draws the currently visible danmaku layer into a screenshot canvas.
+     *
+     * This must be called on the main thread, matching Android View's drawing contract. Controls
+     * are not part of this renderer, so the resulting image contains video + danmaku only.
+     */
+    fun drawSnapshotOnto(canvas: Canvas, targetWidth: Int, targetHeight: Int): Boolean {
+        val currentView = view ?: return false
+        if (currentView.visibility != View.VISIBLE || currentView.width <= 0 || currentView.height <= 0) {
+            return false
+        }
+        val checkpoint = canvas.save()
+        canvas.scale(
+            targetWidth.toFloat() / currentView.width,
+            targetHeight.toFloat() / currentView.height,
+        )
+        currentView.draw(canvas)
+        canvas.restoreToCount(checkpoint)
+        return true
     }
 
     fun clear() {

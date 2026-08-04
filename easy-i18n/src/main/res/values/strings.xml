@@ -39,6 +39,7 @@
 
     <string name="appearance_setting">外观设置</string>
     <string name="player_setting">播放设置</string>
+    <string name="danmaku_setting">弹幕设置</string>
 
     <string name="download_setting">下载设置</string>
     <string name="extension_setting">番源设置</string>
@@ -439,6 +440,11 @@
     <string name="search_mode_overview_desc">全部结果排序</string>
     <string name="search_overview_all_results">全部结果</string>
     <string name="search_overview_match_order">按名称匹配度排序</string>
+    <string name="search_verification_captcha_required">需要输入验证码</string>
+    <string name="search_verification_human_required">需要人机校验</string>
+    <string name="search_verification_captcha_action">输入验证码</string>
+    <string name="search_verification_human_action">去验证</string>
+    <string name="search_verification_continue_action">校验后继续</string>
 
     <string name="name_word">名称</string>
     <string name="sort">排序</string>

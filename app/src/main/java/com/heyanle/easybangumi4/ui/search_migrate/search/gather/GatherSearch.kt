@@ -57,13 +57,19 @@ fun ColumnScope.GatherSearch(
     val keyboard = LocalSoftwareKeyboardController.current
     val searchComponents = LocalSourceBundleController.current.searches()
     val vm =
-        viewModel<GatherSearchViewModel>(factory = GatherSearchViewModelFactory(searchComponents))
+        viewModel<GatherSearchViewModel>(
+            key = "gather-search",
+            factory = GatherSearchViewModelFactory(searchComponents),
+        )
 
     val starVm = viewModel<CoverStarViewModel>()
 
     val searchRequest = searchViewModel.searchRequestFlow.collectAsState()
     LaunchedEffect(searchRequest.value) {
-        vm.newSearchKey(searchRequest.value.keyword, force = true)
+        vm.submitSearch(searchRequest.value)
+    }
+    LaunchedEffect(searchComponents) {
+        vm.updateSearchComponents(searchComponents)
     }
 
     val itemList = vm.searchItemList.collectAsState()

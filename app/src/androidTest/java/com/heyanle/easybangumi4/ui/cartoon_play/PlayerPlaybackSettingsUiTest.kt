@@ -1,17 +1,19 @@
 package com.heyanle.easybangumi4.ui.cartoon_play
 
+import android.content.res.Configuration
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsEnabled
-import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -212,6 +214,49 @@ class PlayerPlaybackSettingsUiTest {
     }
 
     @Test
+    fun landscapeSettingsPanel_remainsComposedDuringSlideOut() {
+        composeRule.mainClock.autoAdvance = false
+        var visible by mutableStateOf(true)
+        val landscapeConfiguration = Configuration().apply {
+            orientation = Configuration.ORIENTATION_LANDSCAPE
+            screenWidthDp = 800
+            screenHeightDp = 400
+        }
+        setMaterialContent {
+            CompositionLocalProvider(LocalConfiguration provides landscapeConfiguration) {
+                AdaptivePlayerSettingsPanel(
+                    visible = visible,
+                    selectedSection = PlayerSettingsSection.Video,
+                    onSectionSelected = {},
+                    onDismiss = { visible = false },
+                    danmakuConfig = DanmakuDisplayConfig.DEFAULT,
+                    danmakuSummary = null,
+                    onDanmakuConfigChange = {},
+                    onResetDanmaku = {},
+                    videoScaleType = 0,
+                    videoScaleOptions = listOf(
+                        0 to com.heyanle.easy_i18n.R.string.video_scale_type_default,
+                    ),
+                    onVideoScaleSelected = {},
+                )
+            }
+        }
+
+        composeRule.mainClock.advanceTimeBy(300)
+        composeRule.onNodeWithTag(PlayerPlaybackSettingsTestTags.SETTINGS_PANEL)
+            .assertExists()
+
+        composeRule.runOnIdle { visible = false }
+        composeRule.mainClock.advanceTimeBy(120)
+        composeRule.onNodeWithTag(PlayerPlaybackSettingsTestTags.SETTINGS_PANEL)
+            .assertExists()
+
+        composeRule.mainClock.advanceTimeBy(180)
+        composeRule.onNodeWithTag(PlayerPlaybackSettingsTestTags.SETTINGS_PANEL)
+            .assertDoesNotExist()
+    }
+
+    @Test
     fun optionalToggle_keepsLegacyControlFreeOfDanmakuEntry() {
         var state by mutableStateOf<PlayerDanmakuControlState?>(null)
         setMaterialContent { OptionalPlayerDanmakuToggle(state) }
@@ -233,12 +278,14 @@ class PlayerPlaybackSettingsUiTest {
     @Test
     fun quickToggle_exposesEnabledLoadingAndUnavailableSemantics() {
         var clickCount = 0
+        var longClickCount = 0
         var state by mutableStateOf(
             PlayerDanmakuControlState(
                 visualState = PlayerDanmakuControlState.VisualState.Available,
                 displayEnabled = true,
                 contentDescription = "关闭弹幕",
                 onClick = { clickCount++ },
+                onLongClick = { longClickCount++ },
             ),
         )
         setMaterialContent { PlayerDanmakuToggle(state) }
@@ -247,7 +294,10 @@ class PlayerPlaybackSettingsUiTest {
             .assertIsEnabled()
             .assert(stateDescription("已开启"))
             .performClick()
+        composeRule.onNodeWithContentDescription("关闭弹幕")
+            .performSemanticsAction(SemanticsActions.OnLongClick)
         composeRule.runOnIdle { assertEquals(1, clickCount) }
+        composeRule.runOnIdle { assertEquals(1, longClickCount) }
 
         state = state.copy(
             visualState = PlayerDanmakuControlState.VisualState.Loading,
@@ -255,8 +305,10 @@ class PlayerPlaybackSettingsUiTest {
         )
         composeRule.waitForIdle()
         composeRule.onNodeWithContentDescription("弹幕加载中")
-            .assertIsNotEnabled()
+            .assertIsEnabled()
             .assert(stateDescription("加载中"))
+            .performSemanticsAction(SemanticsActions.OnLongClick)
+        composeRule.runOnIdle { assertEquals(2, longClickCount) }
 
         state = state.copy(
             visualState = PlayerDanmakuControlState.VisualState.Unavailable,
