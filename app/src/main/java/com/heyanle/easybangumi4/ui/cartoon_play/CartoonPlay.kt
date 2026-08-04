@@ -33,9 +33,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.media3.common.Effect
 import androidx.media3.common.util.UnstableApi
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
@@ -65,6 +67,7 @@ import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.openUrl
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.inject.core.Inject
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import loli.ball.easyplayer2.ControlViewModel
 import loli.ball.easyplayer2.ControlViewModelFactory
@@ -95,7 +98,7 @@ fun CartoonPlay(
     val controlVM = ControlViewModelFactory.viewModel(
         playingVM.exoPlayer,
         isPad,
-        render = playingVM.easyTextRenderer
+        render = playingVM.render
     )
 
     LaunchedEffect(summary) {
@@ -434,6 +437,41 @@ fun CartoonPlay(
             SettingPreferences.PlayerOrientationMode.Auto -> ControlViewModel.OrientationEnableMode.AUTO
             SettingPreferences.PlayerOrientationMode.Enable -> ControlViewModel.OrientationEnableMode.ENABLE
             SettingPreferences.PlayerOrientationMode.Disable -> ControlViewModel.OrientationEnableMode.DISABLE
+        }
+    }
+
+    // 高清渲染 (Anime4K)：跟随设置实时切换（默认开启，可关闭，持久化）
+    val anime4kContext = LocalContext.current
+    LaunchedEffect(Unit) {
+        launch {
+            combine(
+                settingPreferences.anime4kEnabled.flow(),
+                settingPreferences.anime4kMode.flow(),
+                settingPreferences.anime4kQuality.flow(),
+                settingPreferences.anime4kScale.flow(),
+            ) { on, mode, quality, scale -> on to Triple(mode, quality, scale) }
+                .collect { (on, cfg) ->
+                    val mode = cfg.first
+                    val quality = cfg.second
+                    val scale = cfg.third
+                    val effects: List<Effect> = if (on) {
+                        listOf(
+                            com.heyanle.easybangumi4.anime4k.Anime4KEffect(
+                                com.heyanle.easybangumi4.anime4k.Anime4KSource.chainFor(
+                                    anime4kContext, mode, quality
+                                ),
+                                scaleOverride = scale
+                            )
+                        )
+                    } else {
+                        emptyList()
+                    }
+                    runCatching {
+                        playingVM.exoPlayer.setVideoEffects(effects)
+                    }.onFailure {
+                        it.printStackTrace()
+                    }
+                }
         }
     }
 
