@@ -48,6 +48,16 @@ class SettingPreferences(
         PlayerOrientationMode.Auto
     )
 
+    // 高清渲染 (Anime4K)
+    // 默认开启，可关闭；持久化于 MMKV
+    var anime4kEnabled = preferenceStore.getBoolean("anime4k_enabled", true)
+    // 渲染方案 0..6（见 A4KChain.MODE_NAMES）
+    val anime4kMode = preferenceStore.getInt("anime4k_mode", 1)
+    // 渲染质量 S/M/L
+    val anime4kQuality = preferenceStore.getString("anime4k_quality", "M")
+    // 超分倍率：0=自动(推荐)，1/2/4=强制
+    val anime4kScale = preferenceStore.getInt("anime4k_scale", 0)
+
     // 使用外置播放器
     var useExternalVideoPlayer = preferenceStore.getBoolean("use_external_video_player", false)
 
