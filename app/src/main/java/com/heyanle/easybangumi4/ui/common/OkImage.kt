@@ -25,11 +25,41 @@ import coil.compose.AsyncImage
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import coil.request.ImageRequest
+import okhttp3.Headers
 
 /**
  * Created by HeYanLe on 2023/1/10 16:42.
  * https://github.com/heyanLE
  */
+/**
+ * 解析封面 URL 中的请求头后缀约定：
+ * `https://img.example.com/pic.webp@Referer=https://movie.douban.com/@User-Agent=Mozilla/5.0 ...`
+ * 返回 (干净的图片 URL, 解析出的请求头)。
+ * 兼容任意 @Key=Value 顺序与多个标记。
+ */
+fun parseCoverImage(image: Any?): Pair<Any?, Map<String, String>> {
+    if (image !is String) return image to emptyMap()
+    val url = image
+    val markers = listOf("@Referer=", "@User-Agent=")
+    val first = markers.mapNotNull { url.indexOf(it).takeIf { i -> i >= 0 } }.minOrNull()
+        ?: return url to emptyMap()
+    val clean = url.substring(0, first)
+    val headers = mutableMapOf<String, String>()
+    var pos = first
+    while (pos < url.length) {
+        val marker = markers.firstOrNull { url.startsWith(it, pos) } ?: break
+        val key = when (marker) {
+            "@Referer=" -> "Referer"
+            else -> "User-Agent"
+        }
+        pos += marker.length
+        val next = markers.mapNotNull { url.indexOf(it, pos).takeIf { i -> i >= 0 } }.minOrNull() ?: url.length
+        headers[key] = url.substring(pos, next)
+        pos = next
+    }
+    return clean to headers
+}
+
 
 @Composable
 fun OkImage(
@@ -45,6 +75,7 @@ fun OkImage(
     placeholderRes: Int? = null,
     tint: Color? = null,
     alpha: Float = 1f,
+    headers: Map<String, String>? = null,
 ) {
     var need = true
     if (image == null || image == "" || (image is Int && image <= 0)) {
@@ -98,10 +129,21 @@ fun OkImage(
             }
 
             else -> {
+                val (cleanImage, urlHeaders) = parseCoverImage(image)
+                val mergedHeaders = urlHeaders + (headers ?: emptyMap())
                 AsyncImage(
                     model = ImageRequest
                         .Builder(LocalContext.current)
-                        .data(image)
+                        .data(cleanImage)
+                        .apply {
+                            if (mergedHeaders.isNotEmpty()) {
+                                headers(
+                                    Headers.Builder().apply {
+                                        mergedHeaders.forEach { (k, v) -> add(k, v) }
+                                    }.build()
+                                )
+                            }
+                        }
                         .apply {
                             if (placeholderRes == null) {
                                 placeholderColor?.let {
