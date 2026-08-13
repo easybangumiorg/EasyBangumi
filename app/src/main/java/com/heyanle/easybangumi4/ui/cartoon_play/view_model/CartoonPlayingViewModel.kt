@@ -42,11 +42,14 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.yield
+import loli.ball.easyplayer2.surface.SurfacePlayerRender
 import loli.ball.easyplayer2.texture.TexturePlayerRender
 import java.io.File
 
@@ -151,6 +154,11 @@ class CartoonPlayingViewModel(
         .apply {
             setExtSurfaceTextureListener(this@CartoonPlayingViewModel)
         }
+
+    // Media3 效果管线（VideoGraph）要求有效输出 surface，TextureView 与该管线的
+    // EGL 输出不兼容（报 "Make sure the SurfaceView..."），因此启用效果的播放统一
+    // 走 SurfaceView 渲染；截图/录制功能依赖 TextureView，将优雅降级。
+    val render: SurfacePlayerRender = SurfacePlayerRender()
 
     // 当前播放番剧缓存 =================================================
     private var cartoonPlayingState: CartoonPlayViewModel.CartoonPlayState? = null
@@ -582,6 +590,24 @@ class CartoonPlayingViewModel(
         thumbnailBuffer = ThumbnailBuffer(thumbnailFolder)
         playingInfo = playerInfo
         "play-media action=set uri=${playerInfo.uri} source=${cartoonPlayingState?.cartoonSummary?.source} cartoonId=${cartoonPlayingState?.cartoonSummary?.id} cache=$canMediaCache".logi(TAG)
+        // Media3 效果管线（VideoGraph）要求 codec 初始化前有有效输出 surface，
+        // 否则 renderer 退回 placeholder surface，EGL 渲染报
+        // "Make sure the SurfaceView or associated SurfaceHolder has a valid Surface"。
+        // 播放前等待渲染视图 surface 就绪（最多 5s）。
+        runCatching {
+            withTimeoutOrNull(5000) {
+                while (true) {
+                    val v = render.getViewOrNull()
+                    val ready = when (v) {
+                        is android.view.SurfaceView -> v.holder?.surface?.isValid == true
+                        is android.view.TextureView -> v.isAvailable
+                        else -> false
+                    }
+                    if (ready) break
+                    delay(50)
+                }
+            }
+        }
         // 本地番源不过缓存
         val media =
             if (!canMediaCache || cartoonPlayingState?.cartoonSummary?.source?.equals(LocalSource.LOCAL_SOURCE_KEY) == true)

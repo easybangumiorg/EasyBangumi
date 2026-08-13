@@ -98,6 +98,56 @@ fun ColumnScope.PlayerSetting(
             preference = settingPreferences.playerBottomNavigationBarPadding
         )
 
+        // 高清渲染 (Anime4K) —— 默认开启，可关闭（持久化）
+        BooleanPreferenceItem(
+            title = { Text(stringResource(id = com.heyanle.easy_i18n.R.string.anime4k_title)) },
+            subtitle = { Text(stringResource(id = com.heyanle.easy_i18n.R.string.anime4k_summary)) },
+            preference = settingPreferences.anime4kEnabled
+        )
+
+        val anime4kMode by settingPreferences.anime4kMode.flow()
+            .collectAsState(settingPreferences.anime4kMode.get())
+        StringSelectPreferenceItem(
+            title = { Text(stringResource(id = com.heyanle.easy_i18n.R.string.anime4k_mode)) },
+            textList = com.heyanle.easybangumi4.anime4k.A4KChain.MODE_NAMES,
+            select = anime4kMode.coerceIn(0, com.heyanle.easybangumi4.anime4k.A4KChain.MODE_NAMES.lastIndex),
+        ) {
+            settingPreferences.anime4kMode.set(it)
+        }
+
+        val anime4kScale by settingPreferences.anime4kScale.flow()
+            .collectAsState(settingPreferences.anime4kScale.get())
+        StringSelectPreferenceItem(
+            title = { Text(stringResource(id = com.heyanle.easy_i18n.R.string.anime4k_scale)) },
+            textList = listOf(
+                stringResource(id = com.heyanle.easy_i18n.R.string.anime4k_scale_auto),
+                "1x", "2x", "4x",
+            ),
+            select = when (anime4kScale) {
+                1 -> 1
+                2 -> 2
+                4 -> 3
+                else -> 0
+            },
+        ) {
+            settingPreferences.anime4kScale.set(listOf(0, 1, 2, 4)[it])
+        }
+
+        val anime4kQuality by settingPreferences.anime4kQuality.flow()
+            .collectAsState(settingPreferences.anime4kQuality.get())
+        StringSelectPreferenceItem(
+            title = { Text(stringResource(id = com.heyanle.easy_i18n.R.string.anime4k_quality)) },
+            textList = listOf(
+                stringResource(id = com.heyanle.easy_i18n.R.string.anime4k_quality_s),
+                stringResource(id = com.heyanle.easy_i18n.R.string.anime4k_quality_m),
+                stringResource(id = com.heyanle.easy_i18n.R.string.anime4k_quality_l),
+            ),
+            select = com.heyanle.easybangumi4.anime4k.A4KChain.QUALITIES
+                .indexOf(anime4kQuality).coerceAtLeast(0),
+        ) {
+            settingPreferences.anime4kQuality.set(com.heyanle.easybangumi4.anime4k.A4KChain.QUALITIES[it])
+        }
+
         EmumPreferenceItem(
             title = { Text(stringResource(id = com.heyanle.easy_i18n.R.string.player_orientation_mode)) },
             textList = listOf(
