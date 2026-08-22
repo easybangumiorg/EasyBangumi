@@ -37,6 +37,16 @@ jobs:
         env:
           RELEASE: true
 
+      - name: Validate DanDanPlay credentials
+        run: |
+          if [ -z "$DANDANPLAY_APP_ID" ] || [ -z "$DANDANPLAY_APP_SECRET" ]; then
+            echo "::error::Missing DANDANPLAY_APP_ID or DANDANPLAY_APP_SECRET repository secret"
+            exit 1
+          fi
+        env:
+          DANDANPLAY_APP_ID: ${{ secrets.DANDANPLAY_APP_ID }}
+          DANDANPLAY_APP_SECRET: ${{ secrets.DANDANPLAY_APP_SECRET }}
+
       - name: Build
         run: |
           ls private
@@ -47,6 +57,8 @@ jobs:
         env:
           APPCENTER_SECRET: ${{ secrets.APPCENTER_SECRET }}
           BUGLY_APPID: ${{ secrets.BUGLY_APPID }}
+          DANDANPLAY_APP_ID: ${{ secrets.DANDANPLAY_APP_ID }}
+          DANDANPLAY_APP_SECRET: ${{ secrets.DANDANPLAY_APP_SECRET }}
           RELEASE: true
 
       - name: Get Version
