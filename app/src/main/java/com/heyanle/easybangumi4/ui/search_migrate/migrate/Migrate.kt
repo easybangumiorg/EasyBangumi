@@ -153,7 +153,7 @@ fun Migrate(
             if (!sta.isLoading && sta.selection.isNotEmpty()) {
                 BottomAppBar(actions = {
                     IconButton(onClick = {
-                        deleteCartoonInfo = sta.infoList
+                        deleteCartoonInfo = sta.selection.toList()
                     }) {
                         Icon(
                             Icons.Filled.Delete,
@@ -165,7 +165,7 @@ fun Migrate(
                 }, floatingActionButton = {
                     FloatingActionButton(
                         onClick = {
-                            vm.migrate(sta.infoList)
+                            vm.migrate(sta.selection.toList())
                         },
                     ) {
                         Icon(
@@ -207,9 +207,7 @@ fun Migrate(
 
 
     EasyDeleteDialog(show = deleteCartoonInfo.isNotEmpty(), onDelete = {
-        deleteCartoonInfo?.let {
-            vm.remove(it)
-        }
+        vm.remove(deleteCartoonInfo)
         deleteCartoonInfo = emptyList()
     }) {
         deleteCartoonInfo = emptyList()

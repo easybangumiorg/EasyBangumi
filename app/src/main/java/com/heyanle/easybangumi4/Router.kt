@@ -34,7 +34,6 @@ import com.heyanle.easybangumi4.theme.NormalSystemBarColor
 import com.heyanle.easybangumi4.ui.WebViewUser
 import com.heyanle.easybangumi4.ui.about.About
 import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlay
-import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlayV2
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.dlna.Dlna
 import com.heyanle.easybangumi4.ui.source_push.SourcePush
@@ -302,7 +301,7 @@ fun Nav() {
                 val enterData = kotlin.runCatching {
                     routeArguments.enterDataJson.jsonTo<CartoonPlayViewModel.EnterData>()
                 }.getOrNull()
-                CartoonPlayV2(
+                CartoonPlay(
                     id = routeArguments.id,
                     source = routeArguments.source,
                     enterData = enterData,

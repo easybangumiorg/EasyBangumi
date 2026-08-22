@@ -23,7 +23,7 @@ import androidx.compose.ui.res.stringResource
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LauncherBus
 import com.heyanle.easybangumi4.LocalWindowSizeController
-import com.heyanle.easybangumi4.MainActivity
+import com.heyanle.easybangumi4.MainActivitySwitcher
 import com.heyanle.easybangumi4.Migrate
 import com.heyanle.easybangumi4.Scheduler
 import com.heyanle.easybangumi4.theme.EasyTheme
@@ -138,7 +138,7 @@ class SplashActivity : ComponentActivity() {
         con.end()
 
         splashCompletely = true
-        val intent = Intent(this, MainActivity::class.java)
+        val intent = MainActivitySwitcher.createMainIntent(this)
         intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
         startActivity(intent)
         finish()

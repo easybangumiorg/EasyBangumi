@@ -59,7 +59,7 @@ class CartoonDownloadReqController(
                 }else{
                     it
                 }
-            }.filterNotNull() ?: emptyList()
+            }.filterNotNull()
 
         }
     }
@@ -72,9 +72,32 @@ class CartoonDownloadReqController(
                 }else{
                     it
                 }
-            }.filterNotNull() ?: emptyList()
+            }.filterNotNull()
         }
     }
 
+    fun replaceDownloadItem(item: CartoonDownloadReq) {
+        helper.update { current ->
+            var replaced = false
+            val updated = current.map {
+                if (it.uuid == item.uuid) {
+                    replaced = true
+                    item
+                } else {
+                    it
+                }
+            }
+            if (replaced) updated else updated + item
+        }
+    }
+
+    fun findDownloadItem(uuid: String): CartoonDownloadReq? {
+        return helper.getOrNull()?.firstOrNull { it.uuid == uuid }
+    }
+
+    fun findDownloadItemsByLocalItemIds(itemIds: Collection<String>): List<CartoonDownloadReq> {
+        val ids = itemIds.toSet()
+        return helper.getOrNull()?.filter { it.toLocalItemId in ids }.orEmpty()
+    }
 
 }

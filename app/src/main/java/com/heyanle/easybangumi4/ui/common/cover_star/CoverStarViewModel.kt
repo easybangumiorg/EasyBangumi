@@ -120,4 +120,18 @@ class CoverStarViewModel : ViewModel() {
         }
     }
 
+    /** Idempotent batch entry used by the V2 local-library selection toolbar. */
+    fun starAll(cartoonCovers: Collection<CartoonCover>) {
+        viewModelScope.launch {
+            cartoonStarController.starAll(cartoonCovers)
+        }
+    }
+
+    /** Idempotent batch entry used by the V2 local-library selection toolbar. */
+    fun unstarAll(cartoonCovers: Collection<CartoonCover>) {
+        viewModelScope.launch {
+            cartoonStarController.unstarAll(cartoonCovers)
+        }
+    }
+
 }

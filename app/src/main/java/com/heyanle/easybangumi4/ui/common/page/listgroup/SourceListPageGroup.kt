@@ -26,6 +26,7 @@ import com.heyanle.easybangumi4.ui.common.ErrorPage
 import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.page.list.SourceListPage
+import com.heyanle.easybangumi4.ui.common.page.CartoonPagePresentation
 import com.heyanle.easybangumi4.ui.common.cover_star.CoverStarViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -36,7 +37,8 @@ import kotlinx.coroutines.launch
  */
 @Composable
 fun SourceListPageGroup(
-    listPageGroup: SourcePage.Group
+    listPageGroup: SourcePage.Group,
+    presentation: CartoonPagePresentation = CartoonPagePresentation.Legacy,
 ) {
     val vm =
         viewModel<SourceListGroupViewModel>(factory = SourceListGroupViewModelFactory(listPageGroup))
@@ -56,7 +58,7 @@ fun SourceListPageGroup(
                 )
             }
             is SourceListGroupViewModel.GroupState.Group -> {
-                SourceListWithGroup(vm, it)
+                SourceListWithGroup(vm, it, presentation)
             }
             is SourceListGroupViewModel.GroupState.Error -> {
                 ErrorPage(
@@ -80,6 +82,7 @@ fun SourceListPageGroup(
 fun SourceListWithGroup(
     groupVM: SourceListGroupViewModel,
     groupState: SourceListGroupViewModel.GroupState.Group,
+    presentation: CartoonPagePresentation,
 ){
 
     val coverStarViewModel = viewModel<CoverStarViewModel>()
@@ -101,7 +104,11 @@ fun SourceListWithGroup(
             .pullRefresh(state)
     ) {
         SourceListPage(
-            coverStarViewModel, groupState.list, lazyGridState, lazyStaggeredGridState
+            coverStarViewModel,
+            groupState.list,
+            lazyGridState,
+            lazyStaggeredGridState,
+            presentation,
         )
         PullRefreshIndicator(
             refreshing,

@@ -174,8 +174,15 @@ class MigrateViewModel(
 
     fun remove(cartoonInfo: List<CartoonInfo>) {
         _infoListFlow.update {
+            val removedIdentities = cartoonInfo.mapTo(mutableSetOf()) { item -> item.toIdentify() }
+            val nextInfoList = it.infoList.filterNot { item -> item.toIdentify() in removedIdentities }
+            val nextSelection = it.selection.filterTo(mutableSetOf()) { item ->
+                item.toIdentify() !in removedIdentities
+            }
+            if (nextSelection.isEmpty()) lastSelectInfo = null
             it.copy(
-                infoList = it.infoList.filter { s -> cartoonInfo.find { it.toIdentify() == s.toIdentify() } == null }
+                infoList = nextInfoList,
+                selection = nextSelection,
             )
         }
     }

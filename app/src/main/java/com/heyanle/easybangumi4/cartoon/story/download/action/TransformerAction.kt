@@ -176,11 +176,13 @@ class TransformerAction(
 
 
             val realTarget = File(cacheFolder, "${cartoonDownloadRuntime.req.uuid}.mp4")
+            val tempTarget = File(cacheFolder, "${cartoonDownloadRuntime.req.uuid}.temp.mp4")
             cacheFolder.mkdirs()
             realTarget.delete()
-            realTarget.createNewFile()
+            tempTarget.delete()
 
-            cartoonDownloadRuntime.transformerFile = realTarget
+            cartoonDownloadRuntime.transformerFile = tempTarget
+            cartoonDownloadRuntime.transformerStartError = null
 
             val holder: ProgressHolder = ProgressHolder()
             mainScope.launch {
@@ -188,14 +190,22 @@ class TransformerAction(
                     -1f,
                     stringRes(com.heyanle.easy_i18n.R.string.waiting_transformer)
                 )
-                transformer.start(
-                    mediaItem,
-                    realTarget.absolutePath
-                )
-                initLatch.countDown()
+                try {
+                    transformer.start(
+                        mediaItem,
+                        tempTarget.absolutePath
+                    )
+                } catch (error: Throwable) {
+                    cartoonDownloadRuntime.transformerStartError = error
+                    completelyLatch.countDown()
+                } finally {
+                    // start 抛错时也必须释放工作线程，避免占死完整模式并发槽。
+                    initLatch.countDown()
+                }
             }
 
             initLatch.await()
+            cartoonDownloadRuntime.transformerStartError?.let { throw it }
             while (completelyLatch.count > 0) {
                 if (cartoonDownloadRuntime.isCanceled()) {
                     mainScope.launch {
@@ -230,6 +240,13 @@ class TransformerAction(
                     cartoonDownloadRuntime.exportException?.message
                 )
             } else {
+                if (!tempTarget.isFile ||
+                    !tempTarget.canRead() ||
+                    tempTarget.length() <= 0 ||
+                    !tempTarget.renameTo(realTarget)
+                ) {
+                    throw IllegalStateException("Transformer output finalize failed")
+                }
                 cartoonDownloadRuntime.filePathBeforeCopy = realTarget.absolutePath
                 cartoonDownloadRuntime.stepCompletely(this)
             }
@@ -252,6 +269,7 @@ class TransformerAction(
         mainScope.launch {
             cartoonDownloadRuntime.transformer?.cancel()
         }
+        cartoonDownloadRuntime.transformerFile?.delete()
     }
 
 

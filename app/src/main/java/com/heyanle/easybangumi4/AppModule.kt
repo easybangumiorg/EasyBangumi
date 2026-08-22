@@ -5,6 +5,7 @@ import com.google.gson.Gson
 import com.heyanle.easybangumi4.bus.DownloadingBus
 import com.heyanle.easybangumi4.splash.SplashGuildController
 import com.heyanle.easybangumi4.theme.EasyThemeController
+import com.heyanle.easybangumi4.v2.theme.V2ThemeController
 import com.heyanle.easybangumi4.utils.MoshiArrayListJsonAdapter
 import com.heyanle.inject.api.InjectModule
 import com.heyanle.inject.api.InjectScope
@@ -46,6 +47,9 @@ class ControllerModule(
         }
         addSingletonFactory {
             EasyThemeController(get())
+        }
+        addSingletonFactory {
+            V2ThemeController(get())
         }
         addSingletonFactory {
             DownloadingBus()

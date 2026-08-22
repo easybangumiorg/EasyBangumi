@@ -2,6 +2,7 @@ package com.heyanle.easybangumi4
 
 import android.app.Application
 import android.util.Base64
+import androidx.activity.ComponentActivity
 import com.heyanle.easy_crasher.CrashHandler
 import com.heyanle.easybangumi4.cartoon.CartoonModule
 import com.heyanle.easybangumi4.exo.MediaModule
@@ -93,7 +94,7 @@ object Scheduler {
     /**
      * MainActivity#onCreate
      */
-    fun runOnMainActivityCreate(activity: MainActivity, isFirst: Boolean) {
+    fun runOnMainActivityCreate(activity: ComponentActivity, isFirst: Boolean) {
         Migrate.update(activity)
         if (isFirst) {
             try {
@@ -116,7 +117,7 @@ object Scheduler {
         UpdateController.checkUpdate()
     }
 
-    fun runOnComposeLaunch(activity: MainActivity) {
+    fun runOnComposeLaunch(activity: ComponentActivity) {
         if (first != BuildConfig.VERSION_CODE) {
             try {
                 // 更新日志

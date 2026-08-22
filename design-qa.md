@@ -123,8 +123,6 @@ No actionable P0, P1, or P2 findings remain. The updated control reads as sectio
 
 final result: passed
 
----
-
 # Product Design QA — Overview search verification
 
 ## Evidence
@@ -368,5 +366,175 @@ No actionable P0, P1, or P2 findings remain. The requested hierarchy is clear an
 ## Follow-up polish
 
 - P3: a short device recording over live fullscreen video could document the motion aesthetically once a playback session is already open; the transition lifecycle and direction are covered by implementation and automated regression.
+
+final result: passed
+
+---
+
+# Product Design QA — V2 playback detail migration (2026-08-10)
+
+## Evidence
+
+- Source visual truth: `design/ux-redesign/apple-music-yellow-v1/04-play-detail-download.png`
+- Supporting player-control truth: `design/ux-redesign/apple-music-yellow-v1/05-player-controls-settings.png`
+- Source pixels: `1700 × 925` and `1672 × 941`.
+- Intended implementation viewport: native Android portrait playback detail, previously connected device viewport `1080 × 2344`.
+- Implementation screenshot path: unavailable; `adb devices -l` returned no connected device after the APK build.
+- CSS size / density normalization: not applicable to the native Android build; pixel normalization could not be completed without an implementation capture.
+- State: V2 portrait playback detail with player visible, collapsed media description, normal (non-download-selection) state.
+
+## Full-view comparison
+
+Blocked. Both source boards were opened successfully, but a rendered implementation screenshot could not be captured because the Android device disconnected and no local AVD is configured. Code inspection and build success are not accepted as visual comparison evidence.
+
+## Focused comparison
+
+Blocked for the same reason. The required focused regions are the media identity/action area, the three compact summary rows, and the light episode sheet; none can be judged without device-rendered pixels.
+
+## Required fidelity surfaces
+
+- Fonts and typography: blocked pending device capture.
+- Spacing and layout rhythm: blocked pending device capture.
+- Colors and visual tokens: source tokens are implemented, but visible output is unverified.
+- Image quality and asset fidelity: poster rendering and crop are unverified.
+- Copy and content: static strings were checked in code, but wrapping and truncation are unverified.
+- Interaction and accessibility: unit tests and Android-test compilation passed; runtime touch, focus, rotation, and sheet behavior remain unverified.
+
+## Findings
+
+- [P1] Missing rendered implementation evidence.
+  - Location: V2 playback detail, player controls, and episode sheet.
+  - Evidence: source boards are available, but no current implementation screenshot exists.
+  - Impact: visual fidelity, theme isolation, crop, density, and viewport overflow cannot be approved.
+  - Fix: reconnect the Android device, install `app/build/outputs/apk/debug/app-debug.apk`, capture the same portrait playback state plus the episode sheet, and compare them in one normalized image.
+
+## Comparison history
+
+1. Implementation pass created a dedicated `v2/ui/playback` page, dark playback palette, compact detail rows, and isolated light sheets.
+2. JVM tests, Android-test compilation, and APK assembly passed.
+3. Post-fix visual evidence could not be captured because ADB reported no connected device.
+
+## Implementation checklist
+
+- Reconnect and authorize the Android device.
+- Install the latest debug APK.
+- Capture portrait detail, episode sheet, download selection, and landscape player controls.
+- Build same-input comparison boards and fix all visible P0/P1/P2 differences.
+
+final result: blocked
+
+---
+
+# Product Design QA — V2 non-playback visual rewrite (2026-08-11)
+
+## Evidence
+
+- Primary visual truth: `/Users/heyanle/.codex/generated_images/019fd078-9d8c-70a1-ae6d-3132ff999f8b/exec-6be242f4-8f15-4bd9-9dda-78e0ea816dab.png`.
+- Supporting boards: `design/ux-redesign/apple-music-yellow-v1/03-search.png`, `07-local-download.png`, `08-source-management.png`, `09-tags-migration-backup.png`, `10-settings-general.png`, and `11-settings-support-about.png`.
+- Device: MEIZU 21, native portrait viewport `1080 × 2340`.
+- Final home capture: `/private/tmp/easybangumi-v2-final-home-ready.png`.
+- Same-input home comparison: `/private/tmp/easybangumi-v2-home-compare.png`.
+- Additional inspected captures: `/private/tmp/easybangumi-v2-star.png`, `/private/tmp/easybangumi-v2-history.png`, `/private/tmp/easybangumi-v2-more.png`, `/private/tmp/easybangumi-v2-search.png`, `/private/tmp/easybangumi-v2-tag.png`, `/private/tmp/easybangumi-v2-settings.png`, and `/private/tmp/easybangumi-v2-source-final.png`.
+
+## Comparison result
+
+The V2 implementation now consistently uses the approved warm-white canvas, brand-yellow semantic accent, compact source header, short left-aligned primary underline, distinct dot-style secondary tabs, fixed three-column poster grid, flat management lists, grouped settings surfaces, and a layered bottom navigation with a compact selected icon container. Source-provided page counts and labels remain data-driven, so the connected Age source exposes two primary pages instead of the four illustrative labels in the reference.
+
+## Findings and fixes
+
+1. [P1 fixed] Home and followed-content grids previously used adaptive columns and legacy card spacing. They now use a fixed three-column layout with bare poster cards and compact metadata.
+2. [P1 fixed] The bottom navigation previously used the Material navigation pill hierarchy. It now uses a compact selected icon container, persistent labels, and a top divider.
+3. [P1 fixed] Source manager and local/download tabs initially used full-width equal distribution. Final capture confirms short, left-aligned underline tabs.
+4. [P2 fixed] Tag and source management lists were enclosed in rounded surfaces. They are now flat, divider-based lists with drag, switch, error, and configuration affordances retained.
+5. [P2 fixed] Search landing hierarchy was too close to the result-state header. It now has a large title, outlined search field, compact mode selector, and separate search-history section.
+
+No actionable P0, P1, or P2 visual findings remain in the inspected non-playback states. Empty states intentionally preserve their business-state illustrations and copy.
+
+## Verification
+
+- `./gradlew :app:testDebugUnitTest :app:compileDebugAndroidTestKotlin :app:assembleDebug` — passed.
+- Final `:app:compileDebugKotlin :app:assembleDebug` — passed after the left-aligned tab correction.
+- `git diff --check` — passed.
+- Final debug APK installed successfully on the connected MEIZU 21.
+- Playback visual implementation was excluded from this rewrite.
+
+final result: passed
+
+---
+
+# Product Design QA — V2 semantic theme colors (2026-08-10)
+
+## Evidence
+
+- Source visual truth: `/Users/heyanle/.codex/generated_images/019fd078-9d8c-70a1-ae6d-3132ff999f8b/exec-6be242f4-8f15-4bd9-9dda-78e0ea816dab.png`
+- Source design state: warm-white V2 home, brand-yellow accent, short primary-tab underline, full-width divider, and layered bottom navigation.
+- Intended implementation viewport: native Android portrait, previously connected device viewport `1080 × 2344`.
+- Implementation screenshot: unavailable; `adb devices -l` returned no connected or authorized device after the verified APK build.
+- CSS size / density normalization: not applicable to the native Android app; same-input pixel comparison remains blocked without a rendered capture.
+
+## Full-view comparison
+
+Blocked. The implementation now applies semantic theme colors across every V2 screen except playback and adds a compact selected-state container to the bottom navigation, but code and build output are not accepted as visual evidence.
+
+## Focused comparison
+
+Blocked. The required focused states are the home primary tabs and divider, bottom navigation selection hierarchy, and `外观设置 → 主题色` with at least two live accent selections.
+
+## Findings
+
+- [P1] Missing rendered implementation evidence.
+  - Location: V2 home, bottom navigation, and appearance theme-color chooser.
+  - Evidence: the selected source design is available, while ADB reports no device.
+  - Impact: live recoloring, text contrast, selected-state hierarchy, spacing, and clipping cannot be visually approved.
+  - Fix: reconnect the device, install `app/build/outputs/apk/debug/app-debug.apk`, capture brand-yellow and one alternate theme at the same viewport, and compare each capture with the source in one normalized input.
+
+## Automated verification
+
+- `./gradlew :app:testDebugUnitTest :app:compileDebugAndroidTestKotlin :app:assembleDebug` — passed.
+- `V2ThemeColorTest` — passed after adding storage-key round-trip, fallback, uniqueness, and display-name coverage.
+- Non-playback V2 source scan — no remaining `V2Tokens.BrandGold` or `V2Tokens.BrandGoldSoft` references.
+- Playback source scan — legacy static brand-yellow references intentionally remain isolated in `PlaybackDetailV2.kt`.
+
+final result: blocked
+
+---
+
+# Product Design QA — V2 tab motion and flat More list (2026-08-11)
+
+## Evidence
+
+- Source visual truth: `/Users/heyanle/.codex/generated_images/019fd078-9d8c-70a1-ae6d-3132ff999f8b/exec-2755765a-86f1-409b-bc39-b2dd70f81f72.png` and `/Users/heyanle/.codex/generated_images/019fd078-9d8c-70a1-ae6d-3132ff999f8b/exec-6be242f4-8f15-4bd9-9dda-78e0ea816dab.png`.
+- Device implementation viewport: MEIZU 21, native `1080 × 2340` portrait pixels.
+- Primary-tab end state: `/private/tmp/v2-tab-motion-final.png`.
+- Primary-tab motion recording: `/private/tmp/v2-tab-motion.mp4`.
+- Secondary-tab states: `/private/tmp/v2-age-schedule-before.png` and `/private/tmp/v2-age-schedule-after.png`.
+- Flat More implementation: `/private/tmp/v2-more-flat.png`.
+- Normalized More comparison: `/private/tmp/v2-more-flat-compare.png`; the source panel was aspect-preserving scaled to the device width and vertically padded, while the implementation remained native-density.
+
+## Findings and comparison history
+
+1. [P1 fixed] Tab selection changed color, weight, dot, and underline without motion. Text/dot/indicator colors and opacity now animate over `180ms`; tab font weight stays constant so the row does not remeasure during selection.
+2. [P1 fixed] The selected secondary dot was conditionally inserted, moving the selected label and neighboring tabs. Every secondary tab now reserves the same `6dp` dot slot and animates only its opacity.
+3. [P1 fixed] During secondary-page refresh, the tab row moved between the grid header and the loading container. The row is now a fixed `42dp` sibling above the content viewport. Before and after device semantics bounds are identical: all three labels remain at vertical bounds `[454,520]`.
+4. [P2 fixed] The old clickable modifier let the ripple occupy an unintuitive rectangular region. Each tab now uses a clipped `8dp` rounded, bounded Material 3 ripple around its own stable touch target.
+5. [P2 fixed] More inserted large gaps and full-width group separators between configuration clusters. All configuration rows now share one spacing rule and one continuous inset-divider rule; the debug row also uses the same single-line height.
+
+## Required fidelity surfaces
+
+- Typography: constant medium tab weight prevents measurement jumps; existing app typography is otherwise unchanged.
+- Spacing and rhythm: primary and secondary tab bounds remain stable; More rows are continuous and uniformly spaced.
+- Colors and tokens: transitions continue to use the active V2 semantic accent and neutral tokens.
+- Image quality: no image assets were changed; poster and app-logo rendering remain native.
+- Copy and content: no production labels or business content changed.
+
+## Verification
+
+- `./gradlew :app:testDebugUnitTest :app:compileDebugAndroidTestKotlin :app:assembleDebug` — passed.
+- `V2ScrollableTabsUiTest.secondaryTabSelection_keepsEveryClickableBoundsStable` — passed on the connected MEIZU 21.
+- Manual secondary-tab switch from `今天` to `昨天` — fixed row bounds verified through UI hierarchy and screenshots.
+- Final APK installed and interaction states checked on device.
+- `git diff --check` — passed.
+
+No actionable P0, P1, or P2 findings remain in this iteration.
 
 final result: passed

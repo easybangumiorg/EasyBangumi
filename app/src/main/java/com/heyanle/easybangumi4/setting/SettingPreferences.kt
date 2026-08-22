@@ -21,6 +21,9 @@ class SettingPreferences(
     // 无痕模式
     val isInPrivate = preferenceStore.getBoolean("in_private", false)
 
+    // 新安装默认使用新版；已有用户已经持久化的选择保持不变。
+    val useV2Ui = preferenceStore.getBoolean("use_v2_ui", true)
+
     // 外观设置
     // 夜间模式
     enum class DarkMode {
@@ -31,6 +34,10 @@ class SettingPreferences(
     // 主题设置
     val isThemeDynamic = preferenceStore.getBoolean("theme_dynamic", true)
     val themeMode = preferenceStore.getEnum<EasyThemeMode>("theme_mode", EasyThemeMode.Default)
+
+    // V2 has its own accent-color system. Keep this independent from the legacy Material theme so
+    // both activities can coexist without changing each other's appearance.
+    val v2ThemeColor = preferenceStore.getString("v2_theme_color", "brand_yellow")
 
     // 平板模式
     enum class PadMode {

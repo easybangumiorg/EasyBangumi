@@ -1,8 +1,9 @@
-package com.heyanle.easybangumi4.ui.cartoon_play
+package com.heyanle.easybangumi4.v2.ui.playback
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -34,6 +35,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -43,6 +45,8 @@ import com.heyanle.easybangumi4.cartoon.entity.PlayLineWrapper
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonSummary
 import com.heyanle.easybangumi4.plugin.api.entity.Episode
 import com.heyanle.easybangumi4.plugin.api.entity.PlayLine
+import com.heyanle.easybangumi4.ui.cartoon_play.CartoonRecordedHostTestTags
+import com.heyanle.easybangumi4.ui.cartoon_play.RecordingOverlayHost
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.common.proc.SortBy
 import com.heyanle.easybangumi4.ui.common.proc.SortState
@@ -52,7 +56,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class CartoonPlayV2UiTest {
+class PlaybackDetailV2UiTest {
 
     @get:Rule
     val composeRule = createComposeRule()
@@ -164,7 +168,7 @@ class CartoonPlayV2UiTest {
         composeRule.onNodeWithTag(
             CartoonPlayV2TestTags.MEDIA_COLLAPSED,
             useUnmergedTree = true,
-        ).assertExists().assertHeightIsEqualTo(68.dp)
+        ).assertExists().assertHeightIsAtLeast(120.dp)
         composeRule.onNodeWithContentDescription("展开详情").assertHasClickAction().performClick()
         composeRule.waitForIdle()
 
@@ -190,28 +194,48 @@ class CartoonPlayV2UiTest {
     }
 
     @Test
-    fun actionRow_exposesAllFiveActions_andDispatchesTheMatchingCallback() {
+    fun actionRow_exposesFivePrimaryActions_andMoreSheetDispatchesSecondaryActions() {
         val clicks = mutableListOf<String>()
         setMaterialContent {
+            var showMore by remember { mutableStateOf(false) }
             V2ActionRow(
                 isStar = false,
                 onStar = { clicks += "追番" },
-                onSearch = { clicks += "搜索" },
-                onWeb = { clicks += "网站" },
+                onSearch = { clicks += "换源" },
                 onDownload = { clicks += "下载" },
-                onExternalPlay = { clicks += "外部播放" },
+                onCast = { clicks += "投屏" },
+                onMore = { showMore = true },
             )
+            if (showMore) {
+                PlaybackMoreActionsBottomSheetV2(
+                    onWeb = { clicks += "官网"; showMore = false },
+                    onExternalPlay = { clicks += "外播"; showMore = false },
+                    onShare = { clicks += "分享"; showMore = false },
+                    onDismiss = { showMore = false },
+                )
+            }
         }
 
-        val labels = listOf("追番", "搜索", "网站", "下载", "外部播放")
-        labels.forEach { label ->
+        val primaryLabels = listOf("追番", "换源", "下载", "投屏")
+        primaryLabels.forEach { label ->
             composeRule.onNodeWithTag(CartoonPlayV2TestTags.action(label))
                 .assertExists()
                 .assertHasClickAction()
                 .performClick()
         }
+        composeRule.onNodeWithTag(CartoonPlayV2TestTags.action("更多")).performClick()
+        composeRule.onNodeWithTag(CartoonPlayV2TestTags.MORE_ACTIONS).assertExists()
+        composeRule.onNodeWithText("官网").performClick()
 
-        composeRule.runOnIdle { assertEquals(labels, clicks) }
+        composeRule.onNodeWithTag(CartoonPlayV2TestTags.action("更多")).performClick()
+        composeRule.onNodeWithText("外播").performClick()
+
+        composeRule.onNodeWithTag(CartoonPlayV2TestTags.action("更多")).performClick()
+        composeRule.onNodeWithText("分享").performClick()
+
+        composeRule.runOnIdle {
+            assertEquals(listOf("追番", "换源", "下载", "投屏", "官网", "外播", "分享"), clicks)
+        }
     }
 
     @Test
@@ -280,6 +304,27 @@ class CartoonPlayV2UiTest {
     }
 
     @Test
+    fun episodePicker_exposesDownloadAction_andSwitchesInPlaceToDownloadMode() {
+        val episodes = listOf(
+            Episode("episode-1", "第 1 集", 1),
+            Episode("episode-2", "第 2 集", 2),
+        )
+        setMaterialContent {
+            DownloadSelectionHarness(
+                episodes = episodes,
+                startInDownloadMode = false,
+            )
+        }
+
+        composeRule.onNodeWithTag(CartoonPlayV2TestTags.EPISODE_PICKER).assertExists()
+        composeRule.onNodeWithTag(CartoonPlayV2TestTags.DOWNLOAD_SELECTION).assertDoesNotExist()
+        composeRule.onNodeWithText("下载").performClick()
+        composeRule.onNodeWithTag(CartoonPlayV2TestTags.DOWNLOAD_SELECTION).assertExists()
+        composeRule.onNodeWithText("选择下载剧集").assertExists()
+        composeRule.onNodeWithTag(CartoonPlayV2TestTags.DOWNLOAD_CONFIRM).assertIsNotEnabled()
+    }
+
+    @Test
     fun sortSheet_cyclesDefaultAndNameDirections_withoutLosingSourceOrEpisodeSelection() {
         val firstLine = PlayLine(
             id = "line-a",
@@ -334,7 +379,7 @@ class CartoonPlayV2UiTest {
     }
 
     @Test
-    fun episodePicker_switchesSource_filtersAndSelectsEpisode_thenCanOpenSortSheet() {
+    fun episodePicker_filtersAndSelectsEpisode_thenCanOpenSortSheet() {
         val firstLine = PlayLine(
             id = "line-a",
             label = "线路 A",
@@ -367,9 +412,8 @@ class CartoonPlayV2UiTest {
             )
         }
 
-        composeRule.onNodeWithText("全部选集").performClick()
+        composeRule.onNodeWithText("剧集").performClick()
         composeRule.onNodeWithText("搜索剧集").assertExists()
-        composeRule.onNodeWithText("线路 B").performClick()
         composeRule.onNodeWithText("搜索剧集").performTextInput("特别长")
         composeRule.onNode(
             hasText(targetEpisode.label) and
@@ -383,9 +427,9 @@ class CartoonPlayV2UiTest {
             assertEquals(targetEpisode.id, selectedEpisodeId)
         }
         composeRule.onNodeWithText("搜索剧集").assertDoesNotExist()
-        composeRule.onNodeWithTag(CartoonPlayV2TestTags.episode(targetEpisode.id)).assertIsSelected()
+        composeRule.onNodeWithText(targetEpisode.label, substring = true).assertExists()
 
-        composeRule.onNodeWithText("全部选集").performClick()
+        composeRule.onNodeWithText("剧集").performClick()
         composeRule.onNodeWithContentDescription("切换排序").performClick()
         composeRule.onNodeWithTag(CartoonPlayV2TestTags.SORT_SHEET).assertExists()
     }
@@ -410,10 +454,8 @@ class CartoonPlayV2UiTest {
     }
 
     private fun assertSelectionIsStable() {
-        composeRule.onNodeWithTag(CartoonPlayV2TestTags.source("line-a")).assertIsNotSelected()
         composeRule.onNodeWithTag(CartoonPlayV2TestTags.source("line-b")).assertIsSelected()
-        composeRule.onNodeWithTag(CartoonPlayV2TestTags.episode("b-2")).assertIsSelected()
-        composeRule.onNodeWithTag(CartoonPlayV2TestTags.episode("b-1")).assertIsNotSelected()
+        composeRule.onNodeWithText("Beta · 共 2 集").assertExists()
     }
 
     private fun setMaterialContent(content: @Composable () -> Unit) {
@@ -430,6 +472,7 @@ private fun DownloadSelectionHarness(
     episodes: List<Episode>,
     onPlaybackClick: () -> Unit = {},
     onSubmit: (List<Episode>) -> Unit = {},
+    startInDownloadMode: Boolean = true,
 ) {
     val line = remember(episodes) {
         PlayLine(
@@ -444,8 +487,10 @@ private fun DownloadSelectionHarness(
             comparator = compareBy(Episode::order),
         )
     }
-    var selection by remember {
-        mutableStateOf(DownloadEpisodeSelection(lineId = line.id))
+    var selection by remember(startInDownloadMode) {
+        mutableStateOf(
+            if (startInDownloadMode) DownloadEpisodeSelection(lineId = line.id) else null,
+        )
     }
     val playingState = remember(wrappedLine, episodes) {
         CartoonPlayViewModel.CartoonPlayState(
@@ -455,7 +500,7 @@ private fun DownloadSelectionHarness(
         )
     }
 
-    V2EpisodeSection(
+    EpisodePickerBottomSheet(
         playLines = listOf(wrappedLine),
         selectedLineIndex = 0,
         playingState = playingState,
@@ -470,14 +515,24 @@ private fun DownloadSelectionHarness(
             current = PlayLineWrapper.SORT_DEFAULT_KEY,
             isReverse = false,
         ),
-        onEpisodeSelect = { _, _ -> onPlaybackClick() },
+        onEpisodeSelect = { _, episode ->
+            if (selection == null) {
+                onPlaybackClick()
+            } else {
+                selection = selection?.toggle(episode.id)
+            }
+        },
         onSort = {},
-        onAllEpisodes = {},
         downloadSelection = selection,
-        onDownloadEpisodeToggle = { selection = selection.toggle(it.id) },
-        onDownloadSelectAll = { selection = selection.toggleAll(wrappedLine.sortedEpisodeList) },
-        onDownloadCancel = {},
-        onDownloadConfirm = { onSubmit(selection.resolve(wrappedLine.sortedEpisodeList)) },
+        onEnterDownloadMode = { selection = DownloadEpisodeSelection(lineId = line.id) },
+        onDownloadSelectAll = {
+            selection = selection?.toggleAll(wrappedLine.sortedEpisodeList)
+        },
+        onDownloadCancel = { selection = null },
+        onDownloadConfirm = {
+            onSubmit(selection?.resolve(wrappedLine.sortedEpisodeList).orEmpty())
+        },
+        onDismiss = {},
     )
 }
 
@@ -507,11 +562,11 @@ private fun SortAndSelectionHarness(
     val sortState = SortState(sortOptions, sortKey, isReverse)
 
     Column {
-        V2PlaySourceSection(
+        V2PlaybackLineSection(
             playLines = playLines,
             selectedLineIndex = selectedLineIndex,
             playingLine = originalPlayingState.playLine,
-            onLineSelect = {},
+            onOpen = {},
         )
         V2EpisodeSection(
             playLines = playLines,
@@ -521,6 +576,12 @@ private fun SortAndSelectionHarness(
             onEpisodeSelect = { _, _ -> },
             onSort = { showSort = true },
             onAllEpisodes = {},
+        )
+        Text(
+            text = "排序",
+            modifier = Modifier
+                .testTag(CartoonPlayV2TestTags.SORT_CONTROL)
+                .clickable { showSort = true },
         )
     }
     if (showSort) {
@@ -541,8 +602,8 @@ private fun EpisodePickerHarness(
     sortOptions: List<SortBy<Episode>>,
     onSelected: (String, String) -> Unit,
 ) {
-    var selectedLineIndex by remember { mutableStateOf(0) }
-    var selectedEpisode by remember { mutableStateOf(rawLines.first().episode.first()) }
+    var selectedLineIndex by remember { mutableStateOf(rawLines.lastIndex) }
+    var selectedEpisode by remember { mutableStateOf(rawLines.last().episode.first()) }
     var showPicker by remember { mutableStateOf(false) }
     var showSort by remember { mutableStateOf(false) }
     val comparator = sortOptions.first().comparator
@@ -573,7 +634,6 @@ private fun EpisodePickerHarness(
             selectedLineIndex = selectedLineIndex,
             playingState = playingState,
             sortState = sortState,
-            onLineSelect = { selectedLineIndex = it },
             onEpisodeSelect = { line, episode ->
                 selectedLineIndex = playLines.indexOfFirst { it.playLine.id == line.playLine.id }
                 selectedEpisode = episode

@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.media3.common.util.Size
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.effect.BaseGlShaderProgram
+import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 
 /**
@@ -26,10 +27,16 @@ internal class Anime4KRenderer(
     private val passes: List<A4KPass>,
     private val displayWidthProvider: () -> Int,
     private val scaleOverride: Int = 0,
+    private val deviceProfile: Anime4KDeviceProfile,
+    private val onSafetyEvent: (Anime4KSafetyEvent) -> Unit,
 ) : BaseGlShaderProgram(useHighPrecision, /* texturePoolCapacity = */ 1) {
 
     companion object {
         private const val TAG = "Anime4K"
+        private const val BLACK_SAMPLE_INTERVAL_FRAMES = 30
+        private const val BLACK_WINDOWS_BEFORE_FALLBACK = 2
+        private const val OUTPUT_BLACK_LUMA = 6
+        private const val INPUT_VISIBLE_LUMA = 24
 
         /** 调试用透传链：三种偏移写法对照（R=浮点字面量 G=整数表达式 B=float() 转型） */
         private const val PASSTHROUGH_SRC = """
@@ -91,11 +98,36 @@ vec4 hook() {
     // drawFrame 内通过 GL_FRAMEBUFFER_BINDING 读取）
     private var outputW = 0
     private var outputH = 0
+    private var renderFailureReported = false
+    private var sampleFboId = 0
+    private val samplePixel = ByteBuffer.allocateDirect(4)
+    private var consecutiveBlackOutputWindows = 0
 
     override fun configure(inputWidth: Int, inputHeight: Int): Size {
         inputW = inputWidth
         inputH = inputHeight
-        val scale = A4KChain.scaleFor(inputWidth, displayWidthProvider(), scaleOverride)
+        val maxTextureSize = IntArray(1).also {
+            GLES30.glGetIntegerv(GLES30.GL_MAX_TEXTURE_SIZE, it, 0)
+        }[0]
+        onSafetyEvent(
+            Anime4KSafetyEvent.Capability(inputWidth, inputHeight, maxTextureSize),
+        )
+        val safetyDecision = Anime4KSafetyPolicy.evaluate(
+            inputWidth = inputWidth,
+            inputHeight = inputHeight,
+            displayWidth = displayWidthProvider(),
+            requestedScale = scaleOverride,
+            maxTextureSize = maxTextureSize,
+            deviceProfile = deviceProfile,
+        )
+        if (safetyDecision.fellBackToAuto) {
+            onSafetyEvent(
+                Anime4KSafetyEvent.AutomaticFallback(
+                    safetyDecision.reason ?: "当前设备不适合该超分倍率",
+                ),
+            )
+        }
+        val scale = safetyDecision.appliedScale
         // WHEN 的 OUTPUT 引用 = 目标输出尺寸（等价 mpv 窗口尺寸）
         val outputRef = Pair(inputWidth * scale, inputHeight * scale)
         val result = simulate(passes, inputWidth, inputHeight, outputRef)
@@ -276,6 +308,17 @@ vec4 hook() {
                 //   下一帧 `fbos[i] ?: continue` 直接跳过 pass —— 跨帧必然失效，
                 //   表现为第一帧正常、第二帧起 STATSMAX=0 导致色调异常）
             }
+            if ((frameCount + 1) % BLACK_SAMPLE_INTERVAL_FRAMES == 0) {
+                detectSilentBlackOutput(
+                    inputTexId = inputTexId,
+                    outputFboId = outputFbo[0],
+                )
+                GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, outputFbo[0])
+            }
+            val glError = GLES30.glGetError()
+            if (glError != GLES30.GL_NO_ERROR) {
+                reportRenderFailure("GL 渲染错误 0x${glError.toString(16)}")
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Anime4K drawFrame failed", e)
             onError(e)
@@ -330,6 +373,7 @@ vec4 hook() {
         val fboId = createFboForTexture(texId)
         if (!glCheckComplete(fboId)) {
             Log.e(TAG, "Anime4K RGBA8 FBO incomplete ($w x $h)")
+            reportRenderFailure("GPU 无法创建 ${w}×${h} 渲染缓冲区")
         }
         return Fbo(texId, fboId, w, h)
     }
@@ -345,12 +389,113 @@ vec4 hook() {
             GLES30.GL_UNSIGNED_BYTE,
             null,
         )
+        val allocationError = GLES30.glGetError()
+        if (allocationError != GLES30.GL_NO_ERROR) {
+            reportRenderFailure(
+                if (allocationError == GLES30.GL_OUT_OF_MEMORY) {
+                    "GPU 显存不足，无法创建 ${w}×${h} 超分纹理"
+                } else {
+                    "GPU 纹理创建失败 0x${allocationError.toString(16)}"
+                },
+            )
+        }
         GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR)
         GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR)
         GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE)
         GLES30.glTexParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE)
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, 0)
         return ids[0]
+    }
+
+    private fun reportRenderFailure(reason: String) {
+        if (renderFailureReported) return
+        renderFailureReported = true
+        onSafetyEvent(Anime4KSafetyEvent.RenderFailure(reason))
+    }
+
+    /**
+     * Detects the driver failure mode where all GL calls succeed but the effect graph emits black.
+     * Compare sparse samples from the decoded input texture and final output; a genuinely black
+     * source frame stays black on both sides and is therefore not treated as a renderer failure.
+     */
+    private fun detectSilentBlackOutput(inputTexId: Int, outputFboId: Int) {
+        val outputLuma = sampleMaxLuma(outputFboId, outputW, outputH) ?: return
+        val inputFbo = ensureSampleFbo()
+        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, inputFbo)
+        GLES30.glFramebufferTexture2D(
+            GLES30.GL_FRAMEBUFFER,
+            GLES30.GL_COLOR_ATTACHMENT0,
+            GLES30.GL_TEXTURE_2D,
+            inputTexId,
+            0,
+        )
+        if (GLES30.glCheckFramebufferStatus(GLES30.GL_FRAMEBUFFER) != GLES30.GL_FRAMEBUFFER_COMPLETE) {
+            GLES30.glFramebufferTexture2D(
+                GLES30.GL_FRAMEBUFFER,
+                GLES30.GL_COLOR_ATTACHMENT0,
+                GLES30.GL_TEXTURE_2D,
+                0,
+                0,
+            )
+            consumeGlErrors()
+            return
+        }
+        val inputLuma = sampleMaxLuma(inputFbo, inputW, inputH)
+        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, inputFbo)
+        GLES30.glFramebufferTexture2D(
+            GLES30.GL_FRAMEBUFFER,
+            GLES30.GL_COLOR_ATTACHMENT0,
+            GLES30.GL_TEXTURE_2D,
+            0,
+            0,
+        )
+        if (inputLuma != null && inputLuma >= INPUT_VISIBLE_LUMA && outputLuma <= OUTPUT_BLACK_LUMA) {
+            consecutiveBlackOutputWindows++
+            if (consecutiveBlackOutputWindows >= BLACK_WINDOWS_BEFORE_FALLBACK) {
+                reportRenderFailure("检测到 Anime4K 输出持续黑屏")
+            }
+        } else {
+            consecutiveBlackOutputWindows = 0
+        }
+    }
+
+    private fun sampleMaxLuma(framebufferId: Int, width: Int, height: Int): Int? {
+        if (width <= 0 || height <= 0) return null
+        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, framebufferId)
+        var maxLuma = 0
+        val points = floatArrayOf(0.2f, 0.5f, 0.8f)
+        points.forEach { yFraction ->
+            points.forEach { xFraction ->
+                samplePixel.clear()
+                GLES30.glReadPixels(
+                    (width * xFraction).toInt().coerceIn(0, width - 1),
+                    (height * yFraction).toInt().coerceIn(0, height - 1),
+                    1,
+                    1,
+                    GLES30.GL_RGBA,
+                    GLES30.GL_UNSIGNED_BYTE,
+                    samplePixel,
+                )
+                val red = samplePixel.get(0).toInt() and 0xFF
+                val green = samplePixel.get(1).toInt() and 0xFF
+                val blue = samplePixel.get(2).toInt() and 0xFF
+                val luma = (red * 54 + green * 183 + blue * 19) shr 8
+                if (luma > maxLuma) maxLuma = luma
+            }
+        }
+        return if (GLES30.glGetError() == GLES30.GL_NO_ERROR) maxLuma else null
+    }
+
+    private fun ensureSampleFbo(): Int {
+        if (sampleFboId != 0) return sampleFboId
+        val ids = IntArray(1)
+        GLES30.glGenFramebuffers(1, ids, 0)
+        sampleFboId = ids[0]
+        return sampleFboId
+    }
+
+    private fun consumeGlErrors() {
+        while (GLES30.glGetError() != GLES30.GL_NO_ERROR) Unit
     }
 
     private fun createFboForTexture(texId: Int): Int {
@@ -406,6 +551,12 @@ vec4 hook() {
             GLES30.glDeleteShader(vertexShaderId)
             vertexShaderId = 0
         }
+        if (sampleFboId != 0) {
+            GLES30.glDeleteFramebuffers(1, intArrayOf(sampleFboId), 0)
+            sampleFboId = 0
+        }
+        consecutiveBlackOutputWindows = 0
         sim = null
     }
+
 }

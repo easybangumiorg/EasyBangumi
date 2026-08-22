@@ -1,10 +1,7 @@
 package com.heyanle.easybangumi4.cartoon.entity
 
-import com.heyanle.easybangumi4.cartoon.story.download.action.AriaAction
-import com.heyanle.easybangumi4.cartoon.story.download.action.CopyAndNfoAction
-import com.heyanle.easybangumi4.cartoon.story.download.action.ParseAction
-import com.heyanle.easybangumi4.cartoon.story.download.action.TranscodeAction
-import com.heyanle.easybangumi4.cartoon.story.download.action.TransformerAction
+import com.heyanle.easybangumi4.cartoon.story.download.DownloadTaskPlan
+import com.heyanle.easybangumi4.cartoon.story.download.engine.QuickDownloadEngineIds
 import com.heyanle.easybangumi4.cartoon.story.download.runtime.CartoonDownloadRuntime
 import com.heyanle.easybangumi4.plugin.api.entity.Episode
 import com.heyanle.easybangumi4.plugin.api.entity.PlayLine
@@ -31,26 +28,14 @@ data class CartoonDownloadReq(
 
     // 历史遗留问题，默认不使用快速模式
     val quickMode: Boolean = false,
+
+    // 字段带默认值以兼容旧版 cartoon_download.json。
+    // 完整模式忽略该字段，快速模式在创建任务时固化引擎选择。
+    val quickDownloadEngineId: String = QuickDownloadEngineIds.ARIA,
 ){
 
-    companion object {
-        private val quickActionName = listOf<String>(
-            ParseAction.NAME,
-            AriaAction.NAME,
-            TranscodeAction.NAME,
-            CopyAndNfoAction.NAME
-        )
-
-        private val normalActionNameList = listOf<String>(
-            ParseAction.NAME,
-            TransformerAction.NAME,
-            CopyAndNfoAction.NAME
-        )
-    }
-
-
     val stepChain: List<String> by lazy {
-        if(quickMode) quickActionName else normalActionNameList
+        DownloadTaskPlan.steps(quickMode)
     }
 }
 

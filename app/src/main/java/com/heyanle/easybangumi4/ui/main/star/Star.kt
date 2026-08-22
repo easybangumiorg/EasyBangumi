@@ -508,6 +508,7 @@ fun StarList(
     onRefresh: () -> Unit,
     onStarClick: (CartoonInfo) -> Unit,
     onStarLongPress: (CartoonInfo) -> Unit,
+    v2Presentation: Boolean = false,
 
     ) {
     val lazyGridState = rememberLazyGridState()
@@ -542,10 +543,14 @@ fun StarList(
                     }
                 },
             state = lazyGridState,
-            columns = GridCells.Adaptive(100.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
+            columns = if (v2Presentation) GridCells.Fixed(3) else GridCells.Adaptive(100.dp),
+            verticalArrangement = Arrangement.spacedBy(if (v2Presentation) 14.dp else 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(if (v2Presentation) 10.dp else 4.dp),
+            contentPadding = if (v2Presentation) {
+                PaddingValues(start = 12.dp, top = 12.dp, end = 12.dp, bottom = 88.dp)
+            } else {
+                PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
+            },
         ) {
             if (starCartoon.isEmpty()) {
                 item(span = {
@@ -575,6 +580,7 @@ fun StarList(
                         }
                         onStarLongPress(it)
                     },
+                    v2Presentation = v2Presentation,
                 )
             }
         }

@@ -135,7 +135,7 @@ fun ColumnScope.DownloadSetting(
                         contentColor = MaterialTheme.colorScheme.onPrimary
                     ),
                     onClick = {
-                        chooseFolder()
+                        chooseDownloadFolder()
                     }
                 ) {
                     Text(text = stringResource(id = R.string.choose_folder))
@@ -195,7 +195,7 @@ fun ColumnScope.DownloadSetting(
 
 }
 
-private fun chooseFolder(){
+internal fun chooseDownloadFolder(){
     val localCartoonPreference: LocalCartoonPreference by Inject.injectLazy()
     val settingPreferences: SettingPreferences by Inject.injectLazy()
     val currUri = settingPreferences.localUri.get()

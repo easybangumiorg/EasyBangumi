@@ -23,27 +23,24 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -72,7 +69,7 @@ fun DownloadTopAppBar(){
     val vm = viewModel<DownloadViewModel>()
     val state = vm.state.collectAsState()
     val sta = state.value
-    if (sta.selection.isEmpty())
+    if (sta.selectionIds.isEmpty())
         TopAppBar(
             title = {
                 Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.local_download))
@@ -82,7 +79,7 @@ fun DownloadTopAppBar(){
                     nav.popBackStack()
                 }) {
                     Icon(
-                        imageVector = Icons.Filled.ArrowBack,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         stringResource(id = com.heyanle.easy_i18n.R.string.back)
                     )
                 }
@@ -90,11 +87,17 @@ fun DownloadTopAppBar(){
         )
     else {
         SelectionTopAppBar(
-            selectionItemsCount = sta.selection.size,
+            selectionItemsCount = sta.selectionIds.size,
             onExit = {
                 vm.clearSelection()
             },
             actions = {
+                IconButton(onClick = { vm.selectAll() }) {
+                    Icon(
+                        Icons.Filled.DoneAll,
+                        contentDescription = "全选",
+                    )
+                }
                 IconButton(onClick = { vm.showDeleteDialog() }) {
                     Icon(
                         Icons.Filled.Delete, contentDescription = stringResource(
@@ -111,7 +114,6 @@ fun DownloadTopAppBar(){
 @Composable
 fun Download(
 ) {
-    val nav = LocalNavController.current
     val vm = viewModel<DownloadViewModel>()
     val state = vm.state.collectAsState()
     val sta = state.value
@@ -122,6 +124,21 @@ fun Download(
             LoadingPage(
                 modifier = Modifier.fillMaxSize()
             )
+        } else if (sta.errorMessage != null) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(
+                    text = sta.errorMessage,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+        } else if (sta.downloadInfo.isEmpty()) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(
+                    text = "暂无下载任务",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+            }
         } else {
             LazyColumn(
                 modifier = Modifier
@@ -130,12 +147,15 @@ fun Download(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
                 state = listState
             ) {
-                items(sta.downloadInfo) {
+                items(
+                    items = sta.downloadInfo,
+                    key = { it.req.uuid },
+                ) {
                     DownloadItem(
                         downloadItem = it,
-                        isSelect = sta.selection.contains(it),
+                        isSelect = it.req.uuid in sta.selectionIds,
                         onClick = {
-                            if (sta.selection.isEmpty()) {
+                            if (sta.selectionIds.isEmpty()) {
                                 vm.clickDownloadInfo(it)
                             } else {
                                 vm.selectDownloadInfo(it)
@@ -157,40 +177,66 @@ fun Download(
     when(dialog){
         is DownloadViewModel.Dialog.DeleteSelection -> {
             EasyDeleteDialog(show = true, onDelete = {
-                vm.deleteDownload(dialog.selection)
+                vm.deleteDownload(dialog.taskIds)
                 vm.dismissDialog()
             }) {
                 vm.dismissDialog()
             }
         }
         is DownloadViewModel.Dialog.ResumeTask -> {
+            val item = sta.downloadInfo.firstOrNull { it.req.uuid == dialog.taskId }
             AlertDialog(
+                title = {
+                    Text("恢复下载任务")
+                },
                 text = {
-                    Text(
-                        stringResource(
-                            id = com.heyanle.easy_i18n.R.string.need_close_quick,
-                            dialog.info.req.localItem.title
-                        )
-                    )
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(item?.req?.localItem?.title.orEmpty())
+                        Text("选择当前快速下载任务使用的下载引擎，或切换到完整下载模式。")
+                        sta.quickDownloadEngines.forEach { engine ->
+                            TextButton(
+                                modifier = Modifier.fillMaxWidth(),
+                                onClick = {
+                                    if (item?.req?.quickDownloadEngineId == engine.id &&
+                                        item.runtime?.isPaused() == true
+                                    ) {
+                                        vm.resume(dialog.taskId)
+                                    } else if (item?.req?.quickDownloadEngineId == engine.id) {
+                                        vm.retry(dialog.taskId)
+                                    } else {
+                                        vm.switchEngine(dialog.taskId, engine.id)
+                                    }
+                                    vm.dismissDialog()
+                                },
+                            ) {
+                                val selected = item?.req?.quickDownloadEngineId == engine.id
+                                Text(if (selected) "${engine.displayName}（当前）" else engine.displayName)
+                            }
+                        }
+                    }
                 },
                 onDismissRequest = {
                     vm.dismissDialog()
                 },
                 dismissButton = {
                     TextButton(onClick = {
-                        vm.tryResume(dialog.info, false)
+                        if (item?.runtime?.isPaused() == true) {
+                            vm.resume(dialog.taskId)
+                        } else {
+                            vm.retry(dialog.taskId)
+                        }
                         vm.dismissDialog()
                     }) {
-                        Text(stringResource(id = com.heyanle.easy_i18n.R.string.no_need))
+                        Text(if (item?.runtime?.isPaused() == true) "继续当前任务" else "按当前配置重试")
                     }
 
                 },
                 confirmButton = {
                     TextButton(onClick = {
-                        vm.tryResume(dialog.info, true)
+                        vm.retryAsFull(dialog.taskId)
                         vm.dismissDialog()
                     }) {
-                        Text(stringResource(id = com.heyanle.easy_i18n.R.string.close_quick_mode))
+                        Text("改用完整模式")
                     }
 
                 })
@@ -247,10 +293,12 @@ fun DownloadItem(
                 contentDescription = downloadItem.req.localItem.title,
                 errorRes = R.drawable.placeholder,
             )
-            if (downloadItem.req.quickMode)
+            if (downloadItem.req.quickMode) {
                 Text(
                     fontSize = 13.sp,
-                    text = stringResource(id = com.heyanle.easy_i18n.R.string.quick_download_mode),
+                    text = stringResource(
+                        id = com.heyanle.easy_i18n.R.string.quick_download_mode
+                    ),
                     color = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier
                         .background(
@@ -259,6 +307,7 @@ fun DownloadItem(
                         )
                         .padding(4.dp, 0.dp)
                 )
+            }
         }
 
         Spacer(modifier = Modifier.size(8.dp))
@@ -275,6 +324,27 @@ fun DownloadItem(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 color = if (isSelect) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground
+            )
+            Text(
+                text = when {
+                    downloadItem.runtime == null -> "已中断"
+                    downloadItem.runtime.isError() -> "失败"
+                    downloadItem.runtime.isPaused() -> "已暂停"
+                    downloadItem.runtime.currentAction == null -> "准备中"
+                    else -> downloadItem.runtime.currentAction
+                        ?.javaClass
+                        ?.simpleName
+                        ?.removeSuffix("Action")
+                        .orEmpty()
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = if (isSelect) {
+                    MaterialTheme.colorScheme.onPrimary
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
             Text(
                 modifier = Modifier,
@@ -318,10 +388,10 @@ fun DownloadItem(
                 if (info.process.value == -1f) {
                     LinearProgressIndicator()
                 } else {
-                    LinearProgressIndicator(info.process.value)
+                    LinearProgressIndicator(progress = { info.process.value })
                 }
             } else {
-                LinearProgressIndicator(0f)
+                LinearProgressIndicator(progress = { 0f })
             }
 
         }

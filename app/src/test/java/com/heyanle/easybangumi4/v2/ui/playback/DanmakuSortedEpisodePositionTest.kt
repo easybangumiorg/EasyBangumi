@@ -1,4 +1,4 @@
-package com.heyanle.easybangumi4.ui.cartoon_play
+package com.heyanle.easybangumi4.v2.ui.playback
 
 import com.heyanle.easybangumi4.cartoon.entity.PlayLineWrapper
 import com.heyanle.easybangumi4.plugin.api.entity.Episode
