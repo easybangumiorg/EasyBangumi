@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Build
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.R
+import com.heyanle.easybangumi4.bus.DownloadingBus
 import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadReq
 import com.heyanle.easybangumi4.cartoon.story.download.action.BaseAction
 import com.heyanle.easybangumi4.cartoon.story.download.req.CartoonDownloadReqController
@@ -139,7 +140,7 @@ class CartoonDownloadDispatcher(
     fun newRequest(list: Collection<CartoonDownloadReq>) {
         mainScope.launch {
             val runtimeList = list.map {
-                innerNewRequest(it)
+                createNewRuntime(it)
             }
             dispatchNewRuntime(runtimeList)
         }
@@ -148,7 +149,7 @@ class CartoonDownloadDispatcher(
     fun tryResume(reqList: Collection<CartoonDownloadReq>) {
         mainScope.launch {
             val runtimeList = reqList.map {
-                innerResume(it)
+                createResumeRuntime(it)
             }
             dispatchNewRuntime(runtimeList)
         }
@@ -156,10 +157,19 @@ class CartoonDownloadDispatcher(
     }
 
 
-    fun remove(reqList: Collection<CartoonDownloadReq>) {
+    fun remove(
+        reqList: Collection<CartoonDownloadReq>,
+        afterStop: () -> Unit = {},
+    ) {
         mainScope.launch {
             innerRemoveTask(reqList)
+            afterStop()
         }
+    }
+
+    fun canReplace(uuid: String): Boolean {
+        val runtime = _runtimeMap.value[uuid] ?: return true
+        return runtime.isError() || runtime.isCanceled() || runtime.isPaused()
     }
 
     fun removeWithItemId(itemId: Collection<String>) {
@@ -173,11 +183,29 @@ class CartoonDownloadDispatcher(
         }
     }
 
-    private fun innerNewRequest(req: CartoonDownloadReq): CartoonDownloadRuntime {
+    fun restart(
+        req: CartoonDownloadReq,
+        discardCheckpoint: Boolean,
+        beforeStart: () -> Unit = {},
+    ) {
+        mainScope.launch {
+            removeRuntime(req.uuid, cancel = discardCheckpoint)
+            beforeStart()
+            val runtime = createNewRuntime(req)
+            dispatchNewRuntime(listOf(runtime))
+        }
+    }
+
+    suspend fun toggle(uuid: String): Boolean {
+        val runtime = _runtimeMap.value[uuid] ?: return false
+        val action = runtime.currentAction ?: return false
+        return action.toggle(runtime)
+    }
+
+    private fun createNewRuntime(req: CartoonDownloadReq): CartoonDownloadRuntime {
         val runtime = CartoonDownloadRuntime(req)
         runtime.listener = this
         runtime.dispatcherRunnable = DispatchRuntime(runtime)
-        dispatchExecutor.execute(runtime.dispatcherRunnable)
         return runtime
     }
 
@@ -198,30 +226,30 @@ class CartoonDownloadDispatcher(
                     remove(item.uuid)
                 }
             }
+            Inject.getOrNull<DownloadingBus>()?.remove(
+                DownloadingBus.DownloadScene.CARTOON,
+                item.uuid,
+            )
         }
     }
 
 
-    private suspend fun innerResume(req: CartoonDownloadReq): CartoonDownloadRuntime {
+    private suspend fun createResumeRuntime(req: CartoonDownloadReq): CartoonDownloadRuntime {
         // 倒序检查所有 Action 是否可恢复
         val stepList = req.stepChain.reversed()
         var resumeActionName: String? = null
         for (step in stepList) {
-            val action = step?.let {
-                Inject.get<BaseAction>(it)
-            }
-            if (action != null) {
-                val canResume = action.canResume(req)
-                if (canResume) {
-                    resumeActionName = step
-                    break
-                }
+            val action = Inject.get<BaseAction>(step)
+            val canResume = action.canResume(req)
+            if (canResume) {
+                resumeActionName = step
+                break
             }
         }
         val newCurrentIndex = req.stepChain.indexOf(resumeActionName)
         // 不可恢复走新建下载任务逻辑
         if (resumeActionName == null || newCurrentIndex !in req.stepChain.indices) {
-            return innerNewRequest(req)
+            return createNewRuntime(req)
         }
         val runtime = CartoonDownloadRuntime(req)
         runtime.dispatcherRunnable = DispatchRuntime(runtime)
@@ -238,26 +266,48 @@ class CartoonDownloadDispatcher(
                 stringRes(com.heyanle.easy_i18n.R.string.resuming_download),
             )
         }
-        dispatchExecutor.execute(runtime.dispatcherRunnable)
         return runtime
     }
 
     private fun dispatchNewRuntime(itemList: List<CartoonDownloadRuntime>) {
         _runtimeMap.update {
             it.toMutableMap().apply {
-                itemList.forEach {
-                    get(it.req.uuid)?.let {
-                        it.cancel()
-                        dispatchExecutor.remove(it.dispatcherRunnable)
+                itemList.forEach { newRuntime ->
+                    get(newRuntime.req.uuid)?.let { oldRuntime ->
+                        oldRuntime.listener = null
+                        dispatchExecutor.remove(oldRuntime.dispatcherRunnable)
+                        workerExecutor.remove(oldRuntime.syncTaskRunnable)
                     }
-                    put(it.req.uuid, it)
+                    put(newRuntime.req.uuid, newRuntime)
                 }
             }
+        }
+        // runtime 必须先对观察者可见，再允许 action 执行。
+        itemList.forEach {
+            dispatchExecutor.execute(it.dispatcherRunnable)
+        }
+    }
+
+    private fun removeRuntime(uuid: String, cancel: Boolean) {
+        val runtime = _runtimeMap.value[uuid] ?: return
+        runtime.listener = null
+        if (cancel) {
+            runtime.cancel()
+        }
+        dispatchExecutor.remove(runtime.dispatcherRunnable)
+        workerExecutor.remove(runtime.syncTaskRunnable)
+        _runtimeMap.update { current ->
+            if (current[uuid] !== runtime) current
+            else current.toMutableMap().apply { remove(uuid) }
         }
     }
 
 
     override fun onStateChange(runtime: CartoonDownloadRuntime) {
+        // 被同 UUID 新尝试替换的 runtime 可能仍收到异步回调，必须隔离。
+        if (_runtimeMap.value[runtime.req.uuid] !== runtime) {
+            return
+        }
         val runnable = runtime.dispatcherRunnable
         when (runtime.state) {
             CartoonDownloadRuntime.State.SUCCESS -> {

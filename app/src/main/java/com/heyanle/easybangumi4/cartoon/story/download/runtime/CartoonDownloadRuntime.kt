@@ -8,6 +8,7 @@ import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.bus.DownloadingBus
 import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadReq
 import com.heyanle.easybangumi4.cartoon.story.download.action.BaseAction
+import com.heyanle.easybangumi4.cartoon.story.download.engine.QuickDownloadArtifact
 import com.heyanle.easybangumi4.plugin.api.entity.PlayerInfo
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.inject.api.get
@@ -31,7 +32,7 @@ class CartoonDownloadRuntime(
     var listener: Listener? = null
 
     enum class State {
-        WAITING, DOING, STEP_COMPLETELY, ERROR, SUCCESS, CANCEL
+        WAITING, DOING, PAUSED, STEP_COMPLETELY, ERROR, SUCCESS, CANCEL
     }
 
     @Volatile
@@ -80,12 +81,16 @@ class CartoonDownloadRuntime(
     var ariaDownloadFilePath: String = ""
     var m3u8Entity: M3U8Entity? = null
 
+    // 新快速引擎的中立产物。上面的 Aria 字段暂时保留用于旧缓存兼容。
+    var quickDownloadArtifact: QuickDownloadArtifact? = null
+
     // transform action
     var transformerInitLatch: CountDownLatch? = null
     var transformerCompletelyLatch: CountDownLatch? = null
     var transformer: Transformer? = null
 
     var transformerFile: File? = null
+    var transformerStartError: Throwable? = null
 
     // 这俩变量加锁后会死锁，靠上面 transformerCompletelyLatch 控制，可不加锁访问
     @Volatile
@@ -123,6 +128,10 @@ class CartoonDownloadRuntime(
         return state == State.ERROR
     }
 
+    fun isPaused(): Boolean {
+        return state == State.PAUSED
+    }
+
     fun isSuccess(): Boolean {
         return state == State.SUCCESS
     }
@@ -153,6 +162,9 @@ class CartoonDownloadRuntime(
             State.ERROR -> {
                 info.process.value = 0f
                 info.status.value = errorMsg
+            }
+            State.PAUSED -> {
+                info.status.value = stringRes(R.string.pausing)
             }
             else -> { }
         }

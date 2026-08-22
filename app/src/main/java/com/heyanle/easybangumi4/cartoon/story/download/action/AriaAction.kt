@@ -11,8 +11,14 @@ import com.arialyy.aria.core.inf.IEntity
 import com.arialyy.aria.core.task.DownloadTask
 import com.arialyy.aria.orm.DbEntity
 import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadReq
-import com.heyanle.easybangumi4.cartoon.story.download.runtime.CartoonDownloadRuntime
 import com.heyanle.easybangumi4.cartoon.story.download.CartoonDownloadPreference
+import com.heyanle.easybangumi4.cartoon.story.download.engine.QuickDownloadArtifact
+import com.heyanle.easybangumi4.cartoon.story.download.engine.QuickDownloadEngine
+import com.heyanle.easybangumi4.cartoon.story.download.engine.QuickDownloadEngineContext
+import com.heyanle.easybangumi4.cartoon.story.download.engine.QuickDownloadEngineDescriptor
+import com.heyanle.easybangumi4.cartoon.story.download.engine.QuickDownloadEngineIds
+import com.heyanle.easybangumi4.cartoon.story.download.engine.QuickDownloadMediaType
+import com.heyanle.easybangumi4.cartoon.story.download.engine.QuickDownloadToggleResult
 import com.heyanle.easybangumi4.plugin.api.entity.PlayerInfo
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.getCachePath
@@ -23,9 +29,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.lang.Exception
 import java.net.URI
-import java.net.URL
 import java.util.concurrent.ConcurrentHashMap
-import java.util.regex.Pattern
 
 /**
  * Created by heyanle on 2024/8/3.
@@ -34,11 +38,20 @@ import java.util.regex.Pattern
 class AriaAction(
     application: Application,
     downloadPreference: CartoonDownloadPreference
-) : BaseAction, DownloadTaskListener {
+) : QuickDownloadEngine, DownloadTaskListener {
 
     companion object {
         const val NAME = "AriaAction"
     }
+
+    override val descriptor = QuickDownloadEngineDescriptor(
+        id = QuickDownloadEngineIds.ARIA,
+        displayName = "Aria",
+        supportedMediaTypes = setOf(
+            QuickDownloadMediaType.DIRECT,
+            QuickDownloadMediaType.HLS,
+        ),
+    )
 
     private val aria: DownloadReceiver by lazy {
         Aria.download(this@AriaAction).apply {
@@ -46,7 +59,7 @@ class AriaAction(
         }
     }
 
-    private val ariaId2Runtime = ConcurrentHashMap<Long, CartoonDownloadRuntime>()
+    private val ariaId2Context = ConcurrentHashMap<Long, QuickDownloadEngineContext>()
     private val downloadFolder = application.getCachePath("aria_download")
 
     init {
@@ -61,43 +74,20 @@ class AriaAction(
 
     private val m3u8Option = M3U8VodOption().apply {
         setVodTsUrlConvert { m3u8Url, tsUrls ->
-            val list = arrayListOf<String>()
-            val pattern = "[0-9a-zA-Z]+[.]ts"
-            val r = Pattern.compile(pattern)
-            for (i in tsUrls.indices) {
-                val tspath = tsUrls[i]
-                if (tspath.startsWith("http://") || tspath.startsWith("https://")) {
-                    list.add(tspath)
-                } else if (r.matcher(tspath).find()) {
-                    val e = m3u8Url.lastIndexOf("/") + 1
-                    list.add(m3u8Url.substring(0, e) + tspath)
-                } else {
-                    val host = URI(m3u8Url).host
-                    list.add("$host/$tspath")
-                }
-            }
-            list
+            val base = URI(m3u8Url)
+            tsUrls.map { base.resolve(it).toString() }
         }
         setBandWidthUrlConverter { m3u8Url, bandWidthUrl ->
-            if (bandWidthUrl.startsWith("http://") || bandWidthUrl.startsWith("https://")) {
-                bandWidthUrl
-            } else {
-                val url = URL(m3u8Url)
-                if (url.port == -1) {
-                    url.protocol + "://" + url.host  + "/" + bandWidthUrl
-                } else {
-                    url.protocol + "://" + url.host + ":" + url.port + "/" + bandWidthUrl
-                }
-            }
+            URI(m3u8Url).resolve(bandWidthUrl).toString()
         }
         setUseDefConvert(false)
         generateIndexFile()
     }
 
     // action
-    override suspend fun canResume(cartoonDownloadReq: CartoonDownloadReq): Boolean {
+    override suspend fun canResume(request: CartoonDownloadReq): Boolean {
         return withContext(Dispatchers.IO) {
-            val task = aria.getFirstTaskWithExt(cartoonDownloadReq.uuid) ?: return@withContext false
+            val task = aria.getFirstTaskWithExt(request.uuid) ?: return@withContext false
             if (task.isComplete) {
                 return@withContext true
             }
@@ -105,115 +95,109 @@ class AriaAction(
                     task.state == DownloadEntity.STATE_COMPLETE ||
                     task.state == DownloadEntity.STATE_POST_PRE ||
                     task.state == DownloadEntity.STATE_RUNNING ||
-                    task.state == DownloadEntity.STATE_STOP).apply {
-                        // 不能恢复直接删除
-                        if (!this) {
-                            aria.load(task.id).cancel(true)
-                        }
-            }
+                    task.state == DownloadEntity.STATE_STOP)
         }
     }
 
 
-    override suspend fun toggle(cartoonDownloadRuntime: CartoonDownloadRuntime): Boolean {
-        val entity = aria.getDownloadEntity(cartoonDownloadRuntime.ariaId)
-            ?: return false
+    override suspend fun toggle(taskId: String): QuickDownloadToggleResult {
+        val entity = aria.getFirstTaskWithExt(taskId)
+            ?: return QuickDownloadToggleResult.UNSUPPORTED
         when(entity.state){
             IEntity.STATE_RUNNING, IEntity.STATE_WAIT -> {
-                aria.load(cartoonDownloadRuntime.ariaId).ignoreCheckPermissions().stop()
+                aria.load(entity.id).ignoreCheckPermissions().stop()
+                return QuickDownloadToggleResult.PAUSED
             }
             IEntity.STATE_STOP -> {
-
-                aria.load(cartoonDownloadRuntime.ariaId).ignoreCheckPermissions().resume()
+                aria.load(entity.id).ignoreCheckPermissions().resume()
+                return QuickDownloadToggleResult.RESUMED
             }
-            else -> return false
+            else -> return QuickDownloadToggleResult.UNSUPPORTED
         }
-        return true
     }
 
-    override fun push(cartoonDownloadRuntime: CartoonDownloadRuntime) {
+    override fun start(context: QuickDownloadEngineContext) {
         "push aria action".logi("Action")
-        val entity = aria.getFirstTaskWithExt(cartoonDownloadRuntime.req.uuid)
+        val entity = aria.getFirstTaskWithExt(context.taskId)
 
         File(downloadFolder).mkdirs()
         if (entity != null) {
-            cartoonDownloadRuntime.ariaId = entity.id
-            cartoonDownloadRuntime.m3u8Entity = entity.m3U8Entity
-            cartoonDownloadRuntime.ariaDownloadFilePath = entity.filePath
-            ariaId2Runtime[entity.id] = cartoonDownloadRuntime
-            if (entity.state == IEntity.STATE_STOP) {
-                aria.load(cartoonDownloadRuntime.ariaId).ignoreCheckPermissions().resume()
+            ariaId2Context[entity.id] = context
+            if (entity.state == IEntity.STATE_STOP ||
+                entity.state == IEntity.STATE_WAIT ||
+                entity.state == IEntity.STATE_RUNNING ||
+                entity.state == IEntity.STATE_POST_PRE
+            ) {
+                aria.load(entity.id).ignoreCheckPermissions().resume()
             } else if (entity.state == IEntity.STATE_COMPLETE) {
-                cartoonDownloadRuntime.m3u8Entity = entity.m3U8Entity
-                cartoonDownloadRuntime.ariaDownloadFilePath = entity.filePath
-                cartoonDownloadRuntime.stepCompletely(this)
+                context.complete(entity.toArtifact())
+            } else {
+                aria.load(entity.id).cancel(true)
+                ariaId2Context.remove(entity.id)
+                context.fail(null, "已清理无效的 Aria 检查点，请重试")
             }
         } else {
-            val playerInfo = cartoonDownloadRuntime.playerInfo ?: throw IllegalStateException("playerInfo is null")
-            when (playerInfo.decodeType) {
-                PlayerInfo.DECODE_TYPE_OTHER -> {
-                    val file = File(downloadFolder, cartoonDownloadRuntime.req.uuid + ".mp4")
-                    val path = file.absolutePath
-                    val taskId = aria.load(playerInfo.uri)
-                        .setExtendField(cartoonDownloadRuntime.req.uuid)
-                        .option(HttpOption().apply {
-                            playerInfo.header?.iterator()?.forEach {
-                                addHeader(it.key, it.value)
-                            }
-                        })
-                        .setFilePath(path)
-                        .ignoreCheckPermissions()
-                        .ignoreFilePathOccupy()
-                        .create()
-                    cartoonDownloadRuntime.ariaId = taskId
-                    if (taskId != -1L) {
-                        ariaId2Runtime[taskId] = cartoonDownloadRuntime
-                    }
-                    // pushCompletely(downloadItem, taskId)
-                }
-
-                PlayerInfo.DECODE_TYPE_HLS -> {
-                    val path = File(downloadFolder, cartoonDownloadRuntime.req.uuid).absolutePath
-                    val taskId = aria.load(playerInfo.uri)
-                        .setExtendField(cartoonDownloadRuntime.req.uuid)
-                        .option(HttpOption().apply {
-                            playerInfo.header?.iterator()?.forEach {
-                                addHeader(it.key, it.value)
-                            }
-                        })
-                        .setFilePath(path)
-                        .m3u8VodOption(m3u8Option)
-                        .ignoreFilePathOccupy()
-                        .ignoreCheckPermissions()
-                        .create()
-                    cartoonDownloadRuntime.ariaId = taskId
-                    if (taskId != -1L) {
-                        ariaId2Runtime[taskId] = cartoonDownloadRuntime
-                    }
-                    // pushCompletely(downloadItem, taskId)
-                }
-
-                else -> {
-                    throw IllegalStateException("unknown decodeType")
-                    // error(downloadItem.uuid, stringRes(com.heyanle.easy_i18n.R.string.download_error))
-                }
-            }
-            if (cartoonDownloadRuntime.ariaId == -1L) {
-                throw IllegalStateException("new task error")
-            }
+            createTask(context)
         }
     }
 
-    override fun onCancel(cartoonDownloadRuntime: CartoonDownloadRuntime) {
-        aria.load(cartoonDownloadRuntime.ariaId)?.cancel(true)
+    private fun createTask(context: QuickDownloadEngineContext) {
+        val playerInfo = context.playerInfo
+        val taskId = when (playerInfo.decodeType) {
+            PlayerInfo.DECODE_TYPE_OTHER -> {
+                val path = File(downloadFolder, context.taskId + ".mp4").absolutePath
+                aria.load(playerInfo.uri)
+                    .setExtendField(context.taskId)
+                    .option(playerInfo.toHttpOption())
+                    .setFilePath(path)
+                    .ignoreCheckPermissions()
+                    .ignoreFilePathOccupy()
+                    .create()
+            }
+
+            PlayerInfo.DECODE_TYPE_HLS -> {
+                val path = File(downloadFolder, context.taskId).absolutePath
+                aria.load(playerInfo.uri)
+                    .setExtendField(context.taskId)
+                    .option(playerInfo.toHttpOption())
+                    .setFilePath(path)
+                    .m3u8VodOption(m3u8Option)
+                    .ignoreFilePathOccupy()
+                    .ignoreCheckPermissions()
+                    .create()
+            }
+
+            else -> -1L
+        }
+        if (taskId == -1L) {
+            context.fail(null, "创建 Aria 下载任务失败")
+        } else {
+            ariaId2Context[taskId] = context
+        }
     }
 
+    private fun PlayerInfo.toHttpOption() = HttpOption().apply {
+        header?.forEach { addHeader(it.key, it.value) }
+    }
+
+    override fun cancel(taskId: String) {
+        val entity = aria.getFirstTaskWithExt(taskId) ?: return
+        ariaId2Context.remove(entity.id)
+        aria.load(entity.id)?.cancel(true)
+    }
+
+    override fun clear(taskId: String) {
+        val ids = ariaId2Context.entries
+            .filter { it.value.taskId == taskId }
+            .map { it.key }
+        ids.forEach(ariaId2Context::remove)
+    }
 
     // aria callback
     override fun onWait(task: DownloadTask?) {
         val entity = task?.entity ?: return
-        val runtime = ariaId2Runtime[entity.id] ?: return
-        runtime.dispatchProcessToBus(
+        val context = ariaId2Context[entity.id] ?: return
+        context.dispatchProcess(
             task,
             stringRes(com.heyanle.easy_i18n.R.string.waiting),
         )
@@ -237,8 +221,8 @@ class AriaAction(
 
     override fun onTaskStop(task: DownloadTask?) {
         val entity = task?.entity ?: return
-        val runtime = ariaId2Runtime[entity.id] ?: return
-        runtime.dispatchProcessToBus(
+        val context = ariaId2Context[entity.id] ?: return
+        context.dispatchProcess(
             task,
             stringRes(com.heyanle.easy_i18n.R.string.pausing),
         )
@@ -250,30 +234,21 @@ class AriaAction(
 
     override fun onTaskFail(task: DownloadTask?, e: Exception?) {
         val entity = task?.entity ?: return
-        val runtime = ariaId2Runtime[entity.id] ?: return
-        synchronized(runtime.lock) {
-            runtime.error(
-                errorMsg = stringRes(com.heyanle.easy_i18n.R.string.download_error),
-                error = e
-            )
-        }
+        val context = ariaId2Context.remove(entity.id) ?: return
+        context.fail(e, stringRes(com.heyanle.easy_i18n.R.string.download_error))
     }
 
     override fun onTaskComplete(task: DownloadTask?) {
         val entity = task?.entity ?: return
-        val runtime = ariaId2Runtime[entity.id] ?: return
-        synchronized(runtime.lock) {
-            runtime.ariaDownloadFilePath = task.filePath
-            runtime.m3u8Entity = task.entity.m3U8Entity
-            runtime.stepCompletely(this)
-        }
+        val context = ariaId2Context.remove(entity.id) ?: return
+        context.complete(task.entity.toArtifact())
 
     }
 
     override fun onTaskRunning(task: DownloadTask?) {
         val entity = task?.entity ?: return
-        val runtime = ariaId2Runtime[entity.id] ?: return
-        runtime.dispatchProcessToBus(
+        val context = ariaId2Context[entity.id] ?: return
+        context.dispatchProcess(
             task,
             stringRes(com.heyanle.easy_i18n.R.string.downloading),
         )
@@ -283,7 +258,7 @@ class AriaAction(
         stringRes(com.heyanle.easy_i18n.R.string.no_support_break_point).moeSnackBar()
     }
 
-    private fun CartoonDownloadRuntime.dispatchProcessToBus(
+    private fun QuickDownloadEngineContext.dispatchProcess(
         task: DownloadTask,
         status: String,
         // Null 则展示网速
@@ -297,11 +272,25 @@ class AriaAction(
             if ((task.entity.fileSize) <= 0L) -1f else ((task.entity.percent) / 100f)
         }
 
-        dispatchToBus(
+        report(
             process,
             status,
             subStatus ?: if (task.entity.fileSize > 0L) task.convertSpeed?:"" else task.convertCurrentProgress ?:""
         )
+    }
+
+    private fun DownloadEntity.toArtifact(): QuickDownloadArtifact {
+        val hls = m3U8Entity
+        return if (hls == null) {
+            QuickDownloadArtifact.DirectFile(filePath)
+        } else {
+            QuickDownloadArtifact.HlsBundle(
+                filePath = hls.filePath,
+                keyPath = hls.keyPath,
+                method = hls.method,
+                iv = hls.iv,
+            )
+        }
     }
     private fun DownloadReceiver.getFirstTaskWithExt(
         ext: String

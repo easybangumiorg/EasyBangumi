@@ -147,6 +147,16 @@ class LocalViewModel: ViewModel() {
         }
     }
 
+    /** Inverts only the currently visible (and therefore searchable) local items. */
+    fun selectInvert() {
+        _state.update {
+            val visible = it.storyList.toSet()
+            val selection = (it.selection - visible) + (visible - it.selection)
+            if (selection.isEmpty()) lastStoryItem = null
+            it.copy(selection = selection)
+        }
+    }
+
     fun clearSelection(){
         _state.value = _state.value.copy(
             selection = emptySet()

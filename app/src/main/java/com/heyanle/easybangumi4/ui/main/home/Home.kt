@@ -218,7 +218,7 @@ fun HomeBottomSheet(
     )
     Divider()
     LazyColumn() {
-        items(animSources.pages()) { page ->
+        items(HomeViewModel.prioritizeHomeSources(animSources.pages())) { page ->
             ListItem(
                 modifier = Modifier.clickable {
                     vm.changeSelectionSource(page.source.key)

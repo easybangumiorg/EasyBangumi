@@ -11,6 +11,8 @@ import com.heyanle.easybangumi4.cartoon.entity.CartoonLocalMsg
 import com.heyanle.easybangumi4.cartoon.entity.CartoonStoryItem
 import com.heyanle.easybangumi4.cartoon.story.download.req.CartoonDownloadReqController
 import com.heyanle.easybangumi4.cartoon.story.download.runtime.CartoonDownloadDispatcher
+import com.heyanle.easybangumi4.cartoon.story.download.CartoonDownloadTaskManager
+import com.heyanle.easybangumi4.cartoon.story.download.engine.QuickDownloadEngineDescriptor
 import com.heyanle.easybangumi4.cartoon.story.local.CartoonLocalController
 import com.hippo.unifile.UniFile
 import kotlinx.coroutines.MainScope
@@ -32,6 +34,7 @@ class CartoonStoryControllerImpl(
     private val cartoonDownloadDispatcher: CartoonDownloadDispatcher,
     private val cartoonDownloadReqController: CartoonDownloadReqController,
     private val cartoonLocalController: CartoonLocalController,
+    private val cartoonDownloadTaskManager: CartoonDownloadTaskManager,
 ) : CartoonStoryController {
 
     private val scope = MainScope()
@@ -89,31 +92,27 @@ class CartoonStoryControllerImpl(
     }
 
     override fun newDownloadReq(reqList: Collection<CartoonDownloadReq>) {
-        cartoonDownloadReqController.newDownloadItem(reqList)
-        cartoonDownloadDispatcher.newRequest(reqList)
+        cartoonDownloadTaskManager.enqueue(reqList)
     }
 
     override fun removeDownloadReq(reqList: Collection<CartoonDownloadReq>) {
-        cartoonDownloadReqController.removeDownloadItem(reqList.map { it.uuid })
-        cartoonDownloadDispatcher.remove(reqList)
+        cartoonDownloadTaskManager.remove(reqList)
     }
 
-    override fun tryResumeDownloadReq(info: CartoonDownloadInfo, closeQuickMode: Boolean) {
-        if (!closeQuickMode || !info.req.quickMode) {
-            cartoonDownloadDispatcher.tryResume(listOf(info.req))
+    override val quickDownloadEngines: List<QuickDownloadEngineDescriptor>
+        get() = cartoonDownloadTaskManager.quickDownloadEngines
 
-        } else {
-            cartoonDownloadDispatcher.remove(listOf(info.req))
-            cartoonDownloadReqController.removeDownloadItem(info.req.uuid)
-            cartoonDownloadReqController.newDownloadItem(
-                listOf(
-                    info.req.copy(
-                        quickMode = false
-                    )
-                )
-            )
-        }
-    }
+    override fun retryDownloadReq(taskId: String) =
+        cartoonDownloadTaskManager.retry(taskId)
+
+    override suspend fun toggleDownloadReq(taskId: String): Boolean =
+        cartoonDownloadTaskManager.toggle(taskId)
+
+    override fun switchQuickDownloadEngine(taskId: String, engineId: String): Boolean =
+        cartoonDownloadTaskManager.switchQuickEngine(taskId, engineId)
+
+    override fun retryAsFullDownload(taskId: String): Boolean =
+        cartoonDownloadTaskManager.retryAsFullDownload(taskId)
 
     override suspend fun newStory(localMsg: CartoonLocalMsg): String? {
         return suspendCoroutine<String?> { con ->
@@ -135,8 +134,9 @@ class CartoonStoryControllerImpl(
         }
 
         cartoonLocalController.refresh()
-        cartoonDownloadReqController.removeDownloadItemWithItemId(cartoonStoryItem.map { it.cartoonLocalItem.itemId })
-        cartoonDownloadDispatcher.removeWithItemId(cartoonStoryItem.map { it.cartoonLocalItem.itemId })
+        cartoonDownloadTaskManager.removeByLocalItemIds(
+            cartoonStoryItem.map { it.cartoonLocalItem.itemId }
+        )
     }
 
     override fun removeEpisodeItem(episode: Collection<CartoonLocalEpisode>) {

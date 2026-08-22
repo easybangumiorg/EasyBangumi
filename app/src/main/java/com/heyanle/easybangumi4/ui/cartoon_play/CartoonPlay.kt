@@ -1,6 +1,5 @@
 package com.heyanle.easybangumi4.ui.cartoon_play
 
-import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -28,16 +27,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.media3.common.Effect
 import androidx.media3.common.util.UnstableApi
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
@@ -49,7 +45,6 @@ import com.heyanle.easybangumi4.navigationSearch
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonSummary
 import com.heyanle.easybangumi4.plugin.api.entity.Episode
-import com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded.CartoonRecorded
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModelFactory
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayingViewModel
@@ -67,8 +62,6 @@ import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.openUrl
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.inject.core.Inject
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.launch
 import loli.ball.easyplayer2.ControlViewModel
 import loli.ball.easyplayer2.ControlViewModelFactory
 import loli.ball.easyplayer2.EasyPlayerScaffoldBase
@@ -98,7 +91,7 @@ fun CartoonPlay(
     val controlVM = ControlViewModelFactory.viewModel(
         playingVM.exoPlayer,
         isPad,
-        render = playingVM.render
+        render = playingVM.render,
     )
 
     LaunchedEffect(summary) {
@@ -125,31 +118,6 @@ fun CartoonPlay(
     LaunchedEffect(key1 = detailedState.value) {
         detailedState.value.cartoonInfo?.let {
             playVM.onCartoonInfoChange(it)
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        launch {
-            snapshotFlow {
-                playingVM.showRecording.value
-            }.collect() {
-                if (it == null) {
-                    try {
-                        "bind".logi("CartoonPlay")
-                        controlVM.bind()
-                    } catch (e: Throwable) {
-                        e.printStackTrace()
-                    }
-
-                } else {
-                    try {
-                        "unbind".logi("CartoonPlay")
-                        controlVM.unbind()
-                    } catch (e: Throwable) {
-                        e.printStackTrace()
-                    }
-                }
-            }
         }
     }
 
@@ -357,23 +325,11 @@ fun CartoonPlay(
         )
     }
 
-    val recordState = playingVM.showRecording.value
-
-    if (recordState != null) {
-
-        CartoonRecorded(
-            controlViewModel = controlVM,
-            cartoonRecordedModel = recordState,
-            show = true,
-        ) {
-            playingVM.showRecording.value = null
-        }
-        BackHandler(
-            playingVM.showRecording.value != null
-        ) {
-            playingVM.showRecording.value = null
-        }
-    }
+    CartoonRecordedHost(
+        controlViewModel = controlVM,
+        recording = playingVM.showRecording.value,
+        onDismissRequest = { playingVM.showRecording.value = null },
+    )
 
 
 }
@@ -440,40 +396,6 @@ fun CartoonPlay(
         }
     }
 
-    // 高清渲染 (Anime4K)：跟随设置实时切换（默认开启，可关闭，持久化）
-    val anime4kContext = LocalContext.current
-    LaunchedEffect(Unit) {
-        launch {
-            combine(
-                settingPreferences.anime4kEnabled.flow(),
-                settingPreferences.anime4kMode.flow(),
-                settingPreferences.anime4kQuality.flow(),
-                settingPreferences.anime4kScale.flow(),
-            ) { on, mode, quality, scale -> on to Triple(mode, quality, scale) }
-                .collect { (on, cfg) ->
-                    val mode = cfg.first
-                    val quality = cfg.second
-                    val scale = cfg.third
-                    val effects: List<Effect> = if (on) {
-                        listOf(
-                            com.heyanle.easybangumi4.anime4k.Anime4KEffect(
-                                com.heyanle.easybangumi4.anime4k.Anime4KSource.chainFor(
-                                    anime4kContext, mode, quality
-                                ),
-                                scaleOverride = scale
-                            )
-                        )
-                    } else {
-                        emptyList()
-                    }
-                    runCatching {
-                        playingVM.exoPlayer.setVideoEffects(effects)
-                    }.onFailure {
-                        it.printStackTrace()
-                    }
-                }
-        }
-    }
 
     val lazyGridState = rememberLazyGridState()
 
@@ -648,7 +570,3 @@ fun CartoonPlay(
 
     }
 }
-
-
-
-

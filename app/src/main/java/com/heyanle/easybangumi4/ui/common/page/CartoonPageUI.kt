@@ -37,13 +37,19 @@ import com.heyanle.easybangumi4.ui.common.cover_star.CoverStarViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+enum class CartoonPagePresentation {
+    Legacy,
+    V2,
+}
+
 /**
  * Created by heyanlin on 2024/2/9 10:28.
  */
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun CartoonPageUI(
-    cartoonPage: SourcePage
+    cartoonPage: SourcePage,
+    presentation: CartoonPagePresentation = CartoonPagePresentation.Legacy,
 ) {
     when (cartoonPage) {
         is SourcePage.SingleCartoonPage -> {
@@ -73,7 +79,8 @@ fun CartoonPageUI(
                     page = cartoonPage,
                     lazyGridState = lazyGridState,
                     lazyStaggeredGridState = lazyStaggeredGridState,
-                    vm = vm
+                    vm = vm,
+                    presentation = presentation,
                 )
                 PullRefreshIndicator(
                     refreshing,
@@ -87,7 +94,7 @@ fun CartoonPageUI(
         }
 
         is SourcePage.Group -> {
-            SourceListPageGroup(cartoonPage)
+            SourceListPageGroup(cartoonPage, presentation)
         }
 
         else -> {}

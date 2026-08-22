@@ -25,6 +25,13 @@ import kotlinx.coroutines.launch
  */
 class HomeViewModel : ViewModel() {
 
+    companion object {
+        const val PREFERRED_HOME_SOURCE_KEY = "heyanle.ggl"
+
+        fun prioritizeHomeSources(pages: List<PageComponent>): List<PageComponent> =
+            pages.sortedBy { if (it.source.key == PREFERRED_HOME_SOURCE_KEY) 0 else 1 }
+    }
+
     private var selectionKeyOkkv by okkv("home_selection_key", "")
 
     private val _stateFlow = MutableStateFlow(HomeState(selectionKey = selectionKeyOkkv))
@@ -50,10 +57,10 @@ class HomeViewModel : ViewModel() {
                 sourceStateCase.flowBundle(),
                 _stateFlow.map { it.selectionKey }.distinctUntilChanged()
             ) { sourceBundle, s ->
-                val pages = sourceBundle.pages()
+                val pages = prioritizeHomeSources(sourceBundle.pages())
                 if (pages.isEmpty()) {
                     null
-                } else sourceBundle.page(s) ?: pages[0]
+                } else sourceBundle.page(s) ?: pages.first()
             }.collectLatest { pa ->
                 pa.logi("HomeViewModel")
                 if (pa == null) {

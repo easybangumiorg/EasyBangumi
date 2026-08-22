@@ -7,6 +7,7 @@ import com.heyanle.easybangumi4.base.preferences.android.AndroidPreferenceStore
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
+import com.heyanle.easybangumi4.plugin.api.entity.CartoonCover
 import com.heyanle.easybangumi4.ui.common.proc.FilterState
 import com.heyanle.easybangumi4.utils.CoroutineProvider
 import com.heyanle.easybangumi4.utils.toJson
@@ -16,6 +17,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.io.InputStream
 
 /**
@@ -30,6 +33,7 @@ class CartoonStarController(
 
     private val dispatcher = CoroutineProvider.SINGLE
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
+    private val mutationMutex = Mutex()
 
     data class StarState(
         val tagList: List<CartoonTag> = emptyList(),
@@ -101,6 +105,58 @@ class CartoonStarController(
     }
     fun modifier(cartoonTag: List<CartoonTag>) {
         jsonFileProvider.cartoonTag.set(cartoonTag)
+    }
+
+    /**
+     * Adds every cover to the followed list without toggling items that are already followed.
+     *
+     * The read-modify-write happens inside one transaction so a stale UI snapshot cannot
+     * overwrite playback history or detailed information stored in the same database row.
+     */
+    suspend fun starAll(
+        covers: Collection<CartoonCover>,
+        tags: Collection<CartoonTag> = emptyList(),
+    ) = mutationMutex.withLock {
+        val distinctCovers = covers.distinctBy { it.id to it.source }
+        val normalizedTags = tags
+            .filterNot { it.isInner }
+            .distinctBy { it.label }
+            .sortedBy { it.order }
+        val tagsString = normalizedTags.joinToString(", ") { it.label }
+        val batchTime = System.currentTimeMillis()
+
+        cartoonInfoDao.transaction {
+            distinctCovers.forEach { cover ->
+                val old = cartoonInfoDao.getByCartoonSummary(cover.id, cover.source)
+                when {
+                    old != null && old.starTime > 0 -> Unit
+                    old != null -> cartoonInfoDao.modify(
+                        old.copy(
+                            starTime = batchTime,
+                            tags = tagsString,
+                            upTime = 0,
+                        )
+                    )
+                    else -> cartoonInfoDao.insert(
+                        CartoonInfo.fromCartoonCover(cover, normalizedTags)
+                            .copy(starTime = batchTime)
+                    )
+                }
+            }
+        }
+    }
+
+    /** Clears only follow metadata and preserves history, detail and playback fields. */
+    suspend fun unstarAll(covers: Collection<CartoonCover>) = mutationMutex.withLock {
+        val distinctCovers = covers.distinctBy { it.id to it.source }
+        cartoonInfoDao.transaction {
+            distinctCovers.forEach { cover ->
+                val old = cartoonInfoDao.getByCartoonSummary(cover.id, cover.source)
+                if (old != null && old.starTime > 0) {
+                    cartoonInfoDao.modify(old.copy(starTime = 0, tags = "", upTime = 0))
+                }
+            }
+        }
     }
 
     private fun List<CartoonTag>.process(

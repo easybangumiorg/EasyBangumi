@@ -15,10 +15,12 @@ import com.heyanle.easybangumi4.plugin.api.entity.PlayerInfo
 import com.heyanle.easybangumi4.utils.dip2px
 import com.heyanle.easybangumi4.utils.getCachePath
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.Locale
 import java.util.TreeMap
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Created by heyanlin on 2024/6/21.
@@ -90,11 +92,14 @@ class ClipVideoModel(
         end,
         2000
     )
+    private val released = AtomicBoolean(false)
+    private val thumbnailLoadingJob: Job
 
     init {
-
-        scope.launch {
-            outputThumbnailHelper.start()
+        thumbnailLoadingJob = scope.launch {
+            if (!released.get()) {
+                outputThumbnailHelper.start()
+            }
         }
 
         thumbnailBuffer.onTreeMapChange = { map ->
@@ -103,6 +108,14 @@ class ClipVideoModel(
         thumbnailBuffer.dispatchCurrent()
     }
 
+    fun release() {
+        if (!released.compareAndSet(false, true)) {
+            return
+        }
+        thumbnailLoadingJob.cancel()
+        thumbnailBuffer.onTreeMapChange = null
+        outputThumbnailHelper.release()
+    }
 
     fun onSeekBarSizeChange(width: Int, height: Int){
         // 待定系数计算

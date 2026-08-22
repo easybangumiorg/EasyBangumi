@@ -113,8 +113,12 @@ class JsonFileHelper<T : Any>(
     fun update(
         block:(T) -> T
     ){
-        val data = getOrDef()
-        set( block(data))
+        // MutableStateFlow.update 是原子的，避免多个任务完成/删除同时发生时
+        // getOrDef + set 覆盖彼此的结果。
+        _flow.update { current ->
+            DataResult.ok(block(current.okOrNull() ?: def))
+        }
+        trySave()
     }
 
 

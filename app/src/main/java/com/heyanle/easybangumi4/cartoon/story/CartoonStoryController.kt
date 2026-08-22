@@ -6,6 +6,7 @@ import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadReq
 import com.heyanle.easybangumi4.cartoon.entity.CartoonLocalEpisode
 import com.heyanle.easybangumi4.cartoon.entity.CartoonLocalMsg
 import com.heyanle.easybangumi4.cartoon.entity.CartoonStoryItem
+import com.heyanle.easybangumi4.cartoon.story.download.engine.QuickDownloadEngineDescriptor
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -27,9 +28,13 @@ interface CartoonStoryController {
 
     fun removeDownloadReq(reqList: Collection<CartoonDownloadReq>)
 
-    // 尝试重新下载，只有下载错误或者重启后点击才能恢复
-    // @param closeQuickMode 关闭快速下载模式
-    fun tryResumeDownloadReq(info: CartoonDownloadInfo, closeQuickMode: Boolean)
+    val quickDownloadEngines: List<QuickDownloadEngineDescriptor>
+
+    // 所有任务命令都由 TaskManager 串行协调，UI 不直接访问 runtime/action。
+    fun retryDownloadReq(taskId: String)
+    suspend fun toggleDownloadReq(taskId: String): Boolean
+    fun switchQuickDownloadEngine(taskId: String, engineId: String): Boolean
+    fun retryAsFullDownload(taskId: String): Boolean
 
 
 

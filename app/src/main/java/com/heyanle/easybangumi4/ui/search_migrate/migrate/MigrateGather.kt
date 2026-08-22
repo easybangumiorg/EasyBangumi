@@ -26,6 +26,7 @@ import com.heyanle.easybangumi4.plugin.source.LocalSourceBundleController
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonCover
 import com.heyanle.easybangumi4.ui.common.cover_star.CoverStarViewModel
 import com.heyanle.easybangumi4.ui.search_migrate.search.SearchTopAppBar
+import com.heyanle.easybangumi4.ui.search_migrate.search.SearchMode
 import com.heyanle.easybangumi4.ui.search_migrate.search.gather.GatherSearchViewModel
 import com.heyanle.easybangumi4.ui.search_migrate.search.gather.GatherSearchViewModelFactory
 import com.heyanle.easybangumi4.ui.search_migrate.search.gather.MigrateSourceItem
@@ -74,7 +75,7 @@ fun MigrateGather(
     Column {
         SearchTopAppBar(
             text = searchText,
-            isGather = true,
+            searchMode = SearchMode.BY_SOURCE,
             focusRequester = focusRequester,
             showAction = false,
             onBack = {
@@ -89,7 +90,7 @@ fun MigrateGather(
                     gatherSearchViewModel.newSearchKey(it)
                 }
             },
-            onIsGatherChange = {
+            onSearchModeChange = {
 
             }
         )

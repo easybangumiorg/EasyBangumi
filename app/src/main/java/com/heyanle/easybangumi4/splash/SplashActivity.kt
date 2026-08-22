@@ -23,7 +23,7 @@ import androidx.compose.ui.res.stringResource
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LauncherBus
 import com.heyanle.easybangumi4.LocalWindowSizeController
-import com.heyanle.easybangumi4.MainActivity
+import com.heyanle.easybangumi4.MainActivitySwitcher
 import com.heyanle.easybangumi4.Migrate
 import com.heyanle.easybangumi4.Scheduler
 import com.heyanle.easybangumi4.theme.EasyTheme
@@ -60,14 +60,27 @@ class SplashActivity : ComponentActivity() {
         LauncherBus.onResume(launcherBus)
     }
 
+    override fun onDestroy() {
+        if (lastSplashActivity?.get() === this) {
+            lastSplashActivity = null
+        }
+        super.onDestroy()
+    }
+
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val lat = lastSplashActivity?.get()
-        if (lat != this){
-            lat?.finish()
-            lastSplashActivity = WeakReference(this)
-        }
+        /*
+         * Do not finish the previously registered instance here. During a configuration change,
+         * Android creates the replacement SplashActivity while the old instance is still being
+         * destroyed. Finishing that old instance from the replacement can remove the activity
+         * record that owns the whole launcher task, which makes a rotation return to the launcher.
+         *
+         * The reference is only used by MainActivity as a best-effort cleanup after navigation,
+         * so replacing it with the latest instance is sufficient and lets Android own the
+         * configuration-change lifecycle.
+         */
+        lastSplashActivity = WeakReference(this)
         if (splashCompletely) {
             jumpToMain()
         } else {
@@ -125,7 +138,7 @@ class SplashActivity : ComponentActivity() {
         con.end()
 
         splashCompletely = true
-        val intent = Intent(this, MainActivity::class.java)
+        val intent = MainActivitySwitcher.createMainIntent(this)
         intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
         startActivity(intent)
         finish()

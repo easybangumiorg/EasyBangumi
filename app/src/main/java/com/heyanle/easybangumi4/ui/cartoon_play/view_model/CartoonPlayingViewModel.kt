@@ -1,7 +1,6 @@
 package com.heyanle.easybangumi4.ui.cartoon_play.view_model
 
 import android.content.Intent
-import android.graphics.Bitmap
 import android.graphics.SurfaceTexture
 import android.util.Log
 import android.view.TextureView
@@ -14,10 +13,13 @@ import androidx.lifecycle.viewModelScope
 import androidx.media3.common.C
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSourceException
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.analytics.AnalyticsListener
 import com.heyanle.easybangumi4.APP
+import com.heyanle.easybangumi4.anime4k.Anime4KPlaybackController
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
 import com.heyanle.easybangumi4.cartoon.story.local.source.LocalSource
 import com.heyanle.easybangumi4.case.SourceStateCase
@@ -34,11 +36,9 @@ import com.heyanle.easybangumi4.plugin.api.entity.PlayerInfo
 import com.heyanle.easybangumi4.plugin.source.utils.VerificationHelper
 import com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded.CartoonRecordedModel
 import com.heyanle.easybangumi4.utils.CoroutineProvider
-import com.heyanle.easybangumi4.utils.MediaAndroidUtils
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.stringRes
-import com.heyanle.easybangumi4.utils.toast
 import com.heyanle.inject.core.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -47,8 +47,9 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
@@ -63,7 +64,7 @@ import java.io.File
  */
 @UnstableApi
 class CartoonPlayingViewModel(
-) : ViewModel(), Player.Listener, TextureView.SurfaceTextureListener {
+) : ViewModel(), Player.Listener, TextureView.SurfaceTextureListener, AnalyticsListener {
 
     companion object {
         const val TAG = "CartoonPlayingViewModel"
@@ -82,17 +83,89 @@ class CartoonPlayingViewModel(
         }
     }
 
-    // 播放器状态 =================================================
-    private val exoPlayerBuilder: ExoPlayer.Builder by Inject.injectLazy()
-    val exoPlayer = exoPlayerBuilder.build().apply {
-        addListener(this@CartoonPlayingViewModel)
+    /**
+     * 页面跳转会销毁播放器视图，并可能间接清空 ExoPlayer 的媒体队列，但导航返回时
+     * [CartoonPlayingViewModel] 本身仍然存活。恢复点因此由 ViewModel 持有，而不是交给
+     * Composable 或异步落库的历史记录，避免返回页面时从 0 重新加载。
+     */
+    internal class PlaybackResumeCheckpoint {
+        data class ResumeDirective(
+            val positionMs: Long,
+            val playWhenReady: Boolean,
+        )
+
+        private data class Target(
+            val summary: CartoonSummary,
+            val playLine: PlayLine,
+            val episode: Episode,
+        )
+
+        private var target: Target? = null
+        private var positionMs: Long = -1L
+        private var playWhenReady: Boolean = true
+
+        fun capture(
+            summary: CartoonSummary?,
+            playLine: PlayLine?,
+            episode: Episode?,
+            positionMs: Long,
+            playWhenReady: Boolean,
+        ) {
+            if (summary == null || playLine == null || episode == null || positionMs < 0L) {
+                return
+            }
+            target = Target(summary, playLine, episode)
+            this.positionMs = positionMs
+            this.playWhenReady = playWhenReady
+        }
+
+        /**
+         * 显式传入的播放进度（例如从历史页进入）优先于页面恢复点。恢复点只消费一次，
+         * 且仅能用于完全相同的番剧、线路和选集，避免串到用户主动切换的新内容。
+         */
+        fun consume(
+            summary: CartoonSummary,
+            playLine: PlayLine,
+            episode: Episode,
+            explicitPositionMs: Long,
+        ): ResumeDirective {
+            val isMatchingCheckpoint = target == Target(summary, playLine, episode)
+            val checkpointPosition = positionMs.takeIf {
+                explicitPositionMs < 0L && isMatchingCheckpoint
+            } ?: -1L
+            val directive = ResumeDirective(
+                positionMs = if (explicitPositionMs >= 0L) explicitPositionMs else checkpointPosition,
+                playWhenReady = if (isMatchingCheckpoint) playWhenReady else true,
+            )
+            clear()
+            return directive
+        }
+
+        private fun clear() {
+            target = null
+            positionMs = -1L
+            playWhenReady = true
+        }
     }
 
-    // 渲染器 =================================================
-    val easyTextRenderer: TexturePlayerRender = TexturePlayerRender()
+    // 播放器状态 =================================================
+    private val settingPreferences: SettingPreferences by Inject.injectLazy()
+    private fun buildPlayer(): ExoPlayer = ExoPlayer.Builder(APP)
+        .setSeekBackIncrementMs(settingPreferences.fastSecond.get() * 1_000L)
+        .setSeekForwardIncrementMs(settingPreferences.fastSecond.get() * 1_000L)
+        .build()
         .apply {
+            addListener(this@CartoonPlayingViewModel)
+            addAnalyticsListener(this@CartoonPlayingViewModel)
+        }
+    val exoPlayer: ExoPlayer = buildPlayer()
+
+    // 渲染器 =================================================
+    private fun buildTextureRenderer(): TexturePlayerRender =
+        TexturePlayerRender().apply {
             setExtSurfaceTextureListener(this@CartoonPlayingViewModel)
         }
+    val easyTextRenderer: TexturePlayerRender = buildTextureRenderer()
 
     // Media3 效果管线（VideoGraph）要求有效输出 surface，TextureView 与该管线的
     // EGL 输出不兼容（报 "Make sure the SurfaceView..."），因此启用效果的播放统一
@@ -107,6 +180,7 @@ class CartoonPlayingViewModel(
     private var playingInfoIsCache: Boolean = false
     private var forceNoCacheRetrying: Boolean = false
     private var forceClearMediaCacheRetrying: Boolean = false
+    private val playbackResumeCheckpoint = PlaybackResumeCheckpoint()
 
     // 播放状态 =================================================
     data class PlayingState(
@@ -119,6 +193,8 @@ class CartoonPlayingViewModel(
 
     private val _playingState = MutableStateFlow<PlayingState>(PlayingState())
     val playingState = _playingState.asStateFlow()
+    private val _visualRecoveryRequests = MutableSharedFlow<String>(extraBufferCapacity = 1)
+    val visualRecoveryRequests = _visualRecoveryRequests.asSharedFlow()
 
     // 协程
     private val dispatcher = CoroutineProvider.newSingleDispatcher
@@ -136,7 +212,19 @@ class CartoonPlayingViewModel(
     private val cartoonInfoDao: CartoonInfoDao by Inject.injectLazy()
     private val cartoonMediaSourceFactory: CartoonMediaSourceFactory by Inject.injectLazy()
     private val sourceStateCase: SourceStateCase by Inject.injectLazy()
-    private val settingPreferences: SettingPreferences by Inject.injectLazy()
+    private val anime4KPlaybackController = Anime4KPlaybackController(
+        context = APP,
+        player = exoPlayer,
+        preferences = settingPreferences,
+        scope = viewModelScope,
+        onPipelineResetRequired = ::resetResolvedMediaAfterEffectFailure,
+    )
+    internal val anime4KRuntimeState = anime4KPlaybackController.runtimeState
+    internal val anime4KScaleCapability = anime4KPlaybackController.scaleCapability
+
+    init {
+        anime4KPlaybackController.start()
+    }
 
     // 各种配置（找机会拆单独一个 ViewModel 和播放无关 =================================================
     private val customSpeedPref = settingPreferences.customSpeed
@@ -173,42 +261,11 @@ class CartoonPlayingViewModel(
         mkdirs()
     }
 
-    val imageCache: File = File(APP.getCachePath("image")).apply {
-        deleteRecursively()
-        mkdirs()
-    }
-
-    fun image() {
-        val playerInfo = playingInfo
-        if (playerInfo == null) {
-            stringRes(com.heyanle.easy_i18n.R.string.waiting_parsing)
-            return
-        }
-        val position = exoPlayer.currentPosition
-        scope.launch(dispatcher) {
-            val bmp = easyTextRenderer.getTextureViewOrNull()?.bitmap ?: return@launch
-            val file = File(imageCache, "${position}.png")
-            file.delete()
-            file.createNewFile()
-            bmp.compress(
-                Bitmap.CompressFormat.PNG,
-                100,
-                file.outputStream()
-            )
-            MediaAndroidUtils.saveToDownload(
-                file,
-                type = "image",
-                "image_${position}.png"
-            )
-            scope.launch {
-                stringRes(com.heyanle.easy_i18n.R.string.image_save_completely).toast()
-            }
-
-        }
-    }
-
     @OptIn(UnstableApi::class)
     fun showRecord() {
+        if (showRecording.value != null) {
+            return
+        }
         val playerInfo = playingInfo
         if (playerInfo == null) {
             stringRes(com.heyanle.easy_i18n.R.string.waiting_parsing)
@@ -254,6 +311,8 @@ class CartoonPlayingViewModel(
         videoScaleTypePref.set(scaleType)
     }
 
+    fun setAnime4KScale(scale: Int): Boolean = anime4KPlaybackController.requestScale(scale)
+
     // 刷新 & 播放 ===================================
 
     fun tryRefresh() {
@@ -281,9 +340,24 @@ class CartoonPlayingViewModel(
         cartoonPlayingState: CartoonPlayViewModel.CartoonPlayState?,
         adviceProcess: Long,
     ) {
+        val previousRequestedState = this.cartoonPlayingState
+        val sameRequestedTarget = cartoonPlayingState != null && previousRequestedState != null &&
+            isSamePlaybackTarget(
+                previousSummary = previousRequestedState.cartoonSummary,
+                previousPlayLine = previousRequestedState.playLine.playLine,
+                previousEpisode = previousRequestedState.episode,
+                nextSummary = cartoonPlayingState.cartoonSummary,
+                nextPlayLine = cartoonPlayingState.playLine.playLine,
+                nextEpisode = cartoonPlayingState.episode,
+            )
+        if (sameRequestedTarget && lastJob?.isActive == true) {
+            val duplicateTarget = checkNotNull(cartoonPlayingState)
+            "play-target action=ignore-duplicate-active source=${duplicateTarget.cartoonSummary.source} cartoonId=${duplicateTarget.cartoonSummary.id} lineId=${duplicateTarget.playLine.playLine.id} episodeId=${duplicateTarget.episode.id}".logi(TAG)
+            return
+        }
         lastJob?.cancel()
         lastJob = scope.launch {
-            val previousSummary = this@CartoonPlayingViewModel.cartoonPlayingState?.cartoonSummary
+            val previousSummary = previousRequestedState?.cartoonSummary
             val previousPlayerUri = playingInfo?.uri
             this@CartoonPlayingViewModel.cartoonPlayingState = cartoonPlayingState
             if (cartoonPlayingState == null) {
@@ -295,6 +369,12 @@ class CartoonPlayingViewModel(
                     )
                 }
             } else {
+                val resumeDirective = playbackResumeCheckpoint.consume(
+                    summary = cartoonPlayingState.cartoonSummary,
+                    playLine = cartoonPlayingState.playLine.playLine,
+                    episode = cartoonPlayingState.episode,
+                    explicitPositionMs = adviceProcess,
+                )
                 val sameTarget = isSamePlaybackTarget(
                     previousSummary = previousSummary,
                     previousPlayLine = playingPlayLine,
@@ -304,15 +384,24 @@ class CartoonPlayingViewModel(
                     nextEpisode = cartoonPlayingState.episode,
                 )
                 "play-target previousSource=${previousSummary?.source} previousId=${previousSummary?.id} previousUri=$previousPlayerUri nextSource=${cartoonPlayingState.cartoonSummary.source} nextId=${cartoonPlayingState.cartoonSummary.id} lineId=${cartoonPlayingState.playLine.playLine.id} episodeId=${cartoonPlayingState.episode.id} sameTarget=$sameTarget vm=${System.identityHashCode(this@CartoonPlayingViewModel)}".logi(TAG)
-                if (sameTarget
-                    && _playingState.first().isPlaying
-                    && exoPlayer.isMedia()
-                ) {
-                    if (adviceProcess >= 0) {
-                        exoPlayer.seekTo(adviceProcess)
+                if (sameTarget && exoPlayer.isMedia()) {
+                    if (resumeDirective.positionMs >= 0) {
+                        exoPlayer.seekTo(resumeDirective.positionMs)
+                    }
+                    exoPlayer.playWhenReady = resumeDirective.playWhenReady
+                    _playingState.update {
+                        it.copy(
+                            isLoading = false,
+                            isPlaying = true,
+                            isError = false,
+                        )
                     }
                 } else {
-                    innerPlay(cartoonPlayingState, adviceProcess)
+                    innerPlay(
+                        cartoonPlayingState = cartoonPlayingState,
+                        adviceProcess = resumeDirective.positionMs,
+                        playWhenReady = resumeDirective.playWhenReady,
+                    )
                 }
             }
         }
@@ -381,6 +470,7 @@ class CartoonPlayingViewModel(
         cartoonPlayingState: CartoonPlayViewModel.CartoonPlayState,
         adviceProcess: Long,
         canCache: Boolean = true,
+        playWhenReady: Boolean = true,
     ) {
 
 
@@ -458,7 +548,12 @@ class CartoonPlayingViewModel(
                 playingEpisode = cartoonPlayingState.episode
                 playingInfoIsCache = it.isCache
                 forceNoCacheRetrying = false
-                innerPlay(it.data, adviceProcess, canMediaCache = canCache)
+                innerPlay(
+                    playerInfo = it.data,
+                    adviceProcess = adviceProcess,
+                    canMediaCache = canCache,
+                    playWhenReady = playWhenReady,
+                )
             }
             .error { state ->
                 yield()
@@ -505,12 +600,22 @@ class CartoonPlayingViewModel(
         playerInfo: PlayerInfo,
         adviceProcess: Long,
         canMediaCache: Boolean = true,
+        playWhenReady: Boolean = true,
+        forceMediaReset: Boolean = false,
     ) {
-        exoPlayer.pause()
+        if (forceMediaReset) {
+            // setVideoEffects(emptyList()) updates the pending graph configuration, but a broken
+            // graph may keep its renderer instance alive. Stop and clear the retained media item
+            // so prepare() creates a fresh renderer graph without resolving the source again.
+            exoPlayer.stop()
+            exoPlayer.clearMediaItems()
+        } else {
+            exoPlayer.pause()
+        }
         if (lastJob?.isCancelled != false || lastJob?.isActive != true) {
             return
         }
-        if (this.playingInfo != null) {
+        if (!forceMediaReset && this.playingInfo != null) {
             if (
                 playingInfo?.uri == playerInfo.uri
                 && playingInfo?.decodeType == playerInfo.decodeType
@@ -521,7 +626,7 @@ class CartoonPlayingViewModel(
                 if (adviceProcess >= 0) {
                     exoPlayer.seekTo(adviceProcess)
                 }
-                exoPlayer.playWhenReady = true
+                exoPlayer.playWhenReady = playWhenReady
                 _playingState.update {
                     it.copy(
                         isLoading = false,
@@ -563,7 +668,7 @@ class CartoonPlayingViewModel(
         exoPlayer.setMediaSource(media, adviceProcess)
         exoPlayer.prepare()
         duringTemp = -1L
-        exoPlayer.playWhenReady = true
+        exoPlayer.playWhenReady = playWhenReady
         _playingState.update {
             it.copy(
                 isLoading = false,
@@ -583,15 +688,17 @@ class CartoonPlayingViewModel(
 
             runCatching {
                 var po = if (ps >= 0) ps else exoPlayer.currentPosition
-                when (exoPlayer.playbackState) {
-                    Player.STATE_BUFFERING, Player.STATE_READY -> {
-                        po = exoPlayer.currentPosition
-                    }
-                    Player.STATE_ENDED -> {
-                        if (duringTemp > 0) {
-                            po = duringTemp
-                        } else {
-                            return@launch
+                if (ps < 0L) {
+                    when (exoPlayer.playbackState) {
+                        Player.STATE_BUFFERING, Player.STATE_READY -> {
+                            po = exoPlayer.currentPosition
+                        }
+                        Player.STATE_ENDED -> {
+                            if (duringTemp > 0) {
+                                po = duringTemp
+                            } else {
+                                return@launch
+                            }
                         }
                     }
                 }
@@ -623,7 +730,15 @@ class CartoonPlayingViewModel(
 
     // onDispose
     fun onExit() {
-        trySaveHistory()
+        val exitPosition = exoPlayer.currentPosition.coerceAtLeast(0L)
+        playbackResumeCheckpoint.capture(
+            summary = cartoonPlayingState?.cartoonSummary,
+            playLine = playingPlayLine,
+            episode = playingEpisode,
+            positionMs = exitPosition,
+            playWhenReady = exoPlayer.playWhenReady,
+        )
+        trySaveHistory(exitPosition)
         lastJob?.cancel()
         exoPlayer.pause()
     }
@@ -631,7 +746,7 @@ class CartoonPlayingViewModel(
     // exoPlayer 回调 ==================================================
 
     override fun onPlaybackStateChanged(playbackState: Int) {
-        super.onPlaybackStateChanged(playbackState)
+        super<Player.Listener>.onPlaybackStateChanged(playbackState)
         if (playbackState == Player.STATE_READY) {
             exoPlayer.duration.logi(TAG)
             duringTemp = exoPlayer.duration
@@ -644,14 +759,30 @@ class CartoonPlayingViewModel(
 
     }
 
+    override fun onVideoSizeChanged(videoSize: VideoSize) {
+        super<Player.Listener>.onVideoSizeChanged(videoSize)
+        anime4KPlaybackController.onVideoSizeChanged(videoSize.width, videoSize.height)
+    }
+
+    override fun onDroppedVideoFrames(
+        eventTime: AnalyticsListener.EventTime,
+        droppedFrames: Int,
+        elapsedMs: Long,
+    ) {
+        anime4KPlaybackController.onDroppedVideoFrames(droppedFrames, elapsedMs)
+    }
+
     override fun onPlayerError(error: PlaybackException) {
-        super.onPlayerError(error)
+        super<Player.Listener>.onPlayerError(error)
         var cause: Throwable? = error
         var level = 0
         while (cause != null) {
             Log.e(TAG, "playback cause[$level]: ${cause::class.java.name}: ${cause.message}", cause)
             cause = cause.cause
             level++
+        }
+        if (tryRecoverFromVideoEffectError(error)) {
+            return
         }
         if (error.hasReadPositionOutOfRangeCause() && tryClearMediaCacheAndRetry()) {
             return
@@ -669,6 +800,38 @@ class CartoonPlayingViewModel(
                 errorThrowable = error,
             )
         }
+    }
+
+    /**
+     * A VideoGraph failure is a render configuration failure, not a source resolution failure.
+     * Disable the failed effect and rebuild the media pipeline from the retained PlayerInfo so the
+     * plugin's getPlayInfo() is never called again merely because Anime4K was switched.
+     */
+    private fun tryRecoverFromVideoEffectError(error: PlaybackException): Boolean {
+        if (!Anime4KPlaybackController.isVideoEffectError(error)) return false
+
+        anime4KPlaybackController.disableAfterFailure(error)
+        val resolvedPlayerInfo = playingInfo
+        if (resolvedPlayerInfo == null) {
+            _playingState.update {
+                it.copy(
+                    isLoading = false,
+                    isPlaying = false,
+                    isError = true,
+                    errorMsg = "Anime4K 渲染失败，且当前媒体尚未解析完成",
+                    errorThrowable = error,
+                )
+            }
+            return true
+        }
+
+        resetResolvedMediaAfterEffectFailure(error.message ?: "VideoGraph error")
+        return true
+    }
+
+    private fun resetResolvedMediaAfterEffectFailure(reason: String) {
+        "play-effect action=request-route-recovery reason=$reason position=${exoPlayer.currentPosition}".logi(TAG)
+        _visualRecoveryRequests.tryEmit(reason)
     }
 
     private fun tryClearMediaCacheAndRetry(): Boolean {
@@ -702,7 +865,7 @@ class CartoonPlayingViewModel(
     }
 
     override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
-        super.onPlayWhenReadyChanged(playWhenReady, reason)
+        super<Player.Listener>.onPlayWhenReadyChanged(playWhenReady, reason)
         if (_playingState.value.isPlaying && !exoPlayer.playWhenReady && exoPlayer.isMedia()) {
             trySaveHistory()
         }

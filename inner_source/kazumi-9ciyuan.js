@@ -274,6 +274,10 @@ function SearchComponent_search(pageKey, keyword) {
     var doc = getDoc(url);
     var items = XPathUtils.nodes(doc, SEARCH_LIST_XPATH);
     var list = new ArrayList();
+    // The upstream result page may repeat a card (for example the same title in
+    // two adjacent sections). Keep the source contract: every cover id is
+    // unique within one source response.
+    var seen = new HashMap();
     for (var i = 0; i < items.size(); i++) {
         var item = items.get(i);
         var title = XPathUtils.text(item, SEARCH_NAME_XPATH);
@@ -286,8 +290,13 @@ function SearchComponent_search(pageKey, keyword) {
         }
         var detailUrl = absoluteUrl(href);
         var coverUrl = absoluteUrl(XPathUtils.firstImage(item));
+        var id = encodeSourceId(detailUrl, title, coverUrl);
+        if (seen.containsKey(id)) {
+            continue;
+        }
+        seen.put(id, true);
         list.add(makeCartoonCover({
-            id: encodeSourceId(detailUrl, title, coverUrl),
+            id: id,
             source: source.key,
             url: detailUrl,
             title: title,
@@ -313,6 +322,7 @@ function DetailedComponent_getDetailed(summary) {
     if (title == null || title.length == 0) {
         title = detailUrl;
     }
+    var description = getDetailDescription(doc);
     var roads = XPathUtils.nodes(doc, CHAPTER_ROADS_XPATH);
     var lines = new ArrayList();
     for (var i = 0; i < roads.size(); i++) {
@@ -330,7 +340,7 @@ function DetailedComponent_getDetailed(summary) {
             episodes.add(new Episode(encodeSourceId(epUrl, "", ""), epLabel, j));
         }
         if (episodes.size() > 0) {
-            lines.add(new PlayLine(String(i), "播放线路" + (i + 1), episodes));
+            lines.add(new PlayLine(String(i), getPlayLineName(doc, i), episodes));
         }
     }
     var cartoon = makeCartoon({
@@ -339,12 +349,53 @@ function DetailedComponent_getDetailed(summary) {
         url: detailUrl,
         title: title,
         cover: coverUrl,
-        intro: "",
-        description: "",
+        intro: description,
+        description: description,
         status: Cartoon.STATUS_UNKNOWN,
         updateStrategy: Cartoon.UPDATE_STRATEGY_ALWAYS
     });
     return new Pair(cartoon, lines);
+}
+
+// The source lists the player tabs separately from the episode panels; both
+// collections use the same order. Keep the source-provided label instead of
+// inventing a numbered line name.
+function getPlayLineName(doc, index) {
+    var tabs = doc.select("#y-playList .module-tab-item");
+    if (tabs != null && index < tabs.size()) {
+        var name = trimText(tabs.get(index).attr("data-dropdown-value"));
+        if (name.length > 0) {
+            return name;
+        }
+        var label = tabs.get(index).select("span").first();
+        if (label != null) {
+            name = trimText(label.text());
+            if (name.length > 0) {
+                return name;
+            }
+        }
+    }
+    return "播放线路" + (index + 1);
+}
+
+function getDetailDescription(doc) {
+    var selectors = [
+        ".module-info-introduction .show-desc",
+        ".module-info-introduction-content",
+        "meta[name=description]"
+    ];
+    for (var i = 0; i < selectors.length; i++) {
+        var node = doc.select(selectors[i]).first();
+        if (node == null) {
+            continue;
+        }
+        var value = selectors[i].indexOf("meta") == 0 ? node.attr("content") : node.text();
+        value = trimText(value);
+        if (value.length > 0) {
+            return value;
+        }
+    }
+    return "";
 }
 
 function PlayComponent_getPlayInfo(summary, playLine, episode) {

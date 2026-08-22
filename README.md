@@ -7,6 +7,8 @@
   <img alt="license" src="https://img.shields.io/github/license/easybangumiorg/EasyBangumi" />
   <img alt="downloads" src="https://img.shields.io/github/downloads/easybangumiorg/EasyBangumi/total" />
   <img alt="issues" src="https://img.shields.io/github/issues/easybangumiorg/EasyBangumi" />
+  <br />
+  <a href="https://trendshift.io/repositories/14682?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-14682" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/14682/daily?language=Kotlin" alt="easybangumiorg%2FEasyBangumi | Trendshift" width="250" height="55"/></a>
 </p>
 
 # 须知
@@ -53,5 +55,4 @@
 <img src="./screenshots/7.jpg"/>
 
 # [更新列表](https://github.com/easybangumiorg/EasyBangumi/blob/main/app/src/main/assets/update_log.txt)  
-
 

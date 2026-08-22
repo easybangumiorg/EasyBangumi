@@ -313,6 +313,7 @@ function DetailedComponent_getDetailed(summary) {
     if (title == null || title.length == 0) {
         title = detailUrl;
     }
+    var description = getDetailDescription(doc);
     var roads = XPathUtils.nodes(doc, CHAPTER_ROADS_XPATH);
     var lines = new ArrayList();
     for (var i = 0; i < roads.size(); i++) {
@@ -330,7 +331,7 @@ function DetailedComponent_getDetailed(summary) {
             episodes.add(new Episode(encodeSourceId(epUrl, "", ""), epLabel, j));
         }
         if (episodes.size() > 0) {
-            lines.add(new PlayLine(String(i), "播放线路" + (i + 1), episodes));
+            lines.add(new PlayLine(String(i), getPlayLineName(doc, i), episodes));
         }
     }
     var cartoon = makeCartoon({
@@ -339,12 +340,43 @@ function DetailedComponent_getDetailed(summary) {
         url: detailUrl,
         title: title,
         cover: coverUrl,
-        intro: "",
-        description: "",
+        intro: description,
+        description: description,
         status: Cartoon.STATUS_UNKNOWN,
         updateStrategy: Cartoon.UPDATE_STRATEGY_ALWAYS
     });
     return new Pair(cartoon, lines);
+}
+
+// Player-source tabs and their episode lists are emitted in matching order.
+function getPlayLineName(doc, index) {
+    var tabs = doc.select(".hl-plays-from a");
+    if (tabs != null && index < tabs.size()) {
+        var name = trimText(tabs.get(index).attr("alt"));
+        if (name.length == 0) {
+            name = trimText(tabs.get(index).text());
+        }
+        if (name.length > 0) {
+            return name;
+        }
+    }
+    return "播放线路" + (index + 1);
+}
+
+function getDetailDescription(doc) {
+    var selectors = [".hl-detail-content .blurb", ".blurb", "meta[name=description]"];
+    for (var i = 0; i < selectors.length; i++) {
+        var node = doc.select(selectors[i]).first();
+        if (node == null) {
+            continue;
+        }
+        var value = selectors[i].indexOf("meta") == 0 ? node.attr("content") : node.text();
+        value = trimText(value);
+        if (value.length > 0) {
+            return value;
+        }
+    }
+    return "";
 }
 
 function PlayComponent_getPlayInfo(summary, playLine, episode) {

@@ -67,7 +67,11 @@ class CopyAndNfoAction: BaseAction {
         val mediaNameP =
             "${runtime.req.toLocalItemId} ${runtime.req.toEpisodeTitle} S1E${runtime.req.toEpisode}"
         val mediaName = "${mediaNameP}.mp4"
-        val targetMediaFile = targetCartoonFolder.createFile("$mediaName.temp")
+        val nfoName = "${mediaNameP}.nfo"
+        val tempSuffix = ".${runtime.req.uuid}.temp"
+        targetCartoonFolder.findFile("$mediaName$tempSuffix")?.delete()
+        targetCartoonFolder.findFile("$nfoName$tempSuffix")?.delete()
+        val targetMediaFile = targetCartoonFolder.createFile("$mediaName$tempSuffix")
             ?: throw IllegalStateException("target media file is null")
         if (!targetMediaFile.canWrite()) {
             throw IllegalStateException("target media file can not write")
@@ -79,11 +83,10 @@ class CopyAndNfoAction: BaseAction {
             }
         }
 
-        targetMediaFile.renameTo(mediaName)
-
-        // write nfo
-        val nfoFile = targetCartoonFolder.createFile("${mediaNameP}.nfo")
+        // 先完整写入两个临时文件，再发布正式名称，避免复制/NFO 失败时暴露半成品。
+        val nfoFile = targetCartoonFolder.createFile("$nfoName$tempSuffix")
         if (nfoFile == null || !nfoFile.canWrite()) {
+            targetMediaFile.delete()
             throw IllegalStateException("nfo file is null or can not write")
         }
 
@@ -93,8 +96,23 @@ class CopyAndNfoAction: BaseAction {
         details.appendElement("episode").text(runtime.req.toEpisode.toString())
 
         val text = details.outerHtml()
-        nfoFile.openOutputStream().bufferedWriter().use {
-            it.write(text)
+        try {
+            nfoFile.openOutputStream().bufferedWriter().use {
+                it.write(text)
+            }
+            targetCartoonFolder.findFile(nfoName)?.delete()
+            targetCartoonFolder.findFile(mediaName)?.delete()
+            if (!nfoFile.renameTo(nfoName)) {
+                throw IllegalStateException("publish nfo file failed")
+            }
+            if (!targetMediaFile.renameTo(mediaName)) {
+                targetCartoonFolder.findFile(nfoName)?.delete()
+                throw IllegalStateException("publish media file failed")
+            }
+        } catch (error: Throwable) {
+            targetMediaFile.delete()
+            nfoFile.delete()
+            throw error
         }
 
         sourceFile.delete()

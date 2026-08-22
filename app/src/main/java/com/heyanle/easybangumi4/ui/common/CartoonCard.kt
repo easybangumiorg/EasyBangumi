@@ -34,6 +34,8 @@ import com.heyanle.easybangumi4.R
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.plugin.source.LocalSourceBundleController
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonCover
+import com.heyanle.easybangumi4.v2.theme.V2Theme
+import com.heyanle.easybangumi4.v2.theme.V2Tokens
 
 /**
  * Created by HeYanLe on 2023/2/25 21:04.
@@ -48,11 +50,12 @@ fun CartoonCardWithCover(
     cartoonCover: CartoonCover,
     onClick: (CartoonCover) -> Unit,
     onLongPress: ((CartoonCover) -> Unit)? = null,
+    v2Presentation: Boolean = false,
 ) {
 
     Column(
         modifier = modifier
-            .clip(RoundedCornerShape(4.dp))
+            .clip(RoundedCornerShape(if (v2Presentation) 8.dp else 4.dp))
             .combinedClickable(
                 onClick = {
                     onClick(cartoonCover)
@@ -61,14 +64,14 @@ fun CartoonCardWithCover(
                     onLongPress?.invoke(cartoonCover)
                 }
             )
-            .padding(4.dp),
+            .padding(if (v2Presentation) 0.dp else 4.dp),
         horizontalAlignment = Alignment.Start,
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(19 / 27F)
-                .clip(RoundedCornerShape(4.dp)),
+                .clip(RoundedCornerShape(if (v2Presentation) 7.dp else 4.dp)),
         ) {
             OkImage(
                 modifier = Modifier.fillMaxSize(),
@@ -100,15 +103,37 @@ fun CartoonCardWithCover(
 //                errorRes = R.drawable.placeholder,
 //            )
 
-        Spacer(modifier = Modifier.size(4.dp))
-        Text(
-            style = MaterialTheme.typography.bodySmall,
-            text = cartoonCover.title,
-            maxLines = 4,
-            textAlign = TextAlign.Start,
-            overflow = TextOverflow.Ellipsis,
-        )
-        Spacer(modifier = Modifier.size(4.dp))
+        Spacer(modifier = Modifier.size(if (v2Presentation) 6.dp else 4.dp))
+        if (v2Presentation) {
+            Text(
+                text = cartoonCover.title,
+                maxLines = 2,
+                textAlign = TextAlign.Start,
+                overflow = TextOverflow.Ellipsis,
+                fontSize = 13.sp,
+                lineHeight = 18.sp,
+                color = Color(0xFF171614),
+            )
+            cartoonCover.intro?.takeIf { it.isNotBlank() }?.let { intro ->
+                Text(
+                    text = intro,
+                    modifier = Modifier.padding(top = 3.dp),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontSize = 11.sp,
+                    color = Color(0xFF716E68),
+                )
+            }
+        } else {
+            Text(
+                style = MaterialTheme.typography.bodySmall,
+                text = cartoonCover.title,
+                maxLines = 4,
+                textAlign = TextAlign.Start,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Spacer(modifier = Modifier.size(4.dp))
+        }
     }
 }
 
@@ -125,15 +150,21 @@ fun CartoonStarCardWithCover(
     showIsUpdate: Boolean,
     onClick: (CartoonInfo) -> Unit,
     onLongPress: (CartoonInfo) -> Unit,
+    v2Presentation: Boolean = false,
 ) {
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(4.dp))
+            .clip(RoundedCornerShape(if (v2Presentation) 8.dp else 4.dp))
             .run {
                 if (selected) {
-                    background(MaterialTheme.colorScheme.primary)
+                    if (v2Presentation) {
+                        background(V2Theme.colors.accentContainer)
+                            .border(2.dp, V2Theme.colors.accent, RoundedCornerShape(8.dp))
+                    } else {
+                        background(MaterialTheme.colorScheme.primary)
+                    }
                 } else {
                     this
                 }
@@ -147,14 +178,14 @@ fun CartoonStarCardWithCover(
                     onLongPress(cartoon)
                 }
             )
-            .padding(4.dp),
+            .padding(if (v2Presentation) 0.dp else 4.dp),
         horizontalAlignment = Alignment.Start,
     ) {
         val sourceBundle = LocalSourceBundleController.current
         Box(
             modifier = Modifier
                 .aspectRatio(19 / 27F)
-                .clip(RoundedCornerShape(4.dp)),
+                .clip(RoundedCornerShape(if (v2Presentation) 7.dp else 4.dp)),
         ) {
             OkImage(
                 modifier = Modifier.fillMaxSize(),
@@ -230,16 +261,38 @@ fun CartoonStarCardWithCover(
         }
 
 
-        Spacer(modifier = Modifier.size(4.dp))
+        Spacer(modifier = Modifier.size(if (v2Presentation) 6.dp else 4.dp))
         Text(
-            style = MaterialTheme.typography.bodySmall,
+            style = if (v2Presentation) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodySmall,
             text = cartoon.name,
             maxLines = 2,
             textAlign = TextAlign.Start,
             overflow = TextOverflow.Ellipsis,
-            color = if (selected) MaterialTheme.colorScheme.onPrimary else Color.Unspecified
+            color = if (v2Presentation) {
+                V2Tokens.TextPrimary
+            } else if (selected) {
+                MaterialTheme.colorScheme.onPrimary
+            } else {
+                Color.Unspecified
+            },
+            fontSize = if (v2Presentation) 13.sp else MaterialTheme.typography.bodySmall.fontSize,
         )
-        Spacer(modifier = Modifier.size(4.dp))
+        if (v2Presentation) {
+            Text(
+                text = when {
+                    cartoon.lastEpisodeLabel.isNotBlank() -> "看到 ${cartoon.lastEpisodeLabel}"
+                    cartoon.isUpdate -> "有更新"
+                    else -> cartoon.sourceName
+                },
+                modifier = Modifier.padding(top = 3.dp),
+                color = V2Tokens.TextSecondary,
+                fontSize = 11.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        } else {
+            Spacer(modifier = Modifier.size(4.dp))
+        }
     }
 }
 

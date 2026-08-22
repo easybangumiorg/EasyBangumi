@@ -27,14 +27,21 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
+import com.heyanle.easybangumi4.MainActivitySwitcher
 import com.heyanle.easybangumi4.navigationSetting
+import com.heyanle.easybangumi4.setting.SettingPreferences
+import com.heyanle.easybangumi4.ui.common.BooleanPreferenceItem
+import com.heyanle.inject.core.Inject
 
 /**
  * Created by HeYanLe on 2023/8/5 23:02.
@@ -82,6 +89,12 @@ sealed class SettingPage(
         LocalExtensionSetting(nestedScrollConnection = it)
     })
 
+    data object DanmakuSource : SettingPage("danmaku_source", {
+        Text(text = "弹幕源")
+    }, {
+        DanmakuSourceSetting(nestedScrollConnection = it)
+    })
+
 }
 
 val settingPages = mapOf(
@@ -90,7 +103,8 @@ val settingPages = mapOf(
     SettingPage.Download.router to SettingPage.Download,
     SettingPage.First.router to SettingPage.First,
     SettingPage.Developers.router to SettingPage.Developers,
-    SettingPage.LocalSource.router to SettingPage.LocalSource
+    SettingPage.LocalSource.router to SettingPage.LocalSource,
+    SettingPage.DanmakuSource.router to SettingPage.DanmakuSource,
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -142,6 +156,11 @@ fun ColumnScope.FirstSetting(
     nestedScrollConnection: NestedScrollConnection
 ){
     val nav = LocalNavController.current
+    val context = LocalContext.current
+    val settingPreferences: SettingPreferences by Inject.injectLazy()
+    val useV2Ui by settingPreferences.useV2Ui.flow().collectAsState(
+        initial = settingPreferences.useV2Ui.get(),
+    )
     Column(
         modifier = Modifier
             .weight(1f)
@@ -149,6 +168,15 @@ fun ColumnScope.FirstSetting(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        BooleanPreferenceItem(
+            title = { Text(text = "新版界面") },
+            subtitle = { Text(text = "切换后将返回首页") },
+            change = useV2Ui,
+            onChange = {
+                MainActivitySwitcher.switch(context, it)
+            },
+        )
+
         ListItem(
             modifier = Modifier.clickable {
                 nav.navigationSetting(SettingPage.Appearance)
@@ -184,6 +212,20 @@ fun ColumnScope.FirstSetting(
                 Icon(
                     Icons.Filled.Download,
                     contentDescription = stringResource(id = R.string.download_setting)
+                )
+            }
+        )
+
+        ListItem(
+            modifier = Modifier.clickable {
+                nav.navigationSetting(SettingPage.DanmakuSource)
+            },
+            headlineContent = { Text(text = "弹幕源") },
+            supportingContent = { Text(text = "管理内置弹幕服务") },
+            leadingContent = {
+                Icon(
+                    Icons.Filled.PlayCircle,
+                    contentDescription = "弹幕源"
                 )
             }
         )

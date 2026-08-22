@@ -15,6 +15,8 @@ import com.heyanle.easybangumi4.plugin.api.component.search.SearchComponent
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonCover
 import com.heyanle.easybangumi4.plugin.source.utils.VerificationHelper
 import com.heyanle.easybangumi4.ui.search_migrate.PagingSearchSource
+import com.heyanle.easybangumi4.ui.search_migrate.search.SearchRequest
+import com.heyanle.easybangumi4.ui.search_migrate.search.SubmittedSearchRequestGate
 import com.heyanle.inject.core.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
@@ -30,6 +32,8 @@ class NormalSearchViewModel(
     // 当前搜索的关键字，用于刷新和懒加载判断
     var curKeyWord: String = ""
 
+    private val requestGate = SubmittedSearchRequestGate()
+
     val searchPagingState = mutableStateOf<Flow<PagingData<CartoonCover>>?>(null)
 
     var isRefreshing = mutableStateOf(false)
@@ -37,26 +41,31 @@ class NormalSearchViewModel(
 
     val webViewHelperV2Impl: WebViewHelperV2Impl by Inject.injectLazy()
 
-    private val verificationTemp = hashMapOf<Pair<String, Int>, VerificationResult>()
+    private val verificationTemp = hashMapOf<VerificationRequestKey, VerificationResult>()
 
-    val verificationProvider: (key: Int, keyword: String) -> VerificationResult? = { key, keyword ->
-        verificationTemp.remove(keyword to key)
+    val verificationProvider: (sourceKey: String, key: Int, keyword: String) -> VerificationResult? = { sourceKey, key, keyword ->
+        verificationTemp.remove(VerificationRequestKey(sourceKey, keyword, key))
     }
 
-    fun newSearchKey(searchKey: String) {
-        viewModelScope.launch {
-            if (curKeyWord == searchKey) {
-                return@launch
-            }
-            if (searchKey.isEmpty()) {
-                curKeyWord = ""
-                searchPagingState.value = null
-                return@launch
-            }
-            curKeyWord = searchKey
-            searchPagingState.value =
-                getPager(searchKey, searchComponent).flow.cachedIn(viewModelScope)
+    fun submitSearch(request: SearchRequest) {
+        if (!requestGate.shouldHandle(request, searchPagingState.value != null)) return
+        replaceSearch(request.keyword)
+    }
+
+    fun newSearchKey(searchKey: String, force: Boolean = false) {
+        if (!force && curKeyWord == searchKey && searchPagingState.value != null) return
+        replaceSearch(searchKey)
+    }
+
+    private fun replaceSearch(searchKey: String) {
+        if (searchKey.isEmpty()) {
+            curKeyWord = ""
+            searchPagingState.value = null
+            return
         }
+        curKeyWord = searchKey
+        searchPagingState.value =
+            getPager(searchKey, searchComponent).flow.cachedIn(viewModelScope)
     }
 
     private fun getPager(
@@ -78,7 +87,7 @@ class NormalSearchViewModel(
     ){
         viewModelScope.launch {
             val request = searchNeedWebViewCheckBusinessException.request
-            verificationTemp[request.keyword to request.key] = VerificationHelper.start(
+            verificationTemp[VerificationRequestKey(searchComponent.source.key, request.keyword, request.key)] = VerificationHelper.start(
                 searchNeedWebViewCheckBusinessException.verificationParam,
                 webViewHelperV2Impl,
             )
@@ -93,6 +102,12 @@ class NormalSearchViewModel(
     }
 
 }
+
+private data class VerificationRequestKey(
+    val sourceKey: String,
+    val keyword: String,
+    val pageKey: Int,
+)
 
 class NormalSearchViewModelFactory(
     private val searchComponent: SearchComponent

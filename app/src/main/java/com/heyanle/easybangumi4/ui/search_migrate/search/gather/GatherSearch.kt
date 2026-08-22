@@ -57,13 +57,19 @@ fun ColumnScope.GatherSearch(
     val keyboard = LocalSoftwareKeyboardController.current
     val searchComponents = LocalSourceBundleController.current.searches()
     val vm =
-        viewModel<GatherSearchViewModel>(factory = GatherSearchViewModelFactory(searchComponents))
+        viewModel<GatherSearchViewModel>(
+            key = "gather-search",
+            factory = GatherSearchViewModelFactory(searchComponents),
+        )
 
     val starVm = viewModel<CoverStarViewModel>()
 
-    val searchKey = searchViewModel.searchFlow.collectAsState()
-    LaunchedEffect(key1 = searchKey.value) {
-        vm.newSearchKey(searchKey.value)
+    val searchRequest = searchViewModel.searchRequestFlow.collectAsState()
+    LaunchedEffect(searchRequest.value) {
+        vm.submitSearch(searchRequest.value)
+    }
+    LaunchedEffect(searchComponents) {
+        vm.updateSearchComponents(searchComponents)
     }
 
     val itemList = vm.searchItemList.collectAsState()
@@ -85,17 +91,18 @@ fun ColumnScope.GatherSearch(
                 }
             })
     ) {
-        itemList.value?.let {
-            items(it) {
+        itemList.value?.let { sourceItems ->
+            items(sourceItems) { sourceItem ->
                 MigrateSourceItem(
-                    sourceItem = it,
+                    sourceItem = sourceItem,
                     starVm = starVm,
                     onClick = {
                         nav.navigationDetailed(it)
                     },
                     onWebCheck = { exce, page ->
                         vm.onSearchNeedWebCheck(
-                            exce,
+                            sourceKey = sourceItem.searchComponent.source.key,
+                            searchNeedWebViewCheckBusinessException = exce,
                             onRetry = {
                                 page.retry()
                             }

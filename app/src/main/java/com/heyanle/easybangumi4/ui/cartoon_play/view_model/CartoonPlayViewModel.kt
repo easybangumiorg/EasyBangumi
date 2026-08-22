@@ -80,7 +80,26 @@ class CartoonPlayViewModel(
     }
 
 
-    var selectedLineIndex by mutableIntStateOf(0)
+    /**
+     * UI 正在浏览的播放线路。使用源维护的线路 id 作为身份，避免详情刷新或排序时
+     * [PlayLineWrapper] 被重建后丢失选择。
+     */
+    var selectedLineId: String? = null
+        private set
+
+    /**
+     * 兼容旧播放页的 index API。内部仍以 [selectedLineId] 为准，index 只作为当前列表
+     * 无法解析 id 时的降级值。
+     */
+    private var legacySelectedLineIndex by mutableIntStateOf(0)
+    var selectedLineIndex: Int
+        get() = resolveSelectedLineIndex(latestPlayLines)
+        set(value) {
+            selectLine(latestPlayLines, value)
+        }
+
+    /** 最近一次详情快照生成的线路，排序变化后会替换为新的 wrapper。 */
+    private var latestPlayLines: List<PlayLineWrapper> = emptyList()
 
     private val _curringPlayStatus = MutableStateFlow<CartoonPlayState?>(null)
     val curringPlayState = _curringPlayStatus.asStateFlow()
@@ -89,23 +108,44 @@ class CartoonPlayViewModel(
 
     fun onCartoonInfoChange(
         info: CartoonInfo
+    ) {
+        onCartoonInfoChange(info, info.playLineWrapper, traceEnabled = true)
+    }
+
+    /**
+     * 接收详情与其同一时刻生成的线路快照。internal 重载也让纯 JVM 测试无需初始化
+     * 全局 JSON/依赖注入环境即可验证播放状态迁移。
+     */
+    internal fun onCartoonInfoChange(
+        info: CartoonInfo,
+        playLines: List<PlayLineWrapper>,
+        traceEnabled: Boolean = false,
     ){
         val old = _curringPlayStatus.value
+        latestPlayLines = playLines
         if(old != null && old.cartoonSummary == info.toSummary()){
-            "play-state action=ignore-same-cartoon previousId=${old.cartoonSummary.id} nextId=${info.id}".logi("PlaybackTrace")
+            reconcileSelectedLine(
+                preferredLineId = selectedLineId,
+                playingLineId = old.playLine.playLine.id,
+            )
+            if (traceEnabled) {
+                "play-state action=ignore-same-cartoon previousId=${old.cartoonSummary.id} nextId=${info.id}".logi("PlaybackTrace")
+            }
             return
         }
-        "play-state action=cartoon-info previousId=${old?.cartoonSummary?.id} nextSource=${info.source} nextId=${info.id} title=${info.name}".logi("PlaybackTrace")
+        if (traceEnabled) {
+            "play-state action=cartoon-info previousId=${old?.cartoonSummary?.id} nextSource=${info.source} nextId=${info.id} title=${info.name}".logi("PlaybackTrace")
+        }
         val pair = if(enter == null || enter?.isEffective() != true){
             if(adviceProgress == -1L && old == null){
                 adviceProgress = info.lastProcessTime
             }
-            info.matchHistoryEpisode
+            matchHistory(playLines, info)
         }else{
             if(adviceProgress == -1L && old == null){
                 adviceProgress = enter?.adviceProgress?:0L
             }
-            match(info.playLineWrapper, enter)
+            match(playLines, enter)
         }
 
         // enter 只生效一次
@@ -113,12 +153,18 @@ class CartoonPlayViewModel(
 
         _curringPlayStatus.update {
             if(pair != null){
-                "play-state action=select source=${info.source} cartoonId=${info.id} lineId=${pair.first.playLine.id} episodeId=${pair.second.id}".logi("PlaybackTrace")
+                if (traceEnabled) {
+                    "play-state action=select source=${info.source} cartoonId=${info.id} lineId=${pair.first.playLine.id} episodeId=${pair.second.id}".logi("PlaybackTrace")
+                }
                 CartoonPlayState(info.toSummary(), pair.first, pair.second, info.toCartoon())
             }else{
                 null
             }
         }
+        reconcileSelectedLine(
+            preferredLineId = pair?.first?.playLine?.id,
+            playingLineId = pair?.first?.playLine?.id,
+        )
     }
 
     fun changePlay(
@@ -126,6 +172,7 @@ class CartoonPlayViewModel(
         playLineWrapper: PlayLineWrapper,
         episode: Episode,
     ){
+        selectLineById(playLineWrapper.playLine.id)
         _curringPlayStatus.update {
             CartoonPlayState(cartoonSummary, playLineWrapper, episode)
         }
@@ -135,6 +182,7 @@ class CartoonPlayViewModel(
         playLineWrapper: PlayLineWrapper,
         episode: Episode,
     ){
+        selectLineById(playLineWrapper.playLine.id)
         _curringPlayStatus.update {
             CartoonPlayState(cartoonInfo.toSummary(), playLineWrapper, episode, cartoonInfo.toCartoon())
         }
@@ -142,14 +190,84 @@ class CartoonPlayViewModel(
 
     fun tryNext(){
         val current = _curringPlayStatus.value ?: return
-        val index = current.playLine.sortedEpisodeList.indexOf(current.episode)  + 1
-        if(index <= 0|| index >= current.playLine.sortedEpisodeList.size){
+        val latestLine = latestPlayLines.firstOrNull {
+            it.playLine.id == current.playLine.playLine.id
+        } ?: current.playLine
+        val episodes = latestLine.sortedEpisodeList
+        val currentIndex = episodes.indexOfFirst { it.id == current.episode.id }
+        val nextIndex = currentIndex + 1
+        if(currentIndex < 0 || nextIndex >= episodes.size){
             return
         }
+        selectLineById(latestLine.playLine.id)
         _curringPlayStatus.update {
-            CartoonPlayState(current.cartoonSummary,  current.playLine, current.playLine.sortedEpisodeList[index])
+            CartoonPlayState(
+                current.cartoonSummary,
+                latestLine,
+                episodes[nextIndex],
+                current.cartoon,
+            )
         }
 
+    }
+
+    /** 根据稳定线路 id，在调用方持有的最新列表中解析 UI index。 */
+    fun resolveSelectedLineIndex(playLines: List<PlayLineWrapper>): Int {
+        val fallbackIndex = legacySelectedLineIndex
+        if (playLines.isEmpty()) return fallbackIndex.coerceAtLeast(0)
+        val selectedIndex = selectedLineId?.let { lineId ->
+            playLines.indexOfFirst { it.playLine.id == lineId }.takeIf { it >= 0 }
+        }
+        return selectedIndex ?: fallbackIndex.coerceIn(playLines.indices)
+    }
+
+    /** 使用调用方的最新列表选择浏览线路，供新旧播放页共同使用。 */
+    fun selectLine(playLines: List<PlayLineWrapper>, index: Int) {
+        latestPlayLines = playLines
+        val line = playLines.getOrNull(index) ?: return
+        selectedLineId = line.playLine.id
+        legacySelectedLineIndex = index
+    }
+
+    private fun selectLineById(lineId: String) {
+        selectedLineId = lineId
+        val index = latestPlayLines.indexOfFirst { it.playLine.id == lineId }
+        if (index >= 0) legacySelectedLineIndex = index
+    }
+
+    private fun reconcileSelectedLine(
+        preferredLineId: String?,
+        playingLineId: String?,
+    ) {
+        val resolvedId = sequenceOf(preferredLineId, playingLineId)
+            .filterNotNull()
+            .firstOrNull { lineId -> latestPlayLines.any { it.playLine.id == lineId } }
+            ?: latestPlayLines.firstOrNull()?.playLine?.id
+        if (resolvedId == null) {
+            selectedLineId = null
+            legacySelectedLineIndex = 0
+            return
+        }
+        selectLineById(resolvedId)
+    }
+
+    private fun matchHistory(
+        playLines: List<PlayLineWrapper>,
+        info: CartoonInfo,
+    ): Pair<PlayLineWrapper, Episode>? {
+        return match(
+            playLines,
+            EnterData(
+                playLineId = info.lastLineId,
+                playLineLabel = info.lastLineLabel,
+                playLineIndex = info.lastLinesIndex,
+                episodeId = info.lastEpisodeId,
+                episodeLabel = info.lastEpisodeLabel,
+                episodeOrder = info.lastEpisodeOrder,
+                episodeIndex = info.lastEpisodeIndex,
+                adviceProgress = info.lastProcessTime,
+            ),
+        )
     }
 
     private fun match(
