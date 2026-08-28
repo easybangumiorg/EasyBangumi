@@ -1,93 +1,52 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.kts.
+# EasyBangumi R8/ProGuard rules
 #
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# 策略说明（2025 性能优化）：
+# 1. -dontoptimize 已移除：此前整体关闭了 R8 优化（无内联/无死代码消除），仅保留混淆。
+# 2. 「com.heyanle.**」全量 keep 暂时保留：Rhino JS 扩展源通过 LiveConnect 反射调用
+#    Java 方法（见 JSComponentBundle 放入 scope 的 helper 对象），且 Gson/Moshi 按字段名
+#    解析 com.heyanle 下的实体类；第三方 JS 脚本可能 importClass 任意 app 类。
+#    后续如需收窄，必须配合真机运行全部番源脚本回归验证。
+# 3. okhttp3 / gson / jsoup / kotlinx.coroutines / kotlin-stdlib 自带 consumer rules，
+#    此前的全量 keep 会连带关闭对这些库的优化，已移除（仅保留 ServiceLoader 等必要项）。
+# 4. 文件此前存在三段完全重复的规则块，已合并去重。
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# ---------------------------------------------------------------- 本体（Rhino/Gson 反射依赖，勿动）
+-keep class com.heyanle.** {*;}
+-keep interface com.heyanle.** {*;}
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
-
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
-
-# Please add these rules to your existing keep rules in order to suppress warnings.
-# This is generated automatically by the Android Gradle plugin.
--keep class com.pika.lib_signal.** {*;}
--keep interface com.pika.lib_signal.** {*;}
-
--keep class org.slf4j.impl.StaticLoggerBinder { *; }
--keep class org.slf4j.impl.StaticMDCBinder  { *; }
--dontwarn org.slf4j.impl.StaticLoggerBinder
--dontwarn org.slf4j.impl.StaticMDCBinder
-
+# ---------------------------------------------------------------- JS 引擎（Rhino LiveConnect 反射）
 -keep class org.mozilla.javascript.** {*;}
+-dontwarn javax.script.ScriptEngine
+-dontwarn javax.script.ScriptEngineManager
 
--keep class org.apache.commons.**{*;}
--keep interface org.apache.commons.**{*;}
+# JS 番源脚本的 LiveConnect 反射面（实证：inner_source 的 js 直接调用
+# okhttpHelper.client.newCall(...).execute()、Headers.entrySet()、Jsoup.parse(...)，
+# 2025-08 真机 R8 实测删掉后报 EcmaError: Cannot find function newCall in okhttp3.z）
+-keep class okhttp3.** {*;}
+-keep interface okhttp3.** {*;}
+-keep class org.jsoup.** {*;}
+-keep interface org.jsoup.** {*;}
+
+# Moshi KotlinJsonAdapterFactory 依赖 kotlin-reflect，其内部实现不可被优化
+-keep class kotlin.reflect.jvm.internal.** { *; }
+
+# ---------------------------------------------------------------- 第三方库
 # bugly
-
--dontwarn com.tencent.bugly.**
 -keep public class com.tencent.bugly.**{*;}
+-dontwarn com.tencent.bugly.**
 
-# cybergarage
+# cybergarage (UPnP)
 -keep class org.cybergarage.**{*;}
 -keep interface org.cybergarage.**{*;}
 
-# 本体
--keep class com.heyanle.**{*;}
--keep interface com.heyanle.**{*;}
-
-# 协程
-
--keep class kotlin.** { *; }
--keep class kotlin.Metadata { *; }
--dontwarn kotlin.**
--keepclassmembers class **$WhenMappings {
-    <fields>;
-}
--keepclassmembers class kotlin.Metadata {
-    public <methods>;
-}
--assumenosideeffects class kotlin.jvm.internal.Intrinsics {
-    static void checkParameterIsNotNull(java.lang.Object, java.lang.String);
-}
--keep class kotlinx.coroutines.** {*;}
-# ServiceLoader support
--keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
--keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}
--keepnames class kotlinx.coroutines.android.AndroidExceptionPreHandler {}
--keepnames class kotlinx.coroutines.android.AndroidDispatcherFactory {}
-
-# Most of volatile fields are updated with AFU and should not be mangled
--keepclassmembernames class kotlinx.** {
-    volatile <fields>;
-}
-
+# mmkv
 -keep class com.tencent.mmkv.** {*;}
 
--keep class org.apache.commons.** {*;}
+# commons
+-keep class org.apache.commons.**{*;}
+-keep interface org.apache.commons.**{*;}
 
-# okhttp
--keep class okhttp3.** {*;}
-
-# jsoup
--keep class org.jsoup.** {*;}
-
-# jsoup
--keep class com.google.gson.** {*;}
-
-# aria
--dontwarn com.arialyy.aria.**
+# aria 下载（注解处理器生成代理，反射回调）
 -keep class com.arialyy.aria.**{*;}
 -keep class **$$DownloadListenerProxy{ *; }
 -keep class **$$UploadListenerProxy{ *; }
@@ -99,17 +58,27 @@
     @DownloadGroup.* <methods>;
 }
 
-# m3u8 ffmepg lib
+# m3u8 ffmpeg lib
 -keep class com.jeffmony.** {*;}
 
+# slf4j
+-keep class org.slf4j.impl.StaticLoggerBinder { *; }
+-keep class org.slf4j.impl.StaticMDCBinder  { *; }
+-dontwarn org.slf4j.impl.StaticLoggerBinder
+-dontwarn org.slf4j.impl.StaticMDCBinder
+
+# 历史遗留（lib_signal 已不在依赖中，规则保留以防回退）
+-keep class com.pika.lib_signal.** {*;}
+-keep interface com.pika.lib_signal.** {*;}
+
+# ---------------------------------------------------------------- 序列化 / 系统契约
+# Parcelable
 -keep class * implements android.os.Parcelable {
   public static final android.os.Parcelable$Creator *;
 }
 
-#保持 Serializable 不被混淆
+# Serializable
 -keepnames class * implements java.io.Serializable
-
-#保持 Serializable 不被混淆并且enum 类也不被混淆
 -keepclassmembers class * implements java.io.Serializable {
     static final long serialVersionUID;
     private static final java.io.ObjectStreamField[] serialPersistentFields;
@@ -122,44 +91,43 @@
     java.lang.Object readResolve();
 }
 
-#保持枚举 enum 类不被混淆
+# 枚举 values/valueOf
 -keepclassmembers enum * {
   public static **[] values();
   public static ** valueOf(java.lang.String);
 }
 
--keepclassmembers class * {
-    public void *ButtonClicked(android.view.View);
-}
-
-#优化  不优化输入的类文件
--dontoptimize
-
-#避免混淆泛型
--keepattributes Singature
-
-#保护注解
--keepattributes *Annotation
-
--keepattributes *Annotation*
--keep class com.lidroid.** { *; }
--keep class * extends java.lang.annotation.Annotation { *; }
-
-#保持 Parcelable 不被混淆
--keep class * implements android.os.Parcelable {
-  public static final android.os.Parcelable$Creator *;
-}
-
-#保持 Serializable 不被混淆
--keepnames class * implements java.io.Serializable
-
-#不混淆资源类
+# 资源类
 -keepclassmembers class **.R$* {
     public static <fields>;
 }
 
--dontwarn javax.script.ScriptEngine
--dontwarn javax.script.ScriptEngineManager
+# ---------------------------------------------------------------- Kotlin / 协程
+-keepclassmembers class **$WhenMappings {
+    <fields>;
+}
+-keepclassmembers class kotlin.Metadata {
+    public <methods>;
+}
+-assumenosideeffects class kotlin.jvm.internal.Intrinsics {
+    static void checkParameterIsNotNull(java.lang.Object, java.lang.String);
+}
+# ServiceLoader support
+-keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
+-keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}
+-keepnames class kotlinx.coroutines.android.AndroidExceptionPreHandler {}
+-keepnames class kotlinx.coroutines.android.AndroidDispatcherFactory {}
+# AFU 更新的 volatile 字段名不可被混淆
+-keepclassmembernames class kotlinx.** {
+    volatile <fields>;
+}
+
+# ---------------------------------------------------------------- 通用 keepattributes
+# 注：此前文件中 "Singature" 为拼写错误（应为 Signature），泛型签名实际未被保留
+-keepattributes Signature,InnerClasses,EnclosingMethod
+-keepattributes *Annotation*
+
+# ---------------------------------------------------------------- -dontwarn（依赖库引用了非 Android 环境的类）
 -dontwarn javax.inject.Qualifier
 -dontwarn javax.enterprise.context.ApplicationScoped
 -dontwarn javax.enterprise.inject.Alternative
@@ -173,210 +141,8 @@
 -dontwarn org.openjsse.javax.net.ssl.SSLParameters
 -dontwarn org.openjsse.javax.net.ssl.SSLSocket
 -dontwarn org.openjsse.net.ssl.OpenJSSE
-
 -dontwarn androidx.window.extensions.area.ExtensionWindowAreaPresentation
-
-# Please add these rules to your existing keep rules in order to suppress warnings.
-# This is generated automatically by the Android Gradle plugin.
--dontwarn java.awt.AWTEvent
--dontwarn java.awt.ActiveEvent
--dontwarn java.awt.BorderLayout
--dontwarn java.awt.Color
--dontwarn java.awt.Component
--dontwarn java.awt.Container
--dontwarn java.awt.Dimension
--dontwarn java.awt.EventQueue
--dontwarn java.awt.Font
--dontwarn java.awt.FontMetrics
--dontwarn java.awt.Frame
--dontwarn java.awt.Graphics
--dontwarn java.awt.GridBagConstraints
--dontwarn java.awt.GridBagLayout
--dontwarn java.awt.GridLayout
--dontwarn java.awt.Insets
--dontwarn java.awt.LayoutManager
--dontwarn java.awt.MenuComponent
--dontwarn java.awt.Point
--dontwarn java.awt.Polygon
--dontwarn java.awt.Rectangle
--dontwarn java.awt.Toolkit
--dontwarn java.awt.event.ActionEvent
--dontwarn java.awt.event.ActionListener
--dontwarn java.awt.event.ComponentEvent
--dontwarn java.awt.event.ComponentListener
--dontwarn java.awt.event.ContainerEvent
--dontwarn java.awt.event.ContainerListener
--dontwarn java.awt.event.KeyAdapter
--dontwarn java.awt.event.KeyEvent
--dontwarn java.awt.event.KeyListener
--dontwarn java.awt.event.MouseAdapter
--dontwarn java.awt.event.MouseEvent
--dontwarn java.awt.event.MouseListener
--dontwarn java.awt.event.WindowAdapter
--dontwarn java.awt.event.WindowEvent
--dontwarn java.awt.event.WindowListener
--dontwarn java.beans.BeanDescriptor
--dontwarn java.beans.BeanInfo
--dontwarn java.beans.IntrospectionException
--dontwarn java.beans.Introspector
--dontwarn java.beans.PropertyDescriptor
--dontwarn javax.swing.AbstractButton
--dontwarn javax.swing.BorderFactory
--dontwarn javax.swing.Box
--dontwarn javax.swing.BoxLayout
--dontwarn javax.swing.ButtonGroup
--dontwarn javax.swing.CellEditor
--dontwarn javax.swing.DefaultListModel
--dontwarn javax.swing.DefaultListSelectionModel
--dontwarn javax.swing.DesktopManager
--dontwarn javax.swing.Icon
--dontwarn javax.swing.JButton
--dontwarn javax.swing.JCheckBoxMenuItem
--dontwarn javax.swing.JComboBox
--dontwarn javax.swing.JComponent
--dontwarn javax.swing.JDesktopPane
--dontwarn javax.swing.JDialog
--dontwarn javax.swing.JFileChooser
--dontwarn javax.swing.JFrame
--dontwarn javax.swing.JInternalFrame
--dontwarn javax.swing.JLabel
--dontwarn javax.swing.JList
--dontwarn javax.swing.JMenu
--dontwarn javax.swing.JMenuBar
--dontwarn javax.swing.JMenuItem
--dontwarn javax.swing.JOptionPane
--dontwarn javax.swing.JPanel
--dontwarn javax.swing.JPopupMenu
--dontwarn javax.swing.JRadioButtonMenuItem
--dontwarn javax.swing.JRootPane
--dontwarn javax.swing.JScrollPane
--dontwarn javax.swing.JSplitPane
--dontwarn javax.swing.JTabbedPane
--dontwarn javax.swing.JTable
--dontwarn javax.swing.JTextArea
--dontwarn javax.swing.JToolBar
--dontwarn javax.swing.JTree
--dontwarn javax.swing.JViewport
--dontwarn javax.swing.KeyStroke
--dontwarn javax.swing.ListModel
--dontwarn javax.swing.ListSelectionModel
--dontwarn javax.swing.LookAndFeel
--dontwarn javax.swing.SwingUtilities
--dontwarn javax.swing.UIManager
--dontwarn javax.swing.border.Border
--dontwarn javax.swing.event.CellEditorListener
--dontwarn javax.swing.event.ChangeEvent
--dontwarn javax.swing.event.DocumentEvent
--dontwarn javax.swing.event.DocumentListener
--dontwarn javax.swing.event.EventListenerList
--dontwarn javax.swing.event.InternalFrameAdapter
--dontwarn javax.swing.event.InternalFrameEvent
--dontwarn javax.swing.event.InternalFrameListener
--dontwarn javax.swing.event.ListSelectionEvent
--dontwarn javax.swing.event.ListSelectionListener
--dontwarn javax.swing.event.PopupMenuEvent
--dontwarn javax.swing.event.PopupMenuListener
--dontwarn javax.swing.event.TreeExpansionEvent
--dontwarn javax.swing.event.TreeExpansionListener
--dontwarn javax.swing.event.TreeModelEvent
--dontwarn javax.swing.event.TreeModelListener
--dontwarn javax.swing.filechooser.FileFilter
--dontwarn javax.swing.table.AbstractTableModel
--dontwarn javax.swing.table.TableCellEditor
--dontwarn javax.swing.table.TableCellRenderer
--dontwarn javax.swing.table.TableModel
--dontwarn javax.swing.text.BadLocationException
--dontwarn javax.swing.text.Caret
--dontwarn javax.swing.text.Document
--dontwarn javax.swing.text.Segment
--dontwarn javax.swing.tree.DefaultTreeCellRenderer
--dontwarn javax.swing.tree.DefaultTreeSelectionModel
--dontwarn javax.swing.tree.TreeCellRenderer
--dontwarn javax.swing.tree.TreeModel
--dontwarn javax.swing.tree.TreePath
--dontwarn javax.swing.tree.TreeSelectionModel
-
-
-# 本体
--keep class com.heyanle.**{*;}
--keep interface com.heyanle.**{*;}
-
-# 协程
-
--keep class kotlin.** { *; }
--keep class kotlin.Metadata { *; }
--dontwarn kotlin.**
--keepclassmembers class **$WhenMappings {
-    <fields>;
-}
--keepclassmembers class kotlin.Metadata {
-    public <methods>;
-}
--assumenosideeffects class kotlin.jvm.internal.Intrinsics {
-    static void checkParameterIsNotNull(java.lang.Object, java.lang.String);
-}
--keep class kotlinx.coroutines.android.** {*;}
-# ServiceLoader support
--keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
--keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}
--keepnames class kotlinx.coroutines.android.AndroidExceptionPreHandler {}
--keepnames class kotlinx.coroutines.android.AndroidDispatcherFactory {}
-
-# Most of volatile fields are updated with AFU and should not be mangled
--keepclassmembernames class kotlinx.** {
-    volatile <fields>;
-}
-
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
-
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
-
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
-
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
-
-
-# 本体
--keep class com.heyanle.**{*;}
--keep interface com.heyanle.**{*;}
-
-# 协程
-
--keep class kotlin.** { *; }
--keep class kotlin.Metadata { *; }
--dontwarn kotlin.**
--keepclassmembers class **$WhenMappings {
-    <fields>;
-}
--keepclassmembers class kotlin.Metadata {
-    public <methods>;
-}
--assumenosideeffects class kotlin.jvm.internal.Intrinsics {
-    static void checkParameterIsNotNull(java.lang.Object, java.lang.String);
-}
--keep class kotlinx.coroutines.android.** {*;}
-# ServiceLoader support
--keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
--keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}
--keepnames class kotlinx.coroutines.android.AndroidExceptionPreHandler {}
--keepnames class kotlinx.coroutines.android.AndroidDispatcherFactory {}
-
-# Most of volatile fields are updated with AFU and should not be mangled
--keepclassmembernames class kotlinx.** {
-    volatile <fields>;
-}
-
+# Rhino 在 JVM 桌面环境的可选依赖（awt/swing），Android 上不存在
+-dontwarn java.awt.**
+-dontwarn java.beans.**
+-dontwarn javax.swing.**

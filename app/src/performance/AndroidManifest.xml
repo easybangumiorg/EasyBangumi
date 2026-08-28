@@ -6,7 +6,8 @@
         android:icon="@mipmap/logo_performance"
         tools:replace="android:icon">
 
-        <!-- Non-debuggable like release, but readable by adb/Perfetto/Macrobenchmark. -->
+        <!-- Non-debuggable like release, but readable by adb/Perfetto/Macrobenchmark.
+             Matches nowinandroid convention: profileable lives inside <application>. -->
         <profileable
             android:shell="true"
             tools:targetApi="29" />

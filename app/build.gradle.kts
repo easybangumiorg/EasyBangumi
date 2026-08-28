@@ -124,7 +124,7 @@ android {
         }
         release {
             isMinifyEnabled = true
-            isShrinkResources = false
+            isShrinkResources = true
             proguardFiles("proguard-rules.pro")
 
             manifestPlaceholders["package_name"] = baseApplicationId
