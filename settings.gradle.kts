@@ -36,6 +36,12 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "EasyBangumi"
+includeBuild("third_party/m3u8-ad-audio-probe") {
+    dependencySubstitution {
+        substitute(module("io.github.0o755:ad-audio-probe-runtime")).using(project(":probe-runtime"))
+        substitute(module("io.github.0o755:ad-audio-probe-media3-1.9.2")).using(project(":probe-media3-1-9"))
+    }
+}
 include(":app")
 include(":easy-crasher")
 include(":easy-i18n")
@@ -44,6 +50,5 @@ include(":lib_upnp")
 
 include(":easy-player2")
 include(":easy_transformer")
-
 
 

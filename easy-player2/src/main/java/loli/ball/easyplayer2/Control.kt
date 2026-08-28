@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -114,9 +115,11 @@ fun RowScope.PlayPauseBtn(
 fun RowScope.TimeText(
     time: Long,
     color: Color = Color.Unspecified,
+    fixedWidth: Boolean = false,
 ) {
     Text(
         modifier = Modifier
+            .let { if (fixedWidth) it.width(56.dp) else it }
             .padding(4.dp, 0.dp)
             .align(Alignment.CenterVertically),
         text = TimeUtils.toString(time),

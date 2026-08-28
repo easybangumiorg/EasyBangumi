@@ -155,7 +155,7 @@ internal fun SourcePushV2() {
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = V2Theme.colors.accent,
-                    contentColor = V2Tokens.TextPrimary,
+                    contentColor = V2Theme.colors.onAccent,
                     disabledContainerColor = V2Tokens.Divider,
                     disabledContentColor = V2Tokens.TextSecondary,
                 ),

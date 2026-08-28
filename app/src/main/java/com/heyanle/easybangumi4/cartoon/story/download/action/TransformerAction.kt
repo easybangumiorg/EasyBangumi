@@ -10,7 +10,7 @@ import androidx.media3.transformer.DefaultDecoderFactory
 import androidx.media3.transformer.ExoPlayerAssetLoader
 import androidx.media3.transformer.ExportException
 import androidx.media3.transformer.ExportResult
-import androidx.media3.transformer.InAppMuxer
+import androidx.media3.transformer.InAppMp4Muxer
 import androidx.media3.transformer.ProgressHolder
 import androidx.media3.transformer.Transformer
 import com.heyanle.easybangumi4.APP
@@ -150,7 +150,7 @@ class TransformerAction(
                         sourceFactory
                     )
                 )
-                .setMuxerFactory(InAppMuxer.Factory.Builder().build())
+                .setMuxerFactory(InAppMp4Muxer.Factory())
                 .setMaxDelayBetweenMuxerSamplesMs(500000)
                 .addListener(object : Transformer.Listener {
                     override fun onCompleted(composition: Composition, exportResult: ExportResult) {

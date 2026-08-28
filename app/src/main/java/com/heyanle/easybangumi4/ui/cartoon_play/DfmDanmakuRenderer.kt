@@ -11,7 +11,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.media3.common.Player
 import com.heyanle.easybangumi4.danmaku.DANDANPLAY_SOURCE_ID
 import com.heyanle.easybangumi4.danmaku.DanmakuComment
 import com.heyanle.easybangumi4.danmaku.DanmakuDisplayConfig
@@ -22,6 +21,7 @@ import com.heyanle.easybangumi4.danmaku.DanmakuRendererSyncPolicy
 import com.heyanle.easybangumi4.danmaku.classifyDanmakuConfigChange
 import com.heyanle.easybangumi4.danmaku.toDfmStyle
 import kotlinx.coroutines.delay
+import loli.ball.easyplayer2.EasyPlayerController
 import master.flame.danmaku.controller.DanmakuFilters
 import master.flame.danmaku.controller.DrawHandler
 import master.flame.danmaku.danmaku.model.BaseDanmaku
@@ -427,7 +427,7 @@ class DfmDanmakuRenderer {
 @Composable
 fun DfmDanmakuOverlay(
     renderer: DfmDanmakuRenderer,
-    player: Player,
+    player: EasyPlayerController,
     comments: List<DanmakuComment>,
     bindingOffsetMillis: Long,
     displayConfig: DanmakuDisplayConfig,
@@ -480,17 +480,13 @@ fun DfmDanmakuOverlay(
         )
     }
     DisposableEffect(player) {
-        val listener = object : Player.Listener {
+        val listener = object : EasyPlayerController.Listener {
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 if (isPlaying) renderer.resume() else renderer.pause()
             }
 
-            override fun onPositionDiscontinuity(
-                oldPosition: Player.PositionInfo,
-                newPosition: Player.PositionInfo,
-                reason: Int,
-            ) {
-                renderer.seekTo(newPosition.positionMs)
+            override fun onPositionDiscontinuity(positionMs: Long) {
+                renderer.seekTo(positionMs)
             }
         }
         player.addListener(listener)

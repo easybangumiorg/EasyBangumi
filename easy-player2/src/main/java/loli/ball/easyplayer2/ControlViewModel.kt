@@ -11,15 +11,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.media3.common.C.TIME_UNSET
-import androidx.media3.common.Player
-import androidx.media3.common.VideoSize
 import androidx.media3.exoplayer.ExoPlayer
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -38,11 +36,11 @@ import java.lang.IllegalStateException
 class ControlViewModel(
     @field:SuppressLint("StaticFieldLeak")
     val context: Context,
-    val exoPlayer: ExoPlayer,
+    val playerController: EasyPlayerController,
     val isPadMode: Boolean = false,
     val scene: String? = null,
     val render: EasyPlayerRender,
-) : ViewModel(), Player.Listener {
+) : ViewModel(), EasyPlayerController.Listener {
 
     companion object {
         const val CONTROL_HIDE_DELAY = 4000L
@@ -80,7 +78,7 @@ class ControlViewModel(
 
     var isLoading by mutableStateOf(false)
 
-    var playWhenReady by mutableStateOf(exoPlayer.playWhenReady)
+    var playWhenReady by mutableStateOf(playerController.playWhenReady)
 
     var position by mutableStateOf(0L)
     var bufferPosition by mutableStateOf(0L)
@@ -104,7 +102,7 @@ class ControlViewModel(
     private var lastHideJob: Job? = null
     private var loopJob: Job? = null
 
-    private var lastVideoSize: VideoSize? = null
+    private var lastVideoSize: EasyVideoSize? = null
 
     @Deprecated("use render.getViewOrNull")
     val surfaceView: EasySurfaceView
@@ -225,28 +223,28 @@ class ControlViewModel(
 
     @UiThread
     fun onPlayPause(isPlay: Boolean) {
-        exoPlayer.playWhenReady = isPlay
+        playerController.playWhenReady = isPlay
         isFastRewindWinShow = false
         isFastForwardWinShow = false
     }
 
     fun fastForward() {
-        exoPlayer.seekForward()
+        playerController.seekForward()
         isFastForwardWinShow = true
     }
 
     fun fastForwardTop(offset: Long) {
-        exoPlayer.seekTo(exoPlayer.currentPosition + offset)
+        playerController.seekTo(playerController.currentPosition + offset)
         isFastForwardTopShow = true
     }
 
     fun fastRewind() {
-        exoPlayer.seekBack()
+        playerController.seekBack()
         isFastRewindWinShow = true
     }
 
     fun fastRewindTop(offset: Long) {
-        exoPlayer.seekTo(exoPlayer.currentPosition - offset)
+        playerController.seekTo(playerController.currentPosition - offset)
         isFastRewindTopShow = true
     }
 
@@ -259,12 +257,12 @@ class ControlViewModel(
 
     @UiThread
     fun onPositionChange(position: Float) {
-        if (!exoPlayer.isMedia()) {
+        if (!playerController.hasMedia) {
             return
         }
         controlState.loge("ControlViewModel")
         horizontalScrollPosition =
-            position.coerceIn(0F, exoPlayer.duration.toFloat().coerceAtLeast(Float.MAX_VALUE))
+            position.coerceIn(0F, playerController.duration.toFloat().coerceAtLeast(Float.MAX_VALUE))
 
         if (controlState == ControlState.Normal) {
             controlState = ControlState.HorizontalScroll
@@ -280,31 +278,31 @@ class ControlViewModel(
     fun onActionUP() {
         if (controlState == ControlState.Locked) {
             if (isLongPress) {
-                if (exoPlayer.playbackParameters.speed != lastSpeed) {
-                    exoPlayer.setPlaybackSpeed(lastSpeed)
+                if (playerController.speed != lastSpeed) {
+                    playerController.setSpeed(lastSpeed)
                 }
                 isLongPress = false
             }
             return
         }
         if (controlState == ControlState.HorizontalScroll) {
-            exoPlayer.seekTo(horizontalScrollPosition.toLong())
+            playerController.seekTo(horizontalScrollPosition.toLong())
         }
         isFastRewindWinShow = false
         isFastForwardWinShow = false
         controlState = ControlState.Normal
         showControlWithHideDelay()
         if (isLongPress) {
-            if (exoPlayer.playbackParameters.speed != lastSpeed) {
-                exoPlayer.setPlaybackSpeed(lastSpeed)
+            if (playerController.speed != lastSpeed) {
+                playerController.setSpeed(lastSpeed)
             }
             isLongPress = false
         }
     }
 
     fun onLongPress() {
-        lastSpeed = exoPlayer.playbackParameters.speed
-        exoPlayer.setPlaybackSpeed(lastSpeed * 2)
+        lastSpeed = playerController.speed
+        playerController.setSpeed(lastSpeed * 2)
         isLongPress = true
     }
 
@@ -321,37 +319,34 @@ class ControlViewModel(
         lastVideoSize?.let {
             render.setVideoSize(it.width, it.height)
         }
-        exoPlayer.setPlaybackSpeed(1.0f)
+        playerController.setSpeed(1.0f)
         lastSpeed = 1.0f
         isLongPress = false
     }
 
     fun unbind() {
-        render.onDetachToPlayer(exoPlayer)
+        render.getViewOrNull()?.let(playerController::detach)
     }
 
     fun bind() {
         "bind".loge("ControlViewModel")
-        // exoPlayer.clearVideoSurface()
-        render.onAttachToPlayer(exoPlayer)
+        playerController.attach(render.getOrCreateView(context))
         lastVideoSize?.let {
             render.setVideoSize(it.width, it.height)
         }
     }
 
     fun setSpeed(speed: Float) {
-        exoPlayer.playbackParameters = exoPlayer.playbackParameters.withSpeed(speed)
-        curSpeed = exoPlayer.playbackParameters.speed
-        exoPlayer.playbackParameters.speed.loge("ControlViewModel")
+        playerController.setSpeed(speed)
+        curSpeed = playerController.speed
+        playerController.speed.loge("ControlViewModel")
     }
 
     fun onDisposed() {
-        if (exoPlayer is IScenePlayer) {
-            exoPlayer.stop(scene ?: "")
-        } else {
-            exoPlayer.stop()
-        }
-        render.onDetachToPlayer(exoPlayer)
+        // A configuration/fullscreen change can dispose and recreate the Compose AndroidView
+        // while the playback ViewModel remains alive. Detach only the output view here; stopping
+        // would discard the resolved media connection and force the page layer to rebuild it.
+        render.getViewOrNull()?.let(playerController::detach)
     }
 
     private fun showControlWithHideDelay() {
@@ -366,12 +361,12 @@ class ControlViewModel(
     }
 
     init {
-        exoPlayer.addListener(this)
+        playerController.addListener(this)
     }
 
     override fun onCleared() {
         super.onCleared()
-        exoPlayer.removeListener(this)
+        playerController.removeListener(this)
     }
 
     private fun getLoopJob(): Job {
@@ -400,14 +395,12 @@ class ControlViewModel(
     }
 
     override fun onIsPlayingChanged(isPlaying: Boolean) {
-        super.onIsPlayingChanged(isPlaying)
         render.getViewOrNull()?.keepScreenOn = isPlaying
     }
 
-    override fun onPlaybackStateChanged(playbackState: Int) {
-        super.onPlaybackStateChanged(playbackState)
+    override fun onPlaybackStateChanged(playbackState: EasyPlaybackState) {
         when (playbackState) {
-            Player.STATE_READY -> {
+            EasyPlaybackState.READY -> {
                 isLoading = false
                 syncTimeIfNeed()
                 starLoop()
@@ -417,7 +410,7 @@ class ControlViewModel(
 
             }
 
-            Player.STATE_IDLE -> {
+            EasyPlaybackState.IDLE -> {
                 isLoading = false
                 stopLoop()
                 if (controlState == ControlState.Ended) {
@@ -425,13 +418,13 @@ class ControlViewModel(
                 }
             }
 
-            Player.STATE_BUFFERING -> {
+            EasyPlaybackState.BUFFERING -> {
                 isLoading = true
                 syncTimeIfNeed()
                 starLoop()
             }
 
-            Player.STATE_ENDED -> {
+            EasyPlaybackState.ENDED -> {
                 isLoading = false
                 stopLoop()
                 controlState = ControlState.Ended
@@ -439,39 +432,26 @@ class ControlViewModel(
         }
     }
 
-    override fun onAvailableCommandsChanged(availableCommands: Player.Commands) {
-        super.onAvailableCommandsChanged(availableCommands)
-        if (availableCommands.contains(Player.COMMAND_PREPARE)) {
-            onPrepare()
-        }
-    }
-
-    override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
-        super.onPlayWhenReadyChanged(playWhenReady, reason)
+    override fun onPlayWhenReadyChanged(playWhenReady: Boolean) {
         this.playWhenReady = playWhenReady
     }
 
-    override fun onVideoSizeChanged(videoSize: VideoSize) {
-        super.onVideoSizeChanged(videoSize)
+    override fun onVideoSizeChanged(videoSize: EasyVideoSize) {
         render.setVideoSize(videoSize.width, videoSize.height)
         fullScreenVertically = videoSize.width < videoSize.height
         lastVideoSize = videoSize
     }
 
     private fun syncTimeIfNeed() {
-        with(exoPlayer) {
-            if (!isMedia()) return
-            during = duration.let { if (it == TIME_UNSET) 0 else it }
+        with(playerController) {
+            if (!hasMedia) return
+            during = duration
             position = currentPosition
             if (controlState == ControlState.Normal) {
                 horizontalScrollPosition = currentPosition.toFloat()
             }
             bufferPosition = bufferedPosition
         }
-    }
-
-    private fun ExoPlayer.isMedia(): Boolean {
-        return playbackState == Player.STATE_BUFFERING || playbackState == Player.STATE_READY
     }
 
     fun isShowOverlay(): Boolean {
@@ -496,7 +476,7 @@ class ControlViewModel(
 
 class ControlViewModelFactory(
     private val context: Context,
-    private val exoPlayer: ExoPlayer,
+    private val playerController: EasyPlayerController,
     private val isPadMode: Boolean = false,
     private val scene: String? = null,
     private val render: EasyPlayerRender = SurfacePlayerRender(),
@@ -510,10 +490,26 @@ class ControlViewModelFactory(
             scene: String? = null,
             render: EasyPlayerRender = SurfacePlayerRender(),
         ): ControlViewModel {
+            val controller = remember(exoPlayer) { ExoEasyPlayerController(exoPlayer) }
+            return viewModel(
+                playerController = controller,
+                isPadMode = isPadMode,
+                scene = scene,
+                render = render,
+            )
+        }
+
+        @Composable
+        fun viewModel(
+            playerController: EasyPlayerController,
+            isPadMode: Boolean = false,
+            scene: String? = null,
+            render: EasyPlayerRender = SurfacePlayerRender(),
+        ): ControlViewModel {
             return viewModel<ControlViewModel>(
                 factory = ControlViewModelFactory(
                     LocalContext.current,
-                    exoPlayer,
+                    playerController,
                     isPadMode = isPadMode,
                     scene,
                     render
@@ -526,7 +522,7 @@ class ControlViewModelFactory(
     @SuppressWarnings("unchecked")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(ControlViewModel::class.java))
-            return ControlViewModel(context, exoPlayer, isPadMode, scene, render) as T
+            return ControlViewModel(context, playerController, isPadMode, scene, render) as T
         throw RuntimeException("unknown class :" + modelClass.name)
     }
 

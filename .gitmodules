@@ -1,0 +1,3 @@
+[submodule "third_party/m3u8-ad-audio-probe"]
+	path = third_party/m3u8-ad-audio-probe
+	url = https://github.com/0o755/m3u8-ad-audio-probe.git

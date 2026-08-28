@@ -162,7 +162,7 @@ internal fun StorageV2() {
                     .padding(horizontal = 20.dp, vertical = 14.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = V2Theme.colors.accent,
-                    contentColor = V2Tokens.TextPrimary,
+                    contentColor = V2Theme.colors.onAccent,
                 ),
                 shape = RoundedCornerShape(12.dp),
             ) {
@@ -227,7 +227,7 @@ private fun StorageChoiceRowV2(
             onCheckedChange = onCheckedChange,
             colors = CheckboxDefaults.colors(
                 checkedColor = V2Theme.colors.accent,
-                checkmarkColor = V2Tokens.TextPrimary,
+                checkmarkColor = V2Theme.colors.onAccent,
             ),
         )
     }

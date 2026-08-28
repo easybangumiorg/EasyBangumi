@@ -221,6 +221,9 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 }
 
 dependencies {
+    implementation("io.github.0o755:ad-audio-probe-runtime:0.1.0")
+    implementation("io.github.0o755:ad-audio-probe-media3-1.9.2:0.1.0")
+    implementation("dev.jdtech.mpv:libmpv:0.5.1")
     implementation(libs.dfm)
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
     implementation(androidx.bundles.core)
@@ -307,7 +310,6 @@ dependencies {
     implementation(libs.aria.compiler)
     implementation(libs.aria)
 
-    implementation(libs.jeff.m3u8)
 
 
     implementation(project(":easy-player2"))

@@ -56,3 +56,8 @@
 
 # [更新列表](https://github.com/easybangumiorg/EasyBangumi/blob/main/app/src/main/assets/update_log.txt)  
 
+# 许可证
+
+本项目自引入 libmpv 播放引擎的版本起按 GNU General Public License v3.0 发布。
+历史版本仍适用其发布时附带的许可证。libmpv、mpv、FFmpeg 与 Anime4K 等第三方组件
+保留各自的版权与许可证声明。

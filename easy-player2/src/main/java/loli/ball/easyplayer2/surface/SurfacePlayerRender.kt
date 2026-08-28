@@ -2,7 +2,6 @@ package loli.ball.easyplayer2.surface
 
 import android.content.Context
 import android.view.View
-import androidx.media3.exoplayer.ExoPlayer
 import loli.ball.easyplayer2.render.EasyPlayerRender
 
 /**
@@ -20,21 +19,19 @@ class SurfacePlayerRender: EasyPlayerRender {
     override fun getOrCreateView(ctx: Context): View {
         val sur = surfaceView
         if (sur == null){
-            val surfaceView = EasySurfaceView(ctx)
+            val surfaceView = EasySurfaceView(ctx).apply {
+                // AndroidView hosts a real child View above the Compose hit-test tree. Keeping the
+                // video surface non-interactive lets the foreground Compose gesture/controller
+                // layer receive taps, double taps and drags for both ExoPlayer and libmpv.
+                isClickable = false
+                isLongClickable = false
+                isFocusable = false
+                isFocusableInTouchMode = false
+            }
             this.surfaceView = surfaceView
             return surfaceView
         }
         return sur
-    }
-
-    override fun onAttachToPlayer(exoPlayer: ExoPlayer) {
-        val sur = surfaceView ?: return
-        exoPlayer.setVideoSurfaceView(sur)
-    }
-
-    override fun onDetachToPlayer(exoPlayer: ExoPlayer) {
-        val sur = surfaceView ?: return
-        exoPlayer.clearVideoSurfaceView(sur)
     }
 
     override fun setScaleType(scaleType: Int) {

@@ -67,7 +67,7 @@ class GifRecordedTask(
     override fun onBitmapAvailable(bitmap: Bitmap?, time: Long?) {
         bitmap ?: return
         time ?: return
-        val cop = bitmap.copy(bitmap.config, false)
+        val cop = bitmap.copy(bitmap.config ?: Bitmap.Config.ARGB_8888, false)
         singleScope.launch {
             if (frameTempFolder.isFile){
                 frameTempFolder.deleteRecursively()

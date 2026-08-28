@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+
 package com.heyanle.easybangumi4.v2.ui.playback
 
 import android.app.Activity
@@ -10,6 +12,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -78,6 +81,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -85,6 +89,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -92,6 +97,7 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -111,7 +117,6 @@ import com.heyanle.easybangumi4.danmaku.DanmakuPlaybackViewModel
 import com.heyanle.easybangumi4.navigationSearch
 import com.heyanle.easybangumi4.navigationDlna
 import com.heyanle.easybangumi4.navigationSetting
-import com.heyanle.easybangumi4.navigation.buildPlaybackDetailRoute
 import com.heyanle.easybangumi4.cartoon.story.local.source.LocalSource
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonSummary
 import com.heyanle.easybangumi4.plugin.api.entity.Episode
@@ -123,7 +128,6 @@ import com.heyanle.easybangumi4.ui.cartoon_play.DanmakuMatchBottomSheet
 import com.heyanle.easybangumi4.ui.cartoon_play.DfmDanmakuOverlay
 import com.heyanle.easybangumi4.ui.cartoon_play.DfmDanmakuRenderer
 import com.heyanle.easybangumi4.ui.cartoon_play.PlayerSettingsSection
-import com.heyanle.easybangumi4.ui.cartoon_play.PlayerAnime4KSettings
 import com.heyanle.easybangumi4.ui.cartoon_play.VideoControl
 import com.heyanle.easybangumi4.ui.cartoon_play.VideoFloat
 import com.heyanle.easybangumi4.ui.cartoon_play.toPlayerDanmakuControlState
@@ -143,6 +147,8 @@ import com.heyanle.easybangumi4.ui.common.proc.SortState
 import com.heyanle.easybangumi4.ui.setting.SettingPage
 import com.heyanle.easybangumi4.utils.isCurPadeMode
 import com.heyanle.easybangumi4.utils.openUrl
+import com.heyanle.easybangumi4.utils.downloadImage
+import com.heyanle.easybangumi4.utils.MediaAndroidUtils
 import com.heyanle.easybangumi4.utils.shareText
 import com.heyanle.easybangumi4.utils.toJson
 import com.heyanle.easybangumi4.v2.theme.V2Tokens
@@ -152,6 +158,7 @@ import loli.ball.easyplayer2.ControlViewModel
 import loli.ball.easyplayer2.ControlViewModelFactory
 import loli.ball.easyplayer2.EasyPlayerScaffoldBase
 import loli.ball.easyplayer2.EasyPlayerStateSync
+import kotlinx.coroutines.launch
 
 internal object CartoonPlayV2TestTags {
     const val MEDIA_IDENTITY = "playback_media_identity"
@@ -299,10 +306,8 @@ fun PlaybackDetailV2(
     val danmakuDisplayPreferences: DanmakuDisplayPreferences by Inject.injectLazy()
     val isPad = isCurPadeMode()
     val controlVM = ControlViewModelFactory.viewModel(
-        playingVM.exoPlayer,
+        playingVM.playerController,
         isPad,
-        // Media3 VideoGraph/Anime4K requires a SurfaceView-backed output. TexturePlayerRender can
-        // keep audio/progress running while producing a black video layer on affected devices.
         render = playingVM.render,
     )
     val detailState by detailedVM.stateFlow.collectAsState()
@@ -314,44 +319,6 @@ fun PlaybackDetailV2(
     }.collectAsState(danmakuDisplayPreferences.getConfig())
 
     EasyPlayerStateSync(controlVM)
-
-    val navController = LocalNavController.current
-    LaunchedEffect(playingVM, id, source) {
-        playingVM.visualRecoveryRequests.collect { reason ->
-            val current = playVM.curringPlayState.value
-            val cartoon = detailedVM.stateFlow.value.cartoonInfo
-            val recoveryEnterData = if (current == null || cartoon == null) {
-                null
-            } else {
-                CartoonPlayViewModel.EnterData(
-                    playLineId = current.playLine.playLine.id,
-                    playLineLabel = current.playLine.playLine.label,
-                    playLineIndex = cartoon.playLineWrapper.indexOfFirst {
-                        it.playLine.id == current.playLine.playLine.id
-                    },
-                    episodeId = current.episode.id,
-                    episodeLabel = current.episode.label,
-                    episodeOrder = current.episode.order,
-                    episodeIndex = current.playLine.sortedEpisodeList.indexOfFirst {
-                        it.id == current.episode.id
-                    },
-                    adviceProgress = playingVM.exoPlayer.currentPosition.coerceAtLeast(0L),
-                )
-            }
-            val recoveryRoute = buildPlaybackDetailRoute(
-                id = id,
-                source = source,
-                enterDataJson = recoveryEnterData?.toJson() ?: "{}",
-            )
-            val currentDestinationId = navController.currentDestination?.id
-            "Anime4K visual recovery: $reason".moeSnackBar()
-            navController.navigate(recoveryRoute) {
-                currentDestinationId?.let { destinationId ->
-                    popUpTo(destinationId) { inclusive = true }
-                }
-            }
-        }
-    }
 
     LaunchedEffect(detailState.cartoonInfo) {
         detailState.cartoonInfo?.let(playVM::onCartoonInfoChange)
@@ -495,19 +462,11 @@ private fun PlaybackDetailV2Content(
         showPlayerSettings = true
     }
     val videoScaleType by playingVM.videoScaleType.collectAsState()
-    val anime4kEnabled by settingPreferences.anime4kEnabled.flow().collectAsState(
-        initial = settingPreferences.anime4kEnabled.get(),
-    )
-    val anime4kMode by settingPreferences.anime4kMode.flow().collectAsState(
-        initial = settingPreferences.anime4kMode.get(),
-    )
-    val anime4kQuality by settingPreferences.anime4kQuality.flow().collectAsState(
-        initial = settingPreferences.anime4kQuality.get(),
-    )
-    val anime4kScale by settingPreferences.anime4kScale.flow().collectAsState(
-        initial = settingPreferences.anime4kScale.get(),
-    )
-    val anime4kScaleCapability by playingVM.anime4KScaleCapability.collectAsState()
+    val mpvAnime4kEnabled by playingVM.mpvAnime4kEnabled.collectAsState()
+    val mpvAnime4kPreset by playingVM.mpvAnime4kPreset.collectAsState()
+    val mpvAnime4kStatus by playingVM.mpvAnime4KStatus.collectAsState()
+    val exoAdAudioProbeEnabled by playingVM.exoAdAudioProbeEnabled.collectAsState()
+    val exoAdAudioProbeRulesUrl by playingVM.exoAdAudioProbeRulesUrl.collectAsState()
     val orientationMode by settingPreferences.playerOrientationMode.flow().collectAsState(
         initial = settingPreferences.playerOrientationMode.get(),
     )
@@ -592,7 +551,7 @@ private fun PlaybackDetailV2Content(
             Box(Modifier.fillMaxSize()) {
                 DfmDanmakuOverlay(
                     renderer = danmakuRenderer,
-                    player = playingVM.exoPlayer,
+                    player = playingVM.playerController,
                     comments = matched?.comments.orEmpty(),
                     bindingOffsetMillis = matched?.binding?.timeOffsetMillis ?: 0L,
                     displayConfig = danmakuDisplayConfig,
@@ -611,8 +570,9 @@ private fun PlaybackDetailV2Content(
                     danmakuRenderer = danmakuRenderer,
                     includeDanmakuInScreenshot = danmakuDisplayConfig.enabled,
                     showNormalCastAndShare = false,
-                    showNormalSpeedInTopBar = false,
-                    showNormalSpeedInBottomBar = true,
+                    showNormalSpeedInTopBar = true,
+                    showNormalSpeedInBottomBar = false,
+                    showNormalDanmakuInTopBar = true,
                     enableNormalScreenSeekGestures = true,
                     onShowPlayerSettings = {
                         // “更多”没有预设的配置类别，重开时延续用户上一次浏览的 Tab。
@@ -638,18 +598,17 @@ private fun PlaybackDetailV2Content(
                     videoScaleType = videoScaleType,
                     videoScaleOptions = playingVM.videoScaleTypeSelection,
                     onVideoScaleSelected = playingVM::setVideoScaleType,
-                    anime4kSettings = PlayerAnime4KSettings(
-                        enabled = anime4kEnabled,
-                        mode = anime4kMode,
-                        quality = anime4kQuality,
-                        scale = anime4kScale,
-                        onEnabledChange = settingPreferences.anime4kEnabled::set,
-                        onModeChange = settingPreferences.anime4kMode::set,
-                        onQualityChange = settingPreferences.anime4kQuality::set,
-                        onScaleChange = { playingVM.setAnime4KScale(it) },
-                        supportedScales = anime4kScaleCapability.supportedScales,
-                        unsupportedScaleReasons = anime4kScaleCapability.unsupportedReasons,
-                    ),
+                    isMpvEngine = playingVM.isMpvEngine,
+                    mpvAnime4kEnabled = mpvAnime4kEnabled,
+                    mpvAnime4kPreset = mpvAnime4kPreset,
+                    mpvAnime4kStatus = mpvAnime4kStatus,
+                    onMpvAnime4kEnabledChange = playingVM::setMpvAnime4kEnabled,
+                    onMpvAnime4kPresetChange = playingVM::setMpvAnime4kPreset,
+                    isExoPlayerEngine = !playingVM.isMpvEngine,
+                    exoAdAudioProbeEnabled = exoAdAudioProbeEnabled,
+                    exoAdAudioProbeRulesUrl = exoAdAudioProbeRulesUrl,
+                    onExoAdAudioProbeEnabledChange = playingVM::setExoAdAudioProbeEnabled,
+                    onExoAdAudioProbeRulesUrlChange = playingVM::setExoAdAudioProbeRulesUrl,
                 )
             }
         },
@@ -682,11 +641,12 @@ private fun PlaybackDetailV2Content(
                             onSearch = {
                                 nav.navigationSearch(detailState.cartoonInfo.name, detailState.cartoonInfo.source)
                             },
-                            onWeb = { detailState.cartoonInfo.url.takeIf(String::isNotBlank)?.openUrl() },
                             onDownload = { line, episodes ->
                                 downloadRequest = Triple(detailState.cartoonInfo, line, episodes)
                             },
                             onExternalPlay = playingVM::playCurrentExternal,
+                            hasCustomPlaybackHeaders = playingVM.hasCustomPlaybackHeaders(),
+                            onMediaData = { playingVM.playbackDiagnostic() },
                             onCast = {
                                 if (detailState.cartoonInfo.source == LocalSource.LOCAL_SOURCE_KEY) {
                                     "本地番源不支持投屏".moeSnackBar()
@@ -712,13 +672,6 @@ private fun PlaybackDetailV2Content(
                                         )
                                     }
                                 }
-                            },
-                            onShare = {
-                                val shareContent = listOf(
-                                    detailState.cartoonInfo.name,
-                                    detailState.cartoonInfo.url,
-                                ).filter(String::isNotBlank).joinToString("\n")
-                                if (shareContent.isNotBlank()) shareText(shareContent)
                             },
                             onSortChange = { key, reverse ->
                                 detailedVM.setCartoonSort(key, reverse, detailState.cartoonInfo)
@@ -826,11 +779,11 @@ private fun CartoonPlayV2Detail(
     onEpisodeSelect: (PlayLineWrapper, Episode) -> Unit,
     onStar: (Boolean) -> Unit,
     onSearch: () -> Unit,
-    onWeb: () -> Unit,
     onDownload: (PlayLineWrapper, List<Episode>) -> Unit,
     onExternalPlay: () -> Unit,
+    hasCustomPlaybackHeaders: Boolean,
+    onMediaData: () -> CartoonPlayingViewModel.PlaybackDiagnostic?,
     onCast: () -> Unit,
-    onShare: () -> Unit,
     onSortChange: (String, Boolean) -> Unit,
     onManualMatch: () -> Unit,
     onDanmakuRetry: () -> Unit,
@@ -841,6 +794,7 @@ private fun CartoonPlayV2Detail(
     var showSort by remember { mutableStateOf(false) }
     var showDanmakuPanel by remember { mutableStateOf(false) }
     var showMoreActions by remember { mutableStateOf(false) }
+    var showMediaData by remember { mutableStateOf<CartoonPlayingViewModel.PlaybackDiagnostic?>(null) }
     var downloadSelection by remember(cartoon.id, cartoon.source) {
         mutableStateOf<DownloadEpisodeSelection?>(null)
     }
@@ -1006,19 +960,23 @@ private fun CartoonPlayV2Detail(
     }
     if (showMoreActions) {
         PlaybackMoreActionsBottomSheetV2(
-            onWeb = {
-                showMoreActions = false
-                onWeb()
-            },
             onExternalPlay = {
                 showMoreActions = false
                 onExternalPlay()
             },
-            onShare = {
+            hasCustomPlaybackHeaders = hasCustomPlaybackHeaders,
+            onMediaData = {
                 showMoreActions = false
-                onShare()
+                showMediaData = onMediaData()
             },
             onDismiss = { showMoreActions = false },
+        )
+    }
+    showMediaData?.let { diagnostic ->
+        PlaybackMediaDataBottomSheetV2(
+            cartoon = cartoon,
+            diagnostic = diagnostic,
+            onDismiss = { showMediaData = null },
         )
     }
 }
@@ -1028,14 +986,23 @@ internal fun V2MediaIdentity(cartoon: CartoonInfo) {
     var expanded by rememberSaveable(cartoon.id, cartoon.source) { mutableStateOf(false) }
     val synopsis = cartoon.description.ifBlank { cartoon.intro }
     val interactionSource = remember { MutableInteractionSource() }
+    val clipboard = LocalClipboardManager.current
+    val scope = rememberCoroutineScope()
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .testTag(CartoonPlayV2TestTags.MEDIA_IDENTITY)
-            .clickable(
+            .combinedClickable(
                 interactionSource = interactionSource,
                 indication = null,
                 onClick = { expanded = !expanded },
+                onLongClick = {
+                    val text = listOf(cartoon.name, synopsis, cartoon.url)
+                        .filter(String::isNotBlank)
+                        .joinToString("\n")
+                    clipboard.setText(AnnotatedString(text))
+                    "详情已复制".moeSnackBar()
+                },
             )
             .padding(horizontal = 20.dp, vertical = 16.dp),
     ) {
@@ -1058,7 +1025,24 @@ internal fun V2MediaIdentity(cartoon: CartoonInfo) {
                     modifier = Modifier
                         .width(84.dp)
                         .aspectRatio(0.7f)
-                        .clip(RoundedCornerShape(9.dp)),
+                        .clip(RoundedCornerShape(9.dp))
+                        .combinedClickable(
+                            onClick = { expanded = !expanded },
+                            onLongClick = {
+                                scope.launch {
+                                    val image = downloadImage(cartoon.coverUrl)
+                                    if (image == null) {
+                                        "封面保存失败".moeSnackBar()
+                                    } else {
+                                        MediaAndroidUtils.saveImage(
+                                            image,
+                                            "${cartoon.name.take(48)}.png",
+                                        ).onSuccess { "封面已保存".moeSnackBar() }
+                                            .onFailure { "封面保存失败".moeSnackBar() }
+                                    }
+                                }
+                            },
+                        ),
                     image = cartoon.coverUrl,
                     contentDescription = cartoon.name,
                     errorRes = R.drawable.placeholder,
@@ -1331,9 +1315,9 @@ internal fun V2ActionRow(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun PlaybackMoreActionsBottomSheetV2(
-    onWeb: () -> Unit,
     onExternalPlay: () -> Unit,
-    onShare: () -> Unit,
+    hasCustomPlaybackHeaders: Boolean,
+    onMediaData: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     PlaybackSheetTheme {
@@ -1355,11 +1339,14 @@ internal fun PlaybackMoreActionsBottomSheetV2(
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.SemiBold,
                 )
-                PlaybackMoreActionRowV2("官网", "打开番剧官方网站", Icons.Filled.Language, onWeb)
+                PlaybackMoreActionRowV2("媒体数据", "查看番剧、播放地址与请求 Header", Icons.Filled.MoreHoriz, onMediaData)
                 HorizontalDivider(modifier = Modifier.padding(start = 64.dp), color = MaterialTheme.colorScheme.outline)
-                PlaybackMoreActionRowV2("外播", "使用其他播放器打开", Icons.Filled.ScreenShare, onExternalPlay)
-                HorizontalDivider(modifier = Modifier.padding(start = 64.dp), color = MaterialTheme.colorScheme.outline)
-                PlaybackMoreActionRowV2("分享", "分享当前番剧信息", Icons.Filled.Share, onShare)
+                PlaybackMoreActionRowV2(
+                    "外播",
+                    if (hasCustomPlaybackHeaders) "当前链接含自定义 Header，外部播放器可能无法播放" else "使用其他播放器打开",
+                    Icons.Filled.ScreenShare,
+                    onExternalPlay,
+                )
             }
         }
     }
@@ -1392,6 +1379,60 @@ private fun PlaybackMoreActionRowV2(
             Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Medium)
             Text(description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PlaybackMediaDataBottomSheetV2(
+    cartoon: CartoonInfo,
+    diagnostic: CartoonPlayingViewModel.PlaybackDiagnostic,
+    onDismiss: () -> Unit,
+) {
+    val clipboard = LocalClipboardManager.current
+    PlaybackSheetTheme {
+        ModalBottomSheet(onDismissRequest = onDismiss) {
+            Column(Modifier.fillMaxWidth().padding(bottom = 24.dp)) {
+                Text("媒体数据", Modifier.padding(20.dp), style = MaterialTheme.typography.headlineSmall)
+                PlaybackDataRow("番剧地址", cartoon.url, clipboard, openOnClick = true)
+                PlaybackDataRow("播放地址", diagnostic.mediaUrl, clipboard, openOnClick = true)
+                PlaybackDataRow("封面地址", cartoon.coverUrl, clipboard, openOnClick = true)
+                diagnostic.headers.forEach { (name, value) ->
+                    PlaybackDataRow("Header · $name", value, clipboard, openOnClick = false)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PlaybackDataRow(
+    label: String,
+    value: String,
+    clipboard: androidx.compose.ui.platform.ClipboardManager,
+    openOnClick: Boolean,
+) {
+    if (value.isBlank()) return
+    Column(
+        Modifier.fillMaxWidth()
+            .combinedClickable(
+                onClick = {
+                    if (openOnClick) {
+                        value.openUrl()
+                    } else {
+                        clipboard.setText(AnnotatedString(value))
+                        "已复制 $label".moeSnackBar()
+                    }
+                },
+                onLongClick = {
+                    clipboard.setText(AnnotatedString(value))
+                    "已复制 $label".moeSnackBar()
+                },
+            )
+            .padding(horizontal = 20.dp, vertical = 12.dp),
+    ) {
+        Text(label, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+        Text(value, maxLines = 2, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodySmall)
     }
 }
 

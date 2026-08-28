@@ -31,9 +31,9 @@ object PackageHelper {
             }
 
             val signaturesArray = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                packageInfo.signingInfo.apkContentsSigners
+                packageInfo.signingInfo?.apkContentsSigners.orEmpty()
             } else {
-                packageInfo.signatures
+                packageInfo.signatures.orEmpty()
             }
 
             for (signature in signaturesArray) {

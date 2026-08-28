@@ -1,5 +1,6 @@
 package com.heyanle.easybangumi4.v2.ui.setting
 
+import android.os.Build
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,11 +24,10 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
-import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Cached
 import androidx.compose.material.icons.filled.FastForward
 import androidx.compose.material.icons.filled.FastRewind
-import androidx.compose.material.icons.filled.HighQuality
+import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.ScreenRotation
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Swipe
@@ -83,7 +83,7 @@ import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-private enum class PlayerChoiceDialogV2 { Anime4KMode, Anime4KQuality, Anime4KScale, Orientation, Cache, Speed }
+private enum class PlayerChoiceDialogV2 { Engine, Orientation, Cache, Speed }
 private enum class PlayerNumberDialogV2 { SeekWidthTime, FastTop, FastBottom }
 
 @Composable
@@ -99,18 +99,10 @@ internal fun PlayerSettingV2(
     val bottomPadding by preferences.playerBottomNavigationBarPadding.flow().collectAsState(
         preferences.playerBottomNavigationBarPadding.get(),
     )
-    val anime4kEnabled by preferences.anime4kEnabled.flow().collectAsState(
-        preferences.anime4kEnabled.get(),
+    val playbackEngine by preferences.playbackEngine.flow().collectAsState(
+        preferences.playbackEngine.get(),
     )
-    val anime4kMode by preferences.anime4kMode.flow().collectAsState(
-        preferences.anime4kMode.get(),
-    )
-    val anime4kQuality by preferences.anime4kQuality.flow().collectAsState(
-        preferences.anime4kQuality.get(),
-    )
-    val anime4kScale by preferences.anime4kScale.flow().collectAsState(
-        preferences.anime4kScale.get(),
-    )
+    val mpvAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
     val orientationMode by preferences.playerOrientationMode.flow().collectAsState(
         preferences.playerOrientationMode.get(),
     )
@@ -173,6 +165,16 @@ internal fun PlayerSettingV2(
     ) {
         V2Section(title = "播放方式") {
             V2ActionRow(
+                icon = Icons.Filled.PlayCircle,
+                title = "播放引擎",
+                subtitle = when (playbackEngine) {
+                    SettingPreferences.PlaybackEngine.EXO_PLAYER -> "ExoPlayer · 截图、片段录制、缓存与广告探测"
+                    SettingPreferences.PlaybackEngine.MPV -> "mpv · Anime4K 与无缝旋转，不支持截图和录制"
+                },
+                onClick = { choiceDialog = PlayerChoiceDialogV2.Engine },
+            )
+            V2SectionDivider()
+            V2ActionRow(
                 icon = Icons.AutoMirrored.Filled.OpenInNew,
                 title = stringResource(R.string.use_external_player),
                 subtitle = "播放时直接调用系统或第三方播放器",
@@ -200,57 +202,19 @@ internal fun PlayerSettingV2(
             )
         }
 
-        V2Section(title = "画质增强") {
-            V2ActionRow(
-                icon = Icons.Filled.AutoAwesome,
-                title = stringResource(R.string.anime4k_title),
-                subtitle = stringResource(R.string.anime4k_summary),
-                onClick = { preferences.anime4kEnabled.set(!anime4kEnabled) },
-                trailing = {
-                    PlayerSwitchV2(anime4kEnabled, preferences.anime4kEnabled::set)
-                },
-            )
-            if (anime4kEnabled) {
-                V2SectionDivider()
-                V2ActionRow(
-                    icon = Icons.Filled.HighQuality,
-                    title = stringResource(R.string.anime4k_mode),
-                    subtitle = com.heyanle.easybangumi4.anime4k.A4KChain.MODE_NAMES
-                        .getOrElse(anime4kMode) {
-                            com.heyanle.easybangumi4.anime4k.A4KChain.MODE_NAMES[
-                                com.heyanle.easybangumi4.anime4k.A4KChain.DEFAULT_MODE
-                            ]
-                        },
-                    onClick = { choiceDialog = PlayerChoiceDialogV2.Anime4KMode },
-                )
-                V2SectionDivider()
-                V2ActionRow(
-                    icon = Icons.Filled.AutoAwesome,
-                    title = stringResource(R.string.anime4k_quality),
-                    subtitle = anime4kQuality.qualityLabelV2(),
-                    onClick = { choiceDialog = PlayerChoiceDialogV2.Anime4KQuality },
-                )
-                V2SectionDivider()
-                V2ActionRow(
-                    icon = Icons.Filled.ViewDay,
-                    title = stringResource(R.string.anime4k_scale),
-                    subtitle = anime4kScale.scaleLabelV2(),
-                    onClick = { choiceDialog = PlayerChoiceDialogV2.Anime4KScale },
-                )
-            }
-        }
-
         V2Section(title = "播放体验") {
-            V2ActionRow(
-                icon = Icons.Filled.Cached,
-                title = stringResource(R.string.max_cache_size),
-                subtitle = preferences.cacheSizeSelection
-                    .firstOrNull { it.first == cacheSize }
-                    ?.second
-                    ?: preferences.cacheSizeSelection.first().second,
-                onClick = { choiceDialog = PlayerChoiceDialogV2.Cache },
-            )
-            V2SectionDivider()
+            if (playbackEngine != SettingPreferences.PlaybackEngine.MPV) {
+                V2ActionRow(
+                    icon = Icons.Filled.Cached,
+                    title = stringResource(R.string.max_cache_size),
+                    subtitle = preferences.cacheSizeSelection
+                        .firstOrNull { it.first == cacheSize }
+                        ?.second
+                        ?: preferences.cacheSizeSelection.first().second,
+                    onClick = { choiceDialog = PlayerChoiceDialogV2.Cache },
+                )
+                V2SectionDivider()
+            }
             V2ActionRow(
                 icon = Icons.Filled.Speed,
                 title = stringResource(R.string.default_speed),
@@ -293,45 +257,20 @@ internal fun PlayerSettingV2(
     }
 
     when (choiceDialog) {
-        PlayerChoiceDialogV2.Anime4KMode -> PlayerChoiceDialog(
-            title = stringResource(R.string.anime4k_mode),
-            options = com.heyanle.easybangumi4.anime4k.A4KChain.MODE_NAMES.mapIndexed { index, label ->
-                index to label
+        PlayerChoiceDialogV2.Engine -> PlayerChoiceDialog(
+            title = "播放引擎",
+            options = buildList {
+                add(SettingPreferences.PlaybackEngine.EXO_PLAYER to "ExoPlayer（截图、录制、缓存与广告探测）")
+                if (mpvAvailable) add(SettingPreferences.PlaybackEngine.MPV to "mpv（Anime4K、无缝旋转；不支持截图和录制）")
             },
-            selected = anime4kMode.coerceIn(
-                0,
-                com.heyanle.easybangumi4.anime4k.A4KChain.MODE_NAMES.lastIndex,
-            ),
+            selected = playbackEngine.takeIf {
+                it != SettingPreferences.PlaybackEngine.MPV || mpvAvailable
+            } ?: SettingPreferences.PlaybackEngine.EXO_PLAYER,
             onDismiss = { choiceDialog = null },
             onSelected = {
-                preferences.anime4kMode.set(it)
+                preferences.playbackEngine.set(it)
                 choiceDialog = null
-            },
-        )
-        PlayerChoiceDialogV2.Anime4KQuality -> PlayerChoiceDialog(
-            title = stringResource(R.string.anime4k_quality),
-            options = com.heyanle.easybangumi4.anime4k.A4KChain.QUALITIES.map {
-                it to it.qualityLabelV2()
-            },
-            selected = anime4kQuality.takeIf {
-                it in com.heyanle.easybangumi4.anime4k.A4KChain.QUALITIES
-            } ?: com.heyanle.easybangumi4.anime4k.A4KChain.DEFAULT_QUALITY,
-            onDismiss = { choiceDialog = null },
-            onSelected = {
-                preferences.anime4kQuality.set(it)
-                choiceDialog = null
-            },
-        )
-        PlayerChoiceDialogV2.Anime4KScale -> PlayerChoiceDialog(
-            title = stringResource(R.string.anime4k_scale),
-            // 4× depends heavily on the current video's decoded size and live GPU limits. It is
-            // offered only inside the playback panel after the controller completes that check.
-            options = listOf(0, 1, 2).map { it to it.scaleLabelV2() },
-            selected = anime4kScale.takeIf { it in listOf(0, 1, 2) } ?: 0,
-            onDismiss = { choiceDialog = null },
-            onSelected = {
-                preferences.anime4kScale.set(it)
-                choiceDialog = null
+                "重新进入播放页后生效".moeSnackBar()
             },
         )
         PlayerChoiceDialogV2.Orientation -> PlayerChoiceDialog(
@@ -928,21 +867,6 @@ private fun SettingPreferences.PlayerOrientationMode.orientationLabelV2(): Strin
         SettingPreferences.PlayerOrientationMode.Enable -> stringResource(R.string.always_on)
         SettingPreferences.PlayerOrientationMode.Disable -> stringResource(R.string.always_off)
     }
-}
-
-@Composable
-private fun String.qualityLabelV2(): String = when (this) {
-    com.heyanle.easybangumi4.anime4k.A4KChain.QUALITY_S -> stringResource(R.string.anime4k_quality_s)
-    com.heyanle.easybangumi4.anime4k.A4KChain.QUALITY_L -> stringResource(R.string.anime4k_quality_l)
-    else -> stringResource(R.string.anime4k_quality_m)
-}
-
-@Composable
-private fun Int.scaleLabelV2(): String = when (this) {
-    1 -> "1x"
-    2 -> "2x"
-    4 -> "4x"
-    else -> stringResource(R.string.anime4k_scale_auto)
 }
 
 private fun toggleSignedSetting(value: Int, defaultValue: Int): Int {

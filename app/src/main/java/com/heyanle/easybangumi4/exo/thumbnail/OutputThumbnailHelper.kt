@@ -92,7 +92,7 @@ class OutputThumbnailHelper(
             }
             scope.launch {
                 "dispatchCallback $currentPosition $bitmap 3".logi("OutputThumbnailHelper")
-                val bmp = bitmap.copy(bitmap.config, false)
+                val bmp = bitmap.copy(bitmap.config ?: Bitmap.Config.ARGB_8888, false)
                 "dispatchCallback $time $bitmap 4".logi("OutputThumbnailHelper")
                 rootFolder.mkdirs()
                 val file = TagFile(rootFolder, "${currentPosition}.jpg")

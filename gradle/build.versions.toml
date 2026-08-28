@@ -1,5 +1,5 @@
 [versions]
-android_gradle_plugin = "8.2.2"
+android_gradle_plugin = "8.13.2"
 compose_compiler = "1.5.9"
 kotlin = "1.9.22"
 ksp = "1.9.22-1.0.17"
@@ -12,4 +12,3 @@ kotlin_jvm = {id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin"}
 ksp = {id = "com.google.devtools.ksp", version.ref = "ksp"}
 #maven_publish = {id = "maven-publish"}
 #signing = {id = "signing"}
-

@@ -35,7 +35,7 @@ gradle.projectsEvaluated {
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.21")
 
-    val media3 = "1.4.0-alpha02"
+    val media3 = "1.9.2"
     api("androidx.media3:media3-exoplayer:$media3")
     api("androidx.media3:media3-exoplayer-dash:$media3")
     api("androidx.media3:media3-ui:$media3")

@@ -1,5 +1,6 @@
 package com.heyanle.easybangumi4.ui.setting
 
+import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -98,54 +99,21 @@ fun ColumnScope.PlayerSetting(
             preference = settingPreferences.playerBottomNavigationBarPadding
         )
 
-        // 高清渲染 (Anime4K) —— 默认开启，可关闭（持久化）
-        BooleanPreferenceItem(
-            title = { Text(stringResource(id = com.heyanle.easy_i18n.R.string.anime4k_title)) },
-            subtitle = { Text(stringResource(id = com.heyanle.easy_i18n.R.string.anime4k_summary)) },
-            preference = settingPreferences.anime4kEnabled
-        )
-
-        val anime4kMode by settingPreferences.anime4kMode.flow()
-            .collectAsState(settingPreferences.anime4kMode.get())
-        StringSelectPreferenceItem(
-            title = { Text(stringResource(id = com.heyanle.easy_i18n.R.string.anime4k_mode)) },
-            textList = com.heyanle.easybangumi4.anime4k.A4KChain.MODE_NAMES,
-            select = anime4kMode.coerceIn(0, com.heyanle.easybangumi4.anime4k.A4KChain.MODE_NAMES.lastIndex),
-        ) {
-            settingPreferences.anime4kMode.set(it)
+        val playbackEngine by settingPreferences.playbackEngine.flow()
+            .collectAsState(settingPreferences.playbackEngine.get())
+        val engineOptions = buildList {
+            add(SettingPreferences.PlaybackEngine.EXO_PLAYER to "ExoPlayer")
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                add(SettingPreferences.PlaybackEngine.MPV to "mpv（支持 Anime4K）")
+            }
         }
-
-        val anime4kScale by settingPreferences.anime4kScale.flow()
-            .collectAsState(settingPreferences.anime4kScale.get())
         StringSelectPreferenceItem(
-            title = { Text(stringResource(id = com.heyanle.easy_i18n.R.string.anime4k_scale)) },
-            textList = listOf(
-                stringResource(id = com.heyanle.easy_i18n.R.string.anime4k_scale_auto),
-                "1x", "2x", "4x",
-            ),
-            select = when (anime4kScale) {
-                1 -> 1
-                2 -> 2
-                4 -> 3
-                else -> 0
-            },
+            title = { Text("播放引擎") },
+            textList = engineOptions.map { it.second },
+            select = engineOptions.indexOfFirst { it.first == playbackEngine }.coerceAtLeast(0),
         ) {
-            settingPreferences.anime4kScale.set(listOf(0, 1, 2, 4)[it])
-        }
-
-        val anime4kQuality by settingPreferences.anime4kQuality.flow()
-            .collectAsState(settingPreferences.anime4kQuality.get())
-        StringSelectPreferenceItem(
-            title = { Text(stringResource(id = com.heyanle.easy_i18n.R.string.anime4k_quality)) },
-            textList = listOf(
-                stringResource(id = com.heyanle.easy_i18n.R.string.anime4k_quality_s),
-                stringResource(id = com.heyanle.easy_i18n.R.string.anime4k_quality_m),
-                stringResource(id = com.heyanle.easy_i18n.R.string.anime4k_quality_l),
-            ),
-            select = com.heyanle.easybangumi4.anime4k.A4KChain.QUALITIES
-                .indexOf(anime4kQuality).coerceAtLeast(0),
-        ) {
-            settingPreferences.anime4kQuality.set(com.heyanle.easybangumi4.anime4k.A4KChain.QUALITIES[it])
+            settingPreferences.playbackEngine.set(engineOptions[it].first)
+            "重新进入播放页后生效".moeSnackBar()
         }
 
         EmumPreferenceItem(
@@ -161,16 +129,18 @@ fun ColumnScope.PlayerSetting(
             }
         )
 
-        val sizePre by settingPreferences.cacheSize.flow()
-            .collectAsState(settingPreferences.cacheSize.get())
-        val size = settingPreferences.cacheSizeSelection
-        StringSelectPreferenceItem(
-            title = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.max_cache_size)) },
-            textList = size.map { it.second },
-            select = size.indexOfFirst { it.first == sizePre }.let { if (it == -1) 0 else it }
-        ) {
-            settingPreferences.cacheSize.set(size[it].first)
-            stringRes(com.heyanle.easy_i18n.R.string.should_reboot).moeSnackBar()
+        if (playbackEngine != SettingPreferences.PlaybackEngine.MPV) {
+            val sizePre by settingPreferences.cacheSize.flow()
+                .collectAsState(settingPreferences.cacheSize.get())
+            val size = settingPreferences.cacheSizeSelection
+            StringSelectPreferenceItem(
+                title = { Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.max_cache_size)) },
+                textList = size.map { it.second },
+                select = size.indexOfFirst { it.first == sizePre }.let { if (it == -1) 0 else it }
+            ) {
+                settingPreferences.cacheSize.set(size[it].first)
+                stringRes(com.heyanle.easy_i18n.R.string.should_reboot).moeSnackBar()
+            }
         }
 
         LongEditPreferenceItem(

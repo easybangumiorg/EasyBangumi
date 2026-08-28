@@ -42,6 +42,39 @@ class CartoonPlayingViewModelTest {
     }
 
     @Test
+    fun surfaceLossKeepsExistingPlayerWhenMediaIsStillAttached() {
+        assertEquals(
+            CartoonPlayingViewModel.ContinuationAction.KEEP_PLAYER,
+            CartoonPlayingViewModel.continuationAction(
+                hasResolvedTarget = true,
+                playerHasMedia = true,
+            ),
+        )
+    }
+
+    @Test
+    fun surfaceLossReloadsResolvedUriWithoutResolvingSourceAgain() {
+        assertEquals(
+            CartoonPlayingViewModel.ContinuationAction.LOAD_RESOLVED_MEDIA,
+            CartoonPlayingViewModel.continuationAction(
+                hasResolvedTarget = true,
+                playerHasMedia = false,
+            ),
+        )
+    }
+
+    @Test
+    fun unresolvedTargetStillUsesSourceResolver() {
+        assertEquals(
+            CartoonPlayingViewModel.ContinuationAction.RESOLVE_SOURCE,
+            CartoonPlayingViewModel.continuationAction(
+                hasResolvedTarget = false,
+                playerHasMedia = false,
+            ),
+        )
+    }
+
+    @Test
     fun samePlaybackTargetConsumesPageResumePosition() {
         val checkpoint = CartoonPlayingViewModel.PlaybackResumeCheckpoint()
         val summary = CartoonSummary("cartoon-a", "kazumi.baimao")

@@ -46,6 +46,7 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Slider
@@ -73,14 +74,15 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.heyanle.easybangumi4.anime4k.A4KChain
 import com.heyanle.easybangumi4.danmaku.DanmakuDisplayConfig
 import com.heyanle.easybangumi4.danmaku.DanmakuPlaybackState
 import com.heyanle.easybangumi4.danmaku.DanmakuPlaybackStatus
+import com.heyanle.easybangumi4.player.mpv.MpvAnime4KStatus
+import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.ui.common.TabIndicator
-import com.heyanle.easy_i18n.R as I18nR
 import java.util.Locale
 import kotlin.math.roundToInt
 
@@ -176,40 +178,28 @@ internal fun DanmakuPlaybackState.toPlayerDanmakuControlState(
 internal enum class PlayerSettingsSection {
     Danmaku,
     Video,
+    Anime4K,
+    AdBlock,
 }
-
-internal data class PlayerAnime4KSettings(
-    val enabled: Boolean,
-    val mode: Int,
-    val quality: String,
-    val scale: Int,
-    val onEnabledChange: (Boolean) -> Unit,
-    val onModeChange: (Int) -> Unit,
-    val onQualityChange: (String) -> Unit,
-    val onScaleChange: (Int) -> Unit,
-    val supportedScales: Set<Int> = ANIME4K_SCALES.toSet(),
-    val unsupportedScaleReasons: Map<Int, String> = emptyMap(),
-)
 
 internal object PlayerPlaybackSettingsTestTags {
     const val DANMAKU_TOGGLE = "player_danmaku_toggle"
     const val SETTINGS_PANEL = "player_settings_panel"
     const val DANMAKU_SECTION_TAB = "player_settings_tab_danmaku"
     const val VIDEO_SECTION_TAB = "player_settings_tab_video"
+    const val ANIME4K_SECTION_TAB = "player_settings_tab_anime4k"
+    const val ADBLOCK_SECTION_TAB = "player_settings_tab_adblock"
     const val OPEN_DANMAKU_SETTINGS = "player_open_danmaku_settings"
     const val DANMAKU_SECTION = "player_settings_danmaku"
     const val VIDEO_SECTION = "player_settings_video"
+    const val ANIME4K_SECTION = "player_settings_anime4k"
+    const val ADBLOCK_SECTION = "player_settings_adblock"
     const val RESET = "player_danmaku_reset"
     const val RESET_CONFIRM = "player_danmaku_reset_confirm"
     const val FONT_SIZE = "player_danmaku_font_size"
     const val LINE_HEIGHT = "player_danmaku_line_height"
     const val SCROLL_SPEED = "player_danmaku_scroll_speed"
     const val TIME_OFFSET = "player_danmaku_time_offset"
-    const val ANIME4K_ENABLED = "player_anime4k_enabled"
-    const val ANIME4K_MODE = "player_anime4k_mode"
-    const val ANIME4K_QUALITY = "player_anime4k_quality"
-    const val ANIME4K_SCALE = "player_anime4k_scale"
-
     fun videoScale(value: Int) = "player_video_scale_$value"
 }
 
@@ -379,7 +369,17 @@ internal fun AdaptivePlayerSettingsPanel(
     videoScaleType: Int,
     videoScaleOptions: List<Pair<Int, Int>>,
     onVideoScaleSelected: (Int) -> Unit,
-    anime4kSettings: PlayerAnime4KSettings? = null,
+    isMpvEngine: Boolean = false,
+    mpvAnime4kEnabled: Boolean = false,
+    mpvAnime4kPreset: SettingPreferences.MpvAnime4KPreset = SettingPreferences.MpvAnime4KPreset.FAST,
+    mpvAnime4kStatus: MpvAnime4KStatus = MpvAnime4KStatus(),
+    onMpvAnime4kEnabledChange: (Boolean) -> Unit = {},
+    onMpvAnime4kPresetChange: (SettingPreferences.MpvAnime4KPreset) -> Unit = {},
+    isExoPlayerEngine: Boolean = true,
+    exoAdAudioProbeEnabled: Boolean = false,
+    exoAdAudioProbeRulesUrl: String = "",
+    onExoAdAudioProbeEnabledChange: (Boolean) -> Unit = {},
+    onExoAdAudioProbeRulesUrlChange: (String) -> Unit = {},
 ) {
     val configuration = LocalConfiguration.current
     val useSidePanel = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE ||
@@ -402,7 +402,17 @@ internal fun AdaptivePlayerSettingsPanel(
                 videoScaleType = videoScaleType,
                 videoScaleOptions = videoScaleOptions,
                 onVideoScaleSelected = onVideoScaleSelected,
-                anime4kSettings = anime4kSettings,
+                isMpvEngine = isMpvEngine,
+                mpvAnime4kEnabled = mpvAnime4kEnabled,
+                mpvAnime4kPreset = mpvAnime4kPreset,
+                mpvAnime4kStatus = mpvAnime4kStatus,
+                onMpvAnime4kEnabledChange = onMpvAnime4kEnabledChange,
+                onMpvAnime4kPresetChange = onMpvAnime4kPresetChange,
+                isExoPlayerEngine = isExoPlayerEngine,
+                exoAdAudioProbeEnabled = exoAdAudioProbeEnabled,
+                exoAdAudioProbeRulesUrl = exoAdAudioProbeRulesUrl,
+                onExoAdAudioProbeEnabledChange = onExoAdAudioProbeEnabledChange,
+                onExoAdAudioProbeRulesUrlChange = onExoAdAudioProbeRulesUrlChange,
             )
         }
     } else if (visible) {
@@ -428,7 +438,17 @@ internal fun AdaptivePlayerSettingsPanel(
                     videoScaleType = videoScaleType,
                     videoScaleOptions = videoScaleOptions,
                     onVideoScaleSelected = onVideoScaleSelected,
-                    anime4kSettings = anime4kSettings,
+                    isMpvEngine = isMpvEngine,
+                    mpvAnime4kEnabled = mpvAnime4kEnabled,
+                    mpvAnime4kPreset = mpvAnime4kPreset,
+                    mpvAnime4kStatus = mpvAnime4kStatus,
+                    onMpvAnime4kEnabledChange = onMpvAnime4kEnabledChange,
+                    onMpvAnime4kPresetChange = onMpvAnime4kPresetChange,
+                    isExoPlayerEngine = isExoPlayerEngine,
+                    exoAdAudioProbeEnabled = exoAdAudioProbeEnabled,
+                    exoAdAudioProbeRulesUrl = exoAdAudioProbeRulesUrl,
+                    onExoAdAudioProbeEnabledChange = onExoAdAudioProbeEnabledChange,
+                    onExoAdAudioProbeRulesUrlChange = onExoAdAudioProbeRulesUrlChange,
                 )
             }
         }
@@ -447,12 +467,29 @@ private fun ColumnScope.PlayerSettingsContent(
     videoScaleType: Int,
     videoScaleOptions: List<Pair<Int, Int>>,
     onVideoScaleSelected: (Int) -> Unit,
-    anime4kSettings: PlayerAnime4KSettings?,
+    isMpvEngine: Boolean,
+    mpvAnime4kEnabled: Boolean,
+    mpvAnime4kPreset: SettingPreferences.MpvAnime4KPreset,
+    mpvAnime4kStatus: MpvAnime4KStatus,
+    onMpvAnime4kEnabledChange: (Boolean) -> Unit,
+    onMpvAnime4kPresetChange: (SettingPreferences.MpvAnime4KPreset) -> Unit,
+    isExoPlayerEngine: Boolean,
+    exoAdAudioProbeEnabled: Boolean,
+    exoAdAudioProbeRulesUrl: String,
+    onExoAdAudioProbeEnabledChange: (Boolean) -> Unit,
+    onExoAdAudioProbeRulesUrlChange: (String) -> Unit,
 ) {
     // Keep the visual selection in the same retained subcomposition as the tab controls. The
     // caller still receives every change and provides the initial value the next time this panel
     // enters composition.
+    val sections = buildList {
+        add(PlayerSettingsSection.Danmaku)
+        add(PlayerSettingsSection.Video)
+        if (isMpvEngine) add(PlayerSettingsSection.Anime4K)
+        if (isExoPlayerEngine) add(PlayerSettingsSection.AdBlock)
+    }
     var selectedSection by remember { mutableStateOf(initialSelectedSection) }
+    if (selectedSection !in sections) selectedSection = sections.first()
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -473,6 +510,7 @@ private fun ColumnScope.PlayerSettingsContent(
         }
     }
     PlayerSettingsSectionSelector(
+        sections = sections,
         selected = selectedSection,
         onSelected = { section ->
             selectedSection = section
@@ -491,6 +529,9 @@ private fun ColumnScope.PlayerSettingsContent(
                 when (selectedSection) {
                     PlayerSettingsSection.Danmaku -> danmakuScrollState
                     PlayerSettingsSection.Video -> videoScrollState
+                    PlayerSettingsSection.Anime4K,
+                    PlayerSettingsSection.AdBlock,
+                    -> videoScrollState
                 },
             )
             .padding(vertical = 8.dp),
@@ -505,11 +546,27 @@ private fun ColumnScope.PlayerSettingsContent(
             )
 
             PlayerSettingsSection.Video -> VideoScaleSettingsContent(
+                modifier = Modifier.testTag(PlayerPlaybackSettingsTestTags.VIDEO_SECTION),
                 selectedScaleType = videoScaleType,
                 options = videoScaleOptions,
                 onScaleSelected = onVideoScaleSelected,
-                anime4kSettings = anime4kSettings,
-                modifier = Modifier.testTag(PlayerPlaybackSettingsTestTags.VIDEO_SECTION),
+            )
+
+            PlayerSettingsSection.Anime4K -> MpvAnime4KSettingsContent(
+                enabled = mpvAnime4kEnabled,
+                preset = mpvAnime4kPreset,
+                status = mpvAnime4kStatus,
+                onEnabledChange = onMpvAnime4kEnabledChange,
+                onPresetChange = onMpvAnime4kPresetChange,
+                modifier = Modifier.testTag(PlayerPlaybackSettingsTestTags.ANIME4K_SECTION),
+            )
+
+            PlayerSettingsSection.AdBlock -> ExoAdAudioProbeSettingsContent(
+                enabled = exoAdAudioProbeEnabled,
+                rulesUrl = exoAdAudioProbeRulesUrl,
+                onEnabledChange = onExoAdAudioProbeEnabledChange,
+                onRulesUrlChange = onExoAdAudioProbeRulesUrlChange,
+                modifier = Modifier.testTag(PlayerPlaybackSettingsTestTags.ADBLOCK_SECTION),
             )
         }
     }
@@ -517,11 +574,12 @@ private fun ColumnScope.PlayerSettingsContent(
 
 @Composable
 private fun PlayerSettingsSectionSelector(
+    sections: List<PlayerSettingsSection>,
     selected: PlayerSettingsSection,
     onSelected: (PlayerSettingsSection) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val selectedIndex = PlayerSettingsSection.entries.indexOf(selected)
+    val selectedIndex = sections.indexOf(selected)
     ScrollableTabRow(
         modifier = modifier.fillMaxWidth(),
         selectedTabIndex = selectedIndex,
@@ -535,7 +593,7 @@ private fun PlayerSettingsSectionSelector(
         },
         divider = {},
     ) {
-        PlayerSettingsSection.entries.forEach { section ->
+        sections.forEach { section ->
             val isSelected = section == selected
             Tab(
                 selected = isSelected,
@@ -548,6 +606,12 @@ private fun PlayerSettingsSectionSelector(
 
                             PlayerSettingsSection.Video ->
                                 PlayerPlaybackSettingsTestTags.VIDEO_SECTION_TAB
+
+                            PlayerSettingsSection.Anime4K ->
+                                PlayerPlaybackSettingsTestTags.ANIME4K_SECTION_TAB
+
+                            PlayerSettingsSection.AdBlock ->
+                                PlayerPlaybackSettingsTestTags.ADBLOCK_SECTION_TAB
                         },
                     )
                     .semantics {
@@ -560,6 +624,8 @@ private fun PlayerSettingsSectionSelector(
                         text = when (section) {
                             PlayerSettingsSection.Danmaku -> "弹幕"
                             PlayerSettingsSection.Video -> "画面"
+                            PlayerSettingsSection.Anime4K -> "Anime4K"
+                            PlayerSettingsSection.AdBlock -> "去广告"
                         },
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = if (isSelected) {
@@ -812,7 +878,6 @@ internal fun VideoScaleSettingsContent(
     selectedScaleType: Int,
     options: List<Pair<Int, Int>>,
     onScaleSelected: (Int) -> Unit,
-    anime4kSettings: PlayerAnime4KSettings? = null,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
@@ -841,229 +906,162 @@ internal fun VideoScaleSettingsContent(
                 ),
             )
         }
-        anime4kSettings?.let { settings ->
-            HorizontalDivider(modifier = Modifier.padding(top = 8.dp))
-            Anime4KSettingsContent(
-                enabled = settings.enabled,
-                mode = settings.mode,
-                quality = settings.quality,
-                scale = settings.scale,
-                onEnabledChange = settings.onEnabledChange,
-                onModeChange = settings.onModeChange,
-                onQualityChange = settings.onQualityChange,
-                onScaleChange = settings.onScaleChange,
-                supportedScales = settings.supportedScales,
-                unsupportedScaleReasons = settings.unsupportedScaleReasons,
+        Spacer(Modifier.height(16.dp))
+    }
+}
+
+@Composable
+internal fun MpvAnime4KSettingsContent(
+    enabled: Boolean,
+    preset: SettingPreferences.MpvAnime4KPreset,
+    status: MpvAnime4KStatus,
+    onEnabledChange: (Boolean) -> Unit,
+    onPresetChange: (SettingPreferences.MpvAnime4KPreset) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier.fillMaxWidth()) {
+        SettingsGroupTitle("Anime4K")
+        ListItem(
+            headlineContent = { Text("启用 Anime4K") },
+            supportingContent = { Text("使用 mpv GLSL Shader 实时增强画面") },
+            trailingContent = {
+                Switch(
+                    checked = enabled,
+                    onCheckedChange = onEnabledChange,
+                )
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onEnabledChange(!enabled) },
+            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+        )
+        if (enabled) {
+            SettingsGroupTitle("实时状态")
+            ListItem(
+                headlineContent = {
+                    Text(
+                        when (status.upscaleCnnActive) {
+                            true -> "Upscale CNN 已触发"
+                            false -> "Upscale CNN 未触发"
+                            null -> "正在读取视频尺寸"
+                        },
+                    )
+                },
+                supportingContent = {
+                    Text(
+                        when {
+                            status.inputWidth <= 0 || status.outputWidth <= 0 ->
+                                "开始播放后将显示实际输入与输出尺寸"
+                            status.upscaleCnnActive == true ->
+                                "输入 ${status.inputWidth}×${status.inputHeight} → 输出 ${status.outputWidth}×${status.outputHeight}"
+                            else ->
+                                "输入 ${status.inputWidth}×${status.inputHeight} → 输出 ${status.outputWidth}×${status.outputHeight}；输出需至少比输入放大约 20%"
+                        },
+                    )
+                },
+                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
             )
+            SettingsGroupTitle("增强档位")
+            listOf(
+                SettingPreferences.MpvAnime4KPreset.FAST to ("效率档" to "更省电，适合日常观看"),
+                SettingPreferences.MpvAnime4KPreset.QUALITY to ("质量档" to "更高画质，可能增加功耗和发热"),
+                SettingPreferences.MpvAnime4KPreset.STRONG to ("强效档" to "低清老番增强更明显，可能明显发热或掉帧"),
+            ).forEach { (value, content) ->
+                val selected = preset == value
+                ListItem(
+                    headlineContent = { Text(content.first) },
+                    supportingContent = { Text(content.second) },
+                    trailingContent = {
+                        RadioButton(
+                            selected = selected,
+                            onClick = { onPresetChange(value) },
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable(role = Role.RadioButton) { onPresetChange(value) },
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                )
+            }
         }
         Spacer(Modifier.height(16.dp))
     }
 }
 
-private enum class Anime4KChoice {
-    Mode,
-    Quality,
-    Scale,
-}
-
 @Composable
-private fun Anime4KSettingsContent(
+private fun ExoAdAudioProbeSettingsContent(
     enabled: Boolean,
-    mode: Int,
-    quality: String,
-    scale: Int,
+    rulesUrl: String,
     onEnabledChange: (Boolean) -> Unit,
-    onModeChange: (Int) -> Unit,
-    onQualityChange: (String) -> Unit,
-    onScaleChange: (Int) -> Unit,
-    supportedScales: Set<Int>,
-    unsupportedScaleReasons: Map<Int, String>,
+    onRulesUrlChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    var choice by remember { mutableStateOf<Anime4KChoice?>(null) }
-    val safeMode = mode.takeIf { it in A4KChain.MODE_NAMES.indices } ?: A4KChain.DEFAULT_MODE
-    val safeQuality = quality.takeIf(A4KChain.QUALITIES::contains) ?: A4KChain.DEFAULT_QUALITY
-    val safeScale = scale.takeIf { it in ANIME4K_SCALES } ?: 0
-    val qualityOptions = A4KChain.QUALITIES.map { value ->
-        value to when (value) {
-            A4KChain.QUALITY_S -> stringResource(I18nR.string.anime4k_quality_s)
-            A4KChain.QUALITY_L -> stringResource(I18nR.string.anime4k_quality_l)
-            else -> stringResource(I18nR.string.anime4k_quality_m)
-        }
-    }
-    val scaleOptions = ANIME4K_SCALES.map { value ->
-        value to if (value == 0) {
-            stringResource(I18nR.string.anime4k_scale_auto)
-        } else {
-            "${value}x"
-        }
-    }
-
-    SettingsGroupTitle("画质增强")
-    ListItem(
-        headlineContent = { Text(stringResource(I18nR.string.anime4k_title)) },
-        supportingContent = { Text(stringResource(I18nR.string.anime4k_summary)) },
-        trailingContent = {
-            Switch(
-                checked = enabled,
-                onCheckedChange = onEnabledChange,
-            )
-        },
-        modifier = Modifier
-            .fillMaxWidth()
-            .testTag(PlayerPlaybackSettingsTestTags.ANIME4K_ENABLED)
-            .clickable(role = Role.Switch) { onEnabledChange(!enabled) },
-        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-    )
-    if (enabled) {
-        Anime4KSettingRow(
-            title = stringResource(I18nR.string.anime4k_mode),
-            value = A4KChain.MODE_NAMES[safeMode],
-            testTag = PlayerPlaybackSettingsTestTags.ANIME4K_MODE,
-            onClick = { choice = Anime4KChoice.Mode },
-        )
-        Anime4KSettingRow(
-            title = stringResource(I18nR.string.anime4k_quality),
-            value = qualityOptions.first { it.first == safeQuality }.second,
-            testTag = PlayerPlaybackSettingsTestTags.ANIME4K_QUALITY,
-            onClick = { choice = Anime4KChoice.Quality },
-        )
-        Anime4KSettingRow(
-            title = stringResource(I18nR.string.anime4k_scale),
-            value = scaleOptions.first { it.first == safeScale }.second,
-            testTag = PlayerPlaybackSettingsTestTags.ANIME4K_SCALE,
-            onClick = { choice = Anime4KChoice.Scale },
-        )
-        Text(
-            text = "更改会立即应用到当前播放",
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.bodySmall,
-        )
-    }
-
-    when (choice) {
-        Anime4KChoice.Mode -> Anime4KChoiceDialog(
-            title = stringResource(I18nR.string.anime4k_mode),
-            options = A4KChain.MODE_NAMES.mapIndexed { index, label -> index to label },
-            selected = safeMode,
-            onDismiss = { choice = null },
-            onSelected = {
-                onModeChange(it)
-                choice = null
+    var showRulesEditor by remember { mutableStateOf(false) }
+    Column(modifier = modifier.fillMaxWidth()) {
+        SettingsGroupTitle("音频广告探测")
+        ListItem(
+            headlineContent = { Text("去广告") },
+            supportingContent = {
+                Text(
+                    if (rulesUrl.isBlank()) "需配置广告指纹规则后才会自动跳过"
+                    else "仅对 ExoPlayer 的 HLS/MP4 点播生效",
+                )
             },
-        )
-
-        Anime4KChoice.Quality -> Anime4KChoiceDialog(
-            title = stringResource(I18nR.string.anime4k_quality),
-            options = qualityOptions,
-            selected = safeQuality,
-            onDismiss = { choice = null },
-            onSelected = {
-                onQualityChange(it)
-                choice = null
+            trailingContent = {
+                Switch(
+                    checked = enabled,
+                    onCheckedChange = onEnabledChange,
+                )
             },
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onEnabledChange(!enabled) },
+            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
         )
-
-        Anime4KChoice.Scale -> Anime4KChoiceDialog(
-            title = stringResource(I18nR.string.anime4k_scale),
-            options = scaleOptions,
-            selected = safeScale,
-            enabledOptions = supportedScales,
-            disabledReasons = unsupportedScaleReasons,
-            onDismiss = { choice = null },
-            onSelected = {
-                onScaleChange(it)
-                choice = null
+        ListItem(
+            headlineContent = { Text("广告规则地址") },
+            supportingContent = {
+                Text(
+                    rulesUrl.ifBlank { "未配置" },
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
             },
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { showRulesEditor = true },
+            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
         )
-
-        null -> Unit
+        Spacer(Modifier.height(16.dp))
     }
-}
-
-@Composable
-private fun Anime4KSettingRow(
-    title: String,
-    value: String,
-    testTag: String,
-    onClick: () -> Unit,
-) {
-    ListItem(
-        headlineContent = { Text(title) },
-        supportingContent = { Text(value) },
-        modifier = Modifier
-            .fillMaxWidth()
-            .testTag(testTag)
-            .clickable(onClick = onClick),
-        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-    )
-}
-
-@Composable
-private fun <T> Anime4KChoiceDialog(
-    title: String,
-    options: List<Pair<T, String>>,
-    selected: T,
-    enabledOptions: Set<T> = options.mapTo(linkedSetOf()) { it.first },
-    disabledReasons: Map<T, String> = emptyMap(),
-    onDismiss: () -> Unit,
-    onSelected: (T) -> Unit,
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(title) },
-        text = {
-            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                options.forEach { (value, label) ->
-                    val enabled = value in enabledOptions
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .then(
-                                if (enabled) {
-                                    Modifier.clickable(role = Role.RadioButton) { onSelected(value) }
-                                } else {
-                                    Modifier
-                                },
-                            )
-                            .padding(vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        RadioButton(
-                            selected = value == selected,
-                            enabled = enabled,
-                            onClick = { if (enabled) onSelected(value) },
-                        )
-                        Column(modifier = Modifier.padding(start = 8.dp)) {
-                            Text(
-                                text = label,
-                                color = if (enabled) {
-                                    MaterialTheme.colorScheme.onSurface
-                                } else {
-                                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f)
-                                },
-                            )
-                            if (!enabled) {
-                                Text(
-                                    text = disabledReasons[value] ?: "当前设备不可用",
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                                    style = MaterialTheme.typography.bodySmall,
-                                )
-                            }
-                        }
-                    }
+    if (showRulesEditor) {
+        var draft by remember(rulesUrl) { mutableStateOf(rulesUrl) }
+        AlertDialog(
+            onDismissRequest = { showRulesEditor = false },
+            title = { Text("广告规则地址") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("使用 HTTPS rules-v1 JSON；留空会停用自动跳过，仅保留播放。")
+                    OutlinedTextField(
+                        value = draft,
+                        onValueChange = { draft = it },
+                        singleLine = true,
+                        label = { Text("https://...") },
+                    )
                 }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("取消")
-            }
-        },
-    )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    onRulesUrlChange(draft)
+                    showRulesEditor = false
+                }) { Text("保存") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRulesEditor = false }) { Text("取消") }
+            },
+        )
+    }
 }
-
-private val ANIME4K_SCALES = listOf(0, 1, 2, 4)
 
 private fun formatFactor(value: Float): String = String.format(Locale.US, "%.1f", value)
 

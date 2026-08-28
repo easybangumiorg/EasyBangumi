@@ -3,7 +3,6 @@ package loli.ball.easyplayer2.texture
 import android.content.Context
 import android.view.TextureView
 import android.view.View
-import androidx.media3.exoplayer.ExoPlayer
 import loli.ball.easyplayer2.render.EasyPlayerRender
 
 /**
@@ -33,16 +32,6 @@ class TexturePlayerRender: EasyPlayerRender {
             return surfaceView
         }
         return sur
-    }
-
-    override fun onAttachToPlayer(exoPlayer: ExoPlayer) {
-        val text = textureView ?: return
-        exoPlayer.setVideoTextureView(text)
-    }
-
-    override fun onDetachToPlayer(exoPlayer: ExoPlayer) {
-        val text = textureView ?: return
-        exoPlayer.clearVideoTextureView(text)
     }
 
     override fun setScaleType(scaleType: Int) {

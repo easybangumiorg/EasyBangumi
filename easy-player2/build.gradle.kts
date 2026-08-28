@@ -61,7 +61,7 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.9.0")
     implementation("androidx.compose.material3:material3:1.2.1")
 
-    val media3 = "1.4.0-alpha02"
+    val media3 = "1.9.2"
     api("androidx.media3:media3-exoplayer:$media3")
     api("androidx.media3:media3-exoplayer-dash:$media3")
     api("androidx.media3:media3-ui:$media3")

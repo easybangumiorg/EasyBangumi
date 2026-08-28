@@ -211,6 +211,23 @@ class RestoreController(
                             )
                         )
                     )
+                    playbackEngine.set(
+                        runCatching {
+                            SettingPreferences.PlaybackEngine.valueOf(
+                                spO.optString(playbackEngine.key(), playbackEngine.get().name)
+                            )
+                        }.getOrDefault(SettingPreferences.PlaybackEngine.EXO_PLAYER)
+                    )
+                    mpvAnime4kEnabled.set(
+                        spO.optBoolean(mpvAnime4kEnabled.key(), mpvAnime4kEnabled.get())
+                    )
+                    mpvAnime4kPreset.set(
+                        runCatching {
+                            SettingPreferences.MpvAnime4KPreset.valueOf(
+                                spO.optString(mpvAnime4kPreset.key(), mpvAnime4kPreset.get().name)
+                            )
+                        }.getOrDefault(SettingPreferences.MpvAnime4KPreset.FAST)
+                    )
                     useExternalVideoPlayer.set(
                         spO.optBoolean(
                             useExternalVideoPlayer.key(),

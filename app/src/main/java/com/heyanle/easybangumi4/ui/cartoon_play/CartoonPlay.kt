@@ -89,7 +89,7 @@ fun CartoonPlay(
     val isPad = isCurPadeMode()
     val storyViewModel = viewModel<CartoonStoryViewModel>()
     val controlVM = ControlViewModelFactory.viewModel(
-        playingVM.exoPlayer,
+        playingVM.playerController,
         isPad,
         render = playingVM.render,
     )

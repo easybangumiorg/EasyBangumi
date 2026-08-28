@@ -236,7 +236,7 @@ private fun HomeEmptyStateV2(
             onClick = onAction,
             colors = ButtonDefaults.buttonColors(
                 containerColor = V2Theme.colors.accent,
-                contentColor = V2Tokens.TextPrimary,
+                contentColor = V2Theme.colors.onAccent,
             ),
             shape = RoundedCornerShape(10.dp),
         ) {

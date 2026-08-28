@@ -108,7 +108,6 @@ import com.heyanle.easybangumi4.navigationDlna
 import com.heyanle.easybangumi4.plugin.api.ParserException
 import com.heyanle.easybangumi4.plugin.api.component.BusinessActionType
 import com.heyanle.easybangumi4.plugin.api.component.PlayInfoNeedVerificationBusinessException
-import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayingViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.DetailedViewModel
@@ -123,7 +122,6 @@ import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.shareImageText
 import com.heyanle.easybangumi4.utils.shareText
 import com.heyanle.easybangumi4.utils.stringRes
-import com.heyanle.inject.core.Inject
 import com.heyanle.okkv2.core.okkv
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -169,21 +167,9 @@ fun VideoFloat(
     val nav = LocalNavController.current
     val ctx = LocalContext.current as Activity
     val scaleType by cartoonPlayingViewModel.videoScaleType.collectAsState()
-    val settingPreferences: SettingPreferences by Inject.injectLazy()
-    val anime4kEnabled by settingPreferences.anime4kEnabled.flow().collectAsState(
-        settingPreferences.anime4kEnabled.get(),
-    )
-    val anime4kMode by settingPreferences.anime4kMode.flow().collectAsState(
-        settingPreferences.anime4kMode.get(),
-    )
-    val anime4kQuality by settingPreferences.anime4kQuality.flow().collectAsState(
-        settingPreferences.anime4kQuality.get(),
-    )
-    val anime4kScale by settingPreferences.anime4kScale.flow().collectAsState(
-        settingPreferences.anime4kScale.get(),
-    )
-    val anime4kScaleCapability by cartoonPlayingViewModel.anime4KScaleCapability.collectAsState()
-
+    val mpvAnime4kEnabled by cartoonPlayingViewModel.mpvAnime4kEnabled.collectAsState()
+    val mpvAnime4kPreset by cartoonPlayingViewModel.mpvAnime4kPreset.collectAsState()
+    val mpvAnime4kStatus by cartoonPlayingViewModel.mpvAnime4KStatus.collectAsState()
     LaunchedEffect(Unit) {
         launch {
             snapshotFlow {
@@ -248,7 +234,15 @@ fun VideoFloat(
                             MutableInteractionSource()
                         }
                     ),
-                loadingMsg = stringResource(id = R.string.parsing),
+                loadingMsg = stringResource(
+                    id = if (
+                        playingState.loadingPhase == CartoonPlayingViewModel.LoadingPhase.SOURCE_RESOLUTION
+                    ) {
+                        R.string.parsing
+                    } else {
+                        R.string.loading
+                    },
+                ),
                 msgColor = Color.White
             )
             IconButton(
@@ -529,19 +523,16 @@ fun VideoFloat(
                 selectedScaleType = scaleType,
                 options = cartoonPlayingViewModel.videoScaleTypeSelection,
                 onScaleSelected = cartoonPlayingViewModel::setVideoScaleType,
-                anime4kSettings = PlayerAnime4KSettings(
-                    enabled = anime4kEnabled,
-                    mode = anime4kMode,
-                    quality = anime4kQuality,
-                    scale = anime4kScale,
-                    onEnabledChange = settingPreferences.anime4kEnabled::set,
-                    onModeChange = settingPreferences.anime4kMode::set,
-                    onQualityChange = settingPreferences.anime4kQuality::set,
-                    onScaleChange = { cartoonPlayingViewModel.setAnime4KScale(it) },
-                    supportedScales = anime4kScaleCapability.supportedScales,
-                    unsupportedScaleReasons = anime4kScaleCapability.unsupportedReasons,
-                ),
             )
+            if (cartoonPlayingViewModel.isMpvEngine) {
+                MpvAnime4KSettingsContent(
+                    enabled = mpvAnime4kEnabled,
+                    preset = mpvAnime4kPreset,
+                    status = mpvAnime4kStatus,
+                    onEnabledChange = cartoonPlayingViewModel::setMpvAnime4kEnabled,
+                    onPresetChange = cartoonPlayingViewModel::setMpvAnime4kPreset,
+                )
+            }
         }
     }
 }
@@ -703,6 +694,7 @@ fun VideoControl(
     showNormalCastAndShare: Boolean = true,
     showNormalSpeedInTopBar: Boolean = true,
     showNormalSpeedInBottomBar: Boolean = false,
+    showNormalDanmakuInTopBar: Boolean = false,
     enableNormalScreenSeekGestures: Boolean = false,
 ) {
     val nav = LocalNavController.current
@@ -808,6 +800,7 @@ fun VideoControl(
                     .defaultMinSize(64.dp, Dp.Unspecified)
                     .align(Alignment.CenterEnd),
                 screenshotState = screenshotController.state,
+                showCapture = !cartoonPlayingVM.isMpvEngine,
                 onImage = screenshotController::capture,
                 onShowRecorded = {
                     cartoonPlayingVM.showRecord()
@@ -824,6 +817,7 @@ fun VideoControl(
                 showDlna = detailState.cartoonInfo?.source != LocalSource.LOCAL_SOURCE_KEY,
                 showCastAndShare = showNormalCastAndShare,
                 showSpeed = showNormalSpeedInTopBar,
+                danmakuControlState = if (showNormalDanmakuInTopBar) danmakuControlState else null,
                 onBack = {
                     nav.popBackStack()
                 },
@@ -897,7 +891,7 @@ fun VideoControl(
                 onNext = {
                     cartoonPlayVM.tryNext()
                 },
-                danmakuControlState = danmakuControlState,
+                danmakuControlState = if (showNormalDanmakuInTopBar) null else danmakuControlState,
                 showNormalSpeed = showNormalSpeedInBottomBar,
             )
 
@@ -919,6 +913,7 @@ fun FullScreenRightToolBar(
     modifier: Modifier = Modifier,
     isShowOnNormalScreen: Boolean = false,
     screenshotState: PlayerScreenshotState,
+    showCapture: Boolean = true,
     onShowRecorded: () -> Unit,
     onImage: () -> Unit,
 ) {
@@ -936,51 +931,53 @@ fun FullScreenRightToolBar(
                 modifier = Modifier
             ) {
                 Spacer(Modifier.height(64.dp))
-                val isCapturing = screenshotState is PlayerScreenshotState.Capturing
-                Box(
-                    modifier = Modifier
-                        .padding(4.dp)
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(Color.Black.copy(alpha = 0.6f))
-                        .combinedClickable(
-                            enabled = !isCapturing,
-                            onClickLabel = "截图",
-                            onClick = onImage,
-                            onLongClickLabel = "录制片段",
-                            onLongClick = onShowRecorded,
-                        )
-                        .semantics {
-                            contentDescription = if (isCapturing) {
-                                "正在截图"
-                            } else {
-                                "截图，长按录制"
-                            }
-                        },
-                    contentAlignment = Alignment.Center,
-                ) {
-                    if (isCapturing) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            color = Color.White,
-                            strokeWidth = 2.dp,
-                        )
-                    } else {
-                        Box {
-                            Icon(
-                                Icons.Filled.CameraAlt,
-                                tint = Color.White,
+                if (showCapture) {
+                    val isCapturing = screenshotState is PlayerScreenshotState.Capturing
+                    Box(
+                        modifier = Modifier
+                            .padding(4.dp)
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(Color.Black.copy(alpha = 0.6f))
+                            .combinedClickable(
+                                enabled = !isCapturing,
+                                onClickLabel = "截图",
+                                onClick = onImage,
+                                onLongClickLabel = "录制片段",
+                                onLongClick = onShowRecorded,
+                            )
+                            .semantics {
+                                contentDescription = if (isCapturing) {
+                                    "正在截图"
+                                } else {
+                                    "截图，长按录制"
+                                }
+                            },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        if (isCapturing) {
+                            CircularProgressIndicator(
                                 modifier = Modifier.size(20.dp),
-                                contentDescription = null,
+                                color = Color.White,
+                                strokeWidth = 2.dp,
                             )
-                            Icon(
-                                Icons.Filled.FiberManualRecord,
-                                tint = Color(0xFFFF796F),
-                                modifier = Modifier
-                                    .size(8.dp)
-                                    .align(Alignment.BottomEnd),
-                                contentDescription = null,
-                            )
+                        } else {
+                            Box {
+                                Icon(
+                                    Icons.Filled.CameraAlt,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(20.dp),
+                                    contentDescription = null,
+                                )
+                                Icon(
+                                    Icons.Filled.FiberManualRecord,
+                                    tint = Color(0xFFFF796F),
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .align(Alignment.BottomEnd),
+                                    contentDescription = null,
+                                )
+                            }
                         }
                     }
                 }
@@ -1149,6 +1146,7 @@ fun NormalVideoTopBar(
     showDlna: Boolean,
     showCastAndShare: Boolean = true,
     showSpeed: Boolean = true,
+    danmakuControlState: PlayerDanmakuControlState? = null,
     onBack: () -> Unit,
     onSpeed: () -> Unit,
     onDlna: () -> Unit,
@@ -1175,6 +1173,8 @@ fun NormalVideoTopBar(
                         )
                     }
                 }
+
+                OptionalPlayerDanmakuToggle(state = danmakuControlState)
 
                 if (showCastAndShare && showDlna) {
                     IconButton(onClick = onDlna) {
@@ -1243,7 +1243,7 @@ fun EasyVideoBottomControl(
 
             OptionalPlayerDanmakuToggle(state = danmakuControlState)
 
-            TimeText(time = vm.position, Color.White)
+            TimeText(time = vm.position, Color.White, fixedWidth = true)
 
             val position =
                 when (vm.controlState) {
@@ -1266,7 +1266,7 @@ fun EasyVideoBottomControl(
                 }
             )
 
-            TimeText(time = vm.during, Color.White)
+            TimeText(time = vm.during, Color.White, fixedWidth = true)
 
             if (vm.isFullScreen) {
                 Text(

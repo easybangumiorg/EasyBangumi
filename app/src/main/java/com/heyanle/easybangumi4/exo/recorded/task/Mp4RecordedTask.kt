@@ -18,7 +18,7 @@ import androidx.media3.transformer.Effects
 import androidx.media3.transformer.ExoPlayerAssetLoader
 import androidx.media3.transformer.ExportException
 import androidx.media3.transformer.ExportResult
-import androidx.media3.transformer.InAppMuxer
+import androidx.media3.transformer.InAppMp4Muxer
 import androidx.media3.transformer.TransformationRequest
 import androidx.media3.transformer.Transformer
 import com.heyanle.easybangumi4.exo.ClippingConfigMediaSourceFactory
@@ -133,7 +133,7 @@ class Mp4RecordedTask(
             ExoPlayerAssetLoader.Factory(
             ctx, DefaultDecoderFactory.Builder(ctx).build(),  Clock.DEFAULT, mediaSourceFactory)
         )
-        .setMuxerFactory(InAppMuxer.Factory.Builder().build())
+        .setMuxerFactory(InAppMp4Muxer.Factory())
         .addListener(this)
         .build()
 

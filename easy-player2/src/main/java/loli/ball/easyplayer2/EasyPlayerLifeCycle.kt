@@ -58,7 +58,7 @@ fun EasyPlayerStateSync(vm: ControlViewModel) {
     OnLifecycleEvent { _, event ->
         when (event) {
             Lifecycle.Event.ON_RESUME -> ui.isSystemBarsVisible = !vm.isFullScreen
-            Lifecycle.Event.ON_PAUSE -> vm.exoPlayer.pause()
+            Lifecycle.Event.ON_PAUSE -> vm.playerController.pause()
             else -> Unit
         }
     }

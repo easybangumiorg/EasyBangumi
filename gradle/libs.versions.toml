@@ -41,7 +41,7 @@ jeff_m3u8 = "1.2.0"
 moshi = "1.14.0"
 
 koin = "3.5.0"
-agp = "8.2.2"
+agp = "8.13.2"
 kotlin = "1.9.22"
 
 cybergarage-upnp = "2.1.5"

@@ -393,10 +393,6 @@ class PlayerPlaybackSettingsUiTest {
         var section by mutableStateOf(PlayerSettingsSection.Danmaku)
         var config by mutableStateOf(DanmakuDisplayConfig.DEFAULT)
         var selectedScale = 0
-        var anime4kEnabled by mutableStateOf(true)
-        var anime4kMode by mutableStateOf(1)
-        var anime4kQuality by mutableStateOf("M")
-        var anime4kScale by mutableStateOf(0)
         var resetCount = 0
         val scaleOptions = listOf(
             0 to com.heyanle.easy_i18n.R.string.video_scale_type_default,
@@ -423,16 +419,6 @@ class PlayerPlaybackSettingsUiTest {
                 videoScaleType = selectedScale,
                 videoScaleOptions = scaleOptions,
                 onVideoScaleSelected = { selectedScale = it },
-                anime4kSettings = PlayerAnime4KSettings(
-                    enabled = anime4kEnabled,
-                    mode = anime4kMode,
-                    quality = anime4kQuality,
-                    scale = anime4kScale,
-                    onEnabledChange = { anime4kEnabled = it },
-                    onModeChange = { anime4kMode = it },
-                    onQualityChange = { anime4kQuality = it },
-                    onScaleChange = { anime4kScale = it },
-                ),
             )
         }
 
@@ -478,17 +464,6 @@ class PlayerPlaybackSettingsUiTest {
             .performScrollTo()
             .performClick()
         composeRule.runOnIdle { assertEquals(1, selectedScale) }
-        composeRule.onNodeWithTag(PlayerPlaybackSettingsTestTags.ANIME4K_MODE)
-            .performScrollTo()
-            .performClick()
-        composeRule.onNodeWithText("极致 4K").performClick()
-        composeRule.runOnIdle { assertEquals(6, anime4kMode) }
-        composeRule.onNodeWithTag(PlayerPlaybackSettingsTestTags.ANIME4K_ENABLED)
-            .performScrollTo()
-            .performClick()
-        composeRule.runOnIdle { assertFalse(anime4kEnabled) }
-        composeRule.onNodeWithTag(PlayerPlaybackSettingsTestTags.ANIME4K_MODE)
-            .assertDoesNotExist()
 
         composeRule.onNodeWithContentDescription("关闭播放设置").performClick()
         composeRule.runOnIdle {

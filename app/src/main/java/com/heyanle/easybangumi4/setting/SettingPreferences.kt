@@ -50,20 +50,36 @@ class SettingPreferences(
         Auto, Enable, Disable
     }
 
+    enum class PlaybackEngine {
+        EXO_PLAYER,
+        MPV,
+    }
+
+    enum class MpvAnime4KPreset {
+        FAST,
+        QUALITY,
+        STRONG,
+    }
+
     val playerOrientationMode = preferenceStore.getEnum<PlayerOrientationMode>(
         "player_orientation_mode",
         PlayerOrientationMode.Auto
     )
 
-    // 高清渲染 (Anime4K)
-    // 默认开启，可关闭；持久化于 MMKV
-    var anime4kEnabled = preferenceStore.getBoolean("anime4k_enabled", true)
-    // 渲染方案 0..6（见 A4KChain.MODE_NAMES）
-    val anime4kMode = preferenceStore.getInt("anime4k_mode", 1)
-    // 渲染质量 S/M/L
-    val anime4kQuality = preferenceStore.getString("anime4k_quality", "M")
-    // 超分倍率：0=自动(推荐)，1/2/4=强制
-    val anime4kScale = preferenceStore.getInt("anime4k_scale", 0)
+    val playbackEngine = preferenceStore.getEnum(
+        "playback_engine",
+        PlaybackEngine.EXO_PLAYER,
+    )
+
+    // ExoPlayer 专属：音频指纹广告探针。规则地址由用户或后续云端配置提供。
+    val exoAdAudioProbeEnabled = preferenceStore.getBoolean("exo_ad_audio_probe_enabled", false)
+    val exoAdAudioProbeRulesUrl = preferenceStore.getString("exo_ad_audio_probe_rules_url", "")
+
+    val mpvAnime4kEnabled = preferenceStore.getBoolean("mpv_anime4k_enabled", false)
+    val mpvAnime4kPreset = preferenceStore.getEnum(
+        "mpv_anime4k_preset",
+        MpvAnime4KPreset.FAST,
+    )
 
     // 使用外置播放器
     var useExternalVideoPlayer = preferenceStore.getBoolean("use_external_video_player", false)

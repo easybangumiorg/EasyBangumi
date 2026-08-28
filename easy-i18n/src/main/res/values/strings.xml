@@ -672,13 +672,4 @@
     <string name="go_to_manage_source">跳转到拓展管理</string>
 
 
-    <string name="anime4k_title">高清渲染 (Anime4K)</string>
-    <string name="anime4k_summary">开启后用 Anime4K 算法放大并锐化画面，提高画质</string>
-    <string name="anime4k_mode">渲染方案</string>
-    <string name="anime4k_quality">渲染质量</string>
-    <string name="anime4k_quality_s">快速</string>
-    <string name="anime4k_quality_m">标准</string>
-    <string name="anime4k_quality_l">高画质</string>
-    <string name="anime4k_scale">超分倍率</string>
-    <string name="anime4k_scale_auto">自动（推荐）</string>
 </resources>

@@ -209,7 +209,7 @@ private fun RepositorySourceCardV2(
                 enabled = actionEnabled,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = V2Theme.colors.accent,
-                    contentColor = V2Tokens.TextPrimary,
+                    contentColor = V2Theme.colors.onAccent,
                     disabledContainerColor = V2Tokens.Divider,
                     disabledContentColor = V2Tokens.TextSecondary,
                 ),
@@ -328,7 +328,7 @@ internal fun RepositoryManageDialogV2(
                     enabled = newUrl.isNotBlank(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = V2Theme.colors.accent,
-                        contentColor = V2Tokens.TextPrimary,
+                        contentColor = V2Theme.colors.onAccent,
                     ),
                 ) {
                     Text("添加", fontWeight = FontWeight.SemiBold)
