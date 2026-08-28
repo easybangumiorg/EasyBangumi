@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "loli.ball.easyplayer2"
-    compileSdk = 34
+    compileSdk = com.heyanle.buildsrc.Android.compileSdk
 
     defaultConfig {
         minSdk = 21

@@ -4,10 +4,7 @@ import com.heyanle.buildsrc.Android
 import com.heyanle.buildsrc.RoomSchemaArgProvider
 import java.util.Properties
 
-val DEFAULT_RELEASE = false
-val release = isRelease()
-
-fun isRelease() = (System.getenv("RELEASE") ?: "") == "true"
+val baseApplicationId = "com.heyanle.easybangumi4"
 
 plugins {
     alias(build.plugins.android.application)
@@ -48,16 +45,13 @@ fun buildConfigString(value: String): String {
 val danDanPlayAppId = danDanPlayCredential("dandanplay.appId", "DANDANPLAY_APP_ID")
 val danDanPlayAppSecret = danDanPlayCredential("dandanplay.appSecret", "DANDANPLAY_APP_SECRET")
 
-val packageName = if (release) "com.heyanle.easybangumi4" else "com.heyanle.easybangumi4.debug"
-val labelNameRes = if (release) "@string/app_name" else "纯纯看番 Debug"
-
 android {
     namespace =  "com.heyanle.easybangumi4"
     compileSdk = Android.compileSdk
 
     defaultConfig {
 
-        applicationId = packageName
+        applicationId = baseApplicationId
         minSdk = Android.minSdk
         targetSdk = Android.targetSdk
         versionCode = Android.versionCode
@@ -73,9 +67,9 @@ android {
             publishingProps.getProperty("bugly_appid", System.getenv("BUGLY_APPID")?:"")
         manifestPlaceholders["bugly_app_version"] = Android.versionName
         manifestPlaceholders["bugly_app_channel"] = "github"
-        manifestPlaceholders["package_name"] = packageName
-        manifestPlaceholders["label_res"] = labelNameRes
-        manifestPlaceholders["is_release"] = release
+        manifestPlaceholders["package_name"] = baseApplicationId
+        manifestPlaceholders["label_res"] = "@string/app_name"
+        manifestPlaceholders["is_release"] = false
 
         buildConfigField("String", "DANDANPLAY_APP_ID", buildConfigString(danDanPlayAppId))
         buildConfigField("String", "DANDANPLAY_APP_SECRET", buildConfigString(danDanPlayAppSecret))
@@ -113,9 +107,14 @@ android {
 
     buildTypes {
         debug {
+            applicationIdSuffix = ".debug"
             isMinifyEnabled = false
             isShrinkResources = false
             proguardFiles("proguard-rules.pro")
+
+            manifestPlaceholders["package_name"] = "$baseApplicationId.debug"
+            manifestPlaceholders["label_res"] = "纯纯看番 Debug"
+            manifestPlaceholders["is_release"] = false
 
             buildConfig()
 
@@ -128,11 +127,33 @@ android {
             isShrinkResources = false
             proguardFiles("proguard-rules.pro")
 
+            manifestPlaceholders["package_name"] = baseApplicationId
+            manifestPlaceholders["label_res"] = "@string/app_name"
+            manifestPlaceholders["is_release"] = true
+
             buildConfig()
 
 //            configure<CrashlyticsExtension> {
 //                mappingFileUploadEnabled = false
 //            }
+        }
+        create("performance") {
+            initWith(getByName("release"))
+
+            // Keep release-equivalent code generation and R8 optimization while making the APK
+            // locally installable alongside both the production and debug applications.
+            applicationIdSuffix = ".performance"
+            versionNameSuffix = "-performance"
+            signingConfig = signingConfigs.getByName("debug")
+            isDebuggable = false
+            matchingFallbacks += listOf("release")
+
+            manifestPlaceholders["package_name"] = "$baseApplicationId.performance"
+            manifestPlaceholders["label_res"] = "@string/app_name"
+            manifestPlaceholders["bugly_app_channel"] = "local-performance"
+            manifestPlaceholders["is_release"] = false
+
+            buildConfig()
         }
     }
     compileOptions {

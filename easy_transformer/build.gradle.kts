@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.heyanle.easy_transformer"
-    compileSdk = 34
+    compileSdk = com.heyanle.buildsrc.Android.compileSdk
 
     defaultConfig {
         minSdk = 21
