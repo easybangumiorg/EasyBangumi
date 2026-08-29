@@ -250,7 +250,6 @@ dependencies {
 
     //debugImplementation(libs.leakcanary)
 
-    implementation(libs.glide)
     implementation(libs.okkv2)
 
     testImplementation(libs.junit)
