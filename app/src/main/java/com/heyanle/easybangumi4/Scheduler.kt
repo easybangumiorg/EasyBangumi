@@ -59,11 +59,10 @@ object Scheduler {
      */
     fun runOnAppCreate(application: Application) {
 
-        try {
-            File(application.getCachePath("transformer")).deleteRecursively()
-            File(application.getCachePath("download")).deleteRecursively()
-        }catch (e: Exception) {
-            e.printStackTrace()
+        // 冷启动主线程 deleteRecursively 是启动耗时热点，移到 IO 线程后台清理缓存目录。
+        MainScope().launch(Dispatchers.IO) {
+            runCatching { File(application.getCachePath("transformer")).deleteRecursively() }
+            runCatching { File(application.getCachePath("download")).deleteRecursively() }
         }
 
 

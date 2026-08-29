@@ -43,6 +43,7 @@ import com.heyanle.easybangumi4.utils.logi
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.inject.core.Inject
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.SupervisorJob
@@ -346,9 +347,19 @@ class CartoonPlayingViewModel(
 
     // 缩略图缓存
     var thumbnailBuffer: ThumbnailBuffer? = null
-    val thumbnailFolder: File = File(APP.getCachePath("thumbnail")).apply {
-        deleteRecursively()
-        mkdirs()
+    val thumbnailFolder: File = File(APP.getCachePath("thumbnail")).apply { mkdirs() }
+
+    init {
+        // 清理上次遗留的缩略图缓存；deleteRecursively 是进入播放页的主线程热点，移到 IO。
+        clearThumbnailFolderAsync()
+    }
+
+    /** 在 IO 线程清理缩略图目录。缩略图缓存本质 best-effort，删除与新建并发安全（见 ThumbnailBuffer）。 */
+    private fun clearThumbnailFolderAsync() {
+        singleScope.launch(Dispatchers.IO) {
+            runCatching { thumbnailFolder.deleteRecursively() }
+            thumbnailFolder.mkdirs()
+        }
     }
 
     @OptIn(UnstableApi::class)
@@ -765,7 +776,7 @@ class CartoonPlayingViewModel(
             }
         }
         thumbnailBuffer?.clear()
-        thumbnailFolder.deleteRecursively()
+        clearThumbnailFolderAsync()
         thumbnailBuffer = ThumbnailBuffer(thumbnailFolder)
         playingInfo = playerInfo
         "play-media action=set uri=${playerInfo.uri} source=${cartoonPlayingState?.cartoonSummary?.source} cartoonId=${cartoonPlayingState?.cartoonSummary?.id} cache=$canMediaCache".logi(TAG)

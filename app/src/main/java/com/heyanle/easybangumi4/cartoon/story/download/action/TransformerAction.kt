@@ -1,6 +1,8 @@
 package com.heyanle.easybangumi4.cartoon.story.download.action
 
 import androidx.annotation.OptIn
+import android.os.Handler
+import android.os.HandlerThread
 import androidx.core.text.util.LocalePreferences
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.Clock
@@ -26,6 +28,7 @@ import com.heyanle.easybangumi4.utils.stringRes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.android.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.concurrent.CountDownLatch
@@ -52,6 +55,11 @@ class TransformerAction(
 
     private val cacheFolder = File(APP.getCachePath("transformer"))
     private val mainScope = MainScope()
+
+    // media3 Transformer 的 ExoPlayerAssetLoader 需要一个带 Looper 的线程构建 ExoPlayer。
+    // 原实现用 MainScope（主线程）执行 start/cancel，转码期间会占用主线程；改为独立 HandlerThread。
+    private val transformerThread = HandlerThread("TransformerMain").apply { start() }
+    private val transformerScope = CoroutineScope(SupervisorJob() + Handler(transformerThread.looper).asCoroutineDispatcher())
 
     private val dispatchScope = CoroutineScope(SupervisorJob() + CoroutineProvider.SINGLE)
     private val executor = ThreadPoolExecutor(
@@ -185,7 +193,7 @@ class TransformerAction(
             cartoonDownloadRuntime.transformerStartError = null
 
             val holder: ProgressHolder = ProgressHolder()
-            mainScope.launch {
+            transformerScope.launch {
                 cartoonDownloadRuntime.dispatchToBus(
                     -1f,
                     stringRes(com.heyanle.easy_i18n.R.string.waiting_transformer)
@@ -208,7 +216,7 @@ class TransformerAction(
             cartoonDownloadRuntime.transformerStartError?.let { throw it }
             while (completelyLatch.count > 0) {
                 if (cartoonDownloadRuntime.isCanceled()) {
-                    mainScope.launch {
+                    transformerScope.launch {
                         transformer.cancel()
                     }
                     completelyLatch.countDown()
@@ -232,7 +240,7 @@ class TransformerAction(
             }
 
             if (cartoonDownloadRuntime.exportException != null) {
-                mainScope.launch {
+                transformerScope.launch {
                     transformer.cancel()
                 }
                 cartoonDownloadRuntime.error(
