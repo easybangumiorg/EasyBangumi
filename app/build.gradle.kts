@@ -167,6 +167,7 @@ baselineProfile {
     variants {
         create("performance") {
             mergeIntoMain = true
+            from(project(":baselineprofile"))
         }
     }
 
@@ -322,9 +323,6 @@ dependencies {
 
     // Installs compiled baseline profiles on first launch and enables dex layout optimization.
     implementation(libs.profileinstaller)
-    // Generates startup/scroll baseline profiles from the :baselineprofile module journeys.
-    "baselineProfile"(project(":baselineprofile"))
-
     implementation(libs.uni.file)
 
 }
