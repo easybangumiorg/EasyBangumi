@@ -1,11 +1,8 @@
 package com.heyanle.easybangumi4.utils
 
-import android.webkit.CookieManager
 import android.webkit.WebSettings
 import android.webkit.WebView
 import androidx.annotation.UiThread
-import com.heyanle.easybangumi4.APP
-import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
@@ -17,8 +14,7 @@ import java.util.concurrent.TimeUnit
  * https://github.com/heyanLE
  */
 class WebViewManager(
-    private val cookieManager: CookieManager,
-    private val settingPreferences: SettingMMKVPreferences,
+    private val webViewRuntime: WebViewRuntime,
 ) {
 
     companion object {
@@ -28,8 +24,6 @@ class WebViewManager(
     private val lock = Object()
     private val scope = MainScope()
     private val coreWebViewList = mutableListOf<WebView>()
-    private val shouldSpoofPackageName: Boolean
-        get() = !settingPreferences.webViewCompatible.get()
 
 
     fun getWebViewOrNull(): WebView? {
@@ -88,9 +82,7 @@ class WebViewManager(
     @UiThread
     private fun newWebView(): WebView? {
         return try {
-            WebViewPackageNameScope.withSpoofing(shouldSpoofPackageName) {
-                WebView(APP)
-            }.apply {
+            webViewRuntime.createWebView().apply {
                 // setDefaultSettings()
                 with(settings) {
                     javaScriptEnabled = true
@@ -105,7 +97,7 @@ class WebViewManager(
                     builtInZoomControls = true
                     displayZoomControls = false
                 }
-                cookieManager.also {
+                webViewRuntime.cookieManager.also {
                     it.setAcceptCookie(true)
                     it.acceptCookie()
                     it.setAcceptThirdPartyCookies(this, true) // 跨域cookie读取

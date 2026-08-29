@@ -11,8 +11,9 @@ import okhttp3.HttpUrl.Companion.toHttpUrl
  * Created by HeYanLe on 2023/2/3 21:51.
  * https://github.com/heyanLE
  */
-class AndroidCookieJar : CookieJar {
-    private val manager = CookieManager.getInstance()
+class AndroidCookieJar(
+    private val manager: CookieManager,
+) : CookieJar {
 
     override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
         val urlString = url.toString()

@@ -1,7 +1,6 @@
 package com.heyanle.easybangumi4.plugin.source
 
 import android.app.Application
-import android.webkit.CookieManager
 import com.heyanle.easybangumi4.base.hekv.HeKV
 import com.heyanle.easybangumi4.plugin.source.repository.RepositoryController
 import com.heyanle.easybangumi4.plugin.source.repository.RepositoryPreferences
@@ -24,6 +23,7 @@ import com.heyanle.easybangumi4.plugin.api.utils.api.RenderHelper
 import com.heyanle.easybangumi4.plugin.api.utils.api.StringHelper
 import com.heyanle.easybangumi4.plugin.api.utils.api.WebViewHelperV2
 import com.heyanle.easybangumi4.utils.WebViewManager
+import com.heyanle.easybangumi4.utils.WebViewRuntime
 import com.heyanle.easybangumi4.utils.getFilePath
 import com.heyanle.inject.api.InjectModule
 import com.heyanle.inject.api.InjectScope
@@ -41,6 +41,17 @@ class SourceModule(
 
     override fun InjectScope.registerInjectables() {
 
+        // Create this eagerly while modules are registered on the application main thread.
+        // DefaultInjectScope's first singleton lookup can race across source-loading threads,
+        // which would otherwise create multiple WebView providers with independent locks.
+        val webViewRuntime = WebViewRuntime(
+            application = application,
+            // SettingMMKVPreferences cannot be constructed until Scheduler initializes Okkv.
+            // Resolve it only when WebView is actually used, after module registration ends.
+            shouldSpoofPackageName = {
+                !get<SettingMMKVPreferences>().webViewCompatible.get()
+            },
+        )
 
 
         addSingletonFactory<ISourceController> {
@@ -74,11 +85,13 @@ class SourceModule(
             CaptchaHelperImpl
         }
 
+        addSingletonFactory {
+            webViewRuntime
+        }
+
         // NetworkHelper
         addSingletonFactory<NetworkHelperImpl> {
-            NetworkHelperImpl(
-                application
-            )
+            NetworkHelperImpl(webViewRuntime)
         }
         addScopedPerKeyFactory<NetworkHelper, String> {
             get<NetworkHelperImpl>()
@@ -97,10 +110,7 @@ class SourceModule(
         addAlias<PreferenceHelperImpl, PreferenceHelper>()
 
         addSingletonFactory {
-            WebViewManager(
-                cookieManager = CookieManager.getInstance(),
-                settingPreferences = get<SettingMMKVPreferences>(),
-            )
+            WebViewManager(webViewRuntime)
         }
 
         addSingletonFactory<RenderHelperImpl> {

@@ -31,7 +31,7 @@ class App : Application() {
     override fun getPackageName(): String {
         return if (
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.P &&
-            WebViewPackageNameScope.shouldSpoof()
+            WebViewPackageNameScope.shouldSpoofPackageName()
         ) {
             SPOOF_PACKAGE_NAME
         } else {
