@@ -167,20 +167,6 @@ baselineProfile {
             from(project(":baselineprofile"))
         }
     }
-
-    // Android only consumes binary profiles below its size limit. Keep app-owned
-    // code plus the dynamic source, network and image stacks exercised by this journey;
-    // AndroidX libraries already contribute their own profiles through their AARs.
-    filter {
-        include("com.heyanle.**")
-        include("loli.ball.**")
-        include("org.mozilla.javascript.**")
-        include("okhttp3.**")
-        include("org.jsoup.**")
-        include("coil.**")
-        include("com.squareup.moshi.**")
-        include("com.google.gson.**")
-    }
 }
 
 fun VariantDimension.buildConfig(){
