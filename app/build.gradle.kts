@@ -10,6 +10,7 @@ plugins {
     alias(build.plugins.android.application)
     alias(build.plugins.kotlin.android)
     alias(build.plugins.ksp)
+    alias(build.plugins.baselineprofile)
     if ((System.getenv("RELEASE") ?: "true") == "") {
         id("com.google.gms.google-services")
         id("com.google.firebase.crashlytics")
@@ -315,6 +316,11 @@ dependencies {
     implementation(project(":easy-player2"))
 
     implementation(project(":easy_transformer"))
+
+    // Installs compiled baseline profiles on first launch and enables dex layout optimization.
+    implementation(libs.profileinstaller)
+    // Generates startup/scroll baseline profiles from the :baselineprofile module journeys.
+    "baselineProfile"(project(":baselineprofile"))
 
     implementation(libs.uni.file)
 

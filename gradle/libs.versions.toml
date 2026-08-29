@@ -29,6 +29,9 @@ aria = "3.8.16"
 core-ktx = "1.13.0"
 androidx-test-ext-junit = "1.1.5"
 espresso-core = "3.5.1"
+uiautomator = "2.3.0"
+macrobenchmark = "1.4.1"
+profileinstaller = "1.4.1"
 appcompat = "1.6.1"
 material = "1.11.0"
 
@@ -100,6 +103,9 @@ aria_m3u8 = { module = "me.laoyuyu.aria:m3u8", version.ref = "aria" }
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
 androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-ext-junit" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso-core" }
+uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
+macrobenchmark = { group = "androidx.benchmark", name = "benchmark-macro-junit4", version.ref = "macrobenchmark" }
+profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version.ref = "profileinstaller" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 

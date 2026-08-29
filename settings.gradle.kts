@@ -43,6 +43,7 @@ includeBuild("third_party/m3u8-ad-audio-probe") {
     }
 }
 include(":app")
+include(":baselineprofile")
 include(":easy-crasher")
 include(":easy-i18n")
 include(":inject")

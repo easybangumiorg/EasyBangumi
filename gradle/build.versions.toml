@@ -7,8 +7,10 @@ ksp = "1.9.22-1.0.17"
 [plugins]
 android_application = {id = "com.android.application", version.ref = "android_gradle_plugin"}
 android_library = {id = "com.android.library", version.ref = "android_gradle_plugin"}
+android_test = {id = "com.android.test", version.ref = "android_gradle_plugin"}
 kotlin_android = {id = "org.jetbrains.kotlin.android", version.ref = "kotlin"}
 kotlin_jvm = {id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin"}
 ksp = {id = "com.google.devtools.ksp", version.ref = "ksp"}
+baselineprofile = {id = "androidx.baselineprofile", version = "1.4.1"}
 #maven_publish = {id = "maven-publish"}
 #signing = {id = "signing"}
