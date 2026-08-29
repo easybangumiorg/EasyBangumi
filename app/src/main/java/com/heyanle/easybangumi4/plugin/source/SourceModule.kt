@@ -14,6 +14,7 @@ import com.heyanle.easybangumi4.plugin.source.utils.network.RenderHelperImpl
 import com.heyanle.easybangumi4.plugin.source.utils.network.WebViewHelperV2Impl
 import com.heyanle.easybangumi4.plugin.source.utils.network.web.WebProxyManager
 import com.heyanle.easybangumi4.plugin.source.utils.network.web.WebProxyProvider
+import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
 import com.heyanle.easybangumi4.plugin.source.push.SourcePushController
 import com.heyanle.easybangumi4.plugin.api.utils.api.CaptchaHelper
 import com.heyanle.easybangumi4.plugin.api.utils.api.NetworkHelper
@@ -96,7 +97,10 @@ class SourceModule(
         addAlias<PreferenceHelperImpl, PreferenceHelper>()
 
         addSingletonFactory {
-            WebViewManager(CookieManager.getInstance())
+            WebViewManager(
+                cookieManager = CookieManager.getInstance(),
+                settingPreferences = get<SettingMMKVPreferences>(),
+            )
         }
 
         addSingletonFactory<RenderHelperImpl> {

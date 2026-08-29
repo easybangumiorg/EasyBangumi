@@ -4,10 +4,8 @@ import android.app.ActivityManager
 import android.app.Application
 import android.content.Context
 import android.os.Build
-import android.os.Looper
 import android.os.Process
-import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
-import com.heyanle.inject.core.Inject
+import com.heyanle.easybangumi4.utils.WebViewPackageNameScope
 
 /**
  * Created by HeYanLe on 2023/2/18 22:47.
@@ -17,7 +15,7 @@ lateinit var APP: App
 
 class App : Application() {
 
-    companion object {
+    private companion object {
         const val SPOOF_PACKAGE_NAME = "org.chromium.chrome"
     }
 
@@ -29,32 +27,17 @@ class App : Application() {
         super.attachBaseContext(base)
         Scheduler.runOnAppAttachBaseContext(this)
     }
+
     override fun getPackageName(): String {
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            try {
-                // Override the value passed as X-Requested-With in WebView requests
-                val stackTrace = Looper.getMainLooper().thread.stackTrace
-                val chromiumElement = stackTrace.find {
-                    it.className.equals(
-                        "org.chromium.base.BuildInfo",
-                        ignoreCase = true,
-                    )
-                }
-                if (chromiumElement?.methodName.equals("getAll", ignoreCase = true)) {
-                    val settingPreferences: SettingMMKVPreferences by Inject.injectLazy()
-                    if (settingPreferences.webViewCompatible.get()) {
-                        // 兼容模式不改写
-                        return super.getPackageName()
-                    }
-                    return SPOOF_PACKAGE_NAME
-                }
-            } catch (e: Exception) {
-            }
+        return if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.P &&
+            WebViewPackageNameScope.shouldSpoof()
+        ) {
+            SPOOF_PACKAGE_NAME
+        } else {
+            super.getPackageName()
         }
-        return super.getPackageName()
     }
-
 
     override fun onCreate() {
 
