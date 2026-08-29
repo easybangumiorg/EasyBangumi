@@ -19,7 +19,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.heyanle.easybangumi4.LocalNavController
-import com.heyanle.easybangumi4.ScreenShowEvent
 import com.heyanle.easybangumi4.navControllerRef
 import com.heyanle.easybangumi4.navigation.PLAYBACK_DETAIL_LEGACY_ROUTE
 import com.heyanle.easybangumi4.navigation.PLAYBACK_DETAIL_V2_ROUTE
@@ -120,7 +119,6 @@ fun V2NavGraph(
             popExitTransition = { slideOutHorizontally(tween()) { it } },
         ) {
             composable(V2Routes.MAIN) {
-                ScreenShowEvent()
                 NormalSystemBarColor()
                 LegacyMainScreen()
             }
@@ -133,11 +131,6 @@ fun V2NavGraph(
                     id = entry.arguments?.getString("id") ?: "",
                     source = entry.arguments?.getString("source") ?: "",
                     enterDataJson = entry.arguments?.getString("enter_data") ?: "{}",
-                )
-                ScreenShowEvent(
-                    "id" to arguments.id,
-                    "source" to arguments.source,
-                    "enter_data" to arguments.enterDataJson,
                 )
                 NormalSystemBarColor(getStatusBarDark = { false })
                 PlaybackDetailV2(
@@ -173,11 +166,6 @@ fun V2NavGraph(
                     entry.arguments?.getString("enter_data") ?: "",
                     Charsets.UTF_8.name(),
                 )
-                ScreenShowEvent(
-                    "id" to encodedId,
-                    "source" to encodedSource,
-                    "enter_data" to enterDataJson,
-                )
                 NormalSystemBarColor()
                 LegacyDlnaScreen(
                     id = URLDecoder.decode(encodedId, Charsets.UTF_8.name()),
@@ -190,7 +178,6 @@ fun V2NavGraph(
                 route = "${V2Routes.LOCAL_PLAY}?uuid={uuid}",
                 arguments = listOf(navArgument("uuid") { defaultValue = "" }),
             ) { entry ->
-                ScreenShowEvent()
                 NormalSystemBarColor(getStatusBarDark = { false })
                 LegacyLocalPlayPlaceholderScreen(entry.arguments?.getString("uuid") ?: "")
             }
@@ -202,7 +189,6 @@ fun V2NavGraph(
                 ),
             ) { entry ->
                 val router = entry.arguments?.getString("router") ?: SettingPage.Appearance.router
-                ScreenShowEvent("sub_router" to router)
                 NormalSystemBarColor()
                 LegacySettingScreen(router)
             }
@@ -211,7 +197,6 @@ fun V2NavGraph(
                 route = "${V2Routes.WEB_VERIFICATION}?tips={tips}",
                 arguments = listOf(navArgument("tips") { defaultValue = "" }),
             ) { entry ->
-                ScreenShowEvent()
                 DisposableEffect(Unit) {
                     onDispose { WebViewHelperV2Impl.webPageShowing = false }
                 }
@@ -231,7 +216,6 @@ fun V2NavGraph(
             }
 
             composable(V2Routes.HISTORY) {
-                ScreenShowEvent()
                 NormalSystemBarColor()
                 LegacySurface { LegacyHistoryScreen() }
             }
@@ -245,13 +229,11 @@ fun V2NavGraph(
                     },
                 ),
             ) { entry ->
-                ScreenShowEvent()
                 NormalSystemBarColor()
                 LegacyStoryScreen(entry.arguments?.getInt("defIndex") ?: 0)
             }
 
             composable(V2Routes.SOURCE_PUSH) {
-                ScreenShowEvent()
                 NormalSystemBarColor()
                 LegacySourcePushScreen()
             }
@@ -265,7 +247,6 @@ fun V2NavGraph(
                     },
                 ),
             ) { entry ->
-                ScreenShowEvent()
                 NormalSystemBarColor()
                 LegacySurface {
                     LegacySourceManagerScreen(entry.arguments?.getInt("defIndex") ?: -1)
@@ -279,7 +260,6 @@ fun V2NavGraph(
                     navArgument("defSourceKey") { defaultValue = "" },
                 ),
             ) { entry ->
-                ScreenShowEvent()
                 NormalSystemBarColor()
                 LegacySurface {
                     LegacySearchScreen(
@@ -296,7 +276,6 @@ fun V2NavGraph(
                     navArgument("sourceKeys") { defaultValue = "" },
                 ),
             ) { entry ->
-                ScreenShowEvent()
                 val summaries = entry.arguments?.getString("summaries")
                     .decodeUrl()
                     .jsonToOrEmptyList<CartoonSummary>()
@@ -313,7 +292,6 @@ fun V2NavGraph(
             }
 
             composable(V2Routes.ABOUT) {
-                ScreenShowEvent()
                 NormalSystemBarColor()
                 LegacyAboutScreen()
             }
@@ -322,7 +300,6 @@ fun V2NavGraph(
                 route = "${V2Routes.SOURCE_CONFIG}?source_key={key}",
                 arguments = listOf(navArgument("key") { defaultValue = "" }),
             ) { entry ->
-                ScreenShowEvent()
                 NormalSystemBarColor()
                 LegacySurface {
                     LegacySourceConfigScreen(
@@ -332,13 +309,11 @@ fun V2NavGraph(
             }
 
             composable(V2Routes.TAG_MANAGE) {
-                ScreenShowEvent()
                 NormalSystemBarColor()
                 LegacyTagManageScreen()
             }
 
             composable(V2Routes.STORAGE) {
-                ScreenShowEvent()
                 NormalSystemBarColor()
                 LegacyStorageScreen()
             }

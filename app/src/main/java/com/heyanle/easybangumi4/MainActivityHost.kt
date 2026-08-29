@@ -25,9 +25,6 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
-import com.google.firebase.analytics.FirebaseAnalytics
-import com.google.firebase.analytics.ktx.analytics
-import com.google.firebase.ktx.Firebase
 import com.heyanle.easybangumi4.plugin.source.SourcesHost
 import com.heyanle.easybangumi4.splash.SplashActivity
 import com.heyanle.easybangumi4.theme.EasyTheme
@@ -41,20 +38,15 @@ val LocalWindowSizeController = staticCompositionLocalOf<WindowSizeClass> {
     error("WindowSizeController Not Provided")
 }
 
-val LocalFirebaseAnalytics = staticCompositionLocalOf<FirebaseAnalytics?> {
-    null
-}
-
 /**
  * Shared activity host for the legacy and V2 Compose navigation graphs.
  *
  * Keep process- and activity-level behavior here so both UI versions receive the same migration,
- * source, dialog, snackbar, analytics, activity-result and inset infrastructure. UI-version
+ * source, dialog, snackbar, activity-result and inset infrastructure. UI-version
  * specific navigation is supplied by [NavigationContent].
  */
 abstract class MainActivityHost : ComponentActivity() {
 
-    private var firebaseAnalytics: FirebaseAnalytics? = null
     private var first by okkv("first_visible", def = true)
     private val launcherBus = LauncherBus(this)
 
@@ -65,9 +57,6 @@ abstract class MainActivityHost : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ActivityManager.addActivity(this)
-
-        // Firebase may be unavailable in builds without external service configuration.
-        firebaseAnalytics = runCatching { Firebase.analytics }.getOrNull()
 
         setContentView(FrameLayout(this))
         SplashActivity.lastSplashActivity?.get()?.finish()
@@ -85,7 +74,6 @@ abstract class MainActivityHost : ComponentActivity() {
 
             CompositionLocalProvider(
                 LocalWindowSizeController provides windowClass,
-                LocalFirebaseAnalytics provides firebaseAnalytics,
             ) {
                 EasyTheme {
                     if (isMigrating) {

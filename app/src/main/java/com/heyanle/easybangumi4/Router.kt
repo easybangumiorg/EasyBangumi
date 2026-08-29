@@ -19,8 +19,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.google.firebase.analytics.FirebaseAnalytics
-import com.google.firebase.analytics.logEvent
 import com.heyanle.easybangumi4.plugin.source.utils.network.WebViewHelperV2Impl
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonCover
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonSummary
@@ -225,30 +223,6 @@ fun NavHostController.navigationMigrate(summaries: List<CartoonSummary>, sourceK
 const val DEFAULT = MAIN
 
 @Composable
-fun ScreenShowEvent(
-    vararg customArgs: Pair<String, String>,
-) {
-    val analytics = LocalFirebaseAnalytics.current
-    val nav = LocalNavController.current
-    if (analytics != null) {
-        LaunchedEffect(key1 = Unit) {
-            runCatching {
-                analytics.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW) {
-                    param(FirebaseAnalytics.Param.SCREEN_NAME, nav.currentDestination?.route ?: "")
-                    customArgs.forEach {
-                        param(it.first, it.second)
-                    }
-                }
-            }.onFailure {
-                it.printStackTrace()
-            }
-
-        }
-    }
-
-}
-
-@Composable
 fun Nav() {
 
     val nav = rememberNavController()
@@ -267,7 +241,6 @@ fun Nav() {
             composable(
                 MAIN,
             ) {
-                ScreenShowEvent()
                 NormalSystemBarColor()
                 Main()
 
@@ -287,11 +260,6 @@ fun Nav() {
                     enterDataJson = it.arguments?.getString("enter_data") ?: "{}",
                 )
 
-                ScreenShowEvent(
-                    "id" to routeArguments.id,
-                    "source" to routeArguments.source,
-                    "enter_data" to routeArguments.enterDataJson,
-                )
                 NormalSystemBarColor(
                     getStatusBarDark = {
                         false
@@ -346,11 +314,6 @@ fun Nav() {
 
                 var enterDataString = it.arguments?.getString("enter_data") ?: ""
                 enterDataString = URLDecoder.decode(enterDataString, "utf-8")
-                ScreenShowEvent(
-                    "id" to id,
-                    "source" to source,
-                    "enter_data" to enterDataString
-                )
                 NormalSystemBarColor()
 
                 val enterData = kotlin.runCatching {
@@ -369,7 +332,6 @@ fun Nav() {
                     navArgument("uuid") { defaultValue = "" },
                 )
             ) {
-                ScreenShowEvent()
                 NormalSystemBarColor(
                     getStatusBarDark = {
                         false
@@ -387,9 +349,6 @@ fun Nav() {
             ) {
 
                 val router = it.arguments?.getString("router") ?: SettingPage.Appearance.router
-                ScreenShowEvent(
-                    "sub_router" to router
-                )
                 NormalSystemBarColor()
                 Setting(router = router)
             }
@@ -398,7 +357,6 @@ fun Nav() {
                 arguments = listOf(
                     navArgument("tips") { defaultValue = "" },
                 )) {
-                ScreenShowEvent()
                 DisposableEffect(key1 = Unit) {
                     onDispose {
                         WebViewHelperV2Impl.webPageShowing = false
@@ -416,7 +374,6 @@ fun Nav() {
             }
 
             composable(HISTORY) {
-                ScreenShowEvent()
                 NormalSystemBarColor()
                 Surface(
                     color = MaterialTheme.colorScheme.background,
@@ -436,14 +393,12 @@ fun Nav() {
                 )) {
                 val defSearchKey = it.arguments?.getInt("defIndex", 0) ?: 0
 
-                ScreenShowEvent()
                 NormalSystemBarColor()
                 //Download()
                 Story(defSearchKey)
             }
 
             composable(SOURCE_PUSH) {
-                ScreenShowEvent()
                 NormalSystemBarColor()
                 SourcePush()
                 //Download()
@@ -459,7 +414,6 @@ fun Nav() {
                     }
                 )
             ) {
-                ScreenShowEvent()
                 val defSearchKey = it.arguments?.getInt("defIndex", -1) ?: -1
                 NormalSystemBarColor()
                 Surface(
@@ -477,7 +431,6 @@ fun Nav() {
                     navArgument("defSourceKey") { defaultValue = "" },
                 )
             ) {
-                ScreenShowEvent()
                 val defSearchKey = it.arguments?.getString("defSearchKey") ?: ""
                 val defSourceKey = it.arguments?.getString("defSourceKey") ?: ""
                 NormalSystemBarColor()
@@ -501,7 +454,6 @@ fun Nav() {
                     navArgument("sourceKeys") { defaultValue = "" },
                 )
             ) {
-                ScreenShowEvent()
                 val summariesJson = it.arguments?.getString("summaries")?.let { URLDecoder.decode(it, "utf-8") }
                 val sourceKeysJson = it.arguments?.getString("sourceKeys")?.let { URLDecoder.decode(it, "utf-8") }
                 val summaries = summariesJson?.jsonTo<List<CartoonSummary>>() ?: emptyList()
@@ -528,7 +480,6 @@ fun Nav() {
             }
 
             composable(ABOUT) {
-                ScreenShowEvent()
                 NormalSystemBarColor()
                 About()
             }
@@ -540,7 +491,6 @@ fun Nav() {
                     navArgument("key") { defaultValue = "" },
                 )
             ) {
-                ScreenShowEvent()
                 val source = it.arguments?.getString("key") ?: ""
                 NormalSystemBarColor()
                 Surface(
@@ -552,14 +502,12 @@ fun Nav() {
             }
 
             composable(TAG_MANAGE) {
-                ScreenShowEvent()
                 NormalSystemBarColor()
                 CartoonTag()
             }
 
 
             composable(STORAGE) {
-                ScreenShowEvent()
                 NormalSystemBarColor()
                 Storage()
             }

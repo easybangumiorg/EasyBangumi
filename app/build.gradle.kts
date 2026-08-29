@@ -11,10 +11,6 @@ plugins {
     alias(build.plugins.kotlin.android)
     alias(build.plugins.ksp)
     alias(build.plugins.baselineprofile)
-    if ((System.getenv("RELEASE") ?: "true") == "") {
-        id("com.google.gms.google-services")
-        id("com.google.firebase.crashlytics")
-    }
 }
 
 
@@ -70,8 +66,6 @@ android {
         manifestPlaceholders["bugly_app_channel"] = "github"
         manifestPlaceholders["package_name"] = baseApplicationId
         manifestPlaceholders["label_res"] = "@string/app_name"
-        manifestPlaceholders["is_release"] = false
-
         buildConfigField("String", "DANDANPLAY_APP_ID", buildConfigString(danDanPlayAppId))
         buildConfigField("String", "DANDANPLAY_APP_SECRET", buildConfigString(danDanPlayAppSecret))
 
@@ -115,13 +109,7 @@ android {
 
             manifestPlaceholders["package_name"] = "$baseApplicationId.debug"
             manifestPlaceholders["label_res"] = "纯纯看番 Debug"
-            manifestPlaceholders["is_release"] = false
-
             buildConfig()
-
-//            configure<CrashlyticsExtension> {
-//                mappingFileUploadEnabled = false
-//            }
         }
         release {
             isMinifyEnabled = true
@@ -130,13 +118,7 @@ android {
 
             manifestPlaceholders["package_name"] = baseApplicationId
             manifestPlaceholders["label_res"] = "@string/app_name"
-            manifestPlaceholders["is_release"] = true
-
             buildConfig()
-
-//            configure<CrashlyticsExtension> {
-//                mappingFileUploadEnabled = false
-//            }
         }
         create("performance") {
             initWith(getByName("release"))
@@ -152,8 +134,6 @@ android {
             manifestPlaceholders["package_name"] = "$baseApplicationId.performance"
             manifestPlaceholders["label_res"] = "@string/app_name"
             manifestPlaceholders["bugly_app_channel"] = "local-performance"
-            manifestPlaceholders["is_release"] = false
-
             buildConfig()
         }
     }
@@ -323,10 +303,5 @@ dependencies {
     "baselineProfile"(project(":baselineprofile"))
 
     implementation(libs.uni.file)
-
-    implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
-    implementation("com.google.firebase:firebase-crashlytics-ktx")
-    implementation("com.google.firebase:firebase-analytics-ktx")
-
 
 }
