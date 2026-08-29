@@ -27,12 +27,29 @@ class MainBaselineProfile {
         pressHome()
         startActivityAndWait()
 
-        // Home waits for JS sources (Rhino + network) before the grid renders.
-        device.wait(Until.hasObject(By.text("更新时刻表")), 30_000)
-        device.waitForIdle(2_000)
-
         val w = device.displayWidth
         val h = device.displayHeight
+
+        // Fresh benchmark installs start on the three-page setup guide. Advance through
+        // it without opening optional permission/folder pickers, then continue on home.
+        var onboardingSteps = 0
+        while (onboardingSteps < 4) {
+            val hasNextButton = device.wait(Until.hasObject(By.text("下一步")), 2_000)
+            if (!hasNextButton) break
+            device.click(w / 2, h * 9 / 10)
+            device.waitForIdle(1_000)
+            onboardingSteps++
+        }
+
+        // The performance version suffix can make the local update checker show release notes.
+        if (device.wait(Until.hasObject(By.text("取消")), 3_000)) {
+            device.click(w * 4 / 5, h * 9 / 10)
+            device.waitForIdle(1_000)
+        }
+
+        // Wait for the V2 home destination before exercising its source-backed grid.
+        device.wait(Until.hasObject(By.text("日番")), 30_000)
+        device.waitForIdle(2_000)
 
         // --- Mandatory: fling the cover grid several screens ---
         repeat(4) {
@@ -51,13 +68,15 @@ class MainBaselineProfile {
                     val b = node.visibleBounds
                     b.width() > 60 && b.height() > 30 && b.centerY() in 700..1800
                 }
-            firstCardText?.let {
+            val detailOpened = firstCardText?.let {
                 device.click(it.visibleBounds.centerX(), it.visibleBounds.centerY() - 200)
+                device.wait(Until.hasObject(By.text("外部播放")), 15_000)
+            } == true
+            if (detailOpened) {
+                device.waitForIdle(1_500)
+                device.pressBack()
+                device.waitForIdle(1_000)
             }
-            device.wait(Until.hasObject(By.text("播放线路")), 15_000)
-            device.waitForIdle(1_500)
-            device.pressBack()
-            device.waitForIdle(1_000)
         }
 
         // One more scroll pass after returning, covering recomposition of cached items.
