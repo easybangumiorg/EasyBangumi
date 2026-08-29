@@ -442,6 +442,7 @@ fun LazyGridScope.listPageWithCover(
 ) {
     items(
         count = pagingItems.itemCount,
+        key = { index -> pagingItems.peek(index)?.toIdentify() ?: index },
     ) {
         pagingItems[it]?.let { cover ->
             CartoonCardWithCover(
@@ -464,6 +465,7 @@ fun LazyStaggeredGridScope.listPageWithoutCover(
 ) {
     items(
         count = pagingItems.itemCount,
+        key = { index -> pagingItems.peek(index)?.toIdentify() ?: index },
     ) {
         pagingItems[it]?.let { cover ->
             CartoonCardWithoutCover(

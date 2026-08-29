@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Javascript
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
@@ -129,11 +130,14 @@ fun OkImage(
             }
 
             else -> {
-                val (cleanImage, urlHeaders) = parseCoverImage(image)
-                val mergedHeaders = urlHeaders + (headers ?: emptyMap())
-                AsyncImage(
-                    model = ImageRequest
-                        .Builder(LocalContext.current)
+                val context = LocalContext.current
+                // 缓存请求构建：ImageRequest 无 equals，若每次重组重建会被 Coil 视为新请求重复执行。
+                val request = remember(
+                    image, headers, placeholderRes, placeholderColor, crossFade, isGif, errorRes, errorColor,
+                ) {
+                    val (cleanImage, urlHeaders) = parseCoverImage(image)
+                    val mergedHeaders = urlHeaders + (headers ?: emptyMap())
+                    ImageRequest.Builder(context)
                         .data(cleanImage)
                         .apply {
                             if (mergedHeaders.isNotEmpty()) {
@@ -152,7 +156,6 @@ fun OkImage(
                             } else {
                                 placeholder(placeholderRes)
                             }
-
                         }
                         .crossfade(crossFade)
                         .apply {
@@ -172,9 +175,11 @@ fun OkImage(
                             } else {
                                 error(errorRes)
                             }
-
                         }
-                        .build(),
+                        .build()
+                }
+                AsyncImage(
+                    model = request,
                     contentDescription = contentDescription,
                     contentScale = contentScale,
                     modifier = Modifier.then(modifier),
