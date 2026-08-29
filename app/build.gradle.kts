@@ -9,6 +9,7 @@ val baseApplicationId = "com.heyanle.easybangumi4"
 plugins {
     alias(build.plugins.android.application)
     alias(build.plugins.kotlin.android)
+    alias(build.plugins.compose.compiler)
     alias(build.plugins.ksp)
     alias(build.plugins.baselineprofile)
 }
@@ -155,10 +156,6 @@ android {
         viewBinding = true
         buildConfig = true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = build.versions.compose.compiler.get()
-    }
-
 }
 
 baselineProfile {

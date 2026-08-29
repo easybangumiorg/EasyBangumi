@@ -1,8 +1,7 @@
 [versions]
 android_gradle_plugin = "8.13.2"
-compose_compiler = "1.5.9"
-kotlin = "1.9.22"
-ksp = "1.9.22-1.0.17"
+kotlin = "2.0.21"
+ksp = "2.0.21-1.0.28"
 
 [plugins]
 android_application = {id = "com.android.application", version.ref = "android_gradle_plugin"}
@@ -10,6 +9,7 @@ android_library = {id = "com.android.library", version.ref = "android_gradle_plu
 android_test = {id = "com.android.test", version.ref = "android_gradle_plugin"}
 kotlin_android = {id = "org.jetbrains.kotlin.android", version.ref = "kotlin"}
 kotlin_jvm = {id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin"}
+compose_compiler = {id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin"}
 ksp = {id = "com.google.devtools.ksp", version.ref = "ksp"}
 baselineprofile = {id = "androidx.baselineprofile", version = "1.4.1"}
 #maven_publish = {id = "maven-publish"}

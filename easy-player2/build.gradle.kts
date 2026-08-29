@@ -1,6 +1,7 @@
 plugins {
     id("com.android.library")
-    id("org.jetbrains.kotlin.android")
+    alias(build.plugins.kotlin.android)
+    alias(build.plugins.compose.compiler)
     id("maven-publish")
 }
 
@@ -23,9 +24,6 @@ android {
     buildFeatures {
         compose = true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.9"
-    }
 }
 
 afterEvaluate {
@@ -47,7 +45,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.21")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:${build.versions.kotlin.get()}")
 
     val composeMaterialVersion = "1.6.8"
     implementation("androidx.compose.material:material:$composeMaterialVersion")

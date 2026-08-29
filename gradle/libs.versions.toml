@@ -44,10 +44,10 @@ moshi = "1.14.0"
 
 koin = "3.5.0"
 agp = "8.13.2"
-kotlin = "1.9.22"
+kotlin = "2.0.21"
 
 cybergarage-upnp = "2.1.5"
-org-jetbrains-kotlin-jvm = "1.9.23"
+org-jetbrains-kotlin-jvm = "2.0.21"
 
 zip4j = "2.11.5"
 

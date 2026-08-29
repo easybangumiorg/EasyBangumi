@@ -4,6 +4,7 @@ plugins {
     alias(build.plugins.android.library) apply false
     alias(build.plugins.kotlin.android) apply false
     alias(build.plugins.kotlin.jvm) apply false
+    alias(build.plugins.compose.compiler) apply false
 
 }
 
