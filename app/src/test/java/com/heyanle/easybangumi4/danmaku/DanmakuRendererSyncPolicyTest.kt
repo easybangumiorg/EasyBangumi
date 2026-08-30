@@ -247,9 +247,17 @@ class DanmakuRendererSyncPolicyTest {
             DanmakuRendererConfigEffect.STYLE,
             classifyDanmakuConfigChange(default, default.copy(opacity = 0.5f)),
         )
+        // 显示区域由 Compose 布局承载，纯区域变化不需要原生渲染命令。
+        assertEquals(
+            DanmakuRendererConfigEffect.NONE,
+            classifyDanmakuConfigChange(default, default.copy(areaRatio = 0.5f)),
+        )
         assertEquals(
             DanmakuRendererConfigEffect.STYLE,
-            classifyDanmakuConfigChange(default, default.copy(areaRatio = 0.5f)),
+            classifyDanmakuConfigChange(
+                default,
+                default.copy(areaRatio = 0.5f, fontSizeSp = 24f),
+            ),
         )
     }
 

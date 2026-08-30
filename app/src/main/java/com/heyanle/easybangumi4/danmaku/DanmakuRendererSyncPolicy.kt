@@ -33,15 +33,19 @@ internal fun classifyDanmakuConfigChange(
 ): DanmakuRendererConfigEffect {
     if (previous == next) return DanmakuRendererConfigEffect.NONE
 
+    // 显示区域由 Compose 布局承载（弹幕画布高度 = areaRatio × 视频高度），
+    // 变化时视图自身重排，不需要任何原生渲染命令。
+    if (previous.areaRatio != next.areaRatio && previous.copy(areaRatio = next.areaRatio) == next) {
+        return DanmakuRendererConfigEffect.NONE
+    }
+
     if (
         previous.fontSizeSp != next.fontSizeSp ||
         previous.lineHeightFactor != next.lineHeightFactor ||
         previous.scrollSpeed != next.scrollSpeed ||
-        previous.opacity != next.opacity ||
-        previous.areaRatio != next.areaRatio
+        previous.opacity != next.opacity
     ) {
-        // 透明度走 DFM 全局 paint alpha；显示区域要按视图高度反算最大行数，
-        // 两者都归入 STYLE 以复用带视图的整套应用路径。
+        // 透明度走 DFM 全局 paint alpha，归入 STYLE 走整套应用路径。
         return DanmakuRendererConfigEffect.STYLE
     }
 

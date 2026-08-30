@@ -77,8 +77,9 @@ data class DanmakuDisplayConfig(
     /** Global danmaku opacity, 0.1 (almost invisible) .. 1 (opaque). */
     val opacity: Float = DEFAULT_OPACITY,
     /**
-     * Fraction of the video height available to scrolling danmaku, snapped to
-     * [DANMAKU_AREA_RATIO_TIERS] (0.25 .. 1). Fixed top/bottom danmaku are not clipped by it.
+     * 弹幕画布高度占视频高度的比例，吸附到 [DANMAKU_AREA_RATIO_TIERS]（0.25 .. 1）。
+     * 由 Compose 布局承载（DanmakuView 顶部对齐、高度 = areaRatio × 视频高度）：
+     * 滚动/顶部/底部三种类型的弹幕都被约束在画布内，与 show* 类型开关完全正交。
      */
     val areaRatio: Float = DEFAULT_AREA_RATIO,
 ) {
