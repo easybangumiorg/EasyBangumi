@@ -31,6 +31,19 @@ class DfmDanmakuConfigMapperTest {
     }
 
     @Test
+    fun extendedSpeedTiersMapToTheFullFactorRange() {
+        val slowest = DanmakuDisplayConfig.DEFAULT
+            .copy(scrollSpeed = 0.25f)
+            .toDfmStyle(scaledDensity = 1f)
+        val fastest = DanmakuDisplayConfig.DEFAULT
+            .copy(scrollSpeed = 3f)
+            .toDfmStyle(scaledDensity = 1f)
+
+        assertEquals(4f, slowest.scrollDurationFactor, 0f)
+        assertEquals(1f / 3f, fastest.scrollDurationFactor, 0.001f)
+    }
+
+    @Test
     fun lineHeightRangeMapsToNonNegativeTrackMargin() {
         val compact = DanmakuDisplayConfig.DEFAULT
             .copy(fontSizeSp = 12f, lineHeightFactor = 1f)

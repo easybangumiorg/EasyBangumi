@@ -23,7 +23,9 @@ internal fun DanmakuDisplayConfig.toDfmStyle(scaledDensity: Float): DfmDanmakuSt
             .roundToInt()
             .coerceAtLeast(0),
         // Only DFM's shared scrolling Duration uses this factor. Fixed top/bottom use a separate
-        // duration object, so their timing remains unchanged.
-        scrollDurationFactor = (1f / config.scrollSpeed).coerceIn(0.5f, 2f),
+        // duration object, so their timing remains unchanged. The factor bounds mirror
+        // DANMAKU_SCROLL_SPEED_TIERS: 0.25x speed -> 4x duration (Bilibili's slowest tier feel),
+        // 3x speed -> 1/3 duration.
+        scrollDurationFactor = (1f / config.scrollSpeed).coerceIn(0.25f, 4f),
     )
 }

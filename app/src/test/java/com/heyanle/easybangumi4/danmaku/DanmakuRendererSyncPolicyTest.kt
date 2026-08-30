@@ -243,6 +243,14 @@ class DanmakuRendererSyncPolicyTest {
                 default.copy(showTop = false, fontSizeSp = 24f),
             ),
         )
+        assertEquals(
+            DanmakuRendererConfigEffect.STYLE,
+            classifyDanmakuConfigChange(default, default.copy(opacity = 0.5f)),
+        )
+        assertEquals(
+            DanmakuRendererConfigEffect.STYLE,
+            classifyDanmakuConfigChange(default, default.copy(areaRatio = 0.5f)),
+        )
     }
 
     private fun preparedPolicy(

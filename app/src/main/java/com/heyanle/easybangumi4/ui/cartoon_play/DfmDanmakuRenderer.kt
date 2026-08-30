@@ -12,12 +12,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import com.heyanle.easybangumi4.danmaku.DANDANPLAY_SOURCE_ID
+import com.heyanle.easybangumi4.danmaku.DANMAKU_AREA_RATIO_TIERS
 import com.heyanle.easybangumi4.danmaku.DanmakuComment
 import com.heyanle.easybangumi4.danmaku.DanmakuDisplayConfig
 import com.heyanle.easybangumi4.danmaku.DanmakuDisplayMode
 import com.heyanle.easybangumi4.danmaku.DanmakuRendererCommand
 import com.heyanle.easybangumi4.danmaku.DanmakuRendererConfigEffect
 import com.heyanle.easybangumi4.danmaku.DanmakuRendererSyncPolicy
+import com.heyanle.easybangumi4.danmaku.DfmDanmakuStyle
 import com.heyanle.easybangumi4.danmaku.classifyDanmakuConfigChange
 import com.heyanle.easybangumi4.danmaku.toDfmStyle
 import kotlinx.coroutines.delay
@@ -39,6 +41,7 @@ class DfmDanmakuRenderer {
     private var pendingComments: List<DanmakuComment> = emptyList()
     private var pendingBindingOffsetMillis: Long = 0L
     private var appliedConfig = DanmakuDisplayConfig.DEFAULT
+    private var lastScrollAreaHeight = -1
     private val renderedItems = mutableListOf<RenderedDanmaku>()
     private val syncPolicy = DanmakuRendererSyncPolicy()
 
@@ -67,6 +70,21 @@ class DfmDanmakuRenderer {
             isFocusable = false
             isFocusableInTouchMode = false
             setBackgroundColor(Color.TRANSPARENT)
+            // 全屏/小窗切换只改变视图高度，不经过任何配置变化路径：
+            // 高度变化后按新高度重放显示区域限制，避免行数上限静默失效或过严。
+            addOnLayoutChangeListener { changedView, _, _, _, _, _, _, _, _ ->
+                val danmakuView = changedView as? DanmakuView ?: return@addOnLayoutChangeListener
+                val currentContext = this@DfmDanmakuRenderer.context
+                    ?: return@addOnLayoutChangeListener
+                if (danmakuView.height > 0 && danmakuView.height != lastScrollAreaHeight) {
+                    applyScrollArea(
+                        context = currentContext,
+                        config = appliedConfig,
+                        style = appliedConfig.toDfmStyle(danmakuView.currentScaledDensity()),
+                        view = danmakuView,
+                    )
+                }
+            }
             this@DfmDanmakuRenderer.attach(this, positionMillis, isPlaying)
         }
     }
@@ -312,6 +330,35 @@ class DfmDanmakuRenderer {
             )
             .setDanmakuMargin(style.marginPx)
             .setScrollSpeedFactor(style.scrollDurationFactor)
+        // DFM 的全局透明度直接写绘制 paint 的 alpha，立即生效。
+        context.setDanmakuTransparency(config.opacity)
+        applyScrollArea(context, config, style, view)
+    }
+
+    /**
+     * 用 DFM 的逐类型最大行数近似 B 站的"显示区域"：把可见高度乘以占比后按轨道高度
+     * 反算滚动弹幕的行数上限。顶部/底部固定弹幕不受行数限制，与 B 站行为一致。
+     */
+    private fun applyScrollArea(
+        context: DanmakuContext,
+        config: DanmakuDisplayConfig,
+        style: DfmDanmakuStyle,
+        view: DanmakuView,
+    ) {
+        if (view.height <= 0) return
+        // DFM 的 javadoc 明确 null 才是"取消行数限制"，空 map 会让 filter 常驻。
+        val maxLinesPair: Map<Int, Int>? = if (config.areaRatio >= DANMAKU_AREA_RATIO_TIERS.last()) {
+            null
+        } else {
+            val trackHeightPx = (style.textSizePx + style.marginPx).coerceAtLeast(1f)
+            val maxLines = ((view.height * config.areaRatio) / trackHeightPx)
+                .toInt()
+                .coerceAtLeast(1)
+            mapOf(BaseDanmaku.TYPE_SCROLL_RL to maxLines)
+        }
+        context.setMaximumLines(maxLinesPair)
+        context.mGlobalFlagValues.updateFilterFlag()
+        lastScrollAreaHeight = view.height
     }
 
     /**
@@ -468,6 +515,8 @@ fun DfmDanmakuOverlay(
         displayConfig.fontSizeSp,
         displayConfig.lineHeightFactor,
         displayConfig.scrollSpeed,
+        displayConfig.opacity,
+        displayConfig.areaRatio,
     ) {
         delay(STYLE_RECONFIGURE_DEBOUNCE_MILLIS)
         renderer.setDisplayConfig(displayConfig, player.currentPosition)

@@ -26,6 +26,8 @@ class DanmakuDisplayPreferencesTest {
         assertEquals("danmaku_show_bottom", preferences.showBottom.key())
         assertEquals("danmaku_enabled_provenance", preferences.enabledProvenance.key())
         assertEquals("danmaku_time_offset_millis", preferences.timeOffsetMillis.key())
+        assertEquals("danmaku_opacity", preferences.opacity.key())
+        assertEquals("danmaku_area_ratio", preferences.areaRatio.key())
     }
 
     @Test
@@ -34,6 +36,8 @@ class DanmakuDisplayPreferencesTest {
             fontSizeSp = 1f,
             lineHeightFactor = 9f,
             scrollSpeed = 0.1f,
+            opacity = 0.01f,
+            areaRatio = 0.1f,
         ).normalized()
 
         assertEquals(DanmakuDisplayConfig.FONT_SIZE_SP_RANGE.start, clamped.fontSizeSp)
@@ -42,16 +46,41 @@ class DanmakuDisplayPreferencesTest {
             clamped.lineHeightFactor,
         )
         assertEquals(DanmakuDisplayConfig.SCROLL_SPEED_RANGE.start, clamped.scrollSpeed)
+        assertEquals(DanmakuDisplayConfig.OPACITY_RANGE.start, clamped.opacity)
+        assertEquals(0.25f, clamped.areaRatio)
 
         val invalid = DanmakuDisplayConfig(
             fontSizeSp = Float.NaN,
             lineHeightFactor = Float.POSITIVE_INFINITY,
             scrollSpeed = Float.NEGATIVE_INFINITY,
+            opacity = Float.NaN,
+            areaRatio = Float.POSITIVE_INFINITY,
         ).normalized()
 
         assertEquals(DanmakuDisplayConfig.DEFAULT_FONT_SIZE_SP, invalid.fontSizeSp)
         assertEquals(DanmakuDisplayConfig.DEFAULT_LINE_HEIGHT_FACTOR, invalid.lineHeightFactor)
         assertEquals(DanmakuDisplayConfig.DEFAULT_SCROLL_SPEED, invalid.scrollSpeed)
+        assertEquals(DanmakuDisplayConfig.DEFAULT_OPACITY, invalid.opacity)
+        assertEquals(DanmakuDisplayConfig.DEFAULT_AREA_RATIO, invalid.areaRatio)
+    }
+
+    @Test
+    fun areaRatioSnapsToTheNearestExposedTier() {
+        assertEquals(0.25f, DanmakuDisplayConfig(areaRatio = 0.3f).normalized().areaRatio)
+        assertEquals(0.5f, DanmakuDisplayConfig(areaRatio = 0.6f).normalized().areaRatio)
+        assertEquals(0.75f, DanmakuDisplayConfig(areaRatio = 0.7f).normalized().areaRatio)
+        assertEquals(1f, DanmakuDisplayConfig(areaRatio = 0.9f).normalized().areaRatio)
+    }
+
+    @Test
+    fun scrollSpeedTiersCoverSlowerThanBeforeAndExposeBilibiliStyleLabels() {
+        assertEquals(0.25f, DANMAKU_SCROLL_SPEED_TIERS.first())
+        assertEquals(3f, DANMAKU_SCROLL_SPEED_TIERS.last())
+        assertEquals("极慢", danmakuScrollSpeedLabel(0.25f))
+        assertEquals("适中", danmakuScrollSpeedLabel(1f))
+        assertEquals("极快", danmakuScrollSpeedLabel(3f))
+        assertEquals("50%", danmakuAreaRatioLabel(0.5f))
+        assertEquals("80%", danmakuOpacityLabel(0.8f))
     }
 
     @Test
@@ -70,6 +99,8 @@ class DanmakuDisplayPreferencesTest {
                 fontSizeSp = 40f,
                 lineHeightFactor = 1.5f,
                 scrollSpeed = 1.75f,
+                opacity = 0.3f,
+                areaRatio = 0.6f,
             ),
         )
 
@@ -82,7 +113,18 @@ class DanmakuDisplayPreferencesTest {
         assertEquals(2_500L, restored.timeOffsetMillis)
         assertEquals(36f, restored.fontSizeSp)
         assertEquals(1.5f, restored.lineHeightFactor)
-        assertEquals(1.75f, restored.scrollSpeed)
+        // 旧版本持久化的非档位速度值会吸附到最近的档位（1.75 -> 1.5）。
+        assertEquals(1.5f, restored.scrollSpeed)
+        assertEquals(0.3f, restored.opacity)
+        assertEquals(0.5f, restored.areaRatio)
+    }
+
+    @Test
+    fun legacySpeedValuesMigrateToTheNearestPersistedTier() {
+        assertEquals(1.5f, DanmakuDisplayConfig(scrollSpeed = 1.75f).normalized().scrollSpeed)
+        assertEquals(2.5f, DanmakuDisplayConfig(scrollSpeed = 2.75f).normalized().scrollSpeed)
+        assertEquals(0.25f, DanmakuDisplayConfig(scrollSpeed = 0.1f).normalized().scrollSpeed)
+        assertEquals(3f, DanmakuDisplayConfig(scrollSpeed = 99f).normalized().scrollSpeed)
     }
 
     @Test

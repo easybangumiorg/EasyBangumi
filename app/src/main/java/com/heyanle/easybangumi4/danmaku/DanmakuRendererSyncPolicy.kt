@@ -36,8 +36,12 @@ internal fun classifyDanmakuConfigChange(
     if (
         previous.fontSizeSp != next.fontSizeSp ||
         previous.lineHeightFactor != next.lineHeightFactor ||
-        previous.scrollSpeed != next.scrollSpeed
+        previous.scrollSpeed != next.scrollSpeed ||
+        previous.opacity != next.opacity ||
+        previous.areaRatio != next.areaRatio
     ) {
+        // 透明度走 DFM 全局 paint alpha；显示区域要按视图高度反算最大行数，
+        // 两者都归入 STYLE 以复用带视图的整套应用路径。
         return DanmakuRendererConfigEffect.STYLE
     }
 

@@ -77,9 +77,14 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.heyanle.easybangumi4.danmaku.DANMAKU_AREA_RATIO_TIERS
+import com.heyanle.easybangumi4.danmaku.DANMAKU_SCROLL_SPEED_TIERS
 import com.heyanle.easybangumi4.danmaku.DanmakuDisplayConfig
 import com.heyanle.easybangumi4.danmaku.DanmakuPlaybackState
 import com.heyanle.easybangumi4.danmaku.DanmakuPlaybackStatus
+import com.heyanle.easybangumi4.danmaku.danmakuAreaRatioLabel
+import com.heyanle.easybangumi4.danmaku.danmakuOpacityLabel
+import com.heyanle.easybangumi4.danmaku.danmakuScrollSpeedLabel
 import com.heyanle.easybangumi4.player.mpv.MpvAnime4KStatus
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.ui.common.TabIndicator
@@ -199,6 +204,8 @@ internal object PlayerPlaybackSettingsTestTags {
     const val FONT_SIZE = "player_danmaku_font_size"
     const val LINE_HEIGHT = "player_danmaku_line_height"
     const val SCROLL_SPEED = "player_danmaku_scroll_speed"
+    const val OPACITY = "player_danmaku_opacity"
+    const val AREA = "player_danmaku_area"
     const val TIME_OFFSET = "player_danmaku_time_offset"
     fun videoScale(value: Int) = "player_video_scale_$value"
 }
@@ -693,7 +700,31 @@ internal fun DanmakuDisplaySettingsContent(
             )
         }
 
-        SettingsGroupTitle("样式")
+        SettingsGroupTitle("显示区域与样式")
+        DanmakuValueSlider(
+            title = "显示区域",
+            valueLabel = danmakuAreaRatioLabel(config.areaRatio),
+            value = config.areaRatio,
+            valueRange = DANMAKU_AREA_RATIO_TIERS.first()..DANMAKU_AREA_RATIO_TIERS.last(),
+            steps = DANMAKU_AREA_RATIO_TIERS.size - 2,
+            onValueChange = {
+                onConfigChange(config.copy(areaRatio = it).normalized())
+            },
+            modifier = Modifier.testTag(PlayerPlaybackSettingsTestTags.AREA),
+            sliderTestTag = "${PlayerPlaybackSettingsTestTags.AREA}_slider",
+        )
+        DanmakuValueSlider(
+            title = "不透明度",
+            valueLabel = danmakuOpacityLabel(config.opacity),
+            value = config.opacity,
+            valueRange = DanmakuDisplayConfig.OPACITY_RANGE,
+            steps = 0,
+            onValueChange = {
+                onConfigChange(config.copy(opacity = it).normalized())
+            },
+            modifier = Modifier.testTag(PlayerPlaybackSettingsTestTags.OPACITY),
+            sliderTestTag = "${PlayerPlaybackSettingsTestTags.OPACITY}_slider",
+        )
         DanmakuValueSlider(
             title = "字体大小",
             valueLabel = "${config.fontSizeSp.roundToInt()} sp",
@@ -718,14 +749,21 @@ internal fun DanmakuDisplaySettingsContent(
             modifier = Modifier.testTag(PlayerPlaybackSettingsTestTags.LINE_HEIGHT),
             sliderTestTag = "${PlayerPlaybackSettingsTestTags.LINE_HEIGHT}_slider",
         )
+        // 速度档位不等距，滑条改为"档位索引"式：刻度均匀落在索引上，回写时映射回档位值。
+        val speedIndex = DANMAKU_SCROLL_SPEED_TIERS.indexOf(config.scrollSpeed)
+            .takeIf { it >= 0 }
+            ?: DANMAKU_SCROLL_SPEED_TIERS.indexOf(DanmakuDisplayConfig.DEFAULT_SCROLL_SPEED)
         DanmakuValueSlider(
             title = "滚动速度",
-            valueLabel = "${formatFactor(config.scrollSpeed)}x",
-            value = config.scrollSpeed,
-            valueRange = DanmakuDisplayConfig.SCROLL_SPEED_RANGE,
-            steps = 5,
+            valueLabel = danmakuScrollSpeedLabel(config.scrollSpeed),
+            value = speedIndex.toFloat(),
+            valueRange = 0f..DANMAKU_SCROLL_SPEED_TIERS.lastIndex.toFloat(),
+            steps = DANMAKU_SCROLL_SPEED_TIERS.size - 2,
             onValueChange = {
-                onConfigChange(config.copy(scrollSpeed = it).normalized())
+                val tier = DANMAKU_SCROLL_SPEED_TIERS[
+                    it.roundToInt().coerceIn(DANMAKU_SCROLL_SPEED_TIERS.indices),
+                ]
+                onConfigChange(config.copy(scrollSpeed = tier))
             },
             modifier = Modifier.testTag(PlayerPlaybackSettingsTestTags.SCROLL_SPEED),
             sliderTestTag = "${PlayerPlaybackSettingsTestTags.SCROLL_SPEED}_slider",
@@ -785,7 +823,7 @@ internal fun DanmakuDisplaySettingsContent(
         AlertDialog(
             onDismissRequest = { confirmReset = false },
             title = { Text("恢复弹幕默认设置？") },
-            text = { Text("将恢复显示类型、字体大小、行高、滚动速度和时间偏移。") },
+            text = { Text("将恢复显示类型、显示区域、不透明度、字体大小、行高、滚动速度和时间偏移。") },
             confirmButton = {
                 TextButton(
                     modifier = Modifier.testTag(PlayerPlaybackSettingsTestTags.RESET_CONFIRM),

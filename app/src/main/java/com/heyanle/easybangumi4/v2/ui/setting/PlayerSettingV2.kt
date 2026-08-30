@@ -67,8 +67,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.danmaku.DANDANPLAY_SOURCE_ID
+import com.heyanle.easybangumi4.danmaku.DANMAKU_AREA_RATIO_TIERS
+import com.heyanle.easybangumi4.danmaku.DANMAKU_SCROLL_SPEED_TIERS
 import com.heyanle.easybangumi4.danmaku.DanmakuDisplayConfig
 import com.heyanle.easybangumi4.danmaku.DanmakuDisplayPreferences
+import com.heyanle.easybangumi4.danmaku.danmakuAreaRatioLabel
+import com.heyanle.easybangumi4.danmaku.danmakuOpacityLabel
+import com.heyanle.easybangumi4.danmaku.danmakuScrollSpeedLabel
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.ui.cartoon_play.speedConfig
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
@@ -594,6 +599,26 @@ private fun DanmakuDisplaySettingV2(
                 }
             }
             PlayerValueSliderV2(
+                title = "显示区域",
+                valueLabel = danmakuAreaRatioLabel(config.areaRatio),
+                value = config.areaRatio,
+                valueRange = DANMAKU_AREA_RATIO_TIERS.first()..DANMAKU_AREA_RATIO_TIERS.last(),
+                steps = DANMAKU_AREA_RATIO_TIERS.size - 2,
+                onValueChange = {
+                    onConfigChange(config.copy(areaRatio = it).normalized())
+                },
+            )
+            PlayerValueSliderV2(
+                title = "不透明度",
+                valueLabel = danmakuOpacityLabel(config.opacity),
+                value = config.opacity,
+                valueRange = DanmakuDisplayConfig.OPACITY_RANGE,
+                steps = 0,
+                onValueChange = {
+                    onConfigChange(config.copy(opacity = it).normalized())
+                },
+            )
+            PlayerValueSliderV2(
                 title = "字体大小",
                 valueLabel = "${config.fontSizeSp.roundToInt()} sp",
                 value = config.fontSizeSp,
@@ -613,14 +638,21 @@ private fun DanmakuDisplaySettingV2(
                     onConfigChange(config.copy(lineHeightFactor = it).normalized())
                 },
             )
+            // 速度档位不等距，滑条改为"档位索引"式（与播放器面板一致）。
+            val speedIndex = DANMAKU_SCROLL_SPEED_TIERS.indexOf(config.scrollSpeed)
+                .takeIf { it >= 0 }
+                ?: DANMAKU_SCROLL_SPEED_TIERS.indexOf(DanmakuDisplayConfig.DEFAULT_SCROLL_SPEED)
             PlayerValueSliderV2(
                 title = "滚动速度",
-                valueLabel = "${formatFactorV2(config.scrollSpeed)}x",
-                value = config.scrollSpeed,
-                valueRange = DanmakuDisplayConfig.SCROLL_SPEED_RANGE,
-                steps = 5,
+                valueLabel = danmakuScrollSpeedLabel(config.scrollSpeed),
+                value = speedIndex.toFloat(),
+                valueRange = 0f..DANMAKU_SCROLL_SPEED_TIERS.lastIndex.toFloat(),
+                steps = DANMAKU_SCROLL_SPEED_TIERS.size - 2,
                 onValueChange = {
-                    onConfigChange(config.copy(scrollSpeed = it).normalized())
+                    val tier = DANMAKU_SCROLL_SPEED_TIERS[
+                        it.roundToInt().coerceIn(DANMAKU_SCROLL_SPEED_TIERS.indices),
+                    ]
+                    onConfigChange(config.copy(scrollSpeed = tier))
                 },
             )
             Text(
