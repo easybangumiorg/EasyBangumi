@@ -168,8 +168,8 @@ internal fun StarV2() {
                         state.tagList.getOrNull(index)?.let(starViewModel::changeTab)
                     },
                     style = V2TabStyle.SecondaryDot,
-                    dots = state.tagList.map { tag ->
-                        (state.data[tag.label]?.size ?: 0) > 0
+                    badges = state.tagList.map { tag ->
+                        state.data[tag.label]?.size ?: 0
                     },
                 )
                 HorizontalDivider(color = V2Tokens.Divider)

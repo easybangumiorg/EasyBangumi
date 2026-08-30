@@ -182,6 +182,10 @@ private fun HomeTopAppBarV1Copy(
 ) {
     TopAppBar(
         scrollBehavior = scrollBehavior,
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = V2Tokens.WarmBackground,
+            scrolledContainerColor = V2Tokens.SurfaceMuted,
+        ),
         navigationIcon = {
             IconButton(onClick = onSourceClick) {
             Icon(

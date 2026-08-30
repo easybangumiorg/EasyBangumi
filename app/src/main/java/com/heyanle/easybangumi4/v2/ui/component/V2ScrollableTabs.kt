@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.heyanle.easybangumi4.ui.common.TabIndicator
 import com.heyanle.easybangumi4.v2.theme.V2Theme
 import com.heyanle.easybangumi4.v2.theme.V2Tokens
@@ -24,7 +25,7 @@ internal fun V2ScrollableTabs(
     onSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
     @Suppress("UNUSED_PARAMETER") style: V2TabStyle = V2TabStyle.PrimaryUnderline,
-    dots: List<Boolean> = emptyList(),
+    badges: List<Int> = emptyList(),
 ) {
     if (labels.isEmpty()) return
     val safeIndex = selectedIndex.coerceIn(labels.indices)
@@ -44,10 +45,21 @@ internal fun V2ScrollableTabs(
                 selected = index == safeIndex,
                 onClick = { onSelected(index) },
                 text = {
-                    if (dots.elementAtOrNull(index) == true) {
+                    val badgeCount = badges.elementAtOrNull(index) ?: 0
+                    if (badgeCount > 0) {
                         BadgedBox(
                             badge = {
-                                Badge(containerColor = V2Theme.colors.accent)
+                                Badge(
+                                    containerColor = V2Theme.colors.accent,
+                                    contentColor = V2Tokens.Surface,
+                                ) {
+                                    Text(
+                                        text = if (badgeCount > 99) "99+" else badgeCount.toString(),
+                                        fontSize = 9.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        maxLines = 1,
+                                    )
+                                }
                             },
                         ) {
                             TabLabelText(label, selected = index == safeIndex)
