@@ -111,6 +111,12 @@ jobs:
           cd private
           mkdir -p  ./mapping/${{ env.BANGUMI_VERSION }}
           mv -b --suffix=.old ../app/build/outputs/mapping/release/* ./mapping/${{ env.BANGUMI_VERSION }}
+          mapping_file=./mapping/${{ env.BANGUMI_VERSION }}/mapping.txt
+          # GitHub rejects regular Git objects larger than 100 MiB. Keep a safety margin and
+          # gzip only oversized R8 mappings; retrace can consume the file after decompression.
+          if [ -f "$mapping_file" ] && [ "$(stat -c%s "$mapping_file")" -gt 94371840 ]; then
+            gzip -9 "$mapping_file"
+          fi
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add .
