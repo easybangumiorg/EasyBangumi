@@ -555,6 +555,7 @@ private fun PlaybackDetailV2Content(
                     comments = matched?.comments.orEmpty(),
                     bindingOffsetMillis = matched?.binding?.timeOffsetMillis ?: 0L,
                     displayConfig = danmakuDisplayConfig,
+                    isFullScreen = controlVM.isFullScreen,
                 )
                 VideoControl(
                     controlVM = controlVM,
