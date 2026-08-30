@@ -699,19 +699,19 @@ private fun PlaybackDetailV2Content(
             )
         }
     }
-    danmakuState.manualMatch?.takeIf { danmakuState.isManualMatchVisible }?.let { manual ->
-        PlaybackSheetTheme {
-            DanmakuMatchBottomSheet(
-                state = manual,
-                onQueryChange = onManualQueryChange,
-                onSearch = onManualSearch,
-                onBangumiSelect = onManualBangumiSelect,
-                onEpisodeSelect = onManualEpisodeSelect,
-                onBackToBangumiSelection = onBackToBangumiSelection,
-                onDismiss = onManualDismiss,
-                isFullScreen = controlVM.isFullScreen,
-            )
-        }
+    PlaybackSheetTheme {
+        // 全屏时面板常驻组合，visible 驱动右滑入/滑出动画；竖屏走系统 bottomsheet。
+        DanmakuMatchBottomSheet(
+            state = danmakuState.manualMatch,
+            isVisible = danmakuState.isManualMatchVisible,
+            onQueryChange = onManualQueryChange,
+            onSearch = onManualSearch,
+            onBangumiSelect = onManualBangumiSelect,
+            onEpisodeSelect = onManualEpisodeSelect,
+            onBackToBangumiSelection = onBackToBangumiSelection,
+            onDismiss = onManualDismiss,
+            isFullScreen = controlVM.isFullScreen,
+        )
     }
     detailState.starDialogState?.let { starDialog ->
         PlaybackSheetTheme {
