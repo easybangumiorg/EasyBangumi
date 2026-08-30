@@ -11,6 +11,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -49,6 +50,8 @@ import androidx.compose.material.icons.filled.Battery6Bar
 import androidx.compose.material.icons.filled.BatteryChargingFull
 import androidx.compose.material.icons.filled.BatteryFull
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.CastConnected
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
@@ -62,7 +65,6 @@ import androidx.compose.material.icons.filled.FullscreenExit
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.SkipNext
-import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material3.CircularProgressIndicator
@@ -99,7 +101,9 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.media3.common.util.UnstableApi
@@ -135,7 +139,6 @@ import loli.ball.easyplayer2.BottomControl
 import loli.ball.easyplayer2.BrightVolumeUI
 import loli.ball.easyplayer2.ControlViewModel
 import loli.ball.easyplayer2.GestureController
-import loli.ball.easyplayer2.LockBtn
 import loli.ball.easyplayer2.LongTouchUI
 import loli.ball.easyplayer2.PlayPauseBtn
 import loli.ball.easyplayer2.ProgressBox
@@ -808,7 +811,20 @@ fun VideoControl(
                 onImage = screenshotController::capture,
                 onShowRecorded = {
                     cartoonPlayingVM.showRecord()
-                }
+                },
+                speedText = "x${formatPlaybackSpeed(controlVM.curSpeed)}",
+                onSpeed = {
+                    showSpeedWin.value = true
+                },
+                danmakuControlState = danmakuControlState,
+                onEpisode = {
+                    showEpisodeWin.value = true
+                },
+                onLock = {
+                    controlVM.onLockedChange(
+                        controlVM.controlState != ControlViewModel.ControlState.Locked
+                    )
+                },
             )
             CaptureResultCard(
                 state = screenshotController.state,
@@ -886,9 +902,6 @@ fun VideoControl(
                     16.dp,
                     8.dp
                 ) else PaddingValues(8.dp, 0.dp),
-                onShowEpisodeWin = {
-                    showEpisodeWin.value = true
-                },
                 onSHowSpeedWin = {
                     showSpeedWin.value = true
                 },
@@ -899,9 +912,6 @@ fun VideoControl(
                 showNormalSpeed = showNormalSpeedInBottomBar,
             )
 
-            // 锁定按钮
-            LockBtn(vm = controlVM)
-
             // 加载按钮
             ProgressBox(vm = controlVM)
         }
@@ -910,8 +920,36 @@ fun VideoControl(
 
 }
 
-@kotlin.OptIn(ExperimentalFoundationApi::class)
 @Composable
+private fun PlayerOutlinedTextButton(
+    text: String,
+    contentDescription: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    // 与弹幕开关一致：描边 + 反色文字，内容展示当前值（如 x1.5、选集）。
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(7.dp))
+            .background(Color.Black.copy(alpha = 0.55f))
+            .border(1.dp, Color.White.copy(alpha = 0.75f), RoundedCornerShape(7.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 6.dp, vertical = 5.dp)
+            .semantics { this.contentDescription = contentDescription },
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = text,
+            color = Color.White,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+        )
+    }
+}
+
+@Composable
+@kotlin.OptIn(ExperimentalFoundationApi::class)
 fun FullScreenRightToolBar(
     vm: ControlViewModel,
     modifier: Modifier = Modifier,
@@ -920,70 +958,135 @@ fun FullScreenRightToolBar(
     showCapture: Boolean = true,
     onShowRecorded: () -> Unit,
     onImage: () -> Unit,
+    speedText: String? = null,
+    onSpeed: (() -> Unit)? = null,
+    danmakuControlState: PlayerDanmakuControlState? = null,
+    onEpisode: (() -> Unit)? = null,
+    onLock: (() -> Unit)? = null,
 ) {
 
     (vm.isShowOverlay() && (vm.isFullScreen || isShowOnNormalScreen)).logi("VideoComponent")
+    val overlayVisible = vm.isShowOverlay() && (vm.isFullScreen || isShowOnNormalScreen)
     Box(
         modifier = modifier
     ) {
-        AnimatedVisibility(
-            visible = vm.isShowOverlay() && (vm.isFullScreen || isShowOnNormalScreen),
-            exit = fadeOut(),
-            enter = fadeIn(),
-        ) {
-            Column(
-                modifier = Modifier
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            AnimatedVisibility(
+                visible = overlayVisible,
+                exit = fadeOut(),
+                enter = fadeIn(),
             ) {
-                Spacer(Modifier.height(64.dp))
-                if (showCapture) {
-                    val isCapturing = screenshotState is PlayerScreenshotState.Capturing
-                    Box(
-                        modifier = Modifier
-                            .padding(4.dp)
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(Color.Black.copy(alpha = 0.6f))
-                            .combinedClickable(
-                                enabled = !isCapturing,
-                                onClickLabel = "截图",
-                                onClick = onImage,
-                                onLongClickLabel = "录制片段",
-                                onLongClick = onShowRecorded,
-                            )
-                            .semantics {
-                                contentDescription = if (isCapturing) {
-                                    "正在截图"
-                                } else {
-                                    "截图，长按录制"
-                                }
-                            },
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        if (isCapturing) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(20.dp),
-                                color = Color.White,
-                                strokeWidth = 2.dp,
-                            )
-                        } else {
-                            Box {
-                                Icon(
-                                    Icons.Filled.CameraAlt,
-                                    tint = Color.White,
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Spacer(Modifier.height(64.dp))
+                    if (showCapture) {
+                        val isCapturing = screenshotState is PlayerScreenshotState.Capturing
+                        Box(
+                            modifier = Modifier
+                                .padding(4.dp)
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(Color.Black.copy(alpha = 0.6f))
+                                .combinedClickable(
+                                    enabled = !isCapturing,
+                                    onClickLabel = "截图",
+                                    onClick = onImage,
+                                    onLongClickLabel = "录制片段",
+                                    onLongClick = onShowRecorded,
+                                )
+                                .semantics {
+                                    contentDescription = if (isCapturing) {
+                                        "正在截图"
+                                    } else {
+                                        "截图，长按录制"
+                                    }
+                                },
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            if (isCapturing) {
+                                CircularProgressIndicator(
                                     modifier = Modifier.size(20.dp),
-                                    contentDescription = null,
+                                    color = Color.White,
+                                    strokeWidth = 2.dp,
                                 )
-                                Icon(
-                                    Icons.Filled.FiberManualRecord,
-                                    tint = Color(0xFFFF796F),
-                                    modifier = Modifier
-                                        .size(8.dp)
-                                        .align(Alignment.BottomEnd),
-                                    contentDescription = null,
-                                )
+                            } else {
+                                Box {
+                                    Icon(
+                                        Icons.Filled.CameraAlt,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(20.dp),
+                                        contentDescription = null,
+                                    )
+                                    Icon(
+                                        Icons.Filled.FiberManualRecord,
+                                        tint = Color(0xFFFF796F),
+                                        modifier = Modifier
+                                            .size(8.dp)
+                                            .align(Alignment.BottomEnd),
+                                        contentDescription = null,
+                                    )
+                                }
                             }
                         }
                     }
+                    if (vm.isFullScreen) {
+                        if (speedText != null && onSpeed != null) {
+                            PlayerOutlinedTextButton(
+                                text = speedText,
+                                contentDescription = "播放速度，当前 $speedText",
+                                onClick = onSpeed,
+                                modifier = Modifier.padding(4.dp),
+                            )
+                        }
+                        OptionalPlayerDanmakuToggle(
+                            state = danmakuControlState,
+                            modifier = Modifier.padding(4.dp),
+                        )
+                        if (onEpisode != null) {
+                            PlayerOutlinedTextButton(
+                                text = stringResource(id = R.string.episode),
+                                contentDescription = stringResource(id = R.string.episode),
+                                onClick = onEpisode,
+                                modifier = Modifier.padding(4.dp),
+                            )
+                        }
+                    }
+                }
+            }
+            // 锁定态下 isShowOverlay() 恒为 false，解锁入口必须独立于 overlay 展示。
+            val isShowLock = when (vm.controlState) {
+                ControlViewModel.ControlState.Normal -> vm.isNormalLockedControlShow
+                ControlViewModel.ControlState.Locked -> vm.isNormalLockedControlShow
+                ControlViewModel.ControlState.Ended -> false
+                else -> true
+            }
+            AnimatedVisibility(
+                visible = vm.isFullScreen && onLock != null && isShowLock,
+                exit = fadeOut(),
+                enter = fadeIn(),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .padding(4.dp)
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(Color.Black.copy(alpha = 0.6f))
+                        .clickable { onLock?.invoke() },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        if (vm.controlState == ControlViewModel.ControlState.Locked) {
+                            Icons.Filled.Lock
+                        } else {
+                            Icons.Filled.LockOpen
+                        },
+                        tint = Color.White,
+                        modifier = Modifier.size(18.dp),
+                        contentDescription = if (vm.controlState == ControlViewModel.ControlState.Locked) {
+                            "解锁"
+                        } else {
+                            "锁定"
+                        },
+                    )
                 }
             }
         }
@@ -1169,11 +1272,15 @@ fun NormalVideoTopBar(
 
             if (showTools) {
                 if (showSpeed) {
-                    IconButton(onClick = onSpeed) {
-                        Icon(
-                            Icons.Filled.Speed,
-                            tint = Color.White,
-                            contentDescription = stringResource(R.string.speed)
+                    Box(
+                        modifier = Modifier
+                            .size(height = 48.dp, width = 64.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        PlayerOutlinedTextButton(
+                            text = "x${formatPlaybackSpeed(vm.curSpeed)}",
+                            contentDescription = "播放速度，当前 x${formatPlaybackSpeed(vm.curSpeed)}",
+                            onClick = onSpeed,
                         )
                     }
                 }
@@ -1212,7 +1319,6 @@ fun EasyVideoBottomControl(
     vm: ControlViewModel,
     modifier: Modifier = Modifier,
     paddingValues: PaddingValues = PaddingValues(0.dp),
-    onShowEpisodeWin: () -> Unit,
     onSHowSpeedWin: () -> Unit,
     onNext: () -> Unit,
     danmakuControlState: PlayerDanmakuControlState? = null,
@@ -1265,7 +1371,10 @@ fun EasyVideoBottomControl(
                 )
             }
 
-            OptionalPlayerDanmakuToggle(state = danmakuControlState)
+            // 横屏的弹幕入口移到右侧工具栏，底部只保留播放控制。
+            if (!vm.isFullScreen) {
+                OptionalPlayerDanmakuToggle(state = danmakuControlState)
+            }
 
             TimeText(time = vm.position, Color.White, timeTextWidth = timeTextWidth)
 
@@ -1292,28 +1401,7 @@ fun EasyVideoBottomControl(
 
             TimeText(time = vm.during, Color.White, timeTextWidth = timeTextWidth)
 
-            if (vm.isFullScreen) {
-                Text(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(4.dp))
-                        .clickable {
-                            onShowEpisodeWin()
-                        }
-                        .padding(8.dp),
-                    text = stringResource(id = R.string.episode),
-                    color = Color.White
-                )
-                Text(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(4.dp))
-                        .clickable {
-                            onSHowSpeedWin()
-                        }
-                        .padding(8.dp),
-                    text = stringResource(id = R.string.speed),
-                    color = Color.White
-                )
-            } else if (showNormalSpeed) {
+            if (!vm.isFullScreen && showNormalSpeed) {
                 Surface(
                     modifier = Modifier
                         .semantics {

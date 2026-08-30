@@ -668,6 +668,8 @@ fun LazyGridScope.cartoonPlayLines(
 ) {
 
     // 播放线路
+    // 特殊情况：线路没有任何名字时，线路行既无法辨识也无法操作，直接不展示。
+    val showLineRow = showPlayLine && playLines.any { it.playLine.label.isNotBlank() }
     if (playLines.isEmpty()) {
         item(
             span = {
@@ -696,7 +698,7 @@ fun LazyGridScope.cartoonPlayLines(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 if (selectionMode.value == null) {
-                    if (showPlayLine) {
+                    if (showLineRow) {
                         ScrollableTabRow(
                             modifier = Modifier
                                 .weight(1f)
