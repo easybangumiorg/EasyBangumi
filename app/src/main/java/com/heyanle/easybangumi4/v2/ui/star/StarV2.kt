@@ -35,7 +35,6 @@ import androidx.compose.material.icons.filled.SyncAlt
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.filled.Update
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -85,8 +84,7 @@ import com.heyanle.easybangumi4.ui.main.star.StarViewModel
 import com.heyanle.easybangumi4.v2.theme.V2Tokens
 import com.heyanle.easybangumi4.v2.theme.V2Theme
 import com.heyanle.easybangumi4.v2.ui.component.V2TabPage
-import com.heyanle.easybangumi4.v2.ui.component.V2TabBadge
-import com.heyanle.easybangumi4.v2.ui.component.V2TabLabelText
+import com.heyanle.easybangumi4.v2.ui.component.V2TabLabelWithBadge
 import com.heyanle.easybangumi4.v2.ui.component.V2CountBadge
 
 /**
@@ -188,15 +186,11 @@ internal fun StarV2() {
                 tabs = { index, selected ->
                     val tag = state.tagList.getOrNull(index)
                     val count = tag?.let { state.data[it.label]?.size ?: 0 } ?: 0
-                    if (tag == null) {
-                        V2TabLabelText("", selected)
-                    } else if (count > 0) {
-                        BadgedBox(badge = { V2TabBadge(count) }) {
-                            V2TabLabelText(tag.display, selected)
-                        }
-                    } else {
-                        V2TabLabelText(tag.display, selected)
-                    }
+                    V2TabLabelWithBadge(
+                        label = tag?.display ?: "",
+                        selected = selected,
+                        badgeCount = count,
+                    )
                 },
             ) { pageIndex ->
                 val tab = state.tagList.getOrNull(pageIndex)
