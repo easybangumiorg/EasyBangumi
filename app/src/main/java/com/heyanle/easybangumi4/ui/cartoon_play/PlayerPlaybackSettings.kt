@@ -75,6 +75,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.heyanle.easybangumi4.danmaku.DANMAKU_AREA_RATIO_TIERS
@@ -215,6 +216,7 @@ internal object PlayerPlaybackSettingsTestTags {
 internal fun PlayerDanmakuToggle(
     state: PlayerDanmakuControlState,
     modifier: Modifier = Modifier,
+    buttonSize: Dp = 48.dp,
 ) {
     val isLoading = state.visualState == PlayerDanmakuControlState.VisualState.Loading
     val isAvailable = state.visualState == PlayerDanmakuControlState.VisualState.Available
@@ -230,7 +232,7 @@ internal fun PlayerDanmakuToggle(
 
     Box(
         modifier = modifier
-            .size(48.dp)
+            .size(buttonSize)
             .testTag(PlayerPlaybackSettingsTestTags.DANMAKU_TOGGLE)
             .clip(RoundedCornerShape(12.dp))
             .combinedClickable(
@@ -284,8 +286,11 @@ internal fun PlayerDanmakuToggle(
 internal fun OptionalPlayerDanmakuToggle(
     state: PlayerDanmakuControlState?,
     modifier: Modifier = Modifier,
+    buttonSize: Dp = 48.dp,
 ) {
-    state?.let { PlayerDanmakuToggle(state = it, modifier = modifier) }
+    state?.let {
+        PlayerDanmakuToggle(state = it, modifier = modifier, buttonSize = buttonSize)
+    }
 }
 
 /**

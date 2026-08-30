@@ -665,14 +665,15 @@ private fun PlaybackSpeedOption(
     }
 }
 
-private fun formatPlaybackSpeed(speed: Float): String {
-    val value = if (speed % 1f == 0f) {
+private fun formatSpeedValue(speed: Float): String {
+    return if (speed % 1f == 0f) {
         speed.toInt().toString()
     } else {
         speed.toString().trimEnd('0').trimEnd('.')
     }
-    return "$value×"
 }
+
+private fun formatPlaybackSpeed(speed: Float): String = "${formatSpeedValue(speed)}×"
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -804,7 +805,7 @@ fun VideoControl(
                 onShowRecorded = {
                     cartoonPlayingVM.showRecord()
                 },
-                speedText = "x${formatPlaybackSpeed(controlVM.curSpeed)}",
+                speedText = "倍速x${formatSpeedValue(controlVM.curSpeed)}",
                 onSpeed = {
                     showSpeedWin.value = true
                 },
@@ -1021,24 +1022,30 @@ fun FullScreenRightToolBar(
                         }
                     }
                     if (vm.isFullScreen) {
+                        // 右侧操作组统一内容高度 40dp（4dp 外边距），避免倍速/弹幕/选集高矮不一。
                         if (speedText != null && onSpeed != null) {
                             PlayerOutlinedTextButton(
                                 text = speedText,
                                 contentDescription = "播放速度，当前 $speedText",
                                 onClick = onSpeed,
-                                modifier = Modifier.padding(4.dp),
+                                modifier = Modifier
+                                    .padding(4.dp)
+                                    .height(40.dp),
                             )
                         }
                         OptionalPlayerDanmakuToggle(
                             state = danmakuControlState,
                             modifier = Modifier.padding(4.dp),
+                            buttonSize = 40.dp,
                         )
                         if (onEpisode != null) {
                             PlayerOutlinedTextButton(
                                 text = stringResource(id = R.string.episode),
                                 contentDescription = stringResource(id = R.string.episode),
                                 onClick = onEpisode,
-                                modifier = Modifier.padding(4.dp),
+                                modifier = Modifier
+                                    .padding(4.dp)
+                                    .height(40.dp),
                             )
                         }
                     }
@@ -1266,12 +1273,12 @@ fun NormalVideoTopBar(
                 if (showSpeed) {
                     Box(
                         modifier = Modifier
-                            .size(height = 48.dp, width = 64.dp),
+                            .height(48.dp),
                         contentAlignment = Alignment.Center,
                     ) {
                         PlayerOutlinedTextButton(
-                            text = "x${formatPlaybackSpeed(vm.curSpeed)}",
-                            contentDescription = "播放速度，当前 x${formatPlaybackSpeed(vm.curSpeed)}",
+                            text = "倍速x${formatSpeedValue(vm.curSpeed)}",
+                            contentDescription = "播放速度，当前 倍速x${formatSpeedValue(vm.curSpeed)}",
                             onClick = onSpeed,
                         )
                     }
