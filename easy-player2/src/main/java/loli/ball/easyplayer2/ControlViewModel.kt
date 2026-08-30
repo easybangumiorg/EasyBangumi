@@ -454,8 +454,18 @@ class ControlViewModel(
         }
     }
 
-    fun isShowOverlay(): Boolean {
-        return when (controlState) {
+    /**
+     * 解析/换集开始时调用：把上一集遗留的 Ended 复位为 Normal。
+     * READY/IDLE 也会做同样复位，但解析窗口内引擎不会发出这两个状态，
+     * 不复位会导致解析阶段 isShowOverlay() 恒为 false、控制浮层无法唤出。
+     */
+    fun resetControlUiState() {
+        if (controlState == ControlState.Ended) {
+            controlState = ControlState.Normal
+        }
+    }
+
+    fun isShowOverlay(): Boolean {        return when (controlState) {
             ControlState.Normal -> isNormalLockedControlShow
             ControlState.Locked -> false
             ControlState.Ended -> false

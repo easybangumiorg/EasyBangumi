@@ -15,7 +15,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -219,6 +218,11 @@ fun VideoFloat(
         }
     }
 
+    // 解析开始时复位上一集遗留的 Ended 态，保证解析窗口内控制浮层可唤出。
+    LaunchedEffect(playingState.isLoading) {
+        if (playingState.isLoading) controlVM.resetControlUiState()
+    }
+
     BackHandler(
         showSpeedWin.value || showEpisodeWin.value || showScaleTypeWin.value
     ) {
@@ -227,39 +231,9 @@ fun VideoFloat(
         showScaleTypeWin.value = false
     }
 
-    if (playingState.isLoading) {
-        Box {
-            LoadingPage(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black)
-                    .clickable(
-                        onClick = {
-                        },
-                        indication = null,
-                        interactionSource = remember {
-                            MutableInteractionSource()
-                        }
-                    ),
-                loadingMsg = stringResource(id = R.string.parsing),
-                msgColor = Color.White
-            )
-            IconButton(
-                modifier = Modifier.align(Alignment.TopStart),
-                onClick = {
-                    if (controlVM.isFullScreen)
-                        controlVM.onFullScreen(fullScreen = false, reverse = false, ctx)
-                    else
-                        nav.popBackStack()
-                }) {
-                Icon(
-                    Icons.Filled.ArrowBack,
-                    contentDescription = stringResource(id = R.string.back),
-                    tint = Color.White
-                )
-            }
-        }
-    } else if (playingState.isError) {
+    // 解析中的加载视觉已下沉到 Video 的控制层内部（手势层之上、控制条之下），
+    // 这里只保留错误态：错误页需要点击重试，阻塞手势是有意为之。
+    if (playingState.isError) {
         Box {
             val inner = (playingState.errorThrowable as? ParserException)?.exception
             if (playingState.errorThrowable is ParserException &&
@@ -698,6 +672,7 @@ fun VideoControl(
     enableNormalScreenSeekGestures: Boolean = false,
 ) {
     val nav = LocalNavController.current
+    val ctx = LocalContext.current as Activity
     val scope = rememberCoroutineScope()
     val screenshotController = rememberPlayerScreenshotController(
         playingViewModel = cartoonPlayingVM,
@@ -777,6 +752,40 @@ fun VideoControl(
             }
 
 
+            // 解析中：加载视觉位于手势层之上、控制条之下，不阻塞控制浮层——
+            // 解析卡住时也能唤出顶栏/底栏进行切集、全屏或进入播放设置。
+            // 浮层隐藏时显示独立返回按钮；浮层可见时各控制栏自带返回。
+            if (playingState.isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black),
+                ) {
+                    LoadingPage(
+                        modifier = Modifier.fillMaxSize(),
+                        loadingMsg = stringResource(id = R.string.parsing),
+                        msgColor = Color.White,
+                    )
+                }
+                if (!controlVM.isShowOverlay()) {
+                    IconButton(
+                        modifier = Modifier.align(Alignment.TopStart),
+                        onClick = {
+                            if (controlVM.isFullScreen)
+                                controlVM.onFullScreen(fullScreen = false, reverse = false, ctx)
+                            else
+                                nav.popBackStack()
+                        }) {
+                        Icon(
+                            Icons.Filled.ArrowBack,
+                            contentDescription = stringResource(id = R.string.back),
+                            tint = Color.White
+                        )
+                    }
+                }
+            }
+
+
             // 全屏顶部工具栏只在全屏组合，避免非全屏仍短暂显示更多/分享类操作。
             if (controlVM.isFullScreen) {
                 FullScreenVideoTopBar(
@@ -800,7 +809,8 @@ fun VideoControl(
                     .defaultMinSize(64.dp, Dp.Unspecified)
                     .align(Alignment.CenterEnd),
                 screenshotState = screenshotController.state,
-                showCapture = !cartoonPlayingVM.isMpvEngine,
+                // 解析中画面还是旧帧或黑屏，隐藏截图入口避免存下错误截图。
+                showCapture = !cartoonPlayingVM.isMpvEngine && !playingState.isLoading,
                 onImage = screenshotController::capture,
                 onShowRecorded = {
                     cartoonPlayingVM.showRecord()
