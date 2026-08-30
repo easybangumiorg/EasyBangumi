@@ -17,6 +17,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
@@ -51,6 +52,7 @@ import androidx.compose.material.icons.filled.BatteryFull
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
+import androidx.compose.material.icons.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.CastConnected
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
@@ -70,12 +72,14 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -95,9 +99,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.font.FontWeight
@@ -815,7 +822,7 @@ fun VideoControl(
                 onShowRecorded = {
                     cartoonPlayingVM.showRecord()
                 },
-                speedText = "倍速x${formatSpeedValue(controlVM.curSpeed)}",
+                speedText = "x${formatSpeedValue(controlVM.curSpeed)}",
                 onSpeed = {
                     showSpeedWin.value = true
                 },
@@ -951,6 +958,61 @@ private fun PlayerOutlinedTextButton(
     }
 }
 
+/**
+ * 全屏侧边操作组的统一圆形按钮：40dp 圆、内容居中、4dp 外边距。
+ * 视觉状态约定：黑色蒙层 = 常规态；[active]（白色反色）= 激活态，如锁定中、非 1x 倍速。
+ */
+@Composable
+@kotlin.OptIn(ExperimentalFoundationApi::class)
+private fun PlayerSideCircleButton(
+    contentDescription: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    onLongClick: (() -> Unit)? = null,
+    enabled: Boolean = true,
+    active: Boolean = false,
+    testTag: String? = null,
+    stateDescription: String? = null,
+    content: @Composable BoxScope.() -> Unit,
+) {
+    Box(
+        modifier = modifier
+            .then(if (testTag != null) Modifier.testTag(testTag) else Modifier)
+            .padding(4.dp)
+            .size(40.dp)
+            .clip(CircleShape)
+            .background(if (active) Color.White else Color.Black.copy(alpha = 0.6f))
+            .then(
+                if (onLongClick != null) {
+                    Modifier.combinedClickable(
+                        enabled = enabled,
+                        onClickLabel = contentDescription,
+                        onClick = onClick,
+                        onLongClickLabel = contentDescription,
+                        onLongClick = onLongClick,
+                    )
+                } else {
+                    Modifier.clickable(
+                        enabled = enabled,
+                        onClickLabel = contentDescription,
+                        onClick = onClick,
+                    )
+                }
+            )
+            .semantics {
+                this.contentDescription = contentDescription
+                stateDescription?.let { this.stateDescription = it }
+            },
+        contentAlignment = Alignment.Center,
+    ) {
+        CompositionLocalProvider(
+            LocalContentColor provides if (active) Color.Black else Color.White,
+        ) {
+            content()
+        }
+    }
+}
+
 @Composable
 @kotlin.OptIn(ExperimentalFoundationApi::class)
 fun FullScreenRightToolBar(
@@ -983,27 +1045,11 @@ fun FullScreenRightToolBar(
                     Spacer(Modifier.height(64.dp))
                     if (showCapture) {
                         val isCapturing = screenshotState is PlayerScreenshotState.Capturing
-                        Box(
-                            modifier = Modifier
-                                .padding(4.dp)
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(Color.Black.copy(alpha = 0.6f))
-                                .combinedClickable(
-                                    enabled = !isCapturing,
-                                    onClickLabel = "截图",
-                                    onClick = onImage,
-                                    onLongClickLabel = "录制片段",
-                                    onLongClick = onShowRecorded,
-                                )
-                                .semantics {
-                                    contentDescription = if (isCapturing) {
-                                        "正在截图"
-                                    } else {
-                                        "截图，长按录制"
-                                    }
-                                },
-                            contentAlignment = Alignment.Center,
+                        PlayerSideCircleButton(
+                            contentDescription = if (isCapturing) "正在截图" else "截图，长按录制",
+                            onClick = onImage,
+                            onLongClick = onShowRecorded,
+                            enabled = !isCapturing,
                         ) {
                             if (isCapturing) {
                                 CircularProgressIndicator(
@@ -1015,9 +1061,8 @@ fun FullScreenRightToolBar(
                                 Box {
                                     Icon(
                                         Icons.Filled.CameraAlt,
-                                        tint = Color.White,
-                                        modifier = Modifier.size(20.dp),
                                         contentDescription = null,
+                                        modifier = Modifier.size(20.dp),
                                     )
                                     Icon(
                                         Icons.Filled.FiberManualRecord,
@@ -1032,31 +1077,74 @@ fun FullScreenRightToolBar(
                         }
                     }
                     if (vm.isFullScreen) {
-                        // 右侧操作组统一内容高度 40dp（4dp 外边距），避免倍速/弹幕/选集高矮不一。
+                        // 非默认倍速视为激活态：白色反色提示当前不在常速播放。
                         if (speedText != null && onSpeed != null) {
-                            PlayerOutlinedTextButton(
-                                text = speedText,
+                            PlayerSideCircleButton(
                                 contentDescription = "播放速度，当前 $speedText",
                                 onClick = onSpeed,
-                                modifier = Modifier
-                                    .padding(4.dp)
-                                    .height(40.dp),
-                            )
+                                active = vm.curSpeed != 1f,
+                            ) {
+                                Text(
+                                    text = speedText,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 1,
+                                )
+                            }
                         }
-                        OptionalPlayerDanmakuToggle(
-                            state = danmakuControlState,
-                            modifier = Modifier.padding(4.dp),
-                            buttonSize = 40.dp,
-                        )
+                        danmakuControlState?.let { state ->
+                            val isLoading =
+                                state.visualState == PlayerDanmakuControlState.VisualState.Loading
+                            val isAvailable =
+                                state.visualState == PlayerDanmakuControlState.VisualState.Available
+                            PlayerSideCircleButton(
+                                contentDescription = state.contentDescription,
+                                onClick = state.onClick,
+                                onLongClick = state.onLongClick,
+                                testTag = PlayerPlaybackSettingsTestTags.DANMAKU_TOGGLE,
+                                stateDescription = when {
+                                    isLoading -> "加载中"
+                                    !isAvailable -> "不可用"
+                                    state.displayEnabled -> "已开启"
+                                    else -> "已关闭"
+                                },
+                            ) {
+                                if (isLoading) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(20.dp),
+                                        color = Color.White,
+                                        strokeWidth = 2.dp,
+                                    )
+                                } else {
+                                    Text(
+                                        text = "弹",
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isAvailable) {
+                                            LocalContentColor.current
+                                        } else {
+                                            LocalContentColor.current.copy(alpha = 0.55f)
+                                        },
+                                        textDecoration = if (isAvailable && !state.displayEnabled) {
+                                            TextDecoration.LineThrough
+                                        } else {
+                                            TextDecoration.None
+                                        },
+                                    )
+                                }
+                            }
+                        }
                         if (onEpisode != null) {
-                            PlayerOutlinedTextButton(
-                                text = stringResource(id = R.string.episode),
+                            PlayerSideCircleButton(
                                 contentDescription = stringResource(id = R.string.episode),
                                 onClick = onEpisode,
-                                modifier = Modifier
-                                    .padding(4.dp)
-                                    .height(40.dp),
-                            )
+                            ) {
+                                Icon(
+                                    Icons.Filled.PlaylistPlay,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp),
+                                )
+                            }
                         }
                     }
                 }
@@ -1073,28 +1161,16 @@ fun FullScreenRightToolBar(
                 exit = fadeOut(),
                 enter = fadeIn(),
             ) {
-                Box(
-                    modifier = Modifier
-                        .padding(4.dp)
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(Color.Black.copy(alpha = 0.6f))
-                        .clickable { onLock?.invoke() },
-                    contentAlignment = Alignment.Center,
+                val locked = vm.controlState == ControlViewModel.ControlState.Locked
+                PlayerSideCircleButton(
+                    contentDescription = if (locked) "解锁" else "锁定",
+                    onClick = { onLock?.invoke() },
+                    active = locked,
                 ) {
                     Icon(
-                        if (vm.controlState == ControlViewModel.ControlState.Locked) {
-                            Icons.Filled.Lock
-                        } else {
-                            Icons.Filled.LockOpen
-                        },
-                        tint = Color.White,
+                        if (locked) Icons.Filled.Lock else Icons.Filled.LockOpen,
+                        contentDescription = null,
                         modifier = Modifier.size(18.dp),
-                        contentDescription = if (vm.controlState == ControlViewModel.ControlState.Locked) {
-                            "解锁"
-                        } else {
-                            "锁定"
-                        },
                     )
                 }
             }
