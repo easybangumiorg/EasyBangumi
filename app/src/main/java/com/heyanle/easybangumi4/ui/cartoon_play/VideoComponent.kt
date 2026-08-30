@@ -40,7 +40,8 @@ import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.Battery0Bar
 import androidx.compose.material.icons.filled.Battery2Bar
 import androidx.compose.material.icons.filled.Battery3Bar
@@ -52,7 +53,6 @@ import androidx.compose.material.icons.filled.BatteryFull
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
-import androidx.compose.material.icons.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.CastConnected
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
@@ -182,6 +182,7 @@ fun VideoFloat(
 ) {
     val nav = LocalNavController.current
     val ctx = LocalContext.current as Activity
+    val cutoutSide = PlayerCutoutInsets.rememberCutoutSide(ctx)
     val scaleType by cartoonPlayingViewModel.videoScaleType.collectAsState()
     val mpvAnime4kEnabled by cartoonPlayingViewModel.mpvAnime4kEnabled.collectAsState()
     val mpvAnime4kPreset by cartoonPlayingViewModel.mpvAnime4kPreset.collectAsState()
@@ -290,7 +291,18 @@ fun VideoFloat(
             }
 
             IconButton(
-                modifier = Modifier.align(Alignment.TopStart),
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(
+                        start = if (controlVM.isFullScreen) {
+                            PlayerCutoutInsets.paddingFor(
+                                cutoutSide = cutoutSide,
+                                targetSide = PlayerCutoutInsets.Side.LEFT,
+                            )
+                        } else {
+                            0.dp
+                        },
+                    ),
                 onClick = {
                     if (controlVM.isFullScreen)
                         controlVM.onFullScreen(fullScreen = false, reverse = false, ctx)
@@ -298,7 +310,7 @@ fun VideoFloat(
                         nav.popBackStack()
                 }) {
                 Icon(
-                    Icons.Filled.ArrowBack,
+                    Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = stringResource(id = R.string.back),
                     tint = Color.White
                 )
@@ -324,7 +336,14 @@ fun VideoFloat(
 
                 if (controlVM.isFullScreen) {
                     IconButton(
-                        modifier = Modifier.align(Alignment.TopStart),
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(
+                                start = PlayerCutoutInsets.paddingFor(
+                                    cutoutSide = cutoutSide,
+                                    targetSide = PlayerCutoutInsets.Side.LEFT,
+                                ),
+                            ),
                         onClick = {
                             controlVM.onFullScreen(
                                 fullScreen = false,
@@ -333,7 +352,7 @@ fun VideoFloat(
                             )
                         }) {
                         Icon(
-                            Icons.Filled.ArrowBack,
+                            Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(id = R.string.back)
                         )
                     }
@@ -688,10 +707,13 @@ fun VideoControl(
     showNormalSpeedInTopBar: Boolean = true,
     showNormalSpeedInBottomBar: Boolean = false,
     showNormalDanmakuInTopBar: Boolean = false,
+    showNormalPlayerSettings: Boolean = false,
+    compactNormalTopActions: Boolean = false,
     enableNormalScreenSeekGestures: Boolean = false,
 ) {
     val nav = LocalNavController.current
     val ctx = LocalContext.current as Activity
+    val cutoutSide = PlayerCutoutInsets.rememberCutoutSide(ctx)
     val scope = rememberCoroutineScope()
     val screenshotController = rememberPlayerScreenshotController(
         playingViewModel = cartoonPlayingVM,
@@ -704,11 +726,21 @@ fun VideoControl(
                 .fillMaxSize()
                 .background(Color.Black)
         ) {
-            IconButton(onClick = {
-                nav.popBackStack()
-            }) {
+            IconButton(
+                modifier = Modifier.padding(
+                    start = if (controlVM.isFullScreen) {
+                        PlayerCutoutInsets.paddingFor(
+                            cutoutSide = cutoutSide,
+                            targetSide = PlayerCutoutInsets.Side.LEFT,
+                        )
+                    } else {
+                        0.dp
+                    },
+                ),
+                onClick = { nav.popBackStack() },
+            ) {
                 Icon(
-                    Icons.Filled.ArrowBack,
+                    Icons.AutoMirrored.Filled.ArrowBack,
                     tint = Color.White,
                     contentDescription = null
                 )
@@ -717,7 +749,6 @@ fun VideoControl(
     } else {
         Box(Modifier.fillMaxSize()) {
 
-            val cutoutSide = PlayerCutoutInsets.rememberCutoutSide(ctx)
             val fastWeight by cartoonPlayingVM.fastWeight.collectAsState()
             val fastSecond by cartoonPlayingVM.fastSecond.collectAsState()
             val fastTopSecond by cartoonPlayingVM.fastTopSecond.collectAsState()
@@ -789,7 +820,18 @@ fun VideoControl(
                 }
                 if (!controlVM.isShowOverlay()) {
                     IconButton(
-                        modifier = Modifier.align(Alignment.TopStart),
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(
+                                start = if (controlVM.isFullScreen) {
+                                    PlayerCutoutInsets.paddingFor(
+                                        cutoutSide = cutoutSide,
+                                        targetSide = PlayerCutoutInsets.Side.LEFT,
+                                    )
+                                } else {
+                                    0.dp
+                                },
+                            ),
                         onClick = {
                             if (controlVM.isFullScreen)
                                 controlVM.onFullScreen(fullScreen = false, reverse = false, ctx)
@@ -797,7 +839,7 @@ fun VideoControl(
                                 nav.popBackStack()
                         }) {
                         Icon(
-                            Icons.Filled.ArrowBack,
+                            Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(id = R.string.back),
                             tint = Color.White
                         )
@@ -866,11 +908,16 @@ fun VideoControl(
                 showCastAndShare = showNormalCastAndShare,
                 showSpeed = showNormalSpeedInTopBar,
                 danmakuControlState = if (showNormalDanmakuInTopBar) danmakuControlState else null,
+                showPlayerSettings = showNormalPlayerSettings && onShowPlayerSettings != null,
+                compactActions = compactNormalTopActions,
                 onBack = {
                     nav.popBackStack()
                 },
                 onSpeed = {
                     showSpeedWin.value = true
+                },
+                onPlayerSettings = {
+                    onShowPlayerSettings?.invoke()
                 },
                 onDlna = {
                     // cartoonPlayingVM.playCurrentExternal()
@@ -961,16 +1008,19 @@ private fun PlayerSpeedCircleButton(
     vm: ControlViewModel,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    compact: Boolean = false,
 ) {
     PlayerSideCircleButton(
         contentDescription = "播放速度，当前 倍速x${formatSpeedValue(vm.curSpeed)}",
         onClick = onClick,
         modifier = modifier,
         active = vm.curSpeed != 1f,
+        visualSize = if (compact) 34.dp else 40.dp,
+        outerPadding = if (compact) 3.dp else 4.dp,
     ) {
         Text(
             text = "x${formatSpeedValue(vm.curSpeed)}",
-            fontSize = 11.sp,
+            fontSize = if (compact) 10.sp else 11.sp,
             fontWeight = FontWeight.Bold,
             maxLines = 1,
         )
@@ -985,6 +1035,7 @@ private fun PlayerSpeedCircleButton(
 private fun PlayerDanmakuCircleButton(
     state: PlayerDanmakuControlState,
     modifier: Modifier = Modifier,
+    compact: Boolean = false,
 ) {
     val isLoading = state.visualState == PlayerDanmakuControlState.VisualState.Loading
     val isAvailable = state.visualState == PlayerDanmakuControlState.VisualState.Available
@@ -1000,6 +1051,8 @@ private fun PlayerDanmakuCircleButton(
         },
         borderColor = if (displayOn) MaterialTheme.colorScheme.primary else null,
         testTag = PlayerPlaybackSettingsTestTags.DANMAKU_TOGGLE,
+        visualSize = if (compact) 34.dp else 40.dp,
+        outerPadding = if (compact) 3.dp else 4.dp,
         stateDescription = when {
             isLoading -> "加载中"
             !isAvailable -> "不可用"
@@ -1016,7 +1069,7 @@ private fun PlayerDanmakuCircleButton(
         } else {
             Text(
                 text = "弹",
-                fontSize = 13.sp,
+                fontSize = if (compact) 12.sp else 13.sp,
                 fontWeight = FontWeight.Bold,
                 textDecoration = if (isAvailable && !displayOn) {
                     TextDecoration.LineThrough
@@ -1029,7 +1082,7 @@ private fun PlayerDanmakuCircleButton(
 }
 
 /**
- * 全屏侧边操作组的统一圆形按钮：40dp 圆、内容居中、4dp 外边距。
+ * 全屏侧边操作组的统一圆形按钮：视觉圆与点击区分离，缩小视觉时不牺牲外围容错。
  * 视觉状态约定：黑色蒙层 = 常规态；[active]（白色反色）= 激活态，如锁定中、非 1x 倍速；
  * [containerColor]/[contentColor] 显式指定时优先（用于弹幕等品牌色开关态）。
  */
@@ -1047,6 +1100,8 @@ private fun PlayerSideCircleButton(
     borderColor: Color? = null,
     testTag: String? = null,
     stateDescription: String? = null,
+    visualSize: Dp = 40.dp,
+    outerPadding: Dp = 4.dp,
     content: @Composable BoxScope.() -> Unit,
 ) {
     val resolvedContainer = containerColor
@@ -1056,17 +1111,7 @@ private fun PlayerSideCircleButton(
     Box(
         modifier = modifier
             .then(if (testTag != null) Modifier.testTag(testTag) else Modifier)
-            .padding(4.dp)
-            .size(40.dp)
-            .clip(CircleShape)
-            .background(resolvedContainer)
-            .then(
-                if (borderColor != null) {
-                    Modifier.border(2.dp, borderColor, CircleShape)
-                } else {
-                    Modifier
-                }
-            )
+            .size(visualSize + outerPadding * 2)
             .then(
                 if (onLongClick != null) {
                     Modifier.combinedClickable(
@@ -1090,10 +1135,25 @@ private fun PlayerSideCircleButton(
             },
         contentAlignment = Alignment.Center,
     ) {
-        CompositionLocalProvider(
-            LocalContentColor provides resolvedContent,
+        Box(
+            modifier = Modifier
+                .size(visualSize)
+                .clip(CircleShape)
+                .background(resolvedContainer)
+                .then(
+                    if (borderColor != null) {
+                        Modifier.border(2.dp, borderColor, CircleShape)
+                    } else {
+                        Modifier
+                    },
+                ),
+            contentAlignment = Alignment.Center,
         ) {
-            content()
+            CompositionLocalProvider(
+                LocalContentColor provides resolvedContent,
+            ) {
+                content()
+            }
         }
     }
 }
@@ -1124,6 +1184,8 @@ fun FullScreenRightToolBar(
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
+            // 背后遮罩保持满屏，只将可交互按钮向内避让挖孔。
+            // 这样不会在黑色渐变边缘留下一条突兀的透明缝隙。
             modifier = Modifier.padding(
                 start = PlayerCutoutInsets.paddingFor(
                     cutoutSide = cutoutSide,
@@ -1215,7 +1277,7 @@ fun FullScreenRightToolBar(
                                 onClick = onEpisode,
                             ) {
                                 Icon(
-                                    Icons.Filled.PlaylistPlay,
+                                    Icons.AutoMirrored.Filled.PlaylistPlay,
                                     contentDescription = null,
                                     modifier = Modifier.size(20.dp),
                                 )
@@ -1402,8 +1464,11 @@ fun NormalVideoTopBar(
     showCastAndShare: Boolean = true,
     showSpeed: Boolean = true,
     danmakuControlState: PlayerDanmakuControlState? = null,
+    showPlayerSettings: Boolean = false,
+    compactActions: Boolean = false,
     onBack: () -> Unit,
     onSpeed: () -> Unit,
+    onPlayerSettings: () -> Unit = {},
     onDlna: () -> Unit,
     onShare: (withCover: Boolean) -> Unit
 ) {
@@ -1420,11 +1485,33 @@ fun NormalVideoTopBar(
 
             if (showTools) {
                 if (showSpeed) {
-                    PlayerSpeedCircleButton(vm = vm, onClick = onSpeed)
+                    PlayerSpeedCircleButton(
+                        vm = vm,
+                        onClick = onSpeed,
+                        compact = compactActions,
+                    )
                 }
 
                 danmakuControlState?.let { state ->
-                    PlayerDanmakuCircleButton(state = state)
+                    PlayerDanmakuCircleButton(
+                        state = state,
+                        compact = compactActions,
+                    )
+                }
+
+                if (showPlayerSettings) {
+                    PlayerSideCircleButton(
+                        contentDescription = "播放设置",
+                        onClick = onPlayerSettings,
+                        visualSize = if (compactActions) 34.dp else 40.dp,
+                        outerPadding = if (compactActions) 3.dp else 4.dp,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.MoreVert,
+                            contentDescription = null,
+                            modifier = Modifier.size(if (compactActions) 18.dp else 22.dp),
+                        )
+                    }
                 }
 
                 if (showCastAndShare && showDlna) {

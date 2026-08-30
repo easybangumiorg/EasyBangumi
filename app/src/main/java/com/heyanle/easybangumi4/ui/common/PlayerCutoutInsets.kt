@@ -1,11 +1,9 @@
 package com.heyanle.easybangumi4.ui.common
 
 import android.app.Activity
-import android.content.res.Configuration
 import android.os.Build
 import android.util.Log
 import android.view.WindowManager
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalConfiguration
@@ -71,23 +69,7 @@ object PlayerCutoutInsets {
     fun paddingFor(cutoutSide: Side, targetSide: Side, width: Dp = SAFE_WIDTH): Dp =
         if (targetSide == cutoutSide) width else 0.dp
 
-    /**
-     * 弹幕画布安全边距：竖屏不做避让（保持原状）；全屏横屏只避让挖孔真正所在的一侧。
-     */
-    @Composable
-    fun canvasPaddingValues(isFullScreen: Boolean, cutoutSide: Side): PaddingValues {
-        return if (isFullScreen && cutoutSide != Side.NONE) {
-            if (cutoutSide == Side.LEFT) {
-                PaddingValues(start = SAFE_WIDTH)
-            } else {
-                PaddingValues(end = SAFE_WIDTH)
-            }
-        } else {
-            PaddingValues(0.dp)
-        }
-    }
-
-        /** 允许窗口内容延伸进刘海/挖孔区域（SHORT_EDGES）。重复调用无副作用。 */
+    /** 允许窗口内容延伸进刘海/挖孔区域（SHORT_EDGES）。重复调用无副作用。 */
     fun enableShortEdges(activity: Activity) {
         activity.window.attributes = activity.window.attributes.apply {
             layoutInDisplayCutoutMode =

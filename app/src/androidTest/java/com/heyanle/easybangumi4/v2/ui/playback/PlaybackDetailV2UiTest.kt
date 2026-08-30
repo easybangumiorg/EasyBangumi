@@ -208,9 +208,9 @@ class PlaybackDetailV2UiTest {
             )
             if (showMore) {
                 PlaybackMoreActionsBottomSheetV2(
-                    onWeb = { clicks += "官网"; showMore = false },
                     onExternalPlay = { clicks += "外播"; showMore = false },
-                    onShare = { clicks += "分享"; showMore = false },
+                    hasCustomPlaybackHeaders = false,
+                    onMediaData = { clicks += "媒体数据"; showMore = false },
                     onDismiss = { showMore = false },
                 )
             }
@@ -225,16 +225,13 @@ class PlaybackDetailV2UiTest {
         }
         composeRule.onNodeWithTag(CartoonPlayV2TestTags.action("更多")).performClick()
         composeRule.onNodeWithTag(CartoonPlayV2TestTags.MORE_ACTIONS).assertExists()
-        composeRule.onNodeWithText("官网").performClick()
+        composeRule.onNodeWithText("媒体数据").performClick()
 
         composeRule.onNodeWithTag(CartoonPlayV2TestTags.action("更多")).performClick()
         composeRule.onNodeWithText("外播").performClick()
 
-        composeRule.onNodeWithTag(CartoonPlayV2TestTags.action("更多")).performClick()
-        composeRule.onNodeWithText("分享").performClick()
-
         composeRule.runOnIdle {
-            assertEquals(listOf("追番", "换源", "下载", "投屏", "官网", "外播", "分享"), clicks)
+            assertEquals(listOf("追番", "换源", "下载", "投屏", "媒体数据", "外播"), clicks)
         }
     }
 

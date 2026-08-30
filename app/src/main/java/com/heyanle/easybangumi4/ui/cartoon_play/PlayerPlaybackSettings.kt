@@ -1,5 +1,6 @@
 package com.heyanle.easybangumi4.ui.cartoon_play
 
+import android.app.Activity
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
@@ -33,6 +34,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
@@ -65,6 +67,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -88,6 +91,7 @@ import com.heyanle.easybangumi4.danmaku.danmakuOpacityLabel
 import com.heyanle.easybangumi4.danmaku.danmakuScrollSpeedLabel
 import com.heyanle.easybangumi4.player.mpv.MpvAnime4KStatus
 import com.heyanle.easybangumi4.setting.SettingPreferences
+import com.heyanle.easybangumi4.ui.common.PlayerCutoutInsets
 import com.heyanle.easybangumi4.ui.common.TabIndicator
 import java.util.Locale
 import kotlin.math.roundToInt
@@ -309,6 +313,8 @@ internal fun FullscreenPlayerSidePanel(
     panelModifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    val activity = LocalContext.current as Activity
+    val cutoutSide = PlayerCutoutInsets.rememberCutoutSide(activity)
     BackHandler(enabled = visible, onBack = onDismiss)
     Box(modifier = modifier.fillMaxSize()) {
         AnimatedVisibility(
@@ -355,6 +361,13 @@ internal fun FullscreenPlayerSidePanel(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
+                        // 面板底色可以延伸到挖孔区，但内部所有操作必须保持可点击。
+                        .padding(
+                            end = PlayerCutoutInsets.paddingFor(
+                                cutoutSide = cutoutSide,
+                                targetSide = PlayerCutoutInsets.Side.RIGHT,
+                            ),
+                        )
                         .navigationBarsPadding(),
                     content = content,
                 )
@@ -366,8 +379,8 @@ internal fun FullscreenPlayerSidePanel(
 /**
  * Material 3 adaptive shell for player-scoped settings.
  *
- * A compact portrait uses a modal bottom sheet. Landscape and expanded layouts retain the video
- * as context and slide a bounded settings surface in from the right.
+ * Portrait always uses a modal bottom sheet so the panel follows the control entry vertically.
+ * Landscape retains the video as context and slides a bounded settings surface in from the right.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -396,8 +409,7 @@ internal fun AdaptivePlayerSettingsPanel(
     onExoAdAudioProbeRulesUrlChange: (String) -> Unit = {},
 ) {
     val configuration = LocalConfiguration.current
-    val useSidePanel = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE ||
-        configuration.screenWidthDp >= 600
+    val useSidePanel = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     if (useSidePanel) {
         FullscreenPlayerSidePanel(
@@ -663,6 +675,7 @@ internal fun DanmakuDisplaySettingsContent(
     matchSummary: String? = null,
 ) {
     var confirmReset by remember { mutableStateOf(false) }
+    var helpTopic by remember { mutableStateOf<DanmakuSettingHelp?>(null) }
 
     Column(modifier = modifier.fillMaxWidth()) {
         ListItem(
@@ -786,6 +799,7 @@ internal fun DanmakuDisplaySettingsContent(
             },
             modifier = Modifier.testTag(PlayerPlaybackSettingsTestTags.DENSITY),
             sliderTestTag = "${PlayerPlaybackSettingsTestTags.DENSITY}_slider",
+            onHelpClick = { helpTopic = DanmakuSettingHelp.Density },
         )
         DanmakuValueSlider(
             title = "复读合并",
@@ -807,6 +821,7 @@ internal fun DanmakuDisplaySettingsContent(
             },
             modifier = Modifier.testTag(PlayerPlaybackSettingsTestTags.MERGE_REPEAT),
             sliderTestTag = "${PlayerPlaybackSettingsTestTags.MERGE_REPEAT}_slider",
+            onHelpClick = { helpTopic = DanmakuSettingHelp.MergeRepeat },
         )
 
         SettingsGroupTitle("时间校准")
@@ -882,6 +897,32 @@ internal fun DanmakuDisplaySettingsContent(
             },
         )
     }
+    helpTopic?.let { topic ->
+        AlertDialog(
+            onDismissRequest = { helpTopic = null },
+            title = { Text(topic.title) },
+            text = { Text(topic.description) },
+            confirmButton = {
+                TextButton(onClick = { helpTopic = null }) {
+                    Text("知道了")
+                }
+            },
+        )
+    }
+}
+
+private enum class DanmakuSettingHelp(
+    val title: String,
+    val description: String,
+) {
+    Density(
+        title = "弹幕数量",
+        description = "控制实际显示的弹幕比例。降低比例会均匀减少同一时间段内的弹幕，适合弹幕过密或性能有限的设备。",
+    ),
+    MergeRepeat(
+        title = "复读合并",
+        description = "在选定时间范围内合并内容相同的弹幕。范围越大，重复弹幕越少；选择“不合并”会保留全部重复内容。",
+    ),
 }
 
 @Composable
@@ -918,6 +959,7 @@ private fun DanmakuValueSlider(
     onValueChange: (Float) -> Unit,
     modifier: Modifier = Modifier,
     sliderTestTag: String? = null,
+    onHelpClick: (() -> Unit)? = null,
 ) {
     Column(
         modifier = modifier
@@ -928,9 +970,30 @@ private fun DanmakuValueSlider(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = title,
-                modifier = Modifier.weight(1f),
                 style = MaterialTheme.typography.bodyLarge,
             )
+            if (onHelpClick != null) {
+                Spacer(Modifier.widthIn(min = 4.dp))
+                Box(
+                    modifier = Modifier
+                        // 与正文行高相同，不使用默认 48dp IconButton，避免标题行被抬高。
+                        .size(24.dp)
+                        .clickable(
+                            role = Role.Button,
+                            onClickLabel = "查看${title}说明",
+                            onClick = onHelpClick,
+                        ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.HelpOutline,
+                        contentDescription = "$title 说明",
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            Spacer(Modifier.weight(1f))
             Text(
                 text = valueLabel,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,

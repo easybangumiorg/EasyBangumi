@@ -194,6 +194,8 @@ private fun playbackDetailColorScheme() = darkColorScheme(
     background = V2Tokens.PlayerDark,
     onBackground = Color.White,
     surface = V2Tokens.PlayerDark,
+    surfaceContainer = V2Tokens.PlayerSurface,
+    surfaceContainerLow = V2Tokens.PlayerSurfaceMuted,
     onSurface = Color.White,
     surfaceVariant = V2Tokens.PlayerSurface,
     onSurfaceVariant = V2Tokens.PlayerTextSecondary,
@@ -214,6 +216,8 @@ private fun playbackSheetColorScheme() = darkColorScheme(
     background = V2Tokens.PlayerDark,
     onBackground = V2Tokens.PlayerTextPrimary,
     surface = V2Tokens.PlayerSurface,
+    surfaceContainer = V2Tokens.PlayerSurface,
+    surfaceContainerLow = V2Tokens.PlayerSurfaceMuted,
     onSurface = V2Tokens.PlayerTextPrimary,
     surfaceVariant = V2Tokens.PlayerSurfaceMuted,
     onSurfaceVariant = V2Tokens.PlayerTextSecondary,
@@ -555,7 +559,6 @@ private fun PlaybackDetailV2Content(
                     comments = matched?.comments.orEmpty(),
                     bindingOffsetMillis = matched?.binding?.timeOffsetMillis ?: 0L,
                     displayConfig = danmakuDisplayConfig,
-                    isFullScreen = controlVM.isFullScreen,
                 )
                 VideoControl(
                     controlVM = controlVM,
@@ -574,6 +577,8 @@ private fun PlaybackDetailV2Content(
                     showNormalSpeedInTopBar = true,
                     showNormalSpeedInBottomBar = false,
                     showNormalDanmakuInTopBar = true,
+                    showNormalPlayerSettings = true,
+                    compactNormalTopActions = true,
                     enableNormalScreenSeekGestures = true,
                     onShowPlayerSettings = {
                         // “更多”没有预设的配置类别，重开时延续用户上一次浏览的 Tab。

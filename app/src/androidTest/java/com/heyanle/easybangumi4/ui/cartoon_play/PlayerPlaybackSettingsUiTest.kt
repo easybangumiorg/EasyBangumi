@@ -160,6 +160,7 @@ class PlayerPlaybackSettingsUiTest {
                 onEpisodeSelect = {},
                 onBackToBangumiSelection = { changeBangumiCount++ },
                 onDismiss = {},
+                isVisible = true,
             )
         }
 
@@ -175,6 +176,24 @@ class PlayerPlaybackSettingsUiTest {
             .assertHasClickAction()
             .performClick()
         composeRule.runOnIdle { assertEquals(1, changeBangumiCount) }
+    }
+
+    @Test
+    fun danmakuDensityHelp_opensCompactExplanationDialog() {
+        setMaterialContent {
+            DanmakuDisplaySettingsContent(
+                config = DanmakuDisplayConfig.DEFAULT,
+                onConfigChange = {},
+                onReset = {},
+            )
+        }
+
+        composeRule.onNodeWithContentDescription("弹幕数量 说明")
+            .performScrollTo()
+            .assertHasClickAction()
+            .performClick()
+        composeRule.onNodeWithText("控制实际显示的弹幕比例。降低比例会均匀减少同一时间段内的弹幕，适合弹幕过密或性能有限的设备。")
+            .assertExists()
     }
 
     @Test

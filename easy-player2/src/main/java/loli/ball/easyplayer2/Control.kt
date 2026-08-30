@@ -51,6 +51,7 @@ import loli.ball.easyplayer2.utils.TimeUtils
 @Composable
 fun TopControl(
     modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
     content: @Composable RowScope.() -> Unit,
 ) {
     Row(
@@ -60,7 +61,8 @@ fun TopControl(
                 brush = Brush.verticalGradient(
                     listOf(Color.Black, Color.Transparent),
                 )
-            ),
+            )
+            .padding(contentPadding),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.Start),
         content = content

@@ -47,7 +47,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -311,8 +310,11 @@ fun DanmakuMatchBottomSheet(
     } else if (state != null && isVisible) {
         ModalBottomSheet(
             onDismissRequest = onDismiss,
-            scrimColor = Color.Black.copy(alpha = 0.32f),
-            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
+            // 与倍速、选集和播放设置使用同一面板容器色；
+            // 避免 surfaceColorAtElevation 叠加额外的主题色偏移。
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            scrimColor = Color.Black.copy(alpha = 0.48f),
         ) {
             DanmakuMatchPanel(
                 state = state,
@@ -346,6 +348,7 @@ private fun DanmakuMatchPanel(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
+        // 固定区：标题 + 副标题不随内容滚动。
         Row(
             modifier = Modifier.padding(horizontal = 24.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -356,18 +359,19 @@ private fun DanmakuMatchPanel(
                 fontWeight = FontWeight.SemiBold,
             )
         }
+        Text(
+            modifier = Modifier.padding(horizontal = 24.dp),
+            text = "先匹配对应番剧，再为当前播放位置匹配选集。",
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        // 滚动区：进度、输入/已选、错误与候选列表作为一整块滚动。
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text(
-                modifier = Modifier.padding(horizontal = 24.dp),
-                text = "先匹配对应番剧，再为当前播放位置匹配选集。",
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodyMedium,
-            )
             DanmakuMatchProgress(
                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp),
                 page = state.page,

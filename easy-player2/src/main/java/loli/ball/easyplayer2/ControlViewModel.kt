@@ -306,14 +306,16 @@ class ControlViewModel(
         isLongPress = true
     }
 
-    // 全屏控制浮层的水平位置跟随最近一次单击的点击侧（true = 右侧）。
+    // 全屏控制浮层的水平位置跟随最近一次“唤出”浮层的点击侧（true = 右侧）。
+    // 浮层已经显示时，任意位置的单击只负责关闭，不再改变侧边栏位置。
+    // 否则退出动画会在消失前先瞬移到用户的关闭点击侧。
     var sideControlsOnRight by mutableStateOf(true)
 
     fun onSingleClick(tapOnRight: Boolean = true) {
-        sideControlsOnRight = tapOnRight
         if (isNormalLockedControlShow) {
             isNormalLockedControlShow = false
         } else {
+            sideControlsOnRight = tapOnRight
             showControlWithHideDelay()
         }
     }
