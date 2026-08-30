@@ -50,6 +50,7 @@ import com.heyanle.easybangumi4.ui.setting.SettingPage
 import com.heyanle.easybangumi4.ui.source_manage.source.SourceViewModel
 import com.heyanle.easybangumi4.v2.theme.V2Tokens
 import com.heyanle.easybangumi4.v2.theme.V2Theme
+import com.heyanle.easybangumi4.v2.ui.component.V2Switch
 import com.heyanle.easybangumi4.v2.ui.story.StoryEmptyV2
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorderAfterLongPress
@@ -222,16 +223,9 @@ private fun SourceSwitchV2(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
 ) {
-    Switch(
+    V2Switch(
         checked = checked,
         onCheckedChange = onCheckedChange,
-        colors = SwitchDefaults.colors(
-            checkedThumbColor = V2Tokens.Surface,
-            checkedTrackColor = V2Theme.colors.accent,
-            uncheckedThumbColor = V2Tokens.Surface,
-            uncheckedTrackColor = V2Tokens.Divider,
-            uncheckedBorderColor = V2Tokens.Divider,
-        ),
     )
 }
 

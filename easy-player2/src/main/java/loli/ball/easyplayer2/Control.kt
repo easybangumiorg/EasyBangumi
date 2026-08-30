@@ -38,6 +38,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import loli.ball.easyplayer2.utils.TimeUtils
@@ -115,15 +116,18 @@ fun RowScope.PlayPauseBtn(
 fun RowScope.TimeText(
     time: Long,
     color: Color = Color.Unspecified,
-    fixedWidth: Boolean = false,
+    timeTextWidth: androidx.compose.ui.unit.Dp? = null,
 ) {
     Text(
         modifier = Modifier
-            .let { if (fixedWidth) it.width(56.dp) else it }
+            .let { if (timeTextWidth != null) it.width(timeTextWidth) else it }
             .padding(4.dp, 0.dp)
             .align(Alignment.CenterVertically),
         text = TimeUtils.toString(time),
-        color = color
+        color = color,
+        maxLines = 1,
+        softWrap = false,
+        overflow = TextOverflow.Clip,
     )
 }
 

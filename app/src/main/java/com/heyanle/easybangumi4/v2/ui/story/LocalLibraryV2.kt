@@ -45,7 +45,7 @@ import com.heyanle.easybangumi4.v2.theme.V2Tokens
 import com.heyanle.easybangumi4.v2.theme.V2Theme
 
 @Composable
-internal fun LocalLibraryV2(
+internal fun LocalLibraryV1CopyV2(
     state: LocalViewModel.State,
     starredIdentities: Set<String>,
     onItemClick: (CartoonStoryItem) -> Unit,
@@ -64,16 +64,16 @@ internal fun LocalLibraryV2(
         else -> {
             val haptic = LocalHapticFeedback.current
             LazyVerticalGrid(
-                columns = GridCells.Fixed(3),
+                columns = GridCells.Adaptive(100.dp),
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(
-                    start = 12.dp,
-                    top = 12.dp,
-                    end = 12.dp,
-                    bottom = 24.dp,
+                    start = 4.dp,
+                    top = 4.dp,
+                    end = 4.dp,
+                    bottom = 88.dp,
                 ),
-                verticalArrangement = Arrangement.spacedBy(14.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 items(
                     items = state.storyList,
@@ -108,13 +108,8 @@ private fun LocalLibraryCardV2(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .border(
-                width = if (selected) 1.5.dp else 0.dp,
-                color = if (selected) V2Theme.colors.accent else V2Tokens.Surface,
-                shape = shape,
-            )
             .combinedClickable(onClick = onClick, onLongClick = onLongClick),
-        color = Color.Transparent,
+        color = if (selected) V2Theme.colors.accentContainer else Color.Transparent,
         contentColor = V2Tokens.TextPrimary,
         shape = shape,
         tonalElevation = 0.dp,
@@ -157,7 +152,7 @@ private fun LocalLibraryCardV2(
                     )
                     Surface(
                         modifier = Modifier
-                            .align(Alignment.TopEnd)
+                            .align(Alignment.BottomEnd)
                             .padding(7.dp)
                             .size(28.dp),
                         color = V2Theme.colors.accent,
@@ -173,7 +168,7 @@ private fun LocalLibraryCardV2(
                 }
                 Surface(
                     modifier = Modifier
-                        .align(Alignment.BottomEnd)
+                        .align(Alignment.TopEnd)
                         .padding(7.dp),
                     color = V2Tokens.TextPrimary.copy(alpha = 0.78f),
                     shape = RoundedCornerShape(7.dp),

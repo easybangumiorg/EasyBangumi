@@ -74,6 +74,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -91,11 +92,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
@@ -141,6 +144,7 @@ import loli.ball.easyplayer2.SlideUI
 import loli.ball.easyplayer2.TimeText
 import loli.ball.easyplayer2.TopControl
 import loli.ball.easyplayer2.ViewSeekBar
+import loli.ball.easyplayer2.utils.TimeUtils
 import loli.ball.easyplayer2.utils.rememberBatteryReceiver
 import loli.ball.easyplayer2.utils.rememberCurrentTimeText
 
@@ -1214,6 +1218,26 @@ fun EasyVideoBottomControl(
     danmakuControlState: PlayerDanmakuControlState? = null,
     showNormalSpeed: Boolean = false,
 ) {
+    // The total duration fixes the number of digits and ':' separators on both sides. Measure
+    // every digit first, then build a mask with the widest one, so "88:88" never gets clipped
+    // when the duration itself happens to contain narrower digits such as "11:11".
+    val textMeasurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    val timeTextStyle = LocalTextStyle.current
+    val totalTimeText = TimeUtils.toString(vm.during)
+    val widestDigit = remember(textMeasurer, timeTextStyle) {
+        ('0'..'9').maxBy { digit ->
+            textMeasurer.measure(digit.toString(), style = timeTextStyle, maxLines = 1).size.width
+        }
+    }
+    val fixedWidthTimeMask = remember(totalTimeText, widestDigit) {
+        totalTimeText.map { character ->
+            if (character.isDigit()) widestDigit else character
+        }.joinToString(separator = "")
+    }
+    val timeTextWidth = with(density) {
+        textMeasurer.measure(fixedWidthTimeMask, style = timeTextStyle, maxLines = 1).size.width.toDp() + 10.dp
+    }
     AnimatedVisibility(
         modifier = modifier,
         visible = vm.isShowOverlay(),
@@ -1243,7 +1267,7 @@ fun EasyVideoBottomControl(
 
             OptionalPlayerDanmakuToggle(state = danmakuControlState)
 
-            TimeText(time = vm.position, Color.White, fixedWidth = true)
+            TimeText(time = vm.position, Color.White, timeTextWidth = timeTextWidth)
 
             val position =
                 when (vm.controlState) {
@@ -1266,7 +1290,7 @@ fun EasyVideoBottomControl(
                 }
             )
 
-            TimeText(time = vm.during, Color.White, fixedWidth = true)
+            TimeText(time = vm.during, Color.White, timeTextWidth = timeTextWidth)
 
             if (vm.isFullScreen) {
                 Text(

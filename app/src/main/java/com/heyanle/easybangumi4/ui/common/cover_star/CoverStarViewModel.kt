@@ -28,6 +28,11 @@ class CoverStarViewModel : ViewModel() {
 
     private val cartoonInfoDao: CartoonInfoDao by Inject.injectLazy()
     private val cartoonStarController: CartoonStarController by Inject.injectLazy()
+    private val pendingStarDialogs = mutableSetOf<String>()
+
+    private fun releasePendingStarDialog(key: String) {
+        synchronized(pendingStarDialogs) { pendingStarDialogs.remove(key) }
+    }
 
     data class State(
         val startList: List<CartoonInfo> = emptyList(),
@@ -67,15 +72,22 @@ class CoverStarViewModel : ViewModel() {
 
 
     fun dispatchStar(cartoonCover: CartoonCover) {
+        val pendingKey = "${cartoonCover.source}:${cartoonCover.id}"
+        if (!synchronized(pendingStarDialogs) { pendingStarDialogs.add(pendingKey) }) return
         viewModelScope.launch {
-            cartoonInfoDao.transaction {
+            var dialogShown = false
+            try {
+                cartoonInfoDao.transaction {
                 val old = cartoonInfoDao.getByCartoonSummary(cartoonCover.id, cartoonCover.source)
                 if (old != null && old.starTime > 0) {
                     cartoonInfoDao.modify(old.copy(starTime = 0, tags = "", upTime = 0))
                 }
                 val tl = cartoonStarController.cartoonTagFlow.first().tagList
                 if (tl.find { !it.isInner && !it.isDefault } != null) {
-                    MoeDialogData.Compose {
+                    dialogShown = true
+                    MoeDialogData.Compose(
+                        onDismiss = { releasePendingStarDialog(pendingKey) },
+                    ) {
                         CoverStarDialog(
                             true,
                             cartoonCover,
@@ -92,7 +104,9 @@ class CoverStarViewModel : ViewModel() {
                     realStar(cartoonCover)
                 }
             }
-
+            } finally {
+                if (!dialogShown) releasePendingStarDialog(pendingKey)
+            }
         }
     }
 

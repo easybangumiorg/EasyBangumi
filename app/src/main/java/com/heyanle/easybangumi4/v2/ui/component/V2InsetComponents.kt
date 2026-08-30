@@ -1,8 +1,8 @@
 package com.heyanle.easybangumi4.v2.ui.component
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,41 +30,9 @@ import com.heyanle.easybangumi4.v2.theme.V2Theme
 internal fun V2SecondaryHeader(
     title: String,
     onBack: () -> Unit,
-    largeTitle: Boolean = false,
+    @Suppress("UNUSED_PARAMETER") largeTitle: Boolean = false,
     actions: @Composable RowScope.() -> Unit = {},
 ) {
-    if (largeTitle) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .statusBarsPadding(),
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 4.dp, end = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                IconButton(onClick = onBack) {
-                    V2Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "返回",
-                        tint = V2Theme.colors.accent,
-                    )
-                }
-                androidx.compose.foundation.layout.Spacer(Modifier.weight(1f))
-                actions()
-            }
-            Text(
-                text = title,
-                modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 2.dp, bottom = 14.dp),
-                color = V2Tokens.TextPrimary,
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-            )
-        }
-        return
-    }
     Row(
         modifier = Modifier
             .fillMaxWidth()

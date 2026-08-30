@@ -57,6 +57,7 @@ import com.heyanle.easybangumi4.v2.theme.V2Theme
 import com.heyanle.easybangumi4.v2.ui.component.V2ActionRow
 import com.heyanle.easybangumi4.v2.ui.component.V2Section
 import com.heyanle.easybangumi4.v2.ui.component.V2SectionDivider
+import com.heyanle.easybangumi4.v2.ui.component.V2Switch
 import com.heyanle.inject.core.Inject
 
 private enum class DownloadCountFieldV2 { Download, Transform }
@@ -238,8 +239,8 @@ internal fun DownloadSettingV2(
             onDismiss = { editingCount = null },
             onConfirm = { next ->
                 when (field) {
-                    DownloadCountFieldV2.Download -> downloadPreference.downloadMaxCountPref.set(next)
-                    DownloadCountFieldV2.Transform -> downloadPreference.transformMaxCountPref.set(next)
+                    DownloadCountFieldV2.Download -> downloadPreference.downloadMaxCountPref.set(next.coerceAtLeast(1L))
+                    DownloadCountFieldV2.Transform -> downloadPreference.transformMaxCountPref.set(next.coerceAtLeast(1L))
                 }
                 editingCount = null
                 stringRes(R.string.should_reboot).moeSnackBar()
@@ -284,16 +285,9 @@ private fun DownloadSwitchV2(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
 ) {
-    Switch(
+    V2Switch(
         checked = checked,
         onCheckedChange = onCheckedChange,
-        colors = SwitchDefaults.colors(
-            checkedThumbColor = V2Tokens.Surface,
-            checkedTrackColor = V2Theme.colors.accent,
-            uncheckedThumbColor = V2Tokens.Surface,
-            uncheckedTrackColor = V2Tokens.Divider,
-            uncheckedBorderColor = V2Tokens.Divider,
-        ),
     )
 }
 

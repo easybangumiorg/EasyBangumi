@@ -47,6 +47,7 @@ import com.heyanle.easybangumi4.ui.common.SourceContainerBase
 import com.heyanle.easybangumi4.v2.theme.V2Tokens
 import com.heyanle.easybangumi4.v2.theme.V2Theme
 import com.heyanle.easybangumi4.v2.ui.component.V2SecondaryHeader
+import com.heyanle.easybangumi4.v2.ui.component.V2Switch
 import com.heyanle.easybangumi4.v2.ui.component.V2Section
 import com.heyanle.easybangumi4.v2.ui.component.V2SectionDivider
 
@@ -164,14 +165,9 @@ private fun SourceSwitchPreferenceV2(
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
         )
-        Switch(
+        V2Switch(
             checked = checked,
             onCheckedChange = ::update,
-            colors = SwitchDefaults.colors(
-                checkedTrackColor = V2Theme.colors.accent,
-                checkedThumbColor = V2Tokens.Surface,
-                uncheckedTrackColor = V2Tokens.Divider,
-            ),
         )
     }
 }

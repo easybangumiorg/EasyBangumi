@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+
 package com.heyanle.easybangumi4.v2.ui.history
 
 import androidx.activity.compose.BackHandler
@@ -30,7 +32,6 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.AlertDialog
@@ -38,6 +39,10 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.Surface
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -59,6 +64,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -73,6 +79,7 @@ import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.main.history.HistoryViewModel
 import com.heyanle.easybangumi4.v2.theme.V2Tokens
 import com.heyanle.easybangumi4.v2.theme.V2Theme
+import com.heyanle.easybangumi4.v2.ui.component.V2CountBadge
 import loli.ball.easyplayer2.utils.TimeUtils
 import java.util.Calendar
 
@@ -83,6 +90,7 @@ internal fun HistoryV2() {
     val state by viewModel.stateFlow.collectAsState()
     val navController = LocalNavController.current
     val focusRequester = remember { FocusRequester() }
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     BackHandler(enabled = state.selection.isNotEmpty()) {
         viewModel.onSelectionExit()
@@ -112,6 +120,7 @@ internal fun HistoryV2() {
 
             else -> HistoryHeaderV2(
                 count = state.history.size,
+                scrollBehavior = scrollBehavior,
                 onSearch = { viewModel.search("") },
                 onClear = viewModel::clearDialog,
             )
@@ -125,6 +134,7 @@ internal fun HistoryV2() {
 
             else -> HistoryListV2(
                 state = state,
+                scrollBehavior = scrollBehavior,
                 onItemClick = { cartoon ->
                     val enterData = CartoonPlayViewModel.EnterData(
                         playLineId = cartoon.lastLineId,
@@ -180,37 +190,39 @@ internal fun HistoryV2() {
 @Composable
 private fun HistoryHeaderV2(
     count: Int,
+    scrollBehavior: TopAppBarScrollBehavior,
     onSearch: () -> Unit,
     onClear: () -> Unit,
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .statusBarsPadding()
-            .padding(start = V2Tokens.ScreenHorizontalPadding, top = 18.dp, end = 8.dp, bottom = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
+    TopAppBar(
+        scrollBehavior = scrollBehavior,
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = V2Tokens.WarmBackground,
+            scrolledContainerColor = V2Tokens.SurfaceMuted,
+        ),
+        title = {
+            Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(9.dp),
+            ) {
             Text(
                 text = stringResource(R.string.history),
                 color = V2Tokens.TextPrimary,
-                fontSize = 32.sp,
+                fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
             )
-            Text(
-                text = "$count 条播放记录",
-                modifier = Modifier.padding(top = 5.dp),
-                color = V2Tokens.TextSecondary,
-                fontSize = 13.sp,
-            )
-        }
-        IconButton(onClick = onSearch) {
+            V2CountBadge(count)
+            }
+        },
+        actions = {
+            IconButton(onClick = onSearch) {
             Icon(Icons.Filled.Search, contentDescription = stringResource(R.string.search))
-        }
-        IconButton(onClick = onClear) {
+            }
+            IconButton(onClick = onClear) {
             Icon(Icons.Filled.DeleteSweep, contentDescription = stringResource(R.string.clear))
-        }
-    }
+            }
+        },
+    )
 }
 
 @Composable
@@ -297,6 +309,7 @@ private fun HistorySelectionHeaderV2(
 @Composable
 private fun HistoryListV2(
     state: HistoryViewModel.HistoryState,
+    scrollBehavior: TopAppBarScrollBehavior,
     onItemClick: (CartoonInfo) -> Unit,
     onToggleSelection: (CartoonInfo) -> Unit,
     onLongPress: (CartoonInfo) -> Unit,
@@ -324,7 +337,7 @@ private fun HistoryListV2(
 
     val hapticFeedback = LocalHapticFeedback.current
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
         contentPadding = PaddingValues(bottom = 96.dp),
     ) {
         if (state.isInPrivate) {
@@ -344,36 +357,20 @@ private fun HistoryListV2(
                 }
             }
         }
-        state.history.groupBy { historyDayLabel(it.lastHistoryTime) }.forEach { (day, cartoons) ->
-            item(key = "day:$day") {
-                Row(
-                    modifier = Modifier.padding(horizontal = V2Tokens.ScreenHorizontalPadding, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(7.dp)
-                            .clip(androidx.compose.foundation.shape.CircleShape)
-                            .background(V2Theme.colors.accent),
-                    )
-                    Text(day, modifier = Modifier.padding(start = 8.dp), color = V2Tokens.TextPrimary, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
-                }
-            }
-            items(cartoons, key = { "${it.source}:${it.id}" }) { cartoon ->
-                HistoryItemV2(
-                    cartoon = cartoon,
-                    selected = cartoon in state.selection,
-                    showDelete = state.selection.isEmpty(),
-                    onClick = {
-                        if (state.selection.isEmpty()) onItemClick(cartoon) else onToggleSelection(cartoon)
-                    },
-                    onLongPress = {
-                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                        onLongPress(cartoon)
-                    },
-                    onDelete = { onDeleteOne(cartoon) },
-                )
-            }
+        items(state.history, key = { "${it.source}:${it.id}" }) { cartoon ->
+            HistoryItemV2(
+                cartoon = cartoon,
+                selected = cartoon in state.selection,
+                showDelete = state.selection.isEmpty(),
+                onClick = {
+                    if (state.selection.isEmpty()) onItemClick(cartoon) else onToggleSelection(cartoon)
+                },
+                onLongPress = {
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onLongPress(cartoon)
+                },
+                onDelete = { onDeleteOne(cartoon) },
+            )
         }
     }
 }
@@ -458,7 +455,7 @@ private fun HistoryItemV2(
         }
         if (showDelete) {
             IconButton(onClick = onDelete) {
-                Icon(Icons.Filled.MoreVert, contentDescription = stringResource(R.string.delete), tint = V2Tokens.TextSecondary)
+                Icon(Icons.Outlined.Delete, contentDescription = stringResource(R.string.delete), tint = V2Tokens.TextSecondary)
             }
         }
     }

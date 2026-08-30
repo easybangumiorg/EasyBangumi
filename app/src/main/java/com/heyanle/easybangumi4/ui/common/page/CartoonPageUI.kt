@@ -34,6 +34,8 @@ import com.heyanle.easybangumi4.ui.common.page.list.SourceListViewModel
 import com.heyanle.easybangumi4.ui.common.page.list.SourceListViewModelFactory
 import com.heyanle.easybangumi4.ui.common.page.listgroup.SourceListPageGroup
 import com.heyanle.easybangumi4.ui.common.cover_star.CoverStarViewModel
+import com.heyanle.easybangumi4.v2.theme.V2Theme
+import com.heyanle.easybangumi4.v2.theme.V2Tokens
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -86,8 +88,8 @@ fun CartoonPageUI(
                     refreshing,
                     state,
                     Modifier.align(Alignment.TopCenter),
-                    backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    backgroundColor = if (presentation == CartoonPagePresentation.V2) V2Tokens.SurfaceMuted else MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = if (presentation == CartoonPagePresentation.V2) V2Theme.colors.accent else MaterialTheme.colorScheme.onSecondaryContainer,
                 )
                 FastScrollToTopFab(listState = lazyGridState, after = 20)
             }

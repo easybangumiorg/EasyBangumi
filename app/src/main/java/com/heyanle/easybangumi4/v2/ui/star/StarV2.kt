@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+
 package com.heyanle.easybangumi4.v2.ui.star
 
 import androidx.activity.compose.BackHandler
@@ -38,6 +40,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -70,12 +75,12 @@ import com.heyanle.easybangumi4.ui.common.EasyMutiSelectionDialogStar
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.main.MainViewModel
 import com.heyanle.easybangumi4.ui.main.star.CartoonStarProcBottomSheet
-import com.heyanle.easybangumi4.ui.main.star.StarList
 import com.heyanle.easybangumi4.ui.main.star.StarViewModel
 import com.heyanle.easybangumi4.v2.theme.V2Tokens
 import com.heyanle.easybangumi4.v2.theme.V2Theme
 import com.heyanle.easybangumi4.v2.ui.component.V2ScrollableTabs
 import com.heyanle.easybangumi4.v2.ui.component.V2TabStyle
+import com.heyanle.easybangumi4.v2.ui.component.V2CountBadge
 
 /**
  * V2 presentation for the followed-cartoon page.
@@ -90,6 +95,7 @@ internal fun StarV2() {
     val navController = LocalNavController.current
     val focusRequester = remember { FocusRequester() }
     val currentSelectionCount = rememberUpdatedState(state.selection.size)
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     val selectionBottomBar = remember<@Composable () -> Unit>(starViewModel) {
         {
@@ -140,6 +146,7 @@ internal fun StarV2() {
 
             else -> StarHeaderV2(
                 count = state.starCount,
+                scrollBehavior = scrollBehavior,
                 filterActive = state.isFilter,
                 onSearch = { starViewModel.onSearch("") },
                 onFilter = starViewModel::dialogProc,
@@ -169,19 +176,19 @@ internal fun StarV2() {
             }
 
             val list = state.data[state.curTab?.label].orEmpty()
-            StarList(
-                starCartoon = list,
-                selectionSet = state.selection,
+            StarListV1CopyV2(
+                cartoons = list,
+                selection = state.selection,
                 onRefresh = starViewModel::onUpdate,
-                onStarClick = { cartoon ->
+                onClick = { cartoon ->
                     if (state.selection.isEmpty()) {
                         navController.navigationDetailed(cartoon.id, cartoon.url, cartoon.source)
                     } else {
                         starViewModel.onSelectionChange(cartoon)
                     }
                 },
-                onStarLongPress = starViewModel::onSelectionLongPress,
-                v2Presentation = true,
+                onLongPress = starViewModel::onSelectionLongPress,
+                nestedScrollConnection = scrollBehavior.nestedScrollConnection.takeIf { state.tagList.size <= 1 },
             )
         }
     }
@@ -258,46 +265,48 @@ internal fun StarV2() {
 @Composable
 private fun StarHeaderV2(
     count: Int,
+    scrollBehavior: TopAppBarScrollBehavior,
     filterActive: Boolean,
     onSearch: () -> Unit,
     onFilter: () -> Unit,
     onUpdate: () -> Unit,
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .statusBarsPadding()
-            .padding(start = V2Tokens.ScreenHorizontalPadding, top = 18.dp, end = 8.dp, bottom = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
+    TopAppBar(
+        scrollBehavior = scrollBehavior,
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = V2Tokens.WarmBackground,
+            scrolledContainerColor = V2Tokens.SurfaceMuted,
+        ),
+        title = {
+            Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(9.dp),
+            ) {
             Text(
                 text = stringResource(R.string.my_anim),
                 color = V2Tokens.TextPrimary,
-                fontSize = 32.sp,
+                fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
             )
-            Text(
-                text = "共 $count 部",
-                modifier = Modifier.padding(top = 5.dp),
-                color = V2Tokens.TextSecondary,
-                fontSize = 13.sp,
-            )
-        }
-        IconButton(onClick = onSearch) {
+            V2CountBadge(count)
+            }
+        },
+        actions = {
+            IconButton(onClick = onSearch) {
             Icon(Icons.Filled.Search, contentDescription = stringResource(R.string.search))
-        }
-        IconButton(onClick = onFilter) {
+            }
+            IconButton(onClick = onFilter) {
             Icon(
                 Icons.Filled.FilterAlt,
                 contentDescription = stringResource(R.string.filter),
                 tint = if (filterActive) V2Theme.colors.accent else V2Tokens.TextPrimary,
             )
-        }
-        IconButton(onClick = onUpdate) {
+            }
+            IconButton(onClick = onUpdate) {
             Icon(Icons.Filled.Update, contentDescription = stringResource(R.string.update))
-        }
-    }
+            }
+        },
+    )
 }
 
 @Composable
@@ -408,8 +417,8 @@ private fun StarSelectionActionBarV2(
             ) {
                 SelectionActionV2(Icons.Filled.Tag, stringResource(R.string.change_tag), onChangeTag)
                 SelectionActionV2(Icons.Filled.Update, stringResource(R.string.update), onUpdate)
-                SelectionActionV2(Icons.Filled.SyncAlt, stringResource(R.string.migrating), onMigrate)
-                SelectionActionV2(Icons.Filled.PushPin, stringResource(R.string.filter_with_is_up), onPin)
+                SelectionActionV2(Icons.Filled.SyncAlt, "迁移", onMigrate)
+                SelectionActionV2(Icons.Filled.PushPin, "设置置顶", onPin)
                 SelectionActionV2(
                     Icons.Filled.Delete,
                     stringResource(R.string.delete),

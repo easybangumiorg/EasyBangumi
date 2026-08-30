@@ -21,12 +21,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.material3.Text
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
-import com.heyanle.easybangumi4.ui.common.TabPage
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.ui.source_manage.explorePageIndex
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.easybangumi4.v2.theme.V2Tokens
 import com.heyanle.easybangumi4.v2.ui.component.V2SecondaryHeader
+import com.heyanle.easybangumi4.v2.ui.component.V2TabPage
 
 /** V2 source manager; existing source and repository ViewModels remain unchanged. */
 @OptIn(ExperimentalFoundationApi::class)
@@ -72,14 +72,12 @@ internal fun SourceManagerV2(initialPage: Int = -1) {
                 }
             },
         )
-        TabPage(
+        V2TabPage(
             pagerModifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
             tabSize = 2,
             pagerState = pagerState,
-            containerColor = V2Tokens.WarmBackground,
-            contentColor = V2Tokens.TextPrimary,
             onTabSelect = { explorePageIndex = it },
             tabs = { page, _ ->
                 Text(if (page == 0) "已安装" else "番源仓库")

@@ -27,6 +27,8 @@ import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.page.list.SourceListPage
 import com.heyanle.easybangumi4.ui.common.page.CartoonPagePresentation
+import com.heyanle.easybangumi4.v2.theme.V2Theme
+import com.heyanle.easybangumi4.v2.theme.V2Tokens
 import com.heyanle.easybangumi4.ui.common.cover_star.CoverStarViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -114,8 +116,8 @@ fun SourceListWithGroup(
             refreshing,
             state,
             Modifier.align(Alignment.TopCenter),
-            backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
-            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+            backgroundColor = if (presentation == CartoonPagePresentation.V2) V2Tokens.SurfaceMuted else MaterialTheme.colorScheme.secondaryContainer,
+            contentColor = if (presentation == CartoonPagePresentation.V2) V2Theme.colors.accent else MaterialTheme.colorScheme.onSecondaryContainer,
         )
         FastScrollToTopFab(listState = lazyGridState, after = 20)
     }

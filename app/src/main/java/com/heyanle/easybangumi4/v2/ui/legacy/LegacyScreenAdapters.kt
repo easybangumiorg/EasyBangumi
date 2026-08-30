@@ -7,7 +7,7 @@ import com.heyanle.easybangumi4.ui.cartoon_play.CartoonPlay
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.common.SourceContainer
 import com.heyanle.easybangumi4.v2.ui.main.MainV2Shell
-import com.heyanle.easybangumi4.ui.main.home.Home
+import com.heyanle.easybangumi4.v2.ui.home.HomeV2
 import com.heyanle.easybangumi4.v2.ui.history.HistoryV2
 import com.heyanle.easybangumi4.v2.ui.more.MoreV2
 import com.heyanle.easybangumi4.v2.ui.star.StarV2
@@ -38,8 +38,8 @@ internal fun LegacyMainScreen() {
 
 @Composable
 internal fun LegacyHomeScreen() {
-    // V2 keeps the proven legacy home interaction/layout and only supplies the V2 color theme.
-    SourceContainer { Home() }
+    // HomeV2 owns presentation locally; V1 Home remains untouched for rollback.
+    SourceContainer { HomeV2() }
 }
 
 @Composable

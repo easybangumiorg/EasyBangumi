@@ -65,6 +65,7 @@ import com.heyanle.easybangumi4.ui.common.cover_star.CoverStarViewModel
 import com.heyanle.easybangumi4.ui.common.page.CartoonPagePresentation
 import com.heyanle.easybangumi4.v2.theme.V2Theme
 import com.heyanle.easybangumi4.v2.theme.V2Tokens
+import com.heyanle.easybangumi4.v2.ui.component.V2ScrollableTabs
 import io.ktor.http.headersOf
 
 /**
@@ -100,13 +101,6 @@ fun SourceListPage(
 
     if (presentation == CartoonPagePresentation.V2) {
         Column(modifier = Modifier.fillMaxSize()) {
-            SourceListGroupTab(
-                list = pageList,
-                curPage = vm.selected.intValue,
-                lazyListState = lazyListState,
-                presentation = presentation,
-                onClick = { vm.selected.intValue = it },
-            )
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -116,11 +110,20 @@ fun SourceListPage(
                     LazyVerticalGrid(
                         modifier = Modifier.fillMaxSize(),
                         state = lazyGridState,
-                        columns = GridCells.Fixed(3),
+                        columns = GridCells.Adaptive(100.dp),
                         verticalArrangement = Arrangement.spacedBy(14.dp),
                         horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
                         contentPadding = PaddingValues(start = 12.dp, top = 12.dp, end = 12.dp, bottom = 88.dp),
                     ) {
+                        item(span = { GridItemSpan(maxLineSpan) }) {
+                            SourceListGroupTab(
+                                list = pageList,
+                                curPage = vm.selected.intValue,
+                                lazyListState = lazyListState,
+                                presentation = presentation,
+                                onClick = { vm.selected.intValue = it },
+                            )
+                        }
                         pagingItems?.let { items ->
                             listPageWithCover(
                                 pagingItems = items,
@@ -144,6 +147,15 @@ fun SourceListPage(
                         contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp),
                         modifier = Modifier.fillMaxSize(),
                     ) {
+                        item(span = StaggeredGridItemSpan.FullLine) {
+                            SourceListGroupTab(
+                                list = pageList,
+                                curPage = vm.selected.intValue,
+                                lazyListState = lazyListState,
+                                presentation = presentation,
+                                onClick = { vm.selected.intValue = it },
+                            )
+                        }
                         pagingItems?.let { items ->
                             listPageWithoutCover(
                                 pagingItems = items,
@@ -169,7 +181,7 @@ fun SourceListPage(
             modifier = Modifier
                 .fillMaxSize(),
             state = lazyGridState,
-            columns = if (presentation == CartoonPagePresentation.V2) GridCells.Fixed(3) else GridCells.Adaptive(100.dp),
+            columns = GridCells.Adaptive(100.dp),
             verticalArrangement = Arrangement.spacedBy(if (presentation == CartoonPagePresentation.V2) 14.dp else 4.dp),
             horizontalArrangement = Arrangement.spacedBy(
                 if (presentation == CartoonPagePresentation.V2) 10.dp else 4.dp,
@@ -296,7 +308,7 @@ fun SourceListPage(
             modifier = Modifier
                 .fillMaxSize(),
             state = lazyGridState,
-            columns = if (presentation == CartoonPagePresentation.V2) GridCells.Fixed(3) else GridCells.Adaptive(100.dp),
+            columns = GridCells.Adaptive(100.dp),
             verticalArrangement = Arrangement.spacedBy(if (presentation == CartoonPagePresentation.V2) 14.dp else 4.dp),
             horizontalArrangement = Arrangement.spacedBy(
                 if (presentation == CartoonPagePresentation.V2) 10.dp else 4.dp,
@@ -358,6 +370,14 @@ fun SourceListGroupTab(
     presentation: CartoonPagePresentation = CartoonPagePresentation.Legacy,
     onClick: (Int) -> Unit,
 ) {
+    if (presentation == CartoonPagePresentation.V2) {
+        V2ScrollableTabs(
+            labels = list.map { it.label },
+            selectedIndex = curPage,
+            onSelected = onClick,
+        )
+        return
+    }
     //val state = rememberLazyListState(initialFirstVisibleItemIndex = curPage)
 
     LazyRow(
@@ -372,43 +392,6 @@ fun SourceListGroupTab(
     ) {
         itemsIndexed(list) { index, item ->
             val selected = index == curPage
-            if (presentation == CartoonPagePresentation.V2) {
-                val dotAlpha by animateFloatAsState(
-                    targetValue = if (selected) 1f else 0f,
-                    animationSpec = tween(180),
-                    label = "v2-source-secondary-dot",
-                )
-                val textColor by animateColorAsState(
-                    targetValue = if (selected) V2Tokens.TextPrimary else V2Tokens.TextSecondary,
-                    animationSpec = tween(180),
-                    label = "v2-source-secondary-color",
-                )
-                val interactionSource = remember { MutableInteractionSource() }
-                androidx.compose.foundation.layout.Row(
-                    modifier = Modifier
-                        .clip(androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
-                        .clickable(
-                            interactionSource = interactionSource,
-                            indication = ripple(bounded = true),
-                        ) { onClick(index) }
-                        .padding(horizontal = 4.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Spacer(
-                        modifier = Modifier
-                            .size(6.dp)
-                            .background(V2Theme.colors.accent.copy(alpha = dotAlpha), CircleShape),
-                    )
-                    Text(
-                        text = item.label,
-                        color = textColor,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 14.sp,
-                    )
-                }
-                return@itemsIndexed
-            }
             Surface(
                 shape = CircleShape,
                 modifier =

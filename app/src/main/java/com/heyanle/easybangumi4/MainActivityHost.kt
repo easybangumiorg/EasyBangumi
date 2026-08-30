@@ -107,7 +107,6 @@ abstract class MainActivityHost : ComponentActivity() {
                             NavigationContent()
                         }
                         MoeSnackBar(Modifier.statusBarsPadding())
-                        MoeDialogHost()
                     }
                 }
             }

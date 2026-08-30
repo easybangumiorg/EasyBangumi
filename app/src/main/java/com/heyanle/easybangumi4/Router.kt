@@ -5,6 +5,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -37,6 +38,7 @@ import com.heyanle.easybangumi4.ui.dlna.Dlna
 import com.heyanle.easybangumi4.ui.source_push.SourcePush
 import com.heyanle.easybangumi4.ui.story.download.Download
 import com.heyanle.easybangumi4.ui.main.Main
+import com.heyanle.easybangumi4.ui.common.MoeDialogHost
 import com.heyanle.easybangumi4.ui.main.history.History
 import com.heyanle.easybangumi4.ui.search_migrate.migrate.Migrate
 import com.heyanle.easybangumi4.ui.search_migrate.search.Search
@@ -230,7 +232,8 @@ fun Nav() {
         navControllerRef = WeakReference(nav)
     }
     CompositionLocalProvider(LocalNavController provides nav) {
-        NavHost(nav, DEFAULT,
+        Box(Modifier.fillMaxSize()) {
+            NavHost(nav, DEFAULT,
             modifier = Modifier.fillMaxSize(),
             enterTransition = { slideInHorizontally(tween()) { it } },
             exitTransition = { slideOutHorizontally(tween()) { -it } + fadeOut(tween()) },
@@ -511,6 +514,8 @@ fun Nav() {
                 NormalSystemBarColor()
                 Storage()
             }
+            }
+            MoeDialogHost()
         }
     }
 

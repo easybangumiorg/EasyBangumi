@@ -5,6 +5,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -27,6 +28,7 @@ import com.heyanle.easybangumi4.plugin.api.entity.CartoonSummary
 import com.heyanle.easybangumi4.plugin.source.utils.network.WebViewHelperV2Impl
 import com.heyanle.easybangumi4.theme.NormalSystemBarColor
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
+import com.heyanle.easybangumi4.ui.common.MoeDialogHost
 import com.heyanle.easybangumi4.ui.setting.SettingPage
 import com.heyanle.easybangumi4.utils.jsonTo
 import com.heyanle.easybangumi4.v2.ui.legacy.LegacyAboutScreen
@@ -109,7 +111,8 @@ fun V2NavGraph(
     }
 
     CompositionLocalProvider(LocalNavController provides navController) {
-        NavHost(
+        Box(Modifier.fillMaxSize()) {
+            NavHost(
             navController = navController,
             startDestination = startDestination,
             modifier = Modifier.fillMaxSize(),
@@ -317,6 +320,8 @@ fun V2NavGraph(
                 NormalSystemBarColor()
                 LegacyStorageScreen()
             }
+            }
+            MoeDialogHost()
         }
     }
 }

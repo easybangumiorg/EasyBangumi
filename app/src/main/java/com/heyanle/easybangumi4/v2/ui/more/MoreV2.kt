@@ -49,6 +49,7 @@ import com.heyanle.easybangumi4.ui.common.OkImage
 import com.heyanle.easybangumi4.ui.setting.SettingPage
 import com.heyanle.easybangumi4.v2.theme.V2Tokens
 import com.heyanle.easybangumi4.v2.theme.V2Theme
+import com.heyanle.easybangumi4.v2.ui.component.V2Switch
 import com.heyanle.easybangumi4.v2.ui.component.V2Icon
 import com.heyanle.inject.core.Inject
 
@@ -76,20 +77,9 @@ internal fun MoreV2() {
             subtitle = null,
             onClick = { settingPreferences.isInPrivate.set(!privateMode) },
             trailing = {
-                Switch(
+                V2Switch(
                     checked = privateMode,
                     onCheckedChange = settingPreferences.isInPrivate::set,
-                    colors = SwitchDefaults.colors(
-                        checkedTrackColor = V2Theme.colors.accent,
-                        checkedThumbColor = V2Tokens.Surface,
-                        checkedBorderColor = V2Theme.colors.accent,
-                        uncheckedThumbColor = V2Tokens.IconSecondary,
-                        uncheckedTrackColor = V2Tokens.SurfaceMuted,
-                        uncheckedBorderColor = V2Tokens.IconSecondary,
-                        disabledUncheckedThumbColor = V2Tokens.IconSecondary.copy(alpha = 0.55f),
-                        disabledUncheckedTrackColor = V2Tokens.SurfaceMuted.copy(alpha = 0.55f),
-                        disabledUncheckedBorderColor = V2Tokens.Divider,
-                    ),
                 )
             },
         )
@@ -119,7 +109,7 @@ private fun MoreHeaderV2(onClick: () -> Unit) {
         text = stringResource(R.string.more),
         modifier = Modifier.padding(horizontal = V2Tokens.ScreenHorizontalPadding, vertical = 14.dp),
         color = V2Tokens.TextPrimary,
-        fontSize = 30.sp,
+        fontSize = 24.sp,
         fontWeight = FontWeight.Bold,
     )
     Row(

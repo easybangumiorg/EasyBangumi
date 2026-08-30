@@ -543,7 +543,7 @@ fun StarList(
                     }
                 },
             state = lazyGridState,
-            columns = if (v2Presentation) GridCells.Fixed(3) else GridCells.Adaptive(100.dp),
+            columns = GridCells.Adaptive(100.dp),
             verticalArrangement = Arrangement.spacedBy(if (v2Presentation) 14.dp else 4.dp),
             horizontalArrangement = Arrangement.spacedBy(if (v2Presentation) 10.dp else 4.dp),
             contentPadding = if (v2Presentation) {
@@ -606,7 +606,10 @@ fun StarSelectionBottomBar(
     onUp: () -> Unit,
 ) {
 
-    BottomAppBar(actions = {
+    BottomAppBar(
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+        actions = {
         IconButton(onClick = {
             onChangeTag()
         }) {
@@ -636,7 +639,8 @@ fun StarSelectionBottomBar(
             )
         }
 
-    }, floatingActionButton = {
+        },
+        floatingActionButton = {
         FloatingActionButton(
             onClick = { onDelete() },
             containerColor = MaterialTheme.colorScheme.errorContainer,
@@ -644,7 +648,8 @@ fun StarSelectionBottomBar(
         ) {
             Icon(Icons.Filled.Delete, contentDescription = stringResource(id = R.string.delete))
         }
-    })
+        },
+    )
 
 
 }

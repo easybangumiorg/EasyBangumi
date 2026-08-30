@@ -22,8 +22,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -50,6 +48,7 @@ import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.easybangumi4.v2.theme.V2Tokens
 import com.heyanle.easybangumi4.v2.theme.V2Theme
 import com.heyanle.easybangumi4.v2.ui.component.V2SecondaryHeader
+import com.heyanle.easybangumi4.v2.ui.component.V2Switch
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorder
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
@@ -216,14 +215,9 @@ private fun CartoonTagRowV2(
                 fontSize = 12.sp,
             )
         }
-        Switch(
+        V2Switch(
             checked = tag.show,
             onCheckedChange = onShowChange,
-            colors = SwitchDefaults.colors(
-                checkedTrackColor = V2Theme.colors.accent,
-                checkedThumbColor = V2Tokens.Surface,
-                uncheckedTrackColor = V2Tokens.Divider,
-            ),
         )
         if (!tag.isInner) {
             IconButton(onClick = onDelete) {

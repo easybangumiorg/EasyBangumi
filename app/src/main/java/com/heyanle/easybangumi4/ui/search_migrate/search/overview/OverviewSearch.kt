@@ -72,6 +72,7 @@ import com.heyanle.easybangumi4.ui.common.EmptyPage
 import com.heyanle.easybangumi4.ui.common.ErrorPage
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.OkImage
+import com.heyanle.easybangumi4.ui.common.CartoonCardWithCover
 import com.heyanle.easybangumi4.ui.common.cover_star.CoverStarViewModel
 import com.heyanle.easybangumi4.ui.search_migrate.search.SearchViewModel
 import com.heyanle.easybangumi4.ui.search_migrate.search.gather.GatherSearchViewModel
@@ -103,7 +104,7 @@ private data class OverviewSourcePage(
  * so switching sources stays fast and does not silently load the entire catalog.
  */
 @Composable
-fun ColumnScope.OverviewSearch(searchViewModel: SearchViewModel) {
+fun ColumnScope.OverviewSearch(searchViewModel: SearchViewModel, v2Presentation: Boolean = false) {
     val nav = LocalNavController.current
     val sourceBundle = LocalSourceBundleController.current
     val searchComponents = sourceBundle.searches()
@@ -238,6 +239,7 @@ fun ColumnScope.OverviewSearch(searchViewModel: SearchViewModel) {
                             OverviewCoverCard(
                                 result = item,
                                 starred = starred.contains(item.cover.toIdentify()),
+                                v2Presentation = v2Presentation,
                                 onClick = { nav.navigationDetailed(item.cover) },
                                 onLongClick = {
                                     starVm.dispatchStar(item.cover)
@@ -272,6 +274,7 @@ fun ColumnScope.OverviewSearch(searchViewModel: SearchViewModel) {
                                 OverviewCoverCard(
                                     result = item,
                                     starred = starred.contains(cover.toIdentify()),
+                                    v2Presentation = v2Presentation,
                                     onClick = { nav.navigationDetailed(cover) },
                                     onLongClick = {
                                         starVm.dispatchStar(cover)
@@ -545,9 +548,20 @@ private fun OverviewSourceTab(
 private fun OverviewCoverCard(
     result: OverviewResult,
     starred: Boolean,
+    v2Presentation: Boolean,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
 ) {
+    if (v2Presentation) {
+        CartoonCardWithCover(
+            star = starred,
+            cartoonCover = result.cover,
+            onClick = { onClick() },
+            onLongPress = { onLongClick() },
+            v2Presentation = true,
+        )
+        return
+    }
     Column(
         modifier = Modifier
             .fillMaxWidth()

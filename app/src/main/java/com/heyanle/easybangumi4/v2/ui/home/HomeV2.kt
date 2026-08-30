@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,7 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Extension
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.SyncAlt
+import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,10 +33,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -46,6 +52,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -58,21 +65,26 @@ import com.heyanle.easybangumi4.navigationSourceManager
 import com.heyanle.easybangumi4.plugin.source.LocalSourceBundleController
 import com.heyanle.easybangumi4.plugin.source.js.source.getIconWithAsyncOrDrawable
 import com.heyanle.easybangumi4.ui.common.LoadingPage
+import com.heyanle.easybangumi4.ui.common.EmptyPage
 import com.heyanle.easybangumi4.ui.common.OkImage
+import com.heyanle.easybangumi4.v2.ui.component.V2PrimaryTabs
 import com.heyanle.easybangumi4.ui.common.page.CartoonPageUI
+import com.heyanle.easybangumi4.ui.common.page.CartoonPagePresentation
 import com.heyanle.easybangumi4.ui.main.home.HomeViewModel
 import com.heyanle.easybangumi4.v2.theme.V2Tokens
 import com.heyanle.easybangumi4.v2.theme.V2Theme
-import com.heyanle.easybangumi4.v2.ui.component.V2ScrollableTabs
-import com.heyanle.easybangumi4.ui.common.page.CartoonPagePresentation
 
-/** First fully owned V2 page. Business state and page ViewModels remain unchanged. */
+/**
+ * V2-owned copy of the established V1 home hierarchy. Business state remains shared, while this
+ * file owns the V1-style app bar, tabs and content transitions so legacy Home is never changed.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun HomeV2() {
     val viewModel = viewModel<HomeViewModel>()
     val state by viewModel.stateFlow.collectAsState()
     val navController = LocalNavController.current
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     var showSourceSelector by remember { mutableStateOf(false) }
 
     if (showSourceSelector) {
@@ -93,10 +105,11 @@ internal fun HomeV2() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(V2Tokens.WarmBackground),
+            .background(MaterialTheme.colorScheme.background),
     ) {
-        HomeHeaderV2(
+        HomeTopAppBarV1Copy(
             sourceLabel = state.topAppBarTitle,
+            scrollBehavior = scrollBehavior,
             onSourceClick = { showSourceSelector = true },
             onSearchClick = { navController.navigationSearch(state.selectionKey) },
         )
@@ -107,21 +120,24 @@ internal fun HomeV2() {
                 loadingMsg = "正在加载番源",
             )
 
-            !state.hasPageComponent -> HomeEmptyStateV2(
-                message = "暂无可用番源",
-                actionLabel = "选择番源",
-                onAction = { navController.navigationSourceManager(1) },
+            !state.hasPageComponent -> EmptyPage(
+                modifier = Modifier.fillMaxSize(),
+                emptyMsg = stringResource(com.heyanle.easy_i18n.R.string.no_source),
+                other = {
+                    TextButton(onClick = { navController.navigationSourceManager(1) }) {
+                        Text(stringResource(com.heyanle.easy_i18n.R.string.go_to_manage_source))
+                    }
+                },
             )
 
-            state.pages.isEmpty() -> HomeEmptyStateV2(
-                message = "这里还没有内容",
-                actionLabel = "重新选择番源",
-                onAction = { showSourceSelector = true },
+            state.pages.isEmpty() -> EmptyPage(
+                modifier = Modifier.fillMaxSize(),
+                emptyMsg = stringResource(com.heyanle.easy_i18n.R.string.is_empty),
             )
 
             else -> {
                 if (state.isShowLabel) {
-                    V2ScrollableTabs(
+                    V2PrimaryTabs(
                         labels = state.pages.map { it.label },
                         selectedIndex = state.selectionIndex,
                         onSelected = viewModel::changeSelectionPage,
@@ -133,10 +149,13 @@ internal fun HomeV2() {
                     targetState = state.pages.getOrNull(state.selectionIndex),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f),
+                        .weight(1f)
+                        .let { modifier ->
+                            if (state.isShowLabel) modifier else modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+                        },
                     transitionSpec = {
-                        fadeIn(tween(durationMillis = 220)) togetherWith
-                            fadeOut(tween(durationMillis = 120))
+                        fadeIn(tween(durationMillis = 300, delayMillis = 300)) togetherWith
+                            fadeOut(tween(durationMillis = 300))
                     },
                     label = "v2-home-page",
                 ) { page ->
@@ -144,10 +163,7 @@ internal fun HomeV2() {
                         CompositionLocalProvider(
                             LocalViewModelStoreOwner provides viewModel.getViewModelStoreOwner(it),
                         ) {
-                            CartoonPageUI(
-                                cartoonPage = it,
-                                presentation = CartoonPagePresentation.V2,
-                            )
+                            CartoonPageUI(cartoonPage = it, presentation = CartoonPagePresentation.V2)
                         }
                     }
                 }
@@ -157,53 +173,42 @@ internal fun HomeV2() {
 }
 
 @Composable
-private fun HomeHeaderV2(
+@OptIn(ExperimentalMaterial3Api::class)
+private fun HomeTopAppBarV1Copy(
     sourceLabel: String,
+    scrollBehavior: TopAppBarScrollBehavior,
     onSourceClick: () -> Unit,
     onSearchClick: () -> Unit,
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .statusBarsPadding()
-            .padding(
-                start = V2Tokens.ScreenHorizontalPadding,
-                top = 18.dp,
-                end = 8.dp,
-                bottom = 10.dp,
-            ),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Row(
-            modifier = Modifier
-                .weight(1f)
-                .clickable(onClick = onSourceClick)
-                .padding(vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
+    TopAppBar(
+        scrollBehavior = scrollBehavior,
+        navigationIcon = {
+            IconButton(onClick = onSourceClick) {
             Icon(
-                imageVector = Icons.Filled.SyncAlt,
+                imageVector = Icons.Filled.SwapHoriz,
                 contentDescription = "切换番源",
-                tint = V2Tokens.TextPrimary,
-                modifier = Modifier.size(24.dp),
+                tint = MaterialTheme.colorScheme.onSurface,
             )
-            Spacer(Modifier.size(14.dp))
+            }
+        },
+        title = {
             Text(
-                text = sourceLabel.ifBlank { "选择番源" },
+                text = sourceLabel,
                 color = V2Tokens.TextPrimary,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                maxLines = 1,
             )
-        }
-        IconButton(onClick = onSearchClick) {
+        },
+        actions = {
+            IconButton(onClick = onSearchClick) {
             Icon(
                 imageVector = Icons.Filled.Search,
                 contentDescription = "搜索",
-                tint = V2Tokens.TextPrimary,
+                tint = MaterialTheme.colorScheme.onSurface,
             )
+            }
         }
-    }
+    )
 }
 
 @Composable
@@ -256,19 +261,19 @@ private fun HomeSourceSelectorV2(
     val sources = LocalSourceBundleController.current
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
-        containerColor = V2Tokens.Surface,
-        contentColor = V2Tokens.TextPrimary,
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
         scrimColor = Color.Black.copy(alpha = 0.32f),
         shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
     ) {
         Text(
             text = "选择番源",
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
-            color = V2Tokens.TextPrimary,
+            color = MaterialTheme.colorScheme.onSurface,
             fontSize = 22.sp,
             fontWeight = FontWeight.Bold,
         )
-        HorizontalDivider(color = V2Tokens.Divider)
+        HorizontalDivider()
         LazyColumn {
             items(
                 HomeViewModel.prioritizeHomeSources(sources.pages()),
@@ -300,11 +305,11 @@ private fun HomeSourceSelectorV2(
                             ),
                         )
                     },
-                    colors = ListItemDefaults.colors(containerColor = V2Tokens.Surface),
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                 )
             }
             item {
-                HorizontalDivider(color = V2Tokens.Divider)
+                HorizontalDivider()
                 ListItem(
                     modifier = Modifier.clickable(onClick = onManageSources),
                     headlineContent = { Text("管理番源") },
@@ -315,7 +320,7 @@ private fun HomeSourceSelectorV2(
                             tint = V2Theme.colors.accent,
                         )
                     },
-                    colors = ListItemDefaults.colors(containerColor = V2Tokens.Surface),
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                 )
             }
         }

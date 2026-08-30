@@ -14,10 +14,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PushPin
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -80,17 +83,29 @@ fun CartoonCardWithCover(
                 errorRes = R.drawable.placeholder,
             )
             if (star) {
-                Text(
-                    fontSize = 13.sp,
-                    text = stringResource(id = com.heyanle.easy_i18n.R.string.stared_min),
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier
-                        .background(
-                            MaterialTheme.colorScheme.primary,
-                            RoundedCornerShape(0.dp, 0.dp, 4.dp, 0.dp)
+                if (v2Presentation) {
+                    Surface(
+                        modifier = Modifier.align(Alignment.TopStart).padding(7.dp).size(27.dp),
+                        color = V2Tokens.Surface.copy(alpha = 0.94f),
+                        shape = CircleShape,
+                    ) {
+                        Icon(
+                            Icons.Filled.Star,
+                            contentDescription = stringResource(com.heyanle.easy_i18n.R.string.stared_min),
+                            tint = V2Theme.colors.accent,
+                            modifier = Modifier.padding(5.dp),
                         )
-                        .padding(4.dp, 0.dp)
-                )
+                    }
+                } else {
+                    Text(
+                        fontSize = 13.sp,
+                        text = stringResource(id = com.heyanle.easy_i18n.R.string.stared_min),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier
+                            .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(0.dp, 0.dp, 4.dp, 0.dp))
+                            .padding(4.dp, 0.dp),
+                    )
+                }
             }
         }
 //            OkImage(
@@ -112,18 +127,8 @@ fun CartoonCardWithCover(
                 overflow = TextOverflow.Ellipsis,
                 fontSize = 13.sp,
                 lineHeight = 18.sp,
-                color = Color(0xFF171614),
+                color = V2Tokens.TextPrimary,
             )
-            cartoonCover.intro?.takeIf { it.isNotBlank() }?.let { intro ->
-                Text(
-                    text = intro,
-                    modifier = Modifier.padding(top = 3.dp),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    fontSize = 11.sp,
-                    color = Color(0xFF716E68),
-                )
-            }
         } else {
             Text(
                 style = MaterialTheme.typography.bodySmall,
@@ -161,7 +166,6 @@ fun CartoonStarCardWithCover(
                 if (selected) {
                     if (v2Presentation) {
                         background(V2Theme.colors.accentContainer)
-                            .border(2.dp, V2Theme.colors.accent, RoundedCornerShape(8.dp))
                     } else {
                         background(MaterialTheme.colorScheme.primary)
                     }
@@ -198,14 +202,15 @@ fun CartoonStarCardWithCover(
                     fontSize = 13.sp,
                     text = sourceBundle.source(cartoon.source)?.label
                         ?: cartoon.sourceName,
-                    color = MaterialTheme.colorScheme.onPrimary,
+                    color = if (v2Presentation) V2Tokens.Surface else MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier
                         .align(Alignment.BottomStart)
+                        .padding(if (v2Presentation) 7.dp else 0.dp)
                         .background(
-                            MaterialTheme.colorScheme.primary,
-                            RoundedCornerShape(0.dp, 4.dp, 0.dp, 0.dp)
+                            if (v2Presentation) V2Tokens.TextPrimary.copy(alpha = 0.78f) else MaterialTheme.colorScheme.primary,
+                            if (v2Presentation) RoundedCornerShape(7.dp) else RoundedCornerShape(0.dp, 4.dp, 0.dp, 0.dp)
                         )
-                        .padding(4.dp, 0.dp)
+                        .padding(if (v2Presentation) 7.dp else 4.dp, if (v2Presentation) 3.dp else 0.dp)
                 )
             }
             if (showWatchProcess && cartoon.lastHistoryTime != 0L) {
@@ -214,14 +219,15 @@ fun CartoonStarCardWithCover(
                     Text(
                         fontSize = 13.sp,
                         text = "${index + 1}/${last.first.sortedEpisodeList.size}",
-                        color = MaterialTheme.colorScheme.onPrimary,
+                        color = if (v2Presentation) V2Tokens.Surface else MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier
                             .align(Alignment.TopEnd)
+                            .padding(if (v2Presentation) 7.dp else 0.dp)
                             .background(
-                                MaterialTheme.colorScheme.primary,
-                                RoundedCornerShape(0.dp, 0.dp, 0.dp, 4.dp)
+                                if (v2Presentation) V2Tokens.TextPrimary.copy(alpha = 0.78f) else MaterialTheme.colorScheme.primary,
+                                if (v2Presentation) RoundedCornerShape(7.dp) else RoundedCornerShape(0.dp, 0.dp, 0.dp, 4.dp)
                             )
-                            .padding(4.dp, 0.dp)
+                            .padding(if (v2Presentation) 7.dp else 4.dp, if (v2Presentation) 3.dp else 0.dp)
                     )
                 }
             }
@@ -231,11 +237,12 @@ fun CartoonStarCardWithCover(
                 Row(
                     modifier = Modifier
                         .align(Alignment.TopStart)
+                        .padding(if (v2Presentation) 7.dp else 0.dp)
                         .background(
-                            MaterialTheme.colorScheme.primary,
-                            RoundedCornerShape(0.dp, 0.dp, 4.dp, 0.dp)
+                            if (v2Presentation) V2Tokens.Surface.copy(alpha = 0.94f) else MaterialTheme.colorScheme.primary,
+                            if (v2Presentation) RoundedCornerShape(7.dp) else RoundedCornerShape(0.dp, 0.dp, 4.dp, 0.dp)
                         )
-                        .padding(4.dp, 0.dp),
+                        .padding(if (v2Presentation) 7.dp else 4.dp, if (v2Presentation) 3.dp else 0.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     if (showIsUp && cartoon.upTime > 0L) {
@@ -245,14 +252,14 @@ fun CartoonStarCardWithCover(
                                 .size(13.dp)
                                 .rotate(-45f),
                             contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.push_pin),
-                            tint = MaterialTheme.colorScheme.onPrimary
+                            tint = if (v2Presentation) V2Theme.colors.accent else MaterialTheme.colorScheme.onPrimary
                         )
                     }
                     if (showIsUpdate && cartoon.isUpdate) {
                         Text(
                             fontSize = 13.sp,
                             text = stringResource(id = com.heyanle.easy_i18n.R.string.need_update),
-                            color = MaterialTheme.colorScheme.onPrimary,
+                            color = if (v2Presentation) V2Theme.colors.accent else MaterialTheme.colorScheme.onPrimary,
                         )
                     }
                 }
@@ -277,20 +284,7 @@ fun CartoonStarCardWithCover(
             },
             fontSize = if (v2Presentation) 13.sp else MaterialTheme.typography.bodySmall.fontSize,
         )
-        if (v2Presentation) {
-            Text(
-                text = when {
-                    cartoon.lastEpisodeLabel.isNotBlank() -> "看到 ${cartoon.lastEpisodeLabel}"
-                    cartoon.isUpdate -> "有更新"
-                    else -> cartoon.sourceName
-                },
-                modifier = Modifier.padding(top = 3.dp),
-                color = V2Tokens.TextSecondary,
-                fontSize = 11.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-        } else {
+        if (!v2Presentation) {
             Spacer(modifier = Modifier.size(4.dp))
         }
     }

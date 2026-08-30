@@ -14,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.inject.core.Inject
 
 @Immutable
@@ -78,16 +79,23 @@ object V2Theme {
 @Composable
 fun V2ThemeProvider(content: @Composable () -> Unit) {
     val controller: V2ThemeController by Inject.injectLazy()
+    val settingPreferences: SettingPreferences by Inject.injectLazy()
     val themeState by controller.themeFlow.collectAsState()
+    val darkMode by settingPreferences.darkMode.flow().collectAsState(settingPreferences.darkMode.get())
     val context = LocalContext.current
     val configurationDark = isSystemInDarkTheme()
     val systemNightMode = context.getSystemService(UiModeManager::class.java)?.nightMode
     // The legacy activity may override the local AppCompat configuration. Reading UiModeManager
     // keeps V2 tied to the device setting even when that old, activity-scoped preference is Light.
-    val isDark = when (systemNightMode) {
+    val systemDark = when (systemNightMode) {
         UiModeManager.MODE_NIGHT_YES -> true
         UiModeManager.MODE_NIGHT_NO -> false
         else -> configurationDark
+    }
+    val isDark = when (darkMode) {
+        SettingPreferences.DarkMode.Auto -> systemDark
+        SettingPreferences.DarkMode.Dark -> true
+        SettingPreferences.DarkMode.Light -> false
     }
     val palette = themeState.themeColor.toPalette(isDark)
     val colorScheme = if (isDark) {
@@ -104,6 +112,13 @@ fun V2ThemeProvider(content: @Composable () -> Unit) {
             onSurface = palette.textPrimary,
             surfaceVariant = palette.surfaceMuted,
             onSurfaceVariant = palette.textSecondary,
+            surfaceDim = palette.background,
+            surfaceBright = palette.surface,
+            surfaceContainerLowest = palette.surface,
+            surfaceContainerLow = palette.surface,
+            surfaceContainer = palette.surfaceMuted,
+            surfaceContainerHigh = palette.surfaceMuted,
+            surfaceContainerHighest = palette.surfaceMuted,
             outline = palette.divider,
             error = palette.error,
         )
@@ -121,6 +136,13 @@ fun V2ThemeProvider(content: @Composable () -> Unit) {
             onSurface = palette.textPrimary,
             surfaceVariant = palette.surfaceMuted,
             onSurfaceVariant = palette.textSecondary,
+            surfaceDim = palette.background,
+            surfaceBright = palette.surface,
+            surfaceContainerLowest = palette.surface,
+            surfaceContainerLow = palette.surface,
+            surfaceContainer = palette.surfaceMuted,
+            surfaceContainerHigh = palette.surfaceMuted,
+            surfaceContainerHighest = palette.surfaceMuted,
             outline = palette.divider,
             error = palette.error,
         )

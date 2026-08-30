@@ -174,7 +174,7 @@ internal fun StoryV2(initialPage: Int = 0) {
             userScrollEnabled = !selectionActive,
         ) { page ->
             when (page) {
-                0 -> LocalLibraryV2(
+                0 -> LocalLibraryV1CopyV2(
                     state = localState,
                     starredIdentities = starState.identifySet,
                     onItemClick = { item ->

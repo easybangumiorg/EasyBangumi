@@ -58,9 +58,6 @@ import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.ui.search_migrate.search.SearchMode
 import com.heyanle.easybangumi4.ui.search_migrate.search.SearchViewModelFactory
-import com.heyanle.easybangumi4.ui.search_migrate.search.gather.GatherSearch
-import com.heyanle.easybangumi4.ui.search_migrate.search.normal.NormalSearch
-import com.heyanle.easybangumi4.ui.search_migrate.search.overview.OverviewSearch
 import com.heyanle.easybangumi4.v2.theme.V2Tokens
 import com.heyanle.easybangumi4.v2.theme.V2Theme
 
@@ -104,12 +101,12 @@ internal fun SearchV2(
             )
         } else {
             when (viewModel.searchMode.value) {
-                SearchMode.SINGLE_SOURCE -> NormalSearch(
-                    defSourceKey = initialSourceKey,
+                SearchMode.SINGLE_SOURCE -> NormalSearchV1CopyV2(
+                    initialSourceKey = initialSourceKey,
                     searchViewModel = viewModel,
                 )
-                SearchMode.BY_SOURCE -> GatherSearch(searchViewModel = viewModel)
-                SearchMode.OVERVIEW -> OverviewSearch(searchViewModel = viewModel)
+                SearchMode.BY_SOURCE -> GatherSearchV1CopyV2(searchViewModel = viewModel)
+                SearchMode.OVERVIEW -> OverviewSearchV1CopyV2(searchViewModel = viewModel)
             }
         }
     }
@@ -145,7 +142,7 @@ private fun SearchHeaderV2(
                     text = "搜索与找番",
                     modifier = Modifier.padding(start = 4.dp),
                     color = V2Tokens.TextPrimary,
-                    fontSize = 26.sp,
+                    fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                 )
             }

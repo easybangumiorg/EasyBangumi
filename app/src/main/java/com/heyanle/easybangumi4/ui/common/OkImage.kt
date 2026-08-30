@@ -72,7 +72,9 @@ fun OkImage(
     crossFade: Boolean = true,
     errorColor: Color? = MaterialTheme.colorScheme.error,
     errorRes: Int? = null,
-    placeholderColor: Color? = MaterialTheme.colorScheme.secondaryContainer,
+    // Loading is neutral feedback, not an accent state. surfaceVariant maps to V2's muted
+    // surface and keeps image placeholders consistent in both day and night palettes.
+    placeholderColor: Color? = MaterialTheme.colorScheme.surfaceVariant,
     placeholderRes: Int? = null,
     tint: Color? = null,
     alpha: Float = 1f,

@@ -34,6 +34,7 @@ import com.heyanle.easybangumi4.v2.theme.V2Theme
 import com.heyanle.easybangumi4.v2.ui.component.V2ActionRow
 import com.heyanle.easybangumi4.v2.ui.component.V2SecondaryHeader
 import com.heyanle.easybangumi4.v2.ui.component.V2Section
+import com.heyanle.easybangumi4.v2.ui.component.V2Switch
 import com.heyanle.easybangumi4.v2.ui.component.V2SectionDivider
 import com.heyanle.inject.core.Inject
 
@@ -98,14 +99,9 @@ private fun FirstSettingV2(modifier: Modifier = Modifier) {
                 subtitle = "切换后将返回首页",
                 onClick = { MainActivitySwitcher.switch(context, !useV2Ui) },
                 trailing = {
-                    Switch(
+                    V2Switch(
                         checked = useV2Ui,
                         onCheckedChange = { MainActivitySwitcher.switch(context, it) },
-                        colors = SwitchDefaults.colors(
-                            checkedTrackColor = V2Theme.colors.accent,
-                            checkedThumbColor = V2Tokens.Surface,
-                            uncheckedTrackColor = V2Tokens.Divider,
-                        ),
                     )
                 },
             )

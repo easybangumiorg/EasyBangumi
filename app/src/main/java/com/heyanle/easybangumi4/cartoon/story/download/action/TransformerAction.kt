@@ -9,6 +9,7 @@ import androidx.media3.common.util.Clock
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.transformer.Composition
 import androidx.media3.transformer.DefaultDecoderFactory
+import androidx.media3.transformer.DefaultEncoderFactory
 import androidx.media3.transformer.ExoPlayerAssetLoader
 import androidx.media3.transformer.ExportException
 import androidx.media3.transformer.ExportResult
@@ -38,6 +39,7 @@ import java.util.concurrent.RejectedExecutionHandler
 import java.util.concurrent.SynchronousQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Created by heyanle on 2024/8/3.
@@ -63,7 +65,7 @@ class TransformerAction(
 
     private val dispatchScope = CoroutineScope(SupervisorJob() + CoroutineProvider.SINGLE)
     private val executor = ThreadPoolExecutor(
-        0, cartoonDownloadPreference.transformMaxCountPref.get().toInt(),
+        0, cartoonDownloadPreference.transformMaxCountPref.get().toInt().coerceAtLeast(1),
         10L, TimeUnit.SECONDS,
         SynchronousQueue(),
     )
@@ -145,44 +147,6 @@ class TransformerAction(
             val sourceFactory = mediaSourceFactory.getMediaSourceFactory(playerInfo)
             val encodeType = cartoonDownloadPreference.downloadEncode.get()
 
-            val transformer = Transformer.Builder(APP)
-                .setVideoMimeType(
-                    if (encodeType == CartoonDownloadPreference.DownloadEncode.H264) MimeTypes.VIDEO_H264
-                    else MimeTypes.VIDEO_H265
-                )
-                .setAssetLoaderFactory(
-                    ExoPlayerAssetLoader.Factory(
-                        APP,
-                        DefaultDecoderFactory.Builder(APP).build(),
-                        Clock.DEFAULT,
-                        sourceFactory
-                    )
-                )
-                .setMuxerFactory(InAppMp4Muxer.Factory())
-                .setMaxDelayBetweenMuxerSamplesMs(500000)
-                .addListener(object : Transformer.Listener {
-                    override fun onCompleted(composition: Composition, exportResult: ExportResult) {
-                        super.onCompleted(composition, exportResult)
-                        cartoonDownloadRuntime.exportResult = exportResult
-                        cartoonDownloadRuntime.exportException = null
-                        cartoonDownloadRuntime.transformerCompletelyLatch?.countDown()
-                    }
-
-                    override fun onError(
-                        composition: Composition,
-                        exportResult: ExportResult,
-                        exportException: ExportException
-                    ) {
-                        super.onError(composition, exportResult, exportException)
-                        cartoonDownloadRuntime.exportResult = exportResult
-                        cartoonDownloadRuntime.exportException = exportException
-                        cartoonDownloadRuntime.transformerCompletelyLatch?.countDown()
-                    }
-                })
-                .build()
-            cartoonDownloadRuntime.transformer = transformer
-
-
             val realTarget = File(cacheFolder, "${cartoonDownloadRuntime.req.uuid}.mp4")
             val tempTarget = File(cacheFolder, "${cartoonDownloadRuntime.req.uuid}.temp.mp4")
             cacheFolder.mkdirs()
@@ -192,13 +156,55 @@ class TransformerAction(
             cartoonDownloadRuntime.transformerFile = tempTarget
             cartoonDownloadRuntime.transformerStartError = null
 
-            val holder: ProgressHolder = ProgressHolder()
+            // Transformer confines all public calls to the application Looper used at creation.
+            // Calling start/getProgress/cancel from different worker threads throws
+            // "Transformer is accessed on the wrong thread" on Media3 1.9+.
+            val progress = AtomicInteger(-1)
             transformerScope.launch {
                 cartoonDownloadRuntime.dispatchToBus(
                     -1f,
                     stringRes(com.heyanle.easy_i18n.R.string.waiting_transformer)
                 )
                 try {
+                    val transformer = Transformer.Builder(APP)
+                        .setVideoMimeType(
+                            if (encodeType == CartoonDownloadPreference.DownloadEncode.H264) MimeTypes.VIDEO_H264
+                            else MimeTypes.VIDEO_H265
+                        )
+                        .setAssetLoaderFactory(
+                            ExoPlayerAssetLoader.Factory(
+                                APP,
+                                DefaultDecoderFactory.Builder(APP).build(),
+                                Clock.DEFAULT,
+                                sourceFactory,
+                            )
+                        )
+                        .setEncoderFactory(
+                            DefaultEncoderFactory.Builder(APP)
+                                .setEnableFallback(true)
+                                .build(),
+                        )
+                        .setMuxerFactory(InAppMp4Muxer.Factory())
+                        .setMaxDelayBetweenMuxerSamplesMs(500000)
+                        .addListener(object : Transformer.Listener {
+                            override fun onCompleted(composition: Composition, exportResult: ExportResult) {
+                                cartoonDownloadRuntime.exportResult = exportResult
+                                cartoonDownloadRuntime.exportException = null
+                                completelyLatch.countDown()
+                            }
+
+                            override fun onError(
+                                composition: Composition,
+                                exportResult: ExportResult,
+                                exportException: ExportException,
+                            ) {
+                                cartoonDownloadRuntime.exportResult = exportResult
+                                cartoonDownloadRuntime.exportException = exportException
+                                completelyLatch.countDown()
+                            }
+                        })
+                        .build()
+                    cartoonDownloadRuntime.transformer = transformer
                     transformer.start(
                         mediaItem,
                         tempTarget.absolutePath
@@ -217,22 +223,24 @@ class TransformerAction(
             while (completelyLatch.count > 0) {
                 if (cartoonDownloadRuntime.isCanceled()) {
                     transformerScope.launch {
-                        transformer.cancel()
+                        cartoonDownloadRuntime.transformer?.cancel()
                     }
                     completelyLatch.countDown()
                     return
                 }
+                transformerScope.launch {
+                    val holder = ProgressHolder()
+                    val state = cartoonDownloadRuntime.transformer?.getProgress(holder)
+                    progress.set(
+                        if (state == Transformer.PROGRESS_STATE_AVAILABLE) holder.progress else -1,
+                    )
+                }
                 mainScope.launch {
-                    val proState = transformer.getProgress(holder)
-                    val progress = if (proState == Transformer.PROGRESS_STATE_AVAILABLE) {
-                        holder.progress
-                    } else {
-                        -1
-                    }
+                    val latestProgress = progress.get()
                     cartoonDownloadRuntime.dispatchToBus(
-                        progress.toFloat() / 100f,
+                        latestProgress.toFloat() / 100f,
                         stringRes(com.heyanle.easy_i18n.R.string.downloading),
-                        if(progress >= 0) "${progress.toInt()}%" else ""
+                        if (latestProgress >= 0) "$latestProgress%" else "",
                     )
                 }
 
@@ -241,7 +249,7 @@ class TransformerAction(
 
             if (cartoonDownloadRuntime.exportException != null) {
                 transformerScope.launch {
-                    transformer.cancel()
+                    cartoonDownloadRuntime.transformer?.cancel()
                 }
                 cartoonDownloadRuntime.error(
                     cartoonDownloadRuntime.exportException,

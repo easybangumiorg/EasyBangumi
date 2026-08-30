@@ -21,7 +21,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Android
 import androidx.compose.material.icons.filled.Devices
+import androidx.compose.material.icons.filled.NightsStay
+import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.RadioButton
@@ -60,6 +63,7 @@ internal fun AppearanceSettingV2(
     val v2ThemeController: V2ThemeController by Inject.injectLazy()
     val settingPreferences: SettingPreferences by Inject.injectLazy()
     val v2ThemeState by v2ThemeController.themeFlow.collectAsState()
+    val darkMode by settingPreferences.darkMode.flow().collectAsState(settingPreferences.darkMode.get())
     val padMode by settingPreferences.padMode.flow().collectAsState(settingPreferences.padMode.get())
     var showPadModeDialog by remember { mutableStateOf(false) }
 
@@ -68,6 +72,13 @@ internal fun AppearanceSettingV2(
             .fillMaxSize()
             .verticalScroll(rememberScrollState()),
     ) {
+        V2Section(title = stringResource(R.string.dark_mode)) {
+            V2DarkModeChoices(
+                selected = darkMode,
+                onSelected = settingPreferences.darkMode::set,
+            )
+        }
+
         V2Section(title = "主题色") {
             V2ThemeColorChoices(
                 selected = v2ThemeState.themeColor,
@@ -96,6 +107,54 @@ internal fun AppearanceSettingV2(
                 stringRes(R.string.some_page_should_reboot).moeSnackBar()
             },
         )
+    }
+}
+
+@Composable
+private fun V2DarkModeChoices(
+    selected: SettingPreferences.DarkMode,
+    onSelected: (SettingPreferences.DarkMode) -> Unit,
+) {
+    val options = listOf(
+        Triple(SettingPreferences.DarkMode.Auto, Icons.Filled.Android, stringResource(R.string.dark_auto)),
+        Triple(SettingPreferences.DarkMode.Light, Icons.Filled.WbSunny, stringResource(R.string.dark_off)),
+        Triple(SettingPreferences.DarkMode.Dark, Icons.Filled.NightsStay, stringResource(R.string.dark_on)),
+    )
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        options.forEach { (mode, icon, label) ->
+            val isSelected = mode == selected
+            Surface(
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable { onSelected(mode) },
+                color = if (isSelected) V2Theme.colors.accentContainer else V2Tokens.Surface,
+                contentColor = if (isSelected) V2Theme.colors.onAccentContainer else V2Tokens.TextSecondary,
+                shape = RoundedCornerShape(10.dp),
+                border = BorderStroke(
+                    1.dp,
+                    if (isSelected) V2Theme.colors.accent else V2Tokens.Divider,
+                ),
+            ) {
+                Column(
+                    modifier = Modifier.padding(vertical = 10.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(5.dp),
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = label,
+                        tint = if (isSelected) V2Theme.colors.accent else V2Tokens.IconSecondary,
+                        modifier = Modifier.size(20.dp),
+                    )
+                    Text(label, fontSize = 12.sp, maxLines = 1)
+                }
+            }
+        }
     }
 }
 

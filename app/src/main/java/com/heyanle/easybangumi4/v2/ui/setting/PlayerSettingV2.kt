@@ -78,6 +78,7 @@ import com.heyanle.easybangumi4.v2.theme.V2Theme
 import com.heyanle.easybangumi4.v2.ui.component.V2ActionRow
 import com.heyanle.easybangumi4.v2.ui.component.V2Section
 import com.heyanle.easybangumi4.v2.ui.component.V2SectionDivider
+import com.heyanle.easybangumi4.v2.ui.component.V2Switch
 import com.heyanle.inject.core.Inject
 import java.util.Locale
 import kotlin.math.abs
@@ -755,16 +756,9 @@ private fun PlayerSwitchV2(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
 ) {
-    Switch(
+    V2Switch(
         checked = checked,
         onCheckedChange = onCheckedChange,
-        colors = SwitchDefaults.colors(
-            checkedThumbColor = V2Tokens.Surface,
-            checkedTrackColor = V2Theme.colors.accent,
-            uncheckedThumbColor = V2Tokens.Surface,
-            uncheckedTrackColor = V2Tokens.Divider,
-            uncheckedBorderColor = V2Tokens.Divider,
-        ),
     )
 }
 
