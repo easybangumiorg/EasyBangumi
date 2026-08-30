@@ -7,9 +7,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
@@ -40,12 +40,16 @@ import kotlinx.coroutines.launch
 internal fun StarListV1CopyV2(
     cartoons: List<CartoonInfo>,
     selection: Set<CartoonInfo>,
+    tabKey: String? = null,
     onRefresh: () -> Unit,
     onClick: (CartoonInfo) -> Unit,
     onLongPress: (CartoonInfo) -> Unit,
     nestedScrollConnection: NestedScrollConnection? = null,
 ) {
-    val gridState = rememberLazyGridState()
+    // V1's TabPage gives every tab its own pager page and therefore its own scroll state;
+    // sharing one state across tabs keeps the previous offset and clamps to the bottom
+    // whenever the next tab is shorter.
+    val gridState = remember(tabKey) { LazyGridState() }
     val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
     val refreshing = remember { mutableStateOf(false) }

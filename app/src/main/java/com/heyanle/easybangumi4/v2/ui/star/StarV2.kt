@@ -179,6 +179,7 @@ internal fun StarV2() {
             StarListV1CopyV2(
                 cartoons = list,
                 selection = state.selection,
+                tabKey = state.curTab?.label,
                 onRefresh = starViewModel::onUpdate,
                 onClick = { cartoon ->
                     if (state.selection.isEmpty()) {
