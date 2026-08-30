@@ -1,6 +1,8 @@
 package com.heyanle.easybangumi4.v2.ui.component
 
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
@@ -22,6 +24,7 @@ internal fun V2ScrollableTabs(
     onSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
     @Suppress("UNUSED_PARAMETER") style: V2TabStyle = V2TabStyle.PrimaryUnderline,
+    dots: List<Boolean> = emptyList(),
 ) {
     if (labels.isEmpty()) return
     val safeIndex = selectedIndex.coerceIn(labels.indices)
@@ -41,13 +44,28 @@ internal fun V2ScrollableTabs(
                 selected = index == safeIndex,
                 onClick = { onSelected(index) },
                 text = {
-                    Text(
-                        text = label,
-                        color = if (index == safeIndex) V2Theme.colors.accent else V2Tokens.TextSecondary,
-                        fontWeight = FontWeight.Medium,
-                    )
+                    if (dots.elementAtOrNull(index) == true) {
+                        BadgedBox(
+                            badge = {
+                                Badge(containerColor = V2Theme.colors.accent)
+                            },
+                        ) {
+                            TabLabelText(label, selected = index == safeIndex)
+                        }
+                    } else {
+                        TabLabelText(label, selected = index == safeIndex)
+                    }
                 },
             )
         }
     }
+}
+
+@Composable
+private fun TabLabelText(label: String, selected: Boolean) {
+    Text(
+        text = label,
+        color = if (selected) V2Theme.colors.accent else V2Tokens.TextSecondary,
+        fontWeight = FontWeight.Medium,
+    )
 }

@@ -162,15 +162,15 @@ internal fun StarV2() {
         } else {
             if (state.tagList.size > 1) {
                 V2ScrollableTabs(
-                    labels = state.tagList.map { tag ->
-                        val count = state.data[tag.label]?.size ?: 0
-                        "${tag.display} $count"
-                    },
+                    labels = state.tagList.map { it.display },
                     selectedIndex = state.tagList.indexOf(state.curTab).coerceAtLeast(0),
                     onSelected = { index ->
                         state.tagList.getOrNull(index)?.let(starViewModel::changeTab)
                     },
                     style = V2TabStyle.SecondaryDot,
+                    dots = state.tagList.map { tag ->
+                        (state.data[tag.label]?.size ?: 0) > 0
+                    },
                 )
                 HorizontalDivider(color = V2Tokens.Divider)
             }
@@ -321,7 +321,8 @@ private fun StarSearchHeaderV2(
         modifier = Modifier
             .fillMaxWidth()
             .statusBarsPadding()
-            .padding(horizontal = 8.dp, vertical = 14.dp),
+            .height(64.dp)
+            .padding(horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         IconButton(onClick = onExit) {

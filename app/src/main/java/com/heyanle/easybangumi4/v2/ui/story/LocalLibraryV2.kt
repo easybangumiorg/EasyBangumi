@@ -67,13 +67,13 @@ internal fun LocalLibraryV1CopyV2(
                 columns = GridCells.Adaptive(100.dp),
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(
-                    start = 4.dp,
-                    top = 4.dp,
-                    end = 4.dp,
+                    start = 12.dp,
+                    top = 12.dp,
+                    end = 12.dp,
                     bottom = 88.dp,
                 ),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 items(
                     items = state.storyList,
@@ -114,7 +114,7 @@ private fun LocalLibraryCardV2(
         shape = shape,
         tonalElevation = 0.dp,
     ) {
-        Column {
+        Column(Modifier.padding(3.dp)) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -129,18 +129,17 @@ private fun LocalLibraryCardV2(
                 )
                 if (starred) {
                     Surface(
-                        modifier = Modifier
-                            .align(Alignment.TopStart)
-                            .padding(7.dp)
-                            .size(27.dp),
+                        modifier = Modifier.align(Alignment.TopStart),
                         color = V2Tokens.Surface.copy(alpha = 0.94f),
-                        shape = CircleShape,
+                        shape = RoundedCornerShape(bottomEnd = 8.dp),
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Star,
                             contentDescription = "已追番",
                             tint = V2Theme.colors.accent,
-                            modifier = Modifier.padding(5.dp),
+                            modifier = Modifier
+                                .padding(start = 4.dp, end = 5.dp, top = 4.dp, bottom = 3.dp)
+                                .size(13.dp),
                         )
                     }
                 }
@@ -153,8 +152,8 @@ private fun LocalLibraryCardV2(
                     Surface(
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
-                            .padding(7.dp)
-                            .size(28.dp),
+                            .padding(4.dp)
+                            .size(22.dp),
                         color = V2Theme.colors.accent,
                         shape = CircleShape,
                     ) {
@@ -162,29 +161,27 @@ private fun LocalLibraryCardV2(
                             imageVector = Icons.Filled.Check,
                             contentDescription = "已选择",
                             tint = V2Tokens.Surface,
-                            modifier = Modifier.padding(5.dp),
+                            modifier = Modifier.padding(4.dp),
                         )
                     }
                 }
                 Surface(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(7.dp),
+                    modifier = Modifier.align(Alignment.TopEnd),
                     color = V2Tokens.TextPrimary.copy(alpha = 0.78f),
-                    shape = RoundedCornerShape(7.dp),
+                    shape = RoundedCornerShape(bottomStart = 6.dp),
                 ) {
                     Text(
                         text = "${item.cartoonLocalItem.episodes.size} 集",
-                        modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp),
+                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
                         color = V2Tokens.Surface,
-                        fontSize = 11.sp,
+                        fontSize = 10.sp,
                         fontWeight = FontWeight.Medium,
                     )
                 }
             }
             Text(
                 text = item.cartoonLocalItem.title,
-                modifier = Modifier.padding(top = 6.dp),
+                modifier = Modifier.padding(top = 4.dp),
                 color = V2Tokens.TextPrimary,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Medium,

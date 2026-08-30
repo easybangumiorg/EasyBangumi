@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.Star
@@ -85,15 +84,17 @@ fun CartoonCardWithCover(
             if (star) {
                 if (v2Presentation) {
                     Surface(
-                        modifier = Modifier.align(Alignment.TopStart).padding(7.dp).size(27.dp),
+                        modifier = Modifier.align(Alignment.TopStart),
                         color = V2Tokens.Surface.copy(alpha = 0.94f),
-                        shape = CircleShape,
+                        shape = RoundedCornerShape(bottomEnd = 8.dp),
                     ) {
                         Icon(
                             Icons.Filled.Star,
                             contentDescription = stringResource(com.heyanle.easy_i18n.R.string.stared_min),
                             tint = V2Theme.colors.accent,
-                            modifier = Modifier.padding(5.dp),
+                            modifier = Modifier
+                                .padding(start = 4.dp, end = 5.dp, top = 4.dp, bottom = 3.dp)
+                                .size(13.dp),
                         )
                     }
                 } else {
@@ -182,7 +183,9 @@ fun CartoonStarCardWithCover(
                     onLongPress(cartoon)
                 }
             )
-            .padding(if (v2Presentation) 0.dp else 4.dp),
+            // V1 keeps a constant inner padding so the selection background extends past the
+            // content without changing the grid margins; V2 mirrors that with 3.dp.
+            .padding(if (v2Presentation) 3.dp else 4.dp),
         horizontalAlignment = Alignment.Start,
     ) {
         val sourceBundle = LocalSourceBundleController.current
@@ -198,51 +201,97 @@ fun CartoonStarCardWithCover(
                 errorRes = R.drawable.placeholder,
             )
             if (showSourceLabel) {
-                Text(
-                    fontSize = 13.sp,
-                    text = sourceBundle.source(cartoon.source)?.label
-                        ?: cartoon.sourceName,
-                    color = if (v2Presentation) V2Tokens.Surface else MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .padding(if (v2Presentation) 7.dp else 0.dp)
-                        .background(
-                            if (v2Presentation) V2Tokens.TextPrimary.copy(alpha = 0.78f) else MaterialTheme.colorScheme.primary,
-                            if (v2Presentation) RoundedCornerShape(7.dp) else RoundedCornerShape(0.dp, 4.dp, 0.dp, 0.dp)
-                        )
-                        .padding(if (v2Presentation) 7.dp else 4.dp, if (v2Presentation) 3.dp else 0.dp)
-                )
+                if (v2Presentation) {
+                    Text(
+                        fontSize = 10.sp,
+                        text = sourceBundle.source(cartoon.source)?.label
+                            ?: cartoon.sourceName,
+                        color = V2Tokens.Surface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(4.dp)
+                            .background(V2Tokens.TextPrimary.copy(alpha = 0.78f), RoundedCornerShape(5.dp))
+                            .padding(horizontal = 5.dp, vertical = 2.dp),
+                    )
+                } else {
+                    Text(
+                        fontSize = 13.sp,
+                        text = sourceBundle.source(cartoon.source)?.label
+                            ?: cartoon.sourceName,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .background(
+                                MaterialTheme.colorScheme.primary,
+                                RoundedCornerShape(0.dp, 4.dp, 0.dp, 0.dp),
+                            )
+                            .padding(4.dp, 0.dp),
+                    )
+                }
             }
             if (showWatchProcess && cartoon.lastHistoryTime != 0L) {
                 cartoon.matchHistoryEpisode?.let { last ->
                     val index = last.first.sortedEpisodeList.indexOf(last.second)
-                    Text(
-                        fontSize = 13.sp,
-                        text = "${index + 1}/${last.first.sortedEpisodeList.size}",
-                        color = if (v2Presentation) V2Tokens.Surface else MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(if (v2Presentation) 7.dp else 0.dp)
-                            .background(
-                                if (v2Presentation) V2Tokens.TextPrimary.copy(alpha = 0.78f) else MaterialTheme.colorScheme.primary,
-                                if (v2Presentation) RoundedCornerShape(7.dp) else RoundedCornerShape(0.dp, 0.dp, 0.dp, 4.dp)
-                            )
-                            .padding(if (v2Presentation) 7.dp else 4.dp, if (v2Presentation) 3.dp else 0.dp)
-                    )
+                    if (v2Presentation) {
+                        Text(
+                            fontSize = 10.sp,
+                            text = "${index + 1}/${last.first.sortedEpisodeList.size}",
+                            color = V2Tokens.Surface,
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(4.dp)
+                                .background(V2Tokens.TextPrimary.copy(alpha = 0.78f), RoundedCornerShape(5.dp))
+                                .padding(horizontal = 5.dp, vertical = 2.dp),
+                        )
+                    } else {
+                        Text(
+                            fontSize = 13.sp,
+                            text = "${index + 1}/${last.first.sortedEpisodeList.size}",
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .background(
+                                    MaterialTheme.colorScheme.primary,
+                                    RoundedCornerShape(0.dp, 0.dp, 0.dp, 4.dp),
+                                )
+                                .padding(4.dp, 0.dp),
+                        )
+                    }
                 }
             }
 
 
-            if (showIsUpdate || showIsUp) {
+            if (v2Presentation) {
+                if (showIsUp && cartoon.upTime > 0L) {
+                    Surface(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(4.dp),
+                        color = V2Tokens.Surface.copy(alpha = 0.94f),
+                        shape = RoundedCornerShape(5.dp),
+                    ) {
+                        Icon(
+                            Icons.Filled.PushPin,
+                            contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.push_pin),
+                            tint = V2Theme.colors.accent,
+                            modifier = Modifier
+                                .padding(3.dp)
+                                .size(11.dp)
+                                .rotate(-45f),
+                        )
+                    }
+                }
+            } else if (showIsUpdate || showIsUp) {
                 Row(
                     modifier = Modifier
                         .align(Alignment.TopStart)
-                        .padding(if (v2Presentation) 7.dp else 0.dp)
                         .background(
-                            if (v2Presentation) V2Tokens.Surface.copy(alpha = 0.94f) else MaterialTheme.colorScheme.primary,
-                            if (v2Presentation) RoundedCornerShape(7.dp) else RoundedCornerShape(0.dp, 0.dp, 4.dp, 0.dp)
+                            MaterialTheme.colorScheme.primary,
+                            RoundedCornerShape(0.dp, 0.dp, 4.dp, 0.dp),
                         )
-                        .padding(if (v2Presentation) 7.dp else 4.dp, if (v2Presentation) 3.dp else 0.dp),
+                        .padding(4.dp, 0.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     if (showIsUp && cartoon.upTime > 0L) {
@@ -252,14 +301,14 @@ fun CartoonStarCardWithCover(
                                 .size(13.dp)
                                 .rotate(-45f),
                             contentDescription = stringResource(id = com.heyanle.easy_i18n.R.string.push_pin),
-                            tint = if (v2Presentation) V2Theme.colors.accent else MaterialTheme.colorScheme.onPrimary
+                            tint = MaterialTheme.colorScheme.onPrimary
                         )
                     }
                     if (showIsUpdate && cartoon.isUpdate) {
                         Text(
                             fontSize = 13.sp,
                             text = stringResource(id = com.heyanle.easy_i18n.R.string.need_update),
-                            color = if (v2Presentation) V2Theme.colors.accent else MaterialTheme.colorScheme.onPrimary,
+                            color = MaterialTheme.colorScheme.onPrimary,
                         )
                     }
                 }

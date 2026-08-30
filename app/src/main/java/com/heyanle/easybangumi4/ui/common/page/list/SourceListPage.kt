@@ -31,6 +31,8 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.ripple
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -65,7 +67,6 @@ import com.heyanle.easybangumi4.ui.common.cover_star.CoverStarViewModel
 import com.heyanle.easybangumi4.ui.common.page.CartoonPagePresentation
 import com.heyanle.easybangumi4.v2.theme.V2Theme
 import com.heyanle.easybangumi4.v2.theme.V2Tokens
-import com.heyanle.easybangumi4.v2.ui.component.V2ScrollableTabs
 import io.ktor.http.headersOf
 
 /**
@@ -371,11 +372,27 @@ fun SourceListGroupTab(
     onClick: (Int) -> Unit,
 ) {
     if (presentation == CartoonPagePresentation.V2) {
-        V2ScrollableTabs(
-            labels = list.map { it.label },
-            selectedIndex = curPage,
-            onSelected = onClick,
-        )
+        // V2 copy of the V1 home chip row (CartoonPageListTab), mapped to V2 colors.
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(horizontal = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            itemsIndexed(list) { index, item ->
+                val selected = index == curPage
+                FilterChip(
+                    selected = selected,
+                    onClick = { onClick(index) },
+                    label = { Text(text = item.label) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        containerColor = Color.Transparent,
+                        labelColor = V2Tokens.TextSecondary,
+                        selectedContainerColor = V2Theme.colors.accentContainer,
+                        selectedLabelColor = V2Theme.colors.accent,
+                    ),
+                )
+            }
+        }
         return
     }
     //val state = rememberLazyListState(initialFirstVisibleItemIndex = curPage)

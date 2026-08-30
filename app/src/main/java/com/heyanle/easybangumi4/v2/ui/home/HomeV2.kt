@@ -67,7 +67,7 @@ import com.heyanle.easybangumi4.plugin.source.js.source.getIconWithAsyncOrDrawab
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.EmptyPage
 import com.heyanle.easybangumi4.ui.common.OkImage
-import com.heyanle.easybangumi4.v2.ui.component.V2PrimaryTabs
+import com.heyanle.easybangumi4.v2.ui.component.V2ScrollableTabs
 import com.heyanle.easybangumi4.ui.common.page.CartoonPageUI
 import com.heyanle.easybangumi4.ui.common.page.CartoonPagePresentation
 import com.heyanle.easybangumi4.ui.main.home.HomeViewModel
@@ -137,7 +137,7 @@ internal fun HomeV2() {
 
             else -> {
                 if (state.isShowLabel) {
-                    V2PrimaryTabs(
+                    V2ScrollableTabs(
                         labels = state.pages.map { it.label },
                         selectedIndex = state.selectionIndex,
                         onSelected = viewModel::changeSelectionPage,
