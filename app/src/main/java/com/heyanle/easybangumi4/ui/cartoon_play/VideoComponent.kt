@@ -26,9 +26,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.displayCutout
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -720,6 +717,7 @@ fun VideoControl(
     } else {
         Box(Modifier.fillMaxSize()) {
 
+            val cutoutSide = PlayerCutoutInsets.rememberCutoutSide(ctx)
             val fastWeight by cartoonPlayingVM.fastWeight.collectAsState()
             val fastSecond by cartoonPlayingVM.fastSecond.collectAsState()
             val fastTopSecond by cartoonPlayingVM.fastTopSecond.collectAsState()
@@ -812,9 +810,9 @@ fun VideoControl(
             if (controlVM.isFullScreen) {
                 FullScreenVideoTopBar(
                     vm = controlVM,
+                    cutoutSide = cutoutSide,
                     modifier = Modifier
                         .align(Alignment.TopCenter)
-                        .windowInsetsPadding(WindowInsets.displayCutout)
                 ) {
                     if (onShowPlayerSettings == null) {
                         showVideoScaleTypeWin.value = true
@@ -829,6 +827,8 @@ fun VideoControl(
             val railOnRight = controlVM.sideControlsOnRight
             FullScreenRightToolBar(
                 vm = controlVM,
+                cutoutSide = cutoutSide,
+                railOnRight = railOnRight,
                 modifier = Modifier
                     .fillMaxHeight()
                     .defaultMinSize(64.dp, Dp.Unspecified)
@@ -923,15 +923,18 @@ fun VideoControl(
 
             EasyVideoBottomControl(
                 vm = controlVM,
-                // 刘海安全边距在 modifier 上避让，16dp 常规边距保持不变。
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .windowInsetsPadding(WindowInsets.displayCutout),
+                modifier = Modifier.align(Alignment.BottomCenter),
                 paddingValues = if (controlVM.isFullScreen) PaddingValues(
-                    16.dp,
-                    0.dp,
-                    16.dp,
-                    8.dp
+                    start = 16.dp + PlayerCutoutInsets.paddingFor(
+                        cutoutSide = cutoutSide,
+                        targetSide = PlayerCutoutInsets.Side.LEFT,
+                    ),
+                    top = 0.dp,
+                    end = 16.dp + PlayerCutoutInsets.paddingFor(
+                        cutoutSide = cutoutSide,
+                        targetSide = PlayerCutoutInsets.Side.RIGHT,
+                    ),
+                    bottom = 8.dp,
                 ) else PaddingValues(8.dp, 0.dp),
                 onSHowSpeedWin = {
                     showSpeedWin.value = true
@@ -1110,6 +1113,8 @@ fun FullScreenRightToolBar(
     danmakuControlState: PlayerDanmakuControlState? = null,
     onEpisode: (() -> Unit)? = null,
     onLock: (() -> Unit)? = null,
+    cutoutSide: PlayerCutoutInsets.Side = PlayerCutoutInsets.Side.NONE,
+    railOnRight: Boolean = true,
 ) {
 
     (vm.isShowOverlay() && (vm.isFullScreen || isShowOnNormalScreen)).logi("VideoComponent")
@@ -1119,7 +1124,16 @@ fun FullScreenRightToolBar(
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.windowInsetsPadding(WindowInsets.displayCutout),
+            modifier = Modifier.padding(
+                start = PlayerCutoutInsets.paddingFor(
+                    cutoutSide = cutoutSide,
+                    targetSide = PlayerCutoutInsets.Side.LEFT,
+                ),
+                end = PlayerCutoutInsets.paddingFor(
+                    cutoutSide = cutoutSide,
+                    targetSide = PlayerCutoutInsets.Side.RIGHT,
+                ),
+            ),
         ) {
             Spacer(Modifier.height(64.dp))
             // 锁定固定在第一格：锁定后浮层收起时按钮位置不变，不会跳到顶部。
@@ -1293,6 +1307,7 @@ private fun CaptureResultCard(
 @Composable
 fun FullScreenVideoTopBar(
     vm: ControlViewModel,
+    cutoutSide: PlayerCutoutInsets.Side = PlayerCutoutInsets.Side.NONE,
     modifier: Modifier = Modifier,
     isShowOnNormalScreen: Boolean = false,
     onMoreClick: () -> Unit,
@@ -1303,7 +1318,19 @@ fun FullScreenVideoTopBar(
         exit = fadeOut(),
         enter = fadeIn(),
     ) {
-        TopControl {
+        // 渐变遮罩保持满宽，仅标题栏内容避让挖孔侧。
+        TopControl(
+            contentPadding = PaddingValues(
+                start = PlayerCutoutInsets.paddingFor(
+                    cutoutSide = cutoutSide,
+                    targetSide = PlayerCutoutInsets.Side.LEFT,
+                ),
+                end = PlayerCutoutInsets.paddingFor(
+                    cutoutSide = cutoutSide,
+                    targetSide = PlayerCutoutInsets.Side.RIGHT,
+                ),
+            ),
+        ) {
             val ctx = LocalContext.current as Activity
             BackBtn {
                 vm.onFullScreen(false, ctx = ctx)

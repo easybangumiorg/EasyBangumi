@@ -1,11 +1,13 @@
 package com.heyanle.easybangumi4.ui.cartoon_play
 
+import android.app.Activity
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
@@ -457,9 +459,16 @@ fun DfmDanmakuOverlay(
 ) {
     AndroidView(
         modifier = modifier
-            // 弹幕画布避让刘海/挖孔：竖屏避让顶部挖孔条，全屏避让左右两侧；
+            // 弹幕画布避让刘海/挖孔：竖屏不避让，全屏只避让挖孔真正所在的一侧；
             // 部分机型系统不上报 cutout，工具类会保底预留挖孔条宽度。
-            .padding(PlayerCutoutInsets.canvasPaddingValues(isFullScreen))
+            .padding(
+                PlayerCutoutInsets.canvasPaddingValues(
+                    isFullScreen = isFullScreen,
+                    cutoutSide = PlayerCutoutInsets.rememberCutoutSide(
+                        LocalContext.current as Activity,
+                    ),
+                ),
+            )
             .fillMaxWidth()
             // 显示区域即弹幕画布：画布顶部对齐视频顶部、高度 = areaRatio × 视频高度。
             // DFM 的滚动轨道与顶部/底部锚点都以画布高度分配，三种类型的弹幕
