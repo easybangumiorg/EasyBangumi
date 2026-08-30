@@ -29,9 +29,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -105,16 +109,34 @@ private fun LocalLibraryCardV2(
     onLongClick: () -> Unit,
 ) {
     val shape = RoundedCornerShape(13.dp)
+    val selectionColor = if (selected) V2Theme.colors.accentContainer else Color.Unspecified
     Surface(
         modifier = Modifier
             .fillMaxWidth()
+            .then(
+                if (selectionColor != Color.Unspecified) {
+                    // Paint the highlight outward so the cover keeps the same size as the
+                    // other pages' grids.
+                    Modifier.drawBehind {
+                        val expand = 3.dp.toPx()
+                        drawRoundRect(
+                            color = selectionColor,
+                            topLeft = Offset(-expand, -expand),
+                            size = Size(size.width + expand * 2, size.height + expand * 2),
+                            cornerRadius = CornerRadius(13.dp.toPx()),
+                        )
+                    }
+                } else {
+                    Modifier
+                }
+            )
             .combinedClickable(onClick = onClick, onLongClick = onLongClick),
-        color = if (selected) V2Theme.colors.accentContainer else Color.Transparent,
+        color = Color.Transparent,
         contentColor = V2Tokens.TextPrimary,
         shape = shape,
         tonalElevation = 0.dp,
     ) {
-        Column(Modifier.padding(3.dp)) {
+        Column {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()

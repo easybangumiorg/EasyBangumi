@@ -25,7 +25,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -159,20 +163,30 @@ fun CartoonStarCardWithCover(
     v2Presentation: Boolean = false,
 ) {
 
+    val selectionColor = if (selected && v2Presentation) V2Theme.colors.accentContainer else Color.Unspecified
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(if (v2Presentation) 8.dp else 4.dp))
-            .run {
-                if (selected) {
-                    if (v2Presentation) {
-                        background(V2Theme.colors.accentContainer)
-                    } else {
-                        background(MaterialTheme.colorScheme.primary)
+            .then(
+                if (selectionColor != Color.Unspecified) {
+                    // Paint the highlight outward so the cover keeps the same size as
+                    // unselected cards and the other pages' grids.
+                    Modifier.drawBehind {
+                        val expand = 3.dp.toPx()
+                        drawRoundRect(
+                            color = selectionColor,
+                            topLeft = Offset(-expand, -expand),
+                            size = Size(size.width + expand * 2, size.height + expand * 2),
+                            cornerRadius = CornerRadius(8.dp.toPx()),
+                        )
                     }
                 } else {
-                    this
+                    Modifier
                 }
+            )
+            .clip(RoundedCornerShape(if (v2Presentation) 8.dp else 4.dp))
+            .run {
+                if (selected && !v2Presentation) background(MaterialTheme.colorScheme.primary) else this
             }
             .then(modifier)
             .combinedClickable(
@@ -183,9 +197,7 @@ fun CartoonStarCardWithCover(
                     onLongPress(cartoon)
                 }
             )
-            // V1 keeps a constant inner padding so the selection background extends past the
-            // content without changing the grid margins; V2 mirrors that with 3.dp.
-            .padding(if (v2Presentation) 3.dp else 4.dp),
+            .padding(if (v2Presentation) 0.dp else 4.dp),
         horizontalAlignment = Alignment.Start,
     ) {
         val sourceBundle = LocalSourceBundleController.current
