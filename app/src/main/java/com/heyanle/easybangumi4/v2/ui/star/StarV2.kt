@@ -1,4 +1,7 @@
-@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@file:OptIn(
+    androidx.compose.material3.ExperimentalMaterial3Api::class,
+    androidx.compose.foundation.ExperimentalFoundationApi::class,
+)
 
 package com.heyanle.easybangumi4.v2.ui.star
 
@@ -32,6 +35,7 @@ import androidx.compose.material.icons.filled.SyncAlt
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.filled.Update
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -50,6 +54,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -64,6 +69,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
+import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.star.isInner
 import com.heyanle.easybangumi4.navigationCartoonTag
 import com.heyanle.easybangumi4.navigationDetailed
@@ -78,8 +84,9 @@ import com.heyanle.easybangumi4.ui.main.star.CartoonStarProcBottomSheet
 import com.heyanle.easybangumi4.ui.main.star.StarViewModel
 import com.heyanle.easybangumi4.v2.theme.V2Tokens
 import com.heyanle.easybangumi4.v2.theme.V2Theme
-import com.heyanle.easybangumi4.v2.ui.component.V2ScrollableTabs
-import com.heyanle.easybangumi4.v2.ui.component.V2TabStyle
+import com.heyanle.easybangumi4.v2.ui.component.V2TabPage
+import com.heyanle.easybangumi4.v2.ui.component.V2TabBadge
+import com.heyanle.easybangumi4.v2.ui.component.V2TabLabelText
 import com.heyanle.easybangumi4.v2.ui.component.V2CountBadge
 
 /**
@@ -123,6 +130,14 @@ internal fun StarV2() {
         starViewModel.onSelectionExit()
     }
 
+    val onCartoonClick: (CartoonInfo) -> Unit = { cartoon ->
+        if (state.selection.isEmpty()) {
+            navController.navigationDetailed(cartoon.id, cartoon.url, cartoon.source)
+        } else {
+            starViewModel.onSelectionChange(cartoon)
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -159,37 +174,48 @@ internal fun StarV2() {
                 modifier = Modifier.fillMaxSize(),
                 loadingMsg = "正在加载追番",
             )
-        } else {
-            if (state.tagList.size > 1) {
-                V2ScrollableTabs(
-                    labels = state.tagList.map { it.display },
-                    selectedIndex = state.tagList.indexOf(state.curTab).coerceAtLeast(0),
-                    onSelected = { index ->
-                        state.tagList.getOrNull(index)?.let(starViewModel::changeTab)
-                    },
-                    style = V2TabStyle.SecondaryDot,
-                    badges = state.tagList.map { tag ->
-                        state.data[tag.label]?.size ?: 0
-                    },
-                )
-                HorizontalDivider(color = V2Tokens.Divider)
-            }
-
-            val list = state.data[state.curTab?.label].orEmpty()
-            StarListV1CopyV2(
-                cartoons = list,
-                selection = state.selection,
-                tabKey = state.curTab?.label,
-                onRefresh = starViewModel::onUpdate,
-                onClick = { cartoon ->
-                    if (state.selection.isEmpty()) {
-                        navController.navigationDetailed(cartoon.id, cartoon.url, cartoon.source)
+        } else if (state.tagList.size > 1) {
+            val pagerState = rememberPagerState(
+                initialPage = state.tagList.indexOf(state.curTab).coerceAtLeast(0),
+            ) { state.tagList.size }
+            V2TabPage(
+                pagerModifier = Modifier.weight(1f),
+                tabSize = state.tagList.size,
+                pagerState = pagerState,
+                onTabSelect = { index ->
+                    state.tagList.getOrNull(index)?.let(starViewModel::changeTab)
+                },
+                tabs = { index, selected ->
+                    val tag = state.tagList.getOrNull(index)
+                    val count = tag?.let { state.data[it.label]?.size ?: 0 } ?: 0
+                    if (tag == null) {
+                        V2TabLabelText("", selected)
+                    } else if (count > 0) {
+                        BadgedBox(badge = { V2TabBadge(count) }) {
+                            V2TabLabelText(tag.display, selected)
+                        }
                     } else {
-                        starViewModel.onSelectionChange(cartoon)
+                        V2TabLabelText(tag.display, selected)
                     }
                 },
+            ) { pageIndex ->
+                val tab = state.tagList.getOrNull(pageIndex)
+                StarListV1CopyV2(
+                    cartoons = state.data[tab?.label].orEmpty(),
+                    selection = state.selection,
+                    onRefresh = starViewModel::onUpdate,
+                    onClick = onCartoonClick,
+                    onLongPress = starViewModel::onSelectionLongPress,
+                )
+            }
+        } else {
+            StarListV1CopyV2(
+                cartoons = state.data[state.curTab?.label].orEmpty(),
+                selection = state.selection,
+                onRefresh = starViewModel::onUpdate,
+                onClick = onCartoonClick,
                 onLongPress = starViewModel::onSelectionLongPress,
-                nestedScrollConnection = scrollBehavior.nestedScrollConnection.takeIf { state.tagList.size <= 1 },
+                nestedScrollConnection = scrollBehavior.nestedScrollConnection,
             )
         }
     }

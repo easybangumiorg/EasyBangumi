@@ -47,25 +47,11 @@ internal fun V2ScrollableTabs(
                 text = {
                     val badgeCount = badges.elementAtOrNull(index) ?: 0
                     if (badgeCount > 0) {
-                        BadgedBox(
-                            badge = {
-                                Badge(
-                                    containerColor = V2Theme.colors.accent,
-                                    contentColor = V2Tokens.Surface,
-                                ) {
-                                    Text(
-                                        text = if (badgeCount > 99) "99+" else badgeCount.toString(),
-                                        fontSize = 9.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        maxLines = 1,
-                                    )
-                                }
-                            },
-                        ) {
-                            TabLabelText(label, selected = index == safeIndex)
+                        BadgedBox(badge = { V2TabBadge(badgeCount) }) {
+                            V2TabLabelText(label, selected = index == safeIndex)
                         }
                     } else {
-                        TabLabelText(label, selected = index == safeIndex)
+                        V2TabLabelText(label, selected = index == safeIndex)
                     }
                 },
             )
@@ -74,10 +60,25 @@ internal fun V2ScrollableTabs(
 }
 
 @Composable
-private fun TabLabelText(label: String, selected: Boolean) {
+internal fun V2TabLabelText(label: String, selected: Boolean) {
     Text(
         text = label,
         color = if (selected) V2Theme.colors.accent else V2Tokens.TextSecondary,
         fontWeight = FontWeight.Medium,
     )
+}
+
+@Composable
+internal fun V2TabBadge(count: Int) {
+    Badge(
+        containerColor = V2Theme.colors.accent,
+        contentColor = V2Tokens.Surface,
+    ) {
+        Text(
+            text = if (count > 99) "99+" else count.toString(),
+            fontSize = 9.sp,
+            fontWeight = FontWeight.SemiBold,
+            maxLines = 1,
+        )
+    }
 }
