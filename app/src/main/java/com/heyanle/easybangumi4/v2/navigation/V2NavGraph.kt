@@ -1,7 +1,6 @@
 package com.heyanle.easybangumi4.v2.navigation
 
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.fillMaxSize
@@ -116,8 +115,10 @@ fun V2NavGraph(
             navController = navController,
             startDestination = startDestination,
             modifier = Modifier.fillMaxSize(),
+            // 前进退场保持纯滑动（与 pop 方向对称）：A 页全程不透明，
+            // 避免 fadeOut 半透明期与进入页混色造成的闪烁/透底观感。
             enterTransition = { slideInHorizontally(tween()) { it } },
-            exitTransition = { slideOutHorizontally(tween()) { -it } + fadeOut(tween()) },
+            exitTransition = { slideOutHorizontally(tween()) { -it } },
             popEnterTransition = { slideInHorizontally(tween()) { -it } },
             popExitTransition = { slideOutHorizontally(tween()) { it } },
         ) {

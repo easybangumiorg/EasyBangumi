@@ -1,7 +1,6 @@
 package com.heyanle.easybangumi4
 
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.fillMaxSize
@@ -235,8 +234,9 @@ fun Nav() {
         Box(Modifier.fillMaxSize()) {
             NavHost(nav, DEFAULT,
             modifier = Modifier.fillMaxSize(),
+            // 前进退场保持纯滑动（与 pop 方向对称），避免 fadeOut 半透明期闪烁。
             enterTransition = { slideInHorizontally(tween()) { it } },
-            exitTransition = { slideOutHorizontally(tween()) { -it } + fadeOut(tween()) },
+            exitTransition = { slideOutHorizontally(tween()) { -it } },
             popEnterTransition = { slideInHorizontally(tween()) { -it } },
             popExitTransition = { slideOutHorizontally(tween()) { it } }
         ) {
