@@ -185,6 +185,39 @@ class DanmakuPlaybackViewModelTest {
     }
 
     @Test
+    fun manualEpisodeOffsetReplaysOnFollowingEpisodesAndFallsBackWhenOutOfRange() = runTest {
+        val manualBangumi = bangumi(id = 20L, title = "人工番剧")
+        val remoteEpisodes = listOf(
+            episode(201L, manualBangumi),
+            episode(202L, manualBangumi),
+            episode(203L, manualBangumi),
+        )
+        val store = FakeStore().apply {
+            searchHandler = { query ->
+                if (query == "人工") DanmakuResult.Success(listOf(manualBangumi))
+                else DanmakuResult.Success(emptyList())
+            }
+            episodeHandler = { DanmakuResult.Success(remoteEpisodes) }
+        }
+        val model = model(store)
+        // 播放位置 2，手动指定弹幕位置 3：记录偏移 +1。
+        start(model, "local-2", 2)
+        advanceUntilIdle()
+        commitManual(model, manualBangumi, remoteEpisodes[2])
+
+        // 切到位置 3：偏移 +1 指向位置 4，越界后回退位置一一对应 -> 203。
+        model.onPlaybackTargetChanged(episodeContext("local-3", 3, lineId = "other-line"))
+        advanceUntilIdle()
+        assertEquals(203L, store.lastSavedBinding?.remoteEpisodeId)
+
+        // 切到位置 1：偏移 +1 命中位置 2 -> 202，而非位置一一对应的 201。
+        model.onPlaybackTargetChanged(episodeContext("local-1", 1, lineId = "third-line"))
+        advanceUntilIdle()
+        assertEquals(202L, store.lastSavedBinding?.remoteEpisodeId)
+        assertEquals(DanmakuMatchOrigin.MANUAL, model.state.value.bangumiSelection?.origin)
+    }
+
+    @Test
     fun automaticBangumiIsReusedAndCurrentSortPositionAloneSelectsEpisode() = runTest {
         val store = FakeStore()
         val model = model(store)

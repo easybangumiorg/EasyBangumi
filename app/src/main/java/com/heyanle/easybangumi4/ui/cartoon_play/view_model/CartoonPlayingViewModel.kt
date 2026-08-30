@@ -233,19 +233,16 @@ class CartoonPlayingViewModel(
     private val playbackResumeCheckpoint = PlaybackResumeCheckpoint()
 
     // 播放状态 =================================================
+    // isLoading 只表示"正在解析片源"：全屏加载页仅覆盖该阶段；
+    // 起播连接与播放中的缓冲统一由 ControlViewModel.isLoading 驱动画面中央转圈，
+    // 不阻塞控制层、手势与切集操作。两个播放引擎（Exo / mpv）行为一致。
     data class PlayingState(
         val isLoading: Boolean = true,
-        val loadingPhase: LoadingPhase = LoadingPhase.SOURCE_RESOLUTION,
         val isPlaying: Boolean = false,
         val isError: Boolean = false,
         val errorMsg: String = "",
         val errorThrowable: Throwable? = null
     )
-
-    enum class LoadingPhase {
-        SOURCE_RESOLUTION,
-        PLAYER_CONNECTION,
-    }
 
     private data class ResolvedPlayback(
         val summary: CartoonSummary,
@@ -284,12 +281,9 @@ class CartoonPlayingViewModel(
         playerController.addListener(object : EasyPlayerController.Listener {
             override fun onPlaybackStateChanged(state: EasyPlaybackState) {
                 when (state) {
-                    EasyPlaybackState.BUFFERING -> _playingState.update {
-                        it.copy(
-                            isLoading = true,
-                            loadingPhase = LoadingPhase.PLAYER_CONNECTION,
-                        )
-                    }
+                    // 缓冲（起播、seek、卡顿）只呈现画面中央转圈，不再把 App 层
+                    // isLoading 置真，避免整个播放器被加载页阻塞。
+                    EasyPlaybackState.BUFFERING -> Unit
                     EasyPlaybackState.READY -> {
                         duringTemp = playerController.duration
                         _playingState.update {
@@ -614,10 +608,7 @@ class CartoonPlayingViewModel(
 
         playerController.pause()
         _playingState.update {
-            it.copy(
-                isLoading = true,
-                loadingPhase = LoadingPhase.SOURCE_RESOLUTION,
-            )
+            it.copy(isLoading = true)
         }
         val play = sourceStateCase.awaitBundle().play(cartoonPlayingState.cartoonSummary.source)
         if (play == null) {
@@ -788,11 +779,12 @@ class CartoonPlayingViewModel(
                 startPositionMs = adviceProcess.coerceAtLeast(0L),
                 playWhenReady = playWhenReady,
             )
+            // mpv 的连接阶段同样只呈现中央转圈，与 Exo 保持一致；
+            // isPlaying 与 Exo 相同乐观置真，保证顶栏工具在连接期可见。
             _playingState.update {
                 it.copy(
-                    isLoading = true,
-                    loadingPhase = LoadingPhase.PLAYER_CONNECTION,
-                    isPlaying = false,
+                    isLoading = false,
+                    isPlaying = true,
                     isError = false,
                 )
             }

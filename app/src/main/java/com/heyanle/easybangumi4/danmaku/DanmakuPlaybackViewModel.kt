@@ -101,6 +101,10 @@ class DanmakuPlaybackViewModel(
     private var manualRequestGeneration = 0L
     private var automaticBangumiAttempted = false
 
+    // 手动指定弹幕集时记录的集数偏移（弹幕集位置 - 播放集位置）。
+    // 之后切到 a + n 集时优先按偏移匹配 b + n 集；更换番剧或重新手动匹配时重算或清空。
+    private var manualEpisodeOffset: Int? = null
+
     fun onBangumiDetailAvailable(context: DanmakuBangumiContext?) {
         if (context == currentBangumiContext) return
         val compatibleTarget = currentEpisodeContext?.takeIf {
@@ -170,6 +174,8 @@ class DanmakuPlaybackViewModel(
             context.playbackKey.cartoonId != bangumi.cartoonId ||
             context.playbackKey.cartoonSourceId != bangumi.cartoonSourceId
         ) {
+            // 偏移量依附于原番剧的弹幕选集列表，换番剧后即失效。
+            manualEpisodeOffset = null
             _state.update {
                 it.copy(
                     bangumiSelection = null,
@@ -386,6 +392,11 @@ class DanmakuPlaybackViewModel(
         )
         invalidateManualRequests()
 
+        // 记录本次手动指定的集数偏移（弹幕集位置 - 播放集位置）：
+        // 之后从 a 集切到 a + n 集时优先匹配 b + n 集。
+        manualEpisodeOffset =
+            manual.episodes.indexOf(episode) + 1 - context.sortedEpisodePosition
+
         val binding = createBinding(
             context = context,
             sourceId = manual.sourceId,
@@ -547,10 +558,21 @@ class DanmakuPlaybackViewModel(
         episodeJob?.cancel()
         _state.update { it.copy(status = DanmakuPlaybackStatus.MatchingEpisode) }
         episodeJob = viewModelScope.launch {
-            val episode = DanmakuMatchPolicy.matchEpisode(
-                request = DanmakuEpisodeMatchRequest(context.sortedEpisodePosition),
-                episodes = selection.episodes,
-            ).matchedEpisodeOrNull()
+            val request = DanmakuEpisodeMatchRequest(context.sortedEpisodePosition)
+            // 手动指定过弹幕集时优先按记录的偏移匹配（b 集 -> b + n 集），
+            // 偏移越界再回退到本地排序位置一一对应。
+            val episode = manualEpisodeOffset
+                ?.let { offset ->
+                    DanmakuMatchPolicy.matchEpisodeWithOffset(
+                        request = request,
+                        episodes = selection.episodes,
+                        episodeOffset = offset,
+                    ).matchedEpisodeOrNull()
+                }
+                ?: DanmakuMatchPolicy.matchEpisode(
+                    request = request,
+                    episodes = selection.episodes,
+                ).matchedEpisodeOrNull()
             if (!requestCoordinator.isCurrent(session) ||
                 _state.value.bangumiSelection !== selection ||
                 currentEpisodeContext != context
@@ -749,6 +771,7 @@ class DanmakuPlaybackViewModel(
         invalidateManualRequests()
         requestCoordinator.invalidate()
         currentSession = null
+        manualEpisodeOffset = null
         _state.update {
             it.copy(
                 bangumiSelection = null,

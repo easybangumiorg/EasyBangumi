@@ -241,15 +241,7 @@ fun VideoFloat(
                             MutableInteractionSource()
                         }
                     ),
-                loadingMsg = stringResource(
-                    id = if (
-                        playingState.loadingPhase == CartoonPlayingViewModel.LoadingPhase.SOURCE_RESOLUTION
-                    ) {
-                        R.string.parsing
-                    } else {
-                        R.string.loading
-                    },
-                ),
+                loadingMsg = stringResource(id = R.string.parsing),
                 msgColor = Color.White
             )
             IconButton(

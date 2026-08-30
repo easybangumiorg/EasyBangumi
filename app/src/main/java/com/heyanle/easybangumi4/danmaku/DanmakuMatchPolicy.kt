@@ -49,6 +49,26 @@ internal object DanmakuMatchPolicy {
         )
     }
 
+    /**
+     * Matches the request position shifted by a manually recorded offset.
+     *
+     * [episodeOffset] = remote episode position - local playback position, captured when the user
+     * hand-picks an episode (playing a, picked b -> b - a). Shifting the current position by it
+     * replays the same choice on later episodes (a + n -> b + n). An out-of-range shifted position
+     * yields episode = null so callers can fall back to [matchEpisode].
+     */
+    fun matchEpisodeWithOffset(
+        request: DanmakuEpisodeMatchRequest,
+        episodes: List<DanmakuEpisode>,
+        episodeOffset: Int,
+    ): DanmakuEpisodeMatch {
+        val shiftedPosition = request.sortedEpisodePosition + episodeOffset
+        return DanmakuEpisodeMatch(
+            episode = shiftedPosition.takeIf { it > 0 }?.let { episodes.getOrNull(it - 1) },
+            sortedEpisodePosition = request.sortedEpisodePosition,
+        )
+    }
+
     fun titleSimilarity(first: String, second: String): Double {
         val normalizedFirst = normalizeTitle(first)
         val normalizedSecond = normalizeTitle(second)

@@ -91,6 +91,59 @@ class DanmakuMatchPolicyTest {
         )
     }
 
+    @Test
+    fun offsetMatchShiftsPositionAndKeepsLocalPositionUnchanged() {
+        val episodes = listOf(episode(201L), episode(202L), episode(203L))
+        val request = DanmakuEpisodeMatchRequest(sortedEpisodePosition = 1)
+
+        val result = DanmakuMatchPolicy.matchEpisodeWithOffset(
+            request = request,
+            episodes = episodes,
+            episodeOffset = 2,
+        )
+
+        assertEquals(203L, result.matchedEpisodeOrNull()?.remoteEpisodeId)
+        assertEquals(1, result.sortedEpisodePosition)
+    }
+
+    @Test
+    fun offsetMatchNeverResolvesWhenShiftedPositionLeavesTheList() {
+        val episodes = listOf(episode(201L), episode(202L), episode(203L))
+
+        // 正向越界与负向越界（shifted <= 0）都不得命中任何选集。
+        assertNull(
+            DanmakuMatchPolicy.matchEpisodeWithOffset(
+                DanmakuEpisodeMatchRequest(3),
+                episodes,
+                episodeOffset = 1,
+            ).matchedEpisodeOrNull(),
+        )
+        assertNull(
+            DanmakuMatchPolicy.matchEpisodeWithOffset(
+                DanmakuEpisodeMatchRequest(2),
+                episodes,
+                episodeOffset = -2,
+            ).matchedEpisodeOrNull(),
+        )
+    }
+
+    @Test
+    fun zeroOffsetMatchesSamePositionAsPlainEpisodeMatch() {
+        val episodes = listOf(episode(201L), episode(202L))
+
+        val offsetResult = DanmakuMatchPolicy.matchEpisodeWithOffset(
+            DanmakuEpisodeMatchRequest(2),
+            episodes,
+            episodeOffset = 0,
+        )
+        val plainResult = DanmakuMatchPolicy.matchEpisode(
+            DanmakuEpisodeMatchRequest(2),
+            episodes,
+        )
+
+        assertEquals(plainResult.matchedEpisodeOrNull(), offsetResult.matchedEpisodeOrNull())
+    }
+
     private fun bangumi(id: Long = 10L, title: String) = DanmakuBangumi(
         remoteAnimeId = id,
         remoteBangumiId = id.toString(),
