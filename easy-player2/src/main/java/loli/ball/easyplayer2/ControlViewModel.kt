@@ -306,7 +306,11 @@ class ControlViewModel(
         isLongPress = true
     }
 
-    fun onSingleClick() {
+    // 全屏控制浮层的水平位置跟随最近一次单击的点击侧（true = 右侧）。
+    var sideControlsOnRight by mutableStateOf(true)
+
+    fun onSingleClick(tapOnRight: Boolean = true) {
+        sideControlsOnRight = tapOnRight
         if (isNormalLockedControlShow) {
             isNormalLockedControlShow = false
         } else {

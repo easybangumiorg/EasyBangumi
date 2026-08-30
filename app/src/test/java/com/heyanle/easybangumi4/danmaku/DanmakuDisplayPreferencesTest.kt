@@ -28,6 +28,8 @@ class DanmakuDisplayPreferencesTest {
         assertEquals("danmaku_time_offset_millis", preferences.timeOffsetMillis.key())
         assertEquals("danmaku_opacity", preferences.opacity.key())
         assertEquals("danmaku_area_ratio", preferences.areaRatio.key())
+        assertEquals("danmaku_density_ratio", preferences.densityRatio.key())
+        assertEquals("danmaku_merge_repeat_window_millis", preferences.mergeRepeatWindowMillis.key())
     }
 
     @Test
@@ -38,6 +40,8 @@ class DanmakuDisplayPreferencesTest {
             scrollSpeed = 0.1f,
             opacity = 0.01f,
             areaRatio = 0.1f,
+            densityRatio = 0.01f,
+            mergeRepeatWindowMillis = -100L,
         ).normalized()
 
         assertEquals(DanmakuDisplayConfig.FONT_SIZE_SP_RANGE.start, clamped.fontSizeSp)
@@ -48,6 +52,8 @@ class DanmakuDisplayPreferencesTest {
         assertEquals(DanmakuDisplayConfig.SCROLL_SPEED_RANGE.start, clamped.scrollSpeed)
         assertEquals(DanmakuDisplayConfig.OPACITY_RANGE.start, clamped.opacity)
         assertEquals(0.25f, clamped.areaRatio)
+        assertEquals(DanmakuDisplayConfig.DENSITY_RATIO_RANGE.start, clamped.densityRatio)
+        assertEquals(0L, clamped.mergeRepeatWindowMillis)
 
         val invalid = DanmakuDisplayConfig(
             fontSizeSp = Float.NaN,
@@ -62,6 +68,8 @@ class DanmakuDisplayPreferencesTest {
         assertEquals(DanmakuDisplayConfig.DEFAULT_SCROLL_SPEED, invalid.scrollSpeed)
         assertEquals(DanmakuDisplayConfig.DEFAULT_OPACITY, invalid.opacity)
         assertEquals(DanmakuDisplayConfig.DEFAULT_AREA_RATIO, invalid.areaRatio)
+        assertEquals(DanmakuDisplayConfig.DEFAULT_DENSITY_RATIO, invalid.densityRatio)
+        assertEquals(DanmakuDisplayConfig.DEFAULT_MERGE_REPEAT_WINDOW_MILLIS, invalid.mergeRepeatWindowMillis)
     }
 
     @Test

@@ -25,6 +25,7 @@ internal enum class DanmakuRendererConfigEffect {
     VISIBILITY_ONLY,
     CONTENT,
     STYLE,
+    REPLACE_ITEMS,
 }
 
 internal fun classifyDanmakuConfigChange(
@@ -37,6 +38,15 @@ internal fun classifyDanmakuConfigChange(
     // 变化时视图自身重排，不需要任何原生渲染命令。
     if (previous.areaRatio != next.areaRatio && previous.copy(areaRatio = next.areaRatio) == next) {
         return DanmakuRendererConfigEffect.NONE
+    }
+
+    if (
+        previous.densityRatio != next.densityRatio ||
+        previous.mergeRepeatWindowMillis != next.mergeRepeatWindowMillis
+    ) {
+        // 数量抽样与复读合并作用于弹幕条目集本身，必须重建时间轴；
+        // 该效果优先级最高，与样式字段同时变化时由 STYLE 路径顺带应用原生样式。
+        return DanmakuRendererConfigEffect.REPLACE_ITEMS
     }
 
     if (
@@ -133,7 +143,14 @@ internal class DanmakuRendererSyncPolicy {
          *
          * It is equally important not to seek: DFM 0.9.25 implements seek as a stop-and-resume
          * transition and can briefly move a paused timeline.
+         *
+         * Exception: density sampling and repeat merging transform the item set itself, so they
+         * explicitly request a rebuild. The brief refresh is the expected feedback for those
+         * two sliders.
          */
+        if (effect == DanmakuRendererConfigEffect.REPLACE_ITEMS) {
+            return replaceItemsAtDesiredPosition()
+        }
         return emptyList()
     }
 

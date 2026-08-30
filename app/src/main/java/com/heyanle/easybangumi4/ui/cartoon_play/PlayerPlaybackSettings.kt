@@ -205,6 +205,8 @@ internal object PlayerPlaybackSettingsTestTags {
     const val FONT_SIZE = "player_danmaku_font_size"
     const val LINE_HEIGHT = "player_danmaku_line_height"
     const val SCROLL_SPEED = "player_danmaku_scroll_speed"
+    const val DENSITY = "player_danmaku_density"
+    const val MERGE_REPEAT = "player_danmaku_merge_repeat"
     const val OPACITY = "player_danmaku_opacity"
     const val AREA = "player_danmaku_area"
     const val TIME_OFFSET = "player_danmaku_time_offset"
@@ -773,6 +775,39 @@ internal fun DanmakuDisplaySettingsContent(
             modifier = Modifier.testTag(PlayerPlaybackSettingsTestTags.SCROLL_SPEED),
             sliderTestTag = "${PlayerPlaybackSettingsTestTags.SCROLL_SPEED}_slider",
         )
+        DanmakuValueSlider(
+            title = "弹幕数量",
+            valueLabel = "${(config.densityRatio * 100).roundToInt()}%",
+            value = config.densityRatio,
+            valueRange = DanmakuDisplayConfig.DENSITY_RATIO_RANGE,
+            steps = 8,
+            onValueChange = {
+                onConfigChange(config.copy(densityRatio = it).normalized())
+            },
+            modifier = Modifier.testTag(PlayerPlaybackSettingsTestTags.DENSITY),
+            sliderTestTag = "${PlayerPlaybackSettingsTestTags.DENSITY}_slider",
+        )
+        DanmakuValueSlider(
+            title = "复读合并",
+            valueLabel = if (config.mergeRepeatWindowMillis <= 0L) {
+                "不合并"
+            } else {
+                "${config.mergeRepeatWindowMillis / 1000}s"
+            },
+            value = config.mergeRepeatWindowMillis.toFloat(),
+            valueRange = DanmakuDisplayConfig.MERGE_REPEAT_WINDOW_RANGE.start.toFloat()
+                ..DanmakuDisplayConfig.MERGE_REPEAT_WINDOW_RANGE.endInclusive.toFloat(),
+            steps = 4,
+            onValueChange = {
+                onConfigChange(
+                    config.copy(
+                        mergeRepeatWindowMillis = (it / 1000f).roundToInt() * 1000L,
+                    ),
+                )
+            },
+            modifier = Modifier.testTag(PlayerPlaybackSettingsTestTags.MERGE_REPEAT),
+            sliderTestTag = "${PlayerPlaybackSettingsTestTags.MERGE_REPEAT}_slider",
+        )
 
         SettingsGroupTitle("时间校准")
         Row(
@@ -828,7 +863,7 @@ internal fun DanmakuDisplaySettingsContent(
         AlertDialog(
             onDismissRequest = { confirmReset = false },
             title = { Text("恢复弹幕默认设置？") },
-            text = { Text("将恢复显示类型、显示区域、不透明度、字体大小、行高、滚动速度和时间偏移。") },
+            text = { Text("将恢复显示类型、显示区域、不透明度、字体大小、行高、滚动速度、数量、复读合并和时间偏移。") },
             confirmButton = {
                 TextButton(
                     modifier = Modifier.testTag(PlayerPlaybackSettingsTestTags.RESET_CONFIRM),

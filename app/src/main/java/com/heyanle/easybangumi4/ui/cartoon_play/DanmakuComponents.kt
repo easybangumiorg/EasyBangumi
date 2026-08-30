@@ -5,10 +5,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -282,101 +284,149 @@ fun DanmakuMatchBottomSheet(
     onEpisodeSelect: (DanmakuEpisode) -> Unit,
     onBackToBangumiSelection: () -> Unit,
     onDismiss: () -> Unit,
+    isFullScreen: Boolean = false,
 ) {
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        scrimColor = Color.Black.copy(alpha = 0.32f),
-        containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
-    ) {
-        Column(
-            modifier = Modifier.padding(bottom = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+    if (isFullScreen) {
+        // 全屏与播放器其他设置面板一致：右侧滑入、固定高度、列表占满剩余空间。
+        FullscreenPlayerSidePanel(
+            visible = true,
+            onDismiss = onDismiss,
         ) {
+            DanmakuMatchPanel(
+                state = state,
+                onQueryChange = onQueryChange,
+                onSearch = onSearch,
+                onBangumiSelect = onBangumiSelect,
+                onEpisodeSelect = onEpisodeSelect,
+                onBackToBangumiSelection = onBackToBangumiSelection,
+                modifier = Modifier.fillMaxSize(),
+            )
+        }
+    } else {
+        ModalBottomSheet(
+            onDismissRequest = onDismiss,
+            scrimColor = Color.Black.copy(alpha = 0.32f),
+            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
+        ) {
+            DanmakuMatchPanel(
+                state = state,
+                onQueryChange = onQueryChange,
+                onSearch = onSearch,
+                onBangumiSelect = onBangumiSelect,
+                onEpisodeSelect = onEpisodeSelect,
+                onBackToBangumiSelection = onBackToBangumiSelection,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(420.dp),
+            )
+        }
+    }
+}
+
+/**
+ * 匹配面板内容：固定外层高度（竖屏最小 420dp / 全屏占满面板），
+ * 列表通过 weight 占满剩余空间——切换搜索状态时整体高度不再跳变。
+ */
+@Composable
+private fun ColumnScope.DanmakuMatchPanel(
+    state: DanmakuManualMatchState,
+    onQueryChange: (String) -> Unit,
+    onSearch: () -> Unit,
+    onBangumiSelect: (DanmakuBangumi) -> Unit,
+    onEpisodeSelect: (DanmakuEpisode) -> Unit,
+    onBackToBangumiSelection: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 24.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = "匹配弹幕",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.SemiBold,
+            )
+        }
+        Text(
+            modifier = Modifier.padding(horizontal = 24.dp),
+            text = "先匹配对应番剧，再为当前播放位置匹配选集。",
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        DanmakuMatchProgress(
+            modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp),
+            page = state.page,
+        )
+
+        if (state.page == DanmakuMatchPage.BANGUMI) {
             Row(
                 modifier = Modifier.padding(horizontal = 24.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    text = "匹配弹幕",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.SemiBold,
+                OutlinedTextField(
+                    modifier = Modifier.weight(1f),
+                    value = state.query,
+                    onValueChange = onQueryChange,
+                    label = { Text("番名") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                    keyboardActions = KeyboardActions(
+                        onSearch = {
+                            if (!state.isSearching && state.query.isNotBlank()) onSearch()
+                        },
+                    ),
                 )
+                Spacer(Modifier.width(8.dp))
+                FilledTonalButton(
+                    onClick = onSearch,
+                    enabled = !state.isSearching && state.query.isNotBlank(),
+                ) {
+                    if (state.isSearching) {
+                        CircularProgressIndicator(modifier = Modifier.width(18.dp), strokeWidth = 2.dp)
+                    } else {
+                        Icon(Icons.Filled.Search, contentDescription = null)
+                    }
+                    Spacer(Modifier.width(6.dp))
+                    Text("搜索")
+                }
             }
+        } else {
+            SelectedDanmakuBangumi(
+                bangumi = state.selectedBangumi,
+                onChangeBangumi = onBackToBangumiSelection,
+            )
+        }
+
+        state.errorMessage?.let {
             Text(
                 modifier = Modifier.padding(horizontal = 24.dp),
-                text = "先匹配对应番剧，再为当前播放位置匹配选集。",
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                text = it,
+                color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodyMedium,
             )
-            DanmakuMatchProgress(
-                modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp),
-                page = state.page,
+        }
+
+        HorizontalDivider()
+        if (state.page == DanmakuMatchPage.BANGUMI) {
+            DanmakuBangumiCandidates(
+                candidates = state.candidates,
+                hasSearched = state.hasSearched,
+                isSearching = state.isSearching,
+                onBangumiSelect = onBangumiSelect,
+                modifier = Modifier.weight(1f),
             )
-
-            if (state.page == DanmakuMatchPage.BANGUMI) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 24.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    OutlinedTextField(
-                        modifier = Modifier.weight(1f),
-                        value = state.query,
-                        onValueChange = onQueryChange,
-                        label = { Text("番名") },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                        keyboardActions = KeyboardActions(
-                            onSearch = {
-                                if (!state.isSearching && state.query.isNotBlank()) onSearch()
-                            },
-                        ),
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    FilledTonalButton(
-                        onClick = onSearch,
-                        enabled = !state.isSearching && state.query.isNotBlank(),
-                    ) {
-                        if (state.isSearching) {
-                            CircularProgressIndicator(modifier = Modifier.width(18.dp), strokeWidth = 2.dp)
-                        } else {
-                            Icon(Icons.Filled.Search, contentDescription = null)
-                        }
-                        Spacer(Modifier.width(6.dp))
-                        Text("搜索")
-                    }
-                }
-            } else {
-                SelectedDanmakuBangumi(
-                    bangumi = state.selectedBangumi,
-                    onChangeBangumi = onBackToBangumiSelection,
-                )
-            }
-
-            state.errorMessage?.let {
-                Text(
-                    modifier = Modifier.padding(horizontal = 24.dp),
-                    text = it,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-
-            HorizontalDivider()
-            if (state.page == DanmakuMatchPage.BANGUMI) {
-                DanmakuBangumiCandidates(
-                    candidates = state.candidates,
-                    hasSearched = state.hasSearched,
-                    isSearching = state.isSearching,
-                    onBangumiSelect = onBangumiSelect,
-                )
-            } else {
-                DanmakuEpisodeCandidates(
-                    isLoading = state.isLoadingEpisodes,
-                    episodes = state.episodes,
-                    selectedEpisodeId = state.selectedEpisode?.remoteEpisodeId,
-                    onEpisodeSelect = onEpisodeSelect,
-                )
-            }
+        } else {
+            DanmakuEpisodeCandidates(
+                isLoading = state.isLoadingEpisodes,
+                episodes = state.episodes,
+                selectedEpisodeId = state.selectedEpisode?.remoteEpisodeId,
+                onEpisodeSelect = onEpisodeSelect,
+                modifier = Modifier.weight(1f),
+            )
         }
     }
 }
@@ -489,6 +539,7 @@ private fun SelectedDanmakuBangumi(
 
 @Composable
 private fun DanmakuBangumiCandidates(
+    modifier: Modifier = Modifier,
     candidates: List<DanmakuBangumi>,
     hasSearched: Boolean,
     isSearching: Boolean,
@@ -512,7 +563,7 @@ private fun DanmakuBangumiCandidates(
         style = MaterialTheme.typography.titleSmall,
         fontWeight = FontWeight.SemiBold,
     )
-    LazyColumn(modifier = Modifier.heightIn(max = 440.dp)) {
+    LazyColumn(modifier = modifier) {
         items(candidates, key = { it.remoteAnimeId }) { bangumi ->
             ListItem(
                 modifier = Modifier
@@ -566,6 +617,7 @@ private fun DanmakuBangumiCover(bangumi: DanmakuBangumi) {
 
 @Composable
 private fun DanmakuEpisodeCandidates(
+    modifier: Modifier = Modifier,
     isLoading: Boolean,
     episodes: List<DanmakuEpisode>,
     selectedEpisodeId: Long?,
@@ -580,7 +632,7 @@ private fun DanmakuEpisodeCandidates(
     if (isLoading) {
         LinearProgressIndicator(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp))
     }
-    LazyColumn(modifier = Modifier.heightIn(max = 440.dp)) {
+    LazyColumn(modifier = modifier) {
         items(episodes, key = { it.remoteEpisodeId }) { episode ->
             val isSelected = episode.remoteEpisodeId == selectedEpisodeId
             ListItem(

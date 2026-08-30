@@ -148,9 +148,9 @@ fun GestureController(
             .pointerInput("单机双击", true) {
                 // 双击
                 detectTapGestures(
-                    onTap = {
+                    onTap = { tapOffset ->
                         "onTap".loge("GestureController")
-                        vm.onSingleClick()
+                        vm.onSingleClick(tapOffset.x > viewSize.width / 2f)
                     },
                     onDoubleTap = {
                         "onDoubleTap".loge("GestureController")
@@ -261,9 +261,9 @@ fun GestureController(
             .pointerInput("单机双击", true) {
                 // 双击
                 detectTapGestures(
-                    onTap = {
+                    onTap = { tapOffset ->
                         "onTap".loge("GestureController")
-                        vm.onSingleClick()
+                        vm.onSingleClick(tapOffset.x > viewSize.width / 2f)
                     },
                     onDoubleTap = {
                         "onDoubleTap".loge("GestureController")

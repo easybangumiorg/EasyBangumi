@@ -26,6 +26,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -80,6 +83,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -99,6 +103,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.stateDescription
@@ -127,6 +132,7 @@ import com.heyanle.easybangumi4.ui.cartoon_play.view_model.DetailedViewModel
 import com.heyanle.easybangumi4.ui.common.CombineClickIconButton
 import com.heyanle.easybangumi4.ui.common.ErrorPage
 import com.heyanle.easybangumi4.ui.common.LoadingPage
+import com.heyanle.easybangumi4.ui.common.PlayerCutoutInsets
 import com.heyanle.easybangumi4.ui.common.ToggleButton
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.bufferImageCache
@@ -228,6 +234,15 @@ fun VideoFloat(
     // 解析开始时复位上一集遗留的 Ended 态，保证解析窗口内控制浮层可唤出。
     LaunchedEffect(playingState.isLoading) {
         if (playingState.isLoading) controlVM.resetControlUiState()
+    }
+
+    // 进入全屏时允许内容延伸进刘海区（SHORT_EDGES），控制层用刘海安全边距避让；
+    // 退出全屏/离开播放页恢复系统默认模式，避免其他页面残留刘海绘制。
+    DisposableEffect(controlVM.isFullScreen) {
+        if (controlVM.isFullScreen) PlayerCutoutInsets.enableShortEdges(ctx)
+        onDispose {
+            if (controlVM.isFullScreen) PlayerCutoutInsets.resetShortEdges(ctx)
+        }
     }
 
     BackHandler(
@@ -799,6 +814,7 @@ fun VideoControl(
                     vm = controlVM,
                     modifier = Modifier
                         .align(Alignment.TopCenter)
+                        .windowInsetsPadding(WindowInsets.displayCutout)
                 ) {
                     if (onShowPlayerSettings == null) {
                         showVideoScaleTypeWin.value = true
@@ -809,12 +825,14 @@ fun VideoControl(
             }
 
 
+            // 控制浮层的水平位置跟随最近一次单击的点击侧。
+            val railOnRight = controlVM.sideControlsOnRight
             FullScreenRightToolBar(
                 vm = controlVM,
                 modifier = Modifier
                     .fillMaxHeight()
                     .defaultMinSize(64.dp, Dp.Unspecified)
-                    .align(Alignment.CenterEnd),
+                    .align(if (railOnRight) Alignment.CenterEnd else Alignment.CenterStart),
                 screenshotState = screenshotController.state,
                 // 解析中画面还是旧帧或黑屏，隐藏截图入口避免存下错误截图。
                 showCapture = !cartoonPlayingVM.isMpvEngine && !playingState.isLoading,
@@ -839,8 +857,8 @@ fun VideoControl(
             CaptureResultCard(
                 state = screenshotController.state,
                 modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .padding(end = 64.dp),
+                    .align(if (railOnRight) Alignment.CenterEnd else Alignment.CenterStart)
+                    .padding(horizontal = 64.dp),
             )
             NormalVideoTopBar(controlVM,
                 showTools = playingState.isPlaying,
@@ -905,7 +923,10 @@ fun VideoControl(
 
             EasyVideoBottomControl(
                 vm = controlVM,
-                modifier = Modifier.align(Alignment.BottomCenter),
+                // 刘海安全边距在 modifier 上避让，16dp 常规边距保持不变。
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .windowInsetsPadding(WindowInsets.displayCutout),
                 paddingValues = if (controlVM.isFullScreen) PaddingValues(
                     16.dp,
                     0.dp,
@@ -930,31 +951,77 @@ fun VideoControl(
 
 }
 
+
+/** 倍速圆钮：圆形 + "x{倍速}"，非 1x 倍速白色反色提示。 */
 @Composable
-private fun PlayerOutlinedTextButton(
-    text: String,
-    contentDescription: String,
+private fun PlayerSpeedCircleButton(
+    vm: ControlViewModel,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // 与弹幕开关一致：描边 + 反色文字，内容展示当前值（如 x1.5、选集）。
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(7.dp))
-            .background(Color.Black.copy(alpha = 0.55f))
-            .border(1.dp, Color.White.copy(alpha = 0.75f), RoundedCornerShape(7.dp))
-            .clickable(onClick = onClick)
-            .padding(horizontal = 6.dp, vertical = 5.dp)
-            .semantics { this.contentDescription = contentDescription },
-        contentAlignment = Alignment.Center,
+    PlayerSideCircleButton(
+        contentDescription = "播放速度，当前 倍速x${formatSpeedValue(vm.curSpeed)}",
+        onClick = onClick,
+        modifier = modifier,
+        active = vm.curSpeed != 1f,
     ) {
         Text(
-            text = text,
-            color = Color.White,
-            fontSize = 12.sp,
+            text = "x${formatSpeedValue(vm.curSpeed)}",
+            fontSize = 11.sp,
             fontWeight = FontWeight.Bold,
             maxLines = 1,
         )
+    }
+}
+
+/**
+ * 弹幕圆钮：圆形 + "弹" 字。
+ * 开启态 = 品牌色描边 + 品牌色文字（圆的直径与其他按钮一致）；关闭态 = 删除线 + 降透明；不可用 = 降透明。
+ */
+@Composable
+private fun PlayerDanmakuCircleButton(
+    state: PlayerDanmakuControlState,
+    modifier: Modifier = Modifier,
+) {
+    val isLoading = state.visualState == PlayerDanmakuControlState.VisualState.Loading
+    val isAvailable = state.visualState == PlayerDanmakuControlState.VisualState.Available
+    val displayOn = isAvailable && state.displayEnabled
+    PlayerSideCircleButton(
+        contentDescription = state.contentDescription,
+        onClick = state.onClick,
+        onLongClick = state.onLongClick,
+        contentColor = when {
+            displayOn -> MaterialTheme.colorScheme.primary
+            isAvailable -> Color.White
+            else -> Color.White.copy(alpha = 0.55f)
+        },
+        borderColor = if (displayOn) MaterialTheme.colorScheme.primary else null,
+        testTag = PlayerPlaybackSettingsTestTags.DANMAKU_TOGGLE,
+        stateDescription = when {
+            isLoading -> "加载中"
+            !isAvailable -> "不可用"
+            displayOn -> "已开启"
+            else -> "已关闭"
+        },
+    ) {
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
+                color = LocalContentColor.current,
+                strokeWidth = 2.dp,
+            )
+        } else {
+            Text(
+                text = "弹",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                textDecoration = if (isAvailable && !displayOn) {
+                    TextDecoration.LineThrough
+                } else {
+                    TextDecoration.None
+                },
+            )
+        }
     }
 }
 
@@ -974,6 +1041,7 @@ private fun PlayerSideCircleButton(
     active: Boolean = false,
     containerColor: Color? = null,
     contentColor: Color? = null,
+    borderColor: Color? = null,
     testTag: String? = null,
     stateDescription: String? = null,
     content: @Composable BoxScope.() -> Unit,
@@ -989,6 +1057,13 @@ private fun PlayerSideCircleButton(
             .size(40.dp)
             .clip(CircleShape)
             .background(resolvedContainer)
+            .then(
+                if (borderColor != null) {
+                    Modifier.border(2.dp, borderColor, CircleShape)
+                } else {
+                    Modifier
+                }
+            )
             .then(
                 if (onLongClick != null) {
                     Modifier.combinedClickable(
@@ -1042,7 +1117,10 @@ fun FullScreenRightToolBar(
     Box(
         modifier = modifier
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.windowInsetsPadding(WindowInsets.displayCutout),
+        ) {
             Spacer(Modifier.height(64.dp))
             // 锁定固定在第一格：锁定后浮层收起时按钮位置不变，不会跳到顶部。
             // 锁定态下 isShowOverlay() 恒为 false，解锁入口必须独立于 overlay 展示。
@@ -1112,68 +1190,10 @@ fun FullScreenRightToolBar(
                     if (vm.isFullScreen) {
                         // 非默认倍速视为激活态：白色反色提示当前不在常速播放。
                         if (speedText != null && onSpeed != null) {
-                            PlayerSideCircleButton(
-                                contentDescription = "播放速度，当前 $speedText",
-                                onClick = onSpeed,
-                                active = vm.curSpeed != 1f,
-                            ) {
-                                Text(
-                                    text = speedText,
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    maxLines = 1,
-                                )
-                            }
+                            PlayerSpeedCircleButton(vm = vm, onClick = onSpeed)
                         }
                         danmakuControlState?.let { state ->
-                            val isLoading =
-                                state.visualState == PlayerDanmakuControlState.VisualState.Loading
-                            val isAvailable =
-                                state.visualState == PlayerDanmakuControlState.VisualState.Available
-                            val displayOn = isAvailable && state.displayEnabled
-                            // 开启态用品牌色圆底（与竖屏"弹"开关一致）；
-                            // 关闭态黑蒙层 + 删除线；不可用态黑蒙层 + 降透明（不划线）。
-                            PlayerSideCircleButton(
-                                contentDescription = state.contentDescription,
-                                onClick = state.onClick,
-                                onLongClick = state.onLongClick,
-                                containerColor = if (displayOn) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    null
-                                },
-                                contentColor = when {
-                                    displayOn -> MaterialTheme.colorScheme.onPrimary
-                                    isAvailable -> Color.White
-                                    else -> Color.White.copy(alpha = 0.55f)
-                                },
-                                testTag = PlayerPlaybackSettingsTestTags.DANMAKU_TOGGLE,
-                                stateDescription = when {
-                                    isLoading -> "加载中"
-                                    !isAvailable -> "不可用"
-                                    displayOn -> "已开启"
-                                    else -> "已关闭"
-                                },
-                            ) {
-                                if (isLoading) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(20.dp),
-                                        color = Color.White,
-                                        strokeWidth = 2.dp,
-                                    )
-                                } else {
-                                    Text(
-                                        text = "弹",
-                                        fontSize = 13.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        textDecoration = if (isAvailable && !displayOn) {
-                                            TextDecoration.LineThrough
-                                        } else {
-                                            TextDecoration.None
-                                        },
-                                    )
-                                }
-                            }
+                            PlayerDanmakuCircleButton(state = state)
                         }
                         if (onEpisode != null) {
                             PlayerSideCircleButton(
@@ -1373,20 +1393,12 @@ fun NormalVideoTopBar(
 
             if (showTools) {
                 if (showSpeed) {
-                    Box(
-                        modifier = Modifier
-                            .height(48.dp),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        PlayerOutlinedTextButton(
-                            text = "倍速x${formatSpeedValue(vm.curSpeed)}",
-                            contentDescription = "播放速度，当前 倍速x${formatSpeedValue(vm.curSpeed)}",
-                            onClick = onSpeed,
-                        )
-                    }
+                    PlayerSpeedCircleButton(vm = vm, onClick = onSpeed)
                 }
 
-                OptionalPlayerDanmakuToggle(state = danmakuControlState)
+                danmakuControlState?.let { state ->
+                    PlayerDanmakuCircleButton(state = state)
+                }
 
                 if (showCastAndShare && showDlna) {
                     IconButton(onClick = onDlna) {

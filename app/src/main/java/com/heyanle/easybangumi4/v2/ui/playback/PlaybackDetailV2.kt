@@ -708,6 +708,7 @@ private fun PlaybackDetailV2Content(
                 onEpisodeSelect = onManualEpisodeSelect,
                 onBackToBangumiSelection = onBackToBangumiSelection,
                 onDismiss = onManualDismiss,
+                isFullScreen = controlVM.isFullScreen,
             )
         }
     }

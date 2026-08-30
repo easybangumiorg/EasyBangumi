@@ -357,7 +357,7 @@ internal fun PlayerSettingV2(
             title = { Text("恢复弹幕默认设置？", color = V2Tokens.TextPrimary) },
             text = {
                 Text(
-                    "将恢复显示类型、字体大小、行高、滚动速度和时间偏移。",
+                    "将恢复显示类型、显示区域、不透明度、字体大小、行高、滚动速度、数量、复读合并和时间偏移。",
                     color = V2Tokens.TextSecondary,
                 )
             },
@@ -653,6 +653,35 @@ private fun DanmakuDisplaySettingV2(
                         it.roundToInt().coerceIn(DANMAKU_SCROLL_SPEED_TIERS.indices),
                     ]
                     onConfigChange(config.copy(scrollSpeed = tier))
+                },
+            )
+            PlayerValueSliderV2(
+                title = "弹幕数量",
+                valueLabel = "${(config.densityRatio * 100).roundToInt()}%",
+                value = config.densityRatio,
+                valueRange = DanmakuDisplayConfig.DENSITY_RATIO_RANGE,
+                steps = 8,
+                onValueChange = {
+                    onConfigChange(config.copy(densityRatio = it).normalized())
+                },
+            )
+            PlayerValueSliderV2(
+                title = "复读合并",
+                valueLabel = if (config.mergeRepeatWindowMillis <= 0L) {
+                    "不合并"
+                } else {
+                    "${config.mergeRepeatWindowMillis / 1000}s"
+                },
+                value = config.mergeRepeatWindowMillis.toFloat(),
+                valueRange = DanmakuDisplayConfig.MERGE_REPEAT_WINDOW_RANGE.start.toFloat()
+                    ..DanmakuDisplayConfig.MERGE_REPEAT_WINDOW_RANGE.endInclusive.toFloat(),
+                steps = 4,
+                onValueChange = {
+                    onConfigChange(
+                        config.copy(
+                            mergeRepeatWindowMillis = (it / 1000f).roundToInt() * 1000L,
+                        ),
+                    )
                 },
             )
             Text(

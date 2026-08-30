@@ -221,6 +221,24 @@ class DanmakuRendererSyncPolicyTest {
     }
 
     @Test
+    fun densityChangeRebuildsItemsAtTheDesiredPosition() {
+        val policy = preparedPolicy(positionMillis = 12_000L, isPlaying = true)
+
+        val commands = policy.onConfigurationChanged(
+            DanmakuRendererConfigEffect.REPLACE_ITEMS,
+            positionMillis = 15_000L,
+        )
+
+        assertEquals(
+            listOf(
+                DanmakuRendererCommand.ReplaceItems,
+                DanmakuRendererCommand.SeekTo(15_000L),
+            ),
+            commands,
+        )
+    }
+
+    @Test
     fun configChangeClassifierUsesTheMostExpensiveRequiredEffect() {
         val default = DanmakuDisplayConfig.DEFAULT
 
@@ -251,6 +269,21 @@ class DanmakuRendererSyncPolicyTest {
         assertEquals(
             DanmakuRendererConfigEffect.NONE,
             classifyDanmakuConfigChange(default, default.copy(areaRatio = 0.5f)),
+        )
+        assertEquals(
+            DanmakuRendererConfigEffect.REPLACE_ITEMS,
+            classifyDanmakuConfigChange(default, default.copy(densityRatio = 0.5f)),
+        )
+        assertEquals(
+            DanmakuRendererConfigEffect.REPLACE_ITEMS,
+            classifyDanmakuConfigChange(default, default.copy(mergeRepeatWindowMillis = 3000L)),
+        )
+        assertEquals(
+            DanmakuRendererConfigEffect.REPLACE_ITEMS,
+            classifyDanmakuConfigChange(
+                default,
+                default.copy(densityRatio = 0.5f, fontSizeSp = 24f),
+            ),
         )
         assertEquals(
             DanmakuRendererConfigEffect.STYLE,

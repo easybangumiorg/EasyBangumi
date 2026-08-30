@@ -50,10 +50,11 @@ import loli.ball.easyplayer2.utils.TimeUtils
 
 @Composable
 fun TopControl(
+    modifier: Modifier = Modifier,
     content: @Composable RowScope.() -> Unit,
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .background(
                 brush = Brush.verticalGradient(

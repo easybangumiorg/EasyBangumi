@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import com.heyanle.easybangumi4.danmaku.DANDANPLAY_SOURCE_ID
 import com.heyanle.easybangumi4.danmaku.DanmakuComment
+import com.heyanle.easybangumi4.danmaku.applyDisplaySampling
 import com.heyanle.easybangumi4.danmaku.DanmakuDisplayConfig
 import com.heyanle.easybangumi4.danmaku.DanmakuDisplayMode
 import com.heyanle.easybangumi4.danmaku.DanmakuRendererCommand
@@ -146,8 +147,11 @@ class DfmDanmakuRenderer {
                     DanmakuRendererConfigEffect.CONTENT -> {
                         applyContentConfig(currentContext, normalized)
                     }
-                    DanmakuRendererConfigEffect.STYLE -> {
-                        // STYLE wins classification when style and content change together.
+                    DanmakuRendererConfigEffect.STYLE,
+                    DanmakuRendererConfigEffect.REPLACE_ITEMS,
+                    -> {
+                        // REPLACE_ITEMS 与 STYLE 同路径应用原生样式；
+                        // 条目集重建由 onConfigurationChanged 返回的命令触发。
                         applyDisplayConfig(currentContext, normalized, currentView)
                     }
                 }
@@ -274,7 +278,12 @@ class DfmDanmakuRenderer {
             DanmakuDisplayConfig.DEFAULT_FONT_SIZE_SP * currentView.currentScaledDensity()
         currentView.removeAllDanmakus(false)
         renderedItems.clear()
-        pendingComments.forEach { comment ->
+        // 数量抽样与复读合并是最终筛选后的展示变换，重建时间轴时统一应用。
+        val displayComments = pendingComments.applyDisplaySampling(
+            densityRatio = appliedConfig.densityRatio,
+            mergeRepeatWindowMillis = appliedConfig.mergeRepeatWindowMillis,
+        )
+        displayComments.forEach { comment ->
             currentContext.mDanmakuFactory
                 .createDanmaku(comment.toDfmType(), currentContext)
                 ?.apply {
@@ -485,6 +494,8 @@ fun DfmDanmakuOverlay(
         displayConfig.lineHeightFactor,
         displayConfig.scrollSpeed,
         displayConfig.opacity,
+        displayConfig.densityRatio,
+        displayConfig.mergeRepeatWindowMillis,
     ) {
         delay(STYLE_RECONFIGURE_DEBOUNCE_MILLIS)
         renderer.setDisplayConfig(displayConfig, player.currentPosition)

@@ -82,6 +82,13 @@ data class DanmakuDisplayConfig(
      * 滚动/顶部/底部三种类型的弹幕都被约束在画布内，与 show* 类型开关完全正交。
      */
     val areaRatio: Float = DEFAULT_AREA_RATIO,
+    /**
+     * 弹幕数量比例（0.1 .. 1）：作用于全部筛选之后的最终列表，按顺序等距抽样。
+     * 0.5 表示每 2 条保留 1 条。
+     */
+    val densityRatio: Float = DEFAULT_DENSITY_RATIO,
+    /** 复读合并窗口（0 .. 5000ms）：窗口内同文字弹幕只保留第一条；0 = 不合并。 */
+    val mergeRepeatWindowMillis: Long = DEFAULT_MERGE_REPEAT_WINDOW_MILLIS,
 ) {
     fun normalized(): DanmakuDisplayConfig = copy(
         enabledProvenance = enabledProvenance.toSet(),
@@ -93,6 +100,11 @@ data class DanmakuDisplayConfig(
         scrollSpeed = scrollSpeed.snapToDanmakuScrollSpeed(),
         opacity = opacity.normalizedIn(OPACITY_RANGE, DEFAULT_OPACITY),
         areaRatio = areaRatio.snapToAreaRatio(),
+        densityRatio = densityRatio.normalizedIn(DENSITY_RATIO_RANGE, DEFAULT_DENSITY_RATIO),
+        mergeRepeatWindowMillis = mergeRepeatWindowMillis.coerceIn(
+            MERGE_REPEAT_WINDOW_RANGE.start,
+            MERGE_REPEAT_WINDOW_RANGE.endInclusive,
+        ),
     )
 
     companion object {
@@ -101,12 +113,16 @@ data class DanmakuDisplayConfig(
         const val DEFAULT_SCROLL_SPEED = 1f
         const val DEFAULT_OPACITY = 1f
         const val DEFAULT_AREA_RATIO = 1f
+        const val DEFAULT_DENSITY_RATIO = 1f
+        const val DEFAULT_MERGE_REPEAT_WINDOW_MILLIS = 0L
 
         val FONT_SIZE_SP_RANGE: ClosedFloatingPointRange<Float> = 12f..36f
         val LINE_HEIGHT_FACTOR_RANGE: ClosedFloatingPointRange<Float> = 1f..2f
         val SCROLL_SPEED_RANGE: ClosedFloatingPointRange<Float> =
             DANMAKU_SCROLL_SPEED_TIERS.first()..DANMAKU_SCROLL_SPEED_TIERS.last()
         val OPACITY_RANGE: ClosedFloatingPointRange<Float> = 0.1f..1f
+        val DENSITY_RATIO_RANGE: ClosedFloatingPointRange<Float> = 0.1f..1f
+        val MERGE_REPEAT_WINDOW_RANGE: ClosedRange<Long> = 0L..5000L
 
         val DEFAULT = DanmakuDisplayConfig()
     }
@@ -173,6 +189,14 @@ class DanmakuDisplayPreferences(
         "danmaku_area_ratio",
         DanmakuDisplayConfig.DEFAULT_AREA_RATIO,
     )
+    val densityRatio = preferenceStore.getFloat(
+        "danmaku_density_ratio",
+        DanmakuDisplayConfig.DEFAULT_DENSITY_RATIO,
+    )
+    val mergeRepeatWindowMillis = preferenceStore.getLong(
+        "danmaku_merge_repeat_window_millis",
+        DanmakuDisplayConfig.DEFAULT_MERGE_REPEAT_WINDOW_MILLIS,
+    )
 
     /** Returns one normalized snapshot for synchronous consumers. */
     fun getConfig(): DanmakuDisplayConfig = rawConfig().normalized()
@@ -198,11 +222,15 @@ class DanmakuDisplayPreferences(
             opacity.flow(),
             areaRatio.flow(),
             timeOffsetMillis.flow(),
-        ) { opacity, areaRatio, offset ->
+            densityRatio.flow(),
+            mergeRepeatWindowMillis.flow(),
+        ) { opacity, areaRatio, offset, density, mergeWindow ->
             Visuals(
                 opacity = opacity,
                 areaRatio = areaRatio,
                 timeOffsetMillis = offset,
+                densityRatio = density,
+                mergeRepeatWindowMillis = mergeWindow,
             )
         }
         return combine(
@@ -220,6 +248,8 @@ class DanmakuDisplayPreferences(
                 enabledProvenance = switchesValue.enabledProvenance,
                 opacity = visualsValue.opacity,
                 areaRatio = visualsValue.areaRatio,
+                densityRatio = visualsValue.densityRatio,
+                mergeRepeatWindowMillis = visualsValue.mergeRepeatWindowMillis,
                 timeOffsetMillis = visualsValue.timeOffsetMillis,
                 fontSizeSp = fontSize,
                 lineHeightFactor = lineHeight,
@@ -242,6 +272,8 @@ class DanmakuDisplayPreferences(
         scrollSpeed.setIfChanged(value.scrollSpeed)
         opacity.setIfChanged(value.opacity)
         areaRatio.setIfChanged(value.areaRatio)
+        densityRatio.setIfChanged(value.densityRatio)
+        mergeRepeatWindowMillis.setIfChanged(value.mergeRepeatWindowMillis)
     }
 
     fun updateConfig(transform: (DanmakuDisplayConfig) -> DanmakuDisplayConfig) {
@@ -266,6 +298,8 @@ class DanmakuDisplayPreferences(
                 scrollSpeed = DanmakuDisplayConfig.DEFAULT.scrollSpeed,
                 opacity = DanmakuDisplayConfig.DEFAULT.opacity,
                 areaRatio = DanmakuDisplayConfig.DEFAULT.areaRatio,
+                densityRatio = DanmakuDisplayConfig.DEFAULT.densityRatio,
+                mergeRepeatWindowMillis = DanmakuDisplayConfig.DEFAULT.mergeRepeatWindowMillis,
             )
         }
     }
@@ -282,6 +316,8 @@ class DanmakuDisplayPreferences(
         scrollSpeed = scrollSpeed.get(),
         opacity = opacity.get(),
         areaRatio = areaRatio.get(),
+        densityRatio = densityRatio.get(),
+        mergeRepeatWindowMillis = mergeRepeatWindowMillis.get(),
     )
 
     private data class Switches(
@@ -296,6 +332,8 @@ class DanmakuDisplayPreferences(
         val opacity: Float,
         val areaRatio: Float,
         val timeOffsetMillis: Long,
+        val densityRatio: Float,
+        val mergeRepeatWindowMillis: Long,
     )
 }
 
