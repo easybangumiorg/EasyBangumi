@@ -960,7 +960,8 @@ private fun PlayerOutlinedTextButton(
 
 /**
  * 全屏侧边操作组的统一圆形按钮：40dp 圆、内容居中、4dp 外边距。
- * 视觉状态约定：黑色蒙层 = 常规态；[active]（白色反色）= 激活态，如锁定中、非 1x 倍速。
+ * 视觉状态约定：黑色蒙层 = 常规态；[active]（白色反色）= 激活态，如锁定中、非 1x 倍速；
+ * [containerColor]/[contentColor] 显式指定时优先（用于弹幕等品牌色开关态）。
  */
 @Composable
 @kotlin.OptIn(ExperimentalFoundationApi::class)
@@ -971,17 +972,23 @@ private fun PlayerSideCircleButton(
     onLongClick: (() -> Unit)? = null,
     enabled: Boolean = true,
     active: Boolean = false,
+    containerColor: Color? = null,
+    contentColor: Color? = null,
     testTag: String? = null,
     stateDescription: String? = null,
     content: @Composable BoxScope.() -> Unit,
 ) {
+    val resolvedContainer = containerColor
+        ?: if (active) Color.White else Color.Black.copy(alpha = 0.6f)
+    val resolvedContent = contentColor
+        ?: if (active) Color.Black else Color.White
     Box(
         modifier = modifier
             .then(if (testTag != null) Modifier.testTag(testTag) else Modifier)
             .padding(4.dp)
             .size(40.dp)
             .clip(CircleShape)
-            .background(if (active) Color.White else Color.Black.copy(alpha = 0.6f))
+            .background(resolvedContainer)
             .then(
                 if (onLongClick != null) {
                     Modifier.combinedClickable(
@@ -1006,7 +1013,7 @@ private fun PlayerSideCircleButton(
         contentAlignment = Alignment.Center,
     ) {
         CompositionLocalProvider(
-            LocalContentColor provides if (active) Color.Black else Color.White,
+            LocalContentColor provides resolvedContent,
         ) {
             content()
         }
@@ -1036,13 +1043,39 @@ fun FullScreenRightToolBar(
         modifier = modifier
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Spacer(Modifier.height(64.dp))
+            // 锁定固定在第一格：锁定后浮层收起时按钮位置不变，不会跳到顶部。
+            // 锁定态下 isShowOverlay() 恒为 false，解锁入口必须独立于 overlay 展示。
+            val isShowLock = when (vm.controlState) {
+                ControlViewModel.ControlState.Normal -> vm.isNormalLockedControlShow
+                ControlViewModel.ControlState.Locked -> vm.isNormalLockedControlShow
+                ControlViewModel.ControlState.Ended -> false
+                else -> true
+            }
+            AnimatedVisibility(
+                visible = vm.isFullScreen && onLock != null && isShowLock,
+                exit = fadeOut(),
+                enter = fadeIn(),
+            ) {
+                val locked = vm.controlState == ControlViewModel.ControlState.Locked
+                PlayerSideCircleButton(
+                    contentDescription = if (locked) "解锁" else "锁定",
+                    onClick = { onLock?.invoke() },
+                    active = locked,
+                ) {
+                    Icon(
+                        if (locked) Icons.Filled.Lock else Icons.Filled.LockOpen,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
+                }
+            }
             AnimatedVisibility(
                 visible = overlayVisible,
                 exit = fadeOut(),
                 enter = fadeIn(),
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Spacer(Modifier.height(64.dp))
                     if (showCapture) {
                         val isCapturing = screenshotState is PlayerScreenshotState.Capturing
                         PlayerSideCircleButton(
@@ -1097,15 +1130,28 @@ fun FullScreenRightToolBar(
                                 state.visualState == PlayerDanmakuControlState.VisualState.Loading
                             val isAvailable =
                                 state.visualState == PlayerDanmakuControlState.VisualState.Available
+                            val displayOn = isAvailable && state.displayEnabled
+                            // 开启态用品牌色圆底（与竖屏"弹"开关一致）；
+                            // 关闭态黑蒙层 + 删除线；不可用态黑蒙层 + 降透明（不划线）。
                             PlayerSideCircleButton(
                                 contentDescription = state.contentDescription,
                                 onClick = state.onClick,
                                 onLongClick = state.onLongClick,
+                                containerColor = if (displayOn) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    null
+                                },
+                                contentColor = when {
+                                    displayOn -> MaterialTheme.colorScheme.onPrimary
+                                    isAvailable -> Color.White
+                                    else -> Color.White.copy(alpha = 0.55f)
+                                },
                                 testTag = PlayerPlaybackSettingsTestTags.DANMAKU_TOGGLE,
                                 stateDescription = when {
                                     isLoading -> "加载中"
                                     !isAvailable -> "不可用"
-                                    state.displayEnabled -> "已开启"
+                                    displayOn -> "已开启"
                                     else -> "已关闭"
                                 },
                             ) {
@@ -1120,12 +1166,7 @@ fun FullScreenRightToolBar(
                                         text = "弹",
                                         fontSize = 13.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = if (isAvailable) {
-                                            LocalContentColor.current
-                                        } else {
-                                            LocalContentColor.current.copy(alpha = 0.55f)
-                                        },
-                                        textDecoration = if (isAvailable && !state.displayEnabled) {
+                                        textDecoration = if (isAvailable && !displayOn) {
                                             TextDecoration.LineThrough
                                         } else {
                                             TextDecoration.None
@@ -1147,31 +1188,6 @@ fun FullScreenRightToolBar(
                             }
                         }
                     }
-                }
-            }
-            // 锁定态下 isShowOverlay() 恒为 false，解锁入口必须独立于 overlay 展示。
-            val isShowLock = when (vm.controlState) {
-                ControlViewModel.ControlState.Normal -> vm.isNormalLockedControlShow
-                ControlViewModel.ControlState.Locked -> vm.isNormalLockedControlShow
-                ControlViewModel.ControlState.Ended -> false
-                else -> true
-            }
-            AnimatedVisibility(
-                visible = vm.isFullScreen && onLock != null && isShowLock,
-                exit = fadeOut(),
-                enter = fadeIn(),
-            ) {
-                val locked = vm.controlState == ControlViewModel.ControlState.Locked
-                PlayerSideCircleButton(
-                    contentDescription = if (locked) "解锁" else "锁定",
-                    onClick = { onLock?.invoke() },
-                    active = locked,
-                ) {
-                    Icon(
-                        if (locked) Icons.Filled.Lock else Icons.Filled.LockOpen,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp),
-                    )
                 }
             }
         }
