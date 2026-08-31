@@ -1,15 +1,16 @@
 package com.heyanle.easybangumi4.plugin.source.utils.network
 
+import android.content.Context
+import android.webkit.WebSettings
 import com.heyanle.easybangumi4.plugin.api.utils.api.NetworkHelper
 import com.heyanle.easybangumi4.plugin.api.utils.core.AndroidCookieJar
-import com.heyanle.easybangumi4.utils.WebViewRuntime
 import com.heyanle.okkv2.core.okkv
 
 /**
  * Created by heyanlin on 2024/6/4.
  */
 class NetworkHelperImpl(
-    private val webViewRuntime: WebViewRuntime,
+    private val context: Context,
 ): NetworkHelper {
 
     companion object {
@@ -38,7 +39,7 @@ class NetworkHelperImpl(
     }
 
 
-    private val _cookieManager = AndroidCookieJar(webViewRuntime.cookieManager)
+    private val _cookieManager = AndroidCookieJar()
     override val cookieManager: AndroidCookieJar
         get() = _cookieManager
 
@@ -49,7 +50,7 @@ class NetworkHelperImpl(
         get() {
             if (defaultAndroidUAOKKV.isEmpty()) {
                 try {
-                    val res = webViewRuntime.getDefaultUserAgent()
+                    val res = WebSettings.getDefaultUserAgent(context)
                     defaultAndroidUAOKKV = res
                     return res
                 } catch (e: Exception) {

@@ -1,8 +1,10 @@
 package com.heyanle.easybangumi4.utils
 
+import android.webkit.CookieManager
 import android.webkit.WebSettings
 import android.webkit.WebView
 import androidx.annotation.UiThread
+import com.heyanle.easybangumi4.APP
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
@@ -14,7 +16,7 @@ import java.util.concurrent.TimeUnit
  * https://github.com/heyanLE
  */
 class WebViewManager(
-    private val webViewRuntime: WebViewRuntime,
+    private val cookieManager: CookieManager,
 ) {
 
     companion object {
@@ -82,7 +84,7 @@ class WebViewManager(
     @UiThread
     private fun newWebView(): WebView? {
         return try {
-            webViewRuntime.createWebView().apply {
+            WebView(APP).apply {
                 // setDefaultSettings()
                 with(settings) {
                     javaScriptEnabled = true
@@ -97,7 +99,7 @@ class WebViewManager(
                     builtInZoomControls = true
                     displayZoomControls = false
                 }
-                webViewRuntime.cookieManager.also {
+                cookieManager.also {
                     it.setAcceptCookie(true)
                     it.acceptCookie()
                     it.setAcceptThirdPartyCookies(this, true) // 跨域cookie读取

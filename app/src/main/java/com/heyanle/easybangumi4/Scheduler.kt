@@ -2,6 +2,7 @@ package com.heyanle.easybangumi4
 
 import android.app.Application
 import android.util.Base64
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import com.heyanle.easy_crasher.CrashHandler
 import com.heyanle.easybangumi4.cartoon.CartoonModule
@@ -11,12 +12,14 @@ import com.heyanle.easybangumi4.danmaku.DanmakuModule
 import com.heyanle.easybangumi4.crash.SourceCrashController
 import com.heyanle.easybangumi4.dlna.DlnaModule
 import com.heyanle.easybangumi4.setting.SettingModule
+import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
 import com.heyanle.easybangumi4.plugin.source.SourceModule
 import com.heyanle.easybangumi4.splash.SplashActivity
 import com.heyanle.easybangumi4.storage.StorageModule
 import com.heyanle.easybangumi4.ui.common.dismiss
 import com.heyanle.easybangumi4.ui.common.moeDialogAlert
 import com.heyanle.easybangumi4.utils.UUIDHelper
+import com.heyanle.easybangumi4.utils.WebViewCompatibilityModeGuard
 import com.heyanle.easybangumi4.utils.exo_ssl.CropUtil
 import com.heyanle.easybangumi4.utils.exo_ssl.TrustAllHostnameVerifier
 import com.heyanle.easybangumi4.utils.getCachePath
@@ -77,6 +80,7 @@ object Scheduler {
         StorageModule(application).registerWith(Inject)
         DlnaModule(application).registerWith(Inject)
         initOkkv(application)
+        recoverWebViewCompatibilityMode(application)
         initBugly(application)
         initAria(application)
 
@@ -171,6 +175,27 @@ object Scheduler {
         Okkv.Builder(MMKVStore(application)).cache().build().init().default()
         // 如果不使用缓存，请手动指定 key
         Okkv.Builder(MMKVStore(application)).build().init().default("no_cache")
+    }
+
+    private fun recoverWebViewCompatibilityMode(application: Application) {
+        if (!WebViewCompatibilityModeGuard.shouldEnableCompatibilityMode()) return
+
+        runCatching {
+            val preferences = Inject.get<SettingMMKVPreferences>().webViewCompatible
+            preferences.set(true)
+            check(preferences.get()) { "failed to persist WebView compatibility mode" }
+            check(WebViewCompatibilityModeGuard.clear()) {
+                "failed to clear WebView compatibility guard directory"
+            }
+            Toast.makeText(
+                application,
+                "检测到上次 WebView 初始化异常，已自动开启兼容模式",
+                Toast.LENGTH_LONG,
+            ).show()
+        }.onFailure {
+            // Keep the parent directory intact so the next process can retry the recovery.
+            it.printStackTrace()
+        }
     }
 
     /**

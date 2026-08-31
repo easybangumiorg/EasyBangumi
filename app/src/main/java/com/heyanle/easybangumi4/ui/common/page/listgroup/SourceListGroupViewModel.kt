@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewModelScope
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.plugin.api.component.page.SourcePage
+import com.heyanle.easybangumi4.utils.WebViewCompatibilityModeGuard
 import com.heyanle.easybangumi4.utils.stringRes
 import kotlinx.coroutines.launch
 
@@ -37,18 +38,24 @@ class SourceListGroupViewModel(
     fun refresh(){
         viewModelScope.launch {
             groupState = GroupState.Loading
-            listPage.loadPage()
-                .complete {
-                    groupState = GroupState.Group(it.data)
-                }
-                .error {
-                    it.throwable.printStackTrace()
-                    groupState =
-                        GroupState.Error(
-                            if (it.isParserError) stringRes(R.string.source_error)
-                            else it.throwable.message ?: stringRes(R.string.loading_error)
-                        )
-                }
+            val tag = WebViewCompatibilityModeGuard.newTag("home_load_page")
+            WebViewCompatibilityModeGuard.open(tag)
+            try {
+                listPage.loadPage()
+                    .complete {
+                        groupState = GroupState.Group(it.data)
+                    }
+                    .error {
+                        it.throwable.printStackTrace()
+                        groupState =
+                            GroupState.Error(
+                                if (it.isParserError) stringRes(R.string.source_error)
+                                else it.throwable.message ?: stringRes(R.string.loading_error)
+                            )
+                    }
+            } finally {
+                WebViewCompatibilityModeGuard.close(tag)
+            }
         }
     }
 
